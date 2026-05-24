@@ -1,1 +1,1 @@
-V52 proposta refeta neta.
+V53 Static sense npm. Render Static Site: Build Command buit; Publish Directory: .
