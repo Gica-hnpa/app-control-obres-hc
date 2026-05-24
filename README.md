@@ -1,1 +1,1 @@
-V53 Static sense npm. Render Static Site: Build Command buit; Publish Directory: .
+V54 Static sense npm. Render Static Site: Build Command buit; Publish Directory: .
