@@ -8,5 +8,3 @@ Render:
 - Publish Directory: dist
 
 No pujar node_modules ni package-lock.json.
-
-V59: fixes certificacions/facturació/configuració.

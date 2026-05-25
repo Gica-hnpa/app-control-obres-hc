@@ -1288,3 +1288,25 @@ button,input,select,textarea{font-size:13.5px!important}
 @media(max-width:1000px){
   .storage-config{grid-template-columns:1fr}
 }
+
+/* V60 fixes reals */
+.cert-tabs{display:flex;gap:8px;margin-bottom:12px}
+.cert-tabs button{border:1px solid #cbd5e1;background:white;border-radius:8px;padding:8px 12px;font-weight:900}
+.cert-tabs button.active{background:#111827;color:white}
+.cert-wide{overflow:auto}
+.cert-edit-input{width:80px;border:1px solid #86efac!important;border-radius:6px!important;padding:5px!important;text-align:right!important;background:#f0fdf4!important;font-weight:900}
+.cert-resum-v60{border:1px solid #d6dde7;border-radius:14px;overflow:auto}
+.cert-resum-head,.cert-resum-row{display:grid;grid-template-columns:2fr 1fr repeat(2,1fr) 1fr 1fr 1.2fr;gap:8px;align-items:center;min-width:980px}
+.cert-resum-head{background:#0f172a;color:white;font-size:12px;font-weight:900;padding:12px}
+.cert-resum-row{padding:12px;border-bottom:1px solid #e5e7eb}
+.cert-resum-row.total{background:#f8fafc;font-weight:900}
+.progress-v60{display:flex;align-items:center;gap:8px}
+.progress-v60 div{height:10px;flex:1;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.progress-v60 i{display:block;height:10px;background:linear-gradient(90deg,#2563eb,#22c55e)}
+.progress-v60 em{font-style:normal;font-weight:900;font-size:12px}
+.proforma-preview-v60{border:1px solid #d6dde7;border-radius:12px;padding:12px;margin-bottom:12px;background:#fff}
+.proforma-preview-v60 table{width:100%;border-collapse:collapse}
+.proforma-preview-v60 th,.proforma-preview-v60 td{border:1px solid #cbd5e1;padding:7px;text-align:right}
+.proforma-preview-v60 th:first-child,.proforma-preview-v60 td:first-child{text-align:left}
+.proforma-doc table{width:100%;border-collapse:collapse;margin:12px 0}
+.proforma-doc th,.proforma-doc td{border:1px solid #cbd5e1;padding:8px}
