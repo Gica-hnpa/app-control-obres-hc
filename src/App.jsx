@@ -124,7 +124,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 60 fixes reals · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 61 preview-certificacions · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 function FitxaClient({client,obres,openObra,back}){return <div className="stack"><button className="secondary" onClick={back}>← Tornar</button><Card title={client.nom}><div className="form-grid"><Input label="Nom comercial" defaultValue={client.nom}/><Input label="Raó social" defaultValue={client.rao}/><Input label="NIF/CIF" defaultValue={client.nif}/><Input label="Contacte" defaultValue={client.contacte}/><Input label="Email" defaultValue={client.email}/><Input label="Telèfon" defaultValue={client.telefon}/></div></Card><Card title={`Obres amb ${client.nom}`}><div className="list">{obres.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card></div>}
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
@@ -284,51 +284,39 @@ function Pressupost({data,importExcel,openPartida,openEmail,openDoc}){
 }
 
 
+
 function Cert({data,updateCert,ci,setCi,saveCert,openEmail,openDoc}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs[0]?.id||null);
-const[view,setView]=useState("Resum");
+const[editing,setEditing]=useState(false);
 let rows=data.partides||[], caps=group(rows,"cap");
 let cert=certs.find(c=>c.id===selected)||certs[0]||null;
 let certNum=cert?+cert.numero:+ci.num;
+let prevNum=Math.max(certNum-1,0);
 function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
 function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
-function updateQty(codi,value){
-  let v=Number(String(value).replace(",","."))||0;
-  let key=certNum===1?"certAnterior":"certActual";
-  updateCert?.(codi,key,v);
-}
 function certTotal(n){return rows.reduce((s,r)=>s+impFor(r,n),0)}
-let tp=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+function updateQty(codi,value){let v=Number(String(value).replace(",","."))||0;updateCert?.(codi,certNum===1?"certAnterior":"certActual",v)}
+function guardar(){saveCert?.();setEditing(false)}
 return <div className="stack">
-<Card title="Certificacions guardades" action={<button className="primary" onClick={saveCert}><Save/> Guardar certificació</button>}>
-  <div className="version-list">
-    {certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=>{
-      let n=+c.numero, total=certTotal(n);
-      return <button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>setSelected(c.id)}>
-        <b>Certificació {c.numero}</b><span>{c.data}</span><strong>{money(total)}</strong><em>Obrir quadre</em>
-      </button>
-    })}
-  </div>
+<Card title="Certificacions guardades" action={<button className="primary" onClick={guardar}><Save/> Guardar certificació</button>}>
+  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>setSelected(c.id)}><b>Certificació {c.numero}</b><span>{c.data}</span><strong>{money(certTotal(+c.numero))}</strong><em>Seleccionar</em></button>)}</div>
 </Card>
-<Card title="Certificacions · resum i detall" action={<button className="secondary" onClick={()=>openDoc({type:"certificacio",title:`Certificació ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`})}><ReceiptText/> Previsualització document</button>}>
-  <div className="cert-tabs">
-    <button className={view==="Resum"?"active":""} onClick={()=>setView("Resum")}>Resum per capítols</button>
-    <button className={view==="Quadre"?"active":""} onClick={()=>setView("Quadre")}>Quadre detallat</button>
-  </div>
-  {view==="Resum"?<CertResumV60 data={data}/>:<div className="table-wrap cert-wide"><table className="cert-table">
-    <thead><tr><th>Partida</th><th>Ut</th><th>Resum</th><th>CanPres</th><th>PrPres</th><th>ImpPres</th><th>Q Cert. {certNum}</th><th>% Cert.</th><th>Imp Cert.</th></tr></thead>
-    <tbody>{Object.entries(caps).map(([cap,items])=><tbody key={cap}><tr className="cap-row"><td colSpan="9">{cap}</td></tr>{items.map(r=>{
-      let q=qFor(r,certNum), imp=impFor(r,certNum), pc=(+r.q||0)?q/(+r.q)*100:0;
-      return <tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money((+r.q||0)*(+r.pu||0))}</td><td className={q>0?"cert-cell-green":""}><input className="cert-edit-input" type="number" step="0.01" value={q} onChange={e=>updateQty(r.codi,e.target.value)}/></td><td className={q>0?"cert-cell-green":""}>{pct(pc)}</td><td className={q>0?"cert-cell-green":""}>{money(imp)}</td></tr>
+<Card title={`Certificació actual ${certNum} · comparativa amb anterior ${prevNum>0?prevNum:"—"}`} action={<div className="actions-inline"><button className="secondary" onClick={()=>setEditing(!editing)}>{editing?"Tancar edició":"Editar amidaments"}</button><button className="primary" onClick={guardar}><Save/> Guardar amidaments</button></div>}>
+  <CertResumV61 data={data}/>
+  <div className="table-wrap cert-wide"><table className="cert-table cert-table-v61">
+    <thead><tr><th>Partida</th><th>Ut</th><th>Resum</th><th>CanPres</th><th>PrPres</th><th>ImpPres</th><th>Q anterior</th><th>Imp anterior</th><th>Q actual</th><th>% actual</th><th>Imp actual</th><th>Total cert.</th></tr></thead>
+    <tbody>{Object.entries(caps).map(([cap,items])=><tbody key={cap}><tr className="cap-row"><td colSpan="12">{cap}</td></tr>{items.map(r=>{
+      let qPrev=prevNum>0?qFor(r,prevNum):0, qAct=qFor(r,certNum), impPrev=qPrev*(+r.pu||0), impAct=qAct*(+r.pu||0), pc=(+r.q||0)?qAct/(+r.q)*100:0;
+      return <tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money((+r.q||0)*(+r.pu||0))}</td><td>{qty2(qPrev)}</td><td>{money(impPrev)}</td><td className={qAct>0?"cert-cell-green":""}>{editing?<input className="cert-edit-input" type="number" step="0.01" value={qAct} onChange={e=>updateQty(r.codi,e.target.value)}/>:qty2(qAct)}</td><td className={qAct>0?"cert-cell-green":""}>{pct(pc)}</td><td className={qAct>0?"cert-cell-green":""}>{money(impAct)}</td><td>{money(impPrev+impAct)}</td></tr>
     })}</tbody>)}</tbody>
-    <tfoot><tr><th colSpan="8">TOTAL CERTIFICACIÓ {certNum}</th><th>{money(certTotal(certNum))}</th></tr></tfoot>
-  </table></div>}
+    <tfoot><tr><th colSpan="7">TOTAL ANTERIOR</th><th>{money(prevNum>0?certTotal(prevNum):0)}</th><th colSpan="2">TOTAL ACTUAL {certNum}</th><th>{money(certTotal(certNum))}</th><th>{money((prevNum>0?certTotal(prevNum):0)+certTotal(certNum))}</th></tr></tfoot>
+  </table></div>
 </Card>
 </div>
 }
 
-function CertResumV60({data}){
+function CertResumV61({data}){
 let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
 function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
 function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
@@ -341,37 +329,47 @@ let capRows=Object.entries(caps).map(([cap,items])=>{
 let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
 let totalCerts=certs.map(c=>rows.reduce((s,r)=>s+impFor(r,+c.numero),0));
 let totalExec=totalCerts.reduce((s,v)=>s+v,0);
-return <div className="cert-resum-v60">
-  <div className="cert-resum-head"><span>CAPÍTOL</span><span>PRESSUPOST</span>{certs.map(c=><span key={c.id}>CERT. {c.numero}</span>)}<span>TOTAL CERT.</span><span>PENDENT</span><span>% EXECUTAT</span></div>
-  {capRows.map(r=><div className="cert-resum-row" key={r.cap}><b>{r.cap}</b><span>{money(r.pressupost)}</span>{r.vals.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(r.total)}</strong><span>{money(r.pendent)}</span><ProgressV60 v={r.percent}/></div>)}
-  <div className="cert-resum-row total"><b>TOTAL</b><span>{money(totalPres)}</span>{totalCerts.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(totalExec)}</strong><span>{money(Math.max(totalPres-totalExec,0))}</span><ProgressV60 v={totalPres?totalExec/totalPres*100:0}/></div>
+return <div className="cert-resum-v61">
+  <div className="cert-resum-head-v61"><span>CAPÍTOL</span><span>PRESSUPOST</span>{certs.map(c=><span key={c.id}>CERT. {c.numero}</span>)}<span>TOTAL CERT.</span><span>PENDENT</span><span>% EXECUTAT</span></div>
+  {capRows.map(r=><div className="cert-resum-row-v61" key={r.cap}><b>{r.cap}</b><span>{money(r.pressupost)}</span>{r.vals.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(r.total)}</strong><span>{money(r.pendent)}</span><ProgressV61 v={r.percent}/></div>)}
+  <div className="cert-resum-row-v61 total"><b>TOTAL</b><span>{money(totalPres)}</span>{totalCerts.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(totalExec)}</strong><span>{money(Math.max(totalPres-totalExec,0))}</span><ProgressV61 v={totalPres?totalExec/totalPres*100:0}/></div>
 </div>
 }
-function ProgressV60({v}){return <div className="progress-v60"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
+function ProgressV61({v}){return <div className="progress-v61"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
 
 
 function Fact({data,openEmail,openDoc}){
-const key="aco_fact_params_v60";
+const key="aco_fact_params_v61";
 const[params,setParams]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
+const[selected,setSelected]=useState(null);
 useEffect(()=>{localStorage.setItem(key,JSON.stringify(params))},[params]);
 function p(id,k,def){return params[id]?.[k]??def}
 function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}
-function qFor(r,c){let n=+c.numero;return n===1?(+r.certAnterior||0):(+r.certActual||0)}
-function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,c)>0)}
-let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let base=rows.reduce((s,r)=>s+qFor(r,c)*(+r.pu||0),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows}});
-let definitives=(data.factures||[]).filter(f=>f.estat==="eFACT enviada"||f.estat==="Veri*factu registrada");
-return <div className="stack">
+function qFor(r,c){let n=+c.numeroCert||+c.numero;return n===1?(+r.certAnterior||0):(+r.certActual||0)}
+function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,{numeroCert:c.numero,numero:c.numero})>0)}
+let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let base=rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*(+r.pu||0),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows}});
+let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
+function calc(f){let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total}}
+function openPrint(f){let c=calc(f);openDoc({type:"proforma",title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${f.data}`,proforma:f,iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp})}
+return <div className="fact-layout-v61">
 <Card title="Factures proforma de certificacions">
-  <div className="table-wrap"><table className="invoice-table"><thead><tr><th>Proforma</th><th>Certificació</th><th>Data</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Estat</th><th></th></tr></thead><tbody>
-  {proformes.length===0&&<tr><td colSpan="10"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
-  {proformes.map(f=>{let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return <tr key={f.pfId}><td><b>{f.numero}</b></td><td>Cert. {f.numeroCert}</td><td>{f.data}</td><td>{money(f.base)}</td><td><select value={iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(total)}</b></td><td>{f.estat}</td><td><button onClick={()=>openDoc({type:"proforma",title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${f.data}`,proforma:f,iva,ret,ded,total,base,ivaImp,retImp})}>Obrir</button></td></tr>})}
+  <div className="table-wrap"><table className="invoice-table"><thead><tr><th>Proforma</th><th>Cert.</th><th>Data</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Accions</th></tr></thead><tbody>
+  {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
+  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>Cert. {f.numeroCert}</td><td>{f.data}</td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button onClick={()=>setSelected(f.pfId)}>Previsualitzar</button><button className="primary small" onClick={()=>openPrint(f)}>Imprimir</button></td></tr>})}
   </tbody></table></div>
 </Card>
-<Card title="Previsualització ràpida de proformes">
-  {proformes.map(f=>{let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return <div className="proforma-preview-v60" key={f.pfId}><h3>{f.numero} · Certificació {f.numeroCert}</h3><table><thead><tr><th>Partida facturada</th><th>Q</th><th>PU</th><th>Import</th></tr></thead><tbody>{f.rows.map(r=><tr key={r.codi}><td>{r.codi} · {r.concepte}</td><td>{qty2(qFor(r,f))}</td><td>{money(r.pu)}</td><td>{money(qFor(r,f)*r.pu)}</td></tr>)}</tbody><tfoot><tr><th colSpan="3">Base</th><th>{money(f.base)}</th></tr><tr><th colSpan="3">IVA {iva}%</th><th>{money(ivaImp)}</th></tr><tr><th colSpan="3">Retenció {ret}%</th><th>-{money(retImp)}</th></tr><tr><th colSpan="3">Total</th><th>{money(total)}</th></tr></tfoot></table></div>})}
+<Card title="Previsualització document proforma">
+  {!current?<Empty text="Selecciona una proforma."/>:<ProformaPreviewV61 f={current} calc={calc(current)} qFor={qFor}/>}
 </Card>
-<Card title="Factures definitives · Veri*factu / eFACT"><div className="table-wrap"><table className="invoice-table"><thead><tr><th>Factura</th><th>Origen</th><th>Data</th><th>Import</th><th>Estat</th><th></th></tr></thead><tbody>{definitives.length===0?<tr><td colSpan="6"><Empty text="Encara no hi ha factures definitives emeses. Quan es generin amb Veri*factu/eFACT quedaran bloquejades i només es podran rectificar amb factura rectificativa."/></td></tr>:definitives.map(f=><tr><td>{f.numero}</td><td>{f.tipus}</td><td>{f.data}</td><td>{money(f.base)}</td><td>Bloquejada</td><td><button>Consultar</button></td></tr>)}</tbody></table></div><div className="efact-box"><b>Regla de bloqueig</b><span>La proforma queda a l’històric. La factura definitiva no s’edita; si cal modificar-la, es genera una rectificativa.</span><button className="secondary"><ReceiptText/> Preparar Facturae XML</button></div></Card>
 </div>}
+function ProformaPreviewV61({f,calc,qFor}){
+return <div className="proforma-preview-doc-v61">
+  <div className="doc-title-row"><div><h2>FACTURA PROFORMA</h2><p>{f.numero} · Certificació {f.numeroCert} · {f.data}</p></div><b>{money(calc.total)}</b></div>
+  <h3>Partides facturades</h3>
+  <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{f.rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(qFor(r,f))}</td><td>{money(r.pu)}</td><td>{money(qFor(r,f)*r.pu)}</td></tr>)}</tbody></table>
+  <table className="totals-preview"><tbody><tr><th>Base certificada</th><td>{money(f.base)}</td></tr><tr><th>Deducció ({calc.ded}%)</th><td>-{money(f.base-calc.base)}</td></tr><tr><th>Base imposable</th><td>{money(calc.base)}</td></tr><tr><th>IVA ({calc.iva}%)</th><td>{money(calc.ivaImp)}</td></tr><tr><th>Retenció ({calc.ret}%)</th><td>-{money(calc.retImp)}</td></tr><tr className="total"><th>Total proforma</th><td>{money(calc.total)}</td></tr></tbody></table>
+</div>
+}
 
 
 function Actes({data,openActa,openEmail,openDoc,selected,setSelected}){const[local,setLocal]=useState(data.actes||[]);const[actaDocs,setActaDocs]=useState(()=>JSON.parse(localStorage.getItem("aco_acta_docs")||"[]"));const[actaPhotos,setActaPhotos]=useState(()=>JSON.parse(localStorage.getItem("aco_acta_photos")||"[]"));useEffect(()=>{localStorage.setItem("aco_acta_docs",JSON.stringify(actaDocs))},[actaDocs]);useEffect(()=>{localStorage.setItem("aco_acta_photos",JSON.stringify(actaPhotos))},[actaPhotos]);let a=local.find(x=>x.id===selected)||local[0];let idx=local.findIndex(x=>x.id===a?.id),prev=idx>0?local[idx-1]:null;function toggleAgent(id,on){setLocal(p=>p.map(x=>x.id===a.id?{...x,agents:on?[...new Set([...x.agents,id])]:x.agents.filter(z=>z!==id)}:x))}function updateText(v){setLocal(p=>p.map(x=>x.id===a.id?{...x,text:v}:x))}function addDocs(e){[...(e.target.files||[])].forEach(f=>setActaDocs(p=>[...p,{id:"ad-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,tipus:f.name.split(".").pop()?.toUpperCase()||"DOC"}]))}function addPhotos(e){[...(e.target.files||[])].forEach(f=>{let r=new FileReader();r.onload=()=>setActaPhotos(p=>[...p,{id:"ap-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,url:r.result}]);r.readAsDataURL(f)})}let docs=actaDocs.filter(d=>d.actaId===a?.id),photos=actaPhotos.filter(p=>p.actaId===a?.id);return <div className="actes-layout"><Card title="Actes creades" action={<button className="primary" onClick={openActa}><Plus/> Nova acta</button>}><div className="acta-list">{local.length===0?<Empty text="Encara no hi ha actes creades."/>:local.map(x=><button className={`acta-list-row ${a?.id===x.id?"active":""}`} onClick={()=>setSelected(x.id)}><strong>{x.titol}</strong><span>{x.data}</span><small>{x.agents.map(id=>data.agents.find(ag=>ag.id===id)?.nom).filter(Boolean).join(", ")}</small></button>)}</div></Card>{a&&<Card title={`Visualització / edició · ${a.titol}`} action={<div className="actions-inline"><button className="secondary" onClick={()=>openDoc({type:"acta",title:a.titol,subtitle:a.data,acta:a,agents:data.agents,actaPhotos:photos,actaDocs:docs})}>Obrir document</button><button className="secondary" onClick={()=>openEmail(a.titol)}><Mail/> Enviar Gmail</button></div>}><div className="previous-acta">{prev?<><b>Consideracions de l’acta anterior ({prev.data})</b><label><input type="checkbox"/> Validat / resolt</label><p>{prev.text}</p></>:<p>No hi ha acta anterior.</p>}</div><div className="form-grid"><Input label="Títol acta" defaultValue={a.titol}/><Input label="Data" defaultValue={a.data}/><Input label="Obra" defaultValue={a.obra}/><Input label="Signatura" defaultValue={a.signatura}/><label className="span-all"><span>Assistents / intervinents a l’acta</span><div className="check-grid">{data.agents.map(ag=><label className="check-row"><input type="checkbox" checked={a.agents.includes(ag.id)} onChange={e=>toggleAgent(ag.id,e.target.checked)}/><span>{ag.nom} · {ag.rol}</span></label>)}</div></label><label className="span-all"><span>Observacions / decisions preses</span><textarea value={a.text} onChange={e=>updateText(e.target.value)}/></label></div><div className="upload-grid"><label><Camera/> Afegir fotos<input type="file" multiple accept="image/*" onChange={addPhotos}/></label><label><Paperclip/> Afegir documents<input type="file" multiple onChange={addDocs}/></label><button><PenLine/> Signatura mòbil</button></div><div className="attached-list">{photos.map(p=><span>📷 {p.nom}</span>)}{docs.map(d=><span>📎 {d.nom}</span>)}</div><div className="card-actions"><button className="primary"><Save/> Guardar canvis</button></div></Card>}</div>}

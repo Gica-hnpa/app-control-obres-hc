@@ -1310,3 +1310,29 @@ button,input,select,textarea{font-size:13.5px!important}
 .proforma-preview-v60 th:first-child,.proforma-preview-v60 td:first-child{text-align:left}
 .proforma-doc table{width:100%;border-collapse:collapse;margin:12px 0}
 .proforma-doc th,.proforma-doc td{border:1px solid #cbd5e1;padding:8px}
+
+/* V61 preview + certificacions */
+.fact-layout-v61{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:start}
+.selected-row{background:#eff6ff!important}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+.small{padding:6px 9px!important;font-size:12px}
+.proforma-preview-doc-v61{background:white;border:1px solid #d6dde7;border-radius:12px;padding:16px}
+.doc-title-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid #d6dde7;margin-bottom:12px;padding-bottom:10px}
+.doc-title-row h2{margin:0;font-size:20px}
+.proforma-preview-doc-v61 table{width:100%;border-collapse:collapse;margin:12px 0}
+.proforma-preview-doc-v61 th,.proforma-preview-doc-v61 td{border:1px solid #cbd5e1;padding:8px;text-align:right}
+.proforma-preview-doc-v61 th:first-child,.proforma-preview-doc-v61 td:first-child,.proforma-preview-doc-v61 td:nth-child(2){text-align:left}
+.totals-preview .total th,.totals-preview .total td{background:#e5e7eb;font-size:18px;font-weight:900}
+.cert-wide{overflow:auto}
+.cert-table-v61{min-width:1250px}
+.cert-edit-input{width:82px;border:1px solid #86efac!important;border-radius:6px!important;padding:5px!important;text-align:right!important;background:#f0fdf4!important;font-weight:900}
+.cert-resum-v61{border:1px solid #d6dde7;border-radius:14px;overflow:auto;margin-bottom:14px}
+.cert-resum-head-v61,.cert-resum-row-v61{display:grid;grid-template-columns:2fr 1fr repeat(2,1fr) 1fr 1fr 1.2fr;gap:8px;align-items:center;min-width:980px}
+.cert-resum-head-v61{background:#0f172a;color:white;font-size:12px;font-weight:900;padding:12px}
+.cert-resum-row-v61{padding:12px;border-bottom:1px solid #e5e7eb}
+.cert-resum-row-v61.total{background:#f8fafc;font-weight:900}
+.progress-v61{display:flex;align-items:center;gap:8px}
+.progress-v61 div{height:10px;flex:1;background:#e5e7eb;border-radius:999px;overflow:hidden}
+.progress-v61 i{display:block;height:10px;background:linear-gradient(90deg,#2563eb,#22c55e)}
+.progress-v61 em{font-style:normal;font-weight:900;font-size:12px}
+@media(max-width:1200px){.fact-layout-v61{grid-template-columns:1fr}}
