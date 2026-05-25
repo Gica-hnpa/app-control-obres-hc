@@ -124,7 +124,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 66 certificacions desbloquejades · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 67 cert-alineada · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 function FitxaClient({client,obres,openObra,back}){return <div className="stack"><button className="secondary" onClick={back}>← Tornar</button><Card title={client.nom}><div className="form-grid"><Input label="Nom comercial" defaultValue={client.nom}/><Input label="Raó social" defaultValue={client.rao}/><Input label="NIF/CIF" defaultValue={client.nif}/><Input label="Contacte" defaultValue={client.contacte}/><Input label="Email" defaultValue={client.email}/><Input label="Telèfon" defaultValue={client.telefon}/></div></Card><Card title={`Obres amb ${client.nom}`}><div className="list">{obres.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card></div>}
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
@@ -299,22 +299,27 @@ function Pressupost({data,importExcel,openPartida,openEmail,openDoc}){
 
 
 
+
 function Cert({data,updateCert,ci,setCi,saveCert,openEmail,openDoc}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
 const[editing,setEditing]=useState(false);
 const[draft,setDraft]=useState({});
 let rows=data.partides||[], caps=group(rows,"cap");
-let cert=certs.find(c=>c.id===selected)||certs[0]||null;
+let cert=certs.find(c=>c.id===selected)||certs.find(c=>+c.numero===2)||certs[0]||null;
 let certNum=cert?+cert.numero:+ci.num;
-let prevNum=Math.max(certNum-1,1);
+let prevNum=certNum>1?certNum-1:1;
 useEffect(()=>{setDraft({})},[selected]);
+
 function fieldFor(n){return n===1?"certAnterior":"certActual"}
-function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
-function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
-function certTotal(n){return rows.reduce((s,r)=>s+impFor(r,n),0)}
-function draftVal(r){return draft[r.codi]??String(qFor(r,certNum))}
-function qDraft(r){let q=Number(String(draftVal(r)).replace(",","."));return Number.isFinite(q)?q:qFor(r,certNum)}
+function qCert(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
+function qActualDraft(r){
+  let raw=draft[r.codi]??String(qCert(r,certNum));
+  let q=Number(String(raw).replace(",","."));
+  return Number.isFinite(q)?q:qCert(r,certNum);
+}
+function imp(r,n){return qCert(r,n)*(+r.pu||0)}
+function certTotal(n){return rows.reduce((s,r)=>s+imp(r,n),0)}
 function commitOne(codi,v){let val=Number(String(v).replace(",","."));if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){
   Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));
@@ -322,33 +327,54 @@ function guardarAmidaments(){
   setEditing(false);
   setTimeout(()=>saveCert?.(),0);
 }
+let totalActual=rows.reduce((s,r)=>s+qActualDraft(r)*(+r.pu||0),0);
 return <div className="stack">
 <Card title="Certificacions guardades">
   <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>setSelected(c.id)}><b>Certificació {c.numero}</b><span>{c.data}</span><strong>{money(certTotal(+c.numero))}</strong><em>Seleccionar</em></button>)}</div>
 </Card>
 <Card title={`Quadre de certificació · Cert. ${prevNum} anterior + Cert. ${certNum} actual`}>
-  <div className="cert-toolbar-v64">
-    <div><b>Mode de treball</b><span>{editing?"Editant amidaments de la certificació actual":"Consulta bloquejada"}</span></div>
-    <div className="actions-inline"><button className="secondary" onClick={()=>setEditing(!editing)}>{editing?"Tancar edició":"Editar amidaments"}</button><button className="primary" onClick={guardarAmidaments}><Save/> Guardar amidaments</button><button className="secondary" onClick={()=>openDoc({type:"certificacio",title:`Certificació ${certNum}`,subtitle:`Import: ${money(rows.reduce((s,r)=>s+qDraft(r)*(+r.pu||0),0))}`})}>Previsualitzar</button></div>
+  <div className="cert-toolbar-v67">
+    <div><b>{editing?"Editant amidaments":"Consulta bloquejada"}</b><span>Només les quantitats de la certificació actual es pinten en verd i passen a facturació.</span></div>
+    <div className="actions-inline">
+      <button className="secondary" onClick={()=>setEditing(!editing)}>{editing?"Tancar edició":"Editar amidaments"}</button>
+      <button className="primary" onClick={guardarAmidaments}><Save/> Guardar amidaments</button>
+      <button className="secondary" onClick={()=>openDoc({type:"certificacio",title:`Certificació ${certNum}`,subtitle:`Import: ${money(totalActual)}`})}>Previsualitzar</button>
+    </div>
   </div>
-  <CertResumV64 data={data}/>
-  <div className="table-wrap cert-wide"><table className="cert-table cert-table-v64">
-    <colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-resum"/><col className="c-num"/><col className="c-money"/><col className="c-money"/><col className="c-num"/><col className="c-pct"/><col className="c-money"/><col className="c-num"/><col className="c-pct"/><col className="c-money"/><col className="c-money"/></colgroup>
+  <CertResumV67 data={data}/>
+  <div className="table-wrap cert-wide"><table className="cert-table cert-table-v67">
+    <colgroup>
+      <col className="c-partida"/><col className="c-ut"/><col className="c-resum"/><col className="c-can"/><col className="c-pu"/><col className="c-imp"/>
+      <col className="c-q"/><col className="c-pct"/><col className="c-imp"/>
+      <col className="c-q"/><col className="c-pct"/><col className="c-imp"/>
+      <col className="c-imp"/>
+    </colgroup>
     <thead>
-      <tr className="super-head-v64"><th colSpan="6">PRESSUPOST</th><th colSpan="3">CERTIFICACIÓ {prevNum}</th><th colSpan="3">CERTIFICACIÓ {certNum}</th><th>A ORIGEN</th></tr>
-      <tr><th>Partida</th><th>Ut</th><th>Resum</th><th>CanPres</th><th>PrPres</th><th>ImpPres</th><th>Q cert. {prevNum}</th><th>% cert. {prevNum}</th><th>Imp cert. {prevNum}</th><th>Q cert. {certNum}</th><th>% cert. {certNum}</th><th>Imp cert. {certNum}</th><th>Total cert.</th></tr>
+      <tr>
+        <th>Partida</th><th>Ut</th><th>Resum</th><th>CanPres</th><th>PrPres</th><th>ImpPres</th>
+        <th>Q cert. {prevNum}</th><th>% cert. {prevNum}</th><th>Imp cert. {prevNum}</th>
+        <th>Q cert. {certNum}</th><th>% cert. {certNum}</th><th>Imp cert. {certNum}</th>
+        <th>Total origen</th>
+      </tr>
     </thead>
     <tbody>{Object.entries(caps).map(([cap,items])=><tbody key={cap}><tr className="cap-row"><td colSpan="13">{cap}</td></tr>{items.map(r=>{
-      let qPrev=qFor(r,prevNum), qAct=qDraft(r), impPrev=qPrev*(+r.pu||0), impAct=qAct*(+r.pu||0), pcPrev=(+r.q||0)?qPrev/(+r.q)*100:0, pcAct=(+r.q||0)?qAct/(+r.q)*100:0;
-      return <tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money((+r.q||0)*(+r.pu||0))}</td><td className="cert-prev">{qty2(qPrev)}</td><td className="cert-prev">{pct(pcPrev)}</td><td className="cert-prev">{money(impPrev)}</td><td className={qAct>0?"cert-cell-green":""}>{editing?<input className="cert-edit-input" inputMode="decimal" value={draftVal(r)} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))} onBlur={e=>commitOne(r.codi,e.target.value)}/>:qty2(qFor(r,certNum))}</td><td className={qAct>0?"cert-cell-green":""}>{pct(pcAct)}</td><td className={qAct>0?"cert-cell-green":""}>{money(impAct)}</td><td>{money(impPrev+impAct)}</td></tr>
+      let qPrev=qCert(r,prevNum), qAct=qActualDraft(r), impPrev=qPrev*(+r.pu||0), impAct=qAct*(+r.pu||0);
+      let pcPrev=(+r.q||0)?qPrev/(+r.q)*100:0, pcAct=(+r.q||0)?qAct/(+r.q)*100:0;
+      return <tr key={r.codi}>
+        <td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money((+r.q||0)*(+r.pu||0))}</td>
+        <td className="cert-prev">{qty2(qPrev)}</td><td className="cert-prev">{pct(pcPrev)}</td><td className="cert-prev">{money(impPrev)}</td>
+        <td className={qAct>0?"cert-current-green":""}>{editing?<input className="cert-edit-input" inputMode="decimal" value={draft[r.codi]??String(qCert(r,certNum))} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))} onBlur={e=>commitOne(r.codi,e.target.value)}/>:qty2(qCert(r,certNum))}</td>
+        <td className={qAct>0?"cert-current-green":""}>{pct(pcAct)}</td><td className={qAct>0?"cert-current-green":""}>{money(impAct)}</td>
+        <td>{money(impPrev+impAct)}</td>
+      </tr>
     })}</tbody>)}</tbody>
-    <tfoot><tr><th colSpan="8">TOTAL CERTIFICACIÓ {prevNum}</th><th>{money(certTotal(prevNum))}</th><th colSpan="2">TOTAL CERTIFICACIÓ {certNum}</th><th>{money(rows.reduce((s,r)=>s+qDraft(r)*(+r.pu||0),0))}</th><th>{money(certTotal(prevNum)+rows.reduce((s,r)=>s+qDraft(r)*(+r.pu||0),0))}</th></tr></tfoot>
+    <tfoot><tr><th colSpan="8">TOTAL CERTIFICACIÓ {prevNum}</th><th>{money(certTotal(prevNum))}</th><th colSpan="2">TOTAL CERTIFICACIÓ {certNum}</th><th>{money(totalActual)}</th><th>{money(certTotal(prevNum)+totalActual)}</th></tr></tfoot>
   </table></div>
 </Card>
 </div>
 }
 
-function CertResumV64({data}){
+function CertResumV67({data}){
 let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
 function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
 function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
@@ -356,9 +382,9 @@ let capRows=Object.entries(caps).map(([cap,items])=>{let pressupost=items.reduce
 let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
 let totalCerts=certs.map(c=>rows.reduce((s,r)=>s+impFor(r,+c.numero),0));
 let totalExec=totalCerts.reduce((s,v)=>s+v,0);
-return <div className="cert-resum-v64"><div className="cert-resum-head-v64"><span>CAPÍTOL</span><span>PRESSUPOST</span>{certs.map(c=><span key={c.id}>CERT. {c.numero}</span>)}<span>TOTAL CERT.</span><span>PENDENT</span><span>% EXECUTAT</span></div>{capRows.map(r=><div className="cert-resum-row-v64" key={r.cap}><b>{r.cap}</b><span>{money(r.pressupost)}</span>{r.vals.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(r.total)}</strong><span>{money(r.pendent)}</span><ProgressV64 v={r.percent}/></div>)}<div className="cert-resum-row-v64 total"><b>TOTAL</b><span>{money(totalPres)}</span>{totalCerts.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(totalExec)}</strong><span>{money(Math.max(totalPres-totalExec,0))}</span><ProgressV64 v={totalPres?totalExec/totalPres*100:0}/></div></div>
+return <div className="cert-resum-v67"><div className="cert-resum-head-v67"><span>CAPÍTOL</span><span>PRESSUPOST</span>{certs.map(c=><span key={c.id}>CERT. {c.numero}</span>)}<span>TOTAL CERT.</span><span>PENDENT</span><span>% EXECUTAT</span></div>{capRows.map(r=><div className="cert-resum-row-v67" key={r.cap}><b>{r.cap}</b><span>{money(r.pressupost)}</span>{r.vals.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(r.total)}</strong><span>{money(r.pendent)}</span><ProgressV67 v={r.percent}/></div>)}<div className="cert-resum-row-v67 total"><b>TOTAL</b><span>{money(totalPres)}</span>{totalCerts.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(totalExec)}</strong><span>{money(Math.max(totalPres-totalExec,0))}</span><ProgressV67 v={totalPres?totalExec/totalPres*100:0}/></div></div>
 }
-function ProgressV64({v}){return <div className="progress-v64"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
+function ProgressV67({v}){return <div className="progress-v67"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
 
 function Fact({data,openEmail,openDoc}){
 const key="aco_fact_params_v61";
