@@ -1356,6 +1356,5 @@ button,input,select,textarea{font-size:13.5px!important}
 .cert-resum-v64{border:1px solid #d6dde7;border-radius:14px;overflow:auto;margin-bottom:14px}.cert-resum-head-v64,.cert-resum-row-v64{display:grid;grid-template-columns:2fr 1fr repeat(2,1fr) 1fr 1fr 1.2fr;gap:8px;align-items:center;min-width:980px}.cert-resum-head-v64{background:#0f172a;color:white;font-size:12px;font-weight:900;padding:12px}.cert-resum-row-v64{padding:12px;border-bottom:1px solid #e5e7eb}.cert-resum-row-v64.total{background:#f8fafc;font-weight:900}.progress-v64{display:flex;align-items:center;gap:8px}.progress-v64 div{height:10px;flex:1;background:#e5e7eb;border-radius:999px;overflow:hidden}.progress-v64 i{display:block;height:10px;background:linear-gradient(90deg,#2563eb,#22c55e)}.progress-v64 em{font-style:normal;font-weight:900;font-size:12px}
 @media(max-width:900px){.cert-toolbar-v64{display:block}.cert-toolbar-v64 .actions-inline{margin-top:10px}}
 
-/* V65 guardat real */
+/* V66 desbloqueig */
 .cert-toolbar-v64{position:sticky;top:0;z-index:5;background:#f8fafc}
-.cert-table-v64 th,.cert-table-v64 td{box-sizing:border-box;overflow:hidden;text-overflow:ellipsis}
