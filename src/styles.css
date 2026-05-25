@@ -1383,3 +1383,22 @@ button,input,select,textarea{font-size:13.5px!important}
 .cert-edit-input{width:76px!important;border:1px solid #86efac!important;border-radius:7px!important;padding:6px!important;text-align:right!important;background:#f0fdf4!important;font-weight:900!important}
 .cert-resum-v68{border:1px solid #d6dde7;border-radius:14px;overflow:auto;margin-bottom:14px}.cert-resum-head-v68,.cert-resum-row-v68{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1.2fr;gap:8px;align-items:center;min-width:980px}.cert-resum-head-v68{background:#0f172a;color:white;font-size:12px;font-weight:900;padding:12px}.cert-resum-row-v68{padding:12px;border-bottom:1px solid #e5e7eb}.cert-resum-row-v68.total{background:#f8fafc;font-weight:900}.progress-v68{display:flex;align-items:center;gap:8px}.progress-v68 div{height:10px;flex:1;background:#e5e7eb;border-radius:999px;overflow:hidden}.progress-v68 i{display:block;height:10px;background:linear-gradient(90deg,#2563eb,#22c55e)}.progress-v68 em{font-style:normal;font-weight:900;font-size:12px}
 @media(max-width:900px){.cert-toolbar-v68{display:block}.cert-toolbar-v68 .actions-inline{margin-top:10px}}
+
+/* V69 grid certificacions sense desalineació */
+.cert-toolbar-v69{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#f8fafc;border:1px solid #d6dde7;border-radius:12px;padding:10px 12px;margin-bottom:12px;position:sticky;top:0;z-index:5}
+.cert-toolbar-v69 b,.cert-toolbar-v69 span{display:block}.cert-toolbar-v69 span{color:#64748b;font-size:12px}
+.cert-grid-wrap-v69{overflow:auto;border:1px solid #b9c7d8;border-radius:10px;background:white}
+.cert-grid-v69{display:grid;grid-template-columns:64px 44px 285px 75px 75px 100px 86px 76px 100px 86px 76px 100px 105px;min-width:1272px}
+.cert-grid-v69>div{border-right:1px solid #b9c7d8;border-bottom:1px solid #b9c7d8;padding:8px 7px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:normal;box-sizing:border-box}
+.cert-grid-v69>div:nth-child(1),.cert-grid-v69>div:nth-child(2),.cert-grid-v69>div:nth-child(3){text-align:left}
+.cert-grid-v69.group>div{background:#e8f1fb!important;text-align:center!important;font-weight:900;color:#0f172a}
+.cert-grid-v69.group .pressupost{grid-column:1 / span 6}.cert-grid-v69.group .anterior{grid-column:7 / span 3}.cert-grid-v69.group .actual{grid-column:10 / span 3}.cert-grid-v69.group .origen{grid-column:13 / span 1}
+.cert-grid-v69.header>div{background:#eef4fb;font-weight:900;color:#0f172a}
+.cert-cap-v69{min-width:1272px;background:#5b9bd5;color:#001b33;font-weight:900;padding:9px;border-bottom:1px solid #b9c7d8}
+.cert-grid-v69.row .concept{text-align:left}
+.cert-grid-v69.row .prev-fill{background:#f1f5f9!important;color:#334155!important;font-weight:800}
+.cert-grid-v69.row .current-fill{background:#dcfce7!important;color:#166534!important;font-weight:900}
+.cert-edit-input-v69{width:72px;border:1px solid #86efac;border-radius:7px;padding:6px;text-align:right;background:#f0fdf4;font-weight:900}
+.cert-grid-v69.total .total-label{grid-column:1 / span 8;text-align:left!important;font-weight:900;background:#eaf2fb}.cert-grid-v69.total .total-label2{grid-column:10 / span 2;text-align:right!important;font-weight:900;background:#eaf2fb}.cert-grid-v69.total>div{background:#eaf2fb;font-weight:900}
+.cert-resum-v69{border:1px solid #d6dde7;border-radius:14px;overflow:auto;margin-bottom:14px}.cert-resum-head-v69,.cert-resum-row-v69{display:grid;grid-template-columns:2fr 1fr repeat(2,1fr) 1fr 1fr 1.2fr;gap:8px;align-items:center;min-width:980px}.cert-resum-head-v69{background:#0f172a;color:white;font-size:12px;font-weight:900;padding:12px}.cert-resum-row-v69{padding:12px;border-bottom:1px solid #e5e7eb}.cert-resum-row-v69.total{background:#f8fafc;font-weight:900}.progress-v69{display:flex;align-items:center;gap:8px}.progress-v69 div{height:10px;flex:1;background:#e5e7eb;border-radius:999px;overflow:hidden}.progress-v69 i{display:block;height:10px;background:linear-gradient(90deg,#2563eb,#22c55e)}.progress-v69 em{font-style:normal;font-weight:900;font-size:12px}
+@media(max-width:900px){.cert-toolbar-v69{display:block}.cert-toolbar-v69 .actions-inline{margin-top:10px}}
