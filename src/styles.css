@@ -1437,3 +1437,31 @@ button,input,select,textarea{font-size:13.5px!important}
 .client-edit-head-v75{display:flex;gap:12px;align-items:center;margin-bottom:12px}
 .client-logo.big{width:120px;height:70px}
 @media(max-width:900px){.agenda-v75 .calendar-filters-v75{grid-template-columns:1fr}}
+
+/* V76 layout */
+.facturacio-grid{
+  grid-template-columns:72px 62px 90px 70px 58px 58px 58px 90px 120px!important;
+}
+.facturacio-grid select{
+  width:52px!important;
+  min-width:52px!important;
+  padding:4px 2px!important;
+  font-size:12px!important;
+}
+.facturacio-grid .cell,
+.facturacio-grid .head{
+  padding:6px 4px!important;
+  font-size:12px!important;
+}
+.facturacio-grid .actions{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:4px!important;
+}
+.printable{
+  background:white;
+}
+.notes-form-v76{
+  display:grid;
+  gap:10px;
+}
