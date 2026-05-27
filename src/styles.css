@@ -1632,34 +1632,3 @@ button,input,select,textarea{font-size:13.5px!important}
 .cert-print-v82 th:nth-child(2),.cert-print-v82 td:nth-child(2){text-align:left}
 .cert-print-v82 .green{background:#dcfce7;color:#166534;font-weight:900}
 .page-break-v82{break-before:page;page-break-before:always;margin-top:30px}
-
-/* V83 factura compacta + impressió funcional */
-.fact-grid-v83{display:grid;grid-template-columns:80px 82px 92px 58px 58px 58px 94px 108px;border:1px solid #b9c7d8;border-radius:10px;overflow:hidden}
-.fact-grid-v83>div{border-right:1px solid #cbd5e1;border-bottom:1px solid #cbd5e1;padding:7px 6px;text-align:right;font-size:12px;min-width:0}
-.fact-grid-v83 .fg-head{background:#eaf2fb;font-weight:900}
-.fact-grid-v83>div:nth-child(8n+1){text-align:left}
-.fact-grid-v83 small{display:block;color:#64748b}
-.fact-grid-v83 select{width:52px;min-width:52px;padding:4px 1px;font-size:12px}
-.fact-grid-v83 .fg-actions{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
-.fact-grid-v83 .fg-actions button{padding:6px 7px;font-size:12px}
-.fact-grid-v83 .sel{background:#eff6ff}
-.fact-grid-v83 .fg-empty{grid-column:1/-1;text-align:left}
-.proforma-print-v83 table,.cert-print-v83 table{width:100%;border-collapse:collapse;margin-top:12px}
-.proforma-print-v83 th,.proforma-print-v83 td,.cert-print-v83 th,.cert-print-v83 td{border:1px solid #cbd5e1;padding:7px;text-align:right;font-size:12px}
-.proforma-print-v83 th:nth-child(2),.proforma-print-v83 td:nth-child(2),.cert-print-v83 th:nth-child(2),.cert-print-v83 td:nth-child(2){text-align:left}
-.doc-totals.v83{margin-top:14px;max-width:420px;margin-left:auto;border:1px solid #cbd5e1}
-.doc-totals.v83 div{display:flex;justify-content:space-between;border-bottom:1px solid #cbd5e1;padding:8px}
-.doc-totals.v83 .total{background:#e5e7eb;font-size:16px}
-.page-break-v83{break-before:page;page-break-before:always;margin-top:28px}
-.cert-grid-print-v83{display:grid;grid-template-columns:55px 35px 210px 65px 65px 85px 75px 65px 85px 75px 65px 85px 90px;border:1px solid #b9c7d8;overflow:auto;font-size:10px}
-.cert-grid-print-v83>div{border-right:1px solid #b9c7d8;border-bottom:1px solid #b9c7d8;padding:5px;text-align:right}
-.cert-grid-print-v83>.h{background:#eaf2fb;font-weight:900}
-.cert-grid-print-v83 .concept{text-align:left}.cert-grid-print-v83 .green{background:#dcfce7;color:#166534;font-weight:900}
-@media print{
-  body *{visibility:hidden!important}
-  .document-preview,.document-preview *{visibility:visible!important}
-  .document-preview{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:white!important;box-shadow:none!important;border:0!important;margin:0!important;padding:0!important}
-  .document-page{box-shadow:none!important;border:0!important;margin:0!important}
-  .modal-actions,.modal-close,.close{display:none!important}
-  @page{size:A4;margin:10mm}
-}
