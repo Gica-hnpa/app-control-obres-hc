@@ -1709,3 +1709,110 @@ button,input,select,textarea{font-size:13.5px!important}
   .modal-actions,.modal-close,.close{display:none!important}
   @page{size:A4;margin:10mm}
 }
+
+/* V88 pàgina 2 certificació = quadre exacte */
+.cert-cover-box-v88{
+  display:grid;
+  gap:6px;
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  border-radius:10px;
+  padding:14px;
+  margin:14px 0;
+}
+.cert-table-print-v88{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+}
+.cert-table-print-v88 th,.cert-table-print-v88 td{
+  border:1px solid #cbd5e1;
+  padding:7px;
+  text-align:right;
+  font-size:12px;
+}
+.cert-table-print-v88 th:nth-child(2),.cert-table-print-v88 td:nth-child(2){
+  text-align:left;
+}
+.cert-page2-v88{
+  break-before:page;
+  page-break-before:always;
+  margin-top:28px;
+}
+.cert-grid-client-v88{
+  display:grid;
+  grid-template-columns:60px 38px 255px 70px 70px 90px 78px 72px 92px 78px 72px 92px 98px;
+  border:1px solid #b9c7d8;
+  overflow:auto;
+  font-size:10.5px;
+  background:white;
+}
+.cert-grid-client-v88>div{
+  border-right:1px solid #b9c7d8;
+  border-bottom:1px solid #b9c7d8;
+  padding:6px;
+  text-align:right;
+  box-sizing:border-box;
+}
+.cert-grid-client-v88 .group{
+  background:#eaf2fb;
+  font-weight:900;
+  text-align:center;
+  color:#0f172a;
+}
+.cert-grid-client-v88 .pressupost{grid-column:1 / span 6}
+.cert-grid-client-v88 .anterior{grid-column:7 / span 3}
+.cert-grid-client-v88 .actual{grid-column:10 / span 3}
+.cert-grid-client-v88 .origen{grid-column:13 / span 1}
+.cert-grid-client-v88 .head{
+  background:#eef4fb;
+  font-weight:900;
+  color:#0f172a;
+}
+.cert-grid-client-v88 .concept{
+  text-align:left;
+}
+.cert-grid-client-v88 .prev{
+  background:#f1f5f9;
+  color:#1f2937;
+  font-weight:800;
+}
+.cert-grid-client-v88 .green{
+  background:#dcfce7;
+  color:#166534;
+  font-weight:900;
+}
+.cert-grid-client-v88 .total-label{
+  grid-column:1 / span 8;
+  text-align:left;
+  background:#eaf2fb;
+  font-weight:900;
+}
+.cert-grid-client-v88 .total-prev{
+  grid-column:9 / span 1;
+  background:#eaf2fb;
+  font-weight:900;
+}
+.cert-grid-client-v88 .total-label2{
+  grid-column:10 / span 2;
+  background:#eaf2fb;
+  font-weight:900;
+}
+.cert-grid-client-v88 .total-act{
+  grid-column:12 / span 1;
+  background:#eaf2fb;
+  font-weight:900;
+}
+.cert-grid-client-v88 .total-origin{
+  grid-column:13 / span 1;
+  background:#eaf2fb;
+  font-weight:900;
+}
+@media print{
+  .cert-grid-client-v88{
+    transform:scale(.83);
+    transform-origin:top left;
+    width:120%;
+    overflow:visible;
+  }
+}
