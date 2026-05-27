@@ -1485,3 +1485,27 @@ button,input,select,textarea{font-size:13.5px!important}
 .agenda-form-v80 textarea{min-height:90px}
 .notes-list-v80{display:grid;gap:8px;margin-top:8px}.note-card-v80{border:1px solid #d6dde7;border-radius:10px;background:#f8fafc;padding:10px;text-align:left}.note-card-v80 b,.note-card-v80 span,.note-card-v80 small{display:block}.note-card-v80 span,.note-card-v80 small{color:#64748b;margin-top:3px}.note-card-v80 p{margin:7px 0 0}
 @media(max-width:1100px){.agenda-v80{grid-template-columns:1fr}.agenda-form-v80{grid-template-columns:1fr}}
+
+/* V81 fixes impressió i agenda */
+.dashboard-grid .home-calendar{display:none}
+.proforma-print-v81 table,.cert-print-v81 table{width:100%;border-collapse:collapse;margin-top:12px}
+.proforma-print-v81 th,.proforma-print-v81 td,.cert-print-v81 th,.cert-print-v81 td{border:1px solid #cbd5e1;padding:7px;text-align:right;font-size:12px}
+.proforma-print-v81 th:nth-child(2),.proforma-print-v81 td:nth-child(2),.cert-print-v81 th:nth-child(2),.cert-print-v81 td:nth-child(2){text-align:left}
+.doc-totals.v81{margin-top:14px;max-width:420px;margin-left:auto;border:1px solid #cbd5e1}
+.doc-totals.v81 div{display:flex;justify-content:space-between;border-bottom:1px solid #cbd5e1;padding:8px}
+.doc-totals.v81 div:last-child{border-bottom:0}
+.doc-totals.v81 .total{background:#e5e7eb;font-size:16px}
+.page-break-v81{break-before:page;page-break-before:always;margin-top:28px}
+.cert-grid-print-v81{display:grid;grid-template-columns:55px 35px 210px 65px 65px 85px 75px 65px 85px 75px 65px 85px 90px;border:1px solid #b9c7d8;overflow:auto;font-size:10px}
+.cert-grid-print-v81>div{border-right:1px solid #b9c7d8;border-bottom:1px solid #b9c7d8;padding:5px;text-align:right}
+.cert-grid-print-v81>.h{background:#eaf2fb;font-weight:900}
+.cert-grid-print-v81 .concept{text-align:left}
+.cert-grid-print-v81 .green{background:#dcfce7;color:#166534;font-weight:900}
+@media print{
+  body *{visibility:hidden!important}
+  .document-preview,.document-preview *{visibility:visible!important}
+  .document-preview{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:white!important;box-shadow:none!important;border:none!important;padding:0!important;margin:0!important}
+  .document-page{box-shadow:none!important;border:none!important;margin:0!important;page-break-after:auto!important}
+  .modal-actions,.modal-close,.modal-backdrop,.modal-backdrop *{display:none!important}
+  @page{size:A4;margin:10mm}
+}
