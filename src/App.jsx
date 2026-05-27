@@ -330,7 +330,7 @@ function Pressupost({data,importExcel,deletePressupostVersion,openPartida,openEm
   return <div className="stack">
     <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label><button className="primary" onClick={addCapitol}><Plus/> Nou capítol</button></div>}>
       <div className="version-list">
-        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><button className="version-row" key={p.id} onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}><strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em></button><button className="danger small" onClick={(e)=>{e.stopPropagation();deletePressupostVersion?.(p.id)}}>Eliminar</button>)}
+        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><div className="version-row version-row-fix" key={p.id}><button className="version-main-fix" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}><strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em></button><button className="danger small" onClick={(e)=>{e.stopPropagation();deletePressupostVersion?.(p.id)}}>Eliminar</button></div>)}
       </div>
     </Card>
 
