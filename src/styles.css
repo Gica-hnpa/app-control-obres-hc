@@ -1456,3 +1456,21 @@ button,input,select,textarea{font-size:13.5px!important}
   margin-bottom:6px;
 }
 .agenda-v77 .day b,.agenda-v75 .day b,.agenda-v74 .day b{font-size:11px}
+
+/* V79 impressions */
+.cert-print-v79 table{width:100%;border-collapse:collapse;margin-top:12px}
+.cert-print-v79 th,.cert-print-v79 td{border:1px solid #cbd5e1;padding:7px;text-align:right;font-size:12px}
+.cert-print-v79 th:nth-child(2),.cert-print-v79 td:nth-child(2){text-align:left}
+.page-break-v79{break-before:page;page-break-before:always;margin-top:28px}
+.cert-grid-print-v79{display:grid;grid-template-columns:55px 35px 210px 65px 65px 85px 75px 65px 85px 75px 65px 85px 90px;border:1px solid #b9c7d8;overflow:auto;font-size:10px}
+.cert-grid-print-v79>div{border-right:1px solid #b9c7d8;border-bottom:1px solid #b9c7d8;padding:5px;text-align:right}
+.cert-grid-print-v79>.h{background:#eaf2fb;font-weight:900}
+.cert-grid-print-v79 .concept{text-align:left}
+.cert-grid-print-v79 .green{background:#dcfce7;color:#166534;font-weight:900}
+@media print{
+  body *{visibility:hidden!important}
+  .document-preview,.document-preview *{visibility:visible!important}
+  .document-preview{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:white!important;box-shadow:none!important;border:none!important}
+  .modal-actions,.modal-close{display:none!important}
+  @page{size:A4;margin:10mm}
+}
