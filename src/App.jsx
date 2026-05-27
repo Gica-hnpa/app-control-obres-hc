@@ -105,7 +105,7 @@ function deleteHour(id){setD(obraId,d=>({...d,hores:d.hores.filter(h=>h.id!==id)
 function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=String(b).split(":").map(Number);let mins=(bh*60+bm)-(ah*60+am);return Math.max(mins/60,0)}
 
 
-return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Projectes / Obres"||screen==="Obra"} i={<FolderOpen/>} l={tt("Projectes / Obres","Proyectos / Obras","Projects / Jobs")} on={()=>nav("Projectes / Obres")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Temps invertit / cost treball","Tiempo invertido / coste","Time / cost")} on={()=>nav("Traça")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Projectes / Obres"||screen==="Obra"} i={<FolderOpen/>} l={tt("Projectes / Obres","Proyectos / Obras","Projects / Jobs")} on={()=>nav("Projectes / Obres")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Temps invertit / cost treball","Tiempo invertido / coste","Time / cost")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen==="Inici"&&<Inici clients={clients} obres={obres} events={Object.values(odata).flatMap(d=>d.events||[])} setScreen={nav} openObra={openObra}/>}
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
@@ -124,7 +124,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 79 impressions · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 80 agenda-certificacio · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -575,72 +575,72 @@ return <Card title="Documents adjunts d’obra" action={<div className="actions-
 <div className="list">{docs.map(d=><div className="doc-row" key={d.id}><div><strong>{d.nom}</strong><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span></div><div><button onClick={()=>openOriginal(d)}>Obrir</button><button onClick={()=>openEmail(d.nom)}>Enviar</button><button onClick={()=>remove(d)}>Eliminar</button></div></div>)}</div>
 </Card>}
 
+
 function Agenda({events=[],clients=[],obres=[],openEvent,calM,setCalM,calY,setCalY,selDay,setSelDay}){
-  const [clientFilter,setClientFilter]=useState("");
-  const [obraFilter,setObraFilter]=useState("");
-  const [refresh,setRefresh]=useState(0);
-  const localKey="aco_calendar_local_v75";
-  const loadLocal=()=>{try{return JSON.parse(localStorage.getItem(localKey)||"[]")}catch(e){return []}};
-  const saveLocal=(list)=>{localStorage.setItem(localKey,JSON.stringify(list));setRefresh(x=>x+1)};
-  const local=loadLocal();
-  const clientNames=[...new Set([...(clients||[]).map(c=>c.nom),...(events||[]).map(e=>e.client),...local.map(e=>e.client)].filter(Boolean))];
-  const obraNames=[...new Set([...(obres||[]).map(o=>o.nom),...(events||[]).map(e=>e.obra),...local.map(e=>e.obra)].filter(Boolean))];
-  const merged=[...(events||[]),...local].filter(e=>(!clientFilter||e.client===clientFilter)&&(!obraFilter||e.obra===obraFilter));
-  const blanks=first(calY,calM), total=days(calY,calM);
-  const selectedDate=selDay?`${String(selDay).padStart(2,"0")}/${String(calM+1).padStart(2,"0")}/${calY}`:"Selecciona un dia";
-  const selectedNotes=selDay?merged.filter(e=>e.day===selDay&&e.month===calM&&e.year===calY):[];
-  function addNote(){
-    if(!selDay){alert("Selecciona primer un dia.");return}
-    const title=prompt("Resum de la nota / cita");
-    if(!title)return;
-    const client=prompt("Client",clientFilter||clientNames[0]||"")||clientFilter||"Sense client";
-    const obra=prompt("Obra",obraFilter||obraNames[0]||"")||obraFilter||"Sense obra";
-    const detail=prompt("Detall / observacions","")||"";
-    saveLocal([...local,{id:"note-"+Date.now(),title,client,obra,detail,day:selDay,month:calM,year:calY,type:"Nota"}]);
-  }
-  function editNote(note){
-    const existing=local.find(n=>n.id===note.id);
-    if(!existing){alert("Aquesta nota és de mostra/base. Crea’n una de nova per editar-la.");return}
-    const title=prompt("Editar resum",note.title);
-    if(title===null)return;
-    const client=prompt("Client",note.client||"")||note.client||"Sense client";
-    const obra=prompt("Obra",note.obra||"")||note.obra||"Sense obra";
-    const detail=prompt("Detall",note.detail||"")||"";
-    saveLocal(local.map(n=>n.id===note.id?{...n,title,client,obra,detail}:n));
-  }
-  return <div className="agenda-grid agenda-v75">
-    <Card title="Agenda / Calendari" action={<button className="primary" onClick={addNote}><Plus/> Nova cita/nota</button>}>
-      <div className="calendar-filters-v75">
-        <label>Client<select value={clientFilter} onChange={e=>setClientFilter(e.target.value)}><option value="">Tots</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select></label>
-        <label>Obra<select value={obraFilter} onChange={e=>setObraFilter(e.target.value)}><option value="">Totes</option>{obraNames.map(o=><option key={o}>{o}</option>)}</select></label>
-        <button className="secondary" onClick={()=>{const c=prompt("Nou client"); if(c)setClientFilter(c)}}>+ Client</button>
-        <button className="secondary" onClick={()=>{const o=prompt("Nova obra"); if(o)setObraFilter(o)}}>+ Obra</button>
-      </div>
-      <div className="calendar-head">
-        <button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button>
-        <button className="secondary" onClick={()=>{const d=new Date();setCalM(d.getMonth());setCalY(d.getFullYear());setSelDay(d.getDate())}}>Avui</button>
-        <button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button>
-        <select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option key={m} value={i}>{m}</option>)}</select>
-        <select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option key={y}>{y}</option>)}</select>
-      </div>
-      <div className="calendar-grid">
-        {["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week" key={d}>{d}</div>)}
-        {Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>)}
-        {Array.from({length:total}).map((_,i)=>{
-          const day=i+1;
-          const ev=merged.filter(e=>e.day===day&&e.month===calM&&e.year===calY);
-          return <button key={day} onClick={()=>setSelDay(day)} className={`day ${selDay===day?"active":""}`}>
-            <b>{String(day).padStart(2,"0")}/{String(calM+1).padStart(2,"0")}/{calY}</b>
-            {ev.slice(0,3).map(e=><small key={e.id}>{e.title}</small>)}
-            {ev.length>3&&<em>+{ev.length-3}</em>}
-          </button>
-        })}
-      </div>
-    </Card>
-    <Card title={`Notes del dia · ${selectedDate}`}>
-      {selectedNotes.length===0?<Empty text="No hi ha notes per aquest dia."/>:<div className="notes-list-v75">{selectedNotes.map(e=><button key={e.id} className="note-card-v75" onClick={()=>editNote(e)}><b>{e.title}</b><span>{e.client||"Sense client"} · {e.obra||"Sense obra"}</span><p>{e.detail||e.type||"Nota"}</p></button>)}</div>}
-    </Card>
-  </div>
+const noteKey="aco_agenda_v80";
+const[version,setVersion]=useState(0);
+const[clientFilter,setClientFilter]=useState("");
+const[obraFilter,setObraFilter]=useState("");
+const[form,setForm]=useState({title:"",client:"",clientNou:"",obra:"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""});
+function load(){try{return JSON.parse(localStorage.getItem(noteKey)||"[]")}catch(e){return []}}
+function saveList(list){localStorage.setItem(noteKey,JSON.stringify(list));setVersion(v=>v+1)}
+const local=load();
+const all=[...(events||[]),...local];
+const clientNames=[...new Set([...(clients||[]).map(c=>c.nom),...all.map(e=>e.client)].filter(Boolean))];
+const obraNames=[...new Set([...(obres||[]).map(o=>o.nom),...all.map(e=>e.obra)].filter(Boolean))];
+const filtered=all.filter(e=>(!clientFilter||e.client===clientFilter)&&(!obraFilter||e.obra===obraFilter));
+const blanks=first(calY,calM), total=days(calY,calM);
+const selectedDate=selDay?`${String(selDay).padStart(2,"0")}/${String(calM+1).padStart(2,"0")}/${calY}`:"Selecciona un dia";
+const selected=selDay?filtered.filter(e=>e.day===selDay&&e.month===calM&&e.year===calY):[];
+function set(k,v){setForm(f=>({...f,[k]:v}))}
+function clearForm(){setForm({title:"",client:clientFilter||"",clientNou:"",obra:obraFilter||"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""})}
+function editNote(n){setSelDay(n.day);setCalM(n.month);setCalY(n.year);setForm({id:n.id,title:n.title||"",client:n.client||"",clientNou:"",obra:n.obra||"",obraNova:"",tipus:n.tipus||n.type||"Nota",hora:n.hora||"09:00",adreca:n.adreca||"",detail:n.detail||""})}
+function saveNote(){
+  if(!selDay){alert("Selecciona primer un dia del calendari.");return}
+  if(!form.title){alert("Posa un resum/títol.");return}
+  const client=form.client==="__nou__"?(form.clientNou||"Nou client"):(form.client||"Sense client");
+  const obra=form.obra==="__nova__"?(form.obraNova||"Nova obra/adreça"):(form.obra||"Sense obra");
+  const note={id:form.id||"note-"+Date.now(),day:selDay,month:calM,year:calY,title:form.title,client,obra,tipus:form.tipus,hora:form.hora,adreca:form.adreca,detail:form.detail,type:form.tipus};
+  const exists=local.some(n=>n.id===note.id);
+  saveList(exists?local.map(n=>n.id===note.id?note:n):[...local,note]);
+  clearForm();
+}
+function deleteNote(){if(!form.id)return;saveList(local.filter(n=>n.id!==form.id));clearForm()}
+return <div className="agenda-v80">
+  <Card title="Agenda / Calendari">
+    <div className="calendar-filters-v80">
+      <label>Filtre client<select value={clientFilter} onChange={e=>setClientFilter(e.target.value)}><option value="">Tots</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select></label>
+      <label>Filtre obra/projecte<select value={obraFilter} onChange={e=>setObraFilter(e.target.value)}><option value="">Totes</option>{obraNames.map(o=><option key={o}>{o}</option>)}</select></label>
+    </div>
+    <div className="calendar-head">
+      <button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button>
+      <button className="secondary" onClick={()=>{const d=new Date();setCalM(d.getMonth());setCalY(d.getFullYear());setSelDay(d.getDate())}}>Avui</button>
+      <button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button>
+      <select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option key={m} value={i}>{m}</option>)}</select>
+      <select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option key={y}>{y}</option>)}</select>
+    </div>
+    <div className="calendar-grid">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week" key={d}>{d}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>)}
+      {Array.from({length:total}).map((_,i)=>{let day=i+1;let ev=filtered.filter(e=>e.day===day&&e.month===calM&&e.year===calY);return <button key={day} onClick={()=>setSelDay(day)} className={`day ${selDay===day?"active":""}`}><b>{String(day).padStart(2,"0")}/{String(calM+1).padStart(2,"0")}/{calY}</b>{ev.slice(0,3).map(e=><small key={e.id}>{e.title}</small>)}{ev.length>3&&<em>+{ev.length-3}</em>}</button>})}
+    </div>
+  </Card>
+  <Card title={`Nota / visita · ${selectedDate}`} action={<button className="secondary" onClick={clearForm}>Nova neta</button>}>
+    <div className="agenda-form-v80">
+      <label>Data completa<input value={selectedDate} readOnly/></label>
+      <label>Client<select value={form.client} onChange={e=>set("client",e.target.value)}><option value="">Selecciona client</option>{clientNames.map(c=><option key={c}>{c}</option>)}<option value="__nou__">+ Crear client nou</option></select></label>
+      {form.client==="__nou__"&&<label>Nom nou client<input value={form.clientNou} onChange={e=>set("clientNou",e.target.value)}/></label>}
+      <label>Obra / projecte<select value={form.obra} onChange={e=>set("obra",e.target.value)}><option value="">Selecciona obra</option>{obraNames.map(o=><option key={o}>{o}</option>)}<option value="__nova__">+ Crear obra/adreça nova</option></select></label>
+      {form.obra==="__nova__"&&<label>Nova obra/adreça<input value={form.obraNova} onChange={e=>set("obraNova",e.target.value)}/></label>}
+      <label>Tipologia de visita o feina<select value={form.tipus} onChange={e=>set("tipus",e.target.value)}><option>Visita d’obra</option><option>Reunió</option><option>Pressupost</option><option>Certificació</option><option>Entrega documentació</option><option>Avís</option><option>Altres</option></select></label>
+      <label>Hora<input value={form.hora} onChange={e=>set("hora",e.target.value)}/></label>
+      <label>Adreça visita<input value={form.adreca} onChange={e=>set("adreca",e.target.value)}/></label>
+      <label>Resum<input value={form.title} onChange={e=>set("title",e.target.value)} placeholder="Ex. Visita obra / revisar certificació"/></label>
+      <label className="wide">Observacions<textarea value={form.detail} onChange={e=>set("detail",e.target.value)} placeholder="Acords, tasques pendents, comentaris..."/></label>
+      <div className="modal-actions"><button className="primary" onClick={saveNote}>Guardar nota</button>{form.id&&<button className="danger" onClick={deleteNote}>Eliminar</button>}</div>
+    </div>
+    <h3>Notes del dia</h3>
+    <div className="notes-list-v80">{selected.length===0?<p className="muted">No hi ha notes per aquest dia.</p>:selected.map(n=><button key={n.id} className="note-card-v80" onClick={()=>editNote(n)}><b>{n.title}</b><span>{String(n.day).padStart(2,"0")}/{String(n.month+1).padStart(2,"0")}/{n.year} · {n.client||"Sense client"} · {n.obra||"Sense obra"}</span><small>{n.tipus||n.type||"Nota"} · {n.hora||""} {n.adreca?`· ${n.adreca}`:""}</small><p>{n.detail||""}</p></button>)}</div>
+  </Card>
+</div>
 }
 
 function ObraMiniCalendar({events=[]}){const[m,setM]=useState(5),[y,setY]=useState(2026),[d,setD]=useState(null),[note,setNote]=useState(null);const[local,setLocal]=useState(()=>JSON.parse(localStorage.getItem("aco_obra_notes")||"[]"));useEffect(()=>{localStorage.setItem("aco_obra_notes",JSON.stringify(local));localStorage.setItem("aco_home_notes",JSON.stringify(local))},[local]);let all=[...events,...local],blanks=first(y,m),total=days(y,m),sel=d?all.filter(e=>e.day===d&&e.month===m&&e.year===y):[];function save(n){if(n.id==="new")setLocal(p=>[...p,{...n,id:"local-"+Date.now(),month:m,year:y}]);else setLocal(p=>p.map(x=>x.id===n.id?n:x));setNote(null)}function newNote(){setNote({id:"new",day:d||1,title:"Nova nota",type:"Nota",hora:"09:00",note:"",color:"blue"})}return <div className="home-calendar obra-calendar"><div className="calendar-head compact"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{setM(5);setY(2026)}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option>{x}</option>)}</select><button className="primary" onClick={newNote}>+ Nota nova</button></div><div className="home-calendar-layout"><div className="calendar-grid small">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week">{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button className={`day ${d===day?"selected":""}`} onClick={()=>setD(day)}><b>{day}</b>{ev.slice(0,2).map(e=><span className={`cal-event ${e.color==="red"?"red":""}`} onClick={(evn)=>{evn.stopPropagation();setNote(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div><div className="day-detail side"><h3>{d?`Dia ${d}`:"Selecciona un dia"}</h3>{d&&sel.length===0&&<p>Sense notes.</p>}{sel.map(e=><button className="note-card" onClick={()=>setNote(e)}><strong>{e.title}</strong><span>{e.hora} · {e.type}</span><p>{e.note||"Sense observacions."}</p></button>)}</div></div>{note&&<div className="note-pop"><div><h3>{note.id==="new"?"Nova nota":"Editar nota"}</h3><label><span>Dia</span><input value={note.day} onChange={e=>setNote({...note,day:+e.target.value})}/></label><label><span>Títol</span><input value={note.title} onChange={e=>setNote({...note,title:e.target.value})}/></label><label><span>Hora</span><input value={note.hora} onChange={e=>setNote({...note,hora:e.target.value})}/></label><label><span>Observacions</span><textarea value={note.note} onChange={e=>setNote({...note,note:e.target.value})}/></label><button className="primary" onClick={()=>save(note)}>Guardar / Tancar</button></div></div>}</div>}
