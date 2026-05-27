@@ -1650,3 +1650,62 @@ button,input,select,textarea{font-size:13.5px!important}
 .google-cal-v86 .day.active b{background:#2563eb;color:#fff}
 .google-cal-v86 .day small{display:block!important;max-width:100%;background:#dbeafe;color:#1e40af;border-radius:6px;padding:2px 5px;margin:2px 0;font-size:10px!important;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:1100px){.agenda-v86{grid-template-columns:1fr}.agenda-form-v86{grid-template-columns:1fr}}
+
+/* V87 agenda + certificació */
+.google-cal-v86 .day.today b,
+.agenda-v80 .day.today b,
+.agenda-v77 .day.today b{
+  background:#2563eb!important;
+  color:white!important;
+}
+.google-cal-v86 .day.today,
+.agenda-v80 .day.today,
+.agenda-v77 .day.today{
+  box-shadow:inset 0 0 0 2px #60a5fa!important;
+}
+.google-cal-v86 .day small,
+.agenda-v80 .day small,
+.agenda-v77 .day small{
+  font-weight:700;
+}
+.cert-cover-box-v87{
+  display:grid;
+  gap:6px;
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  border-radius:10px;
+  padding:14px;
+  margin:14px 0;
+}
+.cert-table-print-v87{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+}
+.cert-table-print-v87 th,.cert-table-print-v87 td{
+  border:1px solid #cbd5e1;
+  padding:7px;
+  text-align:right;
+  font-size:12px;
+}
+.cert-table-print-v87 th:nth-child(2),.cert-table-print-v87 td:nth-child(2){
+  text-align:left;
+}
+.cert-table-print-v87 .green{
+  background:#dcfce7;
+  color:#166534;
+  font-weight:900;
+}
+.cert-page2-v87{
+  break-before:page;
+  page-break-before:always;
+  margin-top:30px;
+}
+@media print{
+  body *{visibility:hidden!important}
+  .document-preview,.document-preview *{visibility:visible!important}
+  .document-preview{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:white!important;box-shadow:none!important;border:0!important;margin:0!important;padding:0!important}
+  .document-page{box-shadow:none!important;border:0!important;margin:0!important}
+  .modal-actions,.modal-close,.close{display:none!important}
+  @page{size:A4;margin:10mm}
+}
