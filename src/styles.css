@@ -1724,8 +1724,3 @@ button,input,select,textarea{font-size:13.5px!important}
 .budget-preview-v89 th{background:#eaf2fb}
 .budget-preview-v89 tfoot th{background:#f1f5f9;font-weight:900}
 .alert{border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:10px;padding:12px}
-
-/* V90 versions pressupost */
-.version-row-v90{display:grid!important;grid-template-columns:1fr auto!important;gap:8px;align-items:center}
-.version-main-v90{display:grid;grid-template-columns:80px 1.8fr 120px 120px 1.4fr;gap:12px;align-items:center;border:0;background:transparent;text-align:left;width:100%;padding:0}
-.version-row-v90 .danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:7px 10px;font-weight:800}

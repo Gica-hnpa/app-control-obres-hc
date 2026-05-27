@@ -81,46 +81,55 @@ const setD=(id,up)=>setOdata(p=>({...p,[id]:typeof up==="function"?up(p[id]||emp
 function nav(s){setScreen(s);setMenuOpen(false);setCollapsed(true)}
 function openObra(id){setObraId(id);setTab("Resum");setSelActa(null);nav("Obra")}
 function openClient(id){setClientId(id);nav("Fitxa client")}
-
 async function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
-function n(v){if(typeof v==="number")return v;let s=String(v??"").replace(/\s/g,"").replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,"");let x=parseFloat(s);return Number.isFinite(x)?x:0}
-function s(v){return String(v??"").trim()}
 try{
-  const ab=await file.arrayBuffer();
-  const wb=XLSX.read(ab,{type:"array"});
-  const ws=wb.Sheets[wb.SheetNames[0]];
-  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-  const headerIndex=Math.max(0,rows.findIndex(r=>r.map(x=>String(x).toLowerCase()).some(x=>x.includes("partida")||x.includes("concepte")||x.includes("descrip")||x.includes("quantitat")||x.includes("preu"))));
-  const header=(rows[headerIndex]||[]).map(x=>String(x).toLowerCase());
-  function col(keys,fallback){let i=header.findIndex(h=>keys.some(k=>h.includes(k)));return i>=0?i:fallback}
-  const codiI=col(["partida","codi","código"],0), utI=col(["ut","unitat","unidad"],1), concI=col(["concepte","descrip","resum"],2), qI=col(["quant","amid","canpres","cantidad"],3), puI=col(["preu","precio","prpres","unit"],4), totalI=col(["total","import","imppres"],5);
-  let capActual="01 PRESSUPOST IMPORTAT";
-  const partides=[];
-  for(const r of rows.slice(headerIndex+1)){
-    if(!r || !r.some(x=>s(x)!=="")) continue;
-    const rawCon=s(r[concI]||r[2]||"");
-    const rawCodi=s(r[codiI]||"");
-    const q=n(r[qI]), pu=n(r[puI]);
-    let total=n(r[totalI]); if(!total && q && pu) total=q*pu;
-    const seemsCap = rawCon && !q && !pu && !total && (rawCodi==="" || /^(\d+|[A-Z])/.test(rawCodi));
-    if(seemsCap){capActual=rawCodi?`${rawCodi} ${rawCon}`:rawCon; continue}
-    if(!rawCon && !total && !q && !pu) continue;
-    partides.push({codi:rawCodi||String(partides.length+1).padStart(2,"0"),cap:capActual,concepte:rawCon||"Partida importada",ut:s(r[utI]||""),q:q||0,pu:pu||0,total:total||0,certAnterior:0,certActual:0,tipus:"Import Excel"});
-  }
-  const total=partides.reduce((acc,p)=>acc+(p.total || ((+p.q||0)*(+p.pu||0))),0);
-  const fixed=partides.map(p=>({...p,pu:(+p.pu||0) || ((+p.q||0)?(+p.total||0)/(+p.q):0)}));
-  setD(obraId,d=>({...d,partides:fixed,pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:`Excel llegit · ${fixed.length} partides`,import:total}]}));
+ const ab=await file.arrayBuffer();
+ const wb=XLSX.read(ab,{type:"array"});
+ const ws=wb.Sheets[wb.SheetNames[0]];
+ const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+ const rows=[];
+ let cap="01 IMPORTAT";
+ const num=v=>{let n=parseFloat(String(v??"").replace(/\./g,"").replace(",",".").replace(/[^\d.-]/g,""));return Number.isFinite(n)?n:0}
+ for(let i=0;i<data.length;i++){
+   let r=data[i]||[];
+   let txt=String(r[2]||r[1]||"").trim();
+   let q=num(r[3]), pu=num(r[4]), imp=num(r[5]);
+   if(txt && !q && !pu && !imp){cap=txt;continue}
+   if(!txt && !q && !pu && !imp)continue;
+   rows.push({
+     codi:String(r[0]||rows.length+1),
+     cap,
+     concepte:txt||"Partida",
+     ut:String(r[1]||"ut"),
+     q:q||0,
+     pu:pu||((q&&imp)?imp/q:0),
+     certAnterior:0,
+     certActual:0,
+     tipus:"Import Excel"
+   });
+ }
+ const total=rows.reduce((s,r)=>s+((+r.q||0)*(+r.pu||0)),0);
+ setD(obraId,d=>({...d,
+   partides:rows.length?rows:d.partides,
+   pressupostos:[...d.pressupostos,{
+     id:"p"+Date.now(),
+     versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
+     data:"Avui",
+     nom:file.name,
+     estat:`Excel llegit · ${rows.length} partides`,
+     import:total
+   }]
+ }));
 }catch(err){
-  setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
+ setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v01",data:"Avui",nom:file.name,estat:"Error lectura Excel",import:0}]}));
 }
 }
-
 
 function deletePressupostVersion(id){
-  if(!confirm("Eliminar aquesta versió de pressupost?"))return;
-  setD(obraId,d=>({...d,pressupostos:(d.pressupostos||[]).filter(p=>p.id!==id)}));
+ if(!confirm("Eliminar aquesta versió?")) return;
+ setD(obraId,d=>({...d,pressupostos:(d.pressupostos||[]).filter(p=>p.id!==id)}));
 }
 function updateCert(codi,fieldOrValue,value){let field=value===undefined?"certActual":fieldOrValue;let raw=value===undefined?fieldOrValue:value;let n=parseFloat(String(raw).replace(",","."));if(!Number.isFinite(n))n=0;setD(obraId,d=>({...d,partides:d.partides.map(r=>r.codi===codi?{...r,[field]:n}:r)}))}
 function saveCert(){let n=+certInfo.num;let field=n===1?"certAnterior":"certActual";let total=data.partides.reduce((s,r)=>s+(+r[field]||0)*(+r.pu||0),0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
@@ -158,7 +167,7 @@ function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
 function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 89 documents-pressupost · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
-function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
+function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button><button className="danger small" onClick={(e)=>{e.stopPropagation();deletePressupostVersion?.(p.id)}}>Eliminar</button>)}</div></Card>}
 
 
 function FitxaClient({client,obres,openObra,back}){
@@ -321,7 +330,7 @@ function Pressupost({data,importExcel,deletePressupostVersion,openPartida,openEm
   return <div className="stack">
     <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label><button className="primary" onClick={addCapitol}><Plus/> Nou capítol</button></div>}>
       <div className="version-list">
-        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><div className="version-row version-row-v90" key={p.id}><button className="version-main-v90" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}><strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em></button><button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button></div>)}
+        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><button className="version-row" key={p.id} onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}><strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em></button>)}
       </div>
     </Card>
 
