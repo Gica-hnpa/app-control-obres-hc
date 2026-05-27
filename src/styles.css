@@ -1632,3 +1632,23 @@ button,input,select,textarea{font-size:13.5px!important}
 .cert-print-v82 th:nth-child(2),.cert-print-v82 td:nth-child(2){text-align:left}
 .cert-print-v82 .green{background:#dcfce7;color:#166534;font-weight:900}
 .page-break-v82{break-before:page;page-break-before:always;margin-top:30px}
+
+/* V85 certificació pàgina 2 = quadre */
+.cert-print-v85{background:white}
+.cert-table-print-v85{width:100%;border-collapse:collapse;margin-top:12px}
+.cert-table-print-v85 th,.cert-table-print-v85 td{border:1px solid #cbd5e1;padding:7px;text-align:right;font-size:12px}
+.cert-table-print-v85 th:nth-child(2),.cert-table-print-v85 td:nth-child(2){text-align:left}
+.cert-page-v85.page2{break-before:page;page-break-before:always;margin-top:30px}
+.cert-grid-print-v85{display:grid;grid-template-columns:55px 35px 210px 65px 65px 85px 75px 65px 85px 75px 65px 85px 90px;border:1px solid #b9c7d8;overflow:auto;font-size:10px}
+.cert-grid-print-v85>div{border-right:1px solid #b9c7d8;border-bottom:1px solid #b9c7d8;padding:5px;text-align:right}
+.cert-grid-print-v85>.h{background:#eaf2fb;font-weight:900}
+.cert-grid-print-v85 .concept{text-align:left}
+.cert-grid-print-v85 .green{background:#dcfce7;color:#166534;font-weight:900}
+@media print{
+  body *{visibility:hidden!important}
+  .document-preview,.document-preview *{visibility:visible!important}
+  .document-preview{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:white!important;box-shadow:none!important;border:0!important;margin:0!important;padding:0!important}
+  .document-page{box-shadow:none!important;border:0!important;margin:0!important}
+  .modal-actions,.modal-close,.close{display:none!important}
+  @page{size:A4;margin:10mm}
+}
