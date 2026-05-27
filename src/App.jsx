@@ -66,7 +66,7 @@ const[clients,setClients]=useState(()=>{let c=JSON.parse(localStorage.getItem("a
 const[clientId,setClientId]=useState("socoterm"),[obraId,setObraId]=useState("maricel"),[tab,setTab]=useState("Resum");
 const[cs,setCs]=useState(""),[ct,setCt]=useState(""),[os,setOs]=useState(""),[oc,setOc]=useState(""),[oy,setOy]=useState(""),[ost,setOst]=useState("");
 const[modal,setModal]=useState(null),[certInfo,setCertInfo]=useState({num:"2",data:"18/06/26",anteriorNum:"1",anteriorData:"12/05/26"});
-const[calM,setCalM]=useState(5),[calY,setCalY]=useState(2026),[selDay,setSelDay]=useState(null),[email,setEmail]=useState(null),[doc,setDoc]=useState(null),[selActa,setSelActa]=useState(null);
+const[calM,setCalM]=useState(new Date().getMonth()),[calY,setCalY]=useState(2026),[selDay,setSelDay]=useState(null),[email,setEmail]=useState(null),[doc,setDoc]=useState(null),[selActa,setSelActa]=useState(null);
 const[timer,setTimer]=useState({running:false,start:null,elapsed:0,label:"Cèdula",task:"",rate:50});
 useEffect(()=>{let id;if(timer.running){id=setInterval(()=>setTimer(t=>({...t,elapsed:Date.now()-t.start})),500)}return()=>clearInterval(id)},[timer.running,timer.start]);
 useEffect(()=>{localStorage.setItem("aco_clients",JSON.stringify(clients))},[clients]);
@@ -124,7 +124,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 85 cert-pagina2 · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 86 cert-agenda-docs · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -576,70 +576,66 @@ return <Card title="Documents adjunts d’obra" action={<div className="actions-
 </Card>}
 
 
+
 function Agenda({events=[],clients=[],obres=[],openEvent,calM,setCalM,calY,setCalY,selDay,setSelDay}){
-const noteKey="aco_agenda_v80";
+const key="aco_agenda_v86";
 const[version,setVersion]=useState(0);
 const[clientFilter,setClientFilter]=useState("");
 const[obraFilter,setObraFilter]=useState("");
-const[form,setForm]=useState({title:"",client:"",clientNou:"",obra:"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""});
-function load(){try{return JSON.parse(localStorage.getItem(noteKey)||"[]")}catch(e){return []}}
-function saveList(list){localStorage.setItem(noteKey,JSON.stringify(list));setVersion(v=>v+1)}
+const[form,setForm]=useState({title:"",client:"",clientNou:"",promotor:"",obra:"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""});
+function load(){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}}
+function saveList(list){localStorage.setItem(key,JSON.stringify(list));setVersion(v=>v+1)}
 const local=load();
 const all=[...(events||[]),...local];
 const clientNames=[...new Set([...(clients||[]).map(c=>c.nom),...all.map(e=>e.client)].filter(Boolean))];
-const obraNames=[...new Set([...(obres||[]).map(o=>o.nom),...all.map(e=>e.obra)].filter(Boolean))];
+const filteredObresBase=clientFilter?(obres||[]).filter(o=>o.client===clientFilter || (clients.find(c=>c.id===o.client)?.nom===clientFilter)):(obres||[]);
+const obraNames=[...new Set([...filteredObresBase.map(o=>o.nom),...all.filter(e=>!clientFilter||e.client===clientFilter).map(e=>e.obra)].filter(Boolean))];
 const filtered=all.filter(e=>(!clientFilter||e.client===clientFilter)&&(!obraFilter||e.obra===obraFilter));
 const blanks=first(calY,calM), total=days(calY,calM);
 const selectedDate=selDay?`${String(selDay).padStart(2,"0")}/${String(calM+1).padStart(2,"0")}/${calY}`:"Selecciona un dia";
 const selected=selDay?filtered.filter(e=>e.day===selDay&&e.month===calM&&e.year===calY):[];
 function set(k,v){setForm(f=>({...f,[k]:v}))}
-function clearForm(){setForm({title:"",client:clientFilter||"",clientNou:"",obra:obraFilter||"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""})}
-function editNote(n){setSelDay(n.day);setCalM(n.month);setCalY(n.year);setForm({id:n.id,title:n.title||"",client:n.client||"",clientNou:"",obra:n.obra||"",obraNova:"",tipus:n.tipus||n.type||"Nota",hora:n.hora||"09:00",adreca:n.adreca||"",detail:n.detail||""})}
+function clearForm(){setForm({title:"",client:clientFilter||"",clientNou:"",promotor:"",obra:obraFilter||"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""})}
+function editNote(n){setSelDay(n.day);setCalM(n.month);setCalY(n.year);setForm({id:n.id,title:n.title||"",client:n.client||"",clientNou:"",promotor:n.promotor||"",obra:n.obra||"",obraNova:"",tipus:n.tipus||n.type||"Nota",hora:n.hora||"09:00",adreca:n.adreca||"",detail:n.detail||""})}
 function saveNote(){
-  if(!selDay){alert("Selecciona primer un dia del calendari.");return}
-  if(!form.title){alert("Posa un resum/títol.");return}
-  const client=form.client==="__nou__"?(form.clientNou||"Nou client"):(form.client||"Sense client");
-  const obra=form.obra==="__nova__"?(form.obraNova||"Nova obra/adreça"):(form.obra||"Sense obra");
-  const note={id:form.id||"note-"+Date.now(),day:selDay,month:calM,year:calY,title:form.title,client,obra,tipus:form.tipus,hora:form.hora,adreca:form.adreca,detail:form.detail,type:form.tipus};
-  const exists=local.some(n=>n.id===note.id);
-  saveList(exists?local.map(n=>n.id===note.id?note:n):[...local,note]);
-  clearForm();
+ if(!selDay){alert("Selecciona primer un dia.");return}
+ if(!form.title){alert("Posa resum/títol.");return}
+ const client=form.client==="__nou__"?(form.clientNou||"Nou client"):(form.client||"Sense client");
+ const obra=form.obra==="__nova__"?(form.obraNova||"Nova obra/adreça"):(form.obra||"Sense obra");
+ const note={id:form.id||"note-"+Date.now(),day:selDay,month:calM,year:calY,title:form.title,client,promotor:form.promotor,obra,tipus:form.tipus,hora:form.hora,adreca:form.adreca,detail:form.detail,type:form.tipus};
+ const exists=local.some(n=>n.id===note.id);
+ saveList(exists?local.map(n=>n.id===note.id?note:n):[...local,note]);
+ clearForm();
 }
 function deleteNote(){if(!form.id)return;saveList(local.filter(n=>n.id!==form.id));clearForm()}
-return <div className="agenda-v80">
-  <Card title="Agenda / Calendari">
-    <div className="calendar-filters-v80">
-      <label>Filtre client<select value={clientFilter} onChange={e=>setClientFilter(e.target.value)}><option value="">Tots</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select></label>
-      <label>Filtre obra/projecte<select value={obraFilter} onChange={e=>setObraFilter(e.target.value)}><option value="">Totes</option>{obraNames.map(o=><option key={o}>{o}</option>)}</select></label>
-    </div>
-    <div className="calendar-head">
-      <button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button>
-      <button className="secondary" onClick={()=>{const d=new Date();setCalM(d.getMonth());setCalY(d.getFullYear());setSelDay(d.getDate())}}>Avui</button>
-      <button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button>
-      <select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option key={m} value={i}>{m}</option>)}</select>
-      <select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option key={y}>{y}</option>)}</select>
-    </div>
-    <div className="calendar-grid">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week" key={d}>{d}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>)}
-      {Array.from({length:total}).map((_,i)=>{let day=i+1;let ev=filtered.filter(e=>e.day===day&&e.month===calM&&e.year===calY);return <button key={day} onClick={()=>setSelDay(day)} className={`day ${selDay===day?"active":""}`}><b>{day}</b>{ev.slice(0,3).map(e=><small key={e.id}>{e.title}</small>)}{ev.length>3&&<em>+{ev.length-3}</em>}</button>})}
-    </div>
-  </Card>
-  <Card title={`Nota / visita · ${selectedDate}`} action={<button className="secondary" onClick={clearForm}>Nova neta</button>}>
-    <div className="agenda-form-v80">
-      <label>Data completa<input value={selectedDate} readOnly/></label>
-      <label>Client<select value={form.client} onChange={e=>set("client",e.target.value)}><option value="">Selecciona client</option>{clientNames.map(c=><option key={c}>{c}</option>)}<option value="__nou__">+ Crear client nou</option></select></label>
-      {form.client==="__nou__"&&<label>Nom nou client<input value={form.clientNou} onChange={e=>set("clientNou",e.target.value)}/></label>}
-      <label>Obra / projecte<select value={form.obra} onChange={e=>set("obra",e.target.value)}><option value="">Selecciona obra</option>{obraNames.map(o=><option key={o}>{o}</option>)}<option value="__nova__">+ Crear obra/adreça nova</option></select></label>
-      {form.obra==="__nova__"&&<label>Nova obra/adreça<input value={form.obraNova} onChange={e=>set("obraNova",e.target.value)}/></label>}
-      <label>Tipologia de visita o feina<select value={form.tipus} onChange={e=>set("tipus",e.target.value)}><option>Visita d’obra</option><option>Reunió</option><option>Pressupost</option><option>Certificació</option><option>Entrega documentació</option><option>Avís</option><option>Altres</option></select></label>
-      <label>Hora<input value={form.hora} onChange={e=>set("hora",e.target.value)}/></label>
-      <label>Adreça visita<input value={form.adreca} onChange={e=>set("adreca",e.target.value)}/></label>
-      <label>Resum<input value={form.title} onChange={e=>set("title",e.target.value)} placeholder="Ex. Visita obra / revisar certificació"/></label>
-      <label className="wide">Observacions<textarea value={form.detail} onChange={e=>set("detail",e.target.value)} placeholder="Acords, tasques pendents, comentaris..."/></label>
-      <div className="modal-actions"><button className="primary" onClick={saveNote}>Guardar nota</button>{form.id&&<button className="danger" onClick={deleteNote}>Eliminar</button>}</div>
-    </div>
-    <h3>Notes del dia</h3>
-    <div className="notes-list-v80">{selected.length===0?<p className="muted">No hi ha notes per aquest dia.</p>:selected.map(n=><button key={n.id} className="note-card-v80" onClick={()=>editNote(n)}><b>{n.title}</b><span>{String(n.day).padStart(2,"0")}/{String(n.month+1).padStart(2,"0")}/{n.year} · {n.client||"Sense client"} · {n.obra||"Sense obra"}</span><small>{n.tipus||n.type||"Nota"} · {n.hora||""} {n.adreca?`· ${n.adreca}`:""}</small><p>{n.detail||""}</p></button>)}</div>
-  </Card>
+return <div className="agenda-v86">
+<Card title="Agenda / Calendari">
+ <div className="calendar-filters-v86">
+  <label>Filtre client<select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setObraFilter("")}}><option value="">Tots</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select></label>
+  <label>Filtre obra/projecte<select value={obraFilter} onChange={e=>setObraFilter(e.target.value)}><option value="">Totes</option>{obraNames.map(o=><option key={o}>{o}</option>)}</select></label>
+ </div>
+ <div className="calendar-head"><button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button><button className="secondary" onClick={()=>{const d=new Date();setCalM(d.getMonth());setCalY(d.getFullYear());setSelDay(d.getDate())}}>Avui</button><button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button><select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option key={m} value={i}>{m}</option>)}</select><select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option key={y}>{y}</option>)}</select></div>
+ <div className="calendar-grid google-cal-v86">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week" key={d}>{d}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>)}
+ {Array.from({length:total}).map((_,i)=>{let day=i+1;let ev=filtered.filter(e=>e.day===day&&e.month===calM&&e.year===calY);return <button key={day} onClick={()=>setSelDay(day)} className={`day ${selDay===day?"active":""}`}><b>{day}</b>{ev.slice(0,3).map(e=><small key={e.id}>{e.title}</small>)}{ev.length>3&&<em>+{ev.length-3}</em>}</button>})}</div>
+</Card>
+<Card title={`Nota / visita · ${selectedDate}`} action={<button className="secondary" onClick={clearForm}>Nova neta</button>}>
+ <div className="agenda-form-v86">
+  <label>Data completa<input value={selectedDate} readOnly/></label>
+  <label>Client contractant<select value={form.client} onChange={e=>set("client",e.target.value)}><option value="">Selecciona client</option>{clientNames.map(c=><option key={c}>{c}</option>)}<option value="__nou__">+ Crear client nou</option></select></label>
+  {form.client==="__nou__"&&<label>Nom nou client<input value={form.clientNou} onChange={e=>set("clientNou",e.target.value)}/></label>}
+  <label>Promotor / client del client<input value={form.promotor} onChange={e=>set("promotor",e.target.value)} placeholder="Ex. Davis Fuster"/></label>
+  <label>Obra / projecte<select value={form.obra} onChange={e=>set("obra",e.target.value)}><option value="">Selecciona obra</option>{obraNames.map(o=><option key={o}>{o}</option>)}<option value="__nova__">+ Crear obra/adreça nova</option></select></label>
+  {form.obra==="__nova__"&&<label>Nova obra/adreça<input value={form.obraNova} onChange={e=>set("obraNova",e.target.value)}/></label>}
+  <label>Tipologia de visita o feina<select value={form.tipus} onChange={e=>set("tipus",e.target.value)}><option>Visita d’obra</option><option>Reunió</option><option>Pressupost</option><option>Certificació</option><option>Entrega documentació</option><option>Avís</option><option>Altres</option></select></label>
+  <label>Hora<input value={form.hora} onChange={e=>set("hora",e.target.value)}/></label>
+  <label>Adreça visita<input value={form.adreca} onChange={e=>set("adreca",e.target.value)}/></label>
+  <label>Resum<input value={form.title} onChange={e=>set("title",e.target.value)}/></label>
+  <label className="wide">Observacions<textarea value={form.detail} onChange={e=>set("detail",e.target.value)}/></label>
+  <div className="modal-actions"><button className="primary" onClick={saveNote}>Guardar nota</button>{form.id&&<button className="danger" onClick={deleteNote}>Eliminar</button>}</div>
+ </div>
+ <h3>Notes del dia</h3>
+ <div className="notes-list-v86">{selected.length===0?<p className="muted">No hi ha notes per aquest dia.</p>:selected.map(n=><button key={n.id} className="note-card-v86" onClick={()=>editNote(n)}><b>{n.title}</b><span>{String(n.day).padStart(2,"0")}/{String(n.month+1).padStart(2,"0")}/{n.year} · {n.client||"Sense client"} · {n.obra||"Sense obra"}</span>{n.promotor&&<small>Promotor: {n.promotor}</small>}<small>{n.tipus||n.type||"Nota"} · {n.hora||""} {n.adreca?`· ${n.adreca}`:""}</small><p>{n.detail||""}</p></button>)}</div>
+</Card>
 </div>
 }
 
@@ -853,37 +849,6 @@ return <div className="cert-print-v82">
 </div>
 }
 
-
-function CertPrintV85({doc}){
-const rows=doc.rows||[];
-const current=rows.filter(r=>(+r.qAct||0)>0);
-const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
-return <div className="cert-print-v85">
-  <section className="cert-page-v85">
-    <h1>{doc.title}</h1>
-    <p>{doc.subtitle}</p>
-    <h3>Resum de partides certificades</h3>
-    <table className="cert-table-print-v85">
-      <thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
-      <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
-      <tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ</th><th>{money(total)}</th></tr></tfoot>
-    </table>
-  </section>
-  <section className="cert-page-v85 page2">
-    <h2>Quadre resum de certificació</h2>
-    <div className="cert-grid-print-v85">
-      <div className="h">Partida</div><div className="h">Ut</div><div className="h">Resum</div><div className="h">CanPres</div><div className="h">PrPres</div><div className="h">ImpPres</div><div className="h">Q anterior</div><div className="h">% anterior</div><div className="h">Imp anterior</div><div className="h">Q actual</div><div className="h">% actual</div><div className="h">Imp actual</div><div className="h">Total origen</div>
-      {rows.map(r=><React.Fragment key={r.codi}>
-        <div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
-        <div>{qty2(r.qPrev)}</div><div>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div>{money((+r.qPrev||0)*(+r.pu||0))}</div>
-        <div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</div>
-        <div>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</div>
-      </React.Fragment>)}
-    </div>
-  </section>
-</div>
-}
-
 function FormClient({onSubmit}){let[logo,setLogo]=useState("");return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Logo / foto empresa</span><input type="file" onChange={e=>f2u(e.target.files[0],setLogo)}/><input type="hidden" name="logoPreview" value={logo}/>{logo&&<img className="logo-preview" src={logo}/>}</label><Input name="nom" label="Nom comercial" defaultValue="Nou client"/><Input name="rao" label="Raó social" defaultValue="Pendent"/><label><span>Rol / tipologia</span><select name="tipus"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Particular</option><option>Altres</option></select></label><Input name="nif" label="NIF/CIF" defaultValue="Pendent"/><Input name="contacte" label="Contacte" defaultValue="Pendent"/><Input name="telefon" label="Telèfon" defaultValue="Pendent"/><Input name="email" label="Email" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear client</button></div></form>}
 function FormObra({clients,onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client">{clients.map(c=><option value={c.id}>{c.nom}</option>)}</select></label><Input name="nom" label="Nom obra" defaultValue="Nova obra"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>Tancada</option></select></label><label><span>Tipologia</span><select name="tipologia"><option>Pressupost</option><option>Project Manager</option><option>Direcció d’obra</option><option>Projecte tècnic</option></select></label><Input name="propietat" label="Client" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear obra</button></div></form>}
 function FormPartida({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="codi" label="Codi" defaultValue="10.02"/><Input name="cap" label="Capítol" defaultValue="10 FEINES FORA PRESSUPOST"/><Input name="concepte" label="Concepte" defaultValue="Nova partida"/><Input name="ut" label="Ut" defaultValue="m²"/><Input name="q" label="Quantitat" defaultValue="1"/><Input name="pu" label="PU" defaultValue="0"/><label><span>Tipus</span><select name="tipus"><option>Base</option><option>Modificada</option><option>Fora pressupost</option></select></label></div><div className="modal-actions"><button className="primary">Afegir partida</button></div></form>}
@@ -912,4 +877,4 @@ return <form onSubmit={onSubmit} className="form-event-v78">
 }
 
 function EmailModal({draft,setDraft,close}){let sel=draft.agents.filter(a=>draft.selected.includes(a.id));return <Modal title="Enviar per email" close={close}><div className="form-grid"><label className="span-all"><span>Destinataris</span><div className="check-grid">{draft.agents.length===0?<Empty text="Aquesta obra no té agents amb email assignats."/>:draft.agents.map(a=><label className="check-row"><input type="checkbox" checked={draft.selected.includes(a.id)} onChange={e=>setDraft({...draft,selected:e.target.checked?[...draft.selected,a.id]:draft.selected.filter(id=>id!==a.id)})}/><span>{a.nom} · {a.email}</span></label>)}</div></label><Input label="Assumpte" defaultValue={draft.title}/><label className="span-all"><span>Missatge</span><textarea value={draft.message} onChange={e=>setDraft({...draft,message:e.target.value})}/></label></div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>{let tos=sel.map(a=>a.email).join(",");openGmailCompose(tos,draft.title,draft.message)}}>Obrir correu</button></div></Modal>}
-function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"landscape-doc":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV85 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div></Modal>}
+function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"landscape-doc":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV82 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Impressió pendent</button></div></Modal>}
