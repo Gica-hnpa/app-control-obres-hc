@@ -114,7 +114,7 @@ return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<
 {screen==="Agenda"&&<Agenda events={data.events||[]} clients={clients} obres={obres} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
-{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nova obra" close={()=>setModal(null)}><FormObra clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’obra" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’obra" close={()=>setModal(null)}><FormActa agents={data.agents} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div>
+{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nova obra" close={()=>setModal(null)}><FormObra clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’obra" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’obra" close={()=>setModal(null)}><FormActa agents={data.agents} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div>
 }
 
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
@@ -124,7 +124,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 77 notes-real · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 78 notes reals · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -575,75 +575,72 @@ return <Card title="Documents adjunts d’obra" action={<div className="actions-
 <div className="list">{docs.map(d=><div className="doc-row" key={d.id}><div><strong>{d.nom}</strong><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span></div><div><button onClick={()=>openOriginal(d)}>Obrir</button><button onClick={()=>openEmail(d.nom)}>Enviar</button><button onClick={()=>remove(d)}>Eliminar</button></div></div>)}</div>
 </Card>}
 
-
 function Agenda({events=[],clients=[],obres=[],openEvent,calM,setCalM,calY,setCalY,selDay,setSelDay}){
-const noteKey="aco_notes_v77";
-const[refresh,setRefresh]=useState(0);
-const[clientFilter,setClientFilter]=useState("");
-const[obraFilter,setObraFilter]=useState("");
-const[note,setNote]=useState(null);
-function load(){try{return JSON.parse(localStorage.getItem(noteKey)||"[]")}catch(e){return []}}
-function save(list){localStorage.setItem(noteKey,JSON.stringify(list));setRefresh(v=>v+1)}
-const local=load();
-const all=[...(events||[]),...local];
-const clientNames=[...new Set([...(clients||[]).map(c=>c.nom),...all.map(e=>e.client)].filter(Boolean))];
-const obraNames=[...new Set([...(obres||[]).map(o=>o.nom),...all.map(e=>e.obra)].filter(Boolean))];
-const filtered=all.filter(e=>(!clientFilter||e.client===clientFilter)&&(!obraFilter||e.obra===obraFilter));
-const blanks=first(calY,calM), total=days(calY,calM);
-const selectedDate=selDay?`${String(selDay).padStart(2,"0")}/${String(calM+1).padStart(2,"0")}/${calY}`:"Selecciona un dia";
-const selected=selDay?filtered.filter(e=>e.day===selDay&&e.month===calM&&e.year===calY):[];
-function newNote(){
-  if(!selDay){alert("Selecciona primer un dia.");return}
-  setNote({id:"new",day:selDay,month:calM,year:calY,title:"",client:clientFilter||"",obra:obraFilter||"",hora:"09:00",adreca:"",detail:""});
-}
-function editNote(e){
-  if(!local.some(n=>n.id===e.id)){alert("Aquesta nota és de mostra/base. Crea’n una de nova per editar-la.");return}
-  setNote({...e});
-}
-function saveNote(){
-  if(!note.title){alert("Posa un títol o resum.");return}
-  let list=note.id==="new"?[...local,{...note,id:"note-"+Date.now()}]:local.map(n=>n.id===note.id?note:n);
-  save(list);setNote(null);
-}
-function deleteNote(){
-  if(!note||note.id==="new")return;
-  save(local.filter(n=>n.id!==note.id));setNote(null);
-}
-return <div className="agenda-grid agenda-v77">
-<Card title="Agenda / Calendari" action={<button className="primary" onClick={newNote}><Plus/> Nova nota / visita</button>}>
-  <div className="calendar-filters-v77">
-    <label>Client<select value={clientFilter} onChange={e=>setClientFilter(e.target.value)}><option value="">Tots</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select></label>
-    <label>Obra<select value={obraFilter} onChange={e=>setObraFilter(e.target.value)}><option value="">Totes</option>{obraNames.map(o=><option key={o}>{o}</option>)}</select></label>
-    <button className="secondary" onClick={()=>{let c=prompt("Nou client");if(c)setClientFilter(c)}}>+ Client</button>
-    <button className="secondary" onClick={()=>{let o=prompt("Nova obra/adreça");if(o)setObraFilter(o)}}>+ Obra</button>
+  const [clientFilter,setClientFilter]=useState("");
+  const [obraFilter,setObraFilter]=useState("");
+  const [refresh,setRefresh]=useState(0);
+  const localKey="aco_calendar_local_v75";
+  const loadLocal=()=>{try{return JSON.parse(localStorage.getItem(localKey)||"[]")}catch(e){return []}};
+  const saveLocal=(list)=>{localStorage.setItem(localKey,JSON.stringify(list));setRefresh(x=>x+1)};
+  const local=loadLocal();
+  const clientNames=[...new Set([...(clients||[]).map(c=>c.nom),...(events||[]).map(e=>e.client),...local.map(e=>e.client)].filter(Boolean))];
+  const obraNames=[...new Set([...(obres||[]).map(o=>o.nom),...(events||[]).map(e=>e.obra),...local.map(e=>e.obra)].filter(Boolean))];
+  const merged=[...(events||[]),...local].filter(e=>(!clientFilter||e.client===clientFilter)&&(!obraFilter||e.obra===obraFilter));
+  const blanks=first(calY,calM), total=days(calY,calM);
+  const selectedDate=selDay?`${String(selDay).padStart(2,"0")}/${String(calM+1).padStart(2,"0")}/${calY}`:"Selecciona un dia";
+  const selectedNotes=selDay?merged.filter(e=>e.day===selDay&&e.month===calM&&e.year===calY):[];
+  function addNote(){
+    if(!selDay){alert("Selecciona primer un dia.");return}
+    const title=prompt("Resum de la nota / cita");
+    if(!title)return;
+    const client=prompt("Client",clientFilter||clientNames[0]||"")||clientFilter||"Sense client";
+    const obra=prompt("Obra",obraFilter||obraNames[0]||"")||obraFilter||"Sense obra";
+    const detail=prompt("Detall / observacions","")||"";
+    saveLocal([...local,{id:"note-"+Date.now(),title,client,obra,detail,day:selDay,month:calM,year:calY,type:"Nota"}]);
+  }
+  function editNote(note){
+    const existing=local.find(n=>n.id===note.id);
+    if(!existing){alert("Aquesta nota és de mostra/base. Crea’n una de nova per editar-la.");return}
+    const title=prompt("Editar resum",note.title);
+    if(title===null)return;
+    const client=prompt("Client",note.client||"")||note.client||"Sense client";
+    const obra=prompt("Obra",note.obra||"")||note.obra||"Sense obra";
+    const detail=prompt("Detall",note.detail||"")||"";
+    saveLocal(local.map(n=>n.id===note.id?{...n,title,client,obra,detail}:n));
+  }
+  return <div className="agenda-grid agenda-v75">
+    <Card title="Agenda / Calendari" action={<button className="primary" onClick={addNote}><Plus/> Nova cita/nota</button>}>
+      <div className="calendar-filters-v75">
+        <label>Client<select value={clientFilter} onChange={e=>setClientFilter(e.target.value)}><option value="">Tots</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select></label>
+        <label>Obra<select value={obraFilter} onChange={e=>setObraFilter(e.target.value)}><option value="">Totes</option>{obraNames.map(o=><option key={o}>{o}</option>)}</select></label>
+        <button className="secondary" onClick={()=>{const c=prompt("Nou client"); if(c)setClientFilter(c)}}>+ Client</button>
+        <button className="secondary" onClick={()=>{const o=prompt("Nova obra"); if(o)setObraFilter(o)}}>+ Obra</button>
+      </div>
+      <div className="calendar-head">
+        <button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button>
+        <button className="secondary" onClick={()=>{const d=new Date();setCalM(d.getMonth());setCalY(d.getFullYear());setSelDay(d.getDate())}}>Avui</button>
+        <button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button>
+        <select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option key={m} value={i}>{m}</option>)}</select>
+        <select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option key={y}>{y}</option>)}</select>
+      </div>
+      <div className="calendar-grid">
+        {["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week" key={d}>{d}</div>)}
+        {Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>)}
+        {Array.from({length:total}).map((_,i)=>{
+          const day=i+1;
+          const ev=merged.filter(e=>e.day===day&&e.month===calM&&e.year===calY);
+          return <button key={day} onClick={()=>setSelDay(day)} className={`day ${selDay===day?"active":""}`}>
+            <b>{String(day).padStart(2,"0")}/{String(calM+1).padStart(2,"0")}/{calY}</b>
+            {ev.slice(0,3).map(e=><small key={e.id}>{e.title}</small>)}
+            {ev.length>3&&<em>+{ev.length-3}</em>}
+          </button>
+        })}
+      </div>
+    </Card>
+    <Card title={`Notes del dia · ${selectedDate}`}>
+      {selectedNotes.length===0?<Empty text="No hi ha notes per aquest dia."/>:<div className="notes-list-v75">{selectedNotes.map(e=><button key={e.id} className="note-card-v75" onClick={()=>editNote(e)}><b>{e.title}</b><span>{e.client||"Sense client"} · {e.obra||"Sense obra"}</span><p>{e.detail||e.type||"Nota"}</p></button>)}</div>}
+    </Card>
   </div>
-  <div className="calendar-head">
-    <button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button>
-    <button className="secondary" onClick={()=>{let d=new Date();setCalM(d.getMonth());setCalY(d.getFullYear());setSelDay(d.getDate())}}>Avui</button>
-    <button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button>
-    <select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option key={m} value={i}>{m}</option>)}</select>
-    <select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option key={y}>{y}</option>)}</select>
-  </div>
-  <div className="calendar-grid">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week" key={d}>{d}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>)}
-    {Array.from({length:total}).map((_,i)=>{let day=i+1;let ev=filtered.filter(e=>e.day===day&&e.month===calM&&e.year===calY);return <button key={day} onClick={()=>setSelDay(day)} className={`day ${selDay===day?"active":""}`}><b>{String(day).padStart(2,"0")}/{String(calM+1).padStart(2,"0")}/{String(calY).slice(-2)}</b>{ev.slice(0,3).map(e=><small key={e.id}>{e.title}</small>)}{ev.length>3&&<em>+{ev.length-3}</em>}</button>})}
-  </div>
-</Card>
-<Card title={`Notes del dia · ${selectedDate}`}>
-  {selected.length===0?<Empty text="No hi ha notes per aquest dia."/>:<div className="notes-list-v77">{selected.map(e=><button key={e.id} className="note-card-v77" onClick={()=>editNote(e)}><b>{e.title}</b><span>{e.client||"Sense client"} · {e.obra||"Sense obra"}</span><p>{e.hora||""} {e.adreca?`· ${e.adreca}`:""}</p><small>{e.detail||""}</small></button>)}</div>}
-</Card>
-{note&&<div className="note-pop-v77"><div>
-  <h3>{note.id==="new"?"Nova nota / visita":"Editar nota / visita"}</h3>
-  <label>Data completa<input value={`${String(note.day).padStart(2,"0")}/${String(note.month+1).padStart(2,"0")}/${note.year}`} readOnly/></label>
-  <label>Client<select value={note.client||""} onChange={e=>setNote({...note,client:e.target.value})}><option value="">Selecciona client</option>{clientNames.map(c=><option key={c}>{c}</option>)}<option value="__nou__">+ Nou client</option></select></label>
-  {note.client==="__nou__"&&<label>Nom nou client<input onChange={e=>setNote({...note,client:e.target.value})}/></label>}
-  <label>Obra / adreça<select value={note.obra||""} onChange={e=>setNote({...note,obra:e.target.value})}><option value="">Selecciona obra</option>{obraNames.map(o=><option key={o}>{o}</option>)}<option value="__nova__">+ Nova obra/adreça</option></select></label>
-  {note.obra==="__nova__"&&<label>Nova obra / adreça<input onChange={e=>setNote({...note,obra:e.target.value})}/></label>}
-  <label>Resum<input value={note.title||""} onChange={e=>setNote({...note,title:e.target.value})}/></label>
-  <label>Hora<input value={note.hora||""} onChange={e=>setNote({...note,hora:e.target.value})}/></label>
-  <label>Observacions / adreça visita<textarea value={note.detail||""} onChange={e=>setNote({...note,detail:e.target.value})}/></label>
-  <div className="modal-actions"><button className="primary" onClick={saveNote}>Guardar / Tancar</button>{note.id!=="new"&&<button className="danger" onClick={deleteNote}>Eliminar</button>}<button className="secondary" onClick={()=>setNote(null)}>Cancel·lar</button></div>
-</div></div>}
-</div>
 }
 
 function ObraMiniCalendar({events=[]}){const[m,setM]=useState(5),[y,setY]=useState(2026),[d,setD]=useState(null),[note,setNote]=useState(null);const[local,setLocal]=useState(()=>JSON.parse(localStorage.getItem("aco_obra_notes")||"[]"));useEffect(()=>{localStorage.setItem("aco_obra_notes",JSON.stringify(local));localStorage.setItem("aco_home_notes",JSON.stringify(local))},[local]);let all=[...events,...local],blanks=first(y,m),total=days(y,m),sel=d?all.filter(e=>e.day===d&&e.month===m&&e.year===y):[];function save(n){if(n.id==="new")setLocal(p=>[...p,{...n,id:"local-"+Date.now(),month:m,year:y}]);else setLocal(p=>p.map(x=>x.id===n.id?n:x));setNote(null)}function newNote(){setNote({id:"new",day:d||1,title:"Nova nota",type:"Nota",hora:"09:00",note:"",color:"blue"})}return <div className="home-calendar obra-calendar"><div className="calendar-head compact"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{setM(5);setY(2026)}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option>{x}</option>)}</select><button className="primary" onClick={newNote}>+ Nota nova</button></div><div className="home-calendar-layout"><div className="calendar-grid small">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week">{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button className={`day ${d===day?"selected":""}`} onClick={()=>setD(day)}><b>{day}</b>{ev.slice(0,2).map(e=><span className={`cal-event ${e.color==="red"?"red":""}`} onClick={(evn)=>{evn.stopPropagation();setNote(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div><div className="day-detail side"><h3>{d?`Dia ${d}`:"Selecciona un dia"}</h3>{d&&sel.length===0&&<p>Sense notes.</p>}{sel.map(e=><button className="note-card" onClick={()=>setNote(e)}><strong>{e.title}</strong><span>{e.hora} · {e.type}</span><p>{e.note||"Sense observacions."}</p></button>)}</div></div>{note&&<div className="note-pop"><div><h3>{note.id==="new"?"Nova nota":"Editar nota"}</h3><label><span>Dia</span><input value={note.day} onChange={e=>setNote({...note,day:+e.target.value})}/></label><label><span>Títol</span><input value={note.title} onChange={e=>setNote({...note,title:e.target.value})}/></label><label><span>Hora</span><input value={note.hora} onChange={e=>setNote({...note,hora:e.target.value})}/></label><label><span>Observacions</span><textarea value={note.note} onChange={e=>setNote({...note,note:e.target.value})}/></label><button className="primary" onClick={()=>save(note)}>Guardar / Tancar</button></div></div>}</div>}
@@ -778,6 +775,27 @@ function FormObra({clients,onSubmit}){return <form onSubmit={onSubmit}><div clas
 function FormPartida({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="codi" label="Codi" defaultValue="10.02"/><Input name="cap" label="Capítol" defaultValue="10 FEINES FORA PRESSUPOST"/><Input name="concepte" label="Concepte" defaultValue="Nova partida"/><Input name="ut" label="Ut" defaultValue="m²"/><Input name="q" label="Quantitat" defaultValue="1"/><Input name="pu" label="PU" defaultValue="0"/><label><span>Tipus</span><select name="tipus"><option>Base</option><option>Modificada</option><option>Fora pressupost</option></select></label></div><div className="modal-actions"><button className="primary">Afegir partida</button></div></form>}
 function FormAgent({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="nom" label="Nom" defaultValue="Nou agent"/><label><span>Rol</span><select name="rol"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="empresa" label="Empresa" defaultValue="Empresa"/><Input name="email" label="Email" defaultValue="email@domini.cat"/><Input name="telefon" label="Telèfon" defaultValue=""/></div><div className="modal-actions"><button className="primary">Crear agent</button></div></form>}
 function FormActa({agents,onSubmit,openAgent}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="titol" label="Títol acta" defaultValue="Nova acta d’obra"/><Input name="data" label="Data" defaultValue="18/06/2026"/><label className="span-all"><span>Agents que intervenen</span><div className="check-grid">{agents.map(a=><label className="check-row"><input type="checkbox" name="agentsActa" value={a.id}/><span>{a.nom} · {a.rol}</span></label>)}</div><button type="button" className="secondary" onClick={openAgent}><Plus/> Crear agent nou</button></label><label className="span-all"><span>Text acta</span><textarea name="text" defaultValue="Es redacta acta de seguiment de l’obra."/></label><label><span>Fotos</span><input type="file" multiple/></label><label><span>Documents</span><input type="file" multiple/></label></div><div className="modal-actions"><button className="primary">Guardar acta</button></div></form>}
-function FormEvent({onSubmit,calM,calY,selDay}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="title" label="Títol" defaultValue="Nova cita"/><label><span>Tipus</span><select name="type"><option>Nota</option><option>Visita</option><option>Certificació</option><option>Acta</option></select></label><Input name="day" label="Dia" defaultValue={selDay||18}/><input type="hidden" name="month" value={calM}/><input type="hidden" name="year" value={calY}/><Input name="hora" label="Hora" defaultValue="10:00"/><label><span>Color</span><select name="color"><option value="blue">Blau</option><option value="red">Vermell</option><option value="orange">Taronja</option></select></label><label className="span-all"><span>Nota</span><textarea name="note"/></label></div><div className="modal-actions"><button className="primary">Crear cita/nota</button></div></form>}
+
+function FormEvent({clients=[],obres=[],calM,calY,selDay,onSubmit}){
+const [clientSel,setClientSel]=useState("");
+const [obraSel,setObraSel]=useState("");
+const defaultDate=`${calY}-${String(calM+1).padStart(2,"0")}-${String(selDay||1).padStart(2,"0")}`;
+return <form onSubmit={onSubmit} className="form-event-v78">
+  <div className="form-grid">
+    <label><span>Data completa</span><input type="date" name="data" defaultValue={defaultDate}/></label>
+    <label><span>Hora</span><input name="hora" defaultValue="09:00"/></label>
+    <label><span>Tipus</span><select name="type"><option>Nota</option><option>Visita d’obra</option><option>Reunió</option><option>Entrega documentació</option><option>Avís</option></select></label>
+    <label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="">Selecciona client</option>{clients.map(c=><option key={c.id} value={c.nom}>{c.nom}</option>)}<option value="__nou__">+ Crear client nou</option></select></label>
+    {clientSel==="__nou__"&&<label><span>Nom nou client</span><input name="clientNou" placeholder="Nom del client"/></label>}
+    <label><span>Obra / projecte</span><select name="obra" value={obraSel} onChange={e=>setObraSel(e.target.value)}><option value="">Selecciona obra</option>{obres.map(o=><option key={o.id} value={o.nom}>{o.nom}</option>)}<option value="__nova__">+ Crear obra/adreça nova</option></select></label>
+    {obraSel==="__nova__"&&<label><span>Nova obra / adreça</span><input name="obraNova" placeholder="Nom obra o adreça"/></label>}
+    <label><span>Adreça visita</span><input name="adreca" placeholder="Adreça concreta si cal"/></label>
+    <label><span>Resum / títol</span><input name="title" defaultValue="Nova nota"/></label>
+    <label className="wide"><span>Observacions</span><textarea name="detail" placeholder="Observacions, tasques pendents, acords..."/></label>
+  </div>
+  <div className="modal-actions"><button className="primary">Guardar / Tancar</button></div>
+</form>
+}
+
 function EmailModal({draft,setDraft,close}){let sel=draft.agents.filter(a=>draft.selected.includes(a.id));return <Modal title="Enviar per email" close={close}><div className="form-grid"><label className="span-all"><span>Destinataris</span><div className="check-grid">{draft.agents.length===0?<Empty text="Aquesta obra no té agents amb email assignats."/>:draft.agents.map(a=><label className="check-row"><input type="checkbox" checked={draft.selected.includes(a.id)} onChange={e=>setDraft({...draft,selected:e.target.checked?[...draft.selected,a.id]:draft.selected.filter(id=>id!==a.id)})}/><span>{a.nom} · {a.email}</span></label>)}</div></label><Input label="Assumpte" defaultValue={draft.title}/><label className="span-all"><span>Missatge</span><textarea value={draft.message} onChange={e=>setDraft({...draft,message:e.target.value})}/></label></div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>{let tos=sel.map(a=>a.email).join(",");openGmailCompose(tos,draft.title,draft.message)}}>Obrir correu</button></div></Modal>}
 function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"landscape-doc":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<div><h1>{doc.title}</h1><p className="doc-sub">{doc.subtitle}</p><table><thead><tr><th>Codi</th><th>Concepte</th><th>Quant.</th><th>Preu</th><th>Import</th></tr></thead><tbody>{(pf.rows||[]).map(r=>{let q=(String(pf.numero).includes("1"))?r.certAnterior:r.certActual;return <tr><td>{r.codi}</td><td>{r.concepte}</td><td>{q}</td><td>{money(r.pu)}</td><td>{money(q*r.pu)}</td></tr>})}</tbody></table><div className="doc-totals"><div><span>Base imposable</span><b>{money(pf.base)}</b></div><div><span>IVA {doc.iva}%</span><b>{money(pf.base*(doc.iva||21)/100)}</b></div><div><span>Total proforma</span><b>{money(doc.total||pf.base*1.21)}</b></div></div></div>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>window.print()}>Exportar / PDF</button></div></Modal>}
