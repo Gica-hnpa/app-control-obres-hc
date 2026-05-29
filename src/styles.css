@@ -1710,26 +1710,44 @@ button,input,select,textarea{font-size:13.5px!important}
   @page{size:A4;margin:10mm}
 }
 
-/* V87.1 - eliminar versions pressupost sense tocar layout base */
-.version-row-delete-v871{
+/* V87.2 versions pressupost */
+.version-card-v872{
   display:grid;
   grid-template-columns:1fr auto;
-  gap:8px;
+  gap:10px;
   align-items:center;
-  border-bottom:1px solid #e5e7eb;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:8px;
+  background:#fff;
+  margin-bottom:8px;
 }
-.version-row-delete-v871 .version-row{
-  border-bottom:0!important;
-}
-.version-row-main-v871{
+.version-main-v872{
+  display:grid;
+  grid-template-columns:80px 1.6fr 110px 110px 1.2fr;
+  gap:12px;
+  align-items:center;
   width:100%;
+  border:0;
+  background:transparent;
+  text-align:left;
+  cursor:pointer;
 }
-.version-row-delete-v871 .danger{
+.version-actions-v872{
+  display:flex;
+  gap:6px;
+}
+.version-actions-v872 button{
+  padding:7px 10px;
+  border-radius:8px;
+  font-weight:800;
+}
+.version-actions-v872 .danger{
   background:#fee2e2;
   color:#991b1b;
   border:1px solid #fecaca;
-  border-radius:8px;
-  padding:7px 10px;
-  font-weight:800;
-  margin-right:8px;
+}
+@media(max-width:900px){
+  .version-card-v872{grid-template-columns:1fr}
+  .version-main-v872{grid-template-columns:1fr}
 }
