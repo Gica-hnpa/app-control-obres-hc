@@ -1710,21 +1710,26 @@ button,input,select,textarea{font-size:13.5px!important}
   @page{size:A4;margin:10mm}
 }
 
-/* V89 documents i pressupost Excel */
-.doc-row-v89 em{display:block;color:#166534;font-size:12px;margin-top:4px;font-style:normal;font-weight:800}
-.doc-actions-v89{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.doc-actions-v89 .danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
-.budget-preview-v89{overflow:auto}
-.budget-summary-v89{display:flex;gap:16px;align-items:center;background:#f8fafc;border:1px solid #d6dde7;border-radius:10px;padding:10px;margin-bottom:10px}
-.budget-summary-v89 strong{font-size:20px;margin-left:auto}
-.budget-summary-v89 span{color:#64748b}
-.budget-preview-v89 table{width:100%;border-collapse:collapse}
-.budget-preview-v89 th,.budget-preview-v89 td{border:1px solid #cbd5e1;padding:8px;text-align:right}
-.budget-preview-v89 th:nth-child(3),.budget-preview-v89 td:nth-child(3){text-align:left}
-.budget-preview-v89 th{background:#eaf2fb}
-.budget-preview-v89 tfoot th{background:#f1f5f9;font-weight:900}
-.alert{border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:10px;padding:12px}
-
-.version-row-fix{display:grid!important;grid-template-columns:1fr auto!important;gap:8px;align-items:center}
-.version-main-fix{display:grid;grid-template-columns:80px 1.8fr 120px 120px 1.4fr;gap:12px;align-items:center;border:0;background:transparent;text-align:left;width:100%;padding:0}
-.version-row-fix .danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:7px 10px;font-weight:800}
+/* V87.1 - eliminar versions pressupost sense tocar layout base */
+.version-row-delete-v871{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:center;
+  border-bottom:1px solid #e5e7eb;
+}
+.version-row-delete-v871 .version-row{
+  border-bottom:0!important;
+}
+.version-row-main-v871{
+  width:100%;
+}
+.version-row-delete-v871 .danger{
+  background:#fee2e2;
+  color:#991b1b;
+  border:1px solid #fecaca;
+  border-radius:8px;
+  padding:7px 10px;
+  font-weight:800;
+  margin-right:8px;
+}
