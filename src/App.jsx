@@ -86,20 +86,8 @@ if(!file)return;
 if(obraId==="maricel"){
   setD(obraId,d=>({...d,partides:partidesMaricel.map(x=>({...x})),pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v03",data:"Avui",nom:file.name,estat:"Importat demo",import:partidesMaricel.reduce((s,p)=>s+p.q*p.pu,0)}]}));
 }else{
-  setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Excel registrat · lectura pendent",import:0}]}));
+  setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v01",data:"Avui",nom:file.name,estat:"Excel pendent de lectura real",import:0}],partides:[]}));
 }
-}
-
-function deletePressupostVersion(id){
-  if(!confirm("Eliminar aquesta versió de pressupost?")) return;
-  setD(obraId,d=>({...d,pressupostos:(d.pressupostos||[]).filter(p=>p.id!==id)}));
-}
-function duplicatePressupostVersion(id){
-  setD(obraId,d=>{
-    const p=(d.pressupostos||[]).find(x=>x.id===id);
-    if(!p)return d;
-    return {...d,pressupostos:[...d.pressupostos,{...p,id:"p"+Date.now(),versio:p.versio+" copia",data:"Avui",estat:"Còpia"}]};
-  });
 }
 function updateCert(codi,fieldOrValue,value){let field=value===undefined?"certActual":fieldOrValue;let raw=value===undefined?fieldOrValue:value;let n=parseFloat(String(raw).replace(",","."));if(!Number.isFinite(n))n=0;setD(obraId,d=>({...d,partides:d.partides.map(r=>r.codi===codi?{...r,[field]:n}:r)}))}
 function saveCert(){let n=+certInfo.num;let field=n===1?"certAnterior":"certActual";let total=data.partides.reduce((s,r)=>s+(+r[field]||0)*(+r.pu||0),0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
@@ -136,7 +124,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.2 pressupostos · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87 agenda-cert-preview · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -187,7 +175,7 @@ function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,upd
       <label><span>Tipus servei</span><input defaultValue={obra.tipologia}/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{tab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {tab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Certificacions"&&<Cert data={data} updateCert={updateCert} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Facturació"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Actes d’obra"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {tab==="Fotografies"&&<SeguimentFotos/>} {tab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {tab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{tab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {tab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Certificacions"&&<Cert data={data} updateCert={updateCert} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Facturació"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Actes d’obra"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {tab==="Fotografies"&&<SeguimentFotos/>} {tab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {tab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 function ObraAgentsResum({data,openAgent}){
 const[q,setQ]=useState("");
@@ -255,7 +243,7 @@ return <div className="stack">
 </div>
 }
 
-function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
+function Pressupost({data,importExcel,openPartida,openEmail,openDoc}){
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
 
@@ -300,15 +288,7 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
   return <div className="stack">
     <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label><button className="primary" onClick={addCapitol}><Plus/> Nou capítol</button></div>}>
       <div className="version-list">
-        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><div className="version-card-v872" key={p.id}>
-          <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}>
-            <strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em>
-          </button>
-          <div className="version-actions-v872">
-            <button className="secondary small" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
-            <button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button>
-          </div>
-        </div>)}
+        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><button className="version-row" key={p.id} onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}><strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em></button>)}
       </div>
     </Card>
 
