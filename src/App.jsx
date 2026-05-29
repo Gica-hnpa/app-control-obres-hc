@@ -124,7 +124,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 88 cert-quadre-exacte · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87 agenda-cert-preview · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -850,61 +850,40 @@ return <div className="cert-print-v82">
 }
 
 
-
 function CertPrintV87({doc}){
 const rows=doc.rows||[];
 const current=rows.filter(r=>(+r.qAct||0)>0);
 const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
-const totalPrev=rows.reduce((s,r)=>s+(+r.qPrev||0)*(+r.pu||0),0);
 const totalOrigen=rows.reduce((s,r)=>s+((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0),0);
-const presTotal=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-return <div className="cert-print-v88">
-  <section className="cert-page-v88">
+return <div className="cert-print-v87">
+  <section className="cert-cover-v87">
     <h1>{doc.title}</h1>
     <p>{doc.subtitle}</p>
-    <div className="cert-cover-box-v88">
+    <div className="cert-cover-box-v87">
       <b>Resum de certificació</b>
       <span>Partides certificades: {current.length}</span>
       <span>Total certificació actual: {money(total)}</span>
       <span>Total acumulat a origen: {money(totalOrigen)}</span>
     </div>
     <h3>Partides certificades en aquesta certificació</h3>
-    <table className="cert-table-print-v88">
+    <table className="cert-table-print-v87">
       <thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
       <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
       <tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ</th><th>{money(total)}</th></tr></tfoot>
     </table>
   </section>
-  <section className="cert-page2-v88">
+  <section className="cert-page2-v87">
     <h2>Quadre resum de certificació</h2>
-    <div className="cert-grid-client-v88">
-      <div className="group pressupost">PRESSUPOST</div>
-      <div className="group anterior">CERTIFICACIÓ {doc.prevNum||1} · ANTERIOR</div>
-      <div className="group actual">CERTIFICACIÓ {doc.certNum||2} · ACTUAL</div>
-      <div className="group origen">A ORIGEN</div>
-
-      <div className="head">Partida</div><div className="head">Ut</div><div className="head">Resum</div><div className="head">CanPres</div><div className="head">PrPres</div><div className="head">ImpPres</div>
-      <div className="head">Q cert. {doc.prevNum||1}</div><div className="head">% cert. {doc.prevNum||1}</div><div className="head">Imp cert. {doc.prevNum||1}</div>
-      <div className="head">Q cert. {doc.certNum||2}</div><div className="head">% cert. {doc.certNum||2}</div><div className="head">Imp cert. {doc.certNum||2}</div>
-      <div className="head">Total origen</div>
-
-      {rows.map(r=><React.Fragment key={r.codi}>
-        <div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
-        <div className={(+r.qPrev||0)>0?"prev":""}>{qty2(r.qPrev)}</div>
-        <div className={(+r.qPrev||0)>0?"prev":""}>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div>
-        <div className={(+r.qPrev||0)>0?"prev":""}>{money((+r.qPrev||0)*(+r.pu||0))}</div>
-        <div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div>
-        <div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div>
-        <div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</div>
-        <div>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</div>
-      </React.Fragment>)}
-
-      <div className="total-label">TOTAL CERTIFICACIÓ {doc.prevNum||1}</div>
-      <div className="total-prev">{money(totalPrev)}</div>
-      <div className="total-label2">TOTAL CERTIFICACIÓ {doc.certNum||2}</div>
-      <div className="total-act">{money(total)}</div>
-      <div className="total-origin">{money(totalOrigen)}</div>
-    </div>
+    <table className="cert-table-print-v87 client-summary">
+      <thead><tr><th>Partida</th><th>Concepte</th><th>Pressupost</th><th>Anterior</th><th>Actual</th><th>Total origen</th></tr></thead>
+      <tbody>{rows.map(r=>{
+        const pres=(+r.q||0)*(+r.pu||0);
+        const ant=(+r.qPrev||0)*(+r.pu||0);
+        const act=(+r.qAct||0)*(+r.pu||0);
+        return <tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{money(pres)}</td><td>{money(ant)}</td><td className={(+r.qAct||0)>0?"green":""}>{money(act)}</td><td>{money(ant+act)}</td></tr>
+      })}</tbody>
+      <tfoot><tr><th colSpan="2">TOTAL</th><th>{money(rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0))}</th><th>{money(rows.reduce((s,r)=>s+(+r.qPrev||0)*(+r.pu||0),0))}</th><th>{money(total)}</th><th>{money(totalOrigen)}</th></tr></tfoot>
+    </table>
   </section>
 </div>
 }
