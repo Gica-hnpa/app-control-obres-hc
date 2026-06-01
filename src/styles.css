@@ -1752,23 +1752,3 @@ button,input,select,textarea{font-size:13.5px!important}
   .version-main-v872{grid-template-columns:1fr}
 }
 
-/* V87.3 Excel Maricel */
-.version-card-v873{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:8px;
-  align-items:center;
-  border-bottom:1px solid #eef2f7;
-}
-.version-card-v873 .version-row{
-  border-bottom:0!important;
-}
-.version-card-v873 .danger{
-  background:#fee2e2;
-  color:#991b1b;
-  border:1px solid #fecaca;
-  border-radius:8px;
-  padding:7px 10px;
-  font-weight:800;
-  margin-right:10px;
-}
