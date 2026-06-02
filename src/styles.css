@@ -2400,3 +2400,130 @@ button,input,select,textarea{font-size:13.5px!important}
   .cert-print-page1-v8717{width:190mm!important;max-width:190mm!important}
   .cert-print-page2-v8717{width:277mm!important;max-width:277mm!important}
 }
+
+/* V87.18 resum superior: títols visibles i colors suaus */
+.cert-resum-v8717{
+  --cert-cols:4;
+}
+.cert-resum-row-v8717.head > *{
+  background:#0f172a!important;
+  color:#ffffff!important;
+  font-weight:900!important;
+  text-shadow:none!important;
+}
+.cert-resum-row-v8717.head .pres{
+  background:#1e3a8a!important;
+}
+.cert-resum-row-v8717.head .cert{
+  background:#334155!important;
+}
+.cert-resum-row-v8717.head .total,
+.cert-resum-row-v8717.head .pct,
+.cert-resum-row-v8717.head .pendent{
+  background:#475569!important;
+}
+.cert-date-input-v8717{
+  border:1px solid #cbd5e1!important;
+  border-radius:7px!important;
+  padding:6px 8px!important;
+  width:92px!important;
+  font-size:13px!important;
+  background:#fff!important;
+  color:#0f172a!important;
+}
+
+/* V87.18 previsualització certificació robusta */
+.cert-doc-v8718 .document-page{
+  max-width:none!important;
+  width:100%!important;
+}
+.cert-print-v8718{
+  background:white;
+  color:#0f172a;
+  width:100%;
+}
+.cert-page-v8718{
+  background:white;
+  margin:0 auto 24px auto;
+  padding:12px;
+  border:1px solid #e5e7eb;
+}
+.cert-page-v8718.portrait{
+  max-width:190mm;
+}
+.cert-page-v8718.landscape{
+  width:277mm;
+  max-width:277mm;
+  overflow:visible;
+}
+.empty-print-v8718{
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  border-radius:10px;
+  padding:14px;
+  margin-top:12px;
+  color:#475569;
+  font-weight:800;
+}
+.cert-table-print-v8718,
+.cert-wide-table-v8718{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+}
+.cert-table-print-v8718 th,
+.cert-table-print-v8718 td,
+.cert-wide-table-v8718 th,
+.cert-wide-table-v8718 td{
+  border:1px solid #cbd5e1;
+  padding:5px 6px;
+  text-align:right;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.cert-table-print-v8718{
+  font-size:12px;
+}
+.cert-wide-table-v8718{
+  font-size:8.5px;
+  table-layout:fixed;
+}
+.cert-table-print-v8718 th:nth-child(3),
+.cert-table-print-v8718 td:nth-child(3),
+.cert-wide-table-v8718 .concept{
+  text-align:left;
+  white-space:normal;
+}
+.cert-table-print-v8718 thead th,
+.cert-table-print-v8718 tfoot th,
+.cert-wide-table-v8718 thead th{
+  background:#eaf2fb;
+  font-weight:900;
+}
+.cert-wide-table-v8718 .blocks th{
+  background:#dbeafe!important;
+  text-align:center;
+}
+.cert-wide-table-v8718 .green{
+  background:#dcfce7;
+  color:#166534;
+  font-weight:900;
+}
+.cert-wide-table-v8718 th:nth-child(6),
+.cert-wide-table-v8718 td:nth-child(6),
+.cert-wide-table-v8718 th:nth-child(9),
+.cert-wide-table-v8718 td:nth-child(9),
+.cert-wide-table-v8718 th:nth-child(12),
+.cert-wide-table-v8718 td:nth-child(12){
+  border-right:2px solid #0f172a;
+}
+@media print{
+  body *{visibility:hidden!important}
+  .modal,.modal *,.document-preview,.document-preview *{visibility:visible!important}
+  .modal{position:static!important;inset:auto!important;background:white!important;overflow:visible!important}
+  .modal-card{box-shadow:none!important;border:0!important;width:auto!important;max-width:none!important;max-height:none!important;overflow:visible!important}
+  .modal-head,.modal-actions{display:none!important}
+  .document-preview{position:absolute!important;left:0!important;top:0!important;width:100%!important;background:white!important;padding:0!important;overflow:visible!important}
+  .document-page{box-shadow:none!important;border:0!important;margin:0!important;padding:0!important}
+  .cert-page-v8718{border:0!important;break-after:page;page-break-after:always}
+}

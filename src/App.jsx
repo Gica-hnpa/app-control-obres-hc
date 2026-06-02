@@ -1090,8 +1090,8 @@ const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
   const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
   return s+((+r.impOrigen||0)||qOri*(+r.pu||0));
 },0);
-return <div className="cert-print-v8717">
-  <section className="cert-print-page1-v8717">
+return <div className="cert-print-v8718">
+  <section className="cert-page-v8718 portrait">
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p>
     <div className="cert-cover-box-v87">
@@ -1101,28 +1101,33 @@ return <div className="cert-print-v8717">
       <span>Total acumulat a origen: {money(totalOrigen)}</span>
     </div>
     <h3>Partides certificades en aquesta certificació</h3>
-    {current.length===0?<div className="empty-print-v8717">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8717">
+    {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718">
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
       <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
       <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
     </table>}
   </section>
-  <section className="cert-print-page2-v8717">
+
+  <section className="cert-page-v8718 landscape">
     <h2>Quadre general de certificació</h2>
-    <div className="cert-grid-print-v8717 group"><div className="pressupost">PRESSUPOST</div><div className="anterior">{doc.prevNum?`CERTIFICACIÓ ${doc.prevNum} · ANTERIOR`:"SENSE CERTIFICACIÓ ANTERIOR"}</div><div className="actual">CERTIFICACIÓ {doc.certNum} · ACTUAL</div><div className="origen">A ORIGEN</div></div>
-    <div className="cert-grid-print-v8717 header"><div>Partida</div><div>Ut</div><div>Resum</div><div>CanPres</div><div>PrPres</div><div>ImpPres</div><div>Q ant.</div><div>% ant.</div><div>Imp ant.</div><div>Q act.</div><div>% act.</div><div>Imp act.</div><div>Q origen</div><div>% origen</div><div>Total origen</div></div>
-    {rows.map(r=>{
-      const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
-      const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
-      const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
-      const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
-      return <React.Fragment key={r.codi}>
-        <div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money(pres)}</div>
-        <div className={(+r.qPrev||0)>0?"green":""}>{qty2(r.qPrev)}</div><div className={(+r.qPrev||0)>0?"green":""}>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div className={(+r.qPrev||0)>0?"green":""}>{money(ant)}</div>
-        <div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money(act)}</div>
-        <div className={qOri>0?"green":""}>{qty2(qOri)}</div><div className={qOri>0?"green":""}>{pct(pctOri)}</div><div className={qOri>0?"green":""}>{money(impOri)}</div>
-      </React.Fragment>
-    })}
+    <table className="cert-wide-table-v8718">
+      <thead>
+        <tr className="blocks"><th colSpan="6">PRESSUPOST</th><th colSpan="3">CERT. {doc.prevNum} ANTERIOR</th><th colSpan="3">CERT. {doc.certNum} ACTUAL</th><th colSpan="3">A ORIGEN</th></tr>
+        <tr><th>Partida</th><th>Ut</th><th>Resum</th><th>CanPres</th><th>PrPres</th><th>ImpPres</th><th>Q ant.</th><th>% ant.</th><th>Imp ant.</th><th>Q act.</th><th>% act.</th><th>Imp act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
+      </thead>
+      <tbody>{rows.map(r=>{
+        const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
+        const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
+        const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
+        const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
+        return <tr key={r.codi}>
+          <td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money(pres)}</td>
+          <td className={(+r.qPrev||0)>0?"green":""}>{qty2(r.qPrev)}</td><td className={(+r.qPrev||0)>0?"green":""}>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td className={(+r.qPrev||0)>0?"green":""}>{money(ant)}</td>
+          <td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td className={(+r.qAct||0)>0?"green":""}>{money(act)}</td>
+          <td className={qOri>0?"green":""}>{qty2(qOri)}</td><td className={qOri>0?"green":""}>{pct(pctOri)}</td><td className={qOri>0?"green":""}>{money(impOri)}</td>
+        </tr>
+      })}</tbody>
+    </table>
   </section>
 </div>
 }
@@ -1155,4 +1160,4 @@ return <form onSubmit={onSubmit} className="form-event-v78">
 }
 
 function EmailModal({draft,setDraft,close}){let sel=draft.agents.filter(a=>draft.selected.includes(a.id));return <Modal title="Enviar per email" close={close}><div className="form-grid"><label className="span-all"><span>Destinataris</span><div className="check-grid">{draft.agents.length===0?<Empty text="Aquesta obra no té agents amb email assignats."/>:draft.agents.map(a=><label className="check-row"><input type="checkbox" checked={draft.selected.includes(a.id)} onChange={e=>setDraft({...draft,selected:e.target.checked?[...draft.selected,a.id]:draft.selected.filter(id=>id!==a.id)})}/><span>{a.nom} · {a.email}</span></label>)}</div></label><Input label="Assumpte" defaultValue={draft.title}/><label className="span-all"><span>Missatge</span><textarea value={draft.message} onChange={e=>setDraft({...draft,message:e.target.value})}/></label></div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>{let tos=sel.map(a=>a.email).join(",");openGmailCompose(tos,draft.title,draft.message)}}>Obrir correu</button></div></Modal>}
-function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8717":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div></Modal>}
+function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div></Modal>}
