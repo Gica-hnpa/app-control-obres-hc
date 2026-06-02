@@ -84,7 +84,8 @@ function openObra(id){setObraId(id);setTab("Resum");setSelActa(null);nav("Obra")
 function openClient(id){setClientId(id);nav("Fitxa client")}
 
 
-async function importExcel(e){
+async function updateObraFitxa8719(patch){setD(obraId,d=>({...d,obra:{...(d.obra||{}),...patch}}))}
+function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
 
@@ -344,7 +345,7 @@ function FitxaClient({client,obres,openObra,back}){
 
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
 function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row"><div className="thumb">{o.imatge?<img src={o.imatge}/>:"FOTO"}</div><div className="grow"><strong>{o.nom}</strong><span>{o.subtitol}</span></div><span>{o.tipologia}</span><Badge estat={o.estat}/></button>}
-function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,updateObraFitxa8719,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO OBRA"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
     <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
@@ -400,11 +401,31 @@ return <Card title="Avisos i notes de l’obra" action={<div className="actions-
       </div>
     })}
   </div>
-  <div className="obra-alerts-summary"><span>Pendents: <b>{pending.length}</b></span><span>Fets: <b>{done.length}</b></span></div>
+  <div className="obra-alerts-summary"><span>Pendents: <b>{pending.length}</b></span><span>Fets: <b>{done.length}</b></span></div>{editObra8719&&<EditObraModal8719 obra={data.obra||obra} close={()=>setEditObra8719(false)} save={(patch)=>{updateObraFitxa8719?.(patch);setEditObra8719(false)}}/>}
 </Card>
 }
 
 
+
+
+function EditObraModal8719({obra,close,save}){
+const[f,setF]=useState(()=>({...obra}));
+function ch(k,v){setF(x=>({...x,[k]:v}))}
+return <Modal title="Modificar fitxa de l’obra" close={close}>
+  <div className="form-grid">
+    <label><span>Nom obra</span><input value={f.nom||""} onChange={e=>ch("nom",e.target.value)}/></label>
+    <label><span>Subtítol / resum</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)}/></label>
+    <label><span>Promotor / propietat</span><input value={f.propietat||""} onChange={e=>ch("propietat",e.target.value)}/></label>
+    <label><span>NIF propietat</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)}/></label>
+    <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)}/></label>
+    <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)}/></label>
+    <label><span>Estat</span><select value={f.estat||"Activa"} onChange={e=>ch("estat",e.target.value)}><option>Activa</option><option>Pendent</option><option>En curs</option><option>Finalitzada</option><option>Tancada</option></select></label>
+    <label><span>Tipologia</span><input value={f.tipologia||""} onChange={e=>ch("tipologia",e.target.value)}/></label>
+    <label className="span-all"><span>Observacions</span><textarea value={f.observacions||""} onChange={e=>ch("observacions",e.target.value)}/></label>
+  </div>
+  <div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>save(f)}>Guardar canvis</button></div>
+</Modal>
+}
 
 function Resum({data}){
 let rows=data.partides||[], certs=data.certificacions||[];
@@ -556,7 +577,7 @@ function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
 
 return <div className="stack">
 <Card title="Certificacions realitzades" action={<button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button>}>
-  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input className="cert-date-input-v8717" value={fmtDate8714(c.data)} onClick={e=>e.stopPropagation()} onChange={e=>updateCertDate?.(c.id,e.target.value)}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><em>{selected===c.id?"Seleccionada":"Veure"}</em></button>)}</div>
+  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8719 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input className="cert-date-input-v8717" value={fmtDate8714(c.data)} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>updateCertDate?.(c.id,e.target.value)}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
 <Card title={`CERTIFICACIÓ ${certNum} ACTUAL · ${prevNum?`Cert. ${prevNum} anterior + `:"sense anterior + "}Cert. ${certNum}`}>
   <div className="cert-mode-tabs-v8711">

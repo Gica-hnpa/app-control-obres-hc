@@ -2527,3 +2527,52 @@ button,input,select,textarea{font-size:13.5px!important}
   .document-page{box-shadow:none!important;border:0!important;margin:0!important;padding:0!important}
   .cert-page-v8718{border:0!important;break-after:page;page-break-after:always}
 }
+
+/* V87.19 data editable + previsualització més ampla */
+.cert-row-v8719{
+  cursor:pointer;
+}
+.cert-row-v8719 input{
+  cursor:text;
+}
+.cert-date-input-v8717{
+  width:96px!important;
+  text-align:center!important;
+  background:white!important;
+  color:#0f172a!important;
+  border:1px solid #94a3b8!important;
+}
+.cert-doc-v8718 .modal-card,
+.cert-doc-v8717 .modal-card{
+  width:96vw!important;
+}
+.cert-doc-v8718 .document-page,
+.cert-doc-v8717 .document-page{
+  width:100%!important;
+}
+.cert-page-v8718.landscape,
+.cert-page-v8717.landscape,
+.cert-page-v8718,
+.cert-page-v8717{
+  max-width:none!important;
+}
+.cert-wide-table-v8718,
+.cert-wide-table-v8717{
+  width:100%!important;
+  table-layout:fixed!important;
+}
+.cert-wide-table-v8718 th:nth-child(1),.cert-wide-table-v8718 td:nth-child(1),
+.cert-wide-table-v8717 th:nth-child(1),.cert-wide-table-v8717 td:nth-child(1){width:52px!important}
+.cert-wide-table-v8718 th:nth-child(2),.cert-wide-table-v8718 td:nth-child(2),
+.cert-wide-table-v8717 th:nth-child(2),.cert-wide-table-v8717 td:nth-child(2){width:34px!important}
+.cert-wide-table-v8718 th:nth-child(3),.cert-wide-table-v8718 td:nth-child(3),
+.cert-wide-table-v8717 th:nth-child(3),.cert-wide-table-v8717 td:nth-child(3){width:28%!important}
+.cert-wide-table-v8718 th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)),
+.cert-wide-table-v8718 td:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)),
+.cert-wide-table-v8717 th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)),
+.cert-wide-table-v8717 td:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3)){
+  width:auto!important;
+}
+@media print{
+  .modal-actions{display:none!important}
+}
