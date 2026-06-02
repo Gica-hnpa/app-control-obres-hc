@@ -2578,12 +2578,12 @@ button,input,select,textarea{font-size:13.5px!important}
   font-weight:900!important;
 }
 
-/* V87.22 botó visible fitxa obra */
-.fitxa-edit-toolbar-v8722{
+/* V87.22b botó fitxa obra segur dins Resum */
+.fitxa-edit-toolbar-v8722b{
   display:flex;
   justify-content:flex-end;
   margin-bottom:10px;
 }
-.fitxa-edit-toolbar-v8722 button{
+.fitxa-edit-toolbar-v8722b button{
   font-weight:900;
 }
