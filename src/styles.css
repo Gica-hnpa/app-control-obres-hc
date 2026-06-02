@@ -1899,3 +1899,47 @@ button,input,select,textarea{font-size:13.5px!important}
 .budget-v25-line input{
   min-height:30px!important;
 }
+
+/* V87.8 ajust fi pressupost/certificació */
+.budget-concept-v875 > .desc-toggle-v875{
+  display:none!important;
+}
+.budget-concept-v874 small{
+  display:none!important;
+}
+
+/* Pressupost: CODI | UT | CONCEPTE | AMID | PREU | TOTAL */
+.budget-v25-line{
+  grid-template-columns:78px 55px minmax(360px,1fr) 95px 105px 120px!important;
+}
+.budget-v25-line.head span:nth-child(2){
+  text-align:left!important;
+}
+.budget-v25-line.head span:nth-child(3){
+  text-align:left!important;
+}
+.budget-v25-line > *:nth-child(2){
+  text-align:left!important;
+}
+.budget-v25-line > *:nth-child(3){
+  border-right:2px solid #cbd5e1!important;
+}
+
+/* Certificació: aprofitar més amplada i donar més espai a Resum */
+.cert-grid-v69{
+  grid-template-columns:64px 44px minmax(360px,1.7fr) 75px 75px 100px 86px 76px 100px 86px 76px 100px 105px!important;
+  min-width:100%!important;
+  width:100%!important;
+}
+.cert-grid-wrap-v69{
+  width:100%!important;
+}
+.cert-grid-v69.group{
+  width:100%!important;
+}
+.cert-grid-v69.header{
+  width:100%!important;
+}
+.cert-cap-v69{
+  min-width:100%!important;
+}
