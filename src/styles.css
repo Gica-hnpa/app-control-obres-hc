@@ -2098,3 +2098,72 @@ button,input,select,textarea{font-size:13.5px!important}
   color:white;
   border-color:#0f172a;
 }
+
+/* V87.12 - pestanyes interiors d'obra a dalt i més amplada útil */
+.obra-layout{
+  display:block!important;
+}
+.obra-side-tabs{
+  display:flex!important;
+  flex-direction:row!important;
+  gap:6px!important;
+  overflow:auto!important;
+  width:100%!important;
+  margin-bottom:12px!important;
+  background:#f8fafc!important;
+  border:1px solid #d6dde7!important;
+  border-radius:12px!important;
+  padding:8px!important;
+  height:auto!important;
+  box-shadow:0 1px 4px rgba(15,23,42,.04)!important;
+}
+.obra-side-tabs button{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+  background:#eef2f7!important;
+  color:#334155!important;
+  border:1px solid #d6dde7!important;
+  border-radius:9px!important;
+  padding:8px 12px!important;
+  font-size:13px!important;
+}
+.obra-side-tabs button.active,
+.obra-side-tabs button:hover{
+  background:#dbeafe!important;
+  color:#1e3a8a!important;
+  border-color:#93c5fd!important;
+}
+.obra-layout > div:last-child{
+  width:100%!important;
+}
+
+/* Facturació aprofita tota l'amplada */
+.fact-layout-v61{
+  grid-template-columns:minmax(620px,.95fr) minmax(620px,1.05fr)!important;
+}
+.fact-compact-wrap-v70,
+.table-wrap{
+  width:100%!important;
+}
+@media(max-width:1200px){
+  .fact-layout-v61{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* Certificacions realitzades: botó nova cert més visible */
+.card-head .primary{
+  background:#2563eb!important;
+  color:white!important;
+}
+
+/* Evitar que la barra de pestanyes ocupi massa en iPad */
+@media(max-width:900px){
+  .obra-side-tabs{
+    padding:6px!important;
+  }
+  .obra-side-tabs button{
+    font-size:12px!important;
+    padding:7px 10px!important;
+  }
+}
