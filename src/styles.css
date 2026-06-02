@@ -1764,3 +1764,67 @@ button,input,select,textarea{font-size:13.5px!important}
 .budget-concept-v874 input{
   width:100%;
 }
+
+/* V87.5 descripcions ocultes + blocs visuals */
+.budget-concept-v875{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.budget-concept-v875 input{
+  width:100%;
+}
+.budget-concept-v875 small,
+.cert-concept-v875 small{
+  display:block;
+  color:#64748b;
+  font-size:11px;
+  line-height:1.25;
+  white-space:normal;
+  margin-top:4px;
+}
+.desc-toggle-v875{
+  width:max-content;
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  color:#334155;
+  border-radius:7px;
+  padding:3px 7px;
+  font-size:11px!important;
+  font-weight:800;
+}
+.cert-concept-v875 span{
+  display:block;
+}
+.cert-concept-v875{
+  text-align:left!important;
+}
+
+/* Blocs marcats a certificacions tipus Maricel */
+.cert-grid-v69>div:nth-child(6),
+.cert-grid-v69>div:nth-child(9),
+.cert-grid-v69>div:nth-child(12){
+  border-right:3px solid #0f172a!important;
+}
+.cert-grid-v69.group .pressupost,
+.cert-grid-v69.group .anterior,
+.cert-grid-v69.group .actual,
+.cert-grid-v69.group .origen{
+  border-right:3px solid #0f172a!important;
+  background:#dbeafe!important;
+}
+.cert-table-v68 .c-imp,
+.cert-table-v67 .c-imp,
+.cert-table-v64 .c-imp,
+.excel-cert .sep{
+  border-right:3px solid #0f172a!important;
+}
+
+/* Blocs pressupost més llegibles */
+.budget-v25-line{
+  grid-template-columns:78px 1fr 55px 95px 105px 115px!important;
+}
+.budget-v25-line > *:nth-child(3),
+.budget-v25-line > *:nth-child(5){
+  border-right:2px solid #cbd5e1!important;
+}

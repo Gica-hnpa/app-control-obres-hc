@@ -128,9 +128,10 @@ try{
       ud: col(header,["ud","ut","unitat","unidad"],2),
       resum: col(header,["resumen","resum","concepto","concepte","descrip"],3),
       q: col(header,["canpres","quant","cantidad","amid"],4),
-      pu: col(header,["pres","preu","precio","prpres","unitari"],5),
+      pu: header.findIndex(h=>h==="pres"||h==="preu"||h==="precio"||h==="prpres"||h.includes("unitari")||h.includes("unitario")),
       imp: col(header,["imppres","import","importe","total"],6)
     };
+    if(idx.pu<0) idx.pu=5;
 
     let partides=[];
     for(const row of data.slice(headerIndex+1)){
@@ -271,7 +272,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.4 Importador BRAVA · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.5 descripcions-blocs · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -393,6 +394,7 @@ return <div className="stack">
 function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
+  const [descOpen875,setDescOpen875]=useState({});
   useEffect(()=>{const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(Object.fromEntries(Object.keys(syncCapsV874).map((k,i)=>[k,i===0])));},[data.partides]);
 
 
@@ -468,7 +470,7 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
                 const t=(+r.q||0)*(+r.pu||0);
                 return <div className="budget-v25-line" key={i}>
                   <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
-                  <div className="budget-concept-v874"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<small>{r.desc}</small>}</div>
+                  <div className="budget-concept-v875"><div className="budget-concept-v875"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v875" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar descripció":"Veure descripció"}</button>}{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>{r.desc&&<button type="button" className="desc-toggle-v875" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar descripció":"Veure descripció"}</button>}{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
                   <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
                   <input type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
                   <input type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>
@@ -497,6 +499,7 @@ const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
 const[editing,setEditing]=useState(false);
 const[draft,setDraft]=useState({});
+const[certDescOpen875,setCertDescOpen875]=useState({});
 let rows=data.partides||[], caps=group(rows,"cap");
 let cert=certs.find(c=>c.id===selected)||certs.find(c=>+c.numero===2)||certs[0]||null;
 let certNum=cert?+cert.numero:1;
@@ -543,7 +546,7 @@ return <div className="stack">
       {items.map(r=>{
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0);
         return <div className="cert-grid-v69 row" key={r.codi}>
-          <div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
+          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v875"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v875" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure"}</button>}{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
           <div className={qa>0?"current-fill":""}>{editing?<input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))} onBlur={e=>commitOne(r.codi,e.target.value)}/>:qty2(qFor(r,certNum))}</div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div><div>{money(ip+ia)}</div>
