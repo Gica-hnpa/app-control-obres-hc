@@ -2206,3 +2206,50 @@ button,input,select,textarea{font-size:13.5px!important}
 .card:has(.fact-compact-v70){
   overflow:hidden!important;
 }
+
+/* V87.14 facturació alineada */
+.fact-compact-v70 th,.fact-compact-v70 td{
+  box-sizing:border-box!important;
+  text-align:right!important;
+}
+.fact-compact-v70 th:nth-child(1),.fact-compact-v70 td:nth-child(1){
+  width:82px!important;
+  text-align:left!important;
+}
+.fact-compact-v70 th:nth-child(2),.fact-compact-v70 td:nth-child(2){
+  width:52px!important;
+  text-align:center!important;
+}
+.fact-compact-v70 th:nth-child(3),.fact-compact-v70 td:nth-child(3){
+  width:82px!important;
+  text-align:center!important;
+}
+.fact-compact-v70 th:nth-child(4),.fact-compact-v70 td:nth-child(4){
+  width:88px!important;
+}
+.fact-compact-v70 th:nth-child(5),.fact-compact-v70 td:nth-child(5),
+.fact-compact-v70 th:nth-child(6),.fact-compact-v70 td:nth-child(6),
+.fact-compact-v70 th:nth-child(7),.fact-compact-v70 td:nth-child(7){
+  width:76px!important;
+}
+.fact-compact-v70 th:nth-child(8),.fact-compact-v70 td:nth-child(8){
+  width:105px!important;
+}
+.fact-compact-v70 th:nth-child(9),.fact-compact-v70 td:nth-child(9){
+  width:118px!important;
+}
+.fact-compact-v70 select{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  padding:5px 4px!important;
+  font-size:12px!important;
+}
+.fact-compact-v70 .row-actions{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+}
+.fact-compact-v70 .row-actions button{
+  width:100%!important;
+}

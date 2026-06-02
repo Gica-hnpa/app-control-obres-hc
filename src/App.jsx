@@ -619,6 +619,11 @@ return <div className="cert-resum-v69"><div className="cert-resum-head-v69"><spa
 }
 function ProgressV69({v}){return <div className="progress-v69"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
 
+
+function fmtDate8714(v){
+  if(!v || String(v).toLowerCase()==="avui") return todayShort8713();
+  return String(v);
+}
 function Fact({data,openEmail,openDoc}){
 const key="aco_fact_params_v61";
 const[params,setParams]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
@@ -631,12 +636,12 @@ function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,{numeroCert:
 let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let base=rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*(+r.pu||0),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows}});
 let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
 function calc(f){let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total}}
-function openPrint(f){let c=calc(f);openDoc({type:"proforma",title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${f.data}`,proforma:f,iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp})}
+function openPrint(f){let c=calc(f);openDoc({type:"proforma",title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${fmtDate8714(f.data)}`,proforma:f,iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp})}
 return <div className="fact-layout-v61">
 <Card title="Factures proforma de certificacions">
   <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70"><thead><tr><th>Proforma</th><th>Cert.</th><th>Data</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Accions</th></tr></thead><tbody>
   {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
-  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.data}</td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button onClick={()=>setSelected(f.pfId)}>Previsualitzar</button><button className="primary small" onClick={()=>openPrint(f)}>Imprimir</button></td></tr>})}
+  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td>{fmtDate8714(f.data)}</td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button onClick={()=>setSelected(f.pfId)}>Previsualitzar</button><button className="primary small" onClick={()=>openPrint(f)}>Imprimir</button></td></tr>})}
   </tbody></table></div>
 </Card>
 <Card title="Previsualització document proforma">
@@ -645,7 +650,7 @@ return <div className="fact-layout-v61">
 </div>}
 function ProformaPreviewV61({f,calc,qFor}){
 return <div className="proforma-preview-doc-v61">
-  <div className="doc-title-row"><div><h2>FACTURA PROFORMA</h2><p>{f.numero} · Certificació {f.numeroCert} · {f.data}</p></div><b>{money(calc.total)}</b></div>
+  <div className="doc-title-row"><div><h2>FACTURA PROFORMA</h2><p>{f.numero} · Certificació {f.numeroCert} · {fmtDate8714(f.data)}</p></div><b>{money(calc.total)}</b></div>
   <h3>Partides facturades</h3>
   <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{f.rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(qFor(r,f))}</td><td>{money(r.pu)}</td><td>{money(qFor(r,f)*r.pu)}</td></tr>)}</tbody></table>
   <table className="totals-preview"><tbody><tr><th>Base certificada</th><td>{money(f.base)}</td></tr><tr><th>Deducció ({calc.ded}%)</th><td>-{money(f.base-calc.base)}</td></tr><tr><th>Base imposable</th><td>{money(calc.base)}</td></tr><tr><th>IVA ({calc.iva}%)</th><td>{money(calc.ivaImp)}</td></tr><tr><th>Retenció ({calc.ret}%)</th><td>-{money(calc.retImp)}</td></tr><tr className="total"><th>Total proforma</th><td>{money(calc.total)}</td></tr></tbody></table>
