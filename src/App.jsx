@@ -82,6 +82,7 @@ function nav(s){setScreen(s);setMenuOpen(false);setCollapsed(true)}
 function openObra(id){setObraId(id);setTab("Resum");setSelActa(null);nav("Obra")}
 function openClient(id){setClientId(id);nav("Fitxa client")}
 
+
 async function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
@@ -101,8 +102,10 @@ function isHeader(row){
   const txt=row.map(norm).join(" ");
   return txt.includes("codigo") || txt.includes("código") || txt.includes("nat") || txt.includes("resumen") || txt.includes("canpres") || txt.includes("imppres");
 }
-function col(header,keys,fallback){
-  let i=header.findIndex(h=>keys.some(k=>h.includes(k)));
+function exactOrIncludes(header, exacts, includes, fallback){
+  let i=header.findIndex(h=>exacts.includes(h));
+  if(i>=0)return i;
+  i=header.findIndex(h=>includes.some(k=>h.includes(k)));
   return i>=0?i:fallback;
 }
 
@@ -118,47 +121,43 @@ try{
     const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
     if(!data?.length) continue;
 
-    let headerIndex=data.findIndex(isHeader);
+    const headerIndex=data.findIndex(isHeader);
     if(headerIndex<0) continue;
 
     const header=(data[headerIndex]||[]).map(norm);
     const idx={
-      codi: col(header,["codigo","código","codi","partida"],0),
-      nat: col(header,["nat","naturaleza","tipus"],1),
-      ud: col(header,["ud","ut","unitat","unidad"],2),
-      resum: col(header,["resumen","resum","concepto","concepte","descrip"],3),
-      q: col(header,["canpres","quant","cantidad","amid"],4),
-      pu: header.findIndex(h=>h==="pres"||h==="preu"||h==="precio"||h==="prpres"||h.includes("unitari")||h.includes("unitario")),
-      imp: col(header,["imppres","import","importe","total"],6)
+      codi: exactOrIncludes(header,["codigo","código","codi"],["partida"],0),
+      nat: exactOrIncludes(header,["nat"],["naturaleza","tipus"],1),
+      ud: exactOrIncludes(header,["ud","ut"],["unitat","unidad"],2),
+      resum: exactOrIncludes(header,["resumen","resum"],["concepto","concepte","descrip"],3),
+      q: exactOrIncludes(header,["canpres"],["quant","cantidad","amid"],4),
+      pu: exactOrIncludes(header,["pres"],["preu","precio","prpres","unitari","unitario"],5),
+      imp: exactOrIncludes(header,["imppres"],["import","importe","total"],6)
     };
-    if(idx.pu<0) idx.pu=5;
 
     let partides=[];
     for(const row of data.slice(headerIndex+1)){
       if(!row || !row.some(x=>clean(x)!=="")) continue;
 
       const codi=clean(row[idx.codi]);
-      const nat=norm(row[idx.nat]);
+      const natTxt=norm(row[idx.nat]);
       const ud=clean(row[idx.ud]);
       const resum=clean(row[idx.resum]);
       const q=num(row[idx.q]);
       let pu=num(row[idx.pu]);
       let imp=num(row[idx.imp]);
+
       if(!imp && q && pu) imp=q*pu;
       if(!pu && q && imp) pu=imp/q;
 
-      if(nat.includes("cap") || (resum && !q && !pu && !imp && !nat.includes("part"))){
-        capActual = codi ? `${codi} ${resum}` : resum;
+      // IMPORTANT: only explicit Nat=Capítol creates a chapter
+      if(natTxt.includes("cap")){
+        capActual = codi ? `${codi} ${resum}` : (resum || capActual);
         continue;
       }
 
-      // long description row immediately after a partida
-      if(!nat && resum && !q && !pu && !imp && partides.length){
-        partides[partides.length-1].desc = (partides[partides.length-1].desc ? partides[partides.length-1].desc + "\n" : "") + resum;
-        continue;
-      }
-
-      if(nat.includes("part") || q || pu || imp){
+      // IMPORTANT: only explicit Nat=Partida creates a budget line
+      if(natTxt.includes("part")){
         partides.push({
           codi: codi || String(partides.length+1).padStart(2,"0"),
           cap: capActual || "PRESSUPOST IMPORTAT",
@@ -171,6 +170,12 @@ try{
           certActual: 0,
           tipus: "Import Excel"
         });
+        continue;
+      }
+
+      // Empty Nat after partida = long description, never chapter
+      if(!natTxt && resum && partides.length){
+        partides[partides.length-1].desc = (partides[partides.length-1].desc ? partides[partides.length-1].desc + "\n" : "") + resum;
       }
     }
 
@@ -226,6 +231,7 @@ try{
 }
 
 
+
 function deletePressupostVersion(id){
   if(!confirm("Eliminar aquesta versió de pressupost?")) return;
   setD(obraId,d=>({...d,pressupostos:(d.pressupostos||[]).filter(p=>p.id!==id)}));
@@ -272,7 +278,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.5 descripcions-blocs · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.6 parser pressupost · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 

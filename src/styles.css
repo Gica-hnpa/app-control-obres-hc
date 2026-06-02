@@ -1828,3 +1828,19 @@ button,input,select,textarea{font-size:13.5px!important}
 .budget-v25-line > *:nth-child(5){
   border-right:2px solid #cbd5e1!important;
 }
+
+/* V87.6 parser correcte */
+.budget-concept-v874 small{
+  display:none!important;
+}
+.budget-concept-v875 small,
+.cert-concept-v875 small{
+  display:block!important;
+  background:#f8fafc;
+  border:1px solid #d6dde7;
+  border-radius:8px;
+  padding:8px;
+  margin-top:5px;
+  color:#475569;
+  white-space:pre-wrap;
+}
