@@ -1844,3 +1844,58 @@ button,input,select,textarea{font-size:13.5px!important}
   color:#475569;
   white-space:pre-wrap;
 }
+
+/* V87.7 descripció compacta en línia */
+.budget-concept-v877,
+.cert-concept-v877{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.concept-line-v877{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+}
+.concept-line-v877 input{
+  flex:1;
+  min-width:0;
+}
+.cert-concept-v877 .concept-line-v877 span{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.desc-toggle-v877{
+  flex:0 0 auto;
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  color:#334155;
+  border-radius:6px;
+  padding:3px 6px;
+  font-size:10.5px!important;
+  font-weight:800;
+  white-space:nowrap;
+}
+.budget-concept-v877 small,
+.cert-concept-v877 small{
+  display:block!important;
+  background:#f8fafc;
+  border:1px solid #d6dde7;
+  border-radius:8px;
+  padding:7px 8px;
+  margin-top:3px;
+  color:#475569;
+  white-space:pre-wrap;
+  font-size:11px!important;
+  line-height:1.25;
+}
+.budget-v25-line{
+  align-items:start!important;
+}
+.budget-v25-line input{
+  min-height:30px!important;
+}
