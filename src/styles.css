@@ -2253,3 +2253,22 @@ button,input,select,textarea{font-size:13.5px!important}
 .fact-compact-v70 .row-actions button{
   width:100%!important;
 }
+
+/* V87.15 impressió certificació: pàg. 1 vertical + pàg. 2 horitzontal */
+.cert-mixed-doc .document-page{max-width:none!important}
+.cert-print-page1-v8715{page:certPortrait;max-width:190mm;margin:0 auto;break-after:page;page-break-after:always}
+.cert-print-page2-v8715{page:certLandscape;width:277mm;max-width:277mm;margin:0 auto;break-before:page;page-break-before:always}
+.cert-table-print-v8715{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+.cert-table-print-v8715 th,.cert-table-print-v8715 td{border:1px solid #cbd5e1;padding:7px;text-align:right}
+.cert-table-print-v8715 th:nth-child(3),.cert-table-print-v8715 td:nth-child(3){text-align:left}
+.cert-table-print-v8715 thead th,.cert-table-print-v8715 tfoot th{background:#eaf2fb;font-weight:900}
+.cert-grid-print-v8715{display:grid;grid-template-columns:50px 34px 245px 58px 62px 82px 62px 62px 82px 62px 62px 82px 62px 62px 86px;border-left:1px solid #b9c7d8;border-top:1px solid #b9c7d8;font-size:8.7px;width:277mm}
+.cert-grid-print-v8715>div{border-right:1px solid #b9c7d8;border-bottom:1px solid #b9c7d8;padding:3px 4px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.cert-grid-print-v8715 .concept{text-align:left;white-space:normal}
+.cert-grid-print-v8715.header>div,.cert-grid-print-v8715.group>div{background:#dbeafe;font-weight:900;text-align:center}
+.cert-grid-print-v8715.group .pressupost{grid-column:1 / span 6}.cert-grid-print-v8715.group .anterior{grid-column:7 / span 3}.cert-grid-print-v8715.group .actual{grid-column:10 / span 3}.cert-grid-print-v8715.group .origen{grid-column:13 / span 3}
+.cert-grid-print-v8715>div:nth-child(6),.cert-grid-print-v8715>div:nth-child(9),.cert-grid-print-v8715>div:nth-child(12){border-right:2px solid #0f172a}
+.cert-grid-print-v8715 .green{background:#dcfce7;color:#166534;font-weight:900}
+@page certPortrait{size:A4 portrait;margin:10mm}
+@page certLandscape{size:A4 landscape;margin:7mm}
+@media print{.cert-print-page1-v8715{max-width:none!important;width:100%!important}.cert-print-page2-v8715{width:277mm!important;max-width:277mm!important}}
