@@ -2167,3 +2167,42 @@ button,input,select,textarea{font-size:13.5px!important}
     padding:7px 10px!important;
   }
 }
+
+/* V87.13 ajust facturació + certs dinàmiques */
+.fact-compact-v70{
+  table-layout:fixed!important;
+  width:100%!important;
+}
+.fact-compact-v70 th,.fact-compact-v70 td{
+  padding:7px 6px!important;
+  vertical-align:middle!important;
+  white-space:nowrap!important;
+}
+.fact-compact-v70 th:nth-child(1),.fact-compact-v70 td:nth-child(1){width:82px!important}
+.fact-compact-v70 th:nth-child(2),.fact-compact-v70 td:nth-child(2){width:54px!important}
+.fact-compact-v70 th:nth-child(3),.fact-compact-v70 td:nth-child(3){width:82px!important}
+.fact-compact-v70 th:nth-child(4),.fact-compact-v70 td:nth-child(4){width:88px!important}
+.fact-compact-v70 th:nth-child(5),.fact-compact-v70 td:nth-child(5){width:76px!important}
+.fact-compact-v70 th:nth-child(6),.fact-compact-v70 td:nth-child(6){width:76px!important}
+.fact-compact-v70 th:nth-child(7),.fact-compact-v70 td:nth-child(7){width:105px!important}
+.fact-compact-v70 th:nth-child(8),.fact-compact-v70 td:nth-child(8){width:120px!important}
+.fact-compact-v70 select{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  padding:6px 4px!important;
+  border-radius:8px!important;
+  font-size:12px!important;
+}
+.fact-compact-v70 .row-actions{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+}
+.fact-compact-v70 .row-actions button{
+  width:100%!important;
+  padding:7px 8px!important;
+}
+.card:has(.fact-compact-v70){
+  overflow:hidden!important;
+}

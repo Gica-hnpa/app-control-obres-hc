@@ -48,6 +48,7 @@ function openGmailCompose(to, subject, body){
   window.open(url,"_blank");
 }
 
+function todayShort8713(){const d=new Date();return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getFullYear()).slice(-2)}`;}
 function money(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+" €"}
 function qty2(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)}
 function pct(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+"%"}
@@ -206,8 +207,8 @@ try{
 
   setD(obraId,d=>{
     const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[
-      {id:"c1",numero:"1",data:"Avui",estat:"Pendent",import:0},
-      {id:"c2",numero:"2",data:"Avui",estat:"Pendent",import:0}
+      {id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},
+      {id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}
     ];
     return {...d,
       partides: imported,
@@ -252,12 +253,25 @@ function addCertificacio(){
   setD(obraId,d=>{
     const certs=d.certificacions||[];
     const nextNum=(certs.reduce((m,c)=>Math.max(m,+c.numero||0),0)||0)+1;
-    const nova={id:"c"+Date.now(),numero:String(nextNum),data:"Avui",estat:"Pendent",import:0};
+    const nova={id:"c"+Date.now(),numero:String(nextNum),data:todayShort8713(),estat:"Pendent",import:0};
     return {...d,certificacions:[...certs,nova]};
   });
 }
-function updateCert(codi,fieldOrValue,value){let field=value===undefined?"certActual":fieldOrValue;let raw=value===undefined?fieldOrValue:value;let n=parseFloat(String(raw).replace(",","."));if(!Number.isFinite(n))n=0;setD(obraId,d=>({...d,partides:d.partides.map(r=>r.codi===codi?{...r,[field]:n}:r)}))}
-function saveCert(){let n=+certInfo.num;let field=n===1?"certAnterior":"certActual";let total=data.partides.reduce((s,r)=>s+(+r[field]||0)*(+r.pu||0),0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
+function updateCert(codi,fieldOrValue,value){
+let field=value===undefined?"certActual":fieldOrValue;
+let raw=value===undefined?fieldOrValue:value;
+let n=parseFloat(String(raw).replace(",","."));
+if(!Number.isFinite(n))n=0;
+setD(obraId,d=>({...d,partides:d.partides.map(r=>{
+  if(r.codi!==codi)return r;
+  const next={...r,[field]:n};
+  if(String(field).startsWith("cert_")){
+    next.certsByNum={...(r.certsByNum||{}),[String(field).replace("cert_","")]:n};
+  }
+  return next;
+})}))
+}
+function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>{let q=(r.certsByNum&&r.certsByNum[String(n)]!==undefined)?+r.certsByNum[String(n)]||0:n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0;return s+q*(+r.pu||0)},0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
 function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data.agents||[]).map(a=>a.id),message:"Bon dia,\n\nAdjunto document de l'obra per a la seva revisió.\n\nSalutacions,\nHéctor"})}
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon")}]}));setModal(null)}
 function addActa(e){e.preventDefault();let f=new FormData(e.currentTarget);let ag=[...e.currentTarget.querySelectorAll('input[name="agentsActa"]:checked')].map(x=>x.value);let a={id:"acta-"+Date.now(),data:f.get("data"),titol:f.get("titol"),obra:obra.nom,agents:ag,text:f.get("text"),signatura:"Pendent"};setD(obraId,d=>({...d,actes:[...d.actes,a]}));setSelActa(a.id);setModal(null);setTab("Actes d’obra")}
@@ -291,7 +305,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.12 pestanyes i nova cert · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.13 cert3-factura · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -528,11 +542,13 @@ let prevNum=certNum>1?certNum-1:0;
 useEffect(()=>{setDraft({})},[selected]);
 useEffect(()=>{if(certs.length){setSelected(certs[certs.length-1].id)}},[certs.length]);
 
-function fieldFor(n){return n===1?"certAnterior":"certActual"}
-function qFor(r,n){if(n<=0)return 0;return n===1?(+r.certAnterior||0):(+r.certActual||0)}
+function fieldFor(n){return "cert_"+n}
+function qFor(r,n){if(n<=0)return 0;if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;if(n===1)return +r.certAnterior||0;if(n===2)return +r.certActual||0;return 0}
 function qDraft(r){let raw=draft[r.codi]??String(qFor(r,certNum));let q=Number(String(raw).replace(",","."));return Number.isFinite(q)?q:qFor(r,certNum)}
 function imp(r,n){return qFor(r,n)*(+r.pu||0)}
+function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qDraft(r):qFor(r,i);return total}
 function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,n))*(+r.pu||0),0)}
+function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*(+r.pu||0),0)}
 function commitOne(codi,v){let val=Number(String(v).replace(",","."));if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
 function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
@@ -541,7 +557,7 @@ return <div className="stack">
 <Card title="Certificacions realitzades" action={<button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button>}>
   <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><span>{c.data}</span><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><em>{selected===c.id?"Seleccionada":"Veure"}</em></button>)}</div>
 </Card>
-<Card title={`Quadre de certificació · ${prevNum?`CERT. ${prevNum} anterior + `:"sense anterior + "}CERT. ${certNum} actual`}>
+<Card title={`CERTIFICACIÓ ${certNum} ACTUAL · ${prevNum?`Cert. ${prevNum} anterior + `:"sense anterior + "}Cert. ${certNum}`}>
   <div className="cert-mode-tabs-v8711">
     <button className={certMode8711==="resum"?"active":""} onClick={()=>setCertMode8711("resum")}>Vista resum</button>
     <button className={certMode8711==="emplenar"?"active":""} onClick={()=>setCertMode8711("emplenar")}>Emplenar certificació</button>
@@ -573,7 +589,7 @@ return <div className="stack">
       return <div key={cap}>
       <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><b>{items.length} partides</b></button>
       {isOpen&&items.map(r=>{
-        let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0), qo=qp+qa, io=ip+ia;
+        let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0), qo=qOrigin(r), io=qo*(+r.pu||0);
         return <div className="cert-grid-v69 row" key={r.codi}>
           <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
@@ -586,7 +602,7 @@ return <div className="stack">
     <div className="cert-grid-v69 total">
       <div className="total-label">TOTAL CERTIFICACIÓ {prevNum||"ANTERIOR"}</div><div>{money(certTotal(prevNum))}</div>
       <div className="total-label2">TOTAL CERTIFICACIÓ {certNum}</div><div>{money(certTotal(certNum))}</div>
-      <div className="total-label3">TOTAL A ORIGEN</div><div>{money(certTotal(prevNum)+certTotal(certNum))}</div>
+      <div className="total-label3">TOTAL A ORIGEN</div><div>{money(totalOrigin())}</div>
     </div>
   </div>}
 </Card>
@@ -610,7 +626,7 @@ const[selected,setSelected]=useState(null);
 useEffect(()=>{localStorage.setItem(key,JSON.stringify(params))},[params]);
 function p(id,k,def){return params[id]?.[k]??def}
 function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}
-function qFor(r,c){let n=+c.numeroCert||+c.numero;return n===1?(+r.certAnterior||0):(+r.certActual||0)}
+function qFor(r,c){let n=+c.numeroCert||+c.numero;if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0}
 function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,{numeroCert:c.numero,numero:c.numero})>0)}
 let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let base=rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*(+r.pu||0),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows}});
 let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
