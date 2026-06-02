@@ -2004,3 +2004,75 @@ button,input,select,textarea{font-size:13.5px!important}
   font-weight:900;
   text-align:right!important;
 }
+
+/* V87.10 - certificació més llegible sense salts en imports/% */
+.cert-grid-v69{
+  grid-template-columns:
+    60px
+    40px
+    minmax(360px,1.65fr)
+    72px
+    74px
+    118px
+    78px
+    84px
+    118px
+    78px
+    84px
+    118px
+    78px
+    84px
+    128px!important;
+  min-width:100%!important;
+  width:100%!important;
+}
+
+.cert-grid-v69>div{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  font-variant-numeric:tabular-nums;
+}
+
+.cert-grid-v69 .concept,
+.cert-grid-v69 .cert-concept-v877,
+.cert-grid-v69 .concept-line-v877 span{
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+.cert-grid-v69>div:nth-child(6),
+.cert-grid-v69>div:nth-child(9),
+.cert-grid-v69>div:nth-child(12),
+.cert-grid-v69>div:nth-child(15){
+  font-weight:900;
+}
+
+.cert-grid-v69>div:nth-child(8),
+.cert-grid-v69>div:nth-child(11),
+.cert-grid-v69>div:nth-child(14){
+  min-width:84px;
+}
+
+/* mantenir separació clara de blocs */
+.cert-grid-v69>div:nth-child(6),
+.cert-grid-v69>div:nth-child(9),
+.cert-grid-v69>div:nth-child(12){
+  border-right:3px solid #0f172a!important;
+}
+
+.cert-grid-v69.group .pressupost{grid-column:1 / span 6!important}
+.cert-grid-v69.group .anterior{grid-column:7 / span 3!important}
+.cert-grid-v69.group .actual{grid-column:10 / span 3!important}
+.cert-grid-v69.group .origen{grid-column:13 / span 3!important}
+
+.cert-grid-v69.total .total-label{
+  grid-column:1 / span 8!important;
+}
+.cert-grid-v69.total .total-label2{
+  grid-column:10 / span 2!important;
+}
+.cert-grid-v69.total .total-label3{
+  grid-column:13 / span 2!important;
+}
