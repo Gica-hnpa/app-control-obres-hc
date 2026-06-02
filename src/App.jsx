@@ -1070,8 +1070,8 @@ const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
   const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
   return s+((+r.impOrigen||0)||qOri*(+r.pu||0));
 },0);
-return <div className="cert-print-v8715">
-  <section className="cert-print-page1-v8715">
+return <div className="cert-print-v8716">
+  <section className="cert-print-page1-v8716">
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p>
     <div className="cert-cover-box-v87">
@@ -1081,19 +1081,26 @@ return <div className="cert-print-v8715">
       <span>Total acumulat a origen: {money(totalOrigen)}</span>
     </div>
     <h3>Partides certificades en aquesta certificació</h3>
-    <table className="cert-table-print-v8715">
+    {current.length===0?<div className="empty-print-v8716">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8716">
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
       <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
       <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
-    </table>
+    </table>}
   </section>
-  <section className="cert-print-page2-v8715">
+
+  <section className="cert-print-page2-v8716">
     <h2>Quadre general de certificació</h2>
-    <div className="cert-grid-print-v8715 group">
-      <div className="pressupost">PRESSUPOST</div><div className="anterior">{doc.prevNum?`CERTIFICACIÓ ${doc.prevNum} · ANTERIOR`:"SENSE CERTIFICACIÓ ANTERIOR"}</div><div className="actual">CERTIFICACIÓ {doc.certNum} · ACTUAL</div><div className="origen">A ORIGEN</div>
+    <div className="cert-grid-print-v8716 group">
+      <div className="pressupost">PRESSUPOST</div>
+      <div className="anterior">{doc.prevNum?`CERTIFICACIÓ ${doc.prevNum} · ANTERIOR`:"SENSE CERTIFICACIÓ ANTERIOR"}</div>
+      <div className="actual">CERTIFICACIÓ {doc.certNum} · ACTUAL</div>
+      <div className="origen">A ORIGEN</div>
     </div>
-    <div className="cert-grid-print-v8715 header">
-      <div>Partida</div><div>Ut</div><div>Resum</div><div>CanPres</div><div>PrPres</div><div>ImpPres</div><div>Q ant.</div><div>% ant.</div><div>Imp ant.</div><div>Q act.</div><div>% act.</div><div>Imp act.</div><div>Q origen</div><div>% origen</div><div>Total origen</div>
+    <div className="cert-grid-print-v8716 header">
+      <div>Partida</div><div>Ut</div><div>Resum</div><div>CanPres</div><div>PrPres</div><div>ImpPres</div>
+      <div>Q ant.</div><div>% ant.</div><div>Imp ant.</div>
+      <div>Q act.</div><div>% act.</div><div>Imp act.</div>
+      <div>Q origen</div><div>% origen</div><div>Total origen</div>
     </div>
     {rows.map(r=>{
       const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
@@ -1110,7 +1117,6 @@ return <div className="cert-print-v8715">
   </section>
 </div>
 }
-
 
 function FormClient({onSubmit}){let[logo,setLogo]=useState("");return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Logo / foto empresa</span><input type="file" onChange={e=>f2u(e.target.files[0],setLogo)}/><input type="hidden" name="logoPreview" value={logo}/>{logo&&<img className="logo-preview" src={logo}/>}</label><Input name="nom" label="Nom comercial" defaultValue="Nou client"/><Input name="rao" label="Raó social" defaultValue="Pendent"/><label><span>Rol / tipologia</span><select name="tipus"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Particular</option><option>Altres</option></select></label><Input name="nif" label="NIF/CIF" defaultValue="Pendent"/><Input name="contacte" label="Contacte" defaultValue="Pendent"/><Input name="telefon" label="Telèfon" defaultValue="Pendent"/><Input name="email" label="Email" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear client</button></div></form>}
 function FormObra({clients,onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client">{clients.map(c=><option value={c.id}>{c.nom}</option>)}</select></label><Input name="nom" label="Nom obra" defaultValue="Nova obra"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>Tancada</option></select></label><label><span>Tipologia</span><select name="tipologia"><option>Pressupost</option><option>Project Manager</option><option>Direcció d’obra</option><option>Projecte tècnic</option></select></label><Input name="propietat" label="Client" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear obra</button></div></form>}

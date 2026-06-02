@@ -2272,3 +2272,55 @@ button,input,select,textarea{font-size:13.5px!important}
 @page certPortrait{size:A4 portrait;margin:10mm}
 @page certLandscape{size:A4 landscape;margin:7mm}
 @media print{.cert-print-page1-v8715{max-width:none!important;width:100%!important}.cert-print-page2-v8715{width:277mm!important;max-width:277mm!important}}
+
+/* V87.16 correcció vista resum certificacions */
+.cert-resum-head-v69,
+.cert-resum-row-v69{
+  grid-template-columns:minmax(260px,1.5fr) repeat(4,minmax(105px,1fr)) minmax(115px,1fr) minmax(115px,1fr) minmax(150px,1.15fr)!important;
+  align-items:center!important;
+}
+.cert-resum-head-v69 span,
+.cert-resum-row-v69 span,
+.cert-resum-row-v69 strong,
+.cert-resum-row-v69 b{
+  white-space:nowrap!important;
+}
+.cert-resum-row-v69 > span:nth-last-child(2){
+  grid-column:auto!important;
+}
+.cert-resum-row-v69 .progress-v69{
+  grid-column:auto!important;
+}
+.cert-resum-v69{
+  overflow-x:auto!important;
+}
+.cert-resum-v69 .progress-v69{
+  min-width:145px!important;
+}
+
+/* V87.16 impressió certificació */
+.cert-mixed-doc .document-page{max-width:none!important}
+.cert-print-page1-v8716{page:certPortrait;max-width:190mm;margin:0 auto;break-after:page;page-break-after:always}
+.cert-print-page2-v8716{page:certLandscape;width:277mm;max-width:277mm;margin:0 auto;break-before:page;page-break-before:always}
+.empty-print-v8716{border:1px solid #cbd5e1;background:#f8fafc;border-radius:10px;padding:14px;margin-top:12px;color:#475569;font-weight:800}
+.cert-table-print-v8716{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+.cert-table-print-v8716 th,.cert-table-print-v8716 td{border:1px solid #cbd5e1;padding:7px;text-align:right}
+.cert-table-print-v8716 th:nth-child(3),.cert-table-print-v8716 td:nth-child(3){text-align:left}
+.cert-table-print-v8716 thead th,.cert-table-print-v8716 tfoot th{background:#eaf2fb;font-weight:900}
+.cert-grid-print-v8716{display:grid;grid-template-columns:50px 34px 245px 58px 62px 82px 62px 62px 82px 62px 62px 82px 62px 62px 86px;border-left:1px solid #b9c7d8;border-top:1px solid #b9c7d8;font-size:8.7px;width:277mm}
+.cert-grid-print-v8716>div{border-right:1px solid #b9c7d8;border-bottom:1px solid #b9c7d8;padding:3px 4px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.cert-grid-print-v8716 .concept{text-align:left;white-space:normal}
+.cert-grid-print-v8716.header>div,.cert-grid-print-v8716.group>div{background:#dbeafe;font-weight:900;text-align:center}
+.cert-grid-print-v8716.group .pressupost{grid-column:1 / span 6}
+.cert-grid-print-v8716.group .anterior{grid-column:7 / span 3}
+.cert-grid-print-v8716.group .actual{grid-column:10 / span 3}
+.cert-grid-print-v8716.group .origen{grid-column:13 / span 3}
+.cert-grid-print-v8716>div:nth-child(6),.cert-grid-print-v8716>div:nth-child(9),.cert-grid-print-v8716>div:nth-child(12){border-right:2px solid #0f172a}
+.cert-grid-print-v8716 .green{background:#dcfce7;color:#166534;font-weight:900}
+@page certPortrait{size:A4 portrait;margin:10mm}
+@page certLandscape{size:A4 landscape;margin:7mm}
+@media print{
+  .cert-print-page1-v8716{max-width:none!important;width:100%!important}
+  .cert-print-page2-v8716{width:277mm!important;max-width:277mm!important}
+  .document-preview.cert-mixed-doc{padding:0!important;background:white!important}
+}
