@@ -84,7 +84,8 @@ function openObra(id){setObraId(id);setTab("Resum");setSelActa(null);nav("Obra")
 function openClient(id){setClientId(id);nav("Fitxa client")}
 
 
-async function importExcel(e){
+async function updateObraFitxa8721b(patch){setD(obraId,d=>({...d,obra:{...(d.obra||{}),...patch}}))}
+function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
 
@@ -291,6 +292,11 @@ function deleteCertificacio8721(id){
 function updateObraFitxa8721(patch){
   setD(obraId,d=>({...d,obra:{...(d.obra||{}),...patch}}))
 }
+
+function deleteCertificacio8721a(id){
+  if(!confirm("Eliminar aquesta certificació?")) return;
+  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))
+}
 function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>{let q=(r.certsByNum&&r.certsByNum[String(n)]!==undefined)?+r.certsByNum[String(n)]||0:n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0;return s+q*(+r.pu||0)},0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
 function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data.agents||[]).map(a=>a.id),message:"Bon dia,\n\nAdjunto document de l'obra per a la seva revisió.\n\nSalutacions,\nHéctor"})}
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon")}]}));setModal(null)}
@@ -311,7 +317,7 @@ return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Projectes / Obres"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst}} newObra={()=>setModal("obra")}/>}
-{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
+{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} deleteCertificacio8721a={deleteCertificacio8721a} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
 {screen==="Agenda"&&<Agenda events={data.events||[]} clients={clients} obres={obres} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
@@ -363,7 +369,7 @@ function FitxaClient({client,obres,openObra,back}){
 
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
 function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row"><div className="thumb">{o.imatge?<img src={o.imatge}/>:"FOTO"}</div><div className="grow"><strong>{o.nom}</strong><span>{o.subtitol}</span></div><span>{o.tipologia}</span><Badge estat={o.estat}/></button>}
-function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,updateObraFitxa8721b,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,deleteCertificacio8721a,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO OBRA"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
     <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
@@ -376,7 +382,7 @@ function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,del
       <label><span>Tipus servei</span><input defaultValue={obra.tipologia}/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{tab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {tab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Certificacions"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Facturació"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Actes d’obra"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {tab==="Fotografies"&&<SeguimentFotos/>} {tab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {tab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{tab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {tab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Certificacions"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} deleteCertificacio8721a={deleteCertificacio8721a} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Facturació"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Actes d’obra"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {tab==="Fotografies"&&<SeguimentFotos/>} {tab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {tab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 function ObraAgentsResum({data,openAgent}){
 const[q,setQ]=useState("");
@@ -445,13 +451,36 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
 </Modal>
 }
 
-function Resum({data}){
+
+function EditObraModal8721b({obra,close,save}){
+const[f,setF]=useState(()=>({...obra}));
+function ch(k,v){setF(x=>({...x,[k]:v}))}
+return <Modal title="Modificar fitxa de l’obra" close={close}>
+  <div className="form-grid">
+    <label><span>Nom obra</span><input value={f.nom||""} onChange={e=>ch("nom",e.target.value)}/></label>
+    <label><span>Subtítol / resum</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)}/></label>
+    <label><span>Promotor / propietat</span><input value={f.propietat||""} onChange={e=>ch("propietat",e.target.value)}/></label>
+    <label><span>NIF propietat</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)}/></label>
+    <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)}/></label>
+    <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)}/></label>
+    <label><span>Estat</span><select value={f.estat||"Activa"} onChange={e=>ch("estat",e.target.value)}><option>Activa</option><option>Pendent</option><option>En curs</option><option>Finalitzada</option><option>Tancada</option></select></label>
+    <label><span>Tipologia</span><input value={f.tipologia||""} onChange={e=>ch("tipologia",e.target.value)}/></label>
+    <label className="span-all"><span>Observacions</span><textarea value={f.observacions||""} onChange={e=>ch("observacions",e.target.value)}/></label>
+  </div>
+  <div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>save(f)}>Guardar canvis</button></div>
+</Modal>
+}
+
+function Resum({data,updateObraFitxa8721b}){
+const[editObra8721b,setEditObra8721b]=useState(false);
 let rows=data.partides||[], certs=data.certificacions||[];
 let pressupost=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
 function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
 let totalCert=certs.reduce((s,c)=>s+rows.reduce((x,r)=>x+qFor(r,+c.numero)*(+r.pu||0),0),0);
 let pendent=Math.max(pressupost-totalCert,0), percent=pressupost?totalCert/pressupost*100:0, ultima=certs.length?certs[certs.length-1]:null;
 return <div className="stack">
+  <div className="fitxa-edit-toolbar-v8721b"><button className="secondary" onClick={()=>setEditObra8721b(true)}>Modificar fitxa obra</button></div>
+  {editObra8721b&&<EditObraModal8721b obra={data.obra||{}} close={()=>setEditObra8721b(false)} save={(patch)=>{updateObraFitxa8721b?.(patch);setEditObra8721b(false)}}/>}
   <div className="obra-resum-v63">
     <div className="resum-kpi-v63"><span>Pressupost obra</span><b>{money(pressupost)}</b></div>
     <div className="resum-kpi-v63"><span>Quantitat certificada</span><b>{money(totalCert)}</b></div>
@@ -567,7 +596,7 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
 
 
 
-function Cert({data,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
+function Cert({data,updateCert,addCertificacio,deleteCertificacio8721a,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
 const[editing,setEditing]=useState(false);
@@ -611,7 +640,7 @@ function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
 
 return <div className="stack">
 <Card title="Certificacions realitzades" action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
-  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input className="cert-date-input-v8721" value={dateVal8721(c)} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
+  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input className="cert-date-input-v8721" value={dateVal8721(c)} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><button className="danger mini-cert-delete-v8721a" onClick={e=>{e.stopPropagation();deleteCertificacio8721a?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
 <Card title={`CERTIFICACIÓ ${certNum} ACTUAL · ${prevNum?`Cert. ${prevNum} anterior + `:"sense anterior + "}Cert. ${certNum}`}>
   <div className="cert-mode-tabs-v8711">

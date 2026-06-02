@@ -2577,3 +2577,24 @@ button,input,select,textarea{font-size:13.5px!important}
   font-size:12px!important;
   font-weight:900!important;
 }
+
+/* V87.21a - eliminar certificació */
+.mini-cert-delete-v8721a{
+  background:#fee2e2!important;
+  color:#991b1b!important;
+  border:1px solid #fecaca!important;
+  border-radius:7px!important;
+  padding:6px 8px!important;
+  font-size:12px!important;
+  font-weight:900!important;
+}
+
+/* V87.21b - botó editar fitxa obra */
+.fitxa-edit-toolbar-v8721b{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:10px;
+}
+.fitxa-edit-toolbar-v8721b button{
+  font-weight:900;
+}
