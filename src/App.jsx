@@ -85,6 +85,7 @@ function openClient(id){setClientId(id);nav("Fitxa client")}
 async function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
+
 function clean(v){return String(v??"").trim()}
 function norm(v){return clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
 function num(v){
@@ -96,93 +97,138 @@ function num(v){
   let n=parseFloat(s.replace(/[^\d.-]/g,""));
   return Number.isFinite(n)?n:0;
 }
-function looksLikeHeader(row){
+function isHeader(row){
   const txt=row.map(norm).join(" ");
-  return txt.includes("partida") || txt.includes("concepte") || txt.includes("descrip") || txt.includes("quant") || txt.includes("preu") || txt.includes("import");
+  return txt.includes("codigo") || txt.includes("código") || txt.includes("nat") || txt.includes("resumen") || txt.includes("canpres") || txt.includes("imppres");
 }
-function findCol(header,keys,fallback){
+function col(header,keys,fallback){
   let i=header.findIndex(h=>keys.some(k=>h.includes(k)));
   return i>=0?i:fallback;
 }
+
 try{
   const ab=await file.arrayBuffer();
   const wb=XLSX.read(ab,{type:"array",cellDates:false});
-  let allPartides=[];
+  let imported=[];
   let detectedSheet="";
+  let capActual="PRESSUPOST IMPORTAT";
+
   for(const sheetName of wb.SheetNames){
     const ws=wb.Sheets[sheetName];
     const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-    if(!data || !data.length) continue;
-    let headerIndex=data.findIndex(looksLikeHeader);
-    if(headerIndex<0) headerIndex=0;
+    if(!data?.length) continue;
+
+    let headerIndex=data.findIndex(isHeader);
+    if(headerIndex<0) continue;
+
     const header=(data[headerIndex]||[]).map(norm);
     const idx={
-      partida:findCol(header,["partida","codi","codigo","código"],0),
-      ut:findCol(header,["ut","unitat","unidad"],1),
-      concepte:findCol(header,["concepte","concepto","descrip","resum","descripcion","descripción"],2),
-      q:findCol(header,["quant","cantidad","amid","canpres","medicio","medición"],3),
-      pu:findCol(header,["preu","precio","prpres","unitari","unitario"],4),
-      import:findCol(header,["import","total","imppres","importe"],5)
+      codi: col(header,["codigo","código","codi","partida"],0),
+      nat: col(header,["nat","naturaleza","tipus"],1),
+      ud: col(header,["ud","ut","unitat","unidad"],2),
+      resum: col(header,["resumen","resum","concepto","concepte","descrip"],3),
+      q: col(header,["canpres","quant","cantidad","amid"],4),
+      pu: col(header,["pres","preu","precio","prpres","unitari"],5),
+      imp: col(header,["imppres","import","importe","total"],6)
     };
-    let capActual = sheetName || "PRESSUPOST IMPORTAT";
-    let partides = [];
+
+    let partides=[];
     for(const row of data.slice(headerIndex+1)){
       if(!row || !row.some(x=>clean(x)!=="")) continue;
-      const rawCodi=clean(row[idx.partida]);
-      const rawUt=clean(row[idx.ut]);
-      const rawConcepte=clean(row[idx.concepte]) || clean(row.find(x=>String(x).length>3));
+
+      const codi=clean(row[idx.codi]);
+      const nat=norm(row[idx.nat]);
+      const ud=clean(row[idx.ud]);
+      const resum=clean(row[idx.resum]);
       const q=num(row[idx.q]);
       let pu=num(row[idx.pu]);
-      let imp=num(row[idx.import]);
+      let imp=num(row[idx.imp]);
       if(!imp && q && pu) imp=q*pu;
       if(!pu && q && imp) pu=imp/q;
-      const textJoined=row.map(clean).filter(Boolean).join(" ");
-      const isChapter = rawConcepte && !q && !pu && !imp && textJoined.length > 3;
-      if(isChapter){
-        capActual = rawCodi ? `${rawCodi} ${rawConcepte}` : rawConcepte;
+
+      if(nat.includes("cap") || (resum && !q && !pu && !imp && !nat.includes("part"))){
+        capActual = codi ? `${codi} ${resum}` : resum;
         continue;
       }
-      if(!rawConcepte && !q && !pu && !imp) continue;
-      if(!rawConcepte && rawCodi.toLowerCase().includes("total")) continue;
-      partides.push({
-        codi: rawCodi || String(partides.length+1).padStart(2,"0"),
-        cap: capActual,
-        concepte: rawConcepte || "Partida importada",
-        ut: rawUt || "ut",
-        q: q || 0,
-        pu: pu || 0,
-        certAnterior: 0,
-        certActual: 0,
-        tipus: "Import Excel"
-      });
+
+      // long description row immediately after a partida
+      if(!nat && resum && !q && !pu && !imp && partides.length){
+        partides[partides.length-1].desc = (partides[partides.length-1].desc ? partides[partides.length-1].desc + "\n" : "") + resum;
+        continue;
+      }
+
+      if(nat.includes("part") || q || pu || imp){
+        partides.push({
+          codi: codi || String(partides.length+1).padStart(2,"0"),
+          cap: capActual || "PRESSUPOST IMPORTAT",
+          concepte: resum || "Partida importada",
+          desc: "",
+          ut: ud || "ut",
+          q: q || 0,
+          pu: pu || 0,
+          certAnterior: 0,
+          certActual: 0,
+          tipus: "Import Excel"
+        });
+      }
     }
+
     if(partides.length){
-      detectedSheet = sheetName;
-      allPartides = partides;
+      imported=partides;
+      detectedSheet=sheetName;
       break;
     }
   }
-  const total=allPartides.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
-  if(!allPartides.length){
+
+  if(!imported.length){
     setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{
-      id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Excel llegit però sense partides detectades",import:0
+      id:"p"+Date.now(),
+      versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
+      data:"Avui",
+      nom:file.name,
+      estat:"Excel llegit però sense partides detectades",
+      import:0
     }]}));
     return;
   }
-  setD(obraId,d=>({...d,
-    partides: allPartides,
-    pressupostos:[...d.pressupostos,{
-      id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:`Excel llegit · ${allPartides.length} partides · ${detectedSheet}`,import:total
-    }]
-  }));
+
+  const total=imported.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
+
+  setD(obraId,d=>{
+    const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[
+      {id:"c1",numero:"1",data:"Avui",estat:"Pendent",import:0},
+      {id:"c2",numero:"2",data:"Avui",estat:"Pendent",import:0}
+    ];
+    return {...d,
+      partides: imported,
+      certificacions: nextCerts,
+      pressupostos:[...d.pressupostos,{
+        id:"p"+Date.now(),
+        versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
+        data:"Avui",
+        nom:file.name,
+        estat:`Excel llegit · ${imported.length} partides · ${detectedSheet}`,
+        import:total
+      }]
+    };
+  });
 }catch(err){
   setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{
-    id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0
+    id:"p"+Date.now(),
+    versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
+    data:"Avui",
+    nom:file.name,
+    estat:"Error lectura Excel: "+String(err?.message||err),
+    import:0
   }]}));
 }
 }
 
 
+function deletePressupostVersion(id){
+  if(!confirm("Eliminar aquesta versió de pressupost?")) return;
+  setD(obraId,d=>({...d,pressupostos:(d.pressupostos||[]).filter(p=>p.id!==id)}));
+}
 function duplicatePressupostVersion(id){
   setD(obraId,d=>{
     const p=(d.pressupostos||[]).find(x=>x.id===id);
@@ -211,7 +257,7 @@ return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Projectes / Obres"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst}} newObra={()=>setModal("obra")}/>}
-{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} updateCert={updateCert} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
+{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
 {screen==="Agenda"&&<Agenda events={data.events||[]} clients={clients} obres={obres} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
@@ -225,7 +271,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.3b Pressupost fix · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.4 Importador BRAVA · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -263,7 +309,7 @@ function FitxaClient({client,obres,openObra,back}){
 
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
 function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row"><div className="thumb">{o.imatge?<img src={o.imatge}/>:"FOTO"}</div><div className="grow"><strong>{o.nom}</strong><span>{o.subtitol}</span></div><span>{o.tipologia}</span><Badge estat={o.estat}/></button>}
-function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,updateCert,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO OBRA"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
     <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
@@ -347,6 +393,8 @@ return <div className="stack">
 function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
+  useEffect(()=>{const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(Object.fromEntries(Object.keys(syncCapsV874).map((k,i)=>[k,i===0])));},[data.partides]);
+
 
   function upd(cap,i,k,v){
     setCaps(p=>{
@@ -420,7 +468,7 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
                 const t=(+r.q||0)*(+r.pu||0);
                 return <div className="budget-v25-line" key={i}>
                   <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
-                  <input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>
+                  <div className="budget-concept-v874"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<small>{r.desc}</small>}</div>
                   <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
                   <input type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
                   <input type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>

@@ -1752,3 +1752,15 @@ button,input,select,textarea{font-size:13.5px!important}
   .version-main-v872{grid-template-columns:1fr}
 }
 
+/* V87.4 Importador BRAVA */
+.budget-concept-v874 small{
+  display:block;
+  color:#64748b;
+  font-size:11px;
+  line-height:1.25;
+  margin-top:4px;
+  white-space:normal;
+}
+.budget-concept-v874 input{
+  width:100%;
+}
