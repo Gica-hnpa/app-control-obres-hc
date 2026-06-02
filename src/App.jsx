@@ -271,6 +271,7 @@ setD(obraId,d=>({...d,partides:d.partides.map(r=>{
   return next;
 })}))
 }
+function updateCertDate(id,value){setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))}
 function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>{let q=(r.certsByNum&&r.certsByNum[String(n)]!==undefined)?+r.certsByNum[String(n)]||0:n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0;return s+q*(+r.pu||0)},0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
 function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data.agents||[]).map(a=>a.id),message:"Bon dia,\n\nAdjunto document de l'obra per a la seva revisió.\n\nSalutacions,\nHéctor"})}
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon")}]}));setModal(null)}
@@ -291,7 +292,7 @@ return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Projectes / Obres"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst}} newObra={()=>setModal("obra")}/>}
-{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
+{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
 {screen==="Agenda"&&<Agenda events={data.events||[]} clients={clients} obres={obres} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
@@ -343,7 +344,7 @@ function FitxaClient({client,obres,openObra,back}){
 
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
 function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row"><div className="thumb">{o.imatge?<img src={o.imatge}/>:"FOTO"}</div><div className="grow"><strong>{o.nom}</strong><span>{o.subtitol}</span></div><span>{o.tipologia}</span><Badge estat={o.estat}/></button>}
-function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO OBRA"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
     <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
@@ -527,7 +528,7 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
 
 
 
-function Cert({data,updateCert,addCertificacio,ci,setCi,saveCert,openEmail,openDoc}){
+function Cert({data,updateCert,addCertificacio,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
 const[editing,setEditing]=useState(false);
@@ -555,7 +556,7 @@ function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
 
 return <div className="stack">
 <Card title="Certificacions realitzades" action={<button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button>}>
-  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><span>{fmtDate8714(c.data)}</span><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><em>{selected===c.id?"Seleccionada":"Veure"}</em></button>)}</div>
+  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input className="cert-date-input-v8717" value={fmtDate8714(c.data)} onClick={e=>e.stopPropagation()} onChange={e=>updateCertDate?.(c.id,e.target.value)}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><em>{selected===c.id?"Seleccionada":"Veure"}</em></button>)}</div>
 </Card>
 <Card title={`CERTIFICACIÓ ${certNum} ACTUAL · ${prevNum?`Cert. ${prevNum} anterior + `:"sense anterior + "}Cert. ${certNum}`}>
   <div className="cert-mode-tabs-v8711">
@@ -611,11 +612,30 @@ return <div className="stack">
 
 function CertResumV69({data}){
 let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
-function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
+function qFor(r,n){if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0}
 function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
-let capRows=Object.entries(caps).map(([cap,items])=>{let pressupost=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);let vals=certs.map(c=>items.reduce((s,r)=>s+impFor(r,+c.numero),0));let total=vals.reduce((s,v)=>s+v,0),pendent=Math.max(pressupost-total,0),percent=pressupost?Math.min(total/pressupost*100,100):0;return{cap,pressupost,vals,total,pendent,percent}});
-let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0), totalCerts=certs.map(c=>rows.reduce((s,r)=>s+impFor(r,+c.numero),0)), totalExec=totalCerts.reduce((s,v)=>s+v,0);
-return <div className="cert-resum-v69"><div className="cert-resum-head-v69"><span>CAPÍTOL</span><span>PRESSUPOST</span>{certs.map(c=><span key={c.id}>CERT. {c.numero}</span>)}<span>TOTAL CERT.</span><span>PENDENT</span><span>% EXECUTAT</span></div>{capRows.map(r=><div className="cert-resum-row-v69" key={r.cap}><b>{r.cap}</b><span>{money(r.pressupost)}</span>{r.vals.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(r.total)}</strong><span>{money(r.pendent)}</span><ProgressV69 v={r.percent}/></div>)}<div className="cert-resum-row-v69 total"><b>TOTAL</b><span>{money(totalPres)}</span>{totalCerts.map((v,i)=><span key={i}>{money(v)}</span>)}<strong>{money(totalExec)}</strong><span>{money(Math.max(totalPres-totalExec,0))}</span><ProgressV69 v={totalPres?totalExec/totalPres*100:0}/></div></div>
+let capRows=Object.entries(caps).map(([cap,items])=>{
+  let pressupost=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  let vals=certs.map(c=>items.reduce((s,r)=>s+impFor(r,+c.numero),0));
+  let total=vals.reduce((s,v)=>s+v,0);
+  let pendent=Math.max(pressupost-total,0);
+  let percent=pressupost?Math.min(total/pressupost*100,999):0;
+  return{cap,pressupost,vals,total,pendent,percent}
+});
+let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+let totalCerts=certs.map(c=>rows.reduce((s,r)=>s+impFor(r,+c.numero),0));
+let totalExec=totalCerts.reduce((s,v)=>s+v,0);
+return <div className="cert-resum-v8717">
+  <div className="cert-resum-row-v8717 head">
+    <span className="cap">CAPÍTOL</span><span className="pres">PRESSUPOST</span>{certs.map(c=><span className="cert" key={c.id}>CERT. {c.numero}</span>)}<span className="total">TOTAL CERT.</span><span className="pct">% EXECUTAT</span><span className="pendent">IMPORT PENDENT</span>
+  </div>
+  {capRows.map(r=><div className="cert-resum-row-v8717" key={r.cap}>
+    <b className="cap">{r.cap}</b><span className="pres">{money(r.pressupost)}</span>{r.vals.map((v,i)=><span className="cert" key={i}>{money(v)}</span>)}<strong className="total">{money(r.total)}</strong><ProgressV69 v={r.percent}/><span className="pendent">{money(r.pendent)}</span>
+  </div>)}
+  <div className="cert-resum-row-v8717 total-row">
+    <b className="cap">TOTAL</b><span className="pres">{money(totalPres)}</span>{totalCerts.map((v,i)=><span className="cert" key={i}>{money(v)}</span>)}<strong className="total">{money(totalExec)}</strong><ProgressV69 v={totalPres?totalExec/totalPres*100:0}/><span className="pendent">{money(Math.max(totalPres-totalExec,0))}</span>
+  </div>
+</div>
 }
 function ProgressV69({v}){return <div className="progress-v69"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
 
@@ -1070,8 +1090,8 @@ const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
   const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
   return s+((+r.impOrigen||0)||qOri*(+r.pu||0));
 },0);
-return <div className="cert-print-v8716">
-  <section className="cert-print-page1-v8716">
+return <div className="cert-print-v8717">
+  <section className="cert-print-page1-v8717">
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p>
     <div className="cert-cover-box-v87">
@@ -1081,27 +1101,16 @@ return <div className="cert-print-v8716">
       <span>Total acumulat a origen: {money(totalOrigen)}</span>
     </div>
     <h3>Partides certificades en aquesta certificació</h3>
-    {current.length===0?<div className="empty-print-v8716">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8716">
+    {current.length===0?<div className="empty-print-v8717">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8717">
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
       <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
       <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
     </table>}
   </section>
-
-  <section className="cert-print-page2-v8716">
+  <section className="cert-print-page2-v8717">
     <h2>Quadre general de certificació</h2>
-    <div className="cert-grid-print-v8716 group">
-      <div className="pressupost">PRESSUPOST</div>
-      <div className="anterior">{doc.prevNum?`CERTIFICACIÓ ${doc.prevNum} · ANTERIOR`:"SENSE CERTIFICACIÓ ANTERIOR"}</div>
-      <div className="actual">CERTIFICACIÓ {doc.certNum} · ACTUAL</div>
-      <div className="origen">A ORIGEN</div>
-    </div>
-    <div className="cert-grid-print-v8716 header">
-      <div>Partida</div><div>Ut</div><div>Resum</div><div>CanPres</div><div>PrPres</div><div>ImpPres</div>
-      <div>Q ant.</div><div>% ant.</div><div>Imp ant.</div>
-      <div>Q act.</div><div>% act.</div><div>Imp act.</div>
-      <div>Q origen</div><div>% origen</div><div>Total origen</div>
-    </div>
+    <div className="cert-grid-print-v8717 group"><div className="pressupost">PRESSUPOST</div><div className="anterior">{doc.prevNum?`CERTIFICACIÓ ${doc.prevNum} · ANTERIOR`:"SENSE CERTIFICACIÓ ANTERIOR"}</div><div className="actual">CERTIFICACIÓ {doc.certNum} · ACTUAL</div><div className="origen">A ORIGEN</div></div>
+    <div className="cert-grid-print-v8717 header"><div>Partida</div><div>Ut</div><div>Resum</div><div>CanPres</div><div>PrPres</div><div>ImpPres</div><div>Q ant.</div><div>% ant.</div><div>Imp ant.</div><div>Q act.</div><div>% act.</div><div>Imp act.</div><div>Q origen</div><div>% origen</div><div>Total origen</div></div>
     {rows.map(r=>{
       const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
       const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
@@ -1146,4 +1155,4 @@ return <form onSubmit={onSubmit} className="form-event-v78">
 }
 
 function EmailModal({draft,setDraft,close}){let sel=draft.agents.filter(a=>draft.selected.includes(a.id));return <Modal title="Enviar per email" close={close}><div className="form-grid"><label className="span-all"><span>Destinataris</span><div className="check-grid">{draft.agents.length===0?<Empty text="Aquesta obra no té agents amb email assignats."/>:draft.agents.map(a=><label className="check-row"><input type="checkbox" checked={draft.selected.includes(a.id)} onChange={e=>setDraft({...draft,selected:e.target.checked?[...draft.selected,a.id]:draft.selected.filter(id=>id!==a.id)})}/><span>{a.nom} · {a.email}</span></label>)}</div></label><Input label="Assumpte" defaultValue={draft.title}/><label className="span-all"><span>Missatge</span><textarea value={draft.message} onChange={e=>setDraft({...draft,message:e.target.value})}/></label></div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>{let tos=sel.map(a=>a.email).join(",");openGmailCompose(tos,draft.title,draft.message)}}>Obrir correu</button></div></Modal>}
-function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"cert-mixed-doc":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div></Modal>}
+function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8717":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div></Modal>}
