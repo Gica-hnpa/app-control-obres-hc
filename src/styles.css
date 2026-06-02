@@ -2528,14 +2528,8 @@ button,input,select,textarea{font-size:13.5px!important}
   .cert-page-v8718{border:0!important;break-after:page;page-break-after:always}
 }
 
-/* V87.19b safe: data editable i preview més ample */
-.cert-row-v8719{
-  cursor:pointer;
-}
-.cert-row-v8719 input{
-  cursor:text;
-}
-.cert-date-input-v8717{
+/* V87.20 data certificació amb guardar */
+.cert-date-input-v8720{
   width:96px!important;
   text-align:center!important;
   background:white!important;
@@ -2544,39 +2538,33 @@ button,input,select,textarea{font-size:13.5px!important}
   border-radius:7px!important;
   padding:6px 8px!important;
 }
-.document-preview.cert-doc-v8718,
-.document-preview.cert-doc-v8717{
-  width:100%!important;
+.version-row input.cert-date-input-v8720{
+  cursor:text!important;
 }
-.modal-card:has(.cert-print-v8718),
-.modal-card:has(.cert-print-v8717){
+
+/* V87.20 previsualització més ampla i proporcions millors */
+.modal-card:has(.cert-print-v8718){
   width:96vw!important;
   max-width:96vw!important;
 }
-.cert-doc-v8718 .document-page,
-.cert-doc-v8717 .document-page{
+.cert-doc-v8718 .document-page{
   width:100%!important;
   max-width:none!important;
 }
-.cert-page-v8718.landscape,
-.cert-page-v8717.landscape{
+.cert-page-v8718.landscape{
   width:100%!important;
   max-width:100%!important;
 }
-.cert-wide-table-v8718,
-.cert-wide-table-v8717{
+.cert-wide-table-v8718{
   width:100%!important;
   table-layout:fixed!important;
 }
-.cert-wide-table-v8718 th:nth-child(1),.cert-wide-table-v8718 td:nth-child(1),
-.cert-wide-table-v8717 th:nth-child(1),.cert-wide-table-v8717 td:nth-child(1){width:50px!important}
-.cert-wide-table-v8718 th:nth-child(2),.cert-wide-table-v8718 td:nth-child(2),
-.cert-wide-table-v8717 th:nth-child(2),.cert-wide-table-v8717 td:nth-child(2){width:34px!important}
-.cert-wide-table-v8718 th:nth-child(3),.cert-wide-table-v8718 td:nth-child(3),
-.cert-wide-table-v8717 th:nth-child(3),.cert-wide-table-v8717 td:nth-child(3){
+.cert-wide-table-v8718 th:nth-child(1),.cert-wide-table-v8718 td:nth-child(1){width:52px!important}
+.cert-wide-table-v8718 th:nth-child(2),.cert-wide-table-v8718 td:nth-child(2){width:34px!important}
+.cert-wide-table-v8718 th:nth-child(3),.cert-wide-table-v8718 td:nth-child(3){
   width:30%!important;
 }
-.cert-wide-table-v8718 .concept,
-.cert-wide-table-v8717 .concept{
+.cert-wide-table-v8718 .concept{
   white-space:normal!important;
+  text-align:left!important;
 }
