@@ -2601,3 +2601,13 @@ button,input,select,textarea{font-size:13.5px!important}
 .fitxa-form-v8726 textarea{
   min-height:90px;
 }
+
+/* V87.27 - modal fitxa amb els mateixos camps que la vista */
+.fitxa-form-v8727 select{
+  width:100%;
+  min-height:38px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  padding:8px 10px;
+  background:#fff;
+}

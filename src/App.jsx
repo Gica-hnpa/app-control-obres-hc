@@ -325,7 +325,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.26 fitxa desplegables · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.27 fitxa igual vista</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -366,43 +366,38 @@ function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="ob
 
 function EditObraModal8725({obra,clients=[],close,save}){
 const clientNames=[...new Set((clients||[]).map(c=>c.nom).filter(Boolean))];
-const tipologies=["Reforma interior","Rehabilitació façana","Obra nova","Piscina","Ascensor","Certificació","Pressupost","Direcció d’obra","Visita d’obra","Informe tècnic","Manteniment","Altres"];
+const serveisBase=["Project Manager","Direcció d’obra","Pressupost","Certificació","Visita d’obra","Informe tècnic","Reforma habitatge unifamiliar","Reforma interior","Rehabilitació façana","Obra nova","Piscina","Ascensor","Manteniment","Altres"];
+const serveis=[...new Set([obra.tipologia,...serveisBase].filter(Boolean))];
 const estats=["Acceptada","Pressupostada","En procés","No contestat","Pendent","Activa","Aturada","Tancada","Descartada"];
-const[f,setF]=useState(()=>({...obra,clientMode:(clientNames.includes(obra.propietat)?"existent":"nou")}));
+const[f,setF]=useState(()=>({...obra}));
 function ch(k,v){setF(x=>({...x,[k]:v}))}
 function selectClient(nom){
   const c=(clients||[]).find(x=>x.nom===nom);
   setF(x=>({
     ...x,
-    clientMode:"existent",
     propietat:nom,
     nifPropietat:x.nifPropietat||c?.nif||c?.nifPropietat||"",
-    adreca:x.adreca||c?.adreca||"",
-    poblacio:x.poblacio||c?.poblacio||"",
-    cp:x.cp||c?.cp||c?.codiPostal||""
   }));
 }
 return <Modal title="Modificar fitxa de l’obra" close={close}>
-  <div className="form-grid fitxa-form-v8726">
-    <label><span>Client / Promotor</span><select value={f.clientMode==="existent"&&clientNames.includes(f.propietat)?f.propietat:"__nou__"} onChange={e=>e.target.value==="__nou__"?setF(x=>({...x,clientMode:"nou",propietat:""})):selectClient(e.target.value)}>
-      <option value="__nou__">Crear / escriure client nou</option>
+  <div className="form-grid fitxa-form-v8727">
+    <label><span>Client</span><select value={clientNames.includes(f.propietat)?f.propietat:"__nou__"} onChange={e=>e.target.value==="__nou__"?ch("propietat",""):selectClient(e.target.value)}>
+      <option value="__nou__">Escriure client nou</option>
       {clientNames.map(n=><option key={n} value={n}>{n}</option>)}
     </select></label>
-    <label><span>Nom client nou / promotor</span><input value={f.propietat||""} onChange={e=>ch("propietat",e.target.value)} placeholder="Nom del client o promotor"/></label>
-    <label><span>NIF client</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)}/></label>
-    <label><span>Nom obra</span><input value={f.nom||""} onChange={e=>ch("nom",e.target.value)} placeholder="Nom curt de l’obra"/></label>
-    <label><span>Subtítol / descripció resum</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)}/></label>
-    <label><span>Tipologia de la feina</span><select value={tipologies.includes(f.tipologia)?f.tipologia:"Altres"} onChange={e=>ch("tipologia",e.target.value)}>
-      {tipologies.map(t=><option key={t}>{t}</option>)}
+    <label><span>Client nou / promotor</span><input value={f.propietat||""} onChange={e=>ch("propietat",e.target.value)} /></label>
+    <label><span>NIF client</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)} /></label>
+    <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)} /></label>
+    <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)} /></label>
+    <label><span>Referència cadastral</span><input value={f.rc||""} onChange={e=>ch("rc",e.target.value)} /></label>
+    <label><span>Tipus servei</span><select value={f.tipologia||""} onChange={e=>ch("tipologia",e.target.value)}>
+      {serveis.map(t=><option key={t} value={t}>{t}</option>)}
     </select></label>
     <label><span>Estat</span><select value={f.estat||"Pressupostada"} onChange={e=>ch("estat",e.target.value)}>
-      {estats.map(e=><option key={e}>{e}</option>)}
+      {estats.map(e=><option key={e} value={e}>{e}</option>)}
     </select></label>
-    <label><span>Carrer / adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)} placeholder="Carrer, número, escala..."/></label>
-    <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)}/></label>
-    <label><span>Codi postal</span><input value={f.cp||""} onChange={e=>ch("cp",e.target.value)} inputMode="numeric"/></label>
-    <label><span>Referència cadastral</span><input value={f.rc||""} onChange={e=>ch("rc",e.target.value)}/></label>
-    <label className="span-all"><span>Observacions</span><textarea value={f.observacions||""} onChange={e=>ch("observacions",e.target.value)}/></label>
+    <label><span>Subtítol</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)} /></label>
+    <label><span>Nom obra</span><input value={f.nom||""} onChange={e=>ch("nom",e.target.value)} /></label>
   </div>
   <div className="modal-actions">
     <button className="secondary" onClick={close}>Cancel·lar</button>
@@ -419,7 +414,7 @@ function Obra({obra,client,clients,data,tab,setTab,setScreen,uploadImage,importE
       <label><span>Client</span><input value={obra.propietat||""} readOnly/></label>
       <label><span>NIF client</span><input value={obra.nifPropietat||""} readOnly/></label>
       <label><span>Adreça</span><input value={obra.adreca||""} readOnly/></label>
-      <label><span>Població</span><input value={obra.poblacio||""} readOnly/></label><label><span>Codi postal</span><input value={obra.cp||""} readOnly/></label>
+      <label><span>Població</span><input value={obra.poblacio||""} readOnly/></label>
       <label><span>Referència cadastral</span><input value={obra.rc||""} readOnly/></label>
       <label><span>Tipus servei</span><input value={obra.tipologia||""} readOnly/></label>
     </div>
