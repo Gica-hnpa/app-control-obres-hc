@@ -101,13 +101,19 @@ function num(v){
 }
 function isHeader(row){
   const txt=row.map(norm).join(" ");
-  return txt.includes("codigo") || txt.includes("código") || txt.includes("nat") || txt.includes("resumen") || txt.includes("canpres") || txt.includes("imppres");
+  const hasClassic=(txt.includes("codigo")||txt.includes("código")||txt.includes("codi")||txt.includes("partida")) && (txt.includes("resumen")||txt.includes("resum")||txt.includes("concepte")||txt.includes("descrip")) && (txt.includes("canpres")||txt.includes("quant")||txt.includes("amid")||txt.includes("cantidad"));
+  const hasBrava=txt.includes("partida") && (txt.includes("ut")||txt.includes("unitat")) && txt.includes("concepte") && txt.includes("quantitat") && (txt.includes("preu")||txt.includes("precio")) && txt.includes("total");
+  return hasClassic || hasBrava || txt.includes("nat") || txt.includes("imppres");
 }
 function exactOrIncludes(header, exacts, includes, fallback){
   let i=header.findIndex(h=>exacts.includes(h));
   if(i>=0)return i;
   i=header.findIndex(h=>includes.some(k=>h.includes(k)));
   return i>=0?i:fallback;
+}
+function rowHasCode(v){
+  const s=clean(v);
+  return /^([A-Z]*\d+|\d{1,2}([.,]\d{1,3})+|\d{1,2}\.\d{1,3})/.test(s);
 }
 
 try{
@@ -126,14 +132,16 @@ try{
     if(headerIndex<0) continue;
 
     const header=(data[headerIndex]||[]).map(norm);
+    const isBravaHeader=header.includes("partida") && (header.includes("ut")||header.includes("unitat")) && header.some(h=>h.includes("concepte")) && header.some(h=>h.includes("quantitat")) && header.some(h=>h.includes("preu")) && header.some(h=>h.includes("total"));
+
     const idx={
-      codi: exactOrIncludes(header,["codigo","código","codi"],["partida"],0),
-      nat: exactOrIncludes(header,["nat"],["naturaleza","tipus"],1),
-      ud: exactOrIncludes(header,["ud","ut"],["unitat","unidad"],2),
-      resum: exactOrIncludes(header,["resumen","resum"],["concepto","concepte","descrip"],3),
-      q: exactOrIncludes(header,["canpres"],["quant","cantidad","amid"],4),
-      pu: exactOrIncludes(header,["pres"],["preu","precio","prpres","unitari","unitario"],5),
-      imp: exactOrIncludes(header,["imppres"],["import","importe","total"],6)
+      codi: exactOrIncludes(header,["codigo","código","codi","partida"],["partida"],0),
+      nat: exactOrIncludes(header,["nat"],["naturaleza","tipus"],-1),
+      ud: exactOrIncludes(header,["ud","ut"],["unitat","unidad"],1),
+      resum: exactOrIncludes(header,["resumen","resum","concepte / descripcio","concepte / descripció"],["concepto","concepte","descrip"],2),
+      q: exactOrIncludes(header,["canpres","quantitat"],["quant","cantidad","amid"],4),
+      pu: exactOrIncludes(header,["pres","preu/ut"],["preu","precio","prpres","unitari","unitario"],5),
+      imp: exactOrIncludes(header,["imppres","total"],["import","importe","total"],6)
     };
 
     let partides=[];
@@ -141,7 +149,7 @@ try{
       if(!row || !row.some(x=>clean(x)!=="")) continue;
 
       const codi=clean(row[idx.codi]);
-      const natTxt=norm(row[idx.nat]);
+      const natTxt=idx.nat>=0?norm(row[idx.nat]):"";
       const ud=clean(row[idx.ud]);
       const resum=clean(row[idx.resum]);
       const q=num(row[idx.q]);
@@ -151,14 +159,20 @@ try{
       if(!imp && q && pu) imp=q*pu;
       if(!pu && q && imp) pu=imp/q;
 
-      // IMPORTANT: only explicit Nat=Capítol creates a chapter
-      if(natTxt.includes("cap")){
+      // FORMAT BRAVA: fila "Capítol XX" a columna Partida i títol a Concepte
+      if(isBravaHeader && /^cap[ií]tol/i.test(codi)){
+        capActual = `${codi}${resum ? " " + resum : ""}`.trim();
+        continue;
+      }
+
+      // FORMAT CLÀSSIC: Nat=Capítol
+      if(!isBravaHeader && natTxt.includes("cap")){
         capActual = codi ? `${codi} ${resum}` : (resum || capActual);
         continue;
       }
 
-      // IMPORTANT: only explicit Nat=Partida creates a budget line
-      if(natTxt.includes("part")){
+      // FORMAT BRAVA: partida real si hi ha codi + concepte + quantitat/preu/import
+      if(isBravaHeader && rowHasCode(codi) && resum && (q || pu || imp)){
         partides.push({
           codi: codi || String(partides.length+1).padStart(2,"0"),
           cap: capActual || "PRESSUPOST IMPORTAT",
@@ -169,17 +183,36 @@ try{
           pu: pu || 0,
           certAnterior: 0,
           certActual: 0,
+          certsByNum: {},
+          tipus: "Import Excel BRAVA"
+        });
+        continue;
+      }
+
+      // FORMAT CLÀSSIC: Nat=Partida
+      if(!isBravaHeader && natTxt.includes("part")){
+        partides.push({
+          codi: codi || String(partides.length+1).padStart(2,"0"),
+          cap: capActual || "PRESSUPOST IMPORTAT",
+          concepte: resum || "Partida importada",
+          desc: "",
+          ut: ud || "ut",
+          q: q || 0,
+          pu: pu || 0,
+          certAnterior: 0,
+          certActual: 0,
+          certsByNum: {},
           tipus: "Import Excel"
         });
         continue;
       }
 
-      // Empty Nat after partida = long description, never chapter
-      if(!natTxt && resum && partides.length){
+      // Descripció llarga sota la partida: normalment només columna Concepte/Descripció
+      if(resum && partides.length && !rowHasCode(codi) && !q && !pu && !imp){
         const last=partides[partides.length-1];
         const currentDesc=String(last.desc||"");
         if(!currentDesc.includes(resum)){
-          last.desc = (currentDesc ? currentDesc + "\n" : "") + resum;
+          last.desc=(currentDesc ? currentDesc + "\n" : "") + resum;
         }
       }
     }
