@@ -2588,3 +2588,16 @@ button,input,select,textarea{font-size:13.5px!important}
   color:#0f172a;
   cursor:default;
 }
+
+/* V87.26 - fitxa amb desplegables */
+.fitxa-form-v8726 select{
+  width:100%;
+  min-height:38px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  padding:8px 10px;
+  background:#fff;
+}
+.fitxa-form-v8726 textarea{
+  min-height:90px;
+}
