@@ -2611,3 +2611,32 @@ button,input,select,textarea{font-size:13.5px!important}
   padding:8px 10px;
   background:#fff;
 }
+
+/* V87.29 - backup JSON manual i guardar fitxa visible */
+.backup-json-v8729{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.backup-json-v8729 b,
+.backup-json-v8729 span{
+  display:block;
+}
+.backup-json-v8729 span{
+  color:#64748b;
+  margin-top:4px;
+  max-width:720px;
+}
+.backup-actions-v8729{
+  flex-wrap:wrap;
+}
+.dashboard-grid .span-all{
+  grid-column:1 / -1;
+}
+@media(max-width:900px){
+  .backup-json-v8729{
+    align-items:flex-start;
+  }
+}
