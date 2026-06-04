@@ -2612,25 +2612,28 @@ button,input,select,textarea{font-size:13.5px!important}
   background:#fff;
 }
 
-/* V87.30 - backup/importació segura a Configuració */
-.backup-config-v8730{
+/* V87.31 - backup per text, sense descàrregues */
+.backup-text-v8731{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  flex-wrap:wrap;
+  flex-direction:column;
+  gap:12px;
 }
-.backup-config-v8730 b,
-.backup-config-v8730 span{
+.backup-text-v8731 b,
+.backup-text-v8731 span{
   display:block;
 }
-.backup-config-v8730 span{
+.backup-text-v8731 span{
   color:#64748b;
   margin-top:4px;
-  max-width:760px;
 }
-@media(max-width:900px){
-  .backup-config-v8730{
-    align-items:flex-start;
-  }
+.backup-textarea-v8731{
+  width:100%;
+  min-height:180px;
+  border:1px solid #cbd5e1;
+  border-radius:12px;
+  padding:12px;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size:12px;
+  resize:vertical;
+  background:#f8fafc;
 }
