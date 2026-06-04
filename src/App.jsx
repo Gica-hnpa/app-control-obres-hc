@@ -74,7 +74,7 @@ function exportBackupJson8722(){
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    alert("Còpia JSON exportada correctament.");
+    
   }catch(err){
     alert("No s’ha pogut exportar la còpia: "+String(err?.message||err));
   }
@@ -106,49 +106,20 @@ function clearLocalDataJson8722(){
   location.reload();
 }
 function BackupPanelJson8722(){
-  return <Card title="Còpia de seguretat de dades" action={<button className="secondary" onClick={exportBackupJson8722}>Exportar JSON</button>}>
+  return <Card title="Còpia / exportació de dades">
     <div className="backup-json-v8722">
       <div>
-        <b>Les dades es guarden en aquest navegador.</b>
-        <span>Exporta una còpia JSON per traspassar clients, obres, pressupostos, certificacions i documents registrats a un altre ordinador.</span>
+        <b>Exportar i importar dades</b>
+        <span>JSON per passar totes les dades a un altre dispositiu. CSV per tenir un resum en Excel.</span>
       </div>
       <div className="actions-inline backup-actions-v8722">
-        <button className="primary" onClick={exportBackupJson8722}>Exportar JSON</button><button className="secondary" onClick={exportCsv8723}>Exportar CSV</button>
-        <label className="secondary upload-label">Importar còpia JSON<input type="file" accept="application/json,.json" onChange={e=>importBackupJson8722(e.target.files?.[0])}/></label>
-        <button className="danger" onClick={clearLocalDataJson8722}>Restaurar / esborrar dades locals</button>
+        <button type="button" className="primary" onClick={()=>exportBackupJson8722()}>Exportar JSON</button>
+        <button type="button" className="secondary" onClick={()=>exportCsv8723()}>Exportar CSV</button>
+        <label className="secondary upload-label">Importar JSON<input type="file" accept="application/json,.json" onChange={e=>importBackupJson8722(e.target.files?.[0])}/></label>
+        <button type="button" className="danger" onClick={()=>clearLocalDataJson8722()}>Restaurar dades locals</button>
       </div>
     </div>
   </Card>
-}
-
-
-
-function exportCsv8723(){
-  try{
-    const keys=["aco_clients","aco_obres","aco_odata"];
-    let rows=[["TIPUS","ID","NOM","CLIENT/OBRA","ESTAT","ADREÇA","POBLACIÓ","IMPORT"]];
-    const clients=JSON.parse(localStorage.getItem("aco_clients")||"[]");
-    const obres=JSON.parse(localStorage.getItem("aco_obres")||"[]");
-    const odata=JSON.parse(localStorage.getItem("aco_odata")||"{}");
-    clients.forEach(c=>rows.push(["CLIENT",c.id||"",c.nom||"",c.tipologia||"",c.estat||"",c.adreca||"",c.poblacio||"",""]));
-    obres.forEach(o=>{
-      const d=odata[o.id]||{};
-      const total=(d.partides||[]).reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
-      rows.push(["OBRA",o.id||"",o.nom||"",o.clientId||"",o.estat||"",o.adreca||"",o.poblacio||"",String(total).replace(".",",")]);
-    });
-    const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(";")).join("\n");
-    const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download=`resum-control-obres-${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }catch(err){
-    alert("No s’ha pogut exportar el CSV: "+String(err?.message||err));
-  }
 }
 
 function App(){
@@ -419,7 +390,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.23 inici-backup-fitxa</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="span-all"><BackupPanelJson8722/></div><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.24 backup manual</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="span-all"><BackupPanelJson8722/></div><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
