@@ -2611,3 +2611,26 @@ button,input,select,textarea{font-size:13.5px!important}
   padding:8px 10px;
   background:#fff;
 }
+
+/* V87.30 - backup/importació segura a Configuració */
+.backup-config-v8730{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.backup-config-v8730 b,
+.backup-config-v8730 span{
+  display:block;
+}
+.backup-config-v8730 span{
+  color:#64748b;
+  margin-top:4px;
+  max-width:760px;
+}
+@media(max-width:900px){
+  .backup-config-v8730{
+    align-items:flex-start;
+  }
+}
