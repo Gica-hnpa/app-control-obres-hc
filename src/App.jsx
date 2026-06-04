@@ -113,7 +113,7 @@ function BackupPanelJson8722(){
         <span>Exporta una còpia JSON per traspassar clients, obres, pressupostos, certificacions i documents registrats a un altre ordinador.</span>
       </div>
       <div className="actions-inline backup-actions-v8722">
-        <button className="primary" onClick={exportBackupJson8722}>Exportar còpia JSON</button>
+        <button className="primary" onClick={exportBackupJson8722}>Exportar JSON</button><button className="secondary" onClick={exportCsv8723}>Exportar CSV</button>
         <label className="secondary upload-label">Importar còpia JSON<input type="file" accept="application/json,.json" onChange={e=>importBackupJson8722(e.target.files?.[0])}/></label>
         <button className="danger" onClick={clearLocalDataJson8722}>Restaurar / esborrar dades locals</button>
       </div>
@@ -121,6 +121,35 @@ function BackupPanelJson8722(){
   </Card>
 }
 
+
+
+function exportCsv8723(){
+  try{
+    const keys=["aco_clients","aco_obres","aco_odata"];
+    let rows=[["TIPUS","ID","NOM","CLIENT/OBRA","ESTAT","ADREÇA","POBLACIÓ","IMPORT"]];
+    const clients=JSON.parse(localStorage.getItem("aco_clients")||"[]");
+    const obres=JSON.parse(localStorage.getItem("aco_obres")||"[]");
+    const odata=JSON.parse(localStorage.getItem("aco_odata")||"{}");
+    clients.forEach(c=>rows.push(["CLIENT",c.id||"",c.nom||"",c.tipologia||"",c.estat||"",c.adreca||"",c.poblacio||"",""]));
+    obres.forEach(o=>{
+      const d=odata[o.id]||{};
+      const total=(d.partides||[]).reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
+      rows.push(["OBRA",o.id||"",o.nom||"",o.clientId||"",o.estat||"",o.adreca||"",o.poblacio||"",String(total).replace(".",",")]);
+    });
+    const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(";")).join("\n");
+    const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=`resum-control-obres-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }catch(err){
+    alert("No s’ha pogut exportar el CSV: "+String(err?.message||err));
+  }
+}
 
 function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
@@ -390,7 +419,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.22 backup JSON · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="span-all"><BackupPanelJson8722/></div><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.23 inici-backup-fitxa</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="span-all"><BackupPanelJson8722/></div><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -428,17 +457,40 @@ function FitxaClient({client,obres,openObra,back}){
 
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
 function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row"><div className="thumb">{o.imatge?<img src={o.imatge}/>:"FOTO"}</div><div className="grow"><strong>{o.nom}</strong><span>{o.subtitol}</span></div><span>{o.tipologia}</span><Badge estat={o.estat}/></button>}
-function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+
+function EditObraModal8723({obra,close,save}){
+const[f,setF]=useState(()=>({...obra}));
+function ch(k,v){setF(x=>({...x,[k]:v}))}
+return <Modal title="Modificar fitxa de l’obra" close={close}>
+  <div className="form-grid">
+    <label><span>Nom obra</span><input value={f.nom||""} onChange={e=>ch("nom",e.target.value)}/></label>
+    <label><span>Subtítol</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)}/></label>
+    <label><span>Client / Promotor</span><input value={f.propietat||""} onChange={e=>ch("propietat",e.target.value)}/></label>
+    <label><span>NIF client</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)}/></label>
+    <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)}/></label>
+    <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)}/></label>
+    <label><span>Referència cadastral</span><input value={f.rc||""} onChange={e=>ch("rc",e.target.value)}/></label>
+    <label><span>Tipologia / servei</span><input value={f.tipologia||""} onChange={e=>ch("tipologia",e.target.value)}/></label>
+    <label><span>Estat</span><select value={f.estat||"Pressupostada"} onChange={e=>ch("estat",e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></label>
+    <label className="span-all"><span>Observacions</span><textarea value={f.observacions||""} onChange={e=>ch("observacions",e.target.value)}/></label>
+  </div>
+  <div className="modal-actions">
+    <button className="secondary" onClick={close}>Cancel·lar</button>
+    <button className="primary" onClick={()=>save(f)}>Guardar canvis</button>
+  </div>
+</Modal>
+}
+function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page">{editObra&&<EditObraModal8723 obra={obra} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO OBRA"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
-    <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
+    <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><button className="secondary edit-fitxa-btn-v8723" onClick={()=>setEditObra(true)}>Modificar fitxa</button><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
     <div className="obra-data-cards">
-      <label><span>Client</span><input defaultValue={obra.propietat}/></label>
-      <label><span>NIF client</span><input defaultValue={obra.nifPropietat}/></label>
-      <label><span>Adreça</span><input defaultValue={obra.adreca}/></label>
-      <label><span>Població</span><input defaultValue={obra.poblacio}/></label>
-      <label><span>Referència cadastral</span><input defaultValue={obra.rc}/></label>
-      <label><span>Tipus servei</span><input defaultValue={obra.tipologia}/></label>
+      <label><span>Client</span><input value={obra.propietat||""} readOnly/></label>
+      <label><span>NIF client</span><input value={obra.nifPropietat||""} readOnly/></label>
+      <label><span>Adreça</span><input value={obra.adreca||""} readOnly/></label>
+      <label><span>Població</span><input value={obra.poblacio||""} readOnly/></label>
+      <label><span>Referència cadastral</span><input value={obra.rc||""} readOnly/></label>
+      <label><span>Tipus servei</span><input value={obra.tipologia||""} readOnly/></label>
     </div>
   </div>
 </section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{tab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {tab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Certificacions"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Facturació"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Actes d’obra"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {tab==="Fotografies"&&<SeguimentFotos/>} {tab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {tab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}

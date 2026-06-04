@@ -2606,3 +2606,41 @@ button,input,select,textarea{font-size:13.5px!important}
     align-items:flex-start;
   }
 }
+
+/* V87.23 inici backup + editar fitxa */
+.edit-fitxa-btn-v8723{
+  margin-right:8px;
+  font-weight:900;
+}
+.backup-json-v8722{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.backup-json-v8722 b,
+.backup-json-v8722 span{
+  display:block;
+}
+.backup-json-v8722 span{
+  color:#64748b;
+  margin-top:4px;
+  max-width:720px;
+}
+.backup-actions-v8722{
+  flex-wrap:wrap;
+}
+.dashboard-grid .span-all{
+  grid-column:1 / -1;
+}
+.obra-data-cards input[readonly]{
+  background:#f8fafc;
+  color:#0f172a;
+  cursor:default;
+}
+@media(max-width:900px){
+  .backup-json-v8722{
+    align-items:flex-start;
+  }
+}
