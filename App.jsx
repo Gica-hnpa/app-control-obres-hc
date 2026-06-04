@@ -1,5 +1,6 @@
 
 import {useEffect,useMemo,useState} from "react";
+import * as XLSX from "xlsx";
 import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText} from "lucide-react";
 
 const SOCOTERM_LOGO="data:image/png;base64,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";
@@ -47,6 +48,7 @@ function openGmailCompose(to, subject, body){
   window.open(url,"_blank");
 }
 
+function todayShort8713(){const d=new Date();return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getFullYear()).slice(-2)}`;}
 function money(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+" €"}
 function qty2(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)}
 function pct(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+"%"}
@@ -55,7 +57,62 @@ function days(y,m){return new Date(y,m+1,0).getDate()}
 function first(y,m){return (new Date(y,m,1).getDay()+6)%7}
 function f2u(file,cb){if(!file)return;let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
 
-export default function App(){
+export default 
+function exportBackup8722(){
+  try{
+    const payload={version:"87.22",createdAt:new Date().toISOString(),localStorage:{}};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      payload.localStorage[k]=localStorage.getItem(k);
+    }
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=`copia-app-control-obres-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert("Còpia JSON exportada correctament.");
+  }catch(err){alert("No s’ha pogut exportar la còpia: "+String(err?.message||err));}
+}
+function importBackup8722(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const payload=JSON.parse(String(reader.result||"{}"));
+      const data=payload.localStorage||payload;
+      if(!data||typeof data!=="object")throw new Error("Format de còpia no vàlid");
+      if(!confirm("Això substituirà les dades locals d’aquest navegador. Continuar?"))return;
+      Object.entries(data).forEach(([k,v])=>{if(typeof v==="string")localStorage.setItem(k,v)});
+      alert("Còpia importada correctament. Ara es recarregarà l’app.");
+      location.reload();
+    }catch(err){alert("No s’ha pogut importar la còpia: "+String(err?.message||err));}
+  };
+  reader.readAsText(file);
+}
+function clearLocalData8722(){
+  if(!confirm("Això esborrarà les dades locals d’aquest navegador. Fes abans una exportació JSON. Continuar?"))return;
+  localStorage.clear();
+  alert("Dades locals esborrades. Ara es recarregarà l’app.");
+  location.reload();
+}
+function BackupPanel8722(){
+return <Card title="Còpia de seguretat de dades" action={<button className="secondary" onClick={exportBackup8722}>Exportar JSON</button>}>
+  <div className="backup-panel-v8722">
+    <div><b>Les dades es guarden al navegador d’aquest PC.</b><span>Per veure les mateixes dades en un altre ordinador, exporta una còpia JSON i importa-la a l’altre navegador.</span></div>
+    <div className="actions-inline">
+      <button className="primary" onClick={exportBackup8722}>Exportar còpia JSON</button>
+      <label className="secondary upload-label">Importar còpia JSON<input type="file" accept="application/json,.json" onChange={e=>importBackup8722(e.target.files?.[0])}/></label>
+      <button className="danger" onClick={clearLocalData8722}>Restaurar / esborrar dades locals</button>
+    </div>
+  </div>
+</Card>
+}
+
+function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
 const appCfg=JSON.parse(localStorage.getItem("aco_config")||"{}");
 const lang=appCfg.idioma||"Català";
@@ -66,7 +123,7 @@ const[clients,setClients]=useState(()=>{let c=JSON.parse(localStorage.getItem("a
 const[clientId,setClientId]=useState("socoterm"),[obraId,setObraId]=useState("maricel"),[tab,setTab]=useState("Resum");
 const[cs,setCs]=useState(""),[ct,setCt]=useState(""),[os,setOs]=useState(""),[oc,setOc]=useState(""),[oy,setOy]=useState(""),[ost,setOst]=useState("");
 const[modal,setModal]=useState(null),[certInfo,setCertInfo]=useState({num:"2",data:"18/06/26",anteriorNum:"1",anteriorData:"12/05/26"});
-const[calM,setCalM]=useState(5),[calY,setCalY]=useState(2026),[selDay,setSelDay]=useState(null),[email,setEmail]=useState(null),[doc,setDoc]=useState(null),[selActa,setSelActa]=useState(null);
+const[calM,setCalM]=useState(new Date().getMonth()),[calY,setCalY]=useState(2026),[selDay,setSelDay]=useState(null),[email,setEmail]=useState(null),[doc,setDoc]=useState(null),[selActa,setSelActa]=useState(null);
 const[timer,setTimer]=useState({running:false,start:null,elapsed:0,label:"Cèdula",task:"",rate:50});
 useEffect(()=>{let id;if(timer.running){id=setInterval(()=>setTimer(t=>({...t,elapsed:Date.now()-t.start})),500)}return()=>clearInterval(id)},[timer.running,timer.start]);
 useEffect(()=>{localStorage.setItem("aco_clients",JSON.stringify(clients))},[clients]);
@@ -80,17 +137,220 @@ const setD=(id,up)=>setOdata(p=>({...p,[id]:typeof up==="function"?up(p[id]||emp
 function nav(s){setScreen(s);setMenuOpen(false);setCollapsed(true)}
 function openObra(id){setObraId(id);setTab("Resum");setSelActa(null);nav("Obra")}
 function openClient(id){setClientId(id);nav("Fitxa client")}
-function importExcel(e){
+
+
+async function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
-if(obraId==="maricel"){
-  setD(obraId,d=>({...d,partides:partidesMaricel.map(x=>({...x})),pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v03",data:"Avui",nom:file.name,estat:"Importat demo",import:partidesMaricel.reduce((s,p)=>s+p.q*p.pu,0)}]}));
-}else{
-  setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{id:"p"+Date.now(),versio:"v01",data:"Avui",nom:file.name,estat:"Excel pendent de lectura real",import:0}],partides:[]}));
+
+function clean(v){return String(v??"").trim()}
+function norm(v){return clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function num(v){
+  if(typeof v==="number")return v;
+  let s=String(v??"").trim();
+  if(!s)return 0;
+  s=s.replace(/\s/g,"").replace(/€/g,"");
+  if(s.includes(",")) s=s.replace(/\./g,"").replace(",",".");
+  let n=parseFloat(s.replace(/[^\d.-]/g,""));
+  return Number.isFinite(n)?n:0;
+}
+function isHeader(row){
+  const txt=row.map(norm).join(" ");
+  return txt.includes("codigo") || txt.includes("código") || txt.includes("nat") || txt.includes("resumen") || txt.includes("canpres") || txt.includes("imppres");
+}
+function exactOrIncludes(header, exacts, includes, fallback){
+  let i=header.findIndex(h=>exacts.includes(h));
+  if(i>=0)return i;
+  i=header.findIndex(h=>includes.some(k=>h.includes(k)));
+  return i>=0?i:fallback;
+}
+
+try{
+  const ab=await file.arrayBuffer();
+  const wb=XLSX.read(ab,{type:"array",cellDates:false});
+  let imported=[];
+  let detectedSheet="";
+  let capActual="PRESSUPOST IMPORTAT";
+
+  for(const sheetName of wb.SheetNames){
+    const ws=wb.Sheets[sheetName];
+    const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+    if(!data?.length) continue;
+
+    const headerIndex=data.findIndex(isHeader);
+    if(headerIndex<0) continue;
+
+    const header=(data[headerIndex]||[]).map(norm);
+    const idx={
+      codi: exactOrIncludes(header,["codigo","código","codi"],["partida"],0),
+      nat: exactOrIncludes(header,["nat"],["naturaleza","tipus"],1),
+      ud: exactOrIncludes(header,["ud","ut"],["unitat","unidad"],2),
+      resum: exactOrIncludes(header,["resumen","resum"],["concepto","concepte","descrip"],3),
+      q: exactOrIncludes(header,["canpres"],["quant","cantidad","amid"],4),
+      pu: exactOrIncludes(header,["pres"],["preu","precio","prpres","unitari","unitario"],5),
+      imp: exactOrIncludes(header,["imppres"],["import","importe","total"],6)
+    };
+
+    let partides=[];
+    for(const row of data.slice(headerIndex+1)){
+      if(!row || !row.some(x=>clean(x)!=="")) continue;
+
+      const codi=clean(row[idx.codi]);
+      const natTxt=norm(row[idx.nat]);
+      const ud=clean(row[idx.ud]);
+      const resum=clean(row[idx.resum]);
+      const q=num(row[idx.q]);
+      let pu=num(row[idx.pu]);
+      let imp=num(row[idx.imp]);
+
+      if(!imp && q && pu) imp=q*pu;
+      if(!pu && q && imp) pu=imp/q;
+
+      // IMPORTANT: only explicit Nat=Capítol creates a chapter
+      if(natTxt.includes("cap")){
+        capActual = codi ? `${codi} ${resum}` : (resum || capActual);
+        continue;
+      }
+
+      // IMPORTANT: only explicit Nat=Partida creates a budget line
+      if(natTxt.includes("part")){
+        partides.push({
+          codi: codi || String(partides.length+1).padStart(2,"0"),
+          cap: capActual || "PRESSUPOST IMPORTAT",
+          concepte: resum || "Partida importada",
+          desc: "",
+          ut: ud || "ut",
+          q: q || 0,
+          pu: pu || 0,
+          certAnterior: 0,
+          certActual: 0,
+          tipus: "Import Excel"
+        });
+        continue;
+      }
+
+      // Empty Nat after partida = long description, never chapter
+      if(!natTxt && resum && partides.length){
+        const last=partides[partides.length-1];
+        const currentDesc=String(last.desc||"");
+        if(!currentDesc.includes(resum)){
+          last.desc = (currentDesc ? currentDesc + "\n" : "") + resum;
+        }
+      }
+    }
+
+    if(partides.length){
+      imported=partides;
+      detectedSheet=sheetName;
+      break;
+    }
+  }
+
+  if(!imported.length){
+    setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{
+      id:"p"+Date.now(),
+      versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
+      data:"Avui",
+      nom:file.name,
+      estat:"Excel llegit però sense partides detectades",
+      import:0
+    }]}));
+    return;
+  }
+
+  const total=imported.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
+
+  setD(obraId,d=>{
+    const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[
+      {id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},
+      {id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}
+    ];
+    return {...d,
+      partides: imported,
+      certificacions: nextCerts,
+      pressupostos:[...d.pressupostos,{
+        id:"p"+Date.now(),
+        versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
+        data:"Avui",
+        nom:file.name,
+        estat:`Excel llegit · ${imported.length} partides · ${detectedSheet}`,
+        import:total
+      }]
+    };
+  });
+}catch(err){
+  setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{
+    id:"p"+Date.now(),
+    versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
+    data:"Avui",
+    nom:file.name,
+    estat:"Error lectura Excel: "+String(err?.message||err),
+    import:0
+  }]}));
 }
 }
-function updateCert(codi,v){let n=parseFloat(String(v).replace(",","."))||0;setD(obraId,d=>({...d,partides:d.partides.map(r=>r.codi===codi?{...r,certActual:n}:r)}))}
-function saveCert(){let total=data.partides.reduce((s,r)=>s+r.certActual*r.pu,0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>c.numero!==certInfo.num),{id:"c"+Date.now(),numero:certInfo.num,data:certInfo.data,estat:"Guardada",import:total}]}));setDoc({type:"certificacio",title:`Certificació ${certInfo.num}`,subtitle:`${certInfo.data} · ${obra.nom}`})}
+
+
+
+function deletePressupostVersion(id){
+  if(!confirm("Eliminar aquesta versió de pressupost?")) return;
+  setD(obraId,d=>({...d,pressupostos:(d.pressupostos||[]).filter(p=>p.id!==id)}));
+}
+function duplicatePressupostVersion(id){
+  setD(obraId,d=>{
+    const p=(d.pressupostos||[]).find(x=>x.id===id);
+    if(!p)return d;
+    return {...d,pressupostos:[...d.pressupostos,{...p,id:"p"+Date.now(),versio:p.versio+" copia",data:"Avui",estat:"Còpia"}]};
+  });
+}
+
+function addCertificacio(){
+  setD(obraId,d=>{
+    const certs=d.certificacions||[];
+    const nextNum=(certs.reduce((m,c)=>Math.max(m,+c.numero||0),0)||0)+1;
+    const nova={id:"c"+Date.now(),numero:String(nextNum),data:todayShort8713(),estat:"Pendent",import:0};
+    return {...d,certificacions:[...certs,nova]};
+  });
+}
+
+function updateObraFitxa8721c(patch){
+  setD(obraId,d=>({...d,obra:{...(d.obra||{}),...patch}}));
+}
+function updateCert(codi,fieldOrValue,value){
+let field=value===undefined?"certActual":fieldOrValue;
+let raw=value===undefined?fieldOrValue:value;
+let n=parseFloat(String(raw).replace(",","."));
+if(!Number.isFinite(n))n=0;
+setD(obraId,d=>({...d,partides:d.partides.map(r=>{
+  if(r.codi!==codi)return r;
+  const next={...r,[field]:n};
+  if(String(field).startsWith("cert_")){
+    next.certsByNum={...(r.certsByNum||{}),[String(field).replace("cert_","")]:n};
+  }
+  return next;
+})}))
+}
+function updateCertDate(id,value){setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))}
+
+function updateCertDateSafe8720(id,value){
+  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))
+}
+function deleteCertificacioSafe8720(id){
+  if(!confirm("Eliminar aquesta certificació?"))return;
+  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))
+}
+
+function updateCertDate8721(id,value){
+  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))
+}
+function deleteCertificacio8721(id){
+  if(!confirm("Eliminar aquesta certificació?"))return;
+  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))
+}
+function updateObraFitxa8721(patch){
+  setD(obraId,d=>({...d,obra:{...(d.obra||{}),...patch}}))
+}
+function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>{let q=(r.certsByNum&&r.certsByNum[String(n)]!==undefined)?+r.certsByNum[String(n)]||0:n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0;return s+q*(+r.pu||0)},0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
 function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data.agents||[]).map(a=>a.id),message:"Bon dia,\n\nAdjunto document de l'obra per a la seva revisió.\n\nSalutacions,\nHéctor"})}
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon")}]}));setModal(null)}
 function addActa(e){e.preventDefault();let f=new FormData(e.currentTarget);let ag=[...e.currentTarget.querySelectorAll('input[name="agentsActa"]:checked')].map(x=>x.value);let a={id:"acta-"+Date.now(),data:f.get("data"),titol:f.get("titol"),obra:obra.nom,agents:ag,text:f.get("text"),signatura:"Pendent"};setD(obraId,d=>({...d,actes:[...d.actes,a]}));setSelActa(a.id);setModal(null);setTab("Actes d’obra")}
@@ -105,16 +365,16 @@ function deleteHour(id){setD(obraId,d=>({...d,hores:d.hores.filter(h=>h.id!==id)
 function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=String(b).split(":").map(Number);let mins=(bh*60+bm)-(ah*60+am);return Math.max(mins/60,0)}
 
 
-return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Projectes / Obres"||screen==="Obra"} i={<FolderOpen/>} l={tt("Projectes / Obres","Proyectos / Obras","Projects / Jobs")} on={()=>nav("Projectes / Obres")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Temps invertit / cost treball","Tiempo invertido / coste","Time / cost")} on={()=>nav("Traça")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Projectes / Obres"||screen==="Obra"} i={<FolderOpen/>} l={tt("Projectes / Obres","Proyectos / Obras","Projects / Jobs")} on={()=>nav("Projectes / Obres")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Temps invertit / cost treball","Tiempo invertido / coste","Time / cost")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen==="Inici"&&<Inici clients={clients} obres={obres} events={Object.values(odata).flatMap(d=>d.events||[])} setScreen={nav} openObra={openObra}/>}
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Projectes / Obres"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst}} newObra={()=>setModal("obra")}/>}
-{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} updateCert={updateCert} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
-{screen==="Agenda"&&<Agenda events={data.events||[]} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
+{screen==="Obra"&&<Obra obra={obra} client={client} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
+{screen==="Agenda"&&<Agenda events={data.events||[]} clients={clients} obres={obres} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
-{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nova obra" close={()=>setModal(null)}><FormObra clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’obra" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’obra" close={()=>setModal(null)}><FormActa agents={data.agents} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div>
+{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nova obra" close={()=>setModal(null)}><FormObra clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’obra" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’obra" close={()=>setModal(null)}><FormActa agents={data.agents} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div>
 }
 
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
@@ -124,12 +384,45 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 58 recuperada V38 · Resum obra tècnic</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Avisos")}><small>AVISOS OBERTS</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Avisos")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Avisos")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Calendari general"><HomeCalendar events={events}/></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.22 backup-fitxa</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><BackupPanel8722/><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
-function FitxaClient({client,obres,openObra,back}){return <div className="stack"><button className="secondary" onClick={back}>← Tornar</button><Card title={client.nom}><div className="form-grid"><Input label="Nom comercial" defaultValue={client.nom}/><Input label="Raó social" defaultValue={client.rao}/><Input label="NIF/CIF" defaultValue={client.nif}/><Input label="Contacte" defaultValue={client.contacte}/><Input label="Email" defaultValue={client.email}/><Input label="Telèfon" defaultValue={client.telefon}/></div></Card><Card title={`Obres amb ${client.nom}`}><div className="list">{obres.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card></div>}
+
+
+function FitxaClient({client,obres,openObra,back}){
+  const [edit,setEdit]=useState(false);
+  const [form,setForm]=useState({...client});
+  const tipus=["Promotor","Arquitecte","Arquitecte tècnic","Direcció Facultativa","Constructor","Autònom","Subcontractat","Industrial","Administració","Particular","Altres"];
+  const treball=["Pressupost","Project Manager","Direcció d’obra","Projecte tècnic","Certificació","Cèdula / CEE","Altres"];
+  function set(k,v){setForm(f=>({...f,[k]:v}))}
+  function save(){
+    try{
+      let all=JSON.parse(localStorage.getItem("aco_clients")||"[]");
+      all=all.map(c=>c.id===client.id?{...c,...form}:c);
+      localStorage.setItem("aco_clients",JSON.stringify(all));
+    }catch(e){}
+    Object.assign(client,form);
+    setEdit(false);
+    alert("Client guardat.");
+  }
+  return <div className="stack"><button className="secondary" onClick={back}>← Tornar</button><Card title={form.nom||client.nom} action={<div className="actions-inline"><button className="secondary" onClick={()=>setEdit(!edit)}>{edit?"Tancar edició":"Editar client"}</button>{edit&&<button className="primary" onClick={save}>Guardar client</button>}</div>}>
+    <div className="client-edit-head-v75"><div className="client-logo big">{form.logo?<img src={form.logo}/>:"LOGO"}</div>{edit&&<label className="upload-label secondary">Canviar logo<input type="file" accept="image/*" onChange={e=>f2u(e.target.files[0],u=>set("logo",u))}/></label>}</div>
+    <div className="form-grid">
+      <label><span>Nom comercial</span><input list="clients-mem" value={form.nom||""} onChange={e=>set("nom",e.target.value)} disabled={!edit}/><datalist id="clients-mem"><option>SOCOTERM</option><option>BRAVA CONSTRUCCIONS</option><option>RICARDO · COPROCAT</option></datalist></label>
+      <Input label="Raó social" value={form.rao||""} onChange={e=>set("rao",e.target.value)} disabled={!edit}/>
+      <label><span>Tipologia de client</span><select value={form.tipus||""} onChange={e=>set("tipus",e.target.value)} disabled={!edit}>{tipus.map(t=><option key={t}>{t}</option>)}</select></label>
+      <label><span>Tipologia del treball meu</span><select value={form.treball||"Pressupost"} onChange={e=>set("treball",e.target.value)} disabled={!edit}>{treball.map(t=><option key={t}>{t}</option>)}</select></label>
+      <Input label="NIF/CIF" value={form.nif||""} onChange={e=>set("nif",e.target.value)} disabled={!edit}/>
+      <Input label="Contacte" value={form.contacte||""} onChange={e=>set("contacte",e.target.value)} disabled={!edit}/>
+      <Input label="Email" value={form.email||""} onChange={e=>set("email",e.target.value)} disabled={!edit}/>
+      <Input label="Telèfon" value={form.telefon||""} onChange={e=>set("telefon",e.target.value)} disabled={!edit}/>
+      <Input label="Adreça" value={form.adreca||""} onChange={e=>set("adreca",e.target.value)} disabled={!edit}/>
+    </div>
+  </Card><Card title={`Obres amb ${form.nom||client.nom}`}><div className="list">{obres.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card></div>
+}
+
 function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Projectes / Obres" action={<button className="primary" onClick={newObra}><Plus/> Nova obra</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar obra..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><div className="company-title">{clients.find(c=>c.id===cid)?.nom}</div>{Object.entries(ys).map(([y,os])=><div key={y}><div className="year-title">{y}</div>{os.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
 function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row"><div className="thumb">{o.imatge?<img src={o.imatge}/>:"FOTO"}</div><div className="grow"><strong>{o.nom}</strong><span>{o.subtitol}</span></div><span>{o.tipologia}</span><Badge estat={o.estat}/></button>}
-function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,updateCert,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,updateObraFitxa8721c,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=["Resum","Pressupost obra","Certificacions","Facturació","Actes d’obra","Fotografies","Documents","Honoraris / Temps"];return <div className="obra-page"><div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {obra.tipologia}</p></div><button className="secondary" onClick={()=>setScreen("Projectes / Obres")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO OBRA"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
     <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
@@ -142,7 +435,7 @@ function Obra({obra,client,data,tab,setTab,setScreen,uploadImage,importExcel,upd
       <label><span>Tipus servei</span><input defaultValue={obra.tipologia}/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{tab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {tab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Certificacions"&&<Cert data={data} updateCert={updateCert} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Facturació"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Actes d’obra"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {tab==="Fotografies"&&<SeguimentFotos/>} {tab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {tab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{tab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent} updateObraFitxa8721c={updateObraFitxa8721c}/>} {tab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Certificacions"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Facturació"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {tab==="Actes d’obra"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {tab==="Fotografies"&&<SeguimentFotos/>} {tab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {tab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 function ObraAgentsResum({data,openAgent}){
 const[q,setQ]=useState("");
@@ -185,23 +478,96 @@ return <Card title="Avisos i notes de l’obra" action={<div className="actions-
       </div>
     })}
   </div>
-  <div className="obra-alerts-summary"><span>Pendents: <b>{pending.length}</b></span><span>Fets: <b>{done.length}</b></span></div>
+  <div className="obra-alerts-summary"><span>Pendents: <b>{pending.length}</b></span><span>Fets: <b>{done.length}</b></span></div>{editObra8721&&<EditObraModal8721 obra={data.obra||obra} close={()=>setEditObra8721(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra8721(false)}}/>}
 </Card>
 }
 
-function Resum({obra,client,data,openAgent}){
-let realPressupost=(data.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-return <div className="stack">
-  <section className="obra-summary-kpis"><Kpi t="PRESSUPOST OBRA" v={money(realPressupost||obra.pressupost)}/><Kpi t="CERTIFICACIONS FETES" v={data.certificacions.length}/><Kpi t="ACTES FETES" v={data.actes.length}/></section>
-  <section className="resum-grid resum-grid-v29">
-    <ObraAgentsResum data={data} openAgent={openAgent}/>
-    <ObraNotesAvisos obraId={obra.id} data={data}/>
-  </section>
-</div>}
 
-function Pressupost({data,importExcel,openPartida,openEmail,openDoc}){
+
+
+function EditObraModal8721({obra,close,save}){
+const[f,setF]=useState(()=>({...obra}));
+function ch(k,v){setF(x=>({...x,[k]:v}))}
+return <Modal title="Modificar fitxa de l’obra" close={close}>
+  <div className="form-grid">
+    <label><span>Nom obra</span><input value={f.nom||""} onChange={e=>ch("nom",e.target.value)}/></label>
+    <label><span>Subtítol / resum</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)}/></label>
+    <label><span>Promotor / propietat</span><input value={f.propietat||""} onChange={e=>ch("propietat",e.target.value)}/></label>
+    <label><span>NIF propietat</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)}/></label>
+    <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)}/></label>
+    <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)}/></label>
+    <label><span>Estat</span><select value={f.estat||"Activa"} onChange={e=>ch("estat",e.target.value)}><option>Activa</option><option>Pendent</option><option>En curs</option><option>Finalitzada</option><option>Tancada</option></select></label>
+    <label><span>Tipologia</span><input value={f.tipologia||""} onChange={e=>ch("tipologia",e.target.value)}/></label>
+    <label className="span-all"><span>Observacions</span><textarea value={f.observacions||""} onChange={e=>ch("observacions",e.target.value)}/></label>
+  </div>
+  <div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>save(f)}>Guardar canvis</button></div>
+</Modal>
+}
+
+
+function Resum({obra,client,data,openAgent,updateObraFitxa8721c}){
+const[edit,setEdit]=useState(false);
+let rows=data.partides||[], certs=data.certificacions||[];
+let obraInfo=data.obra||obra||{};
+let pressupost=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
+let totalCert=certs.reduce((s,c)=>s+rows.reduce((x,r)=>x+qFor(r,+c.numero)*(+r.pu||0),0),0);
+let pendent=Math.max(pressupost-totalCert,0), percent=pressupost?totalCert/pressupost*100:0, ultima=certs.length?certs[certs.length-1]:null;
+return <div className="stack">
+  <div className="fitxa-edit-toolbar-v8721c">
+    <button className="secondary" onClick={()=>setEdit(true)}>Modificar fitxa obra</button>
+  </div>
+  {edit&&<EditObraModal8721c obra={obraInfo} close={()=>setEdit(false)} save={(patch)=>{updateObraFitxa8721c?.(patch);setEdit(false)}}/>}
+  <div className="obra-resum-v63">
+    <div className="resum-kpi-v63"><span>Pressupost obra</span><b>{money(pressupost)}</b></div>
+    <div className="resum-kpi-v63"><span>Quantitat certificada</span><b>{money(totalCert)}</b></div>
+    <div className="resum-kpi-v63"><span>Pendent</span><b>{money(pendent)}</b></div>
+    <div className="resum-kpi-v63"><span>Núm. certificacions</span><b>{certs.length}</b></div>
+    <div className="resum-kpi-v63"><span>% executat</span><b>{pct(percent)}</b></div>
+    <div className="resum-kpi-v63"><span>Última certificació</span><b>{ultima?`Cert. ${ultima.numero}`:"—"}</b><em>{ultima?.data||""}</em></div>
+  </div>
+  <Card title="Fitxa resum de l’obra">
+    <div className="obra-fitxa-v8721c">
+      <div><span>Obra</span><b>{obraInfo.nom||"—"}</b></div>
+      <div><span>Promotor / propietat</span><b>{obraInfo.propietat||"—"}</b></div>
+      <div><span>Adreça</span><b>{obraInfo.adreca||"—"}</b></div>
+      <div><span>Població</span><b>{obraInfo.poblacio||"—"}</b></div>
+      <div><span>Estat</span><b>{obraInfo.estat||"—"}</b></div>
+      <div><span>Tipologia</span><b>{obraInfo.tipologia||"—"}</b></div>
+    </div>
+  </Card>
+  <Card title="Evolució econòmica"><div className="progress-big-v63"><div><i style={{width:`${Math.min(percent,100)}%`}}/></div><b>{pct(percent)}</b></div></Card>
+</div>
+}
+
+function EditObraModal8721c({obra,close,save}){
+const[f,setF]=useState(()=>({...obra}));
+function ch(k,v){setF(x=>({...x,[k]:v}))}
+return <Modal title="Modificar fitxa de l’obra" close={close}>
+  <div className="form-grid">
+    <label><span>Nom obra</span><input value={f.nom||""} onChange={e=>ch("nom",e.target.value)}/></label>
+    <label><span>Subtítol / resum</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)}/></label>
+    <label><span>Promotor / propietat</span><input value={f.propietat||""} onChange={e=>ch("propietat",e.target.value)}/></label>
+    <label><span>NIF propietat</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)}/></label>
+    <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)}/></label>
+    <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)}/></label>
+    <label><span>Estat</span><select value={f.estat||"Activa"} onChange={e=>ch("estat",e.target.value)}><option>Activa</option><option>Pendent</option><option>En curs</option><option>Finalitzada</option><option>Tancada</option></select></label>
+    <label><span>Tipologia</span><input value={f.tipologia||""} onChange={e=>ch("tipologia",e.target.value)}/></label>
+    <label className="span-all"><span>Observacions</span><textarea value={f.observacions||""} onChange={e=>ch("observacions",e.target.value)}/></label>
+  </div>
+  <div className="modal-actions">
+    <button className="secondary" onClick={close}>Cancel·lar</button>
+    <button className="primary" onClick={()=>save(f)}>Guardar canvis</button>
+  </div>
+</Modal>
+}
+
+function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
+  const [descOpen875,setDescOpen875]=useState({});
+  useEffect(()=>{const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(Object.fromEntries(Object.keys(syncCapsV874).map((k,i)=>[k,i===0])));},[data.partides]);
+
 
   function upd(cap,i,k,v){
     setCaps(p=>{
@@ -244,7 +610,15 @@ function Pressupost({data,importExcel,openPartida,openEmail,openDoc}){
   return <div className="stack">
     <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label><button className="primary" onClick={addCapitol}><Plus/> Nou capítol</button></div>}>
       <div className="version-list">
-        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><button className="version-row" key={p.id} onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}><strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em></button>)}
+        {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><div className="version-card-v872" key={p.id}>
+          <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}>
+            <strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em>
+          </button>
+          <div className="version-actions-v872">
+            <button className="secondary small" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
+            <button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button>
+          </div>
+        </div>)}
       </div>
     </Card>
 
@@ -262,13 +636,13 @@ function Pressupost({data,importExcel,openPartida,openEmail,openDoc}){
             </div>
 
             {open[cap]&&<div className="budget-v25-lines">
-              <div className="budget-v25-line head"><span>Codi</span><span>Concepte</span><span>Ut</span><span>Amid.</span><span>Preu/ut</span><span>Total</span></div>
+              <div className="budget-v25-line head"><span>Codi</span><span>Ut</span><span>Concepte</span><span>Amid.</span><span>Preu/ut</span><span>Total</span></div>
               {items.map((r,i)=>{
                 const t=(+r.q||0)*(+r.pu||0);
                 return <div className="budget-v25-line" key={i}>
                   <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
-                  <input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>
                   <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
+                  <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
                   <input type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
                   <input type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>
                   <b>{money(t)}</b>
@@ -283,33 +657,180 @@ function Pressupost({data,importExcel,openPartida,openEmail,openDoc}){
   </div>
 }
 
-function Cert({data,updateCert,ci,setCi,saveCert,openEmail,openDoc}){
-const[selected,setSelected]=useState(data.certificacions?.[0]?.id||null);
-const[view,setView]=useState("Resum");
+
+
+
+
+
+
+
+
+function Cert({data,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
+const certs=data.certificacions||[];
+const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
+const[editing,setEditing]=useState(false);
+const[draft,setDraft]=useState({});
+const[certDescOpen875,setCertDescOpen875]=useState({});
+const[certCapsOpen879,setCertCapsOpen879]=useState({});
+const[certMode8711,setCertMode8711]=useState("resum");
+const[dateDraft8721,setDateDraft8721]=useState({});
+const[dateDraftSafe8720,setDateDraftSafe8720]=useState({});
 let rows=data.partides||[], caps=group(rows,"cap");
-let cert=data.certificacions.find(c=>c.id===selected)||data.certificacions[0]||null;
-let certNum=cert?+cert.numero:+ci.num;
-let prevNum=Math.max(certNum-1,0);
-function qPrev(r){return certNum<=1?0:(+r.certAnterior||0)}
-function qActual(r){return certNum===1?(+r.certAnterior||0):(+r.certActual||0)}
-function impPrev(r){return qPrev(r)*(+r.pu||0)}
-function impActual(r){return qActual(r)*(+r.pu||0)}
-let tp=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-let ta=rows.reduce((s,r)=>s+impPrev(r),0);
-let tc=rows.reduce((s,r)=>s+impActual(r),0);
-let to=ta+tc;
-let showInfo=cert?{num:cert.numero,data:cert.data,anteriorNum:String(prevNum),anteriorData:"Anterior"}:ci;
+let cert=certs.find(c=>c.id===selected)||certs.find(c=>+c.numero===2)||certs[0]||null;
+let certNum=cert?+cert.numero:1;
+let prevNum=certNum>1?certNum-1:0;
+useEffect(()=>{setDraft({})},[selected]);
+useEffect(()=>{if(certs.length){setSelected(certs[certs.length-1].id)}},[certs.length]);
+function dateVal8721(c){return dateDraft8721[c.id]??fmtDate8714(c.data)}
+function saveDates8721(){
+  certs.forEach(c=>{
+    if(dateDraft8721[c.id]!==undefined)updateCertDate8721?.(c.id,dateDraft8721[c.id])
+  });
+  setDateDraft8721({});
+}
+
+function dateValSafe8720(c){return dateDraftSafe8720[c.id]??fmtDate8714(c.data)}
+function saveDatesSafe8720(){
+  certs.forEach(c=>{if(dateDraftSafe8720[c.id]!==undefined)updateCertDateSafe8720?.(c.id,dateDraftSafe8720[c.id])});
+  setDateDraftSafe8720({});
+}
+
+
+function fieldFor(n){return "cert_"+n}
+function qFor(r,n){if(n<=0)return 0;if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;if(n===1)return +r.certAnterior||0;if(n===2)return +r.certActual||0;return 0}
+function qDraft(r){let raw=draft[r.codi]??String(qFor(r,certNum));let q=Number(String(raw).replace(",","."));return Number.isFinite(q)?q:qFor(r,certNum)}
+function imp(r,n){return qFor(r,n)*(+r.pu||0)}
+function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qDraft(r):qFor(r,i);return total}
+function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,n))*(+r.pu||0),0)}
+function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*(+r.pu||0),0)}
+function commitOne(codi,v){let val=Number(String(v).replace(",","."));if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
+function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
+function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
+
 return <div className="stack">
-<Card title="Certificacions guardades"><div className="version-list">{data.certificacions.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:data.certificacions.map(c=><button className={`version-row ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setView("Quadre detallat")}}><strong>Cert. {c.numero}</strong><span>{c.data}</span><span>{c.estat}</span><b>{money(c.import)}</b><em>Obrir quadre</em></button>)}</div></Card>
-<Card title="Certificacions · Resum i quadre"><div className="cert-inner-tabs"><button className={view==="Resum"?"active":""} onClick={()=>setView("Resum")}>Resum per capítols</button><button className={view==="Quadre detallat"?"active":""} onClick={()=>setView("Quadre detallat")}>Quadre detallat {cert?`Cert. ${cert.numero}`:""}</button></div>
-{view==="Resum"?<CertResum rows={rows} certs={data.certificacions||[]} />:<div><div className="card-head inline-head"><h2>{`Certificació ${showInfo.num} · Quadre general`}</h2><div className="actions-inline"><button className="primary" onClick={saveCert}><Save/> Guardar certificació</button><button className="primary" onClick={()=>window.print()}>Exportar / PDF horitzontal</button><button className="secondary" onClick={()=>openEmail(`Certificació ${showInfo.num}`)}><Mail/> Enviar email</button></div></div>
-<div className="cert-config no-print"><Input label="Certificació anterior" defaultValue={showInfo.anteriorNum}/><Input label="Data anterior" defaultValue={showInfo.anteriorData}/><Input label="Certificació actual" defaultValue={showInfo.num}/><Input label="Data actual" defaultValue={showInfo.data}/></div>
-<div className="table-wrap cert-box cert-print-area">{rows.length===0?<Empty text="Sense partides. Primer importa o crea un pressupost."/>:<table className="excel-cert"><thead><tr><th colSpan="15" className="cert-title">VERTICAL TREK ESPAÑA, S.L. · CERTIFICACIÓ {showInfo.num} ({showInfo.data})</th></tr><tr><th>Codi</th><th>Ut</th><th className="concept">Resum</th><th>CanPres</th><th>PrPres</th><th className="sep">ImpPres</th><th colSpan="3" className="group-head sep">CERTIFICACIÓ {showInfo.anteriorNum}</th><th colSpan="3" className="group-head sep">CERTIFICACIÓ {showInfo.num}</th><th colSpan="3" className="group-head">A ORIGEN</th></tr><tr><th></th><th></th><th></th><th></th><th></th><th className="sep"></th><th>Q ant.</th><th>% ant.</th><th className="sep">Imp ant.</th><th>Q act.</th><th>% act.</th><th className="sep">Imp act.</th><th>Q origen</th><th>% origen</th><th>Imp origen</th></tr></thead><tbody>{Object.entries(caps).map(([cap,items])=><CertCap key={cap} cap={cap} items={items} qPrev={qPrev} qActual={qActual} impPrev={impPrev} impActual={impActual}/>) }<tr className="total-row"><td colSpan="5">TOTAL PRESSUPOST</td><td className="sep">{money(tp)}</td><td colSpan="2">TOTAL CERT. {showInfo.anteriorNum}</td><td className="sep">{money(ta)}</td><td colSpan="2">TOTAL CERT. {showInfo.num}</td><td className="sep">{money(tc)}</td><td colSpan="2">TOTAL ORIGEN</td><td>{money(to)}</td></tr></tbody></table>}</div></div>}
-</Card></div>}
-function CertCap({cap,items,qPrev,qActual,impPrev,impActual}){let tp=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0),ta=items.reduce((s,r)=>s+impPrev(r),0),tc=items.reduce((s,r)=>s+impActual(r),0),to=ta+tc;return <><tr className="cap-row"><td colSpan="5">{cap}</td><td className="sep">{money(tp)}</td><td colSpan="2"></td><td className="sep">{money(ta)}</td><td colSpan="2"></td><td className="sep">{money(tc)}</td><td colSpan="2"></td><td>{money(to)}</td></tr>{items.map(r=>{let qA=qPrev(r),qB=qActual(r),qO=qA+qB,pA=r.q?qA/r.q*100:0,pB=r.q?qB/r.q*100:0,pO=r.q?qO/r.q*100:0;return <tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td className="sep">{money(r.q*r.pu)}</td><td className={qA>0?"cert-cell-green":""}>{qty2(qA)}</td><td className={qA>0?"cert-cell-green":""}>{pA.toFixed(2)}%</td><td className={`sep ${qA>0?"cert-cell-green":""}`}>{money(impPrev(r))}</td><td className={qB>0?"cert-cell-green":""}>{qty2(qB)}</td><td className={qB>0?"cert-cell-green":""}>{pB.toFixed(2)}%</td><td className={`sep ${qB>0?"cert-cell-green":""}`}>{money(impActual(r))}</td><td>{qty2(qO)}</td><td>{pO.toFixed(2)}%</td><td>{money(qO*r.pu)}</td></tr>})}</>}
-function CertResum({rows,certs=[]}){const[open,setOpen]=useState({});let caps=group(rows,"cap");function certAmount(r,n){return n===1?(r.certAnterior||0)*r.pu:n===2?(r.certActual||0)*r.pu:0}return <div className="cert-summary-wrap"><div className="cert-summary-table"><div className="cert-summary-head"><span>Capítol</span><span>Pressupost</span>{certs.map(c=><span>Cert. {c.numero}</span>)}<span>Total cert.</span><span>Pendent</span><span>% executat</span></div>{Object.entries(caps).map(([cap,items])=>{let pres=items.reduce((s,r)=>s+r.q*r.pu,0);let certVals=certs.map(c=>items.reduce((s,r)=>s+certAmount(r,+c.numero),0));let total=certVals.reduce((s,x)=>s+x,0);let pend=Math.max(pres-total,0);let pct=pres?Math.min(total/pres*100,100):0;return <div className="cert-summary-block" key={cap}><button className="cert-summary-row" onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}><strong>{cap}</strong><b>{money(pres)}</b>{certVals.map(v=><span>{money(v)}</span>)}<b>{money(total)}</b><span>{money(pend)}</span><div className="progress-cell"><div className="progress-bar"><i style={{width:`${pct}%`}}></i></div><small>{pct.toFixed(1)}%</small></div></button>{open[cap]&&<div className="chapter-lines"><div className="chapter-line head"><span>Partida</span><span>Concepte</span><span>Amid.</span><span>Preu/ut</span><span>Total</span></div>{items.map(r=><div className="chapter-line"><span>{r.codi}</span><strong>{r.concepte}</strong><span>{r.q} {r.ut}</span><span>{money(r.pu)}</span><b>{money(r.q*r.pu)}</b></div>)}</div>}</div>})}</div></div>}
-function Cap({cap,items,updateCert}){let tp=items.reduce((s,r)=>s+r.q*r.pu,0),ta=items.reduce((s,r)=>s+r.certAnterior*r.pu,0),tc=items.reduce((s,r)=>s+r.certActual*r.pu,0),to=ta+tc;return <><tr className="cap-row"><td>{cap.split(" ")[0]}</td><td></td><td colSpan="13">{cap.replace(/^\d+\s*/,"")}</td></tr>{items.map(r=>{let pres=r.q*r.pu,ant=r.certAnterior*r.pu,act=r.certActual*r.pu,org=ant+act,pA=pres?ant/pres*100:0,pC=pres?act/pres*100:0,pO=pres?org/pres*100:0;return <tr key={r.codi} className={(qA>0||qB>0)?"cert-green-row":""}><td>{r.codi}</td><td>{r.ut}</td><td className="text-left">{r.concepte}</td><td>{r.q.toFixed(2)}</td><td>{r.pu.toFixed(2)}</td><td className="sep">{money(pres)}</td><td className={r.certAnterior>0?"cert-green":""}>{r.certAnterior||""}</td><td className={r.certAnterior>0?"cert-green":""}>{r.certAnterior?pct(pA):""}</td><td className={`sep ${r.certAnterior>0?"cert-green":""}`}>{r.certAnterior?money(ant):"-"}</td><td className={r.certActual>0?"cert-green actual-edit":"actual-edit"}><input value={r.certActual||""} onChange={e=>updateCert(r.codi,e.target.value)}/></td><td className={r.certActual>0?"cert-green":""}>{r.certActual?pct(pC):""}</td><td className={`sep ${r.certActual>0?"cert-green":""}`}>{r.certActual?money(act):"-"}</td><td className={org>0?"origin":""}>{org?(r.certAnterior+r.certActual).toFixed(2):""}</td><td className={org>0?"origin":""}>{org?pct(pO):""}</td><td className={org>0?"origin":""}>{org?money(org):"-"}</td></tr>})}<tr className="subtotal-row"><td>{cap.split(" ")[0]}</td><td></td><td colSpan="3"></td><td className="sep">{money(tp)}</td><td colSpan="2"></td><td className="sep">{money(ta)}</td><td colSpan="2"></td><td className="sep">{money(tc)}</td><td></td><td></td><td>{money(to)}</td></tr></>}
-function Fact({data,openEmail,openDoc}){const[params,setParams]=useState({});function p(id,k,def){return params[id]?.[k]??def}function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}function rowsForCert(c){let n=+c.numero;let rows=(data.partides||[]).filter(r=>(c.rows||[]).includes(r.codi));if(rows.length===0){rows=(data.partides||[]).filter(r=>n===1?(+r.certAnterior>0):(+r.certActual>0))}return rows}function qFor(r,c){let n=+c.numero;return n===1?(+r.certAnterior||0):(+r.certActual||0)}let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let base=rows.reduce((s,r)=>s+qFor(r,c)*r.pu,0);return{...c,id:"pf-"+c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows}});let definitives=(data.factures||[]).filter(f=>f.estat==="eFACT enviada"||f.estat==="Veri*factu registrada");return <div className="stack"><Card title="Factures proforma de certificacions"><div className="table-wrap"><table className="invoice-table"><thead><tr><th>Proforma</th><th>Certificació</th><th>Data</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Estat</th><th></th></tr></thead><tbody>{proformes.length===0&&<tr><td colSpan="10"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}{proformes.map(f=>{let iva=+p(f.id,"iva",21),ret=+p(f.id,"ret",0),ded=+p(f.id,"ded",0),base=f.base*(1-ded/100),total=base*(1+iva/100)*(1-ret/100);return <tr key={f.id}><td><b>{f.numero}</b></td><td>Cert. {f.numero}</td><td>{f.data}</td><td>{money(f.base)}</td><td><select value={iva} onChange={e=>setp(f.id,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={ret} onChange={e=>setp(f.id,"ret",+e.target.value)}><option value="0">0%</option><option value="15">15%</option></select></td><td><select value={ded} onChange={e=>setp(f.id,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(total)}</b></td><td>{f.estat}</td><td><button onClick={()=>openDoc({type:"proforma",title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numero} · ${f.data}`,proforma:f,iva,ret,ded,total})}>Obrir</button></td></tr>})}</tbody></table></div></Card><Card title="Factures definitives · Veri*factu / eFACT"><div className="table-wrap"><table className="invoice-table"><thead><tr><th>Factura</th><th>Origen</th><th>Data</th><th>Import</th><th>Estat</th><th></th></tr></thead><tbody>{definitives.length===0?<tr><td colSpan="6"><Empty text="Encara no hi ha factures definitives emeses. Quan es generin amb Veri*factu/eFACT quedaran bloquejades i només es podran rectificar amb factura rectificativa."/></td></tr>:definitives.map(f=><tr><td>{f.numero}</td><td>{f.tipus}</td><td>{f.data}</td><td>{money(f.base)}</td><td>Bloquejada</td><td><button>Consultar</button></td></tr>)}</tbody></table></div><div className="efact-box"><b>Regla de bloqueig</b><span>La proforma queda a l’històric. La factura definitiva no s’edita; si cal modificar-la, es genera una rectificativa.</span><button className="secondary"><ReceiptText/> Preparar Facturae XML</button></div></Card></div>}
+<Card title="Certificacions realitzades" action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
+  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input className="cert-date-input-v8721" value={dateVal8721(c)} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
+</Card>
+<Card title={`CERTIFICACIÓ ${certNum} ACTUAL · ${prevNum?`Cert. ${prevNum} anterior + `:"sense anterior + "}Cert. ${certNum}`}>
+  <div className="cert-mode-tabs-v8711">
+    <button className={certMode8711==="resum"?"active":""} onClick={()=>setCertMode8711("resum")}>Vista resum</button>
+    <button className={certMode8711==="emplenar"?"active":""} onClick={()=>setCertMode8711("emplenar")}>Emplenar certificació</button>
+  </div>
+  <div className="cert-toolbar-v69">
+    <div><b>{editing?`Editant CERT. ${certNum}`:"Consulta bloquejada"}</b><span>La certificació anterior és només consulta. La certificació actual és l’única editable i l’única que passa a la seva proforma.</span></div>
+    <div className="actions-inline">
+      <button className="secondary" onClick={()=>{setEditing(!editing);setCertMode8711("emplenar")}}>{editing?"Tancar edició":`Editar amidaments CERT. ${certNum}`}</button>
+      <button className="primary" onClick={guardarAmidaments}><Save/> Guardar amidaments</button>
+      <button className="secondary" onClick={()=>openDoc({type:"certificacio",title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,rows:rows.map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*(+r.pu||0),pctOrigen:pc(qOrigin(r),r)})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Previsualitzar</button>
+    </div>
+  </div>
+  {certMode8711==="resum"&&<CertResumV69 data={data}/>} 
+  {certMode8711==="emplenar"&&<div className="cert-grid-wrap-v69">
+    <div className="cert-grid-v69 group">
+      <div className="g pressupost">PRESSUPOST</div>
+      <div className="g anterior">{prevNum?`CERTIFICACIÓ ${prevNum} · ANTERIOR`:"SENSE CERT. ANTERIOR"}</div>
+      <div className="g actual">CERTIFICACIÓ {certNum} · ACTUAL</div>
+      <div className="g origen">A ORIGEN</div>
+    </div>
+    <div className="cert-grid-v69 header">
+      <div>Partida</div><div>Ut</div><div>Resum</div><div>CanPres</div><div>PrPres</div><div>ImpPres</div>
+      <div>Q cert. {prevNum||"ant."}</div><div>% cert. {prevNum||"ant."}</div><div>Imp cert. {prevNum||"ant."}</div>
+      <div>Q cert. {certNum}</div><div>% cert. {certNum}</div><div>Imp cert. {certNum}</div>
+      <div>Q origen</div><div>% origen</div><div>Total origen</div>
+    </div>
+    {Object.entries(caps).map(([cap,items],capIdx)=>{
+      const isOpen=certCapsOpen879[cap]??(capIdx===0);
+      return <div key={cap}>
+      <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><b>{items.length} partides</b></button>
+      {isOpen&&items.map(r=>{
+        let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0), qo=qOrigin(r), io=qo*(+r.pu||0);
+        return <div className="cert-grid-v69 row" key={r.codi}>
+          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
+          <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
+          <div className={qa>0?"current-fill":""}>{editing?<input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))} onBlur={e=>commitOne(r.codi,e.target.value)}/>:qty2(qFor(r,certNum))}</div>
+          <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
+          <div className={qo>0?"origin-fill":""}>{qty2(qo)}</div><div className={qo>0?"origin-fill":""}>{pct(pc(qo,r))}</div><div className={qo>0?"origin-fill":""}>{money(io)}</div>
+        </div>
+      })}
+    </div>})}
+    <div className="cert-grid-v69 total">
+      <div className="total-label">TOTAL CERTIFICACIÓ {prevNum||"ANTERIOR"}</div><div>{money(certTotal(prevNum))}</div>
+      <div className="total-label2">TOTAL CERTIFICACIÓ {certNum}</div><div>{money(certTotal(certNum))}</div>
+      <div className="total-label3">TOTAL A ORIGEN</div><div>{money(totalOrigin())}</div>
+    </div>
+  </div>}
+</Card>
+</div>
+}
+
+function CertResumV69({data}){
+let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
+function qFor(r,n){if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0}
+function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
+let capRows=Object.entries(caps).map(([cap,items])=>{
+  let pressupost=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  let vals=certs.map(c=>items.reduce((s,r)=>s+impFor(r,+c.numero),0));
+  let total=vals.reduce((s,v)=>s+v,0);
+  let pendent=Math.max(pressupost-total,0);
+  let percent=pressupost?Math.min(total/pressupost*100,999):0;
+  return{cap,pressupost,vals,total,pendent,percent}
+});
+let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+let totalCerts=certs.map(c=>rows.reduce((s,r)=>s+impFor(r,+c.numero),0));
+let totalExec=totalCerts.reduce((s,v)=>s+v,0);
+return <div className="cert-resum-v8717">
+  <div className="cert-resum-row-v8717 head">
+    <span className="cap">CAPÍTOL</span><span className="pres">PRESSUPOST</span>{certs.map(c=><span className="cert" key={c.id}>CERT. {c.numero}</span>)}<span className="total">TOTAL CERT.</span><span className="pct">% EXECUTAT</span><span className="pendent">IMPORT PENDENT</span>
+  </div>
+  {capRows.map(r=><div className="cert-resum-row-v8717" key={r.cap}>
+    <b className="cap">{r.cap}</b><span className="pres">{money(r.pressupost)}</span>{r.vals.map((v,i)=><span className="cert" key={i}>{money(v)}</span>)}<strong className="total">{money(r.total)}</strong><ProgressV69 v={r.percent}/><span className="pendent">{money(r.pendent)}</span>
+  </div>)}
+  <div className="cert-resum-row-v8717 total-row">
+    <b className="cap">TOTAL</b><span className="pres">{money(totalPres)}</span>{totalCerts.map((v,i)=><span className="cert" key={i}>{money(v)}</span>)}<strong className="total">{money(totalExec)}</strong><ProgressV69 v={totalPres?totalExec/totalPres*100:0}/><span className="pendent">{money(Math.max(totalPres-totalExec,0))}</span>
+  </div>
+</div>
+}
+function ProgressV69({v}){return <div className="progress-v69"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
+
+
+function fmtDate8714(v){
+  if(!v || String(v).toLowerCase()==="avui") return todayShort8713();
+  return String(v);
+}
+function Fact({data,openEmail,openDoc}){
+const key="aco_fact_params_v61";
+const[params,setParams]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
+const[selected,setSelected]=useState(null);
+useEffect(()=>{localStorage.setItem(key,JSON.stringify(params))},[params]);
+function p(id,k,def){return params[id]?.[k]??def}
+function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}
+function qFor(r,c){let n=+c.numeroCert||+c.numero;if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0}
+function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,{numeroCert:c.numero,numero:c.numero})>0)}
+let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let base=rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*(+r.pu||0),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows}});
+let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
+function calc(f){let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total}}
+function openPrint(f){let c=calc(f);openDoc({type:"proforma",title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${fmtDate8714(f.data)}`,proforma:f,iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp})}
+return <div className="fact-layout-v61">
+<Card title="Factures proforma de certificacions">
+  <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70"><thead><tr><th>Proforma</th><th>Cert.</th><th>Data</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Accions</th></tr></thead><tbody>
+  {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
+  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td>{fmtDate8714(f.data)}</td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button onClick={()=>setSelected(f.pfId)}>Previsualitzar</button><button className="primary small" onClick={()=>openPrint(f)}>Imprimir</button></td></tr>})}
+  </tbody></table></div>
+</Card>
+<Card title="Previsualització document proforma">
+  {!current?<Empty text="Selecciona una proforma."/>:<ProformaPreviewV61 f={current} calc={calc(current)} qFor={qFor}/>}
+</Card>
+</div>}
+function ProformaPreviewV61({f,calc,qFor}){
+return <div className="proforma-preview-doc-v61">
+  <div className="doc-title-row"><div><h2>FACTURA PROFORMA</h2><p>{f.numero} · Certificació {f.numeroCert} · {fmtDate8714(f.data)}</p></div><b>{money(calc.total)}</b></div>
+  <h3>Partides facturades</h3>
+  <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{f.rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(qFor(r,f))}</td><td>{money(r.pu)}</td><td>{money(qFor(r,f)*r.pu)}</td></tr>)}</tbody></table>
+  <table className="totals-preview"><tbody><tr><th>Base certificada</th><td>{money(f.base)}</td></tr><tr><th>Deducció ({calc.ded}%)</th><td>-{money(f.base-calc.base)}</td></tr><tr><th>Base imposable</th><td>{money(calc.base)}</td></tr><tr><th>IVA ({calc.iva}%)</th><td>{money(calc.ivaImp)}</td></tr><tr><th>Retenció ({calc.ret}%)</th><td>-{money(calc.retImp)}</td></tr><tr className="total"><th>Total proforma</th><td>{money(calc.total)}</td></tr></tbody></table>
+</div>
+}
+
+
 function Actes({data,openActa,openEmail,openDoc,selected,setSelected}){const[local,setLocal]=useState(data.actes||[]);const[actaDocs,setActaDocs]=useState(()=>JSON.parse(localStorage.getItem("aco_acta_docs")||"[]"));const[actaPhotos,setActaPhotos]=useState(()=>JSON.parse(localStorage.getItem("aco_acta_photos")||"[]"));useEffect(()=>{localStorage.setItem("aco_acta_docs",JSON.stringify(actaDocs))},[actaDocs]);useEffect(()=>{localStorage.setItem("aco_acta_photos",JSON.stringify(actaPhotos))},[actaPhotos]);let a=local.find(x=>x.id===selected)||local[0];let idx=local.findIndex(x=>x.id===a?.id),prev=idx>0?local[idx-1]:null;function toggleAgent(id,on){setLocal(p=>p.map(x=>x.id===a.id?{...x,agents:on?[...new Set([...x.agents,id])]:x.agents.filter(z=>z!==id)}:x))}function updateText(v){setLocal(p=>p.map(x=>x.id===a.id?{...x,text:v}:x))}function addDocs(e){[...(e.target.files||[])].forEach(f=>setActaDocs(p=>[...p,{id:"ad-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,tipus:f.name.split(".").pop()?.toUpperCase()||"DOC"}]))}function addPhotos(e){[...(e.target.files||[])].forEach(f=>{let r=new FileReader();r.onload=()=>setActaPhotos(p=>[...p,{id:"ap-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,url:r.result}]);r.readAsDataURL(f)})}let docs=actaDocs.filter(d=>d.actaId===a?.id),photos=actaPhotos.filter(p=>p.actaId===a?.id);return <div className="actes-layout"><Card title="Actes creades" action={<button className="primary" onClick={openActa}><Plus/> Nova acta</button>}><div className="acta-list">{local.length===0?<Empty text="Encara no hi ha actes creades."/>:local.map(x=><button className={`acta-list-row ${a?.id===x.id?"active":""}`} onClick={()=>setSelected(x.id)}><strong>{x.titol}</strong><span>{x.data}</span><small>{x.agents.map(id=>data.agents.find(ag=>ag.id===id)?.nom).filter(Boolean).join(", ")}</small></button>)}</div></Card>{a&&<Card title={`Visualització / edició · ${a.titol}`} action={<div className="actions-inline"><button className="secondary" onClick={()=>openDoc({type:"acta",title:a.titol,subtitle:a.data,acta:a,agents:data.agents,actaPhotos:photos,actaDocs:docs})}>Obrir document</button><button className="secondary" onClick={()=>openEmail(a.titol)}><Mail/> Enviar Gmail</button></div>}><div className="previous-acta">{prev?<><b>Consideracions de l’acta anterior ({prev.data})</b><label><input type="checkbox"/> Validat / resolt</label><p>{prev.text}</p></>:<p>No hi ha acta anterior.</p>}</div><div className="form-grid"><Input label="Títol acta" defaultValue={a.titol}/><Input label="Data" defaultValue={a.data}/><Input label="Obra" defaultValue={a.obra}/><Input label="Signatura" defaultValue={a.signatura}/><label className="span-all"><span>Assistents / intervinents a l’acta</span><div className="check-grid">{data.agents.map(ag=><label className="check-row"><input type="checkbox" checked={a.agents.includes(ag.id)} onChange={e=>toggleAgent(ag.id,e.target.checked)}/><span>{ag.nom} · {ag.rol}</span></label>)}</div></label><label className="span-all"><span>Observacions / decisions preses</span><textarea value={a.text} onChange={e=>updateText(e.target.value)}/></label></div><div className="upload-grid"><label><Camera/> Afegir fotos<input type="file" multiple accept="image/*" onChange={addPhotos}/></label><label><Paperclip/> Afegir documents<input type="file" multiple onChange={addDocs}/></label><button><PenLine/> Signatura mòbil</button></div><div className="attached-list">{photos.map(p=><span>📷 {p.nom}</span>)}{docs.map(d=><span>📎 {d.nom}</span>)}</div><div className="card-actions"><button className="primary"><Save/> Guardar canvis</button></div></Card>}</div>}
 
 
@@ -438,9 +959,98 @@ return <Card title="Documents adjunts d’obra" action={<div className="actions-
 <div className={`doc-mode-note ${isStorageReady(cfg)?"ok":""}`}><b>Estat documents:</b> {isStorageReady(cfg)?"Supabase Storage configurat. Els originals nous es pujaran al núvol.":"Storage no configurat. Els originals només es guarden en local IndexedDB si el navegador ho permet."} {status&&<span> · {status}</span>}</div>
 <div className="list">{docs.map(d=><div className="doc-row" key={d.id}><div><strong>{d.nom}</strong><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span></div><div><button onClick={()=>openOriginal(d)}>Obrir</button><button onClick={()=>openEmail(d.nom)}>Enviar</button><button onClick={()=>remove(d)}>Eliminar</button></div></div>)}</div>
 </Card>}
-function Agenda({events,openEvent,calM,setCalM,calY,setCalY,selDay,setSelDay}){let blanks=first(calY,calM),total=days(calY,calM),sel=selDay?events.filter(e=>e.day===selDay&&e.month===calM&&e.year===calY):[];return <div className="agenda-grid"><Card title="Agenda / Calendari" action={<button className="primary" onClick={openEvent}><Plus/> Nova cita/nota</button>}><div className="calendar-head"><button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button><button className="secondary" onClick={()=>{setCalM(5);setCalY(2026)}}>Avui</button><button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button><select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option value={i}>{m}</option>)}</select><select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option>{y}</option>)}</select></div><div className="calendar-grid">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week">{d}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank"/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=events.filter(e=>e.day===day&&e.month===calM&&e.year===calY);return <button className={`day ${selDay===day?"selected":""}`} onClick={()=>setSelDay(day)}><b>{day}</b>{ev.map(e=><span className={`cal-event ${e.color==="red"?"red":e.color==="orange"?"orange":""}`}>{e.title}</span>)}</button>})}</div></Card><Card title={selDay?`Dia ${selDay} de ${months[calM]} ${calY}`:"Selecciona un dia"} action={<button className="primary" onClick={openEvent}><Plus/> Afegir nota</button>}><div className="day-detail">{selDay&&sel.length===0&&<Empty text="Aquest dia no té cap nota. Pots crear-ne una."/>}{sel.map(e=><div className="event-detail"><strong>{e.title}</strong><span>{e.type} · {e.hora}</span><p>{e.note}</p></div>)}</div></Card></div>}
+
+
+
+function Agenda({events=[],clients=[],obres=[],openEvent,calM,setCalM,calY,setCalY,selDay,setSelDay}){
+const key="aco_agenda_v86";
+const[version,setVersion]=useState(0);
+const[clientFilter,setClientFilter]=useState("");
+const[obraFilter,setObraFilter]=useState("");
+const[form,setForm]=useState({title:"",client:"",clientNou:"",promotor:"",obra:"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""});
+function load(){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}}
+function saveList(list){localStorage.setItem(key,JSON.stringify(list));setVersion(v=>v+1)}
+const local=load();
+const all=[...(events||[]),...local];
+const clientNames=[...new Set([...(clients||[]).map(c=>c.nom),...all.map(e=>e.client)].filter(Boolean))];
+const filteredObresBase=clientFilter?(obres||[]).filter(o=>o.client===clientFilter || (clients.find(c=>c.id===o.client)?.nom===clientFilter)):(obres||[]);
+const obraNames=[...new Set([...filteredObresBase.map(o=>o.nom),...all.filter(e=>!clientFilter||e.client===clientFilter).map(e=>e.obra)].filter(Boolean))];
+const filtered=all.filter(e=>(!clientFilter||e.client===clientFilter)&&(!obraFilter||e.obra===obraFilter));
+const blanks=first(calY,calM), total=days(calY,calM);
+const selectedDate=selDay?`${String(selDay).padStart(2,"0")}/${String(calM+1).padStart(2,"0")}/${calY}`:"Selecciona un dia";
+const selected=selDay?filtered.filter(e=>e.day===selDay&&e.month===calM&&e.year===calY):[];const today=new Date();const todayDay=today.getDate(),todayMonth=today.getMonth(),todayYear=today.getFullYear();
+function set(k,v){setForm(f=>({...f,[k]:v}))}
+function clearForm(){setForm({title:"",client:clientFilter||"",clientNou:"",promotor:"",obra:obraFilter||"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:""})}
+function editNote(n){setSelDay(n.day);setCalM(n.month);setCalY(n.year);setForm({id:n.id,title:n.title||"",client:n.client||"",clientNou:"",promotor:n.promotor||"",obra:n.obra||"",obraNova:"",tipus:n.tipus||n.type||"Nota",hora:n.hora||"09:00",adreca:n.adreca||"",detail:n.detail||""})}
+function saveNote(){
+ if(!selDay){alert("Selecciona primer un dia.");return}
+ if(!form.title){alert("Posa resum/títol.");return}
+ const client=form.client==="__nou__"?(form.clientNou||"Nou client"):(form.client||"Sense client");
+ const obra=form.obra==="__nova__"?(form.obraNova||"Nova obra/adreça"):(form.obra||"Sense obra");
+ const note={id:form.id||"note-"+Date.now(),day:selDay,month:calM,year:calY,title:form.title,client,promotor:form.promotor,obra,tipus:form.tipus,hora:form.hora,adreca:form.adreca,detail:form.detail,type:form.tipus};
+ const exists=local.some(n=>n.id===note.id);
+ saveList(exists?local.map(n=>n.id===note.id?note:n):[...local,note]);
+ clearForm();
+}
+function deleteNote(){if(!form.id)return;saveList(local.filter(n=>n.id!==form.id));clearForm()}
+return <div className="agenda-v86">
+<Card title="Agenda / Calendari">
+ <div className="calendar-filters-v86">
+  <label>Filtre client<select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setObraFilter("")}}><option value="">Tots</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select></label>
+  <label>Filtre obra/projecte<select value={obraFilter} onChange={e=>setObraFilter(e.target.value)}><option value="">Totes</option>{obraNames.map(o=><option key={o}>{o}</option>)}</select></label>
+ </div>
+ <div className="calendar-head"><button className="secondary" onClick={()=>calM===0?(setCalM(11),setCalY(calY-1)):setCalM(calM-1)}>‹</button><button className="secondary" onClick={()=>{const d=new Date();setCalM(d.getMonth());setCalY(d.getFullYear());setSelDay(d.getDate())}}>Avui</button><button className="secondary" onClick={()=>calM===11?(setCalM(0),setCalY(calY+1)):setCalM(calM+1)}>›</button><select value={calM} onChange={e=>setCalM(+e.target.value)}>{months.map((m,i)=><option key={m} value={i}>{m}</option>)}</select><select value={calY} onChange={e=>setCalY(+e.target.value)}>{years.map(y=><option key={y}>{y}</option>)}</select></div>
+ <div className="calendar-grid google-cal-v86">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(d=><div className="week" key={d}>{d}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>)}
+ {Array.from({length:total}).map((_,i)=>{let day=i+1;let ev=filtered.filter(e=>e.day===day&&e.month===calM&&e.year===calY);return <button key={day} onClick={()=>setSelDay(day)} className={`day ${selDay===day?"active":""} ${day===todayDay&&calM===todayMonth&&calY===todayYear?"today":""}`}><b>{day}</b>{ev.slice(0,3).map(e=><small key={e.id}>{e.hora?e.hora+" · ":""}{e.client?e.client+" · ":""}{e.title}</small>)}{ev.length>3&&<em>+{ev.length-3}</em>}</button>})}</div>
+</Card>
+<Card title={`Nota / visita · ${selectedDate}`} action={<button className="secondary" onClick={clearForm}>Nova neta</button>}>
+ <div className="agenda-form-v86">
+  <label>Data completa<input value={selectedDate} readOnly/></label>
+  <label>Client contractant<select value={form.client} onChange={e=>set("client",e.target.value)}><option value="">Selecciona client</option>{clientNames.map(c=><option key={c}>{c}</option>)}<option value="__nou__">+ Crear client nou</option></select></label>
+  {form.client==="__nou__"&&<label>Nom nou client<input value={form.clientNou} onChange={e=>set("clientNou",e.target.value)}/></label>}
+  <label>Promotor / client del client<input value={form.promotor} onChange={e=>set("promotor",e.target.value)} placeholder="Ex. Davis Fuster"/></label>
+  <label>Obra / projecte<select value={form.obra} onChange={e=>set("obra",e.target.value)}><option value="">Selecciona obra</option>{obraNames.map(o=><option key={o}>{o}</option>)}<option value="__nova__">+ Crear obra/adreça nova</option></select></label>
+  {form.obra==="__nova__"&&<label>Nova obra/adreça<input value={form.obraNova} onChange={e=>set("obraNova",e.target.value)}/></label>}
+  <label>Tipologia de visita o feina<select value={form.tipus} onChange={e=>set("tipus",e.target.value)}><option>Visita d’obra</option><option>Reunió</option><option>Pressupost</option><option>Certificació</option><option>Entrega documentació</option><option>Avís</option><option>Altres</option></select></label>
+  <label>Hora<input value={form.hora} onChange={e=>set("hora",e.target.value)}/></label>
+  <label>Adreça visita<input value={form.adreca} onChange={e=>set("adreca",e.target.value)}/></label>
+  <label>Resum<input value={form.title} onChange={e=>set("title",e.target.value)}/></label>
+  <label className="wide">Observacions<textarea value={form.detail} onChange={e=>set("detail",e.target.value)}/></label>
+  <div className="modal-actions"><button className="primary" onClick={saveNote}>Guardar nota</button>{form.id&&<button className="danger" onClick={deleteNote}>Eliminar</button>}</div>
+ </div>
+ <h3>Notes del dia</h3>
+ <div className="notes-list-v86">{selected.length===0?<p className="muted">No hi ha notes per aquest dia.</p>:selected.map(n=><button key={n.id} className="note-card-v86" onClick={()=>editNote(n)}><b>{n.title}</b><span>{String(n.day).padStart(2,"0")}/{String(n.month+1).padStart(2,"0")}/{n.year} · {n.client||"Sense client"} · {n.obra||"Sense obra"}</span>{n.promotor&&<small>Promotor: {n.promotor}</small>}<small>{n.tipus||n.type||"Nota"} · {n.hora||""} {n.adreca?`· ${n.adreca}`:""}</small><p>{n.detail||""}</p></button>)}</div>
+</Card>
+</div>
+}
+
 function ObraMiniCalendar({events=[]}){const[m,setM]=useState(5),[y,setY]=useState(2026),[d,setD]=useState(null),[note,setNote]=useState(null);const[local,setLocal]=useState(()=>JSON.parse(localStorage.getItem("aco_obra_notes")||"[]"));useEffect(()=>{localStorage.setItem("aco_obra_notes",JSON.stringify(local));localStorage.setItem("aco_home_notes",JSON.stringify(local))},[local]);let all=[...events,...local],blanks=first(y,m),total=days(y,m),sel=d?all.filter(e=>e.day===d&&e.month===m&&e.year===y):[];function save(n){if(n.id==="new")setLocal(p=>[...p,{...n,id:"local-"+Date.now(),month:m,year:y}]);else setLocal(p=>p.map(x=>x.id===n.id?n:x));setNote(null)}function newNote(){setNote({id:"new",day:d||1,title:"Nova nota",type:"Nota",hora:"09:00",note:"",color:"blue"})}return <div className="home-calendar obra-calendar"><div className="calendar-head compact"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{setM(5);setY(2026)}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option>{x}</option>)}</select><button className="primary" onClick={newNote}>+ Nota nova</button></div><div className="home-calendar-layout"><div className="calendar-grid small">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week">{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button className={`day ${d===day?"selected":""}`} onClick={()=>setD(day)}><b>{day}</b>{ev.slice(0,2).map(e=><span className={`cal-event ${e.color==="red"?"red":""}`} onClick={(evn)=>{evn.stopPropagation();setNote(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div><div className="day-detail side"><h3>{d?`Dia ${d}`:"Selecciona un dia"}</h3>{d&&sel.length===0&&<p>Sense notes.</p>}{sel.map(e=><button className="note-card" onClick={()=>setNote(e)}><strong>{e.title}</strong><span>{e.hora} · {e.type}</span><p>{e.note||"Sense observacions."}</p></button>)}</div></div>{note&&<div className="note-pop"><div><h3>{note.id==="new"?"Nova nota":"Editar nota"}</h3><label><span>Dia</span><input value={note.day} onChange={e=>setNote({...note,day:+e.target.value})}/></label><label><span>Títol</span><input value={note.title} onChange={e=>setNote({...note,title:e.target.value})}/></label><label><span>Hora</span><input value={note.hora} onChange={e=>setNote({...note,hora:e.target.value})}/></label><label><span>Observacions</span><textarea value={note.note} onChange={e=>setNote({...note,note:e.target.value})}/></label><button className="primary" onClick={()=>save(note)}>Guardar / Tancar</button></div></div>}</div>}
 function HomeCalendar({events=[]}){const[m,setM]=useState(5),[y,setY]=useState(2026),[d,setD]=useState(null),[note,setNote]=useState(null);const[local,setLocal]=useState(()=>JSON.parse(localStorage.getItem("aco_home_notes")||"[]"));useEffect(()=>{localStorage.setItem("aco_home_notes",JSON.stringify(local))},[local]);let all=[...events,...local],blanks=first(y,m),total=days(y,m),sel=d?all.filter(e=>e.day===d&&e.month===m&&e.year===y):[];function save(n){if(n.id==="new")setLocal(p=>[...p,{...n,id:"home-"+Date.now(),month:m,year:y}]);else setLocal(p=>p.map(x=>x.id===n.id?n:x));setNote(null)}function newNote(){setNote({id:"new",day:d||1,title:"Nova nota",type:"Nota",hora:"09:00",note:"",color:"blue"})}return <div className="home-calendar"><div className="calendar-head compact"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{setM(5);setY(2026)}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option>{x}</option>)}</select><button className="primary" onClick={newNote}>+ Nota nova</button></div><div className="home-calendar-layout"><div className="calendar-grid small">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week">{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button className={`day ${d===day?"selected":""}`} onClick={()=>setD(day)}><b>{day}</b>{ev.slice(0,2).map(e=><span className={`cal-event ${e.color==="red"?"red":""}`} onClick={(evn)=>{evn.stopPropagation();setNote(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div><div className="day-detail side"><h3>{d?`Dia ${d}`:"Selecciona un dia"}</h3>{d&&sel.length===0&&<p>Sense notes.</p>}{sel.map(e=><button className="note-card" onClick={()=>setNote(e)}><strong>{e.title}</strong><span>{e.hora} · {e.type}</span><p>{e.note||"Sense observacions."}</p></button>)}</div></div>{note&&<div className="note-pop"><div><h3>{note.id==="new"?"Nova nota":"Editar nota"}</h3><label><span>Dia</span><input value={note.day} onChange={e=>setNote({...note,day:+e.target.value})}/></label><label><span>Títol</span><input value={note.title} onChange={e=>setNote({...note,title:e.target.value})}/></label><label><span>Hora</span><input value={note.hora} onChange={e=>setNote({...note,hora:e.target.value})}/></label><label><span>Observacions</span><textarea value={note.note} onChange={e=>setNote({...note,note:e.target.value})}/></label><button className="primary" onClick={()=>save(note)}>Guardar / Tancar</button></div></div>}</div>}
+
+function Configuracio(){
+const key="aco_config_v60";
+const[cfg,setCfg]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
+function upd(k,v){setCfg(p=>({...p,[k]:v}))}
+function save(){localStorage.setItem(key,JSON.stringify(cfg));alert("Configuració guardada")}
+return <div className="stack">
+<Card title="Configuració general" action={<button className="primary" onClick={save}><Save/> Guardar configuració</button>}>
+  <div className="form-grid">
+    <Input label="Email emissor" value={cfg.email||""} onChange={e=>upd("email",e.target.value)} />
+    <Input label="Empresa / usuari" value={cfg.empresa||""} onChange={e=>upd("empresa",e.target.value)} />
+    <Input label="IVA defecte %" value={cfg.iva||"21"} onChange={e=>upd("iva",e.target.value)} />
+    <Input label="Retenció defecte %" value={cfg.retencio||"0"} onChange={e=>upd("retencio",e.target.value)} />
+  </div>
+</Card>
+<Card title="Supabase Storage">
+  <div className="form-grid">
+    <Input label="Supabase URL" value={cfg.supabaseUrl||""} onChange={e=>upd("supabaseUrl",e.target.value)} />
+    <Input label="Anon key" value={cfg.supabaseKey||""} onChange={e=>upd("supabaseKey",e.target.value)} />
+    <Input label="Bucket" value={cfg.bucket||"app-control-obres"} onChange={e=>upd("bucket",e.target.value)} />
+  </div>
+</Card>
+</div>
+}
+
 function TracaGeneral({obres,odata,openObra}){const[client,setClient]=useState("");const[from,setFrom]=useState("");const[to,setTo]=useState("");let colors=["#2563eb","#22c55e","#f59e0b","#ef4444","#8b5cf6","#06b6d4"];function rowsForObra(o){let stored=JSON.parse(localStorage.getItem(`aco_honoraris_rows_${o.id}`)||"null");let d=odata[o.id]||empty();return stored||d.hores||[]}let totals=obres.map((o,i)=>{let rows=rowsForObra(o);let h=rows.reduce((s,x)=>s+(+x.hores||0),0),c=rows.reduce((s,x)=>s+(+x.hores||0)*(+x.preu||0)+(+x.despeses||0),0);return{...o,h,c,rows,color:colors[i%colors.length]}}).filter(x=>!client||x.client===client);let totalH=totals.reduce((s,x)=>s+x.h,0),totalC=totals.reduce((s,x)=>s+x.c,0);let acc=0,segments=totals.map(t=>{let start=acc,deg=totalC?(t.c/totalC)*360:0;acc+=deg;return `${t.color} ${start}deg ${acc}deg`}).join(",");let pieStyle={background:totalC?`conic-gradient(${segments})`:"#e5e7eb"};return <div className="stack"><Card title="Temps invertit / cost treball" action={<div className="actions-inline traca-filters"><label><span>Des de</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>Fins</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label><label><span>Client</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">Tots els clients</option><option value="socoterm">SOCOTERM</option><option value="brava">BRAVA</option><option value="oriol">ORIOL BORRÀS</option></select></label></div>}><div className="honor-kpis"><Kpi t="HORES TOTALS" v={`${totalH.toFixed(2)} h`}/><Kpi t="COST TOTAL" v={money(totalC)}/><Kpi t="OBRES" v={totals.length}/></div><div className="double-pie-zone"><PieBlock title="Mes en curs" totals={totals} totalC={totalC} pieStyle={pieStyle} openObra={openObra}/><PieBlock title="Any / període filtrat" totals={totals} totalC={totalC} pieStyle={pieStyle} openObra={openObra}/></div></Card><Card title="Detall per obra"><div className="version-list">{totals.map(t=><button className="version-row" onClick={()=>openObra(t.id)}><strong><span className="color-dot" style={{background:t.color}}></span>{t.any}</strong><span>{t.nom}</span><span>{t.h.toFixed(2)} h</span><b>{money(t.c)}</b><em>{t.estat}</em></button>)}</div></Card></div>}
 function PieBlock({title,totals,totalC,pieStyle,openObra}){return <div className="pie-card"><h3>{title}</h3><div className="real-pie" style={pieStyle}><span>{money(totalC)}</span></div><div className="pie-legend">{totals.map(t=><button onClick={()=>openObra(t.id)}><i style={{background:t.color}}></i><b>{t.nom}</b><span>{money(t.c)}</span></button>)}</div></div>}
 function MiniCal({events}){return <div className="calendar-mini">{Array.from({length:21}).map((_,i)=>{let d=i+1,ev=events.filter(e=>e.day===d&&e.month===5&&e.year===2026);return <button className="mini-day"><b>{d}</b>{ev[0]&&<span className="cal-event">{ev[0].type}</span>}</button>})}</div>}
@@ -541,11 +1151,166 @@ return <Card title="Avisos i notes de l’obra" action={<button className="prima
 </>}</div>})}</div>}
 </Card>}
 function Modal({title,children,close}){return <div className="modal-backdrop"><div className="modal"><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
+
+function CertPrintV79({doc}){
+  const rows=doc.rows||[];
+  const current=rows.filter(r=>(+r.qAct||0)>0);
+  const totalAct=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+  return <div className="cert-print-v79">
+    <h1>{doc.title}</h1>
+    <p className="doc-sub">{doc.subtitle}</p>
+    <h3>Relació de partides certificades</h3>
+    <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(totalAct)}</th></tr></tfoot></table>
+    <div className="page-break-v79"></div>
+    <h2>Quadre resum de certificació</h2>
+    <div className="cert-grid-print-v79">
+      <div className="h">Partida</div><div className="h">Ut</div><div className="h">Resum</div><div className="h">CanPres</div><div className="h">PrPres</div><div className="h">ImpPres</div><div className="h">Q ant.</div><div className="h">% ant.</div><div className="h">Imp ant.</div><div className="h">Q act.</div><div className="h">% act.</div><div className="h">Imp act.</div><div className="h">Total origen</div>
+      {rows.map(r=><React.Fragment key={r.codi}>
+        <div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
+        <div>{qty2(r.qPrev)}</div><div>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div>{money((+r.qPrev||0)*(+r.pu||0))}</div>
+        <div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</div>
+        <div>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</div>
+      </React.Fragment>)}
+    </div>
+  </div>
+}
+
+
+function ProformaPrintV81({doc,pf}){
+  const rows=pf.rows||[];
+  const n=+pf.numeroCert||+(String(pf.numero||"").replace(/\D/g,""))||1;
+  const base=doc.base ?? pf.base ?? 0;
+  const ded=doc.ded||0;
+  const iva=doc.iva||21;
+  const ret=doc.ret||0;
+  const baseImposable=doc.base ?? base*(1-ded/100);
+  const ivaImp=doc.ivaImp ?? baseImposable*iva/100;
+  const retImp=doc.retImp ?? baseImposable*ret/100;
+  const total=doc.total ?? baseImposable+ivaImp-retImp;
+  return <div className="proforma-print-v81">
+    <h1>{doc.title}</h1>
+    <p className="doc-sub">{doc.subtitle}</p>
+    <table><thead><tr><th>Codi</th><th>Concepte</th><th>Quant.</th><th>Preu</th><th>Import</th></tr></thead><tbody>{rows.map(r=>{let q=n===1?(+r.certAnterior||0):(+r.certActual||0);return <tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(q)}</td><td>{money(r.pu)}</td><td>{money(q*r.pu)}</td></tr>})}</tbody></table>
+    <div className="doc-totals v81">
+      <div><span>Base certificada</span><b>{money(base)}</b></div>
+      <div><span>Deducció {ded}%</span><b>-{money(base-baseImposable)}</b></div>
+      <div><span>Base imposable</span><b>{money(baseImposable)}</b></div>
+      <div><span>IVA {iva}%</span><b>{money(ivaImp)}</b></div>
+      <div><span>Retenció {ret}%</span><b>-{money(retImp)}</b></div>
+      <div className="total"><span>Total proforma</span><b>{money(total)}</b></div>
+    </div>
+  </div>
+}
+
+function CertPrintV81({doc}){
+  const rows=doc.rows||[];
+  const current=rows.filter(r=>(+r.qAct||0)>0);
+  const totalAct=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+  return <div className="cert-print-v81">
+    <h1>{doc.title}</h1><p className="doc-sub">{doc.subtitle}</p>
+    <h3>Resum de partides certificades</h3>
+    <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ</th><th>{money(totalAct)}</th></tr></tfoot></table>
+    <div className="page-break-v81"></div>
+    <h2>Quadre resum de certificació</h2>
+    <div className="cert-grid-print-v81">
+      <div className="h">Partida</div><div className="h">Ut</div><div className="h">Resum</div><div className="h">CanPres</div><div className="h">PrPres</div><div className="h">ImpPres</div><div className="h">Q ant.</div><div className="h">% ant.</div><div className="h">Imp ant.</div><div className="h">Q act.</div><div className="h">% act.</div><div className="h">Imp act.</div><div className="h">Total origen</div>
+      {rows.map(r=><React.Fragment key={r.codi}><div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div><div>{qty2(r.qPrev)}</div><div>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div>{money((+r.qPrev||0)*(+r.pu||0))}</div><div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</div><div>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</div></React.Fragment>)}
+    </div>
+  </div>
+}
+
+
+function CertPrintV82({doc}){
+const rows=doc.rows||[];
+const current=rows.filter(r=>(+r.qAct||0)>0);
+const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+return <div className="cert-print-v82">
+<h1>{doc.title}</h1><p>{doc.subtitle}</p>
+<h3>Resum de partides certificades</h3>
+<table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL</th><th>{money(total)}</th></tr></tfoot></table>
+<div className="page-break-v82"></div>
+<h2>Quadre resum</h2>
+<table><thead><tr><th>Partida</th><th>Concepte</th><th>Q anterior</th><th>Q actual</th><th>Import actual</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qPrev)}</td><td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</td><td>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</td></tr>)}</tbody></table>
+</div>
+}
+
+
+function CertPrintV87({doc}){
+const rows=doc.rows||[];
+const current=rows.filter(r=>(+r.qAct||0)>0);
+const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
+  const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
+  return s+((+r.impOrigen||0)||qOri*(+r.pu||0));
+},0);
+return <div className="cert-print-v8718">
+  <section className="cert-page-v8718 portrait">
+    <h1>{doc.title}</h1>
+    <p className="doc-sub">{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p>
+    <div className="cert-cover-box-v87">
+      <b>Resum de certificació</b>
+      <span>Partides certificades en aquesta certificació: {current.length}</span>
+      <span>Total certificació actual: {money(total)}</span>
+      <span>Total acumulat a origen: {money(totalOrigen)}</span>
+    </div>
+    <h3>Partides certificades en aquesta certificació</h3>
+    {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718">
+      <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
+      <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
+      <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
+    </table>}
+  </section>
+
+  <section className="cert-page-v8718 landscape">
+    <h2>Quadre general de certificació</h2>
+    <table className="cert-wide-table-v8718">
+      <thead>
+        <tr className="blocks"><th colSpan="6">PRESSUPOST</th><th colSpan="3">CERT. {doc.prevNum} ANTERIOR</th><th colSpan="3">CERT. {doc.certNum} ACTUAL</th><th colSpan="3">A ORIGEN</th></tr>
+        <tr><th>Partida</th><th>Ut</th><th>Resum</th><th>CanPres</th><th>PrPres</th><th>ImpPres</th><th>Q ant.</th><th>% ant.</th><th>Imp ant.</th><th>Q act.</th><th>% act.</th><th>Imp act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
+      </thead>
+      <tbody>{rows.map(r=>{
+        const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
+        const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
+        const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
+        const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
+        return <tr key={r.codi}>
+          <td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money(pres)}</td>
+          <td className={(+r.qPrev||0)>0?"green":""}>{qty2(r.qPrev)}</td><td className={(+r.qPrev||0)>0?"green":""}>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td className={(+r.qPrev||0)>0?"green":""}>{money(ant)}</td>
+          <td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td className={(+r.qAct||0)>0?"green":""}>{money(act)}</td>
+          <td className={qOri>0?"green":""}>{qty2(qOri)}</td><td className={qOri>0?"green":""}>{pct(pctOri)}</td><td className={qOri>0?"green":""}>{money(impOri)}</td>
+        </tr>
+      })}</tbody>
+    </table>
+  </section>
+</div>
+}
+
 function FormClient({onSubmit}){let[logo,setLogo]=useState("");return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Logo / foto empresa</span><input type="file" onChange={e=>f2u(e.target.files[0],setLogo)}/><input type="hidden" name="logoPreview" value={logo}/>{logo&&<img className="logo-preview" src={logo}/>}</label><Input name="nom" label="Nom comercial" defaultValue="Nou client"/><Input name="rao" label="Raó social" defaultValue="Pendent"/><label><span>Rol / tipologia</span><select name="tipus"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Particular</option><option>Altres</option></select></label><Input name="nif" label="NIF/CIF" defaultValue="Pendent"/><Input name="contacte" label="Contacte" defaultValue="Pendent"/><Input name="telefon" label="Telèfon" defaultValue="Pendent"/><Input name="email" label="Email" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear client</button></div></form>}
 function FormObra({clients,onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client">{clients.map(c=><option value={c.id}>{c.nom}</option>)}</select></label><Input name="nom" label="Nom obra" defaultValue="Nova obra"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>Tancada</option></select></label><label><span>Tipologia</span><select name="tipologia"><option>Pressupost</option><option>Project Manager</option><option>Direcció d’obra</option><option>Projecte tècnic</option></select></label><Input name="propietat" label="Client" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear obra</button></div></form>}
 function FormPartida({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="codi" label="Codi" defaultValue="10.02"/><Input name="cap" label="Capítol" defaultValue="10 FEINES FORA PRESSUPOST"/><Input name="concepte" label="Concepte" defaultValue="Nova partida"/><Input name="ut" label="Ut" defaultValue="m²"/><Input name="q" label="Quantitat" defaultValue="1"/><Input name="pu" label="PU" defaultValue="0"/><label><span>Tipus</span><select name="tipus"><option>Base</option><option>Modificada</option><option>Fora pressupost</option></select></label></div><div className="modal-actions"><button className="primary">Afegir partida</button></div></form>}
 function FormAgent({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="nom" label="Nom" defaultValue="Nou agent"/><label><span>Rol</span><select name="rol"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="empresa" label="Empresa" defaultValue="Empresa"/><Input name="email" label="Email" defaultValue="email@domini.cat"/><Input name="telefon" label="Telèfon" defaultValue=""/></div><div className="modal-actions"><button className="primary">Crear agent</button></div></form>}
 function FormActa({agents,onSubmit,openAgent}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="titol" label="Títol acta" defaultValue="Nova acta d’obra"/><Input name="data" label="Data" defaultValue="18/06/2026"/><label className="span-all"><span>Agents que intervenen</span><div className="check-grid">{agents.map(a=><label className="check-row"><input type="checkbox" name="agentsActa" value={a.id}/><span>{a.nom} · {a.rol}</span></label>)}</div><button type="button" className="secondary" onClick={openAgent}><Plus/> Crear agent nou</button></label><label className="span-all"><span>Text acta</span><textarea name="text" defaultValue="Es redacta acta de seguiment de l’obra."/></label><label><span>Fotos</span><input type="file" multiple/></label><label><span>Documents</span><input type="file" multiple/></label></div><div className="modal-actions"><button className="primary">Guardar acta</button></div></form>}
-function FormEvent({onSubmit,calM,calY,selDay}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="title" label="Títol" defaultValue="Nova cita"/><label><span>Tipus</span><select name="type"><option>Nota</option><option>Visita</option><option>Certificació</option><option>Acta</option></select></label><Input name="day" label="Dia" defaultValue={selDay||18}/><input type="hidden" name="month" value={calM}/><input type="hidden" name="year" value={calY}/><Input name="hora" label="Hora" defaultValue="10:00"/><label><span>Color</span><select name="color"><option value="blue">Blau</option><option value="red">Vermell</option><option value="orange">Taronja</option></select></label><label className="span-all"><span>Nota</span><textarea name="note"/></label></div><div className="modal-actions"><button className="primary">Crear cita/nota</button></div></form>}
+
+function FormEvent({clients=[],obres=[],calM,calY,selDay,onSubmit}){
+const [clientSel,setClientSel]=useState("");
+const [obraSel,setObraSel]=useState("");
+const defaultDate=`${calY}-${String(calM+1).padStart(2,"0")}-${String(selDay||1).padStart(2,"0")}`;
+return <form onSubmit={onSubmit} className="form-event-v78">
+  <div className="form-grid">
+    <label><span>Data completa</span><input type="date" name="data" defaultValue={defaultDate}/></label>
+    <label><span>Hora</span><input name="hora" defaultValue="09:00"/></label>
+    <label><span>Tipus</span><select name="type"><option>Nota</option><option>Visita d’obra</option><option>Reunió</option><option>Entrega documentació</option><option>Avís</option></select></label>
+    <label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="">Selecciona client</option>{clients.map(c=><option key={c.id} value={c.nom}>{c.nom}</option>)}<option value="__nou__">+ Crear client nou</option></select></label>
+    {clientSel==="__nou__"&&<label><span>Nom nou client</span><input name="clientNou" placeholder="Nom del client"/></label>}
+    <label><span>Obra / projecte</span><select name="obra" value={obraSel} onChange={e=>setObraSel(e.target.value)}><option value="">Selecciona obra</option>{obres.map(o=><option key={o.id} value={o.nom}>{o.nom}</option>)}<option value="__nova__">+ Crear obra/adreça nova</option></select></label>
+    {obraSel==="__nova__"&&<label><span>Nova obra / adreça</span><input name="obraNova" placeholder="Nom obra o adreça"/></label>}
+    <label><span>Adreça visita</span><input name="adreca" placeholder="Adreça concreta si cal"/></label>
+    <label><span>Resum / títol</span><input name="title" defaultValue="Nova nota"/></label>
+    <label className="wide"><span>Observacions</span><textarea name="detail" placeholder="Observacions, tasques pendents, acords..."/></label>
+  </div>
+  <div className="modal-actions"><button className="primary">Guardar / Tancar</button></div>
+</form>
+}
+
 function EmailModal({draft,setDraft,close}){let sel=draft.agents.filter(a=>draft.selected.includes(a.id));return <Modal title="Enviar per email" close={close}><div className="form-grid"><label className="span-all"><span>Destinataris</span><div className="check-grid">{draft.agents.length===0?<Empty text="Aquesta obra no té agents amb email assignats."/>:draft.agents.map(a=><label className="check-row"><input type="checkbox" checked={draft.selected.includes(a.id)} onChange={e=>setDraft({...draft,selected:e.target.checked?[...draft.selected,a.id]:draft.selected.filter(id=>id!==a.id)})}/><span>{a.nom} · {a.email}</span></label>)}</div></label><Input label="Assumpte" defaultValue={draft.title}/><label className="span-all"><span>Missatge</span><textarea value={draft.message} onChange={e=>setDraft({...draft,message:e.target.value})}/></label></div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>{let tos=sel.map(a=>a.email).join(",");openGmailCompose(tos,draft.title,draft.message)}}>Obrir correu</button></div></Modal>}
-function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"landscape-doc":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<div><h1>{doc.title}</h1><p className="doc-sub">{doc.subtitle}</p><table><thead><tr><th>Codi</th><th>Concepte</th><th>Quant.</th><th>Preu</th><th>Import</th></tr></thead><tbody>{(pf.rows||[]).map(r=>{let q=(String(pf.numero).includes("1"))?r.certAnterior:r.certActual;return <tr><td>{r.codi}</td><td>{r.concepte}</td><td>{q}</td><td>{money(r.pu)}</td><td>{money(q*r.pu)}</td></tr>})}</tbody></table><div className="doc-totals"><div><span>Base imposable</span><b>{money(pf.base)}</b></div><div><span>IVA {doc.iva}%</span><b>{money(pf.base*(doc.iva||21)/100)}</b></div><div><span>Total proforma</span><b>{money(doc.total||pf.base*1.21)}</b></div></div></div>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>window.print()}>Exportar / PDF</button></div></Modal>}
+function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div></Modal>}
