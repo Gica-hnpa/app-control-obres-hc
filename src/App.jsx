@@ -100,7 +100,7 @@ const WORK_TYPES8737=[
 function canonicalWorkType8740(v){
   const n=codeClean8739(v||"");
   if(!n)return "Altres";
-  if(n.includes("PROJECT MANAGEMENT")||n==="PM")return "Project management";
+  if(n.includes("PROJECT MANAGEMENT")||n.includes("PROJECT MANAGER")||n==="PM")return "Project management";
   if(n.includes("DIRECCIO D EXECUCIO")||n.includes("EXECUCIO D OBRA")||n.includes("DIRECCIO EXECUCIO"))return "Direcció d’execució d’obra";
   if(n.includes("DIRECCIO D OBRA")||n.includes("DIRECCIO OBRA"))return "Direcció d’obra";
   if(n.includes("PROJECTE")&&n.includes("DIRECCIO"))return "Projecte tècnic amb direcció";
@@ -135,18 +135,19 @@ function workNeedsActes8738(t){
   t=String(t||"").toLowerCase();
   return ["direcció","project management","projecte tècnic","seguretat","ite"].some(k=>t.includes(k));
 }
-function workUsesEconomicObra8743(t){
-  const n=codeClean8739(t||"");
-  if(n.includes("PROJECT MANAGEMENT"))return true;
+function workUsesEconomicObra8743(t,obra={},data={}){
+  const n=codeClean8739([t,obra?.nom,obra?.subtitol,obra?.codiExpedient].filter(Boolean).join(" "));
+  if(n.includes("PROJECT MANAGEMENT")||n.includes("PROJECT MANAGER")||n.includes("PM"))return true;
   if(n.includes("DIRECCIO")||n.includes("EXECUCIO"))return true;
   if(n.includes("CERTIFICACIO")&&n.includes("OBRA"))return true;
-  if(n.includes("PRESSUPOST")&&(n.includes("CONSTRUCTOR")||n.includes("PROMOTOR")||n.includes("OBRA")))return true;
-  if(n.includes("REFORMA")||n.includes("CONTROL ECONOMIC"))return true;
+  if(n.includes("PRESSUPOST")&&(n.includes("CONSTRUCTOR")||n.includes("PROMOTOR")||n.includes("OBRA")||n.includes("REFORMA")))return true;
+  if(n.includes("REFORMA")||n.includes("REHABILITACIO")||n.includes("OBRA"))return true;
+  if((data?.partides||[]).length>0||(data?.certificacions||[]).length>0)return true;
   return false;
 }
-function tabsForWork8737(obra){
+function tabsForWork8737(obra,data={}){
   const t=String(obra?.tipusTreball||obra?.tipologia||"");
-  if(workUsesEconomicObra8743(t)) return TABS_M2_OBRA8738;
+  if(workUsesEconomicObra8743(t,obra,data)) return TABS_M2_OBRA8738;
   return workNeedsActes8738(t)?TABS_M1_ACTES8738:TABS_M1_BASE8738;
 }
 function totalIva8743(x){return (+x?.base||+x?.total||0)*(1+(+x?.iva||21)/100)}
@@ -515,8 +516,15 @@ function deleteCertificacio8721(id){
   setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))
 }
 function updateObraFitxa8721(patch){
-  setD(obraId,d=>({...d,obra:{...(d.obra||{}),...patch}}));
-  setObres(p=>p.map(o=>o.id===obraId?{...o,...patch}:o));
+  const cleanPatch={...patch};
+  if(cleanPatch.tipusTreball||cleanPatch.tipologia){
+    const tipus=canonicalWorkType8740(cleanPatch.tipusTreball||cleanPatch.tipologia);
+    cleanPatch.tipusTreball=tipus;
+    cleanPatch.tipologia=tipus;
+  }
+  setD(obraId,d=>({...d,obra:{...(d.obra||{}),...cleanPatch}}));
+  setObres(p=>p.map(o=>o.id===obraId?{...o,...cleanPatch}:o));
+  setTab("Resum");
 }
 function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>{let q=(r.certsByNum&&r.certsByNum[String(n)]!==undefined)?+r.certsByNum[String(n)]||0:n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0;return s+q*(+r.pu||0)},0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
 function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data.agents||[]).map(a=>a.id),message:"Bon dia,\n\nAdjunto document de l'obra per a la seva revisió.\n\nSalutacions,\nHéctor"})}
@@ -534,8 +542,11 @@ function facturarPressupostTecnic8742(id){
     let f={id:"ft-"+Date.now(),numero:`FAC-${String(n).padStart(3,"0")}`,data:todayISO8743(),concepte:p.concepte||"Factura del pressupost acceptat",text:p.text||"",base:+p.base||0,iva:+p.iva||21,estat:"Esborrany",pressupostId:p.id};
     return {...d,pressupostosTecnic:(d.pressupostosTecnic||[]).map(x=>x.id===id?{...x,estat:"Facturat"}:x),facturesTecnic:[...uniqueFactures8743(factures),f]}
   });
+  setTab("Factures");
 }
 function updateFacturaTecnica8743(id,patch){setD(obraId,d=>({...d,facturesTecnic:(d.facturesTecnic||[]).map(f=>f.id===id?{...f,...patch}:f)}))}
+function deletePressupostTecnic8744(id){if(confirm("Eliminar aquest pressupost?"))setD(obraId,d=>({...d,pressupostosTecnic:(d.pressupostosTecnic||[]).filter(p=>p.id!==id),facturesTecnic:(d.facturesTecnic||[]).filter(f=>f.pressupostId!==id)}))}
+function deleteFacturaTecnica8744(id){if(confirm("Eliminar aquesta factura?"))setD(obraId,d=>({...d,facturesTecnic:(d.facturesTecnic||[]).filter(f=>f.id!==id)}))}
 
 function addFacturaTecnica8742(f){setD(obraId,d=>{let rows=d.facturesTecnic||[];let n=rows.length+1;return {...d,facturesTecnic:[...rows,{id:"ft-"+Date.now(),numero:f.numero||`FAC-${String(n).padStart(3,"0")}`,data:f.data||new Date().toLocaleDateString("ca-ES"),concepte:f.concepte||"Factura tècnica",text:f.text||"",base:+f.base||0,iva:+f.iva||21,estat:f.estat||"Esborrany"}]}})}
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon")}]}));setModal(null)}
@@ -570,7 +581,7 @@ return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={()=>setModal("obra")} setScreen={nav}/>}
-{screen==="Obra"&&<Obra obra={obra} client={client} clients={clients} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} openEvent={()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743}/>}
+{screen==="Obra"&&<Obra obra={obra} client={client} clients={clients} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} openEvent={()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744}/>}
 {screen==="Agenda"&&<Agenda events={data.events||[]} clients={clients} obres={obres} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}
@@ -593,7 +604,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.43 pressupostos-factures</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.44 pressupost factura tècnic</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -688,7 +699,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742">
 function EditObraModal8725({obra,clients=[],close,save}){
 const clientNames=[...new Set((clients||[]).map(c=>c.nom).filter(Boolean))];
 const serveisBase=WORK_TYPES8737;
-const serveis=[...new Set([obra.tipologia,...serveisBase].filter(Boolean))];
+const serveis=[...new Set([canonicalWorkType8740(obra.tipusTreball||obra.tipologia),...serveisBase].filter(Boolean))];
 const estats=["Acceptada","Pressupostada","En procés","No contestat","Pendent","Activa","Aturada","Tancada","Descartada"];
 const[f,setF]=useState(()=>({...obra}));
 function ch(k,v){setF(x=>({...x,[k]:v}))}
@@ -711,7 +722,7 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
     <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)} /></label>
     <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)} /></label>
     <label><span>Referència cadastral</span><input value={f.rc||""} onChange={e=>ch("rc",e.target.value)} /></label>
-    <label><span>Tipus de treball</span><select value={f.tipusTreball||f.tipologia||""} onChange={e=>{ch("tipusTreball",e.target.value);ch("tipologia",e.target.value)}}>
+    <label><span>Tipus de treball</span><select value={canonicalWorkType8740(f.tipusTreball||f.tipologia||"")} onChange={e=>{const t=canonicalWorkType8740(e.target.value);ch("tipusTreball",t);ch("tipologia",t)}}>
       {serveis.map(t=><option key={t} value={t}>{t}</option>)}
     </select></label>
     <label><span>Estat</span><select value={f.estat||"Pressupostada"} onChange={e=>ch("estat",e.target.value)}>
@@ -727,7 +738,7 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
 </Modal>
 }
 
-function Obra({obra,client,clients,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=tabsForWork8737(obra);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<div className="obra-topbar"><div><small className="exp-code-header-v8739">{expedientCode8739(obra)}</small><h1>{obra.nom}</h1><p>{client.nom} · {moduleLabel8737(obra)}</p></div><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+function Obra({obra,client,clients,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=tabsForWork8737(obra,data);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<div className="obra-topbar"><div><small className="exp-code-header-v8739">{expedientCode8739(obra)}</small><h1>{obra.nom}</h1><p>{client.nom} · {moduleLabel8737(obra)}</p></div><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO EXPEDIENT"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
     <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><button type="button" className="secondary edit-fitxa-btn-v8725" onClick={()=>setEditObra(true)}>Modificar fitxa</button><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
@@ -740,7 +751,7 @@ function Obra({obra,client,clients,data,tab,setTab,setScreen,uploadImage,importE
       <label><span>Tipus de treball</span><input value={moduleLabel8737(obra)} readOnly/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742}/>}</div></section></div>}
 
 
 function AgendaAvisosExpedient8737({data,openEvent}){
@@ -873,40 +884,47 @@ return <div className="stack resum-tecnic-v8738">
 
 function TextAssistitPress8742({setText,existing=[]}){
 const baseTemplates=[
-  {t:"Projecte tècnic + direcció",v:"Honoraris tècnics per a la redacció del projecte tècnic, documentació gràfica, tramitació administrativa i direcció d’obra del treball encarregat, incloent visites, seguiment i tancament de l’expedient."},
-  {t:"Informe tècnic",v:"Honoraris per a visita d’inspecció, presa de dades, anàlisi tècnica, reportatge fotogràfic i redacció d’informe tècnic amb conclusions i recomanacions d’actuació."},
-  {t:"Cèdula / certificat energètic",v:"Honoraris per a visita a l’immoble, presa de dades, comprovació de documentació, elaboració del certificat corresponent i tramitació administrativa davant l’organisme competent."},
-  {t:"Direcció / project management",v:"Honoraris per al seguiment tècnic de l’obra, coordinació amb agents intervinents, visites periòdiques, revisió de documentació, control d’incidències i assistència tècnica al client."},
+  {t:"Projecte tècnic + direcció",v:"Honoraris tècnics per a la redacció del projecte tècnic, documentació gràfica, tramitació administrativa i direcció d’obra del treball encarregat, incloent visites, seguiment, coordinació amb el client i tancament de l’expedient."},
+  {t:"Informe tècnic",v:"Honoraris per a visita d’inspecció, presa de dades, anàlisi tècnica, reportatge fotogràfic i redacció d’informe tècnic amb conclusions, recomanacions d’actuació i lliurament en format PDF."},
+  {t:"Cèdula / CEE",v:"Honoraris per a visita a l’immoble, presa de dades, comprovació de documentació, elaboració de la cèdula o certificat energètic corresponent i tramitació administrativa davant l’organisme competent."},
+  {t:"Direcció / PM",v:"Honoraris per al seguiment tècnic de l’obra, coordinació amb agents intervinents, visites periòdiques, revisió de documentació, control d’incidències, actes de visita i assistència tècnica al client."},
   {t:"Pressupost / amidaments",v:"Honoraris per a l’anàlisi de documentació, presa d’amidaments, elaboració de pressupost detallat, revisió de partides i preparació de documentació per al client."}
 ];
-const learned=[...new Set([...(existing||[]).map(x=>x.text).filter(Boolean),...loadTemplates8743()])].slice(0,6).map((v,i)=>({t:`Text guardat ${i+1}`,v}));
+const learned=[...new Set([...(existing||[]).map(x=>x.text).filter(Boolean),...loadTemplates8743()])].slice(0,5).map((v,i)=>({t:`Text reutilitzat ${i+1}`,v}));
 const templates=[...baseTemplates,...learned];
 const[prompt,setPrompt]=useState("");
 function generate(){
   const p=prompt.trim();
   if(!p)return;
-  setText(`Honoraris tècnics per a ${p}, incloent presa de dades, gestió documental, coordinació amb el client, redacció/preparació de la documentació necessària i lliurament final segons l’abast acordat.`);
+  setText(`Honoraris tècnics per a ${p}, incloent presa de dades, visites necessàries, gestió documental, coordinació amb el client, redacció/preparació de la documentació tècnica corresponent i lliurament final segons l’abast acordat.`);
 }
-return <div className="text-assist-v8742 text-assist-v8743"><b>Assistent de text</b><span>Tria un text tipus, reutilitza textos anteriors o escriu què vols pressupostar i genera una base editable.</span><div className="ai-mini-v8743"><input value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Ex: informe d’humitats en habitatge, cèdula, direcció d’obra..."/><button type="button" className="secondary" onClick={generate}>Generar text base</button></div><div className="template-buttons-v8743">{templates.map(x=><button type="button" className="secondary" key={x.t} onClick={()=>setText(x.v)}>{x.t}</button>)}</div></div>
+return <div className="text-assist-v8744"><div className="assist-head-v8744"><b>Textos tipus i ajuda ràpida</b><span>Tria un text sencer o escriu una idea i genera una base editable. Més endavant això es podrà connectar amb IA real.</span></div><div className="ai-mini-v8743"><input value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Ex: informe d’humitats, cèdula, direcció d’obra, amidaments..."/><button type="button" className="secondary" onClick={generate}>Generar text base</button></div><div className="template-cards-v8744">{templates.map(x=><div className="template-card-v8744" key={x.t}><h4>{x.t}</h4><p>{x.v}</p><button type="button" className="secondary" onClick={()=>setText(x.v)}>Aplicar aquest text</button></div>)}</div></div>
 }
 function QuotePreview8743({type="pressupost",doc,obra,close}){
   const isFactura=type==="factura";
   const title=isFactura?"FACTURA / PROFORMA":"PRESSUPOST";
   const base=baseIva8743(doc), iva=ivaAmount8743(doc), total=totalIva8743(doc);
+  const cfg=(()=>{try{return JSON.parse(localStorage.getItem("aco_config_v60")||"{}")}catch(e){return {}}})();
   return <Modal title={`Vista prèvia ${isFactura?"factura":"pressupost"}`} close={close}>
     <div className="a4-preview-wrap-v8743">
-      <div className="quote-a4-v8743 print-area">
-        <div className="quote-a4-head-v8743"><div><h1>{title}</h1><b>{doc.numero||"—"}</b><span>Data: {doc.data||"—"}</span></div><div><strong>Control d’Obres</strong><span>Document generat des de l’expedient</span></div></div>
-        <div className="quote-a4-info-v8743"><div><b>Expedient</b><span>{expedientCode8739(obra)}</span><span>{obra?.nom}</span><span>{obra?.adreca||""} {obra?.poblacio||""}</span></div><div><b>Client</b><span>{obra?.propietat||"Client"}</span><span>NIF: {obra?.nifPropietat||"Pendent"}</span></div></div>
-        <table className="quote-a4-table-v8743"><thead><tr><th>Concepte</th><th>Base</th><th>IVA</th><th>Total</th></tr></thead><tbody><tr><td><b>{doc.concepte||"Honoraris tècnics"}</b><p>{doc.text||"—"}</p></td><td>{money(base)}</td><td>{doc.iva||21}%</td><td><b>{money(total)}</b></td></tr></tbody></table>
+      <div className="quote-a4-v8743 quote-a4-v8744 print-area">
+        <div className="quote-doc-title-v8744"><h1>{title}</h1><b>{doc.numero||"—"}</b></div>
+        <div className="quote-parties-v8744"><div><h3>Dades del tècnic</h3><b>{cfg.empresa||"Héctor Cubero / Despatx tècnic"}</b><span>{cfg.email||"Email pendent"}</span><span>NIF / Col·legiat: pendent</span></div><div><h3>Client</h3><b>{obra?.propietat||"Client"}</b><span>NIF: {obra?.nifPropietat||"Pendent"}</span><span>{obra?.adreca||""}</span><span>{obra?.poblacio||""}</span></div></div>
+        <div className="quote-exp-box-v8744"><b>Expedient</b><span>{expedientCode8739(obra)} · {obra?.nom}</span><small>Data: {doc.data||"—"}</small></div>
+        <table className="quote-a4-table-v8743"><thead><tr><th>Concepte</th><th>Base imposable</th><th>IVA</th><th>Total</th></tr></thead><tbody><tr><td><b>{doc.concepte||"Honoraris tècnics"}</b><p>{doc.text||"—"}</p></td><td>{money(base)}</td><td>{doc.iva||21}%<br/><small>{money(iva)}</small></td><td><b>{money(total)}</b></td></tr></tbody></table>
         <div className="quote-a4-totals-v8743"><div><span>Base imposable</span><b>{money(base)}</b></div><div><span>IVA</span><b>{money(iva)}</b></div><div className="total"><span>Total</span><b>{money(total)}</b></div></div>
-        <div className="quote-a4-footer-v8743">Document provisional pendent d’adaptar a dades fiscals definitives del tècnic/despatx.</div>
+        <div className="quote-a4-footer-v8734">Document provisional pendent d’adaptar a dades fiscals definitives del tècnic/despatx.</div>
       </div>
     </div>
     <div className="modal-actions"><button className="secondary" onClick={()=>window.print()}>Imprimir / PDF</button><button className="primary" onClick={close}>Tancar</button></div>
   </Modal>
 }
-function PressupostTecnic8738({data,obra,addPressupost,updatePressupost,facturarPressupost,openEmail,openDoc}){
+function InlineQuotePreview8744({type="pressupost",doc,obra}){
+  const isFactura=type==="factura";
+  const total=totalIva8743(doc);
+  return <div className="inline-preview-v8744"><div className="inline-a4-v8744"><div><b>{isFactura?"Factura / proforma":"Pressupost"}</b><span>{doc.concepte||"Honoraris tècnics"}</span></div><p>{doc.text||"Text pendent"}</p><strong>Total IVA inclòs: {money(total)}</strong><small>{expedientCode8739(obra)} · {obra?.propietat||"Client"}</small></div></div>
+}
+function PressupostTecnic8738({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,openEmail,openDoc}){
   const rows=data.pressupostosTecnic||[];
   const[open,setOpen]=useState(false);
   const[editing,setEditing]=useState(null);
@@ -915,19 +933,20 @@ function PressupostTecnic8738({data,obra,addPressupost,updatePressupost,facturar
   const[form,setForm]=useState({concepte:"Honoraris tècnics",base:"0",iva:"21",data:todayISO8743(),estat:"Esborrany"});
   function reset(p=null){if(p){setEditing(p.id);setForm({concepte:p.concepte||"Honoraris tècnics",base:String(p.base||0),iva:String(p.iva||21),data:toInputDate8743(p.data),estat:p.estat||"Esborrany"});setText(p.text||"");setOpen(true)}else{setEditing(null);setForm({concepte:"Honoraris tècnics",base:"0",iva:"21",data:todayISO8743(),estat:"Esborrany"});setText("Honoraris tècnics per als treballs professionals indicats, incloent gestió, documentació i seguiment de l’expedient segons l’abast acordat amb el client.");setOpen(false)}}
   function submit(e){e.preventDefault();const payload={...form,text,base:+form.base||0,iva:+form.iva||21,estat:form.estat||"Esborrany"};saveTemplate8743(text);if(editing)updatePressupost?.(editing,payload);else addPressupost?.(payload);reset(null)}
-  return <div className="stack quote-module-v8742 quote-module-v8743">{preview&&<QuotePreview8743 type="pressupost" doc={preview} obra={obra} close={()=>setPreview(null)}/>}<Card title="Pressupostos" action={<button className="primary" onClick={()=>{setOpen(true);setEditing(null)}}><Plus/> Nou pressupost</button>}>
+  const liveDoc={...form,text,base:+form.base||0,iva:+form.iva||21};
+  return <div className="stack quote-module-v8742 quote-module-v8743 quote-module-v8744">{preview&&<QuotePreview8743 type="pressupost" doc={preview} obra={obra} close={()=>setPreview(null)}/>}<Card title="Pressupostos" action={<button className="primary" onClick={()=>{setOpen(true);setEditing(null)}}><Plus/> Nou pressupost</button>}>
     <div className="module-note-v8738"><b>Pressupost professional del tècnic.</b><span>Per honoraris, informes, cèdules, CEE, direccions, project management o altres treballs tècnics. No és el pressupost econòmic d’obra.</span></div>
-    {open&&<form className="quote-form-v8742" onSubmit={submit}>
-      <div className="form-grid"><label><span>Concepte</span><input value={form.concepte} onChange={e=>setForm({...form,concepte:e.target.value})}/></label><label><span>Base imposable</span><input type="number" step="0.01" value={form.base} onChange={e=>setForm({...form,base:e.target.value})}/></label><label><span>IVA %</span><input type="number" step="1" value={form.iva} onChange={e=>setForm({...form,iva:e.target.value})}/></label><label><span>Data</span><input type="date" value={form.data||todayISO8743()} onChange={e=>setForm({...form,data:e.target.value})}/></label><label><span>Estat</span><select value={form.estat||"Esborrany"} onChange={e=>setForm({...form,estat:e.target.value})}><option>Esborrany</option><option>Enviat</option><option>Acceptat</option><option>Facturat</option><option>Descartat</option></select></label></div>
+    {open&&<form className="quote-form-v8742 quote-form-v8744" onSubmit={submit}>
+      <div className="quote-form-main-v8744"><div><div className="form-grid"><label><span>Concepte</span><input value={form.concepte} onChange={e=>setForm({...form,concepte:e.target.value})}/></label><label><span>Base imposable</span><input type="number" step="0.01" value={form.base} onChange={e=>setForm({...form,base:e.target.value})}/></label><label><span>IVA %</span><input type="number" step="1" value={form.iva} onChange={e=>setForm({...form,iva:e.target.value})}/></label><label><span>Data</span><input type="date" value={form.data||todayISO8743()} onChange={e=>setForm({...form,data:e.target.value})}/></label><label><span>Estat</span><select value={form.estat||"Esborrany"} onChange={e=>setForm({...form,estat:e.target.value})}><option>Esborrany</option><option>Enviat</option><option>Acceptat</option><option>Facturat</option><option>Descartat</option></select></label></div>
       <TextAssistitPress8742 setText={setText} existing={rows}/>
-      <label className="span-all quote-text-v8742"><span>Text del pressupost</span><textarea value={text} onChange={e=>setText(e.target.value)}/></label>
+      <label className="span-all quote-text-v8742 quote-text-v8744"><span>Text del pressupost</span><textarea value={text} onChange={e=>setText(e.target.value)}/></label>
       <div className="quote-total-v8742"><span>Total amb IVA</span><b>{money((+form.base||0)*(1+(+form.iva||0)/100))}</b></div>
-      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>reset(null)}>Cancel·lar</button><button className="primary">{editing?"Guardar canvis":"Guardar pressupost"}</button></div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>reset(null)}>Cancel·lar</button><button className="primary">{editing?"Guardar canvis":"Guardar pressupost"}</button></div></div><InlineQuotePreview8744 type="pressupost" doc={liveDoc} obra={obra}/></div>
     </form>}
-    <div className="quote-list-v8742 quote-list-v8743">{rows.length===0&&<Empty text="Encara no hi ha pressupostos en aquest expedient."/>}{rows.map(r=><div className="quote-row-v8742 quote-row-v8743" key={r.id}><div><strong>{r.numero||"PRE"}</strong><span>{r.concepte||"Pressupost"}</span><small>{r.data||"—"} · {r.estat||"Pendent"}</small></div><b>{money(totalIva8743(r))}<small>IVA inclòs</small></b><div className="actions-inline"><button className="secondary" onClick={()=>setPreview(r)}>Veure / PDF</button><button className="secondary" onClick={()=>reset(r)}>Editar</button><button className="secondary" onClick={()=>updatePressupost?.(r.id,{estat:"Acceptat"})}>Acceptar</button><button className="secondary" onClick={()=>facturarPressupost?.(r.id)}>Fer factura</button><button className="secondary" onClick={()=>openEmail?.("Pressupost")}>Enviar</button></div></div>)}</div>
+    <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha pressupostos en aquest expedient."/>}{rows.map(r=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={r.id}><div><strong>{r.numero||"PRE"}</strong><span>{r.concepte||"Pressupost"}</span><small>{r.data||"—"} · {r.estat||"Pendent"}</small></div><b>{money(totalIva8743(r))}<small>IVA inclòs</small></b><div className="actions-inline"><button className="secondary" onClick={()=>setPreview(r)}>Veure PDF</button><button className="secondary" onClick={()=>reset(r)}>Editar</button><button className="secondary" onClick={()=>updatePressupost?.(r.id,{estat:"Acceptat"})}>Acceptar</button><button className="secondary" onClick={()=>facturarPressupost?.(r.id)}>Fer factura</button><button className="secondary" onClick={()=>openEmail?.("Pressupost")}>Enviar</button><button className="danger" onClick={()=>deletePressupost?.(r.id)}>Eliminar</button></div></div>)}</div>
   </Card></div>
 }
-function FacturesTecniques8738({data,obra,addFactura,updateFactura,openEmail,openDoc}){
+function FacturesTecniques8738({data,obra,addFactura,updateFactura,deleteFactura,openEmail,openDoc}){
   const rows=uniqueFactures8743(data.facturesTecnic||[]);
   const[open,setOpen]=useState(false);
   const[editing,setEditing]=useState(null);
@@ -936,10 +955,11 @@ function FacturesTecniques8738({data,obra,addFactura,updateFactura,openEmail,ope
   const[form,setForm]=useState({concepte:"Honoraris tècnics",base:"0",iva:"21",data:todayISO8743(),estat:"Esborrany"});
   function reset(f=null){if(f){setEditing(f.id);setForm({concepte:f.concepte||"Honoraris tècnics",base:String(f.base||0),iva:String(f.iva||21),data:toInputDate8743(f.data),estat:f.estat||"Esborrany"});setText(f.text||"");setOpen(true)}else{setEditing(null);setForm({concepte:"Honoraris tècnics",base:"0",iva:"21",data:todayISO8743(),estat:"Esborrany"});setText("Factura corresponent als honoraris tècnics dels treballs professionals realitzats segons pressupost acceptat.");setOpen(false)}}
   function submit(e){e.preventDefault();const payload={...form,text,base:+form.base||0,iva:+form.iva||21,estat:form.estat||"Esborrany"};if(editing)updateFactura?.(editing,payload);else addFactura?.(payload);reset(null)}
-  return <div className="stack quote-module-v8743">{preview&&<QuotePreview8743 type="factura" doc={preview} obra={obra} close={()=>setPreview(null)}/>}<Card title="Factures" action={<button className="primary" onClick={()=>setOpen(!open)}><Plus/> Nova factura</button>}>
+  const liveDoc={...form,text,base:+form.base||0,iva:+form.iva||21};
+  return <div className="stack quote-module-v8743 quote-module-v8744">{preview&&<QuotePreview8743 type="factura" doc={preview} obra={obra} close={()=>setPreview(null)}/>}<Card title="Factures" action={<button className="primary" onClick={()=>setOpen(!open)}><Plus/> Nova factura</button>}>
     <div className="module-note-v8738"><b>Facturació del treball professional.</b><span>Pot sortir d’un pressupost acceptat o crear-se manualment amb conceptes afegits.</span></div>
-    {open&&<form className="quote-form-v8742" onSubmit={submit}><div className="form-grid"><label><span>Concepte</span><input value={form.concepte} onChange={e=>setForm({...form,concepte:e.target.value})}/></label><label><span>Base imposable</span><input type="number" step="0.01" value={form.base} onChange={e=>setForm({...form,base:e.target.value})}/></label><label><span>IVA %</span><input type="number" step="1" value={form.iva} onChange={e=>setForm({...form,iva:e.target.value})}/></label><label><span>Data</span><input type="date" value={form.data||todayISO8743()} onChange={e=>setForm({...form,data:e.target.value})}/></label><label><span>Estat</span><select value={form.estat||"Esborrany"} onChange={e=>setForm({...form,estat:e.target.value})}><option>Esborrany</option><option>Enviada</option><option>Cobrada</option><option>Anul·lada</option></select></label></div><label className="span-all quote-text-v8742"><span>Text factura</span><textarea value={text} onChange={e=>setText(e.target.value)}/></label><div className="quote-total-v8742"><span>Total amb IVA</span><b>{money((+form.base||0)*(1+(+form.iva||0)/100))}</b></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>reset(null)}>Cancel·lar</button><button className="primary">{editing?"Guardar canvis":"Guardar factura"}</button></div></form>}
-    <div className="quote-list-v8742 quote-list-v8743">{rows.length===0&&<Empty text="Encara no hi ha factures en aquest expedient."/>}{rows.map(f=><div className="quote-row-v8742 quote-row-v8743" key={f.id}><div><strong>{f.numero||"FAC"}</strong><span>{f.concepte||f.tipus||"Factura / proforma"}</span><small>{f.data||"—"} · {f.estat||"Pendent"}</small></div><b>{money(totalIva8743(f))}<small>IVA inclòs</small></b><div className="actions-inline"><button className="secondary" onClick={()=>setPreview(f)}>Veure / PDF</button><button className="secondary" onClick={()=>reset(f)}>Editar</button><button className="secondary" onClick={()=>openEmail?.("Factura")}>Enviar</button></div></div>)}</div>
+    {open&&<form className="quote-form-v8742 quote-form-v8744" onSubmit={submit}><div className="quote-form-main-v8744"><div><div className="form-grid"><label><span>Concepte</span><input value={form.concepte} onChange={e=>setForm({...form,concepte:e.target.value})}/></label><label><span>Base imposable</span><input type="number" step="0.01" value={form.base} onChange={e=>setForm({...form,base:e.target.value})}/></label><label><span>IVA %</span><input type="number" step="1" value={form.iva} onChange={e=>setForm({...form,iva:e.target.value})}/></label><label><span>Data</span><input type="date" value={form.data||todayISO8743()} onChange={e=>setForm({...form,data:e.target.value})}/></label><label><span>Estat</span><select value={form.estat||"Esborrany"} onChange={e=>setForm({...form,estat:e.target.value})}><option>Esborrany</option><option>Enviada</option><option>Cobrada</option><option>Anul·lada</option></select></label></div><label className="span-all quote-text-v8742 quote-text-v8744"><span>Text factura</span><textarea value={text} onChange={e=>setText(e.target.value)}/></label><div className="quote-total-v8742"><span>Total amb IVA</span><b>{money((+form.base||0)*(1+(+form.iva||0)/100))}</b></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>reset(null)}>Cancel·lar</button><button className="primary">{editing?"Guardar canvis":"Guardar factura"}</button></div></div><InlineQuotePreview8744 type="factura" doc={liveDoc} obra={obra}/></div></form>}
+    <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha factures en aquest expedient."/>}{rows.map(f=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={f.id}><div><strong>{f.numero||"FAC"}</strong><span>{f.concepte||f.tipus||"Factura / proforma"}</span><small>{f.data||"—"} · {f.estat||"Pendent"}</small></div><b>{money(totalIva8743(f))}<small>IVA inclòs</small></b><div className="actions-inline"><button className="secondary" onClick={()=>setPreview(f)}>Veure PDF</button><button className="secondary" onClick={()=>reset(f)}>Editar</button><button className="secondary" onClick={()=>openEmail?.("Factura")}>Enviar</button><button className="danger" onClick={()=>deleteFactura?.(f.id)}>Eliminar</button></div></div>)}</div>
   </Card></div>
 }
 function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
