@@ -2612,28 +2612,14 @@ button,input,select,textarea{font-size:13.5px!important}
   background:#fff;
 }
 
-/* V87.32 - backup fitxer manual a Configuració */
-.backup-file-v8732{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  flex-wrap:wrap;
-}
-.backup-file-v8732 b,
-.backup-file-v8732 span{
-  display:block;
-}
-.backup-file-v8732 span{
-  color:#64748b;
-  margin-top:4px;
-  max-width:760px;
-}
-.backup-actions-v8732{
-  flex-wrap:wrap;
-}
-@media(max-width:900px){
-  .backup-file-v8732{
-    align-items:flex-start;
-  }
-}
+/* V87.34 - login privat Supabase */
+.login-cloud-page-v8734{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:#eef2f7}
+.login-card-v8734{width:min(900px,96vw);background:#fff;border:1px solid #e5e7eb;border-radius:24px;padding:24px;box-shadow:0 18px 55px rgba(15,23,42,.14)}
+.login-card-v8734 h1{margin:10px 0 4px}
+.login-card-v8734 p{color:#64748b;margin-top:0}
+.cloud-private-v8734{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.cloud-private-v8734 b,.cloud-private-v8734 span{display:block}
+.cloud-private-v8734 span{color:#64748b;margin-top:4px}
+.sync-status-v8734{padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;color:#0f172a;font-weight:800;margin-top:10px}
+.sync-help-v8734{margin-top:12px;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;background:#fff}
+.sync-help-v8734 pre{white-space:pre-wrap;font-size:12px;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:12px;overflow:auto}
