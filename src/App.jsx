@@ -65,7 +65,7 @@ function PlansModuls8736(){
         <strong>2 expedients inclosos</strong>
       </div>
       <div className="plans-grid-v8736">
-        <div className="module-card-v8736 active"><span>Mòdul 1</span><h3>Tècnic / Expedients professionals</h3><p>Per arquitectes tècnics, project managers i tècnics d’edificació.</p><ul><li>Clients, expedients i agenda</li><li>Actes, documents, fotos, notes i avisos</li><li>Honoraris, pressupostos i facturació del tècnic al client</li></ul></div>
+        <div className="module-card-v8736 active"><span>Mòdul 1</span><h3>Tècnic / Expedients professionals</h3><p>Per arquitectes tècnics, project managers i tècnics d’edificació.</p><ul><li>Clients, expedients i agenda</li><li>Actes, documents, fotos, notes i avisos</li><li>Gestió de temps, pressupostos i factures del tècnic al client</li></ul></div>
         <div className="module-card-v8736 locked"><span>Mòdul 2</span><h3>Control econòmic d’obra</h3><p>Per pressupost d’obra, certificacions i facturació d’obra.</p><ul><li>Pressupost d’obra</li><li>Certificacions d’obra</li><li>Comparativa pressupost / certificat</li></ul></div>
         <div className="module-card-v8736 locked"><span>Mòdul 3</span><h3>Control integral d’empresa</h3><p>Per constructores o despatxos que volen controlar costos i rendibilitat.</p><ul><li>Albarans, compres i proveïdors</li><li>Personal, hores i costos indirectes</li><li>Marge i resultat econòmic per expedient</li></ul></div>
       </div>
@@ -78,26 +78,33 @@ const WORK_TYPES8737=[
   "Direcció d’execució d’obra",
   "Direcció d’obra",
   "Project management",
-  "Projecte amb direcció i execució",
-  "Pressupost per constructor/promotor",
+  "Projecte tècnic amb direcció",
   "Informe tècnic",
   "ITE",
   "Certificat energètic",
   "Cèdula d’habitabilitat",
   "Taxació / valoració",
   "Seguretat i salut",
-  "Amidaments i pressupost",
+  "Amidaments i pressupost tècnic",
+  "Pressupost per constructor/promotor",
   "Render / documentació gràfica",
   "Consulta tècnica puntual",
   "Altres"
 ];
+const TABS_M1_BASE8738=["Resum","Agenda / Avisos","Documents","Fotografies","Gestió temps","Pressupostos","Factures"];
+const TABS_M1_ACTES8738=["Resum","Agenda / Avisos","Actes","Documents","Fotografies","Gestió temps","Pressupostos","Factures"];
+const TABS_M2_OBRA8738=["Resum","Agenda / Avisos","Actes","Documents","Fotografies","Gestió temps","Pressupostos","Factures","Pressupost obra","Certificacions obra","Facturació obra"];
+function workNeedsActes8738(t){
+  t=String(t||"").toLowerCase();
+  return ["direcció","project management","projecte tècnic","seguretat","ite"].some(k=>t.includes(k));
+}
 function tabsForWork8737(obra){
-  const t=String(obra?.tipusTreball||obra?.tipologia||"").toLowerCase();
-  const base=["Resum","Agenda / Avisos","Fotografies","Documents","Honoraris / Temps","Pressupost tècnic-client","Facturació tècnic-client"];
-  const withActes=["direcció","project","obra","seguretat","ite"];
-  if(withActes.some(k=>t.includes(k))) return ["Resum","Agenda / Avisos","Actes","Fotografies","Documents","Honoraris / Temps","Pressupost tècnic-client","Facturació tècnic-client"];
-  if(t.includes("pressupost")||t.includes("amidament")) return ["Resum","Agenda / Avisos","Documents","Honoraris / Temps","Pressupost tècnic-client","Facturació tècnic-client"];
-  return base;
+  const t=String(obra?.tipusTreball||obra?.tipologia||"");
+  const mods=obra?.modulsActius||["tecnic"];
+  const hasM2=Array.isArray(mods)?mods.includes("economic_obra"):String(mods).includes("economic_obra");
+  const isObraType=["direcció","project management","obra","projecte tècnic"].some(k=>t.toLowerCase().includes(k));
+  if(hasM2&&isObraType) return TABS_M2_OBRA8738;
+  return workNeedsActes8738(t)?TABS_M1_ACTES8738:TABS_M1_BASE8738;
 }
 function moduleLabel8737(obra){return obra?.tipusTreball||obra?.tipologia||"Treball tècnic"}
 
@@ -394,7 +401,7 @@ function deleteHour(id){setD(obraId,d=>({...d,hores:d.hores.filter(h=>h.id!==id)
 function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=String(b).split(":").map(Number);let mins=(bh*60+bm)-(ah*60+am);return Math.max(mins/60,0)}
 
 
-return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Temps invertit / cost treball","Tiempo invertido / coste","Time / cost")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen==="Inici"&&<Inici clients={clients} obres={obres} events={Object.values(odata).flatMap(d=>d.events||[])} setScreen={nav} openObra={openObra} newObra={()=>setModal("obra")}/>}
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
@@ -402,8 +409,10 @@ return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<
 {screen==="Obra"&&<Obra obra={obra} client={client} clients={clients} data={data} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={setDoc} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} openEvent={()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}
 {screen==="Agenda"&&<Agenda events={data.events||[]} clients={clients} obres={obres} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay}/>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
+{screen==="Pressupostos"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}
+{screen==="Factures"&&<FacturesGeneral8738 obres={obres} odata={odata} openObra={openObra}/>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
-{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><FormObra clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’obra" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’obra" close={()=>setModal(null)}><FormActa agents={data.agents} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div>
+{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><FormObra clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={data.agents} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div>
 }
 
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
@@ -417,7 +426,7 @@ function Inici({clients,obres,events,setScreen,openObra,newObra}){
 const actius=obres.filter(o=>o.estat!=="Tancada").length;
 const recents=obres.slice(0,4);
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, honoraris i pressupostos del tècnic al client.</p><span className="version-badge soft">Versió 87.37 mòdul tècnic</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, honoraris i pressupostos del tècnic al client.</p><span className="version-badge soft">Versió 87.38 mòdul tècnic ordenat</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS ACTIUS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid"><div className="stack"><Card title="Expedients recents"><div className="list">{recents.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Darreres actuacions"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Agenda tècnica</b><span>Visites, entregues, avisos i recordatoris vinculats a expedients.</span></button><button className="notice" onClick={()=>setScreen("Treballs / Expedients")}><b>Flux per tipologia de treball</b><span>Cada expedient mostra només les pestanyes necessàries segons el tipus de treball.</span></button></div></Card></div><Card title="Mòdul 1 · Tècnic"><div className="module-home-v8737"><b>Inclou el necessari per treballar com a tècnic.</b><span>Clients, expedients, agenda, actes quan calgui, fotos, documents, honoraris, pressupostos i facturació del tècnic al client.</span><em>El control econòmic d’obra i el control integral d’empresa queden com a mòduls posteriors.</em></div></Card></section>
@@ -515,7 +524,7 @@ function Obra({obra,client,clients,data,tab,setTab,setScreen,uploadImage,importE
       <label><span>Tipus de treball</span><input value={moduleLabel8737(obra)} readOnly/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupost tècnic-client"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació tècnic-client"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Honoraris / Temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes data={data} openActa={openActa} openEmail={openEmail} openDoc={openDoc} selected={selectedActaId} setSelected={setSelectedActaId}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 
 function AgendaAvisosExpedient8737({data,openEvent}){
@@ -597,34 +606,68 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
 }
 
 function Resum({obra,client,data,openAgent}){
-let rows=data.partides||[], certs=data.certificacions||[], actes=data.actes||[], docs=data.documents||[], fotos=data.fotos||[], events=data.events||[];
-let pressupost=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-function qFor(r,n){return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):(r.certsByNum&&r.certsByNum[String(n)]!==undefined?+r.certsByNum[String(n)]||0:0)}
-let totalCert=certs.reduce((s,c)=>s+rows.reduce((x,r)=>x+qFor(r,+c.numero)*(+r.pu||0),0),0);
-let pendent=Math.max(pressupost-totalCert,0);
-let percent=pressupost?totalCert/pressupost*100:0;
-let ultima=certs.length?[...certs].sort((a,b)=>(+b.numero)-(+a.numero))[0]:null;
-let importUltima=ultima?rows.reduce((x,r)=>x+qFor(r,+ultima.numero)*(+r.pu||0),0):0;
-let partides=rows.length;
-let capitols=[...new Set(rows.map(r=>r.cap).filter(Boolean))].length;
-let timeline=[
-  ultima&&{t:`Certificació ${ultima.numero}`,d:ultima.data||"Sense data",x:`Import ${money(importUltima)}`},
-  actes[0]&&{t:"Última acta",d:actes[0].data||"Sense data",x:actes[0].titol||actes[0].title||"Acta registrada"},
-  docs[0]&&{t:"Últim document",d:docs[0].data||"Document",x:docs[0].nom||docs[0].name||"Document adjunt"},
-  events[0]&&{t:"Agenda / avís",d:`${events[0].day||""}/${(events[0].month||0)+1}/${events[0].year||""}`,x:events[0].title||"Nota agenda"}
-].filter(Boolean);
-if(!timeline.length) timeline=[{t:"Sense activitat recent",d:"—",x:"Quan afegeixis actes, documents, notes o certificacions apareixeran aquí."}];
-return <div className="stack resum-pro-v8735">
-  <section className="resum-hero-v8735"><div><span className="eyebrow-v8735">Fitxa resum de l’expedient</span><h2>{obra?.nom||"Expedient"}</h2><p>{client?.nom||obra?.propietat||"Client"} · {obra?.tipologia||"Tipus servei no definit"} · {obra?.estat||"Estat no definit"}</p></div><div className="resum-hero-badge-v8735"><small>% avanç</small><b>{pct(percent)}</b></div></section>
-  <section className="resum-kpi-grid-v8735">
-    <div className="resum-kpi-pro-v8735 main"><span>Valor / pressupost</span><b>{money(pressupost)}</b><em>{partides} partides · {capitols} capítols</em></div>
-    <div className="resum-kpi-pro-v8735 ok"><span>Import controlat</span><b>{money(totalCert)}</b><em>{certs.length} registres econòmics</em></div>
-    <div className="resum-kpi-pro-v8735 warn"><span>Pendent</span><b>{money(pendent)}</b><em>Pendent de tancar</em></div>
-    <div className="resum-kpi-pro-v8735"><span>Últim registre</span><b>{ultima?`Cert. ${ultima.numero}`:"—"}</b><em>{ultima?`${ultima.data||""} · ${money(importUltima)}`:"Sense registres"}</em></div>
+let events=data.events||[], actes=data.actes||[], docs=data.documents||[], fotos=data.fotos||[], hores=data.hores||[], pressupostos=data.pressupostos||[], factures=data.factures||[];
+let proper=[...events].sort((a,b)=>`${a.year||0}-${a.month||0}-${a.day||0}`.localeCompare(`${b.year||0}-${b.month||0}-${b.day||0}`))[0];
+let totalHores=hores.reduce((s,h)=>s+(+h.hores||0),0);
+let costTemps=hores.reduce((s,h)=>s+(+h.hores||0)*(+h.preu||0)+(+h.despeses||0),0);
+let latest=[];
+latest.push(...events.map(e=>({tipus:e.type||"Agenda",data:`${e.day||"--"}/${String((e.month??0)+1).padStart(2,"0")}/${e.year||""}`,txt:e.title||e.note||"Cita / avís"})));
+latest.push(...actes.map(a=>({tipus:"Acta",data:a.data||"—",txt:a.titol||"Acta d’expedient"})));
+latest.push(...pressupostos.map(p=>({tipus:"Pressupost",data:p.data||"—",txt:p.nom||p.versio||"Pressupost tècnic"})));
+latest.push(...factures.map(f=>({tipus:"Factura",data:f.data||"—",txt:f.numero||f.tipus||"Factura / proforma"})));
+latest.push(...hores.map(h=>({tipus:"Temps",data:h.data||"—",txt:`${h.tasca||h.etiqueta||"Temps registrat"} · ${(+h.hores||0).toFixed(2)} h`})));
+latest=latest.slice(-6).reverse();
+return <div className="stack resum-tecnic-v8738">
+  <section className="resum-hero-v8738">
+    <div>
+      <span className="eyebrow-v8735">Fitxa resum de l’expedient</span>
+      <h2>{obra?.nom||"Expedient"}</h2>
+      <p>{client?.nom||obra?.propietat||"Client"} · {moduleLabel8737(obra)}</p>
+    </div>
+    <div className="status-pill-v8738"><small>Estat</small><b>{obra?.estat||"Pendent"}</b></div>
   </section>
-  <Card title="Evolució de l’expedient"><div className="progress-pro-wrap-v8735"><div className="progress-pro-top-v8735"><span>Avanç econòmic/controlat</span><b>{pct(percent)}</b></div><div className="progress-pro-v8735"><i style={{width:`${Math.min(percent,100)}%`}}/></div><div className="progress-pro-bottom-v8735"><span>{money(totalCert)} controlat</span><span>{money(pendent)} pendent</span></div></div></Card>
-  <Card title="Darreres actuacions i avisos de l’expedient"><div className="timeline-v8736">{timeline.map((it,i)=><div key={i} className="timeline-item-v8736"><b>{it.t}</b><span>{it.d}</span><p>{it.x}</p></div>)}</div></Card>
+  <section className="resum-kpi-grid-v8738">
+    <div className="resum-kpi-pro-v8735 main"><span>Tipus de treball</span><b>{moduleLabel8737(obra)}</b><em>Mòdul 1 · Tècnic</em></div>
+    <div className="resum-kpi-pro-v8735"><span>Proper avís / cita</span><b>{proper?`${proper.day}/${String((proper.month??0)+1).padStart(2,"0")}`:"—"}</b><em>{proper?`${proper.type||"Agenda"} · ${proper.title||proper.note||""}`:"Sense avisos programats"}</em></div>
+    <div className="resum-kpi-pro-v8735 ok"><span>Temps registrat</span><b>{totalHores.toFixed(2)} h</b><em>{money(costTemps)} valor intern</em></div>
+    <div className="resum-kpi-pro-v8735 warn"><span>Documents / fotos</span><b>{docs.length+fotos.length}</b><em>{docs.length} docs · {fotos.length} fotos</em></div>
+  </section>
+  <section className="resum-info-grid-v8738">
+    <Card title="Darreres actuacions i avisos de l’expedient">
+      <div className="activity-list-v8738">
+        {latest.length===0&&<div className="activity-empty-v8738"><b>Sense activitat recent</b><span>Quan afegeixis actes, documents, cites, pressupostos, factures o temps de treball apareixeran aquí.</span></div>}
+        {latest.map((x,i)=><div className="activity-row-v8738" key={i}><strong>{x.tipus}</strong><span>{x.txt}</span><em>{x.data}</em></div>)}
+      </div>
+    </Card>
+    <Card title="Dades bàsiques de control">
+      <div className="obra-data-mini-v8735">
+        <p><b>Client final:</b> {obra?.propietat||"—"}</p>
+        <p><b>Adreça:</b> {obra?.adreca||"—"}</p>
+        <p><b>Població:</b> {obra?.poblacio||"—"}</p>
+        <p><b>Ref. cadastral:</b> {obra?.rc||"—"}</p>
+        <p><b>Actes:</b> {actes.length}</p>
+        <p><b>Pressupostos tècnics:</b> {pressupostos.length}</p>
+        <p><b>Factures tècnic-client:</b> {factures.length}</p>
+        <p><b>Registres de temps:</b> {hores.length}</p>
+      </div>
+    </Card>
+  </section>
 </div>
+}
+
+function PressupostTecnic8738({data,openEmail,openDoc}){
+  const rows=data.pressupostos||[];
+  return <Card title="Pressupostos del tècnic al client" action={<button className="primary"><Plus/> Nou pressupost tècnic</button>}>
+    <div className="module-note-v8738"><b>Pressupostos d’honoraris o treballs tècnics.</b><span>Aquesta pestanya és del Mòdul 1 i no és el pressupost d’obra. Serveix per pressupostar el servei professional al client.</span></div>
+    <div className="version-list">{rows.length===0&&<Empty text="Encara no hi ha pressupostos tècnics en aquest expedient."/>}{rows.map(r=><button className="version-row" key={r.id}><strong>{r.versio||r.numero||"PRESS"}</strong><span>{r.nom||"Pressupost tècnic"}</span><span>{r.data||"—"}</span><b>{money(r.import||r.base||0)}</b><em>{r.estat||"Pendent"}</em></button>)}</div>
+  </Card>
+}
+function FacturesTecniques8738({data,openEmail,openDoc}){
+  const rows=data.factures||[];
+  return <Card title="Factures / proformes del tècnic al client" action={<button className="primary"><Plus/> Nova factura</button>}>
+    <div className="module-note-v8738"><b>Facturació del treball professional.</b><span>La factura pot sortir d’un pressupost tècnic acceptat i permetrà afegir conceptes puntuals si cal. No és facturació d’obra del Mòdul 2.</span></div>
+    <div className="version-list">{rows.length===0&&<Empty text="Encara no hi ha factures tècnic-client en aquest expedient."/>}{rows.map(f=><button className="version-row" key={f.id}><strong>{f.numero||"FACT"}</strong><span>{f.tipus||"Factura / proforma"}</span><span>{f.data||"—"}</span><b>{money(f.base||f.total||0)}</b><em>{f.estat||"Pendent"}</em></button>)}</div>
+  </Card>
 }
 
 function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
@@ -1121,7 +1164,11 @@ function TracaGeneral({obres,odata,openObra}){const[client,setClient]=useState("
 function PieBlock({title,totals,totalC,pieStyle,openObra}){return <div className="pie-card"><h3>{title}</h3><div className="real-pie" style={pieStyle}><span>{money(totalC)}</span></div><div className="pie-legend">{totals.map(t=><button onClick={()=>openObra(t.id)}><i style={{background:t.color}}></i><b>{t.nom}</b><span>{money(t.c)}</span></button>)}</div></div>}
 function MiniCal({events}){return <div className="calendar-mini">{Array.from({length:21}).map((_,i)=>{let d=i+1,ev=events.filter(e=>e.day===d&&e.month===5&&e.year===2026);return <button className="mini-day"><b>{d}</b>{ev[0]&&<span className="cal-event">{ev[0].type}</span>}</button>})}</div>}
 
-function HonorarisGeneral({obres,odata,openObra}){let rows=obres.map(o=>{let d=odata[o.id]||empty(),h=(d.hores||[]).reduce((s,x)=>s+(+x.hores||0),0),cost=(d.hores||[]).reduce((s,x)=>s+(+x.hores||0)*(+x.preu||0),0);return {...o,hores:h,cost}});return <div className="stack"><Card title="Pressupostos tècnic-client" action={<label className="secondary upload-label"><Upload/> Adjuntar pressupost PDF<input type="file" accept=".pdf"/></label>}><div className="version-list">{rows.map(r=><button className="version-row" onClick={()=>openObra(r.id)}><strong>{r.any}</strong><span>{r.nom}</span><span>{r.hores.toFixed(2)} h</span><b>{money(r.cost)}</b><em>{r.estat}</em></button>)}</div></Card><Card title="Criteri d’honoraris"><div className="info-list"><div><b>Preu/h per defecte</b><span>50 €/h editable per obra</span></div><div><b>Documents</b><span>Es poden adjuntar PDFs de pressupost o justificacions.</span></div></div></Card></div>}
+function FacturesGeneral8738({obres,odata,openObra}){
+let rows=obres.flatMap(o=>((odata[o.id]||empty()).factures||[]).map(f=>({...f,obra:o})));let total=rows.reduce((s,f)=>s+(+f.base||+f.total||0),0);
+return <div className="stack"><Card title="Factures del tècnic al client"><div className="honor-kpis"><Kpi t="FACTURES" v={rows.length}/><Kpi t="BASE TOTAL" v={money(total)}/><Kpi t="EXPEDIENTS" v={new Set(rows.map(r=>r.obra.id)).size}/></div><div className="module-note-v8738"><b>Facturació del Mòdul 1.</b><span>Serveix per facturar els treballs tècnics del professional al client. La facturació d’obra queda reservada al Mòdul 2.</span></div><div className="version-list">{rows.length===0&&<Empty text="Encara no hi ha factures tècnic-client."/>}{rows.map(f=><button className="version-row" onClick={()=>openObra(f.obra.id)} key={f.id}><strong>{f.numero||"FACT"}</strong><span>{f.obra.nom}</span><span>{f.data||"—"}</span><b>{money(f.base||f.total||0)}</b><em>{f.estat||"Pendent"}</em></button>)}</div></Card></div>
+}
+function HonorarisGeneral({obres,odata,openObra}){let rows=obres.map(o=>{let d=odata[o.id]||empty(),h=(d.hores||[]).reduce((s,x)=>s+(+x.hores||0),0),cost=(d.hores||[]).reduce((s,x)=>s+(+x.hores||0)*(+x.preu||0),0);return {...o,hores:h,cost}});return <div className="stack"><Card title="Pressupostos del tècnic al client" action={<label className="secondary upload-label"><Upload/> Adjuntar pressupost PDF<input type="file" accept=".pdf"/></label>}><div className="version-list">{rows.map(r=><button className="version-row" onClick={()=>openObra(r.id)}><strong>{r.any}</strong><span>{r.nom}</span><span>{r.hores.toFixed(2)} h</span><b>{money(r.cost)}</b><em>{r.estat}</em></button>)}</div></Card><Card title="Criteri d’honoraris"><div className="info-list"><div><b>Preu/h per defecte</b><span>50 €/h editable per obra</span></div><div><b>Documents</b><span>Es poden adjuntar PDFs de pressupost o justificacions.</span></div></div></Card></div>}
 
 function DespesesMultiples({items,setItems}){
 const tipus=["Kilometratge","Fotocòpies / impressions","Consultes telefòniques","Aparcament","Peatges","Dietes","Taxes / gestions","Missatgeria","Material auxiliar","Altres"];
@@ -1352,7 +1399,7 @@ return <div className="cert-print-v8718">
 }
 
 function FormClient({onSubmit}){let[logo,setLogo]=useState("");return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Logo / foto empresa</span><input type="file" onChange={e=>f2u(e.target.files[0],setLogo)}/><input type="hidden" name="logoPreview" value={logo}/>{logo&&<img className="logo-preview" src={logo}/>}</label><Input name="nom" label="Nom comercial" defaultValue="Nou client"/><Input name="rao" label="Raó social" defaultValue="Pendent"/><label><span>Rol / tipologia</span><select name="tipus"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Particular</option><option>Altres</option></select></label><Input name="nif" label="NIF/CIF" defaultValue="Pendent"/><Input name="contacte" label="Contacte" defaultValue="Pendent"/><Input name="telefon" label="Telèfon" defaultValue="Pendent"/><Input name="email" label="Email" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear client</button></div></form>}
-function FormObra({clients,onSubmit}){const[clientSel,setClientSel]=useState(clients[0]?.id||"__new__");const[tipus,setTipus]=useState(WORK_TYPES8737[0]);return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="__new__">+ Crear client nou</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>{clientSel==="__new__"&&<><Input name="clientNouNom" label="Nom nou client" defaultValue="Nou client"/><Input name="clientNouRao" label="Raó social nou client" defaultValue="Pendent"/><label><span>Tipologia nou client</span><select name="clientNouTipus"><option>Particular</option><option>Promotor</option><option>Arquitecte tècnic</option><option>Constructor</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="clientNouContacte" label="Contacte nou client" defaultValue="Pendent"/><Input name="clientNouNif" label="NIF/CIF nou client" defaultValue="Pendent"/><Input name="clientNouTelefon" label="Telèfon nou client" defaultValue="Pendent"/><Input name="clientNouEmail" label="Email nou client" defaultValue="Pendent"/><Input name="clientNouAdreca" label="Adreça nou client" defaultValue="Pendent"/></>}<Input name="nom" label="Nom expedient" defaultValue="Nou expedient"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Tancada</option></select></label><label className="span-all"><span>Tipus de treball</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==="Altres"&&<Input name="tipusTreballAltres" label="Especifica el tipus de treball" defaultValue=""/>}<Input name="propietat" label="Client final / propietat" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client final" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>}
+function FormObra({clients,onSubmit}){const[clientSel,setClientSel]=useState("__new__");const[tipus,setTipus]=useState(WORK_TYPES8737[0]);return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="__new__">+ Crear client nou</option><option value="" disabled>— Clients existents —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>{clientSel==="__new__"&&<><Input name="clientNouNom" label="Nom nou client" defaultValue="Nou client"/><Input name="clientNouRao" label="Raó social nou client" defaultValue="Pendent"/><label><span>Tipologia nou client</span><select name="clientNouTipus"><option>Particular</option><option>Promotor</option><option>Arquitecte tècnic</option><option>Constructor</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="clientNouContacte" label="Contacte nou client" defaultValue="Pendent"/><Input name="clientNouNif" label="NIF/CIF nou client" defaultValue="Pendent"/><Input name="clientNouTelefon" label="Telèfon nou client" defaultValue="Pendent"/><Input name="clientNouEmail" label="Email nou client" defaultValue="Pendent"/><Input name="clientNouAdreca" label="Adreça nou client" defaultValue="Pendent"/></>}<Input name="nom" label="Nom de l’expedient" defaultValue="Nou expedient"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Tancada</option></select></label><label className="span-all"><span>Tipus de treball</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==="Altres"&&<Input name="tipusTreballAltres" label="Especifica el tipus de treball" defaultValue=""/>}<Input name="propietat" label="Client final / propietat" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client final" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>}
 function FormPartida({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="codi" label="Codi" defaultValue="10.02"/><Input name="cap" label="Capítol" defaultValue="10 FEINES FORA PRESSUPOST"/><Input name="concepte" label="Concepte" defaultValue="Nova partida"/><Input name="ut" label="Ut" defaultValue="m²"/><Input name="q" label="Quantitat" defaultValue="1"/><Input name="pu" label="PU" defaultValue="0"/><label><span>Tipus</span><select name="tipus"><option>Base</option><option>Modificada</option><option>Fora pressupost</option></select></label></div><div className="modal-actions"><button className="primary">Afegir partida</button></div></form>}
 function FormAgent({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="nom" label="Nom" defaultValue="Nou agent"/><label><span>Rol</span><select name="rol"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="empresa" label="Empresa" defaultValue="Empresa"/><Input name="email" label="Email" defaultValue="email@domini.cat"/><Input name="telefon" label="Telèfon" defaultValue=""/></div><div className="modal-actions"><button className="primary">Crear agent</button></div></form>}
 function FormActa({agents,onSubmit,openAgent}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="titol" label="Títol acta" defaultValue="Nova acta d’obra"/><Input name="data" label="Data" defaultValue="18/06/2026"/><label className="span-all"><span>Agents que intervenen</span><div className="check-grid">{agents.map(a=><label className="check-row"><input type="checkbox" name="agentsActa" value={a.id}/><span>{a.nom} · {a.rol}</span></label>)}</div><button type="button" className="secondary" onClick={openAgent}><Plus/> Crear agent nou</button></label><label className="span-all"><span>Text acta</span><textarea name="text" defaultValue="Es redacta acta de seguiment de l’obra."/></label><label><span>Fotos</span><input type="file" multiple/></label><label><span>Documents</span><input type="file" multiple/></label></div><div className="modal-actions"><button className="primary">Guardar acta</button></div></form>}
