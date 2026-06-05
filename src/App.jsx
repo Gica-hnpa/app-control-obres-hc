@@ -75,19 +75,27 @@ function PlansModuls8736(){
 
 
 const WORK_TYPES8737=[
+  "Projecte tècnic",
+  "Projecte tècnic amb direcció",
   "Direcció d’execució d’obra",
   "Direcció d’obra",
   "Project management",
-  "Projecte tècnic amb direcció",
+  "Pressupost tècnic-client",
+  "Pressupost per constructor/promotor",
+  "Certificació d’obra",
   "Informe tècnic",
+  "ITE / informe edifici",
   "ITE",
   "Certificat energètic",
   "Cèdula d’habitabilitat",
   "Taxació / valoració",
+  "Coordinació seguretat i salut",
   "Seguretat i salut",
+  "Aixecament de plànols",
   "Amidaments i pressupost tècnic",
-  "Pressupost per constructor/promotor",
   "Render / documentació gràfica",
+  "Legalització",
+  "Llicència / comunicació",
   "Consulta tècnica puntual",
   "Altres"
 ];
@@ -106,7 +114,81 @@ function tabsForWork8737(obra){
   if(hasM2&&isObraType) return TABS_M2_OBRA8738;
   return workNeedsActes8738(t)?TABS_M1_ACTES8738:TABS_M1_BASE8738;
 }
+
 function moduleLabel8737(obra){return obra?.tipusTreball||obra?.tipologia||"Treball tècnic"}
+function stripAccents8739(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function codeClean8739(s){return stripAccents8739(s).toUpperCase().replace(/[^A-Z0-9 ]+/g," ").replace(/\s+/g," ").trim()}
+function workCode8739(t){
+  const n=codeClean8739(t);
+  if(n.includes("CERTIFICACIO"))return "CERT";
+  if(n.includes("FACTURA"))return "FAC";
+  if(n.includes("PRESSUPOST"))return "PRES";
+  if(n.includes("PROJECTE"))return "PROJ";
+  if(n.includes("ENERGETIC"))return "CEE";
+  if(n.includes("CEDULA"))return "CED";
+  if(n.includes("ITE"))return "ITE";
+  if(n.includes("INFORME"))return "INF";
+  if(n.includes("EXECUCIO")||n==="DO"||n.includes("DIRECCIO"))return "DO";
+  if(n.includes("COORDINACIO")||n.includes("SEGURETAT"))return "CSS";
+  if(n.includes("AIXECAMENT"))return "AIX";
+  if(n.includes("AMIDAMENT"))return "AIX";
+  if(n.includes("RENDER")||n.includes("VISUAL"))return "REND";
+  if(n.includes("LEGAL"))return "LEG";
+  if(n.includes("LLICENCIA")||n.includes("COMUNICACIO"))return "LLIC";
+  if(n.includes("TAXACIO")||n.includes("VALORACIO"))return "TAX";
+  if(n.includes("PROJECT MANAGEMENT"))return "PM";
+  if(n.includes("CONSULTA"))return "CONS";
+  return "ALT";
+}
+function clientCode8739(client,nom){
+  const raw=codeClean8739(client?.nom||nom||"CLIENT");
+  const map={"SOCOTERM":"SOC","BRAVA CONSTRUCCIONS":"BRAVA","ORIOL BORRAS":"ORIOL","JOSE HORTAL":"JH","JOSÉ HORTAL":"JH","ALFONSO MORA":"MORA","RICARDO CONSTRUCTORA COPROCAT":"COPROCAT"};
+  for(const k in map){if(raw.includes(k))return map[k]}
+  const words=raw.split(" ").filter(w=>!["DE","DEL","LA","EL","SL","S","L","S L","CONSTRUCCIONS","CONSTRUCCIONES"].includes(w));
+  if(words.length===1)return words[0].slice(0,8)||"CLI";
+  return words.map(w=>w[0]).join("").slice(0,6)||"CLI";
+}
+function keywordCode8739(s){
+  const stop=["DE","DEL","LA","EL","ELS","LES","L","D","I","A","AL","EN","PER","CARRER","CALLE","AVINGUDA","AV","PASSEIG","CP","COMUNITAT","EDIFICI","EDIFICIO"];
+  const words=codeClean8739(s).split(" ").filter(w=>w&&!stop.includes(w));
+  const joined=words.join("");
+  return (joined||"TREBALL").slice(0,12);
+}
+function padExp8739(n){return String(n||1).padStart(3,"0")}
+function nextExpNumber8739(year,all){
+  const nums=(all||[]).filter(o=>String(o.any||"")===String(year)).map(o=>{
+    if(o.numExpedient)return +o.numExpedient||0;
+    const m=String(o.codiExpedient||o.codi||"").match(/^\d{4}-(\d{3})/);
+    return m?+m[1]:0;
+  });
+  const max=Math.max(0,...nums);
+  return max+1;
+}
+function buildExpedientCode8739({year,number,tipus,client,clientNom,keyword,nom,subtitol,poblacio}){
+  const base=`${year}-${padExp8739(number)}`;
+  const t=workCode8739(tipus);
+  const c=clientCode8739(client,clientNom);
+  const k=keywordCode8739(keyword||nom||subtitol||poblacio||"TREBALL");
+  return {base,codi:`${base}-${t}-${c}-${k}`,codiTipus:t,codiClient:c,paraulaClau:k,numExpedient:+number};
+}
+function assignMissingCodes8739(obres,clients){
+  const counters={};
+  return (obres||[]).map(o=>{
+    if(o.codiExpedient&&o.expedientBase)return o;
+    const year=String(o.any||new Date().getFullYear());
+    const existing=String(o.codiExpedient||o.codi||"").match(/^\d{4}-(\d{3})/);
+    if(existing){
+      const base=`${year}-${existing[1]}`;
+      return {...o,expedientBase:o.expedientBase||base,codiExpedient:o.codiExpedient||o.codi,numExpedient:+existing[1]};
+    }
+    counters[year]=(counters[year]||0)+1;
+    const client=(clients||[]).find(c=>c.id===o.client);
+    const built=buildExpedientCode8739({year,number:counters[year],tipus:o.tipusTreball||o.tipologia,client,clientNom:o.propietat,keyword:o.paraulaClau,nom:o.nom,subtitol:o.subtitol,poblacio:o.poblacio});
+    return {...o,...built,codiExpedient:built.codi};
+  });
+}
+function expedientCode8739(o){return o?.codiExpedient||o?.codi||o?.expedientBase||"Sense codi"}
+
 
 export default function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
@@ -125,9 +207,10 @@ useEffect(()=>{let id;if(timer.running){id=setInterval(()=>setTimer(t=>({...t,el
 useEffect(()=>{localStorage.setItem("aco_clients",JSON.stringify(clients))},[clients]);
 useEffect(()=>{localStorage.setItem("aco_obres",JSON.stringify(obres))},[obres]);
 useEffect(()=>{localStorage.setItem("aco_odata",JSON.stringify(odata))},[odata]);
+useEffect(()=>{if((obres||[]).some(o=>!o.codiExpedient||!o.expedientBase)){setObres(p=>assignMissingCodes8739(p,clients))}},[]);
 const obra=obres.find(o=>o.id===obraId)||obres[0], client=clients.find(c=>c.id===obra.client)||clients[0], data=odata[obraId]||empty();
 const fClients=clients.filter(c=>(!ct||c.tipus===ct)&&(c.nom+" "+c.rao+" "+c.contacte).toLowerCase().includes(cs.toLowerCase()));
-const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||o.estat===ost)&&(!ot||(o.tipusTreball||o.tipologia)===ot)&&((o.nom+" "+o.subtitol+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
+const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||o.estat===ost)&&(!ot||(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+o.nom+" "+o.subtitol+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
 const byClient=useMemo(()=>{let m={};fObres.forEach(o=>{m[o.client]??={};m[o.client][o.any]??=[];m[o.client][o.any].push(o)});return m},[fObres]);
 const setD=(id,up)=>setOdata(p=>({...p,[id]:typeof up==="function"?up(p[id]||empty()):up}));
 function nav(s){setScreen(s);setMenuOpen(false);setCollapsed(true)}
@@ -381,16 +464,20 @@ function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon")}]}));setModal(null)}
 function addActa(e){e.preventDefault();let f=new FormData(e.currentTarget);let ag=[...e.currentTarget.querySelectorAll('input[name="agentsActa"]:checked')].map(x=>x.value);let a={id:"acta-"+Date.now(),data:f.get("data"),titol:f.get("titol"),obra:obra.nom,agents:ag,text:f.get("text"),signatura:"Pendent"};setD(obraId,d=>({...d,actes:[...d.actes,a]}));setSelActa(a.id);setModal(null);setTab("Actes")}
 function addPartida(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,partides:[...d.partides,{codi:f.get("codi"),cap:f.get("cap"),concepte:f.get("concepte"),ut:f.get("ut"),q:+f.get("q")||0,pu:+f.get("pu")||0,certAnterior:0,certActual:0,tipus:f.get("tipus")}]}));setModal(null)}
-function addObra(e){e.preventDefault();let f=new FormData(e.currentTarget),id="obra-"+Date.now();let clientId=f.get("client");
+function addObra(e){e.preventDefault();let f=new FormData(e.currentTarget),id="obra-"+Date.now();let clientId=f.get("client");let nouClient=null;
 if(clientId==="__new__"||!clientId){
   clientId="client-"+Date.now();
   let nom=f.get("clientNouNom")||"Nou client";
-  let c={id:clientId,nom,rao:f.get("clientNouRao")||nom,tipus:f.get("clientNouTipus")||"Particular",contacte:f.get("clientNouContacte")||"Pendent",nif:f.get("clientNouNif")||"Pendent",email:f.get("clientNouEmail")||"Pendent",telefon:f.get("clientNouTelefon")||"Pendent",adreca:f.get("clientNouAdreca")||"Pendent",color:"blue",logo:""};
-  setClients(p=>[c,...p]);
+  nouClient={id:clientId,nom,rao:f.get("clientNouRao")||nom,tipus:f.get("clientNouTipus")||"Particular",contacte:f.get("clientNouContacte")||"Pendent",nif:f.get("clientNouNif")||"Pendent",email:f.get("clientNouEmail")||"Pendent",telefon:f.get("clientNouTelefon")||"Pendent",adreca:f.get("clientNouAdreca")||"Pendent",color:"blue",logo:""};
+  setClients(p=>[nouClient,...p]);
 }
-let tipusRaw=f.get("tipusTreball")||"Direcció d’execució d’obra";
+let tipusRaw=f.get("tipusTreball")||"Projecte tècnic";
 let tipusTreball=tipusRaw==="Altres"?(f.get("tipusTreballAltres")||"Altres"):tipusRaw;
-let o={id,client:clientId,any:f.get("any")||String(new Date().getFullYear()),nom:f.get("nom")||"Nou expedient",subtitol:f.get("subtitol")||tipusTreball,tipologia:tipusTreball,tipusTreball,modul:"tecnic",estat:f.get("estat")||"Pressupostada",pressupost:0,certificacio:0,propietat:f.get("propietat")||f.get("clientNouNom")||"Pendent",nifPropietat:f.get("nifPropietat")||f.get("clientNouNif")||"Pendent",adreca:f.get("adreca")||"Pendent",poblacio:f.get("poblacio")||"Pendent",rc:f.get("rc")||"Pendent",imatge:"",properaCert:"Pendent",properaVisita:"Pendent"};
+let year=f.get("any")||String(new Date().getFullYear());
+let clientObj=nouClient||clients.find(c=>c.id===clientId);
+let keyword=f.get("paraulaClau")||f.get("nom")||f.get("subtitol")||f.get("poblacio");
+let built=buildExpedientCode8739({year,number:nextExpNumber8739(year,obres),tipus:tipusTreball,client:clientObj,clientNom:f.get("clientNouNom"),keyword,nom:f.get("nom"),subtitol:f.get("subtitol"),poblacio:f.get("poblacio")});
+let o={id,client:clientId,any:year,nom:f.get("nom")||"Nou expedient",subtitol:f.get("subtitol")||tipusTreball,tipologia:tipusTreball,tipusTreball,modul:"tecnic",estat:f.get("estat")||"Pressupostada",pressupost:0,certificacio:0,propietat:f.get("propietat")||f.get("clientNouNom")||"Pendent",nifPropietat:f.get("nifPropietat")||f.get("clientNouNif")||"Pendent",adreca:f.get("adreca")||"Pendent",poblacio:f.get("poblacio")||"Pendent",rc:f.get("rc")||"Pendent",imatge:"",properaCert:"Pendent",properaVisita:"Pendent",...built,codiExpedient:built.codi};
 setObres(p=>[o,...p]);setD(id,empty());setModal(null);openObra(id)}
 function addClient(e){e.preventDefault();let f=new FormData(e.currentTarget),id="client-"+Date.now();let c={id,nom:f.get("nom"),rao:f.get("rao"),tipus:f.get("tipus"),contacte:f.get("contacte"),nif:f.get("nif"),email:f.get("email"),telefon:f.get("telefon"),adreca:f.get("adreca"),color:"blue",logo:f.get("logoPreview")||""};setClients(p=>[c,...p]);setModal(null);openClient(id)}
 function addEvent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,events:[...d.events,{id:"e"+Date.now(),day:+f.get("day"),month:+f.get("month"),year:+f.get("year"),title:f.get("title"),type:f.get("type"),hora:f.get("hora"),note:f.get("note"),color:f.get("color")}]}));setModal(null)}
@@ -426,7 +513,7 @@ function Inici({clients,obres,events,setScreen,openObra,newObra}){
 const actius=obres.filter(o=>o.estat!=="Tancada").length;
 const recents=obres.slice(0,4);
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, honoraris i pressupostos del tècnic al client.</p><span className="version-badge soft">Versió 87.38 mòdul tècnic ordenat</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, honoraris i pressupostos del tècnic al client.</p><span className="version-badge soft">Versió 87.39 codis expedient</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS ACTIUS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid"><div className="stack"><Card title="Expedients recents"><div className="list">{recents.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Darreres actuacions"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Agenda tècnica</b><span>Visites, entregues, avisos i recordatoris vinculats a expedients.</span></button><button className="notice" onClick={()=>setScreen("Treballs / Expedients")}><b>Flux per tipologia de treball</b><span>Cada expedient mostra només les pestanyes necessàries segons el tipus de treball.</span></button></div></Card></div><Card title="Mòdul 1 · Tècnic"><div className="module-home-v8737"><b>Inclou el necessari per treballar com a tècnic.</b><span>Clients, expedients, agenda, actes quan calgui, fotos, documents, honoraris, pressupostos i facturació del tècnic al client.</span><em>El control econòmic d’obra i el control integral d’empresa queden com a mòduls posteriors.</em></div></Card></section>
@@ -466,8 +553,8 @@ function FitxaClient({client,obres,openObra,back}){
   </Card><Card title={`Obres amb ${form.nom||client.nom}`}><div className="list">{obres.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card></div>
 }
 
-function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Treballs / Expedients" action={<button className="primary" onClick={newObra}><Plus/> Nou expedient</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar expedient..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els treballs</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><h3>{clients.find(c=>c.id===cid)?.nom}</h3>{Object.entries(ys).sort((a,b)=>b[0].localeCompare(a[0])).map(([y,items])=><div key={y}><h4>{y}</h4>{items.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
-function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row"><div className="thumb">{o.imatge?<img src={o.imatge}/> : "FOTO"}</div><div className="grow"><strong>{o.nom}</strong><span>{o.subtitol}</span><em>{moduleLabel8737(o)}</em></div><Badge estat={o.estat}/></button>}
+function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Treballs / Expedients" action={<button className="primary" onClick={newObra}><Plus/> Nou expedient</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar codi, expedient o client..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els treballs</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><h3>{clients.find(c=>c.id===cid)?.nom}</h3>{Object.entries(ys).sort((a,b)=>b[0].localeCompare(a[0])).map(([y,items])=><div key={y}><h4>{y}</h4>{items.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
+function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row obra-row-code-v8739"><div className="thumb">{o.imatge?<img src={o.imatge}/> : "FOTO"}</div><div className="grow"><small className="exp-code-v8739">{expedientCode8739(o)}</small><strong>{o.nom}</strong><span>{o.subtitol}</span><em>{moduleLabel8737(o)}</em></div><Badge estat={o.estat}/></button>}
 
 function EditObraModal8725({obra,clients=[],close,save}){
 const clientNames=[...new Set((clients||[]).map(c=>c.nom).filter(Boolean))];
@@ -485,7 +572,7 @@ function selectClient(nom){
   }));
 }
 return <Modal title="Modificar fitxa de l’obra" close={close}>
-  <div className="form-grid fitxa-form-v8727">
+  <div className="form-grid fitxa-form-v8727"><label><span>Codi expedient</span><input value={expedientCode8739(f)} readOnly /></label>
     <label><span>Client</span><select value={clientNames.includes(f.propietat)?f.propietat:"__nou__"} onChange={e=>e.target.value==="__nou__"?ch("propietat",""):selectClient(e.target.value)}>
       <option value="__nou__">Escriure client nou</option>
       {clientNames.map(n=><option key={n} value={n}>{n}</option>)}
@@ -511,12 +598,12 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
 </Modal>
 }
 
-function Obra({obra,client,clients,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=tabsForWork8737(obra);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<div className="obra-topbar"><div><h1>{obra.nom}</h1><p>{client.nom} · {moduleLabel8737(obra)}</p></div><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
+function Obra({obra,client,clients,data,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);let tabs=tabsForWork8737(obra);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<div className="obra-topbar"><div><small className="exp-code-header-v8739">{expedientCode8739(obra)}</small><h1>{obra.nom}</h1><p>{client.nom} · {moduleLabel8737(obra)}</p></div><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO EXPEDIENT"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
   <div className="obra-head-data">
     <div className="obra-head-title"><h2>{obra.subtitol} · {obra.nom}</h2><button type="button" className="secondary edit-fitxa-btn-v8725" onClick={()=>setEditObra(true)}>Modificar fitxa</button><select className="estat-obra-select" value={estatObra} onChange={e=>setEstatObra(e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div>
     <div className="obra-data-cards">
-      <label><span>Client</span><input value={obra.propietat||""} readOnly/></label>
+      <label><span>Codi expedient</span><input value={expedientCode8739(obra)} readOnly/></label><label><span>Client</span><input value={obra.propietat||""} readOnly/></label>
       <label><span>NIF client</span><input value={obra.nifPropietat||""} readOnly/></label>
       <label><span>Adreça</span><input value={obra.adreca||""} readOnly/></label>
       <label><span>Població</span><input value={obra.poblacio||""} readOnly/></label>
@@ -1399,7 +1486,7 @@ return <div className="cert-print-v8718">
 }
 
 function FormClient({onSubmit}){let[logo,setLogo]=useState("");return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Logo / foto empresa</span><input type="file" onChange={e=>f2u(e.target.files[0],setLogo)}/><input type="hidden" name="logoPreview" value={logo}/>{logo&&<img className="logo-preview" src={logo}/>}</label><Input name="nom" label="Nom comercial" defaultValue="Nou client"/><Input name="rao" label="Raó social" defaultValue="Pendent"/><label><span>Rol / tipologia</span><select name="tipus"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Particular</option><option>Altres</option></select></label><Input name="nif" label="NIF/CIF" defaultValue="Pendent"/><Input name="contacte" label="Contacte" defaultValue="Pendent"/><Input name="telefon" label="Telèfon" defaultValue="Pendent"/><Input name="email" label="Email" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear client</button></div></form>}
-function FormObra({clients,onSubmit}){const[clientSel,setClientSel]=useState("__new__");const[tipus,setTipus]=useState(WORK_TYPES8737[0]);return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="__new__">+ Crear client nou</option><option value="" disabled>— Clients existents —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>{clientSel==="__new__"&&<><Input name="clientNouNom" label="Nom nou client" defaultValue="Nou client"/><Input name="clientNouRao" label="Raó social nou client" defaultValue="Pendent"/><label><span>Tipologia nou client</span><select name="clientNouTipus"><option>Particular</option><option>Promotor</option><option>Arquitecte tècnic</option><option>Constructor</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="clientNouContacte" label="Contacte nou client" defaultValue="Pendent"/><Input name="clientNouNif" label="NIF/CIF nou client" defaultValue="Pendent"/><Input name="clientNouTelefon" label="Telèfon nou client" defaultValue="Pendent"/><Input name="clientNouEmail" label="Email nou client" defaultValue="Pendent"/><Input name="clientNouAdreca" label="Adreça nou client" defaultValue="Pendent"/></>}<Input name="nom" label="Nom de l’expedient" defaultValue="Nou expedient"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Tancada</option></select></label><label className="span-all"><span>Tipus de treball</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==="Altres"&&<Input name="tipusTreballAltres" label="Especifica el tipus de treball" defaultValue=""/>}<Input name="propietat" label="Client final / propietat" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client final" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>}
+function FormObra({clients,onSubmit}){const[clientSel,setClientSel]=useState("__new__");const[tipus,setTipus]=useState(WORK_TYPES8737[0]);return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="__new__">+ Crear client nou</option><option value="" disabled>— Clients existents —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>{clientSel==="__new__"&&<><Input name="clientNouNom" label="Nom nou client" defaultValue="Nou client"/><Input name="clientNouRao" label="Raó social nou client" defaultValue="Pendent"/><label><span>Tipologia nou client</span><select name="clientNouTipus"><option>Particular</option><option>Promotor</option><option>Arquitecte tècnic</option><option>Constructor</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="clientNouContacte" label="Contacte nou client" defaultValue="Pendent"/><Input name="clientNouNif" label="NIF/CIF nou client" defaultValue="Pendent"/><Input name="clientNouTelefon" label="Telèfon nou client" defaultValue="Pendent"/><Input name="clientNouEmail" label="Email nou client" defaultValue="Pendent"/><Input name="clientNouAdreca" label="Adreça nou client" defaultValue="Pendent"/></>}<Input name="nom" label="Nom de l’expedient" defaultValue="Nou expedient"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><label><span>Paraula clau del codi</span><input name="paraulaClau" placeholder="Ex: FRONTMAR, GARRIGOLES, PALAMOS"/></label><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Tancada</option></select></label><label className="span-all"><span>Tipus de treball</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==="Altres"&&<Input name="tipusTreballAltres" label="Especifica el tipus de treball" defaultValue=""/>}<div className="span-all code-help-v8739"><b>Numeració automàtica</b><span>El codi es generarà com: ANY-NÚM-TIPUS-CLIENT-PARAULA CLAU. Exemple: 2026-001-PRES-SOC-FRONTMAR.</span></div><Input name="propietat" label="Client final / propietat" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client final" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>}
 function FormPartida({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="codi" label="Codi" defaultValue="10.02"/><Input name="cap" label="Capítol" defaultValue="10 FEINES FORA PRESSUPOST"/><Input name="concepte" label="Concepte" defaultValue="Nova partida"/><Input name="ut" label="Ut" defaultValue="m²"/><Input name="q" label="Quantitat" defaultValue="1"/><Input name="pu" label="PU" defaultValue="0"/><label><span>Tipus</span><select name="tipus"><option>Base</option><option>Modificada</option><option>Fora pressupost</option></select></label></div><div className="modal-actions"><button className="primary">Afegir partida</button></div></form>}
 function FormAgent({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="nom" label="Nom" defaultValue="Nou agent"/><label><span>Rol</span><select name="rol"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="empresa" label="Empresa" defaultValue="Empresa"/><Input name="email" label="Email" defaultValue="email@domini.cat"/><Input name="telefon" label="Telèfon" defaultValue=""/></div><div className="modal-actions"><button className="primary">Crear agent</button></div></form>}
 function FormActa({agents,onSubmit,openAgent}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="titol" label="Títol acta" defaultValue="Nova acta d’obra"/><Input name="data" label="Data" defaultValue="18/06/2026"/><label className="span-all"><span>Agents que intervenen</span><div className="check-grid">{agents.map(a=><label className="check-row"><input type="checkbox" name="agentsActa" value={a.id}/><span>{a.nom} · {a.rol}</span></label>)}</div><button type="button" className="secondary" onClick={openAgent}><Plus/> Crear agent nou</button></label><label className="span-all"><span>Text acta</span><textarea name="text" defaultValue="Es redacta acta de seguiment de l’obra."/></label><label><span>Fotos</span><input type="file" multiple/></label><label><span>Documents</span><input type="file" multiple/></label></div><div className="modal-actions"><button className="primary">Guardar acta</button></div></form>}
