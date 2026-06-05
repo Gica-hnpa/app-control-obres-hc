@@ -2700,3 +2700,77 @@ button,input,select,textarea{font-size:13.5px!important}
   margin-top:4px;
   font-weight:700;
 }
+
+/* V87.40 - llistat professional d'expedients i tipologies unificades */
+.expedients-layout-v8740{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.filters-v8740{align-items:center}
+.exp-table-wrap-v8740{overflow:auto}
+.exp-table-v8740{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.exp-table-v8740 th{position:sticky;top:0;background:#f8fafc;color:#475569;text-align:left;padding:12px;border-bottom:1px solid #e5e7eb;font-size:11px;text-transform:uppercase;letter-spacing:.06em;z-index:1}
+.exp-table-v8740 td{padding:12px;border-bottom:1px solid #edf2f7;vertical-align:middle;color:#0f172a}
+.exp-table-v8740 tr{cursor:pointer;transition:.15s ease;background:#fff}
+.exp-table-v8740 tbody tr:hover{background:#f8fafc}
+.exp-table-v8740 td b{display:block;font-size:14px;color:#0f172a}
+.exp-table-v8740 td small{display:block;color:#64748b;margin-top:3px;font-weight:700}
+.exp-table-v8740 td:nth-child(1){min-width:190px}
+.exp-table-v8740 td:nth-child(2){min-width:240px}
+.exp-table-v8740 td:nth-child(4){min-width:190px}
+.exp-side-v8740{display:flex;flex-direction:column;gap:16px}
+.exp-side-kpis-v8740{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.exp-side-kpis-v8740 div{border:1px solid #e5e7eb;border-radius:14px;background:#f8fafc;padding:12px}
+.exp-side-kpis-v8740 span{display:block;color:#64748b;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.exp-side-kpis-v8740 b{display:block;font-size:24px;margin-top:4px;color:#0f172a}
+.exp-side-list-v8740{margin-top:14px}
+.exp-side-list-v8740 h4{margin:0 0 8px;color:#0f172a}
+.exp-side-list-v8740 button{width:100%;border:1px solid #e5e7eb;background:#fff;border-radius:12px;padding:9px 10px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer}
+.exp-side-list-v8740 button:hover{border-color:#2563eb;background:#eff6ff}
+.exp-side-list-v8740 span{color:#334155;font-weight:800}
+.exp-side-list-v8740 b{background:#0f172a;color:#fff;border-radius:999px;padding:2px 7px;font-size:12px}
+.module-side-v8740 b{display:block;font-size:16px;color:#0f172a}
+.module-side-v8740 p{color:#475569;font-weight:700;line-height:1.35}
+.module-side-v8740 small{display:block;color:#2563eb;font-weight:900;background:#eff6ff;border-radius:12px;padding:10px}
+@media(max-width:1100px){.expedients-layout-v8740{grid-template-columns:1fr}.exp-side-v8740{display:grid;grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.exp-side-v8740{display:flex}.exp-table-v8740 th:nth-child(5),.exp-table-v8740 td:nth-child(5),.exp-table-v8740 th:nth-child(7),.exp-table-v8740 td:nth-child(7){display:none}}
+
+/* V87.41 - inici pràctic i llistat professional d'expedients */
+.dashboard-grid-v8741{grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr);align-items:start}
+.compact-list-v8741 .obra-row{min-height:76px}
+.home-work-panel-v8741{display:flex;flex-direction:column;gap:14px}
+.home-panel-section-v8741{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#f8fafc}
+.home-panel-section-v8741 h3{margin:0 0 8px;font-size:14px;color:#0f172a}
+.home-panel-section-v8741 p{margin:0;color:#64748b;font-weight:700}
+.home-panel-section-v8741 button,.activity-row-v8741{width:100%;display:flex;flex-direction:column;gap:3px;text-align:left;border:1px solid #e5e7eb;background:#fff;border-radius:12px;padding:10px;margin-top:8px;cursor:pointer}
+.home-panel-section-v8741 button:hover,.activity-row-v8741:hover{border-color:#2563eb;background:#eff6ff}
+.home-panel-section-v8741 b,.activity-row-v8741 b{color:#0f172a}
+.home-panel-section-v8741 span,.activity-row-v8741 span{color:#64748b;font-weight:700}
+.home-quick-v8741{display:flex;gap:8px;flex-wrap:wrap}
+.activity-panel-v8741{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}
+.expedients-page-v8741{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.filters-v8741{display:grid;grid-template-columns:minmax(260px,1fr) 210px 260px 140px 160px;gap:10px;padding:12px;border-bottom:1px solid #e5e7eb}
+.exp-list-header-v8741{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #e5e7eb;color:#64748b;font-weight:900}
+.exp-table-wrap-v8741{overflow:auto;padding:0 12px 12px}
+.exp-table-v8741{width:100%;border-collapse:separate;border-spacing:0 8px;min-width:1180px}
+.exp-table-v8741 th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;padding:8px 10px;border-bottom:1px solid #e5e7eb}
+.exp-table-v8741 td{background:#fff;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;padding:11px 10px;vertical-align:middle;color:#0f172a}
+.exp-table-v8741 td:first-child{border-left:1px solid #e5e7eb;border-radius:12px 0 0 12px;white-space:nowrap}
+.exp-table-v8741 td:last-child{border-right:1px solid #e5e7eb;border-radius:0 12px 12px 0}
+.exp-table-v8741 tr{cursor:pointer}
+.exp-table-v8741 tbody tr:hover td{background:#eff6ff;border-color:#93c5fd}
+.exp-table-v8741 strong{display:block;font-weight:900;color:#0f172a}
+.exp-table-v8741 small{display:block;color:#64748b;font-weight:700;margin-top:2px}
+.exp-side-v8741{display:flex;flex-direction:column;gap:14px}
+.exp-side-kpis-v8741{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.exp-side-kpis-v8741 div{border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#f8fafc}
+.exp-side-kpis-v8741 span{display:block;color:#64748b;font-size:12px;font-weight:900;text-transform:uppercase}
+.exp-side-kpis-v8741 b{display:block;font-size:24px;color:#0f172a;margin-top:4px}
+.exp-side-list-v8741{padding:0 12px 12px}
+.exp-side-list-v8741 h4{margin:0 0 8px;color:#0f172a}
+.exp-side-list-v8741 button{width:100%;display:flex;justify-content:space-between;gap:8px;border:1px solid #e5e7eb;background:#fff;border-radius:10px;padding:9px 10px;margin-top:6px;cursor:pointer;text-align:left}
+.exp-side-list-v8741 button:hover{border-color:#2563eb;background:#eff6ff}
+.code-criteria-v8741{padding:12px;color:#475569}
+.code-criteria-v8741 b,.code-criteria-v8741 span{display:block}
+.code-criteria-v8741 b{color:#0f172a}
+.code-criteria-v8741 span{margin-top:6px;color:#1d4ed8;font-weight:900;background:#eef2ff;border-radius:999px;padding:5px 8px;width:max-content;max-width:100%}
+.code-criteria-v8741 p{margin:10px 0 0;color:#64748b;font-weight:700}
+@media(max-width:1150px){.dashboard-grid-v8741,.expedients-page-v8741{grid-template-columns:1fr}.filters-v8741{grid-template-columns:1fr 1fr}.activity-panel-v8741{grid-template-columns:1fr}}
+@media(max-width:700px){.filters-v8741{grid-template-columns:1fr}.home-quick-v8741 button{width:100%}}

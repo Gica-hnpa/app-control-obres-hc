@@ -81,24 +81,53 @@ const WORK_TYPES8737=[
   "Direcció d’obra",
   "Project management",
   "Pressupost tècnic-client",
-  "Pressupost per constructor/promotor",
+  "Pressupost constructor/promotor",
   "Certificació d’obra",
   "Informe tècnic",
   "ITE / informe edifici",
-  "ITE",
   "Certificat energètic",
   "Cèdula d’habitabilitat",
   "Taxació / valoració",
   "Coordinació seguretat i salut",
-  "Seguretat i salut",
   "Aixecament de plànols",
   "Amidaments i pressupost tècnic",
-  "Render / documentació gràfica",
+  "Render / visualització",
   "Legalització",
   "Llicència / comunicació",
   "Consulta tècnica puntual",
   "Altres"
 ];
+function canonicalWorkType8740(v){
+  const n=codeClean8739(v||"");
+  if(!n)return "Altres";
+  if(n.includes("PROJECT MANAGEMENT")||n==="PM")return "Project management";
+  if(n.includes("DIRECCIO D EXECUCIO")||n.includes("EXECUCIO D OBRA")||n.includes("DIRECCIO EXECUCIO"))return "Direcció d’execució d’obra";
+  if(n.includes("DIRECCIO D OBRA")||n.includes("DIRECCIO OBRA"))return "Direcció d’obra";
+  if(n.includes("PROJECTE")&&n.includes("DIRECCIO"))return "Projecte tècnic amb direcció";
+  if(n.includes("PROJECTE"))return "Projecte tècnic";
+  if(n.includes("PRESSUPOST")&&(n.includes("CONSTRUCTOR")||n.includes("PROMOTOR")))return "Pressupost constructor/promotor";
+  if(n.includes("PRESSUPOST"))return "Pressupost tècnic-client";
+  if(n.includes("CERTIFICACIO"))return "Certificació d’obra";
+  if(n.includes("ENERGETIC")||n==="CEE")return "Certificat energètic";
+  if(n.includes("CEDULA")||n==="CED")return "Cèdula d’habitabilitat";
+  if(n.includes("ITE"))return "ITE / informe edifici";
+  if(n.includes("INFORME"))return "Informe tècnic";
+  if(n.includes("TAXACIO")||n.includes("VALORACIO"))return "Taxació / valoració";
+  if(n.includes("COORDINACIO")||n.includes("SEGURETAT")||n==="CSS")return "Coordinació seguretat i salut";
+  if(n.includes("AIXECAMENT")||n==="AIX")return "Aixecament de plànols";
+  if(n.includes("AMIDAMENT"))return "Amidaments i pressupost tècnic";
+  if(n.includes("RENDER")||n.includes("VISUAL")||n==="REND")return "Render / visualització";
+  if(n.includes("LEGAL"))return "Legalització";
+  if(n.includes("LLICENCIA")||n.includes("COMUNICACIO")||n==="LLIC")return "Llicència / comunicació";
+  if(n.includes("CONSULTA"))return "Consulta tècnica puntual";
+  return WORK_TYPES8737.includes(v)?v:"Altres";
+}
+function normalizeObraWork8740(o){
+  const tipus=canonicalWorkType8740(o?.tipusTreball||o?.tipologia||o?.subtitol||"");
+  return {...o,tipusTreball:tipus,tipologia:tipus};
+}
+function needsWorkNormalize8740(obres){return (obres||[]).some(o=>canonicalWorkType8740(o?.tipusTreball||o?.tipologia)!==(o?.tipusTreball||o?.tipologia));}
+
 const TABS_M1_BASE8738=["Resum","Agenda / Avisos","Documents","Fotografies","Gestió temps","Pressupostos","Factures"];
 const TABS_M1_ACTES8738=["Resum","Agenda / Avisos","Actes","Documents","Fotografies","Gestió temps","Pressupostos","Factures"];
 const TABS_M2_OBRA8738=["Resum","Agenda / Avisos","Actes","Documents","Fotografies","Gestió temps","Pressupostos","Factures","Pressupost obra","Certificacions obra","Facturació obra"];
@@ -115,10 +144,11 @@ function tabsForWork8737(obra){
   return workNeedsActes8738(t)?TABS_M1_ACTES8738:TABS_M1_BASE8738;
 }
 
-function moduleLabel8737(obra){return obra?.tipusTreball||obra?.tipologia||"Treball tècnic"}
+function moduleLabel8737(obra){return canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia)||"Treball tècnic"}
 function stripAccents8739(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
 function codeClean8739(s){return stripAccents8739(s).toUpperCase().replace(/[^A-Z0-9 ]+/g," ").replace(/\s+/g," ").trim()}
 function workCode8739(t){
+  t=canonicalWorkType8740(t);
   const n=codeClean8739(t);
   if(n.includes("CERTIFICACIO"))return "CERT";
   if(n.includes("FACTURA"))return "FAC";
@@ -210,7 +240,7 @@ useEffect(()=>{localStorage.setItem("aco_odata",JSON.stringify(odata))},[odata])
 useEffect(()=>{if((obres||[]).some(o=>!o.codiExpedient||!o.expedientBase)){setObres(p=>assignMissingCodes8739(p,clients))}},[]);
 const obra=obres.find(o=>o.id===obraId)||obres[0], client=clients.find(c=>c.id===obra.client)||clients[0], data=odata[obraId]||empty();
 const fClients=clients.filter(c=>(!ct||c.tipus===ct)&&(c.nom+" "+c.rao+" "+c.contacte).toLowerCase().includes(cs.toLowerCase()));
-const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||o.estat===ost)&&(!ot||(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+o.nom+" "+o.subtitol+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
+const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||o.estat===ost)&&(!ot||canonicalWorkType8740(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
 const byClient=useMemo(()=>{let m={};fObres.forEach(o=>{m[o.client]??={};m[o.client][o.any]??=[];m[o.client][o.any].push(o)});return m},[fObres]);
 const setD=(id,up)=>setOdata(p=>({...p,[id]:typeof up==="function"?up(p[id]||empty()):up}));
 function nav(s){setScreen(s);setMenuOpen(false);setCollapsed(true)}
@@ -472,7 +502,7 @@ if(clientId==="__new__"||!clientId){
   setClients(p=>[nouClient,...p]);
 }
 let tipusRaw=f.get("tipusTreball")||"Projecte tècnic";
-let tipusTreball=tipusRaw==="Altres"?(f.get("tipusTreballAltres")||"Altres"):tipusRaw;
+let tipusTreball=tipusRaw==="Altres"?(f.get("tipusTreballAltres")||"Altres"):canonicalWorkType8740(tipusRaw);
 let year=f.get("any")||String(new Date().getFullYear());
 let clientObj=nouClient||clients.find(c=>c.id===clientId);
 let keyword=f.get("paraulaClau")||f.get("nom")||f.get("subtitol")||f.get("poblacio");
@@ -511,12 +541,29 @@ function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat
 
 function Inici({clients,obres,events,setScreen,openObra,newObra}){
 const actius=obres.filter(o=>o.estat!=="Tancada").length;
-const recents=obres.slice(0,4);
+const recents=[...obres].sort((a,b)=>String(expedientCode8739(b)).localeCompare(String(expedientCode8739(a)))).slice(0,4);
+const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes(o.estat)).slice(0,4);
+const properes=[...(events||[])].slice(0,4);
+const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, honoraris i pressupostos del tècnic al client.</p><span className="version-badge soft">Versió 87.39 codis expedient</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.41 llistat expedients</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
-<section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS ACTIUS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
-<section className="dashboard-grid"><div className="stack"><Card title="Expedients recents"><div className="list">{recents.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Darreres actuacions"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Agenda tècnica</b><span>Visites, entregues, avisos i recordatoris vinculats a expedients.</span></button><button className="notice" onClick={()=>setScreen("Treballs / Expedients")}><b>Flux per tipologia de treball</b><span>Cada expedient mostra només les pestanyes necessàries segons el tipus de treball.</span></button></div></Card></div><Card title="Mòdul 1 · Tècnic"><div className="module-home-v8737"><b>Inclou el necessari per treballar com a tècnic.</b><span>Clients, expedients, agenda, actes quan calgui, fotos, documents, honoraris, pressupostos i facturació del tècnic al client.</span><em>El control econòmic d’obra i el control integral d’empresa queden com a mòduls posteriors.</em></div></Card></section>
+<section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
+<section className="dashboard-grid dashboard-grid-v8741">
+  <div className="stack">
+    <Card title="Expedients recents"><div className="list compact-list-v8741">{recents.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card>
+    <Card title="Darreres actuacions i avisos"><div className="activity-panel-v8741">
+      {ultim?<button className="activity-row-v8741" onClick={()=>openObra(ultim.id)}><b>Últim expedient</b><span>{expedientCode8739(ultim)} · {ultim.nom}</span></button>:<Empty text="Encara no hi ha expedients."/>}
+      {pendents.length>0&&pendents.slice(0,2).map(o=><button key={o.id} className="activity-row-v8741" onClick={()=>openObra(o.id)}><b>Pendent de seguiment</b><span>{expedientCode8739(o)} · {o.estat}</span></button>)}
+      <button className="activity-row-v8741" onClick={()=>setScreen("Treballs / Expedients")}><b>Revisar llistat general</b><span>Veure tots els expedients ordenats per codi i filtrar per tipus de treball.</span></button>
+    </div></Card>
+  </div>
+  <Card title="Agenda i accions pendents"><div className="home-work-panel-v8741">
+    <div className="home-panel-section-v8741"><h3>Pròximes cites / avisos</h3>{properes.length===0?<p>No hi ha cites registrades. Pots crear-les des de l’agenda.</p>:properes.map(e=><button key={e.id} onClick={()=>setScreen("Agenda")}><b>{e.title||e.titol||"Cita"}</b><span>{e.day?`${e.day}/${(+e.month||0)+1}/${e.year}`:(e.data||"Sense data")} · {e.hora||""}</span></button>)}</div>
+    <div className="home-panel-section-v8741"><h3>Expedients que demanen atenció</h3>{pendents.length===0?<p>No tens expedients pendents destacats.</p>:pendents.slice(0,3).map(o=><button key={o.id} onClick={()=>openObra(o.id)}><b>{o.estat}</b><span>{expedientCode8739(o)} · {o.nom}</span></button>)}</div>
+    <div className="home-quick-v8741"><button className="primary" onClick={newObra}>+ Nou expedient</button><button className="secondary" onClick={()=>setScreen("Agenda")}>Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Pressupostos")}>Pressupostos tècnic-client</button></div>
+  </div></Card>
+</section>
 </>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
@@ -553,8 +600,35 @@ function FitxaClient({client,obres,openObra,back}){
   </Card><Card title={`Obres amb ${form.nom||client.nom}`}><div className="list">{obres.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card></div>
 }
 
-function Projectes({byClient,clients,openObra,f,newObra}){return <Card title="Treballs / Expedients" action={<button className="primary" onClick={newObra}><Plus/> Nou expedient</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar codi, expedient o client..."/></div><select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select><select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els treballs</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select><select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select><select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select></div><div className="company-list">{Object.entries(byClient).map(([cid,ys])=><div className="company-block" key={cid}><h3>{clients.find(c=>c.id===cid)?.nom}</h3>{Object.entries(ys).sort((a,b)=>b[0].localeCompare(a[0])).map(([y,items])=><div key={y}><h4>{y}</h4>{items.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div>)}</div>)}</div></Card>}
-function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row obra-row-code-v8739"><div className="thumb">{o.imatge?<img src={o.imatge}/> : "FOTO"}</div><div className="grow"><small className="exp-code-v8739">{expedientCode8739(o)}</small><strong>{o.nom}</strong><span>{o.subtitol}</span><em>{moduleLabel8737(o)}</em></div><Badge estat={o.estat}/></button>}
+function Projectes({byClient,clients,openObra,f,newObra}){
+let flat=[];Object.entries(byClient||{}).forEach(([cid,ys])=>Object.entries(ys||{}).forEach(([y,items])=>(items||[]).forEach(o=>flat.push(o))));
+flat.sort((a,b)=>String(expedientCode8739(a)).localeCompare(String(expedientCode8739(b))));
+let total=flat.length, actius=flat.filter(o=>o.estat!=="Tancada").length;
+let tipusCount=flat.reduce((m,o)=>{let t=moduleLabel8737(o);m[t]=(m[t]||0)+1;return m},{});
+let topTipus=Object.entries(tipusCount).sort((a,b)=>b[1]-a[1]).slice(0,7);
+return <div className="expedients-page-v8741">
+  <Card title="Llistat d’expedients" action={<button className="primary" onClick={newObra}><Plus/> Nou expedient</button>}>
+    <div className="filters filters-v8741">
+      <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar per codi, treball, client, adreça, municipi o tipus..."/></div>
+      <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
+      <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els tipus de treball</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select>
+      <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select>
+      <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>En procés</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select>
+    </div>
+    <div className="exp-list-header-v8741"><span>{total} expedients filtrats</span><button className="secondary" onClick={()=>{f.setOs("");f.setOc("");f.setOt("");f.setOy("");f.setOst("")}}>Netejar filtres</button></div>
+    <div className="exp-table-wrap-v8741">
+      <table className="exp-table-v8741">
+        <thead><tr><th>Núm.</th><th>Codi expedient</th><th>Treball</th><th>Client</th><th>Tipus de treball</th><th>Adreça / municipi</th><th>Estat</th><th>Any</th></tr></thead>
+        <tbody>{flat.length===0&&<tr><td colSpan="8"><Empty text="No hi ha expedients amb aquest filtre."/></td></tr>}{flat.map(o=>{let c=clients.find(x=>x.id===o.client);return <tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td><strong>{o.nom}</strong><small>{o.subtitol}</small></td><td>{c?.nom||o.propietat||"—"}</td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td><Badge estat={o.estat}/></td><td>{o.any}</td></tr>})}</tbody>
+      </table>
+    </div>
+  </Card>
+  <aside className="exp-side-v8741">
+    <Card title="Resum del llistat"><div className="exp-side-kpis-v8741"><div><span>Total</span><b>{total}</b></div><div><span>Oberts</span><b>{actius}</b></div></div><div className="exp-side-list-v8741"><h4>Filtrar per tipus</h4>{topTipus.length===0?<p>Sense dades.</p>:topTipus.map(([t,n])=><button key={t} onClick={()=>f.setOt(t)}><span>{t}</span><b>{n}</b></button>)}</div></Card>
+    <Card title="Criteri de codificació"><div className="code-criteria-v8741"><b>Any · número · tipus · client · paraula clau</b><span>Exemple: 2026-001-PRES-SOC-FRONTMAR</span><p>El número base és correlatiu anual i després pots filtrar per tipus de treball, client, estat o municipi.</p></div></Card>
+  </aside>
+</div>}
+function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row obra-row-code-v8739"><div className="thumb">{o.imatge?<img src={o.imatge}/> : "FOTO"}</div><div className="grow"><small className="exp-code-v8739">{expedientCode8739(o)}</small><strong>{o.nom}</strong><span>{o.subtitol}</span><em>{moduleLabel8737(o)} · {o.poblacio||"Sense municipi"}</em></div><Badge estat={o.estat}/></button>}
 
 function EditObraModal8725({obra,clients=[],close,save}){
 const clientNames=[...new Set((clients||[]).map(c=>c.nom).filter(Boolean))];
