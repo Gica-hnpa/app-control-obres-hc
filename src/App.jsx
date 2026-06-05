@@ -359,7 +359,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.29b fitxa sense JSON</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.35 dashboard obra</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -522,22 +522,62 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
 </Modal>
 }
 
-function Resum({data}){
-let rows=data.partides||[], certs=data.certificacions||[];
+function Resum({obra,client,data,openAgent}){
+let rows=data.partides||[], certs=data.certificacions||[], actes=data.actes||[], docs=data.documents||[], fotos=data.fotos||[];
 let pressupost=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-function qFor(r,n){return n===1?(+r.certAnterior||0):(+r.certActual||0)}
+function qFor(r,n){return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):(r.certsByNum&&r.certsByNum[String(n)]!==undefined?+r.certsByNum[String(n)]||0:0)}
 let totalCert=certs.reduce((s,c)=>s+rows.reduce((x,r)=>x+qFor(r,+c.numero)*(+r.pu||0),0),0);
-let pendent=Math.max(pressupost-totalCert,0), percent=pressupost?totalCert/pressupost*100:0, ultima=certs.length?certs[certs.length-1]:null;
-return <div className="stack">
-  <div className="obra-resum-v63">
-    <div className="resum-kpi-v63"><span>Pressupost obra</span><b>{money(pressupost)}</b></div>
-    <div className="resum-kpi-v63"><span>Quantitat certificada</span><b>{money(totalCert)}</b></div>
-    <div className="resum-kpi-v63"><span>Pendent</span><b>{money(pendent)}</b></div>
-    <div className="resum-kpi-v63"><span>Núm. certificacions</span><b>{certs.length}</b></div>
-    <div className="resum-kpi-v63"><span>% executat</span><b>{pct(percent)}</b></div>
-    <div className="resum-kpi-v63"><span>Última certificació</span><b>{ultima?`Cert. ${ultima.numero}`:"—"}</b><em>{ultima?.data||""}</em></div>
-  </div>
-  <Card title="Evolució econòmica"><div className="progress-big-v63"><div><i style={{width:`${Math.min(percent,100)}%`}}/></div><b>{pct(percent)}</b></div></Card>
+let pendent=Math.max(pressupost-totalCert,0);
+let percent=pressupost?totalCert/pressupost*100:0;
+let ultima=certs.length?[...certs].sort((a,b)=>(+b.numero)-(+a.numero))[0]:null;
+let importUltima=ultima?rows.reduce((x,r)=>x+qFor(r,+ultima.numero)*(+r.pu||0),0):0;
+let partides=rows.length;
+let capitols=[...new Set(rows.map(r=>r.cap).filter(Boolean))].length;
+let agents=(data.agents||[]).length;
+let actesPendents=actes.filter(a=>String(a.estat||"").toLowerCase().includes("pendent")||!a.estat).length;
+return <div className="stack resum-pro-v8735">
+  <section className="resum-hero-v8735">
+    <div>
+      <span className="eyebrow-v8735">Fitxa resum de l’obra</span>
+      <h2>{obra?.nom||"Obra"}</h2>
+      <p>{client?.nom||obra?.propietat||"Client"} · {obra?.tipologia||"Tipus servei no definit"} · {obra?.estat||"Estat no definit"}</p>
+    </div>
+    <div className="resum-hero-badge-v8735"><small>% executat</small><b>{pct(percent)}</b></div>
+  </section>
+
+  <section className="resum-kpi-grid-v8735">
+    <div className="resum-kpi-pro-v8735 main"><span>Pressupost obra</span><b>{money(pressupost)}</b><em>{partides} partides · {capitols} capítols</em></div>
+    <div className="resum-kpi-pro-v8735 ok"><span>Total certificat</span><b>{money(totalCert)}</b><em>{certs.length} certificacions</em></div>
+    <div className="resum-kpi-pro-v8735 warn"><span>Import pendent</span><b>{money(pendent)}</b><em>Pendent d’executar/certificar</em></div>
+    <div className="resum-kpi-pro-v8735"><span>Última certificació</span><b>{ultima?`Cert. ${ultima.numero}`:"—"}</b><em>{ultima?`${ultima.data||""} · ${money(importUltima)}`:"Sense certificacions"}</em></div>
+  </section>
+
+  <Card title="Evolució econòmica de l’obra">
+    <div className="progress-pro-wrap-v8735">
+      <div className="progress-pro-top-v8735"><span>Executat certificat</span><b>{pct(percent)}</b></div>
+      <div className="progress-pro-v8735"><i style={{width:`${Math.min(percent,100)}%`}}/></div>
+      <div className="progress-pro-bottom-v8735"><span>{money(totalCert)} certificat</span><span>{money(pendent)} pendent</span></div>
+    </div>
+  </Card>
+
+  <section className="resum-info-grid-v8735">
+    <Card title="Control documental">
+      <div className="mini-stat-list-v8735">
+        <div><span>Actes</span><b>{actes.length}</b></div>
+        <div><span>Pendents</span><b>{actesPendents}</b></div>
+        <div><span>Documents</span><b>{docs.length}</b></div>
+        <div><span>Fotografies</span><b>{fotos.length}</b></div>
+      </div>
+    </Card>
+    <Card title="Dades tècniques ràpides">
+      <div className="obra-data-mini-v8735">
+        <p><b>Adreça:</b> {obra?.adreca||"—"}</p>
+        <p><b>Població:</b> {obra?.poblacio||"—"}</p>
+        <p><b>Ref. cadastral:</b> {obra?.rc||"—"}</p>
+        <p><b>Agents registrats:</b> {agents}</p>
+      </div>
+    </Card>
+  </section>
 </div>
 }
 
