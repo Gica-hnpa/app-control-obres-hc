@@ -2612,31 +2612,28 @@ button,input,select,textarea{font-size:13.5px!important}
   background:#fff;
 }
 
-/* V87.29 - backup JSON manual i guardar fitxa visible */
-.backup-json-v8729{
+/* V87.32 - backup fitxer manual a Configuració */
+.backup-file-v8732{
   display:flex;
-  gap:16px;
   align-items:center;
   justify-content:space-between;
+  gap:16px;
   flex-wrap:wrap;
 }
-.backup-json-v8729 b,
-.backup-json-v8729 span{
+.backup-file-v8732 b,
+.backup-file-v8732 span{
   display:block;
 }
-.backup-json-v8729 span{
+.backup-file-v8732 span{
   color:#64748b;
   margin-top:4px;
-  max-width:720px;
+  max-width:760px;
 }
-.backup-actions-v8729{
+.backup-actions-v8732{
   flex-wrap:wrap;
 }
-.dashboard-grid .span-all{
-  grid-column:1 / -1;
-}
 @media(max-width:900px){
-  .backup-json-v8729{
+  .backup-file-v8732{
     align-items:flex-start;
   }
 }
