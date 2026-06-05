@@ -57,159 +57,7 @@ function days(y,m){return new Date(y,m+1,0).getDate()}
 function first(y,m){return (new Date(y,m,1).getDay()+6)%7}
 function f2u(file,cb){if(!file)return;let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
 
-export default 
-function getCloudCfg8734(){try{return JSON.parse(localStorage.getItem("aco_cloud_cfg")||"{}")}catch(e){return {}}}
-function saveCloudCfg8734(cfg){localStorage.setItem("aco_cloud_cfg",JSON.stringify(cfg||{}))}
-function getSession8734(){try{return JSON.parse(localStorage.getItem("aco_auth_session")||"null")}catch(e){return null}}
-function saveSession8734(session){if(session)localStorage.setItem("aco_auth_session",JSON.stringify(session));else localStorage.removeItem("aco_auth_session")}
-async function authRequest8734(cfg,path,body){
-  const url=String(cfg.supabaseUrl||"").replace(/\/$/,"");
-  const key=String(cfg.supabaseKey||"").trim();
-  if(!url||!key)throw new Error("Falta Supabase URL o Anon key");
-  const res=await fetch(`${url}/auth/v1/${path}`,{method:"POST",headers:{apikey:key,"Content-Type":"application/json"},body:JSON.stringify(body)});
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok)throw new Error(data?.error_description||data?.msg||data?.message||`${res.status} ${res.statusText}`);
-  return data;
-}
-function getSyncPayload8734(){
-  return {
-    aco_clients:localStorage.getItem("aco_clients"),
-    aco_obres:localStorage.getItem("aco_obres"),
-    aco_odata:localStorage.getItem("aco_odata"),
-    aco_config:localStorage.getItem("aco_config"),
-    aco_config_v60:localStorage.getItem("aco_config_v60"),
-    aco_home_notes:localStorage.getItem("aco_home_notes")
-  };
-}
-function applySyncPayload8734(data){
-  ["aco_clients","aco_obres","aco_odata","aco_config","aco_config_v60","aco_home_notes"].forEach(k=>{
-    if(data && data[k]!==undefined && data[k]!==null){
-      if(typeof data[k]==="string")localStorage.setItem(k,data[k]);
-      else localStorage.setItem(k,JSON.stringify(data[k]));
-    }
-  });
-}
-async function privateSyncRequest8734(cfg,session,method,body){
-  const url=String(cfg.supabaseUrl||"").replace(/\/$/,"");
-  const anon=String(cfg.supabaseKey||"").trim();
-  const table=String(cfg.syncTable||"app_control_obres_user_data").trim();
-  if(!url||!anon)throw new Error("Falta Supabase URL o Anon key");
-  if(!session?.access_token)throw new Error("No hi ha sessió iniciada");
-  const userId=session.user?.id;
-  const endpoint=`${url}/rest/v1/${table}?user_id=eq.${encodeURIComponent(userId)}`;
-  const headers={apikey:anon,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=representation"};
-  const res=await fetch(endpoint,{method,headers,body:body?JSON.stringify(body):undefined});
-  if(!res.ok)throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`);
-  return await res.json();
-}
-function LoginSupabase8734({onReady}){
-  const[cfg,setCfg]=useState(()=>getCloudCfg8734());
-  const[email,setEmail]=useState("");
-  const[password,setPassword]=useState("");
-  const[status,setStatus]=useState("");
-  function upd(k,v){setCfg(p=>({...p,[k]:v}))}
-  function saveCfg(){saveCloudCfg8734({...cfg,syncTable:cfg.syncTable||"app_control_obres_user_data"});setStatus("Configuració guardada.")}
-  async function login(){
-    try{
-      setStatus("Entrant...");
-      saveCloudCfg8734({...cfg,syncTable:cfg.syncTable||"app_control_obres_user_data"});
-      const data=await authRequest8734(cfg,"token?grant_type=password",{email,password});
-      saveSession8734(data); setStatus("Sessió iniciada."); onReady?.();
-    }catch(err){setStatus("Error iniciant sessió: "+String(err?.message||err));}
-  }
-  async function signup(){
-    try{
-      setStatus("Creant usuari...");
-      saveCloudCfg8734({...cfg,syncTable:cfg.syncTable||"app_control_obres_user_data"});
-      const data=await authRequest8734(cfg,"signup",{email,password});
-      if(data?.access_token){saveSession8734(data);onReady?.();return}
-      setStatus("Usuari creat. Revisa el correu si Supabase demana confirmació i després inicia sessió.");
-    }catch(err){setStatus("Error creant usuari: "+String(err?.message||err));}
-  }
-  return <div className="login-cloud-page-v8734">
-    <div className="login-card-v8734">
-      <div className="app-logo">CO</div>
-      <h1>Control d’Obres</h1>
-      <p>Accés privat per usuari. Cada usuari veu només les seves dades.</p>
-      <div className="form-grid">
-        <label><span>Supabase URL</span><input value={cfg.supabaseUrl||""} onChange={e=>upd("supabaseUrl",e.target.value)} placeholder="https://xxxx.supabase.co"/></label>
-        <label><span>Anon key</span><input value={cfg.supabaseKey||""} onChange={e=>upd("supabaseKey",e.target.value)} placeholder="eyJ..."/></label>
-        <label><span>Taula dades usuari</span><input value={cfg.syncTable||"app_control_obres_user_data"} onChange={e=>upd("syncTable",e.target.value)}/></label>
-        <label><span>Email</span><input value={email} onChange={e=>setEmail(e.target.value)} type="email"/></label>
-        <label><span>Contrasenya</span><input value={password} onChange={e=>setPassword(e.target.value)} type="password"/></label>
-      </div>
-      <div className="actions-inline">
-        <button className="secondary" onClick={saveCfg}>Guardar configuració</button>
-        <button className="primary" onClick={login}>Entrar</button>
-        <button className="secondary" onClick={signup}>Crear usuari</button>
-      </div>
-      {status&&<div className="sync-status-v8734">{status}</div>}
-      <details className="sync-help-v8734"><summary>SQL privat necessari a Supabase</summary><pre>{`create table if not exists app_control_obres_user_data (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  payload jsonb not null,
-  updated_at timestamptz default now()
-);
-
-alter table app_control_obres_user_data enable row level security;
-
-create policy "users can read own data"
-on app_control_obres_user_data
-for select
-using (auth.uid() = user_id);
-
-create policy "users can insert own data"
-on app_control_obres_user_data
-for insert
-with check (auth.uid() = user_id);
-
-create policy "users can update own data"
-on app_control_obres_user_data
-for update
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);`}</pre></details>
-    </div>
-  </div>
-}
-function PrivateCloudPanel8734(){
-  const cfg=getCloudCfg8734();
-  const[session,setSession]=useState(()=>getSession8734());
-  const[status,setStatus]=useState("");
-  async function upload(){
-    try{
-      setStatus("Pujant dades privades...");
-      await privateSyncRequest8734(cfg,session,"POST",[{user_id:session.user.id,payload:getSyncPayload8734(),updated_at:new Date().toISOString()}]);
-      setStatus("Dades pujades al núvol privat.");
-    }catch(err){setStatus("Error pujant dades: "+String(err?.message||err));}
-  }
-  async function download(){
-    try{
-      if(!confirm("Això substituirà les dades locals per les del teu núvol privat. Continuar?"))return;
-      setStatus("Baixant dades privades...");
-      const rows=await privateSyncRequest8734(cfg,session,"GET");
-      if(!rows||!rows.length)throw new Error("Encara no tens cap còpia al núvol privat");
-      applySyncPayload8734(rows[0].payload||{});
-      setStatus("Dades baixades. Recarregant...");
-      setTimeout(()=>location.reload(),600);
-    }catch(err){setStatus("Error baixant dades: "+String(err?.message||err));}
-  }
-  function logout(){saveSession8734(null);setSession(null);location.reload()}
-  if(!session?.access_token)return null;
-  return <Card title="Núvol privat de l’usuari">
-    <div className="cloud-private-v8734">
-      <div><b>{session.user?.email||"Usuari connectat"}</b><span>Les dades es guarden associades al teu usuari. Altres usuaris no les veuen.</span></div>
-      <div className="actions-inline">
-        <button className="primary" onClick={upload}>Pujar dades privades</button>
-        <button className="secondary" onClick={download}>Baixar dades privades</button>
-        <button className="danger" onClick={logout}>Sortir</button>
-      </div>
-      {status&&<div className="sync-status-v8734">{status}</div>}
-    </div>
-  </Card>
-}
-
-function App(){
-const[authReady8734,setAuthReady8734]=useState(()=>!!getSession8734()?.access_token);
-
+export default function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
 const appCfg=JSON.parse(localStorage.getItem("aco_config")||"{}");
 const lang=appCfg.idioma||"Català";
@@ -492,7 +340,6 @@ function deleteHour(id){setD(obraId,d=>({...d,hores:d.hores.filter(h=>h.id!==id)
 function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=String(b).split(":").map(Number);let mins=(bh*60+bm)-(ah*60+am);return Math.max(mins/60,0)}
 
 
-if(!authReady8734)return <LoginSupabase8734 onReady={()=>setAuthReady8734(true)}/>;
 return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Projectes / Obres"||screen==="Obra"} i={<FolderOpen/>} l={tt("Projectes / Obres","Proyectos / Obras","Projects / Jobs")} on={()=>nav("Projectes / Obres")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Temps invertit / cost treball","Tiempo invertido / coste","Time / cost")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen==="Inici"&&<Inici clients={clients} obres={obres} events={Object.values(odata).flatMap(d=>d.events||[])} setScreen={nav} openObra={openObra}/>}
 {screen==="Clients"&&<Clients clients={fClients} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
@@ -512,7 +359,7 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let cls=estat==="Activa"||estat==="Acceptada"?"ok":estat==="Pressupostada"?"warn":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
-function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.34 login privat Supabase</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
+function Inici({clients,obres,events,setScreen,openObra}){return <><section className="hero"><div className="app-logo">CO</div><div><h1>Control d'Obres</h1><p>Gestió tècnica de clients, obres, certificacions i actes.</p><span className="version-badge soft">Versió 87.29b fitxa sense JSON</span></div><div className="user-card"><strong>Héctor Cubero</strong><span>Arquitecte tècnic</span><span>Núm. col·legial: pendent</span></div></section><section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Projectes / Obres")}><small>PROJECTES ACTIUS</small><strong>{obres.filter(o=>o.estat!=="Tancada").length}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AVISOS / NOTES</small><strong>4</strong></button></section><section className="dashboard-grid"><div className="stack"><Card title="Projectes recents"><div className="list">{obres.slice(0,3).map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card><Card title="Avisos importants"><div className="notice-list"><button className="notice urgent" onClick={()=>setScreen("Agenda")}><b>Certificació pendent</b><span>CP Maricel · revisar proforma</span></button><button className="notice warning" onClick={()=>setScreen("Agenda")}><b>Acta pendent</b><span>Falta validació/signatura</span></button></div></Card></div><Card title="Agenda / Notes"><div className="notice-list"><button className="notice" onClick={()=>setScreen("Agenda")}><b>Obrir agenda general</b><span>Calendari, notes, visites i avisos</span></button></div></Card></section></>}
 function Clients({clients,cs,setCs,ct,setCt,openClient,newClient}){return <Card title="Clients" action={<button className="primary" onClick={newClient}><Plus/> Nou client</button>}><div className="filters"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Tots</option><option>Industrial</option><option>Constructora</option><option>Particular</option></select></div><div className="list">{clients.map(c=><button className="client-row" key={c.id} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color}`}>{c.logo?<img src={c.logo}/>:"LOGO"}</div><div className="grow"><strong>{c.nom}</strong><span>{c.rao}</span></div><span>{c.contacte}</span><span>{c.tipus}</span><b>Entrar</b></button>)}</div></Card>}
 
 
@@ -1165,7 +1012,6 @@ const[cfg,setCfg]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)|
 function upd(k,v){setCfg(p=>({...p,[k]:v}))}
 function save(){localStorage.setItem(key,JSON.stringify(cfg));alert("Configuració guardada")}
 return <div className="stack">
-<PrivateCloudPanel8734/>
 <Card title="Configuració general" action={<button className="primary" onClick={save}><Save/> Guardar configuració</button>}>
   <div className="form-grid">
     <Input label="Email emissor" value={cfg.email||""} onChange={e=>upd("email",e.target.value)} />
