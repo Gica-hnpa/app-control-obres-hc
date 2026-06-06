@@ -402,6 +402,127 @@ function fallbackExtract8749(wb){
   return best;
 }
 
+
+function extractAGCapitols8752(wb){
+  function clean(v){return String(v??"").trim()}
+  function norm(v){return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
+  function num(v){
+    if(typeof v==="number")return v;
+    let s=String(v??"").trim();
+    if(!s)return 0;
+    s=s.replace(/€/g,"").replace(/\s/g,"");
+    if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");
+    let n=parseFloat(s.replace(/[^0-9.-]/g,""));
+    return Number.isFinite(n)?n:0;
+  }
+  function isLikelyHeader(r){
+    const t=r.map(norm).join(" ");
+    return (t.includes("partida")||t.includes("codi")||t.includes("codigo")) &&
+           (t.includes("ut")||t.includes("unitat")||t.includes("unidad")) &&
+           (t.includes("concepte")||t.includes("concepto")||t.includes("descrip")) &&
+           (t.includes("quant")||t.includes("amid")||t.includes("cantidad")) &&
+           (t.includes("preu")||t.includes("precio")||t.includes("pu")) &&
+           (t.includes("total")||t.includes("import"));
+  }
+  function isPartidaCode(s){
+    s=clean(s);
+    return /^([A-Za-z]{0,4}\d+|\d{1,2}([.,]\d{1,3})+|\d{1,3})/.test(s);
+  }
+  function isUnit(s){
+    return /^(m2|m²|m3|m³|ml|m|ut|u|kg|h|pa|ud)$/i.test(clean(s));
+  }
+  function makeCap(a,b,c,d){
+    const parts=[a,b,c,d].map(clean).filter(Boolean);
+    let txt=parts.join(" ");
+    txt=txt.replace(/\s+/g," ").trim();
+    return txt || "PRESSUPOST IMPORTAT";
+  }
+
+  let best={rows:[],sheet:"",caps:0};
+
+  for(const sn of wb.SheetNames){
+    const ws=wb.Sheets[sn];
+    const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+    if(!data?.length)continue;
+
+    let headerIndex=data.findIndex(isLikelyHeader);
+    // si no troba capçalera però hi ha estructura A-G clara, comença des del principi
+    if(headerIndex<0){
+      const possible=data.findIndex(r=>{
+        const E=num(r[4]), F=num(r[5]), G=num(r[6]);
+        return clean(r[0]) && clean(r[2]) && (E || F || G);
+      });
+      headerIndex=possible>0?possible-1:0;
+    }
+
+    let out=[];
+    let capActual="PRESSUPOST IMPORTAT";
+    let lastPartida=null;
+
+    for(const r of data.slice(headerIndex+1)){
+      const A=clean(r[0]), B=clean(r[1]), C=clean(r[2]), D=clean(r[3]);
+      const E=num(r[4]), F=num(r[5]), G=num(r[6]);
+      const rowText=norm([A,B,C,D].join(" "));
+      const anyText=clean([A,B,C,D].join(" "));
+
+      if(!A&&!B&&!C&&!D&&!E&&!F&&!G)continue;
+
+      // Capítols explícits
+      const explicitCap = rowText.includes("capitol") || rowText.includes("capítol") || /^cap[\.\s-]/i.test(A);
+      // Capítol implícit: codi a A + títol a C/B + sense quant/preu/import + B no és unitat
+      const implicitCap = !E && !F && !G && (A || B || C) && (
+        explicitCap ||
+        (/^\d{1,2}([.,]\d{1,2})?$/.test(A) && !isUnit(B) && (C || B)) ||
+        (/^\d{1,2}\s*[-–]/.test(anyText))
+      );
+
+      if(implicitCap){
+        capActual=makeCap(A,B,C,D);
+        lastPartida=null;
+        continue;
+      }
+
+      // Descripció llarga de la partida anterior
+      if(lastPartida && !E && !F && !G && !isPartidaCode(A) && (C || D || B)){
+        const extra=[B,C,D].map(clean).filter(Boolean).join(" ");
+        if(extra && !String(lastPartida.desc||"").includes(extra)){
+          lastPartida.desc=(lastPartida.desc?lastPartida.desc+"\n":"")+extra;
+        }
+        continue;
+      }
+
+      // Partida A-G
+      if((isPartidaCode(A) || A) && (C || D) && (E || F || G)){
+        let q=E||0, pu=F||0, total=G||0;
+        if(!pu && total && q)pu=total/q;
+        if(!total && q && pu)total=q*pu;
+
+        const partida={
+          codi:A||String(out.length+1).padStart(2,"0"),
+          ut:B||"ut",
+          concepte:C||D||"Partida importada",
+          desc:D && C ? D : "",
+          cap:capActual||"PRESSUPOST IMPORTAT",
+          q:q||0,
+          pu:pu||0,
+          certAnterior:0,
+          certActual:0,
+          certsByNum:{},
+          tipus:"Import Excel A-G"
+        };
+        out.push(partida);
+        lastPartida=partida;
+      }
+    }
+
+    const caps=new Set(out.map(x=>x.cap)).size;
+    if(out.length>best.rows.length || (out.length===best.rows.length && caps>best.caps)){
+      best={rows:out,sheet:sn,caps};
+    }
+  }
+  return best;
+}
+
 async function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
@@ -442,6 +563,13 @@ try{
   let detectedSheet="";
   let capActual="PRESSUPOST IMPORTAT";
 
+  const ag8752=extractAGCapitols8752(wb);
+  if(ag8752.rows && ag8752.rows.length){
+    imported=ag8752.rows;
+    detectedSheet=`${ag8752.sheet||"Excel"} · estructura A-G amb ${ag8752.caps||1} capítols`;
+  }
+
+  if(!imported.length){
   for(const sheetName of wb.SheetNames){
     const ws=wb.Sheets[sheetName];
     const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
@@ -542,6 +670,7 @@ try{
       break;
     }
   }
+  }
 
   if(!imported.length){
     const fb2=fallbackExtract8749(wb);
@@ -603,7 +732,7 @@ function deletePressupostVersion(id){
   if(!confirm("Eliminar aquesta versió de pressupost?")) return;
   setD(obraId,d=>{
     const next=(d.pressupostos||[]).filter(p=>p.id!==id);
-    return {...d,pressupostos:next,partides:next.length?d.partides:[],certificacions:next.length?d.certificacions:[]};
+    return {...d,pressupostos:next,partides:next.length?d.partides:[],certificacions:next.length?d.certificacions:[],factures:next.length?d.factures:[]};
   });
 }
 function duplicatePressupostVersion(id){
@@ -739,7 +868,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.51 rescat funcions</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.52 temps validat i Excel capítols</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -901,7 +1030,7 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
       <label><span>Tipus de treball</span><input value={moduleLabel8737(obra)} readOnly/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<SafeActes8751 obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<SafeTemps8751 data={data} setData={setData}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<SafeActes8751 obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 
 function AgendaAvisosExpedient8737({data,openEvent}){
