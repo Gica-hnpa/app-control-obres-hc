@@ -2842,3 +2842,10 @@ button,input,select,textarea{font-size:13.5px!important}
 /* V87.49 - resum i agenda més proporcionats */
 .resum-dashboard-v8748{grid-template-columns:minmax(0,1.55fr) minmax(430px,.95fr)!important;gap:16px!important;align-items:start}
 .resum-main-v8748{gap:12px!important}.resum-side-v8748{grid-template-columns:1fr 1fr!important;gap:10px!important}.resum-donut-card-v8748{grid-column:1/-1!important}.activity-list-v8748{max-height:260px;overflow:auto}.activity-row-v8748{grid-template-columns:110px 1fr 100px!important}.resum-quick-grid-v8748{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}.resum-quick-grid-v8748 div{min-height:74px!important}.side-card-v8748{min-height:92px!important}.side-card-v8748 b{font-size:18px!important}.agenda-detail-v8749{margin-top:12px;border:1px solid #bfdbfe;background:#eff6ff;border-radius:14px;padding:12px;display:grid;gap:6px}.agenda-detail-v8749 b{color:#1d4ed8}.agenda-detail-v8749 span{display:block}.agenda-notes-v8749 .note-card-v86 em{display:block;margin-top:4px;color:#2563eb;font-size:11px;font-style:normal;font-weight:800}.app-shell h2,.app-shell h3,.card>header h3,.card-title{color:#0f2f6e;font-weight:900}.badge,.estat-obra-select{font-weight:900}@media(max-width:1200px){.resum-dashboard-v8748{grid-template-columns:1fr!important}.resum-side-v8748{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:700px){.resum-side-v8748{grid-template-columns:1fr!important}.activity-row-v8748{grid-template-columns:1fr!important}.resum-quick-grid-v8748{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* V87.50 estabilització */
+.modal-backdrop{z-index:9999!important;align-items:flex-start!important;overflow:auto!important;padding:24px!important}
+.modal{max-height:calc(100vh - 48px)!important;overflow:auto!important}
+.temps-safe-v8750 .time-table{min-width:1180px;table-layout:fixed}
+.temps-safe-v8750 input,.temps-safe-v8750 select{width:100%}
+.excel-help-v8746{border:1px solid #bfdbfe;background:#eff6ff;border-radius:10px;padding:8px 12px;margin-bottom:10px}
