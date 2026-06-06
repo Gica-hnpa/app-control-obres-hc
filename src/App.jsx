@@ -403,113 +403,17 @@ function fallbackExtract8749(wb){
 }
 
 async function importExcel(e){
-let file=e?.target?.files?.[0];
+const file=e.target.files?.[0];
 if(!file)return;
 function clean(v){return String(v??"").trim()}
 function norm(v){return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
-function num(v){
-  if(typeof v==="number")return v;
-  let s=String(v??"").trim();
-  if(!s)return 0;
-  s=s.replace(/€/g,"").replace(/\s/g,"");
-  if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");
-  let n=parseFloat(s.replace(/[^0-9.-]/g,""));
-  return Number.isFinite(n)?n:0;
-}
-function rowText(row){return (row||[]).map(clean).filter(Boolean).join(" ")}
-function isHeader(row){
-  const t=(row||[]).map(norm).join(" ");
-  const hasCode=t.includes("codigo")||t.includes("codi")||t.includes("partida");
-  const hasUnit=t.includes(" ud")||t.includes(" ut")||t.includes("unitat")||t.includes("unidad")||t.split(" ").includes("ud")||t.split(" ").includes("ut");
-  const hasConcept=t.includes("resumen")||t.includes("resum")||t.includes("concepte")||t.includes("concepto")||t.includes("descrip");
-  const hasQty=t.includes("canpres")||t.includes("quant")||t.includes("amid")||t.includes("cantidad");
-  const hasPrice=t.includes(" pres")||t.includes("preu")||t.includes("precio")||t.includes("prpres")||t.includes("pu");
-  const hasTotal=t.includes("imppres")||t.includes("total")||t.includes("import")||t.includes("importe");
-  return (hasCode&&hasConcept&&(hasQty||hasPrice||hasTotal)) || t.includes("nat imppres");
-}
-function findIdx(header, exacts, includes, fallback){
-  let h=header.map(norm);
-  let i=h.findIndex(x=>exacts.includes(x));
-  if(i>=0)return i;
-  i=h.findIndex(x=>includes.some(k=>x.includes(k)));
-  return i>=0?i:fallback;
-}
-function isCode(s){s=clean(s);return /^([A-Za-z]{0,6}\d+[A-Za-z0-9.\-]*|\d{1,2}([.,]\d{1,3})+)$/.test(s)}
+function num(v){if(typeof v==="number")return v;let s=String(v??"").trim();if(!s)return 0;s=s.replace(/€/g,"").replace(/\s/g,"");if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");let n=parseFloat(s.replace(/[^0-9.-]/g,""));return Number.isFinite(n)?n:0}
+function isHeader(r){const t=r.map(norm).join(" ");return (t.includes("codigo")||t.includes("codi")||t.includes("partida"))&&(t.includes("nat")||t.includes("unitat")||t.includes("ud")||t.includes("ut"))&&(t.includes("resumen")||t.includes("resum")||t.includes("concepte")||t.includes("descrip"))}
+function findIdx(header,names,fallback){const h=header.map(norm);for(const n of names){let i=h.findIndex(x=>x===n||x.includes(n));if(i>=0)return i}return fallback}
 function isUnit(s){return /^(m2|m²|m3|m³|ml|m|ut|u|ud|kg|h|pa)$/i.test(clean(s))}
-function capName(a,nat,c,d){let out=[a,nat,c,d].map(clean).filter(Boolean).join(" ").replace(/\s+/g," ").trim();return out||"PRESSUPOST IMPORTAT"}
-function parseSheet(sheetName,ws){
-  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-  if(!rows?.length)return [];
-  let headerIndex=rows.findIndex(isHeader);
-  if(headerIndex<0){
-    headerIndex=rows.findIndex(r=>clean(r[0])&&clean(r[2])&&(num(r[4])||num(r[5])||num(r[6])));
-    if(headerIndex>0)headerIndex--;
-    if(headerIndex<0)return [];
-  }
-  const header=rows[headerIndex]||[];
-  const idx={
-    codi:findIdx(header,["codigo","código","codi","partida"],["codigo","codi","partida"],0),
-    nat:findIdx(header,["nat"],["naturalesa","naturaleza","tipus"],1),
-    ud:findIdx(header,["ud","ut"],["unitat","unidad"],1),
-    resum:findIdx(header,["resumen","resum","concepte / descripcio","concepte / descripció","concepte"],["resumen","resum","concepte","concepto","descrip"],2),
-    q:findIdx(header,["canpres","quantitat","quantitat pressupost"],["quant","cantidad","amid","canpres"],4),
-    pu:findIdx(header,["pres","preu/ut","preu ut","precio unitario"],["preu","precio","unitari","unitario","prpres","pu"],5),
-    imp:findIdx(header,["imppres","total"],["import","importe","total"],6)
-  };
-  let out=[];let cap="PRESSUPOST IMPORTAT";let last=null;
-  for(const row of rows.slice(headerIndex+1)){
-    if(!row||!row.some(x=>clean(x)))continue;
-    const A=clean(row[idx.codi]);
-    const N=idx.nat>=0?clean(row[idx.nat]):"";
-    const U=clean(row[idx.ud]);
-    const C=clean(row[idx.resum]);
-    const D=clean(row[3]);
-    const Q=num(row[idx.q]); let PU=num(row[idx.pu]); let IMP=num(row[idx.imp]);
-    const all=rowText(row);
-    const nAll=norm(all); const nNat=norm(N);
-    const isCap=nNat.includes("cap") || /^cap[ií]tol/i.test(A) || (nAll.includes("capitol")&& !C.toLowerCase().includes("total"));
-    if(isCap){cap=capName(A,N,C,D);last=null;continue;}
-    if(!IMP && Q && PU)IMP=Q*PU;
-    if(!PU && Q && IMP)PU=IMP/Q;
-    const partClassic=nNat.includes("part");
-    const partAG=isCode(A)&&C&&(Q||PU||IMP)&&!/^total/i.test(C);
-    if(partClassic || partAG){
-      const desc=(D && D!==C)?D:"";
-      const p={codi:A||String(out.length+1).padStart(2,"0"),cap,concepte:C||"Partida importada",desc,ut:(isUnit(U)?U:(U||"ut")),q:Q||0,pu:PU||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel"};
-      out.push(p);last=p;continue;
-    }
-    if(last && C && !isCode(A) && !Q && !PU && !IMP){
-      if(!String(last.desc||"").includes(C))last.desc=(last.desc?last.desc+"\n":"")+C;
-      continue;
-    }
-  }
-  return out;
-}
-try{
-  const ab=await file.arrayBuffer();
-  const wb=XLSX.read(ab,{type:"array",cellDates:false});
-  let best=[],bestSheet="",bestCaps=0;
-  for(const sheetName of wb.SheetNames){
-    const partides=parseSheet(sheetName,wb.Sheets[sheetName]);
-    const caps=new Set(partides.map(p=>p.cap)).size;
-    if(partides.length>best.length || (partides.length===best.length&&caps>bestCaps)){best=partides;bestSheet=sheetName;bestCaps=caps;}
-  }
-  if(!best.length){
-    setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Excel llegit però sense partides detectades",import:0}]}));
-    return;
-  }
-  const total=best.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
-  setD(obraId,d=>{
-    const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[{id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},{id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}];
-    return {...d,partides:best,certificacions:nextCerts,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:`Excel llegit · ${best.length} partides · ${bestCaps||1} capítols · ${bestSheet}`,import:total}]};
-  });
-}catch(err){
-  setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
-}
-}
-
-
-
+function isCode(s){s=clean(s);return !!s&&!/^total/i.test(s)&&/^([A-Za-z]{0,6}\d+[A-Za-z0-9.\-]*|\d{1,2}([.,]\d{1,3})+|\d{1,3})/.test(s)}
+function parseRows(rows){let headerIndex=rows.findIndex(isHeader);if(headerIndex<0)headerIndex=rows.findIndex(r=>clean(r[0])&&clean(r[2]||r[3])&&(num(r[4])||num(r[5])||num(r[6])))-1;if(headerIndex<0)headerIndex=0;const header=rows[headerIndex]||[];const idx={codi:findIdx(header,["codigo","código","codi","partida"],0),nat:findIdx(header,["nat","naturalesa","naturaleza"],1),ud:findIdx(header,["ud","ut","unitat","unidad"],2),resum:findIdx(header,["resumen","resum","concepte","concepto","descrip"],3),q:findIdx(header,["canpres","quant","cantidad","amid"],4),pu:findIdx(header,["pres","preu","precio","pu","prpres"],5),imp:findIdx(header,["imppres","import","importe","total"],6)};let out=[],cap="PRESSUPOST IMPORTAT",last=null;for(const row of rows.slice(headerIndex+1)){if(!row||!row.some(x=>clean(x)))continue;const A=clean(row[idx.codi]),N=clean(row[idx.nat]),U=clean(row[idx.ud]),C=clean(row[idx.resum]),D=clean(row[3]);const Q=num(row[idx.q]);let PU=num(row[idx.pu]);let IMP=num(row[idx.imp]);const nN=norm(N),nA=norm(A),nC=norm(C),nD=norm(D);if(nC.startsWith("total")||nD.startsWith("total"))continue;if(nN.includes("capitol")||nN.includes("capítol")||(/^cap/.test(nA)&&!Q&&!PU&&!IMP)){cap=[A,C||D].filter(Boolean).join(" - ")||C||D||"CAPÍTOL";last=null;continue}const isPartida=nN.includes("partida")||nN.includes("part")||(isCode(A)&&C&&(Q||PU||IMP));if(isPartida){if(!IMP&&Q&&PU)IMP=Q*PU;if(!PU&&Q&&IMP)PU=IMP/Q;const p={codi:A||String(out.length+1).padStart(2,"0"),cap,ut:isUnit(U)?U:(U||"ut"),concepte:C||D||"Partida importada",desc:"",q:Q||0,pu:PU||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel"};out.push(p);last=p;continue}if(last&&!A&&!N&&!U&&(C||D)&&!Q&&!PU&&!IMP){const extra=C||D;if(extra&&!String(last.desc||"").includes(extra))last.desc=(last.desc?last.desc+"\n":"")+extra;continue}}return out}
+try{const ab=await file.arrayBuffer();const wb=XLSX.read(ab,{type:"array",cellDates:false});let best=[],bestSheet="",bestCaps=0;for(const sheetName of wb.SheetNames){const ws=wb.Sheets[sheetName];const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});const partides=parseRows(rows);const caps=new Set(partides.map(p=>p.cap)).size;if(partides.length>best.length||(partides.length===best.length&&caps>bestCaps)){best=partides;bestSheet=sheetName;bestCaps=caps}}if(!best.length){setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Excel llegit però sense partides detectades",import:0}]}));return}const total=best.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);setD(obraId,d=>{const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[{id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},{id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}];return {...d,partides:best,certificacions:nextCerts,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:`Excel llegit · ${best.length} partides · ${bestCaps||1} capítols · ${bestSheet}`,import:total}]}})}catch(err){setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}))}if(e?.target)e.target.value=""}
 
 function deletePressupostVersion(id){
   if(!confirm("Eliminar aquesta versió de pressupost?")) return;
@@ -651,7 +555,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.53 temps desplegables i capítols</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.54 temps/excel real</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -1536,23 +1440,25 @@ function calcKmTotal(items=[]){return items.reduce((s,x)=>s+(x.tipus==="Kilometr
 
 function HonorarisTemps({obraId,data,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){
 const key=`aco_honoraris_rows_${obraId||"default"}`;
-const tipusFeina=["Pressupost","Certificació d'obra","Acta d'obra","Memòria tècnica","Pla de Seguretat","Visita obra","Reunió","Trucades / emails","Gestió administrativa","Desplaçament","Altres"];
+const tipusRegistre=["Honoraris","Kilometratge","Fotocòpies / impressions","Gasolina / desplaçament","Aparcament","Peatges","Dietes","Taxes / gestions","Altres"];
+const tipusFeina=["Pressupost","Certificació d'obra","Acta d'obra","Memòria tècnica","Project management","Direcció d’obra","Direcció d’execució","Visita obra","Reunió","Trucades / emails","Gestió administrativa","Altres"];
 const tasques=["Redacció","Revisió","Visita a obra","Reunió amb client","Reunió amb industrials","Trucades / emails","Preparació documentació","Gestió administrativa","Impressió / preparació entrega","Altres"];
-const[rows,setRows]=useState(()=>JSON.parse(localStorage.getItem(key)||"null")||[]);
+const[rows,setRows]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}});
 const[editing,setEditing]=useState(null);
-const[manual,setManual]=useState({data:new Date().toISOString().slice(0,10),tipus:"Pressupost",tasca:"Redacció",hores:"1.00",preu:"50.00",despeses:[]});
+const[manual,setManual]=useState({data:new Date().toISOString().slice(0,10),tipusRegistre:"Honoraris",tipusFeina:"Pressupost",tasca:"Redacció",hores:"1.00",preuHora:"50.00",km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:""});
 useEffect(()=>{localStorage.setItem(key,JSON.stringify(rows));localStorage.setItem("aco_honoraris_sync_tick",String(Date.now()))},[rows,key]);
-let totalH=rows.reduce((s,x)=>s+(+x.hores||0),0);
-let totalHonor=rows.reduce((s,x)=>s+(+x.hores||0)*(+x.preu||0),0);
-let totalDesp=rows.reduce((s,x)=>s+calcDespesaTotal(x.despeses||[]),0);
-let totalKm=rows.reduce((s,x)=>s+calcKmTotal(x.despeses||[]),0);
-function add(){setRows(p=>[...p,{id:"hr-"+Date.now(),obraId,data:manual.data,tipus:manual.tipus,tasca:manual.tasca,hores:Number(String(manual.hores).replace(",","."))||0,preu:Number(String(manual.preu).replace(",","."))||0,despeses:manual.despeses||[]}]);setManual({...manual,tasca:"Redacció",hores:"1.00",despeses:[]})}
+function n(v){return Number(String(v??0).replace(",","."))||0}
+function importReg(r){if(r.tipusRegistre==="Honoraris")return n(r.hores)*n(r.preuHora);if(r.tipusRegistre==="Kilometratge")return n(r.km)*n(r.preuKm);return n(r.quantitat)*n(r.preuUnitari)}
+function totalKmRow(r){return r.tipusRegistre==="Kilometratge"?n(r.km):0}
+let totalH=rows.reduce((s,r)=>s+(r.tipusRegistre==="Honoraris"?n(r.hores):0),0);
+let totalHonor=rows.reduce((s,r)=>s+(r.tipusRegistre==="Honoraris"?importReg(r):0),0);
+let totalDesp=rows.reduce((s,r)=>s+(r.tipusRegistre!=="Honoraris"?importReg(r):0),0);
+let totalKm=rows.reduce((s,r)=>s+totalKmRow(r),0);
+function add(){setRows(p=>[...p,{...manual,id:"hr-"+Date.now(),obraId}]);setManual(m=>({...m,tipusRegistre:"Honoraris",tipusFeina:"Pressupost",tasca:"Redacció",hores:"1.00",preuHora:"50.00",km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:""}))}
 function upd(id,k,v){setRows(p=>p.map(r=>r.id===id?{...r,[k]:v}:r))}
-function updDesp(id,items){setRows(p=>p.map(r=>r.id===id?{...r,despeses:items}:r))}
 function del(id){if(confirm("Segur que vols eliminar aquest registre?"))setRows(p=>p.filter(r=>r.id!==id))}
-return <div className="stack temps-validat-v8753"><Card title="Resum honoraris / despeses"><div className="honor-kpis"><Kpi t="HORES" v={`${totalH.toFixed(2)} h`}/><Kpi t="HONORARIS" v={money(totalHonor)}/><Kpi t="DESPESES" v={money(totalDesp)}/><Kpi t="KM" v={`${totalKm.toFixed(2)} km`}/><Kpi t="TOTAL" v={money(totalHonor+totalDesp)}/></div></Card><Card title="Nou registre"><div className="form-grid"><label><span>Data</span><input type="date" value={manual.data} onChange={e=>setManual({...manual,data:e.target.value})}/></label><label><span>Tipologia feina</span><select value={manual.tipus} onChange={e=>setManual({...manual,tipus:e.target.value})}>{tipusFeina.map(t=><option key={t}>{t}</option>)}</select></label><label><span>Tasca feta</span><select value={manual.tasca} onChange={e=>setManual({...manual,tasca:e.target.value})}>{tasques.map(t=><option key={t}>{t}</option>)}</select></label><label><span>Hores</span><input type="number" step="0.01" value={manual.hores} onChange={e=>setManual({...manual,hores:e.target.value})}/></label><label><span>€/h</span><input type="number" step="0.01" value={manual.preu} onChange={e=>setManual({...manual,preu:e.target.value})}/></label></div><div className="span-all"><h4>Despeses imputables al registre</h4><DespesesMultiples items={manual.despeses} setItems={(items)=>setManual({...manual,despeses:items})}/></div><div className="card-actions"><button className="primary" onClick={add}>Afegir registre</button></div></Card><Card title="Registres de temps / cost"><div className="time-table-wrap"><table className="time-table"><thead><tr><th>Data</th><th>Tipus</th><th>Tasca</th><th>Hores</th><th>€/h</th><th>Honoraris</th><th>Despeses</th><th>Total</th><th>Accions</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha registres de temps."/></td></tr>}{rows.map(h=>{let edit=editing===h.id, honor=(+h.hores||0)*(+h.preu||0), desp=calcDespesaTotal(h.despeses||[]);return <tr key={h.id}><td>{edit?<input type="date" value={h.data} onChange={e=>upd(h.id,"data",e.target.value)}/>:h.data}</td><td>{edit?<select value={h.tipus||"Altres"} onChange={e=>upd(h.id,"tipus",e.target.value)}>{tipusFeina.map(t=><option key={t}>{t}</option>)}</select>:h.tipus}</td><td>{edit?<select value={h.tasca||"Altres"} onChange={e=>upd(h.id,"tasca",e.target.value)}>{tasques.map(t=><option key={t}>{t}</option>)}</select>:h.tasca}</td><td>{edit?<input type="number" step="0.01" value={h.hores} onChange={e=>upd(h.id,"hores",e.target.value)}/>:Number(h.hores).toFixed(2)}</td><td>{edit?<input type="number" step="0.01" value={h.preu} onChange={e=>upd(h.id,"preu",e.target.value)}/>:money(h.preu)}</td><td>{money(honor)}</td><td>{money(desp)}</td><td><b>{money(honor+desp)}</b></td><td><div className="row-actions">{edit?<button className="secondary" onClick={()=>setEditing(null)}>Guardar</button>:<button className="secondary" onClick={()=>setEditing(h.id)}>Editar</button>}<button className="danger" onClick={()=>del(h.id)}>Eliminar</button></div></td></tr>})}</tbody></table></div>{editing&&<div className="edit-despeses-panel"><h4>Despeses del registre seleccionat</h4><DespesesMultiples items={(rows.find(r=>r.id===editing)||{}).despeses||[]} setItems={(items)=>updDesp(editing,items)}/></div>}</Card></div>}
-
-
+function fields(r,setter,editingId){const set=(k,v)=>editingId?upd(editingId,k,v):setter({...r,[k]:v});if(r.tipusRegistre==="Honoraris")return <><label><span>Hores</span><input type="number" step="0.25" value={r.hores||0} onChange={e=>set("hores",e.target.value)}/></label><label><span>€/h</span><input type="number" step="0.01" value={r.preuHora||0} onChange={e=>set("preuHora",e.target.value)}/></label></>;if(r.tipusRegistre==="Kilometratge")return <><label><span>Kilòmetres</span><input type="number" step="0.01" value={r.km||0} onChange={e=>set("km",e.target.value)}/></label><label><span>€/km</span><input type="number" step="0.01" value={r.preuKm||0} onChange={e=>set("preuKm",e.target.value)}/></label></>;return <><label><span>Quantitat</span><input type="number" step="0.01" value={r.quantitat||0} onChange={e=>set("quantitat",e.target.value)}/></label><label><span>Preu unitari</span><input type="number" step="0.01" value={r.preuUnitari||0} onChange={e=>set("preuUnitari",e.target.value)}/></label></>}
+return <div className="stack temps-validat-v8754"><Card title="Resum temps, honoraris i despeses"><div className="honor-kpis"><Kpi t="HORES" v={`${totalH.toFixed(2)} h`}/><Kpi t="HONORARIS" v={money(totalHonor)}/><Kpi t="DESPESES" v={money(totalDesp)}/><Kpi t="KM" v={`${totalKm.toFixed(2)} km`}/><Kpi t="TOTAL" v={money(totalHonor+totalDesp)}/></div></Card><Card title="Nou registre"><div className="time-form-v8754"><label><span>Data</span><input type="date" value={manual.data} onChange={e=>setManual({...manual,data:e.target.value})}/></label><label><span>Tipus de registre</span><select value={manual.tipusRegistre} onChange={e=>setManual({...manual,tipusRegistre:e.target.value})}>{tipusRegistre.map(t=><option key={t}>{t}</option>)}</select></label><label><span>Tipus de feina</span><select value={manual.tipusFeina} onChange={e=>setManual({...manual,tipusFeina:e.target.value})}>{tipusFeina.map(t=><option key={t}>{t}</option>)}</select></label><label><span>Tasca feta</span><select value={manual.tasca} onChange={e=>setManual({...manual,tasca:e.target.value})}>{tasques.map(t=><option key={t}>{t}</option>)}</select></label>{fields(manual,setManual,null)}<label className="span-all"><span>Observacions</span><input value={manual.observacions||""} onChange={e=>setManual({...manual,observacions:e.target.value})}/></label></div><div className="card-actions"><button className="primary" onClick={add}>Afegir registre</button></div></Card><Card title="Registres de temps / despeses"><div className="time-table-wrap"><table className="time-table time-table-v8754"><thead><tr><th>Data</th><th>Tipus registre</th><th>Tipus feina</th><th>Tasca</th><th>Dades</th><th>Observacions</th><th>Import</th><th>Accions</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="8"><Empty text="Encara no hi ha registres."/></td></tr>}{rows.map(r=>{let edit=editing===r.id;return <tr key={r.id}><td>{edit?<input type="date" value={r.data||""} onChange={e=>upd(r.id,"data",e.target.value)}/>:r.data}</td><td>{edit?<select value={r.tipusRegistre||"Honoraris"} onChange={e=>upd(r.id,"tipusRegistre",e.target.value)}>{tipusRegistre.map(t=><option key={t}>{t}</option>)}</select>:r.tipusRegistre}</td><td>{edit?<select value={r.tipusFeina||"Altres"} onChange={e=>upd(r.id,"tipusFeina",e.target.value)}>{tipusFeina.map(t=><option key={t}>{t}</option>)}</select>:r.tipusFeina}</td><td>{edit?<select value={r.tasca||"Altres"} onChange={e=>upd(r.id,"tasca",e.target.value)}>{tasques.map(t=><option key={t}>{t}</option>)}</select>:r.tasca}</td><td>{edit?<div className="row-edit-fields-v8754">{fields(r,null,r.id)}</div>:r.tipusRegistre==="Honoraris"?`${n(r.hores).toFixed(2)} h × ${money(n(r.preuHora))}`:r.tipusRegistre==="Kilometratge"?`${n(r.km).toFixed(2)} km × ${money(n(r.preuKm))}`:`${n(r.quantitat).toFixed(2)} × ${money(n(r.preuUnitari))}`}</td><td>{edit?<input value={r.observacions||""} onChange={e=>upd(r.id,"observacions",e.target.value)}/>:r.observacions}</td><td><b>{money(importReg(r))}</b></td><td><div className="row-actions">{edit?<button className="secondary" onClick={()=>setEditing(null)}>Guardar</button>:<button className="secondary" onClick={()=>setEditing(r.id)}>Editar</button>}<button className="danger" onClick={()=>del(r.id)}>Eliminar</button></div></td></tr>})}</tbody></table></div></Card></div>}
 
 function AvisosPanel({openObra}){
 const[items,setItems]=useState(()=>JSON.parse(localStorage.getItem("aco_avisos_generals_v36")||"null")||[
