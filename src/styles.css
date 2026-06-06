@@ -2847,12 +2847,11 @@ button,input,select,textarea{font-size:13.5px!important}
 .safe-form-exp-v8751 .form-grid{padding:4px}.safe-actes-layout-v8751{display:grid;grid-template-columns:280px 1fr;gap:14px}.safe-actes-list-v8751{display:flex;flex-direction:column;gap:8px}.safe-actes-list-v8751 button{text-align:left;border:1px solid #e5e7eb;background:#fff;border-radius:12px;padding:10px}.safe-actes-list-v8751 button.active{border-color:#2563eb;background:#eff6ff}.safe-actes-list-v8751 b,.safe-actes-list-v8751 span{display:block}.safe-acta-editor-v8751 textarea{min-height:150px}.agent-chip-v8751{display:flex;gap:8px;flex-wrap:wrap}.agent-chip-v8751 span{background:#eef2ff;color:#1d4ed8;border-radius:999px;padding:6px 10px;font-weight:800}.acta-a4-v8751{margin-top:14px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.08)}.empty-v8751{padding:14px;color:#64748b}.safe-temps-v8751{padding:14px}.time-total-v8751{margin-bottom:12px}.table-scroll-v8751{overflow:auto}.table-scroll-v8751 table{width:100%;min-width:900px;border-collapse:collapse}.table-scroll-v8751 th,.table-scroll-v8751 td{border:1px solid #e5e7eb;padding:8px}.table-scroll-v8751 input{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:7px}
 @media(max-width:900px){.safe-actes-layout-v8751{grid-template-columns:1fr}}
 
-/* V87.52 - recuperació gestió temps validada i importació A-G per capítols */
-.time-table-wrap{overflow:auto}
-.time-table{min-width:1050px;width:100%;border-collapse:collapse}
-.time-table th,.time-table td{border:1px solid #dbe3ef;padding:8px;vertical-align:top}
-.time-table th{background:#eef4fb;text-align:left;font-size:12px;text-transform:uppercase;color:#46566f}
-.time-table input,.time-table select{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:7px}
-.edit-despeses-panel{margin-top:12px;border:1px solid #cbd5e1;border-radius:14px;background:#f8fafc;padding:12px}
-.despeses-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1.5fr auto;gap:8px;align-items:end}
-@media(max-width:900px){.despeses-grid{grid-template-columns:1fr}}
+/* V87.53 - gestió temps amb desplegables i Excel amb capítols */
+.temps-validat-v8753 .time-table-wrap{overflow:auto}
+.temps-validat-v8753 .time-table{min-width:1120px;width:100%;border-collapse:collapse}
+.temps-validat-v8753 .time-table th,.temps-validat-v8753 .time-table td{border:1px solid #dbe3ef;padding:8px;vertical-align:top}
+.temps-validat-v8753 .time-table th{background:#eef4fb;text-align:left;font-size:12px;text-transform:uppercase;color:#46566f}
+.temps-validat-v8753 .time-table input,.temps-validat-v8753 .time-table select{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:7px;background:#fff}
+.temps-validat-v8753 .edit-despeses-panel{margin-top:12px;border:1px solid #cbd5e1;border-radius:14px;background:#f8fafc;padding:12px}
+.temps-validat-v8753 .despeses-multi select{background:#fff}

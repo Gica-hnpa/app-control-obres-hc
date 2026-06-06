@@ -402,329 +402,112 @@ function fallbackExtract8749(wb){
   return best;
 }
 
-
-function extractAGCapitols8752(wb){
-  function clean(v){return String(v??"").trim()}
-  function norm(v){return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
-  function num(v){
-    if(typeof v==="number")return v;
-    let s=String(v??"").trim();
-    if(!s)return 0;
-    s=s.replace(/€/g,"").replace(/\s/g,"");
-    if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");
-    let n=parseFloat(s.replace(/[^0-9.-]/g,""));
-    return Number.isFinite(n)?n:0;
-  }
-  function isLikelyHeader(r){
-    const t=r.map(norm).join(" ");
-    return (t.includes("partida")||t.includes("codi")||t.includes("codigo")) &&
-           (t.includes("ut")||t.includes("unitat")||t.includes("unidad")) &&
-           (t.includes("concepte")||t.includes("concepto")||t.includes("descrip")) &&
-           (t.includes("quant")||t.includes("amid")||t.includes("cantidad")) &&
-           (t.includes("preu")||t.includes("precio")||t.includes("pu")) &&
-           (t.includes("total")||t.includes("import"));
-  }
-  function isPartidaCode(s){
-    s=clean(s);
-    return /^([A-Za-z]{0,4}\d+|\d{1,2}([.,]\d{1,3})+|\d{1,3})/.test(s);
-  }
-  function isUnit(s){
-    return /^(m2|m²|m3|m³|ml|m|ut|u|kg|h|pa|ud)$/i.test(clean(s));
-  }
-  function makeCap(a,b,c,d){
-    const parts=[a,b,c,d].map(clean).filter(Boolean);
-    let txt=parts.join(" ");
-    txt=txt.replace(/\s+/g," ").trim();
-    return txt || "PRESSUPOST IMPORTAT";
-  }
-
-  let best={rows:[],sheet:"",caps:0};
-
-  for(const sn of wb.SheetNames){
-    const ws=wb.Sheets[sn];
-    const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-    if(!data?.length)continue;
-
-    let headerIndex=data.findIndex(isLikelyHeader);
-    // si no troba capçalera però hi ha estructura A-G clara, comença des del principi
-    if(headerIndex<0){
-      const possible=data.findIndex(r=>{
-        const E=num(r[4]), F=num(r[5]), G=num(r[6]);
-        return clean(r[0]) && clean(r[2]) && (E || F || G);
-      });
-      headerIndex=possible>0?possible-1:0;
-    }
-
-    let out=[];
-    let capActual="PRESSUPOST IMPORTAT";
-    let lastPartida=null;
-
-    for(const r of data.slice(headerIndex+1)){
-      const A=clean(r[0]), B=clean(r[1]), C=clean(r[2]), D=clean(r[3]);
-      const E=num(r[4]), F=num(r[5]), G=num(r[6]);
-      const rowText=norm([A,B,C,D].join(" "));
-      const anyText=clean([A,B,C,D].join(" "));
-
-      if(!A&&!B&&!C&&!D&&!E&&!F&&!G)continue;
-
-      // Capítols explícits
-      const explicitCap = rowText.includes("capitol") || rowText.includes("capítol") || /^cap[\.\s-]/i.test(A);
-      // Capítol implícit: codi a A + títol a C/B + sense quant/preu/import + B no és unitat
-      const implicitCap = !E && !F && !G && (A || B || C) && (
-        explicitCap ||
-        (/^\d{1,2}([.,]\d{1,2})?$/.test(A) && !isUnit(B) && (C || B)) ||
-        (/^\d{1,2}\s*[-–]/.test(anyText))
-      );
-
-      if(implicitCap){
-        capActual=makeCap(A,B,C,D);
-        lastPartida=null;
-        continue;
-      }
-
-      // Descripció llarga de la partida anterior
-      if(lastPartida && !E && !F && !G && !isPartidaCode(A) && (C || D || B)){
-        const extra=[B,C,D].map(clean).filter(Boolean).join(" ");
-        if(extra && !String(lastPartida.desc||"").includes(extra)){
-          lastPartida.desc=(lastPartida.desc?lastPartida.desc+"\n":"")+extra;
-        }
-        continue;
-      }
-
-      // Partida A-G
-      if((isPartidaCode(A) || A) && (C || D) && (E || F || G)){
-        let q=E||0, pu=F||0, total=G||0;
-        if(!pu && total && q)pu=total/q;
-        if(!total && q && pu)total=q*pu;
-
-        const partida={
-          codi:A||String(out.length+1).padStart(2,"0"),
-          ut:B||"ut",
-          concepte:C||D||"Partida importada",
-          desc:D && C ? D : "",
-          cap:capActual||"PRESSUPOST IMPORTAT",
-          q:q||0,
-          pu:pu||0,
-          certAnterior:0,
-          certActual:0,
-          certsByNum:{},
-          tipus:"Import Excel A-G"
-        };
-        out.push(partida);
-        lastPartida=partida;
-      }
-    }
-
-    const caps=new Set(out.map(x=>x.cap)).size;
-    if(out.length>best.rows.length || (out.length===best.rows.length && caps>best.caps)){
-      best={rows:out,sheet:sn,caps};
-    }
-  }
-  return best;
-}
-
 async function importExcel(e){
 let file=e?.target?.files?.[0];
 if(!file)return;
-
 function clean(v){return String(v??"").trim()}
-function fallbackExtract8748(wb){function c(v){return String(v??"").trim()}function n(v){if(typeof v==="number")return v;let s=String(v??"").replace(/€/g,"").replace(/\s/g,"");if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");let x=parseFloat(s.replace(/[^0-9.-]/g,""));return Number.isFinite(x)?x:0}let best=[];for(const sn of wb.SheetNames){let rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:""});let out=[],cap="PRESSUPOST IMPORTAT";for(const r of rows){let a=c(r[0]),b=c(r[1]),cc=c(r[2]);if(!a&&!b&&!cc)continue;if(/cap[ií]tol/i.test(a+" "+cc)){cap=(a+" "+cc).trim();continue}let q=n(r[4]),pu=n(r[5]),tot=n(r[6]);if(!q||(!pu&&!tot)||!cc)continue;if(!pu&&tot)pu=tot/q;out.push({codi:a||String(out.length+1),ut:b||"ut",concepte:cc,cap,q,pu,certAnterior:0,certActual:0,tipus:"Importat"})}if(out.length>best.length)best=out}return best}
-function norm(v){return clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function norm(v){return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
 function num(v){
   if(typeof v==="number")return v;
   let s=String(v??"").trim();
   if(!s)return 0;
-  s=s.replace(/\s/g,"").replace(/€/g,"");
-  if(s.includes(",")) s=s.replace(/\./g,"").replace(",",".");
-  let n=parseFloat(s.replace(/[^\d.-]/g,""));
+  s=s.replace(/€/g,"").replace(/\s/g,"");
+  if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");
+  let n=parseFloat(s.replace(/[^0-9.-]/g,""));
   return Number.isFinite(n)?n:0;
 }
+function rowText(row){return (row||[]).map(clean).filter(Boolean).join(" ")}
 function isHeader(row){
-  const txt=row.map(norm).join(" ");
-  const hasClassic=(txt.includes("codigo")||txt.includes("código")||txt.includes("codi")||txt.includes("partida")) && (txt.includes("resumen")||txt.includes("resum")||txt.includes("concepte")||txt.includes("descrip")) && (txt.includes("canpres")||txt.includes("quant")||txt.includes("amid")||txt.includes("cantidad"));
-  const hasBrava=txt.includes("partida") && (txt.includes("ut")||txt.includes("unitat")) && txt.includes("concepte") && txt.includes("quantitat") && (txt.includes("preu")||txt.includes("precio")) && txt.includes("total");
-  return hasClassic || hasBrava || txt.includes("nat") || txt.includes("imppres");
+  const t=(row||[]).map(norm).join(" ");
+  const hasCode=t.includes("codigo")||t.includes("codi")||t.includes("partida");
+  const hasUnit=t.includes(" ud")||t.includes(" ut")||t.includes("unitat")||t.includes("unidad")||t.split(" ").includes("ud")||t.split(" ").includes("ut");
+  const hasConcept=t.includes("resumen")||t.includes("resum")||t.includes("concepte")||t.includes("concepto")||t.includes("descrip");
+  const hasQty=t.includes("canpres")||t.includes("quant")||t.includes("amid")||t.includes("cantidad");
+  const hasPrice=t.includes(" pres")||t.includes("preu")||t.includes("precio")||t.includes("prpres")||t.includes("pu");
+  const hasTotal=t.includes("imppres")||t.includes("total")||t.includes("import")||t.includes("importe");
+  return (hasCode&&hasConcept&&(hasQty||hasPrice||hasTotal)) || t.includes("nat imppres");
 }
-function exactOrIncludes(header, exacts, includes, fallback){
-  let i=header.findIndex(h=>exacts.includes(h));
+function findIdx(header, exacts, includes, fallback){
+  let h=header.map(norm);
+  let i=h.findIndex(x=>exacts.includes(x));
   if(i>=0)return i;
-  i=header.findIndex(h=>includes.some(k=>h.includes(k)));
+  i=h.findIndex(x=>includes.some(k=>x.includes(k)));
   return i>=0?i:fallback;
 }
-function rowHasCode(v){
-  const s=clean(v);
-  return /^([A-Z]*\d+|\d{1,2}([.,]\d{1,3})+|\d{1,2}\.\d{1,3})/.test(s);
+function isCode(s){s=clean(s);return /^([A-Za-z]{0,6}\d+[A-Za-z0-9.\-]*|\d{1,2}([.,]\d{1,3})+)$/.test(s)}
+function isUnit(s){return /^(m2|m²|m3|m³|ml|m|ut|u|ud|kg|h|pa)$/i.test(clean(s))}
+function capName(a,nat,c,d){let out=[a,nat,c,d].map(clean).filter(Boolean).join(" ").replace(/\s+/g," ").trim();return out||"PRESSUPOST IMPORTAT"}
+function parseSheet(sheetName,ws){
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+  if(!rows?.length)return [];
+  let headerIndex=rows.findIndex(isHeader);
+  if(headerIndex<0){
+    headerIndex=rows.findIndex(r=>clean(r[0])&&clean(r[2])&&(num(r[4])||num(r[5])||num(r[6])));
+    if(headerIndex>0)headerIndex--;
+    if(headerIndex<0)return [];
+  }
+  const header=rows[headerIndex]||[];
+  const idx={
+    codi:findIdx(header,["codigo","código","codi","partida"],["codigo","codi","partida"],0),
+    nat:findIdx(header,["nat"],["naturalesa","naturaleza","tipus"],1),
+    ud:findIdx(header,["ud","ut"],["unitat","unidad"],1),
+    resum:findIdx(header,["resumen","resum","concepte / descripcio","concepte / descripció","concepte"],["resumen","resum","concepte","concepto","descrip"],2),
+    q:findIdx(header,["canpres","quantitat","quantitat pressupost"],["quant","cantidad","amid","canpres"],4),
+    pu:findIdx(header,["pres","preu/ut","preu ut","precio unitario"],["preu","precio","unitari","unitario","prpres","pu"],5),
+    imp:findIdx(header,["imppres","total"],["import","importe","total"],6)
+  };
+  let out=[];let cap="PRESSUPOST IMPORTAT";let last=null;
+  for(const row of rows.slice(headerIndex+1)){
+    if(!row||!row.some(x=>clean(x)))continue;
+    const A=clean(row[idx.codi]);
+    const N=idx.nat>=0?clean(row[idx.nat]):"";
+    const U=clean(row[idx.ud]);
+    const C=clean(row[idx.resum]);
+    const D=clean(row[3]);
+    const Q=num(row[idx.q]); let PU=num(row[idx.pu]); let IMP=num(row[idx.imp]);
+    const all=rowText(row);
+    const nAll=norm(all); const nNat=norm(N);
+    const isCap=nNat.includes("cap") || /^cap[ií]tol/i.test(A) || (nAll.includes("capitol")&& !C.toLowerCase().includes("total"));
+    if(isCap){cap=capName(A,N,C,D);last=null;continue;}
+    if(!IMP && Q && PU)IMP=Q*PU;
+    if(!PU && Q && IMP)PU=IMP/Q;
+    const partClassic=nNat.includes("part");
+    const partAG=isCode(A)&&C&&(Q||PU||IMP)&&!/^total/i.test(C);
+    if(partClassic || partAG){
+      const desc=(D && D!==C)?D:"";
+      const p={codi:A||String(out.length+1).padStart(2,"0"),cap,concepte:C||"Partida importada",desc,ut:(isUnit(U)?U:(U||"ut")),q:Q||0,pu:PU||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel"};
+      out.push(p);last=p;continue;
+    }
+    if(last && C && !isCode(A) && !Q && !PU && !IMP){
+      if(!String(last.desc||"").includes(C))last.desc=(last.desc?last.desc+"\n":"")+C;
+      continue;
+    }
+  }
+  return out;
 }
-
 try{
   const ab=await file.arrayBuffer();
   const wb=XLSX.read(ab,{type:"array",cellDates:false});
-  let imported=[];
-  let detectedSheet="";
-  let capActual="PRESSUPOST IMPORTAT";
-
-  const ag8752=extractAGCapitols8752(wb);
-  if(ag8752.rows && ag8752.rows.length){
-    imported=ag8752.rows;
-    detectedSheet=`${ag8752.sheet||"Excel"} · estructura A-G amb ${ag8752.caps||1} capítols`;
-  }
-
-  if(!imported.length){
+  let best=[],bestSheet="",bestCaps=0;
   for(const sheetName of wb.SheetNames){
-    const ws=wb.Sheets[sheetName];
-    const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-    if(!data?.length) continue;
-
-    const headerIndex=data.findIndex(isHeader);
-    if(headerIndex<0) continue;
-
-    const header=(data[headerIndex]||[]).map(norm);
-    const isBravaHeader=header.includes("partida") && (header.includes("ut")||header.includes("unitat")) && header.some(h=>h.includes("concepte")) && header.some(h=>h.includes("quantitat")) && header.some(h=>h.includes("preu")) && header.some(h=>h.includes("total"));
-
-    const idx={
-      codi: exactOrIncludes(header,["codigo","código","codi","partida"],["partida"],0),
-      nat: exactOrIncludes(header,["nat"],["naturaleza","tipus"],-1),
-      ud: exactOrIncludes(header,["ud","ut"],["unitat","unidad"],1),
-      resum: exactOrIncludes(header,["resumen","resum","concepte / descripcio","concepte / descripció"],["concepto","concepte","descrip"],2),
-      q: exactOrIncludes(header,["canpres","quantitat"],["quant","cantidad","amid"],4),
-      pu: exactOrIncludes(header,["pres","preu/ut"],["preu","precio","prpres","unitari","unitario"],5),
-      imp: exactOrIncludes(header,["imppres","total"],["import","importe","total"],6)
-    };
-
-    let partides=[];
-    for(const row of data.slice(headerIndex+1)){
-      if(!row || !row.some(x=>clean(x)!=="")) continue;
-
-      const codi=clean(row[idx.codi]);
-      const natTxt=idx.nat>=0?norm(row[idx.nat]):"";
-      const ud=clean(row[idx.ud]);
-      const resum=clean(row[idx.resum]);
-      const q=num(row[idx.q]);
-      let pu=num(row[idx.pu]);
-      let imp=num(row[idx.imp]);
-
-      if(!imp && q && pu) imp=q*pu;
-      if(!pu && q && imp) pu=imp/q;
-
-      // FORMAT BRAVA: fila "Capítol XX" a columna Partida i títol a Concepte
-      if(isBravaHeader && /^cap[ií]tol/i.test(codi)){
-        capActual = `${codi}${resum ? " " + resum : ""}`.trim();
-        continue;
-      }
-
-      // FORMAT CLÀSSIC: Nat=Capítol
-      if(!isBravaHeader && natTxt.includes("cap")){
-        capActual = codi ? `${codi} ${resum}` : (resum || capActual);
-        continue;
-      }
-
-      // FORMAT BRAVA: partida real si hi ha codi + concepte + quantitat/preu/import
-      if(isBravaHeader && rowHasCode(codi) && resum && (q || pu || imp)){
-        partides.push({
-          codi: codi || String(partides.length+1).padStart(2,"0"),
-          cap: capActual || "PRESSUPOST IMPORTAT",
-          concepte: resum || "Partida importada",
-          desc: "",
-          ut: ud || "ut",
-          q: q || 0,
-          pu: pu || 0,
-          certAnterior: 0,
-          certActual: 0,
-          certsByNum: {},
-          tipus: "Import Excel BRAVA"
-        });
-        continue;
-      }
-
-      // FORMAT CLÀSSIC: Nat=Partida
-      if(!isBravaHeader && natTxt.includes("part")){
-        partides.push({
-          codi: codi || String(partides.length+1).padStart(2,"0"),
-          cap: capActual || "PRESSUPOST IMPORTAT",
-          concepte: resum || "Partida importada",
-          desc: "",
-          ut: ud || "ut",
-          q: q || 0,
-          pu: pu || 0,
-          certAnterior: 0,
-          certActual: 0,
-          certsByNum: {},
-          tipus: "Import Excel"
-        });
-        continue;
-      }
-
-      // Descripció llarga sota la partida: normalment només columna Concepte/Descripció
-      if(resum && partides.length && !rowHasCode(codi) && !q && !pu && !imp){
-        const last=partides[partides.length-1];
-        const currentDesc=String(last.desc||"");
-        if(!currentDesc.includes(resum)){
-          last.desc=(currentDesc ? currentDesc + "\n" : "") + resum;
-        }
-      }
-    }
-
-    if(partides.length){
-      imported=partides;
-      detectedSheet=sheetName;
-      break;
-    }
+    const partides=parseSheet(sheetName,wb.Sheets[sheetName]);
+    const caps=new Set(partides.map(p=>p.cap)).size;
+    if(partides.length>best.length || (partides.length===best.length&&caps>bestCaps)){best=partides;bestSheet=sheetName;bestCaps=caps;}
   }
-  }
-
-  if(!imported.length){
-    const fb2=fallbackExtract8749(wb);
-    if(fb2.length){imported=fb2;detectedSheet="estructura A-G validada";}
-  }
-
-  if(!imported.length){
-    const fb=fallbackExtract8748(wb);
-    if(fb.length){imported=fb;detectedSheet="estructura A-G";}
-  }
-
-  if(!imported.length){
-    setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{
-      id:"p"+Date.now(),
-      versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
-      data:"Avui",
-      nom:file.name,
-      estat:"Excel llegit però sense partides detectades",
-      import:0
-    }]}));
+  if(!best.length){
+    setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Excel llegit però sense partides detectades",import:0}]}));
     return;
   }
-
-  const total=imported.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
-
+  const total=best.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
   setD(obraId,d=>{
-    const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[
-      {id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},
-      {id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}
-    ];
-    return {...d,
-      partides: imported,
-      certificacions: nextCerts,
-      pressupostos:[...d.pressupostos,{
-        id:"p"+Date.now(),
-        versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
-        data:"Avui",
-        nom:file.name,
-        estat:`Excel llegit · ${imported.length} partides · ${detectedSheet}`,
-        import:total
-      }]
-    };
+    const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[{id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},{id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}];
+    return {...d,partides:best,certificacions:nextCerts,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:`Excel llegit · ${best.length} partides · ${bestCaps||1} capítols · ${bestSheet}`,import:total}]};
   });
 }catch(err){
-  setD(obraId,d=>({...d,pressupostos:[...d.pressupostos,{
-    id:"p"+Date.now(),
-    versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
-    data:"Avui",
-    nom:file.name,
-    estat:"Error lectura Excel: "+String(err?.message||err),
-    import:0
-  }]}));
+  setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
 }
 }
+
 
 
 
@@ -868,7 +651,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.52 temps validat i Excel capítols</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.53 temps desplegables i capítols</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -1753,19 +1536,22 @@ function calcKmTotal(items=[]){return items.reduce((s,x)=>s+(x.tipus==="Kilometr
 
 function HonorarisTemps({obraId,data,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){
 const key=`aco_honoraris_rows_${obraId||"default"}`;
+const tipusFeina=["Pressupost","Certificació d'obra","Acta d'obra","Memòria tècnica","Pla de Seguretat","Visita obra","Reunió","Trucades / emails","Gestió administrativa","Desplaçament","Altres"];
+const tasques=["Redacció","Revisió","Visita a obra","Reunió amb client","Reunió amb industrials","Trucades / emails","Preparació documentació","Gestió administrativa","Impressió / preparació entrega","Altres"];
 const[rows,setRows]=useState(()=>JSON.parse(localStorage.getItem(key)||"null")||[]);
 const[editing,setEditing]=useState(null);
-const[manual,setManual]=useState({data:new Date().toISOString().slice(0,10),tipus:"Pressupost",tasca:"",hores:"1.00",preu:"50.00",despeses:[]});
+const[manual,setManual]=useState({data:new Date().toISOString().slice(0,10),tipus:"Pressupost",tasca:"Redacció",hores:"1.00",preu:"50.00",despeses:[]});
 useEffect(()=>{localStorage.setItem(key,JSON.stringify(rows));localStorage.setItem("aco_honoraris_sync_tick",String(Date.now()))},[rows,key]);
 let totalH=rows.reduce((s,x)=>s+(+x.hores||0),0);
 let totalHonor=rows.reduce((s,x)=>s+(+x.hores||0)*(+x.preu||0),0);
 let totalDesp=rows.reduce((s,x)=>s+calcDespesaTotal(x.despeses||[]),0);
 let totalKm=rows.reduce((s,x)=>s+calcKmTotal(x.despeses||[]),0);
-function add(){setRows(p=>[...p,{id:"hr-"+Date.now(),obraId,data:manual.data,tipus:manual.tipus,tasca:manual.tasca,hores:Number(String(manual.hores).replace(",","."))||0,preu:Number(String(manual.preu).replace(",","."))||0,despeses:manual.despeses||[]}]);setManual({...manual,tasca:"",hores:"1.00",despeses:[]})}
+function add(){setRows(p=>[...p,{id:"hr-"+Date.now(),obraId,data:manual.data,tipus:manual.tipus,tasca:manual.tasca,hores:Number(String(manual.hores).replace(",","."))||0,preu:Number(String(manual.preu).replace(",","."))||0,despeses:manual.despeses||[]}]);setManual({...manual,tasca:"Redacció",hores:"1.00",despeses:[]})}
 function upd(id,k,v){setRows(p=>p.map(r=>r.id===id?{...r,[k]:v}:r))}
 function updDesp(id,items){setRows(p=>p.map(r=>r.id===id?{...r,despeses:items}:r))}
 function del(id){if(confirm("Segur que vols eliminar aquest registre?"))setRows(p=>p.filter(r=>r.id!==id))}
-return <div className="stack"><Card title="Resum honoraris / despeses"><div className="honor-kpis"><Kpi t="HORES" v={`${totalH.toFixed(2)} h`}/><Kpi t="HONORARIS" v={money(totalHonor)}/><Kpi t="DESPESES" v={money(totalDesp)}/><Kpi t="KM" v={`${totalKm.toFixed(2)} km`}/><Kpi t="TOTAL" v={money(totalHonor+totalDesp)}/></div></Card><Card title="Nou registre"><div className="form-grid"><label><span>Data</span><input type="date" value={manual.data} onChange={e=>setManual({...manual,data:e.target.value})}/></label><label><span>Tipologia feina</span><select value={manual.tipus} onChange={e=>setManual({...manual,tipus:e.target.value})}><option>Pressupost</option><option>Certificació d'obra</option><option>Acta d'obra</option><option>Memòria tècnica</option><option>Pla de Seguretat</option><option>Visita obra</option><option>Gestió administrativa</option><option>Altres</option></select></label><label><span>Tasca feta</span><input value={manual.tasca} onChange={e=>setManual({...manual,tasca:e.target.value})}/></label><label><span>Hores</span><input type="number" step="0.01" value={manual.hores} onChange={e=>setManual({...manual,hores:e.target.value})}/></label><label><span>€/h</span><input type="number" step="0.01" value={manual.preu} onChange={e=>setManual({...manual,preu:e.target.value})}/></label></div><div className="span-all"><h4>Despeses imputables al registre</h4><DespesesMultiples items={manual.despeses} setItems={(items)=>setManual({...manual,despeses:items})}/></div><div className="card-actions"><button className="primary" onClick={add}>Afegir registre</button></div></Card><Card title="Registres de temps / cost"><div className="time-table-wrap"><table className="time-table"><thead><tr><th>Data</th><th>Tipus</th><th>Tasca</th><th>Hores</th><th>€/h</th><th>Honoraris</th><th>Despeses</th><th>Total</th><th>Accions</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha registres de temps."/></td></tr>}{rows.map(h=>{let edit=editing===h.id, honor=(+h.hores||0)*(+h.preu||0), desp=calcDespesaTotal(h.despeses||[]);return <tr key={h.id}><td>{edit?<input type="date" value={h.data} onChange={e=>upd(h.id,"data",e.target.value)}/>:h.data}</td><td>{edit?<input value={h.tipus} onChange={e=>upd(h.id,"tipus",e.target.value)}/>:h.tipus}</td><td>{edit?<input value={h.tasca} onChange={e=>upd(h.id,"tasca",e.target.value)}/>:h.tasca}</td><td>{edit?<input type="number" step="0.01" value={h.hores} onChange={e=>upd(h.id,"hores",e.target.value)}/>:Number(h.hores).toFixed(2)}</td><td>{edit?<input type="number" step="0.01" value={h.preu} onChange={e=>upd(h.id,"preu",e.target.value)}/>:money(h.preu)}</td><td>{money(honor)}</td><td>{money(desp)}</td><td><b>{money(honor+desp)}</b></td><td><div className="row-actions">{edit?<button className="secondary" onClick={()=>setEditing(null)}>Guardar</button>:<button className="secondary" onClick={()=>setEditing(h.id)}>Editar</button>}<button className="danger" onClick={()=>del(h.id)}>Eliminar</button></div></td></tr>})}</tbody></table></div>{editing&&<div className="edit-despeses-panel"><h4>Despeses del registre seleccionat</h4><DespesesMultiples items={(rows.find(r=>r.id===editing)||{}).despeses||[]} setItems={(items)=>updDesp(editing,items)}/></div>}</Card></div>}
+return <div className="stack temps-validat-v8753"><Card title="Resum honoraris / despeses"><div className="honor-kpis"><Kpi t="HORES" v={`${totalH.toFixed(2)} h`}/><Kpi t="HONORARIS" v={money(totalHonor)}/><Kpi t="DESPESES" v={money(totalDesp)}/><Kpi t="KM" v={`${totalKm.toFixed(2)} km`}/><Kpi t="TOTAL" v={money(totalHonor+totalDesp)}/></div></Card><Card title="Nou registre"><div className="form-grid"><label><span>Data</span><input type="date" value={manual.data} onChange={e=>setManual({...manual,data:e.target.value})}/></label><label><span>Tipologia feina</span><select value={manual.tipus} onChange={e=>setManual({...manual,tipus:e.target.value})}>{tipusFeina.map(t=><option key={t}>{t}</option>)}</select></label><label><span>Tasca feta</span><select value={manual.tasca} onChange={e=>setManual({...manual,tasca:e.target.value})}>{tasques.map(t=><option key={t}>{t}</option>)}</select></label><label><span>Hores</span><input type="number" step="0.01" value={manual.hores} onChange={e=>setManual({...manual,hores:e.target.value})}/></label><label><span>€/h</span><input type="number" step="0.01" value={manual.preu} onChange={e=>setManual({...manual,preu:e.target.value})}/></label></div><div className="span-all"><h4>Despeses imputables al registre</h4><DespesesMultiples items={manual.despeses} setItems={(items)=>setManual({...manual,despeses:items})}/></div><div className="card-actions"><button className="primary" onClick={add}>Afegir registre</button></div></Card><Card title="Registres de temps / cost"><div className="time-table-wrap"><table className="time-table"><thead><tr><th>Data</th><th>Tipus</th><th>Tasca</th><th>Hores</th><th>€/h</th><th>Honoraris</th><th>Despeses</th><th>Total</th><th>Accions</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha registres de temps."/></td></tr>}{rows.map(h=>{let edit=editing===h.id, honor=(+h.hores||0)*(+h.preu||0), desp=calcDespesaTotal(h.despeses||[]);return <tr key={h.id}><td>{edit?<input type="date" value={h.data} onChange={e=>upd(h.id,"data",e.target.value)}/>:h.data}</td><td>{edit?<select value={h.tipus||"Altres"} onChange={e=>upd(h.id,"tipus",e.target.value)}>{tipusFeina.map(t=><option key={t}>{t}</option>)}</select>:h.tipus}</td><td>{edit?<select value={h.tasca||"Altres"} onChange={e=>upd(h.id,"tasca",e.target.value)}>{tasques.map(t=><option key={t}>{t}</option>)}</select>:h.tasca}</td><td>{edit?<input type="number" step="0.01" value={h.hores} onChange={e=>upd(h.id,"hores",e.target.value)}/>:Number(h.hores).toFixed(2)}</td><td>{edit?<input type="number" step="0.01" value={h.preu} onChange={e=>upd(h.id,"preu",e.target.value)}/>:money(h.preu)}</td><td>{money(honor)}</td><td>{money(desp)}</td><td><b>{money(honor+desp)}</b></td><td><div className="row-actions">{edit?<button className="secondary" onClick={()=>setEditing(null)}>Guardar</button>:<button className="secondary" onClick={()=>setEditing(h.id)}>Editar</button>}<button className="danger" onClick={()=>del(h.id)}>Eliminar</button></div></td></tr>})}</tbody></table></div>{editing&&<div className="edit-despeses-panel"><h4>Despeses del registre seleccionat</h4><DespesesMultiples items={(rows.find(r=>r.id===editing)||{}).despeses||[]} setItems={(items)=>updDesp(editing,items)}/></div>}</Card></div>}
+
 
 
 function AvisosPanel({openObra}){
