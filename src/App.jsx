@@ -295,7 +295,6 @@ function assignMissingCodes8739(obres,clients){
 function expedientCode8739(o){return o?.codiExpedient||o?.codi||o?.expedientBase||"Sense codi"}
 
 
-export default 
 function SafeFormExpedient8751({clients,onSubmit}){
   const [mode,setMode]=useState('__new__');
   const [tipus,setTipus]=useState('Projecte tècnic');
@@ -327,7 +326,7 @@ function SafeTemps8751({data,setData}){
   return <Card title="Gestió del temps" action={<button type="button" className="primary" onClick={add}>+ Afegir registre</button>}><div className="safe-temps-v8751"><div className="time-total-v8751">Total expedient: <b>{total.toFixed(2)} h</b></div><div className="table-scroll-v8751"><table><thead><tr><th>Data</th><th>Feina</th><th>Hores</th><th>Facturat</th><th>Entregat</th><th>Cobrat</th><th>Observacions</th><th></th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="8">Encara no hi ha registres.</td></tr>}{rows.map(r=><tr key={r.id}><td><input type="date" value={r.data||''} onChange={e=>upd(r.id,'data',e.target.value)}/></td><td><input value={r.feina||''} onChange={e=>upd(r.id,'feina',e.target.value)}/></td><td><input type="number" step="0.25" value={r.hores||0} onChange={e=>upd(r.id,'hores',e.target.value)}/></td><td><input type="checkbox" checked={!!r.facturat} onChange={e=>upd(r.id,'facturat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.entregat} onChange={e=>upd(r.id,'entregat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.cobrat} onChange={e=>upd(r.id,'cobrat',e.target.checked)}/></td><td><input value={r.observacions||''} onChange={e=>upd(r.id,'observacions',e.target.value)}/></td><td><button type="button" className="danger" onClick={()=>del(r.id)}>Eliminar</button></td></tr>)}</tbody></table></div></div></Card>
 }
 
-function App(){
+export default function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
 const appCfg=JSON.parse(localStorage.getItem("aco_config")||"{}");
 const lang=appCfg.idioma||"Català";
