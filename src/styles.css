@@ -2871,3 +2871,42 @@ button,input,select,textarea{font-size:13.5px!important}
 }
 
 /* V87.57 - import Excel definitiu: capítols Nat=Capítol o codi curt + Resumen */
+
+/* V87.59 - edició segura pressupost, actes, fotos i documents */
+.edit-toolbar-v8759{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border-bottom:1px solid #e5e7eb}
+.press-table-wrap-v8759{padding:12px;overflow:auto}
+.cap-block-v8759{border:1px solid #dbe3ef;border-radius:12px;margin-bottom:12px;overflow:hidden;background:#fff}
+.cap-title-v8759{display:flex;justify-content:space-between;align-items:center;background:#eef4fb;padding:10px 12px;font-weight:900}
+.cap-title-v8759 input{font-weight:900}
+.press-table-v8759{width:100%;min-width:980px;border-collapse:collapse}
+.press-table-v8759 th,.press-table-v8759 td{border:1px solid #dbe3ef;padding:8px;vertical-align:top}
+.press-table-v8759 th{background:#f8fafc;text-align:left;font-size:12px;text-transform:uppercase;color:#475569}
+.press-table-v8759 input,.press-table-v8759 textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:7px}
+.press-table-v8759 textarea{min-height:70px}
+.file-button-v8759{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.file-button-v8759 input{display:none}
+.photo-grid-v8759{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;padding:12px}
+.photo-card-v8759{border:1px solid #dbe3ef;border-radius:12px;overflow:hidden;background:#fff}
+.photo-card-v8759 img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#e5e7eb}
+.photo-card-v8759 b,.photo-card-v8759 span{display:block;padding:6px 8px}
+.docs-folders-v8759{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:12px}
+.folder-box-v8759{border:1px solid #dbe3ef;border-radius:12px;padding:10px;background:#f8fafc;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.folder-box-v8759 b,.folder-box-v8759 span{display:block}
+.docs-list-v8759{padding:12px;display:flex;flex-direction:column;gap:8px}
+.doc-row-v8759{display:grid;grid-template-columns:90px 1fr 220px auto;gap:10px;align-items:center;border:1px solid #dbe3ef;border-radius:12px;padding:10px;background:#fff}
+.doc-code-v8759{background:#0f172a;color:#fff;border-radius:999px;padding:4px 8px;font-weight:900;text-align:center}
+.actes-grid-v8759{display:grid;grid-template-columns:280px 1fr;gap:12px;padding:12px}
+.actes-list-v8759{display:flex;flex-direction:column;gap:8px}
+.actes-list-v8759 button{text-align:left;border:1px solid #dbe3ef;background:#fff;border-radius:12px;padding:10px}
+.actes-list-v8759 button.active{border-color:#2563eb;background:#eff6ff}
+.actes-list-v8759 b,.actes-list-v8759 span{display:block}
+.acta-editor-v8759 textarea{width:100%;min-height:150px;border:1px solid #cbd5e1;border-radius:12px;padding:10px}
+.photo-select-v8759{border:1px solid #dbe3ef;border-radius:12px;padding:10px;background:#f8fafc;margin:10px 0}
+.photo-select-v8759>div{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
+.photo-select-v8759 label{display:flex;align-items:center;gap:6px;border:1px solid #dbe3ef;border-radius:10px;background:#fff;padding:6px}
+.photo-select-v8759 img{width:46px;height:34px;object-fit:cover;border-radius:6px}
+.a4-acta-preview-v8759{background:#fff;border:1px solid #dbe3ef;border-radius:12px;margin-top:12px;padding:18px;max-width:794px;min-height:420px}
+.acta-fotos-preview-v8759{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acta-fotos-preview-v8759 img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px}
+.empty-v8759{padding:18px;color:#64748b;font-weight:700}
+@media(max-width:900px){.actes-grid-v8759{grid-template-columns:1fr}.doc-row-v8759{grid-template-columns:1fr}.edit-toolbar-v8759{flex-direction:column;align-items:flex-start}}
