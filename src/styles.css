@@ -2858,3 +2858,14 @@ button,input,select,textarea{font-size:13.5px!important}
 
 /* V87.54 - gestió temps real amb desplegables i import Excel per capítols */
 .time-form-v8754{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:10px;align-items:end}.time-form-v8754 label span{display:block;font-weight:800;font-size:12px;color:#475569;margin-bottom:4px}.time-form-v8754 select,.time-form-v8754 input{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:#fff}.time-form-v8754 .span-all{grid-column:1/-1}.time-table-v8754{min-width:1150px}.time-table-v8754 th{white-space:nowrap}.row-edit-fields-v8754{display:grid;grid-template-columns:1fr 1fr;gap:6px}.row-edit-fields-v8754 label span{font-size:10px;font-weight:800;color:#64748b}.row-edit-fields-v8754 input{width:100%}@media(max-width:900px){.time-form-v8754{grid-template-columns:1fr}.row-edit-fields-v8754{grid-template-columns:1fr}}
+
+/* V87.56 - Excel Código/Resumen amb capítols */
+.excel-info-v8756{
+  border:1px solid #bfdbfe;
+  background:#eff6ff;
+  color:#1e3a8a;
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:13px;
+  font-weight:700;
+}

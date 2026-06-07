@@ -52,6 +52,22 @@ function openGmailCompose(to, subject, body){
 }
 
 function todayShort8713(){const d=new Date();return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getFullYear()).slice(-2)}`;}
+
+function groupPartidesCapitols8756(rows){
+  const out=[];
+  let current=null;
+  (rows||[]).forEach(r=>{
+    const cap=r.cap||"Sense capítol";
+    if(!current||current.cap!==cap){
+      current={cap,rows:[],total:0};
+      out.push(current);
+    }
+    current.rows.push(r);
+    current.total+=(+r.q||0)*(+r.pu||0);
+  });
+  return out;
+}
+
 function money(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+" €"}
 function qty2(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)}
 function pct(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+"%"}
@@ -402,6 +418,153 @@ function fallbackExtract8749(wb){
   return best;
 }
 
+
+function extractCodigoResumen8756(wb){
+  function clean(v){return String(v??"").trim()}
+  function norm(v){return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
+  function num(v){
+    if(typeof v==="number")return v;
+    let s=String(v??"").trim();
+    if(!s)return 0;
+    s=s.replace(/€/g,"").replace(/\s/g,"");
+    if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");
+    const n=parseFloat(s.replace(/[^0-9.-]/g,""));
+    return Number.isFinite(n)?n:0;
+  }
+  function isHeader(r){
+    const t=r.map(norm).join(" ");
+    return t.includes("codigo") && t.includes("resumen") && (t.includes("canpres")||t.includes("can pres")) && (t.includes("prpres")||t.includes("pr pres")) && (t.includes("imppres")||t.includes("imp pres"));
+  }
+  function isUnit(s){
+    return /^(m2|m²|m3|m³|ml|m|ut|u|ud|kg|h|pa)$/i.test(clean(s));
+  }
+  function isChapterCode(s){
+    s=clean(s);
+    return /^\d{1,2}$/.test(s) || /^\d{1,2}[.,]0$/.test(s);
+  }
+  function isPartidaCode(s){
+    s=clean(s);
+    if(!s)return false;
+    if(isChapterCode(s))return false;
+    return /^[A-Za-z0-9][A-Za-z0-9.\-\/]*$/.test(s);
+  }
+  let best={rows:[],sheet:"",caps:0,total:0};
+
+  for(const sn of wb.SheetNames){
+    const ws=wb.Sheets[sn];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+    if(!rows?.length)continue;
+
+    let headerIndex=rows.findIndex(isHeader);
+    if(headerIndex<0){
+      headerIndex=rows.findIndex(r=>{
+        const A=norm(r[0]), C=norm(r[2]), E=norm(r[4]), F=norm(r[5]), G=norm(r[6]);
+        return (A.includes("codigo")||A.includes("codi")) && (C.includes("resumen")||C.includes("resum")) && (E.includes("can")||F.includes("pr")||G.includes("imp"));
+      });
+    }
+    if(headerIndex<0){
+      // Permet format sense capçalera si sembla A-G
+      headerIndex=0;
+    }
+
+    let out=[];
+    let capActual="PRESSUPOST IMPORTAT";
+    let capCount=0;
+    let last=null;
+
+    for(const r of rows.slice(headerIndex+1)){
+      const A=clean(r[0]);  // Código
+      const B=clean(r[1]);  // Ut
+      const C=clean(r[2]);  // Resumen
+      const D=clean(r[3]);  // lliure
+      const E=num(r[4]);    // CanPres
+      const F=num(r[5]);    // PrPres
+      const G=num(r[6]);    // ImpPres
+      const textAC=[A,B,C,D].map(clean).filter(Boolean).join(" ");
+      const ntext=norm(textAC);
+
+      if(!A&&!B&&!C&&!D&&!E&&!F&&!G)continue;
+
+      // CAPÍTOL: codi curt a Código + títol a Resumen + sense imports
+      const isCapitol = isChapterCode(A) && C && !E && !F && !G;
+      if(isCapitol){
+        capActual=`${A} ${C}`.replace(/\s+/g," ").trim();
+        capCount++;
+        last=null;
+        continue;
+      }
+
+      // També accepta capítols escrits textualment
+      if((ntext.includes("capitol")||ntext.includes("capítol")) && !E && !F && !G){
+        capActual=textAC.replace(/\s+/g," ").trim() || capActual;
+        capCount++;
+        last=null;
+        continue;
+      }
+
+      // DESCRIPCIÓ LLARGA: fila sense codi, amb text a Resumen/D, sense imports
+      if(last && !A && !E && !F && !G && (C||D||B)){
+        const extra=[B,C,D].map(clean).filter(Boolean).join(" ");
+        if(extra && !String(last.desc||"").includes(extra)){
+          last.desc=(last.desc?last.desc+"\n":"")+extra;
+        }
+        continue;
+      }
+
+      // Alguns Excels repeteixen línies de descripció amb codi buit però a C
+      if(last && !isPartidaCode(A) && !E && !F && !G && (C||D)){
+        const extra=[C,D].map(clean).filter(Boolean).join(" ");
+        if(extra && !String(last.desc||"").includes(extra)){
+          last.desc=(last.desc?last.desc+"\n":"")+extra;
+        }
+        continue;
+      }
+
+      // PARTIDA: codi real + unitat + resumen + amid/preu/import
+      if(isPartidaCode(A) && (C||D) && (E||F||G)){
+        let q=E||0;
+        let pu=F||0;
+        let total=G||0;
+        if(!total && q && pu)total=q*pu;
+        if(!pu && q && total)pu=total/q;
+
+        const partida={
+          codi:A,
+          ut:B||"ut",
+          concepte:C||D||"Partida importada",
+          desc:D&&C?D:"",
+          cap:capActual,
+          q:q||0,
+          pu:pu||0,
+          certAnterior:0,
+          certActual:0,
+          certsByNum:{},
+          tipus:"Import Excel Código-Resumen"
+        };
+        out.push(partida);
+        last=partida;
+        continue;
+      }
+
+      // PARTIDA sense unitat però amb imports
+      if(isPartidaCode(A) && (C||D) && (E||F||G)){
+        let q=E||0, pu=F||0, total=G||0;
+        if(!total && q && pu)total=q*pu;
+        if(!pu && q && total)pu=total/q;
+        const partida={codi:A,ut:B||"ut",concepte:C||D||"Partida importada",desc:"",cap:capActual,q,pu,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel Código-Resumen"};
+        out.push(partida); last=partida;
+      }
+    }
+
+    const caps=new Set(out.map(x=>x.cap)).size;
+    const total=out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0);
+    if(out.length>best.rows.length || (out.length===best.rows.length && caps>best.caps)){
+      best={rows:out,sheet:sn,caps,total};
+    }
+  }
+  return best;
+}
+
 async function importExcel(e){
 const file=e.target.files?.[0];
 if(!file)return;
@@ -575,7 +738,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.55 Excel capítols corregit</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.56 Excel capítols Código-Resumen</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
