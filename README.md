@@ -1,9 +1,8 @@
-# APP Control d'Obres · V87.73
+# APP Control d'Obres · V87.74
 
-Base V87.72 amb millores de clients, dades d'expedient, codis postals, menú PC fix i rendibilitat/desviacions del Mòdul 2.
+Versió amb millores de clients en format llista, agenda unificada/estable i rendibilitat-desviacions més visual dins la gestió integral d'obra.
 
 Render:
-- Static Site
 - Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 - Publish Directory: dist
 
