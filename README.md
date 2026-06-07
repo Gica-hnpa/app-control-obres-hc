@@ -1,3 +1,5 @@
-# APP Control d'Obres · V87.77
+# APP Control d'Obres · V87.78
 
-Versió amb capçalera d’expedient neta, resum sense control documental, pressupostos del tècnic amb estat/facturat i proposta preparada per sincronització multi-dispositiu.
+Login de prova, exportació/importació JSON, honoraris sincronitzats i millora agenda/tasques.
+
+Usuari de prova: hector · contrasenya: 0000.
