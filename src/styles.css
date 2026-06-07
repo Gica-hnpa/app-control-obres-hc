@@ -2872,61 +2872,22 @@ button,input,select,textarea{font-size:13.5px!important}
 
 /* V87.57 - import Excel definitiu: capítols Nat=Capítol o codi curt + Resumen */
 
-/* V87.59b - rescat estable: edició segura pressupost obra */
-.edit-toolbar-v8759b{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border-bottom:1px solid #e5e7eb}
-.press-table-wrap-v8759b{padding:12px;overflow:auto}
-.cap-block-v8759b{border:1px solid #dbe3ef;border-radius:12px;margin-bottom:12px;overflow:hidden;background:#fff}
-.cap-title-v8759b{display:flex;justify-content:space-between;align-items:center;background:#eef4fb;padding:10px 12px;font-weight:900}
-.cap-title-v8759b input{font-weight:900;width:70%;border:1px solid #cbd5e1;border-radius:8px;padding:7px}
-.press-table-v8759b{width:100%;min-width:980px;border-collapse:collapse}
-.press-table-v8759b th,.press-table-v8759b td{border:1px solid #dbe3ef;padding:8px;vertical-align:top}
-.press-table-v8759b th{background:#f8fafc;text-align:left;font-size:12px;text-transform:uppercase;color:#475569}
-.press-table-v8759b input,.press-table-v8759b textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:7px}
-.press-table-v8759b textarea{min-height:70px}
-.empty-v8759b{padding:18px;color:#64748b;font-weight:700}
-@media(max-width:900px){.edit-toolbar-v8759b{flex-direction:column;align-items:flex-start}}
-
-/* V87.60 - edició real del Pressupost obra */
-.pressupost-edit-real-v8760 .budget-v25-cap-head input{
-  font-weight:900;
-  border:1px solid #b6c6da;
-  border-radius:8px;
-  padding:7px 9px;
-  width:100%;
-}
-.cap-title-read-v8760{
-  display:block;
-  color:#0f172a;
-}
-.edit-warning-v8760,
-.view-warning-v8760{
+/* V87.60b - Gestió obra estable + edició controlada */
+.view-warning-v8760b,.edit-warning-v8760b{
   margin:10px 12px;
   padding:10px 12px;
   border-radius:12px;
   font-weight:800;
 }
-.edit-warning-v8760{
-  background:#fff7ed;
-  border:1px solid #fed7aa;
-  color:#9a3412;
+.view-warning-v8760b{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.edit-warning-v8760b{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}
+.pressupost-readonly-v8760b input{
+  pointer-events:none;
+  border-color:transparent!important;
+  background:transparent!important;
+  padding-left:0!important;
+  color:#0f172a;
 }
-.view-warning-v8760{
-  background:#eff6ff;
-  border:1px solid #bfdbfe;
-  color:#1e40af;
-}
-.read-row-v8760 span{
-  align-self:center;
-}
-.edit-row-v8760 input,
-.edit-row-v8760 textarea{
-  border:1px solid #b6c6da;
-  border-radius:8px;
-  padding:7px;
-  background:#fff;
-}
-.desc-edit-v8760{
-  width:100%;
-  min-height:80px;
-  margin-top:6px;
+.pressupost-readonly-v8760b .budget-v25-cap-head input{
+  font-weight:900;
 }

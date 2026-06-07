@@ -342,72 +342,6 @@ function SafeTemps8751({data,setData}){
   return <Card title="Gestió del temps" action={<button type="button" className="primary" onClick={add}>+ Afegir registre</button>}><div className="safe-temps-v8751"><div className="time-total-v8751">Total expedient: <b>{total.toFixed(2)} h</b></div><div className="table-scroll-v8751"><table><thead><tr><th>Data</th><th>Feina</th><th>Hores</th><th>Facturat</th><th>Entregat</th><th>Cobrat</th><th>Observacions</th><th></th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="8">Encara no hi ha registres.</td></tr>}{rows.map(r=><tr key={r.id}><td><input type="date" value={r.data||''} onChange={e=>upd(r.id,'data',e.target.value)}/></td><td><input value={r.feina||''} onChange={e=>upd(r.id,'feina',e.target.value)}/></td><td><input type="number" step="0.25" value={r.hores||0} onChange={e=>upd(r.id,'hores',e.target.value)}/></td><td><input type="checkbox" checked={!!r.facturat} onChange={e=>upd(r.id,'facturat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.entregat} onChange={e=>upd(r.id,'entregat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.cobrat} onChange={e=>upd(r.id,'cobrat',e.target.checked)}/></td><td><input value={r.observacions||''} onChange={e=>upd(r.id,'observacions',e.target.value)}/></td><td><button type="button" className="danger" onClick={()=>del(r.id)}>Eliminar</button></td></tr>)}</tbody></table></div></div></Card>
 }
 
-
-function EditablePressupostObra8759b({data,setData}){
-  const [edit,setEdit]=useState(false);
-  const [draft,setDraft]=useState(()=>JSON.parse(JSON.stringify(data.partides||[])));
-
-  useEffect(()=>{if(!edit)setDraft(JSON.parse(JSON.stringify(data.partides||[])))},[data.partides?.length,edit]);
-
-  function save(){
-    setData(d=>({...d,partides:draft}));
-    setEdit(false);
-  }
-  function cancel(){
-    setDraft(JSON.parse(JSON.stringify(data.partides||[])));
-    setEdit(false);
-  }
-  function upd(i,k,v){setDraft(rows=>rows.map((r,idx)=>idx===i?{...r,[k]:v}:r))}
-  function addPartida(){
-    const cap=(draft.at(-1)?.cap)||(data.partides?.at(-1)?.cap)||"Nou capítol";
-    setDraft(rows=>[...rows,{codi:"NOVA",cap,ut:"ut",concepte:"Nova partida",desc:"",q:0,pu:0,certAnterior:0,certActual:0,certsByNum:{}}]);
-    setEdit(true);
-  }
-  const rows=edit?draft:(data.partides||[]);
-  const total=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-  const caps=(typeof groupPartidesCapitols8756==="function")
-    ? groupPartidesCapitols8756(rows)
-    : [{cap:"Pressupost",rows,total}];
-
-  return <Card title="Pressupost obra">
-    <div className="edit-toolbar-v8759b">
-      <div><b>Total pressupost:</b> {money(total)}</div>
-      <div className="actions-inline">
-        {!edit&&<button type="button" className="primary" onClick={()=>setEdit(true)}>Editar</button>}
-        {edit&&<><button type="button" className="primary" onClick={save}>Guardar canvis</button><button type="button" className="secondary" onClick={cancel}>Cancel·lar</button></>}
-        <button type="button" className="secondary" onClick={addPartida}>+ Nova partida</button>
-      </div>
-    </div>
-    <div className="press-table-wrap-v8759b">
-      {rows.length===0&&<div className="empty-v8759b">No hi ha partides importades.</div>}
-      {caps.map((cap,ci)=><div className="cap-block-v8759b" key={ci}>
-        <div className="cap-title-v8759b">
-          {edit?<input value={cap.cap} onChange={e=>{
-            const old=cap.cap;
-            setDraft(rs=>rs.map(r=>r.cap===old?{...r,cap:e.target.value}:r));
-          }}/>:<b>{cap.cap}</b>}
-          <span>{money(cap.total)}</span>
-        </div>
-        <table className="press-table-v8759b">
-          <thead><tr><th>Codi</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>Preu/ut</th><th>Total</th></tr></thead>
-          <tbody>{cap.rows.map((r,ri)=>{
-            const idx=rows.findIndex(x=>x===r);
-            const i=idx>=0?idx:ri;
-            return <tr key={i+"-"+(r.codi||"")}>
-              <td>{edit?<input value={r.codi||""} onChange={e=>upd(i,"codi",e.target.value)}/>:r.codi}</td>
-              <td>{edit?<input value={r.ut||""} onChange={e=>upd(i,"ut",e.target.value)}/>:r.ut}</td>
-              <td>{edit?<><input value={r.concepte||""} onChange={e=>upd(i,"concepte",e.target.value)}/><textarea value={r.desc||""} onChange={e=>upd(i,"desc",e.target.value)} placeholder="Descripció llarga"/></>:<><b>{r.concepte}</b>{r.desc&&<details><summary>Veure desc.</summary><p>{r.desc}</p></details>}</>}</td>
-              <td>{edit?<input type="number" step="0.01" value={r.q||0} onChange={e=>upd(i,"q",e.target.value)}/>:num(r.q)}</td>
-              <td>{edit?<input type="number" step="0.01" value={r.pu||0} onChange={e=>upd(i,"pu",e.target.value)}/>:money(r.pu||0)}</td>
-              <td><b>{money((+r.q||0)*(+r.pu||0))}</b></td>
-            </tr>
-          })}</tbody>
-        </table>
-      </div>)}
-    </div>
-  </Card>
-}
-
 export default function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
 const appCfg=JSON.parse(localStorage.getItem("aco_config")||"{}");
@@ -949,7 +883,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.60 edició pressupost obra real</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.60b gestió obra estable</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -1306,36 +1240,26 @@ function FacturesTecniques8738({data,obra,addFactura,updateFactura,deleteFactura
   </Card></div>
 }
 function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
-  const [edit,setEdit]=useState(false);
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
   const [descOpen875,setDescOpen875]=useState({});
-
-  function resetFromData(){
-    const g=group(data.partides||[],"cap");
-    setCaps(g);
-    setOpen(Object.fromEntries(Object.keys(g).map((k,i)=>[k,i===0])));
-  }
-
-  useEffect(()=>{if(!edit)resetFromData()},[data.partides]);
-
-  function flatCaps(){
-    return Object.entries(caps).flatMap(([cap,items])=>(items||[]).map(r=>({...r,cap})));
-  }
-
-  function saveBudget(){
-    const flat=flatCaps();
+  const [editBudget8760b,setEditBudget8760b]=useState(false);
+  function saveBudget8760b(){
+    const flat=Object.entries(caps).flatMap(([cap,items])=>(items||[]).map(r=>({...r,cap})));
     setData?.(d=>({...d,partides:flat}));
-    setEdit(false);
+    setEditBudget8760b(false);
   }
+  function cancelBudget8760b(){
+    const syncCaps=group(data.partides||[],"cap");
+    setCaps(syncCaps);
+    setOpen(Object.fromEntries(Object.keys(syncCaps).map((k,i)=>[k,i===0])));
+    setEditBudget8760b(false);
+  }
+  useEffect(()=>{if(editBudget8760b)return;const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(Object.fromEntries(Object.keys(syncCapsV874).map((k,i)=>[k,i===0])));},[data.partides,editBudget8760b]);
 
-  function cancelBudget(){
-    resetFromData();
-    setEdit(false);
-  }
 
   function upd(cap,i,k,v){
-    if(!edit)return;
+    if(!editBudget8760b)return;
     setCaps(p=>{
       const n={...p};
       n[cap]=[...(n[cap]||[])];
@@ -1345,8 +1269,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
 
   function renameCap(oldName,v){
-    if(!edit)return;
-    if(!String(v).trim()) return;
+    if(!editBudget8760b)return;
+    if(!v.trim()) return;
     setCaps(p=>{
       const n={...p};
       n[v]=n[oldName]||[];
@@ -1362,47 +1286,44 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
 
   function addCapitol(){
-    if(!edit)setEdit(true);
+    if(!editBudget8760b)return;
     const nom="Nou capítol "+(Object.keys(caps).length+1);
     setCaps(p=>({...p,[nom]:[]}));
     setOpen(o=>({...o,[nom]:true}));
   }
 
   function addPartida(cap){
-    if(!edit)setEdit(true);
-    setCaps(p=>({...p,[cap]:[...(p[cap]||[]),{codi:"",cap,concepte:"Nova partida",desc:"",ut:"ut",q:1,pu:0,tipus:"Base",certAnterior:0,certActual:0,certsByNum:{}}]}));
+    if(!editBudget8760b)return;
+    setCaps(p=>({...p,[cap]:[...(p[cap]||[]),{codi:"",cap,concepte:"Nova partida",ut:"ut",q:1,pu:0,tipus:"Base"}]}));
     setOpen(o=>({...o,[cap]:true}));
   }
 
-  const allRows=Object.values(caps).flat();
-  const total=allRows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const total=Object.values(caps).flat().reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
 
-  return <div className="stack pressupost-edit-real-v8760">
-    <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label></div>}>
-      <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura validada: Código / Ut / Resumen / CanPres / PrPres / ImpPres. Els capítols són files amb codi curt, títol i imports buits.</p></details>
-      <div className="version-list">
+  return <div className="stack">
+    <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label>{editBudget8760b&&<button className="primary" onClick={addCapitol}><Plus/> Nou capítol</button>}</div>}>
+      <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura recomanada: columna A = codi o número de partida, B = unitat, C = concepte/descripció, D = columna lliure, E = amidament/quantitat, F = preu unitari, G = total.</p></details><div className="version-list">
         {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><div className="version-card-v872" key={p.id}>
-          <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:(p.nom||"Pressupost")+" · "+(p.versio||""),subtitle:(p.data||"")+" · "+(p.estat||"")})}>
-            <strong>{p.versio||"Excel"}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import||p.total||0)}</b><em>{p.estat||"Importat"}</em>
+          <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}>
+            <strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em>
           </button>
           <div className="version-actions-v872">
-            <button className="secondary small" type="button" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
-            <button className="danger small" type="button" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button>
+            <button className="secondary small" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
+            <button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button>
           </div>
         </div>)}
       </div>
     </Card>
 
-    <Card title="Pressupost obra per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span>{!edit&&<button type="button" className="primary" onClick={()=>setEdit(true)}>Editar</button>}{edit&&<><button type="button" className="primary" onClick={saveBudget}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget}>Cancel·lar</button></>}<button type="button" className="secondary" onClick={addCapitol}><Plus/> Nou capítol</button><button type="button" className="secondary" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar email</button></div>}>
-      <div className={edit?"edit-warning-v8760":"view-warning-v8760"}>{edit?"Mode edició actiu. Els canvis no es desen fins que cliquis “Guardar canvis”.":"Mode consulta. Clica “Editar” per modificar capítols, partides o descripcions."}</div>
-      <div className="budget-v25">
+    <Card title="Pressupost obra per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span>{!editBudget8760b&&<button type="button" className="primary" onClick={()=>setEditBudget8760b(true)}>Editar</button>}{editBudget8760b&&<><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar</button></>}<button className="secondary" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar email</button></div>}>
+      <div className={editBudget8760b?"edit-warning-v8760b":"view-warning-v8760b"}>{editBudget8760b?"Mode edició actiu. Guarda els canvis quan acabis.":"Mode consulta. Clica Editar per modificar capítols o partides."}</div><div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
         {Object.entries(caps).map(([cap,items])=>{
           const capTotal=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
           return <div className="budget-v25-cap" key={cap}>
             <div className="budget-v25-cap-head">
-              <button type="button" onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
-              {edit?<input value={cap} onChange={e=>renameCap(cap,e.target.value)}/>:<strong className="cap-title-read-v8760">{cap}</strong>}
+              <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
+              <input value={cap} onChange={e=>renameCap(cap,e.target.value)}/>
               <span>{items.length} partides</span>
               <strong>{money(capTotal)}</strong>
             </div>
@@ -1411,23 +1332,16 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               <div className="budget-v25-line head"><span>Codi</span><span>Ut</span><span>Concepte</span><span>Amid.</span><span>Preu/ut</span><span>Total</span></div>
               {items.map((r,i)=>{
                 const t=(+r.q||0)*(+r.pu||0);
-                return <div className={edit?"budget-v25-line edit-row-v8760":"budget-v25-line read-row-v8760"} key={i}>
-                  {edit?<input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>:<span>{r.codi||"—"}</span>}
-                  {edit?<input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>:<span>{r.ut||"—"}</span>}
-                  <div className="budget-concept-v877">
-                    <div className="concept-line-v877">
-                      {edit?<input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>:<b>{r.concepte||"—"}</b>}
-                      {(r.desc||edit)&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}
-                    </div>
-                    {edit&&descOpen875[`${cap}-${i}`]&&<textarea className="desc-edit-v8760" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>}
-                    {!edit&&r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}
-                  </div>
-                  {edit?<input type="number" step="0.01" value={r.q??0} onChange={e=>upd(cap,i,"q",e.target.value)}/>:<span>{num(r.q)}</span>}
-                  {edit?<input type="number" step="0.01" value={r.pu??0} onChange={e=>upd(cap,i,"pu",e.target.value)}/>:<span>{money(r.pu||0)}</span>}
+                return <div className="budget-v25-line" key={i}>
+                  <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
+                  <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
+                  <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
+                  <input type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
+                  <input type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>
                   <b>{money(t)}</b>
                 </div>
               })}
-              {edit&&<button type="button" className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
+              {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
             </div>}
           </div>
         })}
@@ -1435,6 +1349,15 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     </Card>
   </div>
 }
+
+
+
+
+
+
+
+
+
 function Cert({data,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
