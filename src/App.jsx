@@ -342,41 +342,13 @@ function SafeTemps8751({data,setData}){
   return <Card title="Gestió del temps" action={<button type="button" className="primary" onClick={add}>+ Afegir registre</button>}><div className="safe-temps-v8751"><div className="time-total-v8751">Total expedient: <b>{total.toFixed(2)} h</b></div><div className="table-scroll-v8751"><table><thead><tr><th>Data</th><th>Feina</th><th>Hores</th><th>Facturat</th><th>Entregat</th><th>Cobrat</th><th>Observacions</th><th></th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="8">Encara no hi ha registres.</td></tr>}{rows.map(r=><tr key={r.id}><td><input type="date" value={r.data||''} onChange={e=>upd(r.id,'data',e.target.value)}/></td><td><input value={r.feina||''} onChange={e=>upd(r.id,'feina',e.target.value)}/></td><td><input type="number" step="0.25" value={r.hores||0} onChange={e=>upd(r.id,'hores',e.target.value)}/></td><td><input type="checkbox" checked={!!r.facturat} onChange={e=>upd(r.id,'facturat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.entregat} onChange={e=>upd(r.id,'entregat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.cobrat} onChange={e=>upd(r.id,'cobrat',e.target.checked)}/></td><td><input value={r.observacions||''} onChange={e=>upd(r.id,'observacions',e.target.value)}/></td><td><button type="button" className="danger" onClick={()=>del(r.id)}>Eliminar</button></td></tr>)}</tbody></table></div></div></Card>
 }
 
-export default 
-function fmtDate8759(v){
-  if(!v)return "—";
-  const s=String(v).trim();
-  const m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
-  if(m)return `${String(m[3]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}/${m[1]}`;
-  const m2=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
-  if(m2)return `${String(m2[1]).padStart(2,"0")}/${String(m2[2]).padStart(2,"0")}/${m2[3]}`;
-  return s;
-}
-function todayISO8759(){return new Date().toISOString().slice(0,10)}
-const DOC_FOLDERS8759=[
-  ["DOC","Documentació general"],
-  ["PLA","Plànols"],
-  ["AMI","Amidaments"],
-  ["POB","Pressupostos d’obra"],
-  ["PIN","Pressupostos industrials"],
-  ["CER","Certificacions"],
-  ["ACT","Actes"],
-  ["SS","Seguretat i salut"],
-  ["ALT","Altres"]
-];
-function folderLabel8759(code){return (DOC_FOLDERS8759.find(x=>x[0]===code)||["ALT","Altres"])[1]}
-function nextDocCode8759(data,folder){
-  const docs=data.documents||[];
-  const n=docs.filter(d=>d.folder===folder).length+1;
-  return `${folder}-${String(n).padStart(3,"0")}`;
-}
-function blobUrl8759(file){
-  try{return URL.createObjectURL(file)}catch(e){return ""}
-}
-function EditablePressupostObra8759({data,setData}){
+
+function EditablePressupostObra8759b({data,setData}){
   const [edit,setEdit]=useState(false);
   const [draft,setDraft]=useState(()=>JSON.parse(JSON.stringify(data.partides||[])));
+
   useEffect(()=>{if(!edit)setDraft(JSON.parse(JSON.stringify(data.partides||[])))},[data.partides?.length,edit]);
+
   function save(){
     setData(d=>({...d,partides:draft}));
     setEdit(false);
@@ -387,40 +359,46 @@ function EditablePressupostObra8759({data,setData}){
   }
   function upd(i,k,v){setDraft(rows=>rows.map((r,idx)=>idx===i?{...r,[k]:v}:r))}
   function addPartida(){
-    setDraft(rows=>[...rows,{codi:"NOVA",cap:rows.at(-1)?.cap||"Nou capítol",ut:"ut",concepte:"Nova partida",desc:"",q:0,pu:0,certAnterior:0,certActual:0,certsByNum:{}}]);
+    const cap=(draft.at(-1)?.cap)||(data.partides?.at(-1)?.cap)||"Nou capítol";
+    setDraft(rows=>[...rows,{codi:"NOVA",cap,ut:"ut",concepte:"Nova partida",desc:"",q:0,pu:0,certAnterior:0,certActual:0,certsByNum:{}}]);
     setEdit(true);
   }
-  const caps=groupPartidesCapitols8756?groupPartidesCapitols8756(edit?draft:(data.partides||[])):[{cap:"Pressupost",rows:edit?draft:(data.partides||[]),total:(edit?draft:(data.partides||[])).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0)}];
-  const total=(edit?draft:(data.partides||[])).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const rows=edit?draft:(data.partides||[]);
+  const total=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const caps=(typeof groupPartidesCapitols8756==="function")
+    ? groupPartidesCapitols8756(rows)
+    : [{cap:"Pressupost",rows,total}];
+
   return <Card title="Pressupost obra">
-    <div className="edit-toolbar-v8759">
+    <div className="edit-toolbar-v8759b">
       <div><b>Total pressupost:</b> {money(total)}</div>
       <div className="actions-inline">
-        {!edit&&<button className="primary" onClick={()=>setEdit(true)}>Editar</button>}
-        {edit&&<><button className="primary" onClick={save}>Guardar canvis</button><button className="secondary" onClick={cancel}>Cancel·lar</button></>}
-        <button className="secondary" onClick={addPartida}>+ Nova partida</button>
+        {!edit&&<button type="button" className="primary" onClick={()=>setEdit(true)}>Editar</button>}
+        {edit&&<><button type="button" className="primary" onClick={save}>Guardar canvis</button><button type="button" className="secondary" onClick={cancel}>Cancel·lar</button></>}
+        <button type="button" className="secondary" onClick={addPartida}>+ Nova partida</button>
       </div>
     </div>
-    <div className="press-table-wrap-v8759">
-      {caps.map((cap,ci)=><div className="cap-block-v8759" key={ci}>
-        <div className="cap-title-v8759">
+    <div className="press-table-wrap-v8759b">
+      {rows.length===0&&<div className="empty-v8759b">No hi ha partides importades.</div>}
+      {caps.map((cap,ci)=><div className="cap-block-v8759b" key={ci}>
+        <div className="cap-title-v8759b">
           {edit?<input value={cap.cap} onChange={e=>{
             const old=cap.cap;
-            setDraft(rows=>rows.map(r=>r.cap===old?{...r,cap:e.target.value}:r));
+            setDraft(rs=>rs.map(r=>r.cap===old?{...r,cap:e.target.value}:r));
           }}/>:<b>{cap.cap}</b>}
           <span>{money(cap.total)}</span>
         </div>
-        <table className="press-table-v8759">
+        <table className="press-table-v8759b">
           <thead><tr><th>Codi</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>Preu/ut</th><th>Total</th></tr></thead>
           <tbody>{cap.rows.map((r,ri)=>{
-            const globalIndex=(edit?draft:(data.partides||[])).findIndex(x=>x===r || (x.codi===r.codi&&x.concepte===r.concepte&&x.cap===r.cap));
-            const idx=globalIndex<0?ri:globalIndex;
-            return <tr key={idx+"-"+r.codi}>
-              <td>{edit?<input value={r.codi||""} onChange={e=>upd(idx,"codi",e.target.value)}/>:r.codi}</td>
-              <td>{edit?<input value={r.ut||""} onChange={e=>upd(idx,"ut",e.target.value)}/>:r.ut}</td>
-              <td>{edit?<><input value={r.concepte||""} onChange={e=>upd(idx,"concepte",e.target.value)}/><textarea value={r.desc||""} onChange={e=>upd(idx,"desc",e.target.value)} placeholder="Descripció llarga"/></>:<><b>{r.concepte}</b>{r.desc&&<details><summary>Veure desc.</summary><p>{r.desc}</p></details>}</>}</td>
-              <td>{edit?<input type="number" step="0.01" value={r.q||0} onChange={e=>upd(idx,"q",e.target.value)}/>:num(r.q)}</td>
-              <td>{edit?<input type="number" step="0.01" value={r.pu||0} onChange={e=>upd(idx,"pu",e.target.value)}/>:money(r.pu||0)}</td>
+            const idx=rows.findIndex(x=>x===r);
+            const i=idx>=0?idx:ri;
+            return <tr key={i+"-"+(r.codi||"")}>
+              <td>{edit?<input value={r.codi||""} onChange={e=>upd(i,"codi",e.target.value)}/>:r.codi}</td>
+              <td>{edit?<input value={r.ut||""} onChange={e=>upd(i,"ut",e.target.value)}/>:r.ut}</td>
+              <td>{edit?<><input value={r.concepte||""} onChange={e=>upd(i,"concepte",e.target.value)}/><textarea value={r.desc||""} onChange={e=>upd(i,"desc",e.target.value)} placeholder="Descripció llarga"/></>:<><b>{r.concepte}</b>{r.desc&&<details><summary>Veure desc.</summary><p>{r.desc}</p></details>}</>}</td>
+              <td>{edit?<input type="number" step="0.01" value={r.q||0} onChange={e=>upd(i,"q",e.target.value)}/>:num(r.q)}</td>
+              <td>{edit?<input type="number" step="0.01" value={r.pu||0} onChange={e=>upd(i,"pu",e.target.value)}/>:money(r.pu||0)}</td>
               <td><b>{money((+r.q||0)*(+r.pu||0))}</b></td>
             </tr>
           })}</tbody>
@@ -429,71 +407,8 @@ function EditablePressupostObra8759({data,setData}){
     </div>
   </Card>
 }
-function Photos8759({data,setData}){
-  const fotos=data.fotos||[];
-  function addFiles(files){
-    [...files].forEach(file=>{
-      const reader=new FileReader();
-      reader.onload=()=>setData(d=>({...d,fotos:[...(d.fotos||[]),{id:"foto-"+Date.now()+"-"+Math.random(),nom:file.name||"Foto",src:reader.result,data:todayISO8759(),acta:false}]}));
-      reader.readAsDataURL(file);
-    });
-  }
-  return <Card title="Fotografies">
-    <div className="actions-inline"><label className="primary file-button-v8759">Adjuntar fotos<input type="file" accept="image/*" multiple onChange={e=>addFiles(e.target.files)}/></label><label className="secondary file-button-v8759">Fer foto<input type="file" accept="image/*" capture="environment" onChange={e=>addFiles(e.target.files)}/></label></div>
-    <div className="photo-grid-v8759">{fotos.length===0&&<div className="empty-v8759">Encara no hi ha fotografies.</div>}{fotos.map(f=><div className="photo-card-v8759" key={f.id}><img src={f.src}/><b>{f.nom}</b><span>{fmtDate8759(f.data)}</span></div>)}</div>
-  </Card>
-}
-function Documents8759({obra,data,setData}){
-  const docs=data.documents||[];
-  function addFiles(files,folder){
-    [...files].forEach(file=>{
-      const reader=new FileReader();
-      reader.onload=()=>setData(d=>({...d,documents:[...(d.documents||[]),{id:"doc-"+Date.now()+"-"+Math.random(),folder,code:nextDocCode8759(d,folder),nom:file.name,url:reader.result,type:file.type,data:todayISO8759()}]}));
-      reader.readAsDataURL(file);
-    });
-  }
-  return <Card title="Documents">
-    <div className="docs-folders-v8759">
-      {DOC_FOLDERS8759.map(([code,label])=><div className="folder-box-v8759" key={code}><div><b>{code}</b><span>{label}</span></div><label className="secondary file-button-v8759">Afegir<input type="file" multiple onChange={e=>addFiles(e.target.files,code)}/></label></div>)}
-    </div>
-    <div className="docs-list-v8759">
-      {docs.length===0&&<div className="empty-v8759">Encara no hi ha documents adjunts.</div>}
-      {docs.map(d=><div className="doc-row-v8759" key={d.id}><span className="doc-code-v8759">{d.code||d.folder}</span><b>{d.nom}</b><span>{folderLabel8759(d.folder)} · {fmtDate8759(d.data)}</span><a className="secondary" href={d.url} target="_blank" rel="noreferrer">Obrir</a></div>)}
-    </div>
-  </Card>
-}
-function Actes8759({obra,data,setData}){
-  const [editId,setEditId]=useState(null);
-  const [draft,setDraft]=useState(null);
-  const actes=data.actes||[];
-  const allFotos=data.fotos||[];
-  function startEdit(a){setEditId(a.id);setDraft(JSON.parse(JSON.stringify(a)))}
-  function save(){
-    if(!draft.titol||!draft.data){alert("Cal indicar títol i data de l’acta.");return}
-    setData(d=>({...d,actes:(d.actes||[]).map(a=>a.id===draft.id?draft:a)}));
-    setEditId(null);setDraft(null);
-  }
-  function add(){
-    const a={id:"acta-"+Date.now(),data:todayISO8759(),titol:"Nova acta",text:"",fotoIds:[],estat:"Esborrany"};
-    setData(d=>({...d,actes:[...(d.actes||[]),a]}));
-    setEditId(a.id);setDraft(a);
-  }
-  function upd(k,v){setDraft(d=>({...d,[k]:v}))}
-  function toggleFoto(id){setDraft(d=>{const arr=d.fotoIds||[];return {...d,fotoIds:arr.includes(id)?arr.filter(x=>x!==id):[...arr,id]}})}
-  return <Card title="Actes">
-    <div className="actions-inline"><button className="primary" onClick={add}>+ Nova acta</button></div>
-    {actes.length===0&&<div className="empty-v8759">Encara no hi ha actes.</div>}
-    <div className="actes-grid-v8759">
-      <div className="actes-list-v8759">{actes.map(a=><button key={a.id} onClick={()=>startEdit(a)} className={editId===a.id?"active":""}><b>{a.titol}</b><span>{fmtDate8759(a.data)}</span></button>)}</div>
-      <div className="acta-editor-v8759">
-        {!draft&&<div className="empty-v8759">Selecciona una acta per editar-la o crea’n una de nova.</div>}
-        {draft&&<><div className="form-grid"><label><span>Títol acta *</span><input value={draft.titol||""} onChange={e=>upd("titol",e.target.value)}/></label><label><span>Data *</span><input type="date" value={draft.data||""} onChange={e=>upd("data",e.target.value)}/></label></div><label><span>Text acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Text de l’acta..."/></label><div className="photo-select-v8759"><b>Fotos incloses a l’acta</b><div>{allFotos.length===0&&<span>No hi ha fotos a l’expedient.</span>}{allFotos.map(f=><label key={f.id}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><img src={f.src}/><span>{f.nom}</span></label>)}</div></div><div className="actions-inline"><button className="primary" onClick={save}>Guardar acta</button><button className="secondary" onClick={()=>{setEditId(null);setDraft(null)}}>Cancel·lar</button></div><div className="a4-acta-preview-v8759"><h3>ACTA</h3><b>{draft.titol}</b><p><b>Expedient:</b> {obra.nom}</p><p><b>Data:</b> {fmtDate8759(draft.data)}</p><p>{draft.text||"Text pendent..."}</p><div className="acta-fotos-preview-v8759">{(draft.fotoIds||[]).map(id=>allFotos.find(f=>f.id===id)).filter(Boolean).map(f=><img key={f.id} src={f.src}/>)}</div></div></>}
-      </div>
-    </div>
-  </Card>
-}
 
-function App(){
+export default function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
 const appCfg=JSON.parse(localStorage.getItem("aco_config")||"{}");
 const lang=appCfg.idioma||"Català";
@@ -1034,7 +949,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.59 edició actes fotos documents</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.59b rescat estable</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -1179,9 +1094,9 @@ function hasModule2Access8747(){
 }
 function ModulLocked8747(){return <Card title="Mòdul 2 · Control econòmic d’obra"><div className="locked-module-v8747"><div><b>Aquesta funcionalitat forma part del Mòdul 2</b><p>Inclou pressupost d’obra, certificacions, facturació d’obra i seguiment econòmic bàsic. El Mòdul 1 Tècnic manté els pressupostos i factures del tècnic al client.</p></div><button className="primary" onClick={()=>{localStorage.setItem("aco_modul2_actiu","1");location.reload()}}>Activar Mòdul 2 en mode prova</button></div></Card>}
 
-function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert}){
+function GestioObra8746({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert}){
   const[sub,setSub]=useState("Pressupost obra");
-  return <div className="stack gestio-obra-v8746"><div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button></div>{sub==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>}</div>
+  return <div className="stack gestio-obra-v8746"><div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button></div>{sub==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>}</div>
 }
 function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,allAgents=[]}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);let tabs=tabsForWork8737(obra,data);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<div className="obra-topbar"><div><small className="exp-code-header-v8739">{expedientCode8739(obra)}</small><h1>{obra.nom}</h1><p>{client.nom} · {moduleLabel8737(obra)}</p></div><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO EXPEDIENT"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
@@ -1196,7 +1111,7 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
       <label><span>Tipus de treball</span><input value={moduleLabel8737(obra)} readOnly/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes8759 obra={obra} data={data} setData={setData}/>} {activeTab==="Fotografies"&&<Photos8759 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents8759 obra={obra} data={data} setData={setData}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<SafeActes8751 obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 
 function AgendaAvisosExpedient8737({data,openEvent}){
@@ -1390,19 +1305,12 @@ function FacturesTecniques8738({data,obra,addFactura,updateFactura,deleteFactura
     <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha factures en aquest expedient."/>}{rows.map(f=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={f.id}><div><strong>{f.numero||"FAC"}</strong><span>{f.concepte||f.tipus||"Factura / proforma"}</span><small>{f.data||"—"} · {f.estat||"Pendent"}</small></div><b>{money(totalIva8743(f))}<small>IVA inclòs</small></b><div className="actions-inline"><button className="secondary" onClick={()=>setPreview(f)}>Veure PDF</button><button className="secondary" onClick={()=>reset(f)}>Editar</button><button className="secondary" onClick={()=>openEmail?.("Factura")}>Enviar</button><button className="danger" onClick={()=>deleteFactura?.(f.id)}>Eliminar</button></div></div>)}</div>
   </Card></div>
 }
-function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
+function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
   const [descOpen875,setDescOpen875]=useState({});
-  const [editingBudget,setEditingBudget]=useState(false);
   useEffect(()=>{const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(Object.fromEntries(Object.keys(syncCapsV874).map((k,i)=>[k,i===0])));},[data.partides]);
 
-
-  function saveBudget8759(){
-    const rows=Object.entries(caps).flatMap(([cap,items])=>(items||[]).map(r=>({...r,cap})));
-    setData?.(d=>({...d,partides:rows}));
-    setEditingBudget(false);
-  }
 
   function upd(cap,i,k,v){
     setCaps(p=>{
@@ -1430,14 +1338,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
 
   function addCapitol(){
-    setEditingBudget(true);
     const nom="Nou capítol "+(Object.keys(caps).length+1);
     setCaps(p=>({...p,[nom]:[]}));
     setOpen(o=>({...o,[nom]:true}));
   }
 
   function addPartida(cap){
-    setEditingBudget(true);
     setCaps(p=>({...p,[cap]:[...(p[cap]||[]),{codi:"",cap,concepte:"Nova partida",ut:"ut",q:1,pu:0,tipus:"Base"}]}));
     setOpen(o=>({...o,[cap]:true}));
   }
@@ -1459,7 +1365,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       </div>
     </Card>
 
-    <Card title="Pressupost obra per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span>{!editingBudget?<button className="primary" onClick={()=>setEditingBudget(true)}>Editar</button>:<><button className="primary" onClick={saveBudget8759}>Guardar</button><button className="secondary" onClick={()=>{const sync=group(data.partides||[],"cap");setCaps(sync);setEditingBudget(false)}}>Cancel·lar</button></>}<button className="secondary" onClick={()=>openEmail("Pressupost obra") }><Mail/> Enviar email</button></div>}>
+    <Card title="Pressupost tècnic-client per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span><button className="secondary" onClick={()=>openEmail("Pressupost tècnic-client")}><Mail/> Enviar email</button></div>}>
       <div className="budget-v25">
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
         {Object.entries(caps).map(([cap,items])=>{
@@ -1467,7 +1373,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           return <div className="budget-v25-cap" key={cap}>
             <div className="budget-v25-cap-head">
               <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
-              <input disabled={!editingBudget} value={cap} onChange={e=>renameCap(cap,e.target.value)}/>
+              <input value={cap} onChange={e=>renameCap(cap,e.target.value)}/>
               <span>{items.length} partides</span>
               <strong>{money(capTotal)}</strong>
             </div>
@@ -1477,15 +1383,15 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               {items.map((r,i)=>{
                 const t=(+r.q||0)*(+r.pu||0);
                 return <div className="budget-v25-line" key={i}>
-                  <input disabled={!editingBudget} value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
-                  <input disabled={!editingBudget} value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
-                  <div className="budget-concept-v877"><div className="concept-line-v877"><input disabled={!editingBudget} value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
-                  <input disabled={!editingBudget} type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
-                  <input disabled={!editingBudget} type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>
+                  <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
+                  <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
+                  <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
+                  <input type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
+                  <input type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>
                   <b>{money(t)}</b>
                 </div>
               })}
-              {editingBudget&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
+              <button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>
             </div>}
           </div>
         })}
