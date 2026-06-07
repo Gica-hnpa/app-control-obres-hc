@@ -568,35 +568,149 @@ function extractCodigoResumen8756(wb){
 async function importExcel(e){
 const file=e.target.files?.[0];
 if(!file)return;
+
 function clean(v){return String(v??"").trim()}
 function norm(v){return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()}
-function num(v){if(typeof v==="number")return v;let s=String(v??"").trim();if(!s)return 0;s=s.replace(/€/g,"").replace(/\s/g,"");if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");let n=parseFloat(s.replace(/[^0-9.-]/g,""));return Number.isFinite(n)?n:0}
-function isHeader(r){const t=r.map(norm).join(" ");return (t.includes("codigo")||t.includes("codi")||t.includes("partida"))&&(t.includes("nat")||t.includes("unitat")||t.includes("ud")||t.includes("ut"))&&(t.includes("resumen")||t.includes("resum")||t.includes("concepte")||t.includes("descrip"))}
-function findIdx(header,names,fallback){
-  const h=(header||[]).map(norm);
-  // 1) Coincidència exacta primer: evita que "pres" agafi "CanPres" o "ImpPres".
-  for(const n of names){let i=h.findIndex(x=>x===n);if(i>=0)return i}
-  // 2) Coincidències específiques per formats TCQ/Presto/Excel validat.
-  if(names.includes("canpres")){let i=h.findIndex(x=>["canpres","cantidad","quantitat","amidament","amid","can presupuesto"].includes(x));if(i>=0)return i}
-  if(names.includes("pres")){let i=h.findIndex(x=>["pres","preu","preu/ut","precio","precio unitario","pu","prpres"].includes(x));if(i>=0)return i}
-  if(names.includes("imppres")){let i=h.findIndex(x=>["imppres","import","importe","total","preu total"].includes(x));if(i>=0)return i}
-  // 3) Fallback amb includes, però protegint columnes que es confonen.
-  for(const n of names){
-    let i=h.findIndex(x=>{
-      if(!x.includes(n))return false;
-      if(n==="pres"&&(x.includes("canpres")||x.includes("imppres")))return false;
-      if(n==="import"&&x.includes("canpres"))return false;
-      if(n==="total"&&x.includes("capitol"))return false;
-      return true;
-    });
-    if(i>=0)return i;
-  }
-  return fallback
+function num(v){
+  if(typeof v==="number")return v;
+  let s=String(v??"").trim();
+  if(!s)return 0;
+  s=s.replace(/€/g,"").replace(/\s/g,"");
+  if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");
+  const n=parseFloat(s.replace(/[^0-9.-]/g,""));
+  return Number.isFinite(n)?n:0;
 }
+function isEmptyNum(v){return clean(v)==="" || clean(v)==="-"}
+function isCapCode(s){s=clean(s);return /^\d{1,2}$/.test(s)||/^\d{1,2}[.,]0$/.test(s)||/^cap[íi]tol\s*\d+/i.test(s)}
+function isCode(s){s=clean(s);return !!s && !/^total/i.test(s) && /^[A-Za-z0-9][A-Za-z0-9.\-\/]*$/.test(s)}
 function isUnit(s){return /^(m2|m²|m3|m³|ml|m|ut|u|ud|kg|h|pa)$/i.test(clean(s))}
-function isCode(s){s=clean(s);return !!s&&!/^total/i.test(s)&&/^([A-Za-z]{0,6}\d+[A-Za-z0-9.\-]*|\d{1,2}([.,]\d{1,3})+|\d{1,3})/.test(s)}
-function parseRows(rows){let headerIndex=rows.findIndex(isHeader);if(headerIndex<0)headerIndex=rows.findIndex(r=>clean(r[0])&&clean(r[2]||r[3])&&(num(r[4])||num(r[5])||num(r[6])))-1;if(headerIndex<0)headerIndex=0;const header=rows[headerIndex]||[];const idx={codi:findIdx(header,["codigo","código","codi","partida"],0),nat:findIdx(header,["nat","naturalesa","naturaleza"],1),ud:findIdx(header,["ud","ut","unitat","unidad"],2),resum:findIdx(header,["resumen","resum","concepte","concepto","descrip"],3),q:findIdx(header,["canpres","quant","cantidad","amid"],4),pu:findIdx(header,["pres","preu","precio","pu","prpres"],5),imp:findIdx(header,["imppres","import","importe","total"],6)};let out=[],cap="PRESSUPOST IMPORTAT",last=null;for(const row of rows.slice(headerIndex+1)){if(!row||!row.some(x=>clean(x)))continue;const A=clean(row[idx.codi]),N=clean(row[idx.nat]),U=clean(row[idx.ud]),C=clean(row[idx.resum]),D=clean(row[3]);const Q=num(row[idx.q]);let PU=num(row[idx.pu]);let IMP=num(row[idx.imp]);const nN=norm(N),nA=norm(A),nC=norm(C),nD=norm(D);if(nC.startsWith("total")||nD.startsWith("total"))continue;if(nN.includes("capitol")||nN.includes("capítol")||(/^cap/.test(nA)&&!Q&&!PU&&!IMP)){cap=[A,(C||D)].filter(Boolean).join(" - ")||C||D||"CAPÍTOL";last=null;continue}const isPartida=nN.includes("partida")||nN.includes("part")||(isCode(A)&&C&&(Q||PU||IMP));if(isPartida){if(!IMP&&Q&&PU)IMP=Q*PU;if(!PU&&Q&&IMP)PU=IMP/Q;const p={codi:A||String(out.length+1).padStart(2,"0"),cap,ut:isUnit(U)?U:(U||"ut"),concepte:C||D||"Partida importada",desc:"",q:Q||0,pu:PU||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel"};out.push(p);last=p;continue}if(last&&!A&&!N&&!U&&(C||D)&&!Q&&!PU&&!IMP){const extra=C||D;if(extra&&!String(last.desc||"").includes(extra))last.desc=(last.desc?last.desc+"\n":"")+extra;continue}}return out}
-try{const ab=await file.arrayBuffer();const wb=XLSX.read(ab,{type:"array",cellDates:false});let best=[],bestSheet="",bestCaps=0;for(const sheetName of wb.SheetNames){const ws=wb.Sheets[sheetName];const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});const partides=parseRows(rows);const caps=new Set(partides.map(p=>p.cap)).size;if(partides.length>best.length||(partides.length===best.length&&caps>bestCaps)){best=partides;bestSheet=sheetName;bestCaps=caps}}if(!best.length){setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Excel llegit però sense partides detectades",import:0}]}));return}const total=best.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);setD(obraId,d=>{const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[{id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},{id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}];return {...d,partides:best,certificacions:nextCerts,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:`Excel llegit · ${best.length} partides · ${bestCaps||1} capítols · ${bestSheet}`,import:total}]}})}catch(err){setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}))}if(e?.target)e.target.value=""}
+function findHeader(rows){
+  let idx=rows.findIndex(r=>{
+    const txt=r.map(norm).join("|");
+    return (txt.includes("codigo")||txt.includes("codi")||txt.includes("partida")) &&
+           (txt.includes("resumen")||txt.includes("resum")||txt.includes("concepte")||txt.includes("descrip")) &&
+           (txt.includes("canpres")||txt.includes("quant")||txt.includes("amid")||txt.includes("cantidad"));
+  });
+  if(idx>=0)return idx;
+  return 0;
+}
+function idxMap(header){
+  const h=(header||[]).map(norm);
+  function exact(names, fallback){
+    for(const n of names){const i=h.findIndex(x=>x===n);if(i>=0)return i}
+    for(const n of names){const i=h.findIndex(x=>x.includes(n));if(i>=0)return i}
+    return fallback;
+  }
+  // Prioritat real del teu Excel: Código, Nat, Ud, Resumen, CanPres, Pres/PrPres, ImpPres.
+  return {
+    codi: exact(["codigo","código","codi","partida"],0),
+    nat: exact(["nat","naturalesa","naturaleza"],1),
+    ud: exact(["ud","ut","unitat","unidad"],2),
+    resum: exact(["resumen","resum","concepte","concepto"],3),
+    q: exact(["canpres","can pres","quantitat","cantidad","amidament","amid"],4),
+    pu: exact(["prpres","pr pres","pres","preu","preu/ut","precio","pu"],5),
+    imp: exact(["imppres","imp pres","import","importe","total"],6)
+  };
+}
+function parseSheet(rows){
+  const headerIndex=findHeader(rows);
+  const idx=idxMap(rows[headerIndex]||[]);
+  let out=[];
+  let cap="PRESSUPOST IMPORTAT";
+  let capCount=0;
+  let last=null;
+  for(const row of rows.slice(headerIndex+1)){
+    if(!row||!row.some(x=>clean(x)))continue;
+    const A=clean(row[idx.codi]);
+    const N=clean(row[idx.nat]);
+    const U=clean(row[idx.ud]);
+    const R=clean(row[idx.resum]);
+    const Q=num(row[idx.q]);
+    const PU0=num(row[idx.pu]);
+    const IMP0=num(row[idx.imp]);
+    const nN=norm(N), nR=norm(R), nA=norm(A);
+    const rawNumsEmpty=isEmptyNum(row[idx.q])&&isEmptyNum(row[idx.pu])&&isEmptyNum(row[idx.imp]);
+    const txt=[A,N,U,R].filter(Boolean).join(" ");
+    if(!A&&!N&&!U&&!R&&rawNumsEmpty)continue;
+    if(nR.startsWith("total")||nA.startsWith("total"))continue;
+
+    // CAPÍTOL del teu format: Nat=Capítol, o codi curt 01/02 + Resumen, encara que CanPres/Pres/ImpPres portin import de capítol.
+    const isCapitol = nN.includes("capitol") || nN.includes("capítol") || (isCapCode(A) && R && (!isUnit(U)) && (!nN.includes("partida")) && (!nN.includes("part")) && (!/^[A-Za-z]{2,}/.test(A)));
+    if(isCapitol){
+      cap=`${A} ${R||N||"CAPÍTOL"}`.replace(/\s+/g," ").trim();
+      capCount++;
+      last=null;
+      continue;
+    }
+
+    // DESCRIPCIÓ llarga: sense codi i sense imports; sol venir sota la partida a Resumen.
+    if(last && !A && !N && !U && R && rawNumsEmpty){
+      if(!String(last.desc||"").includes(R))last.desc=(last.desc?last.desc+"\n":"")+R;
+      continue;
+    }
+
+    // PARTIDA: Nat=Partida o codi no capítol amb resum i algun import/quantitat.
+    const isPartida = nN.includes("partida") || nN.includes("part") || (isCode(A) && !isCapCode(A) && R && (!rawNumsEmpty));
+    if(isPartida){
+      let q=Q||0, pu=PU0||0, imp=IMP0||0;
+      if(!imp && q && pu)imp=q*pu;
+      if(!pu && q && imp)pu=imp/q;
+      const partida={
+        codi:A||String(out.length+1).padStart(2,"0"),
+        cap,
+        ut:isUnit(U)?U:(U||"ut"),
+        concepte:R||"Partida importada",
+        desc:"",
+        q:q||0,
+        pu:pu||0,
+        certAnterior:0,
+        certActual:0,
+        certsByNum:{},
+        tipus:"Import Excel"
+      };
+      out.push(partida);
+      last=partida;
+      continue;
+    }
+
+    // Descripció llarga alternativa amb codi buit però Nat/U buits o text a altres columnes.
+    if(last && !A && (R||U||N) && rawNumsEmpty){
+      const extra=[N,U,R].filter(Boolean).join(" ");
+      if(extra&&!String(last.desc||"").includes(extra))last.desc=(last.desc?last.desc+"\n":"")+extra;
+      continue;
+    }
+  }
+  const caps=new Set(out.map(p=>p.cap)).size;
+  const total=out.reduce((s,p)=>s+(+p.q||0)*(+p.pu||0),0);
+  return {rows:out,caps,total};
+}
+try{
+  const ab=await file.arrayBuffer();
+  const wb=XLSX.read(ab,{type:"array",cellDates:false});
+  let best={rows:[],caps:0,total:0,sheet:""};
+  for(const sheetName of wb.SheetNames){
+    const ws=wb.Sheets[sheetName];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+    const parsed=parseSheet(rows);
+    if(parsed.rows.length>best.rows.length || (parsed.rows.length===best.rows.length && parsed.caps>best.caps)){
+      best={...parsed,sheet:sheetName};
+    }
+  }
+  if(!best.rows.length){
+    setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Excel llegit però sense partides detectades",import:0}]}));
+    if(e?.target)e.target.value="";
+    return;
+  }
+  setD(obraId,d=>{
+    const nextCerts=(d.certificacions&&d.certificacions.length)?d.certificacions:[{id:"c1",numero:"1",data:todayShort8713(),estat:"Pendent",import:0},{id:"c2",numero:"2",data:todayShort8713(),estat:"Pendent",import:0}];
+    return {...d,partides:best.rows,certificacions:nextCerts,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:`Excel llegit · ${best.rows.length} partides · ${best.caps||1} capítols · ${best.sheet}`,import:best.total}]}
+  });
+  alert(`Pressupost importat correctament: ${best.rows.length} partides en ${best.caps||1} capítols.`);
+}catch(err){
+  setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:"Avui",nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
+}
+if(e?.target)e.target.value="";
+}
 
 function deletePressupostVersion(id){
   if(!confirm("Eliminar aquesta versió de pressupost?")) return;
@@ -738,7 +852,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.56 Excel capítols Código-Resumen</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.57 Excel capítols definitiu</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
