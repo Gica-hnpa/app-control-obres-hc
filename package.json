@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-69-pestanyes-croquis-acta",
+  "name": "app-control-obres-v87-70-importacio-impressio-documents",
   "private": true,
-  "version": "87.69.0",
+  "version": "87.70.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

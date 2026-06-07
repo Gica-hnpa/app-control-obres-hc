@@ -1026,65 +1026,104 @@ async function importExcel(e){
     return (t.includes("codigo")||t.includes("codi")||t.includes("partida")) &&
            (t.includes("resumen")||t.includes("resum")||t.includes("concepte")||t.includes("descrip"));
   }
-  function parseRows(rows,sheetName){
+  
+  // V87.70: lector més robust per Excel tipus pressupost visual (capítols C02/C 02 i partides 02.01 amb imports separats per columnes buides).
+  function isCapCode(s){s=clean(s).replace(/\s+/g,"");return /^C\d{1,3}$/i.test(s) || /^C\d{1,3}[A-Z]?$/i.test(s)}
+  function isItemCodeStrict(s){s=clean(s);return /^\d{1,3}[\.,]\d{1,3}[A-Za-z0-9\-\/]*$/.test(s)}
+  function isMoneyLike(v){
+    if(typeof v==="number")return Number.isFinite(v);
+    const s=clean(v);
+    if(!s || /[A-Za-zÀ-ÿ]/.test(s))return false;
+    return /^-?[0-9.\s]+([,\.][0-9]+)?\s*€?$/.test(s);
+  }
+  function numericCellsAfter(row,from=0){
+    return (row||[]).map((v,i)=>({i,v,t:clean(v),n:num(v)})).filter(c=>c.i>=from && c.t!=="" && isMoneyLike(c.v));
+  }
+  function getAmountTriplet(row,idx){
+    const q0=idx.q>=0?num(row[idx.q]):0, pu0=idx.pu>=0?num(row[idx.pu]):0, imp0=idx.imp>=0?num(row[idx.imp]):0;
+    const okMapped=(idx.q>=0&&!isEmptyNum(row[idx.q])) || (idx.pu>=0&&!isEmptyNum(row[idx.pu])) || (idx.imp>=0&&!isEmptyNum(row[idx.imp]));
+    if(okMapped && (q0||pu0||imp0))return {q:q0,pu:pu0,imp:imp0,source:"mapped"};
+    const nums=numericCellsAfter(row,3);
+    if(nums.length>=3){const last=nums.slice(-3);return {q:last[0].n,pu:last[1].n,imp:last[2].n,source:"tail"}}
+    return {q:0,pu:0,imp:0,source:"none"};
+  }
+  function nonEmptyCells(row){return (row||[]).map((v,i)=>({i,t:clean(v),v})).filter(c=>c.t!=="")}
+  function textWithoutTrailingAmounts(row,start=0){
+    return nonEmptyCells(row).filter(c=>c.i>=start && !isMoneyLike(c.v) && !isUnit(c.t) && !isItemCodeStrict(c.t) && !isCapCode(c.t)).map(c=>c.t).join(" ").replace(/\s+/g," ").trim();
+  }
+  function capTitleFromRow(row,code){
+    const cells=nonEmptyCells(row);
+    const title=cells.filter(c=>c.t!==code && !isMoneyLike(c.v) && !isUnit(c.t) && !isCapCode(c.t)).map(c=>c.t).join(" ").trim();
+    return title||"CAPÍTOL";
+  }
+  
+function parseRows(rows,sheetName){
     const headerIndex=Math.max(0,rows.findIndex(looksHeader));
     const idx=headerMap(rows[headerIndex]||[]);
     let out=[];
     let cap="PRESSUPOST IMPORTAT";
-    let capCount=0;
     let last=null;
 
     for(const row of rows.slice(headerIndex+1)){
       if(!row || !row.some(x=>clean(x)))continue;
+      const cells=nonEmptyCells(row);
+      if(!cells.length)continue;
+
       const A=clean(row[idx.codi]);
       const N=idx.nat>=0?clean(row[idx.nat]):"";
-      const U=clean(row[idx.ud]);
-      const R=clean(row[idx.resum]);
-      const Q=num(row[idx.q]);
-      const PU=num(row[idx.pu]);
-      const IMP=num(row[idx.imp]);
-      const qEmpty=isEmptyNum(row[idx.q]);
-      const puEmpty=isEmptyNum(row[idx.pu]);
-      const impEmpty=isEmptyNum(row[idx.imp]);
-      const numsEmpty=qEmpty && puEmpty && impEmpty;
-      const nN=norm(N), nR=norm(R), nA=norm(A);
-      const rowText=[A,N,U,R].map(clean).filter(Boolean).join(" ");
-      if(!A&&!N&&!U&&!R&&numsEmpty)continue;
-      if(isTotalRow(R)||isTotalRow(A))continue;
+      const Uraw=clean(row[idx.ud]);
+      const Rraw=clean(row[idx.resum]);
+      const first=cells[0]?.t||"";
+      const second=cells[1]?.t||"";
+      const third=cells[2]?.t||"";
+      const nN=norm(N), nR=norm(Rraw);
+      const amounts=getAmountTriplet(row,idx);
+      const numsEmpty=!(amounts.q||amounts.pu||amounts.imp);
+      const rowText=cells.map(c=>c.t).join(" ");
 
-      // CAPÍTOL: format amb Nat=Capítol, o format de captura: codi curt 01 + títol + sense imports.
-      // També acceptem codi curt de capítol amb imports si la columna Nat diu Capítol.
+      if(isTotalRow(Rraw)||isTotalRow(A)||isTotalRow(first)||/^total\b/i.test(norm(rowText)))continue;
+
+      // CAPÍTOL explícit: C02 / C 02 + títol, o Nat=Capítol. S'admet una única xifra de subtotal al final.
+      const capCode=isCapCode(A)?A:(isCapCode(first)?first:(isCapCode(second)?second:""));
       const natCap=nN.includes("capitol") || nN.includes("capítol");
-      const shortCodeCap=pureNumericCode(A) && R && !isUnit(U) && numsEmpty && !nN.includes("part");
-      const textCap=(nR.includes("capitol")||nR.includes("capítol")) && numsEmpty;
-      if(natCap || shortCodeCap || textCap){
-        const title=R || U || N || "CAPÍTOL";
-        cap=`${A} ${title}`.replace(/\s+/g," ").trim();
-        capCount++;
+      const shortCodeCap=(pureNumericCode(A||first) && !isItemCodeStrict(A||first) && !isUnit(second) && textWithoutTrailingAmounts(row,1) && (numsEmpty || numericCellsAfter(row,3).length<=1));
+      const textCap=(nR.includes("capitol")||nR.includes("capítol")) && (numsEmpty || numericCellsAfter(row,3).length<=1);
+      if(capCode || natCap || shortCodeCap || textCap){
+        const code=capCode || A || first || "";
+        const title=capTitleFromRow(row,code) || Rraw || Uraw || N || "CAPÍTOL";
+        cap=`${code} ${title}`.replace(/\s+/g," ").trim();
         last=null;
         continue;
       }
 
-      // DESCRIPCIÓ LLARGA: normalment codi buit + text a Resumen.
-      if(last && !A && (R||U) && numsEmpty){
-        const extra=[U,R].map(clean).filter(Boolean).join(" ");
-        if(extra && !String(last.desc||"").includes(extra)){
-          last.desc=(last.desc?last.desc+"\n":"")+extra;
-        }
+      // DESCRIPCIÓ LLARGA: files sense codi de partida i sense tripleta d'import.
+      const maybeCode=A||first;
+      if(last && !isItemCodeStrict(maybeCode) && !isCapCode(maybeCode) && (Rraw||Uraw||textWithoutTrailingAmounts(row,0)) && (numsEmpty || numericCellsAfter(row,3).length<3)){
+        const extra=(Rraw||Uraw)?[Uraw,Rraw].map(clean).filter(Boolean).join(" "):textWithoutTrailingAmounts(row,0);
+        if(extra && !String(last.desc||"").includes(extra))last.desc=(last.desc?last.desc+"\n":"")+extra;
         continue;
       }
 
+      // PARTIDA: prioritat a codis tipus 02.01 / 03.02. Funciona encara que hi hagi columnes buides abans dels imports.
+      let code=isItemCodeStrict(A)?A:(isItemCodeStrict(first)?first:"");
       const natPart=nN.includes("partida") || nN.includes("part");
-      const codedPart=isPartidaCode(A) && !pureNumericCode(A) && (R||U) && (!numsEmpty || natPart);
-      if(natPart || codedPart){
-        let q=Q||0, pu=PU||0, imp=IMP||0;
+      if(!code && natPart)code=A||first||String(out.length+1).padStart(2,"0");
+      if(code){
+        let unit=isUnit(Uraw)?Uraw:(isUnit(second)?second:(isUnit(third)?third:(Uraw||"ut")));
+        let concept=Rraw;
+        if(!concept){
+          const codeIdx=cells.find(c=>c.t===code)?.i ?? 0;
+          const unitIdx=cells.find(c=>isUnit(c.t) && c.i>codeIdx)?.i ?? -1;
+          concept=textWithoutTrailingAmounts(row,unitIdx>=0?unitIdx+1:codeIdx+1) || third || second || "Partida importada";
+        }
+        let q=amounts.q||0, pu=amounts.pu||0, imp=amounts.imp||0;
         if(!imp && q && pu)imp=q*pu;
         if(!pu && q && imp)pu=imp/q;
         const partida={
-          codi:A||String(out.length+1).padStart(2,"0"),
+          codi:code,
           cap,
-          ut:isUnit(U)?U:(U||"ut"),
-          concepte:R||U||"Partida importada",
+          ut:unit,
+          concepte:concept||"Partida importada",
           desc:"",
           q:q||0,
           pu:pu||0,
@@ -1098,21 +1137,19 @@ async function importExcel(e){
         continue;
       }
 
-      // Si hi ha un codi alfanumèric i imports, encara que no hi hagi Nat.
-      if(isPartidaCode(A) && (R||U) && !numsEmpty){
-        let q=Q||0, pu=PU||0, imp=IMP||0;
+      // Fallback: codi alfanumèric + imports, però evitant confondre capítols C02 amb partides.
+      const fallback=A||first;
+      if(isPartidaCode(fallback) && !isCapCode(fallback) && (Rraw||Uraw||textWithoutTrailingAmounts(row,1)) && !numsEmpty){
+        let q=amounts.q||0, pu=amounts.pu||0, imp=amounts.imp||0;
         if(!imp && q && pu)imp=q*pu;
         if(!pu && q && imp)pu=imp/q;
-        const partida={codi:A,cap,ut:isUnit(U)?U:(U||"ut"),concepte:R||U||"Partida importada",desc:"",q:q||0,pu:pu||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel"};
+        const partida={codi:fallback,cap,ut:isUnit(Uraw)?Uraw:(isUnit(second)?second:(Uraw||"ut")),concepte:Rraw||textWithoutTrailingAmounts(row,1)||"Partida importada",desc:"",q:q||0,pu:pu||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel"};
         out.push(partida);last=partida;
       }
     }
 
-    // Si per qualsevol motiu les primeres partides han quedat a PRESSUPOST IMPORTAT però després apareix un capítol real,
-    // intentem assignar-les al primer capítol real detectat a continuació només si no n'hi ha cap altre.
     const realCaps=[...new Set(out.map(x=>x.cap).filter(c=>c && c!=="PRESSUPOST IMPORTAT"))];
     if(realCaps.length===1){out=out.map(x=>x.cap==="PRESSUPOST IMPORTAT"?{...x,cap:realCaps[0]}:x)}
-
     return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
   }
 
@@ -1578,7 +1615,7 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
       <label><span>Tipus de treball</span><input value={moduleLabel8737(obra)} readOnly/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} save={updateObraFitxa8721}/>} {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} {activeTab==="Amidaments"&&<ExpedientSection8769 label="Amidaments" data={data} setData={setData}/>} {activeTab==="Industrials / Comparatius"&&<ExpedientSection8769 label="Industrials / Comparatius" data={data} setData={setData}/>} {activeTab==="Tràmits"&&<ExpedientSection8769 label="Tràmits" data={data} setData={setData}/>} {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} save={updateObraFitxa8721}/>} {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} {activeTab==="Amidaments"&&<ExpedientSection8769 label="Amidaments" data={data} setData={setData}/>} {activeTab==="Industrials / Comparatius"&&<ExpedientSection8769 label="Industrials / Comparatius" data={data} setData={setData}/>} {activeTab==="Tràmits"&&<ExpedientSection8769 label="Tràmits" data={data} setData={setData}/>} {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 
 function AgendaAvisosExpedient8737({data,openEvent}){
@@ -2140,32 +2177,38 @@ async function deleteFromSupabaseStorage(path){
   return res.ok;
 }
 
-function Documents({openEmail,openDoc}){
-const[docs,setDocs]=useState(()=>JSON.parse(localStorage.getItem("aco_docs_meta_v38")||"null")||JSON.parse(localStorage.getItem("aco_docs_meta_v33")||"null")||[{id:"d1",nom:"Pressupost oficial PDF",tipus:"PDF",data:"10/05/2026",hasFile:false,size:0},{id:"d2",nom:"Pla de seguretat.pdf",tipus:"PDF",data:new Date().toLocaleDateString("ca-ES"),hasFile:false,size:0}]);
+function Documents({obra,data,setData,openEmail,openDoc}){
+const docs=data.documents||[];
 const[cfg,setCfg]=useState(()=>getStorageCfg());
 const[showCfg,setShowCfg]=useState(!isStorageReady(getStorageCfg()));
 const[status,setStatus]=useState("");
-useEffect(()=>{localStorage.setItem("aco_docs_meta_v38",JSON.stringify(docs))},[docs]);
+function setDocs(updater){
+  setData(d=>{
+    const current=d.documents||[];
+    const next=typeof updater==="function"?updater(current):updater;
+    return {...d,documents:next};
+  });
+}
 function saveCfg(){saveStorageCfg(cfg);setStatus(isStorageReady(cfg)?"Storage configurat. Prova pujar un document.":"Falten dades de configuració.")}
 async function add(e){
   let f=e.target.files?.[0];if(!f)return;
-  let id="d"+Date.now(),tipus=f.name.split(".").pop()?.toUpperCase()||"DOC";
-  let baseMeta={id,nom:f.name,tipus,data:new Date().toLocaleDateString("ca-ES"),size:f.size};
+  let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC";
+  let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,data:new Date().toLocaleDateString("ca-ES"),size:f.size};
   try{
     if(isStorageReady(cfg)){
       setStatus("Pujant document a Supabase Storage...");
-      let up=await uploadToSupabaseStorage(f,{id,obraId:"obra-maricel"});
+      let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient"});
       setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);
       setStatus("Document pujat a Supabase Storage.");
       return;
     }
     await saveDocFile(id,f);
     setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);
-    setStatus("Document guardat en local IndexedDB.");
+    setStatus("Document guardat en local IndexedDB dins aquest expedient.");
   }catch(err){
     try{await saveDocFile(id,f);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}
     catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}
-  }
+  }finally{if(e?.target)e.target.value=""}
 }
 async function openOriginal(d){
   if(d.storage==="supabase"&&d.url){window.open(d.url,"_blank");return}
@@ -2173,25 +2216,20 @@ async function openOriginal(d){
   openDoc({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."})
 }
 async function remove(d){
-  if(!confirm("Segur que vols eliminar aquest document?"))return;
+  if(!confirm("Segur que vols eliminar aquest document d’aquest expedient?"))return;
   if(d.storage==="supabase"&&d.path) await deleteFromSupabaseStorage(d.path).catch(()=>{});
   if(d.storage==="indexeddb"||d.hasFile) await deleteDocFile(d.id).catch(()=>{});
   setDocs(p=>p.filter(x=>x.id!==d.id))
 }
 function sizeTxt(n){return n?((n/1024/1024).toFixed(2)+" MB"):"—"}
 function storageLabel(d){if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
-return <Card title="Documents adjunts d’obra" action={<div className="actions-inline"><button className="secondary" onClick={()=>setShowCfg(!showCfg)}>Configurar Storage</button><label className="primary upload-label"><Plus/> Nou document<input type="file" onChange={add}/></label></div>}>
-{showCfg&&<div className="storage-config">
-  <h3>Supabase Storage</h3>
-  <p>Posa les dades del teu projecte Supabase. Bucket recomanat: <b>app-control-obres</b>.</p>
-  <label><span>SUPABASE URL</span><input value={cfg.url||""} onChange={e=>setCfg({...cfg,url:e.target.value})} placeholder="https://xxxx.supabase.co"/></label>
-  <label><span>ANON KEY</span><input value={cfg.anon||""} onChange={e=>setCfg({...cfg,anon:e.target.value})} placeholder="eyJ..."/></label>
-  <label><span>BUCKET</span><input value={cfg.bucket||"app-control-obres"} onChange={e=>setCfg({...cfg,bucket:e.target.value})}/></label>
-  <button className="primary" onClick={saveCfg}>Guardar configuració</button>
-</div>}
-<div className={`doc-mode-note ${isStorageReady(cfg)?"ok":""}`}><b>Estat documents:</b> {isStorageReady(cfg)?"Supabase Storage configurat. Els originals nous es pujaran al núvol.":"Storage no configurat. Els originals només es guarden en local IndexedDB si el navegador ho permet."} {status&&<span> · {status}</span>}</div>
-<div className="list">{docs.map(d=><div className="doc-row" key={d.id}><div><strong>{d.nom}</strong><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span></div><div><button onClick={()=>openOriginal(d)}>Obrir</button><button onClick={()=>openEmail(d.nom)}>Enviar</button><button onClick={()=>remove(d)}>Eliminar</button></div></div>)}</div>
-</Card>}
+return <Card title={`Documents adjunts de l’expedient${obra?.nom?` · ${obra.nom}`:""}`} action={<div className="actions-inline"><label className="primary upload-label"><Upload/> Adjuntar document<input type="file" onChange={add}/></label><button className="secondary" onClick={()=>openEmail("Documents expedient")}>Enviar email</button><button className="secondary" onClick={()=>setShowCfg(!showCfg)}>Config. Storage</button></div>}>
+  {showCfg&&<div className="storage-config"><b>Configuració opcional Supabase Storage</b><p>Si no configures Storage, els originals es guarden en local IndexedDB d’aquest navegador. Els documents ara queden vinculats només a aquest expedient, no són globals.</p><div className="form-grid no-pad"><label><span>URL Supabase</span><input value={cfg.url} onChange={e=>setCfg({...cfg,url:e.target.value})}/></label><label><span>Anon key</span><input value={cfg.key} onChange={e=>setCfg({...cfg,key:e.target.value})}/></label><label><span>Bucket</span><input value={cfg.bucket} onChange={e=>setCfg({...cfg,bucket:e.target.value})}/></label></div><button className="primary" onClick={saveCfg}>Guardar configuració</button></div>}
+  {status&&<div className="doc-status-v38">{status}</div>}
+  <div className="doc-list-v38">{docs.length===0?<Empty text="Aquest expedient encara no té documents adjunts."/>:docs.map(d=><div className="doc-row-v38" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div><div className="actions-inline"><button className="secondary small" onClick={()=>openOriginal(d)}>Obrir</button><button className="danger small" onClick={()=>remove(d)}>Eliminar</button></div></div>)}</div>
+</Card>
+}
+
 
 
 
@@ -2497,12 +2535,12 @@ return <div className="cert-print-v8718">
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p>
     <div className="cert-cover-box-v87">
-      <b>Resum de certificació</b>
-      <span>Partides certificades en aquesta certificació: {current.length}</span>
+      <b>Resum de partides modificades en la certificació en curs</b>
+      <span>Partides amb amidament/import introduït en aquesta certificació: {current.length}</span>
       <span>Total certificació actual: {money(total)}</span>
       <span>Total acumulat a origen: {money(totalOrigen)}</span>
     </div>
-    <h3>Partides certificades en aquesta certificació</h3>
+    <h3>Resum de partides modificades en aquesta certificació</h3>
     {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718">
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
       <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
@@ -2511,7 +2549,7 @@ return <div className="cert-print-v8718">
   </section>
 
   <section className="cert-page-v8718 landscape">
-    <h2>Quadre general de certificació</h2>
+    <h2>Quadre resum general de certificació</h2>
     <table className="cert-wide-table-v8718">
       <thead>
         <tr className="blocks"><th colSpan="6">PRESSUPOST</th><th colSpan="3">CERT. {doc.prevNum} ANTERIOR</th><th colSpan="3">CERT. {doc.certNum} ACTUAL</th><th colSpan="3">A ORIGEN</th></tr>
@@ -2571,8 +2609,18 @@ function DocViewer({doc,obra,client,close,email}){
   const actaPhotos=doc.actaPhotos||[];
   const actaDocs=doc.actaDocs||[];
   const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
+  const printRef=useRef(null);
+  function printIsolated(){
+    const node=printRef.current;
+    if(!node){window.print();return}
+    const css=[...document.querySelectorAll('style')].map(x=>x.innerHTML).join('\n');
+    const win=window.open('','_blank','width=1200,height=900');
+    if(!win){setTimeout(()=>window.print(),100);return}
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title><style>${css}\nbody{background:white!important;margin:0!important}.document-preview{background:white!important;padding:0!important}.document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.modal-actions,.modal-head,.no-print{display:none!important}@media print{body{margin:0!important}.cert-page-v8718{break-after:page;page-break-after:always}.cert-page-v8718:last-child{break-after:auto;page-break-after:auto}}</style></head><body>${node.innerHTML}<script>setTimeout(()=>{window.focus();window.print();},350)<\/script></body></html>`);
+    win.document.close();
+  }
   return <Modal title={doc.title} close={close}>
-    <div className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}>
+    <div ref={printRef} className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}>
       <div className="document-page modern-acta-page">
         {doc.type!=="acta"&&<div className="cert-header-pro">
           <div>{(client?.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client?.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client?.rao||client?.nom||"Despatx tècnic"}</h3><p>NIF: {client?.nif||"Pendent"}<br/>Adreça: {client?.adreca||"Pendent"}<br/>{client?.email||""}<br/>{client?.telefon||""}</p></div>
@@ -2581,6 +2629,6 @@ function DocViewer({doc,obra,client,close,email}){
         {doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
       </div>
     </div>
-    <div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div>
+    <div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={printIsolated}>Imprimir / Guardar PDF</button></div>
   </Modal>
 }
