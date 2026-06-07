@@ -2530,42 +2530,56 @@ const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
   const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
   return s+((+r.impOrigen||0)||qOri*(+r.pu||0));
 },0);
-return <div className="cert-print-v8718">
-  <section className="cert-page-v8718 portrait">
+let lastCap="__none__";
+return <div className="cert-print-v8718 cert-print-v8771">
+  <section className="cert-page-v8718 cert-page-v8771 portrait">
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p>
-    <div className="cert-cover-box-v87">
+    <div className="cert-cover-box-v87 cert-cover-box-v8771">
       <b>Resum de partides modificades en la certificació en curs</b>
       <span>Partides amb amidament/import introduït en aquesta certificació: {current.length}</span>
       <span>Total certificació actual: {money(total)}</span>
       <span>Total acumulat a origen: {money(totalOrigen)}</span>
     </div>
     <h3>Resum de partides modificades en aquesta certificació</h3>
-    {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718">
+    {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718 cert-summary-table-v8771">
+      <colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-qty"/><col className="c-pu"/><col className="c-import"/></colgroup>
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
       <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
       <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
     </table>}
   </section>
 
-  <section className="cert-page-v8718 landscape">
+  <section className="cert-page-v8718 cert-page-v8771 landscape">
     <h2>Quadre resum general de certificació</h2>
-    <table className="cert-wide-table-v8718">
+    <table className="cert-wide-table-v8718 cert-wide-table-v8771">
+      <colgroup>
+        <col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/>
+        <col className="c-q"/><col className="c-pu"/><col className="c-imp"/>
+        <col className="c-q"/><col className="c-pct"/><col className="c-imp"/>
+        <col className="c-q"/><col className="c-pct"/><col className="c-imp"/>
+        <col className="c-q"/><col className="c-pct"/><col className="c-imp-total"/>
+      </colgroup>
       <thead>
         <tr className="blocks"><th colSpan="6">PRESSUPOST</th><th colSpan="3">CERT. {doc.prevNum} ANTERIOR</th><th colSpan="3">CERT. {doc.certNum} ACTUAL</th><th colSpan="3">A ORIGEN</th></tr>
-        <tr><th>Partida</th><th>Ut</th><th>Resum</th><th>CanPres</th><th>PrPres</th><th>ImpPres</th><th>Q ant.</th><th>% ant.</th><th>Imp ant.</th><th>Q act.</th><th>% act.</th><th>Imp act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
+        <tr><th>Partida</th><th>Ut</th><th>Concepte / resum</th><th>Q pres.</th><th>PU pres.</th><th>Imp. pres.</th><th>Q ant.</th><th>% ant.</th><th>Imp. ant.</th><th>Q act.</th><th>% act.</th><th>Imp. act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
       </thead>
       <tbody>{rows.map(r=>{
         const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
         const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
         const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
         const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
-        return <tr key={r.codi}>
-          <td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money(pres)}</td>
-          <td className={(+r.qPrev||0)>0?"green":""}>{qty2(r.qPrev)}</td><td className={(+r.qPrev||0)>0?"green":""}>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td className={(+r.qPrev||0)>0?"green":""}>{money(ant)}</td>
-          <td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td className={(+r.qAct||0)>0?"green":""}>{money(act)}</td>
-          <td className={qOri>0?"green":""}>{qty2(qOri)}</td><td className={qOri>0?"green":""}>{pct(pctOri)}</td><td className={qOri>0?"green":""}>{money(impOri)}</td>
-        </tr>
+        const showCap=(r.cap||"")!==lastCap;
+        if(showCap) lastCap=r.cap||"";
+        return <React.Fragment key={(r.cap||"")+"-"+r.codi}>
+          {showCap&&<tr className="cap-print-row-v8771"><td colSpan="15">{r.cap||"PRESSUPOST IMPORTAT"}</td></tr>}
+          <tr>
+            <td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money(pres)}</td>
+            <td className={(+r.qPrev||0)>0?"green":""}>{qty2(r.qPrev)}</td><td className={(+r.qPrev||0)>0?"green":""}>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td className={(+r.qPrev||0)>0?"green":""}>{money(ant)}</td>
+            <td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td className={(+r.qAct||0)>0?"green":""}>{money(act)}</td>
+            <td className={qOri>0?"green":""}>{qty2(qOri)}</td><td className={qOri>0?"green":""}>{pct(pctOri)}</td><td className={qOri>0?"green":""}>{money(impOri)}</td>
+          </tr>
+        </React.Fragment>
       })}</tbody>
     </table>
   </section>
@@ -2613,10 +2627,10 @@ function DocViewer({doc,obra,client,close,email}){
   function printIsolated(){
     const node=printRef.current;
     if(!node){window.print();return}
-    const css=[...document.querySelectorAll('style')].map(x=>x.innerHTML).join('\n');
-    const win=window.open('','_blank','width=1200,height=900');
+    const css=[...document.querySelectorAll('style')].map(x=>x.innerHTML).join('\n')+"\n"+[...document.styleSheets].map(ss=>{try{return [...(ss.cssRules||[])].map(r=>r.cssText).join('\n')}catch(e){return ''}}).join('\n');
+    const win=window.open('','_blank','width=1300,height=900');
     if(!win){setTimeout(()=>window.print(),100);return}
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title><style>${css}\nbody{background:white!important;margin:0!important}.document-preview{background:white!important;padding:0!important}.document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.modal-actions,.modal-head,.no-print{display:none!important}@media print{body{margin:0!important}.cert-page-v8718{break-after:page;page-break-after:always}.cert-page-v8718:last-child{break-after:auto;page-break-after:auto}}</style></head><body>${node.innerHTML}<script>setTimeout(()=>{window.focus();window.print();},350)<\/script></body></html>`);
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title><style>${css}\nbody{background:white!important;margin:0!important}.document-preview{background:white!important;padding:0!important}.document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.modal-actions,.modal-head,.no-print{display:none!important}@page certPortraitV8771{size:A4 portrait;margin:8mm}@page certLandscapeV8771{size:A4 landscape;margin:6mm}.cert-page-v8771.portrait{page:certPortraitV8771}.cert-page-v8771.landscape{page:certLandscapeV8771}@media print{body{margin:0!important}.cert-page-v8718,.cert-page-v8771{break-after:page;page-break-after:always}.cert-page-v8718:last-child,.cert-page-v8771:last-child{break-after:auto;page-break-after:auto}}</style></head><body>${node.innerHTML}<script>setTimeout(()=>{window.focus();window.print();},450)<\/script></body></html>`);
     win.document.close();
   }
   return <Modal title={doc.title} close={close}>
