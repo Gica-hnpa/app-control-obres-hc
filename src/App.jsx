@@ -169,6 +169,74 @@ function tabsForWork8737(obra,data={}){
   if(workUsesEconomicObra8743(t,obra,data)) return TABS_M2_OBRA8738;
   return workNeedsActes8738(t)?TABS_M1_ACTES8738:TABS_M1_BASE8738;
 }
+
+const EXP_TAB_BASE8765={
+  resum:"RESUM", dades:"DADES", documents:"DOCUMENTS", fotos:"VISITA / FOTOS", planols:"PLÀNOLS",
+  memoria:"MEMÒRIA / INFORME / CERTIFICAT", amidaments:"AMIDAMENTS", pressupost:"PRESSUPOST D’OBRA",
+  industrials:"INDUSTRIALS / COMPARATIUS", tramits:"TRÀMITS", seguretat:"SEGURETAT I SALUT",
+  actes:"ACTES / SEGUIMENT", gestio:"GESTIÓ DE L’OBRA", tasques:"TASQUES", temps:"TEMPS", tancament:"TANCAMENT / ENTREGA"
+};
+function foldersFromTabs8765(tabs=[]){
+  const s=new Set(tabs||[]);
+  const out=["00_CONTROL","01_DOCUMENTACIO"];
+  if(s.has(EXP_TAB_BASE8765.planols))out.push("02_PLANOLS");
+  if(s.has(EXP_TAB_BASE8765.amidaments))out.push("03_AMIDAMENTS");
+  if(s.has(EXP_TAB_BASE8765.pressupost))out.push("04_PRESSUPOST_OBRA");
+  if(s.has(EXP_TAB_BASE8765.industrials))out.push("05_INDUSTRIALS");
+  if(s.has(EXP_TAB_BASE8765.seguretat))out.push("06_SEGURETAT_SALUT");
+  if(s.has(EXP_TAB_BASE8765.actes)||s.has(EXP_TAB_BASE8765.fotos)||s.has(EXP_TAB_BASE8765.gestio))out.push("07_OBRA_SEGUIMENT");
+  if(s.has(EXP_TAB_BASE8765.gestio))out.push("08_CERTIFICACIONS");
+  if(s.has(EXP_TAB_BASE8765.tramits)||s.has(EXP_TAB_BASE8765.tancament))out.push("09_TRAMITS_FINAL");
+  out.push("99_ALTRES");
+  return [...new Set(out)];
+}
+function templateExpedient8765(tipus){
+  const T=EXP_TAB_BASE8765, n=codeClean8739(tipus||"");
+  const common=[T.resum,T.dades,T.documents,T.tasques,T.temps,T.tancament];
+  let active=[...common], optional=[];
+  let label="Plantilla general";
+  if(n.includes("PROJECTE")||n.includes("LLICENCIA")||n.includes("COMUNICACIO")){
+    label="Projecte / llicència d’obres";
+    active=[T.resum,T.dades,T.documents,T.planols,T.memoria,T.amidaments,T.pressupost,T.seguretat,T.tramits,T.tasques,T.temps,T.tancament];
+    optional=[T.fotos,T.industrials,T.actes,T.gestio];
+  }else if(n.includes("PRESSUPOST")||n.includes("AMIDAMENT")){
+    label="Pressupost d’obra / amidaments";
+    active=[T.resum,T.dades,T.documents,T.planols,T.amidaments,T.pressupost,T.industrials,T.tasques,T.temps,T.tancament];
+    optional=[T.fotos];
+  }else if(n.includes("DIRECCIO")||n.includes("EXECUCIO")||n.includes("PROJECT MANAGEMENT")||n.includes("PROJECT MANAGER")){
+    label="Direcció / seguiment / gestió d’obra";
+    active=[T.resum,T.dades,T.documents,T.planols,T.fotos,T.seguretat,T.actes,T.gestio,T.tasques,T.temps,T.tancament];
+  }else if(n.includes("ENERGETIC")||n.includes("CEDULA")){
+    label=n.includes("ENERGETIC")?"Certificat energètic":"Cèdula d’habitabilitat";
+    active=[T.resum,T.dades,T.documents,T.fotos,T.memoria,T.tramits,T.tasques,T.temps,T.tancament];
+  }else if(n.includes("ITE")||n.includes("IEE")||n.includes("INSPECCIO")){
+    label="ITE / IEE / inspecció d’edifici";
+    active=[T.resum,T.dades,T.documents,T.fotos,T.memoria,T.tramits,T.tasques,T.temps,T.tancament];
+    optional=[T.planols,T.pressupost,T.gestio];
+  }else if(n.includes("INFORME")||n.includes("PATOLOG")||n.includes("PERIT")){
+    label="Informe tècnic / patologies / peritatge";
+    active=[T.resum,T.dades,T.documents,T.fotos,T.memoria,T.tasques,T.temps,T.tancament];
+    optional=[T.planols,T.amidaments,T.pressupost,T.tramits];
+  }else if(n.includes("AIXECAMENT")){
+    label="Plànols / aixecament";
+    active=[T.resum,T.dades,T.documents,T.fotos,T.planols,T.tasques,T.temps,T.tancament];
+    optional=[T.amidaments,T.memoria];
+  }else if(n.includes("RENDER")||n.includes("VISUAL")){
+    label="Render / 3D / visualització";
+    active=[T.resum,T.dades,T.documents,T.planols,"RENDERS / PRESENTACIÓ",T.tasques,T.temps,T.tancament];
+    optional=[T.fotos];
+  }else if(n.includes("SEGURETAT")||n.includes("COORDINACIO")){
+    label=n.includes("COORDINACIO")?"Coordinació de seguretat":"Seguretat i salut";
+    active=n.includes("COORDINACIO")?[T.resum,T.dades,T.documents,T.fotos,T.seguretat,T.actes,T.tasques,T.temps,T.tancament]:[T.resum,T.dades,T.documents,T.seguretat,T.tramits,T.tasques,T.temps,T.tancament];
+  }else if(n.includes("CONTROL ECONOMIC")){
+    label="Control econòmic d’obra";
+    active=[T.resum,T.dades,T.documents,T.amidaments,T.pressupost,T.industrials,T.gestio,T.tasques,T.temps,T.tancament];
+    optional=[T.actes,T.seguretat];
+  }
+  active=[...new Set(active)]; optional=[...new Set(optional.filter(x=>!active.includes(x)))];
+  return {label,active,optional,folders:foldersFromTabs8765([...active,...optional])};
+}
+
 function totalIva8743(x){return (+x?.base||+x?.total||0)*(1+(+x?.iva||21)/100)}
 function baseIva8743(x){return (+x?.base||+x?.total||0)}
 function ivaAmount8743(x){return baseIva8743(x)*((+x?.iva||21)/100)}
@@ -315,11 +383,13 @@ function SafeFormExpedient8751({clients,onSubmit}){
   const [mode,setMode]=useState('__new__');
   const [tipus,setTipus]=useState('Projecte tècnic');
   const types=(typeof WORK_TYPES8737!=='undefined'?WORK_TYPES8737:['Projecte tècnic','Project management','Informe tècnic','Certificat energètic','Cèdula d’habitabilitat','Pressupost tècnic-client','Altres']);
+  const tpl8765=templateExpedient8765(tipus);
   return <form onSubmit={onSubmit} className="safe-form-exp-v8751"><div className="form-grid">
     <label><span>Client *</span><select name="client" value={mode} onChange={e=>setMode(e.target.value)} required><option value="__new__">+ Crear client nou</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
     {mode==='__new__'&&<><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" defaultValue="Pendent"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" defaultValue="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" defaultValue="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" defaultValue="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" defaultValue="Pendent"/></label></>}
     <label><span>Nom expedient *</span><input name="nom" required defaultValue="Nou expedient"/></label><label><span>Descripció breu</span><input name="subtitol" defaultValue="Treball pendent de definir"/></label><label><span>Any</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Pendent</option><option>Tancada</option></select></label>
     <label className="span-all"><span>Tipus de treball *</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)} required>{types.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==='Altres'&&<label><span>Altres</span><input name="tipusTreballAltres"/></label>}
+    <div className="span-all template-preview-v8765"><div className="template-head-v8765"><b>Plantilla intel·ligent de l’expedient</b><span>{tpl8765.label}</span></div><div className="template-chip-zone-v8765">{tpl8765.active.map(x=><em key={x}>{x}</em>)}</div>{tpl8765.optional.length>0&&<details><summary>Pestanyes opcionals disponibles</summary><div className="template-chip-zone-v8765 optional">{tpl8765.optional.map(x=><em key={x}>{x}</em>)}</div></details>}<div className="template-folders-v8765"><b>Carpetes documentals previstes:</b> {tpl8765.folders.join(' · ')}</div><input type="hidden" name="tabsPlantilla" value={tpl8765.active.join('|')}/><input type="hidden" name="tabsOpcionals" value={tpl8765.optional.join('|')}/><input type="hidden" name="carpetesPlantilla" value={tpl8765.folders.join('|')}/></div>
     <label><span>Client final / propietat</span><input name="propietat" defaultValue="Pendent"/></label><label><span>NIF client final</span><input name="nifPropietat" defaultValue="Pendent"/></label><label><span>Adreça expedient *</span><input name="adreca" required defaultValue="Pendent"/></label><label><span>Població *</span><input name="poblacio" required defaultValue="Pendent"/></label><label><span>Referència cadastral</span><input name="rc" defaultValue="Pendent"/></label><label><span>Paraula clau codi</span><input name="paraulaClau" placeholder="FRONTMAR, PALAMOS..."/></label>
   </div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>
 }
@@ -1118,7 +1188,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.64 actes agents documents</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.65 A4 actes + plantilles expedient</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
