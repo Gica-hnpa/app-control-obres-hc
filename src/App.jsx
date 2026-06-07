@@ -342,6 +342,113 @@ function SafeTemps8751({data,setData}){
   return <Card title="Gestió del temps" action={<button type="button" className="primary" onClick={add}>+ Afegir registre</button>}><div className="safe-temps-v8751"><div className="time-total-v8751">Total expedient: <b>{total.toFixed(2)} h</b></div><div className="table-scroll-v8751"><table><thead><tr><th>Data</th><th>Feina</th><th>Hores</th><th>Facturat</th><th>Entregat</th><th>Cobrat</th><th>Observacions</th><th></th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="8">Encara no hi ha registres.</td></tr>}{rows.map(r=><tr key={r.id}><td><input type="date" value={r.data||''} onChange={e=>upd(r.id,'data',e.target.value)}/></td><td><input value={r.feina||''} onChange={e=>upd(r.id,'feina',e.target.value)}/></td><td><input type="number" step="0.25" value={r.hores||0} onChange={e=>upd(r.id,'hores',e.target.value)}/></td><td><input type="checkbox" checked={!!r.facturat} onChange={e=>upd(r.id,'facturat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.entregat} onChange={e=>upd(r.id,'entregat',e.target.checked)}/></td><td><input type="checkbox" checked={!!r.cobrat} onChange={e=>upd(r.id,'cobrat',e.target.checked)}/></td><td><input value={r.observacions||''} onChange={e=>upd(r.id,'observacions',e.target.value)}/></td><td><button type="button" className="danger" onClick={()=>del(r.id)}>Eliminar</button></td></tr>)}</tbody></table></div></div></Card>
 }
 
+
+function fmtDate8761(v){
+  if(!v)return "—";
+  const s=String(v).trim();
+  const m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if(m)return `${String(m[3]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}/${m[1]}`;
+  const m2=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if(m2)return `${String(m2[1]).padStart(2,"0")}/${String(m2[2]).padStart(2,"0")}/${m2[3]}`;
+  return s;
+}
+function todayISO8761(){return new Date().toISOString().slice(0,10)}
+function addPhotoFiles8761(files,setData){
+  [...(files||[])].forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=()=>setData(d=>({...d,fotos:[...(d.fotos||[]),{
+      id:"foto-"+Date.now()+"-"+Math.random().toString(16).slice(2),
+      nom:file.name||"Foto",
+      src:reader.result,
+      data:todayISO8761()
+    }]}));
+    reader.readAsDataURL(file);
+  });
+}
+function Fotografies8761({data,setData}){
+  const fotos=data.fotos||[];
+  return <Card title="Fotografies" action={<div className="actions-inline"><label className="secondary file-btn-v8761">Adjuntar fotos<input type="file" accept="image/*" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label><label className="primary file-btn-v8761">Fer foto<input type="file" accept="image/*" capture="environment" onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>}>
+    <div className="photo-grid-v8761">
+      {fotos.length===0&&<div className="empty-v8761">Encara no hi ha fotografies adjuntades.</div>}
+      {fotos.map(f=><div className="photo-card-v8761" key={f.id}><img src={f.src}/><div><b>{f.nom}</b><span>{fmtDate8761(f.data)}</span></div></div>)}
+    </div>
+  </Card>
+}
+function Actes8761({obra,data,setData}){
+  const actes=data.actes||[];
+  const fotos=data.fotos||[];
+  const [editId,setEditId]=useState(null);
+  const [draft,setDraft]=useState(null);
+
+  function addActa(){
+    const a={id:"acta-"+Date.now(),titol:"Nova acta",data:todayISO8761(),text:"",fotoIds:[],estat:"Esborrany"};
+    setData(d=>({...d,actes:[...(d.actes||[]),a]}));
+    setEditId(a.id);
+    setDraft(a);
+  }
+  function startEdit(a){
+    setEditId(a.id);
+    setDraft(JSON.parse(JSON.stringify({...a,fotoIds:a.fotoIds||[]})));
+  }
+  function save(){
+    if(!draft?.titol||!draft?.data){alert("Cal indicar títol i data de l’acta.");return}
+    setData(d=>({...d,actes:(d.actes||[]).map(a=>a.id===draft.id?draft:a)}));
+    setEditId(null);
+    setDraft(null);
+  }
+  function del(id){
+    if(!confirm("Eliminar aquesta acta?"))return;
+    setData(d=>({...d,actes:(d.actes||[]).filter(a=>a.id!==id)}));
+    if(editId===id){setEditId(null);setDraft(null)}
+  }
+  function upd(k,v){setDraft(d=>({...d,[k]:v}))}
+  function toggleFoto(id){
+    setDraft(d=>{
+      const arr=d.fotoIds||[];
+      return {...d,fotoIds:arr.includes(id)?arr.filter(x=>x!==id):[...arr,id]};
+    });
+  }
+
+  return <Card title="Actes" action={<button className="primary" type="button" onClick={addActa}>+ Nova acta</button>}>
+    <div className="actes-layout-v8761">
+      <div className="actes-list-v8761">
+        {actes.length===0&&<div className="empty-v8761">Encara no hi ha actes.</div>}
+        {actes.map(a=><div className={editId===a.id?"acta-list-row-v8761 active":"acta-list-row-v8761"} key={a.id}>
+          <button type="button" onClick={()=>startEdit(a)}><b>{a.titol||"Acta"}</b><span>{fmtDate8761(a.data)}</span></button>
+          <button type="button" className="danger small" onClick={()=>del(a.id)}>Eliminar</button>
+        </div>)}
+      </div>
+      <div className="acta-editor-v8761">
+        {!draft&&<div className="empty-v8761">Selecciona una acta per editar-la o crea’n una de nova.</div>}
+        {draft&&<>
+          <div className="form-grid">
+            <label><span>Títol acta *</span><input value={draft.titol||""} onChange={e=>upd("titol",e.target.value)}/></label>
+            <label><span>Data *</span><input type="date" value={draft.data||""} onChange={e=>upd("data",e.target.value)}/></label>
+            <label><span>Estat</span><select value={draft.estat||"Esborrany"} onChange={e=>upd("estat",e.target.value)}><option>Esborrany</option><option>Enviada</option><option>Signada</option><option>Tancada</option></select></label>
+          </div>
+          <label className="span-all"><span>Text de l’acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Redacta aquí l’acta..."/></label>
+          <div className="photo-select-v8761">
+            <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
+            <div className="photo-mini-grid-v8761">
+              {fotos.length===0&&<span>No hi ha fotos a l’expedient.</span>}
+              {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><img src={f.src}/><span>{f.nom}</span></label>)}
+            </div>
+          </div>
+          <div className="actions-inline"><button type="button" className="primary" onClick={save}>Guardar acta</button><button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null)}}>Cancel·lar</button></div>
+          <div className="a4-acta-preview-v8761">
+            <h2>ACTA</h2>
+            <p><b>Expedient:</b> {obra?.nom}</p>
+            <p><b>Data:</b> {fmtDate8761(draft.data)}</p>
+            <h3>{draft.titol}</h3>
+            <p>{draft.text||"Text pendent..."}</p>
+            <div className="acta-photo-preview-v8761">{(draft.fotoIds||[]).map(id=>fotos.find(f=>f.id===id)).filter(Boolean).map(f=><img key={f.id} src={f.src}/>)}</div>
+          </div>
+        </>}
+      </div>
+    </div>
+  </Card>
+}
+
 export default function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
 const appCfg=JSON.parse(localStorage.getItem("aco_config")||"{}");
@@ -883,7 +990,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.60b gestió obra estable</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.61 pressupost actes fotos</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -1244,6 +1351,10 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
   const [descOpen875,setDescOpen875]=useState({});
   const [editBudget8760b,setEditBudget8760b]=useState(false);
+  const [capNameDraft8761,setCapNameDraft8761]=useState({});
+  useEffect(()=>{
+    if(!editBudget8760b)setCapNameDraft8761({});
+  },[editBudget8760b]);
   function saveBudget8760b(){
     const flat=Object.entries(caps).flatMap(([cap,items])=>(items||[]).map(r=>({...r,cap})));
     setData?.(d=>({...d,partides:flat}));
@@ -1270,17 +1381,20 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
 
   function renameCap(oldName,v){
     if(!editBudget8760b)return;
-    if(!v.trim()) return;
+    const nv=String(v||"").trim();
+    if(!nv || nv===oldName)return;
     setCaps(p=>{
-      const n={...p};
-      n[v]=n[oldName]||[];
-      if(v!==oldName) delete n[oldName];
+      const n={};
+      Object.entries(p).forEach(([k,items])=>{
+        n[k===oldName?nv:k]=items;
+      });
       return n;
     });
     setOpen(o=>{
-      const n={...o};
-      n[v]=n[oldName];
-      if(v!==oldName) delete n[oldName];
+      const n={};
+      Object.entries(o).forEach(([k,val])=>{
+        n[k===oldName?nv:k]=val;
+      });
       return n;
     });
   }

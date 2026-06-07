@@ -2891,3 +2891,29 @@ button,input,select,textarea{font-size:13.5px!important}
 .pressupost-readonly-v8760b .budget-v25-cap-head input{
   font-weight:900;
 }
+
+/* V87.61 - correcció edició capítol, actes i fotos */
+.file-btn-v8761{position:relative;overflow:hidden;cursor:pointer}
+.file-btn-v8761 input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.photo-grid-v8761{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;padding:12px}
+.photo-card-v8761{border:1px solid #dbe3ef;border-radius:12px;overflow:hidden;background:#fff}
+.photo-card-v8761 img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#e5e7eb}
+.photo-card-v8761 div{padding:8px}.photo-card-v8761 b,.photo-card-v8761 span{display:block}
+.actes-layout-v8761{display:grid;grid-template-columns:300px 1fr;gap:14px;padding:12px}
+.actes-list-v8761{display:flex;flex-direction:column;gap:8px}
+.acta-list-row-v8761{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid #dbe3ef;border-radius:12px;padding:8px;background:#fff}
+.acta-list-row-v8761.active{border-color:#2563eb;background:#eff6ff}
+.acta-list-row-v8761 button:first-child{text-align:left;background:transparent;border:0}
+.acta-list-row-v8761 b,.acta-list-row-v8761 span{display:block}
+.acta-editor-v8761 textarea{width:100%;min-height:160px;border:1px solid #cbd5e1;border-radius:12px;padding:10px}
+.photo-select-v8761{border:1px solid #dbe3ef;border-radius:12px;background:#f8fafc;padding:10px;margin:12px 0}
+.photo-select-head-v8761{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.photo-mini-grid-v8761{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.photo-mini-grid-v8761 label{border:1px solid #dbe3ef;background:#fff;border-radius:10px;padding:6px;display:grid;grid-template-columns:auto 48px 1fr;gap:6px;align-items:center}
+.photo-mini-grid-v8761 label.selected{border-color:#2563eb;background:#eff6ff}
+.photo-mini-grid-v8761 img{width:48px;height:36px;object-fit:cover;border-radius:6px}
+.a4-acta-preview-v8761{margin-top:14px;background:#fff;border:1px solid #dbe3ef;border-radius:14px;padding:22px;max-width:794px;min-height:420px}
+.acta-photo-preview-v8761{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.acta-photo-preview-v8761 img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px}
+.empty-v8761{padding:18px;color:#64748b;font-weight:700}
+@media(max-width:900px){.actes-layout-v8761{grid-template-columns:1fr}.photo-select-head-v8761{flex-direction:column;align-items:flex-start}}
