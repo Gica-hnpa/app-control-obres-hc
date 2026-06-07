@@ -3352,3 +3352,26 @@ button,input,select,textarea{font-size:13.5px!important}
   .cert-summary-table-v8771{font-size:10px!important;}
   .cert-summary-table-v8771 th,.cert-summary-table-v8771 td{padding:4px 5px!important;}
 }
+
+/* UPDATE V87.72 - previsualització estable de certificacions */
+.cert-preview-v8772{background:white;color:#0f172a;padding:10px;max-width:100%;}
+.cert-preview-head-v8772{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;border-bottom:2px solid #0f172a;padding-bottom:10px;margin-bottom:10px;}
+.cert-preview-head-v8772 h1{margin:0;font-size:22px;color:#0f2d5c;}
+.cert-preview-head-v8772 p{margin:4px 0 0;color:#64748b;}
+.cert-preview-head-v8772 b{background:#d9ead3;border:1px solid #94a3b8;border-radius:10px;padding:10px 12px;font-size:18px;white-space:nowrap;}
+.cert-preview-note-v8772{background:#eff6ff;border:1px solid #bfdbfe;border-left:5px solid #2563eb;border-radius:12px;padding:10px 12px;margin:10px 0;color:#1e3a8a;font-weight:800;}
+.cert-preview-v8772 h3{margin:16px 0 8px;color:#0f2d5c;}
+.cert-preview-table-wrap-v8772{overflow:auto;border:1px solid #cbd5e1;border-radius:12px;background:white;max-height:56vh;}
+.cert-preview-summary-v8772,.cert-preview-wide-v8772{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;}
+.cert-preview-summary-v8772 th,.cert-preview-summary-v8772 td,.cert-preview-wide-v8772 th,.cert-preview-wide-v8772 td{border:1px solid #cbd5e1;padding:6px 7px;text-align:right;vertical-align:middle;font-variant-numeric:tabular-nums;}
+.cert-preview-summary-v8772 th,.cert-preview-wide-v8772 th{background:#dbeafe;color:#0f172a;font-weight:900;position:sticky;top:0;z-index:1;}
+.cert-preview-summary-v8772 .concept,.cert-preview-wide-v8772 .concept{text-align:left!important;white-space:normal!important;}
+.cert-preview-summary-v8772 th:nth-child(3),.cert-preview-summary-v8772 td:nth-child(3){width:auto;}
+.cert-preview-summary-v8772 th:nth-child(1),.cert-preview-summary-v8772 td:nth-child(1){width:70px;}
+.cert-preview-summary-v8772 th:nth-child(2),.cert-preview-summary-v8772 td:nth-child(2){width:45px;}
+.cert-preview-summary-v8772 th:nth-child(4),.cert-preview-summary-v8772 td:nth-child(4),.cert-preview-summary-v8772 th:nth-child(5),.cert-preview-summary-v8772 td:nth-child(5){width:115px;}
+.cert-preview-summary-v8772 th:nth-child(6),.cert-preview-summary-v8772 td:nth-child(6){width:130px;}
+.cert-preview-wide-v8772{min-width:980px;font-size:11px;}
+.cert-preview-wide-v8772 th:nth-child(2),.cert-preview-wide-v8772 td:nth-child(2){width:330px;}
+.cert-preview-wide-v8772 .green{background:#d9ead3;font-weight:800;}
+.cert-preview-summary-v8772 tfoot th{background:#b7c9dd;border-top:2px solid #0f172a;}

@@ -2586,6 +2586,76 @@ return <div className="cert-print-v8718 cert-print-v8771">
 </div>
 }
 
+
+function escHtmlV8772(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]))}
+function certPrintHtmlV8772(doc,obra,client){
+  const rows=doc.rows||[];
+  const current=rows.filter(r=>(+r.qAct||0)>0);
+  const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+  const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
+    const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
+    return s+((+r.impOrigen||0)||qOri*(+r.pu||0));
+  },0);
+  let lastCap="__none__";
+  const summaryRows=current.map(r=>`<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qAct)}</td><td>${money(r.pu)}</td><td>${money((+r.qAct||0)*(+r.pu||0))}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">No hi ha partides amb amidament certificat en aquesta certificació.</td></tr>`;
+  const wideRows=rows.map(r=>{
+    const cap=r.cap||"PRESSUPOST IMPORTAT";
+    const showCap=cap!==lastCap; lastCap=cap;
+    const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
+    const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
+    const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
+    const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
+    return `${showCap?`<tr class="cap"><td colspan="15">${escHtmlV8772(cap)}</td></tr>`:""}<tr>
+      <td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.q)}</td><td>${money(r.pu)}</td><td>${money(pres)}</td>
+      <td class="${(+r.qPrev||0)>0?'green':''}">${qty2(r.qPrev)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${money(ant)}</td>
+      <td class="${(+r.qAct||0)>0?'green':''}">${qty2(r.qAct)}</td><td class="${(+r.qAct||0)>0?'green':''}">${pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td class="${(+r.qAct||0)>0?'green':''}">${money(act)}</td>
+      <td class="${qOri>0?'green':''}">${qty2(qOri)}</td><td class="${qOri>0?'green':''}">${pct(pctOri)}</td><td class="${qOri>0?'green':''}">${money(impOri)}</td>
+    </tr>`;
+  }).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Certificació")}</title><style>
+    *{box-sizing:border-box} body{margin:0;background:white;color:#0f172a;font-family:Arial,Helvetica,sans-serif;font-size:10px}
+    @page certPortraitV8772{size:A4 portrait;margin:8mm} @page certLandscapeV8772{size:A4 landscape;margin:6mm}
+    .page{background:#fff;break-after:page;page-break-after:always}.page:last-child{break-after:auto;page-break-after:auto}
+    .portrait{page:certPortraitV8772;width:190mm;min-height:277mm;padding:0}.landscape{page:certLandscapeV8772;width:277mm;min-height:190mm;padding:0}
+    h1{font-size:18px;margin:0 0 6px;color:#0f2d5c} h2{font-size:16px;margin:0 0 8px;color:#0f2d5c} h3{font-size:13px;margin:12px 0 8px;color:#0f2d5c}.sub{color:#475569;margin:0 0 10px}
+    .head{display:grid;grid-template-columns:1fr 1fr;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:10px}.head b{display:block;font-size:12px}.head span{display:block;color:#475569;margin-top:2px}
+    .cover{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px;margin:8px 0 10px}.cover b{grid-column:1/-1;font-size:13px}.cover span{background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:7px;font-weight:700;color:#334155}
+    table{width:100%;border-collapse:collapse;table-layout:fixed} th,td{border:1px solid #94a3b8;padding:3px 4px;text-align:right;vertical-align:middle;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden} th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow:visible!important;line-height:1.15}
+    .summary{font-size:10px}.summary .part{width:14mm}.summary .ut{width:8mm}.summary .concept-col{width:auto}.summary .num{width:22mm}.summary .imp{width:26mm}.summary tfoot th{background:#b7c9dd;border-top:2px solid #0f172a}
+    .wide{font-size:6.7px;line-height:1.05}.wide col.part{width:5.8%}.wide col.ut{width:3.2%}.wide col.concept-col{width:26.5%}.wide col.q{width:4.6%}.wide col.pu{width:5.2%}.wide col.imp{width:6.2%}.wide col.pct{width:4.1%}.wide col.imp-total{width:6.9%}.wide th,.wide td{padding:2.1px 2.4px}.wide .blocks th{background:#b7c9dd;border-top:2px solid #0f172a;border-bottom:2px solid #0f172a;text-align:center}.wide .green{background:#d9ead3;font-weight:700}.wide th:nth-child(6),.wide td:nth-child(6),.wide th:nth-child(9),.wide td:nth-child(9),.wide th:nth-child(12),.wide td:nth-child(12){border-right:2px solid #0f172a}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900;border-top:2px solid #0f172a;border-bottom:1.5px solid #0f172a;white-space:normal!important;font-size:7px}
+    thead{display:table-header-group} tfoot{display:table-footer-group}.empty{text-align:left;color:#64748b;padding:10px!important}
+    @media screen{body{background:#e5e7eb;padding:16px}.page{box-shadow:0 2px 12px rgba(15,23,42,.15);margin:0 auto 16px;background:#fff;padding:8mm}.landscape{padding:6mm}}
+    @media print{body{background:#fff!important;padding:0!important}.page{box-shadow:none!important;margin:0!important}.portrait{padding:0!important}.landscape{padding:0!important}}
+  </style></head><body>
+    <section class="page portrait">
+      <div class="head"><div><b>${escHtmlV8772(client?.rao||client?.nom||"Despatx tècnic")}</b><span>NIF: ${escHtmlV8772(client?.nif||"Pendent")}</span><span>${escHtmlV8772(client?.adreca||"")}</span></div><div><b>${escHtmlV8772(obra?.propietat||client?.nom||"Client")}</b><span>NIF: ${escHtmlV8772(obra?.nifPropietat||"Pendent")}</span><span>${escHtmlV8772(obra?.adreca||"")} ${escHtmlV8772(obra?.poblacio||"")}</span></div></div>
+      <h1>${escHtmlV8772(doc.title||"CERTIFICACIÓ")}</h1><p class="sub">${doc.data?`Data: ${escHtmlV8772(doc.data)} · `:""}${escHtmlV8772(doc.subtitle||"")}</p>
+      <div class="cover"><b>Resum de partides modificades en la certificació en curs</b><span>Partides certificades: ${current.length}</span><span>Total certificació actual: ${money(total)}</span><span>Total acumulat a origen: ${money(totalOrigen)}</span></div>
+      <h3>Resum de partides modificades en aquesta certificació</h3>
+      <table class="summary"><colgroup><col class="part"><col class="ut"><col class="concept-col"><col class="num"><col class="num"><col class="imp"></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>${summaryRows}</tbody><tfoot><tr><th colspan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>${money(total)}</th></tr></tfoot></table>
+    </section>
+    <section class="page landscape">
+      <h2>Quadre resum general de certificació</h2>
+      <table class="wide"><colgroup><col class="part"><col class="ut"><col class="concept-col"><col class="q"><col class="pu"><col class="imp"><col class="q"><col class="pct"><col class="imp"><col class="q"><col class="pct"><col class="imp"><col class="q"><col class="pct"><col class="imp-total"></colgroup>
+      <thead><tr class="blocks"><th colspan="6">PRESSUPOST</th><th colspan="3">CERT. ${escHtmlV8772(doc.prevNum)} ANTERIOR</th><th colspan="3">CERT. ${escHtmlV8772(doc.certNum)} ACTUAL</th><th colspan="3">A ORIGEN</th></tr><tr><th>Partida</th><th>Ut</th><th>Concepte / resum</th><th>Q pres.</th><th>PU pres.</th><th>Imp. pres.</th><th>Q ant.</th><th>% ant.</th><th>Imp. ant.</th><th>Q act.</th><th>% act.</th><th>Imp. act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr></thead><tbody>${wideRows}</tbody></table>
+    </section>
+  </body></html>`;
+}
+
+function CertPreviewV8772({doc}){
+  const rows=doc.rows||[];
+  const current=rows.filter(r=>(+r.qAct||0)>0);
+  const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+  return <div className="cert-preview-v8772">
+    <div className="cert-preview-head-v8772"><h1>{doc.title}</h1><p>{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p><b>{money(total)}</b></div>
+    <div className="cert-preview-note-v8772">Previsualització lleugera. El botó “Imprimir / Guardar PDF” genera el document complet: primera pàgina vertical i quadre general horitzontal.</div>
+    <h3>Resum de partides modificades en aquesta certificació</h3>
+    {current.length===0?<div className="empty">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772"><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="5">TOTAL</th><th>{money(total)}</th></tr></tfoot></table></div>}
+    <h3>Quadre general</h3>
+    <div className="cert-preview-table-wrap-v8772"><table className="cert-preview-wide-v8772"><thead><tr><th>Partida</th><th>Concepte</th><th>Q pres.</th><th>PU</th><th>Imp. pres.</th><th>Q ant.</th><th>Q act.</th><th>Imp. act.</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=>{const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));return <tr key={(r.cap||"")+r.codi}><td>{r.codi}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money((+r.q||0)*(+r.pu||0))}</td><td>{qty2(r.qPrev)}</td><td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</td><td>{money(qOri*(+r.pu||0))}</td></tr>})}</tbody></table></div>
+  </div>
+}
+
 function FormClient({onSubmit}){let[logo,setLogo]=useState("");return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Logo / foto empresa</span><input type="file" onChange={e=>f2u(e.target.files[0],setLogo)}/><input type="hidden" name="logoPreview" value={logo}/>{logo&&<img className="logo-preview" src={logo}/>}</label><Input name="nom" label="Nom comercial" defaultValue="Nou client"/><Input name="rao" label="Raó social" defaultValue="Pendent"/><label><span>Rol / tipologia</span><select name="tipus"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Particular</option><option>Altres</option></select></label><Input name="nif" label="NIF/CIF" defaultValue="Pendent"/><Input name="contacte" label="Contacte" defaultValue="Pendent"/><Input name="telefon" label="Telèfon" defaultValue="Pendent"/><Input name="email" label="Email" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear client</button></div></form>}
 function FormObra({clients,onSubmit}){const[clientSel,setClientSel]=useState("__new__");const[tipus,setTipus]=useState(WORK_TYPES8737[0]);return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="__new__">+ Crear client nou</option><option value="" disabled>— Clients existents —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>{clientSel==="__new__"&&<><Input name="clientNouNom" label="Nom nou client" defaultValue="Nou client"/><Input name="clientNouRao" label="Raó social nou client" defaultValue="Pendent"/><label><span>Tipologia nou client</span><select name="clientNouTipus"><option>Particular</option><option>Promotor</option><option>Arquitecte tècnic</option><option>Constructor</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="clientNouContacte" label="Contacte nou client" defaultValue="Pendent"/><Input name="clientNouNif" label="NIF/CIF nou client" defaultValue="Pendent"/><Input name="clientNouTelefon" label="Telèfon nou client" defaultValue="Pendent"/><Input name="clientNouEmail" label="Email nou client" defaultValue="Pendent"/><Input name="clientNouAdreca" label="Adreça nou client" defaultValue="Pendent"/></>}<Input name="nom" label="Nom de l’expedient" defaultValue="Nou expedient"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><label><span>Paraula clau del codi</span><input name="paraulaClau" placeholder="Ex: FRONTMAR, GARRIGOLES, PALAMOS"/></label><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Tancada</option></select></label><label className="span-all"><span>Tipus de treball</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==="Altres"&&<Input name="tipusTreballAltres" label="Especifica el tipus de treball" defaultValue=""/>}<div className="span-all code-help-v8739"><b>Numeració automàtica</b><span>El codi es generarà com: ANY-NÚM-TIPUS-CLIENT-PARAULA CLAU. Exemple: 2026-001-PRES-SOC-FRONTMAR.</span></div><Input name="propietat" label="Client final / propietat" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client final" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>}
 function FormPartida({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="codi" label="Codi" defaultValue="10.02"/><Input name="cap" label="Capítol" defaultValue="10 FEINES FORA PRESSUPOST"/><Input name="concepte" label="Concepte" defaultValue="Nova partida"/><Input name="ut" label="Ut" defaultValue="m²"/><Input name="q" label="Quantitat" defaultValue="1"/><Input name="pu" label="PU" defaultValue="0"/><label><span>Tipus</span><select name="tipus"><option>Base</option><option>Modificada</option><option>Fora pressupost</option></select></label></div><div className="modal-actions"><button className="primary">Afegir partida</button></div></form>}
@@ -2625,12 +2695,18 @@ function DocViewer({doc,obra,client,close,email}){
   const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
   const printRef=useRef(null);
   function printIsolated(){
+    const win=window.open('','_blank','width=1300,height=900');
+    if(!win){setTimeout(()=>window.print(),100);return}
+    if(doc.type==="certificacio"&&doc.rows){
+      win.document.open();
+      win.document.write(certPrintHtmlV8772(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},350)<\/script>`);
+      win.document.close();
+      return;
+    }
     const node=printRef.current;
     if(!node){window.print();return}
     const css=[...document.querySelectorAll('style')].map(x=>x.innerHTML).join('\n')+"\n"+[...document.styleSheets].map(ss=>{try{return [...(ss.cssRules||[])].map(r=>r.cssText).join('\n')}catch(e){return ''}}).join('\n');
-    const win=window.open('','_blank','width=1300,height=900');
-    if(!win){setTimeout(()=>window.print(),100);return}
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title><style>${css}\nbody{background:white!important;margin:0!important}.document-preview{background:white!important;padding:0!important}.document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.modal-actions,.modal-head,.no-print{display:none!important}@page certPortraitV8771{size:A4 portrait;margin:8mm}@page certLandscapeV8771{size:A4 landscape;margin:6mm}.cert-page-v8771.portrait{page:certPortraitV8771}.cert-page-v8771.landscape{page:certLandscapeV8771}@media print{body{margin:0!important}.cert-page-v8718,.cert-page-v8771{break-after:page;page-break-after:always}.cert-page-v8718:last-child,.cert-page-v8771:last-child{break-after:auto;page-break-after:auto}}</style></head><body>${node.innerHTML}<script>setTimeout(()=>{window.focus();window.print();},450)<\/script></body></html>`);
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title><style>${css}\nbody{background:white!important;margin:0!important}.document-preview{background:white!important;padding:0!important}.document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.modal-actions,.modal-head,.no-print{display:none!important}</style></head><body>${node.innerHTML}<script>setTimeout(()=>{window.focus();window.print();},350)<\/script></body></html>`);
     win.document.close();
   }
   return <Modal title={doc.title} close={close}>
@@ -2640,7 +2716,7 @@ function DocViewer({doc,obra,client,close,email}){
           <div>{(client?.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client?.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client?.rao||client?.nom||"Despatx tècnic"}</h3><p>NIF: {client?.nif||"Pendent"}<br/>Adreça: {client?.adreca||"Pendent"}<br/>{client?.email||""}<br/>{client?.telefon||""}</p></div>
           <div><h3>{obra?.propietat||client?.nom||"Client"}</h3><p>NIF: {obra?.nifPropietat||"Pendent"}<br/>{obra?.adreca||""}<br/>{obra?.poblacio||""}</p></div>
         </div>}
-        {doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
+        {doc.type==="certificacio"&&doc.rows?<CertPreviewV8772 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
       </div>
     </div>
     <div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={printIsolated}>Imprimir / Guardar PDF</button></div>
