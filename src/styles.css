@@ -2942,3 +2942,113 @@ button,input,select,textarea{font-size:13.5px!important}
   object-fit:contain;
   background:#f1f5f9;
 }
+
+/* V87.63 - botó previsualitzar actes */
+.a4-acta-preview-v8761{
+  animation: actaPreviewIn8763 .12s ease-out;
+}
+@keyframes actaPreviewIn8763{
+  from{opacity:0;transform:translateY(4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* V87.64 - agents i documents a actes */
+.section-head-v8764{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.section-head-v8764 b,
+.section-head-v8764 span{display:block}
+.agents-box-v8764,
+.docs-acta-box-v8764{
+  border:1px solid #dbe3ef;
+  border-radius:14px;
+  background:#f8fafc;
+  padding:12px;
+  margin:12px 0;
+}
+.agent-form-v8764{
+  display:grid;
+  grid-template-columns:1.1fr .9fr .9fr 1.1fr auto;
+  gap:8px;
+  margin-bottom:10px;
+}
+.agent-form-v8764 input,
+.agent-row-v8764 input{
+  border:1px solid #cbd5e1;
+  border-radius:9px;
+  padding:8px;
+  background:#fff;
+}
+.agents-list-v8764{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.agent-row-v8764{
+  display:grid;
+  grid-template-columns:110px 1fr .9fr .9fr auto;
+  gap:8px;
+  align-items:center;
+  border:1px solid #dbe3ef;
+  background:#fff;
+  border-radius:12px;
+  padding:8px;
+}
+.agent-row-v8764.selected{
+  border-color:#2563eb;
+  background:#eff6ff;
+}
+.agent-row-v8764 label{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  font-weight:800;
+  font-size:12px;
+}
+.docs-acta-list-v8764{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.doc-acta-row-v8764{
+  display:grid;
+  grid-template-columns:1fr 100px auto auto;
+  gap:8px;
+  align-items:center;
+  border:1px solid #dbe3ef;
+  background:#fff;
+  border-radius:12px;
+  padding:8px;
+}
+.preview-section-v8764{
+  margin:14px 0;
+  border-top:1px solid #e2e8f0;
+  padding-top:10px;
+}
+.preview-section-v8764 table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px;
+}
+.preview-section-v8764 td{
+  border:1px solid #e2e8f0;
+  padding:6px;
+}
+.preview-section-v8764 ul{
+  margin:8px 0 0 18px;
+}
+@media(max-width:1000px){
+  .agent-form-v8764,
+  .agent-row-v8764,
+  .doc-acta-row-v8764{
+    grid-template-columns:1fr;
+  }
+  .section-head-v8764{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}

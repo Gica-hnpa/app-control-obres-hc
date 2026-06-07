@@ -374,34 +374,95 @@ function Fotografies8761({data,setData}){
     </div>
   </Card>
 }
+
+function addActaDocFiles8764(files,setDraft){
+  [...(files||[])].forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=()=>setDraft(d=>({...d,docs:[...(d.docs||[]),{
+      id:"doc-acta-"+Date.now()+"-"+Math.random().toString(16).slice(2),
+      nom:file.name||"Document",
+      type:file.type||"",
+      url:reader.result,
+      data:todayISO8761()
+    }]}));
+    reader.readAsDataURL(file);
+  });
+}
+
 function Actes8761({obra,data,setData}){
   const actes=data.actes||[];
   const fotos=data.fotos||[];
+  const defaultAgents8764=[
+    {id:"ag-agent-1",nom:"Héctor Cubero",rol:"Arquitecte tècnic",empresa:"Despatx tècnic",email:""},
+    {id:"ag-agent-2",nom:"Contractista",rol:"Contractista",empresa:"",email:""}
+  ];
+  const agents=(data.agents&&data.agents.length)?data.agents:defaultAgents8764;
+
   const [editId,setEditId]=useState(null);
   const [draft,setDraft]=useState(null);
+  const [showActaPreview8763,setShowActaPreview8763]=useState(false);
+  const [agentForm8764,setAgentForm8764]=useState({nom:"",rol:"",empresa:"",email:""});
+
+  function ensureAgents(){
+    if(!(data.agents&&data.agents.length)){
+      setData(d=>({...d,agents:defaultAgents8764}));
+    }
+  }
+
+  function addAgent8764(){
+    const nom=String(agentForm8764.nom||"").trim();
+    if(!nom){alert("Cal indicar el nom de l’agent.");return}
+    const ag={id:"ag-"+Date.now(),...agentForm8764,nom};
+    setData(d=>({...d,agents:[...((d.agents&&d.agents.length)?d.agents:defaultAgents8764),ag]}));
+    setAgentForm8764({nom:"",rol:"",empresa:"",email:""});
+  }
+
+  function updateAgent8764(id,k,v){
+    setData(d=>({...d,agents:((d.agents&&d.agents.length)?d.agents:defaultAgents8764).map(a=>a.id===id?{...a,[k]:v}:a)}));
+  }
+
+  function deleteAgent8764(id){
+    if(!confirm("Eliminar aquest agent de l’expedient?"))return;
+    setData(d=>({
+      ...d,
+      agents:((d.agents&&d.agents.length)?d.agents:defaultAgents8764).filter(a=>a.id!==id),
+      actes:(d.actes||[]).map(a=>({...a,agentIds:(a.agentIds||[]).filter(x=>x!==id)}))
+    }));
+    setDraft(dr=>dr?{...dr,agentIds:(dr.agentIds||[]).filter(x=>x!==id)}:dr);
+  }
 
   function addActa(){
-    const a={id:"acta-"+Date.now(),titol:"Nova acta",data:todayISO8761(),text:"",fotoIds:[],estat:"Esborrany"};
+    ensureAgents();
+    const a={id:"acta-"+Date.now(),titol:"Nova acta",data:todayISO8761(),text:"",fotoIds:[],agentIds:[],docs:[],estat:"Esborrany"};
     setData(d=>({...d,actes:[...(d.actes||[]),a]}));
     setEditId(a.id);
     setDraft(a);
+    setShowActaPreview8763(false);
   }
+
   function startEdit(a){
+    ensureAgents();
     setEditId(a.id);
-    setDraft(JSON.parse(JSON.stringify({...a,fotoIds:a.fotoIds||[]})));
+    setDraft(JSON.parse(JSON.stringify({...a,fotoIds:a.fotoIds||[],agentIds:a.agentIds||[],docs:a.docs||[]})));
+    setShowActaPreview8763(false);
   }
+
   function save(){
     if(!draft?.titol||!draft?.data){alert("Cal indicar títol i data de l’acta.");return}
     setData(d=>({...d,actes:(d.actes||[]).map(a=>a.id===draft.id?draft:a)}));
     setEditId(null);
     setDraft(null);
+    setShowActaPreview8763(false);
   }
+
   function del(id){
     if(!confirm("Eliminar aquesta acta?"))return;
     setData(d=>({...d,actes:(d.actes||[]).filter(a=>a.id!==id)}));
-    if(editId===id){setEditId(null);setDraft(null)}
+    if(editId===id){setEditId(null);setDraft(null);setShowActaPreview8763(false)}
   }
+
   function upd(k,v){setDraft(d=>({...d,[k]:v}))}
+
   function toggleFoto(id){
     setDraft(d=>{
       const arr=d.fotoIds||[];
@@ -409,24 +470,62 @@ function Actes8761({obra,data,setData}){
     });
   }
 
+  function toggleAgent(id){
+    setDraft(d=>{
+      const arr=d.agentIds||[];
+      return {...d,agentIds:arr.includes(id)?arr.filter(x=>x!==id):[...arr,id]};
+    });
+  }
+
+  function removeDoc8764(id){
+    setDraft(d=>({...d,docs:(d.docs||[]).filter(x=>x.id!==id)}));
+  }
+
+  const selectedAgents=(draft?.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean);
+  const selectedFotos=(draft?.fotoIds||[]).map(id=>fotos.find(f=>f.id===id)).filter(Boolean);
+
   return <Card title="Actes" action={<button className="primary" type="button" onClick={addActa}>+ Nova acta</button>}>
     <div className="actes-layout-v8761">
       <div className="actes-list-v8761">
         {actes.length===0&&<div className="empty-v8761">Encara no hi ha actes.</div>}
         {actes.map(a=><div className={editId===a.id?"acta-list-row-v8761 active":"acta-list-row-v8761"} key={a.id}>
-          <button type="button" onClick={()=>startEdit(a)}><b>{a.titol||"Acta"}</b><span>{fmtDate8761(a.data)}</span></button>
+          <button type="button" onClick={()=>startEdit(a)}><b>{a.titol||"Acta"}</b><span>{fmtDate8761(a.data)}</span><small>{(a.agentIds||[]).length} agents · {(a.fotoIds||[]).length} fotos · {(a.docs||[]).length} docs</small></button>
           <button type="button" className="danger small" onClick={()=>del(a.id)}>Eliminar</button>
         </div>)}
       </div>
+
       <div className="acta-editor-v8761">
         {!draft&&<div className="empty-v8761">Selecciona una acta per editar-la o crea’n una de nova.</div>}
+
         {draft&&<>
           <div className="form-grid">
             <label><span>Títol acta *</span><input value={draft.titol||""} onChange={e=>upd("titol",e.target.value)}/></label>
             <label><span>Data *</span><input type="date" value={draft.data||""} onChange={e=>upd("data",e.target.value)}/></label>
             <label><span>Estat</span><select value={draft.estat||"Esborrany"} onChange={e=>upd("estat",e.target.value)}><option>Esborrany</option><option>Enviada</option><option>Signada</option><option>Tancada</option></select></label>
           </div>
+
+          <div className="agents-box-v8764">
+            <div className="section-head-v8764"><div><b>Agents / assistents de l’acta</b><span>Selecciona qui assisteix a aquesta acta.</span></div></div>
+            <div className="agent-form-v8764">
+              <input placeholder="Nom agent" value={agentForm8764.nom} onChange={e=>setAgentForm8764(p=>({...p,nom:e.target.value}))}/>
+              <input placeholder="Rol" value={agentForm8764.rol} onChange={e=>setAgentForm8764(p=>({...p,rol:e.target.value}))}/>
+              <input placeholder="Empresa" value={agentForm8764.empresa} onChange={e=>setAgentForm8764(p=>({...p,empresa:e.target.value}))}/>
+              <input placeholder="Email" value={agentForm8764.email} onChange={e=>setAgentForm8764(p=>({...p,email:e.target.value}))}/>
+              <button type="button" className="secondary" onClick={addAgent8764}>+ Afegir agent</button>
+            </div>
+            <div className="agents-list-v8764">
+              {agents.map(a=><div className={(draft.agentIds||[]).includes(a.id)?"agent-row-v8764 selected":"agent-row-v8764"} key={a.id}>
+                <label><input type="checkbox" checked={(draft.agentIds||[]).includes(a.id)} onChange={()=>toggleAgent(a.id)}/><span>Assisteix</span></label>
+                <input value={a.nom||""} onChange={e=>updateAgent8764(a.id,"nom",e.target.value)} placeholder="Nom"/>
+                <input value={a.rol||""} onChange={e=>updateAgent8764(a.id,"rol",e.target.value)} placeholder="Rol"/>
+                <input value={a.empresa||""} onChange={e=>updateAgent8764(a.id,"empresa",e.target.value)} placeholder="Empresa"/>
+                <button type="button" className="danger small" onClick={()=>deleteAgent8764(a.id)}>Eliminar</button>
+              </div>)}
+            </div>
+          </div>
+
           <label className="span-all"><span>Text de l’acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Redacta aquí l’acta..."/></label>
+
           <div className="photo-select-v8761">
             <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
             <div className="photo-mini-grid-v8761">
@@ -434,15 +533,44 @@ function Actes8761({obra,data,setData}){
               {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><img src={f.src}/><span>{f.nom}</span></label>)}
             </div>
           </div>
-          <div className="actions-inline"><button type="button" className="primary" onClick={save}>Guardar acta</button><button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null)}}>Cancel·lar</button></div>
-          <div className="a4-acta-preview-v8761">
+
+          <div className="docs-acta-box-v8764">
+            <div className="section-head-v8764"><div><b>Documents adjunts a l’acta</b><span>Afegeix documents específics d’aquesta acta.</span></div><label className="secondary file-btn-v8761">Afegir documents<input type="file" multiple onChange={e=>addActaDocFiles8764(e.target.files,setDraft)}/></label></div>
+            <div className="docs-acta-list-v8764">
+              {(draft.docs||[]).length===0&&<span>No hi ha documents adjunts a aquesta acta.</span>}
+              {(draft.docs||[]).map(d=><div className="doc-acta-row-v8764" key={d.id}><b>{d.nom}</b><span>{fmtDate8761(d.data)}</span><a className="secondary small" href={d.url} target="_blank" rel="noreferrer">Obrir</a><button type="button" className="danger small" onClick={()=>removeDoc8764(d.id)}>Eliminar</button></div>)}
+            </div>
+          </div>
+
+          <div className="actions-inline">
+            <button type="button" className="primary" onClick={save}>Guardar acta</button>
+            <button type="button" className="secondary" onClick={()=>setShowActaPreview8763(v=>!v)}>{showActaPreview8763?"Amagar previsualització":"Previsualitzar acta"}</button>
+            <button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false)}}>Cancel·lar</button>
+          </div>
+
+          {showActaPreview8763&&<div className="a4-acta-preview-v8761">
             <h2>ACTA</h2>
             <p><b>Expedient:</b> {obra?.nom}</p>
             <p><b>Data:</b> {fmtDate8761(draft.data)}</p>
             <h3>{draft.titol}</h3>
-            <p>{draft.text||"Text pendent..."}</p>
-            <div className="acta-photo-preview-v8761">{(draft.fotoIds||[]).map(id=>fotos.find(f=>f.id===id)).filter(Boolean).map(f=><img key={f.id} src={f.src}/>)}</div>
-          </div>
+
+            <div className="preview-section-v8764">
+              <b>Assistents</b>
+              {selectedAgents.length===0?<p>Sense agents seleccionats.</p>:<table><tbody>{selectedAgents.map(a=><tr key={a.id}><td>{a.nom}</td><td>{a.rol}</td><td>{a.empresa}</td></tr>)}</tbody></table>}
+            </div>
+
+            <div className="preview-section-v8764">
+              <b>Contingut de l’acta</b>
+              <p>{draft.text||"Text pendent..."}</p>
+            </div>
+
+            <div className="preview-section-v8764">
+              <b>Documents adjunts</b>
+              {(draft.docs||[]).length===0?<p>Sense documents adjunts.</p>:<ul>{(draft.docs||[]).map(d=><li key={d.id}>{d.nom}</li>)}</ul>}
+            </div>
+
+            <div className="acta-photo-preview-v8761">{selectedFotos.map(f=><img key={f.id} src={f.src}/>)}</div>
+          </div>}
         </>}
       </div>
     </div>
@@ -990,7 +1118,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.62 connexió real actes fotos</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.64 actes agents documents</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
