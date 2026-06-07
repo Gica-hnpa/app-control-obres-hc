@@ -3274,3 +3274,22 @@ button,input,select,textarea{font-size:13.5px!important}
 @media print{
   .signature-grid-v8768 span{background:white}
 }
+
+/* UPDATE V87.69 - Tipologies d'expedient + plànols/croquis en actes */
+.plan-acta-box-v8769{border:1px solid #d6dde7;border-radius:18px;background:#f8fafc;margin:18px 0;padding:16px;display:flex;flex-direction:column;gap:12px}
+.plan-toolbar-v8769{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.plan-toolbar-v8769 label{display:flex;flex-direction:column;gap:5px;font-weight:900;font-size:12px;color:#64748b}
+.plan-toolbar-v8769 input[type="color"]{width:54px;height:40px;border:1px solid #cbd5e1;border-radius:10px;background:white;padding:4px}
+.plan-toolbar-v8769 input[type="range"]{width:110px}
+.plan-status-v8769{font-size:13px;color:#64748b;font-weight:800;background:white;border:1px solid #d6dde7;border-radius:12px;padding:9px 12px}
+.canvas-wrap-v8769{background:#e5e7eb;border:1px solid #cbd5e1;border-radius:16px;padding:12px;overflow:auto;max-height:78vh;touch-action:none}
+.canvas-wrap-v8769 canvas{display:block;background:white;border-radius:8px;box-shadow:0 2px 14px rgba(15,23,42,.18);touch-action:none;cursor:crosshair;max-width:100%;height:auto;margin:0 auto}
+.croquis-list-v8769{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.croquis-list-v8769>span{color:#64748b;background:white;border:1px dashed #cbd5e1;border-radius:14px;padding:14px}
+.croquis-card-v8769{display:grid;grid-template-columns:94px 1fr auto;gap:12px;align-items:center;background:white;border:1px solid #d6dde7;border-radius:14px;padding:10px}
+.croquis-card-v8769 img{width:94px;height:70px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;background:white}
+.croquis-card-v8769 b,.croquis-card-v8769 span{display:block}.croquis-card-v8769 span{font-size:12px;color:#64748b;margin-top:3px}
+.exp-section-v8769{padding:20px;display:flex;flex-direction:column;gap:14px}.exp-section-v8769 p{margin:0;color:#475569;background:#f8fafc;border:1px solid #d6dde7;border-radius:14px;padding:14px;font-weight:700}.exp-section-v8769 label span{font-weight:900;font-size:13px;display:block;margin-bottom:7px}.exp-section-v8769 textarea{width:100%;min-height:150px;border:1px solid #cbd5e1;border-radius:14px;padding:12px;resize:vertical}.section-doc-list-v8769{display:flex;flex-direction:column;padding:0 20px 20px;gap:8px}
+.task-list-v8769{display:flex;flex-direction:column;gap:10px;padding:20px}.task-row-v8769{display:grid;grid-template-columns:1.5fr .7fr .8fr .7fr auto;gap:10px;align-items:center;background:#f8fafc;border:1px solid #d6dde7;border-radius:14px;padding:12px}.task-row-v8769 input,.task-row-v8769 select{border:1px solid #cbd5e1;border-radius:10px;padding:10px;background:white}.danger{background:#fee2e2!important;color:#991b1b!important;border:1px solid #fecaca!important;border-radius:10px;padding:8px 10px;font-weight:900}.small{font-size:12px;padding:7px 9px!important}
+@media(max-width:900px){.task-row-v8769,.croquis-card-v8769{grid-template-columns:1fr}.croquis-card-v8769 img{width:100%;height:150px}.plan-toolbar-v8769{align-items:stretch}.plan-toolbar-v8769 button,.plan-toolbar-v8769 label{width:100%}}
+@media print{.plan-acta-box-v8769,.canvas-wrap-v8769,.plan-toolbar-v8769,.plan-status-v8769{display:none!important}.acta-photo-preview-v8761 figure{break-inside:avoid}}

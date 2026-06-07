@@ -1,19 +1,16 @@
-# APP Control d'Obres · V87.68 rescat acta formal
+# APP Control d'Obres · V87.69
 
-Base de recuperació després del problema de descàrrega de V87.67.
+Base: V87.68 rescat nou expedient + acta formal.
 
 Canvis principals:
-- Recuperat el flux de `Nou expedient` amb creació robusta de client nou o client existent.
-- Generació automàtica de codi d'expedient `ANY-NÚM-TIPUS-CLIENT-PARAULA`.
-- Inicialització segura de dades internes de l'expedient.
-- Millora del mòdul d'actes amb número d'acta, promotor, constructor, DO, DEO, CSS, agents, fotos, documents i signatures.
-- Acta formal A4 amb previsualització i opció d'imprimir/exportar.
-
-No inclou encara el bloc de plànols PDF amb llapis/colors ni la configuració avançada de pestanyes per tipologia d'expedient.
+- Editor de plànols/croquis dins les actes: PDF o imatge com a base, llapis, colors, gruix, goma, desfer, full en blanc i inserció directa a l'acta formal.
+- Tipologies d'expedient amb pestanyes intel·ligents segons la feina contractada.
+- Pestanyes professionals noves: Dades, Plànols, Memòria/Informe/Certificat, Amidaments, Industrials/Comparatius, Tràmits, Seguretat i salut, Tasques i Tancament/Entrega.
+- Es manté el menú principal global del despatx/tècnic.
 
 Render:
 - Static Site
 - Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 - Publish Directory: dist
 
-No pujar `node_modules` ni `package-lock.json`.
+No pujar node_modules ni package-lock.json.
