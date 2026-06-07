@@ -949,7 +949,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.59b rescat estable</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.60 edició pressupost obra real</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -1094,9 +1094,9 @@ function hasModule2Access8747(){
 }
 function ModulLocked8747(){return <Card title="Mòdul 2 · Control econòmic d’obra"><div className="locked-module-v8747"><div><b>Aquesta funcionalitat forma part del Mòdul 2</b><p>Inclou pressupost d’obra, certificacions, facturació d’obra i seguiment econòmic bàsic. El Mòdul 1 Tècnic manté els pressupostos i factures del tècnic al client.</p></div><button className="primary" onClick={()=>{localStorage.setItem("aco_modul2_actiu","1");location.reload()}}>Activar Mòdul 2 en mode prova</button></div></Card>}
 
-function GestioObra8746({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert}){
+function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert}){
   const[sub,setSub]=useState("Pressupost obra");
-  return <div className="stack gestio-obra-v8746"><div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button></div>{sub==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>}</div>
+  return <div className="stack gestio-obra-v8746"><div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button></div>{sub==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>}</div>
 }
 function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,allAgents=[]}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);let tabs=tabsForWork8737(obra,data);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<div className="obra-topbar"><div><small className="exp-code-header-v8739">{expedientCode8739(obra)}</small><h1>{obra.nom}</h1><p>{client.nom} · {moduleLabel8737(obra)}</p></div><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div><section className="obra-compact-head">
   <div className="obra-mini-photo">{obra.imatge?<img src={obra.imatge}/>:"FOTO EXPEDIENT"}<label className="mini-photo-btn">Canviar foto<input type="file" accept="image/*" onChange={e=>uploadImage(e.target.files[0])}/></label></div>
@@ -1111,7 +1111,7 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
       <label><span>Tipus de treball</span><input value={moduleLabel8737(obra)} readOnly/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<SafeActes8751 obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<SafeActes8751 obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<SeguimentFotos/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 
 function AgendaAvisosExpedient8737({data,openEvent}){
@@ -1305,14 +1305,37 @@ function FacturesTecniques8738({data,obra,addFactura,updateFactura,deleteFactura
     <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha factures en aquest expedient."/>}{rows.map(f=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={f.id}><div><strong>{f.numero||"FAC"}</strong><span>{f.concepte||f.tipus||"Factura / proforma"}</span><small>{f.data||"—"} · {f.estat||"Pendent"}</small></div><b>{money(totalIva8743(f))}<small>IVA inclòs</small></b><div className="actions-inline"><button className="secondary" onClick={()=>setPreview(f)}>Veure PDF</button><button className="secondary" onClick={()=>reset(f)}>Editar</button><button className="secondary" onClick={()=>openEmail?.("Factura")}>Enviar</button><button className="danger" onClick={()=>deleteFactura?.(f.id)}>Eliminar</button></div></div>)}</div>
   </Card></div>
 }
-function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
+function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc}){
+  const [edit,setEdit]=useState(false);
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
   const [descOpen875,setDescOpen875]=useState({});
-  useEffect(()=>{const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(Object.fromEntries(Object.keys(syncCapsV874).map((k,i)=>[k,i===0])));},[data.partides]);
 
+  function resetFromData(){
+    const g=group(data.partides||[],"cap");
+    setCaps(g);
+    setOpen(Object.fromEntries(Object.keys(g).map((k,i)=>[k,i===0])));
+  }
+
+  useEffect(()=>{if(!edit)resetFromData()},[data.partides]);
+
+  function flatCaps(){
+    return Object.entries(caps).flatMap(([cap,items])=>(items||[]).map(r=>({...r,cap})));
+  }
+
+  function saveBudget(){
+    const flat=flatCaps();
+    setData?.(d=>({...d,partides:flat}));
+    setEdit(false);
+  }
+
+  function cancelBudget(){
+    resetFromData();
+    setEdit(false);
+  }
 
   function upd(cap,i,k,v){
+    if(!edit)return;
     setCaps(p=>{
       const n={...p};
       n[cap]=[...(n[cap]||[])];
@@ -1322,7 +1345,8 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
   }
 
   function renameCap(oldName,v){
-    if(!v.trim()) return;
+    if(!edit)return;
+    if(!String(v).trim()) return;
     setCaps(p=>{
       const n={...p};
       n[v]=n[oldName]||[];
@@ -1338,42 +1362,47 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
   }
 
   function addCapitol(){
+    if(!edit)setEdit(true);
     const nom="Nou capítol "+(Object.keys(caps).length+1);
     setCaps(p=>({...p,[nom]:[]}));
     setOpen(o=>({...o,[nom]:true}));
   }
 
   function addPartida(cap){
-    setCaps(p=>({...p,[cap]:[...(p[cap]||[]),{codi:"",cap,concepte:"Nova partida",ut:"ut",q:1,pu:0,tipus:"Base"}]}));
+    if(!edit)setEdit(true);
+    setCaps(p=>({...p,[cap]:[...(p[cap]||[]),{codi:"",cap,concepte:"Nova partida",desc:"",ut:"ut",q:1,pu:0,tipus:"Base",certAnterior:0,certActual:0,certsByNum:{}}]}));
     setOpen(o=>({...o,[cap]:true}));
   }
 
-  const total=Object.values(caps).flat().reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const allRows=Object.values(caps).flat();
+  const total=allRows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
 
-  return <div className="stack">
-    <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label><button className="primary" onClick={addCapitol}><Plus/> Nou capítol</button></div>}>
-      <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura recomanada: columna A = codi o número de partida, B = unitat, C = concepte/descripció, D = columna lliure, E = amidament/quantitat, F = preu unitari, G = total.</p></details><div className="version-list">
+  return <div className="stack pressupost-edit-real-v8760">
+    <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label></div>}>
+      <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura validada: Código / Ut / Resumen / CanPres / PrPres / ImpPres. Els capítols són files amb codi curt, títol i imports buits.</p></details>
+      <div className="version-list">
         {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><div className="version-card-v872" key={p.id}>
-          <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}>
-            <strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em>
+          <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:(p.nom||"Pressupost")+" · "+(p.versio||""),subtitle:(p.data||"")+" · "+(p.estat||"")})}>
+            <strong>{p.versio||"Excel"}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import||p.total||0)}</b><em>{p.estat||"Importat"}</em>
           </button>
           <div className="version-actions-v872">
-            <button className="secondary small" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
-            <button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button>
+            <button className="secondary small" type="button" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
+            <button className="danger small" type="button" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button>
           </div>
         </div>)}
       </div>
     </Card>
 
-    <Card title="Pressupost tècnic-client per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span><button className="secondary" onClick={()=>openEmail("Pressupost tècnic-client")}><Mail/> Enviar email</button></div>}>
+    <Card title="Pressupost obra per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span>{!edit&&<button type="button" className="primary" onClick={()=>setEdit(true)}>Editar</button>}{edit&&<><button type="button" className="primary" onClick={saveBudget}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget}>Cancel·lar</button></>}<button type="button" className="secondary" onClick={addCapitol}><Plus/> Nou capítol</button><button type="button" className="secondary" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar email</button></div>}>
+      <div className={edit?"edit-warning-v8760":"view-warning-v8760"}>{edit?"Mode edició actiu. Els canvis no es desen fins que cliquis “Guardar canvis”.":"Mode consulta. Clica “Editar” per modificar capítols, partides o descripcions."}</div>
       <div className="budget-v25">
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
         {Object.entries(caps).map(([cap,items])=>{
           const capTotal=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
           return <div className="budget-v25-cap" key={cap}>
             <div className="budget-v25-cap-head">
-              <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
-              <input value={cap} onChange={e=>renameCap(cap,e.target.value)}/>
+              <button type="button" onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
+              {edit?<input value={cap} onChange={e=>renameCap(cap,e.target.value)}/>:<strong className="cap-title-read-v8760">{cap}</strong>}
               <span>{items.length} partides</span>
               <strong>{money(capTotal)}</strong>
             </div>
@@ -1382,16 +1411,23 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
               <div className="budget-v25-line head"><span>Codi</span><span>Ut</span><span>Concepte</span><span>Amid.</span><span>Preu/ut</span><span>Total</span></div>
               {items.map((r,i)=>{
                 const t=(+r.q||0)*(+r.pu||0);
-                return <div className="budget-v25-line" key={i}>
-                  <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
-                  <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
-                  <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
-                  <input type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
-                  <input type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>
+                return <div className={edit?"budget-v25-line edit-row-v8760":"budget-v25-line read-row-v8760"} key={i}>
+                  {edit?<input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>:<span>{r.codi||"—"}</span>}
+                  {edit?<input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>:<span>{r.ut||"—"}</span>}
+                  <div className="budget-concept-v877">
+                    <div className="concept-line-v877">
+                      {edit?<input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>:<b>{r.concepte||"—"}</b>}
+                      {(r.desc||edit)&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}
+                    </div>
+                    {edit&&descOpen875[`${cap}-${i}`]&&<textarea className="desc-edit-v8760" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>}
+                    {!edit&&r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}
+                  </div>
+                  {edit?<input type="number" step="0.01" value={r.q??0} onChange={e=>upd(cap,i,"q",e.target.value)}/>:<span>{num(r.q)}</span>}
+                  {edit?<input type="number" step="0.01" value={r.pu??0} onChange={e=>upd(cap,i,"pu",e.target.value)}/>:<span>{money(r.pu||0)}</span>}
                   <b>{money(t)}</b>
                 </div>
               })}
-              <button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>
+              {edit&&<button type="button" className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
             </div>}
           </div>
         })}
@@ -1399,15 +1435,6 @@ function Pressupost({data,importExcel,deletePressupostVersion,duplicatePressupos
     </Card>
   </div>
 }
-
-
-
-
-
-
-
-
-
 function Cert({data,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
