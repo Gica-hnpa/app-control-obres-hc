@@ -2917,3 +2917,28 @@ button,input,select,textarea{font-size:13.5px!important}
 .acta-photo-preview-v8761 img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px}
 .empty-v8761{padding:18px;color:#64748b;font-weight:700}
 @media(max-width:900px){.actes-layout-v8761{grid-template-columns:1fr}.photo-select-head-v8761{flex-direction:column;align-items:flex-start}}
+
+/* V87.62 - connexió real actes/fotos i proporció real en previsualització */
+.acta-photo-preview-v8761{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+  align-items:start;
+}
+.acta-photo-preview-v8761 img{
+  width:100%;
+  height:auto;
+  max-height:280px;
+  object-fit:contain;
+  background:#f1f5f9;
+  border:1px solid #dbe3ef;
+  border-radius:8px;
+}
+.photo-card-v8761 img{
+  width:100%;
+  height:auto;
+  max-height:220px;
+  object-fit:contain;
+  background:#f1f5f9;
+}
