@@ -311,6 +311,69 @@ function assignMissingCodes8739(obres,clients){
 function expedientCode8739(o){return o?.codiExpedient||o?.codi||o?.expedientBase||"Sense codi"}
 
 
+// V87.68 - recuperació base estable: creació d'expedients i actes formals
+function uniqAgents8768(list=[]){
+  const out=[]; const seen=new Set();
+  for(const a of (list||[]).filter(Boolean)){
+    const id=a.id || (String(a.nom||"")+String(a.email||"")+String(a.empresa||""));
+    const key=String(id||"").toLowerCase();
+    if(!key||seen.has(key))continue;
+    seen.add(key); out.push({...a,id:a.id||("ag-"+out.length)});
+  }
+  return out;
+}
+function safeSlug8768(v,prefix="id"){
+  return String(v||prefix).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||prefix;
+}
+function nextActaNumber8768(actes=[]){
+  const nums=(actes||[]).map(a=>+String(a.numero||a.num||"").replace(/[^0-9]/g,"")||0);
+  return Math.max(0,...nums)+1;
+}
+function normalizeActa8768(acta={},agents=[]){
+  const knownIds=new Set((agents||[]).map(a=>a.id));
+  const legacyAgents=Array.isArray(acta.agents)?acta.agents:[];
+  const legacyIds=legacyAgents.map(a=>typeof a==="string"?a:a?.id).filter(Boolean);
+  const agentIds=[...(acta.agentIds||[]),...legacyIds].filter(Boolean);
+  return {
+    ...acta,
+    numero:acta.numero||acta.num||"",
+    data:acta.data||todayISO8743(),
+    titol:acta.titol||acta.title||"Acta de visita d’obra",
+    text:acta.text||acta.observacions||"",
+    agentIds:[...new Set(agentIds.filter(id=>!knownIds.size||knownIds.has(id)))],
+    fotoIds:acta.fotoIds||[],
+    docs:acta.docs||[],
+    estat:acta.estat||"Esborrany"
+  };
+}
+function baseAgentsForObra8768(obra={},client={}){
+  const promotor=obra.propietat||client.nom||"Promotor pendent";
+  const constructor=obra.constructor||obra.empresaConstructora||client.rao||client.nom||"Constructor pendent";
+  return [
+    {id:"agent-hector-default",nom:"Héctor Cubero",rol:"Arquitecte tècnic / DEO",empresa:"Despatx tècnic",email:"hector@despatx.cat",telefon:""},
+    {id:"agent-promotor-default",nom:promotor,rol:"Promotor / propietat",empresa:promotor,email:"",telefon:""},
+    {id:"agent-constructor-default",nom:constructor,rol:"Constructor / contractista",empresa:constructor,email:"",telefon:""}
+  ];
+}
+function emptyExpedientData8768(obra={},client={}){
+  return {
+    ...empty(),
+    agents:ensureAgents8748(baseAgentsForObra8768(obra,client)),
+    fotos:[],
+    notes:[],
+    documents:[],
+    pressupostos:[],
+    pressupostosTecnic:[],
+    certificacions:[],
+    actes:[],
+    factures:[],
+    facturesTecnic:[],
+    events:[],
+    hores:[]
+  };
+}
+
+
 function SafeFormExpedient8751({clients,onSubmit}){
   const [mode,setMode]=useState('__new__');
   const [tipus,setTipus]=useState('Projecte tècnic');
@@ -320,7 +383,7 @@ function SafeFormExpedient8751({clients,onSubmit}){
     {mode==='__new__'&&<><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" defaultValue="Pendent"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" defaultValue="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" defaultValue="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" defaultValue="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" defaultValue="Pendent"/></label></>}
     <label><span>Nom expedient *</span><input name="nom" required defaultValue="Nou expedient"/></label><label><span>Descripció breu</span><input name="subtitol" defaultValue="Treball pendent de definir"/></label><label><span>Any</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Pendent</option><option>Tancada</option></select></label>
     <label className="span-all"><span>Tipus de treball *</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)} required>{types.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==='Altres'&&<label><span>Altres</span><input name="tipusTreballAltres"/></label>}
-    <label><span>Client final / propietat</span><input name="propietat" defaultValue="Pendent"/></label><label><span>NIF client final</span><input name="nifPropietat" defaultValue="Pendent"/></label><label><span>Adreça expedient *</span><input name="adreca" required defaultValue="Pendent"/></label><label><span>Població *</span><input name="poblacio" required defaultValue="Pendent"/></label><label><span>Referència cadastral</span><input name="rc" defaultValue="Pendent"/></label><label><span>Paraula clau codi</span><input name="paraulaClau" placeholder="FRONTMAR, PALAMOS..."/></label>
+    <label><span>Client final / propietat</span><input name="propietat" defaultValue="Pendent"/></label><label><span>NIF client final</span><input name="nifPropietat" defaultValue="Pendent"/></label><label><span>Constructor / contractista</span><input name="constructor" defaultValue="Pendent"/></label><label><span>Direcció d’obra (DO)</span><input name="do" defaultValue="Pendent"/></label><label><span>Direcció execució (DEO)</span><input name="deo" defaultValue="Héctor Cubero"/></label><label><span>Coordinació S+S (CSS)</span><input name="css" defaultValue="Pendent"/></label><label><span>Adreça expedient *</span><input name="adreca" required defaultValue="Pendent"/></label><label><span>Població *</span><input name="poblacio" required defaultValue="Pendent"/></label><label><span>Referència cadastral</span><input name="rc" defaultValue="Pendent"/></label><label><span>Paraula clau codi</span><input name="paraulaClau" placeholder="FRONTMAR, PALAMOS..."/></label>
   </div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>
 }
 function SafeActes8751({obra,data,setData,openEmail,openDoc}){
@@ -389,14 +452,13 @@ function addActaDocFiles8764(files,setDraft){
   });
 }
 
-function Actes8761({obra,data,setData}){
-  const actes=data.actes||[];
+function Actes8761({obra,client,data,setData,openEmail,openDoc}){
+  const actesRaw=data.actes||[];
   const fotos=data.fotos||[];
-  const defaultAgents8764=[
-    {id:"ag-agent-1",nom:"Héctor Cubero",rol:"Arquitecte tècnic",empresa:"Despatx tècnic",email:""},
-    {id:"ag-agent-2",nom:"Contractista",rol:"Contractista",empresa:"",email:""}
-  ];
-  const agents=(data.agents&&data.agents.length)?data.agents:defaultAgents8764;
+  const defaultAgents8768=baseAgentsForObra8768(obra,client);
+  const legacyActaAgents=(actesRaw||[]).flatMap(a=>(a.agents||[]).filter(x=>typeof x==="object"));
+  const agents=ensureAgents8748(uniqAgents8768([...defaultAgents8768,...(data.agents||[]),...legacyActaAgents]));
+  const actes=actesRaw.map(a=>normalizeActa8768(a,agents));
 
   const [editId,setEditId]=useState(null);
   const [draft,setDraft]=useState(null);
@@ -405,7 +467,7 @@ function Actes8761({obra,data,setData}){
 
   function ensureAgents(){
     if(!(data.agents&&data.agents.length)){
-      setData(d=>({...d,agents:defaultAgents8764}));
+      setData(d=>({...d,agents}));
     }
   }
 
@@ -413,28 +475,45 @@ function Actes8761({obra,data,setData}){
     const nom=String(agentForm8764.nom||"").trim();
     if(!nom){alert("Cal indicar el nom de l’agent.");return}
     const ag={id:"ag-"+Date.now(),...agentForm8764,nom};
-    setData(d=>({...d,agents:[...((d.agents&&d.agents.length)?d.agents:defaultAgents8764),ag]}));
+    setData(d=>({...d,agents:uniqAgents8768([...agents,ag])}));
     setAgentForm8764({nom:"",rol:"",empresa:"",email:""});
   }
 
   function updateAgent8764(id,k,v){
-    setData(d=>({...d,agents:((d.agents&&d.agents.length)?d.agents:defaultAgents8764).map(a=>a.id===id?{...a,[k]:v}:a)}));
+    setData(d=>({...d,agents:agents.map(a=>a.id===id?{...a,[k]:v}:a)}));
   }
 
   function deleteAgent8764(id){
     if(!confirm("Eliminar aquest agent de l’expedient?"))return;
     setData(d=>({
       ...d,
-      agents:((d.agents&&d.agents.length)?d.agents:defaultAgents8764).filter(a=>a.id!==id),
-      actes:(d.actes||[]).map(a=>({...a,agentIds:(a.agentIds||[]).filter(x=>x!==id)}))
+      agents:agents.filter(a=>a.id!==id),
+      actes:(d.actes||[]).map(a=>({...normalizeActa8768(a,agents),agentIds:(normalizeActa8768(a,agents).agentIds||[]).filter(x=>x!==id)}))
     }));
     setDraft(dr=>dr?{...dr,agentIds:(dr.agentIds||[]).filter(x=>x!==id)}:dr);
   }
 
   function addActa(){
     ensureAgents();
-    const a={id:"acta-"+Date.now(),titol:"Nova acta",data:todayISO8761(),text:"",fotoIds:[],agentIds:[],docs:[],estat:"Esborrany"};
-    setData(d=>({...d,actes:[...(d.actes||[]),a]}));
+    const numero=nextActaNumber8768(actes);
+    const baseSelected=agents.filter(a=>["agent-hector-default","agent-promotor-default","agent-constructor-default"].includes(a.id)).map(a=>a.id);
+    const a={
+      id:"acta-"+Date.now(),
+      numero:String(numero).padStart(2,"0"),
+      titol:`Acta de visita d'obra ${String(numero).padStart(2,"0")}`,
+      data:todayISO8761(),
+      text:"",
+      fotoIds:[],
+      agentIds:baseSelected,
+      docs:[],
+      estat:"Esborrany",
+      promotor:obra?.propietat||client?.nom||"Pendent",
+      constructor:obra?.constructor||obra?.empresaConstructora||client?.rao||"Pendent",
+      do:obra?.do||obra?.direccioObra||"Pendent",
+      deo:obra?.deo||obra?.direccioExecucio||"Héctor Cubero",
+      css:obra?.css||obra?.coordinacioSS||"Pendent"
+    };
+    setData(d=>({...d,agents:agents,actes:[...(d.actes||[]),a]}));
     setEditId(a.id);
     setDraft(a);
     setShowActaPreview8763(false);
@@ -442,14 +521,23 @@ function Actes8761({obra,data,setData}){
 
   function startEdit(a){
     ensureAgents();
-    setEditId(a.id);
-    setDraft(JSON.parse(JSON.stringify({...a,fotoIds:a.fotoIds||[],agentIds:a.agentIds||[],docs:a.docs||[]})));
+    const na={
+      ...normalizeActa8768(a,agents),
+      promotor:a.promotor||obra?.propietat||client?.nom||"Pendent",
+      constructor:a.constructor||obra?.constructor||obra?.empresaConstructora||client?.rao||"Pendent",
+      do:a.do||obra?.do||obra?.direccioObra||"Pendent",
+      deo:a.deo||obra?.deo||obra?.direccioExecucio||"Héctor Cubero",
+      css:a.css||obra?.css||obra?.coordinacioSS||"Pendent"
+    };
+    setEditId(na.id);
+    setDraft(JSON.parse(JSON.stringify(na)));
     setShowActaPreview8763(false);
   }
 
   function save(){
     if(!draft?.titol||!draft?.data){alert("Cal indicar títol i data de l’acta.");return}
-    setData(d=>({...d,actes:(d.actes||[]).map(a=>a.id===draft.id?draft:a)}));
+    const normalized=normalizeActa8768(draft,agents);
+    setData(d=>({...d,agents,actes:(d.actes||[]).map(a=>a.id===draft.id?normalized:a)}));
     setEditId(null);
     setDraft(null);
     setShowActaPreview8763(false);
@@ -483,13 +571,14 @@ function Actes8761({obra,data,setData}){
 
   const selectedAgents=(draft?.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean);
   const selectedFotos=(draft?.fotoIds||[]).map(id=>fotos.find(f=>f.id===id)).filter(Boolean);
+  const printableDoc=draft?{type:"acta",title:`Acta ${draft.numero||""} · ${obra?.nom||"Expedient"}`,subtitle:draft.data,acta:normalizeActa8768(draft,agents),agents,actaPhotos:selectedFotos,actaDocs:draft.docs||[]}:null;
 
   return <Card title="Actes" action={<button className="primary" type="button" onClick={addActa}>+ Nova acta</button>}>
     <div className="actes-layout-v8761">
       <div className="actes-list-v8761">
         {actes.length===0&&<div className="empty-v8761">Encara no hi ha actes.</div>}
         {actes.map(a=><div className={editId===a.id?"acta-list-row-v8761 active":"acta-list-row-v8761"} key={a.id}>
-          <button type="button" onClick={()=>startEdit(a)}><b>{a.titol||"Acta"}</b><span>{fmtDate8761(a.data)}</span><small>{(a.agentIds||[]).length} agents · {(a.fotoIds||[]).length} fotos · {(a.docs||[]).length} docs</small></button>
+          <button type="button" onClick={()=>startEdit(a)}><b>Acta {a.numero||"—"}</b><span>{a.titol||"Acta"}</span><small>{fmtDate8761(a.data)} · {(a.agentIds||[]).length} agents · {(a.fotoIds||[]).length} fotos · {(a.docs||[]).length} docs</small></button>
           <button type="button" className="danger small" onClick={()=>del(a.id)}>Eliminar</button>
         </div>)}
       </div>
@@ -499,9 +588,15 @@ function Actes8761({obra,data,setData}){
 
         {draft&&<>
           <div className="form-grid">
+            <label><span>Número acta *</span><input value={draft.numero||""} onChange={e=>upd("numero",e.target.value)}/></label>
             <label><span>Títol acta *</span><input value={draft.titol||""} onChange={e=>upd("titol",e.target.value)}/></label>
             <label><span>Data *</span><input type="date" value={draft.data||""} onChange={e=>upd("data",e.target.value)}/></label>
             <label><span>Estat</span><select value={draft.estat||"Esborrany"} onChange={e=>upd("estat",e.target.value)}><option>Esborrany</option><option>Enviada</option><option>Signada</option><option>Tancada</option></select></label>
+            <label><span>Promotor</span><input value={draft.promotor||""} onChange={e=>upd("promotor",e.target.value)}/></label>
+            <label><span>Constructor</span><input value={draft.constructor||""} onChange={e=>upd("constructor",e.target.value)}/></label>
+            <label><span>Direcció d’obra (DO)</span><input value={draft.do||""} onChange={e=>upd("do",e.target.value)}/></label>
+            <label><span>Direcció execució (DEO)</span><input value={draft.deo||""} onChange={e=>upd("deo",e.target.value)}/></label>
+            <label><span>Coordinació S+S (CSS)</span><input value={draft.css||""} onChange={e=>upd("css",e.target.value)}/></label>
           </div>
 
           <div className="agents-box-v8764">
@@ -524,7 +619,7 @@ function Actes8761({obra,data,setData}){
             </div>
           </div>
 
-          <label className="span-all"><span>Text de l’acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Redacta aquí l’acta..."/></label>
+          <label className="span-all acta-textarea-v8768"><span>Text de l’acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents..."/></label>
 
           <div className="photo-select-v8761">
             <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
@@ -545,57 +640,55 @@ function Actes8761({obra,data,setData}){
           <div className="actions-inline">
             <button type="button" className="primary" onClick={save}>Guardar acta</button>
             <button type="button" className="secondary" onClick={()=>setShowActaPreview8763(v=>!v)}>{showActaPreview8763?"Amagar previsualització":"Previsualitzar acta"}</button>
+            <button type="button" className="secondary" onClick={()=>printableDoc&&openDoc?.(printableDoc)}>Obrir acta formal / imprimir</button>
+            <button type="button" className="secondary" onClick={()=>openEmail?.(draft.titol||"Acta")}>Enviar</button>
             <button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false)}}>Cancel·lar</button>
           </div>
 
-          {showActaPreview8763&&<div className="a4-acta-preview-v8761 acta-a4-v8766">
-            <div className="acta-a4-header-v8766">
-              <div>
-                <span>ACTA DE VISITA / SEGUIMENT</span>
-                <h2>{draft.titol||"Acta"}</h2>
-              </div>
-              <div className="acta-a4-date-v8766">
-                <small>Data</small>
-                <b>{fmtDate8761(draft.data)}</b>
-              </div>
-            </div>
-
-            <div className="acta-a4-obra-v8766">
-              <small>Expedient / obra</small>
-              <h1>{obra?.nom||"Expedient"}</h1>
-              <div className="acta-a4-meta-v8766">
-                <span><b>Codi:</b> {typeof expedientCode8739==="function"?expedientCode8739(obra):"—"}</span>
-                <span><b>Tipus:</b> {obra?.tipusTreball||obra?.tipologia||"—"}</span>
-                <span><b>Adreça:</b> {obra?.adreca||"—"}</span>
-                <span><b>Població:</b> {obra?.poblacio||"—"}</span>
-                <span><b>Client / propietat:</b> {obra?.propietat||"—"}</span>
-              </div>
-            </div>
-
-            <div className="preview-section-v8764 acta-a4-section-v8766">
-              <h3>Agents / assistents</h3>
-              {selectedAgents.length===0?<p>Sense agents seleccionats.</p>:<table><thead><tr><th>Nom</th><th>Rol</th><th>Empresa</th></tr></thead><tbody>{selectedAgents.map(a=><tr key={a.id}><td>{a.nom||"—"}</td><td>{a.rol||"—"}</td><td>{a.empresa||"—"}</td></tr>)}</tbody></table>}
-            </div>
-
-            <div className="preview-section-v8764 acta-a4-section-v8766">
-              <h3>Contingut de l’acta</h3>
-              <p>{draft.text||"Text pendent..."}</p>
-            </div>
-
-            <div className="preview-section-v8764 acta-a4-section-v8766">
-              <h3>Documents adjunts</h3>
-              {(draft.docs||[]).length===0?<p>Sense documents adjunts.</p>:<ul>{(draft.docs||[]).map(d=><li key={d.id}>{d.nom}</li>)}</ul>}
-            </div>
-
-            {selectedFotos.length>0&&<div className="preview-section-v8764 acta-a4-section-v8766">
-              <h3>Reportatge fotogràfic seleccionat</h3>
-              <div className="acta-photo-preview-v8761">{selectedFotos.map(f=><figure key={f.id}><img src={f.src}/><figcaption>{f.nom}</figcaption></figure>)}</div>
-            </div>}
-          </div>}
+          {showActaPreview8763&&<ActaFormalPreview8768 obra={obra} client={client} acta={draft} agents={selectedAgents} fotos={selectedFotos} docs={draft.docs||[]}/>}
         </>}
       </div>
     </div>
   </Card>
+}
+
+function ActaFormalPreview8768({obra,client,acta,agents=[],fotos=[],docs=[]}){
+  return <div className="a4-acta-preview-v8761 acta-a4-v8766 acta-formal-v8768">
+    <div className="acta-a4-header-v8766">
+      <div><span>ACTA DE VISITA / SEGUIMENT D’OBRA</span><h2>Acta núm. {acta?.numero||"—"}</h2></div>
+      <div className="acta-a4-date-v8766"><small>Data</small><b>{fmtDate8761(acta?.data)}</b><small>Estat</small><b>{acta?.estat||"Esborrany"}</b></div>
+    </div>
+    <div className="acta-a4-obra-v8766">
+      <small>Expedient / obra</small>
+      <h1>{obra?.nom||"Expedient"}</h1>
+      <div className="acta-a4-meta-v8766">
+        <span><b>Codi expedient:</b> {typeof expedientCode8739==="function"?expedientCode8739(obra):"—"}</span>
+        <span><b>Tipus:</b> {obra?.tipusTreball||obra?.tipologia||"—"}</span>
+        <span><b>Adreça:</b> {obra?.adreca||"—"}</span>
+        <span><b>Població:</b> {obra?.poblacio||"—"}</span>
+      </div>
+    </div>
+    <div className="acta-key-grid-v8768">
+      <div><b>Promotor</b><span>{acta?.promotor||obra?.propietat||client?.nom||"—"}</span></div>
+      <div><b>Constructor</b><span>{acta?.constructor||obra?.constructor||client?.rao||"—"}</span></div>
+      <div><b>Direcció d’obra</b><span>{acta?.do||obra?.do||"—"}</span></div>
+      <div><b>Direcció execució</b><span>{acta?.deo||obra?.deo||"—"}</span></div>
+      <div><b>Coordinació S+S</b><span>{acta?.css||obra?.css||"—"}</span></div>
+      <div><b>Tècnic / despatx</b><span>Héctor Cubero · Arquitecte tècnic</span></div>
+    </div>
+    <div className="preview-section-v8764 acta-a4-section-v8766">
+      <h3>Agents intervinents / assistents</h3>
+      {agents.length===0?<p>Sense agents seleccionats.</p>:<table><thead><tr><th>Nom</th><th>Rol</th><th>Empresa</th></tr></thead><tbody>{agents.map(a=><tr key={a.id}><td>{a.nom||"—"}</td><td>{a.rol||"—"}</td><td>{a.empresa||"—"}</td></tr>)}</tbody></table>}
+    </div>
+    <div className="preview-section-v8764 acta-a4-section-v8766">
+      <h3>Contingut de l’acta</h3><p>{acta?.text||"Text pendent..."}</p>
+    </div>
+    <div className="preview-section-v8764 acta-a4-section-v8766">
+      <h3>Documents adjunts</h3>{docs.length===0?<p>Sense documents adjunts.</p>:<ul>{docs.map(d=><li key={d.id}>{d.nom}</li>)}</ul>}
+    </div>
+    {fotos.length>0&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>Reportatge fotogràfic</h3><div className="acta-photo-preview-v8761">{fotos.map(f=><figure key={f.id}><img src={f.src||f.url}/><figcaption>{f.nom}</figcaption></figure>)}</div></div>}
+    <div className="preview-section-v8764 acta-a4-section-v8766"><h3>Signatures electròniques</h3><div className="signature-grid-v8768"><span>Direcció facultativa / DO<br/>Nom i signatura</span><span>DEO / Arquitecte tècnic<br/>Nom i signatura</span><span>Constructor<br/>Nom i signatura</span><span>Promotor / propietat<br/>Nom i signatura</span></div></div>
+  </div>
 }
 
 export default function App(){
@@ -1103,6 +1196,80 @@ if(f.get("crearAgentActa")==="1"){
 let a={id:"acta-"+Date.now(),data:dataActa,titol,obra:obra.nom,agents:ag,text:text||"Es redacta acta de seguiment de l’expedient.",signatura:"Pendent"};
 setD(obraId,d=>({...d,agents:newAgent?[...(d.agents||[]),newAgent]:(d.agents||[]),actes:[...(d.actes||[]),a]}));setSelActa(a.id);setModal(null);setTab("Actes")}
 function addClient(e){e.preventDefault();let f=new FormData(e.currentTarget),id="client-"+Date.now();let c={id,nom:f.get("nom"),rao:f.get("rao"),tipus:f.get("tipus"),contacte:f.get("contacte"),nif:f.get("nif"),email:f.get("email"),telefon:f.get("telefon"),adreca:f.get("adreca"),color:"blue",logo:f.get("logoPreview")||""};setClients(p=>[c,...p]);setModal(null);openClient(id)}
+function addObra(e){
+  e.preventDefault();
+  const f=new FormData(e.currentTarget);
+  const year=String(f.get("any")||new Date().getFullYear()).trim()||String(new Date().getFullYear());
+  const selectedClient=String(f.get("client")||"");
+  const createClient=selectedClient==="__new__"||!selectedClient;
+  let clientFinal=createClient?null:clients.find(c=>c.id===selectedClient);
+  if(createClient){
+    const clientNom=String(f.get("clientNouNom")||"Nou client").trim()||"Nou client";
+    const idBase="client-"+safeSlug8768(clientNom,"client")+"-"+Date.now();
+    clientFinal={
+      id:idBase,
+      nom:clientNom,
+      rao:String(f.get("clientNouRao")||clientNom||"Pendent"),
+      tipus:String(f.get("clientNouTipus")||"Particular"),
+      contacte:String(f.get("clientNouContacte")||clientNom||"Pendent"),
+      nif:String(f.get("clientNouNif")||"Pendent"),
+      email:String(f.get("clientNouEmail")||"Pendent"),
+      telefon:String(f.get("clientNouTelefon")||"Pendent"),
+      adreca:String(f.get("clientNouAdreca")||"Pendent"),
+      color:"blue",
+      logo:""
+    };
+  }
+  if(!clientFinal){alert("No s'ha pogut identificar el client de l'expedient.");return;}
+  const tipus=canonicalWorkType8740(f.get("tipusTreballAltres")||f.get("tipusTreball")||"Altres");
+  const keyword=String(f.get("paraulaClau")||"").trim();
+  const number=nextExpNumber8739(year,obres);
+  const built=buildExpedientCode8739({
+    year,
+    number,
+    tipus,
+    client:clientFinal,
+    clientNom:clientFinal.nom,
+    keyword,
+    nom:f.get("nom"),
+    subtitol:f.get("subtitol"),
+    poblacio:f.get("poblacio")
+  });
+  const id=`obra-${year}-${padExp8739(number)}-${Date.now()}`;
+  const propietatRaw=String(f.get("propietat")||"").trim();
+  const obraNew={
+    id,
+    client:clientFinal.id,
+    any:year,
+    nom:String(f.get("nom")||"Nou expedient").trim()||"Nou expedient",
+    subtitol:String(f.get("subtitol")||"Treball pendent de definir"),
+    tipologia:tipus,
+    tipusTreball:tipus,
+    estat:String(f.get("estat")||"Pressupostada"),
+    pressupost:0,
+    certificacio:0,
+    propietat:propietatRaw&&propietatRaw!=="Pendent"?propietatRaw:clientFinal.nom,
+    nifPropietat:String(f.get("nifPropietat")||clientFinal.nif||"Pendent"),
+    constructor:String(f.get("constructor")||"Pendent"),
+    do:String(f.get("do")||"Pendent"),
+    deo:String(f.get("deo")||"Héctor Cubero"),
+    css:String(f.get("css")||"Pendent"),
+    adreca:String(f.get("adreca")||"Pendent"),
+    poblacio:String(f.get("poblacio")||"Pendent"),
+    rc:String(f.get("rc")||"Pendent"),
+    paraulaClau:keyword,
+    ...built,
+    codiExpedient:built.codi
+  };
+  if(createClient)setClients(p=>[clientFinal,...p]);
+  setObres(p=>[obraNew,...p]);
+  setOdata(p=>({...p,[id]:emptyExpedientData8768(obraNew,clientFinal)}));
+  setModal(null);
+  setObraId(id);
+  setClientId(clientFinal.id);
+  setTab("Resum");
+  nav("Obra");
+}
 function addEvent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,events:[...d.events,{id:"e"+Date.now(),obraId,title:f.get("title"),day:+f.get("day"),month:+f.get("month"),year:+f.get("year"),type:f.get("type"),hora:f.get("hora"),note:f.get("note"),color:f.get("color"),client:client?.nom||"",obra:obra?.nom||"",adreca:obra?.adreca||""}]}));setModal(null)}
 function addManualHours(e){e.preventDefault();let f=new FormData(e.currentTarget);let hi=f.get("inici"),hf=f.get("final");let h=calcHours(hi,hf);setD(obraId,d=>({...d,hores:[...d.hores,{id:"h"+Date.now(),data:f.get("data"),etiqueta:f.get("etiqueta"),tasca:f.get("tasca"),inici:hi,final:hf,hores:h,preu:+f.get("preu")||50}]}))}
 function startTimer(){setTimer(t=>({...t,running:true,start:Date.now(),elapsed:0}))}
@@ -1139,7 +1306,7 @@ const pendents=obres.filter(o=>["Pressupostada","En procés","Pendent"].includes
 const properes=[...(events||[])].slice(0,4);
 const ultim=recents[0];
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.66 rescat actes A4</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.68 rescat nou expedient + acta formal</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -1301,7 +1468,7 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
       <label><span>Tipus de treball</span><input value={moduleLabel8737(obra)} readOnly/></label>
     </div>
   </div>
-</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes8761 obra={obra} data={data} setData={setData}/>} {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
+</section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaAvisosExpedient8737 data={data} openEvent={openEvent}/>} {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
 
 function AgendaAvisosExpedient8737({data,openEvent}){
@@ -2287,4 +2454,23 @@ return <form onSubmit={onSubmit} className="form-event-v78">
 }
 
 function EmailModal({draft,setDraft,close}){let sel=draft.agents.filter(a=>draft.selected.includes(a.id));return <Modal title="Enviar per email" close={close}><div className="form-grid"><label className="span-all"><span>Destinataris</span><div className="check-grid">{draft.agents.length===0?<Empty text="Aquesta obra no té agents amb email assignats."/>:draft.agents.map(a=><label className="check-row"><input type="checkbox" checked={draft.selected.includes(a.id)} onChange={e=>setDraft({...draft,selected:e.target.checked?[...draft.selected,a.id]:draft.selected.filter(id=>id!==a.id)})}/><span>{a.nom} · {a.email}</span></label>)}</div></label><Input label="Assumpte" defaultValue={draft.title}/><label className="span-all"><span>Missatge</span><textarea value={draft.message} onChange={e=>setDraft({...draft,message:e.target.value})}/></label></div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>{let tos=sel.map(a=>a.email).join(",");openGmailCompose(tos,draft.title,draft.message)}}>Obrir correu</button></div></Modal>}
-function DocViewer({doc,obra,client,close,email}){let acta=doc.acta,agents=doc.agents||[],pf=doc.proforma,actaPhotos=doc.actaPhotos||[],actaDocs=doc.actaDocs||[];let assistents=acta?acta.agents.map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];return <Modal title={doc.title} close={close}><div className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}><div className="document-page modern-acta-page"><div className="cert-header-pro"><div>{(client.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client.rao}</h3><p>NIF: {client.nif}<br/>Adreça: {client.adreca||"Pendent"}<br/>{client.email}<br/>{client.telefon}</p></div><div><h3>{obra.propietat}</h3><p>NIF: {obra.nifPropietat}<br/>{obra.adreca}<br/>{obra.poblacio}</p></div></div>{doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<div className="acta-template"><div className="acta-title"><h1>ACTA VISITA D'OBRA</h1><span>Data: {acta.data}</span></div><div className="acta-info-grid"><b>Promotor</b><span>{obra.propietat}</span><b>Obra</b><span>{obra.subtitol || obra.nom}</span><b>Emplaçament</b><span>{obra.adreca}</span><b>Empresa adjudicatària</b><span>{client.rao}</span><b>Direcció de l’obra</b><span>Héctor Cubero Monge</span><b>Direcció d’execució</b><span>Héctor Cubero Monge</span><b>Assistents / intervinents</b><span className="assistents-list">{assistents.map(a=><em>{a.nom}<small>{a.rol} · {a.empresa}</small></em>)}</span></div><h3>Observacions / decisions preses</h3><div className="acta-observacions"><p>{acta.text}</p></div>{actaDocs.length>0&&<><h3>Documents annexats</h3><ul>{actaDocs.map(d=><li>{d.nom}</li>)}</ul></>}<h3>Reportatge fotogràfic</h3>{actaPhotos.length>0?<div className="acta-photo-grid">{actaPhotos.map(p=><figure><img src={p.url}/><figcaption>{p.nom}</figcaption></figure>)}</div>:<div className="photo-placeholders six"><span>Foto 1</span><span>Foto 2</span><span>Foto 3</span><span>Foto 4</span><span>Foto 5</span><span>Foto 6</span></div>}<h3>Signatures</h3><div className="signature-grid"><span>Direcció facultativa<br/>Nom i signatura</span><span>Contractista<br/>Nom i signatura</span><span>Propietat<br/>Nom i signatura</span></div></div>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}</div></div><div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div></Modal>}
+function DocViewer({doc,obra,client,close,email}){
+  const pf=doc.proforma;
+  const agents=doc.agents||[];
+  const acta=doc.acta?normalizeActa8768(doc.acta,agents):null;
+  const actaPhotos=doc.actaPhotos||[];
+  const actaDocs=doc.actaDocs||[];
+  const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
+  return <Modal title={doc.title} close={close}>
+    <div className={`document-preview print-area ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}>
+      <div className="document-page modern-acta-page">
+        {doc.type!=="acta"&&<div className="cert-header-pro">
+          <div>{(client?.logo||SOCOTERM_LOGO)?<img className="doc-logo" src={client?.logo||SOCOTERM_LOGO}/>:<div className="fake-logo">LOGO</div>}<h3>{client?.rao||client?.nom||"Despatx tècnic"}</h3><p>NIF: {client?.nif||"Pendent"}<br/>Adreça: {client?.adreca||"Pendent"}<br/>{client?.email||""}<br/>{client?.telefon||""}</p></div>
+          <div><h3>{obra?.propietat||client?.nom||"Client"}</h3><p>NIF: {obra?.nifPropietat||"Pendent"}<br/>{obra?.adreca||""}<br/>{obra?.poblacio||""}</p></div>
+        </div>}
+        {doc.type==="certificacio"&&doc.rows?<CertPrintV87 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
+      </div>
+    </div>
+    <div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={()=>setTimeout(()=>window.print(),100)}>Exportar / Imprimir</button></div>
+  </Modal>
+}

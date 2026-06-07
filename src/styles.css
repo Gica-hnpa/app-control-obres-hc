@@ -3217,3 +3217,60 @@ button,input,select,textarea{font-size:13.5px!important}
     padding:0;
   }
 }
+
+/* V87.68 - recuperació nou expedient i acta formal */
+.acta-key-grid-v8768{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:14px 0 18px;
+}
+.acta-key-grid-v8768 div{
+  border:1px solid #dbe3ef;
+  border-radius:8px;
+  padding:9px 10px;
+  background:#fff;
+}
+.acta-key-grid-v8768 b{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:#64748b;
+  margin-bottom:4px;
+}
+.acta-key-grid-v8768 span{
+  display:block;
+  font-weight:800;
+  color:#111827;
+}
+.signature-grid-v8768{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+.signature-grid-v8768 span{
+  min-height:86px;
+  border:1px dashed #94a3b8;
+  border-radius:10px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  text-align:center;
+  padding:10px;
+  color:#64748b;
+  font-weight:800;
+  background:#f8fafc;
+}
+.acta-formal-v8768 .acta-a4-date-v8766 small:not(:first-child){margin-top:8px}
+.acta-textarea-v8768{display:block;padding:0 20px 16px}
+.acta-textarea-v8768 span{font-weight:900;font-size:13px;display:block;margin-bottom:6px}
+.acta-textarea-v8768 textarea{width:100%;min-height:180px;border:1px solid #cbd5e1;border-radius:12px;padding:11px 12px;font-family:inherit}
+@media(max-width:850px){
+  .acta-key-grid-v8768,
+  .signature-grid-v8768{grid-template-columns:1fr}
+}
+@media print{
+  .signature-grid-v8768 span{background:white}
+}
