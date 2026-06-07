@@ -1,3 +1,10 @@
-# APP Control d'Obres · V87.72
+# APP Control d'Obres · V87.73
 
-Correcció de la previsualització de certificacions i impressió/PDF estable amb primera pàgina vertical i quadre general horitzontal.
+Base V87.72 amb millores de clients, dades d'expedient, codis postals, menú PC fix i rendibilitat/desviacions del Mòdul 2.
+
+Render:
+- Static Site
+- Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+- Publish Directory: dist
+
+No pujar node_modules ni package-lock.json.
