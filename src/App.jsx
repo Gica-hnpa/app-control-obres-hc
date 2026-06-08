@@ -1459,7 +1459,9 @@ setD(obraId,d=>({...d,partides:d.partides.map(r=>{
   if(r.codi!==codi)return r;
   const next={...r,[field]:n};
   if(String(field).startsWith("cert_")){
-    next.certsByNum={...(r.certsByNum||{}),[String(field).replace("cert_","")]:n};
+    const certKey=String(field).replace("cert_","");
+    next.certsByNum={...(r.certsByNum||{}),[certKey]:n};
+    if(next.certMesuresByNum&&next.certMesuresByNum[certKey]){next.certMesuresByNum={...next.certMesuresByNum};delete next.certMesuresByNum[certKey];}
   }
   return next;
 })}))
@@ -1492,7 +1494,7 @@ function updateObraFitxa8721(patch){
   setObres(p=>p.map(o=>o.id===obraId?{...o,...cleanPatch}:o));
   setTab("Resum");
 }
-function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>{let q=(r.certsByNum&&r.certsByNum[String(n)]!==undefined)?+r.certsByNum[String(n)]||0:n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0;return s+q*(+r.pu||0)},0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
+function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>s+certQty8783(r,n)*(+r.pu||0),0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total,updatedAt:new Date().toISOString()}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
 function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data.agents||[]).map(a=>a.id),message:"Bon dia,\n\nAdjunto document de l'obra per a la seva revisió.\n\nSalutacions,\nHéctor"})}
 function addPressupostTecnic8742(p){
   const year=String(obra?.any||new Date().getFullYear());
@@ -1639,30 +1641,82 @@ function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</s
 function Empty({text}){return <div className="empty">{text}</div>}
 function Badge({estat}){let e=String(estat||"");let cls=e==="Activa"||e==="Acceptada"?"ok":e==="Pressupostada"||e==="En procés"||e==="Pendent"?"warn":e==="Aturada"||e==="Descartada"||e==="No contestat"?"danger":e==="Tancada"?"dark":"info";return <span className={`badge ${cls}`}>{estat}</span>}
 
+function timeValue8783(v){
+  if(!v)return 0;
+  if(typeof v==='number')return v;
+  const s=String(v||'').trim();
+  const iso=Date.parse(s);
+  if(Number.isFinite(iso))return iso;
+  const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(m){const y=(+m[3]<100?2000+(+m[3]):+m[3]);return new Date(y,+m[2]-1,+m[1]).getTime()}
+  const n=s.match(/(\d{12,})/); if(n)return +n[1];
+  return 0;
+}
+function eventTime8783(e){if(e?.year&&e?.day)return new Date(+e.year,+e.month||0,+e.day,+String(e.hora||'0').split(':')[0]||0,+String(e.hora||'0:0').split(':')[1]||0).getTime();return timeValue8783(e?.data||e?.createdAt||e?.updatedAt||e?.id)}
+function itemTime8783(x){return Math.max(timeValue8783(x?.updatedAt),timeValue8783(x?.createdAt),timeValue8783(x?.data),eventTime8783(x),timeValue8783(x?.id))}
+function obraScore8783(o,d={}){
+  const vals=[timeValue8783(o?.updatedAt),timeValue8783(o?.createdAt),timeValue8783(d?.updatedAt)];
+  ['documents','fotos','actes','events','hores','pressupostosTecnic','facturesTecnic','certificacions','factures'].forEach(k=>(d[k]||[]).forEach(x=>vals.push(itemTime8783(x))));
+  Object.values(d.sectionDocs||{}).forEach(arr=>(arr||[]).forEach(x=>vals.push(itemTime8783(x))));
+  return Math.max(0,...vals);
+}
+function fmtActivityDate8783(t){if(!t)return 'Sense data';const d=new Date(t);return Number.isFinite(d.getTime())?d.toLocaleDateString('ca-ES'):'Sense data'}
+function collectActivities8783(obres=[],odata={},clients=[]){
+  const out=[];
+  const clientName=o=>clients.find(c=>c.id===o.client)?.nom||o.propietat||'Client';
+  for(const o of obres){
+    const d=odata[o.id]||{};
+    const push=(type,title,detail,t,tab)=>out.push({type,title,detail,time:t,obra:o,tab});
+    push('Expedient','Expedient modificat',`${expedientCode8739(o)} · ${o.nom}`,obraScore8783(o,d),'Resum');
+    (d.events||[]).forEach(e=>push('Agenda',e.title||e.titol||'Cita / avís',`${clientName(o)} · ${e.hora||''} · ${e.note||e.detail||''}`,eventTime8783(e),'Agenda / Avisos'));
+    (d.actes||[]).forEach(a=>push('Acta',a.titol||'Acta',`${expedientCode8739(o)} · ${a.data||''}`,itemTime8783(a),'Actes'));
+    (d.documents||[]).forEach(doc=>push('Document',doc.nom||'Document',`${doc.folder||'Documents'} · ${expedientCode8739(o)}`,itemTime8783(doc),'Documents'));
+    Object.entries(d.sectionDocs||{}).forEach(([sec,arr])=>(arr||[]).forEach(doc=>push('Document',doc.nom||'Document',`${sec} · ${expedientCode8739(o)}`,itemTime8783(doc),'Documents')));
+    (d.pressupostosTecnic||[]).forEach(p=>push('Pressupost',p.concepte||'Pressupost honoraris',`${money(p.base||0)} · ${p.estat||'Pendent'}`,itemTime8783(p),'Honoraris'));
+    (d.facturesTecnic||[]).forEach(f=>push('Factura',f.concepte||'Factura honoraris',`${money(f.base||0)} · ${f.estat||'Pendent'}`,itemTime8783(f),'Honoraris'));
+    (d.certificacions||[]).forEach(c=>push('Certificació',`Certificació ${c.numero||''}`,`${money(c.import||0)} · ${expedientCode8739(o)}`,itemTime8783(c),'Gestió obra'));
+    (d.hores||[]).forEach(h=>push('Temps',h.tasca||h.etiqueta||'Registre de temps',`${qty2(h.hores||0)} h · ${money((+h.hores||0)*(+h.preu||0))}`,itemTime8783(h),'Gestió temps'));
+  }
+  return out.filter(a=>a.time).sort((a,b)=>b.time-a.time);
+}
+function certQty8783(r,n){
+  if(n<=0)return 0;
+  const lines=(r.certMesuresByNum||{})[String(n)];
+  if(lines&&lines.length)return medicioTotal8780(lines,r.ut);
+  if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;
+  if(n===1)return +r.certAnterior||0;
+  if(n===2)return +r.certActual||0;
+  return 0;
+}
+function certTotalsForPrint8780(rows=[],doc={}){
+  const nums=new Set([...(doc.prevNum?[doc.prevNum]:[]),...(doc.certNum?[doc.certNum]:[])]);
+  rows.forEach(r=>{Object.keys(r.certsByNum||{}).forEach(n=>nums.add(+n));Object.keys(r.certMesuresByNum||{}).forEach(n=>nums.add(+n));});
+  return [...nums].filter(n=>Number.isFinite(+n)&&+n>0).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certQty8783(r,+n)*(+r.pu||0),0)}));
+}
+
 function Inici({clients,obres,odata={},events,setScreen,openObra,newObra}){
 const actius=obres.filter(o=>o.estat!=="Tancada").length;
-const recents=[...obres].sort((a,b)=>String(b.updatedAt||b.createdAt||expedientCode8739(b)).localeCompare(String(a.updatedAt||a.createdAt||expedientCode8739(a)))).slice(0,4);
-const pendents=[...obres].filter(o=>["Pressupostada","En procés","Pendent"].includes(o.estat)).sort((a,b)=>String(b.updatedAt||b.createdAt||expedientCode8739(b)).localeCompare(String(a.updatedAt||a.createdAt||expedientCode8739(a)))).slice(0,4);
+const activities=collectActivities8783(obres,odata,clients);
+const recents=[...obres].sort((a,b)=>obraScore8783(b,odata[b.id]||{})-obraScore8783(a,odata[a.id]||{})).slice(0,4);
+const pendents=[...obres].filter(o=>["Pressupostada","En procés","Pendent"].includes(o.estat)).sort((a,b)=>obraScore8783(b,odata[b.id]||{})-obraScore8783(a,odata[a.id]||{})).slice(0,4);
 const autoFacturesPendents=(events||[]).filter(e=>e.auto&&String(e.id||"").startsWith("av-fact-"));
-const properes=[...(events||[])].sort((a,b)=>`${a.year||0}-${a.month||0}-${a.day||0}`.localeCompare(`${b.year||0}-${b.month||0}-${b.day||0}`)).slice(0,4);
-const ultim=recents[0];
+const properes=[...(events||[])].sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,4);
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.81 usuaris separats i inici actualitzat</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.83 inici dinàmic i certificacions estables</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>{autoFacturesPendents.length>0&&<section className="home-alerts-v8776">{autoFacturesPendents.slice(0,4).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent de cobrament</b><span>{a.obra} · {a.detail}</span></button>)}</section>}
 <section className="dashboard-grid dashboard-grid-v8741">
   <div className="stack">
-    <Card title="Expedients recents"><div className="list compact-list-v8741">{recents.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</div></Card>
+    <Card title="Expedients recents"><div className="list compact-list-v8741">{recents.length?recents.map(o=><ObraRow key={o.id} o={o} open={openObra}/>):<Empty text="Encara no hi ha expedients."/>}</div></Card>
     <Card title="Darreres actuacions i avisos"><div className="activity-panel-v8741">
-      {ultim?<button className="activity-row-v8741" onClick={()=>openObra(ultim.id)}><b>Últim expedient</b><span>{expedientCode8739(ultim)} · {ultim.nom}</span></button>:<Empty text="Encara no hi ha expedients."/>}
-      {pendents.length>0&&pendents.slice(0,2).map(o=><button key={o.id} className="activity-row-v8741" onClick={()=>openObra(o.id)}><b>Pendent de seguiment</b><span>{expedientCode8739(o)} · {o.estat}</span></button>)}
-      <button className="activity-row-v8741" onClick={()=>setScreen("Treballs / Expedients")}><b>Revisar llistat general</b><span>Veure tots els expedients ordenats per codi i filtrar per tipus de treball.</span></button>
+      {activities.length?activities.slice(0,6).map(a=><button key={`${a.type}-${a.time}-${a.title}`} className="activity-row-v8741" onClick={()=>openObra(a.obra.id)}><b>{a.type} · {a.title}</b><span>{fmtActivityDate8783(a.time)} · {a.detail}</span></button>):<Empty text="Encara no hi ha moviments registrats."/>}
+      <button className="activity-row-v8741" onClick={()=>setScreen("Treballs / Expedients")}><b>Revisar llistat general</b><span>Veure tots els expedients ordenats i filtrar per tipus de treball.</span></button>
     </div></Card>
   </div>
   <Card title="Panell de treball del dia"><div className="home-work-panel-v8741 home-work-panel-v8742">
-    <div className="home-panel-section-v8741"><h3>Pròximes cites / avisos</h3>{properes.length===0?<p>No hi ha cites registrades. Crea visites, entregues o recordatoris des de l’agenda.</p>:properes.map(e=><button key={e.id} onClick={()=>setScreen("Agenda")}><b>{e.title||e.titol||"Cita"}</b><span>{e.day?`${e.day}/${(+e.month||0)+1}/${e.year}`:(e.data||"Sense data")} · {e.hora||""}</span></button>)}</div>
+    <div className="home-panel-section-v8741"><h3>Pròximes cites / avisos</h3>{properes.length===0?<p>No hi ha cites registrades. Crea visites, entregues o recordatoris des de l’agenda.</p>:properes.map(e=><button key={e.id} onClick={()=>setScreen("Agenda")}><b>{e.title||e.titol||"Cita"}</b><span>{e.day?`${String(e.day).padStart(2,'0')}/${String((+e.month||0)+1).padStart(2,'0')}/${e.year}`:(fmtAppDate8748(e.data)||"Sense data")} · {e.hora||""}</span></button>)}</div>
     <div className="home-panel-section-v8741"><h3>Seguiment pendent</h3>{pendents.length===0?<p>No tens expedients pendents destacats.</p>:pendents.slice(0,3).map(o=><button key={o.id} onClick={()=>openObra(o.id)}><b>{o.estat}</b><span>{expedientCode8739(o)} · {o.nom}</span></button>)}</div>
-    <div className="home-panel-section-v8741"><h3>Últims moviments tècnics</h3>{[...obres].sort((a,b)=>String(b.updatedAt||b.createdAt||expedientCode8739(b)).localeCompare(String(a.updatedAt||a.createdAt||expedientCode8739(a)))).slice(0,3).map(o=>{let d=odata[o.id]||empty();let np=(d.pressupostosTecnic||[]).length,nf=(d.facturesTecnic||[]).length,nh=(d.hores||[]).length;return <button key={o.id} onClick={()=>openObra(o.id)}><b>{o.nom}</b><span>{np} pressupostos · {nf} factures · {nh} registres temps</span></button>})}</div>
+    <div className="home-panel-section-v8741"><h3>Últims moviments tècnics</h3>{activities.length===0?<p>Sense moviments tècnics encara.</p>:activities.slice(0,5).map(a=><button key={`mov-${a.type}-${a.time}-${a.title}`} onClick={()=>openObra(a.obra.id)}><b>{a.title}</b><span>{a.type} · {expedientCode8739(a.obra)} · {fmtActivityDate8783(a.time)}</span></button>)}</div>
     <div className="home-quick-v8741"><button className="primary" onClick={newObra}>+ Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}>Llistat expedients</button><button className="secondary" onClick={()=>setScreen("Pressupostos")}>Pressupostos</button><button className="secondary" onClick={()=>setScreen("Factures")}>Factures</button></div>
   </div></Card>
 </section>
@@ -2452,7 +2506,7 @@ return <div className="stack">{medicioTarget8780&&<MedicioModal8780 row={medicio
         return <div className="cert-grid-v69 row" key={r.codi}>
           <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
-          <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))} onBlur={e=>commitOne(r.codi,e.target.value)}/>:qty2(qFor(r,certNum))}<button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></div></div>
+          <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))} onBlur={e=>commitOne(r.codi,e.target.value)}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
           <div className={qo>0?"origin-fill":""}>{qty2(qo)}</div><div className={qo>0?"origin-fill":""}>{pct(pc(qo,r))}</div><div className={qo>0?"origin-fill":""}>{money(io)}</div>
         </div>
@@ -2470,7 +2524,7 @@ return <div className="stack">{medicioTarget8780&&<MedicioModal8780 row={medicio
 
 function CertResumV69({data}){
 let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
-function qFor(r,n){if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0}
+function qFor(r,n){return certQty8783(r,n)}
 function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
 let capRows=Object.entries(caps).map(([cap,items])=>{
   let pressupost=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
@@ -2509,7 +2563,7 @@ const[selected,setSelected]=useState(null);
 useEffect(()=>{localStorage.setItem(key,JSON.stringify(params))},[params,key]);
 function p(id,k,def){return params[id]?.[k]??def}
 function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}
-function qFor(r,c){let n=+c.numeroCert||+c.numero;if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0}
+function qFor(r,c){let n=+c.numeroCert||+c.numero;return certQty8783(r,n)}
 function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,{numeroCert:c.numero,numero:c.numero})>0)}
 let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let base=rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*(+r.pu||0),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows}});
 let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
@@ -3012,7 +3066,7 @@ function ProformaPrintV81({doc,pf}){
   return <div className="proforma-print-v81">
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.subtitle}</p>
-    <table><thead><tr><th>Codi</th><th>Concepte</th><th>Quant.</th><th>Preu</th><th>Import</th></tr></thead><tbody>{rows.map(r=>{let q=n===1?(+r.certAnterior||0):(+r.certActual||0);return <tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(q)}</td><td>{money(r.pu)}</td><td>{money(q*r.pu)}</td></tr>})}</tbody></table>
+    <table><thead><tr><th>Codi</th><th>Concepte</th><th>Quant.</th><th>Preu</th><th>Import</th></tr></thead><tbody>{rows.map(r=>{let q=certQty8783(r,n);return <tr key={r.codi}><td>{r.codi}</td><td className="concept">{r.concepte}</td><td className="num">{qty2(q)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(q*r.pu)}</td></tr>})}</tbody></table>
     <div className="doc-totals v81">
       <div><span>Base certificada</span><b>{money(base)}</b></div>
       <div><span>Deducció {ded}%</span><b>-{money(base-baseImposable)}</b></div>
@@ -3184,15 +3238,16 @@ function certPrintHtmlV8772(doc,obra,client){
 function CertPreviewV8772({doc}){
   const rows=doc.rows||[];
   const current=rows.filter(r=>(+r.qAct||0)>0);
-  const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
-  return <div className="cert-preview-v8772">
+  const total=doc.totalActual ?? current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+  const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>s+((+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0)))*(+r.pu||0),0);
+  const certTotals=certTotalsForPrint8780(rows,doc);
+  return <div className="cert-preview-v8772 cert-preview-lite-v8783">
     <div className="cert-preview-head-v8772"><h1>{doc.title}</h1><p>{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p><b>{money(total)}</b></div>
-    <div className="cert-preview-note-v8772">Previsualització lleugera. El botó “Imprimir / Guardar PDF” genera el document complet: primera pàgina vertical i quadre general horitzontal.</div>
+    <div className="cert-preview-note-v8772"><b>Previsualització lleugera estable.</b><span>Per veure el document complet amb primera pàgina vertical, quadre horitzontal, colors i totals, clica “Imprimir / Guardar PDF”.</span></div>
+    <div className="cert-lite-kpis-v8783"><div><span>Partides certificades actuals</span><b>{current.length}</b></div><div><span>Total certificació actual</span><b>{money(total)}</b></div><div><span>Total a origen</span><b>{money(totalOrigen)}</b></div></div>
     <h3>Resum de partides modificades en aquesta certificació</h3>
-    {current.length===0?<div className="empty">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772"><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="5">TOTAL</th><th>{money(total)}</th></tr></tfoot></table></div>}
-    <h3>Quadre general</h3>
-    <div className="cert-preview-table-wrap-v8772"><table className="cert-preview-wide-v8772"><thead><tr><th>Partida</th><th>Concepte</th><th>Q pres.</th><th>PU</th><th>Imp. pres.</th><th>Q ant.</th><th>Q act.</th><th>Imp. act.</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=>{const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));return <React.Fragment key={(r.cap||"")+r.codi}><tr><td>{r.codi}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money((+r.q||0)*(+r.pu||0))}</td><td>{qty2(r.qPrev)}</td><td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</td><td>{money(qOri*(+r.pu||0))}</td></tr>{doc.includeMesures&&r.mesures&&r.mesures.length&&<tr><td></td><td colSpan="8"><b>Línies de medició:</b> {r.mesures.map(m=>`${m.concepte||""} ${qty2(medicioCalc8780(m,r.ut))}`).join(" · ")}</td></tr>}</React.Fragment>})}</tbody></table></div>
-    <div className="cert-preview-totals-v8780"><h3>Resum total de certificacions</h3><table><thead><tr><th>Certificació</th><th>Total</th></tr></thead><tbody>{certTotalsForPrint8780(rows,doc).map(c=><tr key={c.n}><td>CERT. {c.n}</td><td>{money(c.total)}</td></tr>)}</tbody><tfoot><tr><th>Total a origen</th><th>{money(certTotalsForPrint8780(rows,doc).reduce((s,c)=>s+c.total,0))}</th></tr></tfoot></table></div>
+    {current.length===0?<div className="empty">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772 stable-num-table-v8783"><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.slice(0,80).map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot></table>{current.length>80&&<p className="muted">Hi ha més partides. El document complet sortirà a la impressió.</p>}</div>}
+    <div className="cert-preview-totals-v8780"><h3>Resum total de certificacions</h3><table className="stable-num-table-v8783"><thead><tr><th>Certificació</th><th>Total</th></tr></thead><tbody>{certTotals.map(c=><tr key={c.n}><td>CERT. {c.n}</td><td>{money(c.total)}</td></tr>)}</tbody><tfoot><tr><th>Total a origen</th><th>{money(certTotals.reduce((s,c)=>s+c.total,0))}</th></tr></tfoot></table></div>
   </div>
 }
 
@@ -3227,6 +3282,21 @@ return <form onSubmit={onSubmit} className="form-event-v78">
 }
 
 function EmailModal({draft,setDraft,close}){let sel=draft.agents.filter(a=>draft.selected.includes(a.id));return <Modal title="Enviar per email" close={close}><div className="form-grid"><label className="span-all"><span>Destinataris</span><div className="check-grid">{draft.agents.length===0?<Empty text="Aquesta obra no té agents amb email assignats."/>:draft.agents.map(a=><label className="check-row"><input type="checkbox" checked={draft.selected.includes(a.id)} onChange={e=>setDraft({...draft,selected:e.target.checked?[...draft.selected,a.id]:draft.selected.filter(id=>id!==a.id)})}/><span>{a.nom} · {a.email}</span></label>)}</div></label><Input label="Assumpte" defaultValue={draft.title}/><label className="span-all"><span>Missatge</span><textarea value={draft.message} onChange={e=>setDraft({...draft,message:e.target.value})}/></label></div><div className="modal-actions"><button className="secondary" onClick={close}>Cancel·lar</button><button className="primary" onClick={()=>{let tos=sel.map(a=>a.email).join(",");openGmailCompose(tos,draft.title,draft.message)}}>Obrir correu</button></div></Modal>}
+function proformaPrintHtml8783(doc,obra,client){
+  const pf=doc.proforma||{};
+  const rows=pf.rows||[];
+  const n=+pf.numeroCert||+(String(pf.numero||"").replace(/\D/g,""))||1;
+  const qFor=(r)=>certQty8783(r,n);
+  const base=doc.base ?? pf.base ?? rows.reduce((s,r)=>s+qFor(r)*(+r.pu||0),0);
+  const ded=+doc.ded||0, iva=+doc.iva||21, ret=+doc.ret||0;
+  const baseImposable=doc.base ?? base*(1-ded/100);
+  const ivaImp=doc.ivaImp ?? baseImposable*iva/100;
+  const retImp=doc.retImp ?? baseImposable*ret/100;
+  const total=doc.total ?? baseImposable+ivaImp-retImp;
+  const bodyRows=rows.map(r=>`<tr><td>${escHtmlV8772(r.codi)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(qFor(r))}</td><td>${money(r.pu)}</td><td>${money(qFor(r)*(+r.pu||0))}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">Sense partides.</td></tr>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Factura proforma")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1fr 1fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #cbd5e1;padding:6px 7px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important}.totals{width:80mm;margin-left:auto;margin-top:14mm}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0}.totals .total{border-top:2px solid #0f172a;border-bottom:0;font-size:18px;margin-top:6px;padding-top:9px}.empty{text-align:left!important;color:#64748b}@media screen{body{background:#e5e7eb;padding:16px}.page{box-shadow:0 2px 12px rgba(15,23,42,.15);padding:14mm}}@media print{body{background:#fff;padding:0}.page{box-shadow:none;padding:0}}</style></head><body><section class="page"><div class="head"><div><h3>Dades del tècnic</h3><p><b>${escHtmlV8772(client?.rao||client?.nom||"Despatx tècnic")}</b><br>NIF: ${escHtmlV8772(client?.nif||"Pendent")}<br>${escHtmlV8772(client?.adreca||"")}<br>${escHtmlV8772(client?.email||"")}</p></div><div><h3>Client / expedient</h3><p><b>${escHtmlV8772(obra?.propietat||client?.nom||"Client")}</b><br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}<br>${escHtmlV8772(obra?.adreca||"")} ${escHtmlV8772(obra?.poblacio||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"FACTURA PROFORMA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}</p></div><b>${money(total)}</b></div><table><colgroup><col style="width:16mm"><col><col style="width:24mm"><col style="width:24mm"><col style="width:28mm"></colgroup><thead><tr><th>Codi</th><th>Concepte</th><th>Quant.</th><th>Preu</th><th>Import</th></tr></thead><tbody>${bodyRows}</tbody></table><div class="totals"><div><span>Base certificada</span><b>${money(base)}</b></div><div><span>Deducció ${ded}%</span><b>-${money(base-baseImposable)}</b></div><div><span>Base imposable</span><b>${money(baseImposable)}</b></div><div><span>IVA ${iva}%</span><b>${money(ivaImp)}</b></div><div><span>Retenció ${ret}%</span><b>-${money(retImp)}</b></div><div class="total"><span>Total proforma</span><b>${money(total)}</b></div></div></section></body></html>`;
+}
+
 function DocViewer({doc,obra,client,close,email}){
   const pf=doc.proforma;
   const agents=doc.agents||[];
@@ -3240,7 +3310,13 @@ function DocViewer({doc,obra,client,close,email}){
     if(!win){setTimeout(()=>window.print(),100);return}
     if(doc.type==="certificacio"&&doc.rows){
       win.document.open();
-      win.document.write(certPrintHtmlV8772(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},350)<\/script>`);
+      win.document.write(certPrintHtmlV8772(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
+      win.document.close();
+      return;
+    }
+    if(doc.type==="proforma"&&doc.proforma){
+      win.document.open();
+      win.document.write(proformaPrintHtml8783(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
       win.document.close();
       return;
     }
