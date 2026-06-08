@@ -1,3 +1,5 @@
-# APP Control d’Obres · V87.84
+# APP Control d'Obres · V87.85
 
-Base V87.83 amb càrrega d’usuari blindada. Corregeix bloqueig d’accés d’Héctor quan alguna dada local queda corrupta després d’una previsualització. Manté separació d’usuaris de V87.82.
+Versió de recuperació d’accés Héctor: càrrega defensiva de dades locals, separació d’usuaris mantinguda i login blindat per evitar bloquejos per dades corruptes.
+
+Build: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
