@@ -1,5 +1,9 @@
-# APP Control d'Obres · V87.78
+# APP Control d'Obres · V87.79
 
-Login de prova, exportació/importació JSON, honoraris sincronitzats i millora agenda/tasques.
+Versió: login sempre obligatori, usuaris separats, pressupost d'obra editable amb capítols ordenats i fotos d'acta optimitzades.
 
-Usuari de prova: hector · contrasenya: 0000.
+Usuaris de prova:
+- hector / 0000
+- pol / 1919
+
+El sistema JSON exporta/importa les dades de l'usuari actiu.
