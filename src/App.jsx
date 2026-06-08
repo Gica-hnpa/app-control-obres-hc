@@ -1330,8 +1330,9 @@ function extractCodigoResumen8756(wb){
   return best;
 }
 
-async function importExcel(e){
+async function importExcel(e,budgetId="principal"){
   const file=e.target.files?.[0];
+  const activeBudgetId8786=String(budgetId||"principal");
   if(!file)return;
 
   function clean(v){return String(v??"").trim()}
@@ -1524,23 +1525,36 @@ function parseRows(rows,sheetName){
     }
     if(!best.rows.length)throw new Error("No s'han detectat partides. Revisa que l'Excel tingui columnas Código / Ut o Nat / Resumen / CanPres / PrPres / ImpPres.");
 
-    setD(obraId,d=>({
-      ...d,
-      partides:best.rows,
-      certificacions:[],
-      factures:[],
-      pressupostos:[...(d.pressupostos||[]),{
-        id:"px-"+Date.now(),
-        versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),
-        data:new Date().toLocaleDateString("ca-ES"),
-        nom:file.name,
-        estat:`Importat · ${best.rows.length} partides · ${best.caps||1} capítols · ${best.sheet}`,
-        import:best.total
-      }]
-    }));
+    setD(obraId,d=>{
+      const bid=activeBudgetId8786;
+      const rowsWithBudget=best.rows.map(r=>({...r,budgetId:bid}));
+      const oldPartides=(d.partides||[]).filter(r=>(r.budgetId||"principal")!==bid);
+      const oldCerts=(d.certificacions||[]).filter(c=>(c.budgetId||"principal")!==bid);
+      const oldFacts=(d.factures||[]).filter(f=>(f.budgetId||"principal")!==bid);
+      const oldPress=(d.pressupostos||[]).filter(p=>(p.budgetId||"principal")!==bid);
+      const groups=ensureBudgetGroups8786({...d,partides:[...oldPartides,...rowsWithBudget],pressupostos:[...oldPress]}).groups;
+      const groupName=(groups.find(g=>g.id===bid)?.nom)||"Pressupost principal";
+      return {
+        ...d,
+        budgetGroups:groups.filter(g=>g.id!=="principal"),
+        activeBudgetIdObra:bid,
+        partides:[...oldPartides,...rowsWithBudget],
+        certificacions:oldCerts,
+        factures:oldFacts,
+        pressupostos:[...oldPress,{
+          id:"px-"+Date.now(),
+          budgetId:bid,
+          versio:"v"+String(oldPress.filter(p=>(p.budgetId||"principal")===bid).length+1).padStart(2,"0"),
+          data:new Date().toLocaleDateString("ca-ES"),
+          nom:file.name,
+          estat:`${groupName} · Importat · ${best.rows.length} partides · ${best.caps||1} capítols · ${best.sheet}`,
+          import:best.total
+        }]
+      };
+    });
     alert(`Pressupost importat correctament: ${best.rows.length} partides en ${best.caps||1} capítols.`);
   }catch(err){
-    setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),versio:"v"+String((d.pressupostos||[]).length+1).padStart(2,"0"),data:new Date().toLocaleDateString("ca-ES"),nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
+    setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),budgetId:activeBudgetId8786,versio:"v"+String((d.pressupostos||[]).filter(p=>(p.budgetId||"principal")===activeBudgetId8786).length+1).padStart(2,"0"),data:new Date().toLocaleDateString("ca-ES"),nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
   }
   if(e?.target)e.target.value="";
 }
@@ -1548,8 +1562,17 @@ function parseRows(rows,sheetName){
 function deletePressupostVersion(id){
   if(!confirm("Eliminar aquesta versió de pressupost?")) return;
   setD(obraId,d=>{
+    const removed=(d.pressupostos||[]).find(p=>p.id===id);
+    const bid=removed?.budgetId||"principal";
     const next=(d.pressupostos||[]).filter(p=>p.id!==id);
-    return {...d,pressupostos:next,partides:next.length?d.partides:[],certificacions:next.length?d.certificacions:[],factures:next.length?d.factures:[]};
+    const hasSame=next.some(p=>(p.budgetId||"principal")===bid);
+    return {
+      ...d,
+      pressupostos:next,
+      partides:hasSame?(d.partides||[]):(d.partides||[]).filter(r=>(r.budgetId||"principal")!==bid),
+      certificacions:hasSame?(d.certificacions||[]):(d.certificacions||[]).filter(c=>(c.budgetId||"principal")!==bid),
+      factures:hasSame?(d.factures||[]):(d.factures||[]).filter(f=>(f.budgetId||"principal")!==bid)
+    };
   });
 }
 function duplicatePressupostVersion(id){
@@ -2093,6 +2116,37 @@ function certQtyTotal8773(r){
   if(vals.length)return vals.reduce((s,v)=>s+(+v||0),0);
   return (+r.certAnterior||0)+(+r.certActual||0);
 }
+
+function ensureBudgetGroups8786(data={}){
+  const explicit=(data.budgetGroups||[]).filter(Boolean);
+  const ids=new Set(["principal"]);
+  const inferred=[];
+  (data.pressupostos||[]).forEach(p=>{const id=p.budgetId||"principal";if(!ids.has(id)){ids.add(id);inferred.push({id,nom:p.budgetNom||p.nom||id,tipus:p.tipus||"Fora pressupost"})}});
+  (data.partides||[]).forEach(r=>{const id=r.budgetId||"principal";if(!ids.has(id)){ids.add(id);inferred.push({id,nom:id,tipus:"Fora pressupost"})}});
+  const base={id:"principal",nom:"Pressupost principal",tipus:"Principal"};
+  const all=[base,...explicit,...inferred].reduce((acc,g)=>{const id=g.id||("bg-"+acc.length);if(!acc.some(x=>x.id===id))acc.push({...g,id,nom:g.nom||g.name||id,tipus:g.tipus||"Fora pressupost"});return acc},[]);
+  return {groups:all,active:(data.activeBudgetIdObra&&all.some(g=>g.id===data.activeBudgetIdObra)?data.activeBudgetIdObra:"principal")};
+}
+function budgetLabel8786(data,bid){return ensureBudgetGroups8786(data).groups.find(g=>g.id===(bid||"principal"))?.nom||"Pressupost principal"}
+function filterBudgetData8786(data,bid){
+  const id=bid||"principal";
+  const is=(x)=>(x?.budgetId||"principal")===id;
+  return {...data,activeBudgetIdObra:id,partides:(data.partides||[]).filter(is),pressupostos:(data.pressupostos||[]).filter(is),certificacions:(data.certificacions||[]).filter(is),factures:(data.factures||[]).filter(is)};
+}
+function mergeBudgetData8786(globalData,bid,nextScope){
+  const id=bid||"principal";
+  const not=(x)=>(x?.budgetId||"principal")!==id;
+  return {
+    ...globalData,
+    activeBudgetIdObra:id,
+    budgetGroups:ensureBudgetGroups8786(globalData).groups.filter(g=>g.id!=="principal"),
+    partides:[...(globalData.partides||[]).filter(not),...(nextScope.partides||[]).map(r=>({...r,budgetId:id}))],
+    pressupostos:[...(globalData.pressupostos||[]).filter(not),...(nextScope.pressupostos||[]).map(p=>({...p,budgetId:id}))],
+    certificacions:[...(globalData.certificacions||[]).filter(not),...(nextScope.certificacions||[]).map(c=>({...c,budgetId:id}))],
+    factures:[...(globalData.factures||[]).filter(not),...(nextScope.factures||[]).map(f=>({...f,budgetId:id}))]
+  };
+}
+
 function RentabilitatObra8773({data,setData}){
   const rows=data.partides||[];
   const tancats=data.capitolsTancats||{};
@@ -2135,7 +2189,81 @@ function RentabilitatObra8773({data,setData}){
 }
 function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert}){
   const[sub,setSub]=useState("Pressupost obra");
-  return <div className="stack gestio-obra-v8746"><div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>Rendibilitat / desviacions</button></div>{sub==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Certificacions obra"&&<Cert data={data} setData={setData} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {sub==="Rendibilitat"&&<RentabilitatObra8773 data={data} setData={setData}/>}</div>
+  const info=ensureBudgetGroups8786(data);
+  const[activeBudgetId,setActiveBudgetId]=useState(info.active);
+  useEffect(()=>{const next=ensureBudgetGroups8786(data);if(!next.groups.some(g=>g.id===activeBudgetId))setActiveBudgetId(next.active)},[data.pressupostos?.length,data.partides?.length,data.budgetGroups?.length]);
+  const groups=ensureBudgetGroups8786(data).groups;
+  const activeData=filterBudgetData8786(data,activeBudgetId);
+  function setScopedData(updater){
+    setData(d=>{
+      const current=filterBudgetData8786(d,activeBudgetId);
+      const nextScope=typeof updater==="function"?updater(current):updater;
+      return mergeBudgetData8786(d,activeBudgetId,nextScope);
+    });
+  }
+  function addBudget(tipus="Fora pressupost"){
+    const nom=prompt("Nom del nou pressupost / fora pressupost:", tipus==="Modificat"?"Modificat 01":"Fora pressupost 01");
+    if(!nom)return;
+    const id="bg-"+Date.now();
+    setData(d=>({...d,activeBudgetIdObra:id,budgetGroups:[...(d.budgetGroups||[]),{id,nom,tipus}]}));
+    setActiveBudgetId(id);
+    setSub("Pressupost obra");
+  }
+  function renameBudget(id){
+    const g=groups.find(x=>x.id===id); if(!g)return;
+    const nom=prompt("Nom del pressupost:",g.nom); if(!nom)return;
+    setData(d=>({...d,budgetGroups:[...(d.budgetGroups||[]).filter(x=>x.id!==id),{...g,nom}].filter(x=>x.id!=="principal")}));
+  }
+  function deleteBudget(id){
+    if(id==="principal")return alert("El pressupost principal no es pot eliminar.");
+    if(!confirm("Eliminar aquest pressupost annex i totes les seves partides/certificacions/factures?"))return;
+    setData(d=>({...d,budgetGroups:(d.budgetGroups||[]).filter(g=>g.id!==id),partides:(d.partides||[]).filter(r=>(r.budgetId||"principal")!==id),pressupostos:(d.pressupostos||[]).filter(p=>(p.budgetId||"principal")!==id),certificacions:(d.certificacions||[]).filter(c=>(c.budgetId||"principal")!==id),factures:(d.factures||[]).filter(f=>(f.budgetId||"principal")!==id),activeBudgetIdObra:"principal"}));
+    setActiveBudgetId("principal");
+  }
+  function scopedUpdateCert(codi,fieldOrValue,value){
+    let field=value===undefined?"certActual":fieldOrValue;
+    let raw=value===undefined?fieldOrValue:value;
+    let n=parseNum8770(raw); if(!Number.isFinite(n))n=0;
+    setData(d=>({...d,partides:(d.partides||[]).map(r=>{
+      if((r.budgetId||"principal")!==activeBudgetId||r.codi!==codi)return r;
+      const next={...r,[field]:n};
+      if(String(field).startsWith("cert_")){
+        const certKey=String(field).replace("cert_","");
+        next.certsByNum={...(r.certsByNum||{}),[certKey]:n};
+        if(next.certMesuresByNum&&next.certMesuresByNum[certKey]){next.certMesuresByNum={...next.certMesuresByNum};delete next.certMesuresByNum[certKey];}
+      }
+      return next;
+    })}));
+  }
+  function scopedAddCert(){
+    setData(d=>{
+      const certs=(d.certificacions||[]).filter(c=>(c.budgetId||"principal")===activeBudgetId);
+      const nextNum=(certs.reduce((m,c)=>Math.max(m,+c.numero||0),0)||0)+1;
+      const nova={id:"c"+Date.now(),budgetId:activeBudgetId,numero:String(nextNum),data:todayShort8713(),estat:"Pendent",import:0};
+      return {...d,certificacions:[...(d.certificacions||[]),nova],activeBudgetIdObra:activeBudgetId};
+    });
+  }
+  function scopedDeleteCert(id){if(!confirm("Eliminar aquesta certificació?"))return;setData(d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))}
+  function scopedUpdateCertDate(id,value){setData(d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))}
+  const totalGlobal=(data.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const totalActive=(activeData.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  return <div className="stack gestio-obra-v8746 gestio-obra-v8786">
+    <Card title="Pressupostos de l’obra" action={<div className="actions-inline"><button className="secondary" onClick={()=>addBudget("Fora pressupost")}>+ Fora pressupost</button><button className="secondary" onClick={()=>addBudget("Modificat")}>+ Modificat / annex</button></div>}>
+      <div className="budget-selector-v8786">
+        {groups.map(g=>{
+          const count=(data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id).length;
+          const total=(data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+          return <button key={g.id} className={activeBudgetId===g.id?"active":""} onClick={()=>setActiveBudgetId(g.id)}><b>{g.nom}</b><span>{g.tipus} · {count} partides</span><strong>{money(total)}</strong></button>
+        })}
+      </div>
+      <div className="budget-selected-actions-v8786"><span>Seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · {money(totalActive)} / global obra {money(totalGlobal)}</span><div className="actions-inline"><button className="secondary small" onClick={()=>renameBudget(activeBudgetId)}>Renombrar</button>{activeBudgetId!=="principal"&&<button className="danger small" onClick={()=>deleteBudget(activeBudgetId)}>Eliminar annex</button>}</div></div>
+    </Card>
+    <div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>Rendibilitat / desviacions</button></div>
+    {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} 
+    {sub==="Certificacions obra"&&<Cert data={activeData} setData={setScopedData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} 
+    {sub==="Facturació obra"&&<Fact data={activeData} openEmail={openEmail} openDoc={openDoc}/>} 
+    {sub==="Rendibilitat"&&<><RentabilitatObra8773 data={activeData} setData={setScopedData}/><Card title="Resum global de tots els pressupostos de l’obra"><div className="budget-global-summary-v8786">{groups.map(g=>{const sd=filterBudgetData8786(data,g.id);const pres=(sd.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);const cert=(sd.partides||[]).reduce((s,r)=>{let certs=sd.certificacions||[];let total=0;certs.forEach(c=>total+=certQty8783(r,+c.numero)*(+r.pu||0));return s+total},0);return <div key={g.id}><b>{g.nom}</b><span>{g.tipus}</span><strong>{money(pres)}</strong><em>Certificat: {money(cert)}</em></div>})}</div></Card></>}
+  </div>
 }
 function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,allAgents=[]}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);let tabs=tabsForWork8737(obra,data);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777"><div><small>{expedientCode8739(obra)}</small><h2>{obra.nom}</h2><p>{client.nom} · {moduleLabel8737(obra)}</p></div><div className="obra-mini-actions-v8776"><Badge estat={estatObra}/><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button><button type="button" className="secondary" onClick={()=>setTab("Dades")}>Dades</button><button type="button" className="secondary edit-fitxa-btn-v8725" onClick={()=>setEditObra(true)}>Modificar fitxa</button><select className="estat-obra-select" value={estatObra} onChange={e=>{let v=e.target.value;setEstatObra(v);updateObraFitxa8721?.({estat:v})}}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div></section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent}/>} {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} {activeTab==="Amidaments"&&<ExpedientSection8769 label="Amidaments" data={data} setData={setData}/>} {activeTab==="Industrials / Comparatius"&&<ExpedientSection8769 label="Industrials / Comparatius" data={data} setData={setData}/>} {activeTab==="Tràmits"&&<ExpedientSection8769 label="Tràmits" data={data} setData={setData}/>} {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} setData={setData} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client}/>} {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
 
@@ -2451,7 +2579,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const total=Object.values(caps).flat().reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
 
   return <div className="stack">
-    <Card title="Versions de pressupost" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label></div>}>
+    <Card title={`Versions de pressupost · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label></div>}>
       <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura recomanada: columna A = codi o número de partida, B = unitat, C = concepte/descripció, D = columna lliure, E = amidament/quantitat, F = preu unitari, G = total.</p></details><div className="version-list">
         {data.pressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:data.pressupostos.map(p=><div className="version-card-v872" key={p.id}>
           <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}>
@@ -2584,7 +2712,7 @@ function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
 function saveMesures8780(codi,lines,total){setData?.(d=>({...d,partides:(d.partides||[]).map(r=>r.codi===codi?{...r,certMesuresByNum:{...(r.certMesuresByNum||{}),[String(certNum)]:lines},certsByNum:{...(r.certsByNum||{}),[String(certNum)]:total},certAnterior:certNum===1?total:r.certAnterior,certActual:certNum===2?total:r.certActual}:r)}));setDraft(x=>({...x,[codi]:String(total)}));setMedicioTarget8780(null)}
 
 return <div className="stack">{medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780.codi,lines,total)}/>}
-<Card title="Certificacions obra realitzades" action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
+<Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
   <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input className="cert-date-input-v8721" value={dateVal8721(c)} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
 <Card title={`CERTIFICACIÓ ${certNum} ACTUAL · ${prevNum?`Cert. ${prevNum} anterior + `:"sense anterior + "}Cert. ${certNum}`}>
@@ -2688,7 +2816,7 @@ let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
 function calc(f){let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total}}
 function openPrint(f){let c=calc(f);openDoc({type:"proforma",title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${fmtDate8714(f.data)}`,proforma:f,iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp})}
 return <div className="fact-layout-v61">
-<Card title="Factures proforma de certificacions">
+<Card title={`Factures proforma de certificacions · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`}>
   <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70"><thead><tr><th>Proforma</th><th>Cert.</th><th>Data</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Accions</th></tr></thead><tbody>
   {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
   {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td>{fmtDate8714(f.data)}</td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button onClick={()=>setSelected(f.pfId)}>Previsualitzar</button><button className="primary small" onClick={()=>openPrint(f)}>Imprimir</button></td></tr>})}

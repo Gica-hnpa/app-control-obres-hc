@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-85-acces-hector-recuperacio",
+  "name": "app-control-obres-v87-86-pressupostos-multiples-obra",
   "private": true,
-  "version": "87.85.0",
+  "version": "87.86.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

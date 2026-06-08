@@ -1,5 +1,15 @@
-# APP Control d'Obres · V87.85
+# APP Control d'Obres · V87.86
 
-Versió de recuperació d’accés Héctor: càrrega defensiva de dades locals, separació d’usuaris mantinguda i login blindat per evitar bloquejos per dades corruptes.
+Base V87.85 amb accés recuperat d'Héctor.
 
-Build: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+Actualització V87.86:
+- Pressupostos múltiples dins Gestió d'obra.
+- Selector de Pressupost principal / Fora pressupost / Modificat.
+- Certificacions, facturació i rendibilitat filtrades pel pressupost seleccionat.
+- Resum global de tots els pressupostos de l'obra.
+
+Render/Vite:
+- Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+- Publish Directory: dist
+
+No pujar node_modules ni package-lock.json.
