@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-84-acces-hector-blindat",
+  "name": "app-control-obres-v87-85-acces-hector-recuperacio",
   "private": true,
-  "version": "87.84.0",
+  "version": "87.85.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
