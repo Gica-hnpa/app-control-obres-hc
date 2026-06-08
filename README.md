@@ -1,12 +1,11 @@
-# APP Control d'Obres · V87.86
+# APP Control d'Obres · V87.87
 
-Base V87.85 amb accés recuperat d'Héctor.
+Base V87.86 amb pressupostos múltiples dins Gestió d'obra.
 
-Actualització V87.86:
-- Pressupostos múltiples dins Gestió d'obra.
-- Selector de Pressupost principal / Fora pressupost / Modificat.
-- Certificacions, facturació i rendibilitat filtrades pel pressupost seleccionat.
-- Resum global de tots els pressupostos de l'obra.
+Correcció V87.87:
+- Corregit bloqueig en la pestanya Rendibilitat / desviacions.
+- Mantingut el sistema de pressupost principal / fora pressupost / modificat.
+- Sense tocar login ni separació d'usuaris.
 
 Render/Vite:
 - Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
