@@ -1,3 +1,3 @@
-# APP Control d'Obres · V87.88
+# APP Control d'Obres · V87.90
 
-Pressupostos múltiples persistents dins gestió d’obra: pressupost principal, fora pressupost, modificats/annexos, amb certificacions, proformes/factures i desviacions separades per grup.
+Calculadora d’honoraris tècnics integrada a Pressupostos/Honoraris, partint de la base V87.89.

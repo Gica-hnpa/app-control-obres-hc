@@ -1033,8 +1033,9 @@ function DataJsonTools8778(){
 
 function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc}){
   const[sub,setSub]=useState("Pressupostos");
-  return <div className="stack honoraris-exp-v8778"><div className="subtabs-v8746"><button className={sub==="Pressupostos"?"active":""} onClick={()=>setSub("Pressupostos")}>Pressupostos honoraris</button><button className={sub==="Factures"?"active":""} onClick={()=>setSub("Factures")}>Factures honoraris</button></div>
+  return <div className="stack honoraris-exp-v8778"><div className="subtabs-v8746"><button className={sub==="Pressupostos"?"active":""} onClick={()=>setSub("Pressupostos")}>Pressupostos honoraris</button><button className={sub==="Calculadora"?"active":""} onClick={()=>setSub("Calculadora")}>Calculadora honoraris</button><button className={sub==="Factures"?"active":""} onClick={()=>setSub("Factures")}>Factures honoraris</button></div>
     {sub==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupost} updatePressupost={updatePressupost} facturarPressupost={facturarPressupost} deletePressupost={deletePressupost} openEmail={openEmail} openDoc={openDoc}/>}
+    {sub==="Calculadora"&&<HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} onCreatePressupost={addPressupost}/>}
     {sub==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>}
   </div>
 }
@@ -1055,6 +1056,146 @@ function NewGlobalPressupost8778({obres=[],onSave,close}){
   </form></Modal>
 }
 
+
+
+// V87.90 · Calculadora d'honoraris tècnics basada en la matriu Excel d'honoraris aportada.
+function numCa8790(v){return Number(String(v??0).replace(/\./g,"").replace(",","."))||0}
+function lookup8790(table,value){
+  const target=Math.ceil(numCa8790(value))-1;
+  let best=table[0]?.[1]||0;
+  for(const [limit,coef] of table){if(target>=limit)best=coef;else break}
+  return best;
+}
+const HON_SUP8790=[[-1,3.9],[50,3.6],[100,3.42],[200,3.3],[400,3.18],[600,3.06],[800,2.94],[1000,2.82],[2000,2.7],[3000,2.58],[4000,2.46],[6000,2.37],[8000,2.28],[10000,2.19],[12000,2.1],[14000,2.01],[16000,1.95],[18000,1.89],[20000,1.83],[25000,1.77],[30000,1.71],[35000,1.65],[40000,1.59],[50000,1.56],[65000,1.53],[80000,1.5],[100000,1.47],[120000,1.44],[140000,1.41],[180000,1.38],[200000,1.35],[999999999,1.35]];
+const HON_PEMCA8790=[[-1,2.4],[24,2.25],[36,2.1],[48,2.01],[60,1.92],[90,1.87],[120,1.83],[180,1.74],[240,1.71],[300,1.65],[453,1.58],[601,1.5],[901,1.43],[1202,1.35],[1502,1.28],[2103,1.2],[2704,1.13],[3606,1.01],[4808,0.95],[6010,0.92],[9015,0.8],[12020,0.71],[18030,0.63],[30050,0.6],[999999999,0.6]];
+const HON_SUP_STRUCT8790=[[-1,2.05],[50,1.95],[100,1.79],[200,1.64],[400,1.54],[600,1.48],[800,1.42],[1000,1.34],[2000,1.25],[3000,1.19],[4000,1.15],[6000,1.11],[8000,1.07],[10000,1.05],[12000,1.03],[14000,1.01],[16000,0.99],[18000,0.97],[20000,0.95],[25000,0.93],[30000,0.91],[35000,0.88],[40000,0.86],[50000,0.84],[65000,0.82],[80000,0.8],[100000,0.78],[120000,0.76],[140000,0.74],[180000,0.72],[200000,0.7],[999999999,0.7]];
+const HON_ACTIVITY8790=[[-1,4.05],[100,3],[200,2.5],[300,2.2],[400,2],[500,1.85],[600,1.7],[700,1.6],[800,1.5],[1000,1.25],[1500,1.05],[2000,0.9],[3000,0.8],[4000,0.7],[5000,0.65],[6000,0.5],[999999999,0.5]];
+const HON_BASTIDA8790=[[-1,150.25],[50,150.25],[100,219.35],[200,306.5],[300,387.65],[400,441.7],[500,489.8],[750,595],[1000,692.65],[999999999,692.65]];
+const HON_ACT_EDIF8790={"Documentació tècnica i obres menors":{coef:1,min:450},"Projecte":{coef:1,min:450},"Direcció d'obra / direcció d'execució":{coef:1,min:450},"Projecte + DO + DEO":{coef:2,min:850},"Control de qualitat":{coef:0.3,min:225}};
+const HON_ACT_URB8790={"Projecte":{coef:1,min:420.7},"Direcció d'obra":{coef:1,min:300.5},"Projecte i direcció":{coef:2,min:570.95},"Control de qualitat":{coef:0.09,min:0}};
+const HON_SAFETY8790={"Redacció EBSS":0.15,"Redacció ESS":0.15,"Coordinació seguretat execució":0.25,"EBSS + coordinació execució":0.35,"ESS + coordinació execució":0.35,"Coordinació projecte + execució":0.40,"Aprovació PSS i control":0.05};
+const HONOR_TREBALLS8790=[
+ {id:"edificacio",grup:"Treballs d'edificació i urbanització",nom:"Treballs d'edificació",formula:"edificacio",req:"PEM, m² i Ca"},
+ {id:"urbanitzacio",grup:"Treballs d'edificació i urbanització",nom:"Treballs d'urbanització",formula:"urbanitzacio",req:"PEM i Ca"},
+ {id:"estructures",grup:"Treballs d'edificació i urbanització",nom:"Treballs de càlcul d’estructures",formula:"estructures",req:"PEM, m² i Ca"},
+ {id:"activitat",grup:"Treballs d'edificació i urbanització",nom:"Activitat / incidència ambiental",formula:"activitat",req:"m² i Ca"},
+ {id:"pla_emergencia",grup:"Treballs d'edificació i urbanització",nom:"Redacció del pla d'emergència",formula:"activitat",req:"m² i Ca"},
+ {id:"bastida",grup:"Treballs d'edificació i urbanització",nom:"Treballs per a instal·lació de bastida",formula:"bastida",req:"m² i Ca"},
+ {id:"seguretat",grup:"Treballs de seguretat",nom:"Seguretat i salut vinculada a obra",formula:"seguretat",req:"PEM, m² i Ca"},
+ {id:"gestio_projecte",grup:"Gestió",nom:"Gestió del projecte",formula:"pemPercentCa",coef:1.2,req:"PEM i Ca"},
+ {id:"control_economic",grup:"Gestió",nom:"Control econòmic de l’obra",formula:"pemDirect",coef:0.04,req:"PEM"},
+ {id:"contractacio_oficis",grup:"Gestió",nom:"Contractació d'oficis",formula:"pemDirect",coef:0.03,req:"PEM"},
+ {id:"control_costos",grup:"Gestió",nom:"Control de costos",formula:"pemDirect",coef:0.01,req:"PEM"},
+ {id:"cedula",grup:"Altres treballs",nom:"Certificat d'habitabilitat d'habitatges usats",formula:"cedula",req:"habitatges, superfície i Ca"},
+ {id:"informe",grup:"Altres treballs",nom:"Informes, dictàmens i certificats",formula:"informe",req:"Ca"},
+ {id:"aixecament",grup:"Altres treballs",nom:"Aixecaments planimètrics",formula:"aixecament",req:"m² i Ca"},
+ {id:"amidaments",grup:"Altres treballs",nom:"Amidaments i memòria valorada",formula:"amidaments",req:"m² o PEM i Ca"},
+ {id:"minutats",grup:"Treballs minutats per hores",nom:"Treballs minutats per hores",formula:"hores",req:"hores i €/h"},
+ {id:"manual",grup:"Altres treballs",nom:"Honoraris convinguts / manual",formula:"manual",req:"import manual"}
+];
+function calcHonoraris8790(f){
+  const pem=numCa8790(f.pem), sup=numCa8790(f.superficie), ca=numCa8790(f.ca)||2.3, hores=numCa8790(f.hores), preuHora=numCa8790(f.preuHora)||50, habitatges=Math.max(0,numCa8790(f.habitatges)||0), manual=numCa8790(f.manual);
+  const t=HONOR_TREBALLS8790.find(x=>x.id===f.treball)||HONOR_TREBALLS8790[0];
+  const tipusObraCoef=f.tipusObra==="Obres d'ampliació, reforma i reparació"?1.2:1;
+  let base=0,minim=0,formula="";
+  if(t.formula==="edificacio"){
+    const a=HON_ACT_EDIF8790[f.actuacioEdif]||HON_ACT_EDIF8790["Projecte + DO + DEO"];
+    const coefSup=lookup8790(HON_SUP8790,sup);
+    minim=a.min*ca;
+    base=pem*a.coef*coefSup*tipusObraCoef/100;
+    formula=`PEM × coef. actuació (${a.coef}) × coef. superfície (${coefSup.toFixed(2)}) × coef. tipus obra (${tipusObraCoef}) / 100`;
+  }else if(t.formula==="urbanitzacio"){
+    const a=HON_ACT_URB8790[f.actuacioUrb]||HON_ACT_URB8790["Projecte i direcció"];
+    const coef=lookup8790(HON_PEMCA8790,pem/(ca*1000));
+    minim=a.min*ca;
+    base=pem*a.coef*coef/100;
+    formula=`PEM × coef. actuació (${a.coef}) × coef. pressupost (${coef.toFixed(2)}) / 100`;
+  }else if(t.formula==="estructures"){
+    const coef=lookup8790(HON_SUP_STRUCT8790,sup);
+    minim=240.4*ca;
+    base=pem*coef/100;
+    formula=`PEM × coef. superfície estructures (${coef.toFixed(2)}) / 100`;
+  }else if(t.formula==="activitat"){
+    const coef=lookup8790(HON_ACTIVITY8790,sup);
+    minim=360*ca;
+    base=sup*coef*ca;
+    formula=`Superfície × coef. activitat (${coef.toFixed(2)}) × Ca`;
+  }else if(t.formula==="bastida"){
+    const coef=lookup8790(HON_BASTIDA8790,sup);
+    base=coef*ca;minim=0;formula=`barem bastida segons superfície (${coef.toFixed(2)}) × Ca`;
+  }else if(t.formula==="seguretat"){
+    const safety=HON_SAFETY8790[f.actuacioSafety]??0.15;
+    const coefSup=lookup8790(HON_SUP8790,sup);
+    const principal=pem*1*coefSup*tipusObraCoef/100;
+    minim=450*ca*safety;
+    base=principal*safety;
+    formula=`honoraris base d'obra × coef. seguretat (${safety})`;
+  }else if(t.formula==="pemPercentCa"){
+    base=pem*(t.coef||0)/100*ca;formula=`PEM × ${t.coef}% × Ca`;
+  }else if(t.formula==="pemDirect"){
+    base=pem*(t.coef||0);formula=`PEM × ${t.coef}`;
+  }else if(t.formula==="cedula"){
+    const h=habitatges||1;
+    if(f.planoCedula==="Cal elaborar plànol")base=(65*(h+1)*ca)+((sup<70?150:200));
+    else base=65*(h+1)*ca;
+    formula=`certificat habitabilitat segons habitatges${f.planoCedula==="Cal elaborar plànol"?" + plànol":""}`;
+  }else if(t.formula==="informe"){
+    const mins={"Informe sense certificat":180,"Certificat sense informe":180,"Dictamen amb informe":240,"Certificat amb informe":331};
+    base=(mins[f.tipusInforme]||180)*ca;formula=`mínim segons tipus d'informe × Ca`;
+  }else if(t.formula==="aixecament"){
+    minim=150.25*ca;base=Math.max(minim,sup*0.0644*ca);formula=`màxim entre mínim i superfície × coeficient orientatiu × Ca`;
+  }else if(t.formula==="amidaments"){
+    minim=130*ca;base=Math.max(minim,(pem?pem*0.00295:sup*4.922)*ca);formula=`màxim entre mínim i amidament segons PEM/superfície`;
+  }else if(t.formula==="hores"){
+    base=hores*preuHora;formula=`hores × €/h`;
+  }else{base=manual;formula="import manual";}
+  const recomanat=Math.max(minim||0,base||0);
+  const ajust=numCa8790(f.ajustPercent);
+  const final=recomanat*(1+ajust/100);
+  return {treball:t,base,minim,recomanat,final,formula};
+}
+function HonorarisCalculator8790({obres=[],defaultObraId="",onCreatePressupost}){
+  const firstObra=defaultObraId||obres[0]?.id||"";
+  const [f,setF]=useState({obraId:firstObra,grup:"Treballs d'edificació i urbanització",treball:"edificacio",pem:"30000",superficie:"100",ca:"2,30",iva:"21",estat:"Pendent",ajustPercent:"0",actuacioEdif:"Projecte + DO + DEO",tipusObra:"Obres d'ampliació, reforma i reparació",actuacioUrb:"Projecte i direcció",actuacioSafety:"Redacció EBSS",planoCedula:"No cal elaborar plànol",tipusInforme:"Certificat sense informe",habitatges:"1",hores:"1",preuHora:"50",manual:"0"});
+  const groups=[...new Set(HONOR_TREBALLS8790.map(x=>x.grup))];
+  const treballs=HONOR_TREBALLS8790.filter(x=>x.grup===f.grup);
+  useEffect(()=>{if(!treballs.some(t=>t.id===f.treball))setF(x=>({...x,treball:treballs[0]?.id||"manual"}))},[f.grup]);
+  const r=calcHonoraris8790(f);const finalEditable=numCa8790(f.finalManual)>0?numCa8790(f.finalManual):r.final;
+  function set(k,v){setF(x=>({...x,[k]:v}))}
+  function create(){
+    if(!f.obraId){alert("Selecciona un expedient vinculat.");return}
+    const concepte=`Honoraris · ${r.treball.nom}`;
+    const text=`Càlcul orientatiu segons matriu d'honoraris aportada. ${r.formula}. PEM: ${money(numCa8790(f.pem))}; superfície: ${numCa8790(f.superficie).toFixed(2)} m²; Ca: ${numCa8790(f.ca).toFixed(2)}. Import recomanat: ${money(r.recomanat)}. Import final editable aplicat: ${money(finalEditable)}.`;
+    onCreatePressupost?.({obraId:f.obraId,concepte,text,base:finalEditable,iva:numCa8790(f.iva)||21,estat:f.estat||"Pendent",data:todayISO8743(),honorarisCalc:{...f,resultat:r,final:finalEditable}});
+  }
+  return <div className="honor-calc-v8790">
+    <div className="module-note-v8738"><b>Calculadora d’honoraris tècnics</b><span>Primera integració de la matriu Excel. El resultat és una referència orientativa i el preu final sempre és editable abans de convertir-lo en pressupost d’honoraris.</span></div>
+    <div className="form-grid honor-calc-grid-v8790">
+      <label className="span-all"><span>Expedient vinculat</span><select value={f.obraId} onChange={e=>set("obraId",e.target.value)}>{obres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label>
+      <label><span>Grup</span><select value={f.grup} onChange={e=>set("grup",e.target.value)}>{groups.map(g=><option key={g}>{g}</option>)}</select></label>
+      <label><span>Tipus de feina</span><select value={f.treball} onChange={e=>set("treball",e.target.value)}>{treballs.map(t=><option key={t.id} value={t.id}>{t.nom}</option>)}</select></label>
+      <label><span>PEM / pressupost base</span><input value={f.pem} onChange={e=>set("pem",e.target.value)} /></label>
+      <label><span>Superfície m²</span><input value={f.superficie} onChange={e=>set("superficie",e.target.value)} /></label>
+      <label><span>Coeficient actualització Ca</span><input value={f.ca} onChange={e=>set("ca",e.target.value)} /></label>
+      <label><span>IVA %</span><input value={f.iva} onChange={e=>set("iva",e.target.value)} /></label>
+      {f.treball==="edificacio"&&<><label><span>Actuació edificació</span><select value={f.actuacioEdif} onChange={e=>set("actuacioEdif",e.target.value)}>{Object.keys(HON_ACT_EDIF8790).map(x=><option key={x}>{x}</option>)}</select></label><label><span>Tipus d’obra</span><select value={f.tipusObra} onChange={e=>set("tipusObra",e.target.value)}><option>Obres d'ampliació, reforma i reparació</option><option>Obres de nova planta</option></select></label></>}
+      {f.treball==="urbanitzacio"&&<label><span>Actuació urbanització</span><select value={f.actuacioUrb} onChange={e=>set("actuacioUrb",e.target.value)}>{Object.keys(HON_ACT_URB8790).map(x=><option key={x}>{x}</option>)}</select></label>}
+      {f.treball==="seguretat"&&<><label><span>Actuació seguretat</span><select value={f.actuacioSafety} onChange={e=>set("actuacioSafety",e.target.value)}>{Object.keys(HON_SAFETY8790).map(x=><option key={x}>{x}</option>)}</select></label><label><span>Tipus d’obra</span><select value={f.tipusObra} onChange={e=>set("tipusObra",e.target.value)}><option>Obres d'ampliació, reforma i reparació</option><option>Obres de nova planta</option></select></label></>}
+      {f.treball==="cedula"&&<><label><span>Núm. habitatges</span><input value={f.habitatges} onChange={e=>set("habitatges",e.target.value)} /></label><label><span>Plànol</span><select value={f.planoCedula} onChange={e=>set("planoCedula",e.target.value)}><option>No cal elaborar plànol</option><option>Cal elaborar plànol</option></select></label></>}
+      {f.treball==="informe"&&<label><span>Tipus informe/certificat</span><select value={f.tipusInforme} onChange={e=>set("tipusInforme",e.target.value)}><option>Informe sense certificat</option><option>Certificat sense informe</option><option>Dictamen amb informe</option><option>Certificat amb informe</option></select></label>}
+      {f.treball==="minutats"&&<><label><span>Hores</span><input value={f.hores} onChange={e=>set("hores",e.target.value)} /></label><label><span>€/h</span><input value={f.preuHora} onChange={e=>set("preuHora",e.target.value)} /></label></>}
+      {f.treball==="manual"&&<label><span>Import manual</span><input value={f.manual} onChange={e=>set("manual",e.target.value)} /></label>}
+      <label><span>Ajust final %</span><input value={f.ajustPercent} onChange={e=>set("ajustPercent",e.target.value)} /></label>
+      <label><span>Preu final manual opcional</span><input value={f.finalManual||""} placeholder={money(r.final)} onChange={e=>set("finalManual",e.target.value)} /></label>
+      <label><span>Estat pressupost</span><select value={f.estat} onChange={e=>set("estat",e.target.value)}><option>Pendent</option><option>Esborrany</option><option>Enviat</option><option>Acceptat</option><option>No acceptat</option></select></label>
+    </div>
+    <div className="honor-result-v8790">
+      <div><small>Mínim de referència</small><b>{money(r.minim)}</b></div><div><small>Càlcul base</small><b>{money(r.base)}</b></div><div><small>Honorari recomanat</small><b>{money(r.recomanat)}</b></div><div className="final"><small>Preu final editable</small><b>{money(finalEditable)}</b></div>
+    </div>
+    <div className="honor-formula-v8790"><b>Fórmula aplicada:</b> {r.formula}</div>
+    <div className="card-actions"><button className="primary" onClick={create}>Crear pressupost d’honoraris</button></div>
+  </div>
+}
 function NewGlobalFactura8778({obres=[],onSave,close}){
   const [f,setF]=useState({obraId:obres[0]?.id||"",concepte:"Honoraris tècnics",base:"0",iva:"21",retencio:"0",descompte:"0",data:todayISO8743(),estat:"Pendent",text:"Factura corresponent als honoraris tècnics realitzats."});
   function set(k,v){setF(x=>({...x,[k]:v}))}
@@ -3204,7 +3345,8 @@ function TracaGeneral({obres,odata,openObra}){
 function MiniCal({events}){return <div className="calendar-mini">{Array.from({length:21}).map((_,i)=>{let d=i+1,ev=events.filter(e=>e.day===d&&e.month===5&&e.year===2026);return <button className="mini-day"><b>{d}</b>{ev[0]&&<span className="cal-event">{ev[0].type}</span>}</button>})}</div>}
 function FinanceFilters8776({rows,children}){return children}
 function FacturesGeneral8738({obres,odata,setOdata,openObra,openObraTab}){
-  const[preview,setPreview]=useState(null);const[newOpen,setNewOpen]=useState(false);const[period,setPeriod]=useState("all"),[from,setFrom]=useState(""),[to,setTo]=useState(""),[client,setClient]=useState(""),[obra,setObra]=useState(""),[tipus,setTipus]=useState("");
+  const[preview,setPreview]=useState(null);const[newOpen,setNewOpen]=useState(false);
+  const[calcOpen,setCalcOpen]=useState(false);const[period,setPeriod]=useState("all"),[from,setFrom]=useState(""),[to,setTo]=useState(""),[client,setClient]=useState(""),[obra,setObra]=useState(""),[tipus,setTipus]=useState("");
   let all=obres.flatMap(o=>uniqueFactures8743(((odata[o.id]||empty()).facturesTecnic||[])).map((f,i)=>({...f,displayNumero:displayDocNumber8745(f,"factura",o,i+1),obra:o,clientNom:o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o)})));
   const clients=[...new Set(all.map(r=>r.clientNom).filter(Boolean))],tipologies=[...new Set(all.map(r=>r.tipologia).filter(Boolean))];
   let rows=all.filter(f=>(!client||f.clientNom===client)&&(!obra||f.obra.id===obra)&&(!tipus||f.tipologia===tipus)&&periodFilter8776(f,period,from,to));
@@ -3264,6 +3406,7 @@ function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab}){
   return <div className="stack finance-general-v8743 finance-general-v8745 finance-v8776 finance-v8777">
     {preview&&<QuotePreview8743 type="pressupost" doc={preview.doc} obra={preview.obra} close={()=>setPreview(null)}/>}
     {newOpen&&<NewGlobalPressupost8778 obres={obres} onSave={createPressupostGlobal8778} close={()=>setNewOpen(false)}/>}
+    {calcOpen&&<Modal title="Calculadora d’honoraris tècnics" close={()=>setCalcOpen(false)}><HonorarisCalculator8790 obres={obres} onCreatePressupost={(payload)=>{createPressupostGlobal8778(payload);setCalcOpen(false)}}/></Modal>}
     {editDoc&&<Modal title="Gestionar pressupost" close={()=>setEditDoc(null)}>
       <div className="budget-manage-v8777">
         <div className="budget-manage-head-v8777"><span className="exp-code-v8739">{expedientCode8739(editDoc.obra)}</span><h3>{editDoc.displayNumero} · {editDoc.concepte||"Pressupost"}</h3><p>{editDoc.clientNom} · {editDoc.obra.nom}</p></div>
@@ -3279,7 +3422,7 @@ function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab}){
       <div className="modal-actions"><button className="secondary" onClick={()=>setPreview({doc:{...editDoc,numero:editDoc.displayNumero},obra:editDoc.obra})}>Veure PDF</button><button className="secondary" onClick={()=>printQuote8745("pressupost",{...editDoc,numero:editDoc.displayNumero},editDoc.obra)}>Imprimir</button><button className="primary" onClick={()=>facturarPressupostGlobal(editDoc)}>Crear factura i tancar</button><button className="secondary" onClick={()=>setEditDoc(null)}>Tancar</button></div>
     </Modal>}
     <Card title="Pressupostos / honoraris del tècnic" action={<FilterBar8776><label><span>Període</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="all">Tot</option><option value="week">Setmana actual</option><option value="month">Mes en curs</option><option value="year">Any actual</option><option value="dates">Dates</option></select></label>{period==="dates"&&<><label><span>Des de</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>Fins</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>Client</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">Tots</option>{clients.map(c=><option key={c}>{c}</option>)}</select></label><label><span>Obra</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">Totes</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>Tipologia</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">Totes</option>{tipologies.map(t=><option key={t}>{t}</option>)}</select></label></FilterBar8776>}>
-      <div className="card-actions"><button className="primary" onClick={()=>setNewOpen(true)}>+ Nou pressupost</button></div><div className="honor-kpis"><Kpi t="PRESSUPOSTOS" v={rows.length}/><Kpi t="BASE SENSE IVA" v={money(base)}/><Kpi t="TOTAL IVA INC." v={money(total)}/></div>
+      <div className="card-actions"><button className="primary" onClick={()=>setNewOpen(true)}>+ Nou pressupost</button><button className="secondary" onClick={()=>setCalcOpen(true)}>Calcular amb barem d’honoraris</button></div><div className="honor-kpis"><Kpi t="PRESSUPOSTOS" v={rows.length}/><Kpi t="BASE SENSE IVA" v={money(base)}/><Kpi t="TOTAL IVA INC." v={money(total)}/></div>
       <div className="finance-charts-v8776"><Donut8776 title="Estat dels pressupostos" parts={parts} total={rows.length} kind="count"/></div>
       <div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8745 finance-budget-table-v8777"><colgroup><col className="c-num"/><col className="c-exp"/><col className="c-client"/><col className="c-tipus"/><col className="c-concepte"/><col className="c-data"/><col className="c-money"/><col className="c-money"/><col className="c-estat"/><col className="c-fact"/><col className="c-actions"/></colgroup><thead><tr><th>Pressupost</th><th>Expedient</th><th>Client</th><th>Tipologia</th><th>Concepte</th><th>Data</th><th>Base</th><th>Total IVA inclòs</th><th>Estat</th><th>Facturat</th><th>Accions</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="11"><Empty text="Encara no hi ha pressupostos."/></td></tr>}{rows.map(p=><tr key={p.obra.id+p.id}><td><b>{p.displayNumero}</b></td><td><span className="exp-code-v8739">{expedientCode8739(p.obra)}</span><small>{p.obra.nom}</small></td><td>{p.clientNom}</td><td>{p.tipologia}</td><td className="concept-cell-v8777">{p.concepte||"Pressupost"}</td><td>{fmtAppDate8748(p.data)||"—"}</td><td><b>{money(baseIva8743(p))}</b></td><td><strong>{money(totalIva8743(p))}</strong></td><td><span className="budget-status-v8777">{p.estat||"Pendent"}</span></td><td><b className={p.facturat?"yes-v8777":"no-v8777"}>{p.facturat?"Sí":"No"}</b></td><td><div className="actions-inline"><button className="primary small-v8777" onClick={()=>setEditDoc(p)}>Gestionar</button><button className="secondary" onClick={()=>setPreview({doc:{...p,numero:p.displayNumero},obra:p.obra})}>PDF</button><button className="secondary" onClick={()=>openObraTab?openObraTab(p.obra.id,"Pressupostos"):openObra(p.obra.id)}>Obrir</button></div></td></tr>)}</tbody></table></div>
     </Card>
