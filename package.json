@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-90-calculadora-honoraris",
+  "name": "app-control-obres-v87-91-pressupostos-multiples-blindats",
   "private": true,
-  "version": "87.90.0",
+  "version": "87.91.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
