@@ -3445,3 +3445,24 @@ button,input,select,textarea{font-size:13.5px!important}
 .active-session-top-v8781 b{text-transform:uppercase;color:#fff}
 .nav-collapsed .active-user-v8780{display:none}
 @media(max-width:900px){.active-session-top-v8781{align-self:stretch;justify-content:center;margin-top:-6px;margin-bottom:4px}}
+
+/* UPDATE V87.82 - usuari actiu fix i separació real per usuari */
+.user-global-badge-v8782{
+  position:fixed;
+  top:10px;
+  right:14px;
+  z-index:9999;
+  background:#0f172a;
+  color:white;
+  border:2px solid #60a5fa;
+  border-radius:999px;
+  padding:8px 14px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  box-shadow:0 8px 24px rgba(15,23,42,.25);
+  font-weight:900;
+}
+.user-global-badge-v8782 span{font-size:10px;color:#bfdbfe;letter-spacing:.05em}
+.user-global-badge-v8782 b{text-transform:uppercase;font-size:14px;color:white}
+@media(max-width:900px){.user-global-badge-v8782{left:12px;right:12px;justify-content:center;top:8px}.main{padding-top:54px}}

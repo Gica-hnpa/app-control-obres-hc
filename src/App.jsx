@@ -7,8 +7,34 @@ pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
 import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText} from "lucide-react";
 
 const APP_USERS8779={hector:"0000",pol:"1919"};
+const STORAGE_NS8782="aco_v8782";
 function currentAppUser8779(){return sessionStorage.getItem("aco_current_user8779")||""}
-function lsKey8779(key,user=currentAppUser8779()){return user?`${key}__${user}`:key}
+function lsKey8779(key,user=currentAppUser8779()){
+  const u=String(user||"").trim().toLowerCase();
+  return u?`${STORAGE_NS8782}__${u}__${key}`:`${STORAGE_NS8782}__nouser__${key}`;
+}
+function legacyUserKey8782(key,user){return user?`${key}__${user}`:key}
+function isAppStorageKey8782(k){return /^aco_/.test(k)&&!k.startsWith(STORAGE_NS8782+"__")&&k!=="aco_current_user8779"}
+function migrateStorageForUser8782(user){
+  const u=String(user||"").trim().toLowerCase();
+  if(!u)return;
+  if(u==="pol"){
+    // Usuari de prova: mai ha d'arrossegar dades antigues d'Héctor ni dades contaminades de versions anteriors.
+    Object.keys(localStorage).forEach(k=>{if(k.startsWith(`${STORAGE_NS8782}__pol__`)||k.endsWith("__pol"))localStorage.removeItem(k)});
+    return;
+  }
+  if(localStorage.getItem(`${STORAGE_NS8782}__migrated__${u}`)==="1")return;
+  Object.keys(localStorage).forEach(k=>{
+    if(!isAppStorageKey8782(k))return;
+    let base=null;
+    if(k.endsWith(`__${u}`))base=k.slice(0,-(`__${u}`).length);
+    else if(!k.includes("__"))base=k;
+    if(!base)return;
+    const nk=lsKey8779(base,u);
+    if(localStorage.getItem(nk)==null)localStorage.setItem(nk,localStorage.getItem(k));
+  });
+  localStorage.setItem(`${STORAGE_NS8782}__migrated__${u}`,"1");
+}
 function lsGet8779(key,fallback="",user=currentAppUser8779()){const v=localStorage.getItem(lsKey8779(key,user));return v==null?fallback:v}
 function lsSet8779(key,value,user=currentAppUser8779()){localStorage.setItem(lsKey8779(key,user),value)}
 function lsJson8779(key,fallback,user=currentAppUser8779()){try{const raw=lsGet8779(key,null,user);return raw==null?fallback:JSON.parse(raw)}catch{return fallback}}
@@ -868,7 +894,7 @@ function DataJsonTools8778(){
   const user=currentAppUser8779()||"hector";
   const keys=["aco_clients","aco_obres","aco_odata","aco_cp_custom8775","aco_config","aco_config_v60","aco_agenda_v86","aco_home_notes","aco_obra_notes","aco_acta_docs","aco_acta_photos","aco_photos"];
   function exportJson(){
-    const data={version:"V87.79",user,exportedAt:new Date().toISOString(),localStorage:{}};
+    const data={version:"V87.82",user,exportedAt:new Date().toISOString(),localStorage:{}};
     keys.forEach(k=>{data.localStorage[k]=localStorage.getItem(lsKey8779(k,user))||null});
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -956,15 +982,11 @@ useEffect(()=>{
   setDataLoadedUser8781("");
   setClients([]);setObres([]);setOdata({});setObraId("");setClientId("");
   sessionStorage.setItem("aco_current_user8779",authUser8779);
-  if(authUser8779==="pol" && localStorage.getItem("aco_pol_reset_v8781")!=="1"){
-    ["aco_clients","aco_obres","aco_odata","aco_cp_custom8775","aco_config","aco_config_v60","aco_agenda_v86","aco_home_notes","aco_obra_notes","aco_acta_docs","aco_acta_photos","aco_photos","aco_avisos_generals_v36","aco_honoraris_sync_tick"].forEach(k=>localStorage.removeItem(lsKey8779(k,"pol")));
-    localStorage.setItem("aco_pol_reset_v8781","1");
-  }
+  migrateStorageForUser8782(authUser8779);
   const isHector=authUser8779==="hector";
   let rawClients=localStorage.getItem(lsKey8779("aco_clients",authUser8779));
   let rawObres=localStorage.getItem(lsKey8779("aco_obres",authUser8779));
   let rawOdata=localStorage.getItem(lsKey8779("aco_odata",authUser8779));
-  if(isHector){rawClients=rawClients||localStorage.getItem("aco_clients");rawObres=rawObres||localStorage.getItem("aco_obres");rawOdata=rawOdata||localStorage.getItem("aco_odata");}
   let c=rawClients?JSON.parse(rawClients):(isHector?clients0:[]);
   let o=rawObres?JSON.parse(rawObres):(isHector?obres0:[]);
   let d=rawOdata?JSON.parse(rawOdata):(isHector?data0:{});
@@ -1596,7 +1618,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
-return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div><div className="active-session-top-v8781"><span>Usuari actiu:</span><b>{authUser8779}</b></div>
+return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div><div className="active-session-top-v8781"><span>Usuari actiu:</span><b>{authUser8779}</b></div>
 {screen==="Inici"&&<Inici clients={clients} obres={obres} odata={odata} events={[...Object.values(odata).flatMap(d=>d.events||[]),...invoiceAlerts8776(obres,odata)]} setScreen={nav} openObra={openObra} newObra={()=>setModal("obra")}/>}
 {screen==="Clients"&&<Clients clients={fClients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
@@ -1607,7 +1629,7 @@ return <div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<
 {screen==="Pressupostos"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/>}
 {screen==="Factures"&&<FacturesGeneral8738 obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
-{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div>
+{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
 }
 
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
@@ -2481,10 +2503,10 @@ function fmtDate8714(v){
   return String(v);
 }
 function Fact({data,openEmail,openDoc}){
-const key="aco_fact_params_v61";
+const key=lsKey8779("aco_fact_params_v61");
 const[params,setParams]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
 const[selected,setSelected]=useState(null);
-useEffect(()=>{localStorage.setItem(key,JSON.stringify(params))},[params]);
+useEffect(()=>{localStorage.setItem(key,JSON.stringify(params))},[params,key]);
 function p(id,k,def){return params[id]?.[k]??def}
 function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}
 function qFor(r,c){let n=+c.numeroCert||+c.numero;if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;return n===1?(+r.certAnterior||0):n===2?(+r.certActual||0):0}
