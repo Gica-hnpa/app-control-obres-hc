@@ -1843,7 +1843,7 @@ const pendents=[...obres].filter(o=>["Pressupostada","En procés","Pendent"].inc
 const autoFacturesPendents=(events||[]).filter(e=>e.auto&&String(e.id||"").startsWith("av-fact-"));
 const properes=[...(events||[])].sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,4);
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.84 accés Héctor blindat</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.89 desviacions globals + honoraris base</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>{autoFacturesPendents.length>0&&<section className="home-alerts-v8776">{autoFacturesPendents.slice(0,4).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent de cobrament</b><span>{a.obra} · {a.detail}</span></button>)}</section>}
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -2147,6 +2147,85 @@ function mergeBudgetData8786(globalData,bid,nextScope){
   };
 }
 
+function certQtyTotal8789(r){
+  const nums=new Set();
+  Object.keys(r.certsByNum||{}).forEach(n=>nums.add(+n));
+  Object.keys(r.certMesuresByNum||{}).forEach(n=>nums.add(+n));
+  if(nums.size){return [...nums].filter(n=>Number.isFinite(n)&&n>0).reduce((s,n)=>s+certQty8783(r,n),0)}
+  return certQtyTotal8773(r);
+}
+function budgetImpact8789(g){
+  const txt=String((g?.tipus||"")+" "+(g?.nom||"")).toLowerCase();
+  if(txt.includes("principal"))return {key:"base",label:"Pressupost principal",tone:"neutral",sign:0};
+  if(txt.includes("estalvi")||txt.includes("no executada"))return {key:"estalvi",label:"Estalvi / partida no executada",tone:"good",sign:-1};
+  if(txt.includes("imprevist")||txt.includes("sobrecost")||txt.includes("risc"))return {key:"imprevist",label:"Imprevist / sobrecost",tone:"bad",sign:1};
+  if(txt.includes("pendent"))return {key:"pendent",label:"Extra pendent d’aprovació",tone:"warn",sign:1};
+  if(txt.includes("modificat")||txt.includes("aprovat"))return {key:"aprovat",label:"Modificat / extra aprovat",tone:"info",sign:1};
+  if(txt.includes("fora"))return {key:"fora",label:"Fora pressupost",tone:"warn",sign:1};
+  return {key:"altres",label:g?.tipus||"Altres",tone:"info",sign:1};
+}
+function budgetMetric8789(data,g){
+  const id=g.id||"principal";
+  const rows=(data.partides||[]).filter(r=>(r.budgetId||"principal")===id);
+  const pressupost=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const certificat=rows.reduce((s,r)=>s+certQtyTotal8789(r)*(+r.pu||0),0);
+  const capMap={};
+  rows.forEach(r=>{const cap=r.cap||"Sense capítol";if(!capMap[cap])capMap[cap]={cap,pressupost:0,certificat:0,partides:0};capMap[cap].pressupost+=(+r.q||0)*(+r.pu||0);capMap[cap].certificat+=certQtyTotal8789(r)*(+r.pu||0);capMap[cap].partides+=1;});
+  const impact=budgetImpact8789(g);
+  return {...g,rows,pressupost,certificat,capitols:Object.values(capMap),impact};
+}
+function GlobalRendibilitat8789({data,setData,activeBudgetId,setActiveBudgetId}){
+  const groups=ensureBudgetGroups8786(data).groups;
+  const metrics=groups.map(g=>budgetMetric8789(data,g));
+  const principal=metrics.find(m=>m.id==="principal")||metrics[0]||{pressupost:0,certificat:0};
+  const base=principal.pressupost||0;
+  const afegits=metrics.filter(m=>m.id!=="principal"&&!["estalvi","imprevist","pendent"].includes(m.impact.key)).reduce((s,m)=>s+m.pressupost,0);
+  const imprevistos=metrics.filter(m=>m.impact.key==="imprevist").reduce((s,m)=>s+m.pressupost,0);
+  const pendents=metrics.filter(m=>m.impact.key==="pendent"||m.impact.key==="fora").reduce((s,m)=>s+m.pressupost,0);
+  const estalvis=metrics.filter(m=>m.impact.key==="estalvi").reduce((s,m)=>s+m.pressupost,0);
+  const totalActual=base+afegits+imprevistos+pendents-estalvis;
+  const totalCert=metrics.reduce((s,m)=>s+m.certificat,0);
+  const desviacioActual=totalActual-base;
+  const pctActual=base?desviacioActual/base*100:0;
+  const pctCert=base?totalCert/base*100:0;
+  const byImpact={base,afegits,imprevistos,pendents,estalvis};
+  function updateGroup(id,patch){
+    if(id==="principal")return;
+    setData?.(d=>{const groups=ensureBudgetGroups8786(d).groups.filter(g=>g.id!=="principal").map(g=>g.id===id?{...g,...patch}:g);return {...d,budgetGroups:groups,updatedAt:new Date().toISOString()}})
+  }
+  const allCaps={};
+  metrics.forEach(m=>m.capitols.forEach(c=>{if(!allCaps[c.cap])allCaps[c.cap]={cap:c.cap,pressupost:0,certificat:0};allCaps[c.cap].pressupost+=c.pressupost;allCaps[c.cap].certificat+=c.certificat;}));
+  const caps=Object.values(allCaps).sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
+  return <div className="stack rend-global-v8789">
+    <Card title="Rendibilitat i desviacions · visió global de l’obra">
+      <div className="rend-dashboard-v8789">
+        <div className={`rend-main-kpi-v8789 ${desviacioActual>0?"bad":"good"}`}><span>Desviació prevista sobre pressupost inicial</span><b>{desviacioActual>0?"+":""}{money(desviacioActual)}</b><small>{pct(pctActual)} respecte del pressupost principal</small></div>
+        <div className="rend-ring-card-v8789"><div className="ring-v8774" style={{background:`conic-gradient(#2563eb 0 ${Math.min(140,pctCert)*3.6}deg,#e5e7eb ${Math.min(140,pctCert)*3.6}deg 360deg)`}}><b>{new Intl.NumberFormat("ca-ES",{minimumFractionDigits:1,maximumFractionDigits:1}).format(pctCert)}%</b><span>certificat</span></div><em>Certificat total a origen: {money(totalCert)}</em></div>
+        <div className="rend-metric-grid-v8789">
+          <div><span>Pressupost inicial</span><b>{money(base)}</b></div>
+          <div className="info"><span>Modificats / extres aprovats</span><b>{money(afegits)}</b></div>
+          <div className="bad"><span>Imprevistos / sobrecostos</span><b>{money(imprevistos)}</b></div>
+          <div className="warn"><span>Fora pressupost / pendents</span><b>{money(pendents)}</b></div>
+          <div className="good"><span>Estalvis</span><b>-{money(estalvis)}</b></div>
+          <div><span>Total actual previst</span><b>{money(totalActual)}</b></div>
+        </div>
+      </div>
+      <div className="rend-stack-bars-v8789">
+        <div><span>Base</span><b style={{width:`${totalActual?Math.max(8,base/totalActual*100):0}%`}}/></div>
+        <div><span>Aprovats</span><b className="info" style={{width:`${totalActual?Math.max(4,afegits/totalActual*100):0}%`}}/></div>
+        <div><span>Imprevistos</span><b className="bad" style={{width:`${totalActual?Math.max(4,imprevistos/totalActual*100):0}%`}}/></div>
+        <div><span>Pendents</span><b className="warn" style={{width:`${totalActual?Math.max(4,pendents/totalActual*100):0}%`}}/></div>
+      </div>
+    </Card>
+    <Card title="Paquets econòmics de l’obra" action={<span className="muted">Classifica cada pressupost perquè la desviació surti amb el color correcte.</span>}>
+      <div className="budget-analysis-grid-v8789">{metrics.map(m=>{const selected=(activeBudgetId||"principal")===m.id;return <button key={m.id} className={`budget-analysis-card-v8789 ${m.impact.tone} ${selected?"active":""}`} onClick={()=>setActiveBudgetId?.(m.id)}><div><b>{m.nom}</b><small>{m.impact.label}</small></div><strong>{money(m.pressupost)}</strong><em>Certificat: {money(m.certificat)}</em><span>{m.rows.length} partides</span>{m.id!=="principal"&&<select value={m.tipus||"Fora pressupost"} onClick={e=>e.stopPropagation()} onChange={e=>updateGroup(m.id,{tipus:e.target.value})}><option>Fora pressupost</option><option>Imprevist / sobrecost</option><option>Modificat aprovat</option><option>Extra aprovat pel client</option><option>Extra pendent d’aprovació</option><option>Estalvi / partida no executada</option><option>Altres</option></select>}</button>})}</div>
+    </Card>
+    <Card title="Desviació global per capítols">
+      <div className="rent-table-wrap-v8774"><table className="rent-table-v8774"><thead><tr><th>Capítol</th><th>Pressupost actual</th><th>Certificat a origen</th><th>Desviació certificada</th><th>% certificat</th><th>Visual</th></tr></thead><tbody>{caps.length===0?<tr><td colSpan="6"><Empty text="Encara no hi ha pressupost."/></td></tr>:caps.map(c=>{const dif=c.certificat-c.pressupost;const pc=c.pressupost?c.certificat/c.pressupost*100:0;return <tr key={c.cap}><td className="text-left"><b>{c.cap}</b></td><td>{money(c.pressupost)}</td><td>{money(c.certificat)}</td><td><b className={dif>0?"bad-text":"good-text"}>{dif>0?"+":""}{money(dif)}</b></td><td>{pct(pc)}</td><td><div className="cap-bar-v8774"><span className={dif>0?"bad":"good"} style={{width:`${Math.min(100,Math.abs(pc))}%`}}/></div></td></tr>})}</tbody></table></div>
+    </Card>
+  </div>
+}
+
 function RentabilitatObra8773({data,setData}){
   const rows=data.partides||[];
   const tancats=data.capitolsTancats||{};
@@ -2224,7 +2303,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     alert("Pressupost seleccionat fixat/guardat dins aquesta obra.");
   }
   function addBudget(tipus="Fora pressupost"){
-    const nom=prompt("Nom del nou pressupost / fora pressupost:", tipus==="Modificat"?"Modificat 01":"Fora pressupost 01");
+    const nom=prompt("Nom del nou pressupost / fora pressupost:", tipus.includes("Imprevist")?"Imprevistos 01":(tipus.includes("Modificat")?"Modificat 01":"Fora pressupost 01"));
     if(!nom)return;
     const id="bg-"+Date.now();
     const now=new Date().toISOString();
@@ -2281,7 +2360,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
   const totalGlobal=(data.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
   const totalActive=(activeData.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
   return <div className="stack gestio-obra-v8746 gestio-obra-v8786">
-    <Card title="Pressupostos de l’obra" action={<div className="actions-inline"><button className="secondary" onClick={()=>addBudget("Fora pressupost")}>+ Fora pressupost</button><button className="secondary" onClick={()=>addBudget("Modificat")}>+ Modificat / annex</button></div>}>
+    <Card title="Pressupostos de l’obra" action={<div className="actions-inline"><button className="secondary" onClick={()=>addBudget("Fora pressupost")}>+ Fora pressupost</button><button className="secondary" onClick={()=>addBudget("Imprevist / sobrecost")}>+ Imprevist</button><button className="secondary" onClick={()=>addBudget("Modificat aprovat")}>+ Modificat / annex</button></div>}>
       <div className="budget-selector-v8786">
         {groups.map(g=>{
           const count=(data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id).length;
@@ -2295,7 +2374,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Certificacions obra"&&<Cert data={activeData} setData={setScopedData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Facturació obra"&&<Fact data={activeData} openEmail={openEmail} openDoc={openDoc}/>} 
-    {sub==="Rendibilitat"&&<><RentabilitatObra8773 data={activeData} setData={setScopedData}/><Card title="Resum global de tots els pressupostos de l’obra"><div className="budget-global-summary-v8786">{groups.map(g=>{const sd=filterBudgetData8786(data,g.id);const pres=(sd.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);const cert=(sd.partides||[]).reduce((s,r)=>{let certs=sd.certificacions||[];let total=0;certs.forEach(c=>total+=certQty8783(r,+c.numero)*(+r.pu||0));return s+total},0);return <div key={g.id}><b>{g.nom}</b><span>{g.tipus}</span><strong>{money(pres)}</strong><em>Certificat: {money(cert)}</em></div>})}</div></Card></>}
+    {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} setActiveBudgetId={selectBudget8788}/>}
   </div>
 }
 function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,allAgents=[]}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);let tabs=tabsForWork8737(obra,data);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777"><div><small>{expedientCode8739(obra)}</small><h2>{obra.nom}</h2><p>{client.nom} · {moduleLabel8737(obra)}</p></div><div className="obra-mini-actions-v8776"><Badge estat={estatObra}/><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button><button type="button" className="secondary" onClick={()=>setTab("Dades")}>Dades</button><button type="button" className="secondary edit-fitxa-btn-v8725" onClick={()=>setEditObra(true)}>Modificar fitxa</button><select className="estat-obra-select" value={estatObra} onChange={e=>{let v=e.target.value;setEstatObra(v);updateObraFitxa8721?.({estat:v})}}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></div></section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent}/>} {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} {activeTab==="Amidaments"&&<ExpedientSection8769 label="Amidaments" data={data} setData={setData}/>} {activeTab==="Industrials / Comparatius"&&<ExpedientSection8769 label="Industrials / Comparatius" data={data} setData={setData}/>} {activeTab==="Tràmits"&&<ExpedientSection8769 label="Tràmits" data={data} setData={setData}/>} {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} setData={setData} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client}/>} {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
