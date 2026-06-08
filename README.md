@@ -1,3 +1,3 @@
-# APP Control d'Obres · V87.83
+# APP Control d’Obres · V87.84
 
-Correcció d’inici dinàmic, certificacions/previsualització estable, impressió de proformes A4, clients sense solapaments i usuaris aïllats.
+Base V87.83 amb càrrega d’usuari blindada. Corregeix bloqueig d’accés d’Héctor quan alguna dada local queda corrupta després d’una previsualització. Manté separació d’usuaris de V87.82.
