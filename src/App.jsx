@@ -1351,6 +1351,8 @@ function NewGlobalFactura8778({obres=[],onSave,close}){
 }
 
 function directPrintDocV87103(doc,obra,client){
+  // En mòbil/iPad no obrim directament una finestra d'impressió perquè l'usuari pugui tornar enrere, compartir o descarregar.
+  if((window.innerWidth||0)<=900)return false;
   const aw=window.screen?.availWidth||1400, ah=window.screen?.availHeight||900;
   const win=window.open('', '_blank', `width=${aw},height=${ah},left=0,top=0,resizable=yes,scrollbars=yes`);
   if(!win)return false;
@@ -1379,7 +1381,14 @@ const[cs,setCs]=useState(""),[ct,setCt]=useState(""),[os,setOs]=useState(""),[oc
 const[modal,setModal]=useState(null),[certInfo,setCertInfo]=useState({num:"2",data:"18/06/26",anteriorNum:"1",anteriorData:"12/05/26"});
 const[calM,setCalM]=useState(new Date().getMonth()),[calY,setCalY]=useState(2026),[selDay,setSelDay]=useState(null),[email,setEmail]=useState(null),[doc,setDoc]=useState(null),[selActa,setSelActa]=useState(null);
 const[timer,setTimer]=useState({running:false,start:null,elapsed:0,label:"Cèdula",task:"",rate:50});
-function openDocSmart87103(d){if(d?.autoPrint&&(d.type==="certificacio"||d.type==="proforma")){if(directPrintDocV87103(d,obra,client))return;}setDoc(d)}
+function openDocSmart87103(d){
+  if(d?.autoPrint&&(d.type==="certificacio"||d.type==="proforma")){
+    if(directPrintDocV87103(d,obra,client))return;
+    setDoc({...d,autoPrint:false,mobilePrint:true});
+    return;
+  }
+  setDoc(d)
+}
 useEffect(()=>{let id;if(timer.running){id=setInterval(()=>setTimer(t=>({...t,elapsed:Date.now()-t.start})),500)}return()=>clearInterval(id)},[timer.running,timer.start]);
 useEffect(()=>{
   if(!authUser8779)return;
@@ -3554,16 +3563,19 @@ return <Card title={`Documents de l’expedient${obra?.nom?` · ${obra.nom}`:""}
 
 function Agenda({events=[],clients=[],obres=[],openObra,openEvent,calM,setCalM,calY,setCalY,selDay,setSelDay,setOdata}){
 const key=lsKey8779("aco_agenda_v86");
+const safeClients=Array.isArray(clients)?clients.filter(Boolean):[];
+const safeObres=Array.isArray(obres)?obres.filter(Boolean):[];
+const safeIncomingEvents=Array.isArray(events)?events.filter(e=>e&&typeof e==="object").slice(-500):[];
 const[version,setVersion]=useState(0);
 const[clientFilter,setClientFilter]=useState("");
 const[obraFilter,setObraFilter]=useState("");
 const[form,setForm]=useState({title:"",client:"",clientNou:"",promotor:"",obra:"",obraNova:"",tipus:"Visita d’obra",hora:"09:00",adreca:"",detail:"",obraId:""});
 function load(){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}}
 function saveList(list){localStorage.setItem(key,JSON.stringify(list));setVersion(v=>v+1)}
-const local=load();
-const all=[...(events||[]),...local];
-const clientNames=[...new Set([...(clients||[]).map(c=>c.nom),...all.map(e=>e.client)].filter(Boolean))];
-const filteredObresBase=clientFilter?(obres||[]).filter(o=>o.client===clientFilter || (clients.find(c=>c.id===o.client)?.nom===clientFilter)):(obres||[]);
+const local=load().filter(e=>e&&typeof e==="object").slice(-500);
+const all=[...safeIncomingEvents,...local];
+const clientNames=[...new Set([...safeClients.map(c=>c.nom),...all.map(e=>e.client)].filter(Boolean))];
+const filteredObresBase=clientFilter?safeObres.filter(o=>o.client===clientFilter || (safeClients.find(c=>c.id===o.client)?.nom===clientFilter)):safeObres;
 const obraNames=[...new Set([...filteredObresBase.map(o=>o.nom),...all.filter(e=>!clientFilter||e.client===clientFilter).map(e=>e.obra)].filter(Boolean))];
 const filtered=all.filter(e=>(!clientFilter||e.client===clientFilter)&&(!obraFilter||e.obra===obraFilter));
 const blanks=first(calY,calM), total=days(calY,calM);
@@ -3582,7 +3594,7 @@ function saveNote(){
  if(!form.title){alert("Posa resum/títol.");return}
  const client=form.client==="__nou__"?(form.clientNou||"Nou client"):(form.client||"Sense client");
  const obra=form.obra==="__nova__"?(form.obraNova||"Nou expedient/adreça"):(form.obra||"Sense obra");
- const obraFound=(obres||[]).find(o=>o.nom===obra);
+ const obraFound=safeObres.find(o=>o.nom===obra);
  const obraId=form.obraId||obraFound?.id||"";
  const note={id:form.id||"note-"+Date.now(),day:selDay,month:calM,year:calY,title:form.title,client,promotor:form.promotor,obra,obraId,tipus:form.tipus,hora:form.hora,adreca:form.adreca||obraFound?.adreca||"",detail:form.detail,note:form.detail,type:form.tipus,color:form.tipus==="Certificació"?"red":form.tipus==="Avís"?"orange":"blue"};
  const existsLocal=local.some(n=>n.id===note.id);
@@ -4195,6 +4207,31 @@ function DocViewer({doc,obra,client,close,email}){
   const actaDocs=doc.actaDocs||[];
   const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
   const printRef=useRef(null);
+  function htmlForCurrentDoc(){
+    if(doc.type==="certificacio"&&doc.rows)return certPrintHtmlV8772(doc,obra,client);
+    if(doc.type==="proforma"&&doc.proforma)return proformaPrintHtml8783(doc,obra,client);
+    const node=printRef.current;
+    return `<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title></head><body>${node?node.innerHTML:''}</body></html>`;
+  }
+  function downloadHtmlDoc(){
+    const html=htmlForCurrentDoc();
+    const blob=new Blob([html],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=((doc.title||"document").replace(/[^a-z0-9_\-]+/gi,"_")||"document")+".html";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+  async function shareHtmlDoc(){
+    const html=htmlForCurrentDoc();
+    const name=((doc.title||"document").replace(/[^a-z0-9_\-]+/gi,"_")||"document")+".html";
+    const file=new File([html],name,{type:"text/html"});
+    try{
+      if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({title:doc.title||"Document",text:"Document de l'APP Control d'Obres",files:[file]});return;}
+      if(navigator.share){await navigator.share({title:doc.title||"Document",text:"Obre l'app i utilitza Imprimir/PDF per generar el document."});return;}
+    }catch(e){return}
+    alert("Aquest navegador no permet compartir directament. Pots descarregar el document o fer Imprimir > Guardar PDF.");
+  }
   function printIsolated(){
     const aw=window.screen?.availWidth||1400, ah=window.screen?.availHeight||900;
     const win=window.open('', '_blank', `width=${aw},height=${ah},left=0,top=0,resizable=yes,scrollbars=yes`);
@@ -4230,6 +4267,12 @@ function DocViewer({doc,obra,client,close,email}){
         {doc.type==="certificacio"&&doc.rows?<CertPreviewV8772 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
       </div>
     </div>
-    <div className="modal-actions"><button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button><button className="primary" onClick={printIsolated}>Imprimir / Guardar PDF</button></div>
+    <div className="modal-actions doc-mobile-actions-v87107">
+      <button className="secondary" onClick={close}>Tancar / tornar</button>
+      <button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button>
+      <button className="secondary" onClick={downloadHtmlDoc}>Descarregar document</button>
+      <button className="secondary" onClick={shareHtmlDoc}>Compartir</button>
+      <button className="primary" onClick={printIsolated}>Imprimir / Guardar PDF</button>
+    </div>
   </Modal>
 }

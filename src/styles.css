@@ -3645,3 +3645,21 @@ button,input,select,textarea{font-size:13.5px!important}
 }
 .cert-date-input-v8721{min-width:132px!important}
 .cert-grid-v69 .cert-edit-input-v69{text-align:right!important}
+
+/* V87.107 · tancament mòduls principals: navegació mòbil i impressió segura */
+.doc-mobile-actions-v87107{position:sticky;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);z-index:20;box-shadow:0 -8px 24px rgba(15,23,42,.08);flex-wrap:wrap}.doc-mobile-actions-v87107 button{min-height:42px}.document-modal .modal-head{position:sticky;top:0;z-index:24;background:#fff}.clean-doc-preview-v8799{background:#eef2f7!important}
+.subtabs-v8746{position:sticky;top:86px;z-index:32;background:rgba(248,250,252,.98);backdrop-filter:blur(8px);padding:10px 0;border-bottom:1px solid #d6dde7;overflow-x:auto;white-space:nowrap}.subtabs-v8746 button{white-space:nowrap;min-height:42px}
+@media(max-width:950px){
+  .obra-tabs-toggle-v87105{display:none!important}
+  .obra-layout-v87105,.obra-layout-v87105.tabs-open,.obra-layout-v87105.tabs-closed{display:block!important;grid-template-columns:1fr!important}
+  .obra-side-tabs-v87105,.obra-layout-v87105.tabs-closed .obra-side-tabs-v87105{display:flex!important;position:sticky!important;top:82px!important;z-index:44!important;left:auto!important;right:auto!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;flex-direction:row!important;gap:8px!important;border-radius:0!important;padding:8px 10px!important;margin:0 -10px 10px!important;background:rgba(255,255,255,.97)!important;box-shadow:0 4px 18px rgba(15,23,42,.08)!important;border-left:0!important;border-right:0!important}
+  .obra-tabs-title-v87105{display:none!important}
+  .obra-side-tabs-v87105 button{white-space:nowrap!important;min-width:max-content!important;padding:10px 13px!important;border:1px solid #d6dde7!important;border-radius:999px!important;background:#f8fafc!important;font-size:13px!important}
+  .obra-side-tabs-v87105 button.active{background:#2563eb!important;color:#fff!important;border-color:#2563eb!important}
+  .subtabs-v8746{top:138px;z-index:43;margin:0 -10px 10px;padding:8px 10px;background:rgba(255,255,255,.97);box-shadow:0 4px 16px rgba(15,23,42,.06)}
+  .subtabs-v8746 button{border-radius:999px!important;font-size:13px!important;padding:9px 12px!important;min-height:39px!important}
+  .modal.document-modal,.modal:has(.clean-doc-preview-v8799){width:100vw!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important}.document-preview.clean-doc-preview-v8799{max-height:calc(100dvh - 142px)!important;padding:8px!important}.document-page{padding:10mm 6mm!important}
+  .doc-mobile-actions-v87107{justify-content:stretch!important}.doc-mobile-actions-v87107 button{flex:1 1 45%;justify-content:center}.doc-mobile-actions-v87107 .primary{flex-basis:100%}
+  .agenda-v86{display:block!important}.agenda-v86 .card{margin-bottom:12px}.calendar-grid.google-cal-v86{grid-template-columns:repeat(7,minmax(42px,1fr));overflow-x:auto}.day{min-height:64px!important}.agenda-form-v86{grid-template-columns:1fr!important}.agenda-form-v86 label.wide{grid-column:auto!important}
+}
+@media(min-width:951px){.obra-side-tabs-v87105{display:flex!important;flex-direction:column!important}.subtabs-v8746{top:82px}.document-preview.clean-doc-preview-v8799{max-height:calc(100vh - 130px)!important}.modal.document-modal,.modal:has(.clean-doc-preview-v8799){width:min(98vw,1600px)!important;max-width:1600px!important}}

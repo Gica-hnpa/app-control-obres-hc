@@ -8,3 +8,10 @@ Versió amb millores d’accessibilitat i ús real en PC/iPad/mòbil:
 - Fitxa de client més compacta: dades amagables i edició sota demanda.
 
 Base: V87.105.
+
+
+## V87.107
+- Impressió mòbil segura amb visor tancable, descarrega i compartir.
+- Pestanyes d’expedient visibles i sticky en mòbil/iPad.
+- Subpestanyes de gestió d’obra sticky per no haver de pujar amb scroll.
+- Agenda protegida amb llistes segures per evitar bloquejos per dades malformades.
