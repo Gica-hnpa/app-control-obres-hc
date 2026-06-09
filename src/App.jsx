@@ -140,6 +140,58 @@ function sanitizeOdata8785(value,fallback={}){
   });
   return out;
 }
+
+
+// V87.104: persistència crítica separada. Evita perdre pressupostos annexos/fora pressupost
+// quan el localStorage queda ple per fotos, croquis o documents en base64.
+function stripHeavy878104(value){
+  if(Array.isArray(value)) return value.map(stripHeavy878104);
+  if(value && typeof value === "object"){
+    const out={};
+    Object.entries(value).forEach(([k,v])=>{
+      const lk=String(k).toLowerCase();
+      if(["src","url","dataurl","base64","blob","raw","content","filedata","preview"].includes(lk)) return;
+      out[k]=stripHeavy878104(v);
+    });
+    return out;
+  }
+  if(typeof value === "string" && /^data:/i.test(value)) return "";
+  return value;
+}
+function keyBudget878104(x){return `${x?.budgetId||"principal"}__${x?.id||x?.codi||x?.numero||x?.nom||x?.versio||""}__${x?.cap||""}`}
+function mergeArr878104(a=[],b=[],keyFn=keyBudget878104){
+  const map=new Map();
+  [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])].forEach(x=>{if(!x)return;const k=keyFn(x);map.set(k,{...(map.get(k)||{}),...x});});
+  return [...map.values()];
+}
+function mergeOdataCore878104(full={},core={}){
+  const out={...(full||{})};
+  Object.entries(core||{}).forEach(([oid,cv])=>{
+    if(!cv || typeof cv!=="object" || Array.isArray(cv)) return;
+    const fd=out[oid]||{};
+    const next={...cv,...fd};
+    next.budgetGroups=mergeArr878104(fd.budgetGroups,cv.budgetGroups,x=>x?.id||x?.nom||"");
+    next.pressupostos=mergeArr878104(fd.pressupostos,cv.pressupostos,x=>`${x?.budgetId||"principal"}__${x?.id||x?.nom||x?.versio||""}`);
+    next.partides=mergeArr878104(fd.partides,cv.partides,x=>`${x?.budgetId||"principal"}__${x?.codi||""}__${x?.cap||""}`);
+    next.certificacions=mergeArr878104(fd.certificacions,cv.certificacions,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||""}`);
+    next.factures=mergeArr878104(fd.factures,cv.factures,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||x?.pfId||""}`);
+    if(cv.activeBudgetIdObra && !fd.activeBudgetIdObra) next.activeBudgetIdObra=cv.activeBudgetIdObra;
+    out[oid]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(next):next;
+  });
+  return out;
+}
+function saveOdata878104(odata,user=currentAppUser8779()){
+  const core=stripHeavy878104(odata||{});
+  try{localStorage.setItem(lsKey8779("aco_odata_core_v87104",user),JSON.stringify(core));}catch(e){console.warn("No s'ha pogut guardar la còpia crítica d'obra",e)}
+  try{
+    localStorage.setItem(lsKey8779("aco_odata",user),JSON.stringify(odata||{}));
+    localStorage.removeItem(lsKey8779("aco_storage_warning_v87104",user));
+  }catch(e){
+    console.warn("No s'ha pogut guardar la còpia completa d'obra; es manté la còpia crítica sense fotos/croquis",e);
+    try{localStorage.setItem(lsKey8779("aco_storage_warning_v87104",user),"La còpia completa no s'ha pogut guardar per límit d'espai. S'ha guardat la còpia crítica de dades.")}catch{}
+  }
+}
+
 function backupUserState8785(user,reason,raw){
   try{
     const stamp=new Date().toISOString().replace(/[:.]/g,"-");
@@ -1295,9 +1347,10 @@ useEffect(()=>{
     const rawC=loadUserJson8784("aco_clients",(isHector?clients0:[]),authUser8779);
     const rawO=loadUserJson8784("aco_obres",(isHector?obres0:[]),authUser8779);
     const rawD=loadUserJson8784("aco_odata",(isHector?data0:{}),authUser8779);
+    const coreD=loadUserJson8784("aco_odata_core_v87104",{},authUser8779);
     c=sanitizeClients8785(rawC,(isHector?clients0:[])).map(cleanClientFiscal87102).map(x=>x.id==="socoterm"?{...x,logo:x.logo||SOCOTERM_LOGO}:x);
     o=sanitizeObres8785(rawO,(isHector?obres0:[]));
-    d=sanitizeOdata8785(rawD,(isHector?data0:{}));
+    d=sanitizeOdata8785(mergeOdataCore878104(rawD,coreD),(isHector?data0:{}));
     if(isHector) d=recoverBudgetAnnexesLocal8795(d,o,authUser8779);
   }catch(e){
     console.error("Recuperació segura de login",e);
@@ -1312,7 +1365,7 @@ useEffect(()=>{
 },[authUser8779]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(clients),authUser8779)},[clients,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(obres),authUser8779)},[obres,authUser8779,dataLoadedUser8781]);
-useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_odata",JSON.stringify(odata),authUser8779)},[odata,authUser8779,dataLoadedUser8781]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,authUser8779)},[odata,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779&&(obres||[]).some(o=>!o.codiExpedient||!o.expedientBase)){setObres(p=>assignMissingCodes8739(p,clients))}},[authUser8779,dataLoadedUser8781,obres,clients]);
 const obra=obres.find(o=>o.id===obraId)||obres[0]||{id:"",client:"",nom:"Sense expedient",propietat:"Client pendent",nifPropietat:"Pendent",adreca:"",poblacio:"",tipusTreball:"Altres",tipologia:"Altres",estat:"Pendent",any:String(new Date().getFullYear())}, client=clients.find(c=>c.id===obra?.client)||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(odata[obra.id]||empty()):empty();
 const fClients=clients.filter(c=>(!ct||c.tipus===ct)&&(c.nom+" "+c.rao+" "+c.contacte).toLowerCase().includes(cs.toLowerCase()));
@@ -2097,7 +2150,7 @@ const pendents=[...obres].filter(o=>["Pressupostada","En procés","Pendent"].inc
 const autoFacturesPendents=(events||[]).filter(e=>e.auto&&String(e.id||"").startsWith("av-fact-"));
 const properes=[...(events||[])].sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,4);
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.98 refinament estable + honoraris millorats</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.104 persistència blindada de pressupostos annexos</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>{autoFacturesPendents.length>0&&<section className="home-alerts-v8776">{autoFacturesPendents.slice(0,4).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent de cobrament</b><span>{a.obra} · {a.detail}</span></button>)}</section>}
 <section className="dashboard-grid dashboard-grid-v8741">
