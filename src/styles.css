@@ -3663,3 +3663,27 @@ button,input,select,textarea{font-size:13.5px!important}
   .agenda-v86{display:block!important}.agenda-v86 .card{margin-bottom:12px}.calendar-grid.google-cal-v86{grid-template-columns:repeat(7,minmax(42px,1fr));overflow-x:auto}.day{min-height:64px!important}.agenda-form-v86{grid-template-columns:1fr!important}.agenda-form-v86 label.wide{grid-column:auto!important}
 }
 @media(min-width:951px){.obra-side-tabs-v87105{display:flex!important;flex-direction:column!important}.subtabs-v8746{top:82px}.document-preview.clean-doc-preview-v8799{max-height:calc(100vh - 130px)!important}.modal.document-modal,.modal:has(.clean-doc-preview-v8799){width:min(98vw,1600px)!important;max-width:1600px!important}}
+
+/* V87.108 · accessibilitat expedient: pestanyes fixes i netes */
+.obra-head-access-v87105{position:sticky;top:0;z-index:40;background:#f4f6f8;border-bottom:1px solid #d6dde7;box-shadow:0 3px 12px rgba(15,23,42,.06)}
+.obra-tabs-toggle-v87105{display:none!important}
+.obra-layout-v87105{display:block!important}
+.obra-side-tabs-v87105{position:sticky;top:96px;z-index:35;display:flex!important;flex-direction:row!important;gap:8px;overflow-x:auto;white-space:nowrap;background:#f8fafc;border:1px solid #d6dde7;border-radius:16px;padding:10px;margin-bottom:14px;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+.obra-side-tabs-v87105 .obra-tabs-title-v87105{display:none!important}
+.obra-side-tabs-v87105 button{flex:0 0 auto;border:1px solid #cbd5e1;background:white;border-radius:12px;padding:10px 14px;font-weight:900;color:#0f172a}
+.obra-side-tabs-v87105 button.active{background:#2563eb;color:white;border-color:#2563eb}
+.obra-content{min-width:0}
+.client-exp-filters-v878108{align-items:center}
+@media(max-width:900px){
+  .obra-head-access-v87105{top:0;padding:10px!important}
+  .obra-head-main-v87105 h2{font-size:20px!important;line-height:1.15}
+  .obra-mini-actions-v8776{gap:6px;flex-wrap:wrap}
+  .obra-side-tabs-v87105{top:74px;border-radius:0;margin-left:-14px;margin-right:-14px;border-left:0;border-right:0;padding:8px 12px}
+  .obra-side-tabs-v87105 button{padding:9px 12px;font-size:13px}
+  .card{border-radius:16px}
+  .card-head{padding:13px 14px}
+  .form-grid{grid-template-columns:1fr!important;padding:14px}
+  .filters{padding:12px 14px}
+  .client-profile-v8773{grid-template-columns:56px 1fr!important;gap:12px!important;align-items:center!important}
+  .client-logo.big{width:56px!important;height:56px!important;border-radius:14px!important}
+}
