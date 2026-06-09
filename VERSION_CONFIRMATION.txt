@@ -1,11 +1,1 @@
-APP CONTROL D'OBRES
-VERSIO: V87.111 - FINANCES + AGENDA + UI REFINADES
-PAQUET: CARPETA ÚNICA DE VALIDACIÓ
-
-Aquesta versió parteix de V87.110 i aplica correccions sobre:
-- estats de pressupostos i factures;
-- colors de gràfiques;
-- informes/resums;
-- estabilitat de factures;
-- pestanyes fixes i ocultables;
-- adaptació mòbil/iPad.
+V87.112 - FINANCES ESTABLES - carpeta pròpia - sense package-lock.json
