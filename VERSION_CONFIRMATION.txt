@@ -1,12 +1,11 @@
 APP CONTROL D'OBRES
-VERSIO: V87.110 - FINANCES + AGENDA + UI
+VERSIO: V87.111 - FINANCES + AGENDA + UI REFINADES
 PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-AQUEST FITXER SERVEIX PER CONFIRMAR QUE HAS DESCOMPRIMIT EL ZIP NOU.
-Si aquest fitxer no apareix dins la carpeta, NO estàs mirant el paquet correcte.
-
-Instruccions ràpides:
-1. Descomprimeix aquest ZIP en una carpeta nova, sense barrejar-lo amb versions antigues.
-2. Obre aquesta carpeta: app-control-obres-v87-110-CARPETA-VALIDACIO
-3. Ha d'incloure src, index.html, package.json, README.md i aquest fitxer VERSION_CONFIRMATION.txt.
-4. Per Render, puja exactament els arxius d'aquesta carpeta, no una carpeta antiga.
+Aquesta versió parteix de V87.110 i aplica correccions sobre:
+- estats de pressupostos i factures;
+- colors de gràfiques;
+- informes/resums;
+- estabilitat de factures;
+- pestanyes fixes i ocultables;
+- adaptació mòbil/iPad.
