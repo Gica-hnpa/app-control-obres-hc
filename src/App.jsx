@@ -987,12 +987,12 @@ function LoginScreen8778({onLogin}){
     if(APP_USERS8779[u]&&APP_USERS8779[u]===pwd){sessionStorage.setItem("aco_current_user8779",u);onLogin?.(u);return}
     setErr("Usuari o contrasenya incorrectes.");
   }
-  return <div className="login-page-v8778"><form className="login-card-v8778" onSubmit={submit}>
+  return <div className="login-page-v8778"><form className="login-card-v8778" onSubmit={submit} autoComplete="on">
     <div className="login-logo-v8778">CO</div><h1>APP Control d’Obres</h1><p>Accés privat al mòdul tècnic del despatx.</p>
-    <label><span>Usuari</span><input autoFocus value={user} onChange={e=>setUser(e.target.value)} placeholder="Usuari" autoComplete="username"/></label>
-    <label><span>Contrasenya</span><input type="password" value={pwd} onChange={e=>setPwd(e.target.value)} placeholder="Contrasenya" autoComplete="current-password"/></label>
+    <label><span>Usuari</span><input autoFocus name="username" id="aco-login-username" value={user} onChange={e=>setUser(e.target.value)} placeholder="Usuari" autoComplete="username"/></label>
+    <label><span>Contrasenya</span><input type="password" name="password" id="aco-login-password" value={pwd} onChange={e=>setPwd(e.target.value)} placeholder="Contrasenya" autoComplete="current-password"/></label>
     {err&&<div className="login-error-v8778">{err}</div>}
-    <button className="primary">Entrar</button><small>Les dades queden separades per usuari en aquest dispositiu. L’usuari de prova extern entra buit.</small>
+    <button className="primary">Entrar</button><small>Les dades queden separades per usuari en aquest dispositiu. El navegador pot desar la contrasenya i, a iPad/mòbil, usar clauer/Face ID/Touch ID si està activat al dispositiu.</small>
     <button type="button" className="secondary login-repair-v8785" onClick={()=>{
       const u=(user||"hector").trim().toLowerCase();
       sessionStorage.removeItem("aco_current_user8779");
@@ -1248,6 +1248,7 @@ useEffect(()=>{
     c=sanitizeClients8785(rawC,(isHector?clients0:[])).map(x=>x.id==="socoterm"?{...x,logo:x.logo||SOCOTERM_LOGO}:x);
     o=sanitizeObres8785(rawO,(isHector?obres0:[]));
     d=sanitizeOdata8785(rawD,(isHector?data0:{}));
+    if(isHector) d=recoverBudgetAnnexesLocal8795(d,o,authUser8779);
   }catch(e){
     console.error("Recuperació segura de login",e);
     backupUserState8785(authUser8779,"load_error",{message:String(e?.message||e)});
@@ -2046,7 +2047,7 @@ const pendents=[...obres].filter(o=>["Pressupostada","En procés","Pendent"].inc
 const autoFacturesPendents=(events||[]).filter(e=>e.auto&&String(e.id||"").startsWith("av-fact-"));
 const properes=[...(events||[])].sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,4);
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.94 certificacions i proformes a origen real</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.95 proformes netes + recuperació annexos</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>{autoFacturesPendents.length>0&&<section className="home-alerts-v8776">{autoFacturesPendents.slice(0,4).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent de cobrament</b><span>{a.obra} · {a.detail}</span></button>)}</section>}
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -2390,6 +2391,70 @@ function normalizeBudgetedData8791(data={}){
   const validIds=new Set(["principal",...groups.map(g=>g.id)]);
   const active=validIds.has(d.activeBudgetIdObra)?d.activeBudgetIdObra:"principal";
   return {...d,budgetGroups:groups,pressupostos,activeBudgetIdObra:active};
+}
+
+
+function recoverBudgetAnnexesLocal8795(currentOdata={},obres=[],user=currentAppUser8779()) {
+  // Recuperació prudent: només per a l'usuari actiu, i especialment útil si un annex va quedar en una clau antiga/local abans de canviar de versió.
+  // No pot recuperar allò que mai no es va escriure al navegador, però sí marcadors, partides, certificacions i factures que quedin en còpies locals.
+  const u=String(user||"").toLowerCase();
+  if(!u || u==="pol") return currentOdata||{};
+  const obraIndex={};
+  (obres||[]).forEach(o=>{ if(o?.id) obraIndex[o.id]=o; });
+  const out={...(currentOdata||{})};
+  const targetKeys=Object.keys(localStorage).filter(k=>{
+    const lk=k.toLowerCase();
+    if(!lk.includes("odata")) return false;
+    if(lk.includes("__pol__")) return false;
+    return lk.includes(u) || !lk.includes("__");
+  });
+  function mergeOne(oid,src){
+    if(!src || typeof src!=="object" || Array.isArray(src)) return;
+    const dst=normalizeBudgetedData8791(out[oid]||empty());
+    const beforeGroups=new Set(["principal",...(dst.budgetGroups||[]).map(g=>g.id)]);
+    const addBy=(arr,keyFn,mergeFn)=>{
+      const base=Array.isArray(arr)?arr:[];
+      return base;
+    };
+    let changed=false;
+    const next={...dst};
+    const srcNorm=normalizeBudgetedData8791(src);
+    const groupMap=new Map((next.budgetGroups||[]).map(g=>[g.id,g]));
+    (srcNorm.budgetGroups||[]).forEach(g=>{
+      if(!g?.id || g.id==="principal") return;
+      if(!groupMap.has(g.id)){groupMap.set(g.id,g); changed=true;}
+    });
+    next.budgetGroups=[...groupMap.values()];
+    const partKey=r=>`${r?.budgetId||"principal"}__${r?.codi||""}__${r?.cap||""}`;
+    const partKeys=new Set((next.partides||[]).map(partKey));
+    (srcNorm.partides||[]).forEach(r=>{ if((r?.budgetId||"principal")!=="principal" && !partKeys.has(partKey(r))){ next.partides=[...(next.partides||[]),r]; partKeys.add(partKey(r)); changed=true; }});
+    const certKey=c=>`${c?.budgetId||"principal"}__${c?.numero||""}`;
+    const certKeys=new Set((next.certificacions||[]).map(certKey));
+    (srcNorm.certificacions||[]).forEach(c=>{ if((c?.budgetId||"principal")!=="principal" && !certKeys.has(certKey(c))){ next.certificacions=[...(next.certificacions||[]),c]; certKeys.add(certKey(c)); changed=true; }});
+    const factKey=f=>`${f?.budgetId||"principal"}__${f?.id||f?.numero||f?.pfId||""}`;
+    const factKeys=new Set((next.factures||[]).map(factKey));
+    (srcNorm.factures||[]).forEach(f=>{ if((f?.budgetId||"principal")!=="principal" && !factKeys.has(factKey(f))){ next.factures=[...(next.factures||[]),f]; factKeys.add(factKey(f)); changed=true; }});
+    const presKey=p=>`${p?.budgetId||"principal"}__${p?.id||p?.nom||p?.versio||""}`;
+    const presKeys=new Set((next.pressupostos||[]).map(presKey));
+    (srcNorm.pressupostos||[]).forEach(pr=>{ if((pr?.budgetId||"principal")!=="principal" && !presKeys.has(presKey(pr))){ next.pressupostos=[...(next.pressupostos||[]),pr]; presKeys.add(presKey(pr)); changed=true; }});
+    if(changed){
+      out[oid]=normalizeBudgetedData8791({...next, updatedAt:new Date().toISOString()});
+    }
+  }
+  targetKeys.forEach(k=>{
+    try{
+      const raw=localStorage.getItem(k);
+      if(!raw) return;
+      const parsed=JSON.parse(raw);
+      if(!parsed || typeof parsed!=="object" || Array.isArray(parsed)) return;
+      Object.entries(parsed).forEach(([oid,val])=>{
+        if(val && typeof val==="object" && (val.partides||val.budgetGroups||val.certificacions||val.pressupostos||val.factures)){
+          if(out[oid] || obraIndex[oid]) mergeOne(oid,val);
+        }
+      });
+    }catch{}
+  });
+  return out;
 }
 
 function certRecordTotal8791(data={},bid="principal"){
@@ -3203,8 +3268,8 @@ return <div className="proforma-a4-wrap-v8748"><div className="proforma-preview-
   <h3>Partides certificades a origen</h3>
   <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.map(r=><tr key={r.codi}><td>{r.codi}</td><td className="concept">{r.concepte}</td><td>{qty2(r.qOrigin??originRowsForCert8793([r],f.numeroCert)[0]?.qOrigin??qFor(r,f))}</td><td>{money(r.pu)}</td><td>{money(r.impOrigin??((r.qOrigin??qFor(r,f))*(+r.pu||0)))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL A ORIGEN</th><th>{money(totalOrigen)}</th></tr></tfoot></table>
   <h3>Deducció de certificacions anteriors</h3>
-  <table className="totals-preview"><tbody><tr><th>Total certificat a origen</th><td>{money(totalOrigen)}</td></tr>{prevTotals.length===0?<tr><th>No hi ha certificacions anteriors</th><td>{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><th>Deducció Certificació {c.n}</th><td>-{money(c.total)}</td></tr>)}<tr className="total"><th>Base certificada actual / Cert. {certNum}</th><td>{money(f.base)}</td></tr></tbody></table>
-  <table className="totals-preview"><tbody><tr><th>Base certificada actual</th><td>{money(f.base)}</td></tr><tr><th>Deducció ({calc.ded}%)</th><td>-{money(f.base-calc.base)}</td></tr><tr><th>Base imposable</th><td>{money(calc.base)}</td></tr><tr><th>IVA ({calc.iva}%)</th><td>{money(calc.ivaImp)}</td></tr><tr><th>Retenció ({calc.ret}%)</th><td>-{money(calc.retImp)}</td></tr><tr className="total"><th>Total proforma</th><td>{money(calc.total)}</td></tr></tbody></table>
+  <table className="totals-preview"><tbody><tr><th>Total certificat a origen</th><td className="num">{money(totalOrigen)}</td></tr>{prevTotals.length===0?<tr><th>No hi ha certificacions anteriors</th><td className="num">{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><th>Deducció Certificació {c.n}</th><td className="num">-{money(c.total)}</td></tr>)}<tr className="total"><th>Base certificada actual / Cert. {certNum}</th><td>{money(f.base)}</td></tr></tbody></table>
+  <table className="totals-preview"><tbody><tr><th>Deducció ({calc.ded}%)</th><td>-{money(f.base-calc.base)}</td></tr><tr><th>Base imposable</th><td>{money(calc.base)}</td></tr><tr><th>IVA ({calc.iva}%)</th><td>{money(calc.ivaImp)}</td></tr><tr><th>Retenció ({calc.ret}%)</th><td>-{money(calc.retImp)}</td></tr><tr className="total"><th>Total proforma</th><td>{money(calc.total)}</td></tr></tbody></table>
 </div></div>
 }
 
@@ -3694,9 +3759,8 @@ function ProformaPrintV81({doc,pf}){
     <h3>Partides certificades a origen</h3>
     <table><thead><tr><th>Codi</th><th>Concepte</th><th>Q origen</th><th>Preu</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td className="concept">{r.concepte}</td><td className="num">{qty2(r.qOrigin??0)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin??0)}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL A ORIGEN</th><th>{money(totalOrigen)}</th></tr></tfoot></table>
     <h3>Deducció de certificacions anteriors</h3>
-    <table className="totals-preview"><tbody><tr><th>Total certificat a origen</th><td>{money(totalOrigen)}</td></tr>{prevTotals.length===0?<tr><th>No hi ha certificacions anteriors</th><td>{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><th>Deducció Certificació {c.n}</th><td>-{money(c.total)}</td></tr>)}<tr className="total"><th>Base certificada actual / Cert. {certNum}</th><td>{money(base)}</td></tr></tbody></table>
+    <table className="totals-preview"><tbody><tr><th>Total certificat a origen</th><td className="num">{money(totalOrigen)}</td></tr>{prevTotals.length===0?<tr><th>No hi ha certificacions anteriors</th><td className="num">{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><th>Deducció Certificació {c.n}</th><td className="num">-{money(c.total)}</td></tr>)}<tr className="total"><th>Base certificada actual / Cert. {certNum}</th><td className="num">{money(base)}</td></tr></tbody></table>
     <div className="doc-totals v81">
-      <div><span>Base certificada actual</span><b>{money(base)}</b></div>
       <div><span>Deducció {ded}%</span><b>-{money(base-baseImposable)}</b></div>
       <div><span>Base imposable</span><b>{money(baseImposable)}</b></div>
       <div><span>IVA {iva}%</span><b>{money(ivaImp)}</b></div>
@@ -3813,7 +3877,7 @@ function certPrintHtmlV8772(doc,obra,client){
   const totalOrigen=fin.totalOrigen;
   const certTotals=fin.certTotals;
   const prevTotals=fin.prevTotals||[];
-  const deductionRows=prevTotals.length?prevTotals.map(c=>`<tr><td>Deducció Certificació ${c.n}</td><td>-${money(c.total)}</td></tr>`).join(""):`<tr><td>No hi ha certificacions anteriors</td><td>${money(0)}</td></tr>`;
+  const deductionRows=prevTotals.length?prevTotals.map(c=>`<tr><td>Deducció Certificació ${c.n}</td><td class="num">-${money(c.total)}</td></tr>`).join(""):`<tr><td>No hi ha certificacions anteriors</td><td class="num">${money(0)}</td></tr>`;
   const summaryTotalsRows=certTotals.map(c=>`<tr><td>CERT. ${c.n}</td><td>${money(c.total)}</td></tr>`).join("");
   const originRowsHtml=originRows.map(r=>`<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qOrigin)}</td><td>${money(r.pu)}</td><td>${money(r.impOrigin)}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">No hi ha partides certificades a origen.</td></tr>`;
   let lastCap="__none__";
@@ -3853,7 +3917,6 @@ function certPrintHtmlV8772(doc,obra,client){
       <h3>Partides certificades a origen</h3>
       <table class="summary"><colgroup><col class="part"><col class="ut"><col class="concept-col"><col class="num"><col class="num"><col class="imp"></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>${originRowsHtml}</tbody><tfoot><tr><th colspan="5">TOTAL A ORIGEN</th><th>${money(totalOrigen)}</th></tr></tfoot></table>
       <div class="certs-list"><h3>Deducció de certificacions anteriors</h3><table><thead><tr><th>Concepte</th><th>Import</th></tr></thead><tbody><tr><td><b>Total certificat a origen</b></td><td><b>${money(totalOrigen)}</b></td></tr>${deductionRows}<tr><td><b>Import sense IVA certificació ${certNum}</b></td><td><b>${money(total)}</b></td></tr></tbody></table></div>
-      <div class="deduction-box"><div><span>Total certificat a origen</span><b>${money(totalOrigen)}</b></div><div><span>Deducció certificacions anteriors</span><b>-${money(fin.anterior)}</b></div><div><span>Import sense IVA certificació ${certNum}</span><b>${money(total)}</b></div></div>
     </section>
     <section class="page landscape">
       <h2>Quadre resum general de certificació</h2>
@@ -3925,9 +3988,9 @@ function proformaPrintHtml8783(doc,obra,client){
   const retImp=doc.retImp ?? baseImposable*ret/100;
   const total=doc.total ?? baseImposable+ivaImp-retImp;
   const totalOrigen=pf.totalOrigen||rows.reduce((s,r)=>s+(+r.impOrigin||0),0);
-  const bodyRows=rows.map(r=>`<tr><td>${escHtmlV8772(r.codi)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qOrigin||0)}</td><td>${money(r.pu)}</td><td>${money(r.impOrigin||0)}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">Sense partides certificades a origen.</td></tr>`;
-  const deductionRows=prevTotals.length?prevTotals.map(c=>`<tr><th>Deducció Certificació ${c.n}</th><td>-${money(c.total)}</td></tr>`).join(""):`<tr><th>No hi ha certificacions anteriors</th><td>${money(0)}</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Factura proforma")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1fr 1fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5mm}th,td{border:1px solid #cbd5e1;padding:6px 7px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important}.totals{width:86mm;margin-left:auto;margin-top:8mm}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0}.totals .total{border-top:2px solid #0f172a;border-bottom:0;font-size:18px;margin-top:6px;padding-top:9px}.empty{text-align:left!important;color:#64748b}.cert-lines{width:92mm;margin-left:auto}.cert-lines th{text-align:left}.cert-lines td{text-align:right}.cert-lines .strong th,.cert-lines .strong td{background:#f1f5f9;font-weight:900}@media screen{body{background:#e5e7eb;padding:16px}.page{box-shadow:0 2px 12px rgba(15,23,42,.15);padding:14mm}}@media print{body{background:#fff;padding:0}.page{box-shadow:none;padding:0}}</style></head><body><section class="page"><div class="head"><div><h3>Dades del tècnic</h3><p><b>${escHtmlV8772(client?.rao||client?.nom||"Despatx tècnic")}</b><br>NIF: ${escHtmlV8772(client?.nif||"Pendent")}<br>${escHtmlV8772(client?.adreca||"")}<br>${escHtmlV8772(client?.email||"")}</p></div><div><h3>Client / expedient</h3><p><b>${escHtmlV8772(obra?.propietat||client?.nom||"Client")}</b><br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}<br>${escHtmlV8772(obra?.adreca||"")} ${escHtmlV8772(obra?.poblacio||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"FACTURA PROFORMA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}</p></div><b>${money(total)}</b></div><h3>Partides certificades a origen</h3><table><colgroup><col style="width:16mm"><col><col style="width:24mm"><col style="width:24mm"><col style="width:30mm"></colgroup><thead><tr><th>Codi</th><th>Concepte</th><th>Q origen</th><th>Preu</th><th>Total origen</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr><th colspan="4">TOTAL A ORIGEN</th><th>${money(totalOrigen)}</th></tr></tfoot></table><table class="cert-lines"><tbody><tr class="strong"><th>Total certificat a origen</th><td>${money(totalOrigen)}</td></tr>${deductionRows}<tr class="strong"><th>Base certificada actual / Cert. ${certNum}</th><td>${money(base)}</td></tr></tbody></table><div class="totals"><div><span>Base certificada actual</span><b>${money(base)}</b></div><div><span>Deducció ${ded}%</span><b>-${money(base-baseImposable)}</b></div><div><span>Base imposable</span><b>${money(baseImposable)}</b></div><div><span>IVA ${iva}%</span><b>${money(ivaImp)}</b></div><div><span>Retenció ${ret}%</span><b>-${money(retImp)}</b></div><div class="total"><span>Total proforma</span><b>${money(total)}</b></div></div></section></body></html>`;
+  const bodyRows=rows.map(r=>`<tr><td>${escHtmlV8772(r.codi)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td class="num">${qty2(r.qOrigin||0)}</td><td class="num">${money(r.pu)}</td><td class="num">${money(r.impOrigin||0)}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">Sense partides certificades a origen.</td></tr>`;
+  const deductionRows=prevTotals.length?prevTotals.map(c=>`<tr><th>Deducció Certificació ${c.n}</th><td class="num">-${money(c.total)}</td></tr>`).join(""):`<tr><th>No hi ha certificacions anteriors</th><td class="num">${money(0)}</td></tr>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Factura proforma")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1fr 1fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5mm}th,td{border:1px solid #cbd5e1;padding:6px 7px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important}.num{text-align:right!important;font-variant-numeric:tabular-nums}.totals{width:86mm;margin-left:auto;margin-top:8mm}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0}.totals .total{border-top:2px solid #0f172a;border-bottom:0;font-size:18px;margin-top:6px;padding-top:9px}.empty{text-align:left!important;color:#64748b}.cert-lines{width:92mm;margin-left:auto}.cert-lines th{text-align:left}.cert-lines td{text-align:right}.cert-lines .strong th,.cert-lines .strong td{background:#f1f5f9;font-weight:900}@media screen{body{background:#e5e7eb;padding:16px}.page{box-shadow:0 2px 12px rgba(15,23,42,.15);padding:14mm}}@media print{body{background:#fff;padding:0}.page{box-shadow:none;padding:0}}</style></head><body><section class="page"><div class="head"><div><h3>Dades del tècnic</h3><p><b>${escHtmlV8772(client?.rao||client?.nom||"Despatx tècnic")}</b><br>NIF: ${escHtmlV8772(client?.nif||"Pendent")}<br>${escHtmlV8772(client?.adreca||"")}<br>${escHtmlV8772(client?.email||"")}</p></div><div><h3>Client / expedient</h3><p><b>${escHtmlV8772(obra?.propietat||client?.nom||"Client")}</b><br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}<br>${escHtmlV8772(obra?.adreca||"")} ${escHtmlV8772(obra?.poblacio||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"FACTURA PROFORMA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}</p></div><b>${money(total)}</b></div><h3>Partides certificades a origen</h3><table><colgroup><col style="width:16mm"><col><col style="width:24mm"><col style="width:24mm"><col style="width:30mm"></colgroup><thead><tr><th>Codi</th><th>Concepte</th><th>Q origen</th><th>Preu</th><th>Total origen</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr><th colspan="4">TOTAL A ORIGEN</th><th>${money(totalOrigen)}</th></tr></tfoot></table><table class="cert-lines"><tbody><tr class="strong"><th>Total certificat a origen</th><td>${money(totalOrigen)}</td></tr>${deductionRows}<tr class="strong"><th>Base certificada actual / Cert. ${certNum}</th><td>${money(base)}</td></tr></tbody></table><div class="totals"><div><span>Deducció ${ded}%</span><b>-${money(base-baseImposable)}</b></div><div><span>Base imposable</span><b>${money(baseImposable)}</b></div><div><span>IVA ${iva}%</span><b>${money(ivaImp)}</b></div><div><span>Retenció ${ret}%</span><b>-${money(retImp)}</b></div><div class="total"><span>Total proforma</span><b>${money(total)}</b></div></div></section></body></html>`;
 }
 
 

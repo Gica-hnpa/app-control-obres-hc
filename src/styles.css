@@ -3492,3 +3492,29 @@ button,input,select,textarea{font-size:13.5px!important}
 /* UPDATE V87.90 - calculadora d'honoraris tècnics */
 .honor-calc-v8790{display:flex;flex-direction:column;gap:16px;padding:0 0 10px}.honor-calc-grid-v8790{padding-top:10px!important}.honor-calc-grid-v8790 label input,.honor-calc-grid-v8790 label select{font-weight:800}.honor-result-v8790{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:0 20px}.honor-result-v8790 div{background:#f8fafc;border:1px solid #d6dde7;border-radius:18px;padding:15px}.honor-result-v8790 small{display:block;color:#64748b;font-size:11px;text-transform:uppercase;font-weight:900}.honor-result-v8790 b{display:block;text-align:right;font-size:22px;margin-top:8px;color:#0f172a;font-variant-numeric:tabular-nums}.honor-result-v8790 .final{background:#0f172a;border-color:#0f172a;color:white}.honor-result-v8790 .final small{color:#bfdbfe}.honor-result-v8790 .final b{color:#86efac;font-size:27px}.honor-formula-v8790{margin:0 20px;background:#eef6ff;border:1px solid #bfdbfe;border-radius:14px;padding:13px;color:#334155;line-height:1.4}.honor-formula-v8790 b{color:#0f2a5f}.subtabs-v8746 button.active{background:#2563eb!important;color:white!important}
 @media(max-width:900px){.honor-result-v8790{grid-template-columns:1fr;padding:0 14px}.honor-formula-v8790{margin:0 14px}}
+
+/* V87.95 · alineacions numèriques, proformes i login */
+.cert-preview-summary-v8772 td:nth-child(4),
+.cert-preview-summary-v8772 td:nth-child(5),
+.cert-preview-summary-v8772 td:nth-child(6),
+.cert-preview-summary-v8772 th:nth-child(4),
+.cert-preview-summary-v8772 th:nth-child(5),
+.cert-preview-summary-v8772 th:nth-child(6),
+.proforma-preview-doc-v61 td:nth-child(3),
+.proforma-preview-doc-v61 td:nth-child(4),
+.proforma-preview-doc-v61 td:nth-child(5),
+.proforma-preview-doc-v61 th:nth-child(3),
+.proforma-preview-doc-v61 th:nth-child(4),
+.proforma-preview-doc-v61 th:nth-child(5),
+.proforma-preview-doc-v61 .totals-preview td,
+.proforma-a4-v8748 td:nth-child(3),
+.proforma-a4-v8748 td:nth-child(4),
+.proforma-a4-v8748 td:nth-child(5),
+.proforma-a4-v8748 th:nth-child(3),
+.proforma-a4-v8748 th:nth-child(4),
+.proforma-a4-v8748 th:nth-child(5){text-align:right!important;font-variant-numeric:tabular-nums}
+.proforma-preview-doc-v61 td:nth-child(2),
+.proforma-preview-doc-v61 th:nth-child(2),
+.proforma-a4-v8748 td:nth-child(2),
+.proforma-a4-v8748 th:nth-child(2){text-align:left!important;white-space:normal!important}
+.login-card-v8778 input[name="username"],.login-card-v8778 input[name="password"]{letter-spacing:.02em}
