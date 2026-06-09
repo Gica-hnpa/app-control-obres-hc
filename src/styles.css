@@ -3587,3 +3587,20 @@ button,input,select,textarea{font-size:13.5px!important}
 .prev-agents-v87102{margin:12px 0;border:1px solid #e2e8f0;border-radius:14px;padding:12px;background:#fff}.prev-agents-v87102 h4{margin:0 0 8px;color:#0f2d5c}
 .agents-box-v87102 .agent-library-edit-v87100{max-height:420px;overflow:auto;padding-right:4px}.agents-box-v87102 .section-head-v8764{align-items:center}
 @media(max-width:900px){.agent-search-box-v87102{grid-template-columns:1fr}.agents-box-v87102 .agent-library-edit-v87100{max-height:none}.agent-form-v8764{grid-template-columns:1fr!important}}
+
+/* UPDATE V87.103 - refinament agents, impressió i ús en tauleta/mòbil */
+.agents-box-v87103{display:flex;flex-direction:column;gap:14px;padding:14px!important;background:#fff;border-radius:18px}
+.section-head-v87103{align-items:flex-start;gap:12px;flex-wrap:wrap}
+.agent-search-panel-v87103{background:#f8fafc;border:1px solid #d6dde7;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.agent-main-search-v87103{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:14px 16px;font-size:15px;font-weight:800;background:#fff}
+.agent-smart-results-v87103{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;max-height:255px;overflow:auto}
+.agent-smart-results-v87103 button{border:1px solid #d6dde7;background:#fff;border-radius:14px;padding:11px 12px;text-align:left;display:flex;flex-direction:column;gap:3px;min-height:68px}
+.agent-smart-results-v87103 button:hover,.agent-smart-results-v87103 button.selected{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px rgba(37,99,235,.08)}
+.agent-smart-results-v87103 b{color:#0f2d5c;font-size:14px}.agent-smart-results-v87103 span,.agent-smart-results-v87103 small{color:#64748b;font-size:12px}
+.new-agent-box-v87103{border:1px solid #bfdbfe;background:#eff6ff;border-radius:16px;padding:12px}.new-agent-box-v87103 h4{margin:0 0 10px;color:#0f2d5c}
+.prev-agents-v87103{border:1px solid #e2e8f0;background:#fff;border-radius:16px;padding:12px}.prev-agents-v87103 h4{margin:0 0 5px}.prev-agents-v87103 .check-grid{margin-top:8px}
+.agent-library-edit-v87103{border:1px dashed #94a3b8;background:#fff;border-radius:16px;padding:12px;max-height:360px;overflow:auto}.agent-library-edit-v87103 h4{margin:0 0 4px}
+.acta-panel-tabs-v8799{position:sticky;top:0;z-index:3;background:#f4f6f8;padding:8px 0;margin-bottom:10px;overflow-x:auto;white-space:nowrap}
+.acta-panel-tabs-v8799 button{font-size:14px;padding:10px 14px}
+.document-preview.clean-doc-preview-v8799{max-height:calc(100vh - 120px);overflow:auto}.modal.document-modal,.modal:has(.clean-doc-preview-v8799){width:min(98vw,1500px);max-width:1500px}
+@media(max-width:900px){.actes-layout-v8761{grid-template-columns:1fr!important}.actes-list-v8761{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}.acta-list-row-v8761{min-width:220px}.agent-smart-results-v87103{grid-template-columns:1fr}.section-head-v87103 .actions-inline{width:100%;justify-content:flex-start}.agent-form-v8764{grid-template-columns:1fr!important}.obra-layout{grid-template-columns:1fr!important}.obra-side-tabs{position:sticky;top:0;z-index:4;display:flex;overflow-x:auto;padding:8px;background:#fff;border-radius:14px}.obra-side-tabs button{white-space:nowrap;min-width:max-content}.main{padding:10px}.card{border-radius:16px}.card-head{padding:14px}.form-grid{grid-template-columns:1fr!important;padding:14px}.table-wrap{max-width:100%;overflow:auto}.finance-table-wrap-v8743,.fact-compact-wrap-v70{overflow:auto}.fact-summary-v87101{grid-template-columns:1fr!important}.verifactu-note-v87101{font-size:12px}.document-page{width:100%!important;min-width:0!important}.modal{width:98vw!important;max-height:96vh}.modal-backdrop{padding:6px}}

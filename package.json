@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-102-impressio-agents-honoraris",
+  "name": "app-control-obres-v87-103-poliment-agents-mobil",
   "private": true,
-  "version": "87.102.0",
+  "version": "87.103.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

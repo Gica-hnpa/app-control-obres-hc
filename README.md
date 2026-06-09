@@ -1,9 +1,5 @@
-# APP Control d'Obres · V87.102
+# APP Control d'Obres · V87.103
 
-Refinament d'impressió directa, biblioteca global d'agents i petits ajustos de clients/honoraris.
+Poliment agents, impressió directa i millora responsive.
 
-Render:
-- Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
-- Publish Directory: dist
-
-No pujar node_modules, dist ni package-lock.json.
+Base derivada de V87.102.
