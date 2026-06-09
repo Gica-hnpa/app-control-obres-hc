@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-101-refinament-facturacio-clients",
+  "name": "app-control-obres-v87-102-impressio-agents-honoraris",
   "private": true,
-  "version": "87.101.0",
+  "version": "87.102.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
