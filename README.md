@@ -1,14 +1,11 @@
-# APP Control d'Obres · V87.97
+# APP Control d'Obres · V87.98 refinament estable
 
-Versió de recuperació estable després que la V87.96 no obrís.
+Base: V87.97 retorn estable.
 
-Base utilitzada: V87.95, que mantenia:
-- certificació/proforma a origen,
-- alineació dreta d'imports i quantitats,
-- recuperació prudent d'annexos / fora pressupost,
-- login compatible amb gestor de contrasenyes del navegador.
-
-Objectiu d'aquesta versió:
-- tornar a una base que obri correctament,
-- no incorporar els canvis de V87.96 que podien haver trencat l'arrencada,
-- deixar punt segur per continuar refinant la UI i documents de manera progressiva.
+Canvis:
+- Recuperació de refinaments visuals sense trencar l'obertura.
+- Login amb usuari actiu i opció de recordar accés en dispositiu.
+- Fitxa d'expedient més neta: accions duplicades concentrades a Dades.
+- Darreres actuacions de l'expedient millorades.
+- Impressió/previsualització de certificació i proforma refinades.
+- Calculadora d'honoraris amb grups més alineats amb el full Excel.
