@@ -3615,3 +3615,33 @@ button,input,select,textarea{font-size:13.5px!important}
 
 /* V87.105 · accessibilitat global */
 .card,.modal,.obra-mini-fixed-v8776{scroll-margin-top:90px}.table-wrap{max-width:100%}.actions-inline{align-items:center}.doc-status-v38{white-space:pre-wrap}
+
+/* V87.106 · accessibilitat expedient / mòbil */
+@media (min-width:951px){
+  .obra-tabs-toggle-v87105{display:none!important}
+  .obra-layout-v87105,.obra-layout-v87105.tabs-closed{grid-template-columns:250px minmax(0,1fr)!important}
+  .obra-layout-v87105.tabs-closed .obra-side-tabs-v87105{display:flex!important}
+  .obra-tabs-title-v87105 button{display:none!important}
+}
+@media (max-width:950px){
+  .obra-head-access-v87105{position:sticky;top:0;z-index:50;border-radius:0 0 18px 18px;margin:-10px -10px 8px!important}
+  .obra-head-main-v87105 small{font-size:11px}.obra-head-main-v87105 p{font-size:12px;line-height:1.25}
+  .obra-side-tabs-v87105{display:flex!important;flex-direction:column}
+  .obra-side-tabs-v87105 button{font-size:15px!important;padding:13px 12px!important}
+  .obra-content .card-head{gap:8px;flex-wrap:wrap}
+  .obra-content table{font-size:11px}
+}
+.client-details-collapsible-v87106{animation:fadeIn87106 .16s ease-out}
+@keyframes fadeIn87106{from{opacity:.35;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.client-fitxa-v8773 .client-profile-v8773{align-items:center!important}
+@media(max-width:900px){
+  .client-fitxa-v8773 .client-profile-v8773{grid-template-columns:70px 1fr!important;padding:10px!important}
+  .client-fitxa-v8773 .client-profile-v8773 h2{font-size:18px;margin-bottom:2px}
+  .client-fitxa-v8773 .client-profile-v8773 p,.client-fitxa-v8773 .client-profile-v8773 span{font-size:12px;line-height:1.25}
+  .client-fitxa-v8773 .card-head{align-items:flex-start;flex-direction:column}
+  .client-fitxa-v8773 .card-head .actions-inline{width:100%;justify-content:flex-start;gap:8px}
+  .client-fitxa-v8773 .card-head .actions-inline button{flex:1;min-width:130px}
+  .client-details-collapsible-v87106{padding-top:8px!important}
+}
+.cert-date-input-v8721{min-width:132px!important}
+.cert-grid-v69 .cert-edit-input-v69{text-align:right!important}
