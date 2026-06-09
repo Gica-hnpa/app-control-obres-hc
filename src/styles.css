@@ -3518,20 +3518,3 @@ button,input,select,textarea{font-size:13.5px!important}
 .proforma-a4-v8748 td:nth-child(2),
 .proforma-a4-v8748 th:nth-child(2){text-align:left!important;white-space:normal!important}
 .login-card-v8778 input[name="username"],.login-card-v8778 input[name="password"]{letter-spacing:.02em}
-
-/* V87.96 - refinament professional: previsualitzacions, imports i capçalera neta */
-.document-preview.print-area{padding:24px!important;background:#eef2f7!important;overflow:auto!important;max-height:calc(92vh - 92px)}
-.document-preview.print-area .document-page{padding:22px!important;margin:0 auto!important;max-width:1120px!important;background:white!important;border-radius:12px;box-shadow:0 2px 12px rgba(15,23,42,.08)}
-.cert-doc-v8718 .document-page{max-width:1180px!important;padding-top:28px!important}
-.cert-preview-v8772{padding-top:4px!important}
-.cert-preview-head-v8772{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:start;border-bottom:2px solid #0f172a;padding-bottom:12px;margin-bottom:12px}
-.cert-preview-head-v8772 h1{margin:0;color:#0f2d5c;font-size:24px;line-height:1.1}
-.cert-preview-head-v8772 p{margin:4px 0 0;color:#475569}.cert-preview-head-v8772 b{text-align:right;font-size:22px}.cert-preview-head-v8772 small{text-align:right;color:#64748b;font-weight:800}
-.cert-preview-summary-v8772 th,.cert-preview-summary-v8772 td,.stable-num-table-v8783 th,.stable-num-table-v8783 td{text-align:right!important;font-variant-numeric:tabular-nums}
-.cert-preview-summary-v8772 .concept,.stable-num-table-v8783 .concept{text-align:left!important}
-.proforma-print-v81 table th,.proforma-print-v81 table td,.proforma-preview-doc-v61 table th,.proforma-preview-doc-v61 table td{text-align:right!important;font-variant-numeric:tabular-nums}
-.proforma-print-v81 table .concept,.proforma-preview-doc-v61 table .concept{text-align:left!important}
-.doc-totals.v81{max-width:420px;margin-left:auto;margin-top:18px}.doc-totals.v81 div{display:flex;justify-content:space-between;gap:24px}.doc-totals.v81 b{text-align:right!important;font-variant-numeric:tabular-nums;min-width:120px}
-.obra-mini-actions-v8776{align-items:center}.obra-mini-actions-v8776 .edit-fitxa-btn-v8725{display:none!important}
-.resum-dashboard-v8748 .activity-list-v8748{gap:10px}.activity-row-v8748{border-left:4px solid #2563eb;background:#f8fafc;border-radius:14px;padding:12px 14px}.activity-row-v8748 strong{color:#0f2d5c}.activity-row-v8748 span{font-weight:700}.activity-row-v8748 em{font-style:normal;color:#64748b;font-size:12px}
-@media print{.document-preview.print-area{padding:0!important;background:white!important;max-height:none!important}.document-preview.print-area .document-page{box-shadow:none!important;border-radius:0!important;padding:0!important;max-width:none!important}}
