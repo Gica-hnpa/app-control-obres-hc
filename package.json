@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-107-tancament-mobil-impressio",
+  "name": "app-control-obres-v87-109-agenda-finances-mobil",
   "private": true,
-  "version": "87.107.0",
+  "version": "87.109.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

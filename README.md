@@ -1,17 +1,14 @@
-# APP Control d’Obres · V87.106
+# APP Control d’Obres · V87.109
 
-Versió amb millores d’accessibilitat i ús real en PC/iPad/mòbil:
-- Botó de pressupost annex com a Nou pressupost.
-- Dates de certificacions amb selector de calendari.
-- Enter en amidaments de certificació passa a la fila inferior.
-- Pestanyes d’expedient visibles en PC i menú desplegable en iPad/mòbil.
-- Fitxa de client més compacta: dades amagables i edició sota demanda.
+Versió de tancament dels dos primers mòduls principals.
 
-Base: V87.105.
+Canvis:
+- Agenda general reescrita en versió segura per evitar bloquejos.
+- Agenda d’expedient creada/estabilitzada i sincronitzada amb cites de l’expedient.
+- Eliminada la duplicació visual de l’usuari actiu.
+- Millora responsive per mòbil/iPad: amplada, taules, pestanyes i formularis.
+- Pressupostos i factures del tècnic amb targetes d’estat: fets/acceptats/pendents/no acceptats i cobrades/pendents/vençudes.
+- Factures del tècnic amb camp de data de cobrament i canvi automàtic a Cobrada.
+- Taules de pressupostos/factures més proporcionades i amb scroll controlat.
 
-
-## V87.107
-- Impressió mòbil segura amb visor tancable, descarrega i compartir.
-- Pestanyes d’expedient visibles i sticky en mòbil/iPad.
-- Subpestanyes de gestió d’obra sticky per no haver de pujar amb scroll.
-- Agenda protegida amb llistes segures per evitar bloquejos per dades malformades.
+Base: V87.108.
