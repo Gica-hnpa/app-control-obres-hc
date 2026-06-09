@@ -1084,14 +1084,39 @@ function DataJsonTools8778(){
   const[status,setStatus]=useState("");
   const fileRef=useRef(null);
   const user=currentAppUser8779()||"hector";
-  const keys=["aco_clients","aco_obres","aco_odata","aco_cp_custom8775","aco_config","aco_config_v60","aco_agenda_v86","aco_home_notes","aco_obra_notes","aco_acta_docs","aco_acta_photos","aco_photos"];
+  function userPrefix878105(u=user){return `${STORAGE_NS8782}__${String(u||"").trim().toLowerCase()}__`}
+  function storageKeysForUser878105(u=user){
+    const pref=userPrefix878105(u);
+    const legacyCore=["aco_clients","aco_obres","aco_odata","aco_odata_core_v87104","aco_cp_custom8775","aco_config","aco_config_v60","aco_agenda_v86","aco_home_notes","aco_obra_notes","aco_acta_docs","aco_acta_photos","aco_photos"];
+    const keys=new Set();
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith(pref))keys.add(k);
+      // Per Héctor també exportem possibles claus antigues o dinàmiques que encara no s’hagin migrat.
+      if(u==="hector" && /^aco_/.test(k) && !k.startsWith(STORAGE_NS8782+"__") && k!=="aco_current_user8779")keys.add(k);
+    });
+    legacyCore.forEach(k=>keys.add(lsKey8779(k,u)));
+    return [...keys].filter(Boolean).sort();
+  }
   function exportJson(){
-    const data={version:"V87.82",user,exportedAt:new Date().toISOString(),localStorage:{}};
-    keys.forEach(k=>{data.localStorage[k]=localStorage.getItem(lsKey8779(k,user))||null});
+    const keys=storageKeysForUser878105(user);
+    const storage={};
+    keys.forEach(k=>{try{storage[k]=localStorage.getItem(k)}catch{}});
+    const simple={};
+    const pref=userPrefix878105(user);
+    Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
+    const data={
+      version:"V87.105",
+      user,
+      exportedAt:new Date().toISOString(),
+      mode:"FULL_USER_STORAGE",
+      note:"Còpia completa de totes les claus locals de l’usuari actiu. Inclou pressupostos annexos, certificacions, factures, agenda i claus dinàmiques.",
+      storage,
+      localStorage:simple
+    };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download=`app-control-obres-${user}-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus("Còpia JSON exportada per l’usuari "+user+".");
+    const a=document.createElement("a");a.href=url;a.download=`app-control-obres-${user}-backup-complet-${new Date().toISOString().slice(0,10)}.json`;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);setStatus(`Còpia COMPLETA exportada (${keys.length} blocs locals) per l’usuari ${user}.`);
   }
   function importJson(file){
     if(!file)return;
@@ -1099,17 +1124,39 @@ function DataJsonTools8778(){
     reader.onload=()=>{
       try{
         const data=JSON.parse(reader.result);
-        const store=data.localStorage||data;
-        if(!store.aco_clients&&!store.aco_obres&&!store.aco_odata)throw new Error("El fitxer no sembla una còpia de l’app.");
-        keys.forEach(k=>{if(store[k]!==undefined&&store[k]!==null)localStorage.setItem(lsKey8779(k,user),store[k])});
-        setStatus("Dades importades per l’usuari "+user+". Recarregant l’app...");
-        setTimeout(()=>window.location.reload(),600);
+        const active=user;
+        const targetPref=userPrefix878105(active);
+        const sourceUser=String(data.user||active).trim().toLowerCase();
+        const sourcePref=userPrefix878105(sourceUser);
+        const backup={};
+        storageKeysForUser878105(active).forEach(k=>{try{backup[k]=localStorage.getItem(k)}catch{}});
+        try{localStorage.setItem(`${targetPref}backup_abans_import_${Date.now()}`,JSON.stringify({user:active,createdAt:new Date().toISOString(),storage:backup}).slice(0,1000000))}catch{}
+        let count=0;
+        if(data.storage && typeof data.storage==="object"){
+          Object.entries(data.storage).forEach(([k,v])=>{
+            if(v==null)return;
+            let targetKey=k;
+            if(k.startsWith(sourcePref))targetKey=targetPref+k.slice(sourcePref.length);
+            else if(k.startsWith(STORAGE_NS8782+"__")){
+              const parts=k.split("__");
+              const base=parts.slice(2).join("__");
+              targetKey=targetPref+base;
+            }else if(/^aco_/.test(k))targetKey=lsKey8779(k,active);
+            try{localStorage.setItem(targetKey,String(v));count++}catch(e){console.warn("Import parcial",targetKey,e)}
+          });
+        }else{
+          const store=data.localStorage||data;
+          if(!store.aco_clients&&!store.aco_obres&&!store.aco_odata&&!store.aco_odata_core_v87104)throw new Error("El fitxer no sembla una còpia de l’app.");
+          Object.entries(store).forEach(([k,v])=>{if(v!==undefined&&v!==null){try{localStorage.setItem(lsKey8779(k,active),String(v));count++}catch(e){console.warn("Import parcial",k,e)}}});
+        }
+        setStatus(`Dades importades per l’usuari ${active}. S’han escrit ${count} blocs. Recarregant l’app...`);
+        setTimeout(()=>window.location.reload(),800);
       }catch(err){setStatus("Error important JSON: "+String(err?.message||err))}
     };
     reader.readAsText(file);
   }
-  return <Card title="Còpia de seguretat / traspàs de dades JSON" action={<div className="actions-inline"><button className="primary" onClick={exportJson}>Exportar JSON</button><button className="secondary" onClick={()=>fileRef.current?.click()}>Importar JSON</button><input ref={fileRef} type="file" accept="application/json" hidden onChange={e=>importJson(e.target.files?.[0])}/></div>}>
-    <div className="module-note-v8738"><b>Prova simple per demà.</b><span>Exporta la còpia al PC i importa-la a l’iPad/mòbil o a un altre navegador. És una sincronització manual segura abans de fer la connexió online amb Supabase.</span></div>
+  return <Card title="Còpia de seguretat / traspàs de dades JSON" action={<div className="actions-inline"><button className="primary" onClick={exportJson}>Exportar JSON complet</button><button className="secondary" onClick={()=>fileRef.current?.click()}>Importar JSON</button><input ref={fileRef} type="file" accept="application/json" hidden onChange={e=>importJson(e.target.files?.[0])}/></div>}>
+    <div className="module-note-v8738"><b>Còpia completa per usuari.</b><span>Aquesta exportació inclou totes les claus locals de l’usuari actiu, també les dinàmiques i la còpia crítica d’obra. Abans d’importar, l’app guarda una còpia de seguretat interna de l’estat anterior.</span></div>
     {status&&<div className="doc-status-v38">{status}</div>}
   </Card>
 }
@@ -2793,57 +2840,54 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} setActiveBudgetId={selectBudget8788}/>}
   </div>
 }
-function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,allAgents=[]}){const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");const[editObra,setEditObra]=useState(false);useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);let tabs=tabsForWork8737(obra,data);let activeTab=tabs.includes(tab)?tab:"Resum";return <div className="obra-page">{editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}<section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777"><div><small>{expedientCode8739(obra)}</small><h2>{obra.nom}</h2><p>{client.nom} · {moduleLabel8737(obra)}</p></div><div className="obra-mini-actions-v8776"><Badge estat={estatObra}/><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div></section><section className="obra-layout"><aside className="obra-side-tabs">{tabs.map(t=><button key={t} onClick={()=>setTab(t)} className={activeTab===t?"active":""}>{t}</button>)}</aside><div className="obra-content">{activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent}/>} {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} {activeTab==="Amidaments"&&<ExpedientSection8769 label="Amidaments" data={data} setData={setData}/>} {activeTab==="Industrials / Comparatius"&&<ExpedientSection8769 label="Industrials / Comparatius" data={data} setData={setData}/>} {activeTab==="Tràmits"&&<ExpedientSection8769 label="Tràmits" data={data} setData={setData}/>} {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Certificacions obra"&&<Cert data={data} setData={setData} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client}/>} {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents}/>} {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>}</div></section></div>}
-
-
-function AgendaExpedient8774({data,setData,obra,client}){
-  const now=new Date();
-  const[m,setM]=useState(now.getMonth());
-  const[y,setY]=useState(now.getFullYear());
-  const[d,setD]=useState(now.getDate());
-  const[form,setForm]=useState({id:"",title:"",tipus:"Visita d’obra",hora:"09:00",adreca:obra?.adreca||"",note:"",client:client?.nom||"",obra:obra?.nom||""});
-  const events=[...(data.events||[]),...invoiceAlertsForExpedient8776(data,obra,client)];
-  const blanks=first(y,m),total=days(y,m);
-  const selected=events.filter(e=>e.day===d&&e.month===m&&e.year===y);
-  function clear(){setForm({id:"",title:"",tipus:"Visita d’obra",hora:"09:00",adreca:obra?.adreca||"",note:"",client:client?.nom||"",obra:obra?.nom||""})}
-  function edit(e){setD(+e.day||d);setM(+e.month||m);setY(+e.year||y);setForm({id:e.id,title:e.title||"",tipus:e.tipus||e.type||"Nota",hora:e.hora||"09:00",adreca:e.adreca||obra?.adreca||"",note:e.note||e.detail||"",client:e.client||client?.nom||"",obra:e.obra||obra?.nom||""})}
-  function save(){
-    if(!d){alert("Selecciona un dia.");return}
-    if(!form.title){alert("Posa el títol/resum de la cita.");return}
-    const note={...form,id:form.id||"evt-"+Date.now(),day:d,month:m,year:y,type:form.tipus,tipus:form.tipus,color:form.tipus==="Avís"?"orange":form.tipus==="Certificació"?"red":"blue",obraId:obra?.id,client:form.client||client?.nom||"",obra:form.obra||obra?.nom||"",adreca:form.adreca||obra?.adreca||"",detail:form.note,note:form.note};
-    setData?.(prev=>{const list=prev.events||[];const exists=list.some(x=>x.id===note.id);return {...prev,events:exists?list.map(x=>x.id===note.id?note:x):[...list,note]}});
-    setForm(note);
-  }
-  function remove(){if(!form.id)return;if(!confirm("Eliminar aquesta cita o avís?"))return;setData?.(prev=>({...prev,events:(prev.events||[]).filter(x=>x.id!==form.id)}));clear()}
-  return <div className="agenda-v8774 agenda-expedient-v8774">
-    <Card title="Agenda / visites de l’expedient" action={<div className="actions-inline"><button className="secondary" onClick={clear}>Nova cita neta</button>{form.id&&<button className="danger" onClick={remove}>Eliminar</button>}<button className="primary" onClick={save}>Guardar cita / canvis</button></div>}>
-      <div className="agenda-layout-v8774">
-        <div>
-          <div className="calendar-head"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{const n=new Date();setM(n.getMonth());setY(n.getFullYear());setD(n.getDate())}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option key={x} value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{years.map(x=><option key={x}>{x}</option>)}</select></div>
-          <div className="calendar-grid google-cal-v86">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week" key={x}>{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=events.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button key={day} onClick={()=>setD(day)} className={`day ${d===day?"active selected":""}`}><b>{day}</b>{ev.slice(0,3).map(e=><small key={e.id} onClick={(evn)=>{evn.stopPropagation();edit(e)}}>{e.hora?e.hora+" · ":""}{e.title}</small>)}</button>})}</div>
-        </div>
-        <div className="agenda-side-form-v8775">
-          <h3>{form.id?"Editar cita / visita":"Nova cita / visita"}</h3>
-          <div className="agenda-form-v86 onecol-v8775"><label>Client<input value={form.client} onChange={e=>setForm({...form,client:e.target.value})}/></label><label>Obra / projecte<input value={form.obra} onChange={e=>setForm({...form,obra:e.target.value})}/></label><label>Tipologia<select value={form.tipus} onChange={e=>setForm({...form,tipus:e.target.value})}><option>Visita d’obra</option><option>Reunió</option><option>Pressupost</option><option>Certificació</option><option>Entrega documentació</option><option>Avís</option><option>Altres</option></select></label><label>Hora<input value={form.hora} onChange={e=>setForm({...form,hora:e.target.value})}/></label><label>Adreça<input value={form.adreca} onChange={e=>setForm({...form,adreca:e.target.value})}/></label><label>Resum<input value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label><label>Observacions<textarea value={form.note} onChange={e=>setForm({...form,note:e.target.value})}/></label></div>
-          <h3>Notes del dia</h3>{selected.length===0?<p className="muted">No hi ha cites per aquest dia.</p>:selected.map(e=><button key={e.id} className="note-card-v86" onClick={()=>edit(e)}><b>{e.title}</b><span>{e.hora||""} · {e.client||client?.nom||""}</span><small>{e.tipus||e.type||"Nota"} {e.adreca?`· ${e.adreca}`:""}</small><p>{e.note||e.detail||""}</p></button>)}
-        </div>
-      </div>
-    </Card>
+function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,allAgents=[]}){
+  const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");
+  const[editObra,setEditObra]=useState(false);
+  const[tabsOpen,setTabsOpen]=useState(true);
+  useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
+  let tabs=tabsForWork8737(obra,data);
+  let activeTab=tabs.includes(tab)?tab:"Resum";
+  const renderTab=()=> <>
+    {activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} 
+    {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent}/>} 
+    {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} 
+    {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} 
+    {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} 
+    {activeTab==="Amidaments"&&<ExpedientSection8769 label="Amidaments" data={data} setData={setData}/>} 
+    {activeTab==="Industrials / Comparatius"&&<ExpedientSection8769 label="Industrials / Comparatius" data={data} setData={setData}/>} 
+    {activeTab==="Tràmits"&&<ExpedientSection8769 label="Tràmits" data={data} setData={setData}/>} 
+    {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} 
+    {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} 
+    {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
+    {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Certificacions obra"&&<Cert data={data} setData={setData} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert}/>:<ModulLocked8747/>)} 
+    {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client}/>} 
+    {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents}/>} 
+    {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
+    {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>} 
+  </>;
+  return <div className="obra-page obra-page-v87105">
+    {editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
+    <section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777 obra-head-access-v87105">
+      <button type="button" className="secondary obra-tabs-toggle-v87105" onClick={()=>setTabsOpen(v=>!v)}><Menu/> Pestanyes</button>
+      <div className="obra-head-main-v87105"><small>{expedientCode8739(obra)}</small><h2>{obra.nom}</h2><p>{client.nom} · {moduleLabel8737(obra)} · <b>{activeTab}</b></p></div>
+      <div className="obra-mini-actions-v8776"><Badge estat={estatObra}/><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button></div>
+    </section>
+    <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
+      <aside className="obra-side-tabs obra-side-tabs-v87105">
+        <div className="obra-tabs-title-v87105"><b>{obra.nom}</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
+        {tabs.map(t=><button key={t} onClick={()=>{setTab(t); if(window.innerWidth<950)setTabsOpen(false)}} className={activeTab===t?"active":""}>{t}</button>)}
+      </aside>
+      <div className="obra-content">{renderTab()}</div>
+    </section>
   </div>
-
 }
-
-function AgendaAvisosExpedient8737({data,openEvent}){
-  const events=data.events||[];
-  const ordered=[...events].sort((a,b)=>`${a.year||0}-${a.month||0}-${a.day||0}`.localeCompare(`${b.year||0}-${b.month||0}-${b.day||0}`));
-  return <Card title="Agenda i avisos de l’expedient" action={<button className="primary" onClick={openEvent}><Plus/> Nova cita o avís</button>}>
-    <div className="agenda-expedient-v8737">
-      {ordered.length===0&&<Empty text="Aquest expedient encara no té cites, avisos ni recordatoris."/>}
-      {ordered.map(e=><div className="agenda-row-v8737" key={e.id}><b>{e.title||"Cita"}</b><span>{String(e.day||"").padStart(2,"0")}/{String((+e.month||0)+1).padStart(2,"0")}/{e.year||""} · {e.hora||"Sense hora"}</span><em>{e.type||"Avís"}</em><p>{e.note||""}</p></div>)}
-    </div>
-  </Card>
-}
-
 function ObraAgentsResum({data,openAgent}){
 const[q,setQ]=useState("");
 const[editing,setEditing]=useState(null);
