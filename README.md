@@ -1,14 +1,9 @@
-# APP Control d’Obres · V87.109
+# APP Control d'Obres · V87.110
 
-Versió de tancament dels dos primers mòduls principals.
+Refinament finances, agenda i pestanyes fixes.
 
-Canvis:
-- Agenda general reescrita en versió segura per evitar bloquejos.
-- Agenda d’expedient creada/estabilitzada i sincronitzada amb cites de l’expedient.
-- Eliminada la duplicació visual de l’usuari actiu.
-- Millora responsive per mòbil/iPad: amplada, taules, pestanyes i formularis.
-- Pressupostos i factures del tècnic amb targetes d’estat: fets/acceptats/pendents/no acceptats i cobrades/pendents/vençudes.
-- Factures del tècnic amb camp de data de cobrament i canvi automàtic a Cobrada.
-- Taules de pressupostos/factures més proporcionades i amb scroll controlat.
+Render:
+- Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+- Publish Directory: dist
 
-Base: V87.108.
+No pujar node_modules ni dist si es puja com a codi font.
