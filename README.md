@@ -1,9 +1,9 @@
-# APP Control d’Obres · V87.93
+# APP Control d'Obres · V87.94
 
-Versió basada en V87.92.
+Versió V87.94 – certificacions i proformes a origen real.
 
-Canvis principals:
-- Proformes de certificació amb partides certificades a origen.
-- Resum de certificacions realitzades abans de base/IVA/retenció.
-- Certificació amb primera pàgina a origen i deducció de certificacions anteriors.
-- Quadre resum horitzontal mantingut sense canvis funcionals.
+Correcció específica:
+- La certificació en curs i la proforma mostren les partides certificades a origen.
+- A sota es dedueixen les certificacions anteriors en línies independents.
+- L'import final de la certificació actual és: total a origen - certificacions anteriors.
+- El quadre resum horitzontal no s'ha modificat.
