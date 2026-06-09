@@ -1,16 +1,14 @@
-# APP Control d'Obres · V87.99 refinament professional neta
+# APP Control d'Obres · V87.99 mòduls refinats
 
-Versió basada en la V87.98 estable.
+Base: V87.98 refinament estable.
 
-Aquesta carpeta és la versió font neta per treballar i desplegar a Render: no inclou `dist`, `node_modules` ni `package-lock.json`.
+Canvis principals:
+- Refinament de previsualització/impressió de certificacions i proformes sense tocar el quadre horitzontal.
+- Imports reforçats alineats a la dreta i format de document més net.
+- Fitxa de client reestructurada amb camps obligatoris i CP/població/província automàtica.
+- Pestanya Dades d'expedient sense creació automàtica d'agents; els agents es creen des d'Actes o biblioteca.
+- Actes amb editor per blocs/pestanyes: Dades, Agents, Observacions, Fotos, Documents i Plànols.
+- Selecció d'agents a l'acta des de desplegable de biblioteca i opció de crear agent nou dins l'acta.
+- Login preparat perquè el navegador/Clauer pugui gestionar credencials, amb recordatori intern només d'usuari.
 
-## Render / Vite
-- Build command: `npm install && npm run build`
-- Publish directory: `dist`
-
-## Canvis principals
-- Millora de previsualització i impressió/PDF de certificacions i proformes, amb més marge superior i alineació numèrica reforçada.
-- Fitxa de client més estructurada: dades fiscals, NIF/CIF clarificat, camps obligatoris i província automàtica per codi postal.
-- Resum d'expedient amb més traçabilitat de certificacions, factures, pressupostos i edicions recents.
-- Actes reorganitzades per pestanyes: dades, agents, observacions, fotos, documents i plànols.
-- Login amb recordatori propi de l'app i neteja real del mode recuperació.
+Build comprovat amb npm run build.
