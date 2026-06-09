@@ -3538,3 +3538,21 @@ button,input,select,textarea{font-size:13.5px!important}
 .acta-panel-tabs-v8799{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #d6dde7;padding:8px 0 14px;margin-bottom:14px}.acta-panel-tabs-v8799 button{border:1px solid #cbd5e1;background:#f8fafc;border-radius:999px;padding:9px 14px;font-weight:900;color:#334155}.acta-panel-tabs-v8799 button.active{background:#2563eb;color:white;border-color:#2563eb}.acta-agent-selector-v8799{display:flex;flex-direction:column;gap:12px;padding-top:8px}.acta-agent-selector-v8799 select{border:1px solid #cbd5e1;border-radius:12px;padding:11px;background:white;font-weight:800}.selected-agent-chips-v8799{display:flex;flex-wrap:wrap;gap:8px}.selected-agent-chips-v8799>span{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:999px;padding:8px 10px;font-weight:900}.selected-agent-chips-v8799 button{margin-left:8px;border:0;background:#1d4ed8;color:white;border-radius:999px;width:20px;height:20px;font-weight:900}.acta-editor-v8761 .photo-select-v8761,.acta-editor-v8761 .docs-acta-box-v8764{margin-top:0}.acta-textarea-v8768 textarea{min-height:260px;font-size:15px;line-height:1.5}
 @media(max-width:900px){.actes-layout-v8761{grid-template-columns:1fr!important}.acta-panel-tabs-v8799{position:sticky;top:0;background:white;z-index:2}.clean-doc-preview-v8799{padding:10px!important}.clean-doc-preview-v8799>.cert-preview-v8772,.clean-doc-preview-v8799>.proforma-print-v81{padding:12mm 8mm}.obra-side-tabs{gap:6px}.obra-side-tabs button{font-size:14px;padding:10px}}
 @media print{.clean-doc-preview-v8799{padding:0!important;background:white!important;max-height:none!important}.clean-doc-preview-v8799>.cert-preview-v8772,.clean-doc-preview-v8799>.proforma-print-v81{box-shadow:none!important;border:0!important;padding:0!important}}
+
+/* V87.100 refinament professional */
+.client-profile-v8773{grid-template-columns:104px minmax(0,1fr) auto!important;gap:22px!important;align-items:center!important;padding:20px 26px!important;min-height:126px!important}
+.client-profile-v8773 .client-logo.big{width:88px!important;height:88px!important;border-radius:20px!important;background:#f1f5f9!important;flex-shrink:0!important}
+.client-profile-v8773 h2{font-size:25px!important;margin:0 0 5px!important;line-height:1.12!important;word-break:break-word!important}
+.client-profile-v8773 p,.client-profile-v8773 span{display:block!important;line-height:1.35!important;word-break:break-word!important}
+.client-fitxa-v8773 .form-grid{padding-top:16px!important;gap:12px 14px!important}
+.client-form-v8799 .form-grid{gap:12px 14px!important}
+.agent-library-edit-v87100{margin-top:16px;border-top:1px solid #e2e8f0;padding-top:14px;display:flex;flex-direction:column;gap:8px}
+.agent-library-edit-v87100 h4{margin:0;color:#0f2d5c;font-size:15px}.agent-library-edit-v87100 p{margin:0 0 6px;color:#64748b;font-size:12px;font-weight:700}
+.agent-library-row-v87100{display:grid;grid-template-columns:1.15fr .9fr 1.05fr 1.2fr auto;gap:8px;align-items:center;border:1px solid #dbe3ee;border-radius:12px;background:#f8fafc;padding:8px}
+.agent-library-row-v87100 input{padding:8px 9px!important;border-radius:9px!important;background:white!important}
+.clean-doc-preview-v8799{min-height:70vh!important;max-height:none!important;overflow:auto!important;padding:18px!important}
+.document-modal .modal{max-width:min(1500px,98vw)!important;width:98vw!important;max-height:96vh!important;border-radius:18px!important}
+.document-modal .modal-head{padding:12px 16px!important}.document-modal .modal-actions{padding:12px 16px!important}
+.proforma-print-v81 td,.proforma-print-v81 th,.stable-num-table-v8783 td,.stable-num-table-v8783 th{font-variant-numeric:tabular-nums!important}
+.proforma-print-v81 td.num,.proforma-print-v81 th.num,.stable-num-table-v8783 td.num,.stable-num-table-v8783 th.num{text-align:right!important}
+@media(max-width:900px){.client-profile-v8773{grid-template-columns:82px 1fr!important}.client-profile-v8773 .upload-label{grid-column:1/-1;width:max-content}.agent-library-row-v87100{grid-template-columns:1fr}.document-modal .modal{width:100vw!important;max-width:100vw!important;border-radius:0!important}.clean-doc-preview-v8799{padding:10px!important}}
