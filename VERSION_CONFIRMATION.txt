@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.115 - LAYOUT RESUMS + MOBILE + PRESSUPOSTOS MANUALS + LLIBRERIA CLIENT
-BASE: V87.114
+VERSIO: V87.116 - MOBILE PRINT + LLIBRERIA CLIENT REFINADA
+PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-Build pendent de validació local abans d'entrega.
+Deriva de V87.115 i corregeix punts de mòbil, impressió/PDF i llibreria de partides històriques per client.

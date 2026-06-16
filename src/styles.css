@@ -3759,3 +3759,43 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .budget-mobile-control-v87115{display:block}.budget-selector-v8786{display:none!important}.budget-selected-actions-v8786{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}.budget-selected-actions-v8786 .actions-inline{display:grid!important;grid-template-columns:1fr!important}.client-library-filters-v87115{grid-template-columns:1fr}.client-library-row-v87115{grid-template-columns:1fr 1fr}.client-library-row-v87115>div{grid-column:1/-1}.client-library-head-v87115{display:grid;grid-template-columns:1fr}.budget-v25-line{min-width:860px}.budget-v25-lines{overflow-x:auto}.finance-table-wrap-v8743{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}.finance-table-v8743{min-width:980px!important}.finance-table-v8743 th:last-child,.finance-table-v8743 td:last-child{position:sticky!important;right:0!important}.mobile-row-action-v87114{font-size:11px!important}.document-preview.clean-doc-preview-v8799{padding:6px!important}.cert-wide-table-v8771{font-size:6px!important}.cert-wide-table-v8771 th,.cert-wide-table-v8771 td{padding:1.7px 1.8px!important}
 }
 @media print{.cert-wide-table-v8771 th,.cert-wide-table-v8771 td{font-size:6.2px!important;padding:1.8px 2px!important}.cert-wide-table-v8771 th{white-space:normal!important}.cert-wide-table-v8771 td.concept{overflow:visible!important;white-space:normal!important}.document-page{overflow:visible!important}}
+
+/* V87.116 · refinament mòbil, columnes i llibreria històrica */
+.budget-mobile-inline-v87116{display:none;border:1px solid #bfdbfe;background:#eff6ff;border-radius:16px;margin:12px 20px;padding:12px;gap:10px;flex-direction:column}
+.budget-mobile-inline-v87116 label{display:flex;flex-direction:column;gap:5px;font-weight:900;color:#334155}
+.budget-mobile-inline-v87116 select{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;background:#fff;color:#0f172a;font-weight:900}
+.budget-mobile-inline-actions-v87116{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.budget-mobile-inline-v87116 small{display:block;color:#475569;line-height:1.35}
+.finance-budget-table-v8777,.finance-invoice-table-v87114{min-width:1120px!important;table-layout:fixed!important}
+.finance-budget-table-v8777 .c-num,.finance-invoice-table-v87114 .c-num{width:74px!important}
+.finance-budget-table-v8777 .c-exp,.finance-invoice-table-v87114 .c-exp{width:190px!important}
+.finance-budget-table-v8777 .c-client,.finance-invoice-table-v87114 .c-client{width:118px!important}
+.finance-budget-table-v8777 .c-tipus,.finance-invoice-table-v87114 .c-tipus{width:118px!important}
+.finance-budget-table-v8777 .c-concepte,.finance-invoice-table-v87114 .c-concepte{width:auto!important;min-width:260px!important}
+.finance-budget-table-v8777 .c-data,.finance-invoice-table-v87114 .c-data{width:88px!important}
+.finance-budget-table-v8777 .c-money,.finance-invoice-table-v87114 .c-money{width:96px!important}
+.finance-budget-table-v8777 .c-estat,.finance-invoice-table-v87114 .c-estat{width:114px!important}
+.finance-budget-table-v8777 .c-fact{width:74px!important}.finance-invoice-table-v87114 .c-cobrament{width:124px!important}
+.finance-budget-table-v8777 .c-actions,.finance-invoice-table-v87114 .c-actions{width:126px!important}
+.finance-budget-table-v8777 th,.finance-budget-table-v8777 td,.finance-invoice-table-v87114 th,.finance-invoice-table-v87114 td{padding:7px 7px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.finance-budget-table-v8777 td:nth-child(5),.finance-invoice-table-v87114 td:nth-child(5){white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.22!important;text-align:left!important}
+.finance-budget-table-v8777 td:nth-child(7),.finance-budget-table-v8777 td:nth-child(8),.finance-invoice-table-v87114 td:nth-child(7),.finance-invoice-table-v87114 td:nth-child(8){white-space:nowrap!important;text-align:right!important;font-variant-numeric:tabular-nums!important}
+.finance-budget-table-v8777 th:last-child,.finance-budget-table-v8777 td:last-child,.finance-invoice-table-v87114 th:last-child,.finance-invoice-table-v87114 td:last-child{position:sticky!important;right:0!important;z-index:5;background:#fff!important;box-shadow:-8px 0 10px rgba(15,23,42,.06)!important}
+.finance-budget-table-v8777 th:last-child,.finance-invoice-table-v87114 th:last-child{z-index:7;background:#eaf1f8!important}
+.finance-budget-table-v8777 .row-actions-desktop-v87114,.finance-invoice-table-v87114 .row-actions-desktop-v87114{display:none!important}
+.finance-budget-table-v8777 .mobile-row-action-v87114,.finance-invoice-table-v87114 .mobile-row-action-v87114{display:block!important;width:100%!important;min-width:96px!important;border-radius:10px!important;padding:7px 8px!important;font-size:11px!important;background:#fff!important}
+.cert-wide-table-v8771 col.c-concepte{width:30%!important}.cert-wide-table-v8771 col.c-q{width:3.8%!important}.cert-wide-table-v8771 col.c-pct{width:3.5%!important}.cert-wide-table-v8771 col.c-imp,.cert-wide-table-v8771 col.c-imp-total{width:5.5%!important}.cert-wide-table-v8771 col.c-pu{width:4.8%!important}
+.cert-wide-table-v8771 th,.cert-wide-table-v8771 td{font-size:6.05px!important;padding:1.65px 1.8px!important}.cert-wide-table-v8771 th{white-space:normal!important;line-height:1.02!important}.cert-wide-table-v8771 td.concept{font-size:6.1px!important;overflow:visible!important;white-space:normal!important;line-height:1.05!important}
+.cert-preview-summary-v8772{table-layout:fixed!important}.cert-preview-summary-v8772 th:nth-child(1),.cert-preview-summary-v8772 td:nth-child(1){width:54px!important}.cert-preview-summary-v8772 th:nth-child(2),.cert-preview-summary-v8772 td:nth-child(2){width:42px!important}.cert-preview-summary-v8772 th:nth-child(3),.cert-preview-summary-v8772 td:nth-child(3){width:auto!important;text-align:left!important;white-space:normal!important}.cert-preview-summary-v8772 th:nth-child(4),.cert-preview-summary-v8772 td:nth-child(4){width:82px!important}.cert-preview-summary-v8772 th:nth-child(5),.cert-preview-summary-v8772 td:nth-child(5){width:82px!important}.cert-preview-summary-v8772 th:nth-child(6),.cert-preview-summary-v8772 td:nth-child(6){width:96px!important}
+@media(max-width:950px){
+  .budget-context-card-v87116{display:none!important}
+  .budget-mobile-inline-v87116{display:flex!important}
+  .gestio-obra-v8786>.subtabs-v8746{position:relative!important;top:auto!important;margin:0!important;padding:0!important;display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  .gestio-obra-v8786>.subtabs-v8746 button{padding:11px 12px!important;text-align:left!important}
+  .finance-budget-table-v8777,.finance-invoice-table-v87114{min-width:980px!important;font-size:10.5px!important}
+  .finance-budget-table-v8777 .c-exp,.finance-invoice-table-v87114 .c-exp{width:170px!important}.finance-budget-table-v8777 .c-client,.finance-invoice-table-v87114 .c-client{width:102px!important}.finance-budget-table-v8777 .c-tipus,.finance-invoice-table-v87114 .c-tipus{width:102px!important}.finance-budget-table-v8777 .c-money,.finance-invoice-table-v87114 .c-money{width:88px!important}.finance-budget-table-v8777 .c-actions,.finance-invoice-table-v87114 .c-actions{width:104px!important}
+  .document-preview.clean-doc-preview-v8799{overflow:auto!important;-webkit-overflow-scrolling:touch!important;background:#e5e7eb!important}
+  .proforma-print-v81,.cert-preview-v8772{min-width:0!important}
+}
+@media(max-width:520px){.budget-mobile-inline-actions-v87116{grid-template-columns:1fr}.client-library-panel-v87115{margin-left:10px!important;margin-right:10px!important}.cert-preview-summary-v8772 th,.cert-preview-summary-v8772 td{font-size:10px!important;padding:5px!important}}
+@media print{.cert-preview-summary-v8772 thead{display:table-header-group!important}.cert-preview-summary-v8772 th:nth-child(3)::after{content:" / descripció"}}

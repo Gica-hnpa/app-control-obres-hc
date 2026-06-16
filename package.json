@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-115-layout-mobile-manual-library",
+  "name": "app-control-obres-v87-116-mobile-print-library-refine",
   "private": true,
-  "version": "87.115.0",
+  "version": "87.116.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

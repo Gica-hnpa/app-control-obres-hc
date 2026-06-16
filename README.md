@@ -1,18 +1,14 @@
-# APP Control d’Obres · V87.115
+# APP Control d'Obres · V87.116
 
-Versió de correcció de format i base de pressupostos manuals.
+Versió provisional de refinament: mòbil, impressió i llibreria de partides per client.
 
 Canvis principals:
-- Resums de Pressupostos/Honoraris i Factures amb columnes reequilibrades.
-- Accions de les taules econòmiques en desplegable compacte, també útil per mòbil.
-- Columna Accions visible/sticky quan hi ha desplaçament horitzontal.
-- Correcció de maquetació d’impressió/PDF de certificacions i proformes en mòbil/iPad: concepte/descripció no solapat i capçaleres visibles.
-- Gestió d’obra en mòbil sense pestanyes laterals fixes; navegació per desplegables.
-- Selector mòbil de pressupost actiu dins Gestió d’obra.
-- Creació de pressupost manual des de 0.
-- Llibreria de partides pròpia per client, amb filtre per nom/codi/descripció i capítol, i inserció manual al pressupost actiu.
-
-Base: V87.114.
+- Gestió d'obra en mòbil més neta: s'elimina el bloc inicial duplicat de pressupost i el selector queda dins la pestanya Pressupost obra.
+- Accions de resums de Pressupostos/Honoraris i Factures amb desplegable compacte i columna sticky per reduir scroll horitzontal.
+- Amplades de columnes refinades: imports i quantitats més estrets, concepte/descripció més ample.
+- Impressió mòbil/iPad de certificacions i factures/proformes reforçada mitjançant document HTML aïllat en iframe, mantenint el retorn a l'app.
+- Correcció de capçaleres i taules de certificació: Concepte / descripció visible i columnes numèriques ajustades.
+- Llibreria de partides per client amb autoalimentació des de partides històriques del mateix client guardades al navegador, incloses obres com Maricel si estan dins les dades locals.
 
 Render:
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
