@@ -1,6 +1,6 @@
 APP CONTROL D'OBRES
-VERSIO: V87.113 - HOTFIX PRESSUPOSTOS + FACTURES + NOTES DE SINCRONITZACIÓ
+VERSIO: V87.114 - FACTURACIÓ ACCIONS + MÒBIL DESPLEGABLES + NOTES SUPABASE
 
-Aquesta versió parteix de V87.112 i corregeix el bloqueig de Pressupostos/Honoraris i el mode segur de Factures causat pel bloc de resums/informes.
+Aquesta versió parteix de V87.113 i ajusta la columna Accions de Factures/Facturació perquè sigui coherent amb Pressupostos. En mòbil/iPad, les accions dels llistats principals de Pressupostos i Factures es mostren amb desplegable.
 
 Build comprovat amb Vite.

@@ -3718,3 +3718,26 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .exp-table-wrap-v8741{overflow-x:auto!important;-webkit-overflow-scrolling:touch}.exp-table-v8741{min-width:980px!important}
 }
 @media print{.aco-mobile-printing-v878112 .document-preview{background:white!important;padding:0!important}.aco-mobile-printing-v878112 .document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.aco-mobile-printing-v878112 .modal-backdrop{position:static!important;background:white!important;padding:0!important}.aco-mobile-printing-v878112 .modal{max-height:none!important;overflow:visible!important;border:0!important;box-shadow:none!important;border-radius:0!important}}
+
+/* V87.114 · Facturació accions + mòbil amb desplegables */
+.finance-invoice-table-v87114{table-layout:fixed;min-width:1280px}
+.finance-invoice-table-v87114 .c-num{width:78px}
+.finance-invoice-table-v87114 .c-exp{width:185px}
+.finance-invoice-table-v87114 .c-client{width:130px}
+.finance-invoice-table-v87114 .c-tipus{width:130px}
+.finance-invoice-table-v87114 .c-concepte{width:300px}
+.finance-invoice-table-v87114 .c-data{width:100px}
+.finance-invoice-table-v87114 .c-money{width:110px}
+.finance-invoice-table-v87114 .c-estat{width:130px}
+.finance-invoice-table-v87114 .c-cobrament{width:145px}
+.finance-invoice-table-v87114 .c-actions{width:240px}
+.finance-invoice-table-v87114 .actions-inline,.finance-budget-table-v8777 .actions-inline{gap:7px;align-items:center;justify-content:flex-start}
+.finance-invoice-table-v87114 td:last-child,.finance-budget-table-v8777 td:last-child{text-align:left!important}
+.mobile-row-action-v87114{display:none;width:100%;border:1px solid #cbd5e1;border-radius:999px;background:#fff;padding:9px 12px;font-weight:900;color:#0f172a}
+.row-actions-desktop-v87114{display:flex}
+@media(max-width:900px){
+  .finance-invoice-table-v87114{min-width:1060px}
+  .finance-invoice-table-v87114 .c-actions,.finance-budget-table-v8777 .c-actions{width:170px}
+  .row-actions-desktop-v87114{display:none!important}
+  .mobile-row-action-v87114{display:block}
+}
