@@ -3703,16 +3703,18 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .main{max-width:100vw!important;overflow-x:hidden!important}
 @media(max-width:950px){.finance-charts-v8776{grid-template-columns:1fr!important;padding:10px}.finance-table-v8743{min-width:980px!important}.finance-table-wrap-v8743{overflow-x:auto!important;-webkit-overflow-scrolling:touch}.card{border-radius:16px}.honor-kpis{grid-template-columns:1fr 1fr!important;padding:10px}.finance-status-cards-v87109{grid-template-columns:1fr 1fr!important;padding:10px}.obra-head-access-v87105{top:0!important}.obra-side-tabs-v87105{top:72px!important}.subtabs-v8746{top:122px!important}.agenda-layout-safe-v87109{grid-template-columns:1fr!important}.agenda-calendar-safe-v87109{overflow-x:auto!important}.calendar-grid{min-width:650px}}
 
-
-/* V87.112 · finances segures i sense bloquejos */
-.finance-safe-v87112{max-width:100%;overflow-x:hidden}
-.finance-charts-grid-v87112{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:14px;margin:14px 0}
-.mini-finance-chart-v87112{border:1px solid #e5e7eb;border-radius:16px;background:#fff;padding:14px;box-shadow:0 8px 22px rgba(15,23,42,.05)}
-.mini-finance-chart-v87112 h3{margin:0 0 10px;font-size:15px;color:#0f172a}
-.mini-finance-line-v87112{display:grid;grid-template-columns:120px 1fr 34px 95px;gap:8px;align-items:center;font-size:12px;margin:8px 0}
-.mini-finance-line-v87112>div{height:9px;background:#edf2f7;border-radius:99px;overflow:hidden}.mini-finance-line-v87112 i{display:block;height:100%;border-radius:99px;background:#2563eb}
-.mini-finance-line-v87112.ok i{background:#16a34a}.mini-finance-line-v87112.warn i{background:#f59e0b}.mini-finance-line-v87112.bad i{background:#dc2626}.mini-finance-line-v87112.info i{background:#2563eb}
-.mini-finance-line-v87112 em{text-align:right;font-style:normal;color:#334155}
-.finance-card-list-v87112{display:grid;gap:10px;margin-top:12px}.finance-row-card-v87112{display:grid;grid-template-columns:2.1fr 130px 130px 145px 130px auto;gap:10px;align-items:end;border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fff}.finance-row-card-v87112>div:first-child{min-width:0}.finance-row-card-v87112 b,.finance-row-card-v87112 span,.finance-row-card-v87112 small{display:block}.finance-row-card-v87112 span{font-weight:650;color:#0f172a;white-space:normal;overflow-wrap:anywhere}.finance-row-card-v87112 small{color:#64748b}.finance-row-card-v87112 input,.finance-row-card-v87112 select{width:100%;min-width:0}.finance-row-card-v87112 strong{font-size:14px;color:#0f172a;white-space:nowrap}.finance-report-v87112{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:16px}.finance-report-v87112>div{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:14px}.finance-report-v87112 h4{margin:0 0 8px}.finance-report-v87112 p{display:flex;justify-content:space-between;gap:12px;margin:7px 0;color:#334155}.finance-report-v87112 b{color:#0f172a}
-@media(max-width:1100px){.finance-row-card-v87112{grid-template-columns:1fr 1fr 1fr}.finance-row-card-v87112>div:first-child{grid-column:1/-1}.finance-charts-grid-v87112,.finance-report-v87112{grid-template-columns:1fr}}
-@media(max-width:720px){html,body,#root{width:100%;max-width:100%;overflow-x:hidden}.main{max-width:100vw;overflow-x:hidden}.finance-row-card-v87112{grid-template-columns:1fr}.mini-finance-line-v87112{grid-template-columns:95px 1fr 28px}.mini-finance-line-v87112 em{grid-column:2/-1;text-align:left}.filter-panel-v8776{grid-template-columns:1fr!important}.finance-safe-v87112 .card{overflow:hidden}}
+/* V87.112 · millores mòbil, esborrat expedients i honoraris */
+.obra-mobile-tab-select-v878112{display:none;border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;background:#fff;font-weight:900;width:100%;margin-top:8px;color:#0f172a}
+.honor-trace-v878112{margin-top:14px;border:1px solid #bfdbfe;background:#eff6ff;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:5px;color:#0f172a}.honor-trace-v878112 b{color:#1d4ed8}.honor-trace-v878112 span{color:#334155;font-weight:700}.exp-table-v8741 td .danger{white-space:nowrap}.aco-mobile-printing-v878112 .modal-actions,.aco-mobile-printing-v878112 .modal-head{display:none!important}
+@media(max-width:950px){
+  .obra-tabs-toggle-v87105{display:none!important}
+  .obra-mobile-tab-select-v878112{display:block!important}
+  .obra-layout-v87105,.obra-layout-v87105.tabs-open,.obra-layout-v87105.tabs-closed{display:block!important}
+  .obra-side-tabs-v87105,.obra-layout-v87105.tabs-open .obra-side-tabs-v87105,.obra-layout-v87105.tabs-closed .obra-side-tabs-v87105{display:none!important}
+  .obra-head-access-v87105{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;align-items:stretch!important;top:0!important;padding:10px!important}
+  .obra-mini-actions-v8776{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:8px!important}.obra-mini-actions-v8776>*{justify-content:center!important;width:100%}
+  .obra-head-main-v87105 h2{font-size:18px!important;line-height:1.15!important}.obra-head-main-v87105 p{font-size:12px!important}
+  .subtabs-v8746{position:relative!important;top:auto!important;white-space:normal!important;overflow:visible!important;display:grid!important;grid-template-columns:1fr!important}.subtabs-v8746 button{width:100%;justify-content:center}
+  .exp-table-wrap-v8741{overflow-x:auto!important;-webkit-overflow-scrolling:touch}.exp-table-v8741{min-width:980px!important}
+}
+@media print{.aco-mobile-printing-v878112 .document-preview{background:white!important;padding:0!important}.aco-mobile-printing-v878112 .document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.aco-mobile-printing-v878112 .modal-backdrop{position:static!important;background:white!important;padding:0!important}.aco-mobile-printing-v878112 .modal{max-height:none!important;overflow:visible!important;border:0!important;box-shadow:none!important;border-radius:0!important}}
