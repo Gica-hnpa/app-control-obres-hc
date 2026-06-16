@@ -1,13 +1,18 @@
-# APP Control d'Obres · V87.112
+# APP Control d’Obres · V87.113
 
-Versió de continuació sobre V87.111.
+Hotfix sobre V87.112.
 
-Canvis principals:
-- Impressió/descarrega en mòbil/iPad ajustada perquè l'app no quedi en una finestra nova bloquejada després de guardar PDF.
-- Eliminació segura d'expedients/treballs des del llistat i des de dins de la fitxa d'expedient.
-- Navegació dins d'obra en mòbil amb selector desplegable de pestanya, evitant el menú lateral/scroll horitzontal fix.
-- Pantalla principal de Pressupostos/Honoraris reforçada amb accés visible a la calculadora d'honoraris.
-- Càlculs d'honoraris creats des de la calculadora conserven la traça de fórmula i resultat dins del pressupost.
+Canvis:
+- Correcció del bloqueig a la pestanya principal de Pressupostos/Honoraris.
+- Correcció de la pantalla protegida de Factures causada pel resum/informes.
+- El component d’informes accepta ara `k/v` i `label/value` per evitar errors de renderitzat.
+- Pressupostos queda també embolcallat amb mode segur perquè un error de pantalla no bloquegi tota l’app.
+- Es manté la base V87.111/V87.112: mòbil, eliminació d’expedients i accés a calculadora d’honoraris.
+
+Sincronització futura recomanada:
+- Fase 1: export/import JSON manual amb còpia de seguretat.
+- Fase 2: sincronització real amb backend tipus Supabase/Firebase.
+- Google Drive pot servir com a còpia o pont, però no és la millor base de dades automàtica per treball multi-dispositiu.
 
 Render:
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build

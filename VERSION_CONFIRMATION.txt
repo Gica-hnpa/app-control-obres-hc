@@ -1,9 +1,6 @@
 APP CONTROL D'OBRES
-VERSIO: V87.112 - MÒBIL + ELIMINACIÓ EXPEDIENTS + HONORARIS
-BASE: V87.111 finances + agenda + UI refinades
+VERSIO: V87.113 - HOTFIX PRESSUPOSTOS + FACTURES + NOTES DE SINCRONITZACIÓ
 
-Correccions aplicades sobre:
-- impressió/PDF en mòbil i iPad sense perdre la navegació;
-- esborrat segur d'expedients de prova;
-- selector desplegable de pestanyes dins l'obra en mòbil;
-- accés i traçabilitat de la calculadora d'honoraris a Pressupostos meus.
+Aquesta versió parteix de V87.112 i corregeix el bloqueig de Pressupostos/Honoraris i el mode segur de Factures causat pel bloc de resums/informes.
+
+Build comprovat amb Vite.
