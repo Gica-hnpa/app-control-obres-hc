@@ -3824,3 +3824,37 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .cert-preview-summary-v8772 th,.cert-preview-summary-v8772 td{font-size:9.6px!important;padding:4px 3px!important}.cert-summary-cols-v87117 col.c-partida{width:42px!important}.cert-summary-cols-v87117 col.c-ut{width:28px!important}.cert-summary-cols-v87117 col.c-q{width:52px!important}.cert-summary-cols-v87117 col.c-pu{width:58px!important}.cert-summary-cols-v87117 col.c-total{width:66px!important}
 }
 @media print{.cert-preview-summary-v8772 .concept,.proforma-lines-v87117 .concept{overflow:hidden!important;overflow-wrap:anywhere!important}.print-desc-toggle-v87117[open] summary{margin-bottom:2px}}
+
+/* V87.118 · mòbil més pràctic amb desplegables i llibreria reforçada */
+.obra-mobile-tab-list-v87118,.obra-mobile-actions-v87118,.quote-mobile-action-v87118{display:none}
+@media(max-width:950px){
+  .obra-mobile-tab-select-v878112{display:none!important}
+  .obra-mobile-tab-list-v87118{display:block!important;margin-top:9px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;overflow:hidden}
+  .obra-mobile-tab-list-v87118 summary{list-style:none;cursor:pointer;padding:11px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:900;color:#0f172a}
+  .obra-mobile-tab-list-v87118 summary::-webkit-details-marker{display:none}
+  .obra-mobile-tab-list-v87118 summary span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#64748b}
+  .obra-mobile-tab-list-v87118 summary b{font-size:13px;text-align:right;color:#1d4ed8}
+  .obra-mobile-tab-list-v87118>div{display:grid;grid-template-columns:1fr;gap:6px;padding:8px;border-top:1px solid #e2e8f0;background:#f8fafc}
+  .obra-mobile-tab-list-v87118 button{width:100%;text-align:left;border:1px solid #d6dde7;background:#fff;border-radius:11px;padding:10px 11px;font-weight:900;color:#0f172a}
+  .obra-mobile-tab-list-v87118 button.active{background:#2563eb;color:#fff;border-color:#2563eb}
+  .obra-mini-actions-v8776{display:none!important}
+  .obra-mobile-actions-v87118{display:block!important;border:1px solid #d6dde7;border-radius:14px;background:#fff;overflow:hidden}
+  .obra-mobile-actions-v87118 summary{cursor:pointer;list-style:none;padding:10px 12px;font-weight:900;color:#334155;background:#f8fafc}
+  .obra-mobile-actions-v87118 summary::-webkit-details-marker{display:none}
+  .obra-mobile-actions-v87118>div{display:grid;grid-template-columns:1fr;gap:8px;padding:10px;border-top:1px solid #e2e8f0}
+  .obra-mobile-actions-v87118 button{width:100%;justify-content:center}
+  .resum-dashboard-v8748{display:block!important}
+  .resum-title-v8748{padding:14px!important}
+  .resum-title-v8748 h2{font-size:20px!important;line-height:1.18!important}
+  .resum-title-v8748 p{font-size:12px!important}
+  .resum-quick-grid-v8748,.resum-side-v8748{display:none!important}
+  .activity-row-v8748{grid-template-columns:1fr!important;gap:4px!important;align-items:start!important}
+  .activity-row-v8748 em{text-align:left!important;font-size:12px!important}
+  .quote-actions-desktop-v87118{display:none!important}
+  .quote-mobile-action-v87118{display:block!important;width:100%;border:1px solid #cbd5e1;border-radius:12px;background:#fff;padding:10px 12px;font-weight:900;color:#0f172a}
+  .quote-row-v8744{grid-template-columns:1fr!important;gap:9px!important}
+  .library-refresh-v87118{display:none!important}
+  .client-library-panel-v87115{padding:12px!important}
+  .client-library-list-v87115{max-height:none!important}
+  .lib-save-btn-v87115{display:none!important}
+}

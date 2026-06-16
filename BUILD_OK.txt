@@ -1,0 +1,4 @@
+BUILD OK amb Vite.
+Comanda provada: npm run build
+Data: 2026-06-16
+No s'inclou node_modules, dist ni package-lock.json al ZIP final.

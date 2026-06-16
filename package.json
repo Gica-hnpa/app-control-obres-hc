@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-117-mobile-columns-library-actions",
+  "name": "app-control-obres-v87-118-mobile-dropdowns-library-desc",
   "private": true,
-  "version": "87.117.0",
+  "version": "87.118.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
