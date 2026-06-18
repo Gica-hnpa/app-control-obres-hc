@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.118 - MÒBIL DESPLEGABLES + LLIBRERIA DESCRIPCIONS
+VERSIO: V87.120 - HONORARIS + RENDIMENT + PRESSUPOST OBRA OPCIONAL
 PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-Derivada de V87.117. Canvis centrats en mòbil i llibreria, sense tocar la base funcional validada.
+Derivada de V87.119. Correcció d'imports de factures, guardat reforçat de fitxa d'expedient, nova pestanya Rendiment i millora de Gestió del temps global.

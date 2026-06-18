@@ -431,13 +431,39 @@ function tabsForWork8737(obra,data={}){
   const tipus=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
   let tabs=[...(TAB_TEMPLATES8769[tipus]||TAB_TEMPLATES8769["Altres"])];
   if((data?.actes||[]).length&&!tabs.includes("Actes")) tabs.splice(Math.min(5,tabs.length),0,"Actes");
-  if(((data?.partides||[]).length||(data?.certificacions||[]).length||(data?.factures||[]).length)&&!tabs.includes("Gestió obra")) tabs.splice(Math.max(tabs.length-3,1),0,"Gestió obra");
+  // V87.120: la gestió econòmica d'obra ha de ser disponible en qualsevol expedient,
+  // encara que la feina principal no sigui una gestió integral. Això permet crear/importar
+  // un pressupost d'obra quan calgui, en lloc de deixar-lo només com a PDF a Documents.
+  if(!tabs.includes("Gestió obra")) tabs.splice(Math.max(tabs.length-3,1),0,"Gestió obra");
   if(!tabs.includes("Agenda / Avisos")){const idx=Math.max(1,tabs.indexOf("Dades")+1);tabs.splice(idx,0,"Agenda / Avisos");}
   if(!tabs.includes("Honoraris")){const idx=Math.max(1,tabs.indexOf("Agenda / Avisos")+1);tabs.splice(idx,0,"Honoraris");}
+  if(!tabs.includes("Rendiment")){const idx=Math.max(1,tabs.indexOf("Honoraris")+1);tabs.splice(idx,0,"Rendiment");}
   return uniqueTabs8769(tabs);
 }
-function totalIva8743(x){return (+x?.base||+x?.total||0)*(1+(+x?.iva||21)/100)}
+function isFacturaDoc878120(x){return !!x&&(String(x?.id||"").startsWith("ft-")||String(x?.tipus||"").toLowerCase().includes("factura")||x?.pressupostId||Object.prototype.hasOwnProperty.call(x,"retencio")||Object.prototype.hasOwnProperty.call(x,"descompte")||Object.prototype.hasOwnProperty.call(x,"dataCobrament"))}
+function totalIva8743(x){return isFacturaDoc878120(x)?invoiceTotal8746(x):(+x?.base||+x?.total||0)*(1+(+x?.iva||21)/100)}
 function baseIva8743(x){return (+x?.base||+x?.total||0)}
+function totalFactura878120(x){return invoiceTotal8746(x||{})}
+function timeRowsForObra878120(obraId,data={}){let stored=[];try{stored=JSON.parse(localStorage.getItem(lsKey8779(`aco_honoraris_rows_${obraId||"default"}`))||"[]")}catch(e){stored=[]}return stored.length?stored:(data?.hores||[])}
+function timeImport878120(r){const n=v=>Number(String(v??0).replace(",","."))||0;if(r?.tipusRegistre==="Kilometratge")return n(r.km)*n(r.preuKm);if(r?.tipusRegistre&&r.tipusRegistre!=="Honoraris")return n(r.quantitat)*n(r.preuUnitari);return n(r.hores)*(n(r.preuHora)||n(r.preu)||0)}
+function timeHours878120(r){const n=v=>Number(String(v??0).replace(",","."))||0;return n(r?.hores)}
+function honorMetrics878120(data={},obra={}){
+  const pressupostos=data.pressupostosTecnic||[];
+  const factures=uniqueFactures8743(data.facturesTecnic||[]);
+  const timeRows=timeRowsForObra878120(obra?.id,data);
+  const pressupostat=pressupostos.reduce((s,p)=>s+baseIva8743(p),0);
+  const pressupostatIva=pressupostos.reduce((s,p)=>s+totalIva8743(p),0);
+  const facturatBase=factures.reduce((s,f)=>s+baseIva8743(f),0);
+  const facturatTotal=factures.reduce((s,f)=>s+totalFactura878120(f),0);
+  const cobratTotal=factures.filter(f=>statusKeyFactura8776(f.estat)==="cobrades"||f.dataCobrament).reduce((s,f)=>s+totalFactura878120(f),0);
+  const tempsCost=timeRows.reduce((s,r)=>s+timeImport878120(r),0);
+  const hores=timeRows.reduce((s,r)=>s+timeHours878120(r),0);
+  const pendent=facturatTotal-cobratTotal;
+  const marge=facturatBase-tempsCost;
+  const rendimentHora=hores?facturatBase/hores:0;
+  const cobertura=pressupostat?facturatBase/pressupostat*100:0;
+  return {pressupostos,factures,timeRows,pressupostat,pressupostatIva,facturatBase,facturatTotal,cobratTotal,pendent,tempsCost,hores,marge,rendimentHora,cobertura};
+}
 function ivaAmount8743(x){return baseIva8743(x)*((+x?.iva||21)/100)}
 function descompteAmount8746(d){return (+d?.base||0)*((+d?.descompte||0)/100)}
 function invoiceNetBase8746(d){return Math.max((+d?.base||0)-descompteAmount8746(d),0)}
@@ -1994,15 +2020,26 @@ function deleteCertificacio8721(id){
   setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))
 }
 function updateObraFitxa8721(patch){
-  const cleanPatch={...patch};
+  const now=new Date().toISOString();
+  const cleanPatch={...patch,updatedAt:now};
   if(cleanPatch.tipusTreball||cleanPatch.tipologia){
     const tipus=canonicalWorkType8740(cleanPatch.tipusTreball||cleanPatch.tipologia);
     cleanPatch.tipusTreball=tipus;
     cleanPatch.tipologia=tipus;
   }
-  setD(obraId,d=>({...d,obra:{...(d.obra||{}),...cleanPatch}}));
-  setObres(p=>p.map(o=>o.id===obraId?{...o,...cleanPatch}:o));
-  setTab("Resum");
+  // V87.120: guardat reforçat. La fitxa de l'expedient viu a la llista d'obres,
+  // però també en deixem una còpia dins odata per evitar perdre canvis si es canvia de pestanya o es recarrega ràpid.
+  setOdata(prev=>{
+    const current=normalizeBudgetedData8791(prev[obraId]||empty());
+    const next={...prev,[obraId]:normalizeBudgetedData8791({...current,obra:{...(current.obra||{}),...cleanPatch},updatedAt:now})};
+    try{saveOdata878104(next,authUser8779)}catch(e){}
+    return next;
+  });
+  setObres(prev=>{
+    const next=prev.map(o=>o.id===obraId?{...o,...cleanPatch}:o);
+    try{lsSet8779("aco_obres",JSON.stringify(next),authUser8779)}catch(e){}
+    return next;
+  });
 }
 function saveCert(){let n=+certInfo.num;let total=data.partides.reduce((s,r)=>s+certQty8783(r,n)*(+r.pu||0),0);setD(obraId,d=>({...d,certificacions:[...d.certificacions.filter(c=>+c.numero!==n),{id:"c"+Date.now(),numero:String(n),data:certInfo.data,estat:"Guardada",import:total,updatedAt:new Date().toISOString()}].sort((a,b)=>(+a.numero)-(+b.numero))}))}
 function emailDraft(title){setEmail({title,agents:data.agents||[],selected:(data.agents||[]).map(a=>a.id),message:"Bon dia,\n\nAdjunto document de l'obra per a la seva revisió.\n\nSalutacions,\nHéctor"})}
@@ -2387,13 +2424,25 @@ flat.sort((a,b)=>String(expedientCode8739(b)).localeCompare(String(expedientCode
 let total=flat.length, actius=flat.filter(o=>o.estat!=="Tancada").length;
 let tipusCount=flat.reduce((m,o)=>{let t=moduleLabel8737(o);m[t]=(m[t]||0)+1;return m},{});
 let estatCount=flat.reduce((m,o)=>{let t=o.estat||"Sense estat";m[t]=(m[t]||0)+1;return m},{});
-let anys=[...new Set(flat.map(o=>o.any||String(new Date().getFullYear())))].sort((a,b)=>String(b).localeCompare(String(a)));
+let anys=[...new Set(flat.map(o=>o.any||String(new Date().getFullYear())))].sort((a,b)=>String(b).localeCompare(String(a),"ca",{numeric:true}));
 let topTipus=Object.entries(tipusCount).sort((a,b)=>b[1]-a[1]);
 let clientNom=o=>clients.find(x=>x.id===o.client)?.nom||o.propietat||"—";
 let clearAll=()=>{f.setOs("");f.setOc("");f.setOt("");f.setOy("");f.setOst("")};
-return <div className="expedients-page-v8741 expedients-page-v8742">
+const byYearClient=flat.reduce((acc,o)=>{const y=o.any||"Sense any";const cn=clientNom(o);acc[y]??={};acc[y][cn]??=[];acc[y][cn].push(o);return acc},{});
+return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
   <Card title="Llistat professional d’expedients" action={<button className="primary" onClick={newObra}><Plus/> Nou expedient</button>}>
-    <div className="filters filters-v8741 filters-v8742">
+    <details className="mobile-filter-drawer-v87119">
+      <summary><span>Filtres i cerca</span><b>{f.ot||f.oc||f.oy||f.ost||f.os?"Filtres actius":"Tots"}</b></summary>
+      <div className="filters filters-v8741 filters-v8742 filters-v87119">
+        <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar expedient..."/></div>
+        <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
+        <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els tipus de treball</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select>
+        <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option>{[...new Set([...anys,"2026","2025"].filter(Boolean))].map(y=><option key={y}>{y}</option>)}</select>
+        <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>En procés</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select>
+        <button type="button" className="secondary" onClick={clearAll}>Netejar filtres</button>
+      </div>
+    </details>
+    <div className="filters filters-v8741 filters-v8742 desktop-filters-v87119">
       <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar per número, codi, client, treball, adreça o municipi..."/></div>
       <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
       <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els tipus de treball</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select>
@@ -2401,7 +2450,10 @@ return <div className="expedients-page-v8741 expedients-page-v8742">
       <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>En procés</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select>
     </div>
     <div className="exp-list-header-v8741"><span>{total} expedients filtrats</span><div className="actions-inline"><button className="secondary" onClick={clearAll}>Netejar filtres</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>Tornar a tots els tipus</button>}</div></div>
-    <div className="exp-table-wrap-v8741">
+    <div className="exp-mobile-tree-v87119">
+      {flat.length===0?<Empty text="No hi ha expedients amb aquest filtre."/>:anys.map((any,idx)=><details key={any} open={idx===0} className="exp-year-drawer-v87119"><summary><span>{any}</span><b>{flat.filter(o=>String(o.any||"")===String(any)).length} expedients</b></summary><div>{Object.entries(byYearClient[any]||{}).sort((a,b)=>a[0].localeCompare(b[0],"ca")).map(([cn,items])=><details key={cn} className="exp-client-drawer-v87119"><summary><span>{cn}</span><b>{items.length}</b></summary><div>{items.map(o=><div key={o.id} className="exp-mobile-card-v87119"><button type="button" onClick={()=>openObra(o.id)}><small>{expedientCode8739(o)}</small><strong>{o.nom}</strong><span>{moduleLabel8737(o)}</span><em>{o.adreca||"—"} · {o.poblacio||"—"}</em></button><div><Badge estat={o.estat}/><select defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="open")openObra(o.id);if(v==="delete")deleteObra?.(o.id)}}><option value="" disabled>Accions</option><option value="open">Obrir expedient</option><option value="delete">Eliminar</option></select></div></div>)}</div></details>)}</div></details>)}
+    </div>
+    <div className="exp-table-wrap-v8741 exp-table-wrap-v87119">
       <table className="exp-table-v8741 exp-table-v8742">
         <thead><tr><th>Número</th><th>Codi expedient</th><th>Client</th><th>Nom treball</th><th>Tipologia treball</th><th>Adreça / municipi</th><th>Estat</th><th>Accions</th></tr></thead>
         <tbody>{flat.length===0&&<tr><td colSpan="8"><Empty text="No hi ha expedients amb aquest filtre."/></td></tr>}{anys.map(any=><>
@@ -2937,6 +2989,8 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
   const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");
   const[editObra,setEditObra]=useState(false);
   const[tabsOpen,setTabsOpen]=useState(()=>!(typeof window!=="undefined"&&(window.innerWidth||0)<951));
+  const[mobileFlowOpen87119,setMobileFlowOpen87119]=useState(false);
+  const[mobileActionsOpen87119,setMobileActionsOpen87119]=useState(false);
   useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
   let tabs=tabsForWork8737(obra,data);
   let activeTab=tabs.includes(tab)?tab:"Resum";
@@ -2964,6 +3018,7 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>} 
+    {activeTab==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>} 
   </>;
   return <div className="obra-page obra-page-v87105">
     {editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
@@ -2972,18 +3027,15 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
       <div className="obra-head-main-v87105">
         <small>{expedientCode8739(obra)}</small>
         <h2>{obra.nom}</h2>
-        <p>{client.nom} · {moduleLabel8737(obra)} · <b>{activeTab}</b></p>
-        <details className="obra-mobile-tab-list-v87118">
-          <summary><span>Pestanya actual</span><b>{activeTab}</b></summary>
-          <div>{tabs.map(t=><button type="button" key={t} onClick={()=>{setTab(t);setTabsOpen(false)}} className={activeTab===t?"active":""}>{t}</button>)}</div>
-        </details>
-        <select className="obra-mobile-tab-select-v878112" value={activeTab} onChange={e=>{setTab(e.target.value);setTabsOpen(false)}}>{tabs.map(t=><option key={t} value={t}>{t}</option>)}</select>
+        <p>{client.nom} · {moduleLabel8737(obra)}</p>
+        <div className="obra-mobile-flow-v87119">
+          <button type="button" className="primary" onClick={()=>setMobileFlowOpen87119(v=>!v)}>Obrir opcions de l’expedient</button>
+          <button type="button" className="secondary" onClick={()=>setMobileActionsOpen87119(v=>!v)}>Accions</button>
+          {mobileFlowOpen87119&&<div className="obra-mobile-flow-panel-v87119"><div className="flow-title-v87119"><b>Què vols obrir?</b><button type="button" onClick={()=>setMobileFlowOpen87119(false)}>Tancar</button></div>{tabs.map(t=><button type="button" key={t} onClick={()=>{setTab(t);setTabsOpen(false);setMobileFlowOpen87119(false)}} className={activeTab===t?"active":""}><span>{t}</span><small>{activeTab===t?"Oberta":"Entrar"}</small></button>)}</div>}
+          {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button></div>}
+        </div>
       </div>
       <div className="obra-mini-actions-v8776"><Badge estat={estatObra}/><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button></div>
-      <details className="obra-mobile-actions-v87118">
-        <summary>Accions de l’expedient</summary>
-        <div><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar al llistat</button><button type="button" className="secondary" onClick={()=>setEditObra(true)}>Modificar fitxa</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button></div>
-      </details>
     </section>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105">
@@ -3764,12 +3816,15 @@ function Agenda({events=[],clients=[],obres=[],openObra,calM,setCalM,calY,setCal
   const storageKey=lsKey8779("aco_agenda_global_v87109");
   const [local,setLocal]=useState(()=>{try{return (JSON.parse(localStorage.getItem(storageKey)||"[]")||[]).map(cleanAgendaEvent87109).filter(Boolean)}catch{return []}});
   const [selectedId,setSelectedId]=useState("");
+  const [formOpen,setFormOpen]=useState(false);
   const today=new Date();
-  const [form,setForm]=useState({id:"",data:today.toISOString().slice(0,10),hora:"09:00",title:"",tipus:"Visita d’obra",client:"",obraId:"",adreca:"",detail:""});
+  const m=Number(calM??today.getMonth()), y=Number(calY??today.getFullYear()), dsel=Number(selDay||today.getDate());
+  const isoForDay=(day=dsel)=>`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  const baseForm=(day=dsel)=>({id:"",data:isoForDay(day),hora:"09:00",title:"",tipus:"Visita d’obra",client:"",obraId:"",adreca:"",detail:""});
+  const [form,setForm]=useState(()=>baseForm(dsel));
   useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(local.slice(-300)))}catch{}},[local,storageKey]);
   const incoming=(Array.isArray(events)?events:[]).map(cleanAgendaEvent87109).filter(Boolean);
-  const all=[...incoming,...local].sort((a,b)=>(`${a.year}-${a.month}-${a.day} ${a.hora}`).localeCompare(`${b.year}-${b.month}-${b.day} ${b.hora}`));
-  const m=Number(calM??today.getMonth()), y=Number(calY??today.getFullYear()), dsel=Number(selDay||today.getDate());
+  const all=[...incoming,...local].sort((a,b)=>(`${a.year}-${String(a.month).padStart(2,'0')}-${String(a.day).padStart(2,'0')} ${a.hora}`).localeCompare(`${b.year}-${String(b.month).padStart(2,'0')}-${String(b.day).padStart(2,'0')} ${b.hora}`));
   const selected=all.filter(e=>e.day===dsel&&e.month===m&&e.year===y);
   function set(k,v){
     const patch={...form,[k]:v};
@@ -3778,7 +3833,9 @@ function Agenda({events=[],clients=[],obres=[],openObra,calM,setCalM,calY,setCal
     }
     setForm(patch);
   }
-  function edit(e){setSelectedId(e.id);setForm({id:e.id,data:e.iso,hora:e.hora,title:e.title,tipus:e.tipus,client:e.client,obraId:e.obraId||"",adreca:e.adreca,detail:e.detail})}
+  function chooseDay(day){setSelDay(day);setSelectedId("");setFormOpen(false);setForm(baseForm(day));}
+  function edit(e){setSelectedId(e.id);setForm({id:e.id,data:e.iso,hora:e.hora,title:e.title,tipus:e.tipus,client:e.client,obraId:e.obraId||"",adreca:e.adreca,detail:e.detail});setFormOpen(true)}
+  function startNew(day=dsel){setSelectedId("");setForm(baseForm(day));setFormOpen(true)}
   function save(){
     const base=cleanAgendaEvent87109({...form,data:form.data,id:form.id||`ag-${Date.now()}`}); if(!base)return;
     const o=safeObres.find(x=>x.id===form.obraId);
@@ -3788,20 +3845,23 @@ function Agenda({events=[],clients=[],obres=[],openObra,calM,setCalM,calY,setCal
     }else{
       setLocal(p=>p.some(x=>x.id===base.id)?p.map(x=>x.id===base.id?base:x):[...p,base]);
     }
-    setSelectedId(base.id);
+    setSelectedId(base.id);setFormOpen(false);
   }
   function del(){
     if(!form.id)return; if(!confirm("Eliminar aquesta cita / avís?"))return;
     setLocal(p=>p.filter(x=>x.id!==form.id));
     if(setOdata){setOdata(prev=>{const out={...prev};Object.keys(out).forEach(oid=>{const d=out[oid]||{};if(Array.isArray(d.events))out[oid]={...d,events:d.events.filter(e=>String(e.id)!==String(form.id)),updatedAt:new Date().toISOString()};});return out})}
-    setForm({id:"",data:today.toISOString().slice(0,10),hora:"09:00",title:"",tipus:"Visita d’obra",client:"",obraId:"",adreca:"",detail:""});setSelectedId("");
+    setForm(baseForm(dsel));setSelectedId("");setFormOpen(false);
   }
   const blanks=first(y,m), total=days(y,m);
-  return <div className="agenda-safe-v87109"><Card title="Agenda / Calendari" action={<FilterBar8776><label><span>Mes</span><select value={m} onChange={e=>setCalM(+e.target.value)}>{months.map((x,i)=><option key={x} value={i}>{x}</option>)}</select></label><label><span>Any</span><select value={y} onChange={e=>setCalY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option key={x}>{x}</option>)}</select></label></FilterBar8776>}>
-    <div className="agenda-layout-safe-v87109"><div className="calendar-grid agenda-calendar-safe-v87109">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week" key={x}>{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={'b'+i}/>) }{Array.from({length:total}).map((_,i)=>{const day=i+1;const ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button key={day} className={`day ${dsel===day?"selected":""}`} onClick={()=>setSelDay(day)}><b>{day}</b>{ev.slice(0,3).map(e=><span key={e.id} className="cal-event" onClick={(x)=>{x.stopPropagation();edit(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div>
-    <div className="agenda-panel-safe-v87109"><div className="agenda-panel-head-v87109"><h3>{`Dia ${String(dsel).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`}</h3><button className="primary" onClick={()=>setForm({id:"",data:`${y}-${String(m+1).padStart(2,'0')}-${String(dsel).padStart(2,'0')}`,hora:"09:00",title:"",tipus:"Visita d’obra",client:"",obraId:"",adreca:"",detail:""})}>+ Nova cita</button></div>
-    <div className="agenda-list-safe-v87109">{selected.length===0?<p className="muted">No hi ha cites aquest dia.</p>:selected.map(e=><button key={e.id} className={selectedId===e.id?"active":""} onClick={()=>edit(e)}><b>{e.title}</b><span>{e.hora} · {e.client||"Sense client"}</span><small>{e.obra||"Sense expedient"} {e.adreca?`· ${e.adreca}`:""}</small></button>)}</div>
-    <div className="agenda-form-safe-v87109"><label>Data<input type="date" value={form.data} onChange={e=>set("data",e.target.value)}/></label><label>Hora<input type="time" value={form.hora} onChange={e=>set("hora",e.target.value)}/></label><label>Expedient<select value={form.obraId} onChange={e=>set("obraId",e.target.value)}><option value="">Sense vincular</option>{safeObres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label><label>Títol<input value={form.title} onChange={e=>set("title",e.target.value)}/></label><label>Tipus<select value={form.tipus} onChange={e=>set("tipus",e.target.value)}><option>Visita d’obra</option><option>Reunió</option><option>Pressupost</option><option>Certificació</option><option>Entrega documentació</option><option>Avís</option><option>Altres</option></select></label><label>Client<input list="agenda-clients-v87110" value={form.client||""} onChange={e=>set("client",e.target.value)} placeholder="Nom del client"/><datalist id="agenda-clients-v87110">{safeClients.map(c=><option key={c.id} value={c.nom}/>)}</datalist></label><label>Adreça<input value={form.adreca} onChange={e=>set("adreca",e.target.value)}/></label><label className="span-all">Observacions<textarea value={form.detail} onChange={e=>set("detail",e.target.value)}/></label><div className="agenda-actions-safe-v87109"><button className="primary" onClick={save}>Guardar cita / canvis</button>{form.id&&<button className="danger" onClick={del}>Eliminar</button>}{form.obraId&&openObra&&<button className="secondary" onClick={()=>openObra(form.obraId)}>Obrir expedient</button>}</div></div></div></div>
+  const monthEvents=all.filter(e=>e.month===m&&e.year===y);
+  return <div className="agenda-safe-v87109 agenda-mobile-google-v87119"><Card title="Agenda / Calendari" action={<FilterBar8776><label><span>Mes</span><select value={m} onChange={e=>{setCalM(+e.target.value);setFormOpen(false)}}>{months.map((x,i)=><option key={x} value={i}>{x}</option>)}</select></label><label><span>Any</span><select value={y} onChange={e=>{setCalY(+e.target.value);setFormOpen(false)}}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option key={x}>{x}</option>)}</select></label><button type="button" className="secondary agenda-today-v87119" onClick={()=>{const t=new Date();setCalM(t.getMonth());setCalY(t.getFullYear());setSelDay(t.getDate());setFormOpen(false)}}>Avui</button></FilterBar8776>}>
+    <div className="agenda-mobile-toolbar-v87119"><button type="button" className="secondary" onClick={()=>m===0?(setCalM(11),setCalY(y-1)):setCalM(m-1)}>‹</button><b>{months[m]} {y}</b><button type="button" className="secondary" onClick={()=>m===11?(setCalM(0),setCalY(y+1)):setCalM(m+1)}>›</button><button type="button" className="primary" onClick={()=>startNew(dsel)}>+ Cita</button></div>
+    <div className="agenda-layout-safe-v87109 agenda-layout-v87119"><div className="calendar-grid agenda-calendar-safe-v87109 agenda-calendar-v87119">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week" key={x}>{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={'b'+i}/>) }{Array.from({length:total}).map((_,i)=>{const day=i+1;const ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button key={day} className={`day ${dsel===day?"selected":""} ${ev.length?"has-events-v87119":""}`} onClick={()=>chooseDay(day)}><b>{day}</b><em>{ev.length?ev.length:""}</em>{ev.slice(0,2).map(e=><span key={e.id} className={`cal-event ${e.color==="red"?"red":e.color==="orange"?"orange":""}`} onClick={(x)=>{x.stopPropagation();edit(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div>
+    <div className="agenda-panel-safe-v87109 agenda-day-panel-v87119"><div className="agenda-panel-head-v87109 agenda-panel-head-v87119"><div><h3>{`Dia ${String(dsel).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${y}`}</h3><span>{selected.length?`${selected.length} cita${selected.length===1?"":"s"}`:"Sense cites"}</span></div><button type="button" className="primary" onClick={()=>startNew(dsel)}>+ Nova cita</button></div>
+    {!formOpen&&<div className="agenda-list-safe-v87109 agenda-day-list-v87119">{selected.length===0?<div className="agenda-empty-day-v87119"><b>No hi ha res aquest dia.</b><span>Pots crear una cita, reunió, avís o entrega de documentació.</span><button type="button" className="primary" onClick={()=>startNew(dsel)}>Crear cita aquest dia</button></div>:selected.map(e=><div key={e.id} className={selectedId===e.id?"active agenda-event-card-v87119":"agenda-event-card-v87119"}><button type="button" onClick={()=>edit(e)}><b>{e.title}</b><span>{e.hora} · {e.tipus} · {e.client||"Sense client"}</span><small>{e.obra||"Sense expedient"} {e.adreca?`· ${e.adreca}`:""}</small></button><div><button type="button" className="secondary" onClick={()=>edit(e)}>Veure / editar</button>{e.obraId&&openObra&&<button type="button" className="secondary" onClick={()=>openObra(e.obraId)}>Expedient</button>}</div></div>)}</div>}
+    {formOpen&&<div className="agenda-form-safe-v87109 agenda-form-v87119"><div className="agenda-form-title-v87119"><b>{form.id?"Editar cita":"Nova cita"}</b><button type="button" className="secondary" onClick={()=>{setFormOpen(false);setForm(baseForm(dsel));setSelectedId("")}}>Tancar</button></div><label>Data<input type="date" value={form.data} onChange={e=>set("data",e.target.value)}/></label><label>Hora<input type="time" value={form.hora} onChange={e=>set("hora",e.target.value)}/></label><label>Expedient<select value={form.obraId} onChange={e=>set("obraId",e.target.value)}><option value="">Sense vincular</option>{safeObres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label><label>Títol<input value={form.title} onChange={e=>set("title",e.target.value)}/></label><label>Tipus<select value={form.tipus} onChange={e=>set("tipus",e.target.value)}><option>Visita d’obra</option><option>Reunió</option><option>Pressupost</option><option>Certificació</option><option>Entrega documentació</option><option>Avís</option><option>Altres</option></select></label><label>Client<input list="agenda-clients-v87110" value={form.client||""} onChange={e=>set("client",e.target.value)} placeholder="Nom del client"/><datalist id="agenda-clients-v87110">{safeClients.map(c=><option key={c.id} value={c.nom}/>)}</datalist></label><label>Adreça<input value={form.adreca} onChange={e=>set("adreca",e.target.value)}/></label><label className="span-all">Observacions<textarea value={form.detail} onChange={e=>set("detail",e.target.value)}/></label><div className="agenda-actions-safe-v87109"><button type="button" className="primary" onClick={save}>Guardar cita / canvis</button>{form.id&&<button type="button" className="danger" onClick={del}>Eliminar</button>}{form.obraId&&openObra&&<button type="button" className="secondary" onClick={()=>openObra(form.obraId)}>Obrir expedient</button>}</div></div>}
+    </div></div><div className="agenda-month-count-v87119">{monthEvents.length} cites/avisos en aquest mes</div>
   </Card></div>
 }
 function AgendaExpedient8774({data,setData,obra,client}){
@@ -3854,22 +3914,37 @@ function TracaGeneral({obres,odata,openObra}){
   const[obra,setObra]=useState("");
   const[tipus,setTipus]=useState("");
   function n(v){return Number(String(v??0).replace(",","."))||0}
-  function importReg(r){if(r.tipusRegistre==="Honoraris"||r.hores)return n(r.hores)*(n(r.preuHora)||n(r.preu)||0);if(r.tipusRegistre==="Kilometratge")return n(r.km)*n(r.preuKm);return n(r.quantitat)*n(r.preuUnitari)}
-  function rowsForObra(o){let stored=[];try{stored=JSON.parse(localStorage.getItem(lsKey8779(`aco_honoraris_rows_${o.id}`))||"[]")}catch(e){stored=[]}let d=odata[o.id]||empty();return stored.length?stored:(d.hores||[])}
-  const all=obres.flatMap(o=>rowsForObra(o).map(r=>({...r,obra:o,obraNom:o.nom,clientNom:o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o),data:r.data||isoDate8776(now)})));
-  const clients=[...new Set(all.map(r=>r.clientNom).filter(Boolean))];
-  const tipologies=[...new Set(all.map(r=>r.tipologia).filter(Boolean))];
-  const rows=all.filter(r=>(!client||r.clientNom===client)&&(!obra||r.obra.id===obra)&&(!tipus||r.tipologia===tipus)&&periodFilter8776(r,period,from,to));
-  const totalH=rows.reduce((s,r)=>s+n(r.hores),0);
-  const totalC=rows.reduce((s,r)=>s+importReg(r),0);
-  const byClient=aggregate8776(rows,r=>r.clientNom,importReg);
-  const byTipus=aggregate8776(rows,r=>r.tipologia,importReg);
-  return <div className="stack traca-v8776">
-    <Card title="Gestió del temps · mes en curs per defecte" action={<FilterBar8776><label><span>Període</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="month">Mes en curs</option><option value="week">Setmana actual</option><option value="year">Any actual</option><option value="all">Tot</option><option value="dates">Dates</option></select></label>{period==="dates"&&<><label><span>Des de</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>Fins</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>Client</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">Tots</option>{clients.map(c=><option key={c}>{c}</option>)}</select></label><label><span>Obra</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">Totes</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>Tipologia</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">Totes</option>{tipologies.map(t=><option key={t}>{t}</option>)}</select></label></FilterBar8776>}>
-      <div className="honor-kpis"><Kpi t="REGISTRES" v={rows.length}/><Kpi t="HORES" v={`${totalH.toFixed(2)} h`}/><Kpi t="TOTAL" v={money(totalC)}/></div>
-      <div className="finance-charts-v8776"><Donut8776 title="Per client" parts={byClient} total={totalC}/><Donut8776 title="Per tipologia de feina" parts={byTipus} total={totalC}/></div>
+  function baseFilter(o){return (!client||(o.propietat||o.client||"")===client)&&(!obra||o.id===obra)&&(!tipus||(o.tipusTreball||moduleLabel8737(o))===tipus)}
+  function rowsForObra(o){const d=odata[o.id]||empty();return timeRowsForObra878120(o.id,d)}
+  const obresFiltered=(obres||[]).filter(baseFilter);
+  const all=obresFiltered.flatMap(o=>rowsForObra(o).map(r=>({...r,obra:o,obraNom:o.nom,clientNom:o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o),data:r.data||isoDate8776(now)})));
+  const allPress=obresFiltered.flatMap(o=>((odata[o.id]||empty()).pressupostosTecnic||[]).map(p=>({...p,obra:o,obraNom:o.nom,clientNom:o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o)})));
+  const allFact=obresFiltered.flatMap(o=>uniqueFactures8743(((odata[o.id]||empty()).facturesTecnic||[])).map(f=>({...f,obra:o,obraNom:o.nom,clientNom:o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o)})));
+  const clients=[...new Set((obres||[]).map(o=>o.propietat||o.client).filter(Boolean))];
+  const tipologies=[...new Set((obres||[]).map(o=>o.tipusTreball||moduleLabel8737(o)).filter(Boolean))];
+  const rows=all.filter(r=>periodFilter8776(r,period,from,to));
+  const pressRows=allPress.filter(r=>periodFilter8776(r,period,from,to));
+  const factRows=allFact.filter(r=>periodFilter8776(r,period,from,to));
+  const totalH=rows.reduce((s,r)=>s+timeHours878120(r),0);
+  const totalC=rows.reduce((s,r)=>s+timeImport878120(r),0);
+  const pressupostat=pressRows.reduce((s,p)=>s+baseIva8743(p),0);
+  const facturatBase=factRows.reduce((s,f)=>s+baseIva8743(f),0);
+  const facturatTotal=factRows.reduce((s,f)=>s+totalFactura878120(f),0);
+  const cobrat=factRows.filter(f=>statusKeyFactura8776(f.estat)==="cobrades"||f.dataCobrament).reduce((s,f)=>s+totalFactura878120(f),0);
+  const pendent=Math.max(facturatTotal-cobrat,0);
+  const marge=facturatBase-totalC;
+  const byClient=aggregate8776(rows,r=>r.clientNom,timeImport878120);
+  const byTipus=aggregate8776(rows,r=>r.tipologia,timeImport878120);
+  const byObra=obresFiltered.map(o=>{const d=odata[o.id]||empty();const m=honorMetrics878120(d,o);return {...m,obra:o,clientNom:o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o)}}).filter(x=>x.pressupostat||x.facturatBase||x.tempsCost||x.hores);
+  const max=Math.max(pressupostat,facturatBase,totalC,1);
+  return <div className="stack traca-v8776 traca-v878120">
+    <Card title="Rendiment global d'honoraris · pressupost, facturació i temps" action={<FilterBar8776><label><span>Període</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="month">Mes en curs</option><option value="week">Setmana actual</option><option value="year">Any actual</option><option value="all">Tot</option><option value="dates">Dates</option></select></label>{period==="dates"&&<><label><span>Des de</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>Fins</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>Client</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">Tots</option>{clients.map(c=><option key={c}>{c}</option>)}</select></label><label><span>Obra</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">Totes</option>{(obres||[]).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>Tipologia</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">Totes</option>{tipologies.map(t=><option key={t}>{t}</option>)}</select></label></FilterBar8776>}>
+      <div className="honor-kpis"><Kpi t="PRESSUPOSTAT" v={money(pressupostat)}/><Kpi t="FACTURAT BASE" v={money(facturatBase)}/><Kpi t="FACTURAT TOTAL" v={money(facturatTotal)}/><Kpi t="COBRAT" v={money(cobrat)}/><Kpi t="PENDENT" v={money(pendent)}/><Kpi t="TEMPS INTERN" v={money(totalC)}/><Kpi t="HORES" v={`${totalH.toFixed(2)} h`}/><Kpi t="MARGE INTERN" v={money(marge)}/></div>
+      <div className="rend-main-grid-v878120"><div className="rend-bars-v878120"><RendimentBar878120 label="Pressupostos honoraris" value={pressupostat} max={max}/><RendimentBar878120 label="Facturació base" value={facturatBase} max={max}/><RendimentBar878120 label="Temps dedicat valorat" value={totalC} max={max} tone={marge>=0?"good":"bad"}/><RendimentBar878120 label="Cobrat sobre facturat" value={facturatTotal?cobrat/facturatTotal*100:0} max={100} kind="pct" tone={pendent>0?"warn":"good"}/></div><div className={`rend-result-v878120 ${marge>=0?"good":"bad"}`}><span>Resultat global intern</span><b>{marge>=0?"+":""}{money(marge)}</b><small>{totalH?`Rendiment real: ${money(facturatBase/totalH)}/h`:"Encara no hi ha hores registrades."}</small></div></div>
+      <div className="finance-charts-v8776"><Donut8776 title="Temps per client" parts={byClient} total={totalC}/><Donut8776 title="Temps per tipologia" parts={byTipus} total={totalC}/><Donut8776 title="Factures per estat" parts={aggregate8776(factRows,f=>statusKeyFactura8776(f.estat),f=>totalFactura878120(f))} total={facturatTotal}/></div>
     </Card>
-    <Card title="Registres del període seleccionat"><div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8776"><thead><tr><th>Obra</th><th>Client</th><th>Dia</th><th>Tipus feina</th><th>Hora / hores</th><th>Cost hora</th><th>Total</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="7"><Empty text="No hi ha registres en aquest període."/></td></tr>}{rows.map(r=><tr key={(r.obra.id||"")+r.id}><td><button className="table-link-v8776" onClick={()=>openObra(r.obra.id)}>{r.obraNom}</button></td><td>{r.clientNom}</td><td>{fmtAppDate8748(r.data)}</td><td>{r.tipusFeina||r.etiqueta||"Altres"}</td><td>{n(r.hores).toFixed(2)} h</td><td>{money(n(r.preuHora)||n(r.preu)||0)}</td><td><b>{money(importReg(r))}</b></td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL PERÍODE</th><th>{totalH.toFixed(2)} h</th><th></th><th>{money(totalC)}</th></tr></tfoot></table></div></Card>
+    <Card title="Rendiment per feina"><div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8776"><thead><tr><th>Feina</th><th>Client</th><th>Pressupostat</th><th>Facturat base</th><th>Temps intern</th><th>Hores</th><th>Marge</th><th>€/h real</th></tr></thead><tbody>{byObra.length===0&&<tr><td colSpan="8"><Empty text="Encara no hi ha dades de pressupostos, factures o temps."/></td></tr>}{byObra.map(m=><tr key={m.obra.id}><td><button className="table-link-v8776" onClick={()=>openObra(m.obra.id)}>{m.obra.nom}</button><small>{m.tipologia}</small></td><td>{m.clientNom}</td><td>{money(m.pressupostat)}</td><td>{money(m.facturatBase)}</td><td>{money(m.tempsCost)}</td><td>{m.hores.toFixed(2)} h</td><td><b className={m.marge>=0?"good-text":"bad-text"}>{m.marge>=0?"+":""}{money(m.marge)}</b></td><td>{m.hores?money(m.facturatBase/m.hores):"—"}</td></tr>)}</tbody></table></div></Card>
+    <Card title="Registres del període seleccionat"><div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8776"><thead><tr><th>Obra</th><th>Client</th><th>Dia</th><th>Tipus feina</th><th>Hora / hores</th><th>Cost hora</th><th>Total</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="7"><Empty text="No hi ha registres en aquest període."/></td></tr>}{rows.map(r=><tr key={(r.obra.id||"")+r.id}><td><button className="table-link-v8776" onClick={()=>openObra(r.obra.id)}>{r.obraNom}</button></td><td>{r.clientNom}</td><td>{fmtAppDate8748(r.data)}</td><td>{r.tipusFeina||r.etiqueta||"Altres"}</td><td>{n(r.hores).toFixed(2)} h</td><td>{money(n(r.preuHora)||n(r.preu)||0)}</td><td><b>{money(timeImport878120(r))}</b></td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL PERÍODE</th><th>{totalH.toFixed(2)} h</th><th></th><th>{money(totalC)}</th></tr></tfoot></table></div></Card>
   </div>
 }
 function MiniCal({events}){return <div className="calendar-mini">{Array.from({length:21}).map((_,i)=>{let d=i+1,ev=events.filter(e=>e.day===d&&e.month===5&&e.year===2026);return <button className="mini-day"><b>{d}</b>{ev[0]&&<span className="cal-event">{ev[0].type}</span>}</button>})}</div>}
@@ -3999,6 +4074,42 @@ return <div className="despeses-multi">
 </div>}
 function calcDespesaTotal(items=[]){return items.reduce((s,x)=>s+(x.tipus==="Kilometratge"?(+x.km||0)*(+x.preuKm||0):(+x.quantitat||0)*(+x.preu||0)),0)}
 function calcKmTotal(items=[]){return items.reduce((s,x)=>s+(x.tipus==="Kilometratge"?(+x.km||0):0),0)}
+
+
+function RendimentBar878120({label,value,max,kind="money",tone=""}){
+  const w=max?Math.max(4,Math.min(100,Math.abs(value)/max*100)):0;
+  return <div className={`rend-row-v878120 ${tone}`}><div><span>{label}</span><b>{kind==="hours"?`${Number(value||0).toFixed(2)} h`:kind==="pct"?pct(value):money(value)}</b></div><em><i style={{width:`${w}%`}}/></em></div>
+}
+function RendimentHonorarisExpedient878120({data={},obra={}}){
+  const m=honorMetrics878120(data,obra);
+  const max=Math.max(m.pressupostat,m.facturatBase,m.tempsCost,1);
+  const byType=aggregate8776(m.timeRows,r=>r.tipusFeina||r.tasca||r.etiqueta||"Altres",timeImport878120);
+  const byInvoice=aggregate8776(m.factures,f=>statusKeyFactura8776(f.estat),f=>totalFactura878120(f));
+  const health=m.marge>=0?"good":"bad";
+  return <div className="stack rendiment-exp-v878120">
+    <Card title="Rendiment de la feina · honoraris, facturació i temps">
+      <div className="rend-kpis-v878120">
+        <Kpi t="PRESSUPOST HONORARIS" v={money(m.pressupostat)}/>
+        <Kpi t="FACTURAT BASE" v={money(m.facturatBase)}/>
+        <Kpi t="TEMPS INTERN" v={money(m.tempsCost)}/>
+        <Kpi t="HORES" v={`${m.hores.toFixed(2)} h`}/>
+        <Kpi t="RENDIMENT €/H" v={money(m.rendimentHora)}/>
+        <Kpi t="MARGE INTERN" v={money(m.marge)}/>
+      </div>
+      <div className="rend-main-grid-v878120">
+        <div className="rend-bars-v878120">
+          <RendimentBar878120 label="Pressupost d'honoraris" value={m.pressupostat} max={max}/>
+          <RendimentBar878120 label="Facturació base" value={m.facturatBase} max={max}/>
+          <RendimentBar878120 label="Valor temps invertit" value={m.tempsCost} max={max} tone={health}/>
+          <RendimentBar878120 label="Cobertura facturat / pressupostat" value={m.cobertura} max={100} kind="pct" tone={m.cobertura>=90?"good":"warn"}/>
+        </div>
+        <div className={`rend-result-v878120 ${health}`}><span>Resultat intern estimat</span><b>{m.marge>=0?"+":""}{money(m.marge)}</b><small>{m.hores?`Preu real aproximat: ${money(m.rendimentHora)}/h`:"Encara no hi ha hores registrades."}</small></div>
+      </div>
+    </Card>
+    <div className="finance-charts-v8776 rend-charts-v878120"><Donut8776 title="Factures per estat" parts={byInvoice} total={m.factures.length?m.facturatTotal:0}/><Donut8776 title="Temps per tipus de feina" parts={byType} total={m.tempsCost}/><Donut8776 title="Relació honoraris" parts={[{k:"Facturat base",v:m.facturatBase},{k:"Temps intern",v:m.tempsCost},{k:"Pendent pressupost",v:Math.max(m.pressupostat-m.facturatBase,0)}]} total={Math.max(m.pressupostat,m.facturatBase+m.tempsCost,1)}/></div>
+    <Card title="Lectura ràpida del rendiment"><div className="rend-reading-v878120"><p><b>Pressupostat:</b> {money(m.pressupostat)} sense IVA.</p><p><b>Facturat:</b> {money(m.facturatBase)} base / {money(m.facturatTotal)} total factura.</p><p><b>Cobrat:</b> {money(m.cobratTotal)} · <b>Pendent:</b> {money(Math.max(m.pendent,0))}.</p><p><b>Temps invertit:</b> {m.hores.toFixed(2)} h valorades en {money(m.tempsCost)}.</p></div></Card>
+  </div>
+}
 
 function HonorarisTemps({obraId,data,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour}){
 const key=lsKey8779(`aco_honoraris_rows_${obraId||"default"}`);
