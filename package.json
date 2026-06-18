@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-120-honoraris-rendiment-obra",
+  "name": "app-control-obres-v87-121-tipologia-supabase-sync",
   "private": true,
-  "version": "87.120.0",
+  "version": "87.121.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

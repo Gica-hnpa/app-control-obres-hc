@@ -381,6 +381,107 @@ const WORK_TYPES8737=[
   "Postobra / documentació final",
   "Altres"
 ];
+
+// V87.121 · plantilles d'encàrrec editables.
+// Quan es canvia la tipologia de feina, l'app pot omplir una definició base
+// i una orientació de direcció/seguiment, però l'usuari sempre ho pot acabar d'editar.
+const WORK_TYPE_TEMPLATES878121={
+  "Projecte / llicència d’obres":{
+    subtitol:"Projecte tècnic i tramitació de llicència d’obres",
+    definicioFeina:"Redacció de projecte tècnic, justificació normativa, documentació gràfica i suport a la tramitació municipal de l’expedient.",
+    direccioObraText:"Direcció tècnica de l’obra pendent de concretar segons abast, llicència i agents intervinents. Revisar adreça, municipi, referència cadastral i condicionants urbanístics."
+  },
+  "Pressupost d’obra / amidaments":{
+    subtitol:"Amidaments i pressupost d’obra",
+    definicioFeina:"Preparació d’amidaments, estructuració de capítols, valoració de partides, revisió de preus i emissió de pressupost d’obra.",
+    direccioObraText:"No implica direcció d’obra per defecte. Es podrà activar seguiment o gestió d’obra si l’encàrrec ho requereix."
+  },
+  "Direcció / seguiment d’obra":{
+    subtitol:"Direcció i seguiment tècnic d’obra",
+    definicioFeina:"Seguiment de l’execució, visites d’obra, actes, comprovació de treballs, incidències, coordinació amb agents i control documental bàsic.",
+    direccioObraText:"Direcció/seguiment de l’obra a l’adreça indicada, amb visites segons necessitat i registre d’actes, fotos i acords."
+  },
+  "Gestió integral d’obra":{
+    subtitol:"Gestió integral d’obra i control econòmic",
+    definicioFeina:"Gestió global de l’obra: pressupost, comparatius, industrials, calendari, actes, certificacions, factures, incidències i tancament.",
+    direccioObraText:"Coordinació operativa de l’obra completa a l’adreça indicada, amb seguiment tècnic, econòmic i documental."
+  },
+  "Certificat energètic":{
+    subtitol:"Certificat d’eficiència energètica",
+    definicioFeina:"Presa de dades, modelatge energètic, emissió del certificat energètic i tramitació del registre corresponent.",
+    direccioObraText:"No hi ha direcció d’obra. Cal verificar adreça, ús, superfície, instal·lacions i documentació disponible."
+  },
+  "Cèdula d’habitabilitat":{
+    subtitol:"Cèdula d’habitabilitat",
+    definicioFeina:"Comprovació de condicions d’habitabilitat, presa de dades, preparació de documentació i tramitació de la cèdula.",
+    direccioObraText:"No hi ha direcció d’obra. Cal comprovar adreça, superfície útil, peces, alçades, ventilació i estat real de l’habitatge."
+  },
+  "ITE / IEE / inspecció d’edifici":{
+    subtitol:"Inspecció tècnica de l’edifici",
+    definicioFeina:"Inspecció de l’edifici, presa de dades, identificació de deficiències, reportatge fotogràfic i redacció de l’informe tècnic.",
+    direccioObraText:"No implica direcció d’obra inicial. Si es deriven reparacions, es podrà activar seguiment o gestió d’obra."
+  },
+  "Informe tècnic / patologies / peritatge":{
+    subtitol:"Informe tècnic i anàlisi de patologies",
+    definicioFeina:"Visita tècnica, anàlisi de l’estat existent, diagnosi, conclusions i redacció d’informe tècnic o pericial segons encàrrec.",
+    direccioObraText:"No hi ha direcció d’obra per defecte. Si l’informe deriva en actuacions, es podrà crear pressupost o seguiment posterior."
+  },
+  "Plànols / aixecament":{
+    subtitol:"Aixecament, plànols i documentació gràfica",
+    definicioFeina:"Presa de mides, aixecament de l’estat actual, preparació de plànols i documentació gràfica en el format acordat.",
+    direccioObraText:"No hi ha direcció d’obra. Cal concretar abast de plànols, format, escala i ús de la documentació."
+  },
+  "Render / 3D / visualització":{
+    subtitol:"Visualització arquitectònica i renders",
+    definicioFeina:"Preparació de model 3D, escenes, materials, il·luminació i imatges/renderitzats segons l’abast acordat.",
+    direccioObraText:"No hi ha direcció d’obra. Cal concretar plànols base, estil visual, materials, punts de vista i lliurables."
+  },
+  "Seguretat i salut":{
+    subtitol:"Seguretat i salut d’obra",
+    definicioFeina:"Preparació o seguiment de documentació de seguretat i salut, coordinació preventiva i control d’incidències segons encàrrec.",
+    direccioObraText:"Coordinació de seguretat i salut vinculada a l’obra indicada, amb registre de visites/incidències quan correspongui."
+  },
+  "Tràmit municipal / llicència / comunicació":{
+    subtitol:"Tramitació municipal i documentació administrativa",
+    definicioFeina:"Preparació, revisió i presentació de documentació per tràmit municipal, comunicació prèvia, llicència o requeriments.",
+    direccioObraText:"No implica direcció d’obra per defecte. Cal revisar adreça, municipi, normativa i documents exigits per l’ajuntament."
+  },
+  "Control econòmic d’obra":{
+    subtitol:"Control econòmic d’obra",
+    definicioFeina:"Seguiment econòmic del pressupost, certificacions, factures, desviacions, comparatius i estat de cobrament/pagament de l’obra.",
+    direccioObraText:"Control econòmic vinculat a l’obra indicada, sense assumir direcció tècnica si no queda expressament definit."
+  },
+  "Activitat / adequació de local":{
+    subtitol:"Activitat, adequació de local i tramitació",
+    definicioFeina:"Anàlisi de l’activitat, adequació del local, documentació tècnica i tramitació municipal segons normativa aplicable.",
+    direccioObraText:"Direcció o seguiment de l’adequació només si l’encàrrec ho inclou. Revisar adreça, ús, superfícies i condicionants del local."
+  },
+  "Postobra / documentació final":{
+    subtitol:"Documentació final i tancament d’obra",
+    definicioFeina:"Recopilació, revisió i preparació de documentació final, certificats, garanties, as-built i arxiu de tancament.",
+    direccioObraText:"Tancament documental de l’obra indicada. Revisar documentació pendent, certificats finals i lliurament al client."
+  },
+  "Altres":{
+    subtitol:"Treball tècnic pendent de concretar",
+    definicioFeina:"Encàrrec tècnic pendent de definir. Cal concretar abast, documentació necessària, lliurables i termini.",
+    direccioObraText:"Direcció o seguiment pendent de concretar segons la naturalesa de l’encàrrec."
+  }
+};
+function workTypeTemplate878121(v){return WORK_TYPE_TEMPLATES878121[canonicalWorkType8740(v)]||WORK_TYPE_TEMPLATES878121["Altres"]}
+function isDefaultWorkText878121(value,field){
+  const v=String(value||"").trim();
+  if(!v||["Treball pendent de definir","Pendent","Nou expedient"].includes(v))return true;
+  return Object.values(WORK_TYPE_TEMPLATES878121).some(t=>String(t?.[field]||"").trim()===v);
+}
+function applyWorkTemplate878121(obj={},tipus,force=false){
+  const t=canonicalWorkType8740(tipus||obj.tipusTreball||obj.tipologia||"Altres");
+  const tpl=workTypeTemplate878121(t);
+  const out={...obj,tipusTreball:t,tipologia:t};
+  if(force||isDefaultWorkText878121(out.subtitol,"subtitol")) out.subtitol=tpl.subtitol;
+  if(force||isDefaultWorkText878121(out.definicioFeina,"definicioFeina")) out.definicioFeina=tpl.definicioFeina;
+  if(force||isDefaultWorkText878121(out.direccioObraText,"direccioObraText")) out.direccioObraText=tpl.direccioObraText;
+  return out;
+}
 function canonicalWorkType8740(v){
   const raw=String(v||"").trim();
   const n=codeClean8739(raw);
@@ -706,18 +807,34 @@ function emptyExpedientData8768(obra={},client={}){
 
 function SafeFormExpedient8751({clients,onSubmit}){
   const [mode,setMode]=useState('__new__');
-  const [tipus,setTipus]=useState('Projecte / llicència d’obres');
+  const [tipus,setTipusState]=useState('Projecte / llicència d’obres');
   const [cp,setCp]=useState('');
   const [poblacio,setPoblacio]=useState('');
+  const tpl=workTypeTemplate878121(tipus);
+  const [nom,setNom]=useState('Nou expedient');
+  const [subtitol,setSubtitol]=useState(tpl.subtitol);
+  const [definicioFeina,setDefinicioFeina]=useState(tpl.definicioFeina);
+  const [direccioObraText,setDireccioObraText]=useState(tpl.direccioObraText);
+  const [adreca,setAdreca]=useState('Pendent');
   const types=(typeof WORK_TYPES8737!=='undefined'?WORK_TYPES8737:['Projecte tècnic','Project management','Informe tècnic','Certificat energètic','Cèdula d’habitabilitat','Pressupost tècnic-client','Altres']);
+  function setTipus(v){
+    const t=canonicalWorkType8740(v);
+    const nt=workTypeTemplate878121(t);
+    setTipusState(t);
+    setSubtitol(prev=>isDefaultWorkText878121(prev,'subtitol')?nt.subtitol:prev);
+    setDefinicioFeina(prev=>isDefaultWorkText878121(prev,'definicioFeina')?nt.definicioFeina:prev);
+    setDireccioObraText(prev=>isDefaultWorkText878121(prev,'direccioObraText')?nt.direccioObraText:prev);
+  }
   function changeCp(v){setCp(v);const pob=poblacioForCp8773(v);if(pob)setPoblacio(pob)}
   function changePoblacio(v){setPoblacio(v);const c=cpForPoblacio8773(v);if(c)setCp(c)}
   return <form onSubmit={onSubmit} className="safe-form-exp-v8751"><DatalistCP8773/><datalist id="agents-base-v8773"><option>Héctor Cubero</option><option>Arquitecte tècnic pendent</option><option>Arquitecte pendent</option><option>Constructor pendent</option><option>Coordinador S+S pendent</option></datalist><div className="form-grid">
     <label><span>Client *</span><select name="client" value={mode} onChange={e=>setMode(e.target.value)} required><option value="__new__">+ Crear client nou</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
     {mode==='__new__'&&<><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" defaultValue="Pendent"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" defaultValue="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" defaultValue="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" defaultValue="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" defaultValue="Pendent"/></label></>}
-    <label><span>Nom expedient *</span><input name="nom" required defaultValue="Nou expedient"/></label><label><span>Descripció breu</span><input name="subtitol" defaultValue="Treball pendent de definir"/></label><label><span>Any</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Pendent</option><option>Tancada</option></select></label>
-    <label className="span-all"><span>Tipus de treball *</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)} required>{types.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==='Altres'&&<label><span>Altres</span><input name="tipusTreballAltres"/></label>}
-    <label><span>Client final / propietat</span><input name="propietat" defaultValue="Pendent"/></label><label><span>NIF client final</span><input name="nifPropietat" defaultValue="Pendent"/></label><label><span>Constructor / contractista</span><input name="constructor" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Direcció d’obra (DO)</span><input name="do" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Direcció execució (DEO)</span><input name="deo" list="agents-base-v8773" defaultValue="Héctor Cubero"/></label><label><span>Coordinació S+S (CSS)</span><input name="css" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Adreça expedient *</span><input name="adreca" required defaultValue="Pendent"/></label><label><span>Codi postal</span><input name="codiPostal" list="cp-list-v8773" value={cp} onChange={e=>changeCp(e.target.value)} placeholder="17230"/></label><label><span>Població *</span><input name="poblacio" list="poblacio-list-v8773" required value={poblacio} onChange={e=>changePoblacio(e.target.value)} placeholder="Palamós"/></label><label><span>Referència cadastral</span><input name="rc" defaultValue="Pendent"/></label><label><span>Paraula clau codi</span><input name="paraulaClau" placeholder="FRONTMAR, PALAMOS..."/></label>
+    <label><span>Nom expedient *</span><input name="nom" required value={nom} onChange={e=>setNom(e.target.value)}/></label><label><span>Descripció breu</span><input name="subtitol" value={subtitol} onChange={e=>setSubtitol(e.target.value)}/></label><label><span>Any</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Pendent</option><option>Tancada</option></select></label>
+    <label className="span-all"><span>Tipus de treball / encàrrec *</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)} required>{types.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==='Altres'&&<label><span>Altres</span><input name="tipusTreballAltres"/></label>}
+    <label className="span-all"><span>Definició tipus de feina</span><textarea name="definicioFeina" value={definicioFeina} onChange={e=>setDefinicioFeina(e.target.value)} placeholder="Defineix l'abast de l'encàrrec..."/></label>
+    <label className="span-all"><span>Direcció / criteri de l’obra</span><textarea name="direccioObraText" value={direccioObraText} onChange={e=>setDireccioObraText(e.target.value)} placeholder="Direcció d’obra, seguiment o criteri aplicable..."/></label>
+    <label><span>Client final / propietat</span><input name="propietat" defaultValue="Pendent"/></label><label><span>NIF client final</span><input name="nifPropietat" defaultValue="Pendent"/></label><label><span>Constructor / contractista</span><input name="constructor" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Direcció d’obra (DO)</span><input name="do" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Direcció execució (DEO)</span><input name="deo" list="agents-base-v8773" defaultValue="Héctor Cubero"/></label><label><span>Coordinació S+S (CSS)</span><input name="css" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Adreça expedient *</span><input name="adreca" required value={adreca} onChange={e=>setAdreca(e.target.value)}/></label><label><span>Codi postal</span><input name="codiPostal" list="cp-list-v8773" value={cp} onChange={e=>changeCp(e.target.value)} placeholder="17230"/></label><label><span>Població *</span><input name="poblacio" list="poblacio-list-v8773" required value={poblacio} onChange={e=>changePoblacio(e.target.value)} placeholder="Palamós"/></label><label><span>Referència cadastral</span><input name="rc" defaultValue="Pendent"/></label><label><span>Paraula clau codi</span><input name="paraulaClau" placeholder="FRONTMAR, PALAMOS..."/></label>
   </div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>
 }
 
@@ -1495,8 +1612,18 @@ useEffect(()=>{
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(clients),authUser8779)},[clients,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(obres),authUser8779)},[obres,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,authUser8779)},[odata,authUser8779,dataLoadedUser8781]);
+useEffect(()=>{
+  if(!authUser8779||dataLoadedUser8781!==authUser8779)return;
+  const cfg=getSyncCfg878121();
+  if(!isSyncReady878121(cfg)||!cfg.auto)return;
+  const t=setTimeout(()=>pushStateToSupabase878121({clients,obres,odata},authUser8779).catch(e=>console.warn("Supabase sync pendent",e)),1400);
+  return()=>clearTimeout(t);
+},[clients,obres,odata,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779&&(obres||[]).some(o=>!o.codiExpedient||!o.expedientBase)){setObres(p=>assignMissingCodes8739(p,clients))}},[authUser8779,dataLoadedUser8781,obres,clients]);
-const obra=obres.find(o=>o.id===obraId)||obres[0]||{id:"",client:"",nom:"Sense expedient",propietat:"Client pendent",nifPropietat:"Pendent",adreca:"",poblacio:"",tipusTreball:"Altres",tipologia:"Altres",estat:"Pendent",any:String(new Date().getFullYear())}, client=clients.find(c=>c.id===obra?.client)||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(odata[obra.id]||empty()):empty();
+const obraBase=obres.find(o=>o.id===obraId)||obres[0]||{id:"",client:"",nom:"Sense expedient",propietat:"Client pendent",nifPropietat:"Pendent",adreca:"",poblacio:"",tipusTreball:"Altres",tipologia:"Altres",estat:"Pendent",any:String(new Date().getFullYear())};
+const obraSnapshot=(obraBase?.id&&odata?.[obraBase.id]?.obra)?odata[obraBase.id].obra:{};
+const obra=applyWorkTemplate878121({...obraBase,...obraSnapshot,id:obraBase.id||obraSnapshot.id||""},obraSnapshot.tipusTreball||obraBase.tipusTreball||obraBase.tipologia,false);
+const client=clients.find(c=>c.id===obra?.client)||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(odata[obra.id]||empty()):empty();
 const fClients=clients.filter(c=>(!ct||c.tipus===ct)&&(c.nom+" "+c.rao+" "+c.contacte).toLowerCase().includes(cs.toLowerCase()));
 const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||o.estat===ost)&&(!ot||canonicalWorkType8740(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
 const byClient=useMemo(()=>{let m={};fObres.forEach(o=>{m[o.client]??={};m[o.client][o.any]??=[];m[o.client][o.any].push(o)});return m},[fObres]);
@@ -2024,8 +2151,7 @@ function updateObraFitxa8721(patch){
   const cleanPatch={...patch,updatedAt:now};
   if(cleanPatch.tipusTreball||cleanPatch.tipologia){
     const tipus=canonicalWorkType8740(cleanPatch.tipusTreball||cleanPatch.tipologia);
-    cleanPatch.tipusTreball=tipus;
-    cleanPatch.tipologia=tipus;
+    Object.assign(cleanPatch,applyWorkTemplate878121(cleanPatch,tipus,false));
   }
   // V87.120: guardat reforçat. La fitxa de l'expedient viu a la llista d'obres,
   // però també en deixem una còpia dins odata per evitar perdre canvis si es canvia de pestanya o es recarrega ràpid.
@@ -2148,6 +2274,11 @@ function addObra(e){
     createdAt:new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
+  Object.assign(obraNew,applyWorkTemplate878121({
+    ...obraNew,
+    definicioFeina:String(f.get("definicioFeina")||""),
+    direccioObraText:String(f.get("direccioObraText")||"")
+  },tipus,false));
   learnCpPoblacio8775(obraNew.codiPostal,obraNew.poblacio);
   if(createClient){learnCpPoblacio8775(clientFinal.codiPostal,clientFinal.poblacio);setClients(p=>[clientFinal,...p]);}
   setObres(p=>[obraNew,...p]);
@@ -2177,7 +2308,7 @@ return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{a
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
 {screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
-{screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio/>}{screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
+{screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={clients} obres={obres} odata={odata} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
 }
 
@@ -2526,13 +2657,18 @@ function ModulLocked8747(){return <Card title="Mòdul 2 · Control econòmic d�
 
 function FitxaDadesTab8769({obra,client,save,allAgents=[],setData,openAgent}){
   const [form,setForm]=useState(()=>({...obra,codiPostal:obra.codiPostal||""}));
-  useEffect(()=>setForm({...obra,codiPostal:obra.codiPostal||""}),[obra.id]);
+  useEffect(()=>setForm(applyWorkTemplate878121({...obra,codiPostal:obra.codiPostal||""},obra.tipusTreball||obra.tipologia,false)),[obra.id,obra.updatedAt,obra.tipusTreball,obra.tipologia]);
   const agents=uniqAgents8768([...(allAgents||[])]);
   const agentNames=[...new Set(agents.map(a=>a.nom).filter(Boolean))];
   function upd(k,v){setForm(p=>({...p,[k]:v}))}
   function changeCp(v){setForm(p=>{const pob=poblacioForCp8773(v);return {...p,codiPostal:v,poblacio:pob||p.poblacio}})}
   function changePoblacio(v){setForm(p=>{const cp=cpForPoblacio8773(v);return {...p,poblacio:v,codiPostal:cp||p.codiPostal}})}
-  function saveAll(){learnCpPoblacio8775(form.codiPostal,form.poblacio);save?.({...form,provincia:provinciaForCp8773(form.codiPostal)||provinciaForPoblacio8773(form.poblacio)||form.provincia||""})}
+  function saveAll(){
+    const normalized=applyWorkTemplate878121(form,form.tipusTreball||form.tipologia,false);
+    learnCpPoblacio8775(normalized.codiPostal,normalized.poblacio);
+    save?.({...normalized,provincia:provinciaForCp8773(normalized.codiPostal)||provinciaForPoblacio8773(normalized.poblacio)||normalized.provincia||""});
+    setForm(normalized);
+  }
   function AgentPicker({field,label}){
     const current=form[field]||"";
     const selected=agentNames.includes(current)?current:(current&&current!=="Pendent"?"__custom__":"");
@@ -2543,7 +2679,7 @@ function FitxaDadesTab8769({obra,client,save,allAgents=[],setData,openAgent}){
       <label><span>Codi expedient</span><input value={expedientCode8739(obra)} readOnly/></label>
       <label><span>Client / carpeta</span><input value={client?.nom||""} readOnly/></label>
       <label><span>Nom de l’obra / treball</span><input value={form.nom||""} onChange={e=>upd("nom",e.target.value)}/></label>
-      <label><span>Tipus de feina</span><select value={form.tipusTreball||form.tipologia||"Altres"} onChange={e=>{upd("tipusTreball",e.target.value);upd("tipologia",e.target.value)}}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>
+      <label><span>Tipus de feina / encàrrec</span><select value={canonicalWorkType8740(form.tipusTreball||form.tipologia||"Altres")} onChange={e=>setForm(p=>applyWorkTemplate878121(p,e.target.value,false))}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>
       <label><span>Estat de l’expedient</span><select value={form.estat||"Pendent"} onChange={e=>upd("estat",e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></label>
       <label><span>Promotor / propietat</span><input value={form.propietat||""} onChange={e=>upd("propietat",e.target.value)}/></label>
       <AgentPicker field="constructor" label="Constructor / contractista"/>
@@ -2555,6 +2691,8 @@ function FitxaDadesTab8769({obra,client,save,allAgents=[],setData,openAgent}){
       <label><span>Població</span><input list="poblacio-list-v8773" value={form.poblacio||""} onChange={e=>changePoblacio(e.target.value)} placeholder="Palamós"/></label>
       <label><span>Província</span><input value={provinciaForCp8773(form.codiPostal)||provinciaForPoblacio8773(form.poblacio)||form.provincia||""} readOnly/></label>
       <label><span>Referència cadastral</span><input value={form.rc||""} onChange={e=>upd("rc",e.target.value)}/></label>
+      <label className="span-all"><span>Definició tipus de feina</span><textarea value={form.definicioFeina||""} onChange={e=>upd("definicioFeina",e.target.value)} placeholder="Definició base de l'encàrrec, editable per cada expedient..."/></label>
+      <label className="span-all"><span>Direcció / criteri de l’obra</span><textarea value={form.direccioObraText||""} onChange={e=>upd("direccioObraText",e.target.value)} placeholder="Direcció d’obra, seguiment, criteris i condicions particulars..."/></label>
       <label className="span-all"><span>Observacions internes</span><textarea value={form.observacions||""} onChange={e=>upd("observacions",e.target.value)} placeholder="Condicionants, criteris, notes de l’encàrrec..."/></label>
     </div>
   </Card>
@@ -3878,11 +4016,84 @@ function AgendaExpedient8774({data,setData,obra,client}){
 function ObraMiniCalendar({events=[]}){const[m,setM]=useState(5),[y,setY]=useState(2026),[d,setD]=useState(null),[note,setNote]=useState(null);const[local,setLocal]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_obra_notes"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_obra_notes"),JSON.stringify(local));localStorage.setItem(lsKey8779("aco_home_notes"),JSON.stringify(local))},[local]);let all=[...events,...local],blanks=first(y,m),total=days(y,m),sel=d?all.filter(e=>e.day===d&&e.month===m&&e.year===y):[];function save(n){if(n.id==="new")setLocal(p=>[...p,{...n,id:"local-"+Date.now(),month:m,year:y}]);else setLocal(p=>p.map(x=>x.id===n.id?n:x));setNote(null)}function newNote(){setNote({id:"new",day:d||1,title:"Nova nota",type:"Nota",hora:"09:00",note:"",color:"blue"})}return <div className="home-calendar obra-calendar"><div className="calendar-head compact"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{setM(5);setY(2026)}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option>{x}</option>)}</select><button className="primary" onClick={newNote}>+ Nota nova</button></div><div className="home-calendar-layout"><div className="calendar-grid small">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week">{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button className={`day ${d===day?"selected":""}`} onClick={()=>setD(day)}><b>{day}</b>{ev.slice(0,2).map(e=><span className={`cal-event ${e.color==="red"?"red":""}`} onClick={(evn)=>{evn.stopPropagation();setNote(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div><div className="day-detail side"><h3>{d?`Dia ${d}`:"Selecciona un dia"}</h3>{d&&sel.length===0&&<p>Sense notes.</p>}{sel.map(e=><button className="note-card" onClick={()=>setNote(e)}><strong>{e.title}</strong><span>{e.hora} · {e.type}</span><p>{e.note||"Sense observacions."}</p></button>)}</div></div>{note&&<div className="note-pop"><div><h3>{note.id==="new"?"Nova nota":"Editar nota"}</h3><label><span>Dia</span><input value={note.day} onChange={e=>setNote({...note,day:+e.target.value})}/></label><label><span>Títol</span><input value={note.title} onChange={e=>setNote({...note,title:e.target.value})}/></label><label><span>Hora</span><input value={note.hora} onChange={e=>setNote({...note,hora:e.target.value})}/></label><label><span>Observacions</span><textarea value={note.note} onChange={e=>setNote({...note,note:e.target.value})}/></label><button className="primary" onClick={()=>save(note)}>Guardar / Tancar</button></div></div>}</div>}
 function HomeCalendar({events=[]}){const[m,setM]=useState(5),[y,setY]=useState(2026),[d,setD]=useState(null),[note,setNote]=useState(null);const[local,setLocal]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_home_notes"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_home_notes"),JSON.stringify(local))},[local]);let all=[...events,...local],blanks=first(y,m),total=days(y,m),sel=d?all.filter(e=>e.day===d&&e.month===m&&e.year===y):[];function save(n){if(n.id==="new")setLocal(p=>[...p,{...n,id:"home-"+Date.now(),month:m,year:y}]);else setLocal(p=>p.map(x=>x.id===n.id?n:x));setNote(null)}function newNote(){setNote({id:"new",day:d||1,title:"Nova nota",type:"Nota",hora:"09:00",note:"",color:"blue"})}return <div className="home-calendar"><div className="calendar-head compact"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{setM(5);setY(2026)}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option>{x}</option>)}</select><button className="primary" onClick={newNote}>+ Nota nova</button></div><div className="home-calendar-layout"><div className="calendar-grid small">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week">{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button className={`day ${d===day?"selected":""}`} onClick={()=>setD(day)}><b>{day}</b>{ev.slice(0,2).map(e=><span className={`cal-event ${e.color==="red"?"red":""}`} onClick={(evn)=>{evn.stopPropagation();setNote(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div><div className="day-detail side"><h3>{d?`Dia ${d}`:"Selecciona un dia"}</h3>{d&&sel.length===0&&<p>Sense notes.</p>}{sel.map(e=><button className="note-card" onClick={()=>setNote(e)}><strong>{e.title}</strong><span>{e.hora} · {e.type}</span><p>{e.note||"Sense observacions."}</p></button>)}</div></div>{note&&<div className="note-pop"><div><h3>{note.id==="new"?"Nova nota":"Editar nota"}</h3><label><span>Dia</span><input value={note.day} onChange={e=>setNote({...note,day:+e.target.value})}/></label><label><span>Títol</span><input value={note.title} onChange={e=>setNote({...note,title:e.target.value})}/></label><label><span>Hora</span><input value={note.hora} onChange={e=>setNote({...note,hora:e.target.value})}/></label><label><span>Observacions</span><textarea value={note.note} onChange={e=>setNote({...note,note:e.target.value})}/></label><button className="primary" onClick={()=>save(note)}>Guardar / Tancar</button></div></div>}</div>}
 
-function Configuracio(){
+
+// V87.121 · sincronització de dades amb Supabase sense dependències externes.
+// Manté el localStorage com a base offline i permet pujar/baixar l'estat complet quan Supabase estigui configurat.
+function getSyncCfg878121(){
+  try{return JSON.parse(localStorage.getItem(lsKey8779("aco_supabase_sync_v87121"))||"{}")||{}}catch{return {}}
+}
+function saveSyncCfg878121(cfg){
+  localStorage.setItem(lsKey8779("aco_supabase_sync_v87121"),JSON.stringify(cfg||{}));
+}
+function isSyncReady878121(cfg){return !!(cfg?.url&&cfg?.anon&&cfg?.syncKey)}
+function syncHeaders878121(cfg,extra={}){
+  return {apikey:cfg.anon,Authorization:`Bearer ${cfg.anon}`,"Content-Type":"application/json",...extra};
+}
+function syncUser878121(user){return String(user||currentAppUser8779()||"hector").trim().toLowerCase()||"hector"}
+async function pushStateToSupabase878121(state,user=currentAppUser8779()){
+  const cfg=getSyncCfg878121();
+  if(!isSyncReady878121(cfg)) throw new Error("Supabase Sync no configurat");
+  const app_user=syncUser878121(user);
+  const payload={
+    app_user,
+    sync_key:String(cfg.syncKey),
+    device_id:String(cfg.deviceId||"browser-local"),
+    clients:state.clients||[],
+    obres:state.obres||[],
+    odata:stripHeavy878104(state.odata||{}),
+    app_version:"87.121.0",
+    updated_at:new Date().toISOString()
+  };
+  const base=cfg.url.replace(/\/$/,"");
+  const res=await fetch(`${base}/rest/v1/aco_user_state?on_conflict=app_user,sync_key`,{method:"POST",headers:syncHeaders878121(cfg,{Prefer:"resolution=merge-duplicates,return=representation"}),body:JSON.stringify(payload)});
+  if(!res.ok) throw new Error(await res.text());
+  const out=await res.json().catch(()=>[]);
+  localStorage.setItem(lsKey8779("aco_supabase_last_push_v87121"),new Date().toISOString());
+  return Array.isArray(out)?out[0]:out;
+}
+async function pullStateFromSupabase878121(user=currentAppUser8779()){
+  const cfg=getSyncCfg878121();
+  if(!isSyncReady878121(cfg)) throw new Error("Supabase Sync no configurat");
+  const app_user=encodeURIComponent(syncUser878121(user));
+  const sync_key=encodeURIComponent(String(cfg.syncKey));
+  const base=cfg.url.replace(/\/$/,"");
+  const res=await fetch(`${base}/rest/v1/aco_user_state?select=*&app_user=eq.${app_user}&sync_key=eq.${sync_key}&order=updated_at.desc&limit=1`,{headers:syncHeaders878121(cfg)});
+  if(!res.ok) throw new Error(await res.text());
+  const rows=await res.json();
+  if(!rows?.length) throw new Error("No hi ha cap còpia al núvol per aquest usuari i clau de sincronització.");
+  localStorage.setItem(lsKey8779("aco_supabase_last_pull_v87121"),new Date().toISOString());
+  return rows[0];
+}
+function SupabaseSyncPanel878121({clients=[],obres=[],odata={},setClients,setObres,setOdata,authUser}){
+  const [cfg,setCfg]=useState(()=>({deviceId:"browser-"+syncUser878121(authUser),...getSyncCfg878121()}));
+  const [status,setStatus]=useState("");
+  function upd(k,v){setCfg(p=>({...p,[k]:v}))}
+  function save(){saveSyncCfg878121(cfg);setStatus("Configuració de sincronització guardada.")}
+  async function push(){try{saveSyncCfg878121(cfg);setStatus("Pujant dades locals a Supabase...");await pushStateToSupabase878121({clients,obres,odata},authUser);setStatus("Dades pujades correctament a Supabase.")}catch(e){setStatus("Error pujant dades: "+(e?.message||e))}}
+  async function pull(){try{saveSyncCfg878121(cfg);setStatus("Carregant última còpia de Supabase...");const row=await pullStateFromSupabase878121(authUser);const c=sanitizeClients8785(row.clients||[],[]);const o=sanitizeObres8785(row.obres||[],[]);const d=sanitizeOdata8785(row.odata||{},{});setClients?.(c);setObres?.(o);setOdata?.(d);setStatus("Dades carregades del núvol i guardades localment.")}catch(e){setStatus("Error carregant dades: "+(e?.message||e))}}
+  return <Card title="Supabase Sync · dades de l’app" action={<button className="primary" onClick={save}>Guardar sync</button>}>
+    <div className="form-grid supabase-sync-v87121">
+      <label><span>Supabase URL</span><input value={cfg.url||""} onChange={e=>upd("url",e.target.value)} placeholder="https://xxxx.supabase.co"/></label>
+      <label><span>Anon public key</span><input value={cfg.anon||""} onChange={e=>upd("anon",e.target.value)} placeholder="eyJ..."/></label>
+      <label><span>Clau privada de sincronització</span><input value={cfg.syncKey||""} onChange={e=>upd("syncKey",e.target.value)} placeholder="posa una clau llarga teva"/></label>
+      <label><span>Dispositiu</span><input value={cfg.deviceId||""} onChange={e=>upd("deviceId",e.target.value)} placeholder="PC despatx / portàtil / iPad"/></label>
+      <label><span>Sincronització automàtica</span><select value={cfg.auto?"1":"0"} onChange={e=>upd("auto",e.target.value==="1")}><option value="0">No · només manual</option><option value="1">Sí · pujar canvis automàticament</option></select></label>
+      <div className="sync-actions-v87121"><button className="secondary" onClick={push}>Pujar ara dades locals</button><button className="secondary" onClick={pull}>Carregar última còpia del núvol</button></div>
+      <p className="span-all module-note-v8738"><b>Important</b><span>Primer executa l’arxiu SQL inclòs a la carpeta <code>supabase/aco_supabase_sync_schema.sql</code>. La sincronització desa clients, expedients i dades internes en una sola taula JSONB i manté l’app funcionant offline.</span></p>
+      {status&&<p className="span-all sync-status-v87121">{status}</p>}
+    </div>
+  </Card>
+}
+
+function Configuracio({clients=[],obres=[],odata={},setClients,setObres,setOdata,authUser}){
 const key=lsKey8779("aco_config_v60");
 const[cfg,setCfg]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
 function upd(k,v){setCfg(p=>({...p,[k]:v}))}
-function save(){localStorage.setItem(key,JSON.stringify(cfg));alert("Configuració guardada")}
+function save(){
+  localStorage.setItem(key,JSON.stringify(cfg));
+  saveStorageCfg({url:cfg.supabaseUrl||"",anon:cfg.supabaseKey||"",bucket:cfg.bucket||"app-control-obres"});
+  alert("Configuració guardada");
+}
 return <div className="stack">
 <PlansModuls8736/>
 <DataJsonTools8778/>
@@ -3894,7 +4105,8 @@ return <div className="stack">
     <Input label="Retenció defecte %" value={cfg.retencio||"0"} onChange={e=>upd("retencio",e.target.value)} />
   </div>
 </Card>
-<Card title="Supabase Storage">
+<SupabaseSyncPanel878121 clients={clients} obres={obres} odata={odata} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
+<Card title="Supabase Storage · documents i arxius">
   <div className="form-grid">
     <Input label="Supabase URL" value={cfg.supabaseUrl||""} onChange={e=>upd("supabaseUrl",e.target.value)} />
     <Input label="Anon key" value={cfg.supabaseKey||""} onChange={e=>upd("supabaseKey",e.target.value)} />
@@ -3903,6 +4115,7 @@ return <div className="stack">
 </Card>
 </div>
 }
+
 
 
 function TracaGeneral({obres,odata,openObra}){

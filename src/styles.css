@@ -3906,3 +3906,9 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .rend-result-v878120{border:1px solid #d6dde7;border-radius:18px;padding:18px;background:white;display:flex;flex-direction:column;justify-content:center;gap:8px}.rend-result-v878120 span{font-weight:900;color:#64748b;text-transform:uppercase;font-size:12px}.rend-result-v878120 b{font-size:30px}.rend-result-v878120 small{color:#64748b}.rend-result-v878120.good{background:#f0fdf4;border-color:#bbf7d0}.rend-result-v878120.bad{background:#fef2f2;border-color:#fecaca}.rend-reading-v878120{padding:18px 20px;display:grid;gap:8px}.rend-reading-v878120 p{margin:0;color:#334155}.rend-charts-v878120{padding:0 0 0}.good-text{color:#166534}.bad-text{color:#b91c1c}
 .traca-v878120 .finance-table-v8743 small{display:block;color:#64748b;margin-top:3px}
 @media(max-width:900px){.rend-main-grid-v878120{grid-template-columns:1fr;padding:0 14px 14px}.rend-kpis-v878120{grid-template-columns:repeat(2,1fr);padding:14px}.rend-result-v878120 b{font-size:24px}.rend-row-v878120>div{align-items:flex-start}.rend-row-v878120 span{font-size:13px}}
+
+/* V87.121 · Supabase Sync i fitxa d'encàrrec */
+.supabase-sync-v87121 textarea{min-height:90px}
+.sync-actions-v87121{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.sync-status-v87121{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:12px;font-weight:800}
+@media(max-width:900px){.sync-actions-v87121{display:grid;grid-template-columns:1fr;width:100%}.sync-actions-v87121 button{width:100%;justify-content:center}}
