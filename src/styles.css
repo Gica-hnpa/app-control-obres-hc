@@ -3912,3 +3912,16 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .sync-actions-v87121{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
 .sync-status-v87121{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:12px;font-weight:800}
 @media(max-width:900px){.sync-actions-v87121{display:grid;grid-template-columns:1fr;width:100%}.sync-actions-v87121 button{width:100%;justify-content:center}}
+
+
+/* V87.123 · renombrar pressupostos amb guardat visible */
+.budget-selected-actions-v878123{display:grid;grid-template-columns:1fr minmax(220px,360px) auto;align-items:end;gap:10px}
+.budget-rename-field-v878123{display:flex;flex-direction:column;gap:4px;background:#f8fafc;border:1px solid #d6dde7;border-radius:12px;padding:8px 10px}
+.budget-rename-field-v878123 small{font-weight:900;color:#64748b;text-transform:uppercase;font-size:11px}
+.budget-rename-field-v878123 input{border:0;background:transparent;outline:none;font-weight:900;color:#111827;padding:3px 0}
+@media(max-width:900px){.budget-selected-actions-v878123{grid-template-columns:1fr}.budget-selected-actions-v878123 .actions-inline{display:grid;grid-template-columns:1fr 1fr;gap:8px}.budget-rename-field-v878123{width:100%}}
+
+/* V87.124 · renombrar pressupost visible i directe */
+.budget-rename-direct-v878124{margin:10px 18px 0;display:grid;grid-template-columns:1fr minmax(260px,420px) auto;gap:10px;align-items:center;background:#eef6ff;border:2px solid #93c5fd;border-radius:14px;padding:12px}
+.budget-rename-direct-v878124 b{display:block;color:#0f172a;font-size:14px}.budget-rename-direct-v878124 small{display:block;color:#475569;margin-top:3px}.budget-rename-direct-v878124 input{width:100%;border:1px solid #94a3b8;border-radius:10px;background:#fff;padding:10px 12px;font-weight:900;color:#0f172a}
+@media(max-width:900px){.budget-rename-direct-v878124{grid-template-columns:1fr;margin:10px 12px 0}.budget-rename-direct-v878124 button{width:100%;justify-content:center}}

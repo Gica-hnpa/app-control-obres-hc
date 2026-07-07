@@ -661,6 +661,38 @@ function uniqueFactures8743(rows=[]){
   return rows.filter(f=>{let k=f.pressupostId?`p:${f.pressupostId}`:`id:${f.id}`;if(seen.has(k))return false;seen.add(k);return true;})
 }
 
+// V87.122 · còpies locals de recuperació abans d'accions de risc (import Excel, baixada núvol, etc.)
+function recoverySnapshotsKey878122(user=currentAppUser8779()){return lsKey8779("aco_recovery_snapshots_v87122",user||currentAppUser8779()||"hector")}
+function readRecoverySnapshots878122(user=currentAppUser8779()){
+  try{const rows=JSON.parse(localStorage.getItem(recoverySnapshotsKey878122(user))||"[]");return Array.isArray(rows)?rows:[]}catch{return []}
+}
+function writeRecoverySnapshots878122(rows,user=currentAppUser8779()){
+  try{localStorage.setItem(recoverySnapshotsKey878122(user),JSON.stringify((Array.isArray(rows)?rows:[]).slice(0,12)))}catch(e){console.warn("No s'ha pogut guardar la còpia de recuperació",e)}
+}
+function createLocalRecoverySnapshot878122(state={},label="Còpia de recuperació",user=currentAppUser8779()){
+  const snap={
+    id:"rec-"+Date.now(),
+    label,
+    createdAt:new Date().toISOString(),
+    appVersion:"87.122.0",
+    user:user||currentAppUser8779()||"hector",
+    clients:stripHeavy878104(state.clients||[]),
+    obres:stripHeavy878104(state.obres||[]),
+    odata:stripHeavy878104(state.odata||{})
+  };
+  const rows=[snap,...readRecoverySnapshots878122(user)].slice(0,12);
+  writeRecoverySnapshots878122(rows,user);
+  return snap;
+}
+function downloadRecoverySnapshot878122(snap){
+  if(!snap)return;
+  const blob=new Blob([JSON.stringify(snap,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=`app-control-obres-recuperacio-${String(snap.createdAt||new Date().toISOString()).slice(0,10)}.json`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function fmtRecoveryDate878122(iso){try{return new Date(iso).toLocaleString("ca-ES")}catch{return iso||"—"}}
 
 function moduleLabel8737(obra){return canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia)||"Treball tècnic"}
 function stripAccents8739(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
@@ -1295,7 +1327,7 @@ function DataJsonTools8778(){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.105",
+      version:"V87.122",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE",
@@ -2046,15 +2078,42 @@ function parseRows(rows,sheetName){
     }
     if(!best.rows.length)throw new Error("No s'han detectat partides. Revisa que l'Excel tingui columnas Código / Ut o Nat / Resumen / CanPres / PrPres / ImpPres.");
 
+    const currentData878122=normalizeBudgetedData8791(odata?.[obraId]||data||empty());
+    const originalBid878122=activeBudgetId8786;
+    let targetBid878122=originalBid878122;
+    let newGroup878122=null;
+    const existingRows878122=(currentData878122.partides||[]).filter(r=>(r.budgetId||"principal")===originalBid878122);
+    const existingCerts878122=(currentData878122.certificacions||[]).filter(c=>(c.budgetId||"principal")===originalBid878122);
+    const existingFacts878122=(currentData878122.factures||[]).filter(f=>(f.budgetId||"principal")===originalBid878122);
+    const currentLabel878122=budgetLabel8786(currentData878122,originalBid878122);
+    createLocalRecoverySnapshot878122({clients,obres,odata},`Abans d'importar Excel "${file.name}" a ${obra?.nom||obraId}`,authUser8779);
+    if(existingRows878122.length||existingCerts878122.length||existingFacts878122.length){
+      const resum=`El pressupost actiu "${currentLabel878122}" ja té ${existingRows878122.length} partides, ${existingCerts878122.length} certificacions i ${existingFacts878122.length} factures.`;
+      let createNew=true;
+      if(existingCerts878122.length||existingFacts878122.length){
+        alert(`${resum}\n\nPer seguretat, l'Excel NO substituirà aquest pressupost perquè hi ha certificacions/factures. S'importarà com a nou pressupost/annex independent.`);
+      }else{
+        createNew=!confirm(`${resum}\n\nVols SUBSTITUIR les partides del pressupost actiu?\n\nD'acord = substituir partides del pressupost actiu.\nCancel·lar = crear un nou pressupost/annex independent i conservar tota la feina existent.`);
+      }
+      if(createNew){
+        targetBid878122="bg-import-"+Date.now();
+        newGroup878122={id:targetBid878122,nom:`Importació segura · ${file.name}`.slice(0,90),tipus:"Importació Excel segura",createdAt:new Date().toISOString(),sourceBudgetId:originalBid878122};
+      }
+    }
+
     setD(obraId,d=>{
-      const bid=activeBudgetId8786;
+      const bid=targetBid878122;
+      const seedGroups=newGroup878122?[...(d.budgetGroups||[]),newGroup878122]:(d.budgetGroups||[]);
       const rowsWithBudget=best.rows.map(r=>({...r,budgetId:bid}));
-      const oldPartides=(d.partides||[]).filter(r=>(r.budgetId||"principal")!==bid);
-      const oldCerts=(d.certificacions||[]).filter(c=>(c.budgetId||"principal")!==bid);
-      const oldFacts=(d.factures||[]).filter(f=>(f.budgetId||"principal")!==bid);
+      const replacingExisting=bid===originalBid878122;
+      const oldPartides=replacingExisting?(d.partides||[]).filter(r=>(r.budgetId||"principal")!==bid):(d.partides||[]);
+      // V87.122: no s'esborren certificacions ni factures durant una importació Excel.
+      // Si el pressupost tenia certificacions/factures, l'Excel entra com annex nou.
+      const oldCerts=d.certificacions||[];
+      const oldFacts=d.factures||[];
       const oldPress=(d.pressupostos||[]).filter(p=>(p.budgetId||"principal")!==bid || (!String(p.id||"").startsWith("budget-marker-")&&p.versio!=="Annex"));
-      const currentGroups=ensureBudgetGroups8786({...d,partides:[...oldPartides,...rowsWithBudget],pressupostos:[...oldPress]}).groups;
-      const adjustedGroups=currentGroups.map(g=>g.id===bid&&bid!=="principal"&&(!g.tipus||g.tipus==="Nou pressupost"||g.tipus==="Fora pressupost")?{...g,tipus:"Modificat aprovat"}:g);
+      const currentGroups=ensureBudgetGroups8786({...d,budgetGroups:seedGroups,partides:[...oldPartides,...rowsWithBudget],pressupostos:[...oldPress]}).groups;
+      const adjustedGroups=currentGroups.map(g=>g.id===bid&&bid!=="principal"&&(!g.tipus||g.tipus==="Nou pressupost"||g.tipus==="Fora pressupost")?{...g,tipus:newGroup878122?.tipus||"Modificat aprovat"}:g);
       const groupName=(adjustedGroups.find(g=>g.id===bid)?.nom)||"Pressupost principal";
       return {
         ...d,
@@ -2066,15 +2125,18 @@ function parseRows(rows,sheetName){
         pressupostos:[...oldPress,{
           id:"px-"+Date.now(),
           budgetId:bid,
+          budgetNom:groupName,
           versio:"v"+String(oldPress.filter(p=>(p.budgetId||"principal")===bid).length+1).padStart(2,"0"),
           data:new Date().toLocaleDateString("ca-ES"),
           nom:file.name,
           estat:`${groupName} · Importat · ${best.rows.length} partides · ${best.caps||1} capítols · ${best.sheet}`,
-          import:best.total
-        }]
+          import:best.total,
+          updatedAt:new Date().toISOString()
+        }],
+        updatedAt:new Date().toISOString()
       };
     });
-    alert(`Pressupost importat correctament: ${best.rows.length} partides en ${best.caps||1} capítols.`);
+    alert(`${newGroup878122?"Importació segura creada com a nou pressupost/annex":"Pressupost importat correctament"}: ${best.rows.length} partides en ${best.caps||1} capítols. S'ha guardat una còpia local de recuperació abans d'importar.`);
   }catch(err){
     setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),budgetId:activeBudgetId8786,versio:"v"+String((d.pressupostos||[]).filter(p=>(p.budgetId||"principal")===activeBudgetId8786).length+1).padStart(2,"0"),data:new Date().toLocaleDateString("ca-ES"),nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
   }
@@ -2752,7 +2814,7 @@ function ensureBudgetGroups8786(data={}){
   const inferred=[];
   (data.pressupostos||[]).forEach(p=>{const id=p.budgetId||"principal";if(!ids.has(id)){ids.add(id);inferred.push({id,nom:p.budgetNom||p.nom||id,tipus:p.tipus||"Fora pressupost"})}});
   (data.partides||[]).forEach(r=>{const id=r.budgetId||"principal";if(!ids.has(id)){ids.add(id);inferred.push({id,nom:id,tipus:"Fora pressupost"})}});
-  const base={id:"principal",nom:"Pressupost principal",tipus:"Principal"};
+  const base={id:"principal",nom:data.principalBudgetName||"Pressupost principal",tipus:"Principal"};
   const all=[base,...explicit,...inferred].reduce((acc,g)=>{const id=g.id||("bg-"+acc.length);if(!acc.some(x=>x.id===id))acc.push({...g,id,nom:g.nom||g.name||id,tipus:g.tipus||"Fora pressupost"});return acc},[]);
   return {groups:all,active:(data.activeBudgetIdObra&&all.some(g=>g.id===data.activeBudgetIdObra)?data.activeBudgetIdObra:"principal")};
 }
@@ -3015,9 +3077,12 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
   const[sub,setSub]=useState("Pressupost obra");
   const info=ensureBudgetGroups8786(data);
   const[activeBudgetId,setActiveBudgetId]=useState(info.active);
-  useEffect(()=>{const next=ensureBudgetGroups8786(data);if(!next.groups.some(g=>g.id===activeBudgetId))setActiveBudgetId(next.active)},[data.pressupostos?.length,data.partides?.length,data.budgetGroups?.length]);
+  useEffect(()=>{const next=ensureBudgetGroups8786(data);const desired=data.activeBudgetIdObra||next.active;if(desired&&desired!==activeBudgetId&&next.groups.some(g=>g.id===desired))setActiveBudgetId(desired);else if(!next.groups.some(g=>g.id===activeBudgetId))setActiveBudgetId(next.active)},[data.pressupostos?.length,data.partides?.length,data.budgetGroups?.length,data.activeBudgetIdObra]);
   const groups=ensureBudgetGroups8786(data).groups;
   const activeData=filterBudgetData8786(data,activeBudgetId);
+  const [renameDraft878123,setRenameDraft878123]=useState(budgetLabel8786(data,activeBudgetId));
+  const groupNameKey878123=groups.map(g=>`${g.id}:${g.nom||""}`).join("|")+`__${data.principalBudgetName||""}`;
+  useEffect(()=>{setRenameDraft878123(budgetLabel8786(data,activeBudgetId))},[activeBudgetId,groupNameKey878123]);
   function setScopedData(updater){
     setData(d=>{
       const current=filterBudgetData8786(d,activeBudgetId);
@@ -3056,10 +3121,45 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     setActiveBudgetId(id);
     setSub("Pressupost obra");
   }
+  function commitRenameBudget878123(id,nom,source="manual"){
+    const bid=id||"principal";
+    const current=ensureBudgetGroups8786(data).groups.find(x=>x.id===bid)||groups.find(x=>x.id===bid)||{id:bid,nom:"Pressupost"};
+    const cleanNom=String(nom||"").trim();
+    if(!cleanNom)return alert("Escriu un nom per al pressupost.");
+    setRenameDraft878123(cleanNom);
+    setData(d=>{
+      const now=new Date().toISOString();
+      const norm=normalizeBudgetedData8791(d);
+      const markRow=(x={})=>{
+        const xid=x.budgetId||"principal";
+        if(xid!==bid)return x;
+        const isMarker=String(x.id||"").startsWith("budget-marker-")||String(x.versio||"").toLowerCase()==="annex"||String(x.versio||"").toLowerCase()==="principal"||String(x.id||"")===`budget-marker-${bid}`;
+        return {...x,budgetNom:cleanNom,budgetName:cleanNom,pressupostNom:cleanNom,groupName:cleanNom,nom:isMarker?cleanNom:(x.nom||cleanNom),updatedAt:now};
+      };
+      const renamed={
+        ...norm,
+        principalBudgetName:bid==="principal"?cleanNom:(norm.principalBudgetName||"Pressupost principal"),
+        budgetGroups:ensureBudgetGroups8786(norm).groups
+          .filter(g=>g.id!=="principal")
+          .map(g=>g.id===bid?{...g,nom:cleanNom,name:cleanNom,title:cleanNom,updatedAt:now}:g)
+          .concat(bid!=="principal"&&!ensureBudgetGroups8786(norm).groups.some(g=>g.id===bid)?[{...current,id:bid,nom:cleanNom,name:cleanNom,title:cleanNom,updatedAt:now}]:[]),
+        pressupostos:(norm.pressupostos||[]).map(markRow),
+        partides:(norm.partides||[]).map(r=>(r.budgetId||"principal")===bid?{...r,budgetNom:cleanNom,budgetName:cleanNom,pressupostNom:cleanNom}:r),
+        certificacions:(norm.certificacions||[]).map(c=>(c.budgetId||"principal")===bid?{...c,budgetNom:cleanNom,budgetName:cleanNom,pressupostNom:cleanNom}:c),
+        factures:(norm.factures||[]).map(f=>(f.budgetId||"principal")===bid?{...f,budgetNom:cleanNom,budgetName:cleanNom,pressupostNom:cleanNom}:f),
+        activeBudgetIdObra:bid,
+        updatedAt:now
+      };
+      return normalizeBudgetedData8791(renamed);
+    });
+    if(source!=="blur")setTimeout(()=>alert("Nom del pressupost actualitzat i guardat."),80);
+  }
   function renameBudget(id){
-    const g=groups.find(x=>x.id===id); if(!g)return;
-    const nom=prompt("Nom del pressupost:",g.nom); if(!nom)return;
-    setData(d=>({...d,budgetGroups:[...(d.budgetGroups||[]).filter(x=>x.id!==id),{...g,nom}].filter(x=>x.id!=="principal")}));
+    const bid=id||"principal";
+    const current=ensureBudgetGroups8786(data).groups.find(x=>x.id===bid)||groups.find(x=>x.id===bid);
+    const nom=prompt("Nom del pressupost:",current?.nom||renameDraft878123||"Pressupost");
+    if(!nom||!String(nom).trim())return;
+    commitRenameBudget878123(bid,nom,"prompt");
   }
   function deleteBudget(id){
     if(id==="principal")return alert("El pressupost principal no es pot eliminar.");
@@ -3114,7 +3214,12 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
           return <button key={g.id} className={activeBudgetId===g.id?"active":""} onClick={()=>selectBudget8788(g.id)}><b>{g.nom}</b><span>{g.tipus} · {count} partides</span><strong>{money(total)}</strong></button>
         })}
       </div>
-      <div className="budget-selected-actions-v8786"><span>Seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · {money(totalActive)} / global obra {money(totalGlobal)} · pressupost, certificacions, factures i desviacions filtrades per aquest grup</span><div className="actions-inline"><button className="secondary small" onClick={fixarBudget8788}>Guardar/fixar</button><button className="secondary small" onClick={()=>renameBudget(activeBudgetId)}>Renombrar</button>{activeBudgetId!=="principal"&&<button className="danger small" onClick={()=>deleteBudget(activeBudgetId)}>Eliminar annex</button>}</div></div>
+      <div className="budget-rename-direct-v878124">
+        <div><b>Canviar nom del pressupost seleccionat</b><small>Seleccionat ara: {budgetLabel8786(data,activeBudgetId)}. Escriu el nou nom i prem Guardar nom.</small></div>
+        <input aria-label="Nou nom del pressupost seleccionat" value={renameDraft878123} onChange={e=>setRenameDraft878123(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();commitRenameBudget878123(activeBudgetId,renameDraft878123,"enter");e.currentTarget.blur()} if(e.key==="Escape"){setRenameDraft878123(budgetLabel8786(data,activeBudgetId));e.currentTarget.blur()}}}/>
+        <button type="button" className="primary small" onClick={()=>commitRenameBudget878123(activeBudgetId,renameDraft878123,"button")}>Guardar nom</button>
+      </div>
+      <div className="budget-selected-actions-v8786 budget-selected-actions-v878123"><span>Seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · {money(totalActive)} / global obra {money(totalGlobal)} · pressupost, certificacions, factures i desviacions filtrades per aquest grup</span><div className="actions-inline"><button type="button" className="secondary small" onClick={fixarBudget8788}>Guardar/fixar</button><button type="button" className="secondary small" onClick={()=>commitRenameBudget878123(activeBudgetId,renameDraft878123,"button")}>Guardar nom</button><button type="button" className="secondary small" onClick={()=>renameBudget(activeBudgetId)}>Renombrar amb finestra</button>{activeBudgetId!=="principal"&&<button type="button" className="danger small" onClick={()=>deleteBudget(activeBudgetId)}>Eliminar annex</button>}</div></div>
     </Card></div>
     <div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>Rendibilitat / desviacions</button></div>
     {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} totalGlobal={totalGlobal} totalActive={totalActive}/>} 
@@ -4085,6 +4190,39 @@ function SupabaseSyncPanel878121({clients=[],obres=[],odata={},setClients,setObr
   </Card>
 }
 
+function RecoverySnapshotsPanel878122({setClients,setObres,setOdata,authUser}){
+  const user=authUser||currentAppUser8779()||"hector";
+  const [rows,setRows]=useState(()=>readRecoverySnapshots878122(user));
+  const [status,setStatus]=useState("");
+  function reload(){setRows(readRecoverySnapshots878122(user))}
+  function restore(snap){
+    if(!snap)return;
+    if(!confirm(`Restaurar aquesta còpia local?\n\n${snap.label||"Còpia"}\n${fmtRecoveryDate878122(snap.createdAt)}\n\nAbans de restaurar es guardarà una altra còpia de seguretat de l'estat actual.`))return;
+    try{
+      const current={
+        clients:loadUserJson8784("aco_clients",[],user),
+        obres:loadUserJson8784("aco_obres",[],user),
+        odata:loadUserJson8784("aco_odata",{},user)
+      };
+      createLocalRecoverySnapshot878122(current,"Abans de restaurar una còpia local",user);
+      setClients?.(sanitizeClients8785(snap.clients||[],[]));
+      setObres?.(sanitizeObres8785(snap.obres||[],[]));
+      setOdata?.(sanitizeOdata8785(snap.odata||{},{}));
+      setStatus("Còpia restaurada. Revisa les dades abans de pujar res a Supabase.");
+      reload();
+    }catch(e){setStatus("Error restaurant còpia: "+String(e?.message||e))}
+  }
+  function makeManual(){
+    const snap=createLocalRecoverySnapshot878122({clients:loadUserJson8784("aco_clients",[],user),obres:loadUserJson8784("aco_obres",[],user),odata:loadUserJson8784("aco_odata",{},user)},"Còpia manual des de Configuració",user);
+    setStatus("Còpia manual creada: "+fmtRecoveryDate878122(snap.createdAt));reload();
+  }
+  return <Card title="Còpies locals de recuperació" action={<div className="actions-inline"><button className="secondary" onClick={makeManual}>Crear còpia ara</button><button className="secondary" onClick={reload}>Actualitzar llista</button></div>}>
+    <div className="module-note-v8738"><b>Protecció abans d'importar Excel.</b><span>La V87.122 guarda una còpia local automàtica abans d'una importació Excel o restauració. Això permet tornar enrere si s'ha importat sobre una feina amb certificacions.</span></div>
+    <div className="list">{rows.length===0?<Empty text="Encara no hi ha còpies locals de recuperació."/>:rows.slice(0,8).map(s=><div className="doc-row" key={s.id}><div><strong>{s.label||"Còpia local"}</strong><span>{fmtRecoveryDate878122(s.createdAt)} · clients {(s.clients||[]).length} · expedients {(s.obres||[]).length}</span></div><div className="actions-inline"><button className="secondary" onClick={()=>downloadRecoverySnapshot878122(s)}>Exportar</button><button className="primary" onClick={()=>restore(s)}>Restaurar</button></div></div>)}</div>
+    {status&&<div className="doc-status-v38">{status}</div>}
+  </Card>
+}
+
 function Configuracio({clients=[],obres=[],odata={},setClients,setObres,setOdata,authUser}){
 const key=lsKey8779("aco_config_v60");
 const[cfg,setCfg]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
@@ -4097,6 +4235,7 @@ function save(){
 return <div className="stack">
 <PlansModuls8736/>
 <DataJsonTools8778/>
+<RecoverySnapshotsPanel878122 setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
 <Card title="Configuració general" action={<button className="primary" onClick={save}><Save/> Guardar configuració</button>}>
   <div className="form-grid">
     <Input label="Email emissor" value={cfg.email||""} onChange={e=>upd("email",e.target.value)} />
