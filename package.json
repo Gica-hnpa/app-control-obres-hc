@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-123-rename-real-safe-sync",
+  "name": "app-control-obres-v87-124-rename-visible-hardfix",
   "private": true,
-  "version": "87.123.0",
+  "version": "87.124.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,3 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.123 - RENOMBRAR REAL + IMPORTACIO SEGURA
-Derivada de V87.122. Correccio quirurgica del renombrat de pressupostos i annexos sense tocar la resta.
+VERSIO: V87.124 - RENOMBRAR PRESSUPOST VISIBLE I DIRECTE
+PAQUET: CORRECCIO REAL DEL RENOMBRAT
+
+Derivada de V87.123. Afegeix renombrat visible i directe dins Gestió obra.
