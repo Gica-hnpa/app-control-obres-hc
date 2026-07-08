@@ -1,15 +1,14 @@
-# APP Control d'Obres · V87.138
+# APP Control d'Obres · V87.139
 
-Versió de refinament de la pàgina d'inici sobre V87.137.
+Versió de refinament sobre V87.138 centrada a poder crear feines pendents directament des de la pàgina d'inici.
 
 Canvis:
-- Inici més net i tècnic: eliminat el bloc d'últims canvis reals i els accessos duplicats que ja existeixen al menú lateral.
-- Darrers expedients oberts limitat a 3.
-- Feines obertes del mes actual agrupades per client.
-- Eliminat el resum d'estats com a bloc principal perquè no aportava valor en aquesta vista.
-- Feines pendents agrupades per client amb accions ràpides: Entrar/crono, Pendent resposta, Fet i Anul·lar.
-- Pròximes cites manté només cites futures reals.
-- Disseny més modern, més visual i més adaptable a iPad i mòbil.
+- Afegit botó `+ Afegir feina pendent` dins del bloc `Feines pendents a fer` de la pàgina d'inici.
+- Nova feina pendent amb flux Client → Expedient → Feina pendent → Prioritat → Estat → Data/Hora.
+- La feina queda guardada dins la pestanya `Tasques` de l'expedient corresponent.
+- Si té data, també queda sincronitzada amb Agenda/Avisos com a tasca.
+- Es manté el llistat de feines pendents agrupat per client amb accions Entrar/crono, Pendent resposta, Fet i Anul·lar.
+- En mòbil/iPad el formulari queda en una sola columna i no deforma la pantalla.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

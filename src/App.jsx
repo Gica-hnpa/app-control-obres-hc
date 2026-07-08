@@ -2639,6 +2639,37 @@ function monthActivityCount878137(o,d={},ref=new Date()){
   (d.certificacions||[]).forEach(c=>{if(inMonth878137(Math.max(timeValue8783(c.updatedAt),timeValue8783(c.data)),ref))n++});
   return n;
 }
+
+function createHomeTask878139(setOdata,obra,taskDraft){
+  if(!obra?.id||!setOdata)return false;
+  const text=String(taskDraft?.text||'').trim();
+  if(!text){alert('Escriu el nom de la feina pendent.');return false;}
+  const nowIso=new Date().toISOString();
+  const task={
+    id:'tsk-home-'+Date.now(),
+    text,
+    estat:taskDraft.estat||'Pendent',
+    prioritat:taskDraft.prioritat||'Normal',
+    data:taskDraft.data||'',
+    hora:taskDraft.hora||'09:00',
+    origen:'Inici',
+    createdAt:nowIso,
+    updatedAt:nowIso
+  };
+  setOdata(prev=>{
+    const d=prev[obra.id]||empty();
+    const tasks=[...(d.tasques||[]),task];
+    const manualEvents=(d.events||[]).filter(e=>String(e.id||'')!=='task-'+task.id);
+    const shouldEvent=task.data&&!['Fet','Anul·lat'].includes(task.estat);
+    return {...prev,[obra.id]:{...d,tasques:tasks,events:shouldEvent?[...manualEvents,taskEvent878137(task,obra)]:manualEvents,updatedAt:nowIso,lastWorkedAt:nowIso}};
+  });
+  return true;
+}
+function clientOptionsForHome878139(clients=[],obres=[]){
+  const ids=new Set((obres||[]).map(o=>o.client||'__sense__'));
+  return [...ids].map(id=>({id,label:id==='__sense__'?'Sense client':clientName878138(clients,{client:id})})).sort((a,b)=>String(a.label).localeCompare(String(b.label),'ca',{numeric:true}));
+}
+
 function Inici({clients,obres,odata={},setOdata,events,setScreen,openObra,openObraTab,newObra}){
 const now=new Date();
 const monthName=monthName878137(now);
@@ -2650,6 +2681,19 @@ const obertsMes=[...obres].filter(o=>isExpedientOpen878136(o.estat)).map(o=>({o,
 const recents=[...obres].sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,3);
 const worksByClient=groupByClient878138(obertsMes,clients,x=>x.o.client);
 const tasksByClient=groupByClient878138(tasks,clients,x=>x.obra.client);
+const [showNewTask,setShowNewTask]=useState(false);
+const clientOptions=clientOptionsForHome878139(clients,obres);
+const defaultClient=clientOptions[0]?.id||'__sense__';
+const [taskDraft,setTaskDraft]=useState({clientId:defaultClient,obraId:'',text:'',prioritat:'Normal',estat:'Pendent',data:todayISO8743(),hora:'09:00'});
+const selectedClient=taskDraft.clientId||defaultClient;
+const taskObres=(obres||[]).filter(o=>(o.client||'__sense__')===selectedClient).sort((a,b)=>String(a.nom||'').localeCompare(String(b.nom||''),'ca',{numeric:true}));
+const selectedObra=taskObres.find(o=>o.id===taskDraft.obraId)||taskObres[0]||obres[0];
+function saveHomeTask(){
+  const obra=selectedObra;
+  if(!obra){alert('Primer has de tenir un expedient creat per assignar-hi la feina pendent.');return;}
+  const ok=createHomeTask878139(setOdata,obra,taskDraft);
+  if(ok){setTaskDraft({clientId:obra.client||'__sense__',obraId:obra.id,text:'',prioritat:'Normal',estat:'Pendent',data:todayISO8743(),hora:'09:00'});setShowNewTask(false);}
+}
 return <>
 <section className="home-hero-v878138">
   <div>
@@ -2668,8 +2712,22 @@ return <>
     <Card title={`Feines obertes · ${monthName}`}><div className="client-group-list-v878138">
       {worksByClient.length===0?<Empty text="No hi ha obres o treballs oberts destacats aquest mes."/>:worksByClient.map(g=><section key={g.key} className="client-group-v878138"><header><b>{g.label}</b><span>{g.items.length} treball(s)</span></header><div className="month-work-grid-v878138 grouped-v878138">{g.items.map(({o,count,recent})=><button key={o.id} onClick={()=>openObra(o.id)} className={`month-work-card-v878137 month-work-card-v878138 ${statusKeyPress8776(normalizeExpedientStatus878136(o.estat))}`}><b>{o.nom}</b><span>{expedientCode8739(o)} · {normalizeExpedientStatus878136(o.estat)}</span><em>{count?`${count} moviment(s) aquest mes`:(recent?`Darrer accés ${fmtActivityDate8783(recent)}`:'Sense moviment del mes')}</em></button>)}</div></section>)}
     </div></Card>
-    <Card title="Feines pendents a fer"><div className="client-task-list-v878138">
-      {tasksByClient.length===0?<Empty text="No tens feines pendents destacades."/>:tasksByClient.map(g=><section key={g.key} className="client-task-group-v878138"><header><b>{g.label}</b><span>{g.items.length} pendent(s)</span></header>{g.items.map(({obra:o,task:t,time})=><div key={`${o.id}-${t.id}`} className={`task-home-row-v878137 task-row-v878138 ${taskStatusTone878137(t.estat)}`}><button className="task-main-v878137" onClick={()=>openObraTab?openObraTab(o.id,'Tasques'):openObra(o.id)}><b>{t.text||'Tasca pendent'}</b><span>{o.nom} · {t.estat||'Pendent'} · {time?fmtActivityDate8783(time):'Sense data'} · {t.prioritat||'Normal'}</span></button><div className="task-actions-v878137 task-actions-v878138"><button onClick={()=>{updateTaskHome878137(setOdata,o,t,'En procés');openTemps(o.id)}}>Entrar / crono</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Pendent de resposta')}>Pendent resposta</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Fet')}>Fet</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Anul·lat')}>Anul·lar</button></div></div>)}</section>)}
+    <Card title="Feines pendents a fer" action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?'Tancar':' + Afegir feina pendent'}</button>}>
+      {showNewTask&&<div className="home-task-create-v878139">
+        <div className="home-task-create-head-v878139"><b>Nova feina pendent</b><span>Quedarà guardada dins la pestanya Tasques de l’expedient i sortirà a l’inici agrupada per client.</span></div>
+        <div className="home-task-form-v878139">
+          <label><span>Client</span><select value={selectedClient} onChange={e=>{const cid=e.target.value;const first=(obres||[]).find(o=>(o.client||'__sense__')===cid);setTaskDraft(d=>({...d,clientId:cid,obraId:first?.id||''}))}}>{clientOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+          <label><span>Expedient</span><select value={selectedObra?.id||''} onChange={e=>setTaskDraft(d=>({...d,obraId:e.target.value}))}>{taskObres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>
+          <label className="span-2-v878139"><span>Feina pendent</span><input value={taskDraft.text||''} onChange={e=>setTaskDraft(d=>({...d,text:e.target.value}))} placeholder="Ex. Revisar certificació, trucar client, preparar acta..."/></label>
+          <label><span>Prioritat</span><select value={taskDraft.prioritat||'Normal'} onChange={e=>setTaskDraft(d=>({...d,prioritat:e.target.value}))}><option>Baixa</option><option>Normal</option><option>Alta</option><option>Urgent</option></select></label>
+          <label><span>Estat</span><select value={taskDraft.estat||'Pendent'} onChange={e=>setTaskDraft(d=>({...d,estat:e.target.value}))}><option>Pendent</option><option>En procés</option><option>Pendent de resposta</option></select></label>
+          <label><span>Data prevista</span><input type="date" value={taskDraft.data||''} onChange={e=>setTaskDraft(d=>({...d,data:e.target.value}))}/></label>
+          <label><span>Hora</span><input type="time" value={taskDraft.hora||'09:00'} onChange={e=>setTaskDraft(d=>({...d,hora:e.target.value}))}/></label>
+        </div>
+        <div className="home-task-actions-v878139"><button className="primary" onClick={saveHomeTask}>Guardar feina pendent</button><button className="secondary" onClick={()=>openObraTab?.(selectedObra?.id,'Tasques')}>Obrir Tasques de l’expedient</button></div>
+      </div>}
+      <div className="client-task-list-v878138">
+      {tasksByClient.length===0?<Empty text="No tens feines pendents destacades. Afegeix-ne una des del botó superior."/>:tasksByClient.map(g=><section key={g.key} className="client-task-group-v878138"><header><b>{g.label}</b><span>{g.items.length} pendent(s)</span></header>{g.items.map(({obra:o,task:t,time})=><div key={`${o.id}-${t.id}`} className={`task-home-row-v878137 task-row-v878138 ${taskStatusTone878137(t.estat)}`}><button className="task-main-v878137" onClick={()=>openObraTab?openObraTab(o.id,'Tasques'):openObra(o.id)}><b>{t.text||'Tasca pendent'}</b><span>{o.nom} · {t.estat||'Pendent'} · {time?fmtActivityDate8783(time):'Sense data'} · {t.prioritat||'Normal'}</span></button><div className="task-actions-v878137 task-actions-v878138"><button onClick={()=>{updateTaskHome878137(setOdata,o,t,'En procés');openTemps(o.id)}}>Entrar / crono</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Pendent de resposta')}>Pendent resposta</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Fet')}>Fet</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Anul·lat')}>Anul·lar</button></div></div>)}</section>)}
     </div></Card>
   </div>
   <div className="home-sidecol-v878138">
