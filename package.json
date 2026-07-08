@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-133-actions-admin-agents-recents",
+  "name": "app-control-obres-v87-134-recents-clients-agents-actions",
   "private": true,
-  "version": "87.133.0",
+  "version": "87.134.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

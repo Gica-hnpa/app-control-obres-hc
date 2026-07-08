@@ -1,16 +1,16 @@
-# APP Control d'Obres · V87.133
+# APP Control d'Obres · V87.134
 
-Versió de continuació sobre V87.132.
+Versió derivada de V87.133.
 
 Canvis principals:
-- Certificació: les accions de cada partida passen a un desplegable intern **Accions** dins de la mateixa línia.
-- Des de cada partida es pot obrir el quadre mensual d'administració, reobrir el quadre guardat, modificar-lo i reimprimir-lo.
-- El quadre d'administració assignat a una partida existent s'aplica directament a aquella partida: no crea partides ADM duplicades.
-- S'afegeix avís intern perquè l'import aplicat sigui el total del quadre i la quantitat es calculi segons el PU de la partida.
-- Reordenació/canvi de capítol i codi queda dins el desplegable d'accions de la partida.
-- Dades de l'obra: agents en format desplegable/accordion, adaptat a iPad i mòbil, amb camps NIF/CIF, adreça, telèfon, email i col·legiat/registre.
-- Inici: expedients recents ordenats per darrer treball/accés i mostra de la data de darrer moviment.
-- Es manté Supabase Sync, còpies locals, importació segura i correccions de certificació de V87.132.
+- Darrers expedients: ordenació per últim accés/treball real, evitant que dates futures d'agenda/certificacions facin aparèixer dates incorrectes com desembre de 2026.
+- En obrir un expedient, el darrer accés/treball s'actualitza sempre amb la data actual.
+- Clients/contactes: afegit desplegable de gestió per editar o eliminar clients des del llistat.
+- Dades de l'obra: bloc d'agents principals més clar, amb promotor/propietat a dalt.
+- Agents de l'obra ordenats per rol: Promotor/propietat, constructor, direcció facultativa, tècnics i resta.
+- Quan es completa un agent Promotor/propietat, la fitxa interna de l'obra actualitza propietat i NIF perquè surtin als documents.
+- Impressió de certificació i proforma: dades de client/promotor extretes de l'agent Promotor/propietat quan existeix.
+- Certificacions: accions globals agrupades en un desplegable, deixant a dins de cada partida les accions pròpies de partida com línies de medició, quadre administració, descripció, canvi de codi/capítol i treure certificació.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

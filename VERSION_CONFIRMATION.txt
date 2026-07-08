@@ -1,3 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.133 - ACCIONS CERTIFICACIÓ + ADMIN EDITABLE + AGENTS + RECENTS
-DERIVADA DE V87.132
+VERSIO: V87.134 - RECENTS + CLIENTS + AGENTS + ACCIONS CERTIFICACIÓ
+PAQUET: CARPETA ÚNICA DE VALIDACIÓ
+
+Derivada de V87.133. Correcció de dates de recents, gestió de clients, agents/promotor i neteja d'accions de certificació.
