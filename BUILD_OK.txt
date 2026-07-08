@@ -1,1 +1,1 @@
-Build correcte amb Vite abans de netejar el paquet.
+Build correcte amb Vite per V87.133.

@@ -1676,8 +1676,24 @@ const setD=(id,up)=>{
   if(id)setObres(prev=>prev.map(o=>o.id===id?{...o,updatedAt:now}:o));
 };
 function nav(s){setScreen(s);setMenuOpen(false)}
-function openObra(id){setObraId(id);setTab("Resum");setSelActa(null);nav("Obra")}
-function openObraTab(id,t){setObraId(id);setTab(t||"Resum");setSelActa(null);nav("Obra")}
+function openObra(id){
+  const now=new Date().toISOString();
+  setObraId(id);setTab("Resum");setSelActa(null);
+  if(id){
+    setObres(prev=>prev.map(o=>o.id===id?{...o,lastOpenedAt:now,lastWorkedAt:o.lastWorkedAt||now,updatedAt:now}:o));
+    setOdata(prev=>({...prev,[id]:{...(prev[id]||empty()),lastOpenedAt:now,lastWorkedAt:(prev[id]?.lastWorkedAt||now),updatedAt:now}}));
+  }
+  nav("Obra")
+}
+function openObraTab(id,t){
+  const now=new Date().toISOString();
+  setObraId(id);setTab(t||"Resum");setSelActa(null);
+  if(id){
+    setObres(prev=>prev.map(o=>o.id===id?{...o,lastOpenedAt:now,lastWorkedAt:o.lastWorkedAt||now,updatedAt:now}:o));
+    setOdata(prev=>({...prev,[id]:{...(prev[id]||empty()),lastOpenedAt:now,lastWorkedAt:(prev[id]?.lastWorkedAt||now),updatedAt:now}}));
+  }
+  nav("Obra")
+}
 function openClient(id){setClientId(id);nav("Fitxa client")}
 function deleteObra878112(id){
   const o=obres.find(x=>x.id===id);
@@ -2259,7 +2275,7 @@ function deletePressupostTecnic8744(id){if(confirm("Eliminar aquest pressupost?"
 function deleteFacturaTecnica8744(id){if(confirm("Eliminar aquesta factura?"))setD(obraId,d=>({...d,facturesTecnic:(d.facturesTecnic||[]).filter(f=>f.id!==id)}))}
 
 function addFacturaTecnica8742(f){const numero=f.numero||nextGlobalDocNumber8745(odata,"factura",obra?.any);setD(obraId,d=>{let rows=d.facturesTecnic||[];const id="ft-"+Date.now();const doc={id,numero,data:f.data||todayISO8743(),concepte:f.concepte||"Factura tècnica",text:f.text||"",base:+f.base||0,iva:+f.iva||21,retencio:+f.retencio||0,descompte:+f.descompte||0,estat:f.estat||"Esborrany",pressupostId:f.pressupostId||""};return {...d,facturesTecnic:[...rows,doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}})}
-function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon")}]}));setModal(null)}
+function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon"),nif:f.get("nif"),adreca:f.get("adreca"),collegiat:f.get("collegiat")}]}));setModal(null)}
 function addActa(e){e.preventDefault();let f=new FormData(e.currentTarget);
 let titol=String(f.get("titol")||"").trim(), dataActa=String(f.get("data")||"").trim(), text=String(f.get("text")||"").trim();
 if(!titol||!dataActa){alert("Cal indicar com a mínim títol i data de l’acta.");return}
@@ -2401,7 +2417,7 @@ function timeValue8783(v){
 function eventTime8783(e){if(e?.year&&e?.day)return new Date(+e.year,+e.month||0,+e.day,+String(e.hora||'0').split(':')[0]||0,+String(e.hora||'0:0').split(':')[1]||0).getTime();return timeValue8783(e?.data||e?.createdAt||e?.updatedAt||e?.id)}
 function itemTime8783(x){return Math.max(timeValue8783(x?.updatedAt),timeValue8783(x?.createdAt),timeValue8783(x?.data),eventTime8783(x),timeValue8783(x?.id))}
 function obraScore8783(o,d={}){
-  const vals=[timeValue8783(o?.updatedAt),timeValue8783(o?.createdAt),timeValue8783(d?.updatedAt)];
+  const vals=[timeValue8783(o?.lastWorkedAt),timeValue8783(d?.lastWorkedAt),timeValue8783(o?.lastOpenedAt),timeValue8783(d?.lastOpenedAt),timeValue8783(o?.updatedAt),timeValue8783(o?.createdAt),timeValue8783(d?.updatedAt)];
   ['documents','fotos','actes','events','hores','pressupostosTecnic','facturesTecnic','certificacions','factures'].forEach(k=>(d[k]||[]).forEach(x=>vals.push(itemTime8783(x))));
   Object.values(d.sectionDocs||{}).forEach(arr=>(arr||[]).forEach(x=>vals.push(itemTime8783(x))));
   return Math.max(0,...vals);
@@ -2510,7 +2526,7 @@ return <>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>{autoFacturesPendents.length>0&&<section className="home-alerts-v8776">{autoFacturesPendents.slice(0,4).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent de cobrament</b><span>{a.obra} · {a.detail}</span></button>)}</section>}
 <section className="dashboard-grid dashboard-grid-v8741">
   <div className="stack">
-    <Card title="Expedients recents"><div className="list compact-list-v8741">{recents.length?recents.map(o=><ObraRow key={o.id} o={o} open={openObra}/>):<Empty text="Encara no hi ha expedients."/>}</div></Card>
+    <Card title="Darrers expedients treballats"><div className="list compact-list-v8741">{recents.length?recents.map(o=><ObraRow key={o.id} o={o} d={odata[o.id]||{}} open={openObra}/>):<Empty text="Encara no hi ha expedients."/>}</div></Card>
     <Card title="Darreres actuacions i avisos"><div className="activity-panel-v8741">
       {activities.length?activities.slice(0,6).map(a=><button key={`${a.type}-${a.time}-${a.title}`} className="activity-row-v8741" onClick={()=>openObra(a.obra.id)}><b>{a.type} · {a.title}</b><span>{fmtActivityDate8783(a.time)} · {a.detail}</span></button>):<Empty text="Encara no hi ha moviments registrats."/>}
       <button className="activity-row-v8741" onClick={()=>setScreen("Treballs / Expedients")}><b>Revisar llistat general</b><span>Veure tots els expedients ordenats i filtrar per tipus de treball.</span></button>
@@ -2668,7 +2684,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     <Card title="Filtrar per tipus de treball"><div className="exp-side-list-v8741 type-filter-list-v8742"><button className={!f.ot?"active":""} onClick={()=>f.setOt("")}><span>Tots els tipus</span><b>{flat.length}</b></button>{topTipus.length===0?<p>Sense dades.</p>:topTipus.map(([t,n])=><button key={t} className={f.ot===t?"active":""} onClick={()=>f.setOt(t)}><span>{t}</span><b>{n}</b></button>)}</div></Card>
     <Card title="Accions ràpides"><div className="quick-side-v8742"><button className="primary" onClick={newObra}>+ Nou expedient</button><button className="secondary" onClick={()=>setScreen?.("Agenda")}>Obrir agenda</button><button className="secondary" onClick={()=>setScreen?.("Pressupostos")}>Pressupostos</button><button className="secondary" onClick={()=>setScreen?.("Factures")}>Factures</button></div></Card>
   </aside>
-</div>}function ObraRow({o,open}){return <button onClick={()=>open(o.id)} className="obra-row obra-row-code-v8739"><div className="thumb">{o.imatge?<img src={o.imatge}/> : "FOTO"}</div><div className="grow"><small className="exp-code-v8739">{expedientCode8739(o)}</small><strong>{o.nom}</strong><span>{o.subtitol}</span><em>{moduleLabel8737(o)} · {o.poblacio||"Sense municipi"}</em></div><Badge estat={o.estat}/></button>}
+</div>}function ObraRow({o,d={},open}){const last=obraScore8783(o,d);return <button onClick={()=>open(o.id)} className="obra-row obra-row-code-v8739"><div className="thumb">{o.imatge?<img src={o.imatge}/> : "FOTO"}</div><div className="grow"><small className="exp-code-v8739">{expedientCode8739(o)}</small><strong>{o.nom}</strong><span>{o.subtitol}</span><em>{moduleLabel8737(o)} · {o.poblacio||"Sense municipi"}</em>{last>0&&<small className="last-worked-v878133">Darrer treball / accés: {fmtActivityDate8783(last)}</small>}</div><Badge estat={o.estat}/></button>}
 
 function EditObraModal8725({obra,clients=[],close,save}){
 const clientNames=[...new Set((clients||[]).map(c=>c.nom).filter(Boolean))];
@@ -2724,7 +2740,7 @@ function hasModule2Access8747(){
 function ModulLocked8747(){return <Card title="Mòdul 2 · Control econòmic d’obra"><div className="locked-module-v8747"><div><b>Aquesta funcionalitat forma part del Mòdul 2</b><p>Inclou pressupost d’obra, certificacions, facturació d’obra i seguiment econòmic bàsic. El Mòdul 1 Tècnic manté els pressupostos i factures del tècnic al client.</p></div><button className="primary" onClick={()=>{lsSet8779("aco_modul2_actiu","1");location.reload()}}>Activar Mòdul 2 en mode prova</button></div></Card>}
 
 
-function FitxaDadesTab8769({obra,client,save,allAgents=[],setData,openAgent}){
+function FitxaDadesTab8769({obra,client,data={},save,allAgents=[],setData,openAgent}){
   const [form,setForm]=useState(()=>({...obra,codiPostal:obra.codiPostal||""}));
   useEffect(()=>setForm(applyWorkTemplate878121({...obra,codiPostal:obra.codiPostal||""},obra.tipusTreball||obra.tipologia,false)),[obra.id,obra.updatedAt,obra.tipusTreball,obra.tipologia]);
   const agents=uniqAgents8768([...(allAgents||[])]);
@@ -2743,7 +2759,7 @@ function FitxaDadesTab8769({obra,client,save,allAgents=[],setData,openAgent}){
     const selected=agentNames.includes(current)?current:(current&&current!=="Pendent"?"__custom__":"");
     return <label><span>{label}</span><select value={selected} onChange={e=>e.target.value==="__custom__"?upd(field,""):upd(field,e.target.value||"Pendent")}><option value="">Pendent</option>{agentNames.map(n=><option key={field+n} value={n}>{n}</option>)}<option value="__custom__">+ Escriure / crear nou</option></select>{(selected==="__custom__"||(!agentNames.includes(current)&&current&&current!=="Pendent"))&&<input className="mt-6-v8773" value={current} onChange={e=>upd(field,e.target.value)} placeholder="Nom del tècnic, empresa o agent"/>}</label>
   }
-  return <Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
+  return <div className="fitxa-dades-stack-v878133"><Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
     <div className="form-grid fitxa-form-v8773"><DatalistCP8773/>
       <label><span>Codi expedient</span><input value={expedientCode8739(obra)} readOnly/></label>
       <label><span>Client / carpeta</span><input value={client?.nom||""} readOnly/></label>
@@ -2765,6 +2781,8 @@ function FitxaDadesTab8769({obra,client,save,allAgents=[],setData,openAgent}){
       <label className="span-all"><span>Observacions internes</span><textarea value={form.observacions||""} onChange={e=>upd("observacions",e.target.value)} placeholder="Condicionants, criteris, notes de l’encàrrec..."/></label>
     </div>
   </Card>
+  <AgentsObraCard data={data&&data.agents?data:{agents:uniqAgents8768([...(allAgents||[])])}} setData={setData} openAgent={openAgent}/>
+  </div>
 }
 
 function sectionConfig8769(label){
@@ -3246,7 +3264,7 @@ function Obra({obra,client,clients,data,setData,tab,setTab,setScreen,uploadImage
   let activeTab=tabs.includes(tab)?tab:"Resum";
   const renderTab=()=> <>
     {activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} 
-    {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent}/>} 
+    {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} data={data} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent}/>} 
     {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} 
     {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} 
     {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} 
@@ -3929,7 +3947,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
           <option value="">Sense partida concreta · crear/usar partida resum manual</option>
           {partidesCap.map((r,idx)=><option key={`${r.codi||idx}-${idx}`} value={String(r.codi||"")}>{r.codi||"s/codi"} · {r.concepte}</option>)}
         </select><small>{partidesCap.length?`${partidesCap.length} partida/es disponibles en aquest capítol.`:"Aquest capítol encara no té partides; pots crear la partida resum amb els camps següents."}</small></label>
-        {meta.targetPartidaCodi&&<div className="admin-existing-note-v878130">S'aplicarà directament a la partida {meta.targetPartidaCodi} · {meta.targetPartidaConcepte}. No es crearà cap partida nova ni codi ADM.</div>}
+        {meta.targetPartidaCodi&&<div className="admin-existing-note-v878130">S'aplicarà directament a la partida {meta.targetPartidaCodi} · {meta.targetPartidaConcepte}. No es crearà cap partida nova ni codi ADM. L'import aplicat serà exactament el total del quadre; l'app calcula la quantitat equivalent segons el PU de la partida.</div>}
       </div>
       <div className="admin-monthly-config-v878127 admin-monthly-config-v878129">
         <label><span>Codi partida resum</span><input value={meta.codi} onChange={e=>updMeta("codi",e.target.value)} placeholder="Ex: 04.01.ADM"/></label>
@@ -3958,7 +3976,8 @@ const[certCapsOpen879,setCertCapsOpen879]=useState({});
 const[certMode8711,setCertMode8711]=useState("resum");
 const[medicioTarget8780,setMedicioTarget8780]=useState(null);
 const[adminTarget878126,setAdminTarget878126]=useState(null);
-const[adminMonthlyOpen878127,setAdminMonthlyOpen878127]=useState(false);
+const[adminMonthlyOpen878127,setAdminMonthlyOpen878127]=useState(null);
+const[certActionOpen878133,setCertActionOpen878133]=useState({});
 const[includeMesures8780,setIncludeMesures8780]=useState(false);
 const[showHiddenCert878132,setShowHiddenCert878132]=useState(false);
 const[extraOpen878125,setExtraOpen878125]=useState(false);
@@ -4035,7 +4054,7 @@ function saveAdminMonthly878127(payload){
   const manualCodi=String(payload.codi||`ADM.${String(certNum).padStart(2,"0")}`).trim();
   const codi=targetCode||manualCodi;
   const concepte=String(payload.conceptePartida||"AJUDES A INDUSTRIALS / FEINES PER ADMINISTRACIÓ").trim();
-  const adminData={...payload,codi,cap,conceptePartida:concepte,total,targetPartidaCodi:targetCode};
+  const adminData={...payload,codi,cap,conceptePartida:concepte,total,targetPartidaCodi:targetCode,updatedAt:new Date().toISOString()};
   setData?.(d=>{
     const bid=d.activeBudgetIdObra||"principal";
     let found=false;
@@ -4081,7 +4100,7 @@ function saveAdminMonthly878127(payload){
   const targetRow=(rows||[]).find(r=>String(r.codi||"").trim()===(targetCode||codi));
   const effectivePu=(Number(targetRow?.pu)||0) || (targetCode ? (total||1) : total);
   setDraft(x=>({...x,[targetCode||codi]:String(targetCode?(effectivePu?total/effectivePu:0):(total?1:0))}));
-  setAdminMonthlyOpen878127(false);
+  setAdminMonthlyOpen878127(null);
 }
 
 function deleteCertLine878131(row){
@@ -4176,7 +4195,12 @@ function addExtraCertLine878125(){
   setExtraDraft878125({tipus:"modificacio",cap,codi:"",ut:"ut",concepte:"",q:"1",pu:"0",desc:""});
 }
 
-return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 certNum={certNum} initial={(data.certAdminMonthlyByNum||{})[String(certNum)]||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(false)} save={saveAdminMonthly878127}/>}
+function openAdminMonthlyForRow878133(r){
+  const saved=(r?.certAdminMonthlyByNum||{})[String(certNum)]||{};
+  setAdminMonthlyOpen878127({...saved,cap:r?.cap||saved.cap||"",codi:r?.codi||saved.codi||"",conceptePartida:r?.concepte||saved.conceptePartida||"",targetPartidaCodi:r?.codi||saved.targetPartidaCodi||"",targetPartidaConcepte:r?.concepte||saved.targetPartidaConcepte||""});
+}
+function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMonthlyByNum||{})[String(certNum)]||{});}
+return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127}/>}
 {medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780.codi,lines,total)}/>}
 <Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
   <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={toInputDate8743(dateVal8721(c))} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
@@ -4191,7 +4215,7 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
     <div className="actions-inline">
       <button className="secondary" onClick={()=>{setEditing(!editing);setCertMode8711("emplenar")}}>{editing?"Tancar edició":`Editar amidaments CERT. ${certNum}`}</button>
       <button className="primary" onClick={guardarAmidaments}><Save/> Guardar amidaments</button>
-      <button type="button" className="secondary" onClick={()=>setExtraOpen878125(v=>!v)}>+ Partida extra / provisió</button><button type="button" className="secondary admin-monthly-open-v878127" onClick={()=>setAdminMonthlyOpen878127(true)}>Quadre administració mensual</button>{savedAdmin878132&&<button type="button" className="secondary" onClick={()=>printSavedAdmin878132(savedAdmin878132)}>Imprimir quadre admin. guardat</button>}{hiddenCount878132>0&&<button type="button" className="secondary" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar retirades":"Mostrar retirades"} ({hiddenCount878132})</button>}
+      <button type="button" className="secondary" onClick={()=>setExtraOpen878125(v=>!v)}>+ Partida extra / provisió</button><button type="button" className="secondary admin-monthly-open-v878127" onClick={openAdminMonthlyNew878133}>Quadre administració mensual</button>{savedAdmin878132&&<button type="button" className="secondary" onClick={()=>printSavedAdmin878132(savedAdmin878132)}>Imprimir quadre admin. guardat</button>}{hiddenCount878132>0&&<button type="button" className="secondary" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar retirades":"Mostrar retirades"} ({hiddenCount878132})</button>}
       <label className="check-print-v8780"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Imprimir línies de medició</label>
       <button className="primary" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,rows:sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*(+r.pu||0),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Imprimir / PDF</button>
     </div>
@@ -4218,7 +4242,7 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
       {isOpen&&items.map((r,rowIdx)=>{
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0), qo=qOrigin(r), io=qo*(+r.pu||0);
         return <div className="cert-grid-v69 row" key={r.id||`${cap}-${rowIdx}`}>
-          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}{editing&&<button type="button" className="danger small cert-delete-line-v878131" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar":"Treure cert."}</button>}</div>{editing&&<div className="cert-reorder-controls-v878132"><label>Codi <input defaultValue={r.codi||""} onBlur={e=>updatePartidaMeta878132(r,{codi:e.target.value})} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/></label><label>Capítol <select value={r.cap||""} onChange={e=>updatePartidaMeta878132(r,{cap:e.target.value})}>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}</select></label>{isCertHidden878132(r,certNum)&&<button type="button" className="secondary small" onClick={()=>restoreCertLine878132(r)}>Recuperar a cert.</button>}</div>}{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
+          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877 cert-concept-v878133"><div className="concept-line-v877"><span>{r.concepte}</span><button type="button" className="secondary small cert-actions-btn-v878133" onClick={()=>setCertActionOpen878133(o=>({...o,[r.id||r.codi]:!o[r.id||r.codi]}))}>Accions</button></div>{certActionOpen878133[r.id||r.codi]&&<div className="cert-actions-panel-v878133">{r.desc&&<button type="button" className="secondary small" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar descripció":"Veure descripció"}</button>}{editing&&<button type="button" className="secondary small" onClick={()=>openAdminMonthlyForRow878133(r)}>Quadre administració / justificar</button>}{editing&&<button type="button" className="danger small" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar partida":"Treure certificació"}</button>}{editing&&isCertHidden878132(r,certNum)&&<button type="button" className="secondary small" onClick={()=>restoreCertLine878132(r)}>Recuperar a certificació</button>}{editing&&<div className="cert-reorder-controls-v878132 cert-reorder-controls-v878133"><label>Codi <input defaultValue={r.codi||""} onBlur={e=>updatePartidaMeta878132(r,{codi:e.target.value})} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/></label><label>Capítol <select value={r.cap||""} onChange={e=>updatePartidaMeta878132(r,{cap:e.target.value})}>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}</select></label></div>}</div>}{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
           <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
@@ -4319,36 +4343,36 @@ return <div className="proforma-a4-wrap-v8748"><div className="proforma-preview-
 function Actes({data,allAgents:globalAgents=[],openActa,openEmail,openDoc,selected,setSelected}){const allAgents=ensureAgents8748(uniqAgents8749([...(globalAgents||[]),...(data.agents||[])]));const[local,setLocal]=useState(data.actes||[]);const[actaDocs,setActaDocs]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_acta_docs"))||"[]"));const[actaPhotos,setActaPhotos]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_acta_photos"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_acta_docs"),JSON.stringify(actaDocs))},[actaDocs]);useEffect(()=>{localStorage.setItem(lsKey8779("aco_acta_photos"),JSON.stringify(actaPhotos))},[actaPhotos]);let a=local.find(x=>x.id===selected)||local[0];let idx=local.findIndex(x=>x.id===a?.id),prev=idx>0?local[idx-1]:null;function toggleAgent(id,on){setLocal(p=>p.map(x=>x.id===a.id?{...x,agents:on?[...new Set([...x.agents,id])]:x.agents.filter(z=>z!==id)}:x))}function updateText(v){setLocal(p=>p.map(x=>x.id===a.id?{...x,text:v}:x))}function addDocs(e){[...(e.target.files||[])].forEach(f=>setActaDocs(p=>[...p,{id:"ad-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,tipus:f.name.split(".").pop()?.toUpperCase()||"DOC"}]))}function addPhotos(e){[...(e.target.files||[])].forEach(f=>{let r=new FileReader();r.onload=()=>setActaPhotos(p=>[...p,{id:"ap-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,url:r.result}]);r.readAsDataURL(f)})}let docs=actaDocs.filter(d=>d.actaId===a?.id),photos=actaPhotos.filter(p=>p.actaId===a?.id);return <div className="actes-layout"><Card title="Actes creades" action={<button className="primary" onClick={openActa}><Plus/> Nova acta</button>}><div className="acta-list">{local.length===0?<Empty text="Encara no hi ha actes creades."/>:local.map(x=><button className={`acta-list-row ${a?.id===x.id?"active":""}`} onClick={()=>setSelected(x.id)}><strong>{x.titol}</strong><span>{x.data}</span><small>{x.agents.map(id=>allAgents.find(ag=>ag.id===id)?.nom).filter(Boolean).join(", ")}</small></button>)}</div></Card>{a&&<Card title={`Visualització / edició · ${a.titol}`} action={<div className="actions-inline"><button className="secondary" onClick={()=>openDoc({type:"acta",title:a.titol,subtitle:a.data,acta:a,agents:allAgents,actaPhotos:photos,actaDocs:docs})}>Obrir document</button><button className="secondary" onClick={()=>openEmail(a.titol)}><Mail/> Enviar Gmail</button></div>}><div className="previous-acta">{prev?<><b>Consideracions de l’acta anterior ({prev.data})</b><label><input type="checkbox"/> Validat / resolt</label><p>{prev.text}</p></>:<p>No hi ha acta anterior.</p>}</div><div className="form-grid"><Input label="Títol acta" defaultValue={a.titol}/><Input label="Data" defaultValue={a.data}/><Input label="Obra" defaultValue={a.obra}/><Input label="Signatura" defaultValue={a.signatura}/><label className="span-all"><span>Assistents / intervinents a l’acta</span><div className="check-grid">{allAgents.map(ag=><label className="check-row"><input type="checkbox" checked={a.agents.includes(ag.id)} onChange={e=>toggleAgent(ag.id,e.target.checked)}/><span>{ag.nom} · {ag.rol}</span></label>)}</div></label><label className="span-all"><span>Observacions / decisions preses</span><textarea value={a.text} onChange={e=>updateText(e.target.value)}/></label></div><div className="upload-grid"><label><Camera/> Afegir fotos<input type="file" multiple accept="image/*" onChange={addPhotos}/></label><label><Paperclip/> Afegir documents<input type="file" multiple onChange={addDocs}/></label><button><PenLine/> Signatura mòbil</button></div><div className="attached-list">{photos.map(p=><span>📷 {p.nom}</span>)}{docs.map(d=><span>📎 {d.nom}</span>)}</div><div className="card-actions"><button className="primary"><Save/> Guardar canvis</button></div></Card>}</div>}
 
 
-function AgentsObraCard({data,openAgent}){
+function AgentsObraCard({data,openAgent,setData}){
 const[q,setQ]=useState("");
-const[editing,setEditing]=useState(null);
+const[openId,setOpenId]=useState(null);
 const[local,setLocal]=useState(data.agents||[]);
+useEffect(()=>setLocal(data.agents||[]),[data.agents]);
 const roles=["Promotor","Arquitecte","Arquitecte tècnic","Direcció Facultativa","Constructor","Autònom","Subcontractat","Industrial","Administració","Altres"];
-let filtered=local.filter(a=>(a.nom+" "+a.rol+" "+a.empresa+" "+a.email).toLowerCase().includes(q.toLowerCase()));
-function upd(id,k,v){setLocal(p=>p.map(a=>a.id===id?{...a,[k]:v}:a))}
-function remove(id){if(confirm("Segur que vols eliminar aquest agent?"))setLocal(p=>p.filter(a=>a.id!==id))}
-return <Card title="Agents de l’obra" action={<button className="secondary" onClick={openAgent}><Plus/> Nou agent</button>}>
-<div className="pro-search-line"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Filtrar per nom, rol, empresa o email..."/></div>
-<div className="agents-pro-table">
-<div className="agents-pro-head"><span>Nom</span><span>Rol</span><span>Empresa</span><span>Email</span><span>Telèfon</span><span>Accions</span></div>
+let filtered=local.filter(a=>([a.nom,a.rol,a.empresa,a.email,a.telefon,a.nif,a.adreca].join(" ")).toLowerCase().includes(q.toLowerCase()));
+function commit(next){setLocal(next);setData?.(d=>({...d,agents:next,updatedAt:new Date().toISOString()}));}
+function upd(id,k,v){commit(local.map(a=>a.id===id?{...a,[k]:v,updatedAt:new Date().toISOString()}:a))}
+function remove(id){if(confirm("Segur que vols eliminar aquest agent?"))commit(local.filter(a=>a.id!==id))}
+function addLocal(){const ag={id:"agent-"+Date.now(),nom:"Nou agent",rol:"Altres",empresa:"",email:"",telefon:"",nif:"",adreca:"",collegiat:"",contacte:""};commit([ag,...local]);setOpenId(ag.id)}
+return <Card title="Agents de l’obra" action={<div className="actions-inline"><button className="secondary" onClick={addLocal}><Plus/> Nou agent ràpid</button><button className="secondary" onClick={openAgent}><Plus/> Nou agent complet</button></div>}>
+<div className="pro-search-line"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Filtrar per nom, rol, empresa, NIF, email o telèfon..."/></div>
+<div className="agents-accordion-v878133">
 {filtered.length===0?<Empty text="No hi ha agents amb aquest filtre."/>:filtered.map(a=>{
-let edit=editing===a.id;
-return <div className="agents-pro-row" key={a.id}>
-{edit?<>
-<input value={a.nom||""} onChange={e=>upd(a.id,"nom",e.target.value)}/>
-<select value={a.rol||"Altres"} onChange={e=>upd(a.id,"rol",e.target.value)}>{roles.map(r=><option key={r}>{r}</option>)}</select>
-<input value={a.empresa||""} onChange={e=>upd(a.id,"empresa",e.target.value)}/>
-<input value={a.email||""} onChange={e=>upd(a.id,"email",e.target.value)}/>
-<input value={a.telefon||""} onChange={e=>upd(a.id,"telefon",e.target.value)}/>
-<div className="line-actions"><button className="secondary" onClick={()=>setEditing(null)}>Guardar</button><button className="danger" onClick={()=>remove(a.id)}>Eliminar</button></div>
-</>:<>
-<strong>{a.nom}</strong>
-<span>{a.rol}</span>
-<span>{a.empresa}</span>
-<span>{a.email}</span>
-<span>{a.telefon||"—"}</span>
-<div className="line-actions"><button className="secondary" onClick={()=>setEditing(a.id)}>Editar</button><button className="danger" onClick={()=>remove(a.id)}>Eliminar</button></div>
-</>}
+const opened=openId===a.id;
+return <div className="agent-drawer-v878133" key={a.id}>
+<button type="button" className="agent-summary-v878133" onClick={()=>setOpenId(opened?null:a.id)}><b>{a.nom||"Agent sense nom"}</b><span>{a.rol||"Rol pendent"} · {a.empresa||"Empresa pendent"}</span><em>{a.nif?`NIF ${a.nif}`:"NIF pendent"} · {a.telefon||"Sense telèfon"}</em></button>
+{opened&&<div className="agent-detail-v878133">
+<label><span>Nom</span><input value={a.nom||""} onChange={e=>upd(a.id,"nom",e.target.value)}/></label>
+<label><span>Rol / agent</span><select value={a.rol||"Altres"} onChange={e=>upd(a.id,"rol",e.target.value)}>{roles.map(r=><option key={r}>{r}</option>)}</select></label>
+<label><span>Empresa / autònom</span><input value={a.empresa||""} onChange={e=>upd(a.id,"empresa",e.target.value)}/></label>
+<label><span>NIF / CIF</span><input value={a.nif||""} onChange={e=>upd(a.id,"nif",e.target.value)} placeholder="NIF, CIF o DNI"/></label>
+<label><span>Email</span><input value={a.email||""} onChange={e=>upd(a.id,"email",e.target.value)}/></label>
+<label><span>Telèfon</span><input value={a.telefon||""} onChange={e=>upd(a.id,"telefon",e.target.value)}/></label>
+<label><span>Núm. col·legiat / registre</span><input value={a.collegiat||""} onChange={e=>upd(a.id,"collegiat",e.target.value)}/></label>
+<label className="wide"><span>Adreça</span><input value={a.adreca||""} onChange={e=>upd(a.id,"adreca",e.target.value)}/></label>
+<label className="wide"><span>Observacions / contacte</span><input value={a.contacte||""} onChange={e=>upd(a.id,"contacte",e.target.value)}/></label>
+<div className="line-actions"><button type="button" className="secondary" onClick={()=>setOpenId(null)}>Tancar</button><button type="button" className="danger" onClick={()=>remove(a.id)}>Eliminar</button></div>
+</div>}
 </div>})}
 </div>
 </Card>}
@@ -5210,7 +5234,7 @@ function FormClient({onSubmit}){
 
 function FormObra({clients,onSubmit}){const[clientSel,setClientSel]=useState("__new__");const[tipus,setTipus]=useState(WORK_TYPES8737[0]);return <form onSubmit={onSubmit}><div className="form-grid"><label><span>Client</span><select name="client" value={clientSel} onChange={e=>setClientSel(e.target.value)}><option value="__new__">+ Crear client nou</option><option value="" disabled>— Clients existents —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>{clientSel==="__new__"&&<><Input name="clientNouNom" label="Nom nou client" defaultValue="Nou client"/><Input name="clientNouRao" label="Raó social nou client" defaultValue="Pendent"/><label><span>Tipologia nou client</span><select name="clientNouTipus"><option>Particular</option><option>Promotor</option><option>Arquitecte tècnic</option><option>Constructor</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="clientNouContacte" label="Contacte nou client" defaultValue="Pendent"/><Input name="clientNouNif" label="NIF/CIF nou client" defaultValue="Pendent"/><Input name="clientNouTelefon" label="Telèfon nou client" defaultValue="Pendent"/><Input name="clientNouEmail" label="Email nou client" defaultValue="Pendent"/><Input name="clientNouAdreca" label="Adreça nou client" defaultValue="Pendent"/></>}<Input name="nom" label="Nom de l’expedient" defaultValue="Nou expedient"/><Input name="subtitol" label="Descripció breu" defaultValue="Treball pendent de definir"/><label><span>Paraula clau del codi</span><input name="paraulaClau" placeholder="Ex: FRONTMAR, GARRIGOLES, PALAMOS"/></label><Input name="any" label="Any obertura" defaultValue="2026"/><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Tancada</option></select></label><label className="span-all"><span>Tipus de treball</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==="Altres"&&<Input name="tipusTreballAltres" label="Especifica el tipus de treball" defaultValue=""/>}<div className="span-all code-help-v8739"><b>Numeració automàtica</b><span>El codi es generarà com: ANY-NÚM-TIPUS-CLIENT-PARAULA CLAU. Exemple: 2026-001-PRES-SOC-FRONTMAR.</span></div><Input name="propietat" label="Client final / propietat" defaultValue="Pendent"/><Input name="nifPropietat" label="NIF client final" defaultValue="Pendent"/><Input name="adreca" label="Adreça" defaultValue="Pendent"/><Input name="poblacio" label="Població" defaultValue="Pendent"/><Input name="rc" label="Referència cadastral" defaultValue="Pendent"/></div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>}
 function FormPartida({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="codi" label="Codi" defaultValue="10.02"/><Input name="cap" label="Capítol" defaultValue="10 FEINES FORA PRESSUPOST"/><Input name="concepte" label="Concepte" defaultValue="Nova partida"/><Input name="ut" label="Ut" defaultValue="m²"/><Input name="q" label="Quantitat" defaultValue="1"/><Input name="pu" label="PU" defaultValue="0"/><label><span>Tipus</span><select name="tipus"><option>Base</option><option>Modificada</option><option>Fora pressupost</option></select></label></div><div className="modal-actions"><button className="primary">Afegir partida</button></div></form>}
-function FormAgent({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="nom" label="Nom" defaultValue="Nou agent"/><label><span>Rol</span><select name="rol"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="empresa" label="Empresa" defaultValue="Empresa"/><Input name="email" label="Email" defaultValue="email@domini.cat"/><Input name="telefon" label="Telèfon" defaultValue=""/></div><div className="modal-actions"><button className="primary">Crear agent</button></div></form>}
+function FormAgent({onSubmit}){return <form onSubmit={onSubmit}><div className="form-grid"><Input name="nom" label="Nom" defaultValue="Nou agent"/><label><span>Rol</span><select name="rol"><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Autònom</option><option>Subcontractat</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><Input name="empresa" label="Empresa" defaultValue="Empresa"/><Input name="email" label="Email" defaultValue="email@domini.cat"/><Input name="telefon" label="Telèfon" defaultValue=""/><Input name="nif" label="NIF / CIF" defaultValue=""/><Input name="collegiat" label="Núm. col·legiat / registre" defaultValue=""/><Input name="adreca" label="Adreça" defaultValue=""/></div><div className="modal-actions"><button className="primary">Crear agent</button></div></form>}
 function FormActa({agents,onSubmit,openAgent}){
 const[mode,setMode]=useState("existent");
 return <form onSubmit={onSubmit} className="form-acta-v8747"><div className="form-grid"><label><span>Títol acta *</span><input name="titol" defaultValue="Nova acta d’expedient" required/></label><label><span>Data *</span><input name="data" type="date" defaultValue={todayISO8743?.()||"2026-06-06"} required/></label><label className="span-all"><span>Agents / assistents</span><div className="agent-choice-v8747"><select value={mode} onChange={e=>setMode(e.target.value)}><option value="existent">Cercar agent existent</option><option value="nou">Crear agent nou</option></select><button type="button" className="secondary" onClick={openAgent}><Plus/> Obrir fitxa completa d’agent</button></div></label>{mode==="existent"&&<label className="span-all"><span>Selecciona els agents existents</span><div className="check-grid">{agents.length===0&&<div className="empty mini">No hi ha agents creats encara.</div>}{agents.map(a=><label className="check-row" key={a.id}><input type="checkbox" name="agentsActa" value={a.id}/><span>{a.nom} · {a.rol} · {a.empresa}</span></label>)}</div></label>}{mode==="nou"&&<div className="span-all new-agent-box-v8747"><input type="hidden" name="crearAgentActa" value="1"/><h3>Crear agent nou per aquesta acta</h3><div className="form-grid no-pad"><label><span>Nom *</span><input name="agentNom" required={mode==="nou"}/></label><label><span>Rol *</span><select name="agentRol" required={mode==="nou"}><option>Promotor</option><option>Arquitecte</option><option>Arquitecte tècnic</option><option>Direcció Facultativa</option><option>Constructor</option><option>Industrial</option><option>Administració</option><option>Altres</option></select></label><label><span>Empresa / autònom *</span><input name="agentEmpresa" required={mode==="nou"}/></label><label><span>Email *</span><input name="agentEmail" type="email" required={mode==="nou"}/></label><label><span>Telèfon</span><input name="agentTelefon"/></label><label><span>NIF</span><input name="agentNif"/></label><label className="span-all"><span>Adreça</span><input name="agentAdreca"/></label></div></div>}<label className="span-all"><span>Text acta</span><textarea name="text" defaultValue="Es redacta acta de seguiment de l’expedient."/></label><div className="span-all acta-preview-mini-v8747"><b>Previsualització ràpida</b><p>L’acta es generarà amb capçalera de l’expedient, agents seleccionats, text, fotos i documents adjunts.</p></div><label><span>Fotos</span><input type="file" multiple/></label><label><span>Documents</span><input type="file" multiple/></label></div><div className="modal-actions"><button className="primary">Guardar acta</button></div></form>}
