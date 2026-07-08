@@ -575,7 +575,15 @@ function isFacturaDoc878120(x){return !!x&&(String(x?.id||"").startsWith("ft-")|
 function totalIva8743(x){return isFacturaDoc878120(x)?invoiceTotal8746(x):(+x?.base||+x?.total||0)*(1+(+x?.iva||21)/100)}
 function baseIva8743(x){return (+x?.base||+x?.total||0)}
 function totalFactura878120(x){return invoiceTotal8746(x||{})}
-function timeRowsForObra878120(obraId,data={}){let stored=[];try{stored=JSON.parse(localStorage.getItem(lsKey8779(`aco_honoraris_rows_${obraId||"default"}`))||"[]")}catch(e){stored=[]}return stored.length?stored:(data?.hores||[])}
+function timeRowsForObra878120(obraId,data={}){
+  let stored=[];
+  try{stored=JSON.parse(localStorage.getItem(lsKey8779(`aco_honoraris_rows_${obraId||"default"}`))||"[]")}catch(e){stored=[]}
+  const validStored=(Array.isArray(stored)?stored:[]).filter(r=>r&&(!r.obraId||String(r.obraId)===String(obraId))&&String(r.id||'').startsWith('hr-'));
+  // V87.142: el rendiment ha de coincidir amb la pestanya Gestió temps.
+  // No fem fallback a dades antigues `data.hores` perquè podien venir de proves/versions antigues
+  // i feien aparèixer hores fantasma, com 3h en expedients sense registres visibles.
+  return validStored;
+}
 function timeImport878120(r){const n=v=>Number(String(v??0).replace(",","."))||0;if(r?.tipusRegistre==="Kilometratge")return n(r.km)*n(r.preuKm);if(r?.tipusRegistre&&r.tipusRegistre!=="Honoraris")return n(r.quantitat)*n(r.preuUnitari);return n(r.hores)*(n(r.preuHora)||n(r.preu)||0)}
 function timeHours878120(r){const n=v=>Number(String(v??0).replace(",","."))||0;return n(r?.hores)}
 function honorMetrics878120(data={},obra={}){
@@ -2449,7 +2457,7 @@ function timeValue8783(v){
 function eventTime8783(e){
   if(!e)return 0;
   // V87.137: agenda robusta. Primer respectem una data explícita si existeix.
-  const direct=timeValue8783(e.data||e.date||e.start||e.startDate||e.limit);
+  const direct=timeValue8783(e.iso||e.data||e.date||e.fecha||e.start||e.startDate||e.limit||e.limitDate||e.dataMaxima||e.dia);
   if(direct){
     const d=new Date(direct);
     const hh=Number(String(e.hora||e.time||'0').split(':')[0])||d.getHours()||0;
@@ -2476,7 +2484,7 @@ function eventTime8783(e){
   }
   return timeValue8783(e?.createdAt||e?.updatedAt||e?.id);
 }
-function itemTime8783(x){return Math.max(timeValue8783(x?.updatedAt),timeValue8783(x?.createdAt),timeValue8783(x?.data),timeValue8783(x?.date),eventTime8783(x),timeValue8783(x?.id))}
+function itemTime8783(x){return Math.max(timeValue8783(x?.updatedAt),timeValue8783(x?.createdAt),timeValue8783(x?.iso),timeValue8783(x?.data),timeValue8783(x?.date),eventTime8783(x),timeValue8783(x?.id))}
 function obraScore8783(o,d={}){
   const vals=[timeValue8783(o?.lastWorkedAt),timeValue8783(d?.lastWorkedAt),timeValue8783(o?.lastOpenedAt),timeValue8783(d?.lastOpenedAt),timeValue8783(o?.updatedAt),timeValue8783(o?.createdAt),timeValue8783(d?.updatedAt)];
   ['documents','fotos','actes','events','hores','pressupostosTecnic','facturesTecnic','certificacions','factures'].forEach(k=>(d[k]||[]).forEach(x=>vals.push(itemTime8783(x))));
@@ -2724,8 +2732,10 @@ function Inici({clients,setClients,obres,setObres,odata={},setOdata,events,setSc
 const now=new Date();
 const monthName=monthName878137(now);
 const todayLabel878141=now.toLocaleDateString('ca-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-const allEvents=uniqueEvents878137(events||[]);
-const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,6);
+let agendaLocal878142=[];
+try{agendaLocal878142=JSON.parse(localStorage.getItem(lsKey8779("aco_agenda_global_v87109"))||"[]")||[]}catch{agendaLocal878142=[]}
+const allEvents=uniqueEvents878137([...(events||[]),...agendaLocal878142].map((e,i)=>cleanAgendaEvent87109?cleanAgendaEvent87109(e,i):e).filter(Boolean));
+const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t&&t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,8);
 const tasks=collectPendingTasks878137(obres,odata);
 const taskCounts=taskStatusCounts878140(tasks);
 const tasksByClient=groupByClient878138(tasks,clients,x=>x.obra.client);
@@ -4827,8 +4837,8 @@ return <Card title={`Documents de l’expedient${obra?.nom?` · ${obra.nom}`:""}
 
 function dateParts87109(e){
   if(!e||typeof e!="object")return null;
-  if(e.data||e.date){
-    const raw=String(e.data||e.date||"");
+  if(e.iso||e.data||e.date||e.fecha){
+    const raw=String(e.iso||e.data||e.date||e.fecha||"");
     const d=raw.includes("/")?(()=>{const parts=raw.split("/").map(Number);return new Date(parts[2]||new Date().getFullYear(),(parts[1]||1)-1,parts[0]||1)})():new Date(raw);
     if(!isNaN(d))return {day:d.getDate(),month:d.getMonth(),year:d.getFullYear(),iso:d.toISOString().slice(0,10)};
   }
@@ -4934,7 +4944,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:state.clients||[],
     obres:state.obres||[],
     odata:stripHeavy878104(state.odata||{}),
-    app_version:"87.128.0",
+    app_version:"87.142.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -4944,7 +4954,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
   localStorage.setItem(lsKey8779("aco_supabase_last_push_v87121"),new Date().toISOString());
   return Array.isArray(out)?out[0]:out;
 }
-async function pullStateFromSupabase878121(user=currentAppUser8779()){
+async function pullStateFromSupabase878121(user=currentAppUser8779(),opts={}){
   const cfg=getSyncCfg878121();
   if(!isSyncReady878121(cfg)) throw new Error("Supabase Sync no configurat");
   const app_user=encodeURIComponent(syncUser878121(user));
@@ -4953,7 +4963,7 @@ async function pullStateFromSupabase878121(user=currentAppUser8779()){
   const res=await fetch(`${base}/rest/v1/aco_user_state?select=*&app_user=eq.${app_user}&sync_key=eq.${sync_key}&order=updated_at.desc&limit=1`,{headers:syncHeaders878121(cfg)});
   if(!res.ok) throw new Error(await res.text());
   const rows=await res.json();
-  if(!rows?.length) throw new Error("No hi ha cap còpia al núvol per aquest usuari i clau de sincronització.");
+  if(!rows?.length){if(opts.allowMissing)return null;throw new Error("No hi ha cap còpia al núvol per aquest usuari i clau de sincronització.");}
   localStorage.setItem(lsKey8779("aco_supabase_last_pull_v87121"),new Date().toISOString());
   return rows[0];
 }
@@ -4963,7 +4973,8 @@ function SupabaseSyncPanel878121({clients=[],obres=[],odata={},setClients,setObr
   function upd(k,v){setCfg(p=>({...p,[k]:v}))}
   function save(){saveSyncCfg878121(cfg);setStatus("Configuració de sincronització guardada.")}
   async function push(){try{saveSyncCfg878121(cfg);setStatus("Pujant dades locals a Supabase...");await pushStateToSupabase878121({clients,obres,odata},authUser);setStatus("Dades pujades correctament a Supabase.")}catch(e){setStatus("Error pujant dades: "+(e?.message||e))}}
-  async function pull(){try{saveSyncCfg878121(cfg);setStatus("Carregant última còpia de Supabase...");const row=await pullStateFromSupabase878121(authUser);const c=sanitizeClients8785(row.clients||[],[]);const o=sanitizeObres8785(row.obres||[],[]);const d=sanitizeOdata8785(row.odata||{},{});setClients?.(c);setObres?.(o);setOdata?.(d);setStatus("Dades carregades del núvol i guardades localment.")}catch(e){setStatus("Error carregant dades: "+(e?.message||e))}}
+  async function pull(){try{saveSyncCfg878121(cfg);setStatus("Carregant última còpia de Supabase...");const row=await pullStateFromSupabase878121(authUser);if(!row)throw new Error("No hi ha cap còpia al núvol amb aquesta clau privada. Primer puja dades locals amb aquesta clau o torna a posar la clau anterior.");const c=sanitizeClients8785(row.clients||[],[]);const o=sanitizeObres8785(row.obres||[],[]);const d=sanitizeOdata8785(row.odata||{},{});setClients?.(c);setObres?.(o);setOdata?.(d);setStatus("Dades carregades del núvol i guardades localment. Última còpia: "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'))}catch(e){setStatus("Error carregant dades: "+(e?.message||e))}}
+  async function testSync(){try{saveSyncCfg878121(cfg);setStatus("Comprovant connexió Supabase...");const row=await pullStateFromSupabase878121(authUser,{allowMissing:true});setStatus(row?"Connexió correcta. Còpia trobada del dispositiu "+(row.device_id||'desconegut')+" · "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'):"Connexió correcta, però no hi ha còpia amb aquesta clau privada.")}catch(e){setStatus("Error de connexió Supabase: "+(e?.message||e))}}
   return <Card title="Supabase Sync · dades de l’app" action={<button className="primary" onClick={save}>Guardar sync</button>}>
     <div className="form-grid supabase-sync-v87121">
       <label><span>Supabase URL</span><input value={cfg.url||""} onChange={e=>upd("url",e.target.value)} placeholder="https://xxxx.supabase.co"/></label>
@@ -4971,7 +4982,7 @@ function SupabaseSyncPanel878121({clients=[],obres=[],odata={},setClients,setObr
       <label><span>Clau privada de sincronització</span><input value={cfg.syncKey||""} onChange={e=>upd("syncKey",e.target.value)} placeholder="posa una clau llarga teva"/></label>
       <label><span>Dispositiu</span><input value={cfg.deviceId||""} onChange={e=>upd("deviceId",e.target.value)} placeholder="PC despatx / portàtil / iPad"/></label>
       <label><span>Sincronització automàtica</span><select value={cfg.auto?"1":"0"} onChange={e=>upd("auto",e.target.value==="1")}><option value="0">No · només manual</option><option value="1">Sí · pujar canvis automàticament</option></select></label>
-      <div className="sync-actions-v87121"><button className="secondary" onClick={push}>Pujar ara dades locals</button><button className="secondary" onClick={pull}>Carregar última còpia del núvol</button></div>
+      <div className="sync-actions-v87121"><button className="secondary" onClick={testSync}>Comprovar connexió</button><button className="secondary" onClick={push}>Pujar ara dades locals</button><button className="secondary" onClick={pull}>Carregar última còpia del núvol</button></div>
       <p className="span-all module-note-v8738"><b>Important</b><span>Primer executa l’arxiu SQL inclòs a la carpeta <code>supabase/aco_supabase_sync_schema.sql</code>. La sincronització desa clients, expedients i dades internes en una sola taula JSONB i manté l’app funcionant offline.</span></p>
       {status&&<p className="span-all sync-status-v87121">{status}</p>}
     </div>
@@ -5225,7 +5236,8 @@ function RendimentHonorarisExpedient878120({data={},obra={}}){
   const max=Math.max(m.pressupostat,m.facturatBase,m.tempsCost,1);
   const byType=aggregate8776(m.timeRows,r=>r.tipusFeina||r.tasca||r.etiqueta||"Altres",timeImport878120);
   const byInvoice=aggregate8776(m.factures,f=>statusKeyFactura8776(f.estat),f=>totalFactura878120(f));
-  const health=m.marge>=0?"good":"bad";
+  const hasTime=m.timeRows.length>0&&m.hores>0;
+  const health=!hasTime?"neutral":(m.marge>=0?"good":"bad");
   return <div className="stack rendiment-exp-v878120">
     <Card title="Rendiment de la feina · honoraris, facturació i temps">
       <div className="rend-kpis-v878120">
@@ -5243,11 +5255,11 @@ function RendimentHonorarisExpedient878120({data={},obra={}}){
           <RendimentBar878120 label="Valor temps invertit" value={m.tempsCost} max={max} tone={health}/>
           <RendimentBar878120 label="Cobertura facturat / pressupostat" value={m.cobertura} max={100} kind="pct" tone={m.cobertura>=90?"good":"warn"}/>
         </div>
-        <div className={`rend-result-v878120 ${health}`}><span>Resultat intern estimat</span><b>{m.marge>=0?"+":""}{money(m.marge)}</b><small>{m.hores?`Preu real aproximat: ${money(m.rendimentHora)}/h`:"Encara no hi ha hores registrades."}</small></div>
+        {hasTime?<div className={`rend-result-v878120 ${health}`}><span>Resultat intern estimat</span><b>{m.marge>=0?"+":""}{money(m.marge)}</b><small>{`Preu real aproximat: ${money(m.rendimentHora)}/h`}</small></div>:<div className="rend-result-v878120 neutral"><span>Sense temps registrat</span><b>0,00 h</b><small>Quan entris hores a Gestió temps es calcularà el cost intern i el rendiment real.</small></div>}
       </div>
     </Card>
     <div className="finance-charts-v8776 rend-charts-v878120"><Donut8776 title="Factures per estat" parts={byInvoice} total={m.factures.length?m.facturatTotal:0}/><Donut8776 title="Temps per tipus de feina" parts={byType} total={m.tempsCost}/><Donut8776 title="Relació honoraris" parts={[{k:"Facturat base",v:m.facturatBase},{k:"Temps intern",v:m.tempsCost},{k:"Pendent pressupost",v:Math.max(m.pressupostat-m.facturatBase,0)}]} total={Math.max(m.pressupostat,m.facturatBase+m.tempsCost,1)}/></div>
-    <Card title="Lectura ràpida del rendiment"><div className="rend-reading-v878120"><p><b>Pressupostat:</b> {money(m.pressupostat)} sense IVA.</p><p><b>Facturat:</b> {money(m.facturatBase)} base / {money(m.facturatTotal)} total factura.</p><p><b>Cobrat:</b> {money(m.cobratTotal)} · <b>Pendent:</b> {money(Math.max(m.pendent,0))}.</p><p><b>Temps invertit:</b> {m.hores.toFixed(2)} h valorades en {money(m.tempsCost)}.</p></div></Card>
+    <Card title="Lectura ràpida del rendiment"><div className="rend-reading-v878120"><p><b>Pressupostat:</b> {money(m.pressupostat)} sense IVA.</p><p><b>Facturat:</b> {money(m.facturatBase)} base / {money(m.facturatTotal)} total factura.</p><p><b>Cobrat:</b> {money(m.cobratTotal)} · <b>Pendent:</b> {money(Math.max(m.pendent,0))}.</p><p><b>Temps invertit:</b> {hasTime?`${m.hores.toFixed(2)} h valorades en ${money(m.tempsCost)}`:'Sense registres a Gestió temps'}.</p></div></Card>
   </div>
 }
 
