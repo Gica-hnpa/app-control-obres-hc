@@ -1,12 +1,13 @@
-# APP Control d'Obres · V87.129
+# APP Control d'Obres · V87.130
 
-Versió de recuperació immediata sobre V87.128.
+Versió de correcció immediata sobre V87.129.
 
 Canvis:
-- Recuperació visual de la graella de certificacions perquè els camps de certificació i el botó de línies de medició no deformin el quadre.
-- El botó de línies de medició queda integrat dins la cel·la sense modificar l'amplada de columnes.
-- Quadre mensual de feines per administració amb flux correcte: primer desplegable de capítol, després desplegable de partida filtrada per aquell capítol.
-- Si la partida/capítol no existeix, es pot escriure manualment el capítol, el codi i el nom de la partida resum.
-- La partida resum continua entrant com 1 ut × total del quadre mensual i queda fora de pressupost base.
+- Graella de certificacions compactada perquè el codi de partida es vegi complet i les columnes A origen quedin visibles sense haver d'anar al final amb scroll horitzontal en pantalla d'escriptori.
+- Recuperació de la cel·la de Q cert. actual amb el botó de línies de medició integrat sense deformar la taula.
+- Quadre mensual de feines per administració: si es tria una partida existent, l'import s'aplica directament a aquella partida i a aquella certificació, sense crear una partida nova amb codi .ADM.
+- Si no es tria partida existent, es crea o reutilitza una única partida resum manual pel codi indicat, de manera que no es dupliqui cada mes.
+- Es mantenen Supabase, còpies locals, importació segura i resta de correccions de V87.129.
 
-ZIP net amb `src` real, sense `node_modules`, `dist` ni `package-lock.json`.
+Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+Publish Directory: dist

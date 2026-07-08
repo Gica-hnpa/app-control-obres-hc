@@ -4193,3 +4193,121 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .admin-target-flow-v878129,
   .admin-monthly-config-v878129{grid-template-columns:1fr!important;}
 }
+
+/* V87.130 · graella certificació compacta sense scroll horitzontal + codi complet */
+.cert-grid-wrap-v69{
+  overflow-x:visible!important;
+  overflow-y:visible!important;
+  width:100%!important;
+  max-width:100%!important;
+}
+.cert-grid-v69{
+  display:grid!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  grid-template-columns:
+    82px 42px minmax(180px,1.35fr)
+    62px 72px 90px
+    72px 64px 88px
+    84px 64px 90px
+    76px 64px 96px!important;
+  font-size:11.2px!important;
+  align-items:stretch!important;
+}
+.cert-grid-v69>div{
+  padding:6px 5px!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
+}
+.cert-grid-v69>div:nth-child(1){
+  overflow:visible!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+  font-weight:800!important;
+}
+.cert-grid-v69 .concept,
+.cert-grid-v69 .cert-concept-v877,
+.cert-grid-v69 .concept-line-v877 span{
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:break-word!important;
+}
+.cert-grid-v69 .desc-toggle-v877{
+  padding:3px 5px!important;
+  font-size:9.5px!important;
+  line-height:1!important;
+  flex:0 0 auto!important;
+}
+.cert-cap-v69,
+.cert-cap-toggle-v879{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+.cert-current-cell-v8780{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:visible!important;
+}
+.cert-current-cell-v8780 .cert-edit-input-v69{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:28px!important;
+  padding:5px 24px 5px 5px!important;
+  box-sizing:border-box!important;
+  text-align:right!important;
+  font-size:11.2px!important;
+}
+.measure-btn-v8780{
+  position:absolute!important;
+  right:2px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  width:20px!important;
+  min-width:20px!important;
+  height:20px!important;
+  padding:0!important;
+  border-radius:6px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:11px!important;
+}
+.cert-grid-v69.group .pressupost{grid-column:1 / span 6!important;}
+.cert-grid-v69.group .anterior{grid-column:7 / span 3!important;}
+.cert-grid-v69.group .actual{grid-column:10 / span 3!important;}
+.cert-grid-v69.group .origen{grid-column:13 / span 3!important;}
+.cert-grid-v69.total .total-label{grid-column:1 / span 8!important;}
+.cert-grid-v69.total .total-label2{grid-column:10 / span 2!important;}
+.cert-grid-v69.total .total-label3{grid-column:13 / span 2!important;}
+.admin-target-flow-v878129 .admin-existing-note-v878130{
+  display:block!important;
+  grid-column:1/-1!important;
+  background:#ecfdf5!important;
+  border:1px solid #86efac!important;
+  color:#166534!important;
+  border-radius:12px!important;
+  padding:9px 11px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+}
+@media(max-width:1250px){
+  .cert-grid-v69{font-size:10.5px!important;grid-template-columns:72px 36px minmax(150px,1fr) 54px 62px 78px 62px 56px 76px 72px 56px 78px 66px 56px 84px!important;}
+  .cert-grid-v69>div{padding:5px 3px!important;}
+  .cert-current-cell-v8780 .cert-edit-input-v69{font-size:10.5px!important;padding-right:22px!important;}
+  .measure-btn-v8780{width:18px!important;min-width:18px!important;height:18px!important;font-size:10px!important;}
+}
+@media(max-width:900px){
+  .cert-grid-wrap-v69{overflow-x:auto!important;}
+  .cert-grid-v69,.cert-cap-v69,.cert-cap-toggle-v879{min-width:1280px!important;width:1280px!important;max-width:none!important;}
+}

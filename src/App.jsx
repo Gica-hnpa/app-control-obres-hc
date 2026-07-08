@@ -3826,11 +3826,13 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     const r=partidesCap.find(x=>String(x.codi||"")===code);
     if(!r)return;
     const baseCodi=String(r.codi||"").trim();
+    // V87.130: si es tria una partida existent, NO es crea cap partida .ADM.
+    // El quadre mensual s'aplica directament a aquesta partida i a aquesta certificació.
     setMeta(m=>({
       ...m,
       cap:String(r.cap||m.cap||"C98 FEINES PER ADMINISTRACIÓ"),
-      codi:baseCodi?`${baseCodi}.ADM`:(m.codi||`ADM.${String(certNum).padStart(2,"0")}`),
-      conceptePartida:`Administració · ${String(r.concepte||"Ajudes a industrials")}`.slice(0,140),
+      codi:baseCodi || (m.codi||`ADM.${String(certNum).padStart(2,"0")}`),
+      conceptePartida:String(r.concepte||"Ajudes a industrials"),
       targetPartidaCodi:baseCodi,
       targetPartidaConcepte:String(r.concepte||"")
     }));
@@ -3851,7 +3853,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
   }
   return <Modal title={`Quadre mensual d’administració · CERT. ${certNum}`} close={close}>
     <div className="admin-monthly-v878127 admin-monthly-v878129">
-      <div className="module-note-v8738"><b>Funcionament correcte</b><span>Primer tries el capítol. Després, si vols, tries la partida de referència d’aquest capítol. Si no existeix, escrius manualment el capítol/codi/nom. El sumatori final entra com una sola partida: <b>1 {meta.unitat||"ut"} × {money(total)}</b>.</span></div>
+      <div className="module-note-v8738"><b>Funcionament correcte</b><span>Primer tries el capítol i després la partida. Si tries una partida existent, el quadre s’aplica directament a aquella partida en aquesta certificació, sense crear cap línia nova ni cap codi .ADM. Si no existeix, escrius manualment capítol/codi/nom i llavors es crea una única partida resum reutilitzable.</span></div>
       <div className="admin-target-flow-v878129">
         <label><span>1. Capítol</span><select value={capList.includes(meta.cap)?meta.cap:"__manual__"} onChange={e=>{if(e.target.value==="__manual__")return;setCap879129(e.target.value)}}>
           {capList.map(c=><option key={c} value={c}>{c}</option>)}
@@ -3859,9 +3861,10 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
         </select></label>
         <label><span>Nom del capítol</span><input value={meta.cap} onChange={e=>setCap879129(e.target.value)} placeholder="Ex: C98 FEINES PER ADMINISTRACIÓ"/></label>
         <label><span>2. Partida de referència dins aquest capítol</span><select value={meta.targetPartidaCodi||""} onChange={e=>setPartida879129(e.target.value)}>
-          <option value="">Sense partida concreta · crear partida resum nova</option>
+          <option value="">Sense partida concreta · crear/usar partida resum manual</option>
           {partidesCap.map((r,idx)=><option key={`${r.codi||idx}-${idx}`} value={String(r.codi||"")}>{r.codi||"s/codi"} · {r.concepte}</option>)}
         </select><small>{partidesCap.length?`${partidesCap.length} partida/es disponibles en aquest capítol.`:"Aquest capítol encara no té partides; pots crear la partida resum amb els camps següents."}</small></label>
+        {meta.targetPartidaCodi&&<div className="admin-existing-note-v878130">S'aplicarà directament a la partida {meta.targetPartidaCodi} · {meta.targetPartidaConcepte}. No es crearà cap partida nova ni codi ADM.</div>}
       </div>
       <div className="admin-monthly-config-v878127 admin-monthly-config-v878129">
         <label><span>Codi partida resum</span><input value={meta.codi} onChange={e=>updMeta("codi",e.target.value)} placeholder="Ex: 04.01.ADM"/></label>
@@ -3928,26 +3931,58 @@ function saveMesures8780(codi,lines,total){setData?.(d=>({...d,partides:(d.parti
 function saveAdminCost878126(codi,lines,total){setData?.(d=>({...d,partides:(d.partides||[]).map(r=>{if(r.codi!==codi)return r;const effectivePu=(+r.pu||0)||1;const certQty=total/effectivePu;return {...r,pu:(+r.pu||0)?r.pu:1,certAdminLinesByNum:{...(r.certAdminLinesByNum||{}),[String(certNum)]:lines},certsByNum:{...(r.certsByNum||{}),[String(certNum)]:certQty},certAnterior:certNum===1?certQty:r.certAnterior,certActual:certNum===2?certQty:r.certActual};})}));const current=(rows||[]).find(r=>r.codi===codi);const effectivePu=(+current?.pu||0)||1;setDraft(x=>({...x,[codi]:String(total/effectivePu)}));setAdminTarget878126(null)}
 function saveAdminMonthly878127(payload){
   const key=String(certNum);
-  const codi=String(payload.codi||`ADM.${String(certNum).padStart(2,"0")}`).trim();
   const cap=String(payload.cap||"C98 FEINES PER ADMINISTRACIÓ").trim();
-  const concepte=String(payload.conceptePartida||"AJUDES A INDUSTRIALS / FEINES PER ADMINISTRACIÓ").trim();
   const total=Number(payload.total)||0;
-  const adminData={...payload,codi,cap,conceptePartida:concepte,total};
+  const targetCode=String(payload.targetPartidaCodi||"").trim();
+  const manualCodi=String(payload.codi||`ADM.${String(certNum).padStart(2,"0")}`).trim();
+  const codi=targetCode||manualCodi;
+  const concepte=String(payload.conceptePartida||"AJUDES A INDUSTRIALS / FEINES PER ADMINISTRACIÓ").trim();
+  const adminData={...payload,codi,cap,conceptePartida:concepte,total,targetPartidaCodi:targetCode};
   setData?.(d=>{
     const bid=d.activeBudgetIdObra||"principal";
-    const markerId=`admin-monthly-${key}-${bid}`;
     let found=false;
+    let appliedQty=0;
     const partides=(d.partides||[]).map(r=>{
-      const same=(r.adminMonthlyId===markerId)||((r.adminMonthlyCertNum&&String(r.adminMonthlyCertNum)===key)&&(r.adminMonthlyAuto||String(r.codi)===codi));
-      if(!same)return r;
-      found=true;
-      return {...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,adminMonthlyCertNum:key,noPressupost:true,cap,codi,ut:"ut",concepte,desc:`Quadre mensual d’administració CERT. ${certNum}. ${adminData.targetPartidaCodi?`Vinculat a partida ${adminData.targetPartidaCodi}. `:""}Total: ${money(total)}`,q:0,pu:total,certsByNum:{...(r.certsByNum||{}),[key]: total?1:0},certAnterior:certNum===1?(total?1:0):r.certAnterior,certActual:certNum===2?(total?1:0):r.certActual};
+      const sameBudget=(r.budgetId||"principal")===bid;
+      const sameTarget=targetCode && sameBudget && String(r.codi||"").trim()===targetCode;
+      if(sameTarget){
+        found=true;
+        const effectivePu=(Number(r.pu)||0) || (total||1);
+        appliedQty=effectivePu?total/effectivePu:0;
+        return {
+          ...r,
+          certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},
+          certsByNum:{...(r.certsByNum||{}),[key]:appliedQty},
+          certAnterior:certNum===1?appliedQty:r.certAnterior,
+          certActual:certNum===2?appliedQty:r.certActual,
+          updatedAt:new Date().toISOString()
+        };
+      }
+      return r;
     });
-    if(!found){partides.push({id:markerId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,adminMonthlyCertNum:key,noPressupost:true,cap,codi,ut:"ut",concepte,desc:`Quadre mensual d’administració CERT. ${certNum}. ${adminData.targetPartidaCodi?`Vinculat a partida ${adminData.targetPartidaCodi}. `:""}Total: ${money(total)}`,q:0,pu:total,certsByNum:{[key]:total?1:0},certAnterior:certNum===1?(total?1:0):0,certActual:certNum===2?(total?1:0):0,tipus:"Administració mensual certificable",createdFromCert:certNum,createdAt:new Date().toISOString()});}
+    if(!targetCode){
+      // Si no hi ha partida existent, es crea o reutilitza UNA partida resum per codi, no una nova cada mes.
+      const markerId=`admin-monthly-${bid}-${manualCodi}`;
+      for(let i=0;i<partides.length;i++){
+        const r=partides[i];
+        const same=(r.adminMonthlyId===markerId)||(((r.budgetId||"principal")===bid)&&String(r.codi||"").trim()===manualCodi&&r.adminMonthlyAuto);
+        if(same){
+          found=true;
+          partides[i]={...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"ut",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:0,pu:total||r.pu||0,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},certsByNum:{...(r.certsByNum||{}),[key]:total?1:0},certAnterior:certNum===1?(total?1:0):r.certAnterior,certActual:certNum===2?(total?1:0):r.certActual,updatedAt:new Date().toISOString()};
+          break;
+        }
+      }
+      if(!found){
+        partides.push({id:markerId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"ut",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:0,pu:total,certAdminMonthlyByNum:{[key]:adminData},certsByNum:{[key]:total?1:0},certAnterior:certNum===1?(total?1:0):0,certActual:certNum===2?(total?1:0):0,tipus:"Administració mensual certificable",createdFromCert:certNum,createdAt:new Date().toISOString()});
+      }
+    }
     return {...d,certAdminMonthlyByNum:{...(d.certAdminMonthlyByNum||{}),[key]:adminData},partides,updatedAt:new Date().toISOString()};
   });
   setCertCapsOpen879(o=>({...o,[cap]:true}));
-  setDraft(x=>({...x,[codi]:"1"}));
+  // Si s'ha assignat a una partida existent, la quantitat visible és total/PU per no canviar el pressupost base.
+  const targetRow=(rows||[]).find(r=>String(r.codi||"").trim()===(targetCode||codi));
+  const effectivePu=(Number(targetRow?.pu)||0) || (targetCode ? (total||1) : total);
+  setDraft(x=>({...x,[targetCode||codi]:String(targetCode?(effectivePu?total/effectivePu:0):(total?1:0))}));
   setAdminMonthlyOpen878127(false);
 }
 

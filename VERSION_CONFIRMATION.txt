@@ -1,3 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.129 - RESTORE CERT GRID + ADMIN CAPITOL FLOW
-Derivada de V87.128. Recuperació de graella i flux administració mensual.
+VERSIO: V87.130 - CERTIFICACIO COMPACTA + ADMINISTRACIO DIRECTA A PARTIDA
+PAQUET: CARPETA UNICA DE VALIDACIO
+
+Derivada de V87.129. Correcció urgent de graella i quadre d'administració.
