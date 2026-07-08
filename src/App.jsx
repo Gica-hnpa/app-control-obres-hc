@@ -3630,8 +3630,19 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
 
   function addPartida(cap){
     if(!editBudget8760b)return;
-    setCaps(p=>{const arr=[...(p[cap]||[])];const base=(String(cap).match(/(\d+)/)?.[1]||"").padStart(2,"0");const next=arr.length+1;return {...p,[cap]:[...arr,{codi:base?`${base}.${String(next).padStart(2,"0")}`:"",cap,concepte:"Nova partida",ut:"ut",q:1,pu:0,tipus:"Base"}]}});
+    setCaps(p=>{const arr=[...(p[cap]||[])];const base=(String(cap).match(/(\d+)/)?.[1]||"").padStart(2,"0");const next=arr.length+1;return {...p,[cap]:[...arr,{codi:base?`${base}.${String(next).padStart(2,"0")}`:"",cap,concepte:"Nova partida",ut:"ut",q:"1",pu:"0",tipus:"Base"}]}});
     setOpen(o=>({...o,[cap]:true}));
+  }
+
+  function deletePartida878125(cap,i){
+    if(!editBudget8760b)return;
+    const row=(caps?.[cap]||[])[i];
+    if(!confirm(`Eliminar aquesta partida del pressupost?\n${row?.codi||""} ${row?.concepte||""}`))return;
+    setCaps(p=>{
+      const arr=[...(p[cap]||[])];
+      arr.splice(i,1);
+      return {...p,[cap]:arr};
+    });
   }
 
   const total=Object.values(caps).flat().reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
@@ -3668,7 +3679,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
             </div>
 
             {open[cap]&&<div className="budget-v25-lines">
-              <div className="budget-v25-line head"><span>Codi</span><span>Ut</span><span>Concepte</span><span>Amid.</span><span>Preu/ut</span><span>Total</span></div>
+              <div className="budget-v25-line head"><span>Codi</span><span>Ut</span><span>Concepte</span><span>Amid.</span><span>Preu/ut</span><span>Total</span><span>{editBudget8760b?"Acció":""}</span></div>
               {sortPartides8779(items).map((r)=>{
                 const i=(items||[]).findIndex(x=>x===r);
                 const t=(+r.q||0)*(+r.pu||0);
@@ -3676,9 +3687,10 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                   <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
                   <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
                   <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
-                  <input type="number" step="0.01" value={Number(r.q||0).toFixed(2)} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",Number(e.target.value||0).toFixed(2))}/>
-                  <input type="number" step="0.01" value={Number(r.pu||0).toFixed(2)} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",Number(e.target.value||0).toFixed(2))}/>
+                  <input type="text" inputMode="decimal" value={r.q??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",String(parseNum8770(e.target.value)||0))}/>
+                  <input type="text" inputMode="decimal" value={r.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",String(parseNum8770(e.target.value)||0))}/>
                   <b>{money(t)}</b>
+                  {editBudget8760b?<button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button>:<span/>}
                 </div>
               })}
               {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
@@ -3737,6 +3749,8 @@ const[certCapsOpen879,setCertCapsOpen879]=useState({});
 const[certMode8711,setCertMode8711]=useState("resum");
 const[medicioTarget8780,setMedicioTarget8780]=useState(null);
 const[includeMesures8780,setIncludeMesures8780]=useState(false);
+const[extraOpen878125,setExtraOpen878125]=useState(false);
+const[extraDraft878125,setExtraDraft878125]=useState({tipus:"modificacio",cap:"",codi:"",ut:"ut",concepte:"",q:"1",pu:"0",desc:""});
 const[dateDraft8721,setDateDraft8721]=useState({});
 const[dateDraftSafe8720,setDateDraftSafe8720]=useState({});
 let rows=data.partides||[], caps=group(rows,"cap");
@@ -3779,6 +3793,51 @@ function focusNextCertInput878106(e){
   const next=inputs[idx+1];
   if(next){next.focus();next.select?.();}
 }
+function capNames878125(){return Object.keys(caps||{}).sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true}))}
+function nextCertExtraCode878125(cap){
+  const arr=(caps?.[cap]||[]);
+  const base=(String(cap||"").match(/(\d+)/)?.[1]||"99").padStart(2,"0");
+  let max=arr.reduce((m,r)=>{const mm=String(r.codi||"").match(/\.(\d+)$/);return Math.max(m,mm?+mm[1]:0)},0);
+  return `${base}.${String(max+1).padStart(2,"0")}`;
+}
+function addExtraCertLine878125(){
+  const tipus=extraDraft878125.tipus||"modificacio";
+  const cap=String(extraDraft878125.cap||capNames878125()[0]||"C99 EXTRES / MODIFICACIONS").trim();
+  const isProv=tipus==="provisio";
+  const qRaw=parseNum8770(extraDraft878125.q);
+  const puRaw=parseNum8770(extraDraft878125.pu);
+  const q=Number.isFinite(qRaw)?qRaw:0;
+  const pu=Number.isFinite(puRaw)?puRaw:0;
+  const concepte=String(extraDraft878125.concepte||"").trim() || (isProv?"Provisió de fons":"Partida extra / modificació");
+  if(!q && !isProv)return alert("Indica una quantitat certificada.");
+  if(!pu)return alert("Indica el preu unitari o import de la partida.");
+  const codi=String(extraDraft878125.codi||nextCertExtraCode878125(cap)).trim();
+  const certQty=isProv?1:q;
+  const pressQty=isProv?0:q;
+  const row={
+    id:"extra-cert-"+Date.now(),
+    budgetId:data.activeBudgetIdObra||"principal",
+    cap,
+    codi,
+    ut:isProv?"pa":(extraDraft878125.ut||"ut"),
+    concepte,
+    desc:String(extraDraft878125.desc||"").trim(),
+    q:pressQty,
+    pu,
+    certAnterior:certNum===1?certQty:0,
+    certActual:certNum===2?certQty:0,
+    certsByNum:{[String(certNum)]:certQty},
+    tipus:isProv?"Provisió de fons certificable":"Extra / modificació certificació",
+    noPressupost:isProv,
+    createdFromCert:certNum,
+    createdAt:new Date().toISOString()
+  };
+  setData?.(d=>({...d,partides:[...(d.partides||[]),row],updatedAt:new Date().toISOString()}));
+  setDraft(x=>({...x,[codi]:String(certQty)}));
+  setCertCapsOpen879(o=>({...o,[cap]:true}));
+  setExtraOpen878125(false);
+  setExtraDraft878125({tipus:"modificacio",cap,codi:"",ut:"ut",concepte:"",q:"1",pu:"0",desc:""});
+}
 
 return <div className="stack">{medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780.codi,lines,total)}/>}
 <Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
@@ -3794,11 +3853,13 @@ return <div className="stack">{medicioTarget8780&&<MedicioModal8780 row={medicio
     <div className="actions-inline">
       <button className="secondary" onClick={()=>{setEditing(!editing);setCertMode8711("emplenar")}}>{editing?"Tancar edició":`Editar amidaments CERT. ${certNum}`}</button>
       <button className="primary" onClick={guardarAmidaments}><Save/> Guardar amidaments</button>
+      <button type="button" className="secondary" onClick={()=>setExtraOpen878125(v=>!v)}>+ Partida extra / provisió</button>
       <label className="check-print-v8780"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Imprimir línies de medició</label>
       <button className="primary" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,rows:rows.map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*(+r.pu||0),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Imprimir / PDF</button>
     </div>
   </div>
   {certMode8711==="resum"&&<CertResumV69 data={data}/>} 
+  {extraOpen878125&&<div className="cert-extra-panel-v878125"><div><b>Crear partida des de la certificació</b><span>Serveix per extres/modificacions o per una provisió de fons que suma a la certificació però no incrementa el pressupost.</span></div><div className="cert-extra-form-v878125"><label><span>Tipus</span><select value={extraDraft878125.tipus} onChange={e=>setExtraDraft878125(x=>({...x,tipus:e.target.value}))}><option value="modificacio">Extra / modificació incorporada al pressupost</option><option value="provisio">Provisió de fons · només certificació</option></select></label><label><span>Capítol</span><select value={extraDraft878125.cap} onChange={e=>setExtraDraft878125(x=>({...x,cap:e.target.value}))}><option value="">Primer capítol / C99</option>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}<option value="C99 EXTRES / MODIFICACIONS">C99 EXTRES / MODIFICACIONS</option></select></label><label><span>Codi</span><input value={extraDraft878125.codi} onChange={e=>setExtraDraft878125(x=>({...x,codi:e.target.value}))} placeholder="Automàtic"/></label><label><span>Unitat</span><input value={extraDraft878125.ut} onChange={e=>setExtraDraft878125(x=>({...x,ut:e.target.value}))}/></label><label className="wide"><span>Concepte</span><input value={extraDraft878125.concepte} onChange={e=>setExtraDraft878125(x=>({...x,concepte:e.target.value}))} placeholder="Ex: Reforç extra / provisió de fons"/></label><label><span>Quantitat certificada</span><input inputMode="decimal" value={extraDraft878125.q} onChange={e=>setExtraDraft878125(x=>({...x,q:e.target.value}))}/></label><label><span>Preu unitari / import</span><input inputMode="decimal" value={extraDraft878125.pu} onChange={e=>setExtraDraft878125(x=>({...x,pu:e.target.value}))}/></label><label className="wide"><span>Descripció</span><input value={extraDraft878125.desc} onChange={e=>setExtraDraft878125(x=>({...x,desc:e.target.value}))}/></label></div><div className="actions-inline"><button type="button" className="primary" onClick={addExtraCertLine878125}>Afegir a aquesta certificació</button><button type="button" className="secondary" onClick={()=>setExtraOpen878125(false)}>Cancel·lar</button></div></div>}
   {certMode8711==="emplenar"&&<div className="cert-grid-wrap-v69">
     <div className="cert-grid-v69 group">
       <div className="g pressupost">PRESSUPOST</div>
@@ -3821,7 +3882,7 @@ return <div className="stack">{medicioTarget8780&&<MedicioModal8780 row={medicio
         return <div className="cert-grid-v69 row" key={r.codi}>
           <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
-          <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))} onBlur={e=>commitOne(r.codi,e.target.value)}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
+          <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
           <div className={qo>0?"origin-fill":""}>{qty2(qo)}</div><div className={qo>0?"origin-fill":""}>{pct(pc(qo,r))}</div><div className={qo>0?"origin-fill":""}>{money(io)}</div>
         </div>
@@ -4851,7 +4912,7 @@ function proformaPrintHtml8783(doc,obra,client){
   const totalOrigen=pf.totalOrigen||rows.reduce((s,r)=>s+(+r.impOrigin||0),0);
   const bodyRows=rows.map(r=>`<tr><td>${escHtmlV8772(r.codi)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b>${r.desc?`<details class="print-desc-toggle-v87117"><summary>Veure descripció</summary><small>${escHtmlV8772(r.desc)}</small></details>`:""}</td><td class="num">${qty2(r.qOrigin||0)}</td><td class="num">${money(r.pu)}</td><td class="num">${money(r.impOrigin||0)}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">Sense partides certificades a origen.</td></tr>`;
   const deductionRows=prevTotals.length?prevTotals.map(c=>`<tr><th>Deducció Certificació ${c.n}</th><td class="num">-${money(c.total)}</td></tr>`).join(""):`<tr><th>No hi ha certificacions anteriors</th><td class="num">${money(0)}</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Factura proforma")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.25}.issuer-v87100 b{font-size:12px;margin-bottom:2px}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:10px}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5mm}th,td{border:1px solid #cbd5e1;padding:6px 7px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.num{text-align:right!important;font-variant-numeric:tabular-nums}.print-desc-toggle-v87117{margin-top:3px}.print-desc-toggle-v87117 summary{cursor:pointer;color:#2563eb;font-weight:900;font-size:9px}.print-desc-toggle-v87117 small{display:block;white-space:pre-wrap;color:#475569;line-height:1.25;margin-top:3px}.totals{width:86mm;margin-left:auto;margin-top:8mm}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0}.totals .total{border-top:2px solid #0f172a;border-bottom:0;font-size:18px;margin-top:6px;padding-top:9px}.empty{text-align:left!important;color:#64748b}.cert-lines{width:92mm;margin-left:auto}.cert-lines th{text-align:left}.cert-lines td{text-align:right}.cert-lines .strong th,.cert-lines .strong td{background:#f1f5f9;font-weight:900}@media screen{body{background:#e5e7eb;padding:18px}.page{box-shadow:0 2px 18px rgba(15,23,42,.18);padding:14mm;transform-origin:top center}}@media(max-width:900px){body{padding:8px}.page{width:182mm;min-height:269mm;padding:10mm;transform:scale(.54);transform-origin:top left;margin:0 auto}.head{grid-template-columns:1fr 1fr;gap:8mm}table{font-size:9.5px}th,td{padding:4px 5px}.concept{font-size:9.5px}.totals{width:74mm}}@media print{body{background:#fff!important;padding:0!important}.page{box-shadow:none!important;padding:0!important;width:182mm!important;min-height:269mm!important}table{table-layout:fixed!important}.concept{overflow:hidden!important;overflow-wrap:anywhere!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div><h3>Client / expedient</h3><p><b>${escHtmlV8772(obra?.propietat||client?.nom||"Client")}</b><br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}<br>${escHtmlV8772(obra?.adreca||"")} ${escHtmlV8772(obra?.poblacio||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"FACTURA PROFORMA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}</p></div><b>${money(total)}</b></div><h3>Partides certificades a origen</h3><table><colgroup><col style="width:13mm"><col style="width:auto"><col style="width:15mm"><col style="width:18mm"><col style="width:22mm"></colgroup><thead><tr><th>Codi</th><th>Concepte / descripció</th><th>Q origen</th><th>Preu</th><th>Total origen</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr><th colspan="4">TOTAL A ORIGEN</th><th>${money(totalOrigen)}</th></tr></tfoot></table><table class="cert-lines"><tbody><tr class="strong"><th>Total certificat a origen</th><td>${money(totalOrigen)}</td></tr>${deductionRows}</tbody></table><div class="totals"><div><span>Deducció ${ded}%</span><b>-${money(base-baseImposable)}</b></div><div><span>Base imposable</span><b>${money(baseImposable)}</b></div><div><span>IVA ${iva}%</span><b>${money(ivaImp)}</b></div><div><span>Retenció ${ret}%</span><b>-${money(retImp)}</b></div><div class="total"><span>Total proforma</span><b>${money(total)}</b></div></div></section></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Factura proforma")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.25}.issuer-v87100 b{font-size:12px;margin-bottom:2px}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:10px}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5mm}th,td{border:1px solid #cbd5e1;padding:6px 7px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.num{text-align:right!important;font-variant-numeric:tabular-nums}.print-desc-toggle-v87117{margin-top:3px}.print-desc-toggle-v87117 summary{cursor:pointer;color:#2563eb;font-weight:900;font-size:9px}.print-desc-toggle-v87117 small{display:block;white-space:pre-wrap;color:#475569;line-height:1.25;margin-top:3px}.totals{width:86mm;margin-left:auto;margin-top:8mm}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:6px 0}.totals .total{border-top:2px solid #0f172a;border-bottom:0;font-size:18px;margin-top:6px;padding-top:9px}.empty{text-align:left!important;color:#64748b}.cert-lines{width:92mm;margin-left:auto}.cert-lines th{text-align:left}.cert-lines td{text-align:right}.cert-lines .strong th,.cert-lines .strong td{background:#f1f5f9;font-weight:900}@media screen{body{background:#e5e7eb;padding:18px}.page{box-shadow:0 2px 18px rgba(15,23,42,.18);padding:14mm;transform-origin:top center}}@media screen and (max-width:900px){body{padding:8px}.page{width:182mm;min-height:269mm;padding:10mm;transform:scale(.54);transform-origin:top left;margin:0 auto}.head{grid-template-columns:1fr 1fr;gap:8mm}table{font-size:9.5px}th,td{padding:4px 5px}.concept{font-size:9.5px}.totals{width:74mm}}@media print{body{background:#fff!important;padding:0!important}.page{box-shadow:none!important;padding:0!important;width:182mm!important;min-height:269mm!important;transform:none!important;margin:0!important}table{table-layout:fixed!important}.concept{overflow:hidden!important;overflow-wrap:anywhere!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div><h3>Client / expedient</h3><p><b>${escHtmlV8772(obra?.propietat||client?.nom||"Client")}</b><br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}<br>${escHtmlV8772(obra?.adreca||"")} ${escHtmlV8772(obra?.poblacio||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"FACTURA PROFORMA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}</p></div><b>${money(total)}</b></div><h3>Partides certificades a origen</h3><table><colgroup><col style="width:13mm"><col style="width:auto"><col style="width:15mm"><col style="width:18mm"><col style="width:22mm"></colgroup><thead><tr><th>Codi</th><th>Concepte / descripció</th><th>Q origen</th><th>Preu</th><th>Total origen</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr><th colspan="4">TOTAL A ORIGEN</th><th>${money(totalOrigen)}</th></tr></tfoot></table><table class="cert-lines"><tbody><tr class="strong"><th>Total certificat a origen</th><td>${money(totalOrigen)}</td></tr>${deductionRows}</tbody></table><div class="totals"><div><span>Deducció ${ded}%</span><b>-${money(base-baseImposable)}</b></div><div><span>Base imposable</span><b>${money(baseImposable)}</b></div><div><span>IVA ${iva}%</span><b>${money(ivaImp)}</b></div><div><span>Retenció ${ret}%</span><b>-${money(retImp)}</b></div><div class="total"><span>Total proforma</span><b>${money(total)}</b></div></div></section></body></html>`;
 }
 
 

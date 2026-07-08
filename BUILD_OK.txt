@@ -1,1 +1,1 @@
-Build correcte V87.124 amb Vite
+Build correcte amb Vite: npm run build validat abans de netejar el paquet.
