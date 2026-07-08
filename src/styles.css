@@ -4008,3 +4008,21 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .budget-v25-cap-head{grid-template-columns:28px 1fr!important;}
   .budget-v25-cap-head span,.budget-v25-cap-head strong,.budget-v25-cap-head .danger.small{grid-column:2;text-align:left!important;justify-self:start;}
 }
+
+
+/* V87.127 · Administració mensual sense deformar la graella de certificació */
+.admin-monthly-v878127{padding:20px;display:flex;flex-direction:column;gap:16px}
+.admin-monthly-config-v878127{display:grid;grid-template-columns:1fr 140px 1.6fr 150px 170px;gap:12px;align-items:end}
+.admin-monthly-config-v878127 label span{display:block;font-size:12px;font-weight:900;color:#334155;margin-bottom:5px}
+.admin-monthly-config-v878127 input{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:white}
+.admin-monthly-table-v878127{min-width:1120px;font-size:12px;border:2px solid #111827}
+.admin-monthly-table-v878127 th{background:#93c5fd!important;color:#0f172a;font-weight:900;text-align:center!important;border:1px solid #111827!important}
+.admin-monthly-table-v878127 td{border:1px solid #111827!important;vertical-align:middle;text-align:right!important}
+.admin-monthly-table-v878127 th:first-child,.admin-monthly-table-v878127 td:first-child{text-align:left!important;min-width:360px}
+.admin-monthly-table-v878127 input{width:100%;border:0;background:transparent;padding:6px;font-size:12px}
+.admin-monthly-table-v878127 td:first-child input{text-align:left}
+.admin-monthly-table-v878127 tfoot th{background:#f8fafc!important;font-weight:900;border-top:2px solid #111827!important}
+.admin-monthly-open-v878127{border-color:#93c5fd!important;background:#eff6ff!important;color:#1d4ed8!important}
+.cert-current-cell-v8780{min-width:0!important}
+.cert-current-cell-v8780 .cert-edit-input-v69{width:82px!important;min-width:82px!important}
+@media(max-width:900px){.admin-monthly-config-v878127{grid-template-columns:1fr}.admin-monthly-table-v878127{min-width:980px}.admin-monthly-v878127{padding:12px}}
