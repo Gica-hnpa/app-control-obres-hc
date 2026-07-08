@@ -212,6 +212,26 @@ class SafeRenderBoundary878108 extends React.Component{
 }
 
 const months=["Gener","Febrer","Març","Abril","Maig","Juny","Juliol","Agost","Setembre","Octubre","Novembre","Desembre"];
+const EXPEDIENT_STATUS878136=["Pressupostat","Acceptat","En curs / Actiu","Tancat","Anul·lat","No acceptat","Pendent de resposta","En revisió"];
+function normalizeExpedientStatus878136(v){
+  const s=String(v||"").trim().toLowerCase();
+  if(!s)return "Pendent de resposta";
+  if(s.includes("pressupost"))return "Pressupostat";
+  if(s.includes("accept")&&!s.includes("no"))return "Acceptat";
+  if(s.includes("actiu")||s.includes("activa")||s.includes("curs")||s.includes("proc"))return "En curs / Actiu";
+  if(s.includes("tanc")||s.includes("final"))return "Tancat";
+  if(s.includes("anul"))return "Anul·lat";
+  if(s.includes("no accept")||s.includes("descart")||s.includes("rebutj")||s.includes("no contest"))return "No acceptat";
+  if(s.includes("revis"))return "En revisió";
+  if(s.includes("pendent"))return "Pendent de resposta";
+  return v||"Pendent de resposta";
+}
+function isExpedientOpen878136(v){const n=normalizeExpedientStatus878136(v);return !["Tancat","Anul·lat","No acceptat"].includes(n)}
+function statusOptions878136(current){const n=normalizeExpedientStatus878136(current);return [...new Set([n,...EXPEDIENT_STATUS878136].filter(Boolean))]}
+function todayStartMs878136(){const d=new Date();d.setHours(0,0,0,0);return d.getTime()}
+function isFutureOrTodayEvent878136(e){const t=eventTime8783(e);return t>=todayStartMs878136()}
+function fmtEventDate878136(e){return e?.day?`${String(e.day).padStart(2,'0')}/${String((+e.month||0)+1).padStart(2,'0')}/${e.year}`:(fmtAppDate8748(e?.data)||"Sense data")}
+
 const years=Array.from({length:11},(_,i)=>2023+i);
 const CP_MUNICIPIS8773=[
   {cp:"17230",poblacio:"Palamós"},{cp:"17251",poblacio:"Calonge"},{cp:"17252",poblacio:"Sant Antoni de Calonge"},{cp:"17256",poblacio:"Pals"},{cp:"17255",poblacio:"Begur"},{cp:"17220",poblacio:"Sant Feliu de Guíxols"},{cp:"17248",poblacio:"S'Agaró"},{cp:"17250",poblacio:"Platja d'Aro"},{cp:"17246",poblacio:"Santa Cristina d'Aro"},{cp:"17100",poblacio:"La Bisbal d'Empordà"},{cp:"17130",poblacio:"L'Escala"},{cp:"17140",poblacio:"Ullà"},{cp:"17137",poblacio:"Garrigoles"},{cp:"17001",poblacio:"Girona"},{cp:"17002",poblacio:"Girona"},{cp:"17003",poblacio:"Girona"},{cp:"17004",poblacio:"Girona"},{cp:"17005",poblacio:"Girona"},{cp:"17006",poblacio:"Girona"},{cp:"17007",poblacio:"Girona"},{cp:"08001",poblacio:"Barcelona"},{cp:"08002",poblacio:"Barcelona"},{cp:"08003",poblacio:"Barcelona"},{cp:"08004",poblacio:"Barcelona"},{cp:"08005",poblacio:"Barcelona"},{cp:"08006",poblacio:"Barcelona"},{cp:"08007",poblacio:"Barcelona"},{cp:"08008",poblacio:"Barcelona"},{cp:"08009",poblacio:"Barcelona"},{cp:"08010",poblacio:"Barcelona"}
@@ -868,7 +888,7 @@ function SafeFormExpedient8751({clients,onSubmit}){
   return <form onSubmit={onSubmit} className="safe-form-exp-v8751"><DatalistCP8773/><datalist id="agents-base-v8773"><option>Héctor Cubero</option><option>Arquitecte tècnic pendent</option><option>Arquitecte pendent</option><option>Constructor pendent</option><option>Coordinador S+S pendent</option></datalist><div className="form-grid">
     <label><span>Client *</span><select name="client" value={mode} onChange={e=>setMode(e.target.value)} required><option value="__new__">+ Crear client nou</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
     {mode==='__new__'&&<><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" defaultValue="Pendent"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" defaultValue="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" defaultValue="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" defaultValue="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" defaultValue="Pendent"/></label></>}
-    <label><span>Nom expedient *</span><input name="nom" required value={nom} onChange={e=>setNom(e.target.value)}/></label><label><span>Descripció breu</span><input name="subtitol" value={subtitol} onChange={e=>setSubtitol(e.target.value)}/></label><label><span>Any</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label><label><span>Estat</span><select name="estat"><option>Pressupostada</option><option>Acceptada</option><option>Activa</option><option>En procés</option><option>Pendent</option><option>Tancada</option></select></label>
+    <label><span>Nom expedient *</span><input name="nom" required value={nom} onChange={e=>setNom(e.target.value)}/></label><label><span>Descripció breu</span><input name="subtitol" value={subtitol} onChange={e=>setSubtitol(e.target.value)}/></label><label><span>Any</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label><label><span>Estat</span><select name="estat">{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select></label>
     <label className="span-all"><span>Tipus de treball / encàrrec *</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)} required>{types.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==='Altres'&&<label><span>Altres</span><input name="tipusTreballAltres"/></label>}
     <label className="span-all"><span>Definició tipus de feina</span><textarea name="definicioFeina" value={definicioFeina} onChange={e=>setDefinicioFeina(e.target.value)} placeholder="Defineix l'abast de l'encàrrec..."/></label>
     <label className="span-all"><span>Direcció / criteri de l’obra</span><textarea name="direccioObraText" value={direccioObraText} onChange={e=>setDireccioObraText(e.target.value)} placeholder="Direcció d’obra, seguiment o criteri aplicable..."/></label>
@@ -1663,7 +1683,7 @@ const obraSnapshot=(obraBase?.id&&odata?.[obraBase.id]?.obra)?odata[obraBase.id]
 const obra=applyWorkTemplate878121({...obraBase,...obraSnapshot,id:obraBase.id||obraSnapshot.id||""},obraSnapshot.tipusTreball||obraBase.tipusTreball||obraBase.tipologia,false);
 const client=clients.find(c=>c.id===obra?.client)||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(odata[obra.id]||empty()):empty();
 const fClients=clients.filter(c=>(!ct||c.tipus===ct)&&(c.nom+" "+c.rao+" "+c.contacte).toLowerCase().includes(cs.toLowerCase()));
-const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||o.estat===ost)&&(!ot||canonicalWorkType8740(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
+const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||normalizeExpedientStatus878136(o.estat)===normalizeExpedientStatus878136(ost))&&(!ot||canonicalWorkType8740(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
 const byClient=useMemo(()=>{let m={};fObres.forEach(o=>{m[o.client]??={};m[o.client][o.any]??=[];m[o.client][o.any].push(o)});return m},[fObres]);
 const setD=(id,up)=>{
   const now=new Date().toISOString();
@@ -2401,7 +2421,7 @@ function Card({title,children,action}){return <div className="card"><div classNa
 function Input(p){return <label><span>{p.label}</span><input name={p.name} defaultValue={p.defaultValue} readOnly={p.readOnly} onChange={p.onChange}/></label>}
 function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</strong></div>}
 function Empty({text}){return <div className="empty">{text}</div>}
-function Badge({estat}){let e=String(estat||"");let cls=e==="Activa"||e==="Acceptada"?"ok":e==="Pressupostada"||e==="En procés"||e==="Pendent"?"warn":e==="Aturada"||e==="Descartada"||e==="No contestat"?"danger":e==="Tancada"?"dark":"info";return <span className={`badge ${cls}`}>{estat}</span>}
+function Badge({estat}){let e=normalizeExpedientStatus878136(estat);let cls=e==="Acceptat"||e==="En curs / Actiu"?"ok":e==="Pressupostat"||e==="Pendent de resposta"||e==="En revisió"?"warn":e==="Anul·lat"||e==="No acceptat"?"danger":e==="Tancat"?"dark":"info";return <span className={`badge ${cls}`}>{e}</span>}
 
 function timeValue8783(v){
   if(!v)return 0;
@@ -2474,13 +2494,15 @@ function collectActivities8783(obres=[],odata={},clients=[]){
     const d=odata[o.id]||{};
     const push=(type,title,detail,t,tab)=>out.push({type,title,detail,time:t,obra:o,tab});
     push('Expedient','Expedient modificat',`${expedientCode8739(o)} · ${o.nom}`,obraScore8783(o,d),'Resum');
-    (d.events||[]).forEach(e=>push('Agenda',e.title||e.titol||'Cita / avís',`${clientName(o)} · ${e.hora||''} · ${e.note||e.detail||''}`,eventTime8783(e),'Agenda / Avisos'));
+    (d.events||[]).forEach(e=>{const t=eventTime8783(e);if(t&&t<=Date.now()+60*60*1000)push('Agenda',e.title||e.titol||'Cita / avís',`${clientName(o)} · ${e.hora||''} · ${e.note||e.detail||''}`,t,'Agenda / Avisos')});
     (d.actes||[]).forEach(a=>push('Acta',a.titol||'Acta',`${expedientCode8739(o)} · ${a.data||''}`,itemTime8783(a),'Actes'));
     (d.documents||[]).forEach(doc=>push('Document',doc.nom||'Document',`${doc.folder||'Documents'} · ${expedientCode8739(o)}`,itemTime8783(doc),'Documents'));
     Object.entries(d.sectionDocs||{}).forEach(([sec,arr])=>(arr||[]).forEach(doc=>push('Document',doc.nom||'Document',`${sec} · ${expedientCode8739(o)}`,itemTime8783(doc),'Documents')));
     (d.pressupostosTecnic||[]).forEach(p=>push('Pressupost',p.concepte||'Pressupost honoraris',`${money(p.base||0)} · ${p.estat||'Pendent'}`,itemTime8783(p),'Honoraris'));
     (d.facturesTecnic||[]).forEach(f=>push('Factura',f.concepte||'Factura honoraris',`${money(f.base||0)} · ${f.estat||'Pendent'}`,itemTime8783(f),'Honoraris'));
-    (d.certificacions||[]).forEach(c=>push('Certificació',`Certificació ${c.numero||''}`,`${money(c.import||0)} · ${expedientCode8739(o)}`,itemTime8783(c),'Gestió obra'));
+    const certMap878136=new Map();
+    (d.certificacions||[]).forEach(c=>{const key=String(c.numero||c.id||'');const t=Math.max(clampActivityTime878134(c.updatedAt),clampActivityTime878134(c.createdAt),clampActivityTime878134(c.data));const prev=certMap878136.get(key);if(!prev||t>prev.t)certMap878136.set(key,{c,t});});
+    [...certMap878136.values()].forEach(({c,t})=>push('Certificació',`Certificació ${c.numero||''}`,`${money(c.import||0)} · ${expedientCode8739(o)}`,t||itemTime8783(c),'Gestió obra'));
     (d.hores||[]).forEach(h=>push('Temps',h.tasca||h.etiqueta||'Registre de temps',`${qty2(h.hores||0)} h · ${money((+h.hores||0)*(+h.preu||0))}`,itemTime8783(h),'Gestió temps'));
   }
   return out.filter(a=>a.time).sort((a,b)=>b.time-a.time);
@@ -2558,30 +2580,34 @@ function certFinancialSummaryFromDoc8794(rows=[],certNum=1,doc={}){
 }
 
 function Inici({clients,obres,odata={},events,setScreen,openObra,newObra}){
-const actius=obres.filter(o=>o.estat!=="Tancada").length;
-const activities=collectActivities8783(obres,odata,clients);
-const recents=[...obres].sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,4);
-const pendents=[...obres].filter(o=>["Pressupostada","En procés","Pendent"].includes(o.estat)).sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,4);
-const autoFacturesPendents=(events||[]).filter(e=>e.auto&&String(e.id||"").startsWith("av-fact-"));
-const properes=[...(events||[])].sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,4);
+const oberts=obres.filter(o=>isExpedientOpen878136(o.estat)).length;
+const activities=collectActivities8783(obres,odata,clients).filter(a=>a.time && a.time<=Date.now()+60*60*1000);
+const recents=[...obres].sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,5);
+const seguiment=[...obres].filter(o=>["Pressupostat","Acceptat","En curs / Actiu","Pendent de resposta","En revisió"].includes(normalizeExpedientStatus878136(o.estat))).sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,5);
+const autoFacturesPendents=(events||[]).filter(e=>e.auto&&String(e.id||"").startsWith("av-fact-")&&isFutureOrTodayEvent878136(e));
+const properes=[...(events||[])].filter(isFutureOrTodayEvent878136).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,6);
+const estatCount=(obres||[]).reduce((m,o)=>{const k=normalizeExpedientStatus878136(o.estat);m[k]=(m[k]||0)+1;return m},{});
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.135 clients, agents i certificacions</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
-<section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
-<section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>{autoFacturesPendents.length>0&&<section className="home-alerts-v8776">{autoFacturesPendents.slice(0,4).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent de cobrament</b><span>{a.obra} · {a.detail}</span></button>)}</section>}
-<section className="dashboard-grid dashboard-grid-v8741">
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Entrada simplificada: expedients recents, cites futures i seguiment útil. La resta queda dins de cada pestanya.</p><span className="version-badge soft">Versió 87.136 inici net i estats reals</span></div><div className="user-card"><strong>Panell tècnic</strong><span>{oberts} expedients oberts</span><span>{properes.length} cites futures</span></div></section>
+<section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Pressupostos")}><ClipboardList/> Honoraris</button></section>
+<section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{oberts}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>PRÒXIMES CITES</small><strong>{properes.length}</strong></button></section>
+<section className="dashboard-grid dashboard-grid-v8741 dashboard-clean-v878136">
   <div className="stack">
-    <Card title="Darrers expedients treballats"><div className="list compact-list-v8741">{recents.length?recents.map(o=><ObraRow key={o.id} o={o} d={odata[o.id]||{}} open={openObra}/>):<Empty text="Encara no hi ha expedients."/>}</div></Card>
-    <Card title="Darreres actuacions i avisos"><div className="activity-panel-v8741">
-      {activities.length?activities.slice(0,6).map(a=><button key={`${a.type}-${a.time}-${a.title}`} className="activity-row-v8741" onClick={()=>openObra(a.obra.id)}><b>{a.type} · {a.title}</b><span>{fmtActivityDate8783(a.time)} · {a.detail}</span></button>):<Empty text="Encara no hi ha moviments registrats."/>}
-      <button className="activity-row-v8741" onClick={()=>setScreen("Treballs / Expedients")}><b>Revisar llistat general</b><span>Veure tots els expedients ordenats i filtrar per tipus de treball.</span></button>
+    <Card title="Darrers expedients oberts"><div className="list compact-list-v8741">{recents.length?recents.map(o=><ObraRow key={o.id} o={o} d={odata[o.id]||{}} open={openObra}/>):<Empty text="Encara no hi ha expedients."/>}</div></Card>
+    <Card title="Pròximes cites i avisos"><div className="home-work-panel-v8741 home-work-panel-v8742">
+      {properes.length===0?<p>No hi ha cites futures. Les cites caducades ja no es mostren aquí.</p>:properes.map(e=><button key={e.id||`${e.title}-${eventTime8783(e)}`} onClick={()=>setScreen("Agenda")}><b>{e.title||e.titol||"Cita"}</b><span>{fmtEventDate878136(e)} · {e.hora||""}{e.obra?` · ${e.obra}`:""}</span></button>)}
+      {autoFacturesPendents.length>0&&<div className="home-alerts-inline-v878136">{autoFacturesPendents.slice(0,3).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent</b><span>{a.obra} · {a.detail}</span></button>)}</div>}
     </div></Card>
   </div>
-  <Card title="Panell de treball del dia"><div className="home-work-panel-v8741 home-work-panel-v8742">
-    <div className="home-panel-section-v8741"><h3>Pròximes cites / avisos</h3>{properes.length===0?<p>No hi ha cites registrades. Crea visites, entregues o recordatoris des de l’agenda.</p>:properes.map(e=><button key={e.id} onClick={()=>setScreen("Agenda")}><b>{e.title||e.titol||"Cita"}</b><span>{e.day?`${String(e.day).padStart(2,'0')}/${String((+e.month||0)+1).padStart(2,'0')}/${e.year}`:(fmtAppDate8748(e.data)||"Sense data")} · {e.hora||""}</span></button>)}</div>
-    <div className="home-panel-section-v8741"><h3>Seguiment pendent</h3>{pendents.length===0?<p>No tens expedients pendents destacats.</p>:pendents.slice(0,3).map(o=><button key={o.id} onClick={()=>openObra(o.id)}><b>{o.estat}</b><span>{expedientCode8739(o)} · {o.nom}</span></button>)}</div>
-    <div className="home-panel-section-v8741"><h3>Últims moviments tècnics</h3>{activities.length===0?<p>Sense moviments tècnics encara.</p>:activities.slice(0,5).map(a=><button key={`mov-${a.type}-${a.time}-${a.title}`} onClick={()=>openObra(a.obra.id)}><b>{a.title}</b><span>{a.type} · {expedientCode8739(a.obra)} · {fmtActivityDate8783(a.time)}</span></button>)}</div>
-    <div className="home-quick-v8741"><button className="primary" onClick={newObra}>+ Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}>Llistat expedients</button><button className="secondary" onClick={()=>setScreen("Pressupostos")}>Pressupostos</button><button className="secondary" onClick={()=>setScreen("Factures")}>Factures</button></div>
-  </div></Card>
+  <div className="stack">
+    <Card title="Seguiment d’expedients"><div className="home-work-panel-v8741 home-work-panel-v8742">
+      <div className="status-summary-v878136">{EXPEDIENT_STATUS878136.map(st=><button key={st} onClick={()=>setScreen("Treballs / Expedients")}><span>{st}</span><b>{estatCount[st]||0}</b></button>)}</div>
+      {seguiment.length===0?<p>No tens expedients pendents destacats.</p>:seguiment.map(o=><button key={o.id} onClick={()=>openObra(o.id)}><b>{normalizeExpedientStatus878136(o.estat)}</b><span>{expedientCode8739(o)} · {o.nom}</span></button>)}
+    </div></Card>
+    <Card title="Últims canvis reals"><div className="activity-panel-v8741">
+      {activities.length?activities.slice(0,5).map(a=><button key={`${a.type}-${a.time}-${a.title}`} className="activity-row-v8741" onClick={()=>openObra(a.obra.id)}><b>{a.type} · {a.title}</b><span>{fmtActivityDate8783(a.time)} · {a.detail}</span></button>):<Empty text="Encara no hi ha moviments registrats."/>}
+    </div></Card>
+  </div>
 </section>
 </>}
 function Clients({clients,obres=[],odata={},cs,setCs,ct,setCt,openClient,newClient,setClients,setObres}){
@@ -2716,7 +2742,7 @@ function ClientExpedientsList878108({obres=[],openObra,clientName="client"}){
 function Projectes({byClient,clients,openObra,deleteObra,f,newObra,setScreen}){
 let flat=[];Object.entries(byClient||{}).forEach(([cid,ys])=>Object.entries(ys||{}).forEach(([y,items])=>(items||[]).forEach(o=>flat.push(o))));
 flat.sort((a,b)=>String(expedientCode8739(b)).localeCompare(String(expedientCode8739(a))));
-let total=flat.length, actius=flat.filter(o=>o.estat!=="Tancada").length;
+let total=flat.length, actius=flat.filter(o=>isExpedientOpen878136(o.estat)).length;
 let tipusCount=flat.reduce((m,o)=>{let t=moduleLabel8737(o);m[t]=(m[t]||0)+1;return m},{});
 let estatCount=flat.reduce((m,o)=>{let t=o.estat||"Sense estat";m[t]=(m[t]||0)+1;return m},{});
 let anys=[...new Set(flat.map(o=>o.any||String(new Date().getFullYear())))].sort((a,b)=>String(b).localeCompare(String(a),"ca",{numeric:true}));
@@ -2733,7 +2759,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
         <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
         <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els tipus de treball</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select>
         <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option>{[...new Set([...anys,"2026","2025"].filter(Boolean))].map(y=><option key={y}>{y}</option>)}</select>
-        <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>En procés</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select>
+        <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option>{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select>
         <button type="button" className="secondary" onClick={clearAll}>Netejar filtres</button>
       </div>
     </details>
@@ -2742,7 +2768,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
       <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
       <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els tipus de treball</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select>
       <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select>
-      <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option><option>Activa</option><option>En procés</option><option>Pressupostada</option><option>Acceptada</option><option>Tancada</option></select>
+      <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option>{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select>
     </div>
     <div className="exp-list-header-v8741"><span>{total} expedients filtrats</span><div className="actions-inline"><button className="secondary" onClick={clearAll}>Netejar filtres</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>Tornar a tots els tipus</button>}</div></div>
     <div className="exp-mobile-tree-v87119">
@@ -2769,7 +2795,7 @@ function EditObraModal8725({obra,clients=[],close,save}){
 const clientNames=[...new Set((clients||[]).map(c=>c.nom).filter(Boolean))];
 const serveisBase=WORK_TYPES8737;
 const serveis=[...new Set([canonicalWorkType8740(obra.tipusTreball||obra.tipologia),...serveisBase].filter(Boolean))];
-const estats=["Acceptada","Pressupostada","En procés","No contestat","Pendent","Activa","Aturada","Tancada","Descartada"];
+const estats=statusOptions878136(obra.estat);
 const[f,setF]=useState(()=>({...obra}));
 function ch(k,v){setF(x=>({...x,[k]:v}))}
 function selectClient(nom){
@@ -2794,7 +2820,7 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
     <label><span>Tipus de treball</span><select value={canonicalWorkType8740(f.tipusTreball||f.tipologia||"")} onChange={e=>{const t=canonicalWorkType8740(e.target.value);ch("tipusTreball",t);ch("tipologia",t)}}>
       {serveis.map(t=><option key={t} value={t}>{t}</option>)}
     </select></label>
-    <label><span>Estat</span><select value={f.estat||"Pressupostada"} onChange={e=>ch("estat",e.target.value)}>
+    <label><span>Estat</span><select value={normalizeExpedientStatus878136(f.estat||"Pressupostat")} onChange={e=>ch("estat",e.target.value)}>
       {estats.map(e=><option key={e} value={e}>{e}</option>)}
     </select></label>
     <label><span>Subtítol</span><input value={f.subtitol||""} onChange={e=>ch("subtitol",e.target.value)} /></label>
@@ -3471,7 +3497,7 @@ return <Modal title="Modificar fitxa de l’obra" close={close}>
     <label><span>NIF propietat</span><input value={f.nifPropietat||""} onChange={e=>ch("nifPropietat",e.target.value)}/></label>
     <label><span>Adreça</span><input value={f.adreca||""} onChange={e=>ch("adreca",e.target.value)}/></label>
     <label><span>Població</span><input value={f.poblacio||""} onChange={e=>ch("poblacio",e.target.value)}/></label>
-    <label><span>Estat</span><select value={f.estat||"Activa"} onChange={e=>ch("estat",e.target.value)}><option>Activa</option><option>Pendent</option><option>En curs</option><option>Finalitzada</option><option>Tancada</option></select></label>
+    <label><span>Estat</span><select value={normalizeExpedientStatus878136(f.estat)} onChange={e=>ch("estat",e.target.value)}>{statusOptions878136(f.estat).map(st=><option key={st}>{st}</option>)}</select></label>
     <label><span>Tipologia</span><input value={f.tipologia||""} onChange={e=>ch("tipologia",e.target.value)}/></label>
     <label className="span-all"><span>Observacions</span><textarea value={f.observacions||""} onChange={e=>ch("observacions",e.target.value)}/></label>
   </div>
@@ -3487,10 +3513,12 @@ let totalHores=hores.reduce((s,h)=>s+(+h.hores||0),0);
 let costTemps=hores.reduce((s,h)=>s+(+h.hores||0)*(+h.preu||0)+(+h.despeses||0),0);
 function itemDateIso(x){return toInputDate8743(x.updatedAt||x.data||x.createdAt||todayISO8743())}
 let latest=[];
-latest.push(...events.map(e=>({tipus:e.type||"Agenda",data:`${String(e.day||"--").padStart(2,"0")}/${String((e.month??0)+1).padStart(2,"0")}/${e.year||""}`,iso:`${e.year||"0000"}-${String((e.month??0)+1).padStart(2,"0")}-${String(e.day||1).padStart(2,"0")}`,txt:e.title||e.note||"Cita / avís"})));
-latest.push(...actes.map(a=>({tipus:"Acta",data:fmtAppDate8748(a.data),iso:itemDateIso(a),txt:a.titol||"Acta d’expedient"})));
+latest.push(...events.map(e=>({tipus:e.type||"Agenda",data:fmtEventDate878136(e),iso:new Date(eventTime8783(e)||0).toISOString(),txt:e.title||e.note||"Cita / avís",future:eventTime8783(e)>Date.now()+60*60*1000})).filter(x=>!x.future));
+latest.push(...actes.map(a=>({tipus:"Acta",data:fmtAppDate8748(a.updatedAt||a.data),iso:itemDateIso(a),txt:a.titol||"Acta d’expedient"})));
 function certImportResum878126(c){const n=+c.numero||0;const calc=(data.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*(+r.pu||0),0);return calc||(+c.import||0)||0}
-latest.push(...certs.map(c=>({tipus:"Certificació",data:fmtAppDate8748(c.data),iso:itemDateIso(c),txt:`Certificació ${c.numero||""} · ${money(certImportResum878126(c))}`})));
+const certMapResum878136=new Map();
+certs.forEach(c=>{const key=String(c.numero||c.id||"");const t=Math.max(clampActivityTime878134(c.updatedAt),clampActivityTime878134(c.createdAt),clampActivityTime878134(c.data));const prev=certMapResum878136.get(key);if(!prev||t>prev.t)certMapResum878136.set(key,{c,t});});
+latest.push(...[...certMapResum878136.values()].map(({c,t})=>({tipus:"Certificació",data:fmtActivityDate8783(t||timeValue8783(c.data)),iso:new Date(t||timeValue8783(c.data)||0).toISOString(),txt:`Certificació ${c.numero||""} · ${money(certImportResum878126(c))}`})));
 latest.push(...pressupostos.map(p=>({tipus:"Pressupost",data:fmtAppDate8748(p.data),iso:itemDateIso(p),txt:p.concepte||p.nom||"Pressupost tècnic"})));
 latest.push(...factures.map(f=>({tipus:"Factura honoraris",data:fmtAppDate8748(f.data),iso:itemDateIso(f),txt:f.numero||f.concepte||"Factura / proforma"})));
 latest.push(...factObra.map(f=>({tipus:"Factura obra",data:fmtAppDate8748(f.data),iso:itemDateIso(f),txt:f.numero||f.concepte||"Factura / proforma obra"})));
