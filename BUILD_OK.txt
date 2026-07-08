@@ -1,1 +1,1 @@
-Build OK V87.131 - 2026-07-08T17:28:14Z
+Build correcte amb Vite abans de netejar el paquet.

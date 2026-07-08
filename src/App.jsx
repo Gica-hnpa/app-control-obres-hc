@@ -342,6 +342,12 @@ function moneyInput8770(v){return new Intl.NumberFormat("ca-ES",{minimumFraction
 function qty2(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)}
 function pct(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+"%"}
 function group(arr,k){return arr.reduce((m,x)=>((m[x[k]]??=[]).push(x),m),{})}
+
+function capOrder878132(name){const m=String(name||"").match(/(\d+)/);return m?Number(m[1]):9999}
+function compareCodi878132(a,b){return String(a||"").localeCompare(String(b||""),"ca",{numeric:true,sensitivity:"base"})}
+function sortPartides878132(rows=[]){return [...(rows||[])].sort((a,b)=>capOrder878132(a?.cap)-capOrder878132(b?.cap)||String(a?.cap||"").localeCompare(String(b?.cap||""),"ca",{numeric:true,sensitivity:"base"})||compareCodi878132(a?.codi,b?.codi)||String(a?.concepte||"").localeCompare(String(b?.concepte||""),"ca",{numeric:true,sensitivity:"base"}))}
+function groupSorted878132(rows=[],k="cap"){return sortPartides878132(rows).reduce((m,x)=>((m[x[k]||"Sense capítol"]??=[]).push(x),m),{})}
+function isCertHidden878132(r,n){return !!((r?.certHiddenByNum||{})[String(n)])}
 function days(y,m){return new Date(y,m+1,0).getDate()}
 function first(y,m){return (new Date(y,m,1).getDay()+6)%7}
 function f2u(file,cb){if(!file)return;let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
@@ -2421,6 +2427,7 @@ function collectActivities8783(obres=[],odata={},clients=[]){
 }
 function certQty8783(r,n){
   if(n<=0)return 0;
+  if(isCertHidden878132(r,n))return 0;
   const lines=(r.certMesuresByNum||{})[String(n)];
   if(lines&&lines.length)return medicioTotal8780(lines,r.ut);
   if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;
@@ -2447,7 +2454,7 @@ function originRowsForCert8793(rows=[],certNum=1){
     for(let i=1;i<=max;i++)qOrigin+=certQty8783(r,i);
     const impOrigin=qOrigin*(+r.pu||0);
     return {...r,qOrigin,impOrigin,pctOrigin:(+r.q||0)?qOrigin/(+r.q)*100:0};
-  }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0);
+  }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0).sort((a,b)=>capOrder878132(a.cap)-capOrder878132(b.cap)||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||compareCodi878132(a.codi,b.codi));
 }
 function certFinancialSummary8793(rows=[],certNum=1){
   const certTotals=certTotalsUpTo8793(rows,certNum);
@@ -2465,7 +2472,7 @@ function originRowsFromDoc8794(rows=[],certNum=1){
     const impOrigin = r.impOrigen!==undefined ? (+r.impOrigen||0) : (r.impOrigin!==undefined ? (+r.impOrigin||0) : qOrigin*(+r.pu||0));
     const pctOrigin = r.pctOrigen!==undefined ? (+r.pctOrigen||0) : (r.pctOrigin!==undefined ? (+r.pctOrigin||0) : ((+r.q||0)?qOrigin/(+r.q)*100:0));
     return {...r,qOrigin,impOrigin,pctOrigin};
-  }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0);
+  }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0).sort((a,b)=>capOrder878132(a.cap)-capOrder878132(b.cap)||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||compareCodi878132(a.codi,b.codi));
 }
 function certFinancialSummaryFromDoc8794(rows=[],certNum=1,doc={}){
   const max=Number(certNum)||1;
@@ -3953,14 +3960,18 @@ const[medicioTarget8780,setMedicioTarget8780]=useState(null);
 const[adminTarget878126,setAdminTarget878126]=useState(null);
 const[adminMonthlyOpen878127,setAdminMonthlyOpen878127]=useState(false);
 const[includeMesures8780,setIncludeMesures8780]=useState(false);
+const[showHiddenCert878132,setShowHiddenCert878132]=useState(false);
 const[extraOpen878125,setExtraOpen878125]=useState(false);
 const[extraDraft878125,setExtraDraft878125]=useState({tipus:"modificacio",cap:"",codi:"",ut:"ut",concepte:"",q:"1",pu:"0",desc:""});
 const[dateDraft8721,setDateDraft8721]=useState({});
 const[dateDraftSafe8720,setDateDraftSafe8720]=useState({});
-let rows=data.partides||[], caps=group(rows,"cap");
 let cert=certs.find(c=>c.id===selected)||certs.find(c=>+c.numero===2)||certs[0]||null;
 let certNum=cert?+cert.numero:1;
 let prevNum=certNum>1?certNum-1:0;
+let allRows878132=sortPartides878132(data.partides||[]);
+let hiddenCount878132=allRows878132.filter(r=>isCertHidden878132(r,certNum)).length;
+let rows=allRows878132.filter(r=>showHiddenCert878132||!isCertHidden878132(r,certNum));
+let caps=groupSorted878132(rows,"cap");
 useEffect(()=>{setDraft({})},[selected]);
 useEffect(()=>{if(certs.length){setSelected(certs[certs.length-1].id)}},[certs.length]);
 function dateVal8721(c){return dateDraft8721[c.id]??fmtDate8714(c.data)}
@@ -3987,6 +3998,32 @@ function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,
 function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*(+r.pu||0),0)}
 function commitOne(codi,v){let val=parseNum8770(v);if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
+function updatePartidaMeta878132(row,patch){
+  if(!row)return;
+  const oldCode=String(row.codi||"").trim();
+  const rowId=row.id;
+  setData?.(d=>{
+    const partides=(d.partides||[]).map(r=>{
+      const same=rowId?(r.id===rowId):String(r.codi||"").trim()===oldCode;
+      return same?{...r,...patch,updatedAt:new Date().toISOString()}:r;
+    });
+    return {...d,partides,updatedAt:new Date().toISOString()};
+  });
+  if(patch.codi && patch.codi!==oldCode){setDraft(x=>{const n={...x}; if(n[oldCode]!==undefined){n[patch.codi]=n[oldCode]; delete n[oldCode];} return n;});}
+}
+function printSavedAdmin878132(payload){
+  if(!payload||!(payload.lines||[]).length){alert("No hi ha cap quadre d’administració guardat en aquesta certificació.");return;}
+  const lines=(payload.lines||[]).map(l=>({...l,material:String(adminMaterialSum878131(l))}));
+  const costOficial=parseNum8770(payload.costOficial)||0;
+  const costAjudant=parseNum8770(payload.costAjudant)||0;
+  const lineTotal=(l)=>(parseNum8770(l.horesOficial)||0)*costOficial+(parseNum8770(l.horesAjudant)||0)*costAjudant+adminMaterialSum878131(l);
+  const totalOficial=lines.reduce((s,l)=>s+(parseNum8770(l.horesOficial)||0),0);
+  const totalAjudant=lines.reduce((s,l)=>s+(parseNum8770(l.horesAjudant)||0),0);
+  const totalMaterial=lines.reduce((s,l)=>s+adminMaterialSum878131(l),0);
+  const total=lines.reduce((s,l)=>s+lineTotal(l),0);
+  printAdminMonthly878131({certNum,meta:payload,lines,totalOficial,totalAjudant,totalMaterial,total,lineTotal});
+}
+const savedAdmin878132=(data.certAdminMonthlyByNum||{})[String(certNum)]||rows.map(r=>(r.certAdminMonthlyByNum||{})[String(certNum)]).find(Boolean)||null;
 function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
 function saveMesures8780(codi,lines,total){setData?.(d=>({...d,partides:(d.partides||[]).map(r=>r.codi===codi?{...r,certMesuresByNum:{...(r.certMesuresByNum||{}),[String(certNum)]:lines},certsByNum:{...(r.certsByNum||{}),[String(certNum)]:total},certAnterior:certNum===1?total:r.certAnterior,certActual:certNum===2?total:r.certActual}:r)}));setDraft(x=>({...x,[codi]:String(total)}));setMedicioTarget8780(null)}
 function saveAdminCost878126(codi,lines,total){setData?.(d=>({...d,partides:(d.partides||[]).map(r=>{if(r.codi!==codi)return r;const effectivePu=(+r.pu||0)||1;const certQty=total/effectivePu;return {...r,pu:(+r.pu||0)?r.pu:1,certAdminLinesByNum:{...(r.certAdminLinesByNum||{}),[String(certNum)]:lines},certsByNum:{...(r.certsByNum||{}),[String(certNum)]:certQty},certAnterior:certNum===1?certQty:r.certAnterior,certActual:certNum===2?certQty:r.certActual};})}));const current=(rows||[]).find(r=>r.codi===codi);const effectivePu=(+current?.pu||0)||1;setDraft(x=>({...x,[codi]:String(total/effectivePu)}));setAdminTarget878126(null)}
@@ -4065,11 +4102,24 @@ function deleteCertLine878131(row){
       const certMesuresByNum={...(r.certMesuresByNum||{})};delete certMesuresByNum[key];
       const certAdminLinesByNum={...(r.certAdminLinesByNum||{})};delete certAdminLinesByNum[key];
       const certAdminMonthlyByNum={...(r.certAdminMonthlyByNum||{})};delete certAdminMonthlyByNum[key];
-      return [{...r,certsByNum,certMesuresByNum,certAdminLinesByNum,certAdminMonthlyByNum,certAnterior:certNum===1?0:r.certAnterior,certActual:certNum===2?0:r.certActual,updatedAt:new Date().toISOString()}];
+      const certHiddenByNum={...(r.certHiddenByNum||{}),[key]:true};
+      return [{...r,certsByNum,certMesuresByNum,certAdminLinesByNum,certAdminMonthlyByNum,certHiddenByNum,certAnterior:certNum===1?0:r.certAnterior,certActual:certNum===2?0:r.certActual,updatedAt:new Date().toISOString()}];
     });
     return {...d,partides,updatedAt:new Date().toISOString()};
   });
   setDraft(x=>({...x,[code]:"0"}));
+}
+
+
+function restoreCertLine878132(row){
+  if(!row)return;
+  const code=String(row.codi||"").trim();
+  const key=String(certNum);
+  setData?.(d=>({
+    ...d,
+    partides:(d.partides||[]).map(r=>String(r.codi||"").trim()===code?{...r,certHiddenByNum:Object.fromEntries(Object.entries(r.certHiddenByNum||{}).filter(([k])=>k!==key)),updatedAt:new Date().toISOString()}:r),
+    updatedAt:new Date().toISOString()
+  }));
 }
 
 function focusNextCertInput878106(e){
@@ -4141,9 +4191,9 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
     <div className="actions-inline">
       <button className="secondary" onClick={()=>{setEditing(!editing);setCertMode8711("emplenar")}}>{editing?"Tancar edició":`Editar amidaments CERT. ${certNum}`}</button>
       <button className="primary" onClick={guardarAmidaments}><Save/> Guardar amidaments</button>
-      <button type="button" className="secondary" onClick={()=>setExtraOpen878125(v=>!v)}>+ Partida extra / provisió</button><button type="button" className="secondary admin-monthly-open-v878127" onClick={()=>setAdminMonthlyOpen878127(true)}>Quadre administració mensual</button>
+      <button type="button" className="secondary" onClick={()=>setExtraOpen878125(v=>!v)}>+ Partida extra / provisió</button><button type="button" className="secondary admin-monthly-open-v878127" onClick={()=>setAdminMonthlyOpen878127(true)}>Quadre administració mensual</button>{savedAdmin878132&&<button type="button" className="secondary" onClick={()=>printSavedAdmin878132(savedAdmin878132)}>Imprimir quadre admin. guardat</button>}{hiddenCount878132>0&&<button type="button" className="secondary" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar retirades":"Mostrar retirades"} ({hiddenCount878132})</button>}
       <label className="check-print-v8780"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Imprimir línies de medició</label>
-      <button className="primary" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,rows:rows.map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*(+r.pu||0),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Imprimir / PDF</button>
+      <button className="primary" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,rows:sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*(+r.pu||0),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Imprimir / PDF</button>
     </div>
   </div>
   {certMode8711==="resum"&&<CertResumV69 data={data}/>} 
@@ -4165,10 +4215,10 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
       const isOpen=certCapsOpen879[cap]??(capIdx===0);
       return <div key={cap}>
       <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><b>{items.length} partides</b></button>
-      {isOpen&&items.map(r=>{
+      {isOpen&&items.map((r,rowIdx)=>{
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0), qo=qOrigin(r), io=qo*(+r.pu||0);
-        return <div className="cert-grid-v69 row" key={r.codi}>
-          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}{editing&&<button type="button" className="danger small cert-delete-line-v878131" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar":"Treure cert."}</button>}</div>{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
+        return <div className="cert-grid-v69 row" key={r.id||`${cap}-${rowIdx}`}>
+          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}{editing&&<button type="button" className="danger small cert-delete-line-v878131" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar":"Treure cert."}</button>}</div>{editing&&<div className="cert-reorder-controls-v878132"><label>Codi <input defaultValue={r.codi||""} onBlur={e=>updatePartidaMeta878132(r,{codi:e.target.value})} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/></label><label>Capítol <select value={r.cap||""} onChange={e=>updatePartidaMeta878132(r,{cap:e.target.value})}>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}</select></label>{isCertHidden878132(r,certNum)&&<button type="button" className="secondary small" onClick={()=>restoreCertLine878132(r)}>Recuperar a cert.</button>}</div>}{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
           <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
@@ -4933,7 +4983,7 @@ function ProformaPrintV81({doc,pf}){
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.subtitle}</p>
     <h3>Partides certificades a origen</h3>
-    <table className="proforma-lines-v87117"><colgroup><col className="c-code"/><col className="c-concept"/><col className="c-q"/><col className="c-price"/><col className="c-total"/></colgroup><thead><tr><th>Codi</th><th>Concepte / descripció</th><th>Q origen</th><th>Preu</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td className="concept"><b>{r.concepte}</b>{r.desc&&<small className="print-desc-static-v878126">{r.desc}</small>}</td><td className="num">{qty2(r.qOrigin??0)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin??0)}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL A ORIGEN</th><th className="num">{money(totalOrigen)}</th></tr></tfoot></table>
+    <table className="proforma-lines-v87117"><colgroup><col className="c-code"/><col className="c-concept"/><col className="c-q"/><col className="c-price"/><col className="c-total"/></colgroup><thead><tr><th>Codi</th><th>Concepte / descripció</th><th>Q origen</th><th>Preu</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td className="concept"><b>{r.concepte}</b></td><td className="num">{qty2(r.qOrigin??0)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin??0)}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL A ORIGEN</th><th className="num">{money(totalOrigen)}</th></tr></tfoot></table>
     <h3>Deducció de certificacions anteriors</h3>
     <table className="totals-preview"><tbody><tr><th>Total certificat a origen</th><td className="num">{money(totalOrigen)}</td></tr>{prevTotals.length===0?<tr><th>No hi ha certificacions anteriors</th><td className="num">{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><th>Deducció Certificació {c.n}</th><td className="num">-{money(c.total)}</td></tr>)}<tr className="total"><th>Import sense IVA Cert. {certNum}</th><td className="num">{money(base)}</td></tr></tbody></table>
     <div className="doc-totals v81">
@@ -5018,7 +5068,7 @@ return <div className="cert-print-v8718 cert-print-v8771">
       </colgroup>
       <thead>
         <tr className="blocks"><th colSpan="6">PRESSUPOST</th><th colSpan="3">CERT. {doc.prevNum} ANTERIOR</th><th colSpan="3">CERT. {doc.certNum} ACTUAL</th><th colSpan="3">A ORIGEN</th></tr>
-        <tr><th>Partida</th><th>Ut</th><th>Concepte / descripció</th><th>Q pres.</th><th>PU pres.</th><th>Imp. pres.</th><th>Q ant.</th><th>% ant.</th><th>Imp. ant.</th><th>Q act.</th><th>% act.</th><th>Imp. act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
+        <tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q pres.</th><th>PU pres.</th><th>Imp. pres.</th><th>Q ant.</th><th>% ant.</th><th>Imp. ant.</th><th>Q act.</th><th>% act.</th><th>Imp. act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
       </thead>
       <tbody>{rows.map(r=>{
         const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
@@ -5054,7 +5104,7 @@ function issuerLogoHtml87100(client){const src=client?.logo||"";return src?`<img
 function issuerFiscalBlockHtml87100(client){const name=issuerFiscalName87100(client);const nif=(client?.nif||"").trim();const nifLine=nif&&!sameFiscalValue87101(nif,name)?`<span>NIF/CIF: ${escHtmlV8772(nif)}</span>`:"";return `<div class="issuer-v87100"><div class="issuer-logo-box-v87100">${issuerLogoHtml87100(client)}</div><div><b>${escHtmlV8772(name)}</b>${nifLine}<span>${escHtmlV8772(client?.adreca||"")}</span><span>${escHtmlV8772([client?.codiPostal,client?.poblacio,client?.provincia?`(${client.provincia})`:""].filter(Boolean).join(" "))}</span><span>${escHtmlV8772(client?.email||"")}${client?.telefon?` · ${escHtmlV8772(client.telefon)}`:""}</span></div></div>`}
 
 function certPrintHtmlV8772(doc,obra,client){
-  const rows=doc.rows||[];
+  const rows=sortPartides878132(doc.rows||[]);
   const certNum=+doc.certNum||1;
   const originRows=originRowsFromDoc8794(rows,certNum);
   const fin=certFinancialSummaryFromDoc8794(rows,certNum,doc);
@@ -5064,9 +5114,11 @@ function certPrintHtmlV8772(doc,obra,client){
   const prevTotals=fin.prevTotals||[];
   const deductionRows=prevTotals.length?prevTotals.map(c=>`<tr><td>Deducció Certificació ${c.n}</td><td class="num">-${money(c.total)}</td></tr>`).join(""):`<tr><td>No hi ha certificacions anteriors</td><td class="num">${money(0)}</td></tr>`;
   const summaryTotalsRows=certTotals.map(c=>`<tr><td>CERT. ${c.n}</td><td>${money(c.total)}</td></tr>`).join("");
-  const originRowsHtml=originRows.map(r=>`<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b>${r.desc?`<small class="print-desc-static-v878126">${escHtmlV8772(r.desc)}</small>`:""}</td><td class="num">${qty2(r.qOrigin)}</td><td class="num">${money(r.pu)}</td><td class="num">${money(r.impOrigin)}</td></tr>`).join("") || `<tr><td colspan="6" class="empty">No hi ha partides certificades a origen.</td></tr>`;
+  let lastOriginCap878132="__none__";
+  const originRowsHtml=originRows.map(r=>{const cap=r.cap||"PRESSUPOST IMPORTAT";const show=cap!==lastOriginCap878132;lastOriginCap878132=cap;return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b></td><td class="num">${qty2(r.qOrigin)}</td><td class="num">${money(r.pu)}</td><td class="num">${money(r.impOrigin)}</td></tr>`}).join("") || `<tr><td colspan="6" class="empty">No hi ha partides certificades a origen.</td></tr>`;
+  const printRows=sortPartides878132(rows).filter(r=>((+r.qOrigen||0)||(+r.qPrev||0)||(+r.qAct||0)||(+r.impOrigen||0))>0);
   let lastCap="__none__";
-  const wideRows=rows.map(r=>{
+  const wideRows=printRows.map(r=>{
     const cap=r.cap||"PRESSUPOST IMPORTAT";
     const showCap=cap!==lastCap; lastCap=cap;
     const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
@@ -5074,7 +5126,7 @@ function certPrintHtmlV8772(doc,obra,client){
     const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
     const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
     return `${showCap?`<tr class="cap"><td colspan="15">${escHtmlV8772(cap)}</td></tr>`:""}<tr>
-      <td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b>${r.desc?`<small class="print-desc-static-v878126">${escHtmlV8772(r.desc)}</small>`:""}</td><td>${qty2(r.q)}</td><td>${money(r.pu)}</td><td>${money(pres)}</td>
+      <td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b></td><td>${qty2(r.q)}</td><td>${money(r.pu)}</td><td>${money(pres)}</td>
       <td class="${(+r.qPrev||0)>0?'green':''}">${qty2(r.qPrev)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${money(ant)}</td>
       <td class="${(+r.qAct||0)>0?'green':''}">${qty2(r.qAct)}</td><td class="${(+r.qAct||0)>0?'green':''}">${pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td class="${(+r.qAct||0)>0?'green':''}">${money(act)}</td>
       <td class="${qOri>0?'green':''}">${qty2(qOri)}</td><td class="${qOri>0?'green':''}">${pct(pctOri)}</td><td class="${qOri>0?'green':''}">${money(impOri)}</td>
@@ -5125,7 +5177,7 @@ function CertPreviewV8772({doc}){
     <div className="cert-preview-note-v8772"><b>Previsualització a origen.</b><span>La certificació en curs es presenta a origen; a sota es dedueixen les certificacions anteriors per obtenir l'import d'aquesta certificació. El quadre horitzontal no es modifica.</span></div>
     <div className="cert-lite-kpis-v8783"><div><span>Partides amb certificació a origen</span><b>{originRows.length}</b></div><div><span>Total certificat a origen</span><b>{money(totalOrigen)}</b></div><div><span>Import cert. {certNum} després deduccions</span><b>{money(totalActual)}</b></div></div>
     <h3>Partides certificades a origen</h3>
-    {originRows.length===0?<div className="empty">No hi ha partides certificades a origen.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772 stable-num-table-v8783 cert-summary-cols-v87117"><colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-q"/><col className="c-pu"/><col className="c-total"/></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte / descripció</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.slice(0,80).map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept"><b>{r.concepte}</b>{r.desc&&<small className="print-desc-static-v878126">{r.desc}</small>}</td><td className="num">{qty2(r.qOrigin)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin)}</td></tr>)}</tbody><tfoot><tr><th colSpan="5">TOTAL A ORIGEN</th><th>{money(totalOrigen)}</th></tr></tfoot></table>{originRows.length>80&&<p className="muted">Hi ha més partides. El document complet sortirà a la impressió.</p>}</div>}
+    {originRows.length===0?<div className="empty">No hi ha partides certificades a origen.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772 stable-num-table-v8783 cert-summary-cols-v87117"><colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-q"/><col className="c-pu"/><col className="c-total"/></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte / descripció</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.slice(0,80).map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept"><b>{r.concepte}</b></td><td className="num">{qty2(r.qOrigin)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin)}</td></tr>)}</tbody><tfoot><tr><th colSpan="5">TOTAL A ORIGEN</th><th>{money(totalOrigen)}</th></tr></tfoot></table>{originRows.length>80&&<p className="muted">Hi ha més partides. El document complet sortirà a la impressió.</p>}</div>}
     <div className="cert-preview-totals-v8780"><h3>Deducció de certificacions anteriors</h3><table className="stable-num-table-v8783"><thead><tr><th>Concepte</th><th>Import</th></tr></thead><tbody><tr><td><b>Total certificat a origen</b></td><td><b>{money(totalOrigen)}</b></td></tr>{prevTotals.length===0?<tr><td>No hi ha certificacions anteriors</td><td>{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><td>Deducció Certificació {c.n}</td><td>-{money(c.total)}</td></tr>)}</tbody><tfoot><tr><th>Import sense IVA certificació {certNum}</th><th>{money(totalActual)}</th></tr></tfoot></table></div>
   </div>
 }
