@@ -16,3 +16,18 @@ Notes:
 - L'app continua funcionant amb localStorage encara que Supabase no estigui configurat.
 - En aquesta fase, la sincronització és per usuari intern de l'app + clau privada de sincronització.
 - Més endavant es pot substituir per Supabase Auth i polítiques RLS per usuari real.
+
+
+## Recuperar connexió si falla la clau privada
+
+Si l'app mostra error en carregar o comprovar Supabase després de canviar la clau privada:
+
+1. No cliquis **Carregar última còpia del núvol** amb una clau nova si encara no has pujat dades amb aquesta clau.
+2. Torna a posar la **clau privada antiga** si vols recuperar la còpia existent.
+3. Clica **Guardar sync**.
+4. Clica **Comprovar connexió**.
+5. Si diu que troba còpia, clica **Carregar última còpia del núvol**.
+6. Exporta un **JSON complet** com a còpia local.
+7. Si vols canviar la clau, escriu la clau nova, clica **Guardar sync** i després **Pujar ara dades locals**. Això crea una nova còpia amb la clau nova.
+
+La URL Supabase i la clau pública `anon`/`publishable` han de ser les mateixes. La `service_role` no s'ha d'enganxar mai dins l'app.
