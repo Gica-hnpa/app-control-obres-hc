@@ -1,16 +1,14 @@
-# APP Control d'Obres · V87.134
+# APP Control d'Obres · V87.135
 
-Versió derivada de V87.133.
+Versió de correcció sobre V87.134.
 
-Canvis principals:
-- Darrers expedients: ordenació per últim accés/treball real, evitant que dates futures d'agenda/certificacions facin aparèixer dates incorrectes com desembre de 2026.
-- En obrir un expedient, el darrer accés/treball s'actualitza sempre amb la data actual.
-- Clients/contactes: afegit desplegable de gestió per editar o eliminar clients des del llistat.
-- Dades de l'obra: bloc d'agents principals més clar, amb promotor/propietat a dalt.
-- Agents de l'obra ordenats per rol: Promotor/propietat, constructor, direcció facultativa, tècnics i resta.
-- Quan es completa un agent Promotor/propietat, la fitxa interna de l'obra actualitza propietat i NIF perquè surtin als documents.
-- Impressió de certificació i proforma: dades de client/promotor extretes de l'agent Promotor/propietat quan existeix.
-- Certificacions: accions globals agrupades en un desplegable, deixant a dins de cada partida les accions pròpies de partida com línies de medició, quadre administració, descripció, canvi de codi/capítol i treure certificació.
+Canvis:
+- Clients/contactes: el botó Gestionar contacte ara rep correctament `setClients` i permet guardar o eliminar clients.
+- Darrers expedients: ordenació per últim accés/treball real; s'eviten dates futures de certificacions/agenda.
+- Certificació: etiqueta abreujada a `Import certificació X` en previsualització i impressió.
+- Dades de l'obra: promotor/propietat documental únic i resta d'agents principals separats.
+- Agents de l'obra: relació pròpia per expedient amb desplegable d'agents de biblioteca; els selectors de DO/DEO/CSS només mostren agents creats en aquella obra.
+- Rols d'agent ampliats per poder marcar un mateix agent com DO, DEO, DO+DEO, CSS o DO+DEO+CSS.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

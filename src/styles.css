@@ -4423,3 +4423,16 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .cert-global-actions-v878134{position:relative;display:inline-flex}.cert-global-actions-panel-v878134{position:absolute;top:calc(100% + 6px);right:0;z-index:30;min-width:250px;background:white;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,.14);padding:8px;display:flex;flex-direction:column;gap:6px}
 .cert-global-actions-panel-v878134 button{border:0;background:#f8fafc;text-align:left;border-radius:10px;padding:10px 12px;font-weight:900;color:#0f172a}.cert-global-actions-panel-v878134 button:hover{background:#dbeafe;color:#1d4ed8}
 @media(max-width:900px){.principal-agents-v878134{grid-template-columns:1fr;padding:14px}.client-inline-head-v878134{flex-direction:column;align-items:flex-start}.client-manage-toggle-v878134{margin-left:12px}.cert-global-actions-panel-v878134{left:0;right:auto;min-width:220px}}
+
+
+/* V87.135 · Dades obra, agents i clients */
+.principal-agents-v878135{grid-template-columns:minmax(260px,.9fr) 1.4fr;align-items:stretch}
+.agent-library-add-v878135{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;padding:14px 16px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+.agent-library-add-v878135 label span{display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#334155;text-transform:uppercase}
+.agent-library-add-v878135 select{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:10px;background:white}
+.agent-library-add-v878135 button:disabled{opacity:.55;cursor:not-allowed}
+.fitxa-dades-stack-v878133 .form-grid.fitxa-form-v8773{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));align-items:start}
+.client-inline-editor-v878134{position:relative;z-index:2}
+.client-inline-editor-v878134 .danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.cert-lite-kpis-v8783 div span{white-space:normal;line-height:1.15}
+@media(max-width:900px){.principal-agents-v878135,.agent-library-add-v878135{grid-template-columns:1fr}.fitxa-dades-stack-v878133 .form-grid.fitxa-form-v8773{grid-template-columns:1fr}}

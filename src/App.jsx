@@ -2384,7 +2384,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen==="Inici"&&<Inici clients={clients} obres={obres} odata={odata} events={[...Object.values(odata).flatMap(d=>d.events||[]),...invoiceAlerts8776(obres,odata)]} setScreen={nav} openObra={openObra} newObra={()=>setModal("obra")}/>}
-{screen==="Clients"&&<Clients clients={fClients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")}/>}
+{screen==="Clients"&&<Clients clients={fClients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} deleteObra={deleteObra878112} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={()=>setModal("obra")} setScreen={nav}/>}
 {screen==="Obra"&&<Obra obra={obra} client={client} clients={clients} allAgents={allAgents8749(odata)} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} openEvent={()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={deleteObra878112} clientHistoricalPartides={(obres||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((odata||{})[o.id]?.partides)||[]).map(r=>({...r,sourceObra:o.nom,sourceObraId:o.id})))} />}
@@ -2432,13 +2432,14 @@ function clampActivityTime878134(t){
   return v>now+60*60*1000?0:v;
 }
 function obraRecentScore878134(o,d={}){
+  // V87.135: els "Darrers expedients" només poden ordenar-se per accés/treball real.
+  // No utilitzem dates de certificació, agenda o planificació perquè poden ser futures o històriques.
   const vals=[
     clampActivityTime878134(o?.lastWorkedAt),clampActivityTime878134(d?.lastWorkedAt),
     clampActivityTime878134(o?.lastOpenedAt),clampActivityTime878134(d?.lastOpenedAt),
     clampActivityTime878134(o?.updatedAt),clampActivityTime878134(d?.updatedAt),
     clampActivityTime878134(o?.createdAt)
   ];
-  ['documents','fotos','actes','hores','pressupostosTecnic','facturesTecnic','certificacions','factures'].forEach(k=>(d[k]||[]).forEach(x=>vals.push(clampActivityTime878134(x?.updatedAt||x?.createdAt||x?.data))));
   return Math.max(0,...vals);
 }
 function fmtRecentActivity878134(t){return t?fmtActivityDate8783(t):'Sense accés registrat'}
@@ -2455,6 +2456,9 @@ function agentRoleOrder878134(a={}){
 function sortAgents878134(list=[]){return uniqAgents8768(list).sort((a,b)=>agentRoleOrder878134(a)-agentRoleOrder878134(b)||String(a.nom||'').localeCompare(String(b.nom||''),'ca',{numeric:true}))}
 function primaryPromotorAgent878134(agents=[],obra={},client={}){
   const sorted=sortAgents878134(agents||[]);
+  const prop=String(obra?.propietat||'').trim().toLowerCase();
+  const exact=prop?sorted.find(a=>String(a.nom||'').trim().toLowerCase()===prop || String(a.empresa||'').trim().toLowerCase()===prop):null;
+  if(exact)return exact;
   const found=sorted.find(a=>{const r=String(a.rol||'').toLowerCase();return r.includes('promotor')||r.includes('propiet')||r.includes('client')});
   if(found)return found;
   return {nom:obra?.propietat||client?.nom||'Client pendent',empresa:obra?.propietat||client?.rao||client?.nom||'',nif:obra?.nifPropietat||client?.nif||'',adreca:obra?.adreca||client?.adreca||'',email:client?.email||'',telefon:client?.telefon||'',rol:'Promotor / propietat'};
@@ -2561,7 +2565,7 @@ const pendents=[...obres].filter(o=>["Pressupostada","En procés","Pendent"].inc
 const autoFacturesPendents=(events||[]).filter(e=>e.auto&&String(e.id||"").startsWith("av-fact-"));
 const properes=[...(events||[])].sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,4);
 return <>
-<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.111 finances i agenda refinades</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
+<section className="hero hero-v8737"><div className="app-logo">CO</div><div><h1>Control d'Expedients</h1><p>Mòdul Tècnic per arquitectes tècnics: expedients, agenda, actes, documents, gestió del temps, pressupostos i factures del tècnic al client.</p><span className="version-badge soft">Versió 87.135 clients, agents i certificacions</span></div><div className="user-card"><strong>Free · Mòdul Tècnic</strong><span>2 expedients inclosos</span><span>Agenda inclosa des del primer dia</span></div></section>
 <section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><FolderOpen/> Veure expedients</button><button className="secondary" onClick={()=>setScreen("Agenda")}><CalendarDays/> Obrir agenda</button><button className="secondary" onClick={()=>setScreen("Configuració")}><Settings/> Pla i mòduls</button></section>
 <section className="kpi-grid"><button className="kpi" onClick={()=>setScreen("Clients")}><small>CLIENTS</small><strong>{clients.length}</strong></button><button className="kpi" onClick={()=>setScreen("Treballs / Expedients")}><small>EXPEDIENTS OBERTS</small><strong>{actius}</strong></button><button className="kpi" onClick={()=>setScreen("Agenda")}><small>AGENDA / AVISOS</small><strong>{events.length||0}</strong></button></section>{autoFacturesPendents.length>0&&<section className="home-alerts-v8776">{autoFacturesPendents.slice(0,4).map(a=><button key={a.id} onClick={()=>a.obraId?openObra(a.obraId):setScreen("Factures")}><b>Factura pendent de cobrament</b><span>{a.obra} · {a.detail}</span></button>)}</section>}
 <section className="dashboard-grid dashboard-grid-v8741">
@@ -2817,12 +2821,17 @@ function ModulLocked8747(){return <Card title="Mòdul 2 · Control econòmic d�
 
 function PrincipalAgentsPanel878134({obra,client,agents=[]}){
   const sorted=sortAgents878134(agents);
-  const main=sorted.filter(a=>agentRoleOrder878134(a)<=4).slice(0,4);
   const prom=primaryPromotorAgent878134(sorted,obra,client);
+  const main=sorted.filter(a=>{
+    const r=String(a.rol||'').toLowerCase();
+    if(a.id===prom.id)return false;
+    if(r.includes('promotor')||r.includes('propiet')||r.includes('client'))return false;
+    return agentRoleOrder878134(a)<=5;
+  }).slice(0,4);
   return <Card title="Agents principals de l’obra">
-    <div className="principal-agents-v878134">
+    <div className="principal-agents-v878134 principal-agents-v878135">
       <div className="principal-agent-main-v878134"><small>Promotor / propietat per documents</small><b>{prom.nom||"Promotor pendent"}</b><span>{prom.nif?`NIF/CIF ${prom.nif}`:"NIF pendent"} · {prom.email||prom.telefon||"Contacte pendent"}</span></div>
-      <div className="principal-agent-grid-v878134">{main.length?main.map(a=><div key={a.id||a.nom}><b>{a.rol||"Agent"}</b><span>{a.nom||"Pendent"}</span><em>{a.nif?`NIF ${a.nif}`:"NIF pendent"}</em></div>):<span className="muted">Obre un agent per desplegar i completar les dades.</span>}</div>
+      <div className="principal-agent-grid-v878134">{main.length?main.map(a=><div key={a.id||a.nom}><b>{a.rol||"Agent"}</b><span>{a.nom||"Pendent"}</span><em>{a.nif?`NIF ${a.nif}`:"NIF pendent"}</em></div>):<span className="muted">Afegeix constructor, direcció d’obra, direcció d’execució o CSS a la relació d’agents.</span>}</div>
     </div>
   </Card>
 }
@@ -2830,8 +2839,10 @@ function PrincipalAgentsPanel878134({obra,client,agents=[]}){
 function FitxaDadesTab8769({obra,client,data={},save,allAgents=[],setData,openAgent}){
   const [form,setForm]=useState(()=>({...obra,codiPostal:obra.codiPostal||""}));
   useEffect(()=>setForm(applyWorkTemplate878121({...obra,codiPostal:obra.codiPostal||""},obra.tipusTreball||obra.tipologia,false)),[obra.id,obra.updatedAt,obra.tipusTreball,obra.tipologia]);
-  const agents=sortAgents878134(uniqAgents8768([...(allAgents||[])]));
-  const agentNames=[...new Set(agents.map(a=>a.nom).filter(Boolean))];
+  const obraAgents=sortAgents878134(uniqAgents8768([...(data.agents||[])]));
+  const libraryAgents=sortAgents878134(uniqAgents8768([...(allAgents||[])]));
+  const agents=obraAgents;
+  const agentNames=[...new Set(obraAgents.map(a=>a.nom).filter(Boolean))];
   function upd(k,v){setForm(p=>({...p,[k]:v}))}
   function changeCp(v){setForm(p=>{const pob=poblacioForCp8773(v);return {...p,codiPostal:v,poblacio:pob||p.poblacio}})}
   function changePoblacio(v){setForm(p=>{const cp=cpForPoblacio8773(v);return {...p,poblacio:v,codiPostal:cp||p.codiPostal}})}
@@ -2853,12 +2864,12 @@ function FitxaDadesTab8769({obra,client,data={},save,allAgents=[],setData,openAg
       <label><span>Nom de l’obra / treball</span><input value={form.nom||""} onChange={e=>upd("nom",e.target.value)}/></label>
       <label><span>Tipus de feina / encàrrec</span><select value={canonicalWorkType8740(form.tipusTreball||form.tipologia||"Altres")} onChange={e=>setForm(p=>applyWorkTemplate878121(p,e.target.value,false))}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>
       <label><span>Estat de l’expedient</span><select value={form.estat||"Pendent"} onChange={e=>upd("estat",e.target.value)}><option>Acceptada</option><option>Pressupostada</option><option>En procés</option><option>No contestat</option><option>Pendent</option><option>Activa</option><option>Aturada</option><option>Tancada</option><option>Descartada</option></select></label>
-      <label><span>Promotor / propietat</span><input value={form.propietat||""} onChange={e=>upd("propietat",e.target.value)}/></label>
+      <label><span>Promotor / propietat documental</span><input value={form.propietat||""} onChange={e=>upd("propietat",e.target.value)} placeholder="Nom del promotor principal"/></label>
       <AgentPicker field="constructor" label="Constructor / contractista"/>
-      <AgentPicker field="do" label="Direcció d’obra (DO)"/>
-      <AgentPicker field="deo" label="Direcció d’execució (DEO)"/>
-      <AgentPicker field="css" label="Coordinació S+S (CSS)"/>
-      <label><span>Adreça</span><input value={form.adreca||""} onChange={e=>upd("adreca",e.target.value)}/></label>
+      <AgentPicker field="do" label="Direcció d’obra"/>
+      <AgentPicker field="deo" label="Direcció d’execució"/>
+      <AgentPicker field="css" label="Coordinació seguretat i salut"/>
+      <label><span>Adreça obra</span><input value={form.adreca||""} onChange={e=>upd("adreca",e.target.value)}/></label>
       <label><span>Codi postal</span><input list="cp-list-v8773" value={form.codiPostal||""} onChange={e=>changeCp(e.target.value)} placeholder="17230"/></label>
       <label><span>Població</span><input list="poblacio-list-v8773" value={form.poblacio||""} onChange={e=>changePoblacio(e.target.value)} placeholder="Palamós"/></label>
       <label><span>Província</span><input value={provinciaForCp8773(form.codiPostal)||provinciaForPoblacio8773(form.poblacio)||form.provincia||""} readOnly/></label>
@@ -2868,7 +2879,7 @@ function FitxaDadesTab8769({obra,client,data={},save,allAgents=[],setData,openAg
       <label className="span-all"><span>Observacions internes</span><textarea value={form.observacions||""} onChange={e=>upd("observacions",e.target.value)} placeholder="Condicionants, criteris, notes de l’encàrrec..."/></label>
     </div>
   </Card>
-  <AgentsObraCard data={data&&data.agents?data:{agents:uniqAgents8768([...(allAgents||[])])}} setData={setData} openAgent={openAgent}/>
+  <AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={libraryAgents} setData={setData} openAgent={openAgent}/>
   </div>
 }
 
@@ -4431,19 +4442,23 @@ return <div className="proforma-a4-wrap-v8748"><div className="proforma-preview-
 function Actes({data,allAgents:globalAgents=[],openActa,openEmail,openDoc,selected,setSelected}){const allAgents=ensureAgents8748(uniqAgents8749([...(globalAgents||[]),...(data.agents||[])]));const[local,setLocal]=useState(data.actes||[]);const[actaDocs,setActaDocs]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_acta_docs"))||"[]"));const[actaPhotos,setActaPhotos]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_acta_photos"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_acta_docs"),JSON.stringify(actaDocs))},[actaDocs]);useEffect(()=>{localStorage.setItem(lsKey8779("aco_acta_photos"),JSON.stringify(actaPhotos))},[actaPhotos]);let a=local.find(x=>x.id===selected)||local[0];let idx=local.findIndex(x=>x.id===a?.id),prev=idx>0?local[idx-1]:null;function toggleAgent(id,on){setLocal(p=>p.map(x=>x.id===a.id?{...x,agents:on?[...new Set([...x.agents,id])]:x.agents.filter(z=>z!==id)}:x))}function updateText(v){setLocal(p=>p.map(x=>x.id===a.id?{...x,text:v}:x))}function addDocs(e){[...(e.target.files||[])].forEach(f=>setActaDocs(p=>[...p,{id:"ad-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,tipus:f.name.split(".").pop()?.toUpperCase()||"DOC"}]))}function addPhotos(e){[...(e.target.files||[])].forEach(f=>{let r=new FileReader();r.onload=()=>setActaPhotos(p=>[...p,{id:"ap-"+Date.now()+Math.random(),actaId:a?.id,nom:f.name,url:r.result}]);r.readAsDataURL(f)})}let docs=actaDocs.filter(d=>d.actaId===a?.id),photos=actaPhotos.filter(p=>p.actaId===a?.id);return <div className="actes-layout"><Card title="Actes creades" action={<button className="primary" onClick={openActa}><Plus/> Nova acta</button>}><div className="acta-list">{local.length===0?<Empty text="Encara no hi ha actes creades."/>:local.map(x=><button className={`acta-list-row ${a?.id===x.id?"active":""}`} onClick={()=>setSelected(x.id)}><strong>{x.titol}</strong><span>{x.data}</span><small>{x.agents.map(id=>allAgents.find(ag=>ag.id===id)?.nom).filter(Boolean).join(", ")}</small></button>)}</div></Card>{a&&<Card title={`Visualització / edició · ${a.titol}`} action={<div className="actions-inline"><button className="secondary" onClick={()=>openDoc({type:"acta",title:a.titol,subtitle:a.data,acta:a,agents:allAgents,actaPhotos:photos,actaDocs:docs})}>Obrir document</button><button className="secondary" onClick={()=>openEmail(a.titol)}><Mail/> Enviar Gmail</button></div>}><div className="previous-acta">{prev?<><b>Consideracions de l’acta anterior ({prev.data})</b><label><input type="checkbox"/> Validat / resolt</label><p>{prev.text}</p></>:<p>No hi ha acta anterior.</p>}</div><div className="form-grid"><Input label="Títol acta" defaultValue={a.titol}/><Input label="Data" defaultValue={a.data}/><Input label="Obra" defaultValue={a.obra}/><Input label="Signatura" defaultValue={a.signatura}/><label className="span-all"><span>Assistents / intervinents a l’acta</span><div className="check-grid">{allAgents.map(ag=><label className="check-row"><input type="checkbox" checked={a.agents.includes(ag.id)} onChange={e=>toggleAgent(ag.id,e.target.checked)}/><span>{ag.nom} · {ag.rol}</span></label>)}</div></label><label className="span-all"><span>Observacions / decisions preses</span><textarea value={a.text} onChange={e=>updateText(e.target.value)}/></label></div><div className="upload-grid"><label><Camera/> Afegir fotos<input type="file" multiple accept="image/*" onChange={addPhotos}/></label><label><Paperclip/> Afegir documents<input type="file" multiple onChange={addDocs}/></label><button><PenLine/> Signatura mòbil</button></div><div className="attached-list">{photos.map(p=><span>📷 {p.nom}</span>)}{docs.map(d=><span>📎 {d.nom}</span>)}</div><div className="card-actions"><button className="primary"><Save/> Guardar canvis</button></div></Card>}</div>}
 
 
-function AgentsObraCard({data,openAgent,setData}){
+function AgentsObraCard({data,openAgent,setData,libraryAgents=[]}){
 const[q,setQ]=useState("");
 const[openId,setOpenId]=useState(null);
+const[libPick,setLibPick]=useState("");
 const[local,setLocal]=useState(()=>sortAgents878134(data.agents||[]));
 useEffect(()=>setLocal(sortAgents878134(data.agents||[])),[data.agents]);
-const roles=["Promotor","Arquitecte","Arquitecte tècnic","Direcció Facultativa","Constructor","Autònom","Subcontractat","Industrial","Administració","Altres"];
+const roles=["Promotor / propietat","Constructor / contractista","Direcció d’obra","Direcció d’execució","Direcció d’obra + direcció d’execució","Coordinació S+S","DO + DEO + CSS","Arquitecte","Arquitecte tècnic","Direcció Facultativa","Industrial","Administració","Altres"];
 let filtered=sortAgents878134(local).filter(a=>([a.nom,a.rol,a.empresa,a.email,a.telefon,a.nif,a.adreca].join(" ")).toLowerCase().includes(q.toLowerCase()));
+const libAvailable=sortAgents878134(libraryAgents||[]).filter(a=>a.nom&&!local.some(x=>String(x.nom||"").toLowerCase()===String(a.nom||"").toLowerCase()));
 function commit(next){const sorted=sortAgents878134(next);setLocal(sorted);setData?.(d=>{const prom=primaryPromotorAgent878134(sorted,d?.obra||{},{});const obraPatch=prom?{...(d.obra||{}),propietat:prom.nom||d?.obra?.propietat||"",nifPropietat:prom.nif||d?.obra?.nifPropietat||""}:(d.obra||{});return {...d,agents:sorted,obra:obraPatch,updatedAt:new Date().toISOString()}});}
 function upd(id,k,v){commit(local.map(a=>a.id===id?{...a,[k]:v,updatedAt:new Date().toISOString()}:a))}
-function remove(id){if(confirm("Segur que vols eliminar aquest agent?"))commit(local.filter(a=>a.id!==id))}
+function remove(id){if(confirm("Segur que vols eliminar aquest agent d’aquest expedient?"))commit(local.filter(a=>a.id!==id))}
 function addLocal(){const ag={id:"agent-"+Date.now(),nom:"Nou agent",rol:"Altres",empresa:"",email:"",telefon:"",nif:"",adreca:"",collegiat:"",contacte:""};commit([ag,...local]);setOpenId(ag.id)}
-return <Card title="Agents de l’obra" action={<div className="actions-inline"><button className="secondary" onClick={addLocal}><Plus/> Nou agent ràpid</button><button className="secondary" onClick={openAgent}><Plus/> Nou agent complet</button></div>}>
-<div className="pro-search-line"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Filtrar per nom, rol, empresa, NIF, email o telèfon..."/></div>
+function addFromLibrary(){const ag=libAvailable.find(a=>a.id===libPick);if(!ag)return;const copy={...ag,id:"agent-obra-"+Date.now(),sourceAgentId:ag.id,updatedAt:new Date().toISOString()};commit([copy,...local]);setLibPick("");setOpenId(copy.id)}
+return <Card title="Relació d’agents de l’obra" action={<div className="actions-inline"><button className="secondary" onClick={addLocal}><Plus/> Nou agent obra</button><button className="secondary" onClick={openAgent}><Plus/> Nou agent complet</button></div>}>
+<div className="agent-library-add-v878135"><label><span>Afegir agent de la biblioteca</span><select value={libPick} onChange={e=>setLibPick(e.target.value)}><option value="">Selecciona agent existent...</option>{libAvailable.map(a=><option key={a.id} value={a.id}>{a.nom} · {a.rol||"Rol pendent"}</option>)}</select></label><button type="button" className="secondary" disabled={!libPick} onClick={addFromLibrary}>Afegir a aquesta obra</button></div>
+<div className="pro-search-line"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Filtrar agents d’aquesta obra..."/></div>
 <div className="agents-accordion-v878133">
 {filtered.length===0?<Empty text="No hi ha agents amb aquest filtre."/>:filtered.map(a=>{
 const opened=openId===a.id;
@@ -4451,7 +4466,7 @@ return <div className="agent-drawer-v878133" key={a.id}>
 <button type="button" className="agent-summary-v878133" onClick={()=>setOpenId(opened?null:a.id)}><b>{a.nom||"Agent sense nom"}</b><span>{a.rol||"Rol pendent"} · {a.empresa||"Empresa pendent"}</span><em>{a.nif?`NIF ${a.nif}`:"NIF pendent"} · {a.telefon||"Sense telèfon"}</em></button>
 {opened&&<div className="agent-detail-v878133">
 <label><span>Nom</span><input value={a.nom||""} onChange={e=>upd(a.id,"nom",e.target.value)}/></label>
-<label><span>Rol / agent</span><select value={a.rol||"Altres"} onChange={e=>upd(a.id,"rol",e.target.value)}>{roles.map(r=><option key={r}>{r}</option>)}</select></label>
+<label><span>Figura / rol a l’obra</span><select value={a.rol||"Altres"} onChange={e=>upd(a.id,"rol",e.target.value)}>{roles.map(r=><option key={r}>{r}</option>)}</select></label>
 <label><span>Empresa / autònom</span><input value={a.empresa||""} onChange={e=>upd(a.id,"empresa",e.target.value)}/></label>
 <label><span>NIF / CIF</span><input value={a.nif||""} onChange={e=>upd(a.id,"nif",e.target.value)} placeholder="NIF, CIF o DNI"/></label>
 <label><span>Email</span><input value={a.email||""} onChange={e=>upd(a.id,"email",e.target.value)}/></label>
@@ -5262,7 +5277,7 @@ function certPrintHtmlV8772(doc,obra,client){
     <section class="page portrait">
       <div class="head">${issuerFiscalBlockHtml87100(client)}<div><b>Client / promotor</b><span>${fiscalClientBlock878134(obra,client,doc.agents||[])}</span></div></div>
       <h1>${escHtmlV8772(doc.title||"CERTIFICACIÓ")}</h1><p class="sub">${doc.data?`Data: ${escHtmlV8772(doc.data)} · `:""}${escHtmlV8772(doc.subtitle||"")}</p>
-      <div class="cover"><b>Resum econòmic a origen</b><span>Partides amb certificació a origen: ${originRows.length}</span><span>Total certificat a origen: ${money(totalOrigen)}</span><span>Import cert. ${certNum} després deducció: ${money(total)}</span></div>
+      <div class="cover"><b>Resum econòmic a origen</b><span>Partides amb certificació a origen: ${originRows.length}</span><span>Total certificat a origen: ${money(totalOrigen)}</span><span>Import certificació ${certNum}: ${money(total)}</span></div>
       <h3>Partides certificades a origen</h3>
       <table class="summary"><colgroup><col class="part"><col class="ut"><col class="concept-col"><col class="num"><col class="num"><col class="imp"></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>${originRowsHtml}</tbody><tfoot><tr><th colspan="5">TOTAL A ORIGEN</th><th>${money(totalOrigen)}</th></tr></tfoot></table>
       <div class="certs-list"><h3>Deducció de certificacions anteriors</h3><table><thead><tr><th>Concepte</th><th>Import</th></tr></thead><tbody><tr><td><b>Total certificat a origen</b></td><td><b>${money(totalOrigen)}</b></td></tr>${deductionRows}<tr><td><b>Import sense IVA certificació ${certNum}</b></td><td><b>${money(total)}</b></td></tr></tbody></table></div>
@@ -5287,7 +5302,7 @@ function CertPreviewV8772({doc}){
   return <div className="cert-preview-v8772 cert-preview-lite-v8783">
     <div className="cert-preview-head-v8772"><h1>{doc.title}</h1><p>{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p><b>{money(totalOrigen)}</b><small>Total certificat a origen</small></div>
     <div className="cert-preview-note-v8772"><b>Previsualització a origen.</b><span>La certificació en curs es presenta a origen; a sota es dedueixen les certificacions anteriors per obtenir l'import d'aquesta certificació. El quadre horitzontal no es modifica.</span></div>
-    <div className="cert-lite-kpis-v8783"><div><span>Partides amb certificació a origen</span><b>{originRows.length}</b></div><div><span>Total certificat a origen</span><b>{money(totalOrigen)}</b></div><div><span>Import cert. {certNum} després deduccions</span><b>{money(totalActual)}</b></div></div>
+    <div className="cert-lite-kpis-v8783"><div><span>Partides amb certificació a origen</span><b>{originRows.length}</b></div><div><span>Total certificat a origen</span><b>{money(totalOrigen)}</b></div><div><span>Import certificació {certNum}</span><b>{money(totalActual)}</b></div></div>
     <h3>Partides certificades a origen</h3>
     {originRows.length===0?<div className="empty">No hi ha partides certificades a origen.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772 stable-num-table-v8783 cert-summary-cols-v87117"><colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-q"/><col className="c-pu"/><col className="c-total"/></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte / descripció</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.slice(0,80).map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept"><b>{r.concepte}</b></td><td className="num">{qty2(r.qOrigin)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin)}</td></tr>)}</tbody><tfoot><tr><th colSpan="5">TOTAL A ORIGEN</th><th>{money(totalOrigen)}</th></tr></tfoot></table>{originRows.length>80&&<p className="muted">Hi ha més partides. El document complet sortirà a la impressió.</p>}</div>}
     <div className="cert-preview-totals-v8780"><h3>Deducció de certificacions anteriors</h3><table className="stable-num-table-v8783"><thead><tr><th>Concepte</th><th>Import</th></tr></thead><tbody><tr><td><b>Total certificat a origen</b></td><td><b>{money(totalOrigen)}</b></td></tr>{prevTotals.length===0?<tr><td>No hi ha certificacions anteriors</td><td>{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><td>Deducció Certificació {c.n}</td><td>-{money(c.total)}</td></tr>)}</tbody><tfoot><tr><th>Import sense IVA certificació {certNum}</th><th>{money(totalActual)}</th></tr></tfoot></table></div>
