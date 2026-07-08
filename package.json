@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-125-certificacio-pressupost-factura-fix",
+  "name": "app-control-obres-v87-126-certificacio-admin-proforma-fix",
   "private": true,
-  "version": "87.125.0",
+  "version": "87.126.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

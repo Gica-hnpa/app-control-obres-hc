@@ -1,1 +1,2 @@
-Build correcte amb Vite: npm run build validat abans de netejar el paquet.
+Build correcte amb Vite per V87.126.
+Executat: npm install --no-audit --no-fund --legacy-peer-deps && npm run build

@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.125 - CERTIFICACIONS + PRESSUPOST + PROFORMA HARD FIX
+VERSIO: V87.126 - CERTIFICACIÓ ADMINISTRACIÓ + PROFORMA NET + RESUM REAL
 PAQUET: CARPETA ÚNICA AMB SRC REAL
 
-Derivada de V87.124. Correcció enfocada a edició de pressupost, certificacions, extres/provisions i impressió de proforma.
+Derivada de V87.125. Correcció de punts detectats en certificacions, proforma i pressupost.

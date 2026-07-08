@@ -3949,3 +3949,62 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .budget-v25-line{grid-template-columns:72px 52px minmax(210px,1fr) 96px 105px 100px 84px!important;min-width:760px}
   .cert-extra-form-v878125 .wide{grid-column:1/-1}
 }
+
+/* V87.126 · Ajustos finals certificació/proforma/pressupost */
+.budget-v25-cap-head{
+  grid-template-columns:30px minmax(0,1fr) 96px 135px auto!important;
+  align-items:center!important;
+}
+.budget-v25-cap-head > button:first-child{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+  padding:0!important;
+}
+.budget-v25-cap-head .danger.small{
+  width:auto!important;
+  height:auto!important;
+  min-width:96px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  padding:7px 10px!important;
+  line-height:1.15!important;
+}
+.cert-grid-wrap-v69{overflow-x:auto!important;}
+.cert-grid-v69{
+  grid-template-columns:
+    66px
+    48px
+    minmax(420px,2fr)
+    82px
+    86px
+    128px
+    96px
+    92px
+    128px
+    96px
+    92px
+    128px
+    102px
+    94px
+    138px!important;
+  min-width:1720px!important;
+  width:max-content!important;
+}
+.cert-cap-v69{min-width:1720px!important;width:max-content!important;}
+.cert-current-cell-v8780{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:0;}
+.cert-current-cell-v8780 .cert-edit-input-v69{width:78px!important;min-width:78px!important;}
+.measure-btn-v8780,.admin-btn-v878126{border:1px solid #86efac;background:white;color:#166534;border-radius:6px;font-weight:900;padding:5px 6px;line-height:1;white-space:nowrap;}
+.admin-btn-v878126{color:#1d4ed8;border-color:#bfdbfe;background:#eff6ff;}
+.print-desc-static-v878126{display:block;white-space:pre-wrap;color:#475569;line-height:1.25;margin-top:3px;font-size:9px;font-weight:400;}
+.medicio-table-v8780,.admin-table-v878126{min-width:980px;}
+.admin-modal-v878126{padding:20px;}
+.admin-table-v878126{font-size:12px;}
+.admin-table-v878126 input{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:7px;background:white;}
+.admin-table-v878126 th,.admin-table-v878126 td{text-align:right;vertical-align:middle;}
+.admin-table-v878126 th:first-child,.admin-table-v878126 td:first-child{text-align:left;min-width:220px;}
+.admin-table-v878126 tfoot th{background:#dbeafe;font-weight:900;}
+@media(max-width:900px){
+  .budget-v25-cap-head{grid-template-columns:28px 1fr!important;}
+  .budget-v25-cap-head span,.budget-v25-cap-head strong,.budget-v25-cap-head .danger.small{grid-column:2;text-align:left!important;justify-self:start;}
+}
