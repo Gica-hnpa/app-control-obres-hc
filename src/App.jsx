@@ -2642,37 +2642,48 @@ function monthActivityCount878137(o,d={},ref=new Date()){
 function Inici({clients,obres,odata={},setOdata,events,setScreen,openObra,openObraTab,newObra}){
 const now=new Date();
 const monthName=monthName878137(now);
-const oberts=obres.filter(o=>isExpedientOpen878136(o.estat)).length;
-const allEvents=uniqueEvents878137(events||[]);
-const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,6);
-const recents=[...obres].sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,5);
-const tasks=collectPendingTasks878137(obres,odata);
-const monthWorks=[...obres].filter(o=>isExpedientOpen878136(o.estat)).map(o=>({o,d:odata[o.id]||{},count:monthActivityCount878137(o,odata[o.id]||{},now)})).filter(x=>x.count>0||normalizeExpedientStatus878136(x.o.estat)==='En curs / Actiu'||normalizeExpedientStatus878136(x.o.estat)==='Acceptat').sort((a,b)=>b.count-a.count||obraRecentScore878134(b.o,b.d)-obraRecentScore878134(a.o,a.d)).slice(0,8);
-const estatCount=(obres||[]).reduce((m,o)=>{const k=normalizeExpedientStatus878136(o.estat);m[k]=(m[k]||0)+1;return m},{});
-const activities=collectActivities8783(obres,odata,clients).filter(a=>a.time && a.time<=Date.now()+60*60*1000).slice(0,5);
 const openTemps=(oid)=>openObraTab?openObraTab(oid,'Gestió temps'):openObra(oid);
+const allEvents=uniqueEvents878137(events||[]);
+const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,5);
+const tasks=collectPendingTasks878137(obres,odata);
+const obertsMes=[...obres].filter(o=>isExpedientOpen878136(o.estat)).map(o=>({o,d:odata[o.id]||{},count:monthActivityCount878137(o,odata[o.id]||{},now),recent:obraRecentScore878134(o,odata[o.id]||{})})).filter(x=>x.count>0||normalizeExpedientStatus878136(x.o.estat)==='En curs / Actiu'||normalizeExpedientStatus878136(x.o.estat)==='Acceptat').sort((a,b)=>String(clientName878138(clients,a.o)).localeCompare(String(clientName878138(clients,b.o)),'ca',{numeric:true})||b.count-a.count||b.recent-a.recent);
+const recents=[...obres].sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,3);
+const worksByClient=groupByClient878138(obertsMes,clients,x=>x.o.client);
+const tasksByClient=groupByClient878138(tasks,clients,x=>x.obra.client);
 return <>
-<section className="hero hero-v8737 hero-v878137"><div className="app-logo">CO</div><div><h1>Panell de treball</h1><p>Menys soroll: mes actual, cites reals, feines pendents i últims expedients. La resta queda dins de cada pestanya.</p><span className="version-badge soft">Versió 87.137 inici funcional</span></div><div className="user-card"><strong>{monthName}</strong><span>{oberts} expedients oberts</span><span>{tasks.length} feines pendents</span></div></section>
-<section className="home-actions-v8737"><button className="primary" onClick={newObra}><Plus/> Nou expedient</button><button className="secondary" onClick={()=>setScreen('Treballs / Expedients')}><FolderOpen/> Expedients</button><button className="secondary" onClick={()=>setScreen('Agenda')}><CalendarDays/> Agenda</button><button className="secondary" onClick={()=>setScreen('Traça')}><ClipboardList/> Gestió temps</button></section>
-<section className="kpi-grid"><button className="kpi" onClick={()=>setScreen('Treballs / Expedients')}><small>OBERTS</small><strong>{oberts}</strong></button><button className="kpi" onClick={()=>setScreen('Agenda')}><small>PRÒXIMES CITES</small><strong>{properes.length}</strong></button><button className="kpi" onClick={()=>setScreen('Treballs / Expedients')}><small>FEINES PENDENTS</small><strong>{tasks.length}</strong></button></section>
-<section className="dashboard-grid dashboard-grid-v8741 dashboard-clean-v878136 dashboard-v878137">
-  <div className="stack">
-    <Card title={`Obres i treballs oberts · ${monthName}`}><div className="month-work-grid-v878137">
-      {monthWorks.length===0?<Empty text="No hi ha cap obra oberta destacada aquest mes."/>:monthWorks.map(({o,count})=><button key={o.id} onClick={()=>openObra(o.id)} className={`month-work-card-v878137 ${statusKeyPress8776(normalizeExpedientStatus878136(o.estat))}`}><b>{o.nom}</b><span>{expedientCode8739(o)} · {normalizeExpedientStatus878136(o.estat)}</span><em>{count?`${count} moviment(s) aquest mes`:'Oberta sense moviment del mes'}</em></button>)}
-    </div><div className="status-pill-board-v878137">{EXPEDIENT_STATUS878136.map(st=><button key={st} onClick={()=>setScreen('Treballs / Expedients')}><span>{st}</span><b>{estatCount[st]||0}</b></button>)}</div></Card>
-    <Card title="Feines pendents a fer"><div className="task-home-list-v878137">
-      {tasks.length===0?<Empty text="No tens feines pendents destacades."/>:tasks.slice(0,7).map(({obra:o,task:t,time})=><div key={`${o.id}-${t.id}`} className={`task-home-row-v878137 ${taskStatusTone878137(t.estat)}`}><button className="task-main-v878137" onClick={()=>openObraTab?openObraTab(o.id,'Tasques'):openObra(o.id)}><b>{t.text||'Tasca pendent'}</b><span>{o.nom} · {t.estat||'Pendent'} · {time?fmtActivityDate8783(time):'Sense data'}</span></button><div className="task-actions-v878137"><button onClick={()=>{updateTaskHome878137(setOdata,o,t,'En procés');openTemps(o.id)}}>Entrar / crono</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Pendent de resposta')}>Pendent resposta</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Fet')}>Fet</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Anul·lat')}>Anul·lar</button></div></div>)}
+<section className="home-hero-v878138">
+  <div>
+    <span className="home-eyebrow-v878138">Panell tècnic · {monthName}</span>
+    <h1>Treball actiu i pendents</h1>
+    <p>Vista neta per veure què tens obert aquest mes, què has de fer i quines cites venen. La resta queda a les pestanyes específiques.</p>
+  </div>
+  <div className="home-focus-grid-v878138">
+    <button onClick={()=>setScreen('Treballs / Expedients')}><small>Treballs oberts</small><b>{obertsMes.length}</b><span>{monthName}</span></button>
+    <button onClick={()=>setScreen('Agenda')}><small>Pròximes cites</small><b>{properes.length}</b><span>Només futures</span></button>
+    <button onClick={()=>setScreen('Treballs / Expedients')}><small>Feines pendents</small><b>{tasks.length}</b><span>Amb accions</span></button>
+  </div>
+</section>
+<section className="home-workbench-v878138">
+  <div className="home-maincol-v878138">
+    <Card title={`Feines obertes · ${monthName}`}><div className="client-group-list-v878138">
+      {worksByClient.length===0?<Empty text="No hi ha obres o treballs oberts destacats aquest mes."/>:worksByClient.map(g=><section key={g.key} className="client-group-v878138"><header><b>{g.label}</b><span>{g.items.length} treball(s)</span></header><div className="month-work-grid-v878138 grouped-v878138">{g.items.map(({o,count,recent})=><button key={o.id} onClick={()=>openObra(o.id)} className={`month-work-card-v878137 month-work-card-v878138 ${statusKeyPress8776(normalizeExpedientStatus878136(o.estat))}`}><b>{o.nom}</b><span>{expedientCode8739(o)} · {normalizeExpedientStatus878136(o.estat)}</span><em>{count?`${count} moviment(s) aquest mes`:(recent?`Darrer accés ${fmtActivityDate8783(recent)}`:'Sense moviment del mes')}</em></button>)}</div></section>)}
+    </div></Card>
+    <Card title="Feines pendents a fer"><div className="client-task-list-v878138">
+      {tasksByClient.length===0?<Empty text="No tens feines pendents destacades."/>:tasksByClient.map(g=><section key={g.key} className="client-task-group-v878138"><header><b>{g.label}</b><span>{g.items.length} pendent(s)</span></header>{g.items.map(({obra:o,task:t,time})=><div key={`${o.id}-${t.id}`} className={`task-home-row-v878137 task-row-v878138 ${taskStatusTone878137(t.estat)}`}><button className="task-main-v878137" onClick={()=>openObraTab?openObraTab(o.id,'Tasques'):openObra(o.id)}><b>{t.text||'Tasca pendent'}</b><span>{o.nom} · {t.estat||'Pendent'} · {time?fmtActivityDate8783(time):'Sense data'} · {t.prioritat||'Normal'}</span></button><div className="task-actions-v878137 task-actions-v878138"><button onClick={()=>{updateTaskHome878137(setOdata,o,t,'En procés');openTemps(o.id)}}>Entrar / crono</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Pendent de resposta')}>Pendent resposta</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Fet')}>Fet</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Anul·lat')}>Anul·lar</button></div></div>)}</section>)}
     </div></Card>
   </div>
-  <div className="stack">
-    <Card title="Pròximes cites i avisos"><div className="home-work-panel-v8741 home-work-panel-v8742 upcoming-v878137">
-      {properes.length===0?<p>No hi ha cites futures. Les caducades no es mostren aquí.</p>:properes.map(e=><button key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||'Cita'}</b><span>{fmtEventDate878136(e)} · {e.hora||''}{e.obra?` · ${e.obra}`:''}</span></button>)}
+  <div className="home-sidecol-v878138">
+    <Card title="Pròximes cites i avisos"><div className="upcoming-list-v878138">
+      {properes.length===0?<p>No hi ha cites futures. Les caducades no es mostren aquí.</p>:properes.map(e=><button key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||'Cita'}</b><span>{fmtEventDate878136(e)} · {e.hora||'Hora pendent'}</span>{e.obra&&<em>{e.obra}</em>}</button>)}
     </div></Card>
-    <Card title="Darrers expedients oberts"><div className="list compact-list-v8741">{recents.length?recents.map(o=><ObraRow key={o.id} o={o} d={odata[o.id]||{}} open={openObra}/>):<Empty text="Encara no hi ha expedients."/>}</div></Card>
-    <Card title="Últims canvis reals"><div className="activity-panel-v8741">{activities.length?activities.map(a=><button key={`${a.type}-${a.time}-${a.title}`} className="activity-row-v8741" onClick={()=>openObraTab?openObraTab(a.obra.id,a.tab||'Resum'):openObra(a.obra.id)}><b>{a.type} · {a.title}</b><span>{fmtActivityDate8783(a.time)} · {a.detail}</span></button>):<Empty text="Encara no hi ha moviments registrats."/>}</div></Card>
+    <Card title="Darrers expedients oberts"><div className="recent-mini-list-v878138">
+      {recents.length?recents.map(o=><button key={o.id} onClick={()=>openObra(o.id)}><b>{o.nom}</b><span>{clientName878138(clients,o)} · {normalizeExpedientStatus878136(o.estat)}</span><em>{fmtActivityDate8783(obraRecentScore878134(o,odata[o.id]||{}))}</em></button>):<Empty text="Encara no hi ha expedients oberts."/>}
+    </div></Card>
   </div>
 </section>
 </>}
+function clientName878138(clients=[],obra={}){return (clients||[]).find(c=>c.id===obra.client)?.nom||obra.clientNom||obra.propietat||'Sense client'}
+function groupByClient878138(items=[],clients=[],getId=x=>x?.client){const map=new Map();(items||[]).forEach(item=>{const id=getId(item)||'__sense__';const fake={client:id,clientNom:id==='__sense__'?'Sense client':''};const label=id==='__sense__'?'Sense client':clientName878138(clients,fake);if(!map.has(id))map.set(id,{key:id,label,items:[]});map.get(id).items.push(item)});return [...map.values()].sort((a,b)=>String(a.label).localeCompare(String(b.label),'ca',{numeric:true}))}
 function Clients({clients,obres=[],odata={},cs,setCs,ct,setCt,openClient,newClient,setClients,setObres}){
   const tipusOpts=["Promotor","Arquitecte","Arquitecte tècnic","Direcció Facultativa","Constructor","Constructora","Industrial","Administració","Particular","Autònom","Subcontractat","Altres"];
   const [clientManageId878134,setClientManageId878134]=useState(null);
