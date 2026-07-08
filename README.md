@@ -1,14 +1,14 @@
-# APP Control d'Obres · V87.136
+# APP Control d'Obres · V87.137
 
-Versió centrada en netejar la pàgina d'inici i corregir dates/estats.
+Versió de millora funcional sobre V87.136.
 
 Canvis:
-- Pàgina d'inici simplificada: darrers expedients oberts, pròximes cites futures, seguiment per estat i últims canvis reals.
-- Les cites caducades ja no surten a Pròximes cites / avisos.
-- Darreres actuacions dins l'expedient deduplicades, especialment certificacions repetides del mateix número.
-- Darrers expedients ordenats per accés/treball real, no per dates futures de planificació o certificacions.
-- Estats d'expedient normalitzats: Pressupostat, Acceptat, En curs / Actiu, Tancat, Anul·lat, No acceptat, Pendent de resposta i En revisió.
-- Filtres i formularis d'expedient actualitzats amb aquests estats.
+- Pàgina d'inici més neta i útil: mes actual, expedients oberts del mes, pròximes cites futures i feines pendents.
+- Correcció de pròximes cites: només futures/reals, amb lectura robusta de dates `data`, `date`, `year/month/day`.
+- Feines pendents amb accions ràpides: en procés, pendent resposta, fet, anul·lar i obrir a Gestió temps per posar el crono.
+- Seguiment d'expedients amb etiquetes de color per estat.
+- Resum de l'obra més modern i funcional, amb proper avís només si és futur, última certificació/activitat real i tasques pendents.
+- Darreres actuacions de l'expedient deduplicades i sense avisos caducats.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist
