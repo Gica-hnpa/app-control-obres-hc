@@ -1,14 +1,12 @@
-# APP Control d'Obres · V87.128
+# APP Control d'Obres · V87.129
 
-Versió derivada de V87.127 centrada en estabilitzar la graella de certificacions i fer que el quadre mensual d'administració s'incorpori al capítol o partida que indiqui l'usuari.
+Versió de recuperació immediata sobre V87.128.
 
 Canvis:
-- Correcció de la graella de certificació perquè els camps verds i el botó de línies de medició no deformin ni se superposin sobre altres columnes.
-- Quadre mensual d'administració amb selector d'on ha d'aparèixer: capítol nou, capítol existent o partida de referència.
-- Si es tria una partida, la partida resum d'administració s'afegeix dins el mateix capítol amb codi derivat i queda vinculada a la partida triada.
-- La partida d'administració segueix entrant com a 1 ut × total del quadre, suma a certificació/proforma i no incrementa el pressupost base.
-- En el pressupost d'obra, en mode edició, cada partida pot canviar-se de capítol amb un desplegable i es manté l'opció d'eliminar-la.
-- Es mantenen les proteccions d'importació segura, còpies locals i Supabase de les versions anteriors.
+- Recuperació visual de la graella de certificacions perquè els camps de certificació i el botó de línies de medició no deformin el quadre.
+- El botó de línies de medició queda integrat dins la cel·la sense modificar l'amplada de columnes.
+- Quadre mensual de feines per administració amb flux correcte: primer desplegable de capítol, després desplegable de partida filtrada per aquell capítol.
+- Si la partida/capítol no existeix, es pot escriure manualment el capítol, el codi i el nom de la partida resum.
+- La partida resum continua entrant com 1 ut × total del quadre mensual i queda fora de pressupost base.
 
-Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
-Publish Directory: dist
+ZIP net amb `src` real, sense `node_modules`, `dist` ni `package-lock.json`.

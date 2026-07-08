@@ -1,5 +1,3 @@
 APP CONTROL D'OBRES
-VERSIO: V87.128 - CERTIFICACIÓ ADMINISTRACIÓ PER CAPÍTOL + GRAELLA ESTABLE
-PAQUET: CARPETA ÚNICA DE VALIDACIÓ
-
-Derivada de V87.127. Correcció de graella certificacions i administració mensual vinculable a capítol/partida.
+VERSIO: V87.129 - RESTORE CERT GRID + ADMIN CAPITOL FLOW
+Derivada de V87.128. Recuperació de graella i flux administració mensual.

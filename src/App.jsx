@@ -3798,30 +3798,42 @@ function AdminCostModal878126({row,certNum,initial=[],close,save}){
 function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[],partidaOptions=[]}){
   const cfgKey=lsKey8779("aco_admin_monthly_defaults_v87127");
   const defaults=(()=>{try{return JSON.parse(localStorage.getItem(cfgKey)||"{}")}catch{return {}}})();
+  const defaultCap=initial.cap||"C98 FEINES PER ADMINISTRACIÓ";
   const [meta,setMeta]=useState({
-    cap:initial.cap||"C98 FEINES PER ADMINISTRACIÓ",
+    cap:defaultCap,
     codi:initial.codi||`ADM.${String(certNum).padStart(2,"0")}`,
     conceptePartida:initial.conceptePartida||"AJUDES A INDUSTRIALS / FEINES PER ADMINISTRACIÓ",
     unitat:initial.unitat||"ut",
     costOficial:String(initial.costOficial??defaults.costOficial??"27"),
-    costAjudant:String(initial.costAjudant??defaults.costAjudant??"18")
+    costAjudant:String(initial.costAjudant??defaults.costAjudant??"18"),
+    targetPartidaCodi:initial.targetPartidaCodi||"",
+    targetPartidaConcepte:initial.targetPartidaConcepte||""
   });
   const [lines,setLines]=useState(((initial.lines&&initial.lines.length)?initial.lines:[{id:"adm-m-"+Date.now(),concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:""}]).map(x=>({...x,id:x.id||("adm-m-"+Date.now()+"-"+Math.random())})));
+  const capList=Array.from(new Set(["C98 FEINES PER ADMINISTRACIÓ",...(capOptions||[]),defaultCap].filter(Boolean)));
+  const partidesCap=(partidaOptions||[]).filter(r=>String(r.cap||"").trim()===String(meta.cap||"").trim());
   function updMeta(k,v){setMeta(m=>({...m,[k]:v}))}
-  function applyTarget878128(v){
-    if(!v)return;
-    if(String(v).startsWith("cap::")){
-      const cap=String(v).slice(5);
-      setMeta(m=>({...m,cap,targetPartidaCodi:""}));
+  function setCap879129(cap){
+    const next=String(cap||"").trim()||"C98 FEINES PER ADMINISTRACIÓ";
+    setMeta(m=>({...m,cap:next,targetPartidaCodi:"",targetPartidaConcepte:""}));
+  }
+  function setPartida879129(codi){
+    const code=String(codi||"");
+    if(!code){
+      setMeta(m=>({...m,targetPartidaCodi:"",targetPartidaConcepte:""}));
       return;
     }
-    if(String(v).startsWith("part::")){
-      const idx=Number(String(v).slice(6));
-      const r=(partidaOptions||[])[idx];
-      if(!r)return;
-      const baseCodi=String(r.codi||"").trim();
-      setMeta(m=>({...m,cap:String(r.cap||m.cap||"C98 FEINES PER ADMINISTRACIÓ"),codi:baseCodi?`${baseCodi}.ADM`:(m.codi||`ADM.${String(certNum).padStart(2,"0")}`),conceptePartida:`Administració · ${String(r.concepte||"Ajudes a industrials")}`.slice(0,140),targetPartidaCodi:baseCodi,targetPartidaConcepte:String(r.concepte||"")}));
-    }
+    const r=partidesCap.find(x=>String(x.codi||"")===code);
+    if(!r)return;
+    const baseCodi=String(r.codi||"").trim();
+    setMeta(m=>({
+      ...m,
+      cap:String(r.cap||m.cap||"C98 FEINES PER ADMINISTRACIÓ"),
+      codi:baseCodi?`${baseCodi}.ADM`:(m.codi||`ADM.${String(certNum).padStart(2,"0")}`),
+      conceptePartida:`Administració · ${String(r.concepte||"Ajudes a industrials")}`.slice(0,140),
+      targetPartidaCodi:baseCodi,
+      targetPartidaConcepte:String(r.concepte||"")
+    }));
   }
   function upd(id,k,v){setLines(p=>p.map(l=>l.id===id?{...l,[k]:v}:l))}
   function add(){setLines(p=>[...p,{id:"adm-m-"+Date.now()+"-"+p.length,concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:""}])}
@@ -3838,18 +3850,22 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     save({...meta,lines,total,totalOficial,totalAjudant,totalMaterial});
   }
   return <Modal title={`Quadre mensual d’administració · CERT. ${certNum}`} close={close}>
-    <div className="admin-monthly-v878127">
-      <div className="module-note-v8738"><b>Funcionament</b><span>Omples el quadre com a l’Excel. El sumatori final es passa a la certificació com una sola partida: <b>1 {meta.unitat||"ut"} × {money(total)}</b>. No incrementa el pressupost base.</span></div>
-      <div className="admin-monthly-config-v878127 admin-monthly-config-v878128">
-        <label className="wide"><span>On vols que surti afegit?</span><select value="" onChange={e=>{applyTarget878128(e.target.value);e.currentTarget.value=""}}>
-          <option value="" disabled>Escull capítol o partida de referència...</option>
-          <option value="cap::C98 FEINES PER ADMINISTRACIÓ">Capítol nou: C98 FEINES PER ADMINISTRACIÓ</option>
-          {(capOptions||[]).map(c=><option key={`cap-${c}`} value={`cap::${c}`}>Capítol: {c}</option>)}
-          {(partidaOptions||[]).slice(0,350).map((r,idx)=><option key={`part-${idx}-${r.codi}`} value={`part::${idx}`}>Partida: {r.codi||"s/codi"} · {r.concepte}</option>)}
-        </select><small>{meta.targetPartidaCodi?`Relacionat amb partida ${meta.targetPartidaCodi} · ${meta.targetPartidaConcepte||""}`:"Si tries una partida, el quadre quedarà dins el mateix capítol i amb codi derivat."}</small></label>
-        <label><span>Capítol on apareixerà</span><input value={meta.cap} onChange={e=>updMeta("cap",e.target.value)}/></label>
-        <label><span>Codi partida resum</span><input value={meta.codi} onChange={e=>updMeta("codi",e.target.value)}/></label>
-        <label className="wide"><span>Nom partida resum</span><input value={meta.conceptePartida} onChange={e=>updMeta("conceptePartida",e.target.value)}/></label>
+    <div className="admin-monthly-v878127 admin-monthly-v878129">
+      <div className="module-note-v8738"><b>Funcionament correcte</b><span>Primer tries el capítol. Després, si vols, tries la partida de referència d’aquest capítol. Si no existeix, escrius manualment el capítol/codi/nom. El sumatori final entra com una sola partida: <b>1 {meta.unitat||"ut"} × {money(total)}</b>.</span></div>
+      <div className="admin-target-flow-v878129">
+        <label><span>1. Capítol</span><select value={capList.includes(meta.cap)?meta.cap:"__manual__"} onChange={e=>{if(e.target.value==="__manual__")return;setCap879129(e.target.value)}}>
+          {capList.map(c=><option key={c} value={c}>{c}</option>)}
+          <option value="__manual__">Capítol nou / escrit manualment</option>
+        </select></label>
+        <label><span>Nom del capítol</span><input value={meta.cap} onChange={e=>setCap879129(e.target.value)} placeholder="Ex: C98 FEINES PER ADMINISTRACIÓ"/></label>
+        <label><span>2. Partida de referència dins aquest capítol</span><select value={meta.targetPartidaCodi||""} onChange={e=>setPartida879129(e.target.value)}>
+          <option value="">Sense partida concreta · crear partida resum nova</option>
+          {partidesCap.map((r,idx)=><option key={`${r.codi||idx}-${idx}`} value={String(r.codi||"")}>{r.codi||"s/codi"} · {r.concepte}</option>)}
+        </select><small>{partidesCap.length?`${partidesCap.length} partida/es disponibles en aquest capítol.`:"Aquest capítol encara no té partides; pots crear la partida resum amb els camps següents."}</small></label>
+      </div>
+      <div className="admin-monthly-config-v878127 admin-monthly-config-v878129">
+        <label><span>Codi partida resum</span><input value={meta.codi} onChange={e=>updMeta("codi",e.target.value)} placeholder="Ex: 04.01.ADM"/></label>
+        <label className="wide"><span>Nom partida resum</span><input value={meta.conceptePartida} onChange={e=>updMeta("conceptePartida",e.target.value)} placeholder="Ex: Feines per administració mensual"/></label>
         <label><span>Cost hora oficial</span><input inputMode="decimal" value={meta.costOficial} onChange={e=>updMeta("costOficial",e.target.value)}/></label>
         <label><span>Cost hora ajudant / peó</span><input inputMode="decimal" value={meta.costAjudant} onChange={e=>updMeta("costAjudant",e.target.value)}/></label>
       </div>

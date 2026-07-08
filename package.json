@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-128-cert-admin-capitols-graella-fix",
+  "name": "app-control-obres-v87-129-restore-cert-admin-capitol-flow",
   "private": true,
-  "version": "87.128.0",
+  "version": "87.129.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
