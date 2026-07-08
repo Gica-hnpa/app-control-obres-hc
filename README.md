@@ -1,16 +1,14 @@
-# APP Control d'Obres · V87.127
+# APP Control d'Obres · V87.128
 
-Versió correctiva sobre V87.126.
+Versió derivada de V87.127 centrada en estabilitzar la graella de certificacions i fer que el quadre mensual d'administració s'incorpori al capítol o partida que indiqui l'usuari.
 
-Canvis principals:
-- Es retira el botó `€/h` dins de cada fila de la certificació perquè deformava la graella.
-- Nova opció superior **Quadre administració mensual** dins de la certificació.
-- El quadre mensual funciona com l'Excel: concepte, dia, hores d'oficial, hores d'ajudant/peó, material i total per línia.
-- Els costos hora d'oficial i ajudant/peó es configuren dins del quadre i es recorden per al navegador.
-- El total del quadre es transforma en una única partida certificable: **1 ut × cost total**.
-- Aquesta partida suma a la certificació/proforma però queda marcada com a fora de pressupost perquè no incrementi el pressupost base.
-- Es manté el sistema de línies de medició per a partides normals.
-- Es mantenen les correccions de proforma, resum real, importació segura, còpies locals i Supabase.
+Canvis:
+- Correcció de la graella de certificació perquè els camps verds i el botó de línies de medició no deformin ni se superposin sobre altres columnes.
+- Quadre mensual d'administració amb selector d'on ha d'aparèixer: capítol nou, capítol existent o partida de referència.
+- Si es tria una partida, la partida resum d'administració s'afegeix dins el mateix capítol amb codi derivat i queda vinculada a la partida triada.
+- La partida d'administració segueix entrant com a 1 ut × total del quadre, suma a certificació/proforma i no incrementa el pressupost base.
+- En el pressupost d'obra, en mode edició, cada partida pot canviar-se de capítol amb un desplegable i es manté l'opció d'eliminar-la.
+- Es mantenen les proteccions d'importació segura, còpies locals i Supabase de les versions anteriors.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

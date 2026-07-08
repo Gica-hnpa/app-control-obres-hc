@@ -1,1 +1,1 @@
-Build correcte amb Vite verificat abans de netejar el paquet.
+Build correcte amb Vite. Dist retirada del paquet ZIP net.

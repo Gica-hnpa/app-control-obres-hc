@@ -4026,3 +4026,39 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .cert-current-cell-v8780{min-width:0!important}
 .cert-current-cell-v8780 .cert-edit-input-v69{width:82px!important;min-width:82px!important}
 @media(max-width:900px){.admin-monthly-config-v878127{grid-template-columns:1fr}.admin-monthly-table-v878127{min-width:980px}.admin-monthly-v878127{padding:12px}}
+
+/* V87.128 · Graella certificació estable + administració vinculada a capítol/partida */
+.cert-grid-wrap-v69{overflow-x:auto!important;overflow-y:visible!important;max-width:100%!important;}
+.cert-grid-v69{
+  grid-template-columns:
+    66px 46px minmax(430px,1.8fr)
+    82px 90px 124px
+    94px 86px 124px
+    122px 86px 124px
+    104px 90px 138px!important;
+  min-width:1780px!important;
+  width:max-content!important;
+  align-items:stretch!important;
+}
+.cert-grid-v69>div{box-sizing:border-box!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+.cert-grid-v69 .concept,.cert-grid-v69 .cert-concept-v877,.cert-grid-v69 .concept-line-v877 span{overflow:visible!important;white-space:normal!important;text-overflow:clip!important;}
+.cert-current-cell-v8780{display:grid!important;grid-template-columns:minmax(0,1fr) 26px!important;gap:3px!important;align-items:center!important;justify-content:stretch!important;width:100%!important;min-width:0!important;}
+.cert-current-cell-v8780 .cert-edit-input-v69{width:100%!important;min-width:0!important;max-width:none!important;padding:6px 5px!important;box-sizing:border-box!important;}
+.measure-btn-v8780{width:26px!important;min-width:26px!important;height:28px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;}
+.cert-cap-v69,.cert-cap-toggle-v879{min-width:1780px!important;width:max-content!important;}
+.admin-monthly-config-v878128{grid-template-columns:minmax(260px,1.8fr) minmax(210px,1fr) 140px minmax(260px,1.5fr) 150px 170px!important;}
+.admin-monthly-config-v878128 select{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:white;font-weight:800;color:#0f172a;}
+.admin-monthly-config-v878128 small{display:block;margin-top:5px;color:#64748b;font-size:11px;line-height:1.25;}
+.admin-monthly-config-v878128 .wide{grid-column:auto!important;}
+.admin-monthly-table-v878127{min-width:1180px!important;}
+.budget-v25-line{grid-template-columns:80px 64px minmax(260px,1fr) 110px 120px 110px minmax(210px,260px)!important;}
+.budget-line-actions-v878128{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:6px!important;align-items:center!important;min-width:0!important;}
+.budget-line-actions-v878128 select{min-width:0!important;width:100%!important;border:1px solid #cbd5e1;border-radius:8px;background:white;padding:7px 8px;font-size:12px!important;font-weight:800;color:#0f172a;}
+.budget-line-actions-v878128 .budget-delete-line-v878125{white-space:nowrap!important;}
+@media(max-width:900px){
+  .cert-grid-v69{min-width:1680px!important;}
+  .cert-cap-v69,.cert-cap-toggle-v879{min-width:1680px!important;}
+  .admin-monthly-config-v878128{grid-template-columns:1fr!important;}
+  .budget-v25-line{grid-template-columns:72px 52px minmax(210px,1fr) 96px 105px 100px minmax(190px,240px)!important;min-width:900px!important;}
+  .budget-line-actions-v878128{grid-template-columns:1fr!important;}
+}

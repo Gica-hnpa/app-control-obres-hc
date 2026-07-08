@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-127-admin-mensual-certificacio-fix",
+  "name": "app-control-obres-v87-128-cert-admin-capitols-graella-fix",
   "private": true,
-  "version": "87.127.0",
+  "version": "87.128.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

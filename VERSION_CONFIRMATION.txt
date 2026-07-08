@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.127 - ADMINISTRACIÓ MENSUAL CERTIFICACIÓ FIX
+VERSIO: V87.128 - CERTIFICACIÓ ADMINISTRACIÓ PER CAPÍTOL + GRAELLA ESTABLE
 PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-Derivada de V87.126. Correcció del plantejament d'administració: quadre mensual separat, sense deformar la graella de certificació.
+Derivada de V87.127. Correcció de graella certificacions i administració mensual vinculable a capítol/partida.
