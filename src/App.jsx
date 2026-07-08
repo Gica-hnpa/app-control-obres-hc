@@ -2407,7 +2407,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
-{screen==="Inici"&&<Inici clients={clients} obres={obres} odata={odata} setOdata={setOdata} events={[...Object.values(odata).flatMap(d=>d.events||[]),...invoiceAlerts8776(obres,odata)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={()=>setModal("obra")}/>}
+{screen==="Inici"&&<Inici clients={clients} setClients={setClients} obres={obres} setObres={setObres} odata={odata} setOdata={setOdata} events={[...Object.values(odata).flatMap(d=>d.events||[]),...invoiceAlerts8776(obres,odata)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={()=>setModal("obra")}/>}
 {screen==="Clients"&&<Clients clients={fClients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} deleteObra={deleteObra878112} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={()=>setModal("obra")} setScreen={nav}/>}
@@ -2626,10 +2626,49 @@ function updateTaskHome878137(setOdata,obra,task,status){
     return {...prev,[obra.id]:{...d,tasques:nextTasks,events:shouldEvent?[...manualEvents,taskEvent878137(nextTask,obra)]:manualEvents,updatedAt:new Date().toISOString(),lastWorkedAt:new Date().toISOString()}};
   })
 }
+function taskDueTime878140(t={}){return timeValue8783(t.dataMaxima||t.dataEntrega||t.limit||t.data)||0}
+function taskDueLabel878140(t={}){const v=t.dataMaxima||t.dataEntrega||t.limit||t.data;return v?fmtActivityDate8783(timeValue8783(v)):"Sense data màxima"}
+function taskDeadlineTone878140(t={}){
+  const due=taskDueTime878140(t);
+  if(!due)return "neutral";
+  const today=todayStartMs878136();
+  const days=Math.ceil((due-today)/(24*60*60*1000));
+  if(days<0)return "overdue";
+  if(days<=2)return "critical";
+  if(days<=7)return "soon";
+  return "ok";
+}
+function taskDeadlinePercent878140(t={}){
+  const due=taskDueTime878140(t);
+  if(!due)return 25;
+  const today=todayStartMs878136();
+  const days=Math.ceil((due-today)/(24*60*60*1000));
+  if(days<0)return 100;
+  return Math.max(8,Math.min(100,100-((days/30)*92)));
+}
 function collectPendingTasks878137(obres=[],odata={}){
-  return (obres||[]).flatMap(o=>((odata[o.id]||{}).tasques||[]).map(t=>({obra:o,task:t,time:timeValue8783(t.data)||0})))
+  return (obres||[]).flatMap(o=>((odata[o.id]||{}).tasques||[]).map(t=>({obra:o,task:t,time:taskDueTime878140(t)})))
     .filter(x=>!['Fet','Anul·lat'].includes(String(x.task.estat||'Pendent')))
     .sort((a,b)=>(a.time||9999999999999)-(b.time||9999999999999)||String(a.obra.nom||'').localeCompare(String(b.obra.nom||''),'ca',{numeric:true}));
+}
+function taskStatusCounts878140(tasks=[]){
+  const base={Pendent:0,"En procés":0,"Pendent resposta":0,Urgent:0,Vencudes:0};
+  (tasks||[]).forEach(({task:t})=>{
+    if(taskDeadlineTone878140(t)==='overdue')base.Vencudes++;
+    if(String(t.prioritat||'')==='Urgent')base.Urgent++;
+    const st=String(t.estat||'Pendent');
+    if(st.includes('proc')||st.includes('curs'))base['En procés']++;
+    else if(st.includes('resposta'))base['Pendent resposta']++;
+    else base.Pendent++;
+  });
+  return base;
+}
+function taskDonutStyle878140(counts={}){
+  const vals=[counts.Pendent||0,counts['En procés']||0,counts['Pendent resposta']||0,counts.Urgent||0,counts.Vencudes||0];
+  const cols=['#64748b','#2563eb','#f59e0b','#8b5cf6','#dc2626'];
+  const total=vals.reduce((a,b)=>a+b,0)||1;let acc=0;const parts=[];
+  vals.forEach((v,i)=>{if(!v)return;const a=acc/total*360;acc+=v;const b=acc/total*360;parts.push(`${cols[i]} ${a}deg ${b}deg`)});
+  return {background:`conic-gradient(${parts.length?parts.join(','):'#e2e8f0 0deg 360deg'})`};
 }
 function monthActivityCount878137(o,d={},ref=new Date()){
   let n=0;
@@ -2670,75 +2709,118 @@ function clientOptionsForHome878139(clients=[],obres=[]){
   return [...ids].map(id=>({id,label:id==='__sense__'?'Sense client':clientName878138(clients,{client:id})})).sort((a,b)=>String(a.label).localeCompare(String(b.label),'ca',{numeric:true}));
 }
 
-function Inici({clients,obres,odata={},setOdata,events,setScreen,openObra,openObraTab,newObra}){
+function Inici({clients,setClients,obres,setObres,odata={},setOdata,events,setScreen,openObra,openObraTab,newObra}){
 const now=new Date();
 const monthName=monthName878137(now);
-const openTemps=(oid)=>openObraTab?openObraTab(oid,'Gestió temps'):openObra(oid);
 const allEvents=uniqueEvents878137(events||[]);
-const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,5);
+const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,4);
 const tasks=collectPendingTasks878137(obres,odata);
-const obertsMes=[...obres].filter(o=>isExpedientOpen878136(o.estat)).map(o=>({o,d:odata[o.id]||{},count:monthActivityCount878137(o,odata[o.id]||{},now),recent:obraRecentScore878134(o,odata[o.id]||{})})).filter(x=>x.count>0||normalizeExpedientStatus878136(x.o.estat)==='En curs / Actiu'||normalizeExpedientStatus878136(x.o.estat)==='Acceptat').sort((a,b)=>String(clientName878138(clients,a.o)).localeCompare(String(clientName878138(clients,b.o)),'ca',{numeric:true})||b.count-a.count||b.recent-a.recent);
-const recents=[...obres].sort((a,b)=>obraRecentScore878134(b,odata[b.id]||{})-obraRecentScore878134(a,odata[a.id]||{})).slice(0,3);
-const worksByClient=groupByClient878138(obertsMes,clients,x=>x.o.client);
+const taskCounts=taskStatusCounts878140(tasks);
 const tasksByClient=groupByClient878138(tasks,clients,x=>x.obra.client);
+const obertsMes=[...obres].filter(o=>isExpedientOpen878136(o.estat)).map(o=>({o,d:odata[o.id]||{},count:monthActivityCount878137(o,odata[o.id]||{},now),recent:obraRecentScore878134(o,odata[o.id]||{})})).filter(x=>x.count>0||normalizeExpedientStatus878136(x.o.estat)==='En curs / Actiu'||normalizeExpedientStatus878136(x.o.estat)==='Acceptat').sort((a,b)=>String(clientName878138(clients,a.o)).localeCompare(String(clientName878138(clients,b.o)),'ca',{numeric:true})||b.count-a.count||b.recent-a.recent);
+const worksByClient=groupByClient878138(obertsMes,clients,x=>x.o.client);
 const [showNewTask,setShowNewTask]=useState(false);
-const clientOptions=clientOptionsForHome878139(clients,obres);
-const defaultClient=clientOptions[0]?.id||'__sense__';
-const [taskDraft,setTaskDraft]=useState({clientId:defaultClient,obraId:'',text:'',prioritat:'Normal',estat:'Pendent',data:todayISO8743(),hora:'09:00'});
-const selectedClient=taskDraft.clientId||defaultClient;
-const taskObres=(obres||[]).filter(o=>(o.client||'__sense__')===selectedClient).sort((a,b)=>String(a.nom||'').localeCompare(String(b.nom||''),'ca',{numeric:true}));
-const selectedObra=taskObres.find(o=>o.id===taskDraft.obraId)||taskObres[0]||obres[0];
-function saveHomeTask(){
-  const obra=selectedObra;
-  if(!obra){alert('Primer has de tenir un expedient creat per assignar-hi la feina pendent.');return;}
-  const ok=createHomeTask878139(setOdata,obra,taskDraft);
-  if(ok){setTaskDraft({clientId:obra.client||'__sense__',obraId:obra.id,text:'',prioritat:'Normal',estat:'Pendent',data:todayISO8743(),hora:'09:00'});setShowNewTask(false);}
+const [openWorkMonth,setOpenWorkMonth]=useState(false);
+const [viewTask,setViewTask]=useState(null);
+const [taskDraft,setTaskDraft]=useState({clientId:(clients?.[0]?.id)||'__new__',newClientNom:'',newClientNif:'',obraId:'__new__',newObraNom:'',newObraTipus:'Gestió integral d’obra',text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:''});
+const selectedClient=taskDraft.clientId||'__new__';
+const currentClient=clients.find(c=>c.id===selectedClient);
+const taskObres=(obres||[]).filter(o=>selectedClient!=='__new__'&&(o.client||'')===selectedClient&&isExpedientOpen878136(o.estat)).sort((a,b)=>String(a.nom||'').localeCompare(String(b.nom||''),'ca',{numeric:true}));
+const selectedObra=taskObres.find(o=>o.id===taskDraft.obraId);
+function newSlug878140(txt,prefix){return `${prefix}-${String(txt||prefix).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,38)||Date.now()}-${Date.now().toString(36)}`}
+function buildTask878140(extra={}){
+  const nowIso=new Date().toISOString();
+  return {id:'tsk-home-'+Date.now(),text:String(taskDraft.text||'').trim(),estat:taskDraft.estat||'Pendent',prioritat:taskDraft.prioritat||'Normal',data:taskDraft.dataMaxima||'',dataMaxima:taskDraft.dataMaxima||'',hora:taskDraft.hora||'09:00',notes:taskDraft.notes||'',origen:'Inici',createdAt:nowIso,updatedAt:nowIso,...extra};
+}
+function saveHomeTask878140(){
+  if(!String(taskDraft.text||'').trim()){alert('Escriu la feina pendent.');return;}
+  let cid=selectedClient;
+  let createdClient=null;
+  if(selectedClient==='__new__'){
+    const nom=String(taskDraft.newClientNom||'').trim();
+    if(!nom){alert('Escriu el nom del client o promotor.');return;}
+    cid=newSlug878140(nom,'client');
+    createdClient={id:cid,nom,rao:nom,tipus:'Promotor',nif:taskDraft.newClientNif||'',contacte:'',telefon:'',email:'',adreca:'',color:'blue',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  }
+  let oid=taskDraft.obraId;
+  let createdObra=null;
+  if(!oid||oid==='__new__'){
+    const nom=String(taskDraft.newObraNom||'').trim();
+    if(!nom){alert('Escriu el nom de l’expedient o treball.');return;}
+    oid=newSlug878140(nom,'exp');
+    const clientForName=createdClient||currentClient||{};
+    createdObra={id:oid,client:cid,any:String(new Date().getFullYear()),nom,subtitol:'',tipologia:taskDraft.newObraTipus||'Gestió integral d’obra',tipusTreball:taskDraft.newObraTipus||'Gestió integral d’obra',estat:'En curs / Actiu',pressupost:0,certificacio:0,propietat:clientForName.nom||taskDraft.newClientNom||'Client pendent',nifPropietat:clientForName.nif||taskDraft.newClientNif||'',adreca:'',codiPostal:'',poblacio:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),lastOpenedAt:new Date().toISOString(),lastWorkedAt:new Date().toISOString()};
+  } else if(!selectedObra){alert('Selecciona un expedient o crea’n un de nou.');return;}
+  const task=buildTask878140();
+  if(createdClient)setClients?.(prev=>[...(prev||[]),createdClient]);
+  if(createdObra)setObres?.(prev=>assignMissingCodes8739([...(prev||[]),createdObra],createdClient?[...(clients||[]),createdClient]:clients));
+  setOdata?.(prev=>{
+    const d=prev[oid]||empty();
+    const tasks=[...(d.tasques||[]),task];
+    const shouldEvent=task.dataMaxima&&!['Fet','Anul·lat'].includes(task.estat);
+    return {...prev,[oid]:{...d,tasques:tasks,events:shouldEvent?[...(d.events||[]).filter(e=>String(e.id||'')!=='task-'+task.id),taskEvent878137(task,{...(createdObra||selectedObra||{}),id:oid,nom:createdObra?.nom||selectedObra?.nom||''})]:d.events||[],updatedAt:new Date().toISOString(),lastWorkedAt:new Date().toISOString()}}
+  });
+  setTaskDraft({clientId:cid,obraId:oid,text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:'',newClientNom:'',newClientNif:'',newObraNom:'',newObraTipus:'Gestió integral d’obra'});
+  setShowNewTask(false);
+}
+function updateTaskField878140(obra,task,patch){
+  if(!obra?.id||!task?.id)return;
+  setOdata?.(prev=>{
+    const d=prev[obra.id]||empty();
+    const nextTasks=(d.tasques||[]).map(t=>t.id===task.id?{...t,...patch,updatedAt:new Date().toISOString()}:t);
+    const updated=nextTasks.find(t=>t.id===task.id);
+    const manualEvents=(d.events||[]).filter(e=>String(e.id||'')!=='task-'+task.id);
+    const shouldEvent=updated&&updated.dataMaxima&&!['Fet','Anul·lat'].includes(updated.estat);
+    return {...prev,[obra.id]:{...d,tasques:nextTasks,events:shouldEvent?[...manualEvents,taskEvent878137(updated,obra)]:manualEvents,updatedAt:new Date().toISOString(),lastWorkedAt:new Date().toISOString()}}
+  })
+}
+function doTaskAction878140(obra,task,action){
+  if(action==='view'){setViewTask({obra,task});return}
+  if(action==='enter'){openObraTab?openObraTab(obra.id,'Tasques'):openObra(obra.id);return}
+  if(action==='time'){openObraTab?openObraTab(obra.id,'Gestió temps'):openObra(obra.id);return}
+  if(action==='process')updateTaskField878140(obra,task,{estat:'En procés'});
+  if(action==='done')updateTaskField878140(obra,task,{estat:'Fet'});
+  if(action==='cancel')updateTaskField878140(obra,task,{estat:'Anul·lat'});
 }
 return <>
-<section className="home-hero-v878138">
-  <div>
-    <span className="home-eyebrow-v878138">Panell tècnic · {monthName}</span>
-    <h1>Treball actiu i pendents</h1>
-    <p>Vista neta per veure què tens obert aquest mes, què has de fer i quines cites venen. La resta queda a les pestanyes específiques.</p>
-  </div>
-  <div className="home-focus-grid-v878138">
-    <button onClick={()=>setScreen('Treballs / Expedients')}><small>Treballs oberts</small><b>{obertsMes.length}</b><span>{monthName}</span></button>
-    <button onClick={()=>setScreen('Agenda')}><small>Pròximes cites</small><b>{properes.length}</b><span>Només futures</span></button>
-    <button onClick={()=>setScreen('Treballs / Expedients')}><small>Feines pendents</small><b>{tasks.length}</b><span>Amb accions</span></button>
+<section className="home-pro-v878140">
+  <div className="home-pro-title-v878140"><span>Panell operatiu · {monthName}</span><h1>Tasques, entregues i treball actiu</h1><p>Una pantalla d’entrada més neta: primer el que has de fer, després el calendari immediat i una lectura visual de l’estat.</p></div>
+  <div className="home-pro-kpis-v878140">
+    <div className="home-donut-card-v878140"><div className="home-donut-v878140" style={taskDonutStyle878140(taskCounts)}><b>{tasks.length}</b><small>tasques</small></div><div><b>Radar de feines pendents</b><span>{taskCounts.Vencudes?`${taskCounts.Vencudes} vençuda/es`:taskCounts.Urgent?`${taskCounts.Urgent} urgent/s`:'Sense vençudes'}</span></div></div>
+    <div><small>Pròximes cites</small><b>{properes.length}</b><span>només futures</span></div>
+    <div><small>Treballs oberts</small><b>{obertsMes.length}</b><span>{monthName}</span></div>
   </div>
 </section>
-<section className="home-workbench-v878138">
-  <div className="home-maincol-v878138">
-    <Card title={`Feines obertes · ${monthName}`}><div className="client-group-list-v878138">
-      {worksByClient.length===0?<Empty text="No hi ha obres o treballs oberts destacats aquest mes."/>:worksByClient.map(g=><section key={g.key} className="client-group-v878138"><header><b>{g.label}</b><span>{g.items.length} treball(s)</span></header><div className="month-work-grid-v878138 grouped-v878138">{g.items.map(({o,count,recent})=><button key={o.id} onClick={()=>openObra(o.id)} className={`month-work-card-v878137 month-work-card-v878138 ${statusKeyPress8776(normalizeExpedientStatus878136(o.estat))}`}><b>{o.nom}</b><span>{expedientCode8739(o)} · {normalizeExpedientStatus878136(o.estat)}</span><em>{count?`${count} moviment(s) aquest mes`:(recent?`Darrer accés ${fmtActivityDate8783(recent)}`:'Sense moviment del mes')}</em></button>)}</div></section>)}
-    </div></Card>
-    <Card title="Feines pendents a fer" action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?'Tancar':' + Afegir feina pendent'}</button>}>
-      {showNewTask&&<div className="home-task-create-v878139">
-        <div className="home-task-create-head-v878139"><b>Nova feina pendent</b><span>Quedarà guardada dins la pestanya Tasques de l’expedient i sortirà a l’inici agrupada per client.</span></div>
-        <div className="home-task-form-v878139">
-          <label><span>Client</span><select value={selectedClient} onChange={e=>{const cid=e.target.value;const first=(obres||[]).find(o=>(o.client||'__sense__')===cid);setTaskDraft(d=>({...d,clientId:cid,obraId:first?.id||''}))}}>{clientOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
-          <label><span>Expedient</span><select value={selectedObra?.id||''} onChange={e=>setTaskDraft(d=>({...d,obraId:e.target.value}))}>{taskObres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>
-          <label className="span-2-v878139"><span>Feina pendent</span><input value={taskDraft.text||''} onChange={e=>setTaskDraft(d=>({...d,text:e.target.value}))} placeholder="Ex. Revisar certificació, trucar client, preparar acta..."/></label>
+<section className="home-pro-layout-v878140">
+  <div className="home-pro-main-v878140">
+    <Card title="Feines pendents a fer" action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?'Tancar':' + Afegir tasca'}</button>}>
+      {showNewTask&&<div className="home-task-create-v878139 home-task-create-v878140">
+        <div className="home-task-create-head-v878139"><b>Nova tasca / feina pendent</b><span>La data és la data màxima d’entrega. Pots crear client i expedient des d’aquí sense anar a una altra pestanya.</span></div>
+        <div className="home-task-form-v878139 home-task-form-v878140">
+          <label><span>Client</span><select value={selectedClient} onChange={e=>{const cid=e.target.value;const first=(obres||[]).find(o=>o.client===cid&&isExpedientOpen878136(o.estat));setTaskDraft(d=>({...d,clientId:cid,obraId:cid==='__new__'?'__new__':(first?.id||'__new__')}))}}><option value="__new__">+ Crear nou client</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
+          {selectedClient==='__new__'&&<><label><span>Nou client / promotor</span><input value={taskDraft.newClientNom||''} onChange={e=>setTaskDraft(d=>({...d,newClientNom:e.target.value}))} placeholder="Nom del client"/></label><label><span>NIF/CIF opcional</span><input value={taskDraft.newClientNif||''} onChange={e=>setTaskDraft(d=>({...d,newClientNif:e.target.value}))}/></label></>}
+          <label><span>Expedient o treball</span><select value={taskDraft.obraId||'__new__'} onChange={e=>setTaskDraft(d=>({...d,obraId:e.target.value}))}><option value="__new__">+ Crear nou expedient</option>{taskObres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label>
+          {(!taskDraft.obraId||taskDraft.obraId==='__new__')&&<><label><span>Nou expedient</span><input value={taskDraft.newObraNom||''} onChange={e=>setTaskDraft(d=>({...d,newObraNom:e.target.value}))} placeholder="Nom de l’obra o treball"/></label><label><span>Tipus feina</span><select value={taskDraft.newObraTipus||'Gestió integral d’obra'} onChange={e=>setTaskDraft(d=>({...d,newObraTipus:e.target.value}))}><option>Gestió integral d’obra</option><option>Direcció d’obra</option><option>Direcció d’execució</option><option>Seguretat i salut</option><option>Informe / certificat</option><option>Altres</option></select></label></>}
+          <label className="span-2-v878139"><span>Tasca / feina pendent</span><input value={taskDraft.text||''} onChange={e=>setTaskDraft(d=>({...d,text:e.target.value}))} placeholder="Ex. Preparar certificació, revisar pressupost, enviar acta..."/></label>
+          <label><span>Data màxima entrega</span><input type="date" value={taskDraft.dataMaxima||''} onChange={e=>setTaskDraft(d=>({...d,dataMaxima:e.target.value}))}/></label>
           <label><span>Prioritat</span><select value={taskDraft.prioritat||'Normal'} onChange={e=>setTaskDraft(d=>({...d,prioritat:e.target.value}))}><option>Baixa</option><option>Normal</option><option>Alta</option><option>Urgent</option></select></label>
-          <label><span>Estat</span><select value={taskDraft.estat||'Pendent'} onChange={e=>setTaskDraft(d=>({...d,estat:e.target.value}))}><option>Pendent</option><option>En procés</option><option>Pendent de resposta</option></select></label>
-          <label><span>Data prevista</span><input type="date" value={taskDraft.data||''} onChange={e=>setTaskDraft(d=>({...d,data:e.target.value}))}/></label>
-          <label><span>Hora</span><input type="time" value={taskDraft.hora||'09:00'} onChange={e=>setTaskDraft(d=>({...d,hora:e.target.value}))}/></label>
+          <label><span>Estat inicial</span><select value={taskDraft.estat||'Pendent'} onChange={e=>setTaskDraft(d=>({...d,estat:e.target.value}))}><option>Pendent</option><option>En procés</option></select></label>
+          <label><span>Hora límit opcional</span><input type="time" value={taskDraft.hora||'09:00'} onChange={e=>setTaskDraft(d=>({...d,hora:e.target.value}))}/></label>
+          <label className="span-2-v878139"><span>Notes internes</span><input value={taskDraft.notes||''} onChange={e=>setTaskDraft(d=>({...d,notes:e.target.value}))} placeholder="Comentari ràpid per saber què s’ha de fer"/></label>
         </div>
-        <div className="home-task-actions-v878139"><button className="primary" onClick={saveHomeTask}>Guardar feina pendent</button><button className="secondary" onClick={()=>openObraTab?.(selectedObra?.id,'Tasques')}>Obrir Tasques de l’expedient</button></div>
+        <div className="home-task-actions-v878139"><button className="primary" onClick={saveHomeTask878140}>Guardar tasca</button></div>
       </div>}
-      <div className="client-task-list-v878138">
-      {tasksByClient.length===0?<Empty text="No tens feines pendents destacades. Afegeix-ne una des del botó superior."/>:tasksByClient.map(g=><section key={g.key} className="client-task-group-v878138"><header><b>{g.label}</b><span>{g.items.length} pendent(s)</span></header>{g.items.map(({obra:o,task:t,time})=><div key={`${o.id}-${t.id}`} className={`task-home-row-v878137 task-row-v878138 ${taskStatusTone878137(t.estat)}`}><button className="task-main-v878137" onClick={()=>openObraTab?openObraTab(o.id,'Tasques'):openObra(o.id)}><b>{t.text||'Tasca pendent'}</b><span>{o.nom} · {t.estat||'Pendent'} · {time?fmtActivityDate8783(time):'Sense data'} · {t.prioritat||'Normal'}</span></button><div className="task-actions-v878137 task-actions-v878138"><button onClick={()=>{updateTaskHome878137(setOdata,o,t,'En procés');openTemps(o.id)}}>Entrar / crono</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Pendent de resposta')}>Pendent resposta</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Fet')}>Fet</button><button onClick={()=>updateTaskHome878137(setOdata,o,t,'Anul·lat')}>Anul·lar</button></div></div>)}</section>)}
-    </div></Card>
+      <div className="client-task-list-v878138 client-task-list-v878140">
+      {tasksByClient.length===0?<Empty text="No tens tasques pendents. Afegeix-ne una amb el botó superior."/>:tasksByClient.map(g=><section key={g.key} className="client-task-group-v878138 client-task-group-v878140"><header><b>{g.label}</b><span>{g.items.length} tasca/ques</span></header>{g.items.map(({obra:o,task:t})=>{const tone=taskDeadlineTone878140(t);return <div key={`${o.id}-${t.id}`} className={`task-card-pro-v878140 ${tone}`}><div className="task-colorbar-v878140"><i style={{width:`${taskDeadlinePercent878140(t)}%`}}/></div><button className="task-main-v878137 task-main-pro-v878140" onClick={()=>setViewTask({obra:o,task:t})}><b>{t.text||'Tasca pendent'}</b><span>{o.nom} · {t.estat||'Pendent'} · màxim {taskDueLabel878140(t)} · {t.prioritat||'Normal'}</span>{t.notes&&<em>{t.notes}</em>}</button><select className="task-action-select-v878140" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value='';doTaskAction878140(o,t,v)}}><option value="" disabled>Accions</option><option value="view">Veure / editar tasca</option><option value="enter">Entrar a l’expedient</option><option value="time">Iniciar temps</option><option value="process">Marcar en procés</option><option value="done">Fet</option><option value="cancel">Anul·lar</option></select></div>})}</section>)}
+      </div>
+    </Card>
   </div>
-  <div className="home-sidecol-v878138">
-    <Card title="Pròximes cites i avisos"><div className="upcoming-list-v878138">
-      {properes.length===0?<p>No hi ha cites futures. Les caducades no es mostren aquí.</p>:properes.map(e=><button key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||'Cita'}</b><span>{fmtEventDate878136(e)} · {e.hora||'Hora pendent'}</span>{e.obra&&<em>{e.obra}</em>}</button>)}
-    </div></Card>
-    <Card title="Darrers expedients oberts"><div className="recent-mini-list-v878138">
-      {recents.length?recents.map(o=><button key={o.id} onClick={()=>openObra(o.id)}><b>{o.nom}</b><span>{clientName878138(clients,o)} · {normalizeExpedientStatus878136(o.estat)}</span><em>{fmtActivityDate8783(obraRecentScore878134(o,odata[o.id]||{}))}</em></button>):<Empty text="Encara no hi ha expedients oberts."/>}
-    </div></Card>
-  </div>
+  <aside className="home-pro-side-v878140">
+    <Card title="Pròximes cites i avisos"><div className="upcoming-list-v878138 upcoming-list-v878140">{properes.length===0?<p>No hi ha cites futures.</p>:properes.map(e=><button key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||'Cita'}</b><span>{fmtEventDate878136(e)} · {e.hora||'Hora pendent'}</span>{e.obra&&<em>{e.obra}</em>}</button>)}</div></Card>
+    <Card title={`Treballs oberts · ${monthName}`} action={<button className="secondary small" onClick={()=>setOpenWorkMonth(v=>!v)}>{openWorkMonth?'Amagar':'Veure'}</button>}>{openWorkMonth?<div className="client-group-list-v878138 client-group-list-v878140">{worksByClient.length===0?<Empty text="No hi ha treballs oberts destacats aquest mes."/>:worksByClient.map(g=><section key={g.key} className="client-group-v878138"><header><b>{g.label}</b><span>{g.items.length}</span></header><div className="month-work-grid-v878137 grouped-v878138">{g.items.map(({o,count,recent})=><button key={o.id} onClick={()=>openObra(o.id)} className={`month-work-card-v878137 month-work-card-v878138 ${statusKeyPress8776(normalizeExpedientStatus878136(o.estat))}`}><b>{o.nom}</b><span>{expedientCode8739(o)} · {normalizeExpedientStatus878136(o.estat)}</span><em>{count?`${count} moviment(s) aquest mes`:(recent?`Darrer accés ${fmtActivityDate8783(recent)}`:'Sense moviment del mes')}</em></button>)}</div></section>)}</div>:<div className="home-collapsed-note-v878140"><b>{obertsMes.length}</b><span>treball(s) oberts aquest mes. Obre el desplegable només quan ho necessitis.</span></div>}</Card>
+  </aside>
 </section>
+{viewTask&&<div className="modal-backdrop"><div className="modal task-modal-v878140"><div className="modal-head"><div><h2>Veure / editar tasca</h2><p>{viewTask.obra.nom} · {clientName878138(clients,viewTask.obra)}</p></div><button onClick={()=>setViewTask(null)}><X/></button></div><div className="form-grid"><label className="span-all"><span>Tasca</span><input value={viewTask.task.text||''} onChange={e=>setViewTask(v=>({...v,task:{...v.task,text:e.target.value}}))}/></label><label><span>Estat</span><select value={viewTask.task.estat||'Pendent'} onChange={e=>setViewTask(v=>({...v,task:{...v.task,estat:e.target.value}}))}><option>Pendent</option><option>En procés</option><option>Fet</option><option>Anul·lat</option></select></label><label><span>Prioritat</span><select value={viewTask.task.prioritat||'Normal'} onChange={e=>setViewTask(v=>({...v,task:{...v.task,prioritat:e.target.value}}))}><option>Baixa</option><option>Normal</option><option>Alta</option><option>Urgent</option></select></label><label><span>Data màxima entrega</span><input type="date" value={toInputDate8743(viewTask.task.dataMaxima||viewTask.task.data)||''} onChange={e=>setViewTask(v=>({...v,task:{...v.task,dataMaxima:e.target.value,data:e.target.value}}))}/></label><label><span>Hora</span><input type="time" value={viewTask.task.hora||'09:00'} onChange={e=>setViewTask(v=>({...v,task:{...v.task,hora:e.target.value}}))}/></label><label className="span-all"><span>Notes</span><textarea value={viewTask.task.notes||''} onChange={e=>setViewTask(v=>({...v,task:{...v.task,notes:e.target.value}}))}/></label></div><div className="modal-actions"><button className="secondary" onClick={()=>{openObraTab?openObraTab(viewTask.obra.id,'Tasques'):openObra(viewTask.obra.id);setViewTask(null)}}>Entrar a l’expedient</button><button className="secondary" onClick={()=>{openObraTab?openObraTab(viewTask.obra.id,'Gestió temps'):openObra(viewTask.obra.id);setViewTask(null)}}>Iniciar temps</button><button className="primary" onClick={()=>{updateTaskField878140(viewTask.obra,viewTask.task,viewTask.task);setViewTask(null)}}>Guardar canvis</button></div></div></div>}
 </>}
 function clientName878138(clients=[],obra={}){return (clients||[]).find(c=>c.id===obra.client)?.nom||obra.clientNom||obra.propietat||'Sense client'}
 function groupByClient878138(items=[],clients=[],getId=x=>x?.client){const map=new Map();(items||[]).forEach(item=>{const id=getId(item)||'__sense__';const fake={client:id,clientNom:id==='__sense__'?'Sense client':''};const label=id==='__sense__'?'Sense client':clientName878138(clients,fake);if(!map.has(id))map.set(id,{key:id,label,items:[]});map.get(id).items.push(item)});return [...map.values()].sort((a,b)=>String(a.label).localeCompare(String(b.label),'ca',{numeric:true}))}
