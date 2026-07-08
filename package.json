@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-130-cert-compact-admin-directe",
+  "name": "app-control-obres-v87-131-cert-admin-justificacio",
   "private": true,
-  "version": "87.130.0",
+  "version": "87.131.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

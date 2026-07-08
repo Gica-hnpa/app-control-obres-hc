@@ -1,1 +1,1 @@
-Build correcte amb Vite · V87.130
+Build OK V87.131 - 2026-07-08T17:28:14Z

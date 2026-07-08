@@ -1,13 +1,13 @@
-# APP Control d'Obres · V87.130
+# APP Control d'Obres · V87.131
 
-Versió de correcció immediata sobre V87.129.
+Versió derivada de V87.130.
 
 Canvis:
-- Graella de certificacions compactada perquè el codi de partida es vegi complet i les columnes A origen quedin visibles sense haver d'anar al final amb scroll horitzontal en pantalla d'escriptori.
-- Recuperació de la cel·la de Q cert. actual amb el botó de línies de medició integrat sense deformar la taula.
-- Quadre mensual de feines per administració: si es tria una partida existent, l'import s'aplica directament a aquella partida i a aquella certificació, sense crear una partida nova amb codi .ADM.
-- Si no es tria partida existent, es crea o reutilitza una única partida resum manual pel codi indicat, de manera que no es dupliqui cada mes.
-- Es mantenen Supabase, còpies locals, importació segura i resta de correccions de V87.129.
+- Eliminació/neteja de partides dins la certificació: si és una partida només de certificació s'elimina; si és del pressupost base, es treu de la certificació actual i queda a 0.
+- Quadre mensual d'administració amb memòria de conceptes de feina repetits.
+- Materials desglossables per línia: es poden afegir diversos conceptes de material amb import i l'app en calcula el total.
+- Impressió del quadre d'administració com a justificació, amb detall i resum agrupat per concepte, hores, materials i imports.
+- Es manté l'aplicació directa a partida existent sense crear codis ADM duplicats.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

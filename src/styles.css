@@ -4311,3 +4311,55 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .cert-grid-wrap-v69{overflow-x:auto!important;}
   .cert-grid-v69,.cert-cap-v69,.cert-cap-toggle-v879{min-width:1280px!important;width:1280px!important;max-width:none!important;}
 }
+
+/* V87.131 · certificació: eliminar línies, memòria de conceptes i quadre d'administració imprimible */
+.cert-delete-line-v878131{
+  margin-left:6px!important;
+  padding:3px 6px!important;
+  font-size:9.5px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.cert-concept-v877 .concept-line-v877{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:5px!important;
+  flex-wrap:wrap!important;
+}
+.admin-monthly-table-v878131 th:first-child,
+.admin-monthly-table-v878131 td:first-child{min-width:300px!important;}
+.admin-material-cell-v878131{
+  display:grid!important;
+  grid-template-columns:minmax(72px,1fr) auto!important;
+  gap:5px!important;
+  align-items:center!important;
+}
+.admin-material-cell-v878131 input:disabled{
+  background:#f1f5f9!important;
+  color:#0f172a!important;
+  opacity:1!important;
+}
+.admin-material-cell-v878131 button{white-space:nowrap!important;padding:5px 7px!important;font-size:11px!important;}
+.admin-material-panel-v878131{
+  border:1px solid #bfdbfe!important;
+  background:#eff6ff!important;
+  border-radius:14px!important;
+  padding:12px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+}
+.admin-material-panel-head-v878131{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.admin-material-panel-v878131 table{width:100%;border-collapse:collapse;font-size:12px;background:white;}
+.admin-material-panel-v878131 th,.admin-material-panel-v878131 td{border:1px solid #93c5fd!important;padding:6px!important;}
+.admin-material-panel-v878131 th{background:#dbeafe!important;font-weight:900!important;}
+.admin-material-panel-v878131 input{width:100%!important;border:1px solid #cbd5e1!important;border-radius:8px!important;padding:7px!important;background:white!important;}
+@media(max-width:900px){
+  .admin-material-cell-v878131{grid-template-columns:1fr!important;}
+  .admin-material-panel-head-v878131{align-items:flex-start!important;flex-direction:column!important;}
+}

@@ -3795,6 +3795,42 @@ function AdminCostModal878126({row,certNum,initial=[],close,save}){
 
 // V87.127 · Quadre mensual d'administració independent de la graella de certificació.
 // No deforma la taula: es gestiona amb un botó superior i crea una sola partida certificable 1 ut × total.
+function escapeHtml878131(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]||ch))}
+function adminMaterialSum878131(l){
+  const mats=Array.isArray(l?.materials)?l.materials:[];
+  if(mats.length)return mats.reduce((s,m)=>s+(parseNum8770(m.import)||0),0);
+  return parseNum8770(l?.material)||0;
+}
+function adminConceptKey878131(v){return String(v||"Sense concepte").trim()||"Sense concepte"}
+function printAdminMonthly878131({certNum,meta,lines,totalOficial,totalAjudant,totalMaterial,total,lineTotal}){
+  const rows=Array.isArray(lines)?lines:[];
+  const groups={};
+  rows.forEach(l=>{
+    const k=adminConceptKey878131(l.concepte);
+    if(!groups[k])groups[k]={concepte:k,horesOficial:0,horesAjudant:0,material:0,total:0};
+    groups[k].horesOficial+=parseNum8770(l.horesOficial)||0;
+    groups[k].horesAjudant+=parseNum8770(l.horesAjudant)||0;
+    groups[k].material+=adminMaterialSum878131(l);
+    groups[k].total+=lineTotal(l);
+  });
+  const materialGroups={};
+  rows.forEach(l=>{
+    const mats=Array.isArray(l.materials)?l.materials:[];
+    mats.forEach(m=>{
+      const k=adminConceptKey878131(m.concepte);
+      if(!materialGroups[k])materialGroups[k]=0;
+      materialGroups[k]+=parseNum8770(m.import)||0;
+    });
+  });
+  const css=`<style>body{font-family:Arial,Helvetica,sans-serif;color:#111827;margin:28px}h1{font-size:20px;margin:0 0 6px}h2{font-size:15px;margin:22px 0 8px}.sub{color:#475569;margin-bottom:18px}.box{border:1px solid #94a3b8;padding:10px;margin:8px 0 14px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #111827;padding:5px 6px;text-align:right;vertical-align:top}th{background:#93c5fd;text-align:center;font-weight:900}.left{text-align:left}tfoot th,tfoot td{background:#eef2ff;font-weight:900}.materials{font-size:10px;color:#334155;margin-top:3px;line-height:1.25}@page{size:A4 landscape;margin:10mm}@media print{button{display:none}}</style>`;
+  const detail=rows.map(l=>`<tr><td class="left">${escapeHtml878131(l.concepte)}</td><td>${escapeHtml878131(l.data)}</td><td>${qty2(parseNum8770(l.horesOficial)||0)}</td><td>${qty2(parseNum8770(l.horesAjudant)||0)}</td><td>${money(adminMaterialSum878131(l))}${(Array.isArray(l.materials)&&l.materials.length)?`<div class="materials">${l.materials.map(m=>`${escapeHtml878131(m.concepte)}: ${money(parseNum8770(m.import)||0)}`).join("<br>")}</div>`:""}</td><td>${money(lineTotal(l))}</td></tr>`).join("");
+  const summary=Object.values(groups).map(g=>`<tr><td class="left">${escapeHtml878131(g.concepte)}</td><td>${qty2(g.horesOficial)}</td><td>${qty2(g.horesAjudant)}</td><td>${money(g.material)}</td><td>${money(g.total)}</td></tr>`).join("");
+  const mats=Object.entries(materialGroups).map(([k,v])=>`<tr><td class="left">${escapeHtml878131(k)}</td><td>${money(v)}</td></tr>`).join("");
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Quadre administració CERT ${certNum}</title>${css}</head><body><button onclick="window.print()">Imprimir</button><h1>Quadre mensual de feines per administració · Certificació ${certNum}</h1><div class="sub">Capítol: <b>${escapeHtml878131(meta.cap)}</b> · Partida: <b>${escapeHtml878131(meta.targetPartidaCodi||meta.codi)}</b> · ${escapeHtml878131(meta.targetPartidaConcepte||meta.conceptePartida)}</div><div class="box">Cost hora oficial: <b>${money(parseNum8770(meta.costOficial)||0)}</b> · Cost hora ajudant/peó: <b>${money(parseNum8770(meta.costAjudant)||0)}</b></div><h2>Detall justificatiu</h2><table><thead><tr><th class="left">Concepte</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total línia</th></tr></thead><tbody>${detail}</tbody><tfoot><tr><td class="left">TOTAL</td><td></td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table><h2>Resum per concepte</h2><table><thead><tr><th class="left">Concepte</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total</th></tr></thead><tbody>${summary}</tbody><tfoot><tr><td class="left">TOTAL</td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table>${mats?`<h2>Resum de materials per concepte</h2><table><thead><tr><th class="left">Material</th><th>Import</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td class="left">TOTAL MATERIALS</td><td>${money(totalMaterial)}</td></tr></tfoot></table>`:""}</body></html>`;
+  const w=window.open("","_blank");
+  if(!w){alert("El navegador ha bloquejat la finestra d'impressió. Permet pop-ups per imprimir el quadre.");return;}
+  w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);
+}
 function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[],partidaOptions=[]}){
   const cfgKey=lsKey8779("aco_admin_monthly_defaults_v87127");
   const defaults=(()=>{try{return JSON.parse(localStorage.getItem(cfgKey)||"{}")}catch{return {}}})();
@@ -3809,7 +3845,14 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     targetPartidaCodi:initial.targetPartidaCodi||"",
     targetPartidaConcepte:initial.targetPartidaConcepte||""
   });
-  const [lines,setLines]=useState(((initial.lines&&initial.lines.length)?initial.lines:[{id:"adm-m-"+Date.now(),concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:""}]).map(x=>({...x,id:x.id||("adm-m-"+Date.now()+"-"+Math.random())})));
+  const [lines,setLines]=useState(((initial.lines&&initial.lines.length)?initial.lines:[{id:"adm-m-"+Date.now(),concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:"",materials:[]}]).map(x=>({...x,id:x.id||("adm-m-"+Date.now()+"-"+Math.random()),materials:Array.isArray(x.materials)?x.materials:[]})));
+  const histKey878131=lsKey8779("aco_admin_monthly_concepts_v87131");
+  const matHistKey878131=lsKey8779("aco_admin_monthly_material_concepts_v87131");
+  const [conceptHistory878131,setConceptHistory878131]=useState(()=>{try{return JSON.parse(localStorage.getItem(histKey878131)||"[]")}catch{return []}});
+  const [materialConceptHistory878131,setMaterialConceptHistory878131]=useState(()=>{try{return JSON.parse(localStorage.getItem(matHistKey878131)||"[]")}catch{return []}});
+  const [materialEditId878131,setMaterialEditId878131]=useState(null);
+  const conceptDatalistId878131=`admin-concepts-${certNum}`;
+  const materialDatalistId878131=`admin-material-concepts-${certNum}`;
   const capList=Array.from(new Set(["C98 FEINES PER ADMINISTRACIÓ",...(capOptions||[]),defaultCap].filter(Boolean)));
   const partidesCap=(partidaOptions||[]).filter(r=>String(r.cap||"").trim()===String(meta.cap||"").trim());
   function updMeta(k,v){setMeta(m=>({...m,[k]:v}))}
@@ -3838,19 +3881,34 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     }));
   }
   function upd(id,k,v){setLines(p=>p.map(l=>l.id===id?{...l,[k]:v}:l))}
-  function add(){setLines(p=>[...p,{id:"adm-m-"+Date.now()+"-"+p.length,concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:""}])}
+  function add(){setLines(p=>[...p,{id:"adm-m-"+Date.now()+"-"+p.length,concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:"",materials:[]}])}
   function del(id){setLines(p=>p.length>1?p.filter(l=>l.id!==id):p)}
+  function materialRows878131(id){return (lines.find(l=>l.id===id)?.materials)||[]}
+  function materialTotalLine878131(l){return adminMaterialSum878131(l)}
+  function updMaterial878131(id,mid,k,v){setLines(p=>p.map(l=>{if(l.id!==id)return l;const materials=(l.materials||[]).map(m=>m.id===mid?{...m,[k]:v}:m);return {...l,materials,material:String(materials.reduce((s,m)=>s+(parseNum8770(m.import)||0),0))}}))}
+  function addMaterial878131(id){setLines(p=>p.map(l=>l.id===id?{...l,materials:[...(l.materials||[]),{id:"mat-"+Date.now()+"-"+Math.random(),concepte:"",import:""}]}:l));setMaterialEditId878131(id)}
+  function delMaterial878131(id,mid){setLines(p=>p.map(l=>{if(l.id!==id)return l;const materials=(l.materials||[]).filter(m=>m.id!==mid);return {...l,materials,material:String(materials.length?materials.reduce((s,m)=>s+(parseNum8770(m.import)||0),0):parseNum8770(l.material)||0)}}))}
+  function storeHistories878131(nextLines){
+    const concepts=Array.from(new Set([...(conceptHistory878131||[]),...(nextLines||[]).map(l=>String(l.concepte||"").trim())].filter(Boolean))).slice(-80);
+    const matConcepts=Array.from(new Set([...(materialConceptHistory878131||[]),...(nextLines||[]).flatMap(l=>(l.materials||[]).map(m=>String(m.concepte||"").trim()))].filter(Boolean))).slice(-80);
+    setConceptHistory878131(concepts);setMaterialConceptHistory878131(matConcepts);
+    try{localStorage.setItem(histKey878131,JSON.stringify(concepts));localStorage.setItem(matHistKey878131,JSON.stringify(matConcepts));}catch{}
+  }
   const costOficial=parseNum8770(meta.costOficial)||0;
   const costAjudant=parseNum8770(meta.costAjudant)||0;
-  function lineTotal(l){return (parseNum8770(l.horesOficial)||0)*costOficial + (parseNum8770(l.horesAjudant)||0)*costAjudant + (parseNum8770(l.material)||0)}
+  function lineTotal(l){return (parseNum8770(l.horesOficial)||0)*costOficial + (parseNum8770(l.horesAjudant)||0)*costAjudant + materialTotalLine878131(l)}
   const totalOficial=lines.reduce((s,l)=>s+(parseNum8770(l.horesOficial)||0),0);
   const totalAjudant=lines.reduce((s,l)=>s+(parseNum8770(l.horesAjudant)||0),0);
-  const totalMaterial=lines.reduce((s,l)=>s+(parseNum8770(l.material)||0),0);
+  const totalMaterial=lines.reduce((s,l)=>s+materialTotalLine878131(l),0);
   const total=lines.reduce((s,l)=>s+lineTotal(l),0);
+  const materialLine878131=lines.find(l=>l.id===materialEditId878131);
   function saveAndClose(){
+    const normalized=lines.map(l=>({...l,material:String(materialTotalLine878131(l))}));
+    storeHistories878131(normalized);
     try{localStorage.setItem(cfgKey,JSON.stringify({costOficial:meta.costOficial,costAjudant:meta.costAjudant}))}catch{}
-    save({...meta,lines,total,totalOficial,totalAjudant,totalMaterial});
+    save({...meta,lines:normalized,total,totalOficial,totalAjudant,totalMaterial});
   }
+  function printCurrent878131(){const normalized=lines.map(l=>({...l,material:String(materialTotalLine878131(l))}));storeHistories878131(normalized);printAdminMonthly878131({certNum,meta,lines:normalized,totalOficial,totalAjudant,totalMaterial,total,lineTotal});}
   return <Modal title={`Quadre mensual d’administració · CERT. ${certNum}`} close={close}>
     <div className="admin-monthly-v878127 admin-monthly-v878129">
       <div className="module-note-v8738"><b>Funcionament correcte</b><span>Primer tries el capítol i després la partida. Si tries una partida existent, el quadre s’aplica directament a aquella partida en aquesta certificació, sense crear cap línia nova ni cap codi .ADM. Si no existeix, escrius manualment capítol/codi/nom i llavors es crea una única partida resum reutilitzable.</span></div>
@@ -3872,11 +3930,14 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
         <label><span>Cost hora oficial</span><input inputMode="decimal" value={meta.costOficial} onChange={e=>updMeta("costOficial",e.target.value)}/></label>
         <label><span>Cost hora ajudant / peó</span><input inputMode="decimal" value={meta.costAjudant} onChange={e=>updMeta("costAjudant",e.target.value)}/></label>
       </div>
-      <div className="table-wrap"><table className="admin-monthly-table-v878127"><thead><tr><th>Concepte feina</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant / peó (h)</th><th>Material</th><th>Total línia</th><th></th></tr></thead><tbody>
-        {lines.map(l=><tr key={l.id}><td><input value={l.concepte||""} onChange={e=>upd(l.id,"concepte",e.target.value)} placeholder="Ex: estintolament cuina - terrassa"/></td><td><input type="date" value={toInputDate8743(l.data||todayISO8743())} onChange={e=>upd(l.id,"data",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesOficial||""} onChange={e=>upd(l.id,"horesOficial",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesAjudant||""} onChange={e=>upd(l.id,"horesAjudant",e.target.value)}/></td><td><input inputMode="decimal" value={l.material||""} onChange={e=>upd(l.id,"material",e.target.value)}/></td><td><b>{money(lineTotal(l))}</b></td><td><button type="button" className="danger small" onClick={()=>del(l.id)}>Eliminar</button></td></tr>)}
+      <datalist id={conceptDatalistId878131}>{conceptHistory878131.map(c=><option key={c} value={c}/>)}</datalist>
+      <datalist id={materialDatalistId878131}>{materialConceptHistory878131.map(c=><option key={c} value={c}/>)}</datalist>
+      <div className="table-wrap"><table className="admin-monthly-table-v878127 admin-monthly-table-v878131"><thead><tr><th>Concepte feina</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant / peó (h)</th><th>Materials</th><th>Total línia</th><th></th></tr></thead><tbody>
+        {lines.map(l=><tr key={l.id}><td><input list={conceptDatalistId878131} value={l.concepte||""} onChange={e=>upd(l.id,"concepte",e.target.value)} placeholder="Ex: estintolament cuina - terrassa"/></td><td><input type="date" value={toInputDate8743(l.data||todayISO8743())} onChange={e=>upd(l.id,"data",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesOficial||""} onChange={e=>upd(l.id,"horesOficial",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesAjudant||""} onChange={e=>upd(l.id,"horesAjudant",e.target.value)}/></td><td><div className="admin-material-cell-v878131"><input inputMode="decimal" value={String(materialTotalLine878131(l)||"")} onChange={e=>upd(l.id,"material",e.target.value)} disabled={(l.materials||[]).length>0}/><button type="button" className="secondary small" onClick={()=>{setMaterialEditId878131(l.id);if(!(l.materials||[]).length)addMaterial878131(l.id)}}>{(l.materials||[]).length?`${(l.materials||[]).length} materials`:"Desglossar"}</button></div></td><td><b>{money(lineTotal(l))}</b></td><td><button type="button" className="danger small" onClick={()=>del(l.id)}>Eliminar</button></td></tr>)}
       </tbody><tfoot><tr><th colSpan="2">TOTALS</th><th>{qty2(totalOficial)} h</th><th>{qty2(totalAjudant)} h</th><th>{money(totalMaterial)}</th><th>{money(total)}</th><th></th></tr></tfoot></table></div>
+      {materialLine878131&&<div className="admin-material-panel-v878131"><div className="admin-material-panel-head-v878131"><b>Materials de: {materialLine878131.concepte||"línia sense concepte"}</b><button type="button" className="secondary small" onClick={()=>setMaterialEditId878131(null)}>Tancar materials</button></div><table><thead><tr><th>Concepte material</th><th>Import</th><th></th></tr></thead><tbody>{materialRows878131(materialLine878131.id).map(m=><tr key={m.id}><td><input list={materialDatalistId878131} value={m.concepte||""} onChange={e=>updMaterial878131(materialLine878131.id,m.id,"concepte",e.target.value)} placeholder="Ex: sacs morter, lloguer, runa..."/></td><td><input inputMode="decimal" value={m.import||""} onChange={e=>updMaterial878131(materialLine878131.id,m.id,"import",e.target.value)}/></td><td><button type="button" className="danger small" onClick={()=>delMaterial878131(materialLine878131.id,m.id)}>Eliminar</button></td></tr>)}</tbody><tfoot><tr><th>Total materials</th><th>{money(materialTotalLine878131(materialLine878131))}</th><th></th></tr></tfoot></table><button type="button" className="secondary small" onClick={()=>addMaterial878131(materialLine878131.id)}>+ Afegir material</button></div>}
     </div>
-    <div className="modal-actions"><button type="button" className="secondary" onClick={add}>+ Afegir línia</button><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={saveAndClose}>Guardar quadre i aplicar 1 ut × total</button></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={add}>+ Afegir línia</button><button type="button" className="secondary" onClick={printCurrent878131}>Imprimir quadre justificatiu</button><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={saveAndClose}>Guardar quadre i aplicar 1 ut × total</button></div>
   </Modal>
 }
 
@@ -3986,6 +4047,31 @@ function saveAdminMonthly878127(payload){
   setAdminMonthlyOpen878127(false);
 }
 
+function deleteCertLine878131(row){
+  if(!row)return;
+  const code=String(row.codi||"").trim();
+  const key=String(certNum);
+  const isCertOnly=!!(row.noPressupost||row.createdFromCert||row.adminMonthlyAuto);
+  const hasOtherCerts=Object.entries(row.certsByNum||{}).some(([k,v])=>k!==key && (parseNum8770(v)||0)!==0);
+  const msg=isCertOnly&&!hasOtherCerts
+    ? `Eliminar aquesta partida creada des de certificació?\n${code} ${row.concepte||""}`
+    : `Treure aquesta partida de la certificació ${certNum}?\nEs deixarà a 0 en aquesta certificació, però no s'eliminarà del pressupost base.\n${code} ${row.concepte||""}`;
+  if(!confirm(msg))return;
+  setData?.(d=>{
+    const partides=(d.partides||[]).flatMap(r=>{
+      if(String(r.codi||"").trim()!==code)return [r];
+      if(isCertOnly&&!hasOtherCerts)return [];
+      const certsByNum={...(r.certsByNum||{})};delete certsByNum[key];
+      const certMesuresByNum={...(r.certMesuresByNum||{})};delete certMesuresByNum[key];
+      const certAdminLinesByNum={...(r.certAdminLinesByNum||{})};delete certAdminLinesByNum[key];
+      const certAdminMonthlyByNum={...(r.certAdminMonthlyByNum||{})};delete certAdminMonthlyByNum[key];
+      return [{...r,certsByNum,certMesuresByNum,certAdminLinesByNum,certAdminMonthlyByNum,certAnterior:certNum===1?0:r.certAnterior,certActual:certNum===2?0:r.certActual,updatedAt:new Date().toISOString()}];
+    });
+    return {...d,partides,updatedAt:new Date().toISOString()};
+  });
+  setDraft(x=>({...x,[code]:"0"}));
+}
+
 function focusNextCertInput878106(e){
   if(e.key!=="Enter")return;
   e.preventDefault();
@@ -4082,7 +4168,7 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
       {isOpen&&items.map(r=>{
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0), qo=qOrigin(r), io=qo*(+r.pu||0);
         return <div className="cert-grid-v69 row" key={r.codi}>
-          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
+          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877"><div className="concept-line-v877"><span>{r.concepte}</span>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar":"Veure desc."}</button>}{editing&&<button type="button" className="danger small cert-delete-line-v878131" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar":"Treure cert."}</button>}</div>{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
           <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
