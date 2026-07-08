@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-140-tasques-clients-inici-pro",
+  "name": "app-control-obres-v87-141-proforma-inici-cites-net",
   "private": true,
-  "version": "87.140.0",
+  "version": "87.141.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

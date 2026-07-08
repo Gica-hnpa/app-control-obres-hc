@@ -1,3 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.140 - TASQUES CLIENTS + INICI PRO
-Derivada de V87.139. Pantalla d'inici orientada a tasques, clients, data màxima d'entrega i accions adaptades a dispositius petits.
+VERSIO: V87.141 - PROFORMA NETA + INICI CITES NET
+PAQUET: CARPETA ÚNICA DE VALIDACIÓ
+
+Derivada de V87.140. Correcció quirúrgica de proforma, pròximes cites i targeta inicial.
