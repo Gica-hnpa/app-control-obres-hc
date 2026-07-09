@@ -31,3 +31,15 @@ Si l'app mostra error en carregar o comprovar Supabase després de canviar la cl
 7. Si vols canviar la clau, escriu la clau nova, clica **Guardar sync** i després **Pujar ara dades locals**. Això crea una nova còpia amb la clau nova.
 
 La URL Supabase i la clau pública `anon`/`publishable` han de ser les mateixes. La `service_role` no s'ha d'enganxar mai dins l'app.
+
+## V87.146 · Cites globals entre dispositius
+
+A partir d'aquesta versió, la sincronització manual també inclou les cites globals de l'agenda que no estan vinculades a cap expedient. Això evita que al PC surtin dues cites i al mòbil només una.
+
+Ordre recomanat:
+
+1. Al dispositiu bo: **Configuració → Supabase Sync → Pujar ara dades locals**.
+2. A l'altre dispositiu: **Configuració → Supabase Sync → Carregar última còpia del núvol**.
+3. Recarrega l'app si encara veus l'agenda antiga en memòria.
+
+Mantingues la sincronització automàtica desactivada fins que validem que PC, iPad i mòbil mostren el mateix.

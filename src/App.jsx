@@ -2424,6 +2424,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+{screen!=="Inici"&&<MobileBackBar878146 screen={screen} goBack={()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}}/>}
 {screen==="Inici"&&<Inici clients={clients} setClients={setClients} obres={obres} setObres={setObres} odata={odata} setOdata={setOdata} events={[...Object.values(odata).flatMap(d=>d.events||[]),...invoiceAlerts8776(obres,odata)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={()=>setModal("obra")}/>}
 {screen==="Clients"&&<Clients clients={fClients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
@@ -2437,6 +2438,8 @@ return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{a
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={clients} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
 }
 
+
+function MobileBackBar878146({screen,goBack}){return <div className="screen-return-v87146"><button type="button" onClick={goBack}>← Tornar</button><span>{screen}</span></div>}
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
 function Card({title,children,action}){return <div className="card"><div className="card-head"><h2>{title}</h2>{action}</div>{children}</div>}
 function Input(p){return <label><span>{p.label}</span><input name={p.name} defaultValue={p.defaultValue} readOnly={p.readOnly} onChange={p.onChange}/></label>}
@@ -2733,9 +2736,8 @@ function Inici({clients,setClients,obres,setObres,odata={},setOdata,events,setSc
 const now=new Date();
 const monthName=monthName878137(now);
 const todayLabel878141=now.toLocaleDateString('ca-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-let agendaLocal878142=[];
-try{agendaLocal878142=JSON.parse(localStorage.getItem(lsKey8779("aco_agenda_global_v87109"))||"[]")||[]}catch{agendaLocal878142=[]}
-const allEvents=uniqueEvents878137([...(events||[]),...agendaLocal878142].map((e,i)=>cleanAgendaEvent87109?cleanAgendaEvent87109(e,i):e).filter(Boolean));
+const agendaLocal878146=readGlobalAgenda878146();
+const allEvents=uniqueEvents878137([...(events||[]),...agendaLocal878146].map((e,i)=>cleanAgendaEvent87109?cleanAgendaEvent87109(e,i):e).filter(Boolean));
 const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t&&t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,8);
 const tasks=collectPendingTasks878137(obres,odata);
 const taskCounts=taskStatusCounts878140(tasks);
@@ -4852,6 +4854,37 @@ function cleanAgendaEvent87109(e,i=0){
   const dp=dateParts87109(e); if(!dp)return null;
   return {id:String(e.id||`ag-${Date.now()}-${i}`),title:String(e.title||e.titol||e.resum||e.note||"Cita / avís"),tipus:String(e.tipus||e.type||"Avís"),hora:String(e.hora||"09:00"),client:String(e.client||""),obra:String(e.obra||""),obraId:e.obraId||"",adreca:String(e.adreca||""),detail:String(e.detail||e.note||e.observacions||""),color:e.color||"blue",...dp};
 }
+
+// V87.146 · agenda global sincronitzable entre PC, iPad i mòbil.
+// Abans només pujaven clients/obres/odata i les cites creades sense expedient quedaven al navegador local.
+function agendaGlobalKeys878146(){return ["aco_agenda_global_v87109","aco_home_notes","aco_obra_notes","aco_agenda_v86"]}
+function readGlobalAgenda878146(){
+  const out=[];
+  agendaGlobalKeys878146().forEach(k=>{
+    try{(JSON.parse(localStorage.getItem(lsKey8779(k))||"[]")||[]).forEach((e,i)=>{const c=cleanAgendaEvent87109(e,i);if(c)out.push({...c,sourceKey:k})})}catch{}
+  });
+  const map=new Map();
+  out.forEach(e=>{const sig=String(e.id||"")+"__"+String(e.iso||"")+"__"+String(e.title||"")+"__"+String(e.hora||""); if(!map.has(sig))map.set(sig,e);});
+  return [...map.values()].sort((a,b)=>(a.iso+" "+a.hora).localeCompare(b.iso+" "+b.hora));
+}
+function collectSyncExtras878146(){
+  const agenda=readGlobalAgenda878146().map(({sourceKey,...e})=>e).slice(-500);
+  return {agendaGlobal:agenda,agendaUpdatedAt:new Date().toISOString()};
+}
+function restoreSyncExtras878146(meta={}){
+  const agenda=(Array.isArray(meta?.agendaGlobal)?meta.agendaGlobal:[]).map(cleanAgendaEvent87109).filter(Boolean);
+  if(agenda.length){
+    try{localStorage.setItem(lsKey8779("aco_agenda_global_v87109"),JSON.stringify(agenda.slice(-500)));}catch{}
+    try{localStorage.setItem(lsKey8779("aco_home_notes"),JSON.stringify(agenda.slice(-500)));}catch{}
+  }
+}
+function mergeOdataWithSyncMeta878146(odata={}){return {...(odata||{}),__syncMeta878146:collectSyncExtras878146()}}
+function splitOdataSyncMeta878146(raw={}){
+  const src=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};
+  const meta=src.__syncMeta878146||{};
+  const clean={...src}; delete clean.__syncMeta878146;
+  return {clean,meta};
+}
 function Agenda({events=[],clients=[],obres=[],openObra,calM,setCalM,calY,setCalY,selDay,setSelDay,setOdata}){
   const safeClients=Array.isArray(clients)?clients:[];
   const safeObres=Array.isArray(obres)?obres:[];
@@ -4944,8 +4977,8 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     device_id:String(cfg.deviceId||"browser-local"),
     clients:state.clients||[],
     obres:state.obres||[],
-    odata:stripHeavy878104(state.odata||{}),
-    app_version:"87.142.0",
+    odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{})),
+    app_version:"87.146.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -4973,8 +5006,8 @@ function SupabaseSyncPanel878121({clients=[],obres=[],odata={},setClients,setObr
   const [status,setStatus]=useState("");
   function upd(k,v){setCfg(p=>({...p,[k]:v}))}
   function save(){saveSyncCfg878121(cfg);setStatus("Configuració de sincronització guardada.")}
-  async function push(){try{saveSyncCfg878121(cfg);setStatus("Pujant dades locals a Supabase...");await pushStateToSupabase878121({clients,obres,odata},authUser);setStatus("Dades pujades correctament a Supabase.")}catch(e){setStatus("Error pujant dades: "+(e?.message||e))}}
-  async function pull(){try{saveSyncCfg878121(cfg);setStatus("Carregant última còpia de Supabase...");const row=await pullStateFromSupabase878121(authUser);if(!row)throw new Error("No hi ha cap còpia al núvol amb aquesta clau privada. Primer puja dades locals amb aquesta clau o torna a posar la clau anterior.");const c=sanitizeClients8785(row.clients||[],[]);const o=sanitizeObres8785(row.obres||[],[]);const d=sanitizeOdata8785(row.odata||{},{});setClients?.(c);setObres?.(o);setOdata?.(d);setStatus("Dades carregades del núvol i guardades localment. Última còpia: "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'))}catch(e){setStatus("Error carregant dades: "+(e?.message||e))}}
+  async function push(){try{saveSyncCfg878121(cfg);setStatus("Pujant dades locals i cites globals a Supabase...");await pushStateToSupabase878121({clients,obres,odata},authUser);setStatus("Dades pujades correctament a Supabase, incloses les cites globals de l'agenda.")}catch(e){setStatus("Error pujant dades: "+(e?.message||e))}}
+  async function pull(){try{saveSyncCfg878121(cfg);setStatus("Carregant última còpia de Supabase...");const row=await pullStateFromSupabase878121(authUser);if(!row)throw new Error("No hi ha cap còpia al núvol amb aquesta clau privada. Primer puja dades locals amb aquesta clau o torna a posar la clau anterior.");const c=sanitizeClients8785(row.clients||[],[]);const o=sanitizeObres8785(row.obres||[],[]);const split=splitOdataSyncMeta878146(row.odata||{});restoreSyncExtras878146(split.meta);const d=sanitizeOdata8785(split.clean||{},{});setClients?.(c);setObres?.(o);setOdata?.(d);setStatus("Dades carregades del núvol i guardades localment. També s'han restaurat cites globals de l'agenda. Última còpia: "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'))}catch(e){setStatus("Error carregant dades: "+(e?.message||e))}}
   async function testSync(){try{saveSyncCfg878121(cfg);setStatus("Comprovant connexió Supabase...");const row=await pullStateFromSupabase878121(authUser,{allowMissing:true});setStatus(row?"Connexió correcta. Còpia trobada del dispositiu "+(row.device_id||'desconegut')+" · "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'):"Connexió correcta, però no hi ha còpia amb aquesta clau privada.")}catch(e){setStatus("Error de connexió Supabase: "+(e?.message||e))}}
   return <Card title="Supabase Sync · dades de l’app" action={<button className="primary" onClick={save}>Guardar sync</button>}>
     <div className="form-grid supabase-sync-v87121">
@@ -5341,7 +5374,7 @@ return <Card title="Avisos i notes de l’obra" action={<button className="prima
 <span className={`priority-dot ${x.prioritat?.toLowerCase()}`}>{x.prioritat}</span><strong onClick={()=>setEditing(x.id)}>{x.titol}</strong><span>{x.client}</span><span>{x.obra}</span><span>{fmtAppDate8748(x.limit)}</span><span>{x.hora}</span><span>{x.estat}</span><button className="secondary" onClick={()=>setEditing(x.id)}>Veure / editar</button>
 </>}</div>})}</div>}
 </Card>}
-function Modal({title,children,close}){return <div className="modal-backdrop"><div className="modal"><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
+function Modal({title,children,close}){return <div className="modal-backdrop"><div className="modal"><button type="button" className="modal-back-mobile-v87146" onClick={close}>← Tancar / tornar</button><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
 
 function CertPrintV79({doc}){
   const rows=doc.rows||[];

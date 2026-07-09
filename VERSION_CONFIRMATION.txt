@@ -1,3 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.145 - IPAD EXPEDIENTS + AGENTS DESPLEGABLES
-Derivada de V87.144. Optimització responsive, pestanya Agents i gestió d'agents en actes.
+VERSIO: V87.146 - IPAD/MOBIL RETORN + SYNC CITES GLOBALS
+PAQUET: CARPETA ÚNICA DE VALIDACIÓ
+
+Derivada de V87.145. Millora vistes iPad/mòbil i sincronització de cites globals.
