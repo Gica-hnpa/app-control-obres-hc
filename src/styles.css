@@ -4555,3 +4555,46 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .main{padding:8px!important;}
   .mobile-top{padding:9px 10px!important;margin:0 -1px 10px!important;}
 }
+
+/* V87.145 · iPad/mòbil: més desplegables, pestanya Agents i actes editables */
+.agents-tab-v87145{gap:16px;}
+.selected-agent-edit-v87145{display:flex;flex-direction:column;gap:9px;padding:12px;border:1px solid #bfdbfe;background:#eff6ff;border-radius:16px;margin:10px 0;}
+.selected-agent-edit-v87145>b{color:#0f2f6c;font-size:14px;text-transform:uppercase;letter-spacing:.03em;}
+.acta-agent-edit-drawer-v87145{border:1px solid #d6dde7;background:white;border-radius:14px;overflow:hidden;}
+.acta-agent-edit-drawer-v87145 summary{cursor:pointer;display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:11px 12px;font-weight:900;}
+.acta-agent-edit-drawer-v87145 summary span{color:#0f172a;}
+.acta-agent-edit-drawer-v87145 summary em{font-style:normal;color:#64748b;font-size:12px;text-align:right;}
+.acta-agent-edit-grid-v87145{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;border-top:1px solid #e2e8f0;background:#f8fafc;}
+.acta-agent-edit-grid-v87145 label{display:flex;flex-direction:column;gap:4px;}
+.acta-agent-edit-grid-v87145 small{font-weight:900;color:#334155;text-transform:uppercase;font-size:10px;}
+.acta-agent-edit-grid-v87145 input{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:white;}
+.acta-agent-actions-v87145{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+.agent-library-row-v87145{grid-template-columns:1.15fr .9fr 1fr 1fr .75fr .75fr auto!important;}
+.fitxa-dades-stack-v878133>.card:first-child .card-head h2:after{content:" · fitxa";font-weight:700;color:#64748b;}
+@media (max-width:1280px), (hover:none) and (pointer:coarse){
+  .expedients-page-v8741,.expedients-page-v8742,.expedients-page-v87119{display:block!important;grid-template-columns:1fr!important;}
+  .exp-side-v8741{display:none!important;}
+  .desktop-filters-v87119,.exp-table-wrap-v87119{display:none!important;}
+  .mobile-filter-drawer-v87119,.exp-mobile-tree-v87119{display:block!important;}
+  .mobile-filter-drawer-v87119{border:1px solid #d6dde7!important;border-radius:16px!important;margin:0 0 12px!important;background:#fff!important;overflow:hidden!important;}
+  .mobile-filter-drawer-v87119 summary{background:#f8fafc!important;}
+  .exp-mobile-tree-v87119{padding-top:4px!important;}
+  .acta-panel-tabs-v8799{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;background:#f8fafc!important;border:1px solid #d6dde7!important;border-radius:14px!important;padding:8px!important;margin-bottom:10px!important;}
+  .acta-panel-tabs-v8799 button{width:100%!important;border:1px solid #d6dde7!important;border-radius:12px!important;background:white!important;padding:10px!important;font-weight:900!important;}
+  .acta-panel-tabs-v8799 button.active{background:#2563eb!important;color:#fff!important;border-color:#2563eb!important;}
+  .actes-layout-v8761{grid-template-columns:1fr!important;}
+  .actes-list-v8761{max-height:none!important;display:grid!important;grid-template-columns:1fr!important;}
+  .agent-summary-v878133{grid-template-columns:1fr!important;}
+  .agent-detail-v878133{grid-template-columns:1fr!important;}
+  .agent-library-row-v87145{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;}
+  .acta-agent-edit-drawer-v87145 summary{grid-template-columns:1fr!important;}
+  .acta-agent-edit-drawer-v87145 summary em{text-align:left!important;}
+  .acta-agent-edit-grid-v87145{grid-template-columns:1fr!important;}
+  .acta-agent-actions-v87145{justify-content:stretch!important;}
+  .acta-agent-actions-v87145 button{width:100%!important;justify-content:center!important;}
+}
+@media(max-width:700px){
+  .acta-panel-tabs-v8799{grid-template-columns:1fr!important;}
+  .client-exp-filters-v878108{display:grid!important;grid-template-columns:1fr!important;}
+  .client-exp-filters-v878108 .search-field,.client-exp-filters-v878108 select{width:100%!important;min-width:0!important;}
+}
