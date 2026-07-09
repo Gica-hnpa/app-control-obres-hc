@@ -1,5 +1,3 @@
 APP CONTROL D'OBRES
-VERSIO: V87.143 - PROFORMA PER CAPÍTOLS + GUIA SUPABASE
-PAQUET: CARPETA ÚNICA DE VALIDACIÓ
-
-Derivada de V87.142. Correcció de proforma i guia de recuperació Supabase.
+VERSIO: V87.144 - IPAD/MÒBIL MENÚ OCULT I PANTALLA OPTIMITZADA
+Derivada de V87.143. Correcció visual/responsive sense tocar la lògica de dades, Supabase, certificacions ni proformes.
