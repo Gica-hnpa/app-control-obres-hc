@@ -1,14 +1,13 @@
-# APP Control d'Obres · V87.146
+# APP Control d'Obres · V87.147
 
-Versió centrada en iPad/mòbil, retorns de pantalla i sincronització de cites.
+Versió derivada de V87.146.
 
-Canvis:
-- iPad amb vista més moderna i aprofitant la pantalla gran, diferent del mòbil.
-- Botó de tornar/tancar visible en pantalles interiors i modals de documents/impressió.
-- Capçaleres mòbils/iPad més integrades amb l'app.
-- Supabase Sync inclou també cites globals locals de l'agenda, perquè PC i mòbil mostrin el mateix.
-- En carregar del núvol es restauren les cites globals al localStorage del dispositiu.
-- Inici també llegeix cites globals locals, no només cites vinculades a expedients.
+Canvis principals:
+- En iPad/tauleta, la vista de Treballs/Expedients deixa de comportar-se com mòbil pur.
+- Es recupera una visualització més propera a PC: filtres visibles, taula professional d'expedients i resum lateral.
+- El menú lateral continua ocult en iPad/mòbil per aprofitar l'amplada, però el contingut d'expedients utilitza millor la pantalla gran.
+- En mòbil petit es manté el funcionament compacte amb desplegables.
+- Ajusts visuals perquè els expedients no quedin en una sola línia pobra a iPad.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

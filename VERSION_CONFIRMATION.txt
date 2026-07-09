@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.146 - IPAD/MOBIL RETORN + SYNC CITES GLOBALS
+VERSIO: V87.147 - IPAD EXPEDIENTS VISTA PC
 PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-Derivada de V87.145. Millora vistes iPad/mòbil i sincronització de cites globals.
+Derivada de V87.146. Ajust específic perquè a iPad la vista d'expedients aprofiti la pantalla com a PC.

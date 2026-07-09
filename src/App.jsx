@@ -713,7 +713,7 @@ function createLocalRecoverySnapshot878122(state={},label="C√≤pia de recuperaci√
     id:"rec-"+Date.now(),
     label,
     createdAt:new Date().toISOString(),
-    appVersion:"87.122.0",
+    appVersion:"87.147.0",
     user:user||currentAppUser8779()||"hector",
     clients:stripHeavy878104(state.clients||[]),
     obres:stripHeavy878104(state.obres||[]),
@@ -4978,7 +4978,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:state.clients||[],
     obres:state.obres||[],
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{})),
-    app_version:"87.146.0",
+    app_version:"87.147.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

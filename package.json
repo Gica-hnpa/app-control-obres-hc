@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-146-ipad-retorn-sync-cites",
+  "name": "app-control-obres-v87-147-ipad-expedients-pc-view",
   "private": true,
-  "version": "87.146.0",
+  "version": "87.147.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
