@@ -1,3 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.150 - FLUX PRESSUPOST + SYNC + IA
-Derivada de V87.149.
+VERSIO: V87.151 - NOU EXPEDIENT PROGRESSIU PER TIPUS DE FEINA
+PAQUET: CARPETA ÚNICA DE VALIDACIÓ
+
+Derivada de V87.150. Formulari de nou expedient simplificat, progressiu i condicionat pel tipus de treball.

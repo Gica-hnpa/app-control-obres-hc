@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-150-flux-pressupost-sync-ia",
+  "name": "app-control-obres-v87-151-nou-expedient-progressiu",
   "private": true,
-  "version": "87.150.0",
+  "version": "87.151.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

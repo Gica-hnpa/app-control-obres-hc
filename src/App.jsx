@@ -212,13 +212,14 @@ class SafeRenderBoundary878108 extends React.Component{
 }
 
 const months=["Gener","Febrer","Març","Abril","Maig","Juny","Juliol","Agost","Setembre","Octubre","Novembre","Desembre"];
-const EXPEDIENT_STATUS878136=["Pressupostat","Acceptat","En curs / Actiu","Tancat","Anul·lat","No acceptat","Pendent de resposta","En revisió"];
+const EXPEDIENT_STATUS878136=["Pressupostat","En procés","Acceptat","En curs / Actiu","Tancat","Anul·lat","No acceptat","Pendent de resposta","En revisió"];
 function normalizeExpedientStatus878136(v){
   const s=String(v||"").trim().toLowerCase();
   if(!s)return "Pendent de resposta";
   if(s.includes("pressupost"))return "Pressupostat";
   if(s.includes("accept")&&!s.includes("no"))return "Acceptat";
-  if(s.includes("actiu")||s.includes("activa")||s.includes("curs")||s.includes("proc"))return "En curs / Actiu";
+  if(s.includes("proc"))return "En procés";
+  if(s.includes("actiu")||s.includes("activa")||s.includes("curs"))return "En curs / Actiu";
   if(s.includes("tanc")||s.includes("final"))return "Tancat";
   if(s.includes("anul"))return "Anul·lat";
   if(s.includes("no accept")||s.includes("descart")||s.includes("rebutj")||s.includes("no contest"))return "No acceptat";
@@ -504,6 +505,33 @@ const WORK_TYPE_TEMPLATES878121={
   }
 };
 function workTypeTemplate878121(v){return WORK_TYPE_TEMPLATES878121[canonicalWorkType8740(v)]||WORK_TYPE_TEMPLATES878121["Altres"]}
+
+// V87.151 · configuració de formulari progressiu segons el tipus d'encàrrec.
+const SIMPLE_WORK_TYPES878151=new Set([
+  "Pressupost d’obra / amidaments",
+  "Elaboració de pressupost per client",
+  "Certificat energètic",
+  "Cèdula d’habitabilitat",
+  "ITE / IEE / inspecció d’edifici",
+  "Informe tècnic / patologies / peritatge",
+  "Plànols / aixecament",
+  "Render / 3D / visualització",
+  "Tràmit municipal / llicència / comunicació",
+  "Control econòmic d’obra",
+  "Postobra / documentació final"
+]);
+function isSimpleWorkType878151(t){return SIMPLE_WORK_TYPES878151.has(canonicalWorkType8740(t));}
+function workNeedsAgentsByDefault878151(t){
+  const c=canonicalWorkType8740(t);
+  return ["Projecte / llicència d’obres","Direcció / seguiment d’obra","Gestió integral d’obra","Seguretat i salut","Activitat / adequació de local"].includes(c);
+}
+function workQuickHelp878151(t){
+  const c=canonicalWorkType8740(t);
+  if(c==="Pressupost d’obra / amidaments")return "Flux curt: client, nom, paraula clau i dades bàsiques. Agents, direcció i obra es poden afegir més tard si el pressupost acaba en encàrrec d’obra.";
+  if(c==="Elaboració de pressupost per client")return "Flux curt per preparar un pressupost per encàrrec d’un client. No demana constructor ni direcció d’obra per defecte.";
+  if(workNeedsAgentsByDefault878151(c))return "Flux d’obra: permet definir agents, direcció, constructor i dades tècniques des de l’inici.";
+  return "Flux tècnic simplificat. Pots crear l’expedient amb les dades essencials i ampliar-lo després.";
+}
 
 // V87.150 · normalització segura de tipus seleccionat.
 // Evita que un encàrrec triat al desplegable (especialment Pressupost d'obra / amidaments)
@@ -903,15 +931,19 @@ function emptyExpedientData8768(obra={},client={}){
 
 function SafeFormExpedient8751({clients,onSubmit}){
   const [mode,setMode]=useState('__new__');
-  const [tipus,setTipusState]=useState('Projecte / llicència d’obres');
+  const [tipus,setTipusState]=useState('Pressupost d’obra / amidaments');
   const [cp,setCp]=useState('');
   const [poblacio,setPoblacio]=useState('');
   const tpl=workTypeTemplate878121(tipus);
-  const [nom,setNom]=useState('Nou expedient');
+  const [nom,setNom]=useState('Nou pressupost');
   const [subtitol,setSubtitol]=useState(tpl.subtitol);
   const [definicioFeina,setDefinicioFeina]=useState(tpl.definicioFeina);
   const [direccioObraText,setDireccioObraText]=useState(tpl.direccioObraText);
   const [adreca,setAdreca]=useState('Pendent');
+  const [showAgents,setShowAgents]=useState(workNeedsAgentsByDefault878151(tipus));
+  const [showTec,setShowTec]=useState(!isSimpleWorkType878151(tipus));
+  const [clientOpen,setClientOpen]=useState(true);
+  const [detailOpen,setDetailOpen]=useState(false);
   const types=(typeof WORK_TYPES8737!=='undefined'?WORK_TYPES8737:['Projecte tècnic','Project management','Informe tècnic','Certificat energètic','Cèdula d’habitabilitat','Pressupost tècnic-client','Altres']);
   function setTipus(v){
     const t=selectedWorkType878150(v);
@@ -920,18 +952,65 @@ function SafeFormExpedient8751({clients,onSubmit}){
     setSubtitol(nt.subtitol);
     setDefinicioFeina(nt.definicioFeina);
     setDireccioObraText(nt.direccioObraText);
+    const needs=workNeedsAgentsByDefault878151(t);
+    setShowAgents(needs);
+    setShowTec(!isSimpleWorkType878151(t));
+    if(isSimpleWorkType878151(t))setDetailOpen(false);
   }
   function changeCp(v){setCp(v);const pob=poblacioForCp8773(v);if(pob)setPoblacio(pob)}
   function changePoblacio(v){setPoblacio(v);const c=cpForPoblacio8773(v);if(c)setCp(c)}
-  return <form onSubmit={onSubmit} className="safe-form-exp-v8751"><DatalistCP8773/><datalist id="agents-base-v8773"><option>Héctor Cubero</option><option>Arquitecte tècnic pendent</option><option>Arquitecte pendent</option><option>Constructor pendent</option><option>Coordinador S+S pendent</option></datalist><div className="form-grid">
-    <label><span>Client *</span><select name="client" value={mode} onChange={e=>setMode(e.target.value)} required><option value="__new__">+ Crear client nou</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
-    {mode==='__new__'&&<><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" defaultValue="Pendent"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" defaultValue="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" defaultValue="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" defaultValue="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" defaultValue="Pendent"/></label></>}
-    <label><span>Nom expedient *</span><input name="nom" required value={nom} onChange={e=>setNom(e.target.value)}/></label><label><span>Descripció breu</span><input name="subtitol" value={subtitol} onChange={e=>setSubtitol(e.target.value)}/></label><label><span>Any</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label><label><span>Estat</span><select name="estat">{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select></label>
-    <label className="span-all"><span>Tipus de treball / encàrrec *</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)} required>{types.map(t=><option key={t}>{t}</option>)}</select></label>{tipus==='Altres'&&<label><span>Altres</span><input name="tipusTreballAltres"/></label>}
-    <label className="span-all"><span>Definició tipus de feina</span><textarea name="definicioFeina" value={definicioFeina} onChange={e=>setDefinicioFeina(e.target.value)} placeholder="Defineix l'abast de l'encàrrec..."/></label>
-    <label className="span-all"><span>Direcció / criteri de l’obra</span><textarea name="direccioObraText" value={direccioObraText} onChange={e=>setDireccioObraText(e.target.value)} placeholder="Direcció d’obra, seguiment o criteri aplicable..."/></label>
-    <label><span>Client final / propietat</span><input name="propietat" defaultValue="Pendent"/></label><label><span>NIF client final</span><input name="nifPropietat" defaultValue="Pendent"/></label><label><span>Constructor / contractista</span><input name="constructor" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Direcció d’obra (DO)</span><input name="do" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Direcció execució (DEO)</span><input name="deo" list="agents-base-v8773" defaultValue="Héctor Cubero"/></label><label><span>Coordinació S+S (CSS)</span><input name="css" list="agents-base-v8773" defaultValue="Pendent"/></label><label><span>Adreça expedient *</span><input name="adreca" required value={adreca} onChange={e=>setAdreca(e.target.value)}/></label><label><span>Codi postal</span><input name="codiPostal" list="cp-list-v8773" value={cp} onChange={e=>changeCp(e.target.value)} placeholder="17230"/></label><label><span>Població *</span><input name="poblacio" list="poblacio-list-v8773" required value={poblacio} onChange={e=>changePoblacio(e.target.value)} placeholder="Palamós"/></label><label><span>Referència cadastral</span><input name="rc" defaultValue="Pendent"/></label><label><span>Paraula clau codi</span><input name="paraulaClau" placeholder="FRONTMAR, PALAMOS..."/></label>
-  </div><div className="modal-actions"><button className="primary">Crear expedient</button></div></form>
+  const simple=isSimpleWorkType878151(tipus);
+  const needsAgents=workNeedsAgentsByDefault878151(tipus);
+  return <form onSubmit={onSubmit} className="safe-form-exp-v8751 exp-form-pro-v87151"><DatalistCP8773/><datalist id="agents-base-v8773"><option>Héctor Cubero</option><option>Arquitecte tècnic pendent</option><option>Arquitecte pendent</option><option>Constructor pendent</option><option>Coordinador S+S pendent</option></datalist>
+    <div className="exp-form-head-v87151">
+      <div><span>Nou expedient</span><h3>{tipus}</h3><p>{workQuickHelp878151(tipus)}</p></div>
+      <div className="exp-form-badge-v87151">{simple?'Flux curt':'Flux d’obra'}</div>
+    </div>
+    <div className="work-type-cards-v87151">
+      {types.map(t=><button type="button" key={t} className={canonicalWorkType8740(t)===tipus?'active':''} onClick={()=>setTipus(t)}><b>{t}</b><small>{isSimpleWorkType878151(t)?'Dades essencials':'Dades d’obra'}</small></button>)}
+    </div>
+    <input type="hidden" name="tipusTreball" value={tipus}/>
+    {tipus==='Altres'&&<div className="form-grid compact-v87151"><label><span>Altres *</span><input name="tipusTreballAltres" placeholder="Defineix el tipus de feina"/></label></div>}
+
+    <details open className="form-accordion-v87151"><summary><b>1 · Dades mínimes obligatòries</b><span>El necessari per crear-lo ràpid</span></summary>
+      <div className="form-grid compact-v87151">
+        <label><span>Client *</span><select name="client" value={mode} onChange={e=>setMode(e.target.value)} required><option value="__new__">+ Crear client nou</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
+        <label><span>Nom de l’obra / treball *</span><input name="nom" required value={nom} onChange={e=>setNom(e.target.value)} placeholder="Ex. Verbania, Bany, Pressupost comunitat..."/></label>
+        <label><span>Any *</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label>
+        <label><span>Estat *</span><select name="estat" defaultValue={simple?'En procés':'En curs / Actiu'}>{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select></label>
+        <label><span>Paraula clau codi</span><input name="paraulaClau" placeholder="VERBANIA, BANY, COBERTA..."/></label>
+        <label><span>Descripció breu</span><input name="subtitol" value={subtitol} onChange={e=>setSubtitol(e.target.value)}/></label>
+      </div>
+    </details>
+
+    <details open={clientOpen} onToggle={e=>setClientOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>2 · Client</b><span>{mode==='__new__'?'Crear client nou':'Seleccionar existent'}</span></summary>
+      {mode==='__new__'?<div className="form-grid compact-v87151"><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" placeholder="Opcional si és igual al nom"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" placeholder="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" placeholder="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" placeholder="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" placeholder="Pendent"/></label></div>:<div className="notice-soft-v87151">El client seleccionat es farà servir per codificar l’expedient. Després el podràs editar des de Clients.</div>}
+    </details>
+
+    <details open={detailOpen} onToggle={e=>setDetailOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>3 · Definició de l’encàrrec</b><span>Preomplert segons tipus, editable</span></summary>
+      <div className="form-grid compact-v87151">
+        <label className="span-all"><span>Definició tipus de feina</span><textarea name="definicioFeina" value={definicioFeina} onChange={e=>setDefinicioFeina(e.target.value)} placeholder="Defineix l'abast de l'encàrrec..."/></label>
+        <label className="span-all"><span>Criteri / notes d’execució</span><textarea name="direccioObraText" value={direccioObraText} onChange={e=>setDireccioObraText(e.target.value)} placeholder="Direcció d’obra, seguiment o criteri aplicable..."/></label>
+      </div>
+    </details>
+
+    <details open={showTec} onToggle={e=>setShowTec(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>4 · Dades tècniques i ubicació</b><span>{simple?'Opcional per aquest tipus':'Recomanat per obra'}</span></summary>
+      <div className="form-grid compact-v87151">
+        <label><span>Client final / propietat</span><input name="propietat" placeholder="Per defecte serà el client"/></label><label><span>NIF client final</span><input name="nifPropietat" placeholder="Pendent"/></label>
+        <label><span>Adreça expedient</span><input name="adreca" value={adreca} onChange={e=>setAdreca(e.target.value)} placeholder="Pendent"/></label><label><span>Codi postal</span><input name="codiPostal" list="cp-list-v8773" value={cp} onChange={e=>changeCp(e.target.value)} placeholder="17230"/></label><label><span>Població</span><input name="poblacio" list="poblacio-list-v8773" value={poblacio} onChange={e=>changePoblacio(e.target.value)} placeholder="Palamós"/></label><label><span>Referència cadastral</span><input name="rc" placeholder="Pendent"/></label>
+      </div>
+    </details>
+
+    <details open={showAgents} onToggle={e=>setShowAgents(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>5 · Agents d’obra</b><span>{needsAgents?'Recomanat per aquest encàrrec':'Opcional, només si cal'}</span></summary>
+      <div className="form-grid compact-v87151">
+        <label><span>Constructor / contractista</span><input name="constructor" list="agents-base-v8773" placeholder="Pendent"/></label><label><span>Direcció d’obra (DO)</span><input name="do" list="agents-base-v8773" placeholder="Pendent"/></label><label><span>Direcció execució (DEO)</span><input name="deo" list="agents-base-v8773" placeholder="Pendent"/></label><label><span>Coordinació S+S (CSS)</span><input name="css" list="agents-base-v8773" placeholder="Pendent"/></label>
+      </div>
+    </details>
+
+    {!showTec&&<><input type="hidden" name="adreca" value="Pendent"/><input type="hidden" name="codiPostal" value=""/><input type="hidden" name="poblacio" value="Pendent"/><input type="hidden" name="rc" value="Pendent"/><input type="hidden" name="propietat" value=""/><input type="hidden" name="nifPropietat" value=""/></>}
+    {!showAgents&&<><input type="hidden" name="constructor" value="Pendent"/><input type="hidden" name="do" value="Pendent"/><input type="hidden" name="deo" value="Pendent"/><input type="hidden" name="css" value="Pendent"/></>}
+    <div className="modal-actions sticky-actions-v87151"><button className="primary">Crear expedient</button></div>
+  </form>
 }
 
 function SafeActes8751({obra,data,setData,openEmail,openDoc}){
@@ -2397,7 +2476,7 @@ function addObra(e){
     subtitol:String(f.get("subtitol")||"Treball pendent de definir"),
     tipologia:tipus,
     tipusTreball:tipus,
-    estat:String(f.get("estat")||"Pressupostada"),
+    estat:String(f.get("estat")||"Pressupostat"),
     pressupost:0,
     certificacio:0,
     propietat:propietatRaw&&propietatRaw!=="Pendent"?propietatRaw:clientFinal.nom,
