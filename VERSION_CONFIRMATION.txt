@@ -1,5 +1,3 @@
 APP CONTROL D'OBRES
-VERSIO: V87.149 - TIPUS FEINA + CODIFICACIO + LLIBRERIA IA + GANTT
-PAQUET: CARPETA ÚNICA DE VALIDACIÓ
-
-Derivada de V87.148. Correcció de nou expedient i millores progressives sense tocar la base ja validada.
+VERSIO: V87.150 - FLUX PRESSUPOST + SYNC + IA
+Derivada de V87.149.

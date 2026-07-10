@@ -1,15 +1,14 @@
-# APP Control d'Obres · V87.149
+# APP Control d'Obres · V87.150
 
-Versió de millora funcional sobre V87.148.
+Versió centrada en flux de pressupost, codificació i sincronització segura.
 
-Canvis principals:
-- Correcció del formulari de nou expedient: en canviar el tipus de treball es refresquen correctament la definició i el criteri de l'encàrrec.
-- Afegit tipus de feina: **Elaboració de pressupost per client**.
-- Codificació d'expedients més compacta: any, número, inicials del tipus, inicials del client i paraula clau.
-- Millora visual del llistat de pressupostos amb targetes més modernes i tècniques.
-- Llibreria de partides: es pot reclassificar la partida canviant el capítol/tipologia des de la mateixa llibreria del client.
-- Afegit botó **Buscar IA** a la llibreria per generar un prompt de consulta de partida/descomposat i copiar-lo al porta-retalls.
-- Afegit apartat **Gantt** dins Gestió obra amb visió orientativa pressupost/certificació.
+Canvis:
+- Correcció reforçada de tipus de treball en nou expedient: Pressupost d’obra / amidaments i Elaboració de pressupost per client ja no tornen a Seguretat i salut.
+- Afegida pestanya Pressupost ràpid per encàrrecs d’elaboració de pressupost, sense haver d’entrar primer a tot el flux de certificacions/factures.
+- Renombrar pressupost queda plegat en desplegable i ja no ocupa espai fix dins Gestió obra.
+- Codificació compacta mantinguda: ANY-NÚM-TIPUS-CLIENT-PARAULA.
+- Botó Buscar amb IA amb avís clar: integració directa requerirà API/servidor; de moment copia prompt segur per ChatGPT.
+- Supabase app_version actualitzada a 87.150.0.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist
