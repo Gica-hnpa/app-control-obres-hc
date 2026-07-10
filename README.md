@@ -1,13 +1,15 @@
-# APP Control d'Obres · V87.147
+# APP Control d'Obres · V87.149
 
-Versió derivada de V87.146.
+Versió de millora funcional sobre V87.148.
 
 Canvis principals:
-- En iPad/tauleta, la vista de Treballs/Expedients deixa de comportar-se com mòbil pur.
-- Es recupera una visualització més propera a PC: filtres visibles, taula professional d'expedients i resum lateral.
-- El menú lateral continua ocult en iPad/mòbil per aprofitar l'amplada, però el contingut d'expedients utilitza millor la pantalla gran.
-- En mòbil petit es manté el funcionament compacte amb desplegables.
-- Ajusts visuals perquè els expedients no quedin en una sola línia pobra a iPad.
+- Correcció del formulari de nou expedient: en canviar el tipus de treball es refresquen correctament la definició i el criteri de l'encàrrec.
+- Afegit tipus de feina: **Elaboració de pressupost per client**.
+- Codificació d'expedients més compacta: any, número, inicials del tipus, inicials del client i paraula clau.
+- Millora visual del llistat de pressupostos amb targetes més modernes i tècniques.
+- Llibreria de partides: es pot reclassificar la partida canviant el capítol/tipologia des de la mateixa llibreria del client.
+- Afegit botó **Buscar IA** a la llibreria per generar un prompt de consulta de partida/descomposat i copiar-lo al porta-retalls.
+- Afegit apartat **Gantt** dins Gestió obra amb visió orientativa pressupost/certificació.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

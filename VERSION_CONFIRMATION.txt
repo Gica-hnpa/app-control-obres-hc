@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.147 - IPAD EXPEDIENTS VISTA PC
+VERSIO: V87.149 - TIPUS FEINA + CODIFICACIO + LLIBRERIA IA + GANTT
 PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-Derivada de V87.146. Ajust específic perquè a iPad la vista d'expedients aprofiti la pantalla com a PC.
+Derivada de V87.148. Correcció de nou expedient i millores progressives sense tocar la base ja validada.
