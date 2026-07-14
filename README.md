@@ -1,14 +1,14 @@
-# APP Control d’Obres · V87.155
+# APP Control d'Obres · V87.156
 
-Versió de refinament de Pressupost ràpid sobre V87.154.
+Versió sobre V87.155.
 
 Canvis:
-- Preus unitaris, quantitats i imports de pressupost sempre visibles amb 2 decimals, per exemple `89,00 €` i no `89 €`.
-- Pressupostos d’obra mantenen i imprimeixen la descripció llarga de les partides.
-- Pressupost ràpid incorpora camps finals editables d’Observacions i Forma de pagament.
-- La previsualització i impressió/PDF del pressupost inclouen al final els apartats Observacions i Forma de pagament.
-- El càlcul de pressupost ràpid usa `parseNum8770`, de manera que accepta decimals amb coma o punt sense perdre import.
-- Es manté la millora V87.154 del lector Excel prioritzant el full PRESSUPOST.
+- Import Excel de pressupost: separa OBSERVACIONS i FORMA DE PAGAMENT perquè no quedin enganxades a la descripció llarga de la partida.
+- Pressupostos: preus i quantitats normalitzats a 2 decimals després d'importar i en edició.
+- Pressupost ràpid: camps de Nº pressupost, referència, data de realització, versió i dades del tercer/promotor.
+- PDF/preview de pressupost: capçalera més neta amb número de pressupost, referència/data/versió, i dades del tercer a la dreta.
+- Partides de pressupost: descripció llarga editable en mode edició.
+- Llibreria de partides: camp inicial de descomposat per partida.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

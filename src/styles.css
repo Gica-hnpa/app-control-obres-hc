@@ -4881,3 +4881,10 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .budget-final-notes-v87155 b{display:block;color:#0f2d5c;margin-bottom:6px}
 .budget-final-notes-v87155 p{margin:0;white-space:pre-wrap;color:#334155;line-height:1.35}
 @media(max-width:900px){.budget-final-notes-v87155{grid-template-columns:1fr}.pressupost-rapid-v87155 .budget-observacions-v87155 .form-grid{grid-template-columns:1fr}}
+
+/* V87.156 · pressupost ràpid i llibreria */
+.budget-desc-edit-v878156{width:100%;min-height:92px;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:#f8fafc;font-size:12px;line-height:1.35;margin-top:6px;resize:vertical}
+.lib-descompost-v878156 textarea{width:100%;min-height:90px;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:white;font-size:12px;line-height:1.35;resize:vertical;margin-top:6px}
+.pressupost-rapid-v87155 .budget-observacions-v87155 .form-grid label span::after{content:""}
+.pressupost-print-preview-v87153 th,.pressupost-print-preview-v87153 td{vertical-align:middle}
+.pressupost-print-preview-v87153 .text-left{vertical-align:top;text-align:left}
