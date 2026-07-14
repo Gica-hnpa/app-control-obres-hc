@@ -4888,3 +4888,10 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .pressupost-rapid-v87155 .budget-observacions-v87155 .form-grid label span::after{content:""}
 .pressupost-print-preview-v87153 th,.pressupost-print-preview-v87153 td{vertical-align:middle}
 .pressupost-print-preview-v87153 .text-left{vertical-align:top;text-align:left}
+/* V87.157 · Nou expedient: client existent o crear nou, més clar */
+.selected-client-v87157{background:#f8fafc;border:1px solid #d6dde7;border-radius:16px;padding:14px;display:grid;gap:5px;color:#0f172a}
+.selected-client-v87157 b{font-size:15px;color:#0f2d6b}
+.selected-client-v87157 span{color:#475569;font-size:13px}
+.selected-client-v87157 small{color:#64748b;border-top:1px solid #e2e8f0;margin-top:6px;padding-top:8px;line-height:1.35}
+.client-create-v87157{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;margin:0 0 4px 0}
+@media(max-width:900px){.selected-client-v87157{padding:12px}.client-create-v87157{border-radius:14px}}

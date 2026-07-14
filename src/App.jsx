@@ -940,7 +940,8 @@ function emptyExpedientData8768(obra={},client={}){
 
 
 function SafeFormExpedient8751({clients,onSubmit}){
-  const [mode,setMode]=useState('__new__');
+  const [mode,setMode]=useState(()=>((clients&&clients.length)?clients[0].id:'__new__'));
+  const [clientModeTouched,setClientModeTouched]=useState(false);
   const [tipus,setTipusState]=useState('Pressupost d’obra / amidaments');
   const [cp,setCp]=useState('');
   const [poblacio,setPoblacio]=useState('');
@@ -954,6 +955,12 @@ function SafeFormExpedient8751({clients,onSubmit}){
   const [showTec,setShowTec]=useState(!isSimpleWorkType878151(tipus));
   const [clientOpen,setClientOpen]=useState(true);
   const [detailOpen,setDetailOpen]=useState(false);
+  useEffect(()=>{
+    if(!clientModeTouched && (!mode||mode==='__new__') && (clients||[]).length){setMode(clients[0].id);}
+    if(mode && mode!=='__new__' && (clients||[]).length && !(clients||[]).some(c=>c.id===mode)){setMode(clients[0].id);}
+    if(mode && mode!=='__new__' && !(clients||[]).length){setMode('__new__');}
+  },[clients,mode,clientModeTouched]);
+  const selectedClient878157=(clients||[]).find(c=>c.id===mode);
   const types=(typeof WORK_TYPES8737!=='undefined'?WORK_TYPES8737:['Projecte tècnic','Project management','Informe tècnic','Certificat energètic','Cèdula d’habitabilitat','Pressupost tècnic-client','Altres']);
   function setTipus(v){
     const t=selectedWorkType878150(v);
@@ -984,7 +991,7 @@ function SafeFormExpedient8751({clients,onSubmit}){
 
     <details open className="form-accordion-v87151 form-accordion-main-v87152"><summary><b>1 · Dades mínimes obligatòries</b><span>Només el necessari per obrir l’expedient</span></summary>
       <div className="form-grid compact-v87151">
-        <label><span>Client *</span><select name="client" value={mode} onChange={e=>setMode(e.target.value)} required><option value="__new__">+ Crear client nou</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
+        <label><span>Client *</span><select name="client" value={mode} onChange={e=>{setClientModeTouched(true);setMode(e.target.value)}} required>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}<option value="__new__">+ Crear client nou</option></select></label>
         <label><span>Nom de l’obra / treball *</span><input name="nom" required value={nom} onChange={e=>setNom(e.target.value)} placeholder="Ex. Verbania, Bany, Pressupost comunitat..."/></label>
         <label><span>Any *</span><input name="any" defaultValue={String(new Date().getFullYear())}/></label>
         <label><span>Estat *</span><select name="estat" defaultValue={simple?'En procés':'En curs / Actiu'}>{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select></label>
@@ -994,7 +1001,7 @@ function SafeFormExpedient8751({clients,onSubmit}){
     </details>
 
     <details open={clientOpen} onToggle={e=>setClientOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>2 · Client</b><span>{mode==='__new__'?'Crear client nou':'Dades del client ja guardades'}</span></summary>
-      {mode==='__new__'?<div className="form-grid compact-v87151"><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" placeholder="Opcional si és igual al nom"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" placeholder="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" placeholder="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" placeholder="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" placeholder="Pendent"/></label></div>:<div className="notice-soft-v87151">El client seleccionat es farà servir per codificar l’expedient. Després el podràs editar des de Clients.</div>}
+      {mode==='__new__'?<div className="form-grid compact-v87151 client-create-v87157"><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" placeholder="Opcional si és igual al nom"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" placeholder="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" placeholder="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" placeholder="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" placeholder="Pendent"/></label></div>:<div className="selected-client-v87157"><b>{selectedClient878157?.nom||'Client seleccionat'}</b><span>{selectedClient878157?.nif?`NIF/CIF: ${selectedClient878157.nif}`:'NIF/CIF pendent'}</span><span>{[selectedClient878157?.email,selectedClient878157?.telefon].filter(Boolean).join(' · ')||'Contacte pendent'}</span><small>El client es farà servir per codificar l’expedient. Per crear-ne un altre, obre el desplegable i tria “+ Crear client nou”.</small></div>}
     </details>
 
     <details open={detailOpen} onToggle={e=>setDetailOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>3 · Definició de l’encàrrec</b><span>{simple?'Opcional: ja queda definida automàticament':'Preomplert segons tipus, editable'}</span></summary>
