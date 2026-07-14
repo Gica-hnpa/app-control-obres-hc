@@ -540,8 +540,12 @@ function selectedWorkType878150(v){
   const raw=String(v||"").trim();
   if(WORK_TYPES8737.includes(raw)) return raw;
   const n=codeClean8739(raw);
+  const exact=(WORK_TYPES8737||[]).find(t=>codeClean8739(t)===n);
+  if(exact) return exact;
+  // Prioritat absoluta als fluxos de pressupost: mai poden caure a Seguretat i salut
+  // per paraules antigues de plantilles, descripcions o camps ocults.
   if(n.includes("PRESSUPOST") && (n.includes("AMIDAMENT")||n.includes("OBRA"))) return "Pressupost d’obra / amidaments";
-  if(n.includes("ELABORACIO") && n.includes("PRESSUPOST")) return "Elaboració de pressupost per client";
+  if((n.includes("ELABORACIO")||n.includes("REDACCIO")||n.includes("FER ")) && n.includes("PRESSUPOST")) return "Elaboració de pressupost per client";
   if(n.includes("PRESSUPOST CLIENT")||n.includes("PRESSUPOST PER CLIENT")) return "Elaboració de pressupost per client";
   return canonicalWorkType8740(raw);
 }
@@ -563,6 +567,12 @@ function canonicalWorkType8740(v){
   const raw=String(v||"").trim();
   const n=codeClean8739(raw);
   if(!n)return "Altres";
+  const exact=(WORK_TYPES8737||[]).find(t=>codeClean8739(t)===n);
+  if(exact)return exact;
+  // Primer pressupostos, després la resta. Evita que un text antic de S+S condicioni el tipus.
+  if((n.includes("ELABORACIO")||n.includes("REDACCIO")||n.includes("FER "))&&n.includes("PRESSUPOST"))return "Elaboració de pressupost per client";
+  if(n.includes("PRESSUPOST CLIENT")||n.includes("PRESSUPOST PER CLIENT"))return "Elaboració de pressupost per client";
+  if(n.includes("PRESSUPOST")||n.includes("AMIDAMENT"))return "Pressupost d’obra / amidaments";
   if(n.includes("PROJECT MANAGEMENT")||n.includes("PROJECT MANAGER")||n==="PM"||n.includes("GESTIO INTEGRAL"))return "Gestió integral d’obra";
   if(n.includes("CONTROL ECONOMIC")||n.includes("CERTIFICACIO D OBRA")||n.includes("CERTIFICACIO OBRA"))return "Control econòmic d’obra";
   if(n.includes("DIRECCIO")||n.includes("EXECUCIO D OBRA")||n.includes("SEGUIMENT D OBRA"))return "Direcció / seguiment d’obra";
@@ -972,7 +982,7 @@ function SafeFormExpedient8751({clients,onSubmit}){
     <input type="hidden" name="tipusTreball" value={tipus}/>
     {tipus==='Altres'&&<div className="form-grid compact-v87151"><label><span>Altres *</span><input name="tipusTreballAltres" placeholder="Defineix el tipus de feina"/></label></div>}
 
-    <details open className="form-accordion-v87151"><summary><b>1 · Dades mínimes obligatòries</b><span>El necessari per crear-lo ràpid</span></summary>
+    <details open className="form-accordion-v87151 form-accordion-main-v87152"><summary><b>1 · Dades mínimes obligatòries</b><span>Només el necessari per obrir l’expedient</span></summary>
       <div className="form-grid compact-v87151">
         <label><span>Client *</span><select name="client" value={mode} onChange={e=>setMode(e.target.value)} required><option value="__new__">+ Crear client nou</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
         <label><span>Nom de l’obra / treball *</span><input name="nom" required value={nom} onChange={e=>setNom(e.target.value)} placeholder="Ex. Verbania, Bany, Pressupost comunitat..."/></label>
@@ -983,11 +993,11 @@ function SafeFormExpedient8751({clients,onSubmit}){
       </div>
     </details>
 
-    <details open={clientOpen} onToggle={e=>setClientOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>2 · Client</b><span>{mode==='__new__'?'Crear client nou':'Seleccionar existent'}</span></summary>
+    <details open={clientOpen} onToggle={e=>setClientOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>2 · Client</b><span>{mode==='__new__'?'Crear client nou':'Dades del client ja guardades'}</span></summary>
       {mode==='__new__'?<div className="form-grid compact-v87151"><label><span>Nom nou client *</span><input name="clientNouNom" required defaultValue="Nou client"/></label><label><span>Raó social</span><input name="clientNouRao" placeholder="Opcional si és igual al nom"/></label><input type="hidden" name="clientNouTipus" value="Particular"/><label><span>NIF/CIF</span><input name="clientNouNif" placeholder="Pendent"/></label><label><span>Email</span><input name="clientNouEmail" placeholder="Pendent"/></label><label><span>Telèfon</span><input name="clientNouTelefon" placeholder="Pendent"/></label><label><span>Adreça client</span><input name="clientNouAdreca" placeholder="Pendent"/></label></div>:<div className="notice-soft-v87151">El client seleccionat es farà servir per codificar l’expedient. Després el podràs editar des de Clients.</div>}
     </details>
 
-    <details open={detailOpen} onToggle={e=>setDetailOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>3 · Definició de l’encàrrec</b><span>Preomplert segons tipus, editable</span></summary>
+    <details open={detailOpen} onToggle={e=>setDetailOpen(e.currentTarget.open)} className="form-accordion-v87151"><summary><b>3 · Definició de l’encàrrec</b><span>{simple?'Opcional: ja queda definida automàticament':'Preomplert segons tipus, editable'}</span></summary>
       <div className="form-grid compact-v87151">
         <label className="span-all"><span>Definició tipus de feina</span><textarea name="definicioFeina" value={definicioFeina} onChange={e=>setDefinicioFeina(e.target.value)} placeholder="Defineix l'abast de l'encàrrec..."/></label>
         <label className="span-all"><span>Criteri / notes d’execució</span><textarea name="direccioObraText" value={direccioObraText} onChange={e=>setDireccioObraText(e.target.value)} placeholder="Direcció d’obra, seguiment o criteri aplicable..."/></label>
@@ -2452,7 +2462,9 @@ function addObra(e){
     };
   }
   if(!clientFinal){alert("No s'ha pogut identificar el client de l'expedient.");return;}
-  const tipus=selectedWorkType878150(f.get("tipusTreballAltres")||f.get("tipusTreball")||"Altres");
+  const rawTipus=String(f.get("tipusTreball")||"").trim();
+  const rawAltres=String(f.get("tipusTreballAltres")||"").trim();
+  const tipus=selectedWorkType878150(rawAltres||rawTipus||"Altres");
   const keyword=String(f.get("paraulaClau")||"").trim();
   const number=nextExpNumber8739(year,obres);
   const built=buildExpedientCode8739({
@@ -2495,11 +2507,14 @@ function addObra(e){
     createdAt:new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
+  const isBudgetFlow878152=tipus==="Pressupost d’obra / amidaments"||tipus==="Elaboració de pressupost per client";
   Object.assign(obraNew,applyWorkTemplate878121({
     ...obraNew,
     definicioFeina:String(f.get("definicioFeina")||""),
     direccioObraText:String(f.get("direccioObraText")||"")
-  },tipus,false));
+  },tipus,isBudgetFlow878152));
+  obraNew.tipusTreball=tipus;
+  obraNew.tipologia=tipus;
   learnCpPoblacio8775(obraNew.codiPostal,obraNew.poblacio);
   if(createClient){learnCpPoblacio8775(clientFinal.codiPostal,clientFinal.poblacio);setClients(p=>[clientFinal,...p]);}
   setObres(p=>[obraNew,...p]);
@@ -4979,7 +4994,13 @@ const totalDocs=docs.length+generatedDocs878148.length;
 return <Card title={`Documents de l’expedient${obra?.nom?` · ${obra.nom}`:""}`} action={<div className="actions-inline"><label className="primary upload-label"><Upload/> Adjuntar a carpeta actual<input type="file" onChange={add}/></label><button className="secondary" onClick={()=>openEmail("Documents expedient")}>Enviar email</button><button className="secondary" onClick={()=>setShowCfg(!showCfg)}>Config. Storage</button></div>}>
   {showCfg&&<div className="storage-config"><b>Configuració opcional Supabase Storage</b><p>Si no configures Storage, els originals es guarden en local IndexedDB d’aquest navegador. Cada document queda vinculat a l’expedient i a una carpeta documental.</p><div className="form-grid no-pad"><label><span>URL Supabase</span><input value={cfg.url} onChange={e=>setCfg({...cfg,url:e.target.value})}/></label><label><span>Anon key</span><input value={cfg.key} onChange={e=>setCfg({...cfg,key:e.target.value})}/></label><label><span>Bucket</span><input value={cfg.bucket} onChange={e=>setCfg({...cfg,bucket:e.target.value})}/></label></div><button className="primary" onClick={saveCfg}>Guardar configuració</button></div>}
   {status&&<div className="doc-status-v38">{status}</div>}
-  <div className="documents-layout-v8775"><aside className="doc-folders-v8775">{folders.map(f=>{const count=docs.filter(d=>docFolder(d)===f.id).length+generatedDocs878148.filter(d=>docFolder(d)===f.id).length;return <button key={f.id} className={folder===f.id?"active":""} onClick={()=>setFolder(f.id)}><b>{f.label}</b><span>{count} document{count===1?"":"s"}</span></button>})}</aside><section className="doc-folder-content-v8775"><div className="folder-head-v8775"><div><h3>{activeFolder?.label}</h3><p>{activeFolder?.desc}</p></div><span>{shown.length+shownGenerated878148.length} / {totalDocs} docs</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {d.import?money(d.import):"import pendent"} · generat automàticament des de {d.origen}</span><em>No cal entrar manualment certificacions/factures ja creades: apareixen aquí com a documentació generada.</em></div><div className="actions-inline"><button className="secondary small" onClick={()=>openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}. Per imprimir-lo amb format complet, entra a Gestió obra / Factures o Certificacions i utilitza la previsualització.`})}>Info</button></div></div>)}{shown.map(d=><div className="doc-row-v38" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div><div className="actions-inline"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>Obrir</button><button className="danger small" onClick={()=>remove(d)}>Eliminar</button></div></div>)}</>}</div></section></div>
+  <div className="documents-pro-v87152">
+    <details className="doc-folder-picker-v87152" open>
+      <summary><b>Classificació documental</b><span>{activeFolder?.label} · {shown.length+shownGenerated878148.length} docs</span></summary>
+      <div className="doc-folder-grid-v87152">{folders.map(f=>{const count=docs.filter(d=>docFolder(d)===f.id).length+generatedDocs878148.filter(d=>docFolder(d)===f.id).length;return <button type="button" key={f.id} className={folder===f.id?"active":""} onClick={()=>setFolder(f.id)}><b>{f.label}</b><span>{count} document{count===1?"":"s"}</span><em>{f.desc}</em></button>})}</div>
+    </details>
+    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152"><div className="folder-head-v8775"><div><h3>{activeFolder?.label}</h3><p>{activeFolder?.desc}</p></div><span>{shown.length+shownGenerated878148.length} / {totalDocs} docs</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {d.import?money(d.import):"import pendent"} · generat automàticament des de {d.origen}</span><em>No cal entrar manualment certificacions/factures ja creades: apareixen aquí com a documentació generada.</em></div><div className="actions-inline"><button className="secondary small" onClick={()=>openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}. Per imprimir-lo amb format complet, entra a Gestió obra / Factures o Certificacions i utilitza la previsualització.`})}>Info</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>Obrir</button><button className="danger small" onClick={()=>remove(d)}>Eliminar</button></div></details>)}</>}</div></section>
+  </div>
 </Card>
 }
 

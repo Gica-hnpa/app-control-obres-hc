@@ -1,20 +1,12 @@
-{
-  "name": "app-control-obres-v87-152-documents-progressiu-tipus-fix",
-  "private": true,
-  "version": "87.152.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "lucide-react": "latest",
-    "pdfjs-dist": "^6.0.227",
-    "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest",
-    "xlsx": "0.18.5"
-  }
-}
+# APP Control d’Obres · V87.152
+
+Versió derivada de V87.151.
+
+Canvis principals:
+- Correcció reforçada del tipus de feina en Nou expedient perquè Pressupost d’obra / amidaments i Elaboració de pressupost per client no tornin a Seguretat i salut.
+- Formulari de nou expedient més progressiu, tècnic i net, amb blocs obligatoris i opcionals més clars.
+- Pestanya Documents redissenyada amb classificacions en desplegable/accordion, més moderna i adaptada a PC, iPad i mòbil.
+- Les accions dels documents queden dins de cada document, i les carpetes es trien des d’un panell plegable.
+
+Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+Publish Directory: dist
