@@ -1,12 +1,12 @@
-# APP Control d’Obres · V87.152
+# APP Control d’Obres · V87.153
 
-Versió derivada de V87.151.
+Versió centrada en Pressupost ràpid i importació de pressupostos.
 
-Canvis principals:
-- Correcció reforçada del tipus de feina en Nou expedient perquè Pressupost d’obra / amidaments i Elaboració de pressupost per client no tornin a Seguretat i salut.
-- Formulari de nou expedient més progressiu, tècnic i net, amb blocs obligatoris i opcionals més clars.
-- Pestanya Documents redissenyada amb classificacions en desplegable/accordion, més moderna i adaptada a PC, iPad i mòbil.
-- Les accions dels documents queden dins de cada document, i les carpetes es trien des d’un panell plegable.
+Canvis:
+- Importació Excel reforçada per formats estàndard amb columnes: partida/codi, unitat, descripció, quantitat, preu unitari i total.
+- Pressupost ràpid amb botó de partida manual, previsualització/impressió PDF i guardat a Documents.
+- Document de pressupost d’obra imprimible en PDF amb capítols i totals.
+- Avís funcional sobre lectura PDF: possible si és text real, però recomanada com a fase experimental separada; si és escanejat cal OCR.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

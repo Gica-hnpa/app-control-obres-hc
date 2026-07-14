@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-152-documents-progressiu-tipus-fix",
+  "name": "app-control-obres-v87-153-pressupost-rapid-excel-pdf",
   "private": true,
-  "version": "87.152.0",
+  "version": "87.153.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

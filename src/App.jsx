@@ -2138,10 +2138,31 @@ async function importExcel(e,budgetId="principal"){
     const title=cells.filter(c=>c.t!==code && !isMoneyLike(c.v) && !isUnit(c.t) && !isCapCode(c.t)).map(c=>c.t).join(" ").trim();
     return title||"CAPÍTOL";
   }
+  // V87.153 · lector estàndard de pressupost ràpid: partida/codi/unitat/descripció/quantitat/preu unitari/total
+  function standardBudgetMap878153(row){
+    const h=(row||[]).map(norm);
+    function findAny(names){
+      for(const name of names){const i=h.findIndex(x=>x===name);if(i>=0)return i}
+      for(const name of names){const i=h.findIndex(x=>x.includes(name));if(i>=0)return i}
+      return -1;
+    }
+    const partidaNum=findAny(["numero partida","nº partida","num partida","n partida","partida nº","partida num","partida"]);
+    const codi=findAny(["codi","codigo","código","codigo partida","codi partida","cod"]);
+    const ud=findAny(["unitat","unidad","ut","ud","u"]);
+    const resum=findAny(["descripcio","descripción","descripcion","descripcio partida","descripcion partida","concepte","concepto","resum","resumen"]);
+    const q=findAny(["quantitat","cantidad","amidament","medicion","medición","canpres","can pres","q","qty"]);
+    const pu=findAny(["preu unitari","precio unitario","preu/ut","precio/ud","preu","precio","pu","prpres","pr pres"]);
+    const imp=findAny(["total","import","importe","imppres","imp pres","import total"]);
+    if((codi>=0||partidaNum>=0) && ud>=0 && resum>=0 && q>=0 && pu>=0 && imp>=0){
+      return {codi:codi>=0?codi:partidaNum,partidaNum,ud,resum,q,pu,imp,nat:-1,hasNat:false,standard878153:true};
+    }
+    return null;
+  }
   
 function parseRows(rows,sheetName){
     const headerIndex=Math.max(0,rows.findIndex(looksHeader));
-    const idx=headerMap(rows[headerIndex]||[]);
+    const stdIdx878153=standardBudgetMap878153(rows[headerIndex]||[]);
+    const idx=stdIdx878153||headerMap(rows[headerIndex]||[]);
     let out=[];
     let cap="PRESSUPOST IMPORTAT";
     let last=null;
@@ -2151,7 +2172,7 @@ function parseRows(rows,sheetName){
       const cells=nonEmptyCells(row);
       if(!cells.length)continue;
 
-      const A=clean(row[idx.codi]);
+      const A=clean(row[idx.codi]) || (idx.partidaNum>=0?clean(row[idx.partidaNum]):"");
       const N=idx.nat>=0?clean(row[idx.nat]):"";
       const Uraw=clean(row[idx.ud]);
       const Rraw=clean(row[idx.resum]);
@@ -2245,7 +2266,7 @@ function parseRows(rows,sheetName){
       const parsed=parseRows(rows,sheetName);
       if(parsed.rows.length>best.rows.length || (parsed.rows.length===best.rows.length && parsed.caps>best.caps))best=parsed;
     }
-    if(!best.rows.length)throw new Error("No s'han detectat partides. Revisa que l'Excel tingui columnas Código / Ut o Nat / Resumen / CanPres / PrPres / ImpPres.");
+    if(!best.rows.length)throw new Error("No s'han detectat partides. Revisa que l'Excel tingui capçaleres tipus Partida/Codi, Unitat, Descripció, Quantitat, Preu unitari i Total.");
 
     const currentData878122=normalizeBudgetedData8791(odata?.[obraId]||data||empty());
     const originalBid878122=activeBudgetId8786;
@@ -3756,11 +3777,29 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
 }
 
 function PressupostRapid878150(props){
-  const total=(props.data?.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-  const parts=(props.data?.partides||[]).length;
-  return <div className="pressupost-rapid-v87150">
-    <Card title="Pressupost ràpid" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" accept=".xlsx,.xls" onChange={props.importExcel}/></label><button className="primary" onClick={()=>props.openDoc?.('Pressupost obra')}>Previsualitzar / imprimir</button></div>}>
-      <div className="rapid-budget-hero-v87150"><div><small>Encàrrec d’elaboració de pressupost</small><h2>{money(total)}</h2><p>{parts} partides · pensat per amidar, valorar i entregar pressupost sense entrar a certificacions ni factures.</p></div><div className="rapid-budget-steps-v87150"><span>1 · Importa o crea partides</span><span>2 · Revisa capítols i preus</span><span>3 · Imprimeix o guarda el pressupost</span></div></div>
+  const rows=props.data?.partides||[];
+  const total=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const parts=rows.length;
+  function addManual878153(){
+    props.setData?.(d=>{
+      const current=d.partides||[];
+      const cap=current[0]?.cap||"01 PRESSUPOST";
+      return {...d,partides:[...current,{id:"pr-"+Date.now(),codi:String(current.length+1).padStart(2,"0")+".01",ut:"ut",concepte:"Nova partida",desc:"",cap,q:1,pu:0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Pressupost ràpid manual"}],updatedAt:new Date().toISOString()};
+    });
+  }
+  function doc878153(){return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES")}}
+  function saveAsDocument878153(){
+    props.setData?.(d=>({
+      ...d,
+      documents:[{id:"doc-pres-"+Date.now(),nom:`Pressupost d’obra · ${new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),size:0,storage:"generat",hasFile:false,import:total,origen:"Pressupost ràpid"},...(d.documents||[])],
+      updatedAt:new Date().toISOString()
+    }));
+    alert("Pressupost guardat dins Documents · Amidaments / pressupost d’obra. Per obtenir el PDF, utilitza Imprimir / Guardar PDF.");
+  }
+  return <div className="pressupost-rapid-v87150 pressupost-rapid-v87153">
+    <Card title="Pressupost ràpid" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" accept=".xlsx,.xls" onChange={props.importExcel}/></label><button className="secondary" onClick={addManual878153}>+ Partida manual</button><button className="secondary" onClick={saveAsDocument878153}>Guardar a Documents</button><button className="primary" onClick={()=>props.openDoc?.(doc878153())}>Previsualitzar / imprimir PDF</button></div>}>
+      <div className="rapid-budget-hero-v87150"><div><small>Encàrrec d’elaboració de pressupost</small><h2>{money(total)}</h2><p>{parts} partides · importa Excel estàndard o crea manualment. Columnes acceptades: partida/codi, unitat, descripció, quantitat, preu unitari i total.</p></div><div className="rapid-budget-steps-v87150"><span>1 · Importa Excel o crea partida</span><span>2 · Edita quantitats i preus</span><span>3 · Imprimeix PDF o guarda a Documents</span></div></div>
+      <div className="module-note-v8738 rapid-pdf-note-v87153"><b>PDF</b><span>El PDF es pot arribar a llegir si és text real, però no és tan fiable com Excel. Si és un PDF escanejat/foto cal OCR i ho deixaria com a fase experimental separada.</span></div>
     </Card>
     <Pressupost {...props}/>
   </div>
@@ -5865,6 +5904,21 @@ function proformaPrintHtml8783(doc,obra,client){
 }
 
 
+
+function pressupostObraPrintHtml878153(doc,obra,client){
+  const rows=sortPartides878132(doc.rows||[]);
+  const total=doc.total ?? rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  let lastCap="__none__";
+  const body=rows.map(r=>{const cap=r.cap||"PRESSUPOST";const show=cap!==lastCap;lastCap=cap;return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b></td><td class="num">${qty2(+r.q||0)}</td><td class="num">${money(+r.pu||0)}</td><td class="num"><b>${money((+r.q||0)*(+r.pu||0))}</b></td></tr>`}).join("") || `<tr><td colspan="6" class="empty">Sense partides.</td></tr>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Pressupost")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5mm}th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.num{text-align:right!important}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important}.totals{width:70mm;margin-left:auto;margin-top:8mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:8px 0;font-size:16px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.25}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:10px}@media screen{body{background:#e5e7eb;padding:18px}.page{box-shadow:0 2px 18px rgba(15,23,42,.18);padding:14mm;transform-origin:top center}}@media screen and (max-width:900px){body{padding:8px}.page{width:182mm;min-height:269mm;padding:10mm;transform:scale(.54);transform-origin:top left;margin:0 auto}table{font-size:9.5px}th,td{padding:4px 5px}}@media print{body{background:white!important;padding:0!important}.page{box-shadow:none!important;padding:0!important;width:182mm!important;min-height:269mm!important;transform:none!important;margin:0!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div><h3>Client / promotor</h3><p>${fiscalClientBlock878134(obra,client,doc.agents||[])}<br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"PRESSUPOST D’OBRA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}<br>${escHtmlV8772(doc.data||"")}</p></div><b>${money(total)}</b></div><table><colgroup><col style="width:18mm"><col style="width:10mm"><col style="width:auto"><col style="width:18mm"><col style="width:22mm"><col style="width:24mm"></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quantitat</th><th>Preu unit.</th><th>Total</th></tr></thead><tbody>${body}</tbody></table><div class="totals"><div><span>TOTAL PRESSUPOST</span><b>${money(total)}</b></div></div></section></body></html>`;
+}
+function PressupostObraPreview878153({doc}){
+  const rows=sortPartides878132(doc.rows||[]);
+  const total=doc.total ?? rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  let last="__none__";
+  return <div className="pressupost-print-preview-v87153"><h1>{doc.title||"PRESSUPOST D’OBRA"}</h1><p>{doc.subtitle}</p><table><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quantitat</th><th>Preu unit.</th><th>Total</th></tr></thead><tbody>{rows.map((r,i)=>{const cap=r.cap||"PRESSUPOST";const show=cap!==last;last=cap;return <React.Fragment key={i}>{show&&<tr className="cap-row"><td colSpan="6">{cap}</td></tr>}<tr><td>{r.codi}</td><td>{r.ut}</td><td className="text-left"><b>{r.concepte}</b></td><td>{qty2(+r.q||0)}</td><td>{money(+r.pu||0)}</td><td><b>{money((+r.q||0)*(+r.pu||0))}</b></td></tr></React.Fragment>})}</tbody><tfoot><tr><th colSpan="5">TOTAL PRESSUPOST</th><th>{money(total)}</th></tr></tfoot></table></div>
+}
+
 function DocViewer({doc,obra,client,close,email}){
   const pf=doc.proforma;
   const agents=doc.agents||[];
@@ -5876,6 +5930,7 @@ function DocViewer({doc,obra,client,close,email}){
   function htmlForCurrentDoc(){
     if(doc.type==="certificacio"&&doc.rows)return certPrintHtmlV8772(doc,obra,client);
     if(doc.type==="proforma"&&doc.proforma)return proformaPrintHtml8783(doc,obra,client);
+    if(doc.type==="pressupostobra"&&doc.rows)return pressupostObraPrintHtml878153(doc,obra,client);
     const node=printRef.current;
     return `<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title></head><body>${node?node.innerHTML:''}</body></html>`;
   }
@@ -5902,6 +5957,7 @@ function DocViewer({doc,obra,client,close,email}){
     if(isMobilePrint878112()){
       if(doc.type==="certificacio"&&doc.rows){if(printHtmlInPlace878112(certPrintHtmlV8772(doc,obra,client),doc.title||"Certificació"))return;}
       if(doc.type==="proforma"&&doc.proforma){if(printHtmlInPlace878112(proformaPrintHtml8783(doc,obra,client),doc.title||"Factura proforma"))return;}
+      if(doc.type==="pressupostobra"&&doc.rows){if(printHtmlInPlace878112(pressupostObraPrintHtml878153(doc,obra,client),doc.title||"Pressupost d’obra"))return;}
       document.body.classList.add("aco-mobile-printing-v878112");
       const cleanup=()=>{document.body.classList.remove("aco-mobile-printing-v878112");window.removeEventListener("afterprint",cleanup)};
       window.addEventListener("afterprint",cleanup);
@@ -5924,6 +5980,12 @@ function DocViewer({doc,obra,client,close,email}){
       win.document.close();
       return;
     }
+    if(doc.type==="pressupostobra"&&doc.rows){
+      win.document.open();
+      win.document.write(pressupostObraPrintHtml878153(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
+      win.document.close();
+      return;
+    }
     const node=printRef.current;
     if(!node){window.print();return}
     const css=[...document.querySelectorAll('style')].map(x=>x.innerHTML).join('\n')+"\n"+[...document.styleSheets].map(ss=>{try{return [...(ss.cssRules||[])].map(r=>r.cssText).join('\n')}catch(e){return ''}}).join('\n');
@@ -5939,7 +6001,7 @@ function DocViewer({doc,obra,client,close,email}){
           <div>{client?.logo?<img className="doc-logo" src={client.logo}/>:<div className="fake-logo">LOGO</div>}<h3>{client?.rao||client?.nom||"Despatx tècnic"}</h3><p>NIF: {client?.nif||"Pendent"}<br/>Adreça: {client?.adreca||"Pendent"}<br/>{client?.email||""}<br/>{client?.telefon||""}</p></div>
           <div><h3>{obra?.propietat||client?.nom||"Client"}</h3><p>NIF: {obra?.nifPropietat||"Pendent"}<br/>{obra?.adreca||""}<br/>{obra?.poblacio||""}</p></div>
         </div>}
-        {doc.type==="certificacio"&&doc.rows?<CertPreviewV8772 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
+        {doc.type==="certificacio"&&doc.rows?<CertPreviewV8772 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:doc.type==="pressupostobra"&&doc.rows?<PressupostObraPreview878153 doc={doc}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
       </div>
     </div>
     <div className="modal-actions doc-mobile-actions-v87107">
