@@ -1,15 +1,13 @@
-# APP Control d'Obres · V87.158
+# APP Control d'Obres · V87.159
 
-Versió derivada de V87.157.
+Versió derivada de V87.158.
 
 Canvis principals:
-- Correcció de la capçalera del pressupost imprès/previsualitzat.
-- El número de pressupost i la versió passen al bloc dret del títol del pressupost.
-- Sota el títol apareixen en línies separades: Referència, Adreça de l’obra i Data.
-- Afegit camp editable d’Adreça de l’obra dins Pressupost ràpid.
-- Taula de pressupost amb alineació vertical superior a totes les cel·les.
-- La columna Partida queda alineada a l’esquerra i a dalt; la descripció/concepte també a l’esquerra i a dalt.
-- Es mantenen dos decimals, descripcions llargues en pressupostos, Observacions i Forma de pagament.
+- Dades de l'expedient: el client/carpeta ja no és només lectura; es pot canviar amb desplegable de clients existents o crear un client nou des de la mateixa pantalla.
+- Nou expedient: els agents d'obra passen a funcionar amb desplegables de tècnics/empreses existents i opció d'escriure/crear-ne un de nou.
+- Dades tècniques: constructor, DO, DEO i CSS es poden escollir des de la llibreria d'agents de l'obra/global o crear fitxa nova.
+- Es manté el criteri general de desplegable + crear nou per a clients, agents i camps reutilitzables.
+- Es manté la base de pressupost V87.158: header, alineacions, dos decimals, descripció llarga, observacions i forma de pagament.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist
