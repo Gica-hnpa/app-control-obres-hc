@@ -1,5 +1,3 @@
 APP CONTROL D'OBRES
-VERSIO: V87.151 - NOU EXPEDIENT PROGRESSIU PER TIPUS DE FEINA
-PAQUET: CARPETA ÚNICA DE VALIDACIÓ
-
-Derivada de V87.150. Formulari de nou expedient simplificat, progressiu i condicionat pel tipus de treball.
+VERSIO: V87.152 - DOCUMENTS PROGRESSIUS + TIPUS FEINA FIX
+Derivada de V87.151.
