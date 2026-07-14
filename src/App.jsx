@@ -2146,7 +2146,7 @@ async function importExcel(e,budgetId="principal"){
       for(const name of names){const i=h.findIndex(x=>x.includes(name));if(i>=0)return i}
       return -1;
     }
-    const partidaNum=findAny(["numero partida","nº partida","num partida","n partida","partida nº","partida num","partida"]);
+    const partidaNum=findAny(["numero partida","número partida","nº partida","num partida","n partida","partida nº","partida num","nº","núm","num","numero","número","n.","partida"]);
     const codi=findAny(["codi","codigo","código","codigo partida","codi partida","cod"]);
     const ud=findAny(["unitat","unidad","ut","ud","u"]);
     const resum=findAny(["descripcio","descripción","descripcion","descripcio partida","descripcion partida","concepte","concepto","resum","resumen"]);
@@ -2256,15 +2256,37 @@ function parseRows(rows,sheetName){
     return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
   }
 
+  // V87.154 · quan un Excel té full PRESSUPOST + fulls AMIDAMENTS/DESCOMPOST,
+  // no s'ha d'escollir el full amb més línies, sinó el full de pressupost real.
+  function excelSheetScore878154(parsed,rows,sheetName){
+    if(!parsed?.rows?.length)return -999999;
+    const sn=norm(sheetName||"");
+    const head=(rows||[]).slice(0,35).map(r=>(r||[]).map(norm).join(" ")).join(" | ");
+    let score=0;
+    if(sn.includes("pressupost")||sn.includes("presupuesto")||sn.includes("budget"))score+=1200;
+    if(sn.includes("descompost")||sn.includes("descompos")||sn.includes("descompuesto")||sn.includes("descomp"))score-=900;
+    if(sn.includes("amidament")||sn.includes("medicion")||sn.includes("medición"))score-=700;
+    if(sn.includes("config"))score-=900;
+    if(head.includes("pressupost")||head.includes("presupuesto"))score+=300;
+    if((head.includes("codi")||head.includes("codigo")||head.includes("código")) && (head.includes("unitat")||head.includes("unidad")) && (head.includes("descrip")||head.includes("concepte")||head.includes("concepto")) && (head.includes("quantitat")||head.includes("cantidad")||head.includes("amidament")) && (head.includes("preu unitari")||head.includes("precio unitario")||head.includes("preu")||head.includes("precio")) && (head.includes("import")||head.includes("importe")||head.includes("total")))score+=500;
+    // Es valora tenir imports reals, però sense deixar que DESCOMPOST guanyi només per tenir moltes línies.
+    score+=Math.min(parsed.rows.length,10)*8;
+    score+=Math.min(parsed.caps||0,5)*4;
+    score+=Math.min(parsed.total||0,100000)/100000;
+    return score;
+  }
+
   try{
     const ab=await file.arrayBuffer();
     const wb=XLSX.read(ab,{type:"array",cellDates:false});
     let best={rows:[],sheet:"",caps:0,total:0};
+    let bestScore=-999999;
     for(const sheetName of wb.SheetNames){
       const ws=wb.Sheets[sheetName];
       const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
       const parsed=parseRows(rows,sheetName);
-      if(parsed.rows.length>best.rows.length || (parsed.rows.length===best.rows.length && parsed.caps>best.caps))best=parsed;
+      const score=excelSheetScore878154(parsed,rows,sheetName);
+      if(score>bestScore || (score===bestScore && (parsed.rows.length>best.rows.length || (parsed.rows.length===best.rows.length && parsed.caps>best.caps)))){best=parsed;bestScore=score;}
     }
     if(!best.rows.length)throw new Error("No s'han detectat partides. Revisa que l'Excel tingui capçaleres tipus Partida/Codi, Unitat, Descripció, Quantitat, Preu unitari i Total.");
 
@@ -3778,8 +3800,11 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
 
 function PressupostRapid878150(props){
   const rows=props.data?.partides||[];
-  const total=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   const parts=rows.length;
+  const observacions=props.data?.pressupostRapidObservacions||"";
+  const formaPagament=props.data?.pressupostRapidFormaPagament||"";
+  function setMeta878155(k,v){props.setData?.(d=>({...d,[k]:v,updatedAt:new Date().toISOString()}))}
   function addManual878153(){
     props.setData?.(d=>{
       const current=d.partides||[];
@@ -3787,18 +3812,25 @@ function PressupostRapid878150(props){
       return {...d,partides:[...current,{id:"pr-"+Date.now(),codi:String(current.length+1).padStart(2,"0")+".01",ut:"ut",concepte:"Nova partida",desc:"",cap,q:1,pu:0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Pressupost ràpid manual"}],updatedAt:new Date().toISOString()};
     });
   }
-  function doc878153(){return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES")}}
+  function doc878153(){return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES"),observacions,formaPagament}}
   function saveAsDocument878153(){
     props.setData?.(d=>({
       ...d,
-      documents:[{id:"doc-pres-"+Date.now(),nom:`Pressupost d’obra · ${new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),size:0,storage:"generat",hasFile:false,import:total,origen:"Pressupost ràpid"},...(d.documents||[])],
+      documents:[{id:"doc-pres-"+Date.now(),nom:`Pressupost d’obra · ${new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),size:0,storage:"generat",hasFile:false,import:total,origen:"Pressupost ràpid",observacions,formaPagament},...(d.documents||[])],
       updatedAt:new Date().toISOString()
     }));
     alert("Pressupost guardat dins Documents · Amidaments / pressupost d’obra. Per obtenir el PDF, utilitza Imprimir / Guardar PDF.");
   }
-  return <div className="pressupost-rapid-v87150 pressupost-rapid-v87153">
+  return <div className="pressupost-rapid-v87150 pressupost-rapid-v87153 pressupost-rapid-v87155">
     <Card title="Pressupost ràpid" action={<div className="actions-inline"><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" accept=".xlsx,.xls" onChange={props.importExcel}/></label><button className="secondary" onClick={addManual878153}>+ Partida manual</button><button className="secondary" onClick={saveAsDocument878153}>Guardar a Documents</button><button className="primary" onClick={()=>props.openDoc?.(doc878153())}>Previsualitzar / imprimir PDF</button></div>}>
-      <div className="rapid-budget-hero-v87150"><div><small>Encàrrec d’elaboració de pressupost</small><h2>{money(total)}</h2><p>{parts} partides · importa Excel estàndard o crea manualment. Columnes acceptades: partida/codi, unitat, descripció, quantitat, preu unitari i total.</p></div><div className="rapid-budget-steps-v87150"><span>1 · Importa Excel o crea partida</span><span>2 · Edita quantitats i preus</span><span>3 · Imprimeix PDF o guarda a Documents</span></div></div>
+      <div className="rapid-budget-hero-v87150"><div><small>Encàrrec d’elaboració de pressupost</small><h2>{money(total)}</h2><p>{parts} partides · preus, quantitats i imports sempre amb 2 decimals. Els pressupostos mantenen la descripció llarga i tanquen amb Observacions i Forma de pagament.</p></div><div className="rapid-budget-steps-v87150"><span>1 · Importa Excel o crea partida</span><span>2 · Edita quantitats i preus</span><span>3 · Revisa observacions i imprimeix PDF</span></div></div>
+      <details className="budget-observacions-v87155" open>
+        <summary>Observacions i forma de pagament del pressupost</summary>
+        <div className="form-grid">
+          <label className="span-all"><span>Observacions</span><textarea value={observacions} onChange={e=>setMeta878155("pressupostRapidObservacions",e.target.value)} placeholder="Condicions del pressupost, validesa, amidaments pendents de comprovació, exclusions..."/></label>
+          <label className="span-all"><span>Forma de pagament</span><textarea value={formaPagament} onChange={e=>setMeta878155("pressupostRapidFormaPagament",e.target.value)} placeholder="Ex: 40% acceptació, 40% durant l'execució i 20% a la finalització, o segons acord amb el client."/></label>
+        </div>
+      </details>
       <div className="module-note-v8738 rapid-pdf-note-v87153"><b>PDF</b><span>El PDF es pot arribar a llegir si és text real, però no és tan fiable com Excel. Si és un PDF escanejat/foto cal OCR i ho deixaria com a fase experimental separada.</span></div>
     </Card>
     <Pressupost {...props}/>
@@ -4287,13 +4319,13 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               <div className="budget-v25-line head"><span>Codi</span><span>Ut</span><span>Concepte</span><span>Amid.</span><span>Preu/ut</span><span>Total</span><span>{editBudget8760b?"Acció":""}</span></div>
               {sortPartides8779(items).map((r)=>{
                 const i=(items||[]).findIndex(x=>x===r);
-                const t=(+r.q||0)*(+r.pu||0);
+                const t=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);
                 return <div className="budget-v25-line" key={i}>
                   <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
                   <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
                   <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{r.desc&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{r.desc&&descOpen875[`${cap}-${i}`]&&<small>{r.desc}</small>}</div>
-                  <input type="text" inputMode="decimal" value={r.q??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",String(parseNum8770(e.target.value)||0))}/>
-                  <input type="text" inputMode="decimal" value={r.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",String(parseNum8770(e.target.value)||0))}/>
+                  <input type="text" inputMode="decimal" value={editBudget8760b?(r.q??""):qty2(parseNum8770(r.q)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",parseNum8770(e.target.value)||0)}/>
+                  <input type="text" inputMode="decimal" value={editBudget8760b?(r.pu??""):qty2(parseNum8770(r.pu)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",parseNum8770(e.target.value)||0)}/>
                   <b>{money(t)}</b>
                   {editBudget8760b?<div className="budget-line-actions-v878128"><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></div>:<span/>}
                 </div>
@@ -5907,16 +5939,20 @@ function proformaPrintHtml8783(doc,obra,client){
 
 function pressupostObraPrintHtml878153(doc,obra,client){
   const rows=sortPartides878132(doc.rows||[]);
-  const total=doc.total ?? rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const total=doc.total ?? rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+  const obs=String(doc.observacions||"").trim()||"Observacions pendents d’indicar.";
+  const forma=String(doc.formaPagament||"").trim()||"Forma de pagament pendent d’indicar.";
   let lastCap="__none__";
-  const body=rows.map(r=>{const cap=r.cap||"PRESSUPOST";const show=cap!==lastCap;lastCap=cap;return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b></td><td class="num">${qty2(+r.q||0)}</td><td class="num">${money(+r.pu||0)}</td><td class="num"><b>${money((+r.q||0)*(+r.pu||0))}</b></td></tr>`}).join("") || `<tr><td colspan="6" class="empty">Sense partides.</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Pressupost")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5mm}th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.num{text-align:right!important}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important}.totals{width:70mm;margin-left:auto;margin-top:8mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:8px 0;font-size:16px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.25}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:10px}@media screen{body{background:#e5e7eb;padding:18px}.page{box-shadow:0 2px 18px rgba(15,23,42,.18);padding:14mm;transform-origin:top center}}@media screen and (max-width:900px){body{padding:8px}.page{width:182mm;min-height:269mm;padding:10mm;transform:scale(.54);transform-origin:top left;margin:0 auto}table{font-size:9.5px}th,td{padding:4px 5px}}@media print{body{background:white!important;padding:0!important}.page{box-shadow:none!important;padding:0!important;width:182mm!important;min-height:269mm!important;transform:none!important;margin:0!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div><h3>Client / promotor</h3><p>${fiscalClientBlock878134(obra,client,doc.agents||[])}<br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"PRESSUPOST D’OBRA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}<br>${escHtmlV8772(doc.data||"")}</p></div><b>${money(total)}</b></div><table><colgroup><col style="width:18mm"><col style="width:10mm"><col style="width:auto"><col style="width:18mm"><col style="width:22mm"><col style="width:24mm"></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quantitat</th><th>Preu unit.</th><th>Total</th></tr></thead><tbody>${body}</tbody></table><div class="totals"><div><span>TOTAL PRESSUPOST</span><b>${money(total)}</b></div></div></section></body></html>`;
+  const body=rows.map(r=>{const q=parseNum8770(r.q)||0, pu=parseNum8770(r.pu)||0;const cap=r.cap||"PRESSUPOST";const show=cap!==lastCap;lastCap=cap;return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b>${r.desc?`<p class="long-desc">${escHtmlV8772(r.desc)}</p>`:""}</td><td class="num">${qty2(q)}</td><td class="num">${money(pu)}</td><td class="num"><b>${money(q*pu)}</b></td></tr>`}).join("") || `<tr><td colspan="6" class="empty">Sense partides.</td></tr>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Pressupost")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:white}.page{width:182mm;min-height:269mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12mm;border-bottom:2px solid #0f172a;padding-bottom:9px;margin-bottom:14px}.head h3{margin:0 0 5px;font-size:12px}.head p{margin:0;line-height:1.45;color:#475569}.title{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 14px}.title h1{margin:0;font-size:22px;color:#0f2d5c}.title b{font-size:20px}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:5mm}th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:3px 0 0;color:#475569;font-size:9px;line-height:1.25;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important}.totals{width:70mm;margin-left:auto;margin-top:8mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:8px 0;font-size:16px}.final-notes{display:grid;grid-template-columns:1fr 1fr;gap:8mm;margin-top:9mm}.final-notes div{border:1px solid #cbd5e1;border-radius:8px;padding:8px;background:#f8fafc}.final-notes h3{margin:0 0 5px;font-size:12px;color:#0f2d5c}.final-notes p{margin:0;white-space:pre-wrap;line-height:1.35;color:#334155}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.25}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:10px}@media screen{body{background:#e5e7eb;padding:18px}.page{box-shadow:0 2px 18px rgba(15,23,42,.18);padding:14mm;transform-origin:top center}}@media screen and (max-width:900px){body{padding:8px}.page{width:182mm;min-height:269mm;padding:10mm;transform:scale(.54);transform-origin:top left;margin:0 auto}table{font-size:9.5px}th,td{padding:4px 5px}.final-notes{grid-template-columns:1fr}}@media print{body{background:white!important;padding:0!important}.page{box-shadow:none!important;padding:0!important;width:182mm!important;min-height:269mm!important;transform:none!important;margin:0!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div><h3>Client / promotor</h3><p>${fiscalClientBlock878134(obra,client,doc.agents||[])}<br>${escHtmlV8772(expedientCode8739(obra))} · ${escHtmlV8772(obra?.nom||"")}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"PRESSUPOST D’OBRA")}</h1><p>${escHtmlV8772(doc.subtitle||"")}<br>${escHtmlV8772(doc.data||"")}</p></div><b>${money(total)}</b></div><table><colgroup><col style="width:18mm"><col style="width:10mm"><col style="width:auto"><col style="width:18mm"><col style="width:22mm"><col style="width:24mm"></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quantitat</th><th>Preu unit.</th><th>Total</th></tr></thead><tbody>${body}</tbody></table><div class="totals"><div><span>TOTAL PRESSUPOST</span><b>${money(total)}</b></div></div><div class="final-notes"><div><h3>Observacions</h3><p>${escHtmlV8772(obs)}</p></div><div><h3>Forma de pagament</h3><p>${escHtmlV8772(forma)}</p></div></div></section></body></html>`;
 }
 function PressupostObraPreview878153({doc}){
   const rows=sortPartides878132(doc.rows||[]);
-  const total=doc.total ?? rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  const total=doc.total ?? rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+  const obs=String(doc.observacions||"").trim()||"Observacions pendents d’indicar.";
+  const forma=String(doc.formaPagament||"").trim()||"Forma de pagament pendent d’indicar.";
   let last="__none__";
-  return <div className="pressupost-print-preview-v87153"><h1>{doc.title||"PRESSUPOST D’OBRA"}</h1><p>{doc.subtitle}</p><table><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quantitat</th><th>Preu unit.</th><th>Total</th></tr></thead><tbody>{rows.map((r,i)=>{const cap=r.cap||"PRESSUPOST";const show=cap!==last;last=cap;return <React.Fragment key={i}>{show&&<tr className="cap-row"><td colSpan="6">{cap}</td></tr>}<tr><td>{r.codi}</td><td>{r.ut}</td><td className="text-left"><b>{r.concepte}</b></td><td>{qty2(+r.q||0)}</td><td>{money(+r.pu||0)}</td><td><b>{money((+r.q||0)*(+r.pu||0))}</b></td></tr></React.Fragment>})}</tbody><tfoot><tr><th colSpan="5">TOTAL PRESSUPOST</th><th>{money(total)}</th></tr></tfoot></table></div>
+  return <div className="pressupost-print-preview-v87153"><h1>{doc.title||"PRESSUPOST D’OBRA"}</h1><p>{doc.subtitle}</p><table><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quantitat</th><th>Preu unit.</th><th>Total</th></tr></thead><tbody>{rows.map((r,i)=>{const q=parseNum8770(r.q)||0, pu=parseNum8770(r.pu)||0;const cap=r.cap||"PRESSUPOST";const show=cap!==last;last=cap;return <React.Fragment key={i}>{show&&<tr className="cap-row"><td colSpan="6">{cap}</td></tr>}<tr><td>{r.codi}</td><td>{r.ut}</td><td className="text-left"><b>{r.concepte}</b>{r.desc&&<small className="budget-preview-desc-v87155">{r.desc}</small>}</td><td>{qty2(q)}</td><td>{money(pu)}</td><td><b>{money(q*pu)}</b></td></tr></React.Fragment>})}</tbody><tfoot><tr><th colSpan="5">TOTAL PRESSUPOST</th><th>{money(total)}</th></tr></tfoot></table><div className="budget-final-notes-v87155"><div><b>Observacions</b><p>{obs}</p></div><div><b>Forma de pagament</b><p>{forma}</p></div></div></div>
 }
 
 function DocViewer({doc,obra,client,close,email}){
