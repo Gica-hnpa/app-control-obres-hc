@@ -4895,3 +4895,16 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .selected-client-v87157 small{color:#64748b;border-top:1px solid #e2e8f0;margin-top:6px;padding-top:8px;line-height:1.35}
 .client-create-v87157{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;margin:0 0 4px 0}
 @media(max-width:900px){.selected-client-v87157{padding:12px}.client-create-v87157{border-radius:14px}}
+
+/* V87.158 · Pressupost: capçalera i alineacions PDF/preview */
+.budget-preview-head-v87158{display:grid;grid-template-columns:1fr minmax(170px,230px);gap:18px;align-items:flex-start;margin-bottom:14px;border-bottom:2px solid #0f172a;padding-bottom:10px}
+.budget-preview-head-v87158 h1{margin:0 0 8px;color:#0f2d5c;font-size:24px}
+.budget-preview-head-v87158 p{margin:0 0 4px;color:#334155;line-height:1.35}
+.budget-preview-id-v87158{background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:10px;text-align:right}
+.budget-preview-id-v87158 small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:10px;margin-top:5px}
+.budget-preview-id-v87158 b{display:block;font-size:14px;color:#0f172a}
+.budget-preview-id-v87158 strong{display:block;font-size:20px;color:#0f2d5c;margin-top:8px}
+.pressupost-preview-v87158 table th,.pressupost-preview-v87158 table td{vertical-align:top!important}
+.pressupost-preview-v87158 .budget-code-v87158{text-align:left!important}
+.pressupost-preview-v87158 .budget-concept-v87158{text-align:left!important;vertical-align:top!important}
+@media(max-width:900px){.budget-preview-head-v87158{grid-template-columns:1fr}.budget-preview-id-v87158{text-align:left}}
