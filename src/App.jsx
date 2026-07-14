@@ -400,6 +400,84 @@ function readAllLibraries878160(){
   }catch{}
   return out;
 }
+
+function descompostRowsToText878161(rows=[],source="Excel descomposat") {
+  const clean=(v)=>String(v??"").trim();
+  const normHead=(v)=>clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const all=(rows||[]).filter(r=>(r||[]).some(c=>clean(c)));
+  if(!all.length)return {text:"",total:0,lines:0};
+  let headerIndex=-1, map={};
+  const aliases={
+    codi:["codi","codigo","cod","code","partida"],
+    tipus:["tipus","tipo","type","familia","naturalesa"],
+    concepte:["concepte","concepto","descripcio","descripcion","resum","texto","denominacio","denominacion"],
+    ut:["ut","unitat","unidad","unit","u"],
+    q:["quantitat","cantidad","q","rendiment","rendimiento","coeficient","coeficiente","consum","medicio","medicion"],
+    pu:["preu unitari","precio unitario","preu","precio","pu","unitari","unitario","cost unitari","coste unitario"],
+    import:["import","importe","total","subtotal","cost","coste"]
+  };
+  for(let i=0;i<Math.min(all.length,25);i++){
+    const heads=(all[i]||[]).map(normHead);
+    const local={};
+    Object.entries(aliases).forEach(([key,als])=>{
+      const idx=heads.findIndex(h=>als.some(a=>h===a||h.includes(a)));
+      if(idx>=0)local[key]=idx;
+    });
+    if(local.concepte>=0 && (local.q>=0||local.pu>=0||local.import>=0||local.ut>=0)){headerIndex=i;map=local;break;}
+  }
+  const data=headerIndex>=0?all.slice(headerIndex+1):all;
+  const lines=[];
+  let total=0;
+  data.forEach((r,idx)=>{
+    const row=Array.isArray(r)?r:[];
+    const rowText=row.map(clean).filter(Boolean).join(" ");
+    if(!rowText)return;
+    if(/^(total|subtotal|import total|pressupost|presupuesto)$/i.test(rowText))return;
+    const codi=clean(row[map.codi]);
+    const tipus=clean(row[map.tipus]);
+    let concepte=clean(row[map.concepte]);
+    const ut=clean(row[map.ut]);
+    let q=parseNum8770(row[map.q]);
+    let pu=parseNum8770(row[map.pu]);
+    let imp=parseNum8770(row[map.import]);
+    if(headerIndex<0){
+      const nums=row.map((v,i)=>({i,v:clean(v),n:parseNum8770(v)})).filter(x=>x.v&&x.n);
+      const textCells=row.map((v,i)=>({i,v:clean(v)})).filter(x=>x.v && !parseNum8770(x.v));
+      concepte=textCells.map(x=>x.v).join(" ").slice(0,180) || rowText;
+      if(nums.length>=3){q=nums[nums.length-3].n;pu=nums[nums.length-2].n;imp=nums[nums.length-1].n;}
+      else if(nums.length>=2){q=nums[nums.length-2].n;pu=nums[nums.length-1].n;imp=q*pu;}
+      else if(nums.length===1){imp=nums[0].n;}
+    }
+    if(!imp && q && pu)imp=q*pu;
+    if(!pu && q && imp)pu=imp/q;
+    if(!concepte && !codi)return;
+    if(!imp && !q && !pu && /^(capitol|capitulo|partida|codi|codigo|descripcio|descripcion)/i.test(rowText))return;
+    total+=imp||0;
+    const prefix=[codi,tipus].filter(Boolean).join(" · ");
+    const calc=(q||pu||imp)?`${q?qty2(q):""}${ut?` ${ut}`:""}${pu?` × ${money(pu)}`:""}${imp?` = ${money(imp)}`:""}`:"";
+    lines.push(`${prefix?prefix+" | ":""}${concepte}${calc?" | "+calc:""}`);
+  });
+  if(!lines.length)return {text:"",total:0,lines:0};
+  const body=[`ORIGEN DESCOMPOSAT: ${source}`,...lines,`TOTAL DESCOMPOSAT: ${money(total)}`].join("\n");
+  return {text:body,total,lines:lines.length};
+}
+function workbookDescompostFromFile878161(file){
+  return file.arrayBuffer().then(ab=>{
+    const wb=XLSX.read(ab,{type:"array",cellDates:false});
+    let best={text:"",total:0,lines:0,sheet:""};
+    wb.SheetNames.forEach(sheetName=>{
+      const ws=wb.Sheets[sheetName];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      const parsed=descompostRowsToText878161(rows,`${file.name} · ${sheetName}`);
+      const sn=String(sheetName||"").toLowerCase();
+      const score=(parsed.lines||0)*10+(parsed.total?5:0)+(sn.includes("descomp")||sn.includes("bedec")||sn.includes("tcq")?250:0)-(sn.includes("pressupost")?150:0);
+      if(score>((best.score)||-999999))best={...parsed,sheet:sheetName,score};
+    });
+    if(!best.text)throw new Error("No he trobat un descomposat vàlid. L'Excel ha de tenir concepte/descripció i imports, o columnes tipus quantitat, preu unitari i import.");
+    return best;
+  });
+}
+
 function pct(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+"%"}
 function group(arr,k){return arr.reduce((m,x)=>((m[x[k]]??=[]).push(x),m),{})}
 
@@ -4326,6 +4404,14 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setOpen(o=>({...o,[dest]:true}));
   }
   function deleteLibraryItem87115(id){if(confirm("Eliminar aquesta partida de la llibreria del client?"))setLibraryItems87115(prev=>(prev||[]).filter(x=>x.id!==id))}
+  async function importLibraryDescompost878161(id,file){
+    if(!file)return;
+    try{
+      const parsed=await workbookDescompostFromFile878161(file);
+      setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===id?{...x,descompost:parsed.text,pu:parsed.total||x.pu||0,descompostSource:file.name,descompostSheet:parsed.sheet}:x));
+      alert(`Descomposat importat a la llibreria: ${parsed.lines} línies · ${money(parsed.total)}.`);
+    }catch(err){alert("No he pogut llegir el descomposat: "+String(err?.message||err));}
+  }
   const generalLibraryItems87160=useMemo(()=>mergeLibrary87118(readAllLibraries878160()),[libraryItems87115.length,clientLibraryKey87115]);
   const visibleLibraryItems87160=libraryScope87160==="general"?mergeLibrary87118([...(generalLibraryItems87160||[]),...(libraryItems87115||[])]):(libraryItems87115||[]);
   const libraryCaps87115=[...new Set((visibleLibraryItems87160||[]).map(x=>x.cap||"General"))].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true}));
@@ -4436,8 +4522,24 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(!editBudget8760b)return;
     const row=(caps?.[cap]||[])[i]||{};
     const pu=descompostTotal878160(row.descompost||"");
-    if(!pu){alert("No he trobat cap import vàlid dins el descomposat. Escriu línies amb imports o una línia Total.");return;}
+    if(!pu){alert("No he trobat cap import vàlid dins el descomposat. Importa un Excel de descomposat, enganxa les línies o escriu una línia Total.");return;}
     setCaps(p=>{const arr=[...(p[cap]||[])];arr[i]={...arr[i],pu:qty2(pu),puFromDescompost:true};return {...p,[cap]:arr};});
+  }
+  async function importDescompostExcel878161(cap,i,file){
+    if(!editBudget8760b)return;
+    if(!file)return;
+    try{
+      const parsed=await workbookDescompostFromFile878161(file);
+      setCaps(p=>{
+        const arr=[...(p[cap]||[])];
+        const current=arr[i]||{};
+        arr[i]={...current,descompost:parsed.text,descompostSource:file.name,descompostSheet:parsed.sheet,descompostImportedAt:new Date().toISOString(),pu:parsed.total?qty2(parsed.total):(current.pu||"0,00"),puFromDescompost:!!parsed.total};
+        return {...p,[cap]:arr};
+      });
+      alert(`Descomposat importat: ${parsed.lines} línies · ${money(parsed.total)}. He aplicat aquest total com a preu unitari de la partida.`);
+    }catch(err){
+      alert("No he pogut llegir el descomposat: "+String(err?.message||err));
+    }
   }
 
   const total=Object.values(caps).flat().reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -4461,7 +4563,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     </Card>
 
     <Card title="Pressupost obra per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span>{!editBudget8760b&&<button type="button" className="primary" onClick={()=>setEditBudget8760b(true)}>Editar</button>}{editBudget8760b&&<><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar</button></>}<button type="button" className="secondary" onClick={()=>setLibraryOpen87115(v=>!v)}>Llibreria client</button><button className="secondary" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar email</button></div>}>
-      <div className={editBudget8760b?"edit-warning-v8760b":"view-warning-v8760b"}>{editBudget8760b?"Mode edició actiu. Guarda els canvis quan acabis.":"Mode consulta. Clica Editar per modificar capítols o partides."}</div>{libraryOpen87115&&<div className="client-library-panel-v87115"><div className="client-library-head-v87115"><div><b>Llibreria de partides del client</b><span>{client?.nom||client?.rao||"Client general"} · {libraryItems87115.length} client · {generalLibraryItems87160.length} generals</span></div><div className="library-head-actions-v87149"><button type="button" className="secondary small library-refresh-v87118" onClick={seedLibraryFromBudget87115}>Actualitzar llibreria amb aquest pressupost</button><button type="button" className="secondary small" onClick={()=>{const q=librarySearch87115||prompt("Quina partida o descomposat vols buscar amb IA?","")||"";if(!q)return;const promptTxt=`Busca una partida d'obra o descomposat per: ${q}. Dona'm unitat, descripció curta, descripció llarga, rendiment orientatiu i preu unitari orientatiu per incorporar-ho a la llibreria.`;navigator.clipboard?.writeText(promptTxt);alert("He copiat un prompt de cerca IA al porta-retalls. Enganxa'l a ChatGPT i després incorpora la partida a la llibreria.");}}>Buscar amb IA</button></div></div><div className="ai-search-note-v87149 ai-search-note-v87150 compact-ai-note-v87160"><b>IA</b><span>Genera una proposta de partida/descomposat per incorporar a la llibreria.</span></div><div className="client-library-filters-v87115"><select value={libraryScope87160} onChange={e=>{setLibraryScope87160(e.target.value);setLibraryCap87115("")}}><option value="client">Llibreria del client</option><option value="general">Llibreria general</option></select><input value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Filtrar per nom, codi o descripció"/><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select><select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}><option value="">Afegir al primer capítol</option>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}</select></div><div className="client-library-list-v87115">{libraryFiltered87115.length===0?<div className="empty-mini-v87115">No hi ha partides a la llibreria amb aquest filtre. Pots guardar partides del pressupost actual o crear-les manualment.</div>:libraryFiltered87115.slice(0,80).map(item=><div className="client-library-row-v87115" key={item.id}><div><strong>{item.concepte}</strong><span>{item.cap} · {item.codi||"sense codi"} · {item.ut} · PU {money(item.pu||0)}</span>{item.desc&&<details className="lib-desc-v87117"><summary>Veure descripció llarga</summary><small>{item.desc}</small></details>}<details className="lib-desc-v87117 lib-descompost-v878156"><summary>Descomposat</summary><textarea value={item.descompost||""} onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,descompost:e.target.value}:x))} placeholder="Materials, rendiments, mà d'obra, mitjans auxiliars..."/></details></div><div className="client-library-row-actions-v87117"><select value={item.cap||"General"} title="Canviar classificació" onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,cap:e.target.value}:x))}>{[...new Set([...(libraryCaps87115||[]),...(sortedCapEntries8779(caps).map(([c])=>c)),"General"] )].map(c=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="primary small" onClick={()=>addLibraryPartidaToBudget87115(item)}>Afegir</button><button type="button" className="danger small" onClick={()=>libraryScope87160==="client"?deleteLibraryItem87115(item.id):alert("Per eliminar una partida general, obre-la des de la llibreria del client on es va crear o copia-la primer a aquest client.")}>Eliminar</button></div><select className="client-library-mobile-action-v87117" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="add")addLibraryPartidaToBudget87115(item);if(v==="delete")deleteLibraryItem87115(item.id)}}><option value="" disabled>Accions</option><option value="add">Afegir al pressupost</option><option value="delete">Eliminar de la llibreria</option></select></div>)}</div></div>}<div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
+      <div className={editBudget8760b?"edit-warning-v8760b":"view-warning-v8760b"}>{editBudget8760b?"Mode edició actiu. Guarda els canvis quan acabis.":"Mode consulta. Clica Editar per modificar capítols o partides."}</div>{libraryOpen87115&&<div className="client-library-panel-v87115"><div className="client-library-head-v87115"><div><b>Llibreria de partides del client</b><span>{client?.nom||client?.rao||"Client general"} · {libraryItems87115.length} client · {generalLibraryItems87160.length} generals</span></div><div className="library-head-actions-v87149"><button type="button" className="secondary small library-refresh-v87118" onClick={seedLibraryFromBudget87115}>Actualitzar llibreria amb aquest pressupost</button><button type="button" className="secondary small" onClick={()=>{const q=librarySearch87115||prompt("Quina partida o descomposat vols buscar amb IA?","")||"";if(!q)return;const promptTxt=`Busca una partida d'obra o descomposat per: ${q}. Dona'm unitat, descripció curta, descripció llarga, rendiment orientatiu i preu unitari orientatiu per incorporar-ho a la llibreria.`;navigator.clipboard?.writeText(promptTxt);alert("He copiat un prompt de cerca IA al porta-retalls. Enganxa'l a ChatGPT i després incorpora la partida a la llibreria.");}}>Buscar amb IA</button></div></div><div className="ai-search-note-v87149 ai-search-note-v87150 compact-ai-note-v87160"><b>IA</b><span>Genera una proposta de partida/descomposat per incorporar a la llibreria.</span></div><div className="client-library-filters-v87115"><select value={libraryScope87160} onChange={e=>{setLibraryScope87160(e.target.value);setLibraryCap87115("")}}><option value="client">Llibreria del client</option><option value="general">Llibreria general</option></select><input value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Filtrar per nom, codi o descripció"/><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select><select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}><option value="">Afegir al primer capítol</option>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}</select></div><div className="client-library-list-v87115">{libraryFiltered87115.length===0?<div className="empty-mini-v87115">No hi ha partides a la llibreria amb aquest filtre. Pots guardar partides del pressupost actual o crear-les manualment.</div>:libraryFiltered87115.slice(0,80).map(item=><div className="client-library-row-v87115" key={item.id}><div><strong>{item.concepte}</strong><span>{item.cap} · {item.codi||"sense codi"} · {item.ut} · PU {money(item.pu||0)}</span>{item.desc&&<details className="lib-desc-v87117"><summary>Veure descripció llarga</summary><small>{item.desc}</small></details>}<details className="lib-desc-v87117 lib-descompost-v878156"><summary>Descomposat Excel / IA / BEDEC</summary><div className="descompost-import-actions-v87161"><label className="secondary small upload-label">Importar Excel<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importLibraryDescompost878161(item.id,e.target.files?.[0])}/></label><small>{item.descompostSource?`Origen: ${item.descompostSource}`:"Excel de descomposat de IA, BEDEC, TCQ o base pròpia"}</small></div><textarea value={item.descompost||""} onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,descompost:e.target.value}:x))} placeholder="Materials, rendiments, mà d'obra, mitjans auxiliars..."/></details></div><div className="client-library-row-actions-v87117"><select value={item.cap||"General"} title="Canviar classificació" onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,cap:e.target.value}:x))}>{[...new Set([...(libraryCaps87115||[]),...(sortedCapEntries8779(caps).map(([c])=>c)),"General"] )].map(c=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="primary small" onClick={()=>addLibraryPartidaToBudget87115(item)}>Afegir</button><button type="button" className="danger small" onClick={()=>libraryScope87160==="client"?deleteLibraryItem87115(item.id):alert("Per eliminar una partida general, obre-la des de la llibreria del client on es va crear o copia-la primer a aquest client.")}>Eliminar</button></div><select className="client-library-mobile-action-v87117" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="add")addLibraryPartidaToBudget87115(item);if(v==="delete")deleteLibraryItem87115(item.id)}}><option value="" disabled>Accions</option><option value="add">Afegir al pressupost</option><option value="delete">Eliminar de la llibreria</option></select></div>)}</div></div>}<div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
         {sortedCapEntries8779(caps).map(([cap,items])=>{
           const capTotal=items.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -4481,7 +4583,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                 return <div className="budget-v25-line" key={i}>
                   <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
                   <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
-                  <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{(r.desc||editBudget8760b)&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{(r.desc||editBudget8760b)&&descOpen875[`${cap}-${i}`]&&(editBudget8760b?<textarea className="budget-desc-edit-v878156" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>:<small>{r.desc}</small>)}{editBudget8760b&&<details className="descompost-row-v87160"><summary>Descomposat {r.puFromDescompost?"· PU aplicat":""}</summary><textarea value={r.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)} placeholder="Enganxa o escriu el descomposat. Si hi ha una línia Total, s’utilitzarà com a preu unitari."/><div><span>Total detectat: <b>{money(descompostTotal878160(r.descompost||""))}</b></span><button type="button" className="secondary small" onClick={()=>applyDescompostToPartida878160(cap,i)}>Aplicar com a preu/ut</button><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115({...r,descompost:r.descompost||""},cap)}>Guardar a llibreria</button></div></details>}</div>
+                  <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{(r.desc||editBudget8760b)&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{(r.desc||editBudget8760b)&&descOpen875[`${cap}-${i}`]&&(editBudget8760b?<textarea className="budget-desc-edit-v878156" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>:<small>{r.desc}</small>)}{editBudget8760b&&<details className="descompost-row-v87160 descompost-row-v87161"><summary>Descomposat Excel / IA / BEDEC {r.puFromDescompost?"· PU aplicat":""}</summary><div className="descompost-import-actions-v87161"><label className="secondary small upload-label">Importar Excel descomposat<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostExcel878161(cap,i,e.target.files?.[0])}/></label><span>{r.descompostSource?`Origen: ${r.descompostSource}${r.descompostSheet?` · ${r.descompostSheet}`:""}`:"Pots importar un descomposat tret de IA, BEDEC, TCQ o base pròpia."}</span></div><textarea value={r.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)} placeholder="Importa un Excel de descomposat o enganxa aquí les línies. Si hi ha Total, s’utilitzarà com a preu unitari."/><div><span>Total detectat: <b>{money(descompostTotal878160(r.descompost||""))}</b></span><button type="button" className="secondary small" onClick={()=>applyDescompostToPartida878160(cap,i)}>Aplicar com a preu/ut</button><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115({...r,descompost:r.descompost||""},cap)}>Guardar a llibreria</button></div></details>}</div>
                   <input type="text" inputMode="decimal" value={editBudget8760b?(r.q??""):qty2(parseNum8770(r.q)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",qty2(parseNum8770(e.target.value)||0))}/>
                   <input type="text" inputMode="decimal" value={editBudget8760b?(r.pu??""):qty2(parseNum8770(r.pu)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>
                   <b>{money(t)}</b>

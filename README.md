@@ -1,15 +1,14 @@
-# APP Control d’Obres · V87.160
+# APP Control d’Obres · V87.161
 
-Versió derivada de V87.159.
+Versió derivada de V87.160.
 
 Canvis principals:
-- Pressupost ràpid reorganitzat amb panells desplegables: dades del pressupost, observacions/pagament i editor per capítols.
-- Eliminades explicacions llargues visibles dins la pantalla de pressupost ràpid.
-- Les dades del pressupost s’omplen per defecte des de l’expedient/client i només s’editen si cal.
-- Observacions i forma de pagament amb defectes per client i opció de guardar-los com a predeterminats.
-- Llibreria dins l’editor de pressupost amb filtre de llibreria del client o llibreria general acumulada.
-- Cada partida pot tenir descomposat editable; si el descomposat té total/import, pot aplicar-se com a preu unitari.
-- Accés a llibreria i guardar partida a llibreria des de la mateixa partida.
+- Descomposats de partida importables des d’Excel directament dins de cada partida del pressupost.
+- Compatible amb Excels generats per IA, BEDEC/TCQ o bases pròpies sempre que tinguin concepte/descripció i imports o quantitat/preu/import.
+- En importar un descomposat, l’app calcula el total i pot aplicar-lo com a preu unitari de la partida.
+- El descomposat queda editable després d’importar-lo.
+- La llibreria de partides també permet importar i guardar descomposats Excel per reutilitzar-los en altres pressupostos.
+- Es manté la base V87.160: pressupost progressiu, llibreries client/general, descripció llarga, observacions i forma de pagament.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

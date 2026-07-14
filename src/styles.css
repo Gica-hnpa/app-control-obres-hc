@@ -4941,3 +4941,10 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .client-library-filters-v87115 select:first-child{min-width:160px}
 @media(max-width:1100px){.rapid-summary-strip-v87160{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.rapid-summary-strip-v87160{grid-template-columns:1fr;padding:10px}.progressive-panel-v87160{margin:10px}.progressive-panel-v87160>summary{display:block}.progressive-panel-v87160>summary span{display:block;text-align:left;margin-top:4px}.compact-actions-v87160 .secondary,.compact-actions-v87160 .primary{width:100%;justify-content:center}}
+
+/* V87.161 · Descomposats Excel / IA / BEDEC */
+.descompost-row-v87161{border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;margin-top:8px;padding:8px}
+.descompost-row-v87161 summary{font-weight:900;color:#0f2d5c;cursor:pointer}
+.descompost-import-actions-v87161{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.descompost-import-actions-v87161 span,.descompost-import-actions-v87161 small{color:#64748b;font-size:12px;font-weight:700}
+.descompost-row-v87161 textarea,.lib-descompost-v878156 textarea{width:100%;min-height:130px;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:white;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.35}
