@@ -1,13 +1,14 @@
-# APP Control d'Obres · V87.162
+# APP Control d'Obres · V87.163
 
-Versió de correcció sobre V87.161.
+Versió de refinament sobre V87.162.
 
 Canvis:
-- Codificació d'expedients editable des de Dades: any, número, inicials del treball, inicials del client, paraula clau i codi complet.
-- Botó per recalcular el codi segons el format recomanat: any-número-tipus-client-paraula clau.
-- Guardat reforçat del tipus de feina perquè un expedient creat com Seguretat i salut/CSS es pugui canviar posteriorment.
-- Gestió del temps amb dues vies: registre manual si s'ha oblidat apuntar la feina i comptador de temps en directe.
-- El comptador guarda el registre dins la mateixa taula de temps utilitzada pel rendiment.
+- Comptador de temps numèric en format HH:MM:SS.
+- En aturar el comptador, el registre es guarda arrodonit a fraccions de 15 minuts.
+- Desplegables d'agents filtrats per funció: tècnics per DO/DEO/CSS i constructores/contractistes pel camp constructor.
+- Dedupliació d'agents per nom/empresa perquè el mateix tècnic no surti repetit.
+- Menú principal més ordenat en grups desplegables: Gestió tècnica, Control econòmic i Sistema.
+- Accés superior a notificacions/agenda i configuració en pantalles petites.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist
