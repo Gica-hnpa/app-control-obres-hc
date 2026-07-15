@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.175 - ELIMINAR PRESSUPOST COMPLET
+VERSIO: V87.176 - DESCOMPOSTOS MASSIUS + CANVIS CONTROLATS
 PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-Derivada de V87.174/V87.173. Correcció quirúrgica: eliminar pressupost importat/annex elimina també les partides i dades vinculades.
+Derivada de V87.175 / V87.174 / V87.171 fiable. Correcció quirúrgica: importació massiva de descomposats, dos decimals i cancel·lació segura d'edició.

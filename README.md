@@ -1,15 +1,14 @@
-# APP Control d'Obres · V87.175
+# APP Control d'Obres · V87.176
 
-Versió quirúrgica sobre V87.174/V87.173.
+Versió quirúrgica sobre V87.175/V87.174 fiable.
 
 Canvis:
-- Correcció de l'eliminació de pressupostos importats/annexos.
-- Quan s'elimina una versió associada a un pressupost annex, ara s'elimina tot el paquet del pressupost: marcador, budgetGroup, partides, certificacions i factures vinculades a aquell `budgetId`.
-- Evita que quedin partides orfes quan s'elimina un pressupost importat.
-- El botó en versions mostra “Eliminar tot” quan el pressupost és annex/importat.
-- El pressupost principal no es buida automàticament per seguretat; només s'elimina la fitxa de versió.
-
-Base protegida: V87.174 / V87.173 / V87.171 fiable.
+- Importació massiva de descomposats Excel des del mode edició de pressupost.
+- Assignació automàtica del descomposat a la partida pel codi detectat al nom del full o a les primeres files.
+- Si no troba codi, intenta coincidència per concepte/títol del full.
+- El descomposat importat queda pendent de validació: no aplica automàticament el preu unitari.
+- Els camps de quantitat i preu unitari es normalitzen a dos decimals en guardar.
+- Cancel·lar l'edició recupera una còpia interna de l'estat inicial i no deixa canvis aplicats.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist
