@@ -4948,3 +4948,14 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .descompost-import-actions-v87161{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
 .descompost-import-actions-v87161 span,.descompost-import-actions-v87161 small{color:#64748b;font-size:12px;font-weight:700}
 .descompost-row-v87161 textarea,.lib-descompost-v878156 textarea{width:100%;min-height:130px;border:1px solid #cbd5e1;border-radius:10px;padding:9px;background:white;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.35}
+
+/* V87.162 · codis editables + comptador temps */
+.code-editor-v87162{background:#f8fafc;border:1px solid #cbd5e1;border-radius:16px;padding:0;overflow:hidden}
+.code-editor-v87162>summary{cursor:pointer;padding:12px 14px;font-weight:900;color:#0f2d5c;background:#eef6ff;border-bottom:1px solid #cbd5e1}
+.code-editor-v87162 .form-grid{padding:14px!important}
+.code-editor-v87162 small{color:#64748b;font-weight:700;display:flex;align-items:center}
+.timer-panel-v87162{align-items:end}
+.timer-clock-v87162{background:#f8fafc;border:1px solid #cbd5e1;border-radius:14px;padding:11px 13px;min-height:64px;display:flex;flex-direction:column;justify-content:center}
+.timer-clock-v87162 span{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase}
+.timer-clock-v87162 b{font-size:24px;color:#0f2d5c}
+@media(max-width:900px){.timer-panel-v87162{align-items:stretch}.timer-clock-v87162 b{font-size:20px}}
