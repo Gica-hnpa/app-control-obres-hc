@@ -986,15 +986,33 @@ function expedientCode8739(o){return o?.codiExpedient||o?.codi||o?.expedientBase
 
 
 // V87.68 - recuperació base estable: creació d'expedients i actes formals
+function agentKey878166(a={}){
+  const clean=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+  const nom=clean(a.nom||a.name||a.contacte);
+  const empresa=clean(a.empresa||a.rao||a.company);
+  const email=clean(a.email);
+  if(email)return `email:${email}`;
+  if(nom)return `nom:${nom}`;
+  if(empresa)return `empresa:${empresa}`;
+  return clean(a.id||"");
+}
+function agentScore878166(a={}){
+  return [a.nif,a.email,a.telefon,a.adreca,a.collegiat,a.contacte,a.empresa,a.rol].filter(Boolean).length;
+}
+function mergeAgent878166(a={},b={}){
+  const richer=agentScore878166(b)>agentScore878166(a)?b:a;
+  const other=richer===b?a:b;
+  return {...other,...richer,id:richer.id||other.id||("ag-"+Date.now()+Math.random().toString(16).slice(2))};
+}
 function uniqAgents8768(list=[]){
-  const out=[]; const seen=new Set();
-  for(const a of (list||[]).filter(Boolean)){
-    const id=a.id || (String(a.nom||"")+String(a.email||"")+String(a.empresa||""));
-    const key=String(id||"").toLowerCase();
-    if(!key||seen.has(key))continue;
-    seen.add(key); out.push({...a,id:a.id||("ag-"+out.length)});
+  const map=new Map();
+  for(const raw of (list||[]).filter(Boolean)){
+    const a={...raw,nom:raw.nom||raw.name||raw.contacte||raw.empresa||""};
+    const key=agentKey878166(a);
+    if(!key)continue;
+    map.set(key,map.has(key)?mergeAgent878166(map.get(key),a):{...a,id:a.id||("ag-"+map.size)});
   }
-  return out;
+  return [...map.values()];
 }
 function safeSlug8768(v,prefix="id"){
   return String(v||prefix).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||prefix;
@@ -1077,12 +1095,13 @@ function SafeFormExpedient8751({clients,onSubmit,allAgents=[]}){
   const types=(typeof WORK_TYPES8737!=='undefined'?WORK_TYPES8737:['Projecte tècnic','Project management','Informe tècnic','Certificat energètic','Cèdula d’habitabilitat','Pressupost tècnic-client','Altres']);
   const agentChoices878159=sortAgents878134(uniqAgents8768([...(allAgents||[])]));
   const [agentVals878159,setAgentVals878159]=useState({constructor:'Pendent',do:'Pendent',deo:'Pendent',css:'Pendent'});
+  const [agentOpen878166,setAgentOpen878166]=useState(null);
   function setAgentVal878159(field,value){setAgentVals878159(p=>({...p,[field]:value||'Pendent'}))}
   function NewExpAgentPicker878159({field,label}){
     const current=agentVals878159[field]||'Pendent';
     const filtered=agentOptionsForField878163(agentChoices878159,field);
     const custom=current&&current!=='Pendent'&&!filtered.some(a=>String(a.nom||'')===String(current));
-    return <div className='agent-picker-card-v87164'><input type='hidden' name={field} value={current}/><details><summary><span>{label}</span><b>{current==='Pendent'?'Pendent':current}</b></summary><div className='agent-picker-body-v87164'><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type='button' className={current==='Pendent'?'active':''} onClick={()=>setAgentVal878159(field,'Pendent')}>Pendent / no cal ara</button>{filtered.map(a=><button type='button' key={field+a.id} className={String(a.nom||'')===String(current)?'active':''} onClick={()=>setAgentVal878159(field,a.nom)}><b>{a.nom}</b><span>{a.empresa||a.rol||'Agent'}</span></button>)}<div className='agent-inline-create-v87159'><input value={custom?current:''} onChange={e=>setAgentVal878159(field,e.target.value)} placeholder='+ Escriure / crear nou agent'/></div></div></details></div>
+    return <div className={`agent-picker-card-v87164 agent-picker-card-v878166 ${agentOpen878166===field?'open':''}`}><input type='hidden' name={field} value={current}/><button type='button' className='agent-picker-summary-v878166' onClick={()=>setAgentOpen878166(p=>p===field?null:field)}><span>{label}</span><b>{current==='Pendent'?'Pendent':current}</b></button>{agentOpen878166===field&&<div className='agent-picker-body-v87164'><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type='button' className={current==='Pendent'?'active':''} onClick={()=>setAgentVal878159(field,'Pendent')}>Pendent / no cal ara</button>{filtered.map(a=><button type='button' key={field+a.id} className={String(a.nom||'')===String(current)?'active':''} onClick={()=>setAgentVal878159(field,a.nom)}><b>{a.nom}</b><span>{a.empresa||a.rol||'Agent'}</span></button>)}<div className='agent-inline-create-v87159'><input value={custom?current:''} onChange={e=>setAgentVal878159(field,e.target.value)} placeholder='+ Escriure / crear nou agent'/></div></div>}</div>
   }
   function setTipus(v){
     const t=selectedWorkType878150(v);
@@ -2857,11 +2876,15 @@ function agentRoleText878163(a={}){return String([a.rol,a.funcio,a.funcions,a.ca
 function agentRoleMatches878163(a={},field=''){
   const r=agentRoleText878163(a);
   const f=String(field||'').toLowerCase();
-  if(f==='constructor'||f.includes('constructor')||f.includes('contractista'))return r.includes('constructor')||r.includes('contractista')||r.includes('empresa constructora')||r.includes('industrial')||r.includes('paleta')||r.includes('constructora');
-  if(f==='css'||f.includes('css')||f.includes('seguretat'))return r.includes('coordin')||r.includes('css')||r.includes('seguretat')||r.includes('salut');
-  if(f==='do'||f.includes('direccio dobra')||f.includes('direcció d’obra'))return r.includes('direccio')||r.includes('direcció')||r.includes('arquitecte')||r.includes('tecnic')||r.includes('tecnic')||r.includes('facultativa')||r.includes('do')||r.includes('project manager');
-  if(f==='deo'||f.includes('execucio')||f.includes('execució'))return r.includes('execucio')||r.includes('execució')||r.includes('arquitecte tecnic')||r.includes('arquitecte tecnic')||r.includes('aparellador')||r.includes('deo')||r.includes('facultativa')||r.includes('tecnic');
-  if(f.includes('promotor')||f.includes('propiet'))return r.includes('promotor')||r.includes('propiet')||r.includes('client');
+  const isBuilder=r.includes('constructor')||r.includes('contractista')||r.includes('empresa constructora')||r.includes('industrial')||r.includes('paleta')||r.includes('constructora');
+  const isPromotor=r.includes('promotor')||r.includes('propiet')||r.includes('client');
+  const isCss=r.includes('coordin')||r.includes('css')||r.includes('seguretat')||r.includes('salut');
+  const isTech=r.includes('direccio')||r.includes('direcció')||r.includes('arquitecte')||r.includes('aparellador')||r.includes('tecnic')||r.includes('tècnic')||r.includes('facultativa')||r.includes('do')||r.includes('deo')||r.includes('project manager')||isCss;
+  if(f==='constructor'||f.includes('constructor')||f.includes('contractista'))return isBuilder && !isPromotor && !isTech;
+  if(f==='css'||f.includes('css')||f.includes('seguretat'))return isCss && !isBuilder && !isPromotor;
+  if(f==='do'||f.includes('direccio dobra')||f.includes('direcció d’obra'))return isTech && !isBuilder && !isPromotor;
+  if(f==='deo'||f.includes('execucio')||f.includes('execució'))return isTech && !isBuilder && !isPromotor;
+  if(f.includes('promotor')||f.includes('propiet'))return isPromotor && !isBuilder;
   return true;
 }
 function agentOptionsForField878163(list=[],field=''){
@@ -2869,7 +2892,7 @@ function agentOptionsForField878163(list=[],field=''){
   return sortAgents878134(list).filter(a=>{
     if(!a||!String(a.nom||'').trim())return false;
     if(!agentRoleMatches878163(a,field))return false;
-    const key=String(a.nom||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')+'__'+String(a.empresa||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const key=agentKey878166(a);
     if(seen.has(key))return false;
     seen.add(key);
     return true;
@@ -2908,7 +2931,7 @@ function AgentsDirectori878164({agents=[]}){
   const groups={tecnic:[],constructor:[],promotor:[],css:[],altres:[]};
   sortAgents878134(uniqAgents8768(agents||[])).forEach(a=>{groups[agentTypeClass878164(a)]?.push(a)});
   const labels={tecnic:'Tècnics',constructor:'Constructors / industrials',promotor:'Promotors / propietat',css:'CSS / seguretat i salut',altres:'Altres agents'};
-  return <div className='agents-directory-v87164'><div className='pro-dashboard-head-v87164'><div><small>Directori</small><h1>Agents</h1><p>Tècnics, constructores, promotors i empreses reutilitzables a les obres.</p></div></div>{Object.entries(groups).map(([k,items])=><details key={k} open={items.length>0} className={`agent-dir-group-v87164 ${k}`}><summary><span>{labels[k]}</span><b>{items.length}</b></summary><div className='agent-dir-grid-v87164'>{items.length===0?<p className='muted'>Cap agent creat en aquesta categoria.</p>:items.map(a=><div key={a.id||a.nom} className='agent-dir-card-v87164'><b>{a.nom||'Agent'}</b><span>{a.empresa||'Sense empresa'}</span><em>{a.rol||'Rol pendent'}{a.nif?` · NIF ${a.nif}`:''}</em><small>{[a.email,a.telefon].filter(Boolean).join(' · ')||'Contacte pendent'}</small></div>)}</div></details>)}</div>
+  return <div className='agents-directory-v87164'><div className='pro-dashboard-head-v87164'><div><small>Directori</small><h1>Agents</h1><p>Biblioteca única d'agents, sense repetits, agrupada per funció.</p></div></div>{Object.entries(groups).map(([k,items])=><details key={k} open={items.length>0} className={`agent-dir-group-v87164 ${k}`}><summary><span>{labels[k]}</span><b>{items.length}</b></summary><div className='agent-dir-grid-v87164'>{items.length===0?<p className='muted'>Cap agent creat en aquesta categoria.</p>:items.map(a=><div key={a.id||a.nom} className='agent-dir-card-v87164'><b>{a.nom||'Agent'}</b><span>{a.empresa||'Sense empresa'}</span><em>{a.rol||'Rol pendent'}{a.nif?` · NIF ${a.nif}`:''}</em><small>{[a.email,a.telefon].filter(Boolean).join(' · ')||'Contacte pendent'}</small></div>)}</div></details>)}</div>
 }
 function primaryPromotorAgent878134(agents=[],obra={},client={}){
   const sorted=sortAgents878134(agents||[]);
@@ -3512,6 +3535,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   const libraryAgents=sortAgents878134(uniqAgents8768([...(allAgents||[])]));
   const agents=obraAgents;
   const agentChoices=sortAgents878134(uniqAgents8768([...(obraAgents||[]),...(libraryAgents||[])]));
+  const [agentOpen878166,setAgentOpen878166]=useState(null);
   function upd(k,v){setForm(p=>({...p,[k]:v}))}
   function changeCp(v){setForm(p=>{const pob=poblacioForCp8773(v);return {...p,codiPostal:v,poblacio:pob||p.poblacio}})}
   function changePoblacio(v){setForm(p=>{const cp=cpForPoblacio8773(v);return {...p,poblacio:v,codiPostal:cp||p.codiPostal}})}
@@ -3559,7 +3583,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     const filtered=agentOptionsForField878163(agentChoices,field);
     const known=filtered.find(a=>String(a.nom||"")===String(current));
     const custom=current&&current!=="Pendent"&&!known;
-    return <div className="agent-picker-card-v87164"><details><summary><span>{label}</span><b>{current==="Pendent"?"Pendent":current}</b></summary><div className="agent-picker-body-v87164"><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type="button" className={current==="Pendent"?"active":""} onClick={()=>upd(field,"Pendent")}>Pendent / no assignat</button>{filtered.map(a=><button type="button" key={field+a.id} className={String(a.nom||"")===String(current)?"active":""} onClick={()=>{upd(field,a.nom);addAgentToObraIfNeeded878159(a)}}><b>{a.nom}</b><span>{a.empresa||a.rol||"Agent"}</span></button>)}<div className="agent-inline-create-v87159"><input value={custom?current:""} onChange={e=>upd(field,e.target.value)} placeholder="+ Escriure / crear nou agent"/><button type="button" className="secondary small" onClick={()=>{const nom=String(form[field]||"").trim();if(!nom){alert("Escriu el nom de l'agent.");return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>Crear fitxa agent</button></div></div></details></div>
+    return <div className={`agent-picker-card-v87164 agent-picker-card-v878166 ${agentOpen878166===field?'open':''}`}><button type="button" className="agent-picker-summary-v878166" onClick={()=>setAgentOpen878166(p=>p===field?null:field)}><span>{label}</span><b>{current==="Pendent"?"Pendent":current}</b></button>{agentOpen878166===field&&<div className="agent-picker-body-v87164"><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type="button" className={current==="Pendent"?"active":""} onClick={()=>upd(field,"Pendent")}>Pendent / no assignat</button>{filtered.map(a=><button type="button" key={field+a.id} className={String(a.nom||"")===String(current)?"active":""} onClick={()=>{upd(field,a.nom);addAgentToObraIfNeeded878159(a)}}><b>{a.nom}</b><span>{a.empresa||a.rol||"Agent"}</span></button>)}<div className="agent-inline-create-v87159"><input value={custom?current:""} onChange={e=>upd(field,e.target.value)} placeholder="+ Escriure / crear nou agent"/><button type="button" className="secondary small" onClick={()=>{const nom=String(form[field]||"").trim();if(!nom){alert("Escriu el nom de l'agent.");return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>Crear fitxa agent</button></div></div>}</div>
   }
   const selectedClient=(clients||[]).find(c=>c.id===clientChoice);
   return <div className="fitxa-dades-stack-v878133"><PrincipalAgentsPanel878134 obra={obra} client={selectedClient||client} agents={agents}/><Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
@@ -5565,7 +5589,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:state.clients||[],
     obres:state.obres||[],
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{})),
-    app_version:"87.165.0",
+    app_version:"87.166.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

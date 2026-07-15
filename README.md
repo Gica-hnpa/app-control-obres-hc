@@ -1,13 +1,14 @@
-# APP Control d’Obres · V87.165
+# APP Control d’Obres · V87.166
 
-Versió sobre V87.164.
+Versió centrada en criteri global d'ús pràctic: pantalles més netes, desplegables persistents, agents sense duplicats i comptador visible.
 
-Canvis principals:
-- Pantalla d’inici més visual tipus dashboard: targetes de projectes/treballs actius, resum d’avui i accés ràpid a tasques, cites i treballs oberts.
-- Pressupost ràpid reorganitzat: vista prèvia tipus PDF/taula immediatament després d’importar Excel, accions clares per previsualitzar, guardar a Documents, renombrar i editar.
-- Editor del pressupost i llibreria queden plegats per defecte per evitar pantalles llargues.
-- La llibreria de partides té botó visible de tancar i guardar una partida a llibreria ja no deixa panells oberts innecessaris.
-- Targetes de versions de pressupost més compactes perquè no ocupin massa pantalla.
+Canvis:
+- Comptador de Gestió del temps més visible, numèric i amb format HH:MM:SS.
+- En aturar el comptador, es manté l'arrodoniment facturable a fraccions de 15 minuts.
+- Desplegables d'agents substituïts per panells persistents perquè no es tanquin de cop.
+- Agents deduplicats per nom/email, evitant que el mateix tècnic aparegui diverses vegades.
+- Filtres d'agents més estrictes: DO/DEO/CSS només tècnics; constructor només constructores/contractistes/industrials.
+- Menú i pantalles reforçats cap al criteri general: menys pantalla ocupada i més contingut plegable.
 
-Build command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
-Publish directory: dist
+Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+Publish Directory: dist
