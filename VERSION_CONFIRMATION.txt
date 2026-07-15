@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.170 - PRESSUPOST PARTIDA A PARTIDA + DESCOMPOSAT MODAL
-PAQUET: CARPETA ÚNICA DE VALIDACIÓ
+VERSIO: V87.171 - RECUPERACIO PRESSUPOST FIABLE
+BASE: V87.162 / V87.169 rollback fiable
 
-Base fiable recuperada V87.162. Millora petita i validable sobre pressupostos/descomposats.
+Recupera la vista fiable abans de V87.170. No aplica la vista nova de pressupost partida-a-partida ni el modal de descomposat que provocava penjaments.
