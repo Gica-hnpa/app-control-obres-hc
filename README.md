@@ -1,17 +1,15 @@
-# APP Control d'Obres · V87.173
+# APP Control d'Obres · V87.174
 
-Versió quirúrgica sobre la base fiable V87.171/V87.162.
+Versió de correcció focalitzada sobre la base fiable V87.173/V87.171.
 
 Canvis:
-- No es canvia la vista general del pressupost.
-- En mode edició, les partides queden plegades i només s'obre la partida seleccionada.
-- En obrir una partida nova es tanca l'anterior.
-- Botó clar **Tancar partida**.
-- Descomposat Excel / IA / BEDEC en finestra modal pròpia, no incrustat dins la línia.
-- El descomposat és editable, mostra total detectat i preu/ut validat.
-- Importar descomposat no aplica automàticament el preu; cal validar-lo.
-- Guardar a llibreria no obre tota la llibreria.
-- Ajust d'alineacions dels camps del pressupost.
+- El descomposat d'una partida s'obre en una finestra pròpia en format quadre tipus Excel.
+- Importació de descomposats Excel amb columnes Concepte, Unitat, Rendiment, Preu/Ut i Preu Total.
+- Reconeixement de files de secció tipus MÀ D'OBRA, MATERIALS, ALTRES RECURSOS i totals finals.
+- Les cel·les del descomposat són editables dins del quadre.
+- El total detectat prioritza el PREU UNITARI FINAL quan existeix.
+- El preu/ut validat no s'aplica automàticament: cal confirmar-lo amb el botó d'aplicar.
+- Manté la vista general fiable del pressupost.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

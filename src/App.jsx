@@ -401,6 +401,81 @@ function readAllLibraries878160(){
   return out;
 }
 
+
+function descompostTableTotal878174(table){
+  const rows=Array.isArray(table?.rows)?table.rows:[];
+  const final=rows.slice().reverse().find(r=>!r?.isSection && /preu\s*unitari\s*final|precio\s*unitario\s*final|preu\s*final|precio\s*final|total\s*final/i.test(String(r?.concepte||"")) && parseNum8770(r?.total)>0);
+  if(final)return parseNum8770(final.total);
+  const direct=rows.slice().reverse().find(r=>!r?.isSection && /total\s*descomposat|total\s*descompost|precio\s*unitario|preu\s*unitari/i.test(String(r?.concepte||"")) && parseNum8770(r?.total)>0);
+  if(direct)return parseNum8770(direct.total);
+  return rows.filter(r=>!r?.isSection && !/cost\s*directe|costos\s*indirectes|despeses\s*generals|benefici\s*industrial|preu\s*unitari\s*final|precio\s*unitario\s*final|total/i.test(String(r?.concepte||""))).reduce((sum,r)=>sum+(parseNum8770(r?.total)||((parseNum8770(r?.q)||0)*(parseNum8770(r?.pu)||0))),0);
+}
+function descompostTableToText878174(table){
+  const rows=Array.isArray(table?.rows)?table.rows:[];
+  const source=table?.source||"Descomposat";
+  const lines=[`ORIGEN DESCOMPOSAT: ${source}`];
+  rows.forEach(r=>{
+    if(r?.isSection){lines.push(String(r.concepte||""));return;}
+    const q=parseNum8770(r?.q), pu=parseNum8770(r?.pu), imp=parseNum8770(r?.total)||(q&&pu?q*pu:0);
+    const parts=[String(r?.concepte||"").trim(),String(r?.ut||"").trim(),q?qty2(q):"",pu?money(pu):"",imp?money(imp):""].filter(Boolean);
+    if(parts.length)lines.push(parts.join(" | "));
+  });
+  lines.push(`TOTAL DESCOMPOSAT: ${money(descompostTableTotal878174(table))}`);
+  return lines.join("\n");
+}
+function descompostRowsToTable878174(rows=[],source="Excel descomposat"){
+  const clean=v=>String(v??"").trim();
+  const norm=v=>clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const all=(rows||[]).filter(r=>(r||[]).some(c=>clean(c)));
+  if(!all.length)return {source,rows:[],total:0,title:""};
+  let headerIndex=-1,map={};
+  const aliases={
+    concepte:["concepte","concepto","descripcio","descripcion","descripció","denominacio","denominacion","text","recurs"],
+    ut:["unitat","unidad","ut","unit","u"],
+    q:["rendiment","rendimiento","quantitat","cantidad","coeficient","coeficiente","q","consum","medicio","medicion"],
+    pu:["preu/ut","preu ut","preu unitari","precio unitario","preu","precio","pu","cost unitari","coste unitario"],
+    total:["preu total","precio total","import","importe","total","cost total","coste total"]
+  };
+  for(let i=0;i<Math.min(all.length,30);i++){
+    const heads=(all[i]||[]).map(norm);
+    const local={};
+    Object.entries(aliases).forEach(([key,als])=>{
+      const idx=heads.findIndex(h=>als.some(a=>h===a||h.includes(a)));
+      if(idx>=0)local[key]=idx;
+    });
+    if(local.concepte>=0 && (local.ut>=0||local.q>=0||local.pu>=0||local.total>=0)){headerIndex=i;map=local;break;}
+  }
+  const title=headerIndex>0?clean((all[0]||[]).filter(c=>clean(c))[0]||""):"";
+  const data=headerIndex>=0?all.slice(headerIndex+1):all;
+  const parsed=[];
+  data.forEach((r,idx)=>{
+    const row=Array.isArray(r)?r:[];
+    const textCells=row.map(clean).filter(Boolean);
+    if(!textCells.length)return;
+    const first=clean(row[map.concepte] ?? row[0]);
+    const onlyText=textCells.length===1 && first;
+    const q=parseNum8770(row[map.q]);
+    const pu=parseNum8770(row[map.pu]);
+    let total=parseNum8770(row[map.total]);
+    if(!total && q && pu)total=q*pu;
+    const ut=clean(row[map.ut]);
+    const isUpper=first && first===first.toUpperCase() && first.length<80;
+    const isSection=onlyText && (isUpper || /m[aà]\s*d['’]?obra|materials|recursos|maquin[aà]ria|altres|indirectes/i.test(first));
+    if(isSection){parsed.push({id:`s-${idx}-${Date.now()}`,isSection:true,concepte:first,ut:"",q:"",pu:"",total:""});return;}
+    let concepte=first || textCells[0] || "";
+    if(headerIndex<0){
+      const nums=row.map((v,i)=>({i,v:clean(v),n:parseNum8770(v)})).filter(x=>x.v&&x.n);
+      const text=row.map((v,i)=>({i,v:clean(v)})).filter(x=>x.v&&!parseNum8770(x.v));
+      concepte=text.map(x=>x.v).join(" ")||textCells.join(" ");
+      if(nums.length>=3){parsed.push({id:`r-${idx}-${Date.now()}`,isSection:false,concepte,ut:"",q:qty2(nums[nums.length-3].n),pu:qty2(nums[nums.length-2].n),total:qty2(nums[nums.length-1].n)});return;}
+    }
+    if(!concepte)return;
+    parsed.push({id:`r-${idx}-${Date.now()}`,isSection:false,concepte,ut:ut||"",q:q?qty2(q):"",pu:pu?qty2(pu):"",total:total?qty2(total):""});
+  });
+  const table={source,title,rows:parsed};
+  return {...table,total:descompostTableTotal878174(table),lines:parsed.filter(r=>!r.isSection).length};
+}
+
 function descompostRowsToText878161(rows=[],source="Excel descomposat") {
   const clean=(v)=>String(v??"").trim();
   const normHead=(v)=>clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
@@ -468,10 +543,12 @@ function workbookDescompostFromFile878161(file){
     wb.SheetNames.forEach(sheetName=>{
       const ws=wb.Sheets[sheetName];
       const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      const table=descompostRowsToTable878174(rows,`${file.name} · ${sheetName}`);
       const parsed=descompostRowsToText878161(rows,`${file.name} · ${sheetName}`);
+      const merged={...parsed,table,total:table.total||parsed.total||0,lines:table.lines||parsed.lines||0,text:(table.rows&&table.rows.length?descompostTableToText878174(table):parsed.text)};
       const sn=String(sheetName||"").toLowerCase();
-      const score=(parsed.lines||0)*10+(parsed.total?5:0)+(sn.includes("descomp")||sn.includes("bedec")||sn.includes("tcq")?250:0)-(sn.includes("pressupost")?150:0);
-      if(score>((best.score)||-999999))best={...parsed,sheet:sheetName,score};
+      const score=(merged.lines||0)*10+(merged.total?5:0)+(sn.includes("descomp")||sn.includes("bedec")||sn.includes("tcq")?250:0)-(sn.includes("pressupost")?150:0);
+      if(score>((best.score)||-999999))best={...merged,sheet:sheetName,score};
     });
     if(!best.text)throw new Error("No he trobat un descomposat vàlid. L'Excel ha de tenir concepte/descripció i imports, o columnes tipus quantitat, preu unitari i import.");
     return best;
@@ -4543,7 +4620,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function applyDescompostToPartida878160(cap,i){
     if(!editBudget8760b)return;
     const row=(caps?.[cap]||[])[i]||{};
-    const detected=descompostTotal878160(row.descompost||"");
+    const detected=descompostTableTotal878174(row.descompostTable)||descompostTotal878160(row.descompost||"");
     const pu=parseNum8770(row.descompostValidatedPu)||detected;
     if(!pu){alert("No hi ha cap preu/ut validat. Importa o revisa el descomposat i escriu el preu validat.");return;}
     setCaps(p=>{const arr=[...(p[cap]||[])];arr[i]={...arr[i],pu:qty2(pu),descompostValidatedPu:qty2(pu),puFromDescompost:true};return {...p,[cap]:arr};});
@@ -4557,7 +4634,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       setCaps(p=>{
         const arr=[...(p[cap]||[])];
         const current=arr[i]||{};
-        arr[i]={...current,descompost:parsed.text,descompostSource:file.name,descompostSheet:parsed.sheet,descompostImportedAt:new Date().toISOString(),descompostValidatedPu:parsed.total?qty2(parsed.total):(current.descompostValidatedPu||current.pu||"0,00")};
+        arr[i]={...current,descompost:parsed.text,descompostTable:parsed.table||null,descompostSource:file.name,descompostSheet:parsed.sheet,descompostImportedAt:new Date().toISOString(),descompostValidatedPu:parsed.total?qty2(parsed.total):(current.descompostValidatedPu||current.pu||"0,00")};
         return {...p,[cap]:arr};
       });
       alert(`Descomposat importat: ${parsed.lines} línies · total detectat ${money(parsed.total)}. Revisa'l i aplica el preu validat si és correcte.`);
@@ -4632,9 +4709,24 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         const cap=descompostModal87173.cap;
         const i=descompostModal87173.i;
         const row=(caps?.[cap]||[])[i]||{};
-        const detected=descompostTotal878160(row.descompost||"");
+        const table=row.descompostTable||null;
+        const detected=descompostTableTotal878174(table)||descompostTotal878160(row.descompost||"");
+        const updateTableCell=(rowIdx,key,value)=>{
+          const nextRows=[...((table?.rows)||[])];
+          const current={...(nextRows[rowIdx]||{})};
+          current[key]=value;
+          if(["q","pu"].includes(key)){
+            const q=parseNum8770(key==="q"?value:current.q);
+            const pu=parseNum8770(key==="pu"?value:current.pu);
+            if(q&&pu)current.total=qty2(q*pu);
+          }
+          nextRows[rowIdx]=current;
+          const nextTable={...(table||{source:row.descompostSource||"Descomposat",title:""}),rows:nextRows};
+          upd(cap,i,"descompostTable",nextTable);
+          upd(cap,i,"descompost",descompostTableToText878174(nextTable));
+        };
         return <Modal title={`Descomposat · ${row.codi||""} ${row.concepte||""}`} close={()=>setDescompostModal87173(null)}>
-          <div className="descompost-modal-v87173">
+          <div className="descompost-modal-v87173 descompost-modal-v87174">
             <div className="descompost-modal-head-v87173">
               <label className="secondary upload-label">Importar Excel descomposat<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostExcel878161(cap,i,e.target.files?.[0])}/></label>
               <span>{row.descompostSource?`Origen: ${row.descompostSource}${row.descompostSheet?` · ${row.descompostSheet}`:""}`:"Excel IA / BEDEC / TCQ / base pròpia"}</span>
@@ -4644,9 +4736,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               <label><span>Preu/ut validat</span><input inputMode="decimal" value={row.descompostValidatedPu||qty2(detected||parseNum8770(row.pu)||0)} onChange={e=>upd(cap,i,"descompostValidatedPu",e.target.value)} onBlur={e=>upd(cap,i,"descompostValidatedPu",qty2(parseNum8770(e.target.value)||0))}/></label>
               <label><span>Preu actual partida</span><b>{money(parseNum8770(row.pu)||0)}</b></label>
             </div>
-            <label className="descompost-textarea-v87173"><span>Quadre editable del descomposat</span><textarea value={row.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)} placeholder="Importa l'Excel o enganxa aquí el descomposat. Revisa'l abans d'aplicar el preu."/></label>
+            {table?.rows?.length?<div className="descompost-excel-wrap-v87174">
+              {table.title&&<div className="descompost-title-v87174">{table.title}</div>}
+              <table className="descompost-excel-table-v87174"><thead><tr><th>Concepte</th><th>Unitat</th><th>Rendiment</th><th>Preu/Ut</th><th>Preu total</th></tr></thead><tbody>{table.rows.map((tr,idx)=>tr.isSection?<tr key={tr.id||idx} className="descompost-section-v87174"><td colSpan="5"><input value={tr.concepte||""} onChange={e=>updateTableCell(idx,"concepte",e.target.value)}/></td></tr>:<tr key={tr.id||idx}><td><input value={tr.concepte||""} onChange={e=>updateTableCell(idx,"concepte",e.target.value)}/></td><td><input value={tr.ut||""} onChange={e=>updateTableCell(idx,"ut",e.target.value)}/></td><td><input inputMode="decimal" value={tr.q||""} onChange={e=>updateTableCell(idx,"q",e.target.value)}/></td><td><input inputMode="decimal" value={tr.pu||""} onChange={e=>updateTableCell(idx,"pu",e.target.value)}/></td><td><input inputMode="decimal" value={tr.total||""} onChange={e=>updateTableCell(idx,"total",e.target.value)}/></td></tr>)}</tbody><tfoot><tr><th colSpan="4">PREU UNITARI FINAL / TOTAL DETECTAT</th><th>{money(detected)}</th></tr></tfoot></table>
+            </div>:<label className="descompost-textarea-v87173"><span>Quadre editable del descomposat</span><textarea value={row.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)} placeholder="Importa l'Excel o enganxa aquí el descomposat. Revisa'l abans d'aplicar el preu."/></label>}
           </div>
-          <div className="modal-actions"><button className="secondary" onClick={()=>setDescompostModal87173(null)}>Tancar</button><button className="secondary" onClick={()=>savePartidaToLibrary87115({...row,descompost:row.descompost||""},cap)}>Guardar a llibreria</button><button className="primary" onClick={()=>applyDescompostToPartida878160(cap,i)}>Aplicar preu validat a la partida</button></div>
+          <div className="modal-actions"><button className="secondary" onClick={()=>setDescompostModal87173(null)}>Tancar</button><button className="secondary" onClick={()=>savePartidaToLibrary87115({...row,descompost:row.descompost||"",descompostTable:row.descompostTable||null},cap)}>Guardar a llibreria</button><button className="primary" onClick={()=>applyDescompostToPartida878160(cap,i)}>Aplicar preu validat a la partida</button></div>
         </Modal>
       })()}
     </Card>
