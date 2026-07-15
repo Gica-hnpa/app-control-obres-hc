@@ -1,13 +1,15 @@
-# APP Control d'Obres · V87.167
+# APP Control d'Obres · V87.168
 
-Versió de recuperació i ordre sobre V87.165, evitant la descol·locació de pestanyes de V87.166.
+Versió de recuperació visual i ordre funcional sobre V87.167.
 
-Canvis:
-- Recuperació de les pestanyes completes de l'expedient en format pla, sense agrupar-les ni amagar-ne cap.
-- Dins l'expedient es tornen a veure totes les opcions: Pressupost ràpid, Gestió obra, descomposats, certificacions, factures, documents, actes, agents, etc.
-- Millora de deduplicació d'agents per email/NIF/nom perquè el mateix tècnic no aparegui repetit diverses vegades.
-- Clients/contactes en format plegable per tipologia per reduir pantalla ocupada quan hi hagi molts clients.
-- Es manté la base funcional de V87.165 amb pressupost ràpid, llibreria, descomposats Excel/IA/BEDEC, timer i documents.
+Canvis principals:
+- Recuperació de les pestanyes de l'expedient en format horitzontal/compacte a PC i iPad, evitant el llistat vertical llarg que ocupava massa pantalla.
+- En mòbil es manté el flux d'opcions perquè sigui compacte.
+- Directori d'agents convertit en llistat desplegable editable per grups: tècnics, constructors, promotors, CSS i altres.
+- Creació i edició d'agents directament des de la pantalla Agents.
+- Deduplicació reforçada d'agents per email, NIF i coincidència de nom/rol perquè el mateix tècnic no aparegui diverses vegades.
+- Relació d'agents de l'obra més controlada, amb biblioteca deduplicada i alta/edició des de panells desplegables.
+- Pressupost ràpid manté la vista prèvia i l'editor plegat sense amagar opcions de descomposats ni impressió.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

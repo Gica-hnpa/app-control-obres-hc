@@ -1,2 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.167 - RESTAURACIÓ TABS + AGENTS + CLIENTS PLEGABLES
+VERSIO: V87.168 - RESTAURACIÓ VISUAL + AGENTS EDITABLES + PESTANYES COMPACTES
+PAQUET: CARPETA ÚNICA DE VALIDACIÓ
+
+Derivada de V87.167. Recupera pantalles clares sense perdre pestanyes ni opcions, i reforça la gestió d'agents.
