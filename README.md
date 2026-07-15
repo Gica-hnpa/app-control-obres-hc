@@ -1,14 +1,13 @@
-# APP Control d'Obres · V87.176
+# APP Control d’Obres · V87.177
 
-Versió quirúrgica sobre V87.175/V87.174 fiable.
+Versió derivada de V87.176 / V87.175 fiable.
 
 Canvis:
-- Importació massiva de descomposats Excel des del mode edició de pressupost.
-- Assignació automàtica del descomposat a la partida pel codi detectat al nom del full o a les primeres files.
-- Si no troba codi, intenta coincidència per concepte/títol del full.
-- El descomposat importat queda pendent de validació: no aplica automàticament el preu unitari.
-- Els camps de quantitat i preu unitari es normalitzen a dos decimals en guardar.
-- Cancel·lar l'edició recupera una còpia interna de l'estat inicial i no deixa canvis aplicats.
+- Correcció de la importació massiva de descomposats amb el cas real `Descompostos_Capitol_02_Paleteria.xlsx`.
+- Reconeixement de fulls amb nom de codi de partida, com `02.01`, `02.02`, etc.
+- Correcció de comparació de codis amb zeros inicials: `02.01`, `2.01` i variants equivalents.
+- Assignació del descomposat a la partida del pressupost pel codi del full abans d’intentar coincidència per text.
+- Es manté que el preu del descomposat no s’aplica automàticament: queda pendent de validació.
+- Es manté la protecció de canvis: Cancel·lar edició no guarda modificacions.
 
-Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
-Publish Directory: dist
+Build verificat amb Vite.

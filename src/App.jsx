@@ -556,10 +556,24 @@ function workbookDescompostFromFile878161(file){
 }
 
 function normCode878176(v){return String(v||"").trim().toLowerCase().replace(/[^0-9a-z]+/g,".").replace(/^\.+|\.+$/g,"")}
-function normText878176(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim()}
+function canonCode878177(v){
+  const raw=normCode878176(v);
+  if(!raw)return "";
+  return raw.split(".").map(x=>/^\d+$/.test(x)?String(parseInt(x,10)):x).join(".");
+}
+function codeMatches878177(a,b){
+  const na=normCode878176(a), nb=normCode878176(b), ca=canonCode878177(a), cb=canonCode878177(b);
+  if(!na||!nb)return false;
+  return na===nb || ca===cb || na.endsWith("."+nb) || nb.endsWith("."+na) || ca.endsWith("."+cb) || cb.endsWith("."+ca);
+}
+function normText878176(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim()}
 function findDescompostTargetCode878176(sheetName,rows=[]){
   const candidates=[];
-  const add=(v)=>{const m=String(v||"").match(/(?:^|)(\d{1,2}[\._-]\d{1,3})(?:|$)/); if(m)candidates.push(m[1].replace(/[\._-]/g,"."));};
+  const add=(v)=>{
+    const str=String(v||"");
+    const m=str.match(/(?:^|[^0-9A-Za-z])(\d{1,2}[\._-]\d{1,3})(?=$|[^0-9A-Za-z])/);
+    if(m)candidates.push(m[1].replace(/[\._-]/g,"."));
+  };
   add(sheetName);
   (rows||[]).slice(0,18).forEach(r=>(r||[]).forEach(add));
   return candidates[0]||"";
@@ -4637,11 +4651,20 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         items.forEach(it=>{
           const code=normCode878176(it.code);
           const title=normText878176(it.title||it.sheet);
-          let target=code?flat.find(x=>x.code===code||x.code.endsWith(code)||code.endsWith(x.code)):null;
-          if(!target && title){
-            target=flat.find(x=>x.text && (x.text.includes(title)||title.includes(normText878176(x.row.concepte||""))));
+          let target=code?flat.find(x=>codeMatches878177(x.row?.codi||x.code,code)):null;
+          // Cas típic de l'Excel aportat: cada full es diu 02.01, 02.02, etc.
+          // Si el pressupost té codis amb zeros diferents, comparem també el codi canònic.
+          if(!target && code){
+            const ccode=canonCode878177(code);
+            target=flat.find(x=>canonCode878177(x.row?.codi||x.code)===ccode);
           }
-          if(!target){unmatched.push(it.sheet);return;}
+          if(!target && title){
+            target=flat.find(x=>{
+              const concept=normText878176(x.row?.concepte||"");
+              return concept && (x.text.includes(title)||title.includes(concept)||concept.includes(title));
+            });
+          }
+          if(!target){unmatched.push(`${it.sheet}${it.code?` (${it.code})`:""}`);return;}
           const arr=[...(next[target.cap]||[])];
           const current={...(arr[target.idx]||{})};
           const total=it.total||descompostTableTotal878174(it.table)||descompostTotal878160(it.text);

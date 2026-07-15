@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.176 - DESCOMPOSTOS MASSIUS + CANVIS CONTROLATS
-PAQUET: CARPETA ÚNICA DE VALIDACIÓ
+VERSIO: V87.177 - DESCOMPOSTOS CAPÍTOL DETECT
+BASE: V87.176 / V87.175 fiable
 
-Derivada de V87.175 / V87.174 / V87.171 fiable. Correcció quirúrgica: importació massiva de descomposats, dos decimals i cancel·lació segura d'edició.
+Correcció específica per importar descomposats massius amb fulls anomenats per codi de partida.
