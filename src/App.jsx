@@ -986,31 +986,20 @@ function expedientCode8739(o){return o?.codiExpedient||o?.codi||o?.expedientBase
 
 
 // V87.68 - recuperació base estable: creació d'expedients i actes formals
-function agentKey878166(a={}){
-  const clean=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-  const nom=clean(a.nom||a.name||a.contacte);
-  const empresa=clean(a.empresa||a.rao||a.company);
-  const email=clean(a.email);
-  if(email)return `email:${email}`;
-  if(nom)return `nom:${nom}`;
-  if(empresa)return `empresa:${empresa}`;
-  return clean(a.id||"");
-}
-function agentScore878166(a={}){
-  return [a.nif,a.email,a.telefon,a.adreca,a.collegiat,a.contacte,a.empresa,a.rol].filter(Boolean).length;
-}
-function mergeAgent878166(a={},b={}){
-  const richer=agentScore878166(b)>agentScore878166(a)?b:a;
-  const other=richer===b?a:b;
-  return {...other,...richer,id:richer.id||other.id||("ag-"+Date.now()+Math.random().toString(16).slice(2))};
-}
+function normAgentKey878167(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\b(sr|sra|senyor|senyora|don|doña|dna)\b/g,"").replace(/[^a-z0-9]+/g," ").trim()}
 function uniqAgents8768(list=[]){
   const map=new Map();
   for(const raw of (list||[]).filter(Boolean)){
-    const a={...raw,nom:raw.nom||raw.name||raw.contacte||raw.empresa||""};
-    const key=agentKey878166(a);
+    const a=typeof raw==="string"?{nom:raw}:raw;
+    const key=normAgentKey878167(a.email)||normAgentKey878167(a.nif)||normAgentKey878167(a.nom)||normAgentKey878167(a.empresa)||String(a.id||"");
     if(!key)continue;
-    map.set(key,map.has(key)?mergeAgent878166(map.get(key),a):{...a,id:a.id||("ag-"+map.size)});
+    if(!map.has(key)){map.set(key,{...a,id:a.id||("ag-"+map.size)});continue;}
+    const prev=map.get(key);
+    const merged={...prev};
+    ["nom","empresa","email","telefon","nif","adreca","collegiat","contacte","tipus","categoria"].forEach(k=>{if(!merged[k]&&a[k])merged[k]=a[k]});
+    const roles=[prev.rol,a.rol,prev.funcions,a.funcions].filter(Boolean).flatMap(x=>String(x).split(/[,+/]/).map(y=>y.trim()).filter(Boolean));
+    if(roles.length)merged.rol=[...new Set(roles)].join(" + ");
+    map.set(key,merged);
   }
   return [...map.values()];
 }
@@ -1095,13 +1084,12 @@ function SafeFormExpedient8751({clients,onSubmit,allAgents=[]}){
   const types=(typeof WORK_TYPES8737!=='undefined'?WORK_TYPES8737:['Projecte tècnic','Project management','Informe tècnic','Certificat energètic','Cèdula d’habitabilitat','Pressupost tècnic-client','Altres']);
   const agentChoices878159=sortAgents878134(uniqAgents8768([...(allAgents||[])]));
   const [agentVals878159,setAgentVals878159]=useState({constructor:'Pendent',do:'Pendent',deo:'Pendent',css:'Pendent'});
-  const [agentOpen878166,setAgentOpen878166]=useState(null);
   function setAgentVal878159(field,value){setAgentVals878159(p=>({...p,[field]:value||'Pendent'}))}
   function NewExpAgentPicker878159({field,label}){
     const current=agentVals878159[field]||'Pendent';
     const filtered=agentOptionsForField878163(agentChoices878159,field);
     const custom=current&&current!=='Pendent'&&!filtered.some(a=>String(a.nom||'')===String(current));
-    return <div className={`agent-picker-card-v87164 agent-picker-card-v878166 ${agentOpen878166===field?'open':''}`}><input type='hidden' name={field} value={current}/><button type='button' className='agent-picker-summary-v878166' onClick={()=>setAgentOpen878166(p=>p===field?null:field)}><span>{label}</span><b>{current==='Pendent'?'Pendent':current}</b></button>{agentOpen878166===field&&<div className='agent-picker-body-v87164'><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type='button' className={current==='Pendent'?'active':''} onClick={()=>setAgentVal878159(field,'Pendent')}>Pendent / no cal ara</button>{filtered.map(a=><button type='button' key={field+a.id} className={String(a.nom||'')===String(current)?'active':''} onClick={()=>setAgentVal878159(field,a.nom)}><b>{a.nom}</b><span>{a.empresa||a.rol||'Agent'}</span></button>)}<div className='agent-inline-create-v87159'><input value={custom?current:''} onChange={e=>setAgentVal878159(field,e.target.value)} placeholder='+ Escriure / crear nou agent'/></div></div>}</div>
+    return <div className='agent-picker-card-v87164'><input type='hidden' name={field} value={current}/><details><summary><span>{label}</span><b>{current==='Pendent'?'Pendent':current}</b></summary><div className='agent-picker-body-v87164'><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type='button' className={current==='Pendent'?'active':''} onClick={()=>setAgentVal878159(field,'Pendent')}>Pendent / no cal ara</button>{filtered.map(a=><button type='button' key={field+a.id} className={String(a.nom||'')===String(current)?'active':''} onClick={()=>setAgentVal878159(field,a.nom)}><b>{a.nom}</b><span>{a.empresa||a.rol||'Agent'}</span></button>)}<div className='agent-inline-create-v87159'><input value={custom?current:''} onChange={e=>setAgentVal878159(field,e.target.value)} placeholder='+ Escriure / crear nou agent'/></div></div></details></div>
   }
   function setTipus(v){
     const t=selectedWorkType878150(v);
@@ -2876,15 +2864,11 @@ function agentRoleText878163(a={}){return String([a.rol,a.funcio,a.funcions,a.ca
 function agentRoleMatches878163(a={},field=''){
   const r=agentRoleText878163(a);
   const f=String(field||'').toLowerCase();
-  const isBuilder=r.includes('constructor')||r.includes('contractista')||r.includes('empresa constructora')||r.includes('industrial')||r.includes('paleta')||r.includes('constructora');
-  const isPromotor=r.includes('promotor')||r.includes('propiet')||r.includes('client');
-  const isCss=r.includes('coordin')||r.includes('css')||r.includes('seguretat')||r.includes('salut');
-  const isTech=r.includes('direccio')||r.includes('direcció')||r.includes('arquitecte')||r.includes('aparellador')||r.includes('tecnic')||r.includes('tècnic')||r.includes('facultativa')||r.includes('do')||r.includes('deo')||r.includes('project manager')||isCss;
-  if(f==='constructor'||f.includes('constructor')||f.includes('contractista'))return isBuilder && !isPromotor && !isTech;
-  if(f==='css'||f.includes('css')||f.includes('seguretat'))return isCss && !isBuilder && !isPromotor;
-  if(f==='do'||f.includes('direccio dobra')||f.includes('direcció d’obra'))return isTech && !isBuilder && !isPromotor;
-  if(f==='deo'||f.includes('execucio')||f.includes('execució'))return isTech && !isBuilder && !isPromotor;
-  if(f.includes('promotor')||f.includes('propiet'))return isPromotor && !isBuilder;
+  if(f==='constructor'||f.includes('constructor')||f.includes('contractista'))return r.includes('constructor')||r.includes('contractista')||r.includes('empresa constructora')||r.includes('industrial')||r.includes('paleta')||r.includes('constructora');
+  if(f==='css'||f.includes('css')||f.includes('seguretat'))return r.includes('coordin')||r.includes('css')||r.includes('seguretat')||r.includes('salut');
+  if(f==='do'||f.includes('direccio dobra')||f.includes('direcció d’obra'))return r.includes('direccio')||r.includes('direcció')||r.includes('arquitecte')||r.includes('tecnic')||r.includes('tecnic')||r.includes('facultativa')||r.includes('do')||r.includes('project manager');
+  if(f==='deo'||f.includes('execucio')||f.includes('execució'))return r.includes('execucio')||r.includes('execució')||r.includes('arquitecte tecnic')||r.includes('arquitecte tecnic')||r.includes('aparellador')||r.includes('deo')||r.includes('facultativa')||r.includes('tecnic');
+  if(f.includes('promotor')||f.includes('propiet'))return r.includes('promotor')||r.includes('propiet')||r.includes('client');
   return true;
 }
 function agentOptionsForField878163(list=[],field=''){
@@ -2892,7 +2876,7 @@ function agentOptionsForField878163(list=[],field=''){
   return sortAgents878134(list).filter(a=>{
     if(!a||!String(a.nom||'').trim())return false;
     if(!agentRoleMatches878163(a,field))return false;
-    const key=agentKey878166(a);
+    const key=String(a.nom||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')+'__'+String(a.empresa||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     if(seen.has(key))return false;
     seen.add(key);
     return true;
@@ -2931,7 +2915,7 @@ function AgentsDirectori878164({agents=[]}){
   const groups={tecnic:[],constructor:[],promotor:[],css:[],altres:[]};
   sortAgents878134(uniqAgents8768(agents||[])).forEach(a=>{groups[agentTypeClass878164(a)]?.push(a)});
   const labels={tecnic:'Tècnics',constructor:'Constructors / industrials',promotor:'Promotors / propietat',css:'CSS / seguretat i salut',altres:'Altres agents'};
-  return <div className='agents-directory-v87164'><div className='pro-dashboard-head-v87164'><div><small>Directori</small><h1>Agents</h1><p>Biblioteca única d'agents, sense repetits, agrupada per funció.</p></div></div>{Object.entries(groups).map(([k,items])=><details key={k} open={items.length>0} className={`agent-dir-group-v87164 ${k}`}><summary><span>{labels[k]}</span><b>{items.length}</b></summary><div className='agent-dir-grid-v87164'>{items.length===0?<p className='muted'>Cap agent creat en aquesta categoria.</p>:items.map(a=><div key={a.id||a.nom} className='agent-dir-card-v87164'><b>{a.nom||'Agent'}</b><span>{a.empresa||'Sense empresa'}</span><em>{a.rol||'Rol pendent'}{a.nif?` · NIF ${a.nif}`:''}</em><small>{[a.email,a.telefon].filter(Boolean).join(' · ')||'Contacte pendent'}</small></div>)}</div></details>)}</div>
+  return <div className='agents-directory-v87164'><div className='pro-dashboard-head-v87164'><div><small>Directori</small><h1>Agents</h1><p>Tècnics, constructores, promotors i empreses reutilitzables a les obres.</p></div></div>{Object.entries(groups).map(([k,items])=><details key={k} open={items.length>0} className={`agent-dir-group-v87164 ${k}`}><summary><span>{labels[k]}</span><b>{items.length}</b></summary><div className='agent-dir-grid-v87164'>{items.length===0?<p className='muted'>Cap agent creat en aquesta categoria.</p>:items.map(a=><div key={a.id||a.nom} className='agent-dir-card-v87164'><b>{a.nom||'Agent'}</b><span>{a.empresa||'Sense empresa'}</span><em>{a.rol||'Rol pendent'}{a.nif?` · NIF ${a.nif}`:''}</em><small>{[a.email,a.telefon].filter(Boolean).join(' · ')||'Contacte pendent'}</small></div>)}</div></details>)}</div>
 }
 function primaryPromotorAgent878134(agents=[],obra={},client={}){
   const sorted=sortAgents878134(agents||[]);
@@ -3306,7 +3290,7 @@ function Clients({clients,obres=[],odata={},cs,setCs,ct,setCt,openClient,newClie
       </div>
       <div className="filters filters-v8774"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client, industrial, tècnic, telèfon, població..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Totes les tipologies</option>{tipusOpts.map(t=><option key={t}>{t}</option>)}</select></div>
       <div className="client-list-v8774">
-        {clients.length===0?<Empty text="No hi ha contactes amb aquest filtre."/>:grouped.map(([tipus,items])=><section key={tipus} className="client-type-section-v8774"><div className="client-type-head-v8774"><b>{tipus}</b><span>{items.length} contacte{items.length!==1?"s":""}</span></div>{items.map(c=>{const rel=relatedToClient(c);const docs=rel.all.reduce((sum,o)=>sum+docsCount(o.id),0);return <div className="client-admin-item-v878134" key={c.id}><button className="client-row-v8774" onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color||"blue"}`}>{c.logo?<img src={c.logo}/>:(c.nom||"CL").slice(0,2).toUpperCase()}</div><div className="client-main-v8774"><strong>{c.nom}</strong><span>{c.rao||"Raó social pendent"}</span><small>{c.contacte||"Sense contacte"} · {c.telefon||"Sense telèfon"} · {[c.codiPostal,c.poblacio].filter(Boolean).join(" ")||c.adreca||"Sense població"}</small></div><div className="client-metrics-v8774"><span>Expedients</span><b>{rel.all.length}</b><em>{rel.direct.length} directes · {rel.byAgent.length} com agent</em></div><div className="client-metrics-v8774"><span>Documents</span><b>{docs}</b><em>vinculats</em></div><div className="client-tag-v8774">{c.tipus||"Client"}</div></button><button type="button" className="secondary client-manage-toggle-v878134" onClick={()=>setClientManageId878134(clientManageId878134===c.id?null:c.id)}>{clientManageId878134===c.id?"Tancar gestió":"Gestionar contacte"}</button>{clientManageId878134===c.id&&<ClientInlineEditor878134 client={c} tipusOpts={tipusOpts} onSave={patch=>saveClient878134(c.id,patch)} onDelete={()=>deleteClient878134(c,rel)}/>}</div>})}</section>)}
+        {clients.length===0?<Empty text="No hi ha contactes amb aquest filtre."/>:grouped.map(([tipus,items],idx)=><details key={tipus} className="client-type-section-v8774 client-type-section-v87167" open={idx===0}><summary className="client-type-head-v8774"><b>{tipus}</b><span>{items.length} contacte{items.length!==1?"s":""}</span></summary>{items.map(c=>{const rel=relatedToClient(c);const docs=rel.all.reduce((sum,o)=>sum+docsCount(o.id),0);return <div className="client-admin-item-v878134" key={c.id}><button className="client-row-v8774" onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color||"blue"}`}>{c.logo?<img src={c.logo}/>:(c.nom||"CL").slice(0,2).toUpperCase()}</div><div className="client-main-v8774"><strong>{c.nom}</strong><span>{c.rao||"Raó social pendent"}</span><small>{c.contacte||"Sense contacte"} · {c.telefon||"Sense telèfon"} · {[c.codiPostal,c.poblacio].filter(Boolean).join(" ")||c.adreca||"Sense població"}</small></div><div className="client-metrics-v8774"><span>Expedients</span><b>{rel.all.length}</b><em>{rel.direct.length} directes · {rel.byAgent.length} com agent</em></div><div className="client-metrics-v8774"><span>Documents</span><b>{docs}</b><em>vinculats</em></div><div className="client-tag-v8774">{c.tipus||"Client"}</div></button><button type="button" className="secondary client-manage-toggle-v878134" onClick={()=>setClientManageId878134(clientManageId878134===c.id?null:c.id)}>{clientManageId878134===c.id?"Tancar gestió":"Gestionar contacte"}</button>{clientManageId878134===c.id&&<ClientInlineEditor878134 client={c} tipusOpts={tipusOpts} onSave={patch=>saveClient878134(c.id,patch)} onDelete={()=>deleteClient878134(c,rel)}/>}</div>})}</details>)}
       </div>
     </Card>
   </div>
@@ -3535,7 +3519,6 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   const libraryAgents=sortAgents878134(uniqAgents8768([...(allAgents||[])]));
   const agents=obraAgents;
   const agentChoices=sortAgents878134(uniqAgents8768([...(obraAgents||[]),...(libraryAgents||[])]));
-  const [agentOpen878166,setAgentOpen878166]=useState(null);
   function upd(k,v){setForm(p=>({...p,[k]:v}))}
   function changeCp(v){setForm(p=>{const pob=poblacioForCp8773(v);return {...p,codiPostal:v,poblacio:pob||p.poblacio}})}
   function changePoblacio(v){setForm(p=>{const cp=cpForPoblacio8773(v);return {...p,poblacio:v,codiPostal:cp||p.codiPostal}})}
@@ -3583,7 +3566,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     const filtered=agentOptionsForField878163(agentChoices,field);
     const known=filtered.find(a=>String(a.nom||"")===String(current));
     const custom=current&&current!=="Pendent"&&!known;
-    return <div className={`agent-picker-card-v87164 agent-picker-card-v878166 ${agentOpen878166===field?'open':''}`}><button type="button" className="agent-picker-summary-v878166" onClick={()=>setAgentOpen878166(p=>p===field?null:field)}><span>{label}</span><b>{current==="Pendent"?"Pendent":current}</b></button>{agentOpen878166===field&&<div className="agent-picker-body-v87164"><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type="button" className={current==="Pendent"?"active":""} onClick={()=>upd(field,"Pendent")}>Pendent / no assignat</button>{filtered.map(a=><button type="button" key={field+a.id} className={String(a.nom||"")===String(current)?"active":""} onClick={()=>{upd(field,a.nom);addAgentToObraIfNeeded878159(a)}}><b>{a.nom}</b><span>{a.empresa||a.rol||"Agent"}</span></button>)}<div className="agent-inline-create-v87159"><input value={custom?current:""} onChange={e=>upd(field,e.target.value)} placeholder="+ Escriure / crear nou agent"/><button type="button" className="secondary small" onClick={()=>{const nom=String(form[field]||"").trim();if(!nom){alert("Escriu el nom de l'agent.");return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>Crear fitxa agent</button></div></div>}</div>
+    return <div className="agent-picker-card-v87164"><details><summary><span>{label}</span><b>{current==="Pendent"?"Pendent":current}</b></summary><div className="agent-picker-body-v87164"><small>{agentGroupLabel878164(field)} · {filtered.length} disponibles</small><button type="button" className={current==="Pendent"?"active":""} onClick={()=>upd(field,"Pendent")}>Pendent / no assignat</button>{filtered.map(a=><button type="button" key={field+a.id} className={String(a.nom||"")===String(current)?"active":""} onClick={()=>{upd(field,a.nom);addAgentToObraIfNeeded878159(a)}}><b>{a.nom}</b><span>{a.empresa||a.rol||"Agent"}</span></button>)}<div className="agent-inline-create-v87159"><input value={custom?current:""} onChange={e=>upd(field,e.target.value)} placeholder="+ Escriure / crear nou agent"/><button type="button" className="secondary small" onClick={()=>{const nom=String(form[field]||"").trim();if(!nom){alert("Escriu el nom de l'agent.");return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>Crear fitxa agent</button></div></div></details></div>
   }
   const selectedClient=(clients||[]).find(c=>c.id===clientChoice);
   return <div className="fitxa-dades-stack-v878133"><PrincipalAgentsPanel878134 obra={obra} client={selectedClient||client} agents={agents}/><Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
@@ -4223,7 +4206,7 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
         <div className="obra-mobile-flow-v87119">
           <button type="button" className="primary" onClick={()=>setMobileFlowOpen87119(v=>!v)}>Obrir opcions de l’expedient</button>
           <button type="button" className="secondary" onClick={()=>setMobileActionsOpen87119(v=>!v)}>Accions</button>
-          {mobileFlowOpen87119&&<div className="obra-mobile-flow-panel-v87119"><div className="flow-title-v87119"><b>Què vols obrir?</b><button type="button" onClick={()=>setMobileFlowOpen87119(false)}>Tancar</button></div>{tabGroups878164(tabs).map((g,idx)=><details key={g.title} open={idx===0||g.items.includes(activeTab)} className="obra-mobile-tab-group-v87164"><summary>{g.title}</summary>{g.items.map(t=><button type="button" key={t} onClick={()=>{setTab(t);setTabsOpen(false);setMobileFlowOpen87119(false)}} className={activeTab===t?"active":""}><span>{t}</span><small>{activeTab===t?"Oberta":"Entrar"}</small></button>)}</details>)}</div>}
+          {mobileFlowOpen87119&&<div className="obra-mobile-flow-panel-v87119"><div className="flow-title-v87119"><b>Pestanyes de l’expedient</b><button type="button" onClick={()=>setMobileFlowOpen87119(false)}>Tancar</button></div><div className="obra-mobile-tab-list-v87167">{tabs.map(t=><button type="button" key={t} onClick={()=>{setTab(t);setTabsOpen(false);setMobileFlowOpen87119(false)}} className={activeTab===t?"active":""}><span>{t}</span><small>{activeTab===t?"Oberta":"Entrar"}</small></button>)}</div></div>}
           {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button></div>}
         </div>
       </div>
@@ -4232,7 +4215,7 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105">
         <div className="obra-tabs-title-v87105"><b>{obra.nom}</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
-        {tabGroups878164(tabs).map((g,idx)=><details key={g.title} open={idx===0||g.items.includes(activeTab)} className="obra-tab-group-v87164"><summary><span>{g.title}</span><small>{g.desc}</small></summary>{g.items.map(t=><button key={t} onClick={()=>{setTab(t); if(window.innerWidth<950)setTabsOpen(false)}} className={activeTab===t?"active":""}>{t}</button>)}</details>)}
+        <div className="obra-tabs-flat-v87167">{tabs.map(t=><button key={t} onClick={()=>{setTab(t); if(window.innerWidth<950)setTabsOpen(false)}} className={activeTab===t?"active":""}>{t}</button>)}</div>
       </aside>
       <div className="obra-content">{renderTab()}</div>
     </section>
@@ -5589,7 +5572,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:state.clients||[],
     obres:state.obres||[],
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{})),
-    app_version:"87.166.0",
+    app_version:"87.165.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
