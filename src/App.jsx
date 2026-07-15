@@ -3220,6 +3220,27 @@ function Clients({clients,obres=[],odata={},cs,setCs,ct,setCt,openClient,newClie
       <div className="client-list-v8774">
         {clients.length===0?<Empty text="No hi ha contactes amb aquest filtre."/>:grouped.map(([tipus,items])=><section key={tipus} className="client-type-section-v8774"><div className="client-type-head-v8774"><b>{tipus}</b><span>{items.length} contacte{items.length!==1?"s":""}</span></div>{items.map(c=>{const rel=relatedToClient(c);const docs=rel.all.reduce((sum,o)=>sum+docsCount(o.id),0);return <div className="client-admin-item-v878134" key={c.id}><button className="client-row-v8774" onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color||"blue"}`}>{c.logo?<img src={c.logo}/>:(c.nom||"CL").slice(0,2).toUpperCase()}</div><div className="client-main-v8774"><strong>{c.nom}</strong><span>{c.rao||"Raó social pendent"}</span><small>{c.contacte||"Sense contacte"} · {c.telefon||"Sense telèfon"} · {[c.codiPostal,c.poblacio].filter(Boolean).join(" ")||c.adreca||"Sense població"}</small></div><div className="client-metrics-v8774"><span>Expedients</span><b>{rel.all.length}</b><em>{rel.direct.length} directes · {rel.byAgent.length} com agent</em></div><div className="client-metrics-v8774"><span>Documents</span><b>{docs}</b><em>vinculats</em></div><div className="client-tag-v8774">{c.tipus||"Client"}</div></button><button type="button" className="secondary client-manage-toggle-v878134" onClick={()=>setClientManageId878134(clientManageId878134===c.id?null:c.id)}>{clientManageId878134===c.id?"Tancar gestió":"Gestionar contacte"}</button>{clientManageId878134===c.id&&<ClientInlineEditor878134 client={c} tipusOpts={tipusOpts} onSave={patch=>saveClient878134(c.id,patch)} onDelete={()=>deleteClient878134(c,rel)}/>}</div>})}</section>)}
       </div>
+      {descompostModalV87172&&(()=>{
+        const cap=descompostModalV87172.cap;
+        const i=descompostModalV87172.i;
+        const row=(caps?.[cap]||[])[i]||{};
+        const detected=descompostTotal878160(row.descompost||"");
+        return <Modal title={`Descomposat · ${row.codi||""} ${row.concepte||""}`} close={()=>setDescompostModalV87172(null)}>
+          <div className="descompost-modal-v87172">
+            <div className="descompost-modal-head-v87172">
+              <label className="secondary upload-label">Importar Excel descomposat<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostExcel878161(cap,i,e.target.files?.[0])}/></label>
+              <span>{row.descompostSource?`Origen: ${row.descompostSource}${row.descompostSheet?` · ${row.descompostSheet}`:""}`:"Excel IA / BEDEC / TCQ / base pròpia"}</span>
+            </div>
+            <div className="descompost-modal-grid-v87172">
+              <label><span>Preu/ut detectat</span><b>{money(detected)}</b></label>
+              <label><span>Preu/ut validat</span><input inputMode="decimal" value={row.descompostValidatedPu||qty2(detected||parseNum8770(row.pu)||0)} onChange={e=>upd(cap,i,"descompostValidatedPu",e.target.value)} onBlur={e=>upd(cap,i,"descompostValidatedPu",qty2(parseNum8770(e.target.value)||0))}/></label>
+              <label><span>Preu actual partida</span><b>{money(parseNum8770(row.pu)||0)}</b></label>
+            </div>
+            <label className="descompost-textarea-v87172"><span>Quadre / línies del descomposat</span><textarea value={row.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)} placeholder="Importa l'Excel o enganxa aquí el descomposat. Revisa'l abans d'aplicar el preu."/></label>
+          </div>
+          <div className="modal-actions"><button className="secondary" onClick={()=>setDescompostModalV87172(null)}>Tancar</button><button className="secondary" onClick={()=>savePartidaToLibrary87115({...row,descompost:row.descompost||""},cap)}>Guardar a llibreria</button><button className="primary" onClick={()=>applyDescompostToPartida878160(cap,i)}>Aplicar preu/ut validat</button></div>
+        </Modal>
+      })()}
     </Card>
   </div>
 }
@@ -4355,6 +4376,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [libraryTargetCap87115,setLibraryTargetCap87115]=useState("");
   const [libraryItems87115,setLibraryItems87115]=useState(()=>lsJson8779(clientLibraryKey87115,[]));
   const [libraryScope87160,setLibraryScope87160]=useState("client");
+  const [budgetRowOpenV87172,setBudgetRowOpenV87172]=useState({});
+  const [descompostModalV87172,setDescompostModalV87172]=useState(null);
   useEffect(()=>{setLibraryItems87115(lsJson8779(clientLibraryKey87115,[]));setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("")},[clientLibraryKey87115]);
   const historicalSeedSig87116=useMemo(()=>{
     const rows=(clientHistoricalPartides||[]).filter(r=>r&&String(r.concepte||"").trim());
@@ -4396,7 +4419,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function savePartidaToLibrary87115(row,cap){
     const item=normalizeLibPartida87115(row,cap);
     setLibraryItems87115(prev=>mergeLibrary87118([...(prev||[]),item]));
-    setLibraryOpen87115(true);
+    alert("Partida guardada a la llibreria del client.");
   }
   function seedLibraryFromBudget87115(){
     const flat=Object.entries(caps||{}).flatMap(([cap,items])=>(items||[]).map(r=>normalizeLibPartida87115(r,cap)));
@@ -4540,9 +4563,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function applyDescompostToPartida878160(cap,i){
     if(!editBudget8760b)return;
     const row=(caps?.[cap]||[])[i]||{};
-    const pu=descompostTotal878160(row.descompost||"");
-    if(!pu){alert("No he trobat cap import vàlid dins el descomposat. Importa un Excel de descomposat, enganxa les línies o escriu una línia Total.");return;}
-    setCaps(p=>{const arr=[...(p[cap]||[])];arr[i]={...arr[i],pu:qty2(pu),puFromDescompost:true};return {...p,[cap]:arr};});
+    const manual=parseNum8770(row.descompostValidatedPu);
+    const detected=descompostTotal878160(row.descompost||"");
+    const pu=manual||detected;
+    if(!pu){alert("No he trobat cap import vàlid dins el descomposat. Importa un Excel, revisa el quadre o escriu un preu/ut validat.");return;}
+    setCaps(p=>{const arr=[...(p[cap]||[])];arr[i]={...arr[i],pu:qty2(pu),descompostValidatedPu:qty2(pu),puFromDescompost:true};return {...p,[cap]:arr};});
+    alert(`Preu/ut aplicat a la partida: ${money(pu)}.`);
   }
   async function importDescompostExcel878161(cap,i,file){
     if(!editBudget8760b)return;
@@ -4552,13 +4578,21 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       setCaps(p=>{
         const arr=[...(p[cap]||[])];
         const current=arr[i]||{};
-        arr[i]={...current,descompost:parsed.text,descompostSource:file.name,descompostSheet:parsed.sheet,descompostImportedAt:new Date().toISOString(),pu:parsed.total?qty2(parsed.total):(current.pu||"0,00"),puFromDescompost:!!parsed.total};
+        arr[i]={...current,descompost:parsed.text,descompostSource:file.name,descompostSheet:parsed.sheet,descompostImportedAt:new Date().toISOString(),descompostValidatedPu:parsed.total?qty2(parsed.total):(current.descompostValidatedPu||""),descompostDetectedTotal:parsed.total||0};
         return {...p,[cap]:arr};
       });
-      alert(`Descomposat importat: ${parsed.lines} línies · ${money(parsed.total)}. He aplicat aquest total com a preu unitari de la partida.`);
+      alert(`Descomposat importat: ${parsed.lines} línies · total detectat ${money(parsed.total)}. Revisa'l i valida el preu/ut abans d'aplicar-lo.`);
     }catch(err){
       alert("No he pogut llegir el descomposat: "+String(err?.message||err));
     }
+  }
+
+  function budgetRowKeyV87172(cap,i){return `${cap}__${i}`}
+  function isBudgetRowOpenV87172(cap,i){return !!budgetRowOpenV87172[budgetRowKeyV87172(cap,i)]}
+  function toggleBudgetRowV87172(cap,i){setBudgetRowOpenV87172(o=>({...o,[budgetRowKeyV87172(cap,i)]:!o[budgetRowKeyV87172(cap,i)]}))}
+  function openDescompostModalV87172(cap,i){
+    setBudgetRowOpenV87172(o=>({...o,[budgetRowKeyV87172(cap,i)]:true}));
+    setDescompostModalV87172({cap,i});
   }
 
   const total=Object.values(caps).flat().reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -4599,14 +4633,15 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               {sortPartides8779(items).map((r)=>{
                 const i=(items||[]).findIndex(x=>x===r);
                 const t=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);
-                return <div className="budget-v25-line" key={i}>
-                  <input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>
-                  <input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>
-                  <div className="budget-concept-v877"><div className="concept-line-v877"><input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>{(r.desc||editBudget8760b)&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{(r.desc||editBudget8760b)&&descOpen875[`${cap}-${i}`]&&(editBudget8760b?<textarea className="budget-desc-edit-v878156" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>:<small>{r.desc}</small>)}{editBudget8760b&&<details className="descompost-row-v87160 descompost-row-v87161"><summary>Descomposat Excel / IA / BEDEC {r.puFromDescompost?"· PU aplicat":""}</summary><div className="descompost-import-actions-v87161"><label className="secondary small upload-label">Importar Excel descomposat<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostExcel878161(cap,i,e.target.files?.[0])}/></label><span>{r.descompostSource?`Origen: ${r.descompostSource}${r.descompostSheet?` · ${r.descompostSheet}`:""}`:"Pots importar un descomposat tret de IA, BEDEC, TCQ o base pròpia."}</span></div><textarea value={r.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)} placeholder="Importa un Excel de descomposat o enganxa aquí les línies. Si hi ha Total, s’utilitzarà com a preu unitari."/><div><span>Total detectat: <b>{money(descompostTotal878160(r.descompost||""))}</b></span><button type="button" className="secondary small" onClick={()=>applyDescompostToPartida878160(cap,i)}>Aplicar com a preu/ut</button><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115({...r,descompost:r.descompost||""},cap)}>Guardar a llibreria</button></div></details>}</div>
-                  <input type="text" inputMode="decimal" value={editBudget8760b?(r.q??""):qty2(parseNum8770(r.q)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",qty2(parseNum8770(e.target.value)||0))}/>
-                  <input type="text" inputMode="decimal" value={editBudget8760b?(r.pu??""):qty2(parseNum8770(r.pu)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>
+                const rowOpenV87172=!editBudget8760b||isBudgetRowOpenV87172(cap,i);
+                return <div className={`budget-v25-line ${editBudget8760b&&!rowOpenV87172?"budget-line-compact-v87172":""}`} key={i}>
+                  {rowOpenV87172?<input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>:<span className="budget-static-cell-v87172">{r.codi}</span>}
+                  {rowOpenV87172?<input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>:<span className="budget-static-cell-v87172">{r.ut}</span>}
+                  <div className="budget-concept-v877 budget-concept-v87172"><div className="concept-line-v877">{rowOpenV87172?<input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>:<strong className="budget-summary-concept-v87172">{r.concepte}</strong>}{(r.desc||editBudget8760b)&&rowOpenV87172&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar":"Veure desc."}</button>}</div>{(r.desc||editBudget8760b)&&rowOpenV87172&&descOpen875[`${cap}-${i}`]&&(editBudget8760b?<textarea className="budget-desc-edit-v878156" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>:<small>{r.desc}</small>)}</div>
+                  {rowOpenV87172?<input type="text" inputMode="decimal" value={editBudget8760b?(r.q??""):qty2(parseNum8770(r.q)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87172 num">{qty2(parseNum8770(r.q)||0)}</span>}
+                  {rowOpenV87172?<input type="text" inputMode="decimal" value={editBudget8760b?(r.pu??""):qty2(parseNum8770(r.pu)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87172 num">{qty2(parseNum8770(r.pu)||0)}</span>}
                   <b>{money(t)}</b>
-                  {editBudget8760b?<div className="budget-line-actions-v878128"><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>{setLibraryOpen87115(true);setLibrarySearch87115(String(r.concepte||""));setLibraryTargetCap87115(cap)}}>Llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></div>:<span/>}
+                  {editBudget8760b?<div className="budget-line-actions-v878128 budget-line-actions-v87172"><button type="button" className="secondary small" onClick={()=>toggleBudgetRowV87172(cap,i)}>{rowOpenV87172?"Tancar":"Editar"}</button>{rowOpenV87172&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>openDescompostModalV87172(cap,i)}>Descomposat</button><button type="button" className="secondary small" onClick={()=>{setLibraryOpen87115(true);setLibrarySearch87115(String(r.concepte||""));setLibraryTargetCap87115(cap)}}>Llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}</div>:<span/>}
                 </div>
               })}
               {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
@@ -4615,6 +4650,27 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         })}
         {editBudget8760b&&<button type="button" className="primary add-chapter-bottom-v8779" onClick={addCapitol}><Plus/> Nou capítol</button>}
       </div>
+      {descompostModalV87172&&(()=>{
+        const cap=descompostModalV87172.cap;
+        const i=descompostModalV87172.i;
+        const row=(caps?.[cap]||[])[i]||{};
+        const detected=descompostTotal878160(row.descompost||"");
+        return <Modal title={`Descomposat · ${row.codi||""} ${row.concepte||""}`} close={()=>setDescompostModalV87172(null)}>
+          <div className="descompost-modal-v87172">
+            <div className="descompost-modal-head-v87172">
+              <label className="secondary upload-label">Importar Excel descomposat<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostExcel878161(cap,i,e.target.files?.[0])}/></label>
+              <span>{row.descompostSource?`Origen: ${row.descompostSource}${row.descompostSheet?` · ${row.descompostSheet}`:""}`:"Excel IA / BEDEC / TCQ / base pròpia"}</span>
+            </div>
+            <div className="descompost-modal-grid-v87172">
+              <label><span>Preu/ut detectat</span><b>{money(detected)}</b></label>
+              <label><span>Preu/ut validat</span><input inputMode="decimal" value={row.descompostValidatedPu||qty2(detected||parseNum8770(row.pu)||0)} onChange={e=>upd(cap,i,"descompostValidatedPu",e.target.value)} onBlur={e=>upd(cap,i,"descompostValidatedPu",qty2(parseNum8770(e.target.value)||0))}/></label>
+              <label><span>Preu actual partida</span><b>{money(parseNum8770(row.pu)||0)}</b></label>
+            </div>
+            <label className="descompost-textarea-v87172"><span>Quadre / línies del descomposat</span><textarea value={row.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)} placeholder="Importa l'Excel o enganxa aquí el descomposat. Revisa'l abans d'aplicar el preu."/></label>
+          </div>
+          <div className="modal-actions"><button className="secondary" onClick={()=>setDescompostModalV87172(null)}>Tancar</button><button className="secondary" onClick={()=>savePartidaToLibrary87115({...row,descompost:row.descompost||""},cap)}>Guardar a llibreria</button><button className="primary" onClick={()=>applyDescompostToPartida878160(cap,i)}>Aplicar preu/ut validat</button></div>
+        </Modal>
+      })()}
     </Card>
   </div>
 }

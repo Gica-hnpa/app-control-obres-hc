@@ -4959,3 +4959,55 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .timer-clock-v87162 span{font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase}
 .timer-clock-v87162 b{font-size:24px;color:#0f2d5c}
 @media(max-width:900px){.timer-panel-v87162{align-items:stretch}.timer-clock-v87162 b{font-size:20px}}
+
+/* V87.172 · pressupost editat per partida + descomposat en finestra */
+.budget-line-compact-v87172{
+  align-items:center!important;
+  min-height:52px!important;
+  padding-top:7px!important;
+  padding-bottom:7px!important;
+}
+.budget-static-cell-v87172{
+  display:flex;
+  align-items:flex-start;
+  min-height:32px;
+  padding:8px 10px;
+  border:1px solid #d6dde7;
+  border-radius:8px;
+  background:#fff;
+  color:#0f172a;
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.budget-static-cell-v87172.num{justify-content:flex-end;font-variant-numeric:tabular-nums}
+.budget-summary-concept-v87172{
+  display:block;
+  width:100%;
+  min-height:32px;
+  padding:8px 10px;
+  border:1px solid #d6dde7;
+  border-radius:8px;
+  background:#fff;
+  color:#0f172a;
+  line-height:1.25;
+  text-align:left;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.budget-concept-v87172{align-self:start!important}
+.budget-line-actions-v87172{align-self:start!important;display:flex;flex-wrap:wrap;gap:8px}
+.descompost-modal-v87172{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.descompost-modal-head-v87172{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#f8fafc;border:1px solid #d6dde7;border-radius:14px;padding:12px}
+.descompost-modal-head-v87172 span{color:#64748b;font-weight:800}
+.descompost-modal-grid-v87172{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px}
+.descompost-modal-grid-v87172 label{background:#f8fafc;border:1px solid #d6dde7;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.descompost-modal-grid-v87172 span,.descompost-textarea-v87172 span{font-size:12px;font-weight:900;color:#64748b;text-transform:uppercase}
+.descompost-modal-grid-v87172 input{border:1px solid #cbd5e1;border-radius:10px;padding:10px;text-align:right;font-weight:900}
+.descompost-textarea-v87172{display:flex;flex-direction:column;gap:8px}
+.descompost-textarea-v87172 textarea{width:100%;min-height:280px;border:1px solid #cbd5e1;border-radius:14px;padding:14px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:13px;line-height:1.35;resize:vertical;background:white}
+@media(max-width:900px){
+  .descompost-modal-grid-v87172{grid-template-columns:1fr}
+  .descompost-textarea-v87172 textarea{min-height:220px}
+}

@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.171 - RECUPERACIO PRESSUPOST FIABLE
-BASE: V87.162 / V87.169 rollback fiable
+VERSIO: V87.172 - PRESSUPOST EDIT PLEGABLE + DESCOMPOST MODAL
+BASE: V87.171 / V87.162 fiable
 
-Recupera la vista fiable abans de V87.170. No aplica la vista nova de pressupost partida-a-partida ni el modal de descomposat que provocava penjaments.
+Correcció puntual sense continuar sobre V87.170.

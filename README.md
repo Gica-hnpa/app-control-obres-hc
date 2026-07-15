@@ -1,17 +1,13 @@
-# APP Control d'Obres · V87.171
+# APP Control d'Obres · V87.172
 
-Versió de recuperació fiable sobre la base V87.162 / V87.169 rollback.
+Versió de correcció puntual sobre la base fiable V87.171/V87.162.
 
-Objectiu:
-- Tornar a una base estable després que la V87.170 descol·loqués la vista d'edició de pressupost i provoqués penjaments al descomposat.
-- No continuar sobre la V87.170.
-- Recuperar la vista de pressupost que funcionava abans.
-- Mantenir codis editables i gestió del temps manual/comptador de la V87.162.
-
-Canvis respecte V87.170:
-- Es descarta la vista nova de pressupost partida-a-partida.
-- Es descarta el modal de descomposat que podia quedar penjat.
-- Es recupera el comportament fiable de la base V87.162/V87.169.
+Canvis:
+- En mode edició de pressupost, les partides no s'obren totes amb tots els camps ampliats; queden en línia compacta i s'obren una a una amb el botó Editar.
+- El descomposat Excel / IA / BEDEC deixa d'estar incrustat dins la línia de partida i s'obre en una finestra pròpia.
+- El descomposat importat no aplica automàticament el preu unitari: mostra total detectat i preu/ut validat perquè l'usuari ho confirmi.
+- Guardar a llibreria ja no obre tota la llibreria ni deixa panells oberts innecessaris.
+- Ajustos d'alineació en concepte, camps i accions del pressupost.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist
