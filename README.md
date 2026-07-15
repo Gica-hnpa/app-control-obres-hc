@@ -1,15 +1,13 @@
-# APP Control d'Obres · V87.168
+# APP Control d'Obres · V87.162
 
-Versió de recuperació visual i ordre funcional sobre V87.167.
+Versió de correcció sobre V87.161.
 
-Canvis principals:
-- Recuperació de les pestanyes de l'expedient en format horitzontal/compacte a PC i iPad, evitant el llistat vertical llarg que ocupava massa pantalla.
-- En mòbil es manté el flux d'opcions perquè sigui compacte.
-- Directori d'agents convertit en llistat desplegable editable per grups: tècnics, constructors, promotors, CSS i altres.
-- Creació i edició d'agents directament des de la pantalla Agents.
-- Deduplicació reforçada d'agents per email, NIF i coincidència de nom/rol perquè el mateix tècnic no aparegui diverses vegades.
-- Relació d'agents de l'obra més controlada, amb biblioteca deduplicada i alta/edició des de panells desplegables.
-- Pressupost ràpid manté la vista prèvia i l'editor plegat sense amagar opcions de descomposats ni impressió.
+Canvis:
+- Codificació d'expedients editable des de Dades: any, número, inicials del treball, inicials del client, paraula clau i codi complet.
+- Botó per recalcular el codi segons el format recomanat: any-número-tipus-client-paraula clau.
+- Guardat reforçat del tipus de feina perquè un expedient creat com Seguretat i salut/CSS es pugui canviar posteriorment.
+- Gestió del temps amb dues vies: registre manual si s'ha oblidat apuntar la feina i comptador de temps en directe.
+- El comptador guarda el registre dins la mateixa taula de temps utilitzada pel rendiment.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist

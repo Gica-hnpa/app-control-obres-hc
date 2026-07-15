@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-168-restauracio-visual-agents-tabs",
+  "name": "app-control-obres-v87-162-codis-editables-gestio-temps",
   "private": true,
-  "version": "87.168.0",
+  "version": "87.162.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
