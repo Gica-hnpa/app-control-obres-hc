@@ -2596,19 +2596,55 @@ function parseRows(rows,sheetName){
 }
 
 function deletePressupostVersion(id){
-  if(!confirm("Eliminar aquesta versió de pressupost?")) return;
   setD(obraId,d=>{
-    const removed=(d.pressupostos||[]).find(p=>p.id===id);
+    const norm=normalizeBudgetedData8791(d||empty());
+    const removed=(norm.pressupostos||[]).find(p=>String(p.id)===String(id));
+    if(!removed){alert("No he trobat aquesta versió de pressupost.");return norm;}
     const bid=removed?.budgetId||"principal";
-    const next=(d.pressupostos||[]).filter(p=>p.id!==id);
-    const hasSame=next.some(p=>(p.budgetId||"principal")===bid);
-    return {
-      ...d,
-      pressupostos:next,
-      partides:hasSame?(d.partides||[]):(d.partides||[]).filter(r=>(r.budgetId||"principal")!==bid),
-      certificacions:hasSame?(d.certificacions||[]):(d.certificacions||[]).filter(c=>(c.budgetId||"principal")!==bid),
-      factures:hasSame?(d.factures||[]):(d.factures||[]).filter(f=>(f.budgetId||"principal")!==bid)
-    };
+    const budgetName=budgetLabel8786(norm,bid);
+    const rowsCount=(norm.partides||[]).filter(r=>(r.budgetId||"principal")===bid).length;
+    const certCount=(norm.certificacions||[]).filter(c=>(c.budgetId||"principal")===bid).length;
+    const factCount=(norm.factures||[]).filter(f=>(f.budgetId||"principal")===bid).length;
+
+    // V87.175: si és un annex/importació, eliminar una versió ha d'eliminar TOT el pressupost associat.
+    // Fins ara, si quedava un marcador o una altra versió amb el mateix budgetId, les partides no s'eliminaven.
+    if(bid!=="principal"){
+      const ok=confirm(`Eliminar TOT el pressupost/annex "${budgetName}"?
+
+S'eliminaran ${rowsCount} partides, ${certCount} certificacions i ${factCount} factures vinculades a aquest pressupost.
+
+Aquesta acció no tocarà el pressupost principal ni altres annexos.`);
+      if(!ok)return norm;
+      return normalizeBudgetedData8791({
+        ...norm,
+        budgetGroups:(norm.budgetGroups||[]).filter(g=>g.id!==bid),
+        pressupostos:(norm.pressupostos||[]).filter(p=>(p.budgetId||"principal")!==bid),
+        partides:(norm.partides||[]).filter(r=>(r.budgetId||"principal")!==bid),
+        certificacions:(norm.certificacions||[]).filter(c=>(c.budgetId||"principal")!==bid),
+        factures:(norm.factures||[]).filter(f=>(f.budgetId||"principal")!==bid),
+        activeBudgetIdObra:"principal",
+        updatedAt:new Date().toISOString()
+      });
+    }
+
+    // Pressupost principal: per seguretat no esborrem partides/certificacions sense una confirmació específica.
+    const hasWork=rowsCount||certCount||factCount;
+    if(hasWork){
+      const ok=confirm(`Aquesta versió pertany al pressupost principal.
+
+D'acord = eliminar NOMÉS aquesta fitxa/registre de versió.
+Cancel·lar = no fer res.
+
+Per buidar totes les partides del pressupost principal, fes-ho des del mode edició/capítols.`);
+      if(!ok)return norm;
+    }else if(!confirm("Eliminar aquesta versió de pressupost?")){
+      return norm;
+    }
+    return normalizeBudgetedData8791({
+      ...norm,
+      pressupostos:(norm.pressupostos||[]).filter(p=>String(p.id)!==String(id)),
+      updatedAt:new Date().toISOString()
+    });
   });
 }
 function duplicatePressupostVersion(id){
@@ -4664,7 +4700,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           </button>
           <div className="version-actions-v872">
             <button className="secondary small" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
-            <button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>Eliminar</button>
+            <button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>{(p.budgetId||"principal")!=="principal"?"Eliminar tot":"Eliminar"}</button>
           </div>
         </div>)}
       </div>

@@ -1,5 +1,5 @@
 APP CONTROL D'OBRES
-VERSIO: V87.174 - DESCOMPOST QUADRE EXCEL
+VERSIO: V87.175 - ELIMINAR PRESSUPOST COMPLET
 PAQUET: CARPETA ÚNICA DE VALIDACIÓ
 
-Derivada de V87.173/V87.171 fiable. Canvi focalitzat en descomposats de pressupost.
+Derivada de V87.174/V87.173. Correcció quirúrgica: eliminar pressupost importat/annex elimina també les partides i dades vinculades.
