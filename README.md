@@ -1,14 +1,14 @@
-# APP Control d'Obres · V87.163
+# APP Control d’Obres · V87.164
 
-Versió de refinament sobre V87.162.
+Versió derivada de V87.163.
 
 Canvis:
-- Comptador de temps numèric en format HH:MM:SS.
-- En aturar el comptador, el registre es guarda arrodonit a fraccions de 15 minuts.
-- Desplegables d'agents filtrats per funció: tècnics per DO/DEO/CSS i constructores/contractistes pel camp constructor.
-- Dedupliació d'agents per nom/empresa perquè el mateix tècnic no surti repetit.
-- Menú principal més ordenat en grups desplegables: Gestió tècnica, Control econòmic i Sistema.
-- Accés superior a notificacions/agenda i configuració en pantalles petites.
+- Comptador de temps més visible, numèric i amb facturació arrodonida a fraccions de 15 minuts.
+- Desplegables d’agents substituïts per selectors persistents tipus panell perquè no es tanquin de cop.
+- Agents filtrats per funció: tècnics per DO/DEO/CSS i constructors/contractistes per constructor.
+- Nova pantalla Agents al menú principal, agrupada per tècnics, constructors, promotors, CSS i altres.
+- Pestanyes d’obra agrupades per blocs: resum/dades, documentació i pressupostos/obra.
+- Accés superior a Agenda, Configuració i Sortir en escriptori, mantenint accés compacte en mòbil/iPad.
 
 Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
 Publish Directory: dist
