@@ -1,4 +1,4 @@
-APP CONTROL D'OBRES
-VERSIO: V87.178 - DESCOMPOSTOS MASSIUS ALERT FIX
-BASE: V87.177/V87.171 fiable
-Correcció: importació massiva de descomposats calcula coincidències abans de setState perquè l'alerta i l'estat no quedin a 0.
+V87.180 — validació massiva de descompostos + exportació
+Base: V87.179 / V87.178 / V87.175
+Build: OK amb Vite
+ZIP net: src real, sense node_modules, dist ni package-lock.json

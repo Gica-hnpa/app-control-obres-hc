@@ -1,14 +1,14 @@
-# APP Control d'Obres · V87.178
+# APP Control d’Obres — V87.180
 
-Base fiable derivada de V87.177 / V87.171.
+Versió derivada de V87.179 amb correcció de flux per reentrar pressupostos i descompostos amb seguretat.
 
-Canvis:
-- Correcció de la importació massiva de descomposats per capítol.
-- L'assignació dels fulls `02.01`, `02.02`, etc. es calcula abans d'actualitzar l'estat React.
-- Evita que el missatge final digui `0` per culpa de l'actualització asíncrona de `setCaps`.
-- Mostra resum amb descomposats llegits, assignats i sense coincidència.
-- Es manté que els descomposats queden pendents de validació i no apliquen automàticament el preu.
-- Es manté Cancel·lar edició sense guardar canvis.
+## Canvis principals
+- Importació massiva de descompostos mantinguda i consolidada dins les partides.
+- Nova pestanya interna **Validar descompostos** dins Pressupost obra per validar tots els preus detectats sense obrir partida per partida.
+- Acció **Aplicar tots al pressupost i guardar** per passar tots els preus validats a PU de partida en un sol clic.
+- Pestanya **Exportar / còpies** amb PDF, Guardar a Documents, Exportar Excel i Consolidar dades.
+- Exportació Excel estructurada amb pestanya PRESSUPOST, resum de descompostos i un full per cada partida amb descompost.
+- Els totals del pressupost es consoliden també al marcador de pressupost perquè no surti 0 a la capçalera.
+- Botó Exportar Excel també a Pressupost ràpid.
 
-Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
-Publish Directory: dist
+Build verificat amb Vite.
