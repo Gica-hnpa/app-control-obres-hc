@@ -1,4 +1,3 @@
-V87.183 — recuperació tasques JSON visible
-Base: V87.182
-Canvis: import JSON reconcilia tasques amb expedients, crea expedients recuperats si cal i genera events visibles a Inici.
+V87.184 · export JSON estat viu + import claus dobles tasques
+Base: V87.183.
 Build verificat amb Vite.

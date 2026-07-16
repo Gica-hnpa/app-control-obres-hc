@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-183-recuperacio-tasques-json-visible",
+  "name": "app-control-obres-v87-184-export-json-estat-viu-tasques",
   "private": true,
-  "version": "87.183.0",
+  "version": "87.184.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

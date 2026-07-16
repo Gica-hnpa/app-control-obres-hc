@@ -1808,7 +1808,7 @@ function LoginScreen8778({onLogin}){
   </form></div>
 }
 
-function DataJsonTools8778(){
+function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
   const[status,setStatus]=useState("");
   const fileRef=useRef(null);
   const user=currentAppUser8779()||"hector";
@@ -1833,13 +1833,16 @@ function DataJsonTools8778(){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.182",
+      version:"V87.184",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE",
       note:"Còpia completa de totes les claus locals de l’usuari actiu. Inclou pressupostos annexos, certificacions, factures, agenda i claus dinàmiques.",
       storage,
-      localStorage:simple
+      localStorage:simple,
+      // V87.184: a més del localStorage cru, guardem l'estat viu que està veient l'usuari en pantalla.
+      // Això evita perdre tasques si alguna clau local antiga/no normalitzada no s'havia exportat bé.
+      appState:{clients:clients||[],obres:obres||[],odata:odata||{}}
     };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1872,18 +1875,26 @@ function DataJsonTools8778(){
           if(!buckets[base])buckets[base]=[];
           buckets[base].push({value,rank});
         };
+        const normalizeBase878184=(base)=>{
+          let b=String(base||"").trim();
+          // Versions anteriors podien crear claus dobles: aco_v8782__hector__aco_odata__hector.
+          // En treure el prefix quedava aco_odata__hector i la importació no ho reconeixia com a aco_odata.
+          [sourceUser,active,"hector","pol"].filter(Boolean).forEach(u=>{
+            const suf=`__${String(u).trim().toLowerCase()}`;
+            if(b.toLowerCase().endsWith(suf))b=b.slice(0,-suf.length);
+          });
+          return b;
+        };
         const normalizeStorageKey=(k)=>{
           if(!k)return null;
-          if(k.startsWith(sourcePref))return {base:k.slice(sourcePref.length),rank:30};
-          if(k.startsWith(targetPref))return {base:k.slice(targetPref.length),rank:30};
+          if(k.startsWith(sourcePref))return {base:normalizeBase878184(k.slice(sourcePref.length)),rank:30};
+          if(k.startsWith(targetPref))return {base:normalizeBase878184(k.slice(targetPref.length)),rank:30};
           if(k.startsWith(STORAGE_NS8782+"__")){
             const parts=k.split("__");
-            return {base:parts.slice(2).join("__"),rank:25};
+            return {base:normalizeBase878184(parts.slice(2).join("__")),rank:25};
           }
           if(/^aco_/.test(k)){
-            if(k.endsWith(`__${sourceUser}`))return {base:k.slice(0,-(`__${sourceUser}`).length),rank:20};
-            if(k.endsWith(`__${active}`))return {base:k.slice(0,-(`__${active}`).length),rank:20};
-            return {base:k,rank:10};
+            return {base:normalizeBase878184(k),rank:10};
           }
           return null;
         };
@@ -1894,7 +1905,15 @@ function DataJsonTools8778(){
           });
         }
         if(data.localStorage&&typeof data.localStorage==="object"){
-          Object.entries(data.localStorage).forEach(([k,v])=>addBucket(k,v,40));
+          Object.entries(data.localStorage).forEach(([k,v])=>{
+            const n=normalizeStorageKey(k);
+            addBucket(n?.base||normalizeBase878184(k),v,40);
+          });
+        }
+        if(data.appState&&typeof data.appState==="object"){
+          if(Array.isArray(data.appState.clients))addBucket("aco_clients",data.appState.clients,60);
+          if(Array.isArray(data.appState.obres))addBucket("aco_obres",data.appState.obres,60);
+          if(data.appState.odata&&typeof data.appState.odata==="object")addBucket("aco_odata",data.appState.odata,60);
         }
         if(!data.storage&&!data.localStorage&&typeof data==="object"){
           Object.entries(data).forEach(([k,v])=>addBucket(k,v,40));
@@ -2055,7 +2074,7 @@ function DataJsonTools8778(){
     reader.readAsText(file);
   }
   return <Card title="Còpia de seguretat / traspàs de dades JSON" action={<div className="actions-inline"><button className="primary" onClick={exportJson}>Exportar JSON complet</button><button className="secondary" onClick={()=>fileRef.current?.click()}>Importar JSON</button><input ref={fileRef} type="file" accept="application/json" hidden onChange={e=>importJson(e.target.files?.[0])}/></div>}>
-    <div className="module-note-v8738"><b>Còpia completa per usuari.</b><span>Aquesta exportació inclou totes les claus locals de l’usuari actiu, també les dinàmiques i la còpia crítica d’obra. Abans d’importar, l’app guarda una còpia de seguretat interna de l’estat anterior.</span></div>
+    <div className="module-note-v8738"><b>Còpia completa per usuari.</b><span>Aquesta exportació inclou les claus locals i també l’estat viu que tens carregat a pantalla: clients, expedients, tasques, pressupostos i documents. Abans d’importar, l’app guarda una còpia de seguretat interna de l’estat anterior.</span></div>
     {status&&<div className="doc-status-v38">{status}</div>}
   </Card>
 }
@@ -3468,8 +3487,10 @@ function createHomeTask878139(setOdata,obra,taskDraft){
     text,
     estat:taskDraft.estat||'Pendent',
     prioritat:taskDraft.prioritat||'Normal',
-    data:taskDraft.data||'',
+    data:taskDraft.dataMaxima||taskDraft.data||'',
+    dataMaxima:taskDraft.dataMaxima||taskDraft.data||'',
     hora:taskDraft.hora||'09:00',
+    notes:taskDraft.notes||'',
     origen:'Inici',
     createdAt:nowIso,
     updatedAt:nowIso
@@ -6216,7 +6237,7 @@ function save(){
 }
 return <div className="stack">
 <PlansModuls8736/>
-<DataJsonTools8778/>
+<DataJsonTools8778 clients={clients} obres={obres} odata={odata}/>
 <RecoverySnapshotsPanel878122 setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
 <Card title="Configuració general" action={<button className="primary" onClick={save}><Save/> Guardar configuració</button>}>
   <div className="form-grid">

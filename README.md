@@ -1,14 +1,12 @@
-# APP CONTROL D’OBRES — V87.183
+# APP Control d'Obres · V87.184
 
-Versió de seguretat per desencallar la importació de tasques i clients.
+Versió de correcció de persistència/exportació de tasques.
 
-## Canvis
-- Manté V87.182 com a base.
-- Import JSON més robust quan les tasques estan dins `odata` però l’expedient no queda visible a `aco_obres`.
-- Reconciliació d’`odata[obraId].obra` amb la llista principal d’expedients.
-- Si hi ha tasques/documents/pressupostos dins una clau d’obra sense expedient visible, crea un expedient recuperat.
-- Genera events de calendari per les tasques pendents importades.
-- El missatge d’importació indica tasques totals i tasques pendents visibles a Inici.
-- Conserva creació de client amb rol/tipologia des d’Afegir tasca.
+Canvis:
+- Exportació JSON inclou també l’estat viu carregat en pantalla: clients, expedients i odata.
+- Importació JSON normalitza claus dobles tipus `aco_v8782__hector__aco_odata__hector`.
+- Recupera millor tasques creades des d’Inici, clients nous i expedients nous.
+- Manté la recuperació profunda de V87.183.
 
-Base protegida: V87.182 / V87.180.
+Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+Publish Directory: dist
