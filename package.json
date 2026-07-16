@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-177-descompostos-capitol-detect",
+  "name": "app-control-obres-v87-178-descompostos-massius-alert-fix",
   "private": true,
-  "version": "87.177.0",
+  "version": "87.178.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

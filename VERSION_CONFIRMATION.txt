@@ -1,5 +1,4 @@
 APP CONTROL D'OBRES
-VERSIO: V87.177 - DESCOMPOSTOS CAPÍTOL DETECT
-BASE: V87.176 / V87.175 fiable
-
-Correcció específica per importar descomposats massius amb fulls anomenats per codi de partida.
+VERSIO: V87.178 - DESCOMPOSTOS MASSIUS ALERT FIX
+BASE: V87.177/V87.171 fiable
+Correcció: importació massiva de descomposats calcula coincidències abans de setState perquè l'alerta i l'estat no quedin a 0.

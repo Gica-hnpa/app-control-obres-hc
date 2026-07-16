@@ -4642,39 +4642,40 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(!file)return;
     try{
       const items=await workbookDescompostsMassius878176(file);
+      const prevCaps=cloneJson878176(caps);
+      const next=cloneJson878176(prevCaps);
+      const flat=[];
+      Object.entries(next||{}).forEach(([cap,rows])=>(rows||[]).forEach((r,idx)=>flat.push({cap,idx,row:r,code:normCode878176(r.codi),canon:canonCode878177(r.codi),text:normText878176(`${r.codi||""} ${r.concepte||""}`)})));
       let matched=0;
       const unmatched=[];
-      setCaps(prev=>{
-        const next=cloneJson878176(prev);
-        const flat=[];
-        Object.entries(next||{}).forEach(([cap,rows])=>(rows||[]).forEach((r,idx)=>flat.push({cap,idx,row:r,code:normCode878176(r.codi),text:normText878176(`${r.codi||""} ${r.concepte||""}`)})));
-        items.forEach(it=>{
-          const code=normCode878176(it.code);
-          const title=normText878176(it.title||it.sheet);
-          let target=code?flat.find(x=>codeMatches878177(x.row?.codi||x.code,code)):null;
-          // Cas típic de l'Excel aportat: cada full es diu 02.01, 02.02, etc.
-          // Si el pressupost té codis amb zeros diferents, comparem també el codi canònic.
-          if(!target && code){
-            const ccode=canonCode878177(code);
-            target=flat.find(x=>canonCode878177(x.row?.codi||x.code)===ccode);
-          }
-          if(!target && title){
-            target=flat.find(x=>{
-              const concept=normText878176(x.row?.concepte||"");
-              return concept && (x.text.includes(title)||title.includes(concept)||concept.includes(title));
-            });
-          }
-          if(!target){unmatched.push(`${it.sheet}${it.code?` (${it.code})`:""}`);return;}
-          const arr=[...(next[target.cap]||[])];
-          const current={...(arr[target.idx]||{})};
-          const total=it.total||descompostTableTotal878174(it.table)||descompostTotal878160(it.text);
-          arr[target.idx]={...current,descompost:it.text,descompostTable:it.table||null,descompostSource:file.name,descompostSheet:it.sheet,descompostImportedAt:new Date().toISOString(),descompostValidatedPu:total?qty2(total):(current.descompostValidatedPu||current.pu||"0,00")};
-          next[target.cap]=arr;
-          matched++;
-        });
-        return next;
+      const matchedRows=[];
+      items.forEach(it=>{
+        const rawCode=it.code || it.sheet;
+        const code=normCode878176(rawCode);
+        const title=normText878176(it.title||it.sheet);
+        let target=code?flat.find(x=>codeMatches878177(x.row?.codi||x.code,code)):null;
+        if(!target && code){
+          const ccode=canonCode878177(code);
+          target=flat.find(x=>x.canon===ccode || codeMatches878177(x.canon,ccode));
+        }
+        if(!target && title){
+          target=flat.find(x=>{
+            const concept=normText878176(x.row?.concepte||"");
+            return concept && (x.text.includes(title)||title.includes(concept)||concept.includes(title));
+          });
+        }
+        if(!target){unmatched.push(`${it.sheet}${it.code?` (${it.code})`:""}`);return;}
+        const arr=[...(next[target.cap]||[])];
+        const current={...(arr[target.idx]||{})};
+        const total=it.total||descompostTableTotal878174(it.table)||descompostTotal878160(it.text);
+        arr[target.idx]={...current,descompost:it.text,descompostTable:it.table||null,descompostSource:file.name,descompostSheet:it.sheet,descompostImportedAt:new Date().toISOString(),descompostValidatedPu:total?qty2(total):(current.descompostValidatedPu||current.pu||"0,00")};
+        next[target.cap]=arr;
+        matched++;
+        matchedRows.push(`${it.sheet} → ${current.codi||target.code||target.cap}`);
       });
-      alert(`Descomposats importats: ${matched}. ${unmatched.length?`Sense coincidència: ${unmatched.slice(0,8).join(", ")}${unmatched.length>8?"...":""}`:""}`);
+      setCaps(next);
+      const msg=[`Descomposats llegits: ${items.length}. Assignats: ${matched}.`, matchedRows.length?`Assignats: ${matchedRows.slice(0,8).join(", ")}${matchedRows.length>8?"...":""}`:"", unmatched.length?`Sense coincidència: ${unmatched.slice(0,8).join(", ")}${unmatched.length>8?"...":""}`:""].filter(Boolean).join("\n");
+      alert(msg);
     }catch(err){alert("No he pogut importar descomposats massius: "+String(err?.message||err));}
   }
   function capOrder8779(name){const m=String(name||"").match(/(\d+)/);return m?Number(m[1]):9999}

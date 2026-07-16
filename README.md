@@ -1,13 +1,14 @@
-# APP Control d’Obres · V87.177
+# APP Control d'Obres · V87.178
 
-Versió derivada de V87.176 / V87.175 fiable.
+Base fiable derivada de V87.177 / V87.171.
 
 Canvis:
-- Correcció de la importació massiva de descomposats amb el cas real `Descompostos_Capitol_02_Paleteria.xlsx`.
-- Reconeixement de fulls amb nom de codi de partida, com `02.01`, `02.02`, etc.
-- Correcció de comparació de codis amb zeros inicials: `02.01`, `2.01` i variants equivalents.
-- Assignació del descomposat a la partida del pressupost pel codi del full abans d’intentar coincidència per text.
-- Es manté que el preu del descomposat no s’aplica automàticament: queda pendent de validació.
-- Es manté la protecció de canvis: Cancel·lar edició no guarda modificacions.
+- Correcció de la importació massiva de descomposats per capítol.
+- L'assignació dels fulls `02.01`, `02.02`, etc. es calcula abans d'actualitzar l'estat React.
+- Evita que el missatge final digui `0` per culpa de l'actualització asíncrona de `setCaps`.
+- Mostra resum amb descomposats llegits, assignats i sense coincidència.
+- Es manté que els descomposats queden pendents de validació i no apliquen automàticament el preu.
+- Es manté Cancel·lar edició sense guardar canvis.
 
-Build verificat amb Vite.
+Build Command: npm install --no-audit --no-fund --legacy-peer-deps && npm run build
+Publish Directory: dist
