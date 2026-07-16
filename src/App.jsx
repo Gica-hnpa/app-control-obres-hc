@@ -1947,8 +1947,8 @@ function DataJsonTools8778(){
           return out;
         };
 
-        const clientsMerged=mergeListBy("aco_clients",x=>x?.id||`${x?.nom||x?.rao||""}__${x?.nif||""}`);
-        const obresMerged=mergeListBy("aco_obres",x=>x?.id||`${x?.nom||""}__${x?.client||""}`);
+        let clientsMerged=mergeListBy("aco_clients",x=>x?.id||`${x?.nom||x?.rao||""}__${x?.nif||""}`);
+        let obresMerged=mergeListBy("aco_obres",x=>x?.id||`${x?.nom||""}__${x?.client||""}`);
         let odataMerged={};
         const oCandidates=[
           ...(buckets.aco_odata||[]).map(x=>({...x,base:"aco_odata"})),
@@ -1957,6 +1957,77 @@ function DataJsonTools8778(){
         oCandidates.forEach(({value})=>{
           const obj=parseMaybe(value,{});
           if(obj&&typeof obj==="object"&&!Array.isArray(obj))odataMerged=mergeOdataImport878182(odataMerged,obj);
+        });
+
+        // V87.183: recuperació visible de tasques. Alguns backups tenen les tasques dins d'odata
+        // però l'expedient corresponent no queda a la llista principal o bé queda sota una clau
+        // interna diferent. Aleshores el JSON importa, però l'Inici no pot ensenyar la tasca.
+        const taskKey878183=t=>String(t?.id||`${t?.text||t?.titol||""}__${t?.dataMaxima||t?.data||t?.limit||""}`).trim();
+        const taskIsClosed878183=t=>{const st=String(t?.estat||"Pendent").toLowerCase();return st.includes("fet")||st.includes("anul")||st.includes("cancel")};
+        const mergeOneList878183=(a=[],b=[],keyFn=(x,i)=>x?.id||i)=>mergeArrGeneric878181(Array.isArray(a)?a:[],Array.isArray(b)?b:[],keyFn);
+        const obresFromOdata878183=[];
+        const normalizedOdata878183={};
+        Object.entries(odataMerged||{}).forEach(([oid,raw])=>{
+          if(!raw||typeof raw!=="object"||Array.isArray(raw))return;
+          const embedded=(raw.obra&&typeof raw.obra==="object"&&!Array.isArray(raw.obra))?raw.obra:null;
+          const targetId=String(embedded?.id||oid||`exp-recuperat-${Date.now()}`).trim();
+          const current=normalizedOdata878183[targetId]||{};
+          const next={...current,...raw,obra:{...(current.obra||{}),...(embedded||{}),id:targetId}};
+          next.tasques=mergeOneList878183(current.tasques,raw.tasques,taskKey878183);
+          next.events=mergeOneList878183(current.events,raw.events,x=>x?.id||`${x?.title||x?.titol||""}__${x?.data||x?.day||""}__${x?.hora||""}`);
+          next.hores=mergeOneList878183(current.hores,raw.hores,x=>x?.id||`${x?.data||""}__${x?.tasca||x?.etiqueta||""}`);
+          next.documents=mergeOneList878183(current.documents,raw.documents,x=>x?.id||`${x?.nom||x?.name||""}__${x?.data||x?.createdAt||""}`);
+          next.fotos=mergeOneList878183(current.fotos,raw.fotos,x=>x?.id||`${x?.nom||x?.name||""}__${x?.data||x?.createdAt||""}`);
+          next.actes=mergeOneList878183(current.actes,raw.actes,x=>x?.id||`${x?.titol||""}__${x?.data||""}`);
+          next.agents=mergeOneList878183(current.agents,raw.agents,x=>x?.id||`${x?.nom||""}__${x?.email||""}__${x?.rol||""}`);
+          next.partides=mergeArr878104(current.partides,raw.partides,x=>`${x?.budgetId||"principal"}__${x?.codi||""}__${x?.cap||""}`);
+          next.pressupostos=mergeArr878104(current.pressupostos,raw.pressupostos,x=>`${x?.budgetId||"principal"}__${x?.id||x?.nom||x?.versio||""}`);
+          next.budgetGroups=mergeArr878104(current.budgetGroups,raw.budgetGroups,x=>x?.id||x?.nom||"");
+          normalizedOdata878183[targetId]=next;
+          const hasUseful=(next.tasques||[]).length||(next.events||[]).length||(next.partides||[]).length||(next.pressupostos||[]).length||(next.documents||[]).length;
+          if(hasUseful){
+            const todayYear=String(new Date().getFullYear());
+            obresFromOdata878183.push({
+              id:targetId,
+              client:embedded?.client||next.client||"",
+              any:String(embedded?.any||todayYear),
+              nom:String(embedded?.nom||embedded?.name||next.nom||next.tasques?.[0]?.obra||`Expedient recuperat ${targetId}`),
+              subtitol:String(embedded?.subtitol||""),
+              tipologia:canonicalWorkType8740(embedded?.tipusTreball||embedded?.tipologia||"Altres"),
+              tipusTreball:canonicalWorkType8740(embedded?.tipusTreball||embedded?.tipologia||"Altres"),
+              estat:String(embedded?.estat||next.estat||"En curs / Actiu"),
+              pressupost:Number(embedded?.pressupost)||0,
+              certificacio:Number(embedded?.certificacio)||0,
+              propietat:String(embedded?.propietat||"Client pendent"),
+              nifPropietat:String(embedded?.nifPropietat||""),
+              adreca:String(embedded?.adreca||""),
+              codiPostal:String(embedded?.codiPostal||embedded?.cp||""),
+              poblacio:String(embedded?.poblacio||""),
+              rc:String(embedded?.rc||""),
+              ...embedded,
+              id:targetId
+            });
+          }
+        });
+        odataMerged=normalizedOdata878183;
+        const obraMap878183=new Map((obresMerged||[]).map((o,i)=>[String(o?.id||`obra-${i}`),{...o}]));
+        obresFromOdata878183.forEach(o=>{
+          const key=String(o.id||"");
+          const old=obraMap878183.get(key)||{};
+          // Si l'objecte d'odata és més recent o té camps útils, no el deixem enterrat només dins l'obra.
+          obraMap878183.set(key,{...old,...o,tipusTreball:canonicalWorkType8740(o.tipusTreball||o.tipologia||old.tipusTreball||old.tipologia),tipologia:canonicalWorkType8740(o.tipusTreball||o.tipologia||old.tipusTreball||old.tipologia)});
+        });
+        obresMerged=[...obraMap878183.values()].filter(o=>o&&o.id);
+        const clientsFromObres878183=new Set((obresMerged||[]).map(o=>o.client).filter(Boolean));
+        const clientMap878183=new Map((clientsMerged||[]).map((c,i)=>[String(c?.id||`client-${i}`),{...c}]));
+        clientsFromObres878183.forEach(cid=>{if(!clientMap878183.has(cid))clientMap878183.set(cid,{id:cid,nom:"Client recuperat",rao:"Client recuperat",tipus:"Client",nif:"",email:"",telefon:"",adreca:"",color:"blue"})});
+        clientsMerged=[...clientMap878183.values()];
+        Object.entries(odataMerged||{}).forEach(([oid,d])=>{
+          const o=obresMerged.find(x=>String(x.id)===String(oid))||d.obra||{id:oid,nom:""};
+          const manualEvents=Array.isArray(d.events)?d.events:[];
+          const taskEvents=(d.tasques||[]).filter(t=>!taskIsClosed878183(t)&&(t.dataMaxima||t.data||t.limit)).map(t=>taskEvent878137({...t,data:t.dataMaxima||t.data||t.limit},o));
+          const events=mergeOneList878183(manualEvents,taskEvents,x=>x?.id||`${x?.title||x?.titol||""}__${x?.data||x?.day||""}__${x?.hora||""}`);
+          odataMerged[oid]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791({...d,events,updatedAt:d.updatedAt||new Date().toISOString()}):{...d,events};
         });
 
         let count=0;
@@ -1976,7 +2047,8 @@ function DataJsonTools8778(){
         });
 
         const taskCount=Object.values(odataMerged||{}).reduce((s,d)=>s+(((d||{}).tasques||[]).length||0),0);
-        setStatus(`Dades importades i fusionades per l’usuari ${active}. Clients: ${clientsMerged.length}. Expedients: ${obresMerged.length}. Tasques: ${taskCount}. Blocs escrits: ${count}. Recarregant l’app...`);
+        const pendingTaskCount=Object.values(odataMerged||{}).reduce((s,d)=>s+(((d||{}).tasques||[]).filter(t=>!taskIsClosed878183(t)).length||0),0);
+        setStatus(`Dades importades i fusionades per l’usuari ${active}. Clients: ${clientsMerged.length}. Expedients: ${obresMerged.length}. Tasques totals: ${taskCount}. Pendents visibles a Inici: ${pendingTaskCount}. Blocs escrits: ${count}. Recarregant l’app...`);
         setTimeout(()=>window.location.reload(),900);
       }catch(err){setStatus("Error important JSON: "+String(err?.message||err))}
     };

@@ -1,9 +1,14 @@
-# APP Control d’Obres — V87.182
+# APP CONTROL D’OBRES — V87.183
 
-Versió de seguretat centrada en la importació profunda de JSON: fusiona `storage`, `localStorage`, claus d’usuari i còpia crítica per recuperar clients, expedients, tasques i dades d’obra sense que una còpia antiga trepitgi la recent.
+Versió de seguretat per desencallar la importació de tasques i clients.
 
-- Importació JSON profunda i fusionada.
-- Recuperació de clients i expedients de `localStorage` encara que `storage` contingui còpies antigues.
-- Fusió reforçada de `aco_odata` i `aco_odata_core_v87104`.
-- Comptador de clients, expedients i tasques importades.
-- Manté la millora de V87.181 per indicar rol/tipologia del client quan es crea des d’Afegir tasca.
+## Canvis
+- Manté V87.182 com a base.
+- Import JSON més robust quan les tasques estan dins `odata` però l’expedient no queda visible a `aco_obres`.
+- Reconciliació d’`odata[obraId].obra` amb la llista principal d’expedients.
+- Si hi ha tasques/documents/pressupostos dins una clau d’obra sense expedient visible, crea un expedient recuperat.
+- Genera events de calendari per les tasques pendents importades.
+- El missatge d’importació indica tasques totals i tasques pendents visibles a Inici.
+- Conserva creació de client amb rol/tipologia des d’Afegir tasca.
+
+Base protegida: V87.182 / V87.180.

@@ -1,3 +1,4 @@
-V87.182 — import JSON profund + recuperació tasques/clients
-Base: V87.181
+V87.183 — recuperació tasques JSON visible
+Base: V87.182
+Canvis: import JSON reconcilia tasques amb expedients, crea expedients recuperats si cal i genera events visibles a Inici.
 Build verificat amb Vite.
