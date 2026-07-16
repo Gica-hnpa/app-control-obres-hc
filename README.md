@@ -1,13 +1,9 @@
-# APP Control d’Obres — V87.181
+# APP Control d’Obres — V87.182
 
-Versió derivada de V87.180 amb correcció de persistència de tasques i rols de client creats des de l’Inici.
+Versió de seguretat centrada en la importació profunda de JSON: fusiona `storage`, `localStorage`, claus d’usuari i còpia crítica per recuperar clients, expedients, tasques i dades d’obra sense que una còpia antiga trepitgi la recent.
 
-## Canvis principals
-- A **Afegir tasca** es pot crear un client/contacte nou indicant el rol o tipologia: Promotor, Arquitecte, Arquitecte tècnic, Immobiliària, Constructor/Constructora, Industrial, Administració, Particular, etc.
-- Les tasques creades des de l’Inici consoliden immediatament clients, expedients i odata al localStorage, sense esperar al cicle de React.
-- La importació JSON fusiona també dades operatives de la còpia crítica (`aco_odata_core_v87104`): tasques, agenda/events, hores, documents, fotos, actes i agents.
-- Evita que una còpia completa antiga tapi tasques que sí que existien a la còpia crítica.
-- Manté la V87.180 de pressupostos/descompostos/exportació com a base.
-
-## Recomanació
-Abans de continuar, importar el JSON bo i comprovar a Inici i dins cada expedient que les tasques apareixen.
+- Importació JSON profunda i fusionada.
+- Recuperació de clients i expedients de `localStorage` encara que `storage` contingui còpies antigues.
+- Fusió reforçada de `aco_odata` i `aco_odata_core_v87104`.
+- Comptador de clients, expedients i tasques importades.
+- Manté la millora de V87.181 per indicar rol/tipologia del client quan es crea des d’Afegir tasca.

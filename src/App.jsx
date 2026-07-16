@@ -1833,7 +1833,7 @@ function DataJsonTools8778(){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.181",
+      version:"V87.182",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE",
@@ -1859,26 +1859,125 @@ function DataJsonTools8778(){
         const backup={};
         storageKeysForUser878105(active).forEach(k=>{try{backup[k]=localStorage.getItem(k)}catch{}});
         try{localStorage.setItem(`${targetPref}backup_abans_import_${Date.now()}`,JSON.stringify({user:active,createdAt:new Date().toISOString(),storage:backup}).slice(0,1000000))}catch{}
-        let count=0;
-        if(data.storage && typeof data.storage==="object"){
+
+        // V87.182: importació profunda. Els JSON antics poden portar alhora:
+        // - storage.aco_clients / aco_obres / aco_odata (còpia antiga)
+        // - storage.aco_v8782__hector__aco_clients... (còpia per usuari)
+        // - localStorage.aco_clients... (còpia simple més recent)
+        // Abans una branca podia trepitjar l'altra i les tasques/clients nous no apareixien.
+        const buckets={};
+        const addBucket=(base,value,rank)=>{
+          if(value===undefined||value===null||!base)return;
+          if(!String(base).startsWith("aco_"))return;
+          if(!buckets[base])buckets[base]=[];
+          buckets[base].push({value,rank});
+        };
+        const normalizeStorageKey=(k)=>{
+          if(!k)return null;
+          if(k.startsWith(sourcePref))return {base:k.slice(sourcePref.length),rank:30};
+          if(k.startsWith(targetPref))return {base:k.slice(targetPref.length),rank:30};
+          if(k.startsWith(STORAGE_NS8782+"__")){
+            const parts=k.split("__");
+            return {base:parts.slice(2).join("__"),rank:25};
+          }
+          if(/^aco_/.test(k)){
+            if(k.endsWith(`__${sourceUser}`))return {base:k.slice(0,-(`__${sourceUser}`).length),rank:20};
+            if(k.endsWith(`__${active}`))return {base:k.slice(0,-(`__${active}`).length),rank:20};
+            return {base:k,rank:10};
+          }
+          return null;
+        };
+        if(data.storage&&typeof data.storage==="object"){
           Object.entries(data.storage).forEach(([k,v])=>{
-            if(v==null)return;
-            let targetKey=k;
-            if(k.startsWith(sourcePref))targetKey=targetPref+k.slice(sourcePref.length);
-            else if(k.startsWith(STORAGE_NS8782+"__")){
-              const parts=k.split("__");
-              const base=parts.slice(2).join("__");
-              targetKey=targetPref+base;
-            }else if(/^aco_/.test(k))targetKey=lsKey8779(k,active);
-            try{localStorage.setItem(targetKey,String(v));count++}catch(e){console.warn("Import parcial",targetKey,e)}
+            const n=normalizeStorageKey(k);
+            if(n)addBucket(n.base,v,n.rank);
           });
-        }else{
-          const store=data.localStorage||data;
-          if(!store.aco_clients&&!store.aco_obres&&!store.aco_odata&&!store.aco_odata_core_v87104)throw new Error("El fitxer no sembla una còpia de l’app.");
-          Object.entries(store).forEach(([k,v])=>{if(v!==undefined&&v!==null){try{localStorage.setItem(lsKey8779(k,active),String(v));count++}catch(e){console.warn("Import parcial",k,e)}}});
         }
-        setStatus(`Dades importades per l’usuari ${active}. S’han escrit ${count} blocs. Recarregant l’app...`);
-        setTimeout(()=>window.location.reload(),800);
+        if(data.localStorage&&typeof data.localStorage==="object"){
+          Object.entries(data.localStorage).forEach(([k,v])=>addBucket(k,v,40));
+        }
+        if(!data.storage&&!data.localStorage&&typeof data==="object"){
+          Object.entries(data).forEach(([k,v])=>addBucket(k,v,40));
+        }
+        if(!buckets.aco_clients&&!buckets.aco_obres&&!buckets.aco_odata&&!buckets.aco_odata_core_v87104){
+          throw new Error("El fitxer no sembla una còpia de l’app.");
+        }
+        const parseMaybe=(v,fallback)=>{
+          if(v===undefined||v===null)return fallback;
+          if(typeof v!=="string")return v;
+          try{return JSON.parse(v)}catch{return fallback}
+        };
+        const latestValue=(base)=>{
+          const arr=[...(buckets[base]||[])].sort((a,b)=>a.rank-b.rank);
+          return arr.length?arr[arr.length-1].value:null;
+        };
+        const mergeListBy=(base,keyFn)=>{
+          const map=new Map();
+          [...(buckets[base]||[])].sort((a,b)=>a.rank-b.rank).forEach(({value})=>{
+            const rows=parseMaybe(value,[]);
+            if(!Array.isArray(rows))return;
+            rows.forEach((x,i)=>{
+              if(!x)return;
+              const key=String(keyFn(x,i)||"").trim()||`row-${i}`;
+              map.set(key,{...(map.get(key)||{}),...x});
+            });
+          });
+          return [...map.values()];
+        };
+        const mergeOdataImport878182=(base,inc)=>{
+          const out={...(base||{})};
+          Object.entries(inc||{}).forEach(([oid,val])=>{
+            if(!val||typeof val!=="object"||Array.isArray(val))return;
+            const old=out[oid]||{};
+            const next={...old,...val};
+            next.budgetGroups=mergeArr878104(old.budgetGroups,val.budgetGroups,x=>x?.id||x?.nom||"");
+            next.pressupostos=mergeArr878104(old.pressupostos,val.pressupostos,x=>`${x?.budgetId||"principal"}__${x?.id||x?.nom||x?.versio||""}`);
+            next.partides=mergeArr878104(old.partides,val.partides,x=>`${x?.budgetId||"principal"}__${x?.codi||""}__${x?.cap||""}`);
+            next.certificacions=mergeArr878104(old.certificacions,val.certificacions,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||""}`);
+            next.factures=mergeArr878104(old.factures,val.factures,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||x?.pfId||""}`);
+            next.tasques=mergeArrGeneric878181(old.tasques,val.tasques,x=>x?.id||`${x?.text||x?.titol||""}__${x?.dataMaxima||x?.data||""}`);
+            next.events=mergeArrGeneric878181(old.events,val.events,x=>x?.id||`${x?.title||x?.titol||""}__${x?.day||""}-${x?.month||""}-${x?.year||""}__${x?.hora||""}`);
+            next.hores=mergeArrGeneric878181(old.hores,val.hores,x=>x?.id||`${x?.data||""}__${x?.tasca||x?.etiqueta||""}`);
+            next.documents=mergeArrGeneric878181(old.documents,val.documents,x=>x?.id||`${x?.nom||x?.name||""}__${x?.createdAt||x?.data||""}`);
+            next.fotos=mergeArrGeneric878181(old.fotos,val.fotos,x=>x?.id||`${x?.nom||x?.name||""}__${x?.createdAt||x?.data||""}`);
+            next.actes=mergeArrGeneric878181(old.actes,val.actes,x=>x?.id||`${x?.titol||""}__${x?.data||""}`);
+            next.agents=mergeArrGeneric878181(old.agents,val.agents,x=>x?.id||`${x?.nom||""}__${x?.email||""}__${x?.rol||""}`);
+            out[oid]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(next):next;
+          });
+          return out;
+        };
+
+        const clientsMerged=mergeListBy("aco_clients",x=>x?.id||`${x?.nom||x?.rao||""}__${x?.nif||""}`);
+        const obresMerged=mergeListBy("aco_obres",x=>x?.id||`${x?.nom||""}__${x?.client||""}`);
+        let odataMerged={};
+        const oCandidates=[
+          ...(buckets.aco_odata||[]).map(x=>({...x,base:"aco_odata"})),
+          ...(buckets.aco_odata_core_v87104||[]).map(x=>({...x,base:"aco_odata_core_v87104"}))
+        ].sort((a,b)=>a.rank-b.rank);
+        oCandidates.forEach(({value})=>{
+          const obj=parseMaybe(value,{});
+          if(obj&&typeof obj==="object"&&!Array.isArray(obj))odataMerged=mergeOdataImport878182(odataMerged,obj);
+        });
+
+        let count=0;
+        const write=(base,value)=>{
+          try{localStorage.setItem(lsKey8779(base,active),typeof value==="string"?value:JSON.stringify(value));count++;return true}catch(e){console.warn("Import parcial",base,e);return false}
+        };
+        if(clientsMerged.length)write("aco_clients",clientsMerged);
+        if(obresMerged.length)write("aco_obres",obresMerged);
+        if(Object.keys(odataMerged).length){
+          write("aco_odata_core_v87104",stripHeavy878104(odataMerged));
+          write("aco_odata",odataMerged);
+        }
+        Object.keys(buckets).forEach(base=>{
+          if(["aco_clients","aco_obres","aco_odata","aco_odata_core_v87104"].includes(base))return;
+          const v=latestValue(base);
+          if(v!==undefined&&v!==null)write(base,v);
+        });
+
+        const taskCount=Object.values(odataMerged||{}).reduce((s,d)=>s+(((d||{}).tasques||[]).length||0),0);
+        setStatus(`Dades importades i fusionades per l’usuari ${active}. Clients: ${clientsMerged.length}. Expedients: ${obresMerged.length}. Tasques: ${taskCount}. Blocs escrits: ${count}. Recarregant l’app...`);
+        setTimeout(()=>window.location.reload(),900);
       }catch(err){setStatus("Error important JSON: "+String(err?.message||err))}
     };
     reader.readAsText(file);
