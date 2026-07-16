@@ -164,6 +164,17 @@ function mergeArr878104(a=[],b=[],keyFn=keyBudget878104){
   [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])].forEach(x=>{if(!x)return;const k=keyFn(x);map.set(k,{...(map.get(k)||{}),...x});});
   return [...map.values()];
 }
+function mergeArrGeneric878181(a=[],b=[],keyFn){
+  const map=new Map();
+  let i=0;
+  [...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])].forEach(x=>{
+    if(!x)return;
+    const k=String(keyFn?keyFn(x,i):'').trim() || `row-${i}`;
+    map.set(k,{...(map.get(k)||{}),...x});
+    i++;
+  });
+  return [...map.values()];
+}
 function mergeOdataCore878104(full={},core={}){
   const out={...(full||{})};
   Object.entries(core||{}).forEach(([oid,cv])=>{
@@ -175,6 +186,15 @@ function mergeOdataCore878104(full={},core={}){
     next.partides=mergeArr878104(fd.partides,cv.partides,x=>`${x?.budgetId||"principal"}__${x?.codi||""}__${x?.cap||""}`);
     next.certificacions=mergeArr878104(fd.certificacions,cv.certificacions,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||""}`);
     next.factures=mergeArr878104(fd.factures,cv.factures,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||x?.pfId||""}`);
+    // V87.181: també fusionem dades operatives. Abans, si la còpia completa era antiga
+    // i la còpia crítica sí que tenia tasques, la completa trepitjava la crítica i les tasques desapareixien.
+    next.tasques=mergeArrGeneric878181(cv.tasques,fd.tasques,x=>x?.id||`${x?.text||x?.titol||""}__${x?.dataMaxima||x?.data||""}`);
+    next.events=mergeArrGeneric878181(cv.events,fd.events,x=>x?.id||`${x?.title||x?.titol||""}__${x?.day||""}-${x?.month||""}-${x?.year||""}__${x?.hora||""}`);
+    next.hores=mergeArrGeneric878181(cv.hores,fd.hores,x=>x?.id||`${x?.data||""}__${x?.tasca||x?.etiqueta||""}`);
+    next.documents=mergeArrGeneric878181(cv.documents,fd.documents,x=>x?.id||`${x?.nom||x?.name||""}__${x?.createdAt||x?.data||""}`);
+    next.fotos=mergeArrGeneric878181(cv.fotos,fd.fotos,x=>x?.id||`${x?.nom||x?.name||""}__${x?.createdAt||x?.data||""}`);
+    next.actes=mergeArrGeneric878181(cv.actes,fd.actes,x=>x?.id||`${x?.titol||""}__${x?.data||""}`);
+    next.agents=mergeArrGeneric878181(cv.agents,fd.agents,x=>x?.id||`${x?.nom||""}__${x?.email||""}__${x?.rol||""}`);
     if(cv.activeBudgetIdObra && !fd.activeBudgetIdObra) next.activeBudgetIdObra=cv.activeBudgetIdObra;
     out[oid]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(next):next;
   });
@@ -1813,7 +1833,7 @@ function DataJsonTools8778(){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.122",
+      version:"V87.181",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE",
@@ -3312,7 +3332,8 @@ const worksByClient=groupByClient878138(obertsMes,clients,x=>x.o.client);
 const [showNewTask,setShowNewTask]=useState(false);
 const [openWorkMonth,setOpenWorkMonth]=useState(false);
 const [viewTask,setViewTask]=useState(null);
-const [taskDraft,setTaskDraft]=useState({clientId:(clients?.[0]?.id)||'__new__',newClientNom:'',newClientNif:'',obraId:'__new__',newObraNom:'',newObraTipus:'Gestió integral d’obra',text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:''});
+const clientRoleOptions878181=['Promotor','Arquitecte','Arquitecte tècnic','Immobiliària','Constructor','Constructora','Industrial','Administració','Particular','Autònom','Altres'];
+const [taskDraft,setTaskDraft]=useState({clientId:(clients?.[0]?.id)||'__new__',newClientNom:'',newClientTipus:'Promotor',newClientNif:'',obraId:'__new__',newObraNom:'',newObraTipus:'Gestió integral d’obra',text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:''});
 const selectedClient=taskDraft.clientId||'__new__';
 const currentClient=clients.find(c=>c.id===selectedClient);
 const taskObres=(obres||[]).filter(o=>selectedClient!=='__new__'&&(o.client||'')===selectedClient&&isExpedientOpen878136(o.estat)).sort((a,b)=>String(a.nom||'').localeCompare(String(b.nom||''),'ca',{numeric:true}));
@@ -3330,7 +3351,7 @@ function saveHomeTask878140(){
     const nom=String(taskDraft.newClientNom||'').trim();
     if(!nom){alert('Escriu el nom del client o promotor.');return;}
     cid=newSlug878140(nom,'client');
-    createdClient={id:cid,nom,rao:nom,tipus:'Promotor',nif:taskDraft.newClientNif||'',contacte:'',telefon:'',email:'',adreca:'',color:'blue',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    createdClient={id:cid,nom,rao:nom,tipus:taskDraft.newClientTipus||'Promotor',nif:taskDraft.newClientNif||'',contacte:'',telefon:'',email:'',adreca:'',color:'blue',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
   }
   let oid=taskDraft.obraId;
   let createdObra=null;
@@ -3342,15 +3363,18 @@ function saveHomeTask878140(){
     createdObra={id:oid,client:cid,any:String(new Date().getFullYear()),nom,subtitol:'',tipologia:taskDraft.newObraTipus||'Gestió integral d’obra',tipusTreball:taskDraft.newObraTipus||'Gestió integral d’obra',estat:'En curs / Actiu',pressupost:0,certificacio:0,propietat:clientForName.nom||taskDraft.newClientNom||'Client pendent',nifPropietat:clientForName.nif||taskDraft.newClientNif||'',adreca:'',codiPostal:'',poblacio:'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),lastOpenedAt:new Date().toISOString(),lastWorkedAt:new Date().toISOString()};
   } else if(!selectedObra){alert('Selecciona un expedient o crea’n un de nou.');return;}
   const task=buildTask878140();
-  if(createdClient)setClients?.(prev=>[...(prev||[]),createdClient]);
-  if(createdObra)setObres?.(prev=>assignMissingCodes8739([...(prev||[]),createdObra],createdClient?[...(clients||[]),createdClient]:clients));
+  const activeUser878181=currentAppUser8779()||'hector';
+  if(createdClient)setClients?.(prev=>{const next=[...(prev||[]),createdClient];lsSet8779('aco_clients',JSON.stringify(next),activeUser878181);return next});
+  if(createdObra)setObres?.(prev=>{const next=assignMissingCodes8739([...(prev||[]),createdObra],createdClient?[...(clients||[]),createdClient]:clients);lsSet8779('aco_obres',JSON.stringify(next),activeUser878181);return next});
   setOdata?.(prev=>{
     const d=prev[oid]||empty();
     const tasks=[...(d.tasques||[]),task];
     const shouldEvent=task.dataMaxima&&!['Fet','Anul·lat'].includes(task.estat);
-    return {...prev,[oid]:{...d,tasques:tasks,events:shouldEvent?[...(d.events||[]).filter(e=>String(e.id||'')!=='task-'+task.id),taskEvent878137(task,{...(createdObra||selectedObra||{}),id:oid,nom:createdObra?.nom||selectedObra?.nom||''})]:d.events||[],updatedAt:new Date().toISOString(),lastWorkedAt:new Date().toISOString()}}
+    const next={...prev,[oid]:{...d,tasques:tasks,events:shouldEvent?[...(d.events||[]).filter(e=>String(e.id||'')!=='task-'+task.id),taskEvent878137(task,{...(createdObra||selectedObra||{}),id:oid,nom:createdObra?.nom||selectedObra?.nom||''})]:d.events||[],updatedAt:new Date().toISOString(),lastWorkedAt:new Date().toISOString()}};
+    saveOdata878104(next,activeUser878181);
+    return next;
   });
-  setTaskDraft({clientId:cid,obraId:oid,text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:'',newClientNom:'',newClientNif:'',newObraNom:'',newObraTipus:'Gestió integral d’obra'});
+  setTaskDraft({clientId:cid,obraId:oid,text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:'',newClientNom:'',newClientTipus:'Promotor',newClientNif:'',newObraNom:'',newObraTipus:'Gestió integral d’obra'});
   setShowNewTask(false);
 }
 function updateTaskField878140(obra,task,patch){
@@ -3388,7 +3412,7 @@ return <>
         <div className="home-task-create-head-v878139"><b>Nova tasca / feina pendent</b><span>La data és la data màxima d’entrega. Pots crear client i expedient des d’aquí sense anar a una altra pestanya.</span></div>
         <div className="home-task-form-v878139 home-task-form-v878140">
           <label><span>Client</span><select value={selectedClient} onChange={e=>{const cid=e.target.value;const first=(obres||[]).find(o=>o.client===cid&&isExpedientOpen878136(o.estat));setTaskDraft(d=>({...d,clientId:cid,obraId:cid==='__new__'?'__new__':(first?.id||'__new__')}))}}><option value="__new__">+ Crear nou client</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
-          {selectedClient==='__new__'&&<><label><span>Nou client / promotor</span><input value={taskDraft.newClientNom||''} onChange={e=>setTaskDraft(d=>({...d,newClientNom:e.target.value}))} placeholder="Nom del client"/></label><label><span>NIF/CIF opcional</span><input value={taskDraft.newClientNif||''} onChange={e=>setTaskDraft(d=>({...d,newClientNif:e.target.value}))}/></label></>}
+          {selectedClient==='__new__'&&<><label><span>Nou client / contacte</span><input value={taskDraft.newClientNom||''} onChange={e=>setTaskDraft(d=>({...d,newClientNom:e.target.value}))} placeholder="Nom del client"/></label><label><span>Rol / tipologia</span><select value={taskDraft.newClientTipus||'Promotor'} onChange={e=>setTaskDraft(d=>({...d,newClientTipus:e.target.value}))}>{clientRoleOptions878181.map(t=><option key={t}>{t}</option>)}</select></label><label><span>NIF/CIF opcional</span><input value={taskDraft.newClientNif||''} onChange={e=>setTaskDraft(d=>({...d,newClientNif:e.target.value}))}/></label></>}
           <label><span>Expedient o treball</span><select value={taskDraft.obraId||'__new__'} onChange={e=>setTaskDraft(d=>({...d,obraId:e.target.value}))}><option value="__new__">+ Crear nou expedient</option>{taskObres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label>
           {(!taskDraft.obraId||taskDraft.obraId==='__new__')&&<><label><span>Nou expedient</span><input value={taskDraft.newObraNom||''} onChange={e=>setTaskDraft(d=>({...d,newObraNom:e.target.value}))} placeholder="Nom de l’obra o treball"/></label><label><span>Tipus feina</span><select value={taskDraft.newObraTipus||'Gestió integral d’obra'} onChange={e=>setTaskDraft(d=>({...d,newObraTipus:e.target.value}))}><option>Gestió integral d’obra</option><option>Direcció d’obra</option><option>Direcció d’execució</option><option>Seguretat i salut</option><option>Informe / certificat</option><option>Altres</option></select></label></>}
           <label className="span-2-v878139"><span>Tasca / feina pendent</span><input value={taskDraft.text||''} onChange={e=>setTaskDraft(d=>({...d,text:e.target.value}))} placeholder="Ex. Preparar certificació, revisar pressupost, enviar acta..."/></label>

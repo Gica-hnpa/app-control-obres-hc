@@ -1,4 +1,4 @@
-V87.180 — validació massiva de descompostos + exportació
-Base: V87.179 / V87.178 / V87.175
-Build: OK amb Vite
-ZIP net: src real, sense node_modules, dist ni package-lock.json
+V87.181 — tasques clients + persistència JSON
+Base: V87.180 / V87.179
+Build verificat amb Vite.
+ZIP net sense node_modules, dist ni package-lock.json.

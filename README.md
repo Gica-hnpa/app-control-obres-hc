@@ -1,14 +1,13 @@
-# APP Control d’Obres — V87.180
+# APP Control d’Obres — V87.181
 
-Versió derivada de V87.179 amb correcció de flux per reentrar pressupostos i descompostos amb seguretat.
+Versió derivada de V87.180 amb correcció de persistència de tasques i rols de client creats des de l’Inici.
 
 ## Canvis principals
-- Importació massiva de descompostos mantinguda i consolidada dins les partides.
-- Nova pestanya interna **Validar descompostos** dins Pressupost obra per validar tots els preus detectats sense obrir partida per partida.
-- Acció **Aplicar tots al pressupost i guardar** per passar tots els preus validats a PU de partida en un sol clic.
-- Pestanya **Exportar / còpies** amb PDF, Guardar a Documents, Exportar Excel i Consolidar dades.
-- Exportació Excel estructurada amb pestanya PRESSUPOST, resum de descompostos i un full per cada partida amb descompost.
-- Els totals del pressupost es consoliden també al marcador de pressupost perquè no surti 0 a la capçalera.
-- Botó Exportar Excel també a Pressupost ràpid.
+- A **Afegir tasca** es pot crear un client/contacte nou indicant el rol o tipologia: Promotor, Arquitecte, Arquitecte tècnic, Immobiliària, Constructor/Constructora, Industrial, Administració, Particular, etc.
+- Les tasques creades des de l’Inici consoliden immediatament clients, expedients i odata al localStorage, sense esperar al cicle de React.
+- La importació JSON fusiona també dades operatives de la còpia crítica (`aco_odata_core_v87104`): tasques, agenda/events, hores, documents, fotos, actes i agents.
+- Evita que una còpia completa antiga tapi tasques que sí que existien a la còpia crítica.
+- Manté la V87.180 de pressupostos/descompostos/exportació com a base.
 
-Build verificat amb Vite.
+## Recomanació
+Abans de continuar, importar el JSON bo i comprovar a Inici i dins cada expedient que les tasques apareixen.
