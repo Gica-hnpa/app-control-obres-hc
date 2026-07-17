@@ -36,7 +36,92 @@ function migrateStorageForUser8782(user){
   localStorage.setItem(`${STORAGE_NS8782}__migrated__${u}`,"1");
 }
 function lsGet8779(key,fallback="",user=currentAppUser8779()){const v=localStorage.getItem(lsKey8779(key,user));return v==null?fallback:v}
-function lsSet8779(key,value,user=currentAppUser8779()){try{localStorage.setItem(lsKey8779(key,user),value)}catch(e){console.warn("No s\'ha pogut guardar localment",key,e)}}
+
+// V87.185 · guardat segur: evita que logos/fotos/base64 i còpies antigues omplin el localStorage.
+function isQuotaError878185(e){return e&&(e.name==="QuotaExceededError"||e.code===22||String(e?.message||"").toLowerCase().includes("quota"))}
+function stripHeavy878185(value){
+  if(Array.isArray(value))return value.map(stripHeavy878185);
+  if(value&&typeof value==="object"){
+    const out={};
+    Object.entries(value).forEach(([k,v])=>{
+      const lk=String(k||"").toLowerCase();
+      if(["logo","logos","src","url","dataurl","base64","blob","raw","content","filedata","preview","imatge","image","foto","fotos","croquis"].includes(lk)){
+        if(Array.isArray(v)) out[k]=v.map((x,i)=>x&&typeof x==="object"?{id:x.id||`fitxer-${i}`,nom:x.nom||x.name||"Fitxer",data:x.data||x.createdAt||"",origen:x.origen||"",_light:true}:"[fitxer eliminat per pes]");
+        else out[k]="";
+        return;
+      }
+      out[k]=stripHeavy878185(v);
+    });
+    return out;
+  }
+  if(typeof value==="string"){
+    if(/^data:/i.test(value)||value.length>350000)return "";
+    return value;
+  }
+  return value;
+}
+function localStorageBytes878185(){
+  let total=0,keys=0;
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||"";const v=localStorage.getItem(k)||"";total+=k.length+v.length;keys++;}}catch{}
+  return {keys,chars:total,mb:(total/1024/1024).toFixed(2)};
+}
+function cleanupLocalStorage878185(user=currentAppUser8779(),mode="safe"){
+  const u=String(user||"").trim().toLowerCase();
+  const pref=u?`${STORAGE_NS8782}__${u}__`:"";
+  const removeMatchers=["corrupt_backup","login_recovery","backup_abans_import","aco_storage_warning_v87104"];
+  let removed=0,rewritten=0,freed=0;
+  const keys=[];
+  try{for(let i=0;i<localStorage.length;i++)keys.push(localStorage.key(i));}catch{}
+  keys.filter(Boolean).forEach(k=>{
+    const isUserKey=!pref||k.startsWith(pref)||(u==="hector"&&/^aco_/.test(k)&&!k.startsWith(STORAGE_NS8782+"__"));
+    if(!isUserKey)return;
+    const old=localStorage.getItem(k)||"";
+    if(removeMatchers.some(m=>k.includes(m))||(mode==="deep"&&old.length>1500000)){
+      try{localStorage.removeItem(k);removed++;freed+=old.length;}catch{}
+      return;
+    }
+    let parsed=null,ok=false;
+    try{parsed=JSON.parse(old);ok=true;}catch{}
+    if(ok){
+      const light=JSON.stringify(stripHeavy878185(parsed));
+      if(light.length<old.length){try{localStorage.setItem(k,light);rewritten++;freed+=old.length-light.length;}catch{}}
+    }else if(/^data:/i.test(old)||old.length>700000){
+      try{localStorage.setItem(k,"");rewritten++;freed+=old.length;}catch{}
+    }
+  });
+  return {removed,rewritten,freed,usage:localStorageBytes878185()};
+}
+function safeSetLocalStorage878185(key,value,user=currentAppUser8779()){
+  const str=typeof value==="string"?value:JSON.stringify(value);
+  try{localStorage.setItem(key,str);return {ok:true,light:false};}
+  catch(e){
+    cleanupLocalStorage878185(user,"safe");
+    try{localStorage.setItem(key,str);return {ok:true,light:false,cleaned:true};}
+    catch(e2){
+      if(isQuotaError878185(e)||isQuotaError878185(e2)){
+        const light=typeof value==="string"?JSON.stringify(stripHeavy878185(safeJsonParse8784(value,value))):JSON.stringify(stripHeavy878185(value));
+        try{localStorage.setItem(key,light);return {ok:true,light:true,cleaned:true};}
+        catch(e3){
+          cleanupLocalStorage878185(user,"deep");
+          try{localStorage.setItem(key,light);return {ok:true,light:true,cleaned:true,deep:true};}
+          catch(e4){
+            try{sessionStorage.setItem("aco_last_storage_error_v87185",String(e4?.message||e4));}catch{}
+            window.dispatchEvent?.(new CustomEvent("aco-storage-error-v87185",{detail:{key,error:String(e4?.message||e4)}}));
+            console.error("No s'ha pogut guardar localment ni en mode lleuger",key,e4);
+            return {ok:false,error:e4};
+          }
+        }
+      }
+      console.warn("No s'ha pogut guardar localment",key,e2);
+      return {ok:false,error:e2};
+    }
+  }
+}
+function lsSet8779(key,value,user=currentAppUser8779()){
+  const res=safeSetLocalStorage878185(lsKey8779(key,user),value,user);
+  if(!res.ok)console.warn("No s'ha pogut guardar localment",key,res.error);
+  return res.ok;
+}
 function lsJson8779(key,fallback,user=currentAppUser8779()){try{const raw=lsGet8779(key,null,user);return raw==null?fallback:JSON.parse(raw)}catch{return fallback}}
 
 function safeJsonParse8784(raw,fallback){
@@ -145,12 +230,14 @@ function sanitizeOdata8785(value,fallback={}){
 // V87.104: persistència crítica separada. Evita perdre pressupostos annexos/fora pressupost
 // quan el localStorage queda ple per fotos, croquis o documents en base64.
 function stripHeavy878104(value){
+  // V87.185: compatibilitat amb la neteja ampliada.
+  if(typeof stripHeavy878185==="function")return stripHeavy878185(value);
   if(Array.isArray(value)) return value.map(stripHeavy878104);
   if(value && typeof value === "object"){
     const out={};
     Object.entries(value).forEach(([k,v])=>{
       const lk=String(k).toLowerCase();
-      if(["src","url","dataurl","base64","blob","raw","content","filedata","preview"].includes(lk)) return;
+      if(["logo","imatge","image","foto","fotos","croquis","src","url","dataurl","base64","blob","raw","content","filedata","preview"].includes(lk)) return;
       out[k]=stripHeavy878104(v);
     });
     return out;
@@ -202,20 +289,20 @@ function mergeOdataCore878104(full={},core={}){
 }
 function saveOdata878104(odata,user=currentAppUser8779()){
   const core=stripHeavy878104(odata||{});
-  try{localStorage.setItem(lsKey8779("aco_odata_core_v87104",user),JSON.stringify(core));}catch(e){console.warn("No s'ha pogut guardar la còpia crítica d'obra",e)}
-  try{
-    localStorage.setItem(lsKey8779("aco_odata",user),JSON.stringify(odata||{}));
-    localStorage.removeItem(lsKey8779("aco_storage_warning_v87104",user));
-  }catch(e){
-    console.warn("No s'ha pogut guardar la còpia completa d'obra; es manté la còpia crítica sense fotos/croquis",e);
-    try{localStorage.setItem(lsKey8779("aco_storage_warning_v87104",user),"La còpia completa no s'ha pogut guardar per límit d'espai. S'ha guardat la còpia crítica de dades.")}catch{}
-  }
+  const a=safeSetLocalStorage878185(lsKey8779("aco_odata_core_v87104",user),core,user);
+  const b=safeSetLocalStorage878185(lsKey8779("aco_odata",user),core,user);
+  if(a.ok&&b.ok){try{localStorage.removeItem(lsKey8779("aco_storage_warning_v87104",user));}catch{};return true;}
+  console.warn("No s'ha pogut guardar correctament l'obra",a,b);
+  try{sessionStorage.setItem("aco_last_storage_error_v87185","No s'ha pogut guardar odata. Cal exportar abans de continuar.")}catch{}
+  try{localStorage.setItem(lsKey8779("aco_storage_warning_v87104",user),"ATENCIÓ: el navegador no ha pogut guardar totes les dades. Exporta JSON/Excel abans de continuar.")}catch{}
+  return false;
 }
 
 function backupUserState8785(user,reason,raw){
   try{
     const stamp=new Date().toISOString().replace(/[:.]/g,"-");
-    localStorage.setItem(`${STORAGE_NS8782}__${user||"nouser"}__login_recovery__${reason}__${stamp}`,JSON.stringify(raw||{}).slice(0,250000));
+    // V87.185: les còpies de recuperació no poden tornar a omplir el navegador.
+    safeSetLocalStorage878185(`${STORAGE_NS8782}__${user||"nouser"}__login_recovery__${reason}__${stamp}`,JSON.stringify(stripHeavy878185(raw||{})).slice(0,120000),user);
   }catch{}
 }
 
@@ -1827,22 +1914,26 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
   }
   function exportJson(){
     const keys=storageKeysForUser878105(user);
+    const cleanStoredValue878185=(v)=>{
+      if(v==null)return v;
+      try{return JSON.stringify(stripHeavy878185(JSON.parse(v)));}
+      catch{return typeof v==="string"&&(/^data:/i.test(v)||v.length>700000)?"":v;}
+    };
     const storage={};
-    keys.forEach(k=>{try{storage[k]=localStorage.getItem(k)}catch{}});
+    keys.forEach(k=>{try{storage[k]=cleanStoredValue878185(localStorage.getItem(k))}catch{}});
     const simple={};
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.184",
+      version:"V87.185",
       user,
       exportedAt:new Date().toISOString(),
-      mode:"FULL_USER_STORAGE",
-      note:"Còpia completa de totes les claus locals de l’usuari actiu. Inclou pressupostos annexos, certificacions, factures, agenda i claus dinàmiques.",
+      mode:"FULL_USER_STORAGE_LIGHT_SAFE",
+      note:"Còpia completa segura. Les imatges/logos/base64 s'han eliminat per evitar QuotaExceededError; es mantenen clients, expedients, tasques, pressupostos, partides i descompostos.",
       storage,
       localStorage:simple,
-      // V87.184: a més del localStorage cru, guardem l'estat viu que està veient l'usuari en pantalla.
-      // Això evita perdre tasques si alguna clau local antiga/no normalitzada no s'havia exportat bé.
-      appState:{clients:clients||[],obres:obres||[],odata:odata||{}}
+      appState:stripHeavy878185({clients:clients||[],obres:obres||[],odata:odata||{}}),
+      storageHealth:localStorageBytes878185()
     };
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -1861,7 +1952,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
         const sourcePref=userPrefix878105(sourceUser);
         const backup={};
         storageKeysForUser878105(active).forEach(k=>{try{backup[k]=localStorage.getItem(k)}catch{}});
-        try{localStorage.setItem(`${targetPref}backup_abans_import_${Date.now()}`,JSON.stringify({user:active,createdAt:new Date().toISOString(),storage:backup}).slice(0,1000000))}catch{}
+        try{safeSetLocalStorage878185(`${targetPref}backup_abans_import_${Date.now()}`,JSON.stringify(stripHeavy878185({user:active,createdAt:new Date().toISOString(),storage:backup})).slice(0,180000),active)}catch{}
 
         // V87.182: importació profunda. Els JSON antics poden portar alhora:
         // - storage.aco_clients / aco_obres / aco_odata (còpia antiga)
@@ -2051,7 +2142,10 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
 
         let count=0;
         const write=(base,value)=>{
-          try{localStorage.setItem(lsKey8779(base,active),typeof value==="string"?value:JSON.stringify(value));count++;return true}catch(e){console.warn("Import parcial",base,e);return false}
+          const safeValue=stripHeavy878185(value);
+          const ok=safeSetLocalStorage878185(lsKey8779(base,active),typeof safeValue==="string"?safeValue:JSON.stringify(safeValue),active);
+          if(ok.ok){count++;return true}
+          console.warn("Import parcial",base,ok.error);return false;
         };
         if(clientsMerged.length)write("aco_clients",clientsMerged);
         if(obresMerged.length)write("aco_obres",obresMerged);
@@ -2073,8 +2167,15 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     };
     reader.readAsText(file);
   }
-  return <Card title="Còpia de seguretat / traspàs de dades JSON" action={<div className="actions-inline"><button className="primary" onClick={exportJson}>Exportar JSON complet</button><button className="secondary" onClick={()=>fileRef.current?.click()}>Importar JSON</button><input ref={fileRef} type="file" accept="application/json" hidden onChange={e=>importJson(e.target.files?.[0])}/></div>}>
-    <div className="module-note-v8738"><b>Còpia completa per usuari.</b><span>Aquesta exportació inclou les claus locals i també l’estat viu que tens carregat a pantalla: clients, expedients, tasques, pressupostos i documents. Abans d’importar, l’app guarda una còpia de seguretat interna de l’estat anterior.</span></div>
+  function cleanNow878185(){
+    const before=localStorageBytes878185();
+    const r=cleanupLocalStorage878185(user,"deep");
+    const after=localStorageBytes878185();
+    setStatus(`Neteja feta. Abans: ${before.mb} MB. Ara: ${after.mb} MB. Claus eliminades: ${r.removed}. Blocs alleugerits: ${r.rewritten}.`);
+  }
+  const usage878185=localStorageBytes878185();
+  return <Card title="Còpia de seguretat / traspàs de dades JSON" action={<div className="actions-inline"><button className="primary" onClick={exportJson}>Exportar JSON segur</button><button className="secondary" onClick={()=>fileRef.current?.click()}>Importar JSON</button><button className="secondary" onClick={cleanNow878185}>Netejar espai local</button><input ref={fileRef} type="file" accept="application/json" hidden onChange={e=>importJson(e.target.files?.[0])}/></div>}>
+    <div className="module-note-v8738"><b>V87.185 · guardat segur.</b><span>Ús local aproximat: {usage878185.mb} MB / {usage878185.keys} claus. L’exportació elimina logos/base64 però manté clients, expedients, tasques, pressupostos, partides i descompostos. Si el navegador torna a donar quota plena, l’app intenta guardar en mode lleuger i mostra avís.</span></div>
     {status&&<div className="doc-status-v38">{status}</div>}
   </Card>
 }
@@ -2337,8 +2438,8 @@ useEffect(()=>{
   setClientId(c[0]?.id||"");setObraId(o[0]?.id||"");setTab("Resum");setScreen("Inici");
   setDataLoadedUser8781(authUser8779);
 },[authUser8779]);
-useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(clients),authUser8779)},[clients,authUser8779,dataLoadedUser8781]);
-useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(obres),authUser8779)},[obres,authUser8779,dataLoadedUser8781]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),authUser8779)},[clients,authUser8779,dataLoadedUser8781]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),authUser8779)},[obres,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,authUser8779)},[odata,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{
   if(!authUser8779||dataLoadedUser8781!==authUser8779)return;
@@ -6145,10 +6246,10 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     app_user,
     sync_key:String(cfg.syncKey),
     device_id:String(cfg.deviceId||"browser-local"),
-    clients:state.clients||[],
-    obres:state.obres||[],
+    clients:stripHeavy878185(state.clients||[]),
+    obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{})),
-    app_version:"87.150.0",
+    app_version:"87.185.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

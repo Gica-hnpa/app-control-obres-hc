@@ -1,3 +1,4 @@
-V87.184 · export JSON estat viu + import claus dobles tasques
-Base: V87.183.
+V87.185 · sanejament localStorage + guardat segur
+Base: V87.184.
 Build verificat amb Vite.
+ZIP en carpeta, net sense node_modules, dist ni package-lock.
