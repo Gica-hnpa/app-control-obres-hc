@@ -1,2 +1,2 @@
-V87.187 · promotor agenda clients timer real
+V87.188 · agents filtrats + desplegables generals
 Build verificat amb Vite. ZIP en carpeta.

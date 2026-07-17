@@ -5074,3 +5074,17 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .client-manage-toggle-v878134{justify-self:start!important;margin-left:52px!important;}
   .timer-live-clock-v87186{font-size:34px!important;}
 }
+
+/* V87.188 - Agents filtrats, directori general i desplegables */
+.agents-general-v878188 .module-note-v8738{margin-bottom:12px}
+.agents-add-grid-v878188{align-items:end}
+.agent-group-v878188{border:1px solid #d7e4f4;border-radius:16px;background:#f8fbff;margin:12px 0;overflow:hidden}
+.agent-list-v878188{display:grid;gap:0}
+.agent-row-v878188{display:grid;grid-template-columns:1.25fr 1.1fr 1fr 1fr .8fr auto;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid #e6eef8;background:#fff}
+.agent-row-v878188 input,.agent-row-v878188 select{min-width:0;height:36px;border:1px solid #cbd8ea;border-radius:10px;padding:0 10px;background:#fff;font-weight:700;color:#0f2d5c}
+.time-manual-details-v878188{border:1px solid #d7e4f4;border-radius:16px;background:#f8fbff;overflow:hidden}
+.time-manual-details-v878188>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:14px 16px;font-weight:900;color:#0f2d5c;list-style:none}
+.time-manual-details-v878188>summary::-webkit-details-marker{display:none}
+.time-manual-details-v878188>summary span{font-size:12px;color:#64748b;font-weight:800}
+.time-manual-details-v878188 .card{margin:0;border-left:0;border-right:0;border-bottom:0;border-radius:0;box-shadow:none}
+@media(max-width:900px){.agent-row-v878188{grid-template-columns:1fr}.time-manual-details-v878188>summary{align-items:flex-start;flex-direction:column}}
