@@ -1,4 +1,2 @@
-V87.185 · sanejament localStorage + guardat segur
-Base: V87.184.
-Build verificat amb Vite.
-ZIP en carpeta, net sense node_modules, dist ni package-lock.
+V87.186 agenda clients timer UX
+Build previst amb Vite. ZIP en carpeta.
