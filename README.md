@@ -1,3 +1,3 @@
-# APP Control d’Obres V87.189
+# APP Control d'Obres — V87.190
 
-Agents/clients compactes, documents de pressupost amb format correcte i manté sanejament localStorage.
+Ordre d'expedients, agents optimitzats i clients filtrables.
