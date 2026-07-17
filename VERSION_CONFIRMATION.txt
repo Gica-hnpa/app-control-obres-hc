@@ -1,2 +1,1 @@
-V87.188 · agents filtrats + desplegables generals
-Build verificat amb Vite. ZIP en carpeta.
+V87.189 - agents clients docs segurs

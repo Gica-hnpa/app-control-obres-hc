@@ -2547,7 +2547,18 @@ function uniqAgents8749(list=[]){
 }
 function allAgents8749(odata={}){
   const base=[{id:"hector-tecnic",nom:"Héctor Cubero",rol:"Arquitecte tècnic",empresa:"Despatx tècnic",email:"pendent@despatx.cat",telefon:""}];
-  return uniqAgents8749([...base,...Object.values(odata||{}).flatMap(d=>d.agents||[])]);
+  const out=[...base];
+  try{
+    for(const d of Object.values(odata||{})){
+      if(!d||typeof d!=="object")continue;
+      if(Array.isArray(d.agents)){
+        for(const a of d.agents){
+          if(a&&typeof a==="object")out.push(a);
+        }
+      }
+    }
+  }catch{}
+  return sortAgents878134(uniqAgents8749(out));
 }
 function fallbackExtract8749(wb){
   function clean(v){return String(v??"").trim()}
@@ -3351,22 +3362,32 @@ return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{a
 function AgentsGeneral878188({odata={},setOdata}){
   const [q,setQ]=useState("");
   const [cat,setCat]=useState("tots");
+  const [openGroup,setOpenGroup]=useState("tecnic");
+  const [showAdd,setShowAdd]=useState(false);
   const [draft,setDraft]=useState({nom:"",rol:"Arquitecte tècnic",empresa:"",email:"",telefon:"",nif:""});
-  const agents=sortAgents878134(allAgents8749(odata));
-  const filtered=agents.filter(a=>{
+  const agents=useMemo(()=>sortAgents878134(allAgents8749(odata)).slice(0,600),[odata]);
+  const filtered=useMemo(()=>agents.filter(a=>{
     const txt=[a.nom,a.rol,a.empresa,a.email,a.telefon,a.nif].join(" ").toLowerCase();
     const okQ=!q||txt.includes(q.toLowerCase());
     const c=agentCategory878188(a);
     const okC=cat==="tots"||cat===c;
     return okQ&&okC;
-  });
+  }),[agents,q,cat]);
   const groups=["tecnic","constructora","promotor","administracio","altres"];
   function patchAgent(id,patch){
     setOdata(prev=>{
-      const next={...(prev||{})};
+      const next={...(prev||{})}; let found=false;
       for(const [oid,d] of Object.entries(next)){
-        const arr=d?.agents||[];
-        if(arr.some(a=>a.id===id))next[oid]={...d,agents:arr.map(a=>a.id===id?{...a,...patch,updatedAt:new Date().toISOString()}:a),updatedAt:new Date().toISOString()};
+        if(!d||typeof d!=="object")continue;
+        const arr=Array.isArray(d.agents)?d.agents:[];
+        if(arr.some(a=>a.id===id)){
+          next[oid]={...d,agents:arr.map(a=>a.id===id?{...a,...patch,updatedAt:new Date().toISOString()}:a),updatedAt:new Date().toISOString()};
+          found=true;
+        }
+      }
+      if(!found){
+        const key="__global_agents_878188"; const d=next[key]||{}; const arr=Array.isArray(d.agents)?d.agents:[];
+        next[key]={...d,agents:arr.map(a=>a.id===id?{...a,...patch,updatedAt:new Date().toISOString()}:a),updatedAt:new Date().toISOString()};
       }
       return next;
     });
@@ -3376,7 +3397,8 @@ function AgentsGeneral878188({odata={},setOdata}){
     setOdata(prev=>{
       const next={...(prev||{})};
       for(const [oid,d] of Object.entries(next)){
-        const arr=d?.agents||[];
+        if(!d||typeof d!=="object")continue;
+        const arr=Array.isArray(d.agents)?d.agents:[];
         if(arr.some(a=>a.id===id))next[oid]={...d,agents:arr.filter(a=>a.id!==id),updatedAt:new Date().toISOString()};
       }
       return next;
@@ -3388,23 +3410,27 @@ function AgentsGeneral878188({odata={},setOdata}){
     const ag={id:"agent-global-"+Date.now(),nom,rol:draft.rol||"Altres",empresa:draft.empresa||nom,email:draft.email||"",telefon:draft.telefon||"",nif:draft.nif||"",createdAt:new Date().toISOString()};
     setOdata(prev=>{const key="__global_agents_878188";const d=prev?.[key]||{};return {...(prev||{}),[key]:{...d,agents:sortAgents878134([ag,...(d.agents||[])]),updatedAt:new Date().toISOString()}}});
     setDraft({nom:"",rol:"Arquitecte tècnic",empresa:"",email:"",telefon:"",nif:""});
+    setShowAdd(false);
+    setOpenGroup(agentCategory878188(ag));
   }
   const labelCat=c=>c==="tecnic"?"Tècnics":c==="constructora"?"Constructores / industrials":c==="promotor"?"Promotors / propietat":c==="administracio"?"Administració":"Altres";
-  return <div className="stack agents-general-v878188">
-    <Card title="Agents" action={<button className="primary" type="button" onClick={addAgent}>+ Afegir agent</button>}>
-      <div className="module-note-v8738"><b>Biblioteca general d’agents</b><span>Els desplegables de Nou expedient i Dades filtren automàticament: constructora només mostra constructores/industrials, i DO/DEO/CSS només mostra tècnics.</span></div>
-      <div className="form-grid compact-v87151 agents-add-grid-v878188">
+  return <div className="stack agents-general-v878188 agents-general-v878189">
+    <Card title="Agents" action={<button className="primary" type="button" onClick={()=>setShowAdd(v=>!v)}>{showAdd?"Tancar alta":"+ Afegir agent"}</button>}>
+      <div className="module-note-v8738"><b>Biblioteca general d’agents</b><span>Els llistats es carreguen per grup perquè no quedi penjat. Constructora només mostra constructores/industrials i DO/DEO/CSS només tècnics.</span></div>
+      {showAdd&&<div className="form-grid compact-v87151 agents-add-grid-v878188 agents-add-grid-v878189">
         <label><span>Nom</span><input value={draft.nom} onChange={e=>setDraft(d=>({...d,nom:e.target.value}))} placeholder="Nom de l’agent o empresa"/></label>
         <label><span>Rol</span><select value={draft.rol} onChange={e=>setDraft(d=>({...d,rol:e.target.value}))}>{AGENT_ROLE_OPTIONS878188.map(r=><option key={r}>{r}</option>)}</select></label>
         <label><span>Empresa</span><input value={draft.empresa} onChange={e=>setDraft(d=>({...d,empresa:e.target.value}))} placeholder="Empresa / autònom"/></label>
         <label><span>Email</span><input value={draft.email} onChange={e=>setDraft(d=>({...d,email:e.target.value}))}/></label>
         <label><span>Telèfon</span><input value={draft.telefon} onChange={e=>setDraft(d=>({...d,telefon:e.target.value}))}/></label>
         <label><span>NIF/CIF</span><input value={draft.nif} onChange={e=>setDraft(d=>({...d,nif:e.target.value}))}/></label>
-      </div>
+        <div className="span-all actions-inline"><button type="button" className="primary" onClick={addAgent}>Guardar agent</button></div>
+      </div>}
     </Card>
-    <Card title="Llistat d’agents" action={<div className="actions-inline"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar agent..."/><select value={cat} onChange={e=>setCat(e.target.value)}><option value="tots">Tots</option>{groups.map(g=><option key={g} value={g}>{labelCat(g)}</option>)}</select></div>}>
-      {groups.filter(g=>cat==="tots"||cat===g).map(g=>{const rows=filtered.filter(a=>agentCategory878188(a)===g);return rows.length?<section key={g} className="agent-group-v878188"><div className="client-type-head-v8774"><b>{labelCat(g)}</b><span>{rows.length} agent{rows.length!==1?"s":""}</span></div><div className="agent-list-v878188">{rows.map(a=><div key={a.id} className="agent-row-v878188"><input value={a.nom||""} onChange={e=>patchAgent(a.id,{nom:e.target.value})}/><select value={a.rol||"Altres"} onChange={e=>patchAgent(a.id,{rol:e.target.value})}>{AGENT_ROLE_OPTIONS878188.map(r=><option key={r}>{r}</option>)}</select><input value={a.empresa||""} onChange={e=>patchAgent(a.id,{empresa:e.target.value})} placeholder="Empresa"/><input value={a.email||""} onChange={e=>patchAgent(a.id,{email:e.target.value})} placeholder="Email"/><input value={a.telefon||""} onChange={e=>patchAgent(a.id,{telefon:e.target.value})} placeholder="Telèfon"/><button type="button" className="danger small" onClick={()=>deleteAgent(a.id)}>Eliminar</button></div>)}</div></section>:null})}
-      {filtered.length===0&&<Empty text="No hi ha agents amb aquest filtre."/>}
+    <Card title="Llistat d’agents" action={<div className="actions-inline"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar agent..."/><select value={cat} onChange={e=>{setCat(e.target.value);setOpenGroup(e.target.value==="tots"?"tecnic":e.target.value)}}><option value="tots">Tots</option>{groups.map(g=><option key={g} value={g}>{labelCat(g)}</option>)}</select></div>}>
+      <div className="agent-group-buttons-v878189">{groups.map(g=>{const count=filtered.filter(a=>agentCategory878188(a)===g).length;return <button type="button" key={g} className={openGroup===g?"active":""} onClick={()=>setOpenGroup(openGroup===g?"":g)}><b>{labelCat(g)}</b><span>{count}</span></button>})}</div>
+      {groups.filter(g=>(cat==="tots"||cat===g)&&openGroup===g).map(g=>{const rows=filtered.filter(a=>agentCategory878188(a)===g);return rows.length?<section key={g} className="agent-group-v878188"><div className="client-type-head-v8774"><b>{labelCat(g)}</b><span>{rows.length} agent{rows.length!==1?"s":""}</span></div><div className="agent-list-v878188 agent-list-v878189">{rows.slice(0,120).map(a=><div key={a.id} className="agent-row-v878188 agent-row-v878189"><input value={a.nom||""} onChange={e=>patchAgent(a.id,{nom:e.target.value})}/><select value={a.rol||"Altres"} onChange={e=>patchAgent(a.id,{rol:e.target.value})}>{AGENT_ROLE_OPTIONS878188.map(r=><option key={r}>{r}</option>)}</select><input value={a.empresa||""} onChange={e=>patchAgent(a.id,{empresa:e.target.value})} placeholder="Empresa"/><input value={a.email||""} onChange={e=>patchAgent(a.id,{email:e.target.value})} placeholder="Email"/><input value={a.telefon||""} onChange={e=>patchAgent(a.id,{telefon:e.target.value})} placeholder="Telèfon"/><button type="button" className="danger small" onClick={()=>deleteAgent(a.id)}>Eliminar</button></div>)}</div>{rows.length>120&&<div className="module-note-v8738"><b>Llistat limitat</b><span>Mostro els primers 120 agents del filtre. Utilitza el cercador per concretar més.</span></div>}</section>:<Empty key={g} text="No hi ha agents en aquest grup."/>})}
+      {!openGroup&&<Empty text="Tria un grup d’agents per carregar el llistat."/>}
     </Card>
   </div>
 }
@@ -3844,6 +3870,8 @@ function groupByClient878138(items=[],clients=[],getId=x=>x?.client){const map=n
 function Clients({clients,obres=[],odata={},cs,setCs,ct,setCt,openClient,newClient,setClients,setObres}){
   const tipusOpts=["Promotor","Arquitecte","Arquitecte tècnic","Direcció Facultativa","Constructora","Industrial","Administració","Particular","Autònom","Subcontractat","Altres"];
   const [clientManageId878134,setClientManageId878134]=useState(null);
+  const [openGroups878189,setOpenGroups878189]=useState({});
+  const [compact878189,setCompact878189]=useState(true);
   function saveClient878134(id,patch){
     const clean={...patch,updatedAt:new Date().toISOString()};
     setClients?.(prev=>(prev||[]).map(c=>c.id===id?{...c,...clean}:c));
@@ -3865,10 +3893,11 @@ function Clients({clients,obres=[],odata={},cs,setCs,ct,setCt,openClient,newClie
     return base+sections+actaDocs;
   };
   const relatedToClient=(c)=>{
-    const direct=obres.filter(o=>o.client===c.id || (o.propietat||"").toLowerCase()===(c.nom||"").toLowerCase());
+    const cn=String(c.nom||"").toLowerCase();
+    const direct=obres.filter(o=>o.client===c.id || String(o.propietat||"").toLowerCase()===cn);
     const byAgent=obres.filter(o=>{
       const d=odata?.[o.id]||{};
-      return (d.agents||[]).some(a=>String(a.nom||"").toLowerCase().includes(String(c.nom||"").toLowerCase()) || String(c.nom||"").toLowerCase().includes(String(a.nom||"").toLowerCase()));
+      return (d.agents||[]).some(a=>{const an=String(a.nom||"").toLowerCase();return an&&cn&&(an.includes(cn)||cn.includes(an));});
     }).filter(o=>!direct.some(x=>x.id===o.id));
     return {direct,byAgent,all:[...direct,...byAgent]};
   };
@@ -3877,15 +3906,23 @@ function Clients({clients,obres=[],odata={},cs,setCs,ct,setCt,openClient,newClie
   const grouped=tipusOpts.map(t=>[t,clients.filter(c=>(c.tipus||"Altres")===t)]).filter(([,arr])=>arr.length);
   const altres=clients.filter(c=>!tipusOpts.includes(c.tipus||"Altres"));
   if(altres.length)grouped.push(["Altres",altres]);
-  return <div className="clients-page-v8774">
+  const hasFilter=!!(cs||ct);
+  function toggleGroup878189(t){setOpenGroups878189(p=>({...p,[t]:!p[t]}));}
+  return <div className="clients-page-v8774 clients-page-v878189">
     <Card title="Clients, tècnics i industrials" action={<button className="primary" onClick={newClient}><Plus/> Nou contacte</button>}>
-      <div className="clients-toolbar-v8774">
-        <div><h2>Directori professional del despatx</h2><p>Llista única de clients contractants, promotors, constructors, industrials i tècnics. Cada contacte pot quedar vinculat a expedients, documents, actes o gestió integral d’obra.</p></div>
-        <div className="clients-kpis-v8774"><div><span>Total contactes</span><b>{total}</b></div><div><span>Industrials / obra</span><b>{industrials}</b></div><div><span>Tipologies</span><b>{grouped.length}</b></div></div>
+      <div className="clients-toolbar-v8774 clients-toolbar-v878189">
+        <div><h2>Directori professional</h2><p>Contactes agrupats per tipologia. Obre només el grup que necessites.</p></div>
+        <div className="clients-kpis-v8774 clients-kpis-v878189"><div><span>Total</span><b>{total}</b></div><div><span>Obra</span><b>{industrials}</b></div><div><span>Tipologies</span><b>{grouped.length}</b></div></div>
       </div>
-      <div className="filters filters-v8774"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client, industrial, tècnic, telèfon, població..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Totes les tipologies</option>{tipusOpts.map(t=><option key={t}>{t}</option>)}</select></div>
-      <div className="client-list-v8774">
-        {clients.length===0?<Empty text="No hi ha contactes amb aquest filtre."/>:grouped.map(([tipus,items])=><section key={tipus} className="client-type-section-v8774"><div className="client-type-head-v8774"><b>{tipus}</b><span>{items.length} contacte{items.length!==1?"s":""}</span></div>{items.map(c=>{const rel=relatedToClient(c);const docs=rel.all.reduce((sum,o)=>sum+docsCount(o.id),0);return <div className="client-admin-item-v878134" key={c.id}><button className="client-row-v8774" onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color||"blue"}`}>{c.logo?<img src={c.logo}/>:(c.nom||"CL").slice(0,2).toUpperCase()}</div><div className="client-main-v8774"><strong>{c.nom}</strong><span>{c.rao||"Raó social pendent"}</span><small>{c.contacte||"Sense contacte"} · {c.telefon||"Sense telèfon"} · {[c.codiPostal,c.poblacio].filter(Boolean).join(" ")||c.adreca||"Sense població"}</small></div><div className="client-metrics-v8774"><span>Expedients</span><b>{rel.all.length}</b><em>{rel.direct.length} directes · {rel.byAgent.length} com agent</em></div><div className="client-metrics-v8774"><span>Documents</span><b>{docs}</b><em>vinculats</em></div><div className="client-tag-v8774">{c.tipus||"Client"}</div></button><button type="button" className="secondary client-manage-toggle-v878134" onClick={()=>setClientManageId878134(clientManageId878134===c.id?null:c.id)}>{clientManageId878134===c.id?"Tancar gestió":"Gestionar contacte"}</button>{clientManageId878134===c.id&&<ClientInlineEditor878134 client={c} tipusOpts={tipusOpts} onSave={patch=>saveClient878134(c.id,patch)} onDelete={()=>deleteClient878134(c,rel)}/>}</div>})}</section>)}
+      <details className="mobile-filter-drawer-v87119 client-filter-drawer-v878189" open={hasFilter}>
+        <summary><span>Filtres de clients</span><b>{ct||cs||"Tots"}</b></summary>
+        <div className="filters filters-v8774"><div className="search-field"><Search size={16}/><input value={cs} onChange={e=>setCs(e.target.value)} placeholder="Buscar client, industrial, tècnic, telèfon, població..."/></div><select value={ct} onChange={e=>setCt(e.target.value)}><option value="">Totes les tipologies</option>{tipusOpts.map(t=><option key={t}>{t}</option>)}</select><button type="button" className="secondary" onClick={()=>{setCs("");setCt("")}}>Netejar</button><button type="button" className="secondary" onClick={()=>setCompact878189(v=>!v)}>{compact878189?"Vista detallada":"Vista compacta"}</button></div>
+      </details>
+      <div className="client-list-v8774 client-list-v878189">
+        {clients.length===0?<Empty text="No hi ha contactes amb aquest filtre."/>:grouped.map(([tipus,items])=>{
+          const opened=hasFilter||!!openGroups878189[tipus];
+          return <section key={tipus} className="client-type-section-v8774 client-type-section-v878189"><button type="button" className="client-type-head-v8774 client-type-head-button-v878189" onClick={()=>toggleGroup878189(tipus)}><b>{opened?"▾":"▸"} {tipus}</b><span>{items.length} contacte{items.length!==1?"s":""}</span></button>{opened&&items.map(c=>{const rel=relatedToClient(c);const docs=rel.all.reduce((sum,o)=>sum+docsCount(o.id),0);return <div className="client-admin-item-v878134 client-admin-item-v878189" key={c.id}><button className={compact878189?"client-row-v8774 client-row-v878189 compact":"client-row-v8774 client-row-v878189"} onClick={()=>openClient(c.id)}><div className={`client-logo ${c.color||"blue"}`}>{c.logo?<img src={c.logo}/>:(c.nom||"CL").slice(0,2).toUpperCase()}</div><div className="client-main-v8774"><strong>{c.nom}</strong><span>{c.rao||"Raó social pendent"}</span><small>{c.contacte||"Sense contacte"} · {c.telefon||"Sense telèfon"} · {[c.codiPostal,c.poblacio].filter(Boolean).join(" ")||c.adreca||"Sense població"}</small></div>{!compact878189&&<><div className="client-metrics-v8774"><span>Exp.</span><b>{rel.all.length}</b><em>{rel.direct.length} directes · {rel.byAgent.length} agent</em></div><div className="client-metrics-v8774"><span>Docs</span><b>{docs}</b><em>vinculats</em></div></>}<div className="client-tag-v8774">{c.tipus||"Client"}</div></button><button type="button" className="secondary client-manage-toggle-v878134" onClick={()=>setClientManageId878134(clientManageId878134===c.id?null:c.id)}>{clientManageId878134===c.id?"Tancar gestió":"Gestionar"}</button>{clientManageId878134===c.id&&<ClientInlineEditor878134 client={c} tipusOpts={tipusOpts} onSave={patch=>saveClient878134(c.id,patch)} onDelete={()=>deleteClient878134(c,rel)}/>}</div>})}</section>
+        })}
       </div>
     </Card>
   </div>
@@ -4721,12 +4758,13 @@ function PressupostRapid878150(props){
   }
   function doc878153(){return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",numeroPressupost,referencia,dataPressupost,versioPressupost,obraAdreca:obraAdrecaPressupost,tercerNom,tercerNif,tercerAdreca,tercerEmail,subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES"),observacions,formaPagament}}
   function saveAsDocument878153(){
+    const doc=doc878153();
     props.setData?.(d=>({
       ...d,
-      documents:[{id:"doc-pres-"+Date.now(),nom:`Pressupost d’obra · ${numeroPressupost||new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),size:0,storage:"generat",hasFile:false,import:total,origen:"Pressupost ràpid",observacions,formaPagament},...(d.documents||[])],
+      documents:[{id:"doc-pres-"+Date.now(),nom:`Pressupost d’obra · ${numeroPressupost||new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),size:0,storage:"generat",hasFile:false,import:total,origen:"Pressupost ràpid",observacions,formaPagament,docData:doc},...(d.documents||[])],
       updatedAt:new Date().toISOString()
     }));
-    alert("Pressupost guardat dins Documents · Amidaments / pressupost d’obra. Per obtenir el PDF, utilitza Imprimir / Guardar PDF.");
+    alert("Pressupost guardat dins Documents · Amidaments / pressupost d’obra. Es podrà obrir amb el mateix format de pressupost.");
   }
   function exportRapidExcel878180(){exportBudgetDocExcel878180(doc878153(),`pressupost_rapid_${numeroPressupost||props.obra?.nom||"export"}`)}
   return <div className="pressupost-rapid-v87150 pressupost-rapid-v87153 pressupost-rapid-v87155 pressupost-rapid-v87160">
@@ -5359,8 +5397,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function saveBudgetDocument878179(){
     const doc=budgetPrintDoc878179();
     persistBudgetCaps878179(caps);
-    setData?.(d=>({...d,documents:[{id:"doc-pres-obra-"+Date.now(),nom:`Pressupost obra · ${doc.numeroPressupost||doc.versioPressupost||new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),size:0,storage:"generat",hasFile:false,import:doc.total,origen:"Pressupost obra",observacions:doc.observacions,formaPagament:doc.formaPagament},...(d.documents||[])],updatedAt:new Date().toISOString()}));
-    alert("Pressupost guardat a Documents.");
+    setData?.(d=>({...d,documents:[{id:"doc-pres-obra-"+Date.now(),nom:`Pressupost obra · ${doc.numeroPressupost||doc.versioPressupost||new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),size:0,storage:"generat",hasFile:false,import:doc.total,origen:"Pressupost obra",observacions:doc.observacions,formaPagament:doc.formaPagament,docData:doc},...(d.documents||[])],updatedAt:new Date().toISOString()}));
+    alert("Pressupost guardat a Documents amb format de pressupost.");
   }
   const descompostValidationRows878180=useMemo(()=>{
     const out=[];
@@ -6206,11 +6244,16 @@ function setDocs(updater){setData(d=>{const current=d.documents||[];const next=t
 function docFolder(d){return d.folder||"01_DOCUMENTACIO_PREVIA"}
 function saveCfg(){saveStorageCfg(cfg);setStatus(isStorageReady(cfg)?"Storage configurat. Prova pujar un document.":"Falten dades de configuració.")}
 async function add(e){let f=e.target.files?.[0];if(!f)return;let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC";let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,folder,data:new Date().toLocaleDateString("ca-ES"),size:f.size};try{if(isStorageReady(cfg)){setStatus("Pujant document a Supabase Storage...");let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient",folder});setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);setStatus("Document pujat a Supabase Storage.");return;}await saveDocFile(id,f);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);setStatus(`Document guardat a ${activeFolder?.label||"Documents"}.`);}catch(err){try{await saveDocFile(id,f);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}}finally{if(e?.target)e.target.value=""}}
-async function openOriginal(d){if(d.storage==="supabase"&&d.url){window.open(d.url,"_blank");return}if(d.hasFile){let file=await getDocFile(d.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}openDoc({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."})}
+function budgetDocFromCurrent878189(d){
+  const rows=Array.isArray(data?.partides)?data.partides:[];
+  const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+  return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||"",tercerEmail:data?.pressupostRapidTercerEmail||"",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
+}
+async function openOriginal(d){if(d?.docData){openDoc?.(d.docData);return}if(d?.storage==="generat"&&String(d?.tipus||"").toUpperCase().includes("PRESSUPOST")){openDoc?.(budgetDocFromCurrent878189(d));return}if(d.storage==="supabase"&&d.url){window.open(d.url,"_blank");return}if(d.hasFile){let file=await getDocFile(d.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}openDoc({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."})}
 async function remove(d){if(!confirm("Segur que vols eliminar aquest document d’aquest expedient?"))return;if(d.storage==="supabase"&&d.path) await deleteFromSupabaseStorage(d.path).catch(()=>{});if(d.storage==="indexeddb"||d.hasFile) await deleteDocFile(d.id).catch(()=>{});setDocs(p=>p.filter(x=>x.id!==d.id))}
 function moveDoc(d,newFolder){setDocs(p=>p.map(x=>x.id===d.id?{...x,folder:newFolder}:x))}
 function sizeTxt(n){return n?((n/1024/1024).toFixed(2)+" MB"):"—"}
-function storageLabel(d){if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
+function storageLabel(d){if(d.storage==="generat")return "Document generat dins l’app"; if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
 const generatedDocs878148=[
   ...((data.certificacions||[]).map(c=>{const n=+c.numero||0;const imp=(data.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*(+r.pu||0),0)||(+c.import||0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra"}})),
   ...((data.factures||[]).map(f=>({id:`auto-fac-obra-${f.id||f.numero||Date.now()}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`${f.tipus||"Factura / proforma obra"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"FACTURA").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:+f.total||+f.base||0,origen:"Facturació d’obra"}))),
