@@ -5017,3 +5017,60 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .warn-text{color:#b45309;font-weight:900}
 .good-text{color:#15803d;font-weight:900}
 @media(max-width:800px){.validator-head-v878180,.budget-export-panel-v878180>div:first-child{display:grid}.descompost-validator-v878180,.budget-export-panel-v878180{padding:10px}.descompost-validator-table-v878180{font-size:11px}}
+
+/* V87.186 · Agenda més llegible, clients compactes i comptador viu */
+.agenda-calendar-v87119 .day{position:relative;overflow:hidden!important;padding-top:22px!important;min-height:86px!important}
+.agenda-calendar-v87119 .day>b{position:absolute;top:7px;left:9px;z-index:2}
+.agenda-calendar-v87119 .day>em{position:absolute;top:6px;right:7px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#dbeafe;color:#0f2d5c;display:inline-flex!important;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:950;box-shadow:0 1px 4px rgba(15,45,92,.12);z-index:3}
+.agenda-calendar-v87119 .day>em:empty{display:none!important}
+.agenda-calendar-v87119 .cal-event{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px!important}
+.agenda-day-panel-v87119{min-height:520px!important}
+.agenda-day-list-v87119,.agenda-list-safe-v87109.agenda-day-list-v87119{max-height:none!important;overflow:visible!important;padding-right:0!important}
+.agenda-event-card-v87119{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #d6dde7;border-radius:14px;background:#fff;padding:9px!important;margin-bottom:8px!important}
+.agenda-event-card-v87119>button{margin-bottom:0!important;border:0!important;padding:0!important;background:transparent!important}
+.agenda-empty-day-v87119{min-height:170px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.task-visit-box-v87186{border:1px solid #bfdbfe;background:#eff6ff;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;color:#0f2d5c}
+.task-visit-box-v87186>b{font-size:13px}.task-visit-box-v87186>span{font-size:12px;color:#475569;font-weight:700}.task-visit-box-v87186>div{display:grid;grid-template-columns:1fr 1fr;gap:10px}.task-visit-box-v87186 label{margin:0!important}
+.clients-toolbar-v8774{display:none!important}.client-list-v8774{padding:0 12px 16px!important;gap:10px}.client-type-section-v8774{border-radius:16px!important;margin-top:10px!important;overflow:hidden!important}.client-type-head-v8774{padding:9px 12px!important;min-height:38px!important}.client-admin-item-v878134{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;padding:0 10px!important;border-bottom:1px solid #edf2f7!important}.client-admin-item-v878134>.client-row-v8774{grid-column:1!important;grid-template-columns:48px minmax(220px,1fr) 86px 96px!important;gap:10px!important;min-height:62px!important;padding:8px 0!important;border-bottom:0!important}.client-row-v8774 .client-logo{width:42px!important;height:42px!important;border-radius:14px!important;font-size:11px!important}.client-main-v8774 strong{font-size:13px!important}.client-main-v8774 span{font-size:12px!important;margin-top:1px!important}.client-main-v8774 small{font-size:11px!important;margin-top:2px!important}.client-metrics-v8774 b{font-size:16px!important}.client-metrics-v8774 span,.client-metrics-v8774 em{font-size:9px!important;line-height:1.15!important}.client-row-v8774>div.client-metrics-v8774:nth-of-type(4){display:none!important}.client-tag-v8774{padding:6px 9px!important;font-size:11px!important;white-space:nowrap!important}.client-manage-toggle-v878134{grid-column:2!important;grid-row:1!important;padding:8px 10px!important;font-size:11px!important;white-space:nowrap!important}.client-inline-editor-v878134{grid-column:1/-1!important;margin:8px 0 12px!important}
+.timer-clock-v87162{align-items:flex-start!important;gap:3px;background:linear-gradient(135deg,#f8fafc,#eef6ff)!important}.timer-live-v87186{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.08)}.timer-live-clock-v87186{font-size:34px!important;line-height:1!important;letter-spacing:.04em;font-variant-numeric:tabular-nums;color:#0f2d5c!important}.timer-clock-v87162 em{font-style:normal;font-size:12px;font-weight:950;color:#475569}.timer-live-v87186:before{content:"";width:8px;height:8px;border-radius:999px;background:#22c55e;position:absolute;margin-left:-4px;margin-top:-4px;box-shadow:0 0 0 5px rgba(34,197,94,.12)}
+@media(max-width:900px){.agenda-day-panel-v87119{min-height:auto!important}.client-admin-item-v878134{grid-template-columns:1fr!important}.client-manage-toggle-v878134{grid-column:1!important;grid-row:auto!important;justify-self:flex-start;margin:0 0 8px 48px}.client-admin-item-v878134>.client-row-v8774{grid-template-columns:42px 1fr!important}.client-metrics-v8774,.client-tag-v8774{display:none!important}.task-visit-box-v87186>div{grid-template-columns:1fr}.timer-live-clock-v87186{font-size:28px!important}}
+.timer-clock-v87162{position:relative!important}
+
+/* V87.187 · correcció real UX agenda, clients, promotor i comptador */
+.agenda-layout-v87119{grid-template-columns:minmax(0,1fr) minmax(440px,.78fr)!important;align-items:start!important;}
+.agenda-day-panel-v87119{min-height:640px!important;max-height:none!important;overflow:visible!important;align-self:stretch!important;}
+.agenda-day-list-v87119,.agenda-list-safe-v87109.agenda-day-list-v87119{max-height:none!important;overflow:visible!important;}
+.agenda-calendar-v87119 .day{position:relative!important;align-items:flex-start!important;text-align:left!important;padding:8px 9px!important;}
+.agenda-calendar-v87119 .day>b{display:block!important;font-size:13px!important;line-height:1!important;padding-right:34px!important;}
+.agenda-calendar-v87119 .day>em{position:absolute!important;right:7px!important;top:7px!important;min-width:22px!important;height:22px!important;border-radius:999px!important;background:#2563eb!important;color:white!important;display:flex!important;align-items:center!important;justify-content:center!important;font-style:normal!important;font-weight:900!important;font-size:11px!important;box-shadow:0 2px 6px rgba(37,99,235,.25)!important;}
+.agenda-calendar-v87119 .day>em:empty{display:none!important;}
+.agenda-event-card-v87119{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important;border:1px solid #d6dde7!important;border-radius:16px!important;background:#fff!important;padding:12px!important;margin-bottom:10px!important;}
+.agenda-event-card-v87119>button{border:0!important;background:transparent!important;text-align:left!important;padding:0!important;}
+.agenda-panel-head-v87119{position:sticky!important;top:0!important;z-index:4!important;background:#fff!important;border-radius:14px!important;padding:8px 0 12px!important;}
+.clients-toolbar-v8774{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;padding:14px 18px!important;}
+.clients-toolbar-v8774 p{max-width:980px!important;margin-bottom:0!important;}
+.clients-kpis-v8774{display:flex!important;justify-content:flex-start!important;gap:8px!important;flex-wrap:wrap!important;}
+.clients-kpis-v8774>div{min-width:130px!important;padding:10px 12px!important;border-radius:14px!important;}
+.client-admin-item-v878134{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;padding:6px 10px!important;border-bottom:1px solid #e2e8f0!important;background:#fff!important;}
+.client-admin-item-v878134>.client-row-v8774{display:grid!important;grid-template-columns:42px minmax(0,1fr) auto!important;gap:12px!important;align-items:center!important;padding:10px 8px!important;border:0!important;border-radius:14px!important;}
+.client-admin-item-v878134>.client-row-v8774:hover{background:#f8fafc!important;}
+.client-admin-item-v878134 .client-logo{width:42px!important;height:42px!important;border-radius:12px!important;font-size:10px!important;}
+.client-main-v8774 strong{font-size:14px!important;}
+.client-main-v8774 span,.client-main-v8774 small{font-size:12px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;}
+.client-metrics-v8774{display:none!important;}
+.client-tag-v8774{justify-self:end!important;border-radius:999px!important;background:#eff6ff!important;color:#1d4ed8!important;padding:6px 10px!important;font-size:11px!important;font-weight:900!important;white-space:nowrap!important;}
+.client-manage-toggle-v878134{margin:0!important;white-space:nowrap!important;padding:8px 10px!important;font-size:12px!important;}
+.timer-clock-v87162{border:2px solid #bfdbfe!important;background:linear-gradient(180deg,#eff6ff,#fff)!important;border-radius:20px!important;padding:16px!important;text-align:center!important;min-width:240px!important;}
+.timer-clock-v87162 span{display:block!important;text-transform:uppercase!important;letter-spacing:.04em!important;font-size:12px!important;font-weight:900!important;color:#1d4ed8!important;margin-bottom:6px!important;}
+.timer-live-clock-v87186{display:block!important;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;font-size:44px!important;line-height:1!important;color:#0f172a!important;letter-spacing:-.04em!important;}
+.timer-live-v87186{box-shadow:0 0 0 4px rgba(37,99,235,.08)!important;border-color:#2563eb!important;}
+.timer-panel-v87162{align-items:end!important;}
+.principal-agent-main-v878134 b{font-size:18px!important;}
+@media(max-width:950px){
+  .agenda-layout-v87119{grid-template-columns:1fr!important;}
+  .agenda-day-panel-v87119{min-height:420px!important;max-height:none!important;overflow:visible!important;}
+  .client-admin-item-v878134{grid-template-columns:1fr!important;}
+  .client-admin-item-v878134>.client-row-v8774{grid-template-columns:42px 1fr auto!important;}
+  .client-manage-toggle-v878134{justify-self:start!important;margin-left:52px!important;}
+  .timer-live-clock-v87186{font-size:34px!important;}
+}

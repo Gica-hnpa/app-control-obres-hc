@@ -1,2 +1,2 @@
-V87.186 agenda clients timer UX
-Build previst amb Vite. ZIP en carpeta.
+V87.187 · promotor agenda clients timer real
+Build verificat amb Vite. ZIP en carpeta.
