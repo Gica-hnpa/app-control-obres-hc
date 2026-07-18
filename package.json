@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-192-agents-clients-taula-ordenable",
+  "name": "app-control-obres-v87-193-documents-pdf-pressupost-evolutiu",
   "private": true,
-  "version": "87.192.0",
+  "version": "87.193.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

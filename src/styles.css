@@ -5120,3 +5120,11 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .exp-sort-controls-v878192 label{display:flex;align-items:center;gap:7px;color:#475569;font-size:11px;font-weight:900}
 .exp-sort-controls-v878192 select{height:38px;min-width:150px;border:1px solid #cbd8ea;border-radius:10px;padding:0 10px;background:#fff;color:#0f2d5c;font-weight:800}
 @media(max-width:900px){.exp-sort-controls-v878192{width:100%;justify-content:flex-start}.exp-sort-controls-v878192 label{width:100%}.exp-sort-controls-v878192 select{flex:1;min-width:0}.exp-sort-controls-v878192 .secondary{flex:1}}
+
+/* V87.193 · Documents reals, PDF fidel i encàrrec evolutiu */
+.exact-print-preview-v878193{background:#dfe5ec;padding:12px;min-height:62vh;overflow:hidden}
+.exact-print-note-v878193{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:9px 12px;margin-bottom:10px;color:#0f2d5c}
+.exact-print-note-v878193 b{white-space:nowrap}.exact-print-note-v878193 span{font-size:11px;font-weight:800;color:#475569;text-align:right}
+.exact-print-preview-v878193 iframe{display:block;width:100%;height:72vh;min-height:680px;border:1px solid #94a3b8;border-radius:10px;background:#e5e7eb;box-shadow:0 8px 24px rgba(15,23,42,.12)}
+.obra-evolution-actions-v878193{flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:950px){.exact-print-preview-v878193{padding:6px;min-height:55vh}.exact-print-note-v878193{align-items:flex-start;flex-direction:column}.exact-print-note-v878193 span{text-align:left}.exact-print-preview-v878193 iframe{height:65vh;min-height:540px}.obra-evolution-actions-v878193 .primary,.obra-evolution-actions-v878193 button:not(.danger){display:none}}

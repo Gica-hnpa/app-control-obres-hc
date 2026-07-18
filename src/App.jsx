@@ -1045,6 +1045,13 @@ function uniqueTabs8769(arr){return [...new Set((arr||[]).filter(Boolean))]}
 function tabsForWork8737(obra,data={}){
   const tipus=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
   let tabs=[...(TAB_TEMPLATES8769[tipus]||TAB_TEMPLATES8769["Altres"])];
+  const hasBudgetTrail878193=(data?.partides||[]).length||(data?.pressupostos||[]).length||(data?.documents||[]).some(d=>d?.docData?.type==="pressupostobra"||/pressupost ràpid|pressupost obra/i.test(String(d?.origen||"")));
+  // Si l'encàrrec creix de pressupost a direcció/gestió integral, el pressupost original
+  // continua accessible i no es perd cap dada ni cap eina de l'etapa inicial.
+  if(hasBudgetTrail878193&&!tabs.includes("Pressupost ràpid")){
+    const idx=Math.max(1,tabs.indexOf("Documents")+1);
+    tabs.splice(idx,0,"Pressupost ràpid");
+  }
   if((data?.actes||[]).length&&!tabs.includes("Actes")) tabs.splice(Math.min(5,tabs.length),0,"Actes");
   // V87.120: la gestió econòmica d'obra ha de ser disponible en qualsevol expedient,
   // encara que la feina principal no sigui una gestió integral. Això permet crear/importar
@@ -1162,7 +1169,7 @@ function printHtmlInPlace878112(html,title="Document"){
     return false;
   }
 }
-function printQuote8745(type,doc,obra){
+function quotePrintHtml8745(type,doc,obra){
   const isFactura=type==="factura", title=isFactura?"FACTURA / PROFORMA":"PRESSUPOST";
   const base=baseIva8743(doc), iva=isFactura?invoiceIvaAmount8746(doc):ivaAmount8743(doc), total=isFactura?invoiceTotal8746(doc):base;
   const desc=descompteAmount8746(doc), ret=invoiceRetencioAmount8746(doc);
@@ -1171,7 +1178,12 @@ function printQuote8745(type,doc,obra){
   const totals=isFactura?`<div class="totals"><div><span>Base imposable</span><b>${esc(money(base))}</b></div>${desc?`<div><span>Descompte (${esc(doc.descompte)}%)</span><b>-${esc(money(desc))}</b></div>`:""}<div><span>IVA (${esc(doc.iva||21)}%)</span><b>${esc(money(iva))}</b></div>${ret?`<div><span>Retenció (${esc(doc.retencio)}%)</span><b>-${esc(money(ret))}</b></div>`:""}<div class="total"><span>Total</span><b>${esc(money(total))}</b></div></div>`:`<div class="notes"><b>Observacions</b><p>${esc(doc.observacions||pressupostFooter8746(doc))}</p></div>`;
   const foot=isFactura?`<div class="foot">${esc(doc.observacions||doc.compteBancari||cfg.compteBancari||"Forma de pagament i número de compte pendent d’indicar.")}</div>`:`<div class="foot">Document provisional pendent d’adaptar a dades fiscals definitives del tècnic/despatx.</div>`;
   const rightHead=isFactura?"Import":"Import sense IVA";
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)} ${esc(doc.numero||"")}</title><style>@page{size:A4;margin:14mm}body{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:12px}.top{display:flex;justify-content:space-between;border-bottom:2px solid #111827;padding-bottom:10px;margin-bottom:14px}h1{margin:0;font-size:24px}.parties{display:grid;grid-template-columns:1fr 1fr;gap:10mm;margin-bottom:12px}.box{border:1px solid #cbd5e1;border-radius:6px;padding:9px;min-height:30mm}.box h3{margin:0 0 6px;font-size:11px;color:#64748b;text-transform:uppercase}.box b,.box span{display:block;margin-top:3px}.exp{border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;padding:9px;margin-bottom:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top}th{background:#f1f5f9;text-align:left}.c1{width:78%}.c2{width:22%}.num{text-align:right;white-space:nowrap}p{white-space:pre-wrap;line-height:1.45;color:#334155}.totals{width:82mm;margin-left:auto;margin-top:16px}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:6px 0}.totals .total{border-top:2px solid #111827;border-bottom:0;font-size:18px;margin-top:5px;padding-top:10px}.notes{margin-top:18px;border-top:1px solid #e5e7eb;padding-top:10px}.foot{margin-top:24px;border-top:1px solid #e5e7eb;padding-top:8px;color:#64748b;font-size:11px}</style></head><body><div class="top"><h1>${esc(title)}</h1><b>${esc(doc.numero||"—")}</b></div><div class="parties"><div class="box"><h3>Dades del tècnic</h3><b>${esc(cfg.empresa||"Héctor Cubero / Despatx tècnic")}</b><span>${esc(cfg.email||"Email pendent")}</span><span>NIF / Col·legiat: pendent</span></div><div class="box"><h3>Client</h3><b>${esc(obra?.propietat||"Client")}</b><span>NIF: ${esc(obra?.nifPropietat||"Pendent")}</span><span>${esc(obra?.adreca||"")}</span><span>${esc(obra?.poblacio||"")}</span></div></div><div class="exp"><b>Expedient</b><br>${esc(expedientCode8739(obra))} · ${esc(obra?.nom||"")}<br><small>Data: ${esc(doc.data||"—")}</small></div><table><colgroup><col class="c1"><col class="c2"></colgroup><thead><tr><th>Concepte</th><th>${rightHead}</th></tr></thead><tbody><tr><td><b>${esc(doc.concepte||"Honoraris tècnics")}</b><p>${esc(doc.text||"—")}</p></td><td class="num"><b>${esc(money(isFactura?base:total))}</b></td></tr></tbody></table>${totals}${foot}</body></html>`;
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)} ${esc(doc.numero||"")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:12px;margin:0;background:#fff}.top{display:flex;justify-content:space-between;border-bottom:2px solid #111827;padding-bottom:10px;margin-bottom:14px}h1{margin:0;font-size:24px}.parties{display:grid;grid-template-columns:1fr 1fr;gap:10mm;margin-bottom:12px}.box{border:1px solid #cbd5e1;border-radius:6px;padding:9px;min-height:30mm}.box h3{margin:0 0 6px;font-size:11px;color:#64748b;text-transform:uppercase}.box b,.box span{display:block;margin-top:3px}.exp{border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;padding:9px;margin-bottom:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top}th{background:#f1f5f9;text-align:left}.c1{width:78%}.c2{width:22%}.num{text-align:right;white-space:nowrap}p{white-space:pre-wrap;line-height:1.45;color:#334155}.totals{width:82mm;margin-left:auto;margin-top:16px}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:6px 0}.totals .total{border-top:2px solid #111827;border-bottom:0;font-size:18px;margin-top:5px;padding-top:10px}.notes{margin-top:18px;border-top:1px solid #e5e7eb;padding-top:10px}.foot{margin-top:24px;border-top:1px solid #e5e7eb;padding-top:8px;color:#64748b;font-size:11px}@media screen{html{background:#e5e7eb;padding:16px}body{width:210mm;min-height:297mm;margin:0 auto;padding:14mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media print{html{background:#fff!important;padding:0!important}body{width:auto!important;min-height:0!important;margin:0!important;padding:0!important;box-shadow:none!important}}</style></head><body><div class="top"><h1>${esc(title)}</h1><b>${esc(doc.numero||"—")}</b></div><div class="parties"><div class="box"><h3>Dades del tècnic</h3><b>${esc(cfg.empresa||"Héctor Cubero / Despatx tècnic")}</b><span>${esc(cfg.email||"Email pendent")}</span><span>NIF / Col·legiat: pendent</span></div><div class="box"><h3>Client</h3><b>${esc(obra?.propietat||"Client")}</b><span>NIF: ${esc(obra?.nifPropietat||"Pendent")}</span><span>${esc(obra?.adreca||"")}</span><span>${esc(obra?.poblacio||"")}</span></div></div><div class="exp"><b>Expedient</b><br>${esc(expedientCode8739(obra))} · ${esc(obra?.nom||"")}<br><small>Data: ${esc(doc.data||"—")}</small></div><table><colgroup><col class="c1"><col class="c2"></colgroup><thead><tr><th>Concepte</th><th>${rightHead}</th></tr></thead><tbody><tr><td><b>${esc(doc.concepte||"Honoraris tècnics")}</b><p>${esc(doc.text||"—")}</p></td><td class="num"><b>${esc(money(isFactura?base:total))}</b></td></tr></tbody></table>${totals}${foot}</body></html>`;
+  return html;
+}
+function printQuote8745(type,doc,obra){
+  const isFactura=type==="factura", title=isFactura?"FACTURA / PROFORMA":"PRESSUPOST";
+  const html=quotePrintHtml8745(type,doc,obra);
   if(isMobilePrint878112()){
     if(printHtmlInPlace878112(html,`${title} ${doc.numero||""}`))return;
   }
@@ -4977,6 +4989,8 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
   const[mobileActionsOpen87119,setMobileActionsOpen87119]=useState(false);
   useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
   let tabs=tabsForWork8737(obra,data);
+  const workType878193=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
+  const canQuickBudget878193=["Pressupost d’obra / amidaments","Elaboració de pressupost per client"].includes(workType878193)||tabs.includes("Pressupost ràpid");
   let activeTab=tabs.includes(tab)?tab:"Resum";
   const renderTab=()=> <>
     {activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} 
@@ -5021,7 +5035,7 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
           {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button></div>}
         </div>
       </div>
-      <div className="obra-mini-actions-v8776"><Badge estat={estatObra}/><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button></div>
+      <div className="obra-mini-actions-v8776 obra-evolution-actions-v878193"><Badge estat={estatObra}/>{canQuickBudget878193&&<button type="button" className="primary" onClick={()=>setTab("Pressupost ràpid")}>Crear / editar pressupost</button>}<button type="button" className="secondary" onClick={()=>setEditObra(true)}>Ampliar encàrrec</button><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button></div>
     </section>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105">
@@ -5165,22 +5179,14 @@ function generate(){
 }
 return <div className="text-assist-v8744"><div className="assist-head-v8744"><b>Textos tipus i ajuda ràpida</b><span>Tria un text sencer o escriu una idea i genera una base editable. Més endavant això es podrà connectar amb IA real.</span></div><div className="ai-mini-v8743"><input value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Ex: informe d’humitats, cèdula, direcció d’obra, amidaments..."/><button type="button" className="secondary" onClick={generate}>Generar text base</button></div><div className="template-cards-v8744">{templates.map(x=><div className="template-card-v8744" key={x.t}><h4>{x.t}</h4><p>{x.v}</p><button type="button" className="secondary" onClick={()=>setText(x.v)}>Aplicar aquest text</button></div>)}</div></div>
 }
+function ExactHtmlPreview878193({html,title="Vista prèvia exacta"}){
+  return <div className="exact-print-preview-v878193"><div className="exact-print-note-v878193"><b>Vista prèvia fidel</b><span>Aquesta és la mateixa plantilla que s’utilitzarà en imprimir o guardar el PDF, inclosa l’orientació i la mida de pàgina.</span></div><iframe title={title} srcDoc={html}/></div>
+}
 function QuotePreview8743({type="pressupost",doc,obra,close}){
   const isFactura=type==="factura";
-  const title=isFactura?"FACTURA / PROFORMA":"PRESSUPOST";
-  const base=baseIva8743(doc), desc=descompteAmount8746(doc), net=invoiceNetBase8746(doc), iva=isFactura?invoiceIvaAmount8746(doc):ivaAmount8743(doc), ret=invoiceRetencioAmount8746(doc), total=isFactura?invoiceTotal8746(doc):base;
-  const cfg=(()=>{try{return JSON.parse(lsGet8779("aco_config_v60")||"{}")}catch(e){return {}}})();
+  const html=quotePrintHtml8745(type,doc,obra);
   return <Modal title={`Vista prèvia ${isFactura?"factura":"pressupost"}`} close={close}>
-    <div className="a4-preview-wrap-v8743 a4-preview-wrap-v8746">
-      <div className="quote-a4-v8743 quote-a4-v8744 quote-a4-v8746 print-area">
-        <div className="quote-doc-title-v8744"><h1>{title}</h1><b>{doc.numero||"—"}</b></div>
-        <div className="quote-parties-v8744"><div><h3>Dades del tècnic</h3><b>{cfg.empresa||"Héctor Cubero / Despatx tècnic"}</b><span>{cfg.email||"Email pendent"}</span><span>NIF / Col·legiat: pendent</span></div><div><h3>Client</h3><b>{obra?.propietat||"Client"}</b><span>NIF: {obra?.nifPropietat||"Pendent"}</span><span>{obra?.adreca||""}</span><span>{obra?.poblacio||""}</span></div></div>
-        <div className="quote-exp-box-v8744"><b>Expedient</b><span>{expedientCode8739(obra)} · {obra?.nom}</span><small>Data: {doc.data||"—"}</small></div>
-        <table className="quote-a4-table-v8743 quote-a4-table-v8746"><colgroup><col className="col-concepte"/><col className="col-import"/></colgroup><thead><tr><th>Concepte</th><th>{isFactura?"Import":"Import sense IVA"}</th></tr></thead><tbody><tr><td><b>{doc.concepte||"Honoraris tècnics"}</b><p>{doc.text||"—"}</p></td><td className="numcell"><b>{money(isFactura?base:total)}</b></td></tr></tbody></table>
-        {isFactura?<div className="quote-a4-totals-v8743 quote-a4-totals-v8746"><div><span>Base imposable</span><b>{money(base)}</b></div>{desc>0&&<div><span>Descompte ({doc.descompte||0}%)</span><b>-{money(desc)}</b></div>}<div><span>IVA ({doc.iva||21}%)</span><b>{money(iva)}</b></div>{ret>0&&<div><span>Retenció ({doc.retencio||0}%)</span><b>-{money(ret)}</b></div>}<div className="total"><span>Total</span><b>{money(total)}</b></div></div>:<div className="quote-notes-v8746"><b>Observacions</b><p>{doc.observacions||pressupostFooter8746(doc)}</p></div>}
-        <div className="quote-a4-footer-v8734">{isFactura?(doc.observacions||doc.compteBancari||cfg.compteBancari||"Forma de pagament i número de compte pendent d’indicar."):"Document provisional pendent d’adaptar a dades fiscals definitives del tècnic/despatx."}</div>
-      </div>
-    </div>
+    <ExactHtmlPreview878193 html={html} title={isFactura?"Factura / proforma":"Pressupost"}/>
     <div className="modal-actions"><button className="secondary" onClick={()=>printQuote8745(type,doc,obra)}>Imprimir / PDF</button><button className="primary" onClick={close}>Tancar</button></div>
   </Modal>
 }
@@ -6382,19 +6388,21 @@ async function deleteFromSupabaseStorage(path){
 
 function documentFolders8775(obra,data={}){
   const tipus=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
+  const hasBudgetData878193=(data.partides||[]).length>0||(data.pressupostos||[]).length>0||(data.documents||[]).some(d=>d?.docData?.type==="pressupostobra"||/pressupost d['’]obra|pressupost ràpid/i.test(`${d?.nom||""} ${d?.origin||""}`));
+  const hasCertData878193=(data.certificacions||[]).length>0||(data.factures||[]).length>0||(data.documents||[]).some(d=>["certificacio","proforma"].includes(d?.docData?.type)||/certificaci[oó]|proforma|facturaci[oó] obra/i.test(d?.nom||""));
   const add=(arr,id,label,desc)=>arr.some(x=>x.id===id)?arr:[...arr,{id,label,desc}];
   let folders=[];
   folders=add(folders,"00_DESPATX_TECNIC","00 · Despatx tècnic / honoraris","Pressupostos d’honoraris, factures del tècnic i documents interns del despatx vinculats a aquest expedient. No és documentació econòmica de l’obra.");
   folders=add(folders,"01_DOCUMENTACIO_PREVIA","01 · Documentació prèvia","Encàrrec, informació rebuda, fitxa inicial, documentació del client i antecedents.");
   if(["Projecte / llicència d’obres","Tràmit municipal / llicència / comunicació","Activitat / adequació de local","Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Postobra / documentació final"].includes(tipus)) folders=add(folders,"01_TRAMITS_AJUNTAMENT","01 · Ajuntament / tràmits","Llicències, comunicacions, taxes, requeriments, registre i justificants.");
   if(["Projecte / llicència d’obres","Pressupost d’obra / amidaments","Direcció / seguiment d’obra","Gestió integral d’obra","Plànols / aixecament","Render / 3D / visualització","Activitat / adequació de local","Postobra / documentació final"].includes(tipus)) folders=add(folders,"02_PLANOLS","02 · Plànols","DWG, PDF, aixecaments, as-built, bases gràfiques i plànols marcats.");
-  if(["Projecte / llicència d’obres","Pressupost d’obra / amidaments","Control econòmic d’obra","Gestió integral d’obra"].includes(tipus)) folders=add(folders,"03_AMIDAMENTS_PRESSUPOST_OBRA","03 · Amidaments / pressupost d’obra","Amidaments, pressupost base, descompostos i versions del pressupost d’obra.");
+  if(hasBudgetData878193||["Projecte / llicència d’obres","Pressupost d’obra / amidaments","Control econòmic d’obra","Gestió integral d’obra"].includes(tipus)) folders=add(folders,"03_AMIDAMENTS_PRESSUPOST_OBRA","03 · Amidaments / pressupost d’obra","Amidaments, pressupost base, descompostos i versions del pressupost d’obra.");
   if(["Pressupost d’obra / amidaments","Control econòmic d’obra","Gestió integral d’obra","Direcció / seguiment d’obra"].includes(tipus)) folders=add(folders,"04_PRESSUPOSTS_INDUSTRIALS","04 · Pressupostos industrials","Ofertes de paleteria, pintura, fusteria, serralleria, instal·lacions, bastida, treballs verticals i comparatius.");
   if(["Projecte / llicència d’obres","Direcció / seguiment d’obra","Gestió integral d’obra","Seguretat i salut"].includes(tipus)) folders=add(folders,"05_SEGURETAT_SALUT","05 · Seguretat i salut","EBSS, ESS, PSS, obertura centre, CSS i documentació preventiva.");
   if(["Direcció / seguiment d’obra","Gestió integral d’obra","Seguretat i salut"].includes(tipus)) folders=add(folders,"06_ACTES_SEGUIMENT","06 · Actes i seguiment","Actes, visites, incidències, ordres de la direcció facultativa i documents de seguiment d’obra.");
   if(["Direcció / seguiment d’obra","Gestió integral d’obra","Seguretat i salut","Control econòmic d’obra"].includes(tipus)) folders=add(folders,"06B_FOTOS_OBRA","06B · Fotos d’obra","Fotografies d’obra, visites, abans/després i justificació gràfica separada de les actes.");
   if(["Projecte / llicència d’obres","Direcció / seguiment d’obra","Gestió integral d’obra","Control econòmic d’obra","Postobra / documentació final"].includes(tipus)) folders=add(folders,"06C_CONTROL_QUALITAT","06C · Control de qualitat","Pla de control, assajos, certificats de materials, fitxes tècniques, garanties i comprovacions de qualitat.");
-  if(["Direcció / seguiment d’obra","Gestió integral d’obra","Control econòmic d’obra"].includes(tipus)) folders=add(folders,"07_CERTIFICACIONS_FACTURACIO_OBRA","07 · Certificacions / facturació obra","Certificacions, albarans, factures d’obra i documentació econòmica de l’obra.");
+  if(hasCertData878193||["Direcció / seguiment d’obra","Gestió integral d’obra","Control econòmic d’obra"].includes(tipus)) folders=add(folders,"07_CERTIFICACIONS_FACTURACIO_OBRA","07 · Certificacions / facturació obra","Certificacions, albarans, factures d’obra i documentació econòmica de l’obra.");
   folders=add(folders,"08_DOCUMENTACIO_FINAL","08 · Documentació final / entrega","CFO, llibre de l’edifici, manuals, garanties, as-built final i lliurament al client.");
   folders=add(folders,"99_ALTRES","99 · Altres","Documents puntuals pendents d’ordenar o que no encaixen en cap carpeta.");
   return folders;
@@ -6417,16 +6425,29 @@ function budgetDocFromCurrent878189(d){
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||"",tercerEmail:data?.pressupostRapidTercerEmail||"",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
 }
-async function openOriginal(d){if(d?.docData){openDoc?.(d.docData);return}if(d?.storage==="generat"&&String(d?.tipus||"").toUpperCase().includes("PRESSUPOST")){openDoc?.(budgetDocFromCurrent878189(d));return}if(d.storage==="supabase"&&d.url){window.open(d.url,"_blank");return}if(d.hasFile){let file=await getDocFile(d.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}openDoc({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."})}
+function linkedDocumentData878193(d){
+  const linkedId=d?.linkedId||String(d?.id||"").replace(/^doc-/,"");
+  if(d?.linkedType==="pressupost"||String(d?.nom||"").toLowerCase().includes("pressupost honoraris")){
+    const p=(data.pressupostosTecnic||[]).find(x=>String(x.id)===String(linkedId)||String(x.numero||"")&&String(d?.nom||"").includes(String(x.numero)));
+    if(p)return {...p,type:"pressuposttecnic",title:`PRESSUPOST D’HONORARIS${p.numero?` · ${p.numero}`:""}`,subtitle:`${p.concepte||"Honoraris tècnics"} · ${money(baseIva8743(p))}`};
+  }
+  if(d?.linkedType==="factura"||String(d?.nom||"").toLowerCase().includes("factura honoraris")){
+    const f=(data.facturesTecnic||[]).find(x=>String(x.id)===String(linkedId)||String(x.numero||"")&&String(d?.nom||"").includes(String(x.numero)));
+    if(f)return {...f,type:"facturatecnica",title:`FACTURA / PROFORMA${f.numero?` · ${f.numero}`:""}`,subtitle:`${f.concepte||"Honoraris tècnics"} · ${money(invoiceTotal8746(f))}`};
+  }
+  return null;
+}
+async function openOriginal(d){const linked=linkedDocumentData878193(d);if(linked){openDoc?.(linked);return}if(d?.docData){openDoc?.(d.docData);return}if(d?.storage==="generat"&&String(d?.tipus||"").toUpperCase().includes("PRESSUPOST")){openDoc?.(budgetDocFromCurrent878189(d));return}if(d.storage==="supabase"&&d.url){window.open(d.url,"_blank");return}if(d.hasFile){let file=await getDocFile(d.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}openDoc({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."})}
 async function remove(d){if(!confirm("Segur que vols eliminar aquest document d’aquest expedient?"))return;if(d.storage==="supabase"&&d.path) await deleteFromSupabaseStorage(d.path).catch(()=>{});if(d.storage==="indexeddb"||d.hasFile) await deleteDocFile(d.id).catch(()=>{});setDocs(p=>p.filter(x=>x.id!==d.id))}
 function moveDoc(d,newFolder){setDocs(p=>p.map(x=>x.id===d.id?{...x,folder:newFolder}:x))}
 function sizeTxt(n){return n?((n/1024/1024).toFixed(2)+" MB"):"—"}
 function storageLabel(d){if(d.storage==="generat")return "Document generat dins l’app"; if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
 const generatedDocs878148=[
-  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0;const imp=(data.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*(+r.pu||0),0)||(+c.import||0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra"}})),
-  ...((data.factures||[]).map(f=>({id:`auto-fac-obra-${f.id||f.numero||Date.now()}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`${f.tipus||"Factura / proforma obra"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"FACTURA").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:+f.total||+f.base||0,origen:"Facturació d’obra"}))),
-  ...((data.facturesTecnic||[]).map(f=>({id:`auto-fac-tec-${f.id||f.numero||Date.now()}`,auto878148:true,folder:"00_DESPATX_TECNIC",nom:`${f.tipus||"Factura / proforma honoraris"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"HONORARIS").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:totalFactura878120(f),origen:"Honoraris tècnics"})))
-];
+  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impOrigen:qOrigen*(+r.pu||0),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.qAct||0)*(+r.pu||0),0)||(+c.import||0);const totalOrigen=rows.reduce((sum,r)=>sum+(+r.qOrigen||0)*(+r.pu||0),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
+  ...((data.factures||[]).map(f=>{const base=+f.base||+f.total||0,ded=+f.ded||+f.descompte||0,iva=+f.iva||21,ret=+f.ret||+f.retencio||0,baseImposable=base*(1-ded/100),ivaImp=baseImposable*iva/100,retImp=baseImposable*ret/100,total=+f.total||baseImposable+ivaImp-retImp;return {id:`auto-fac-obra-${f.id||f.numero||Date.now()}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`${f.tipus||"Factura / proforma obra"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"FACTURA").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:total,origen:"Facturació d’obra",docData:{type:"proforma",title:`Proforma ${f.numero||""}`,subtitle:f.data||"",proforma:f,agents:data.agents||[],iva,ret,ded,total,base:baseImposable,ivaImp,retImp}}})),
+  ...((data.pressupostosTecnic||[]).map(p=>({id:`auto-pres-tec-${p.id||p.numero||Date.now()}`,auto878148:true,sourceId878193:p.id,folder:"00_DESPATX_TECNIC",nom:`Pressupost honoraris ${p.numero||""}`.trim(),tipus:"PRESSUPOST HONORARIS",data:p.data||"—",size:0,import:baseIva8743(p),origen:"Honoraris tècnics",docData:{...p,type:"pressuposttecnic",title:`PRESSUPOST D’HONORARIS${p.numero?` · ${p.numero}`:""}`}}))),
+  ...((data.facturesTecnic||[]).map(f=>({id:`auto-fac-tec-${f.id||f.numero||Date.now()}`,auto878148:true,sourceId878193:f.id,folder:"00_DESPATX_TECNIC",nom:`${f.tipus||"Factura / proforma honoraris"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"HONORARIS").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:totalFactura878120(f),origen:"Honoraris tècnics",docData:{...f,type:"facturatecnica",title:`FACTURA / PROFORMA${f.numero?` · ${f.numero}`:""}`}})))
+].filter(g=>!g.sourceId878193||!docs.some(d=>String(d?.linkedId||"")===String(g.sourceId878193)));
 const shown=docs.filter(d=>docFolder(d)===folder);
 const shownGenerated878148=generatedDocs878148.filter(d=>docFolder(d)===folder);
 const totalDocs=docs.length+generatedDocs878148.length;
@@ -6438,7 +6459,7 @@ return <Card title={`Documents de l’expedient${obra?.nom?` · ${obra.nom}`:""}
       <summary><b>Classificació documental</b><span>{activeFolder?.label} · {shown.length+shownGenerated878148.length} docs</span></summary>
       <div className="doc-folder-grid-v87152">{folders.map(f=>{const count=docs.filter(d=>docFolder(d)===f.id).length+generatedDocs878148.filter(d=>docFolder(d)===f.id).length;return <button type="button" key={f.id} className={folder===f.id?"active":""} onClick={()=>setFolder(f.id)}><b>{f.label}</b><span>{count} document{count===1?"":"s"}</span><em>{f.desc}</em></button>})}</div>
     </details>
-    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152"><div className="folder-head-v8775"><div><h3>{activeFolder?.label}</h3><p>{activeFolder?.desc}</p></div><span>{shown.length+shownGenerated878148.length} / {totalDocs} docs</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {d.import?money(d.import):"import pendent"} · generat automàticament des de {d.origen}</span><em>No cal entrar manualment certificacions/factures ja creades: apareixen aquí com a documentació generada.</em></div><div className="actions-inline"><button className="secondary small" onClick={()=>openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}. Per imprimir-lo amb format complet, entra a Gestió obra / Factures o Certificacions i utilitza la previsualització.`})}>Info</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>Obrir</button><button className="danger small" onClick={()=>remove(d)}>Eliminar</button></div></details>)}</>}</div></section>
+    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152"><div className="folder-head-v8775"><div><h3>{activeFolder?.label}</h3><p>{activeFolder?.desc}</p></div><span>{shown.length+shownGenerated878148.length} / {totalDocs} docs</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {d.import?money(d.import):"import pendent"} · generat automàticament des de {d.origen}</span><em>Obre el document amb el mateix format que s’utilitzarà per imprimir-lo o guardar-lo en PDF.</em></div><div className="actions-inline"><button className="secondary small" onClick={()=>d.docData?openDoc?.(d.docData):openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}.`})}>{d.docData?"Obrir":"Info"}</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>Obrir</button><button className="danger small" onClick={()=>remove(d)}>Eliminar</button></div></details>)}</>}</div></section>
   </div>
 </Card>
 }
@@ -7374,10 +7395,9 @@ function DocViewer({doc,obra,client,close,email}){
   const actaDocs=doc.actaDocs||[];
   const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
   const printRef=useRef(null);
+  const exactHtml878193=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):null;
   function htmlForCurrentDoc(){
-    if(doc.type==="certificacio"&&doc.rows)return certPrintHtmlV8772(doc,obra,client);
-    if(doc.type==="proforma"&&doc.proforma)return proformaPrintHtml8783(doc,obra,client);
-    if(doc.type==="pressupostobra"&&doc.rows)return pressupostObraPrintHtml878153(doc,obra,client);
+    if(exactHtml878193)return exactHtml878193;
     const node=printRef.current;
     return `<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title></head><body>${node?node.innerHTML:''}</body></html>`;
   }
@@ -7402,6 +7422,7 @@ function DocViewer({doc,obra,client,close,email}){
   }
   function printIsolated(){
     if(isMobilePrint878112()){
+      if(exactHtml878193){if(printHtmlInPlace878112(exactHtml878193,doc.title||"Document"))return;}
       if(doc.type==="certificacio"&&doc.rows){if(printHtmlInPlace878112(certPrintHtmlV8772(doc,obra,client),doc.title||"Certificació"))return;}
       if(doc.type==="proforma"&&doc.proforma){if(printHtmlInPlace878112(proformaPrintHtml8783(doc,obra,client),doc.title||"Factura proforma"))return;}
       if(doc.type==="pressupostobra"&&doc.rows){if(printHtmlInPlace878112(pressupostObraPrintHtml878153(doc,obra,client),doc.title||"Pressupost d’obra"))return;}
@@ -7415,6 +7436,12 @@ function DocViewer({doc,obra,client,close,email}){
     const win=window.open('', '_blank', `width=${aw},height=${ah},left=0,top=0,resizable=yes,scrollbars=yes`);
     try{win?.moveTo?.(0,0);win?.resizeTo?.(aw,ah)}catch{}
     if(!win){setTimeout(()=>window.print(),100);return}
+    if(exactHtml878193){
+      win.document.open();
+      win.document.write(exactHtml878193+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
+      win.document.close();
+      return;
+    }
     if(doc.type==="certificacio"&&doc.rows){
       win.document.open();
       win.document.write(certPrintHtmlV8772(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
@@ -7443,13 +7470,13 @@ function DocViewer({doc,obra,client,close,email}){
   if(doc?.autoPrint)return null;
   return <Modal title={doc.title} close={close}>
     <div ref={printRef} className={`document-preview print-area clean-doc-preview-v8799 ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}>
-      <div className="document-page modern-acta-page">
+      {exactHtml878193?<ExactHtmlPreview878193 html={exactHtml878193} title={doc.title||"Document"}/>:<div className="document-page modern-acta-page">
         {doc.type!=="acta"&&doc.type!=="certificacio"&&doc.type!=="proforma"&&<div className="cert-header-pro">
           <div>{client?.logo?<img className="doc-logo" src={client.logo}/>:<div className="fake-logo">LOGO</div>}<h3>{client?.rao||client?.nom||"Despatx tècnic"}</h3><p>NIF: {client?.nif||"Pendent"}<br/>Adreça: {client?.adreca||"Pendent"}<br/>{client?.email||""}<br/>{client?.telefon||""}</p></div>
           <div><h3>{obra?.propietat||client?.nom||"Client"}</h3><p>NIF: {obra?.nifPropietat||"Pendent"}<br/>{obra?.adreca||""}<br/>{obra?.poblacio||""}</p></div>
         </div>}
         {doc.type==="certificacio"&&doc.rows?<CertPreviewV8772 doc={doc}/>:doc.type==="acta"&&acta?<ActaFormalPreview8768 obra={obra} client={client} acta={acta} agents={assistents} fotos={actaPhotos} docs={actaDocs}/>:doc.type==="proforma"&&pf?<ProformaPrintV81 doc={doc} pf={pf}/>:doc.type==="pressupostobra"&&doc.rows?<PressupostObraPreview878153 doc={doc}/>:<div className="doc-box"><strong>Vista prèvia del document</strong><span>El document original queda registrat al llistat. La previsualització real del PDF necessita Storage/backend.</span></div>}
-      </div>
+      </div>}
     </div>
     <div className="modal-actions doc-mobile-actions-v87107">
       <button className="secondary" onClick={close}>Tancar / tornar</button>
