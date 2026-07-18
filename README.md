@@ -1,17 +1,15 @@
-# APP Control d’Obres V87.194
+# APP Control d’Obres V87.195
 
-Versió derivada de la V87.193, centrada en la creació i impressió de pressupostos d’obra.
+Versió derivada de la V87.194 amb ajustos concrets a la capçalera i les signatures del pressupost.
 
-## Canvis principals
+## Canvis
 
-- A4 més aprofitat: marges de 9 mm, columnes compactes `Quant.` i `€/ut`, i més amplada per a la descripció llarga.
-- Capçalera reorganitzada: dades del client desplaçades cap a la dreta i identificador amb només número de pressupost i versió.
-- Numeració automàtica correlativa per client amb estructura `ANY-CODICLIENT-SEQ`.
-- Observacions i forma de pagament col·locades una sota l’altra.
-- Espai final de signatures per a qui realitza el pressupost i per al client final.
-- Cada partida admet una quantitat directa o línies d’amidament amb suma automàtica.
-- L’exportació Excel incorpora un full `AMIDAMENTS` quan existeixen línies detallades.
-- Es mantenen les correccions de Documents, PDF fidel, Agents, Clients i ordenació de les versions anteriors.
+- El bloc `Client / promotor` de la capçalera queda més desplaçat cap a la dreta.
+- A la signatura esquerra apareix directament el nom fiscal del client emissor del pressupost, per exemple `VERTICAL TREK ESPAÑA SL`.
+- A la dreta apareix l’etiqueta `Client` i, a sota, el nom del client del pressupost, per exemple `SOCOTERM`.
+- Eliminades de l’editor les dues dades manuals de signatura, perquè ara s’obtenen automàticament dels clients ja vinculats.
+- Corregit el text erroni `function Object() { [native code] }` que podia aparèixer en utilitzar el camp antic `constructor`.
+- Es mantenen l’A4 optimitzat, la numeració per client i els amidaments de la V87.194.
 
 ## Build
 
