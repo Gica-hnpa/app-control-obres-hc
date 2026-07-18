@@ -5108,3 +5108,15 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .agent-library-summary-v878191 small{color:#64748b;font-size:11px;margin-top:3px}
 .agent-library-editor-v878191{border-top:1px solid #e5edf7;background:#f8fbff;padding:12px!important}
 @media(max-width:900px){.client-filter-visible-v878191{margin:10px;padding:10px}.client-filter-visible-v878191 .filters{display:grid!important;grid-template-columns:1fr!important}.client-filter-head-v878191{align-items:flex-start}.agent-search-v878191{width:100%}.agent-search-v878191 input{min-width:0;width:100%}.agent-library-summary-v878191{grid-template-columns:1fr}.agent-library-summary-v878191 button{justify-self:start}}
+
+/* V87.192 · clients disponibles com agents i taula ordenable */
+.agent-name-line-v878192{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.agent-name-line-v878192 em{font-style:normal;font-size:10px;font-weight:950;color:#1d4ed8;background:#dbeafe;border:1px solid #bfdbfe;border-radius:999px;padding:3px 7px;text-transform:uppercase;letter-spacing:.025em}
+.exp-sort-head-v878192{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;border:0;background:transparent;color:inherit;font:inherit;font-weight:950;text-transform:inherit;letter-spacing:inherit;padding:0;cursor:pointer;text-align:left}
+.exp-sort-head-v878192 b{font-size:11px;color:#64748b}
+.exp-sort-head-v878192.active{color:#0b4e9d}
+.exp-sort-head-v878192.active b{color:#0b4e9d}
+.exp-sort-controls-v878192{flex-wrap:wrap;justify-content:flex-end}
+.exp-sort-controls-v878192 label{display:flex;align-items:center;gap:7px;color:#475569;font-size:11px;font-weight:900}
+.exp-sort-controls-v878192 select{height:38px;min-width:150px;border:1px solid #cbd8ea;border-radius:10px;padding:0 10px;background:#fff;color:#0f2d5c;font-weight:800}
+@media(max-width:900px){.exp-sort-controls-v878192{width:100%;justify-content:flex-start}.exp-sort-controls-v878192 label{width:100%}.exp-sort-controls-v878192 select{flex:1;min-width:0}.exp-sort-controls-v878192 .secondary{flex:1}}
