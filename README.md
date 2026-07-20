@@ -1,6 +1,19 @@
-# APP Control d’Obres V87.199
+# APP Control d’Obres V87.200
 
-Versió centrada en el control manual, la depuració i la llegibilitat de la llibreria de partides.
+Versió centrada en recuperar totes les partides existents sense omplir automàticament la llibreria i en fer els codis interns curts i editables.
+
+## Safata de partides i codis V87.200
+
+- Nova safata `Partides detectades pendents de revisar`.
+- Recupera les antigues llibreries separades per client i les línies de tots els pressupostos dels expedients.
+- Mostra per separat les aparicions totals, les partides tècniques úniques, l’origen i el client.
+- Permet cercar i filtrar per origen, client i capítol.
+- Permet seleccionar una partida o moltes i incorporar-les al client, a la llibreria global o a totes dues.
+- Les coincidències tècniques s’unifiquen quan es guarden; la safata conserva el recompte d’aparicions.
+- La safata mostra 100 resultats inicials i permet carregar-ne 100 més sense bloquejar la pantalla.
+- Nou format de codi curt: `PREFIX_PARAULA_001`, per exemple `MA_BAST_001`.
+- El prefix, la paraula clau i el número correlatiu es poden editar individualment a cada partida.
+- Les partides creades o recuperades generen el codi curt automàticament, però després es pot personalitzar.
 
 ## Llibreria controlada V87.199
 
