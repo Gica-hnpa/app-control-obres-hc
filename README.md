@@ -1,6 +1,17 @@
-# APP Control d’Obres V87.200
+# APP Control d’Obres V87.201
 
-Versió centrada en recuperar totes les partides existents sense omplir automàticament la llibreria i en fer els codis interns curts i editables.
+Versió centrada a eliminar la confusió entre llibreria global i llibreries de client: totes les partides formen part d’una sola llibreria i els clients només serveixen per filtrar-les o relacionar-les.
+
+## Llibreria única i capítols compartits V87.201
+
+- Hi ha una sola llibreria de partides; ja no existeixen els àmbits separats global/client.
+- El client és només un filtre i una vinculació opcional per localitzar les partides que utilitza habitualment.
+- Hi ha un únic catàleg persistent de capítols compartit per tots els filtres i editors de la llibreria.
+- Els capítols es poden crear, canviar de nom, fusionar i eliminar si són buits des d’un únic gestor.
+- Un capítol nou apareix immediatament als desplegables de creació, edició, moviments massius i safata pendent.
+- A la safata, el capítol importat es mostra com a capítol d’origen i abans de guardar cal escollir el capítol final.
+- Dins dels pressupostos es consulta la mateixa llibreria única, amb un filtre opcional per veure només les partides relacionades amb aquell client.
+- Afegir una partida a un pressupost la relaciona automàticament amb el client, sense copiar-la ni crear una segona llibreria.
 
 ## Safata de partides i codis V87.200
 
@@ -8,7 +19,7 @@ Versió centrada en recuperar totes les partides existents sense omplir automàt
 - Recupera les antigues llibreries separades per client i les línies de tots els pressupostos dels expedients.
 - Mostra per separat les aparicions totals, les partides tècniques úniques, l’origen i el client.
 - Permet cercar i filtrar per origen, client i capítol.
-- Permet seleccionar una partida o moltes i incorporar-les al client, a la llibreria global o a totes dues.
+- Permet seleccionar una partida o moltes, assignar el capítol final i incorporar-les a la llibreria única.
 - Les coincidències tècniques s’unifiquen quan es guarden; la safata conserva el recompte d’aparicions.
 - La safata mostra 100 resultats inicials i permet carregar-ne 100 més sense bloquejar la pantalla.
 - Nou format de codi curt: `PREFIX_PARAULA_001`, per exemple `MA_BAST_001`.
@@ -52,17 +63,17 @@ Versió centrada en recuperar totes les partides existents sense omplir automàt
 - Les accions es concentren en un desplegable.
 - Origen, importació i annexos queden dins un segon desplegable.
 - Al mòbil cada partida és plegable i disposa d’un selector únic d’accions.
-- Des de la partida es pot guardar clarament a la llibreria del client.
+- Des de la partida es pot guardar expressament a la llibreria única i relacionar-la amb el client de l’expedient.
 
 ## Llibreria central
 
 - Nova pestanya `Llibreria` al menú principal.
-- Vista global i vista filtrada per client.
+- Vista completa i vista filtrada per client sobre la mateixa llibreria.
 - Identificador intern descriptiu i estable separat del codi propi de cada pressupost.
 - El codi, el capítol i el preu no creen duplicats.
 - Les coincidències es determinen pel contingut tècnic: concepte, descripció i unitat.
 - Els preus diferents queden a l’històric de la mateixa partida.
 - Les antigues llibreries es conserven, però les noves importacions no hi incorporen partides automàticament.
-- Dins d’un expedient es consulta primer la llibreria del client i després la global.
-- Una partida global utilitzada en un expedient queda vinculada al client.
+- Dins d’un expedient es consulta tota la llibreria o només les partides relacionades amb el client.
+- Una partida utilitzada en un expedient queda vinculada al client sense duplicar-se.
 - La llibreria forma part del Supabase Sync i de la còpia JSON local.
