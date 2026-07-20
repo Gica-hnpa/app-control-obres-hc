@@ -1,6 +1,17 @@
-# APP Control d’Obres V87.201
+# APP Control d’Obres V87.202
 
-Versió centrada a eliminar la confusió entre llibreria global i llibreries de client: totes les partides formen part d’una sola llibreria i els clients només serveixen per filtrar-les o relacionar-les.
+Versió centrada a començar la depuració de la llibreria pels capítols, abans de classificar o editar les partides.
+
+## Capítols primer i fusió guiada V87.202
+
+- La pantalla comença amb `PAS 1 · Depurar i definir els capítols`, obert d’entrada.
+- La safata de partides passa al pas 2 i la llibreria definitiva al pas 3; totes dues queden plegades inicialment.
+- Nou selector clar per fusionar cada capítol amb un altre d’existent.
+- Si el capítol té partides, fusionar-lo les conserva i elimina el nom repetit.
+- Si és buit, apareix l’acció directa `Eliminar buit`.
+- Es poden crear capítols nous des de la capçalera o des del gestor.
+- Es detecten possibles capítols repetits ignorant la numeració inicial i petites diferències de plural.
+- Per cada grup suggerit es pot triar amb un sol botó quin nom conservar; mai es fusiona automàticament.
 
 ## Llibreria única i capítols compartits V87.201
 

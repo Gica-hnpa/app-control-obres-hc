@@ -539,6 +539,10 @@ function readAllLibraries878160(){
 // segons el capítol i no participa en la detecció de duplicats.
 function libText87196(v){return String(v??"").trim().replace(/\s+/g," ")}
 function libNormText87196(v){return libText87196(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim()}
+function libChapterComparable87202(value=""){
+  const withoutCode=libNormText87196(value).replace(/^(?:c\s*)?\d+(?:\s+\d+)*\s*/,"").trim();
+  return withoutCode.split(/\s+/).filter(Boolean).map(token=>token.length>5?token.replace(/(?:es|s)$/i,""):token).join(" ");
+}
 function libLongDesc87196(row={}){
   const values=[row.desc,row.descripcio,row["descripció"],row.descripcion,row["descripción"],row.description,row.detall,row.text,row.observacions,row.notes].map(libText87196).filter(Boolean);
   return values.sort((a,b)=>b.length-a.length)[0]||"";
@@ -2200,7 +2204,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.201",
+      version:"V87.202",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3813,6 +3817,16 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     });
     return [...map.values()].sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
   },[managerRows,caps]);
+  const duplicateChapterGroups=(()=>{
+    const groups=new Map();
+    caps.forEach(cap=>{
+      if(cap==="General")return;
+      const key=libChapterComparable87202(cap);
+      if(!key)return;
+      groups.set(key,[...(groups.get(key)||[]),cap]);
+    });
+    return [...groups.values()].filter(group=>group.length>1).sort((a,b)=>String(a[0]).localeCompare(String(b[0]),"ca",{numeric:true}));
+  })();
   function updateItem(id,patch){setItems?.(prev=>upsertPartidaLibrary87196(prev,{id,...patch}))}
   function registerChapter87201(value){
     const cap=libText87196(value);
@@ -3919,20 +3933,37 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     if(rows.some(x=>String(x.cap||"General")===cap))return alert("Aquest capítol encara té partides. Primer fusiona’l o mou-les a General.");
     if(confirm(`Eliminar el capítol buit «${cap}» del catàleg?`))setChapterCatalog(prev=>prev.filter(x=>x!==cap));
   }
+  function mergeChapterGroup87202(group,keepCap){
+    const mergeCaps=(group||[]).filter(cap=>cap!==keepCap);
+    if(!mergeCaps.length)return;
+    if(!confirm(`Conservar «${keepCap}» i fusionar-hi ${mergeCaps.map(cap=>`«${cap}»`).join(", ")}? Totes les partides es conservaran.`))return;
+    const mergeSet=new Set(group);
+    setItems?.(prev=>dedupePartidaLibrary87196((prev||[]).map(item=>mergeSet.has(libText87196(item.cap||"General"))?{...item,cap:keepCap,updatedAt:new Date().toISOString()}:item)));
+    setChapterCatalog(prev=>[...new Set(prev.filter(cap=>!mergeSet.has(cap)).concat(keepCap))].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true})));
+    setCapDrafts(prev=>{const next={...prev};group.forEach(cap=>delete next[cap]);return next});
+    if(mergeSet.has(capFilter))setCapFilter(keepCap);
+  }
   return <div className="library-page-v87196 stack">
-    <section className="library-hero-v87196"><div><small>UNA SOLA LLIBRERIA</small><h2>Llibreria de pressupostos</h2><p>Totes les partides viuen aquí. El client és només un filtre per trobar les que utilitza habitualment.</p></div><button type="button" className="primary" onClick={startNew}><Plus/> Crear partida</button></section>
+    <section className="library-hero-v87196"><div><small>COMENCEM PELS CAPÍTOLS</small><h2>Ordena primer el catàleg</h2><p>Crea els capítols bons i fusiona els repetits. Després ja classificarem les partides dins d’aquesta estructura neta.</p></div><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear capítol</button></section>
     <div className="library-policy-note-v87199"><b>Model únic i clar</b><span>No hi ha una llibreria global i una altra per client. Hi ha una única llibreria, un únic catàleg de capítols i vinculacions opcionals amb clients.</span></div>
     <div className="library-stats-v87196 library-stats-v87201"><div><small>Partides de la llibreria</small><b>{rows.length}</b></div><div><small>Capítols únics</small><b>{caps.length}</b></div><div><small>Relacionades amb clients</small><b>{linkedCount}</b></div><div><small>Sense client concret</small><b>{unlinkedCount}</b></div><button type="button" className="secondary" onClick={rebuildCodes87199}>Regenerar codis</button></div>
-    <details className="library-chapters-v87197">
-      <summary><div><b>Catàleg únic de capítols</b><span>{caps.length} capítol/s compartits per tota la llibreria</span></div><em>Obrir ▾</em></summary>
+    <details open className="library-chapters-v87197 library-chapters-step-v87202">
+      <summary><div><b>PAS 1 · Depurar i definir els capítols</b><span>{caps.length} capítol/s compartits · crea, canvia el nom o fusiona els repetits</span></div><em>Obrir ▾</em></summary>
       <div className="library-chapter-controls-v87199 library-chapter-controls-v87201"><label><span>Cercar capítol</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder="Escriu una paraula..."/></label><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear capítol</button></div>
-      <div className="library-chapters-note-v87197"><b>Aquest és l’únic catàleg</b><span>Qualsevol capítol creat aquí apareix immediatament a tots els desplegables. Si poses com a nom final un capítol existent, les partides es fusionen en aquell capítol.</span></div>
-      <div className="library-chapters-list-v87197">{managedChapterStats.length===0?<Empty text="No hi ha capítols amb aquesta cerca."/>:managedChapterStats.map(ch=><div className="library-chapter-row-v87197" key={ch.cap}><div><b>{ch.cap}</b><span>{ch.total} partida/es · relacionat amb {ch.clients.size} client/s</span></div><label><span>Nom final o capítol on fusionar</span><input list="library-chapter-destinations-v87199" value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}}}/></label><button type="button" className="primary small" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Guardar / fusionar</button>{ch.cap!=="General"&&(ch.total?<button type="button" className="secondary small" onClick={()=>moveChapterToGeneral87197(ch.cap)}>Moure a General</button>:<button type="button" className="danger small" onClick={()=>deleteEmptyChapter87201(ch.cap)}>Eliminar buit</button>)}</div>)}</div>
+      <div className="library-chapters-note-v87197"><b>Com s’elimina un capítol repetit?</b><span>Tria a «Fusionar amb un existent» el capítol que vols conservar i prem «Aplicar / fusionar». Les partides es mouen al capítol bo i l’altre desapareix. Només s’elimina directament quan és buit.</span></div>
+      {duplicateChapterGroups.length>0&&<div className="library-duplicate-groups-v87202"><div className="library-duplicate-groups-head-v87202"><b>Possibles repetits detectats ({duplicateChapterGroups.length})</b><span>He ignorat la numeració inicial i petites diferències de plural. No es canvia res fins que tu triïs quin nom conservar.</span></div>{duplicateChapterGroups.map((group,index)=><div className="library-duplicate-group-v87202" key={`${group.join("-")}-${index}`}><span>{group.join(" · ")}</span><div>{group.map(cap=><button type="button" className="secondary small" key={cap} onClick={()=>mergeChapterGroup87202(group,cap)}>Conservar «{cap}»</button>)}</div></div>)}</div>}
+      <div className="library-chapters-list-v87197">{managedChapterStats.length===0?<Empty text="No hi ha capítols amb aquesta cerca."/>:managedChapterStats.map(ch=><div className="library-chapter-row-v87197 library-chapter-row-v87202" key={ch.cap}>
+        <div><b>{ch.cap}</b><span>{ch.total} partida/es · relacionat amb {ch.clients.size} client/s</span></div>
+        <label><span>Fusionar amb un capítol existent</span><select value="" onChange={e=>{if(e.target.value)setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))}}><option value="">Selecciona el capítol que vols conservar...</option>{caps.filter(cap=>cap!==ch.cap).map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label>
+        <label><span>Nom final (també el pots escriure)</span><input list="library-chapter-destinations-v87199" value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}}}/></label>
+        <button type="button" className="primary small" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Aplicar / fusionar</button>
+        {ch.cap!=="General"&&(ch.total?<button type="button" className="secondary small" onClick={()=>moveChapterToGeneral87197(ch.cap)}>Moure a General</button>:<button type="button" className="danger small" onClick={()=>deleteEmptyChapter87201(ch.cap)}>Eliminar buit</button>)}
+      </div>)}</div>
       <datalist id="library-chapter-destinations-v87199">{managedChapterStats.map(ch=><option key={ch.cap} value={ch.cap}/>)}</datalist>
     </details>
     {draft&&<details open className="library-new-v87196"><summary>Crear una partida de llibreria</summary><div className="library-new-code-note-v87199">Codi curt editable: prefix del capítol + paraula clau + número correlatiu. Exemple: <b>MA_BAST_001</b>.</div><div className="library-editor-grid-v87196"><label><span>Concepte *</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>Unitat</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>Capítol de la llibreria</span><select value={draft.cap} onChange={e=>changeDraftChapter87201(e.target.value)}>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select></label><label><span>Prefix del codi</span><input maxLength="4" value={draft.codiPrefix} onChange={e=>setDraft({...draft,codiPrefix:e.target.value})} placeholder={libChapterInitials87199(draft.cap)}/></label><label><span>Paraula clau del codi</span><input maxLength="6" value={draft.codiParaula} onChange={e=>setDraft({...draft,codiParaula:e.target.value})} placeholder={libConceptKeyword87199(draft.concepte)}/></label><label><span>Preu unitari</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label className="span-all"><span>Descripció llarga</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label>{clients.length>0&&<label><span>Client relacionat (opcional)</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveNew}>Guardar a la llibreria</button></div></details>}
-    <details open className="library-candidate-inbox-v871200">
-      <summary><div><b>Partides detectades pendents de revisar</b><span>{candidateData.rawCount} aparicions trobades · {pendingCandidates.length} partides tècniques úniques encara no guardades</span></div><em>Revisar ▾</em></summary>
+    <details className="library-candidate-inbox-v871200">
+      <summary><div><b>PAS 2 · Classificar les partides pendents</b><span>{candidateData.rawCount} aparicions trobades · {pendingCandidates.length} partides tècniques úniques encara no guardades</span></div><em>Obrir quan els capítols estiguin nets ▾</em></summary>
       <div className="library-candidate-stats-v871200"><div><small>Antigues llibreries de clients</small><b>{candidateData.legacyCount}</b></div><div><small>Línies de pressupostos</small><b>{candidateData.budgetCount}</b></div><div><small>Ja guardades</small><b>{rows.length}</b></div><div><small>Pendents úniques</small><b>{pendingCandidates.length}</b></div></div>
       <div className="library-candidate-note-v871200"><b>Cap partida s’incorpora sola.</b><span>Filtra pel capítol d’origen, selecciona les partides i assigna un únic capítol final del catàleg. El client només és una vinculació opcional.</span></div>
       <div className="library-candidate-filters-v871200"><label><span>Cercar</span><input value={candidateSearch} onChange={e=>{setCandidateSearch(e.target.value);setCandidateLimit(100);setCandidateSelected([])}} placeholder="Concepte, codi, capítol o obra"/></label><label><span>Origen de les dades</span><select value={candidateSource} onChange={e=>{setCandidateSource(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els orígens</option><option value="legacy">Antigues llibreries</option><option value="budget">Pressupostos</option></select></label><label><span>Client d’origen</span><select value={candidateClient} onChange={e=>{setCandidateClient(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label><label><span>Capítol d’origen</span><select value={candidateCap} onChange={e=>{setCandidateCap(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els capítols d’origen ({candidateCaps.length})</option>{candidateCaps.map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label></div>
@@ -3944,7 +3975,9 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
       })}</div>
       {candidateFiltered.length>candidateLimit&&<button type="button" className="secondary library-candidate-more-v871200" onClick={()=>setCandidateLimit(x=>x+100)}>Mostrar 100 més · en queden {candidateFiltered.length-candidateLimit}</button>}
     </details>
-    <Card title="Partides de la llibreria única" action={<button type="button" className="secondary" onClick={consolidate}>Unificar partides idèntiques</button>}>
+    <details className="library-items-step-v87202">
+      <summary><div><b>PAS 3 · Consultar i editar la llibreria definitiva</b><span>{rows.length} partida/es ja guardades</span></div><em>Obrir després de classificar ▾</em></summary>
+    <Card title="Partides de la llibreria única" action={<div className="actions-inline"><button type="button" className="primary" onClick={startNew}><Plus/> Crear partida</button><button type="button" className="secondary" onClick={consolidate}>Unificar partides idèntiques</button></div>}>
       <div className="library-filters-v87196 library-filters-v87201"><label><span>Filtre de client</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([])}}><option value="">Tots els clients / tota la llibreria</option><option value="__none__">Sense client relacionat</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label><label><span>Cercar partida</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nom, descripció o codi intern"/></label><label><span>Capítol únic</span><select value={capFilter} onChange={e=>setCapFilter(e.target.value)}><option value="">Tots els capítols ({caps.length})</option>{caps.map(c=><option key={c}>{c}</option>)}</select></label><label><span>Origen de la partida</span><select value={originFilter} onChange={e=>setOriginFilter(e.target.value)}><option value="">Totes les partides</option><option value="selected">Afegides expressament</option><option value="imported">Recuperades anteriorment</option></select></label></div>
       <div className="library-result-head-v87196"><span><b>{filtered.length}</b> partida/es · <b>{caps.length}</b> capítol/s al catàleg únic</span><button type="button" className="secondary small" onClick={selectFiltered87199}>{filtered.length&&filtered.every(x=>selectedIds.includes(x.id))?"Desmarcar resultats":"Seleccionar resultats"}</button></div>
       {selectedIds.length>0&&<div className="library-bulk-bar-v87199"><b>{selectedIds.length} seleccionada/es</b><select value={bulkChapter} onChange={e=>setBulkChapter(e.target.value)}><option value="">Moure a un capítol...</option>{caps.map(c=><option key={c} value={c}>{c}</option>)}<option value="__new__">+ Crear capítol nou</option></select><button type="button" className="primary" onClick={moveSelected87199}>Moure</button><button type="button" className="secondary" onClick={()=>setSelectedIds([])}>Desmarcar</button><button type="button" className="danger" onClick={deleteSelected87199}>Eliminar seleccionades</button></div>}
@@ -3953,6 +3986,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
         return <details className={`library-item-v87196 ${selectedIds.includes(item.id)?"selected-v87199":""}`} key={item.id}><summary><input className="library-select-v87199" type="checkbox" checked={selectedIds.includes(item.id)} onClick={e=>e.stopPropagation()} onChange={()=>toggleLibrarySelection87199(item.id)} aria-label="Seleccionar partida"/><div><b>{item.concepte}</b><span>{item.codiIntern} · {item.cap||"General"} · {item.ut||"ut"}</span><small>{owners.length?`Clients relacionats: ${owners.join(", ")}`:"Sense client relacionat"} · {libraryOrigin87199(item)==="imported"?"Recuperada":"Afegida expressament"}</small></div><div><small>Preu unitari</small><strong>{money(item.pu||0)}</strong><em>Obrir ▾</em></div></summary><div className="library-editor-grid-v87196"><label><span>Codi intern resultant</span><input value={item.codiIntern||""} readOnly/></label><label><span>Prefix capítol</span><input maxLength="4" defaultValue={item.codiPrefix||libChapterInitials87199(item.cap)} onBlur={e=>updateItemCodeParts871200(item,{codiPrefix:e.target.value})}/></label><label><span>Paraula clau</span><input maxLength="6" defaultValue={item.codiParaula||libConceptKeyword87199(item.concepte)} onBlur={e=>updateItemCodeParts871200(item,{codiParaula:e.target.value})}/></label><label><span>Número correlatiu</span><input type="number" min="1" max="999" defaultValue={item.codiSeq||1} onBlur={e=>updateItemCodeParts871200(item,{codiSeq:e.target.value})}/></label><label><span>Unitat</span><input defaultValue={item.ut||"ut"} onBlur={e=>updateItem(item.id,{ut:e.target.value})}/></label><label><span>Preu unitari</span><input inputMode="decimal" defaultValue={qty2(item.pu||0)} onBlur={e=>updateItem(item.id,{pu:parseNum8770(e.target.value)||0})}/></label><label className="span-all"><span>Concepte</span><input defaultValue={item.concepte||""} onBlur={e=>updateItem(item.id,{concepte:e.target.value})}/></label><label className="library-chapter-select-v87198"><span>Capítol del catàleg únic</span><select value={item.cap||"General"} onChange={e=>changeItemChapter87198(item,e.target.value)}>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select>{chapterSavedId===item.id&&<small>Canvi guardat</small>}</label><label className="span-all"><span>Descripció llarga</span><textarea defaultValue={item.desc||""} onBlur={e=>updateItem(item.id,{desc:e.target.value})}/></label><details className="library-client-links-v87196"><summary>Clients relacionats ({(item.clientIds||[]).length})</summary>{clients.map(c=><label key={c.id}><input type="checkbox" checked={(item.clientIds||[]).some(id=>String(id)===String(c.id))} onChange={e=>updateItem(item.id,{clientIds:e.target.checked?[...new Set([...(item.clientIds||[]),String(c.id)])]:(item.clientIds||[]).filter(id=>String(id)!==String(c.id))})}/><span>{c.nom||c.rao}</span></label>)}</details>{(item.priceHistory||[]).length>0&&<details className="library-price-history-v87196"><summary>Històric de preus ({item.priceHistory.length})</summary>{item.priceHistory.slice().reverse().map((p,i)=><span key={`${p.data}-${p.pu}-${i}`}>{p.data||"—"} · {money(p.pu||0)} · {p.origen||"Llibreria"}</span>)}</details>}</div><div className="library-item-actions-v87196"><button type="button" className="danger" onClick={()=>removeItem(item.id)}>Eliminar de la llibreria</button></div></details>
       })}</div>
     </Card>
+    </details>
   </div>
 }
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
@@ -7014,7 +7048,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.201.0",
+    app_version:"87.202.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
