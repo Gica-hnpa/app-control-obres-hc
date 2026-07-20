@@ -1,6 +1,15 @@
-# APP Control d’Obres V87.196
+# APP Control d’Obres V87.197
 
 Versió centrada en la creació de pressupostos i la gestió de la llibreria de partides.
+
+## Gestió de capítols V87.197
+
+- Nou desplegable `Gestionar capítols de la llibreria` al menú principal Llibreria.
+- Permet canviar el nom d’un capítol a totes les seves partides de cop.
+- Si el nom nou ja existeix, els dos capítols es fusionen sense perdre partides.
+- Permet passar totes les partides d’un capítol a `General`.
+- Mostra el nombre de partides globals i clients vinculats a cada capítol.
+- Disseny plegable i adaptat a mòbil.
 
 ## Pressupost
 

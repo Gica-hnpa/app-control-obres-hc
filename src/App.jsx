@@ -2125,7 +2125,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.196",
+      version:"V87.197",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3683,6 +3683,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[]}){
   const[clientId,setClientId]=useState(clients?.[0]?.id||"");
   const[search,setSearch]=useState("");
   const[capFilter,setCapFilter]=useState("");
+  const[capDrafts,setCapDrafts]=useState({});
   const[draft,setDraft]=useState(null);
   useEffect(()=>{if(clientId&&!clients.some(c=>String(c.id)===String(clientId)))setClientId(clients?.[0]?.id||"")},[clients,clientId]);
   const rows=useMemo(()=>dedupePartidaLibrary87196(items||[]),[items]);
@@ -3695,6 +3696,18 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[]}){
   });
   const globalCount=rows.filter(x=>x.global).length;
   const linkedCount=rows.filter(x=>(x.clientIds||[]).length).length;
+  const allChapterStats=useMemo(()=>{
+    const map=new Map();
+    rows.forEach(item=>{
+      const cap=libText87196(item.cap||"General")||"General";
+      const current=map.get(cap)||{cap,total:0,global:0,clients:new Set()};
+      current.total++;
+      if(item.global)current.global++;
+      (item.clientIds||[]).forEach(id=>current.clients.add(String(id)));
+      map.set(cap,current);
+    });
+    return [...map.values()].sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
+  },[rows]);
   function updateItem(id,patch){setItems?.(prev=>upsertPartidaLibrary87196(prev,{id,...patch}))}
   function removeItem(id){if(confirm("Eliminar definitivament aquesta partida de la llibreria? No s'eliminarà dels pressupostos on ja s'hagi utilitzat."))setItems?.(prev=>(prev||[]).filter(x=>String(x.id)!==String(id)))}
   function startNew(){setDraft({concepte:"",desc:"",ut:"ut",pu:"0",cap:"General",codiPressupost:"",global:scope==="global",clientIds:scope==="client"&&clientId?[String(clientId)]:[]})}
@@ -3704,9 +3717,32 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[]}){
     setDraft(null);
   }
   function consolidate(){const before=(items||[]).length;const next=dedupePartidaLibrary87196(items||[]);setItems?.(next);alert(before===next.length?"La llibreria ja estava consolidada.":`${before-next.length} duplicat/s unificat/s. No s'ha perdut cap vinculació de client.`)}
+  function renameChapter87197(oldCap,newValue){
+    const nextCap=libText87196(newValue);
+    if(!nextCap)return alert("Escriu el nou nom del capítol.");
+    if(nextCap===oldCap)return alert("El nom del capítol no ha canviat.");
+    const willMerge=rows.some(x=>String(x.cap||"General")===nextCap);
+    const message=willMerge?`El capítol «${oldCap}» es fusionarà amb «${nextCap}». Les partides es conservaran. Continuar?`:`Canviar «${oldCap}» per «${nextCap}» a tota la llibreria?`;
+    if(!confirm(message))return;
+    setItems?.(prev=>dedupePartidaLibrary87196((prev||[]).map(x=>libText87196(x.cap||"General")===oldCap?{...x,cap:nextCap,updatedAt:new Date().toISOString()}:x)));
+    setCapDrafts(prev=>{const next={...prev};delete next[oldCap];return next});
+    if(capFilter===oldCap)setCapFilter(nextCap);
+  }
+  function moveChapterToGeneral87197(cap){
+    if(cap==="General")return;
+    if(!confirm(`Moure totes les partides de «${cap}» al capítol «General»?`))return;
+    setItems?.(prev=>dedupePartidaLibrary87196((prev||[]).map(x=>libText87196(x.cap||"General")===cap?{...x,cap:"General",updatedAt:new Date().toISOString()}:x)));
+    setCapDrafts(prev=>{const next={...prev};delete next[cap];return next});
+    if(capFilter===cap)setCapFilter("General");
+  }
   return <div className="library-page-v87196 stack">
     <section className="library-hero-v87196"><div><small>CONTROL CENTRAL DE PARTIDES</small><h2>Llibreria de pressupostos</h2><p>Una sola partida tècnica, amb codi intern estable i codi visible independent per als pressupostos.</p></div><button type="button" className="primary" onClick={startNew}><Plus/> Nova partida</button></section>
     <div className="library-stats-v87196"><div><small>Partides úniques</small><b>{rows.length}</b></div><div><small>Llibreria global</small><b>{globalCount}</b></div><div><small>Vinculades a clients</small><b>{linkedCount}</b></div><button type="button" className="secondary" onClick={consolidate}>Consolidar duplicats</button></div>
+    <details className="library-chapters-v87197">
+      <summary><div><b>Gestionar capítols de la llibreria</b><span>{allChapterStats.length} capítol/s · canvia o fusiona noms a totes les partides</span></div><em>Obrir ▾</em></summary>
+      <div className="library-chapters-note-v87197"><b>Gestió central</b><span>El capítol pertany a la partida, no al seu codi. Si escrius el nom d’un capítol existent, les dues classificacions es fusionaran sense duplicar partides.</span></div>
+      <div className="library-chapters-list-v87197">{allChapterStats.length===0?<Empty text="Encara no hi ha capítols perquè la llibreria és buida."/>:allChapterStats.map(ch=><div className="library-chapter-row-v87197" key={ch.cap}><div><b>{ch.cap}</b><span>{ch.total} partida/es · {ch.global} globals · {ch.clients.size} client/s</span></div><label><span>Nou nom o capítol de destí</span><input value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}}}/></label><button type="button" className="primary small" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Guardar / fusionar</button>{ch.cap!=="General"&&<button type="button" className="secondary small" onClick={()=>moveChapterToGeneral87197(ch.cap)}>Passar a General</button>}</div>)}</div>
+    </details>
     {draft&&<details open className="library-new-v87196"><summary>Nova partida de llibreria</summary><div className="library-editor-grid-v87196"><label><span>Concepte *</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>Unitat</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>Capítol / classificació</span><input value={draft.cap} onChange={e=>setDraft({...draft,cap:e.target.value})}/></label><label><span>Preu actual</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label><span>Codi visible orientatiu</span><input value={draft.codiPressupost} onChange={e=>setDraft({...draft,codiPressupost:e.target.value})} placeholder="Es renumerarà en afegir-la"/></label><label className="span-all"><span>Descripció llarga</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label><label className="library-check-v87196"><input type="checkbox" checked={!!draft.global} onChange={e=>setDraft({...draft,global:e.target.checked})}/><span>Disponible a la llibreria global</span></label>{clients.length>0&&<label><span>Client inicial</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveNew}>Guardar partida</button></div></details>}
     <Card title="Consultar i treballar la llibreria" action={<button type="button" className="secondary" onClick={consolidate}>Revisar duplicats</button>}>
       <div className="library-filters-v87196"><label><span>Àmbit</span><select value={scope} onChange={e=>{setScope(e.target.value);setCapFilter("")}}><option value="global">Llibreria global</option><option value="client">Llibreria per client</option></select></label>{scope==="client"&&<label><span>Client</span><select value={clientId} onChange={e=>{setClientId(e.target.value);setCapFilter("")}}>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}<label><span>Cercar</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Concepte, codi, descripció..."/></label><label><span>Capítol</span><select value={capFilter} onChange={e=>setCapFilter(e.target.value)}><option value="">Tots</option>{caps.map(c=><option key={c}>{c}</option>)}</select></label></div>
@@ -6787,7 +6823,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.196.0",
+    app_version:"87.197.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
