@@ -1,6 +1,14 @@
-# APP Control d’Obres V87.197
+# APP Control d’Obres V87.198
 
 Versió centrada en la creació de pressupostos i la gestió de la llibreria de partides.
+
+## Canvi directe de capítol V87.198
+
+- El selector superior passa a dir `Filtrar per capítol` i només filtra la llista.
+- Dins de cada partida hi ha un desplegable real `Canviar de capítol`.
+- En seleccionar un capítol, el canvi es desa immediatament.
+- Es mostra el missatge verd `Capítol canviat i guardat`.
+- L’opció `Crear un capítol nou` permet afegir una classificació nova.
 
 ## Gestió de capítols V87.197
 
