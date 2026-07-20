@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText} from "lucide-react";
+import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen} from "lucide-react";
 
 const APP_USERS8779={hector:"0000",pol:"1919"};
 const STORAGE_NS8782="aco_v8782";
@@ -532,6 +532,74 @@ function readAllLibraries878160(){
     });
   }catch{}
   return out;
+}
+
+// V87.196 · Llibreria central de partides.
+// El codi intern identifica la partida dins l'app. El codi de pressupost es genera
+// segons el capítol i no participa en la detecció de duplicats.
+function libText87196(v){return String(v??"").trim().replace(/\s+/g," ")}
+function libNormText87196(v){return libText87196(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim()}
+function libLongDesc87196(row={}){
+  const values=[row.desc,row.descripcio,row["descripció"],row.descripcion,row["descripción"],row.description,row.detall,row.text,row.observacions,row.notes].map(libText87196).filter(Boolean);
+  return values.sort((a,b)=>b.length-a.length)[0]||"";
+}
+function libFingerprint87196(row={}){
+  const concept=libNormText87196(row.concepte||row.resum||row.resumen||"Nova partida");
+  const desc=libNormText87196(libLongDesc87196(row));
+  const unit=libNormText87196(row.ut||"ut");
+  return `${concept}__${desc}__${unit}`;
+}
+function libHash87196(text=""){
+  let h=2166136261;
+  for(let i=0;i<String(text).length;i++){h^=String(text).charCodeAt(i);h=Math.imul(h,16777619)}
+  return (h>>>0).toString(36);
+}
+function libraryClientToken87196(v){return String(v||"general").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_-]+/g,"_")}
+function dedupePartidaLibrary87196(rows=[]){
+  const map=new Map();
+  (Array.isArray(rows)?rows:[]).forEach((raw,idx)=>{
+    if(!raw||!libText87196(raw.concepte||raw.resum||raw.resumen))return;
+    const pu=parseNum8770(raw.pu)||0;
+    const codiPressupost=libText87196(raw.codiPressupost||raw.codi||"");
+    const updatedAt=raw.updatedAt||raw.modifiedAt||raw.createdAt||new Date().toISOString();
+    const item={...raw,id:raw.id||`libp-${libHash87196(libFingerprint87196(raw))}`,codiIntern:libText87196(raw.codiIntern||raw.internalCode||""),codiPressupost,codi:codiPressupost,cap:libText87196(raw.cap||"General")||"General",ut:libText87196(raw.ut||"ut")||"ut",concepte:libText87196(raw.concepte||raw.resum||raw.resumen||"Nova partida"),desc:libLongDesc87196(raw),pu,global:!!raw.global,clientIds:[...new Set((Array.isArray(raw.clientIds)?raw.clientIds:(raw.clientId?[raw.clientId]:[])).filter(Boolean).map(String))],priceHistory:Array.isArray(raw.priceHistory)?raw.priceHistory:[],createdAt:raw.createdAt||updatedAt,updatedAt};
+    if(pu&&!item.priceHistory.some(x=>Math.abs((+x?.pu||0)-pu)<0.0001))item.priceHistory=[...item.priceHistory,{pu,data:String(updatedAt).slice(0,10),origen:raw.sourceObra||raw.origen||raw.tipus||"Llibreria"}];
+    const key=libFingerprint87196(item);
+    if(!map.has(key)){map.set(key,item);return;}
+    const prev=map.get(key);
+    const desc=item.desc.length>String(prev.desc||"").length?item.desc:prev.desc;
+    const histories=[...(prev.priceHistory||[]),...(item.priceHistory||[])].filter((x,i,a)=>a.findIndex(y=>Math.abs((+y?.pu||0)-(+x?.pu||0))<0.0001&&String(y?.data||"")===String(x?.data||""))===i).slice(-20);
+    map.set(key,{...prev,...item,id:prev.id||item.id,codiIntern:prev.codiIntern||item.codiIntern,codiPressupost:prev.codiPressupost||item.codiPressupost,codi:prev.codiPressupost||item.codiPressupost,desc,pu:item.pu||prev.pu||0,global:prev.global||item.global,clientIds:[...new Set([...(prev.clientIds||[]),...(item.clientIds||[])])],priceHistory:histories,createdAt:prev.createdAt||item.createdAt,updatedAt:item.updatedAt||prev.updatedAt});
+  });
+  const items=[...map.values()];
+  let seq=items.reduce((m,x)=>Math.max(m,+String(x.codiIntern||"").match(/(\d+)$/)?.[1]||0),0);
+  items.forEach(x=>{if(!x.codiIntern)x.codiIntern=`LIB-${String(++seq).padStart(6,"0")}`});
+  return items.sort((a,b)=>String(a.codiIntern).localeCompare(String(b.codiIntern),"ca",{numeric:true}));
+}
+function upsertPartidaLibrary87196(rows=[],patch={}){
+  const current=Array.isArray(rows)?rows:[];
+  const old=patch?.id?current.find(x=>String(x.id)===String(patch.id)):null;
+  const rest=old?current.filter(x=>String(x.id)!==String(patch.id)):current;
+  return dedupePartidaLibrary87196([...rest,{...(old||{}),...patch,updatedAt:new Date().toISOString()}]);
+}
+function migratePartidaLibrary87196(clients=[],user=currentAppUser8779()){
+  const saved=lsJson8779("aco_partides_library_v87196",[],user);
+  if(Array.isArray(saved)&&saved.length)return dedupePartidaLibrary87196(saved);
+  const legacy=[];
+  const marker="aco_partides_client_v87115_";
+  try{
+    Object.keys(localStorage).forEach(k=>{
+      if(!k.includes(marker))return;
+      const isUserKey=k.startsWith(`${STORAGE_NS8782}__${String(user||"").toLowerCase()}__`);
+      const isLegacyHector=String(user||"").toLowerCase()==="hector"&&!k.startsWith(`${STORAGE_NS8782}__`);
+      if(!isUserKey&&!isLegacyHector)return;
+      const token=k.slice(k.indexOf(marker)+marker.length);
+      const owner=(clients||[]).find(c=>[c.id,c.nom,c.rao].some(v=>libraryClientToken87196(v)===token));
+      const parsed=safeJsonParse8784(localStorage.getItem(k),[]);
+      (Array.isArray(parsed)?parsed:[]).forEach(r=>legacy.push({...r,id:undefined,codiIntern:"",clientIds:owner?.id?[String(owner.id)]:[],global:!owner,origen:"Migració llibreria anterior"}));
+    });
+  }catch{}
+  return dedupePartidaLibrary87196(legacy);
 }
 
 
@@ -2057,11 +2125,11 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.185",
+      version:"V87.196",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
-      note:"Còpia completa segura. Les imatges/logos/base64 s'han eliminat per evitar QuotaExceededError; es mantenen clients, expedients, tasques, pressupostos, partides i descompostos.",
+      note:"Còpia completa segura. Les imatges/logos/base64 s'han eliminat per evitar QuotaExceededError; es mantenen clients, expedients, tasques, pressupostos, partides, descompostos i la llibreria central.",
       storage,
       localStorage:simple,
       appState:stripHeavy878185({clients:clients||[],obres:obres||[],odata:odata||{}}),
@@ -2526,7 +2594,8 @@ const lang=appCfg.idioma||"Català";
 const tt=(ca,es,en)=>lang==="Castellà"?es:(lang==="Anglès"?en:ca);
 const[clients,setClients]=useState([]),
 [obres,setObres]=useState([]),
-[odata,setOdata]=useState({});
+[odata,setOdata]=useState({}),
+[partidaLibrary,setPartidaLibrary]=useState([]);
 const[clientId,setClientId]=useState(""),[obraId,setObraId]=useState(""),[tab,setTab]=useState("Resum");
 const[cs,setCs]=useState(""),[ct,setCt]=useState(""),[os,setOs]=useState(""),[oc,setOc]=useState(""),[oy,setOy]=useState(""),[ost,setOst]=useState(""),[ot,setOt]=useState("");
 const[modal,setModal]=useState(null),[certInfo,setCertInfo]=useState({num:"2",data:"18/06/26",anteriorNum:"1",anteriorData:"12/05/26"});
@@ -2544,7 +2613,7 @@ useEffect(()=>{let id;if(timer.running){id=setInterval(()=>setTimer(t=>({...t,el
 useEffect(()=>{
   if(!authUser8779)return;
   setDataLoadedUser8781("");
-  setClients([]);setObres([]);setOdata({});setObraId("");setClientId("");
+  setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setObraId("");setClientId("");
   sessionStorage.setItem("aco_current_user8779",authUser8779);
   migrateStorageForUser8782(authUser8779);
   const isHector=authUser8779==="hector";
@@ -2566,20 +2635,21 @@ useEffect(()=>{
     o=isHector?sanitizeObres8785(obres0,[]):[];
     d=isHector?sanitizeOdata8785(data0,{}):{};
   }
-  setClients(c);setObres(o);setOdata(d);
+  setClients(c);setObres(o);setOdata(d);setPartidaLibrary(migratePartidaLibrary87196(c,authUser8779));
   setClientId(c[0]?.id||"");setObraId(o[0]?.id||"");setTab("Resum");setScreen("Inici");
   setDataLoadedUser8781(authUser8779);
 },[authUser8779]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),authUser8779)},[clients,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),authUser8779)},[obres,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,authUser8779)},[odata,authUser8779,dataLoadedUser8781]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_partides_library_v87196",JSON.stringify(stripHeavy878185(dedupePartidaLibrary87196(partidaLibrary))),authUser8779)},[partidaLibrary,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{
   if(!authUser8779||dataLoadedUser8781!==authUser8779)return;
   const cfg=getSyncCfg878121();
   if(!isSyncReady878121(cfg)||!cfg.auto)return;
-  const t=setTimeout(()=>pushStateToSupabase878121({clients,obres,odata},authUser8779).catch(e=>console.warn("Supabase sync pendent",e)),1400);
+  const t=setTimeout(()=>pushStateToSupabase878121({clients,obres,odata,partidaLibrary},authUser8779).catch(e=>console.warn("Supabase sync pendent",e)),1400);
   return()=>clearTimeout(t);
-},[clients,obres,odata,authUser8779,dataLoadedUser8781]);
+},[clients,obres,odata,partidaLibrary,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{
   if(authUser8779&&dataLoadedUser8781===authUser8779&&needsExpedientCodeRepair878191(obres)){
     setObres(p=>assignMissingCodes8739(p,clients));
@@ -3449,19 +3519,20 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
-return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen!=="Inici"&&<MobileBackBar878146 screen={screen} goBack={()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}}/>}
 {screen==="Inici"&&<Inici clients={clients} setClients={setClients} obres={obres} setObres={setObres} odata={odata} setOdata={setOdata} events={[...Object.values(odata).flatMap(d=>d.events||[]),...invoiceAlerts8776(obres,odata)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={()=>setModal("obra")}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
 {screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Agents"&&<SafeRenderBoundary878108><AgentsGeneral878188 odata={odata} setOdata={setOdata} clients={clients}/></SafeRenderBoundary878108>}
 {screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} deleteObra={deleteObra878112} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={()=>setModal("obra")} setScreen={nav}/>}
-{screen==="Obra"&&<Obra obra={obra} client={client} clients={clients} setClients={setClients} allAgents={allAgents8749(odata,clients)} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} openEvent={()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(obres,odata,obra?.client,obra?.id)} clientHistoricalPartides={(obres||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((odata||{})[o.id]?.partides)||[]).map(r=>({...r,sourceObra:o.nom,sourceObraId:o.id})))} />}
+{screen==="Obra"&&<Obra obra={obra} client={client} clients={clients} setClients={setClients} allAgents={allAgents8749(odata,clients)} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} openEvent={()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(obres,odata,obra?.client,obra?.id)} clientHistoricalPartides={(obres||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((odata||{})[o.id]?.partides)||[]).map(r=>({...r,sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>}
 {screen==="Agenda"&&<SafeRenderBoundary878108><Agenda events={[...Object.entries(odata||{}).flatMap(([oid,d])=>Array.isArray(d?.events)?d.events.map(e=>({...e,obraId:e.obraId||oid,client:e.client||clients.find(c=>c.id===obres.find(o=>o.id===oid)?.client)?.nom,obra:e.obra||obres.find(o=>o.id===oid)?.nom,adreca:e.adreca||obres.find(o=>o.id===oid)?.adreca})):[]),...invoiceAlerts8776(obres,odata)]} clients={clients} obres={obres} openObra={openObra} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay} setOdata={setOdata}/></SafeRenderBoundary878108>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
+{screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={partidaLibrary} setItems={setPartidaLibrary} clients={clients}/></SafeRenderBoundary878108>}
 {screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
-{screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={clients} obres={obres} odata={odata} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
+{screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={clients} obres={obres} odata={odata} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>} 
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={clients} allAgents={allAgents8749(odata,clients)} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
 }
 
@@ -3607,6 +3678,46 @@ function AgentsGeneral878188({odata={},setOdata,clients=[]}){
 }
 
 function MobileBackBar878146({screen,goBack}){return <div className="screen-return-v87146"><button type="button" onClick={goBack}>← Tornar</button><span>{screen}</span></div>}
+function PartidesLibraryGeneral87196({items=[],setItems,clients=[]}){
+  const[scope,setScope]=useState("global");
+  const[clientId,setClientId]=useState(clients?.[0]?.id||"");
+  const[search,setSearch]=useState("");
+  const[capFilter,setCapFilter]=useState("");
+  const[draft,setDraft]=useState(null);
+  useEffect(()=>{if(clientId&&!clients.some(c=>String(c.id)===String(clientId)))setClientId(clients?.[0]?.id||"")},[clients,clientId]);
+  const rows=useMemo(()=>dedupePartidaLibrary87196(items||[]),[items]);
+  const scoped=rows.filter(x=>scope==="global"?x.global:(x.clientIds||[]).some(id=>String(id)===String(clientId)));
+  const caps=[...new Set(scoped.map(x=>x.cap||"General"))].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true}));
+  const filtered=scoped.filter(x=>{
+    const q=libNormText87196(search);
+    const okQ=!q||libNormText87196([x.codiIntern,x.codiPressupost,x.concepte,x.desc,x.ut,x.cap].join(" ")).includes(q);
+    return okQ&&(!capFilter||String(x.cap||"General")===capFilter);
+  });
+  const globalCount=rows.filter(x=>x.global).length;
+  const linkedCount=rows.filter(x=>(x.clientIds||[]).length).length;
+  function updateItem(id,patch){setItems?.(prev=>upsertPartidaLibrary87196(prev,{id,...patch}))}
+  function removeItem(id){if(confirm("Eliminar definitivament aquesta partida de la llibreria? No s'eliminarà dels pressupostos on ja s'hagi utilitzat."))setItems?.(prev=>(prev||[]).filter(x=>String(x.id)!==String(id)))}
+  function startNew(){setDraft({concepte:"",desc:"",ut:"ut",pu:"0",cap:"General",codiPressupost:"",global:scope==="global",clientIds:scope==="client"&&clientId?[String(clientId)]:[]})}
+  function saveNew(){
+    if(!libText87196(draft?.concepte))return alert("Escriu el concepte de la partida.");
+    setItems?.(prev=>upsertPartidaLibrary87196(prev,{...draft,id:undefined,codiIntern:"",updatedAt:new Date().toISOString()}));
+    setDraft(null);
+  }
+  function consolidate(){const before=(items||[]).length;const next=dedupePartidaLibrary87196(items||[]);setItems?.(next);alert(before===next.length?"La llibreria ja estava consolidada.":`${before-next.length} duplicat/s unificat/s. No s'ha perdut cap vinculació de client.`)}
+  return <div className="library-page-v87196 stack">
+    <section className="library-hero-v87196"><div><small>CONTROL CENTRAL DE PARTIDES</small><h2>Llibreria de pressupostos</h2><p>Una sola partida tècnica, amb codi intern estable i codi visible independent per als pressupostos.</p></div><button type="button" className="primary" onClick={startNew}><Plus/> Nova partida</button></section>
+    <div className="library-stats-v87196"><div><small>Partides úniques</small><b>{rows.length}</b></div><div><small>Llibreria global</small><b>{globalCount}</b></div><div><small>Vinculades a clients</small><b>{linkedCount}</b></div><button type="button" className="secondary" onClick={consolidate}>Consolidar duplicats</button></div>
+    {draft&&<details open className="library-new-v87196"><summary>Nova partida de llibreria</summary><div className="library-editor-grid-v87196"><label><span>Concepte *</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>Unitat</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>Capítol / classificació</span><input value={draft.cap} onChange={e=>setDraft({...draft,cap:e.target.value})}/></label><label><span>Preu actual</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label><span>Codi visible orientatiu</span><input value={draft.codiPressupost} onChange={e=>setDraft({...draft,codiPressupost:e.target.value})} placeholder="Es renumerarà en afegir-la"/></label><label className="span-all"><span>Descripció llarga</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label><label className="library-check-v87196"><input type="checkbox" checked={!!draft.global} onChange={e=>setDraft({...draft,global:e.target.checked})}/><span>Disponible a la llibreria global</span></label>{clients.length>0&&<label><span>Client inicial</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveNew}>Guardar partida</button></div></details>}
+    <Card title="Consultar i treballar la llibreria" action={<button type="button" className="secondary" onClick={consolidate}>Revisar duplicats</button>}>
+      <div className="library-filters-v87196"><label><span>Àmbit</span><select value={scope} onChange={e=>{setScope(e.target.value);setCapFilter("")}}><option value="global">Llibreria global</option><option value="client">Llibreria per client</option></select></label>{scope==="client"&&<label><span>Client</span><select value={clientId} onChange={e=>{setClientId(e.target.value);setCapFilter("")}}>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}<label><span>Cercar</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Concepte, codi, descripció..."/></label><label><span>Capítol</span><select value={capFilter} onChange={e=>setCapFilter(e.target.value)}><option value="">Tots</option>{caps.map(c=><option key={c}>{c}</option>)}</select></label></div>
+      <div className="library-result-head-v87196"><span>{filtered.length} partida/es</span><small>Els codis del pressupost no creen duplicats; la identitat interna és independent.</small></div>
+      <div className="library-list-v87196">{filtered.length===0?<Empty text={scope==="client"?"Aquest client encara no té partides. Pots afegir-les des d'un pressupost o des de la llibreria global.":"Encara no hi ha partides globals."}/>:filtered.slice(0,160).map(item=>{
+        const owners=(item.clientIds||[]).map(id=>clients.find(c=>String(c.id)===String(id))?.nom).filter(Boolean);
+        return <details className="library-item-v87196" key={item.id}><summary><div><b>{item.concepte}</b><span>{item.codiIntern} · {item.cap||"General"} · {item.ut||"ut"}</span><small>{item.global?"Global":"Només clients"}{owners.length?` · ${owners.join(", ")}`:""}</small></div><div><small>Preu actual</small><strong>{money(item.pu||0)}</strong><em>Editar ▾</em></div></summary><div className="library-editor-grid-v87196"><label><span>Codi intern</span><input value={item.codiIntern||""} readOnly/></label><label><span>Codi visible orientatiu</span><input defaultValue={item.codiPressupost||item.codi||""} onBlur={e=>updateItem(item.id,{codiPressupost:e.target.value,codi:e.target.value})}/></label><label className="span-all"><span>Concepte</span><input defaultValue={item.concepte||""} onBlur={e=>updateItem(item.id,{concepte:e.target.value})}/></label><label><span>Unitat</span><input defaultValue={item.ut||"ut"} onBlur={e=>updateItem(item.id,{ut:e.target.value})}/></label><label><span>Capítol / classificació</span><input defaultValue={item.cap||"General"} onBlur={e=>updateItem(item.id,{cap:e.target.value})}/></label><label><span>Preu actual</span><input inputMode="decimal" defaultValue={qty2(item.pu||0)} onBlur={e=>updateItem(item.id,{pu:parseNum8770(e.target.value)||0})}/></label><label className="span-all"><span>Descripció llarga</span><textarea defaultValue={item.desc||""} onBlur={e=>updateItem(item.id,{desc:e.target.value})}/></label><label className="library-check-v87196"><input type="checkbox" checked={!!item.global} onChange={e=>updateItem(item.id,{global:e.target.checked})}/><span>Disponible globalment</span></label><details className="library-client-links-v87196"><summary>Clients vinculats ({(item.clientIds||[]).length})</summary>{clients.map(c=><label key={c.id}><input type="checkbox" checked={(item.clientIds||[]).some(id=>String(id)===String(c.id))} onChange={e=>updateItem(item.id,{clientIds:e.target.checked?[...new Set([...(item.clientIds||[]),String(c.id)])]:(item.clientIds||[]).filter(id=>String(id)!==String(c.id))})}/><span>{c.nom||c.rao}</span></label>)}</details>{(item.priceHistory||[]).length>0&&<details className="library-price-history-v87196"><summary>Històric de preus ({item.priceHistory.length})</summary>{item.priceHistory.slice().reverse().map((p,i)=><span key={`${p.data}-${p.pu}-${i}`}>{p.data||"—"} · {money(p.pu||0)} · {p.origen||"Llibreria"}</span>)}</details>}</div><div className="library-item-actions-v87196"><button type="button" className="danger" onClick={()=>removeItem(item.id)}>Eliminar de la llibreria</button></div></details>
+      })}</div>
+    </Card>
+  </div>
+}
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
 function Card({title,children,action}){return <div className="card"><div className="card-head"><h2>{title}</h2>{action}</div>{children}</div>}
 function Input(p){return <label><span>{p.label}</span><input name={p.name} defaultValue={p.defaultValue} readOnly={p.readOnly} onChange={p.onChange}/></label>}
@@ -4780,7 +4891,7 @@ function GanttObra878149({data}){
   </Card>
 }
 
-function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert,client,obra,clientHistoricalPartides=[]}){
+function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert,client,obra,clientHistoricalPartides=[],partidaLibrary=[],setPartidaLibrary}){
   const[sub,setSub]=useState("Pressupost obra");
   const info=ensureBudgetGroups8786(data);
   const[activeBudgetId,setActiveBudgetId]=useState(info.active);
@@ -4930,7 +5041,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
       <div className="budget-selected-actions-v8786 budget-selected-actions-v878123"><span>Seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · {money(totalActive)} / global obra {money(totalGlobal)} · pressupost, certificacions, factures i desviacions filtrades per aquest grup</span><div className="actions-inline"><button type="button" className="secondary small" onClick={fixarBudget8788}>Guardar/fixar</button><button type="button" className="secondary small" onClick={()=>renameBudget(activeBudgetId)}>Renombrar amb finestra</button>{activeBudgetId!=="principal"&&<button type="button" className="danger small" onClick={()=>deleteBudget(activeBudgetId)}>Eliminar annex</button>}</div></div>
     </Card></div>
     <div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button><button className={sub==="Gantt"?"active":""} onClick={()=>setSub("Gantt")}>Gantt</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>Rendibilitat / desviacions</button></div>
-    {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} totalGlobal={totalGlobal} totalActive={totalActive}/>} 
+    {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {sub==="Certificacions obra"&&<Cert data={activeData} setData={setScopedData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Facturació obra"&&<Fact data={activeData} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Gantt"&&<GanttObra878149 data={activeData}/>}
@@ -5019,7 +5130,7 @@ function PressupostRapid878150(props){
   </div>
 }
 
-function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,deleteObra,allAgents=[],clientHistoricalPartides=[],clientBudgetNumbers878194=[]}){
+function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,deleteObra,allAgents=[],clientHistoricalPartides=[],clientBudgetNumbers878194=[],partidaLibrary=[],setPartidaLibrary}){
   const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");
   const[editObra,setEditObra]=useState(false);
   const[tabsOpen,setTabsOpen]=useState(()=>!(typeof window!=="undefined"&&(window.innerWidth||0)<951));
@@ -5051,12 +5162,12 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
     {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
     {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
-    {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides}/>} 
-    {activeTab==="Pressupost ràpid"&&<PressupostRapid878150 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides}/>} 
+    {activeTab==="Pressupost obra"&&<Pressupost data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
+    {activeTab==="Pressupost ràpid"&&<PressupostRapid878150 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {activeTab==="Certificacions obra"&&<Cert data={data} setData={setData} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} 
-    {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides}/>:<ModulLocked8747/>)} 
+    {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client}/>} 
     {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents}/>} 
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
@@ -5277,7 +5388,7 @@ function FacturesTecniques8738({data,obra,addFactura,updateFactura,deleteFactura
     <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha factures en aquest expedient."/>}{rows.map(f=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={f.id}><div><strong>{f.numero||"FAC"}</strong><span>{f.concepte||f.tipus||"Factura / proforma"}</span><small>{f.data||"—"} · {f.estat||"Pendent"}</small></div><b>{money(totalIva8743(f))}<small>IVA inclòs</small></b><div className="actions-inline quote-actions-desktop-v87118"><button className="secondary" onClick={()=>setPreview(f)}>Veure PDF</button><button className="secondary" onClick={()=>reset(f)}>Editar</button><button className="secondary" onClick={()=>openEmail?.("Factura")}>Enviar</button><button className="danger" onClick={()=>deleteFactura?.(f.id)}>Eliminar</button></div><select className="quote-mobile-action-v87118" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="pdf")setPreview(f);if(v==="edit")reset(f);if(v==="send")openEmail?.("Factura");if(v==="delete")deleteFactura?.(f.id)}}><option value="" disabled>Accions</option><option value="pdf">Veure PDF</option><option value="edit">Editar</option><option value="send">Enviar</option><option value="delete">Eliminar</option></select></div>)}</div>
   </Card></div>
 }
-function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,client,obra,clientHistoricalPartides=[],budgetGroups=[],activeBudgetId="principal",selectBudget,addBudget,totalGlobal=0,totalActive=0}){
+function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,client,obra,clientHistoricalPartides=[],budgetGroups=[],activeBudgetId="principal",selectBudget,addBudget,totalGlobal=0,totalActive=0,partidaLibrary=[],setPartidaLibrary}){
   const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
   const [descOpen875,setDescOpen875]=useState({});
@@ -5286,19 +5397,19 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   useEffect(()=>{
     if(!editBudget8760b){setCapNameDraft8761({});setOpenBudgetRow87173(null);setDescompostModal87173(null);}
   },[editBudget8760b]);
-  const clientLibraryKey87115=`aco_partides_client_v87115_${String(client?.id||client?.nom||client?.rao||"general").toLowerCase().replace(/[^a-z0-9_-]+/g,"_")}`;
+  const currentClientId87196=String(client?.id||"");
+  const clientLibraryKey87115=`aco_partides_library_history_v87196_${libraryClientToken87196(client?.id||client?.nom||client?.rao||"general")}`;
   const [libraryOpen87115,setLibraryOpen87115]=useState(false);
   const [librarySearch87115,setLibrarySearch87115]=useState("");
   const [libraryCap87115,setLibraryCap87115]=useState("");
   const [libraryTargetCap87115,setLibraryTargetCap87115]=useState("");
-  const [libraryItems87115,setLibraryItems87115]=useState(()=>lsJson8779(clientLibraryKey87115,[]));
   const [openBudgetRow87173,setOpenBudgetRow87173]=useState(null);
   const [descompostModal87173,setDescompostModal87173]=useState(null);
   const [editSnapshot878176,setEditSnapshot878176]=useState(null);
   const [budgetWorkTab878180,setBudgetWorkTab878180]=useState("Pressupost");
   const [libraryScope87160,setLibraryScope87160]=useState("client");
   const [budgetMeasureTarget878194,setBudgetMeasureTarget878194]=useState(null);
-  useEffect(()=>{setLibraryItems87115(lsJson8779(clientLibraryKey87115,[]));setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("")},[clientLibraryKey87115]);
+  useEffect(()=>{setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("");setLibraryScope87160("client")},[currentClientId87196]);
   const historicalSeedSig87116=useMemo(()=>{
     const rows=(clientHistoricalPartides||[]).filter(r=>r&&String(r.concepte||"").trim());
     return rows.map(r=>`${r.sourceObraId||"obra"}:${r.codi||""}:${r.cap||""}:${r.concepte||""}:${r.ut||""}:${r.pu||0}:${r.desc||r.descripcio||r.descripcion||r.description||""}`).join("|");
@@ -5307,46 +5418,24 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(!historicalSeedSig87116)return;
     const seedKey=`${clientLibraryKey87115}__history_seed_v87118`;
     if(lsGet8779(seedKey,"")===historicalSeedSig87116)return;
-    const rows=(clientHistoricalPartides||[]).filter(r=>r&&String(r.concepte||"").trim()).map(r=>normalizeLibPartida87115({...r,tipus:`Històric ${r.sourceObra||"client"}`},r.cap||"General"));
+    const rows=(clientHistoricalPartides||[]).filter(r=>r&&String(r.concepte||"").trim()).map(r=>({...r,id:undefined,codiIntern:"",codiPressupost:r.codi||"",clientIds:currentClientId87196?[currentClientId87196]:[],global:false,tipus:`Històric ${r.sourceObra||"client"}`,cap:r.cap||"General",updatedAt:new Date().toISOString()}));
     if(!rows.length)return;
-    setLibraryItems87115(prev=>mergeLibrary87118([...(prev||[]),...rows]));
+    setPartidaLibrary?.(prev=>dedupePartidaLibrary87196([...(prev||[]),...rows]));
     lsSet8779(seedKey,historicalSeedSig87116);
-  },[historicalSeedSig87116,clientLibraryKey87115,clientHistoricalPartides]);
-  useEffect(()=>{lsSet8779(clientLibraryKey87115,JSON.stringify(libraryItems87115||[]))},[clientLibraryKey87115,libraryItems87115]);
+  },[historicalSeedSig87116,clientLibraryKey87115,currentClientId87196]);
   function currentLibraryDestinationCap87115(){return libraryTargetCap87115||sortedCapEntries8779(caps)[0]?.[0]||"C01 NOU CAPÍTOL"}
-  function cleanText87118(v){return String(v||"").replace(/\s+$/g,"").trim()}
-  function libDesc87118(row={}){
-    const keys=["desc","descripcio","descripció","descripcion","descripción","description","detall","detallConstructiu","text","observacions","notes","nota"];
-    const parts=[];
-    keys.forEach(k=>{const v=cleanText87118(row[k]);if(v&&!parts.some(p=>p.toLowerCase()===v.toLowerCase()))parts.push(v)});
-    return parts.join("\n");
-  }
-  function libKey87118(x){return `${String(x.cap||"").toLowerCase()}__${String(x.concepte||"").toLowerCase()}__${String(x.ut||"").toLowerCase()}`}
-  function richerLib87118(a={},b={}){
-    const ad=libDesc87118(a), bd=libDesc87118(b);
-    const desc=bd.length>ad.length?bd:ad;
-    return {...a,...b,desc,pu:(+b.pu||0)||(+a.pu||0),codi:b.codi||a.codi||"",tipus:b.tipus||a.tipus||"Llibreria client"};
-  }
-  function sortLibrary87118(rows=[]){return [...rows].sort((a,b)=>String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||String(a.concepte||"").localeCompare(String(b.concepte||""),"ca",{numeric:true}))}
-  function mergeLibrary87118(rows=[]){
-    const map=new Map();
-    (rows||[]).forEach(x=>{if(!x)return;const n=normalizeLibPartida87115(x,x.cap||"General");const k=libKey87118(n);map.set(k,map.has(k)?richerLib87118(map.get(k),n):n)});
-    return sortLibrary87118([...map.values()]);
-  }
-  function normalizeLibPartida87115(row={},cap=""){
-    return {id:row.id&&String(row.id).startsWith("lib-")?row.id:`lib-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,cap:String(row.cap||cap||"General"),codi:String(row.codi||""),ut:String(row.ut||"ut"),concepte:String(row.concepte||row.resum||row.resumen||"Nova partida"),desc:libDesc87118(row),descompost:String(row.descompost||row.descomposto||row.descomposat||""),pu:+row.pu||0,tipus:String(row.tipus||"Llibreria client")};
-  }
+  function libDesc87118(row={}){return libLongDesc87196(row)}
   function savePartidaToLibrary87115(row,cap){
-    const item=normalizeLibPartida87115(row,cap);
-    setLibraryItems87115(prev=>mergeLibrary87118([...(prev||[]),item]));
-    setLibraryOpen87115(false);
-    alert("Partida guardada a la llibreria del client.");
+    const item={...row,id:row.libraryItemId||undefined,codiIntern:row.codiIntern||"",codiPressupost:row.codi||row.codiPressupost||"",cap:cap||row.cap||"General",clientIds:currentClientId87196?[currentClientId87196]:[],global:false,tipus:"Llibreria client",updatedAt:new Date().toISOString()};
+    setPartidaLibrary?.(prev=>upsertPartidaLibrary87196(prev,item));
+    alert("Partida desada a la llibreria del client. Si ja existia, s'ha actualitzat sense duplicar-la.");
   }
   function seedLibraryFromBudget87115(){
-    const flat=Object.entries(caps||{}).flatMap(([cap,items])=>(items||[]).map(r=>normalizeLibPartida87115(r,cap)));
+    const flat=Object.entries(caps||{}).flatMap(([cap,items])=>(items||[]).map(r=>({...r,id:r.libraryItemId||undefined,codiIntern:r.codiIntern||"",codiPressupost:r.codi||"",cap,clientIds:currentClientId87196?[currentClientId87196]:[],global:false,tipus:"Llibreria client",updatedAt:new Date().toISOString()})));
     if(!flat.length)return alert("No hi ha partides per actualitzar la llibreria.");
-    setLibraryItems87115(prev=>mergeLibrary87118([...(prev||[]),...flat]));
+    setPartidaLibrary?.(prev=>dedupePartidaLibrary87196([...(prev||[]),...flat]));
     setLibraryOpen87115(true);
+    alert(`${flat.length} partida/es revisades. Les coincidents s'han unificat.`);
   }
   function startManualBudget87115(){
     const hasRows=Object.values(caps||{}).some(arr=>(arr||[]).length);
@@ -5356,31 +5445,47 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
   function addLibraryPartidaToBudget87115(item){
     if(!editBudget8760b){alert("Primer activa el mode edició del pressupost.");return;}
+    if(currentClientId87196&&!(item.clientIds||[]).some(cid=>String(cid)===currentClientId87196))setPartidaLibrary?.(prev=>upsertPartidaLibrary87196(prev,{...item,clientIds:[...(item.clientIds||[]),currentClientId87196]}));
     const dest=currentLibraryDestinationCap87115();
     setCaps(p=>{
       const arr=[...(p[dest]||[])];
       const base=(String(dest).match(/(\d+)/)?.[1]||"").padStart(2,"0");
-      const next=arr.length+1;
-      const row={...item,id:undefined,cap:dest,codi:item.codi|| (base?`${base}.${String(next).padStart(2,"0")}`:""),q:"1,00",pu:qty2(+item.pu||0),descompost:item.descompost||"",tipus:item.tipus||"Llibreria client"};
+      const used=new Set(arr.map(r=>String(r.codi||"")));
+      let next=arr.length+1;
+      let printedCode=base?`${base}.${String(next).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
+      while(used.has(printedCode)&&base)printedCode=`${base}.${String(++next).padStart(2,"0")}`;
+      const row={...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,codi:printedCode,codiPressupost:printedCode,q:"1,00",pu:qty2(+item.pu||0),descompost:item.descompost||"",tipus:item.tipus||"Llibreria client"};
       return {...p,[dest]:[...arr,row]};
     });
     setOpen(o=>({...o,[dest]:true}));
   }
-  function deleteLibraryItem87115(id){if(confirm("Eliminar aquesta partida de la llibreria del client?"))setLibraryItems87115(prev=>(prev||[]).filter(x=>x.id!==id))}
+  function copyLibraryItemToClient87196(item){
+    if(!currentClientId87196)return;
+    setPartidaLibrary?.(prev=>upsertPartidaLibrary87196(prev,{...item,clientIds:[...new Set([...(item.clientIds||[]),currentClientId87196])]}));
+    setLibraryScope87160("client");
+    alert("Partida incorporada a la llibreria del client.");
+  }
+  function deleteLibraryItem87115(id){
+    if(!confirm("Treure aquesta partida de la llibreria d'aquest client? La partida global, si existeix, es conservarà."))return;
+    setPartidaLibrary?.(prev=>(prev||[]).flatMap(x=>{if(x.id!==id)return [x];const clientIds=(x.clientIds||[]).filter(cid=>String(cid)!==currentClientId87196);return clientIds.length||x.global?[{...x,clientIds,updatedAt:new Date().toISOString()}]:[]}));
+  }
   async function importLibraryDescompost878161(id,file){
     if(!file)return;
     try{
       const parsed=await workbookDescompostFromFile878161(file);
-      setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===id?{...x,descompost:parsed.text,pu:parsed.total||x.pu||0,descompostSource:file.name,descompostSheet:parsed.sheet}:x));
+      setPartidaLibrary?.(prev=>(prev||[]).map(x=>x.id===id?{...x,descompost:parsed.text,pu:parsed.total||x.pu||0,descompostSource:file.name,descompostSheet:parsed.sheet,updatedAt:new Date().toISOString()}:x));
       alert(`Descomposat importat a la llibreria: ${parsed.lines} línies · ${money(parsed.total)}.`);
     }catch(err){alert("No he pogut llegir el descomposat: "+String(err?.message||err));}
   }
-  const generalLibraryItems87160=useMemo(()=>mergeLibrary87118(readAllLibraries878160()),[libraryItems87115.length,clientLibraryKey87115]);
-  const visibleLibraryItems87160=libraryScope87160==="general"?mergeLibrary87118([...(generalLibraryItems87160||[]),...(libraryItems87115||[])]):(libraryItems87115||[]);
+  const centralLibrary87196=useMemo(()=>dedupePartidaLibrary87196(partidaLibrary||[]),[partidaLibrary]);
+  const libraryItems87115=centralLibrary87196.filter(x=>(x.clientIds||[]).some(cid=>String(cid)===currentClientId87196));
+  const generalLibraryItems87160=centralLibrary87196.filter(x=>x.global);
+  const visibleLibraryItems87160=libraryScope87160==="general"?generalLibraryItems87160:libraryItems87115;
+  function setLibraryItems87115(updater){setPartidaLibrary?.(prev=>dedupePartidaLibrary87196(typeof updater==="function"?updater(prev||[]):updater||[]))}
   const libraryCaps87115=[...new Set((visibleLibraryItems87160||[]).map(x=>x.cap||"General"))].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true}));
   const libraryFiltered87115=(visibleLibraryItems87160||[]).filter(x=>{
     const q=librarySearch87115.trim().toLowerCase();
-    const okQ=!q||[x.codi,x.concepte,libDesc87118(x),x.ut,x.tipus,x.origenLlibreria].some(v=>String(v||"").toLowerCase().includes(q));
+    const okQ=!q||[x.codiIntern,x.codiPressupost,x.codi,x.concepte,libDesc87118(x),x.ut,x.tipus].some(v=>String(v||"").toLowerCase().includes(q));
     const okCap=!libraryCap87115||String(x.cap||"")===libraryCap87115;
     return okQ&&okCap;
   });
@@ -5675,24 +5780,23 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
 
   return <div className="stack">
     {budgetMeasureTarget878194&&<MedicioModal8780 row={(caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}} contextLabel="PRESSUPOST" initial={((caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}).pressupostMesures||[]} close={()=>setBudgetMeasureTarget878194(null)} save={saveBudgetMeasures878194}/>} 
-    <Card title={`Versions de pressupost · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><button type="button" className="secondary" onClick={startManualBudget87115}>+ Manual des de 0</button><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label></div>}>
-      {budgetGroups?.length>0&&<div className="budget-mobile-inline-v87116"><label><span>Pressupost actiu</span><select value={activeBudgetId} onChange={e=>selectBudget?.(e.target.value)}>{budgetGroups.map(g=><option key={g.id} value={g.id}>{g.nom}</option>)}</select></label><div className="budget-mobile-inline-actions-v87116"><button type="button" className="secondary small" onClick={()=>addBudget?.("Pressupost manual des de 0")}>+ Manual</button><button type="button" className="secondary small" onClick={()=>addBudget?.("Imprevist / sobrecost")}>+ Imprevist</button><button type="button" className="secondary small" onClick={()=>addBudget?.("Modificat aprovat")}>+ Annex</button></div><small>Pressupost seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · {money(totalActive)} / global {money(totalGlobal)}</small></div>}
-      <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura recomanada: columna A = codi o número de partida, B = unitat, C = concepte/descripció, D = columna lliure, E = amidament/quantitat, F = preu unitari, G = total.</p></details><div className="version-list">
-        {visiblePressupostos.length===0?<Empty text="Aquesta obra encara no té cap pressupost. Importa un Excel o crea partides manualment."/>:visiblePressupostos.map(p=><div className="version-card-v872" key={p.id}>
-          <button className="version-main-v872" onClick={()=>openDoc({type:"pressupost",title:p.nom+" · "+p.versio,subtitle:p.data+" · "+p.estat})}>
-            <strong>{p.versio}</strong><span>{p.nom}</span><span>{p.data}</span><b>{money(p.import)}</b><em>{p.estat}</em>
-          </button>
-          <div className="version-actions-v872">
-            <button className="secondary small" onClick={()=>duplicatePressupostVersion?.(p.id)}>Duplicar</button>
-            <button className="danger small" onClick={()=>deletePressupostVersion?.(p.id)}>{(p.budgetId||"principal")!=="principal"?"Eliminar tot":"Eliminar"}</button>
-          </div>
-        </div>)}
+    <details className="budget-origin-drawer-v87196">
+      <summary><span>Origen, importació i altres pressupostos</span><small>Obre només quan vulguis importar, començar de zero o canviar de pressupost</small></summary>
+      <div className="budget-origin-content-v87196">
+        {budgetGroups?.length>0&&<label><span>Pressupost actiu</span><select value={activeBudgetId} onChange={e=>selectBudget?.(e.target.value)}>{budgetGroups.map(g=><option key={g.id} value={g.id}>{g.nom}</option>)}</select><small>{money(totalActive)} seleccionat · {money(totalGlobal)} global</small></label>}
+        <div className="budget-origin-actions-v87196"><button type="button" className="secondary" onClick={startManualBudget87115}>+ Manual des de zero</button><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label>{budgetGroups?.length>0&&<><button type="button" className="secondary" onClick={()=>addBudget?.("Imprevist / sobrecost")}>+ Imprevist</button><button type="button" className="secondary" onClick={()=>addBudget?.("Modificat aprovat")}>+ Annex</button></>}</div>
+        <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura recomanada: A = codi, B = unitat, C = concepte/descripció, E = quantitat, F = preu unitari i G = total.</p></details>
       </div>
-    </Card>
+    </details>
 
-    <Card title="Pressupost obra per capítols" action={<div className="actions-inline"><span className="budget-grand-total">Total: <b>{money(total)}</b></span>{!editBudget8760b&&<button type="button" className="primary" onClick={beginBudgetEdit878176}>Editar</button>}{editBudget8760b&&<><label className="secondary upload-label">Importar descompostos<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar</button></>}<button type="button" className="secondary" onClick={()=>setLibraryOpen87115(v=>!v)}>Llibreria client</button><button type="button" className="secondary" onClick={saveBudgetDocument878179}>Guardar a Documents</button><button type="button" className="primary" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button><button type="button" className="secondary" onClick={exportBudgetExcel878180}>Exportar Excel</button><button className="secondary" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar email</button></div>}>
+    <Card title="Pressupost obra per capítols" action={<span className="budget-grand-total budget-total-right-v87196"><small>Total pressupost</small><b>{money(total)}</b></span>}>
+      <details className="budget-actions-drawer-v87196">
+        <summary>Què vols fer amb el pressupost?</summary>
+        <div className="budget-actions-grid-v87196">{!editBudget8760b&&<button type="button" className="primary" onClick={beginBudgetEdit878176}>Editar pressupost</button>}{editBudget8760b&&<><label className="secondary upload-label">Importar descompostos<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar edició</button></>}<button type="button" className="secondary" onClick={()=>setLibraryOpen87115(v=>!v)}>Obrir llibreria</button><button type="button" className="secondary" onClick={saveBudgetDocument878179}>Guardar a Documents</button><button type="button" className="primary" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button><button type="button" className="secondary" onClick={exportBudgetExcel878180}>Exportar Excel</button><button className="secondary" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar email</button></div>
+      </details>
       <div className="module-note-v8738 budget-measure-note-v878194"><b>Quantitat directa o amidaments detallats.</b><span>La quantitat importada/manual es pot editar directament. En mode edició, el botó ∑ Amidaments permet introduir línies i aplicar-ne automàticament la suma.</span></div>
-      <div className={editBudget8760b?"edit-warning-v8760b":"view-warning-v8760b"}>{editBudget8760b?"Mode edició actiu. Guarda els canvis quan acabis.":"Mode consulta. Clica Editar per modificar capítols o partides."}</div>{libraryOpen87115&&<div className="client-library-panel-v87115"><div className="client-library-head-v87115"><div><b>Llibreria de partides del client</b><span>{client?.nom||client?.rao||"Client general"} · {libraryItems87115.length} client · {generalLibraryItems87160.length} generals</span></div><div className="library-head-actions-v87149"><button type="button" className="secondary small library-refresh-v87118" onClick={seedLibraryFromBudget87115}>Actualitzar llibreria amb aquest pressupost</button><button type="button" className="secondary small" onClick={()=>{const q=librarySearch87115||prompt("Quina partida o descomposat vols buscar amb IA?","")||"";if(!q)return;const promptTxt=`Busca una partida d'obra o descomposat per: ${q}. Dona'm unitat, descripció curta, descripció llarga, rendiment orientatiu i preu unitari orientatiu per incorporar-ho a la llibreria.`;navigator.clipboard?.writeText(promptTxt);alert("He copiat un prompt de cerca IA al porta-retalls. Enganxa'l a ChatGPT i després incorpora la partida a la llibreria.");}}>Buscar amb IA</button></div></div><div className="ai-search-note-v87149 ai-search-note-v87150 compact-ai-note-v87160"><b>IA</b><span>Genera una proposta de partida/descomposat per incorporar a la llibreria.</span></div><div className="client-library-filters-v87115"><select value={libraryScope87160} onChange={e=>{setLibraryScope87160(e.target.value);setLibraryCap87115("")}}><option value="client">Llibreria del client</option><option value="general">Llibreria general</option></select><input value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Filtrar per nom, codi o descripció"/><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select><select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}><option value="">Afegir al primer capítol</option>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}</select></div><div className="client-library-list-v87115">{libraryFiltered87115.length===0?<div className="empty-mini-v87115">No hi ha partides a la llibreria amb aquest filtre. Pots guardar partides del pressupost actual o crear-les manualment.</div>:libraryFiltered87115.slice(0,80).map(item=><div className="client-library-row-v87115" key={item.id}><div><strong>{item.concepte}</strong><span>{item.cap} · {item.codi||"sense codi"} · {item.ut} · PU {money(item.pu||0)}</span>{item.desc&&<details className="lib-desc-v87117"><summary>Veure descripció llarga</summary><small>{item.desc}</small></details>}<details className="lib-desc-v87117 lib-descompost-v878156"><summary>Descomposat Excel / IA / BEDEC</summary><div className="descompost-import-actions-v87161"><label className="secondary small upload-label">Importar Excel<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importLibraryDescompost878161(item.id,e.target.files?.[0])}/></label><small>{item.descompostSource?`Origen: ${item.descompostSource}`:"Excel de descomposat de IA, BEDEC, TCQ o base pròpia"}</small></div><textarea value={item.descompost||""} onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,descompost:e.target.value}:x))} placeholder="Materials, rendiments, mà d'obra, mitjans auxiliars..."/></details></div><div className="client-library-row-actions-v87117"><select value={item.cap||"General"} title="Canviar classificació" onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,cap:e.target.value}:x))}>{[...new Set([...(libraryCaps87115||[]),...(sortedCapEntries8779(caps).map(([c])=>c)),"General"] )].map(c=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="primary small" onClick={()=>addLibraryPartidaToBudget87115(item)}>Afegir</button><button type="button" className="danger small" onClick={()=>libraryScope87160==="client"?deleteLibraryItem87115(item.id):alert("Per eliminar una partida general, obre-la des de la llibreria del client on es va crear o copia-la primer a aquest client.")}>Eliminar</button></div><select className="client-library-mobile-action-v87117" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="add")addLibraryPartidaToBudget87115(item);if(v==="delete")deleteLibraryItem87115(item.id)}}><option value="" disabled>Accions</option><option value="add">Afegir al pressupost</option><option value="delete">Eliminar de la llibreria</option></select></div>)}</div></div>}<div className="subtabs-v8746 budget-work-tabs-v878180"><button className={budgetWorkTab878180==="Pressupost"?"active":""} onClick={()=>setBudgetWorkTab878180("Pressupost")}>Pressupost</button><button className={budgetWorkTab878180==="Validar descompostos"?"active":""} onClick={()=>setBudgetWorkTab878180("Validar descompostos")}>Validar descompostos</button><button className={budgetWorkTab878180==="Exportar"?"active":""} onClick={()=>setBudgetWorkTab878180("Exportar")}>Exportar / còpies</button></div>{budgetWorkTab878180==="Validar descompostos"?<div className="descompost-validator-v878180"><div className="validator-head-v878180"><div><b>Validació massiva de descompostos</b><span>{descompostValidationRows878180.length} partida/es amb descomposat carregat</span></div><div className="actions-inline"><button type="button" className="secondary" onClick={fillDetectedDescompostos878180}>Carregar tots els preus detectats</button><button type="button" className="primary" onClick={applyAllValidatedDescompostos878180}>Aplicar tots al pressupost i guardar</button><button type="button" className="secondary" onClick={saveOnlyDescompostos878180}>Guardar sense aplicar</button></div></div>{descompostValidationRows878180.length===0?<Empty text="Encara no hi ha descomposats importats. Importa’ls massivament des del botó Importar descompostos."/>:<div className="descompost-validator-table-wrap-v878180"><table className="descompost-validator-table-v878180"><thead><tr><th>Capítol</th><th>Codi</th><th>Concepte</th><th>Total detectat</th><th>PU actual</th><th>PU validat</th><th>Estat</th><th>Acció</th></tr></thead><tbody>{descompostValidationRows878180.map(x=><tr key={`${x.cap}-${x.i}`}><td>{x.cap}</td><td><b>{x.row.codi||"—"}</b></td><td className="text-left"><span>{x.row.concepte}</span><small>{[x.row.descompostSource,x.row.descompostSheet].filter(Boolean).join(" · ")}</small></td><td>{money(x.detected)}</td><td>{money(x.current)}</td><td><input inputMode="decimal" value={x.row.descompostValidatedPu||qty2(x.detected||0)} onChange={e=>setValidatedPu878180(x.cap,x.i,e.target.value)} onBlur={e=>normalizeValidatedPu878180(x.cap,x.i,e.target.value)}/></td><td>{x.row.puFromDescompost?<b className="good-text">Aplicat</b>:<b className="warn-text">Pendent</b>}</td><td><button type="button" className="secondary small" onClick={()=>openDescompostModal87173(x.cap,x.i)}>Obrir</button></td></tr>)}</tbody></table></div>}</div>:budgetWorkTab878180==="Exportar"?<div className="budget-export-panel-v878180"><div><b>Còpia externa del pressupost</b><span>Guarda el pressupost en PDF, Documents i Excel estructurat amb pestanyes de descompostos.</span></div><div className="actions-inline"><button type="button" className="primary" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button><button type="button" className="secondary" onClick={saveBudgetDocument878179}>Guardar a Documents</button><button type="button" className="secondary" onClick={exportBudgetExcel878180}>Exportar Excel</button><button type="button" className="secondary" onClick={()=>{persistBudgetCaps878179(caps);alert("Pressupost consolidat i guardat localment.")}}>Consolidar dades</button></div><small>L’Excel genera una pestanya PRESSUPOST, un resum de descompostos i una pestanya per cada partida amb descomposat.</small></div>:<div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
+      <label className="budget-work-select-v87196"><span>Vista de treball</span><select value={budgetWorkTab878180} onChange={e=>setBudgetWorkTab878180(e.target.value)}><option>Pressupost</option><option>Validar descompostos</option><option>Exportar</option></select></label>
+      <div className={editBudget8760b?"edit-warning-v8760b":"view-warning-v8760b"}>{editBudget8760b?"Mode edició actiu. Guarda els canvis quan acabis.":"Mode consulta. Clica Editar per modificar capítols o partides."}</div>{libraryOpen87115&&<div className="client-library-panel-v87115"><div className="client-library-head-v87115"><div><b>Llibreria de partides · client primer, global després</b><span>{client?.nom||client?.rao||"Client general"} · {libraryItems87115.length} client · {generalLibraryItems87160.length} generals</span></div><div className="library-head-actions-v87149"><button type="button" className="secondary small library-refresh-v87118" onClick={seedLibraryFromBudget87115}>Actualitzar llibreria amb aquest pressupost</button><button type="button" className="secondary small" onClick={()=>{const q=librarySearch87115||prompt("Quina partida o descomposat vols buscar amb IA?","")||"";if(!q)return;const promptTxt=`Busca una partida d'obra o descomposat per: ${q}. Dona'm unitat, descripció curta, descripció llarga, rendiment orientatiu i preu unitari orientatiu per incorporar-ho a la llibreria.`;navigator.clipboard?.writeText(promptTxt);alert("He copiat un prompt de cerca IA al porta-retalls. Enganxa'l a ChatGPT i després incorpora la partida a la llibreria.");}}>Buscar amb IA</button></div></div><div className="ai-search-note-v87149 ai-search-note-v87150 compact-ai-note-v87160"><b>IA</b><span>Genera una proposta de partida/descomposat per incorporar a la llibreria.</span></div><div className="client-library-filters-v87115"><select value={libraryScope87160} onChange={e=>{setLibraryScope87160(e.target.value);setLibraryCap87115("")}}><option value="client">1. Llibreria del client</option><option value="general">2. Llibreria general</option></select><input value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Filtrar per nom, codi o descripció"/><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select><select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}><option value="">Afegir al primer capítol</option>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}</select></div><div className="client-library-list-v87115">{libraryFiltered87115.length===0?<div className="empty-mini-v87115">No hi ha partides a la llibreria amb aquest filtre. Pots guardar partides del pressupost actual o crear-les manualment.</div>:libraryFiltered87115.slice(0,80).map(item=><div className="client-library-row-v87115" key={item.id}><div><strong>{item.concepte}</strong><span>{item.codiIntern} · {item.cap} · codi visible {item.codiPressupost||item.codi||"automàtic"} · {item.ut} · PU {money(item.pu||0)}</span>{item.desc&&<details className="lib-desc-v87117"><summary>Veure descripció llarga</summary><small>{item.desc}</small></details>}<details className="lib-desc-v87117 lib-descompost-v878156"><summary>Descomposat Excel / IA / BEDEC</summary><div className="descompost-import-actions-v87161"><label className="secondary small upload-label">Importar Excel<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importLibraryDescompost878161(item.id,e.target.files?.[0])}/></label><small>{item.descompostSource?`Origen: ${item.descompostSource}`:"Excel de descomposat de IA, BEDEC, TCQ o base pròpia"}</small></div><textarea value={item.descompost||""} onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,descompost:e.target.value}:x))} placeholder="Materials, rendiments, mà d'obra, mitjans auxiliars..."/></details></div><div className="client-library-row-actions-v87117"><select value={item.cap||"General"} title="Canviar classificació" onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,cap:e.target.value}:x))}>{[...new Set([...(libraryCaps87115||[]),...(sortedCapEntries8779(caps).map(([c])=>c)),"General"] )].map(c=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="primary small" onClick={()=>addLibraryPartidaToBudget87115(item)}>Afegir</button><button type="button" className="secondary small" onClick={()=>libraryScope87160==="client"?deleteLibraryItem87115(item.id):copyLibraryItemToClient87196(item)}>{libraryScope87160==="client"?"Treure del client":"Afegir al client"}</button></div><select className="client-library-mobile-action-v87117" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="add")addLibraryPartidaToBudget87115(item);if(v==="client"){if(libraryScope87160==="client")deleteLibraryItem87115(item.id);else copyLibraryItemToClient87196(item)}}}><option value="" disabled>Accions</option><option value="add">Afegir al pressupost</option><option value="client">{libraryScope87160==="client"?"Treure de la llibreria del client":"Afegir a la llibreria del client"}</option></select></div>)}</div></div>}<div className="subtabs-v8746 budget-work-tabs-v878180"><button className={budgetWorkTab878180==="Pressupost"?"active":""} onClick={()=>setBudgetWorkTab878180("Pressupost")}>Pressupost</button><button className={budgetWorkTab878180==="Validar descompostos"?"active":""} onClick={()=>setBudgetWorkTab878180("Validar descompostos")}>Validar descompostos</button><button className={budgetWorkTab878180==="Exportar"?"active":""} onClick={()=>setBudgetWorkTab878180("Exportar")}>Exportar / còpies</button></div>{budgetWorkTab878180==="Validar descompostos"?<div className="descompost-validator-v878180"><div className="validator-head-v878180"><div><b>Validació massiva de descompostos</b><span>{descompostValidationRows878180.length} partida/es amb descomposat carregat</span></div><div className="actions-inline"><button type="button" className="secondary" onClick={fillDetectedDescompostos878180}>Carregar tots els preus detectats</button><button type="button" className="primary" onClick={applyAllValidatedDescompostos878180}>Aplicar tots al pressupost i guardar</button><button type="button" className="secondary" onClick={saveOnlyDescompostos878180}>Guardar sense aplicar</button></div></div>{descompostValidationRows878180.length===0?<Empty text="Encara no hi ha descomposats importats. Importa’ls massivament des del botó Importar descompostos."/>:<div className="descompost-validator-table-wrap-v878180"><table className="descompost-validator-table-v878180"><thead><tr><th>Capítol</th><th>Codi</th><th>Concepte</th><th>Total detectat</th><th>PU actual</th><th>PU validat</th><th>Estat</th><th>Acció</th></tr></thead><tbody>{descompostValidationRows878180.map(x=><tr key={`${x.cap}-${x.i}`}><td>{x.cap}</td><td><b>{x.row.codi||"—"}</b></td><td className="text-left"><span>{x.row.concepte}</span><small>{[x.row.descompostSource,x.row.descompostSheet].filter(Boolean).join(" · ")}</small></td><td>{money(x.detected)}</td><td>{money(x.current)}</td><td><input inputMode="decimal" value={x.row.descompostValidatedPu||qty2(x.detected||0)} onChange={e=>setValidatedPu878180(x.cap,x.i,e.target.value)} onBlur={e=>normalizeValidatedPu878180(x.cap,x.i,e.target.value)}/></td><td>{x.row.puFromDescompost?<b className="good-text">Aplicat</b>:<b className="warn-text">Pendent</b>}</td><td><button type="button" className="secondary small" onClick={()=>openDescompostModal87173(x.cap,x.i)}>Obrir</button></td></tr>)}</tbody></table></div>}</div>:budgetWorkTab878180==="Exportar"?<div className="budget-export-panel-v878180"><div><b>Còpia externa del pressupost</b><span>Guarda el pressupost en PDF, Documents i Excel estructurat amb pestanyes de descompostos.</span></div><div className="actions-inline"><button type="button" className="primary" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button><button type="button" className="secondary" onClick={saveBudgetDocument878179}>Guardar a Documents</button><button type="button" className="secondary" onClick={exportBudgetExcel878180}>Exportar Excel</button><button type="button" className="secondary" onClick={()=>{persistBudgetCaps878179(caps);alert("Pressupost consolidat i guardat localment.")}}>Consolidar dades</button></div><small>L’Excel genera una pestanya PRESSUPOST, un resum de descompostos i una pestanya per cada partida amb descomposat.</small></div>:<div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
         {sortedCapEntries8779(caps).map(([cap,items])=>{
           const capTotal=items.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -5709,16 +5813,28 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               {sortPartides8779(items).map((r)=>{
                 const i=(items||[]).findIndex(x=>x===r);
                 const t=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);
-                const rowOpenV87173=!editBudget8760b || openBudgetRow87173===budgetRowKey87173(cap,i);
+                const rowOpenV87173=openBudgetRow87173===budgetRowKey87173(cap,i);
                 const measureCount878194=(r.pressupostMesures||[]).length;
-                return <div className={`budget-v25-line ${editBudget8760b&&!rowOpenV87173?"budget-row-collapsed-v87173":"budget-row-open-v87173"}`} key={i}>
-                  {rowOpenV87173?<input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>:<span className="budget-static-cell-v87173">{r.codi||"—"}</span>}
-                  {rowOpenV87173?<input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>:<span className="budget-static-cell-v87173">{r.ut||"—"}</span>}
-                  <div className="budget-concept-v877 budget-concept-v87173"><div className="concept-line-v877 concept-line-v87173">{rowOpenV87173?<input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>:<strong className="budget-concept-summary-v87173">{r.concepte||"Sense concepte"}</strong>}{rowOpenV87173&&(r.desc||editBudget8760b)&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar desc.":"Veure desc."}</button>}</div>{rowOpenV87173&&(r.desc||editBudget8760b)&&descOpen875[`${cap}-${i}`]&&(editBudget8760b?<textarea className="budget-desc-edit-v878156" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>:<small>{r.desc}</small>)}</div>
-                  <div className="budget-qty-cell-v878194">{rowOpenV87173?<input type="text" inputMode="decimal" value={editBudget8760b?(r.q??""):qty2(parseNum8770(r.q)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num">{qty2(parseNum8770(r.q)||0)}</span>}{measureCount878194>0&&<small>{r.qFromPressupostMesures?`${measureCount878194} línia${measureCount878194===1?"":"s"} ∑`:`${measureCount878194} línia${measureCount878194===1?"":"s"} guardada${measureCount878194===1?"":"s"}`}</small>}</div>
-                  {rowOpenV87173?<input type="text" inputMode="decimal" value={editBudget8760b?(r.pu??""):qty2(parseNum8770(r.pu)||0)} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num">{qty2(parseNum8770(r.pu)||0)}</span>}
+                return <div className={`budget-v25-line ${rowOpenV87173?"budget-row-open-v87173":"budget-row-collapsed-v87173"}`} key={i}>
+                  <button type="button" className="budget-partida-mobile-summary-v87196" onClick={()=>toggleBudgetRow87173(cap,i)}><span><b>{r.codi||"Sense codi"}</b><strong>{r.concepte||"Sense concepte"}</strong><small>{r.ut||"ut"} · {qty2(parseNum8770(r.q)||0)} × {money(parseNum8770(r.pu)||0)}</small></span><span><small>Total partida</small><b>{money(t)}</b><em>{rowOpenV87173?"▴":"▾"}</em></span></button>
+                  <small className="budget-mobile-field-label-v87196">Codi del pressupost</small>
+                  {editBudget8760b&&rowOpenV87173?<input value={r.codi||""} onChange={e=>upd(cap,i,"codi",e.target.value)}/>:<span className="budget-static-cell-v87173">{r.codi||"—"}</span>}
+                  <small className="budget-mobile-field-label-v87196">Unitat</small>
+                  {editBudget8760b&&rowOpenV87173?<input value={r.ut||""} onChange={e=>upd(cap,i,"ut",e.target.value)}/>:<span className="budget-static-cell-v87173">{r.ut||"—"}</span>}
+                  <small className="budget-mobile-field-label-v87196">Concepte i descripció</small>
+                  <div className="budget-concept-v877 budget-concept-v87173"><div className="concept-line-v877 concept-line-v87173">{editBudget8760b&&rowOpenV87173?<input value={r.concepte||""} onChange={e=>upd(cap,i,"concepte",e.target.value)}/>:<strong className="budget-concept-summary-v87173">{r.concepte||"Sense concepte"}</strong>}{rowOpenV87173&&(r.desc||editBudget8760b)&&<button type="button" className="desc-toggle-v877" onClick={()=>setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}))}>{descOpen875[`${cap}-${i}`]?"Amagar desc.":"Veure desc."}</button>}</div>{rowOpenV87173&&(r.desc||editBudget8760b)&&descOpen875[`${cap}-${i}`]&&(editBudget8760b?<textarea className="budget-desc-edit-v878156" value={r.desc||""} onChange={e=>upd(cap,i,"desc",e.target.value)} placeholder="Descripció llarga de la partida"/>:<small>{r.desc}</small>)}</div>
+                  <small className="budget-mobile-field-label-v87196">Quantitat</small><div className="budget-qty-cell-v878194">{editBudget8760b&&rowOpenV87173?<input type="text" inputMode="decimal" value={r.q??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"q",e.target.value)} onBlur={e=>upd(cap,i,"q",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num">{qty2(parseNum8770(r.q)||0)}</span>}{measureCount878194>0&&<small>{r.qFromPressupostMesures?`${measureCount878194} línia${measureCount878194===1?"":"s"} ∑`:`${measureCount878194} línia${measureCount878194===1?"":"s"} guardada${measureCount878194===1?"":"s"}`}</small>}</div>
+                  <small className="budget-mobile-field-label-v87196">Preu unitari</small>
+                  {editBudget8760b&&rowOpenV87173?<input type="text" inputMode="decimal" value={r.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num">{qty2(parseNum8770(r.pu)||0)}</span>}
+                  <small className="budget-mobile-field-label-v87196">Total de la partida</small>
                   <b>{money(t)}</b>
-                  {editBudget8760b?<div className="budget-line-actions-v878128 budget-line-actions-v87173"><button type="button" className="secondary small" onClick={()=>toggleBudgetRow87173(cap,i)}>{rowOpenV87173?"Tancar partida":"Editar partida"}</button><button type="button" className="secondary small" onClick={()=>setBudgetMeasureTarget878194({cap,i})}>∑ Amidaments</button><button type="button" className="secondary small" onClick={()=>openDescompostModal87173(cap,i)}>Descomposat</button>{rowOpenV87173&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>{setLibraryOpen87115(true);setLibrarySearch87115(String(r.concepte||""));setLibraryTargetCap87115(cap)}}>Llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}</div>:<span/>}
+                  {editBudget8760b&&<select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-client")savePartidaToLibrary87115(r,cap);if(v==="library"){setLibraryOpen87115(true);setLibraryScope87160("client");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>Accions de la partida</option><option value="toggle">{rowOpenV87173?"Tancar partida":"Editar partida"}</option><option value="measure">Introduir amidaments</option><option value="desc">Descripció llarga</option><option value="decomp">Descomposat</option><option value="save-client">Desar a la llibreria del client</option><option value="library">Buscar a la llibreria</option><option value="delete">Eliminar del pressupost</option></select>}
+                  {editBudget8760b?<div className="budget-line-actions-v878128 budget-line-actions-v87173">
+                    <button type="button" className="secondary small" onClick={()=>toggleBudgetRow87173(cap,i)}>{rowOpenV87173?"Tancar partida":"Editar partida"}</button>
+                    <button type="button" className="secondary small" onClick={()=>setBudgetMeasureTarget878194({cap,i})}>∑ Amidaments</button>
+                    <button type="button" className="secondary small" onClick={()=>openDescompostModal87173(cap,i)}>Descomposat</button>
+                    {rowOpenV87173&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115(r,cap)}>Desar a llibreria client</button><button type="button" className="secondary small" onClick={()=>{setLibraryOpen87115(true);setLibraryScope87160("client");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}}>Buscar a la llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}
+                  </div>:<span/>}
                 </div>
               })}
               {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
@@ -6556,9 +6672,10 @@ function readGlobalAgenda878146(){
   out.forEach(e=>{const sig=String(e.id||"")+"__"+String(e.iso||"")+"__"+String(e.title||"")+"__"+String(e.hora||""); if(!map.has(sig))map.set(sig,e);});
   return [...map.values()].sort((a,b)=>(a.iso+" "+a.hora).localeCompare(b.iso+" "+b.hora));
 }
-function collectSyncExtras878146(){
+function collectSyncExtras878146(partidaLibrary=null){
   const agenda=readGlobalAgenda878146().map(({sourceKey,...e})=>e).slice(-500);
-  return {agendaGlobal:agenda,agendaUpdatedAt:new Date().toISOString()};
+  const library=dedupePartidaLibrary87196(Array.isArray(partidaLibrary)?partidaLibrary:lsJson8779("aco_partides_library_v87196",[]));
+  return {agendaGlobal:agenda,partidaLibrary:library,agendaUpdatedAt:new Date().toISOString(),libraryUpdatedAt:new Date().toISOString()};
 }
 function restoreSyncExtras878146(meta={}){
   const agenda=(Array.isArray(meta?.agendaGlobal)?meta.agendaGlobal:[]).map(cleanAgendaEvent87109).filter(Boolean);
@@ -6566,8 +6683,11 @@ function restoreSyncExtras878146(meta={}){
     try{localStorage.setItem(lsKey8779("aco_agenda_global_v87109"),JSON.stringify(agenda.slice(-500)));}catch{}
     try{localStorage.setItem(lsKey8779("aco_home_notes"),JSON.stringify(agenda.slice(-500)));}catch{}
   }
+  const library=dedupePartidaLibrary87196(Array.isArray(meta?.partidaLibrary)?meta.partidaLibrary:[]);
+  if(library.length){try{lsSet8779("aco_partides_library_v87196",JSON.stringify(library))}catch{}}
+  return {agenda,partidaLibrary:library};
 }
-function mergeOdataWithSyncMeta878146(odata={}){return {...(odata||{}),__syncMeta878146:collectSyncExtras878146()}}
+function mergeOdataWithSyncMeta878146(odata={},partidaLibrary=null){return {...(odata||{}),__syncMeta878146:collectSyncExtras878146(partidaLibrary)}}
 function splitOdataSyncMeta878146(raw={}){
   const src=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};
   const meta=src.__syncMeta878146||{};
@@ -6666,8 +6786,8 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     device_id:String(cfg.deviceId||"browser-local"),
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
-    odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{})),
-    app_version:"87.185.0",
+    odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
+    app_version:"87.196.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -6690,13 +6810,13 @@ async function pullStateFromSupabase878121(user=currentAppUser8779(),opts={}){
   localStorage.setItem(lsKey8779("aco_supabase_last_pull_v87121"),new Date().toISOString());
   return rows[0];
 }
-function SupabaseSyncPanel878121({clients=[],obres=[],odata={},setClients,setObres,setOdata,authUser}){
+function SupabaseSyncPanel878121({clients=[],obres=[],odata={},partidaLibrary=[],setPartidaLibrary,setClients,setObres,setOdata,authUser}){
   const [cfg,setCfg]=useState(()=>({deviceId:"browser-"+syncUser878121(authUser),...getSyncCfg878121()}));
   const [status,setStatus]=useState("");
   function upd(k,v){setCfg(p=>({...p,[k]:v}))}
   function save(){saveSyncCfg878121(cfg);setStatus("Configuració de sincronització guardada.")}
-  async function push(){try{saveSyncCfg878121(cfg);setStatus("Pujant dades locals i cites globals a Supabase...");await pushStateToSupabase878121({clients,obres,odata},authUser);setStatus("Dades pujades correctament a Supabase, incloses les cites globals de l'agenda.")}catch(e){setStatus("Error pujant dades: "+(e?.message||e))}}
-  async function pull(){try{saveSyncCfg878121(cfg);setStatus("Carregant última còpia de Supabase...");const row=await pullStateFromSupabase878121(authUser);if(!row)throw new Error("No hi ha cap còpia al núvol amb aquesta clau privada. Primer puja dades locals amb aquesta clau o torna a posar la clau anterior.");const c=sanitizeClients8785(row.clients||[],[]);const o=sanitizeObres8785(row.obres||[],[]);const split=splitOdataSyncMeta878146(row.odata||{});restoreSyncExtras878146(split.meta);const d=sanitizeOdata8785(split.clean||{},{});setClients?.(c);setObres?.(o);setOdata?.(d);setStatus("Dades carregades del núvol i guardades localment. També s'han restaurat cites globals de l'agenda. Última còpia: "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'))}catch(e){setStatus("Error carregant dades: "+(e?.message||e))}}
+  async function push(){try{saveSyncCfg878121(cfg);setStatus("Pujant dades locals, agenda i llibreria a Supabase...");await pushStateToSupabase878121({clients,obres,odata,partidaLibrary},authUser);setStatus("Dades pujades correctament a Supabase, incloses l'agenda i la llibreria de partides.")}catch(e){setStatus("Error pujant dades: "+(e?.message||e))}}
+  async function pull(){try{saveSyncCfg878121(cfg);setStatus("Carregant última còpia de Supabase...");const row=await pullStateFromSupabase878121(authUser);if(!row)throw new Error("No hi ha cap còpia al núvol amb aquesta clau privada. Primer puja dades locals amb aquesta clau o torna a posar la clau anterior.");const c=sanitizeClients8785(row.clients||[],[]);const o=sanitizeObres8785(row.obres||[],[]);const split=splitOdataSyncMeta878146(row.odata||{});const restored=restoreSyncExtras878146(split.meta);const d=sanitizeOdata8785(split.clean||{},{});setClients?.(c);setObres?.(o);setOdata?.(d);if(restored.partidaLibrary?.length)setPartidaLibrary?.(restored.partidaLibrary);setStatus("Dades carregades del núvol i guardades localment. També s'han restaurat l'agenda i la llibreria. Última còpia: "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'))}catch(e){setStatus("Error carregant dades: "+(e?.message||e))}}
   async function testSync(){try{saveSyncCfg878121(cfg);setStatus("Comprovant connexió Supabase...");const row=await pullStateFromSupabase878121(authUser,{allowMissing:true});setStatus(row?"Connexió correcta. Còpia trobada del dispositiu "+(row.device_id||'desconegut')+" · "+(row.updated_at?new Date(row.updated_at).toLocaleString('ca-ES'):'sense data'):"Connexió correcta, però no hi ha còpia amb aquesta clau privada.")}catch(e){setStatus("Error de connexió Supabase: "+(e?.message||e))}}
   return <Card title="Supabase Sync · dades de l’app" action={<button className="primary" onClick={save}>Guardar sync</button>}>
     <div className="form-grid supabase-sync-v87121">
@@ -6745,7 +6865,7 @@ function RecoverySnapshotsPanel878122({setClients,setObres,setOdata,authUser}){
   </Card>
 }
 
-function Configuracio({clients=[],obres=[],odata={},setClients,setObres,setOdata,authUser}){
+function Configuracio({clients=[],obres=[],odata={},partidaLibrary=[],setPartidaLibrary,setClients,setObres,setOdata,authUser}){
 const key=lsKey8779("aco_config_v60");
 const[cfg,setCfg]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
 function upd(k,v){setCfg(p=>({...p,[k]:v}))}
@@ -6766,7 +6886,7 @@ return <div className="stack">
     <Input label="Retenció defecte %" value={cfg.retencio||"0"} onChange={e=>upd("retencio",e.target.value)} />
   </div>
 </Card>
-<SupabaseSyncPanel878121 clients={clients} obres={obres} odata={odata} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
+<SupabaseSyncPanel878121 clients={clients} obres={obres} odata={odata} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
 <Card title="Supabase Storage · documents i arxius">
   <div className="form-grid">
     <Input label="Supabase URL" value={cfg.supabaseUrl||""} onChange={e=>upd("supabaseUrl",e.target.value)} />
