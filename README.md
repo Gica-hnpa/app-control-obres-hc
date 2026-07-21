@@ -1,4 +1,13 @@
-# APP Control d’Obres V87.205
+# APP Control d’Obres V87.206
+
+## Llibreria amb accions clares V87.206
+
+- Cada capítol és una fila plegada amb un únic desplegable d’accions.
+- Dins de cada capítol es pot consultar les partides, renombrar, fusionar o eliminar.
+- El capítol `General` es pot eliminar quan està buit.
+- Ja no es mostren els noms tècnics `PAS 1`, `PAS 2` i `PAS 3`.
+- Quan no hi ha partides pendents només apareix un avís curt; les aparicions històriques no es confonen amb feina pendent.
+- L’apartat de partides guardades indica clarament quantes n’hi ha i què s’hi pot fer.
 
 ## Capítols: inserir i renumerar V87.205
 
@@ -36,8 +45,7 @@ Versió centrada a separar clarament les propostes pendents de les partides ja g
 
 ## Capítols primer i fusió guiada V87.202
 
-- La pantalla comença amb `PAS 1 · Depurar i definir els capítols`, obert d’entrada.
-- La safata de partides passa al pas 2 i la llibreria definitiva al pas 3; totes dues queden plegades inicialment.
+- Aquest antic flux per passos queda substituït a la V87.206 per noms directes: capítols, pendents i partides guardades.
 - Nou selector clar per fusionar cada capítol amb un altre d’existent.
 - Si el capítol té partides, fusionar-lo les conserva i elimina el nom repetit.
 - Si és buit, apareix l’acció directa `Eliminar buit`.
