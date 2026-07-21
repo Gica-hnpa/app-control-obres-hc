@@ -1,4 +1,13 @@
-# APP Control d’Obres V87.208
+# APP Control d’Obres V87.209
+
+## Selecció múltiple i unitats visibles V87.209
+
+- Cada partida torna a tenir una casella de selecció directament dins del capítol.
+- Es poden seleccionar o desmarcar totes les partides visibles d’un capítol amb un sol botó.
+- Una barra fixa permet moure totes les partides seleccionades al mateix capítol, desmarcar-les o eliminar-les.
+- Després del moviment massiu la selecció queda neta automàticament.
+- La unitat de cada partida (`UT`, `ML`, `M2`, etc.) es mostra en una etiqueta gran i diferenciada.
+- El ZIP conté sempre una carpeta arrel amb el nom i número de la versió.
 
 ## Finestres de treball i lectura còmoda V87.208
 

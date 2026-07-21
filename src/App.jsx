@@ -2216,7 +2216,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.208",
+      version:"V87.209",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3916,6 +3916,11 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     setTimeout(()=>setChapterSavedId(current=>current===item.id?"":current),1800);
   }
   function toggleLibrarySelection87199(id){setSelectedIds(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id])}
+  function toggleChapterSelection87209(chapterItems=[]){
+    const ids=chapterItems.map(item=>item.id);
+    const idSet=new Set(ids);
+    setSelectedIds(prev=>ids.length&&ids.every(id=>prev.includes(id))?prev.filter(id=>!idSet.has(id)):[...new Set([...prev,...ids])]);
+  }
   function selectFiltered87199(){setSelectedIds(prev=>filtered.every(x=>prev.includes(x.id))?prev.filter(id=>!filtered.some(x=>x.id===id)):[...new Set([...prev,...filtered.map(x=>x.id)])])}
   function deleteSelected87199(){
     if(!selectedIds.length)return;
@@ -3930,7 +3935,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     if(cap==="__new__")cap=registerChapter87201(prompt("Nom del nou capítol de la llibreria:","")||"");
     if(!cap||cap==="__new__")return alert("Selecciona el capítol de destí.");
     registerChapter87201(cap);
-    const ids=new Set(selectedIds);setItems?.(prev=>dedupePartidaLibrary87196((prev||[]).map(x=>ids.has(x.id)?{...x,cap,updatedAt:new Date().toISOString()}:x)));setBulkChapter("");
+    const ids=new Set(selectedIds);setItems?.(prev=>dedupePartidaLibrary87196((prev||[]).map(x=>ids.has(x.id)?{...x,cap,updatedAt:new Date().toISOString()}:x)));setBulkChapter("");setSelectedIds([]);
   }
   function rebuildCodes87199(){
     if(!confirm("Regenerar els codis interns amb prefix del capítol, paraula clau abreujada i numeració de tres dígits? Els pressupostos existents no canviaran."))return;
@@ -4181,7 +4186,8 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   function renderLibraryItemRow87208(item){
     const hasDescription=!!libText87196(item.desc);
     const hasBreakdown=!!(item.descompostTable?.rows?.length||libText87196(item.descompost));
-    return <div className={`library-item-row-v87208 ${hasDescription?"":"missing-description"}`} key={item.id}><div><b>{item.concepte}</b><span>{item.codiIntern||"Sense codi"} · {item.ut||"ut"}</span><small className={hasDescription?"good-text":"warn-text"}>{hasDescription?"Descripció incorporada":"Falta descripció llarga"} · {hasBreakdown?"Amb descompost":"Sense descompost"}</small></div><strong>{money(item.pu||0)}</strong><button type="button" className="primary small" onClick={()=>{setLibraryItemModalView87208("fitxa");setLibraryItemModal87208(item.id)}}>Obrir fitxa</button></div>;
+    const isSelected=selectedIds.includes(item.id);
+    return <div className={`library-item-row-v87208 ${hasDescription?"":"missing-description"} ${isSelected?"selected-v87209":""}`} key={item.id}><label className="library-item-check-v87209" title="Seleccionar aquesta partida"><input type="checkbox" checked={isSelected} onChange={()=>toggleLibrarySelection87199(item.id)}/><span>Seleccionar</span></label><div className="library-item-info-v87209"><b>{item.concepte}</b><span>{item.codiIntern||"Sense codi"}</span><small className={hasDescription?"good-text":"warn-text"}>{hasDescription?"Descripció incorporada":"Falta descripció llarga"} · {hasBreakdown?"Amb descompost":"Sense descompost"}</small></div><span className="library-unit-badge-v87209"><small>UNITAT</small><b>{String(item.ut||"ut").toUpperCase()}</b></span><span className="library-price-v87209"><small>PREU/UT</small><strong>{money(item.pu||0)}</strong></span><button type="button" className="primary small" onClick={()=>{setLibraryItemModalView87208("fitxa");setLibraryItemModal87208(item.id)}}>Obrir fitxa</button></div>;
   }
   function renderLibraryItemModal87208(item){
     const owners=(item.clientIds||[]).map(id=>clients.find(c=>String(c.id)===String(id))?.nom).filter(Boolean);
@@ -4213,7 +4219,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
         return <details open={isOpen} className="library-chapter-actions-v87206 library-chapter-with-items-v87207" key={ch.cap}>
           <summary onClick={event=>{event.preventDefault();setOpenLibraryChapter(current=>current===ch.cap?"":ch.cap);setOpenLibraryItem("")}}><div><b>{ch.cap}</b><span>{ch.total} partida/es · {ch.clients.size} client/s relacionat/s</span></div><em>Veure partides ▾</em></summary>
           {isOpen&&<div className="library-chapter-content-v87207">
-            <div className="library-chapter-content-head-v87207"><div><b>{chapterItems.length} partida/es {q&&!capMatches?"coincidents amb la cerca":"en aquest capítol"}</b><span>Obre una fitxa en una finestra; la llista no s’allargarà.</span></div><div className="actions-inline"><button type="button" className="secondary small" onClick={()=>setChapterActionModal87208(ch.cap)}>Accions del capítol</button><button type="button" className="primary small" onClick={()=>startNew(ch.cap)}><Plus/> Nova partida aquí</button></div></div>
+            <div className="library-chapter-content-head-v87207"><div className="library-chapter-head-main-v87209"><div><b>{chapterItems.length} partida/es {q&&!capMatches?"coincidents amb la cerca":"en aquest capítol"}</b><span>Marca les que vulguis moure o obre una fitxa individual.</span></div><div className="actions-inline"><button type="button" className="secondary small" disabled={!chapterItems.length} onClick={()=>toggleChapterSelection87209(chapterItems)}>{chapterItems.length&&chapterItems.every(item=>selectedIds.includes(item.id))?"Desmarcar totes":"Seleccionar totes"}</button><button type="button" className="secondary small" onClick={()=>setChapterActionModal87208(ch.cap)}>Accions del capítol</button><button type="button" className="primary small" onClick={()=>startNew(ch.cap)}><Plus/> Nova partida aquí</button></div></div>{selectedIds.length>0&&<div className="library-chapter-bulk-v87209"><b>{selectedIds.length} partida/es seleccionada/es</b><select value={bulkChapter} onChange={e=>setBulkChapter(e.target.value)}><option value="">Moure al capítol...</option>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select><button type="button" className="primary" onClick={moveSelected87199}>Moure seleccionades</button><button type="button" className="secondary" onClick={()=>setSelectedIds([])}>Desmarcar</button><button type="button" className="danger" onClick={deleteSelected87199}>Eliminar</button></div>}</div>
             <div className="library-chapter-items-v87207">{chapterItems.length?chapterItems.map(renderLibraryItemRow87208):<Empty text="Aquest capítol encara no té partides."/>}</div>
             {false&&<details className="library-chapter-tools-v87207"><summary><div><b>Accions del capítol</b><span>Renombrar, fusionar o eliminar</span></div><em>Obrir accions ▾</em></summary><div className="library-chapter-actions-body-v87206">
               <section><div><b>Renombrar</b><span>Canvia el nom sense perdre ni moure les partides.</span></div><label><span>Nom nou del capítol</span><input value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}}}/></label><button type="button" className="primary" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Guardar nom</button></section>
@@ -7347,7 +7353,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.208.0",
+    app_version:"87.209.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
