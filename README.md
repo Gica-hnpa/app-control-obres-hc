@@ -1,12 +1,22 @@
-# APP Control d’Obres V87.207
+# APP Control d’Obres V87.208
+
+## Finestres de treball i lectura còmoda V87.208
+
+- Les accions del capítol són a la capçalera fixa del capítol obert; no cal arribar al final de la llista.
+- Les partides es mostren en files compactes i `Obrir fitxa` obre una finestra sobre la pantalla principal.
+- La fitxa permet modificar dades, descripció llarga, descompost, clients i codi sense allargar la pàgina.
+- En un pressupost, `Veure desc.` obre una finestra gran i llegible amb la descripció completa.
+- Si la partida té descompost, apareix al costat de la descripció; des de la mateixa finestra es pot obrir l’editor.
+- En tancar qualsevol finestra es conserva la posició i la vista anterior.
+- Al mòbil, aquestes finestres ocupen tota la pantalla per evitar columnes i textos minúsculs.
 
 ## Partides directament dins dels capítols V87.207
 
 - S’elimina de la pantalla el bloc separat `Partides guardades a la llibreria`.
 - En obrir un capítol es carreguen directament les partides que té assignades.
 - Només es carrega el capítol o la partida oberta, per evitar alentiments amb centenars de partides.
-- Les accions de renombrar, fusionar i eliminar queden dins del desplegable `Accions del capítol`.
-- Cada partida té un desplegable propi per editar concepte, unitat, preu unitari, capítol i descripció llarga.
+- Les accions de renombrar, fusionar i eliminar es van agrupar per capítol; a la V87.208 passen a una finestra accessible des de la capçalera.
+- Les partides es van integrar dins del capítol; a la V87.208 la seva edició passa a una finestra de treball.
 - Les partides sense descripció llarga queden marcades visualment com a pendents.
 - El descompost es pot escriure en text, crear amb línies manuals o importar des d’Excel.
 - Les línies del descompost permeten editar concepte, unitat, rendiment, preu i total.
