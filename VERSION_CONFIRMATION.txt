@@ -1,6 +1,7 @@
 APP CONTROL D'OBRES
-VERSIÓ: V87.204 - LLIBRERIA ORDENADA I PRESSUPOST RÀPID EDITABLE
-BASE: V87.203 - DEPURACIÓ REAL I PAPERERA RECUPERABLE
+VERSIÓ: V87.205 - INSERCIÓ I RENUMERACIÓ DE CAPÍTOLS
+BASE: V87.204 - LLIBRERIA ORDENADA I PRESSUPOST RÀPID EDITABLE
 
 La V87.190 queda descartada perquè bloquejava l'app.
-Build Vite verificat.
+Ús local amb Vite: la carpeta dist no és necessària.
+Build Vite verificat el 21/07/2026.

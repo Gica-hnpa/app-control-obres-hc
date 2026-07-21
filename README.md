@@ -1,4 +1,12 @@
-# APP Control d’Obres V87.204
+# APP Control d’Obres V87.205
+
+## Capítols: inserir i renumerar V87.205
+
+- Permet inserir un capítol després de qualsevol capítol numerat.
+- El número nou es calcula automàticament i els capítols posteriors es desplacen una posició.
+- Totes les partides continuen vinculades al capítol corresponent.
+- També permet compactar buits de numeració i renombrar cada capítol manualment.
+- El ZIP és per a ús local amb Vite; la carpeta `dist` no és necessària per treballar-hi.
 
 Versió centrada a separar clarament les propostes pendents de les partides ja guardades i a fer editable el pressupost ràpid.
 

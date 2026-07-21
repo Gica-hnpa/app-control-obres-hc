@@ -543,6 +543,18 @@ function libChapterComparable87202(value=""){
   const withoutCode=libNormText87196(value).replace(/^(?:c\s*)?\d+(?:\s+\d+)*\s*/,"").trim();
   return withoutCode.split(/\s+/).filter(Boolean).map(token=>token.length>5?token.replace(/(?:es|s)$/i,""):token).join(" ");
 }
+function libParseNumberedChapter87205(value=""){
+  const text=libText87196(value);
+  const match=text.match(/^([A-Za-zÀ-ÿ]{0,4})\s*(\d{1,3})(?:(?:\s*[-–—:]\s*|\.\s+|\s+)(.*))?$/);
+  if(!match)return null;
+  return {original:text,prefix:String(match[1]||""),number:+match[2],width:Math.max(2,String(match[2]).length),title:libText87196(match[3]||"")};
+}
+function libFormatNumberedChapter87205(parsed,number,title=parsed?.title||""){
+  const prefix=String(parsed?.prefix||"");
+  const code=`${prefix}${String(number).padStart(Math.max(2,+parsed?.width||2),"0")}`;
+  const cleanTitle=libText87196(title);
+  return `${code}${cleanTitle?` ${cleanTitle}`:""}`;
+}
 function libLongDesc87196(row={}){
   const values=[row.desc,row.descripcio,row["descripció"],row.descripcion,row["descripción"],row.description,row.detall,row.text,row.observacions,row.notes].map(libText87196).filter(Boolean);
   return values.sort((a,b)=>b.length-a.length)[0]||"";
@@ -2204,7 +2216,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.204",
+      version:"V87.205",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3776,6 +3788,8 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   const[candidateDestinationChapter,setCandidateDestinationChapter]=useState("");
   const[candidateOverrides,setCandidateOverrides]=useState({});
   const[candidateLimit,setCandidateLimit]=useState(100);
+  const[insertAfterChapter,setInsertAfterChapter]=useState("");
+  const[insertChapterTitle,setInsertChapterTitle]=useState("");
   const[chapterCatalog,setChapterCatalog]=useState(()=>{
     const saved=lsJson8779("aco_library_chapters_v87201",["General"]);
     return [...new Set(["General",...(Array.isArray(saved)?saved:[])].map(x=>libText87196(x)).filter(Boolean))];
@@ -3839,6 +3853,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     });
     return [...groups.values()].filter(group=>group.length>1).sort((a,b)=>String(a[0]).localeCompare(String(b[0]),"ca",{numeric:true}));
   })();
+  const numberedChapters87205=useMemo(()=>caps.map(cap=>({cap,parsed:libParseNumberedChapter87205(cap)})).filter(entry=>entry.parsed).sort((a,b)=>String(a.parsed.prefix).localeCompare(String(b.parsed.prefix),"ca")||a.parsed.number-b.parsed.number||String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true})),[caps.join("\u0001")]);
   function sendToLibraryTrash87203(deletedItems=[],reason="Depuració manual",chapters=[]){
     const safeItems=(deletedItems||[]).filter(Boolean);
     const safeChapters=[...new Set((chapters||[]).map(libText87196).filter(Boolean))];
@@ -3986,6 +4001,63 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     setCapDrafts(prev=>{const next={...prev};delete next[oldCap];return next});
     if(capFilter===oldCap)setCapFilter(nextCap);
   }
+  function applyChapterRenameMap87205(renameMap,newChapter=""){
+    const now=new Date().toISOString();
+    setItems?.(prev=>dedupePartidaLibrary87196((prev||[]).map(item=>{
+      const oldCap=libText87196(item.cap||"General")||"General";
+      return renameMap.has(oldCap)?{...item,cap:renameMap.get(oldCap),updatedAt:now}:item;
+    })));
+    setChapterCatalog(prev=>{
+      const all=[...new Set([...prev,...caps])];
+      return [...new Set([...all.map(cap=>renameMap.get(cap)||cap),...(newChapter?[newChapter]:[])])].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true}));
+    });
+    setCapDrafts({});
+    if(renameMap.has(capFilter))setCapFilter(renameMap.get(capFilter));
+  }
+  function numberedChapterGroup87205(reference){
+    if(!reference?.parsed)return [];
+    const prefix=String(reference.parsed.prefix||"").toLocaleUpperCase("ca");
+    return numberedChapters87205.filter(entry=>String(entry.parsed.prefix||"").toLocaleUpperCase("ca")===prefix).sort((a,b)=>a.parsed.number-b.parsed.number||String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
+  }
+  function insertAndRenumberChapter87205(){
+    const title=libText87196(insertChapterTitle);
+    const reference=numberedChapters87205.find(entry=>entry.cap===insertAfterChapter);
+    if(!reference)return alert("Selecciona el capítol numerat després del qual vols inserir el nou.");
+    if(!title)return alert("Escriu el nom del nou capítol. El número el posarà l’app automàticament.");
+    const group=numberedChapterGroup87205(reference);
+    const targetNumber=reference.parsed.number+1;
+    const width=Math.max(2,...group.map(entry=>entry.parsed.width));
+    const formatBase={...reference.parsed,width};
+    const renameMap=new Map();
+    group.filter(entry=>entry.parsed.number>=targetNumber).sort((a,b)=>b.parsed.number-a.parsed.number).forEach(entry=>renameMap.set(entry.cap,libFormatNumberedChapter87205(formatBase,entry.parsed.number+1,entry.parsed.title)));
+    const newChapter=libFormatNumberedChapter87205(formatBase,targetNumber,title);
+    const changes=[...renameMap.entries()].filter(([oldCap,nextCap])=>oldCap!==nextCap);
+    const preview=changes.slice().reverse().slice(0,4).map(([oldCap,nextCap])=>`${oldCap} → ${nextCap}`).join("\n");
+    if(!confirm(`Crear «${newChapter}» després de «${reference.cap}»?\n\nEs renumeraran ${changes.length} capítol/s posteriors i totes les partides continuaran vinculades al seu capítol.\n${preview?`\nExemple:\n${preview}${changes.length>4?"\n…":""}`:""}`))return;
+    applyChapterRenameMap87205(renameMap,newChapter);
+    setInsertAfterChapter(newChapter);
+    setInsertChapterTitle("");
+    alert(`Capítol «${newChapter}» creat. S’han renumerat ${changes.length} capítol/s sense perdre cap partida.`);
+  }
+  function compactNumberedChapters87205(){
+    const reference=numberedChapters87205.find(entry=>entry.cap===insertAfterChapter);
+    if(!reference)return alert("Selecciona un capítol numerat del grup que vols ordenar.");
+    const group=numberedChapterGroup87205(reference);
+    if(group.length<2)return alert("Aquest grup només té un capítol numerat.");
+    const start=Math.min(...group.map(entry=>entry.parsed.number));
+    const width=Math.max(2,...group.map(entry=>entry.parsed.width));
+    const formatBase={...reference.parsed,width};
+    const renameMap=new Map();
+    group.forEach((entry,index)=>{
+      const nextCap=libFormatNumberedChapter87205(formatBase,start+index,entry.parsed.title);
+      if(nextCap!==entry.cap)renameMap.set(entry.cap,nextCap);
+    });
+    if(!renameMap.size)return alert("La numeració d’aquest grup ja és correlativa.");
+    if(!confirm(`Ordenar correlativament ${group.length} capítols, començant per ${String(start).padStart(width,"0")}? Les partides es conservaran.`))return;
+    applyChapterRenameMap87205(renameMap);
+    setInsertAfterChapter(renameMap.get(insertAfterChapter)||insertAfterChapter);
+    alert(`Numeració compactada. S’han renombrat ${renameMap.size} capítol/s sense perdre cap partida.`);
+  }
   function moveChapterToGeneral87197(cap){
     if(cap==="General")return;
     if(!confirm(`Moure totes les partides de «${cap}» al capítol «General»?`))return;
@@ -4032,13 +4104,14 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     <details open className="library-chapters-v87197 library-chapters-step-v87202">
       <summary><div><b>PAS 1 · Depurar i definir els capítols</b><span>{caps.length} capítol/s compartits · crea, canvia el nom o fusiona els repetits</span></div><em>Obrir ▾</em></summary>
       <div className="library-chapter-controls-v87199 library-chapter-controls-v87201"><label><span>Cercar capítol</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder="Escriu una paraula..."/></label><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear capítol</button></div>
-      <div className="library-chapters-note-v87197"><b>Com s’elimina un capítol repetit?</b><span>Tria a «Fusionar amb un existent» el capítol que vols conservar i prem «Aplicar / fusionar». Les partides es mouen al capítol bo i l’altre desapareix. Només s’elimina directament quan és buit.</span></div>
+      <div className="library-insert-chapter-v87205"><div><b>Afegir un capítol entremig</b><span>Tria després de quin capítol va. L’app crea el número nou i desplaça els següents, conservant totes les partides.</span></div><label><span>Inserir després de</span><select value={insertAfterChapter} onChange={e=>setInsertAfterChapter(e.target.value)}><option value="">Selecciona un capítol numerat...</option>{numberedChapters87205.map(entry=><option key={entry.cap} value={entry.cap}>{entry.cap}</option>)}</select></label><label><span>Nom del nou capítol (sense número)</span><input value={insertChapterTitle} onChange={e=>setInsertChapterTitle(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();insertAndRenumberChapter87205()}}} placeholder="Ex.: TANCAMENTS I DIVISÒRIES"/></label><button type="button" className="primary" onClick={insertAndRenumberChapter87205}>Inserir i renumerar</button><button type="button" className="secondary" onClick={compactNumberedChapters87205}>Compactar numeració</button></div>
+      <div className="library-chapters-note-v87197"><b>Renombrar o fusionar</b><span>Per canviar només el nom, edita «Nom final» i prem «Renombrar / fusionar». Per eliminar un repetit, tria el capítol bo a «Fusionar amb un existent». Les partides es conserven.</span></div>
       {duplicateChapterGroups.length>0&&<div className="library-duplicate-groups-v87202"><div className="library-duplicate-groups-head-v87202"><b>Possibles repetits detectats ({duplicateChapterGroups.length})</b><span>He ignorat la numeració inicial i petites diferències de plural. No es canvia res fins que tu triïs quin nom conservar.</span></div>{duplicateChapterGroups.map((group,index)=><div className="library-duplicate-group-v87202" key={`${group.join("-")}-${index}`}><span>{group.join(" · ")}</span><div>{group.map(cap=><button type="button" className="secondary small" key={cap} onClick={()=>mergeChapterGroup87202(group,cap)}>Conservar «{cap}»</button>)}</div></div>)}</div>}
       <div className="library-chapters-list-v87197">{managedChapterStats.length===0?<Empty text="No hi ha capítols amb aquesta cerca."/>:managedChapterStats.map(ch=><div className="library-chapter-row-v87197 library-chapter-row-v87202" key={ch.cap}>
         <div><b>{ch.cap}</b><span>{ch.total} partida/es · relacionat amb {ch.clients.size} client/s</span></div>
         <label><span>Fusionar amb un capítol existent</span><select value="" onChange={e=>{if(e.target.value)setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))}}><option value="">Selecciona el capítol que vols conservar...</option>{caps.filter(cap=>cap!==ch.cap).map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label>
         <label><span>Nom final (també el pots escriure)</span><input list="library-chapter-destinations-v87199" value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}}}/></label>
-        <button type="button" className="primary small" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Aplicar / fusionar</button>
+        <button type="button" className="primary small" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Renombrar / fusionar</button>
         {ch.cap!=="General"&&<div className="library-chapter-delete-actions-v87203">{ch.total?<><button type="button" className="secondary small" onClick={()=>moveChapterToGeneral87197(ch.cap)}>Moure a General</button><button type="button" className="danger small" onClick={()=>deleteChapterAndItems87203(ch.cap)}>Eliminar capítol + {ch.total} partides</button></>:<button type="button" className="danger small" onClick={()=>deleteEmptyChapter87201(ch.cap)}>Eliminar capítol buit</button>}</div>}
       </div>)}</div>
       <datalist id="library-chapter-destinations-v87199">{managedChapterStats.map(ch=><option key={ch.cap} value={ch.cap}/>)}</datalist>
@@ -7148,7 +7221,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.204.0",
+    app_version:"87.205.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
