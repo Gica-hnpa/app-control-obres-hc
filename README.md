@@ -1,6 +1,19 @@
-# APP Control d’Obres V87.203
+# APP Control d’Obres V87.204
 
-Versió centrada a permetre una depuració real de capítols i partides sense perdre dades accidentalment.
+Versió centrada a separar clarament les propostes pendents de les partides ja guardades i a fer editable el pressupost ràpid.
+
+## Llibreria ordenada i pressupost ràpid editable V87.204
+
+- El pas 2 indica clarament que les files són propostes detectades i que el capítol mostrat és només el d’origen.
+- Les propostes pendents es poden seleccionar i incorporar al capítol final escollit o descartar-les a la paperera.
+- El preu proposat de cada pendent es pot modificar abans d’incorporar-la.
+- Restaurar una proposta descartada la torna al pas 2, sense incorporar-la automàticament a la llibreria.
+- El pas 3 identifica les partides ja guardades i mostra una gestió ràpida amb selecció, capítol assignat, preu i eliminació.
+- Les partides del pas 3 es poden reassignar de capítol directament, variar-ne el preu o eliminar-les.
+- L’editor complet de codis, descripcions i clients queda plegat com a opció avançada.
+- El pressupost ràpid incorpora un botó visible `Editar quantitats i preus`.
+- En mode edició ràpida, codi, unitat, concepte, quantitat i preu unitari són editables directament a totes les partides.
+- Al mòbil, les files també s’obren automàticament mentre el mode edició està actiu.
 
 ## Depuració i paperera recuperable V87.203
 
