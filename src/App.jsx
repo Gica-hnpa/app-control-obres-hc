@@ -2216,7 +2216,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.209",
+      version:"V87.210",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -4358,12 +4358,11 @@ function primaryPromotorAgent878134(agents=[],obra={},client={}){
   const sorted=sortAgents878134(agents||[]);
   const propRaw=String(obra?.propietat||'').trim();
   const prop=propRaw.toLowerCase();
-  const exact=prop?sorted.find(a=>String(a.nom||'').trim().toLowerCase()===prop || String(a.empresa||'').trim().toLowerCase()===prop):null;
-  if(exact)return exact;
-  // V87.187: si l'usuari escriu/canvia el promotor a Dades, aquest text mana.
-  // Abans una fitxa antiga d'agent promotor podia continuar sortint a dalt i creava dos promotors diferents.
+  const linked=obra?.promotorAgentId?sorted.find(a=>String(a.id||'')===String(obra.promotorAgentId)):null;
+  const exact=linked||(prop?sorted.find(a=>String(a.nom||'').trim().toLowerCase()===prop || String(a.empresa||'').trim().toLowerCase()===prop):null);
+  if(exact)return {...exact,nom:propRaw||exact.nom,nif:obra?.nifPropietat||exact.nif||'',adreca:obra?.adrecaPropietat||exact.adreca||'',email:obra?.emailPropietat||exact.email||'',telefon:obra?.telefonPropietat||exact.telefon||''};
   if(propRaw){
-    return {nom:propRaw,empresa:propRaw,nif:obra?.nifPropietat||'',adreca:obra?.adreca||client?.adreca||'',email:client?.email||'',telefon:client?.telefon||'',rol:'Promotor / propietat'};
+    return {id:obra?.promotorAgentId||'',nom:propRaw,empresa:propRaw,nif:obra?.nifPropietat||'',adreca:obra?.adrecaPropietat||'',email:obra?.emailPropietat||'',telefon:obra?.telefonPropietat||'',rol:'Promotor / propietat'};
   }
   const found=sorted.find(a=>{const r=String(a.rol||'').toLowerCase();return r.includes('promotor')||r.includes('propiet')||r.includes('client')});
   if(found)return found;
@@ -4371,7 +4370,7 @@ function primaryPromotorAgent878134(agents=[],obra={},client={}){
 }
 function fiscalClientBlock878134(obra={},client={},agents=[]){
   const p=primaryPromotorAgent878134(agents,obra,client);
-  return `<b>${escHtmlV8772(p.nom||obra?.propietat||client?.nom||'Client')}</b><br>${p.empresa&&p.empresa!==p.nom?`Empresa: ${escHtmlV8772(p.empresa)}<br>`:''}NIF/CIF: ${escHtmlV8772(p.nif||obra?.nifPropietat||client?.nif||'Pendent')}<br>${escHtmlV8772(p.adreca||obra?.adreca||client?.adreca||'')} ${escHtmlV8772(obra?.poblacio||client?.poblacio||'')}${p.email||p.telefon?`<br>${escHtmlV8772([p.email,p.telefon].filter(Boolean).join(' · '))}`:''}`;
+  return `<b>${escHtmlV8772(p.nom||obra?.propietat||client?.nom||'Client')}</b><br>${p.empresa&&p.empresa!==p.nom?`Empresa: ${escHtmlV8772(p.empresa)}<br>`:''}NIF/CIF: ${escHtmlV8772(p.nif||obra?.nifPropietat||'Pendent')}<br>${escHtmlV8772(p.adreca||obra?.adrecaPropietat||'Adreça pendent')}${p.email||p.telefon?`<br>${escHtmlV8772([p.email,p.telefon].filter(Boolean).join(' · '))}`:''}`;
 }
 function collectActivities8783(obres=[],odata={},clients=[]){
   const out=[];
@@ -5017,22 +5016,82 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   const [form,setForm]=useState(()=>({...obra,codiPostal:obra.codiPostal||""}));
   const [clientChoice,setClientChoice]=useState(()=>obra.client||client?.id||"");
   const [newClient878159,setNewClient878159]=useState({nom:"Nou client",rao:"",tipus:"Promotor",nif:"Pendent",email:"",telefon:"",adreca:"",codiPostal:"",poblacio:""});
+  const [promoterModal87210,setPromoterModal87210]=useState(null);
   useEffect(()=>{setForm(applyWorkTemplate878121({...obra,codiPostal:obra.codiPostal||""},obra.tipusTreball||obra.tipologia,false));setClientChoice(obra.client||client?.id||"")},[obra.id,obra.updatedAt,obra.tipusTreball,obra.tipologia,obra.client,client?.id]);
   const obraAgents=sortAgents878134(uniqAgents8768([...(data.agents||[])]));
   const libraryAgents=sortAgents878134(uniqAgents8768([...(allAgents||[])]));
   const agents=obraAgents;
   const agentChoices=sortAgents878134(uniqAgents8768([...(obraAgents||[]),...(libraryAgents||[])]));
+  const promoterChoiceMap87210=new Map();
+  agentChoices.filter(agent=>agentMatchesField878188(agent,"promotor")||agent._fromClient878192).forEach(agent=>{
+    const key=normalizeSearch878191(agent.nom||agent.empresa||agent.id);
+    if(!key)return;
+    const previous=promoterChoiceMap87210.get(key);
+    if(!previous){promoterChoiceMap87210.set(key,agent);return}
+    const score=item=>[item.nif,item.adreca,item.email,item.telefon,item.sourceClientId878192].filter(v=>String(v||"").trim()).length;
+    const preferred=score(agent)>score(previous)?agent:previous;
+    const secondary=preferred===agent?previous:agent;
+    promoterChoiceMap87210.set(key,{...secondary,...preferred,nif:preferred.nif||secondary.nif||"",adreca:preferred.adreca||secondary.adreca||"",email:preferred.email||secondary.email||"",telefon:preferred.telefon||secondary.telefon||""});
+  });
+  const promoterChoices87210=sortAgents878134([...promoterChoiceMap87210.values()]);
+  const selectedPromoter87210=promoterChoices87210.find(agent=>String(agent.id||"")===String(form.promotorAgentId||""))||promoterChoices87210.find(agent=>normalizeSearch878191(agent.nom||agent.empresa)===normalizeSearch878191(form.propietat));
+  const promoterSignature87210=promoterChoices87210.map(agent=>[agent.id,agent.nom,agent.nif,agent.adreca,agent.email,agent.telefon].join("|")).join("¦");
+  useEffect(()=>{
+    const match=promoterChoices87210.find(agent=>String(agent.id||"")===String(obra.promotorAgentId||""))||promoterChoices87210.find(agent=>normalizeSearch878191(agent.nom||agent.empresa)===normalizeSearch878191(obra.propietat));
+    if(!match)return;
+    setForm(previous=>{
+      const missing=value=>!String(value||"").trim()||String(value||"").trim().toLowerCase()==="pendent";
+      const next={...previous,promotorAgentId:previous.promotorAgentId||match.id,propietat:previous.propietat||match.nom};
+      if(missing(previous.nifPropietat)&&match.nif)next.nifPropietat=match.nif;
+      if(missing(previous.adrecaPropietat)&&match.adreca)next.adrecaPropietat=match.adreca;
+      if(missing(previous.emailPropietat)&&match.email)next.emailPropietat=match.email;
+      if(missing(previous.telefonPropietat)&&match.telefon)next.telefonPropietat=match.telefon;
+      return JSON.stringify(next)===JSON.stringify(previous)?previous:next;
+    });
+  },[obra.id,obra.promotorAgentId,obra.propietat,promoterSignature87210]);
   function upd(k,v){setForm(p=>({...p,[k]:v}))}
   function changeCp(v){setForm(p=>{const pob=poblacioForCp8773(v);return {...p,codiPostal:v,poblacio:pob||p.poblacio}})}
   function changePoblacio(v){setForm(p=>{const cp=cpForPoblacio8773(v);return {...p,poblacio:v,codiPostal:cp||p.codiPostal}})}
   function addAgentToObraIfNeeded878159(ag){
     if(!ag?.nom)return;
     setData?.(d=>{
-      const exists=(d.agents||[]).some(x=>String(x.nom||"").toLowerCase()===String(ag.nom||"").toLowerCase());
-      if(exists)return d;
+      const existingIndex=(d.agents||[]).findIndex(x=>String(x.id||"")===String(ag.id||"")||normalizeSearch878191(x.nom)===normalizeSearch878191(ag.nom));
+      if(existingIndex>=0){
+        const next=(d.agents||[]).map((item,index)=>index===existingIndex?{...item,...ag,id:item.id||ag.id,sourceAgentId:item.sourceAgentId||ag.id,updatedAt:new Date().toISOString()}:item);
+        return {...d,agents:sortAgents878134(next),updatedAt:new Date().toISOString()};
+      }
       const copy={...ag,id:"agent-obra-"+Date.now()+"-"+Math.random().toString(16).slice(2),sourceAgentId:ag.id,updatedAt:new Date().toISOString()};
       return {...d,agents:sortAgents878134([...(d.agents||[]),copy]),updatedAt:new Date().toISOString()};
     });
+  }
+  function promoterPatch87210(agent={}){
+    return {promotorAgentId:agent.id||"",propietat:agent.nom||agent.empresa||"",nifPropietat:agent.nif||"",adrecaPropietat:agent.adreca||"",emailPropietat:agent.email||"",telefonPropietat:agent.telefon||""};
+  }
+  function choosePromoter87210(value){
+    if(value==="__new__"){setPromoterModal87210({id:"",nom:"",empresa:"",rol:"Promotor / propietat",nif:"",adreca:"",codiPostal:"",poblacio:"",email:"",telefon:""});return}
+    const found=promoterChoices87210.find(agent=>String(agent.id||"")===String(value));
+    if(!found){setForm(previous=>({...previous,promotorAgentId:"",propietat:"",nifPropietat:"",adrecaPropietat:"",emailPropietat:"",telefonPropietat:""}));return}
+    setForm(previous=>({...previous,...promoterPatch87210(found)}));
+    addAgentToObraIfNeeded878159(found);
+  }
+  function editPromoter87210(){
+    const current=selectedPromoter87210||{id:form.promotorAgentId||"",nom:form.propietat||"",empresa:form.propietat||"",rol:"Promotor / propietat",nif:form.nifPropietat||"",adreca:form.adrecaPropietat||"",email:form.emailPropietat||"",telefon:form.telefonPropietat||""};
+    setPromoterModal87210({...current,nom:form.propietat||current.nom||"",nif:form.nifPropietat||current.nif||"",adreca:form.adrecaPropietat||current.adreca||"",email:form.emailPropietat||current.email||"",telefon:form.telefonPropietat||current.telefon||""});
+  }
+  function savePromoterModal87210(){
+    const draft=promoterModal87210||{};
+    const nom=String(draft.nom||"").trim();
+    if(!nom)return alert("Escriu el nom del promotor o client final.");
+    const id=draft.id||`agent-obra-promotor-${Date.now()}`;
+    const agent={id,nom,empresa:String(draft.empresa||nom).trim()||nom,rol:"Promotor / propietat",nif:String(draft.nif||"").trim(),adreca:String(draft.adreca||"").trim(),email:String(draft.email||"").trim(),telefon:String(draft.telefon||"").trim(),updatedAt:new Date().toISOString()};
+    setData?.(current=>{
+      const list=[...(current.agents||[])];
+      const index=list.findIndex(item=>String(item.id||"")===String(draft.id||"")||normalizeSearch878191(item.nom)===normalizeSearch878191(nom));
+      const next=index>=0?list.map((item,i)=>i===index?{...item,...agent,id:item.id||agent.id}:item):[agent,...list];
+      return {...current,agents:sortAgents878134(next),updatedAt:new Date().toISOString()};
+    });
+    setForm(previous=>({...previous,...promoterPatch87210(agent)}));
+    setPromoterModal87210(null);
   }
   function createNewClient878159(){
     const nom=String(newClient878159.nom||"Nou client").trim()||"Nou client";
@@ -5067,8 +5126,8 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
         const list=[...(d.agents||[])];
         const propName=String(normalizedToSave.propietat||"").trim();
         const propNif=normalizedToSave.nifPropietat||"";
-        const idx=list.findIndex(a=>{const r=String(a.rol||"").toLowerCase();return r.includes("promotor")||r.includes("propiet")||r.includes("client")});
-        const item={id:idx>=0?(list[idx].id||("agent-promotor-"+Date.now())):"agent-promotor-"+Date.now(),nom:propName,empresa:propName,rol:"Promotor / propietat",nif:propNif,email:(idx>=0?list[idx].email:"")||"",telefon:(idx>=0?list[idx].telefon:"")||"",adreca:normalizedToSave.adreca||"",updatedAt:new Date().toISOString()};
+        const idx=list.findIndex(a=>String(a.id||"")===String(normalizedToSave.promotorAgentId||""))>=0?list.findIndex(a=>String(a.id||"")===String(normalizedToSave.promotorAgentId||"")):list.findIndex(a=>normalizeSearch878191(a.nom)===normalizeSearch878191(propName));
+        const item={id:idx>=0?(list[idx].id||("agent-promotor-"+Date.now())):(normalizedToSave.promotorAgentId||"agent-promotor-"+Date.now()),nom:propName,empresa:(idx>=0?list[idx].empresa:"")||propName,rol:"Promotor / propietat",nif:propNif,email:normalizedToSave.emailPropietat||(idx>=0?list[idx].email:"")||"",telefon:normalizedToSave.telefonPropietat||(idx>=0?list[idx].telefon:"")||"",adreca:normalizedToSave.adrecaPropietat||(idx>=0?list[idx].adreca:"")||"",updatedAt:new Date().toISOString()};
         const next=idx>=0?list.map((a,i)=>i===idx?{...a,...item}:a):[item,...list];
         return {...d,agents:sortAgents878134(next),updatedAt:new Date().toISOString()};
       });
@@ -5085,7 +5144,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     return <label><span>{label}</span><select value={selected} onChange={e=>{const v=e.target.value;if(v==="Pendent"){upd(field,"Pendent");return}if(v==="__custom__"){upd(field,"");return}const ag=choices.find(a=>a.id===v);if(ag){upd(field,ag.nom);addAgentToObraIfNeeded878159(ag)}}}><option value="Pendent">Pendent / no assignat</option>{choices.map(a=><option key={field+a.id} value={a.id}>{a.nom} · {a.empresa||a.rol||"Agent"}</option>)}<option value="__custom__">+ Crear / escriure nou</option></select>{(selected==="__custom__"||(!known&&current&&current!=="Pendent"))&&<div className="agent-inline-create-v87159"><input value={current==="Pendent"?"":current} onChange={e=>upd(field,e.target.value)} placeholder={filterField==="constructora"?"Nom de la constructora":"Nom del tècnic o empresa"}/><button type="button" className="secondary small" onClick={()=>{const nom=String(form[field]||"").trim();if(!nom){alert("Escriu el nom de l'agent.");return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>Crear fitxa agent</button></div>}</label>
   }
   const selectedClient=(clients||[]).find(c=>c.id===clientChoice);
-  return <div className="fitxa-dades-stack-v878133"><PrincipalAgentsPanel878134 obra={form} client={selectedClient||client} agents={agents}/><Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
+  return <div className="fitxa-dades-stack-v878133">{promoterModal87210&&<Modal title={`${promoterModal87210.id?"Editar":"Crear"} promotor / client final`} close={()=>setPromoterModal87210(null)}><div className="promoter-modal-v87210"><DatalistCP8773/><div className="module-note-v8738"><b>Independent del client de la carpeta</b><span>Aquesta fitxa identifica la propietat o client final que sortirà als documents de l’expedient.</span></div><div className="form-grid"><label><span>Nom complet / raó social *</span><input autoFocus value={promoterModal87210.nom||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nom:e.target.value}))}/></label><label><span>Empresa o nom fiscal</span><input value={promoterModal87210.empresa||""} onChange={e=>setPromoterModal87210(previous=>({...previous,empresa:e.target.value}))}/></label><label><span>DNI / NIF / CIF</span><input value={promoterModal87210.nif||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nif:e.target.value}))}/></label><label><span>Telèfon</span><input value={promoterModal87210.telefon||""} onChange={e=>setPromoterModal87210(previous=>({...previous,telefon:e.target.value}))}/></label><label className="span-all"><span>Adreça del promotor</span><input value={promoterModal87210.adreca||""} onChange={e=>setPromoterModal87210(previous=>({...previous,adreca:e.target.value}))}/></label><label><span>Email</span><input type="email" value={promoterModal87210.email||""} onChange={e=>setPromoterModal87210(previous=>({...previous,email:e.target.value}))}/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPromoterModal87210(null)}>Cancel·lar</button><button type="button" className="primary" onClick={savePromoterModal87210}>Guardar i seleccionar</button></div></div></Modal>}<PrincipalAgentsPanel878134 obra={form} client={selectedClient||client} agents={agents}/><Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
     <div className="form-grid fitxa-form-v8773 fitxa-form-v87159"><DatalistCP8773/>
       <details className="span-all code-editor-v87162" open><summary>Codificació de l'expedient</summary><div className="form-grid compact-v87151 no-pad"><label><span>Any</span><input value={form.any||new Date().getFullYear()} onChange={e=>upd("any",e.target.value)}/></label><label><span>Número</span><input type="number" value={form.numExpedient||String(form.codiExpedient||"").match(/^\d{4}-(\d{3})/)?.[1]||""} onChange={e=>upd("numExpedient",e.target.value)}/></label><label><span>Inicials treball</span><input value={form.codiTipus||workCode8739(form.tipusTreball||form.tipologia)} onChange={e=>upd("codiTipus",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>Inicials client</span><input value={form.codiClient||clientCode8739(selectedClient||client,selectedClient?.nom||client?.nom)} onChange={e=>upd("codiClient",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>Paraula clau</span><input value={form.paraulaClau||""} onChange={e=>upd("paraulaClau",e.target.value)} placeholder="VERBANIA, SATE, BANY..."/></label><label className="span-all"><span>Codi complet editable</span><input value={form.codiExpedient||expedientCode8739(form)||expedientCode8739(obra)} onChange={e=>upd("codiExpedient",e.target.value)}/></label><div className="span-all actions-inline"><button type="button" className="secondary" onClick={()=>setForm(p=>recomputeExpedientCode878162(p,selectedClient||client))}>Recalcular codi</button><small>Format recomanat: any-número-inicials treball-inicials client-paraula clau. També pots escriure el codi complet manualment.</small></div></div></details>
       <label><span>Client / carpeta</span><select value={clientChoice||""} onChange={e=>setClientChoice(e.target.value)}><option value="" disabled>Selecciona client...</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}<option value="__new__">+ Crear client nou</option></select></label>
@@ -5094,7 +5153,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
       <label><span>Nom de l’obra / treball</span><input value={form.nom||""} onChange={e=>upd("nom",e.target.value)}/></label>
       <label><span>Tipus de feina / encàrrec</span><select value={canonicalWorkType8740(form.tipusTreball||form.tipologia||"Altres")} onChange={e=>{const t=canonicalWorkType8740(e.target.value);setForm(p=>({...applyWorkTemplate878121({...p,tipusTreball:t,tipologia:t},t,false),tipusTreball:t,tipologia:t,codiTipus:workCode8739(t)}))}}>{WORK_TYPES8737.map(t=><option key={t}>{t}</option>)}</select></label>
       <label><span>Estat de l’expedient</span><select value={form.estat||"Pendent"} onChange={e=>upd("estat",e.target.value)}>{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select></label>
-      <label><span>Promotor / propietat documental</span><input value={form.propietat||""} onChange={e=>upd("propietat",e.target.value)} placeholder="Nom del promotor principal"/></label>
+      <div className="span-all promoter-picker-v87210"><label><span>Promotor / client final *</span><select value={selectedPromoter87210?.id||""} onChange={e=>choosePromoter87210(e.target.value)}><option value="">Selecciona el promotor...</option>{promoterChoices87210.map(agent=><option key={agent.id} value={agent.id}>{agent.nom}{agent.nif?` · ${agent.nif}`:""}</option>)}<option value="__new__">+ Crear promotor / client final nou</option></select></label><button type="button" className="secondary small" onClick={()=>setPromoterModal87210({id:"",nom:"",empresa:"",rol:"Promotor / propietat",nif:"",adreca:"",email:"",telefon:""})}>+ Crear nou</button>{form.propietat&&<div className="promoter-selected-v87210"><div><small>PROMOTOR SELECCIONAT</small><b>{form.propietat}</b></div><div><small>DNI / NIF / CIF</small><b>{form.nifPropietat||"Pendent"}</b></div><div><small>ADREÇA</small><b>{form.adrecaPropietat||"Pendent"}</b></div><div><small>CONTACTE</small><b>{[form.emailPropietat,form.telefonPropietat].filter(Boolean).join(" · ")||"Pendent"}</b></div><button type="button" className="secondary small" onClick={editPromoter87210}>Editar dades</button></div>}</div>
       <AgentPicker field="constructor" label="Constructora / contractista" roleHint="Constructora / contractista" filterField="constructora"/>
       <AgentPicker field="do" label="Direcció d’obra" roleHint="Direcció d’obra" filterField="do"/>
       <AgentPicker field="deo" label="Direcció d’execució" roleHint="Direcció d’execució" filterField="deo"/>
@@ -5611,8 +5670,8 @@ function PressupostRapid878150(props){
   const versioPressupost=props.data?.pressupostRapidVersio||"v01";
   const tercerNom=props.data?.pressupostRapidTercerNom||props.obra?.propietat||"";
   const tercerNif=props.data?.pressupostRapidTercerNif||props.obra?.nifPropietat||"";
-  const tercerAdreca=props.data?.pressupostRapidTercerAdreca||[props.obra?.adreca,props.obra?.codiPostal,props.obra?.poblacio].filter(Boolean).join(" · ");
-  const tercerEmail=props.data?.pressupostRapidTercerEmail||"";
+  const tercerAdreca=props.data?.pressupostRapidTercerAdreca||props.obra?.adrecaPropietat||"";
+  const tercerEmail=props.data?.pressupostRapidTercerEmail||props.obra?.emailPropietat||"";
   const obraAdrecaPressupost=props.data?.pressupostRapidObraAdreca||[props.obra?.adreca,props.obra?.codiPostal,props.obra?.poblacio].filter(Boolean).join(" · ");
   const realitzadorPressupost=issuerFiscalName87100(props.client);
   const clientFinalPressupost=tercerNom||props.obra?.propietat||"Client";
@@ -5660,7 +5719,7 @@ function PressupostRapid878150(props){
           <label><span>NIF/CIF tercer</span><input value={tercerNif} onChange={e=>setMeta878155("pressupostRapidTercerNif",e.target.value)} placeholder="NIF/CIF"/></label>
           <label className="span-all"><span>Adreça / contacte tercer</span><input value={tercerAdreca} onChange={e=>setMeta878155("pressupostRapidTercerAdreca",e.target.value)} placeholder="Adreça del tercer/promotor"/></label>
           <label className="span-all"><span>Email tercer</span><input value={tercerEmail} onChange={e=>setMeta878155("pressupostRapidTercerEmail",e.target.value)} placeholder="Opcional"/></label>
-          <button type="button" className="secondary" onClick={()=>setMany878160({pressupostRapidReferencia:props.obra?.subtitol||props.obra?.nom||referencia,pressupostRapidObraAdreca:[props.obra?.adreca,props.obra?.codiPostal,props.obra?.poblacio].filter(Boolean).join(" · "),pressupostRapidTercerNom:props.obra?.propietat||tercerNom,pressupostRapidTercerNif:props.obra?.nifPropietat||tercerNif})}>Reomplir des de dades expedient</button>
+          <button type="button" className="secondary" onClick={()=>setMany878160({pressupostRapidReferencia:props.obra?.subtitol||props.obra?.nom||referencia,pressupostRapidObraAdreca:[props.obra?.adreca,props.obra?.codiPostal,props.obra?.poblacio].filter(Boolean).join(" · "),pressupostRapidTercerNom:props.obra?.propietat||tercerNom,pressupostRapidTercerNif:props.obra?.nifPropietat||tercerNif,pressupostRapidTercerAdreca:props.obra?.adrecaPropietat||tercerAdreca,pressupostRapidTercerEmail:props.obra?.emailPropietat||tercerEmail})}>Reomplir des de dades expedient</button>
         </div>
       </details>
       <details className="progressive-panel-v87160" open>
@@ -5981,8 +6040,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function libDesc87118(row={}){return libLongDesc87196(row)}
   function savePartidaToLibrary87115(row,cap){
     const item={...row,id:row.libraryItemId||undefined,codiIntern:row.codiIntern||"",codiPressupost:row.codi||row.codiPressupost||"",cap:cap||row.cap||"General",clientIds:currentClientId87196?[currentClientId87196]:[],global:true,tipus:"Alta expressa des del pressupost",updatedAt:new Date().toISOString()};
-    setPartidaLibrary?.(prev=>upsertPartidaLibrary87196(prev,item));
-    alert("Partida desada a la llibreria única i relacionada amb aquest client. Si ja existia, s'ha actualitzat sense duplicar-la.");
+    setPartidaLibrary?.(prev=>{
+      const existing=item.id?(prev||[]).find(entry=>String(entry.id)===String(item.id)):null;
+      return upsertPartidaLibrary87196(prev,{...item,clientIds:[...new Set([...(existing?.clientIds||[]),...(item.clientIds||[])])]});
+    });
+    alert("Partida desada a la llibreria general i vinculada amb aquest client. No s'ha creat cap llibreria separada.");
   }
   function startManualBudget87115(){
     const hasRows=Object.values(caps||{}).some(arr=>(arr||[]).length);
@@ -6385,12 +6447,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                   {rowEditableV87204?<input type="text" inputMode="decimal" value={r.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num">{qty2(parseNum8770(r.pu)||0)}</span>}
                   <small className="budget-mobile-field-label-v87196">Total de la partida</small>
                   <b>{money(t)}</b>
-                  {editBudget8760b&&<select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-client")savePartidaToLibrary87115(r,cap);if(v==="library"){setLibraryOpen87115(true);setLibraryScope87160("client");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>Accions de la partida</option><option value="toggle">{rowOpenV87173?"Tancar partida":"Editar partida"}</option><option value="measure">Introduir amidaments</option><option value="desc">Descripció llarga</option><option value="decomp">Descomposat</option><option value="save-client">Desar a la llibreria del client</option><option value="library">Buscar a la llibreria</option><option value="delete">Eliminar del pressupost</option></select>}
+                  {editBudget8760b&&<select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-library")savePartidaToLibrary87115(r,cap);if(v==="library"){setLibraryOpen87115(true);setLibraryScope87160("all");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}if(v.startsWith("move::"))movePartidaCap878128(cap,i,v.slice(6));if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>Accions ▾</option><option value="toggle">{rowOpenV87173?"Tancar edició":"Editar partida"}</option><option value="measure">Introduir amidaments</option><option value="desc">Veure / editar descripció</option><option value="decomp">Veure / editar descompost</option><option value="save-library">Desar a la llibreria general + vincular client</option><option value="library">Buscar a tota la llibreria</option><optgroup label="Moure a un altre capítol">{sortedCapEntries8779(caps).filter(([target])=>target!==cap).map(([target])=><option key={target} value={`move::${target}`}>{target}</option>)}</optgroup><option value="delete">Eliminar del pressupost</option></select>}
                   {editBudget8760b?<div className="budget-line-actions-v878128 budget-line-actions-v87173">
                     <button type="button" className="secondary small" onClick={()=>toggleBudgetRow87173(cap,i)}>{rowOpenV87173?"Tancar partida":"Editar partida"}</button>
                     <button type="button" className="secondary small" onClick={()=>setBudgetMeasureTarget878194({cap,i})}>∑ Amidaments</button>
                     <button type="button" className="secondary small" onClick={()=>openDescompostModal87173(cap,i)}>Descomposat</button>
-                    {rowOpenV87173&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115(r,cap)}>Desar a llibreria client</button><button type="button" className="secondary small" onClick={()=>{setLibraryOpen87115(true);setLibraryScope87160("client");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}}>Buscar a la llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}
+                    {rowOpenV87173&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115(r,cap)}>Desar a llibreria general</button><button type="button" className="secondary small" onClick={()=>{setLibraryOpen87115(true);setLibraryScope87160("all");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}}>Buscar a tota la llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}
                   </div>:<span/>}
                 </div>
               })}
@@ -7053,7 +7115,7 @@ useEffect(()=>setLocal(sortAgents878134(data.agents||[])),[data.agents]);
 const roles=["Promotor / propietat","Constructora / contractista","Direcció d’obra","Direcció d’execució","Direcció d’obra + direcció d’execució","Coordinació S+S","DO + DEO + CSS","Arquitecte","Arquitecte tècnic","Direcció Facultativa","Industrial","Administració","Altres"];
 let filtered=sortAgents878134(local).filter(a=>([a.nom,a.rol,a.empresa,a.email,a.telefon,a.nif,a.adreca].join(" ")).toLowerCase().includes(q.toLowerCase()));
 const libAvailable=sortAgents878134(libraryAgents||[]).filter(a=>a.nom&&!local.some(x=>String(x.nom||"").toLowerCase()===String(a.nom||"").toLowerCase()));
-function commit(next){const sorted=sortAgents878134(next);setLocal(sorted);setData?.(d=>{const prom=primaryPromotorAgent878134(sorted,d?.obra||{},{});const obraPatch=prom?{...(d.obra||{}),propietat:prom.nom||d?.obra?.propietat||"",nifPropietat:prom.nif||d?.obra?.nifPropietat||""}:(d.obra||{});return {...d,agents:sorted,obra:obraPatch,updatedAt:new Date().toISOString()}});}
+function commit(next){const sorted=sortAgents878134(next);setLocal(sorted);setData?.(d=>{const prom=primaryPromotorAgent878134(sorted,d?.obra||{},{});const obraPatch=prom?{...(d.obra||{}),promotorAgentId:prom.id||d?.obra?.promotorAgentId||"",propietat:prom.nom||d?.obra?.propietat||"",nifPropietat:prom.nif||d?.obra?.nifPropietat||"",adrecaPropietat:prom.adreca||d?.obra?.adrecaPropietat||"",emailPropietat:prom.email||d?.obra?.emailPropietat||"",telefonPropietat:prom.telefon||d?.obra?.telefonPropietat||""}:(d.obra||{});return {...d,agents:sorted,obra:obraPatch,updatedAt:new Date().toISOString()}});}
 function upd(id,k,v){commit(local.map(a=>a.id===id?{...a,[k]:v,updatedAt:new Date().toISOString()}:a))}
 function remove(id){if(confirm("Segur que vols eliminar aquest agent d’aquest expedient?"))commit(local.filter(a=>a.id!==id))}
 function addLocal(){const ag={id:"agent-"+Date.now(),nom:"Nou agent",rol:"Altres",empresa:"",email:"",telefon:"",nif:"",adreca:"",collegiat:"",contacte:""};commit([ag,...local]);setOpenId(ag.id)}
@@ -7158,7 +7220,7 @@ async function add(e){let f=e.target.files?.[0];if(!f)return;let id=`doc-${obra?
 function budgetDocFromCurrent878189(d){
   const rows=Array.isArray(data?.partides)?data.partides:[];
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
-  return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||"",tercerEmail:data?.pressupostRapidTercerEmail||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
+  return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||obra?.adrecaPropietat||"",tercerEmail:data?.pressupostRapidTercerEmail||obra?.emailPropietat||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
 }
 function linkedDocumentData878193(d){
   const linkedId=d?.linkedId||String(d?.id||"").replace(/^doc-/,"");
@@ -7353,7 +7415,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.209.0",
+    app_version:"87.210.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

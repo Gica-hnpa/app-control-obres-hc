@@ -1,4 +1,15 @@
-# APP Control d’Obres V87.209
+# APP Control d’Obres V87.210
+
+## Promotor independent i accions clares V87.210
+
+- `Client / carpeta` continua sent el client propi de l’expedient, com SOCOTERM.
+- `Promotor / client final` és ara un desplegable independent amb els promotors i contactes ja existents.
+- En seleccionar-ne un es recuperen DNI/NIF, adreça, email i telèfon de la seva fitxa.
+- Es pot crear o editar el promotor en una finestra superposada i tornar després a la pantalla Dades.
+- Les dades fiscals i de contacte del promotor es guarden separades de l’adreça de l’obra i s’utilitzen als documents.
+- A les partides del pressupost, el bloc de botons queda substituït per un únic desplegable `Accions`.
+- Desar una partida sempre l’envia a la llibreria general; el client actual només queda com a vinculació o filtre.
+- El desplegable permet editar, amidar, veure la descripció o descompost, cercar a tota la llibreria, moure de capítol o eliminar.
 
 ## Selecció múltiple i unitats visibles V87.209
 
