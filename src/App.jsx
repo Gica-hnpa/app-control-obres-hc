@@ -2204,7 +2204,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.202",
+      version:"V87.203",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3780,12 +3780,23 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     return [...new Set(["General",...(Array.isArray(saved)?saved:[])].map(x=>libText87196(x)).filter(Boolean))];
   });
   const[draft,setDraft]=useState(null);
+  const[trashBatches,setTrashBatches]=useState(()=>{
+    const saved=lsJson8779("aco_library_trash_v87203",[]);
+    return Array.isArray(saved)?saved:[];
+  });
+  const[ignoredFingerprints,setIgnoredFingerprints]=useState(()=>{
+    const saved=lsJson8779("aco_library_ignored_v87203",[]);
+    return Array.isArray(saved)?saved:[];
+  });
   const rows=useMemo(()=>dedupePartidaLibrary87196(items||[]),[items]);
   useEffect(()=>{setChapterCatalog(prev=>[...new Set(["General",...prev,...rows.map(x=>x.cap||"General")])].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true})))},[rows]);
   useEffect(()=>{lsSet8779("aco_library_chapters_v87201",JSON.stringify(chapterCatalog))},[chapterCatalog]);
+  useEffect(()=>{lsSet8779("aco_library_trash_v87203",JSON.stringify(stripHeavy878185(trashBatches.slice(0,30))))},[trashBatches]);
+  useEffect(()=>{lsSet8779("aco_library_ignored_v87203",JSON.stringify([...new Set(ignoredFingerprints)].slice(-4000)))},[ignoredFingerprints]);
   const candidateData=useMemo(()=>collectLibraryCandidates871200(clients,obres,odata),[clients,obres,odata]);
   const storedFingerprints=useMemo(()=>new Set(rows.map(libFingerprint87196)),[rows]);
-  const pendingCandidates=useMemo(()=>candidateData.unique.filter(x=>!storedFingerprints.has(x.candidateFingerprint)),[candidateData,storedFingerprints]);
+  const ignoredFingerprintSet=useMemo(()=>new Set(ignoredFingerprints),[ignoredFingerprints]);
+  const pendingCandidates=useMemo(()=>candidateData.unique.filter(x=>!storedFingerprints.has(x.candidateFingerprint)&&!ignoredFingerprintSet.has(x.candidateFingerprint)),[candidateData,storedFingerprints,ignoredFingerprintSet]);
   const candidateCaps=useMemo(()=>[...new Set(pendingCandidates.map(x=>x.cap||"General"))].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true})),[pendingCandidates]);
   const candidateFiltered=useMemo(()=>pendingCandidates.filter(item=>{
     const q=libNormText87196(candidateSearch);
@@ -3827,6 +3838,31 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     });
     return [...groups.values()].filter(group=>group.length>1).sort((a,b)=>String(a[0]).localeCompare(String(b[0]),"ca",{numeric:true}));
   })();
+  function sendToLibraryTrash87203(deletedItems=[],reason="Depuració manual",chapters=[]){
+    const safeItems=(deletedItems||[]).filter(Boolean);
+    const safeChapters=[...new Set((chapters||[]).map(libText87196).filter(Boolean))];
+    if(!safeItems.length&&!safeChapters.length)return;
+    const id=globalThis.crypto?.randomUUID?.()||`trash-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    const batch={id,reason,deletedAt:new Date().toISOString(),chapters:safeChapters,items:stripHeavy878185(safeItems)};
+    setTrashBatches(prev=>[batch,...prev].slice(0,30));
+    if(safeItems.length)setIgnoredFingerprints(prev=>[...new Set([...prev,...safeItems.map(libFingerprint87196)])]);
+  }
+  function restoreTrashBatch87203(batch){
+    const restoreItems=Array.isArray(batch?.items)?batch.items:[];
+    const restoreChapters=[...new Set([...(batch?.chapters||[]),...restoreItems.map(item=>item.cap||"General")].map(libText87196).filter(Boolean))];
+    if(restoreItems.length)setItems?.(prev=>dedupePartidaLibrary87196([...(prev||[]),...restoreItems]));
+    if(restoreChapters.length)setChapterCatalog(prev=>[...new Set([...prev,...restoreChapters])].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true})));
+    const restoredFingerprints=new Set(restoreItems.map(libFingerprint87196));
+    if(restoredFingerprints.size)setIgnoredFingerprints(prev=>prev.filter(fp=>!restoredFingerprints.has(fp)));
+    setTrashBatches(prev=>prev.filter(x=>x.id!==batch.id));
+  }
+  function deleteTrashBatchForever87203(batch){
+    if(confirm(`Eliminar definitivament aquesta còpia de la paperera? Després ja no es podrà recuperar.`))setTrashBatches(prev=>prev.filter(x=>x.id!==batch.id));
+  }
+  function emptyLibraryTrash87203(){
+    if(!trashBatches.length)return;
+    if(confirm(`Buidar definitivament les ${trashBatches.length} eliminacions de la paperera? Les partides continuaran excloses de la safata pendent.`))setTrashBatches([]);
+  }
   function updateItem(id,patch){setItems?.(prev=>upsertPartidaLibrary87196(prev,{id,...patch}))}
   function registerChapter87201(value){
     const cap=libText87196(value);
@@ -3861,8 +3897,11 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   function selectFiltered87199(){setSelectedIds(prev=>filtered.every(x=>prev.includes(x.id))?prev.filter(id=>!filtered.some(x=>x.id===id)):[...new Set([...prev,...filtered.map(x=>x.id)])])}
   function deleteSelected87199(){
     if(!selectedIds.length)return;
-    if(!confirm(`Eliminar ${selectedIds.length} partida/es seleccionades de la llibreria? No s'eliminaran dels pressupostos existents.`))return;
-    const ids=new Set(selectedIds);setItems?.(prev=>(prev||[]).filter(x=>!ids.has(x.id)));setSelectedIds([]);
+    if(!confirm(`Eliminar ${selectedIds.length} partida/es seleccionades de la llibreria? Es guardaran a la paperera i no s'eliminaran dels pressupostos existents.`))return;
+    const ids=new Set(selectedIds);
+    const deleted=rows.filter(item=>ids.has(item.id));
+    sendToLibraryTrash87203(deleted,`Eliminació de ${deleted.length} partides seleccionades`,[...new Set(deleted.map(item=>item.cap||"General"))]);
+    setItems?.(prev=>(prev||[]).filter(x=>!ids.has(x.id)));setSelectedIds([]);
   }
   function moveSelected87199(){
     let cap=bulkChapter;
@@ -3894,7 +3933,14 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     setCandidateSelected(prev=>prev.filter(id=>!selected.some(x=>x.id===id)));
     alert(`${selected.length} partida/es incorporades a la llibreria única. Les coincidències tècniques s'han unificat.`);
   }
-  function removeItem(id){if(confirm("Eliminar definitivament aquesta partida de la llibreria? No s'eliminarà dels pressupostos on ja s'hagi utilitzat."))setItems?.(prev=>(prev||[]).filter(x=>String(x.id)!==String(id)))}
+  function removeItem(id){
+    const item=rows.find(x=>String(x.id)===String(id));
+    if(!item)return;
+    if(!confirm(`Eliminar la partida «${item.concepte}» de la llibreria? Es guardarà a la paperera i no s'eliminarà dels pressupostos on ja s'hagi utilitzat.`))return;
+    sendToLibraryTrash87203([item],`Partida eliminada: ${item.concepte}`,[item.cap||"General"]);
+    setItems?.(prev=>(prev||[]).filter(x=>String(x.id)!==String(id)));
+    setSelectedIds(prev=>prev.filter(x=>String(x)!==String(id)));
+  }
   function startNew(){setDraft({concepte:"",desc:"",ut:"ut",pu:"0",cap:"General",codiPrefix:"",codiParaula:"",global:true,clientIds:[],tipus:"Alta manual"})}
   function changeDraftChapter87201(value){
     let cap=value;
@@ -3931,7 +3977,23 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   function deleteEmptyChapter87201(cap){
     if(cap==="General")return;
     if(rows.some(x=>String(x.cap||"General")===cap))return alert("Aquest capítol encara té partides. Primer fusiona’l o mou-les a General.");
-    if(confirm(`Eliminar el capítol buit «${cap}» del catàleg?`))setChapterCatalog(prev=>prev.filter(x=>x!==cap));
+    if(confirm(`Eliminar el capítol buit «${cap}» del catàleg? Es podrà recuperar des de la paperera.`)){
+      sendToLibraryTrash87203([],`Capítol buit eliminat: ${cap}`,[cap]);
+      setChapterCatalog(prev=>prev.filter(x=>x!==cap));
+    }
+  }
+  function deleteChapterAndItems87203(cap){
+    if(cap==="General")return alert("El capítol General no es pot eliminar. Mou o elimina les seves partides individualment.");
+    const chapterItems=rows.filter(item=>libText87196(item.cap||"General")===cap);
+    if(!chapterItems.length)return deleteEmptyChapter87201(cap);
+    if(!confirm(`Eliminar el capítol «${cap}» i les seves ${chapterItems.length} partida/es? Tot quedarà guardat a la paperera i no s'esborrarà dels pressupostos existents.`))return;
+    const ids=new Set(chapterItems.map(item=>String(item.id)));
+    sendToLibraryTrash87203(chapterItems,`Capítol eliminat amb ${chapterItems.length} partides: ${cap}`,[cap]);
+    setItems?.(prev=>(prev||[]).filter(item=>!ids.has(String(item.id))));
+    setChapterCatalog(prev=>prev.filter(x=>x!==cap));
+    setSelectedIds(prev=>prev.filter(id=>!ids.has(String(id))));
+    setCapDrafts(prev=>{const next={...prev};delete next[cap];return next});
+    if(capFilter===cap)setCapFilter("");
   }
   function mergeChapterGroup87202(group,keepCap){
     const mergeCaps=(group||[]).filter(cap=>cap!==keepCap);
@@ -3957,9 +4019,14 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
         <label><span>Fusionar amb un capítol existent</span><select value="" onChange={e=>{if(e.target.value)setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))}}><option value="">Selecciona el capítol que vols conservar...</option>{caps.filter(cap=>cap!==ch.cap).map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label>
         <label><span>Nom final (també el pots escriure)</span><input list="library-chapter-destinations-v87199" value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}}}/></label>
         <button type="button" className="primary small" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Aplicar / fusionar</button>
-        {ch.cap!=="General"&&(ch.total?<button type="button" className="secondary small" onClick={()=>moveChapterToGeneral87197(ch.cap)}>Moure a General</button>:<button type="button" className="danger small" onClick={()=>deleteEmptyChapter87201(ch.cap)}>Eliminar buit</button>)}
+        {ch.cap!=="General"&&<div className="library-chapter-delete-actions-v87203">{ch.total?<><button type="button" className="secondary small" onClick={()=>moveChapterToGeneral87197(ch.cap)}>Moure a General</button><button type="button" className="danger small" onClick={()=>deleteChapterAndItems87203(ch.cap)}>Eliminar capítol + {ch.total} partides</button></>:<button type="button" className="danger small" onClick={()=>deleteEmptyChapter87201(ch.cap)}>Eliminar capítol buit</button>}</div>}
       </div>)}</div>
       <datalist id="library-chapter-destinations-v87199">{managedChapterStats.map(ch=><option key={ch.cap} value={ch.cap}/>)}</datalist>
+    </details>
+    <details className="library-trash-v87203">
+      <summary><div><b>Paperera recuperable</b><span>{trashBatches.length} eliminació/ns guardades · els pressupostos existents no es modifiquen</span></div><em>Obrir ▾</em></summary>
+      <div className="library-trash-head-v87203"><div><b>Elements eliminats de la llibreria</b><span>Pots restaurar un capítol complet o partides eliminades individualment.</span></div>{trashBatches.length>0&&<button type="button" className="danger small" onClick={emptyLibraryTrash87203}>Buidar paperera</button>}</div>
+      <div className="library-trash-list-v87203">{trashBatches.length===0?<Empty text="La paperera és buida."/>:trashBatches.map(batch=><div className="library-trash-row-v87203" key={batch.id}><div><b>{batch.reason||"Eliminació de la llibreria"}</b><span>{(batch.chapters||[]).length?`Capítol/s: ${(batch.chapters||[]).join(", ")} · `:""}{(batch.items||[]).length} partida/es</span><small>{batch.deletedAt?new Date(batch.deletedAt).toLocaleString("ca-ES"):""}{(batch.items||[]).length?` · ${(batch.items||[]).slice(0,3).map(item=>item.concepte).join(" · ")}${batch.items.length>3?"…":""}`:""}</small></div><div><button type="button" className="primary small" onClick={()=>restoreTrashBatch87203(batch)}>Restaurar</button><button type="button" className="danger small" onClick={()=>deleteTrashBatchForever87203(batch)}>Eliminar definitivament</button></div></div>)}</div>
     </details>
     {draft&&<details open className="library-new-v87196"><summary>Crear una partida de llibreria</summary><div className="library-new-code-note-v87199">Codi curt editable: prefix del capítol + paraula clau + número correlatiu. Exemple: <b>MA_BAST_001</b>.</div><div className="library-editor-grid-v87196"><label><span>Concepte *</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>Unitat</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>Capítol de la llibreria</span><select value={draft.cap} onChange={e=>changeDraftChapter87201(e.target.value)}>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select></label><label><span>Prefix del codi</span><input maxLength="4" value={draft.codiPrefix} onChange={e=>setDraft({...draft,codiPrefix:e.target.value})} placeholder={libChapterInitials87199(draft.cap)}/></label><label><span>Paraula clau del codi</span><input maxLength="6" value={draft.codiParaula} onChange={e=>setDraft({...draft,codiParaula:e.target.value})} placeholder={libConceptKeyword87199(draft.concepte)}/></label><label><span>Preu unitari</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label className="span-all"><span>Descripció llarga</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label>{clients.length>0&&<label><span>Client relacionat (opcional)</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveNew}>Guardar a la llibreria</button></div></details>}
     <details className="library-candidate-inbox-v871200">
@@ -3976,8 +4043,9 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
       {candidateFiltered.length>candidateLimit&&<button type="button" className="secondary library-candidate-more-v871200" onClick={()=>setCandidateLimit(x=>x+100)}>Mostrar 100 més · en queden {candidateFiltered.length-candidateLimit}</button>}
     </details>
     <details className="library-items-step-v87202">
-      <summary><div><b>PAS 3 · Consultar i editar la llibreria definitiva</b><span>{rows.length} partida/es ja guardades</span></div><em>Obrir després de classificar ▾</em></summary>
+      <summary><div><b>PAS 3 · Consultar, seleccionar i eliminar partides</b><span>{rows.length} partida/es · es poden eliminar individualment o en grup i recuperar des de la paperera</span></div><em>Obrir després de classificar ▾</em></summary>
     <Card title="Partides de la llibreria única" action={<div className="actions-inline"><button type="button" className="primary" onClick={startNew}><Plus/> Crear partida</button><button type="button" className="secondary" onClick={consolidate}>Unificar partides idèntiques</button></div>}>
+      <div className="library-delete-guide-v87203"><b>Eliminar partides</b><span>Marca la casella de cada partida —o prem «Seleccionar resultats»— i apareixerà el botó vermell «Eliminar seleccionades». Cada eliminació va a la paperera recuperable.</span></div>
       <div className="library-filters-v87196 library-filters-v87201"><label><span>Filtre de client</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([])}}><option value="">Tots els clients / tota la llibreria</option><option value="__none__">Sense client relacionat</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label><label><span>Cercar partida</span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nom, descripció o codi intern"/></label><label><span>Capítol únic</span><select value={capFilter} onChange={e=>setCapFilter(e.target.value)}><option value="">Tots els capítols ({caps.length})</option>{caps.map(c=><option key={c}>{c}</option>)}</select></label><label><span>Origen de la partida</span><select value={originFilter} onChange={e=>setOriginFilter(e.target.value)}><option value="">Totes les partides</option><option value="selected">Afegides expressament</option><option value="imported">Recuperades anteriorment</option></select></label></div>
       <div className="library-result-head-v87196"><span><b>{filtered.length}</b> partida/es · <b>{caps.length}</b> capítol/s al catàleg únic</span><button type="button" className="secondary small" onClick={selectFiltered87199}>{filtered.length&&filtered.every(x=>selectedIds.includes(x.id))?"Desmarcar resultats":"Seleccionar resultats"}</button></div>
       {selectedIds.length>0&&<div className="library-bulk-bar-v87199"><b>{selectedIds.length} seleccionada/es</b><select value={bulkChapter} onChange={e=>setBulkChapter(e.target.value)}><option value="">Moure a un capítol...</option>{caps.map(c=><option key={c} value={c}>{c}</option>)}<option value="__new__">+ Crear capítol nou</option></select><button type="button" className="primary" onClick={moveSelected87199}>Moure</button><button type="button" className="secondary" onClick={()=>setSelectedIds([])}>Desmarcar</button><button type="button" className="danger" onClick={deleteSelected87199}>Eliminar seleccionades</button></div>}
@@ -6934,7 +7002,9 @@ function collectSyncExtras878146(partidaLibrary=null){
   const agenda=readGlobalAgenda878146().map(({sourceKey,...e})=>e).slice(-500);
   const library=dedupePartidaLibrary87196(Array.isArray(partidaLibrary)?partidaLibrary:lsJson8779("aco_partides_library_v87196",[]));
   const libraryChapters=[...new Set(["General",...(lsJson8779("aco_library_chapters_v87201",[])||[]),...library.map(x=>x.cap||"General")].map(x=>libText87196(x)).filter(Boolean))];
-  return {agendaGlobal:agenda,partidaLibrary:library,libraryChapters,agendaUpdatedAt:new Date().toISOString(),libraryUpdatedAt:new Date().toISOString()};
+  const libraryTrash=(lsJson8779("aco_library_trash_v87203",[])||[]).slice(0,30);
+  const libraryIgnored=[...new Set(lsJson8779("aco_library_ignored_v87203",[])||[])].slice(-4000);
+  return {agendaGlobal:agenda,partidaLibrary:library,libraryChapters,libraryTrash,libraryIgnored,agendaUpdatedAt:new Date().toISOString(),libraryUpdatedAt:new Date().toISOString()};
 }
 function restoreSyncExtras878146(meta={}){
   const agenda=(Array.isArray(meta?.agendaGlobal)?meta.agendaGlobal:[]).map(cleanAgendaEvent87109).filter(Boolean);
@@ -6946,7 +7016,11 @@ function restoreSyncExtras878146(meta={}){
   if(library.length){try{lsSet8779("aco_partides_library_v87196",JSON.stringify(library))}catch{}}
   const libraryChapters=[...new Set(["General",...(Array.isArray(meta?.libraryChapters)?meta.libraryChapters:[]),...library.map(x=>x.cap||"General")].map(x=>libText87196(x)).filter(Boolean))];
   try{lsSet8779("aco_library_chapters_v87201",JSON.stringify(libraryChapters))}catch{}
-  return {agenda,partidaLibrary:library,libraryChapters};
+  const libraryTrash=Array.isArray(meta?.libraryTrash)?meta.libraryTrash.slice(0,30):[];
+  const libraryIgnored=[...new Set(Array.isArray(meta?.libraryIgnored)?meta.libraryIgnored:[])].slice(-4000);
+  try{lsSet8779("aco_library_trash_v87203",JSON.stringify(libraryTrash))}catch{}
+  try{lsSet8779("aco_library_ignored_v87203",JSON.stringify(libraryIgnored))}catch{}
+  return {agenda,partidaLibrary:library,libraryChapters,libraryTrash,libraryIgnored};
 }
 function mergeOdataWithSyncMeta878146(odata={},partidaLibrary=null){return {...(odata||{}),__syncMeta878146:collectSyncExtras878146(partidaLibrary)}}
 function splitOdataSyncMeta878146(raw={}){
@@ -7048,7 +7122,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.202.0",
+    app_version:"87.203.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

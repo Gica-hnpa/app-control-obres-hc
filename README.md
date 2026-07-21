@@ -1,6 +1,17 @@
-# APP Control d’Obres V87.202
+# APP Control d’Obres V87.203
 
-Versió centrada a començar la depuració de la llibreria pels capítols, abans de classificar o editar les partides.
+Versió centrada a permetre una depuració real de capítols i partides sense perdre dades accidentalment.
+
+## Depuració i paperera recuperable V87.203
+
+- Un capítol buit es pot eliminar directament.
+- Un capítol amb partides mostra l’acció `Eliminar capítol + X partides` amb confirmació explícita.
+- Les partides es poden eliminar individualment o seleccionar-ne diverses i eliminar-les de cop.
+- Les eliminacions passen a una paperera recuperable, agrupades per operació.
+- La paperera permet restaurar capítols complets, partides o eliminar definitivament cada còpia.
+- Les partides eliminades no reapareixen automàticament a la safata de candidates encara que encara existeixin en pressupostos antics.
+- La paperera i les exclusions també s’inclouen al Supabase Sync.
+- Eliminar de la llibreria no modifica les partides ja utilitzades dins dels pressupostos existents.
 
 ## Capítols primer i fusió guiada V87.202
 
