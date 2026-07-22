@@ -1,0 +1,26 @@
+V87.212 · CERTIFICACIONS RECUPERADES I CONTROL D'INTEGRITAT
+
+1. Obre aquesta versió de l'app en local.
+2. Ves a Configuració > Importar còpia JSON.
+3. Selecciona el fitxer de la carpeta DADES_REPARADES:
+   app-control-obres-hector-backup-reparat-v87-212-2026-07-22.json
+4. No importis després la còpia original del 22/07/2026, perquè és la que conté
+   les files antigues fusionades.
+5. Entra a 2025-002-ALT-BRAVA-OBRADAVIDFUS i comprova:
+   - Pressupost principal+modificacions: 164 partides i 669.074,00 €.
+   - Pressupost inicial: 122 partides i 470.269,62 €, separat de l'anterior.
+   - Certificacions: una sola còpia de cada número, de l'1 al 8, amb imports.
+   - Certificació 8: conserva la provisió de fons de 23.552,58 €.
+
+QUÈ S'HA REPARAT
+
+- Eliminades 117 files antigues que s'havien incorporat al pressupost actiu de
+  DAVID FUS sense haver-les creat l'usuari.
+- Recuperades tres partides legítimes que compartien codi, amb codis únics:
+  01.09-MOD, 08.01-MAT i 08.05-MAT.
+- Conservats amidaments i quantitats de les certificacions 1 a 8.
+- Recalculats els imports resum de les certificacions perquè no apareguin a 0.
+- Verbania també s'ha depurat: 90 partides vàlides; 56 files antigues retirades.
+- La resta d'expedients no s'han modificat.
+
+La còpia original no s'ha sobreescrit i es pot conservar només com a seguretat.

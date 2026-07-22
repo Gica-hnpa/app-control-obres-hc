@@ -2208,7 +2208,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.211",
+      version:"V87.212",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -4399,6 +4399,10 @@ function certQty8783(r,n){
   const lines=(r.certMesuresByNum||{})[String(n)];
   if(lines&&lines.length)return medicioTotal8780(lines,r.ut);
   if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;
+  // V87.212 · compatibilitat amb certificacions creades en versions antigues.
+  // Durant anys també es van guardar com cert_1, cert_2...; si el resum
+  // certsByNum no existeix, aquestes quantitats continuen sent vàlides.
+  if(r[`cert_${n}`]!==undefined)return +r[`cert_${n}`]||0;
   if(n===1)return +r.certAnterior||0;
   if(n===2)return +r.certActual||0;
   return 0;
@@ -5289,7 +5293,16 @@ function normalizeBudgetedData8791(data={}){
   });
   const validIds=new Set(["principal",...groups.map(g=>g.id)]);
   const active=validIds.has(d.activeBudgetIdObra)?d.activeBudgetIdObra:"principal";
-  return {...d,budgetGroups:groups,pressupostos,activeBudgetIdObra:active};
+  const certificacions=(d.certificacions||[]).map(c=>{
+    const n=+c.numero||0;
+    if(!n)return c;
+    const bid=c.budgetId||"principal";
+    const calculat=(d.partides||[])
+      .filter(r=>(r.budgetId||"principal")===bid)
+      .reduce((s,r)=>s+certQty8783(r,n)*(+r.pu||0),0);
+    return {...c,import:Math.abs(calculat)>0.000001?calculat:(+c.import||0)};
+  });
+  return {...d,budgetGroups:groups,pressupostos,certificacions,activeBudgetIdObra:active};
 }
 
 
@@ -6779,7 +6792,7 @@ function saveDatesSafe8720(){
 
 
 function fieldFor(n){return "cert_"+n}
-function qFor(r,n){if(n<=0)return 0;const lines=(r.certMesuresByNum||{})[String(n)];if(lines&&lines.length)return medicioTotal8780(lines,r.ut);if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;if(n===1)return +r.certAnterior||0;if(n===2)return +r.certActual||0;return 0}
+function qFor(r,n){return certQty8783(r,n)}
 function qDraft(r){let raw=draft[r.codi]??String(qFor(r,certNum));let q=parseNum8770(raw);return Number.isFinite(q)?q:qFor(r,certNum)}
 function imp(r,n){return qFor(r,n)*(+r.pu||0)}
 function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qDraft(r):qFor(r,i);return total}
@@ -7424,7 +7437,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.211.0",
+    app_version:"87.212.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

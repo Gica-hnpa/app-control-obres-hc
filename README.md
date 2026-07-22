@@ -1,4 +1,11 @@
-# APP Control d’Obres V87.211
+# APP Control d’Obres V87.212
+
+## Certificacions recuperades V87.212
+
+- Recupera les quantitats certificades tant des de `certsByNum` com dels camps històrics `cert_1`, `cert_2`, etc.
+- Recalcula l’import resum de cada certificació a partir de les seves partides en carregar les dades.
+- Manté les vuit certificacions de DAVID FUS amb els imports comprovats i evita que apareguin a zero.
+- La còpia JSON reparada duplica de manera segura cada quantitat en els dos formats compatibles.
 
 ## Integritat de pressupostos i certificacions V87.211
 
