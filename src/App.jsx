@@ -263,27 +263,19 @@ function mergeArrGeneric878181(a=[],b=[],keyFn){
   return [...map.values()];
 }
 function mergeOdataCore878104(full={},core={}){
-  const out={...(full||{})};
-  Object.entries(core||{}).forEach(([oid,cv])=>{
-    if(!cv || typeof cv!=="object" || Array.isArray(cv)) return;
-    const fd=out[oid]||{};
-    const next={...cv,...fd};
-    next.budgetGroups=mergeArr878104(fd.budgetGroups,cv.budgetGroups,x=>x?.id||x?.nom||"");
-    next.pressupostos=mergeArr878104(fd.pressupostos,cv.pressupostos,x=>`${x?.budgetId||"principal"}__${x?.id||x?.nom||x?.versio||""}`);
-    next.partides=mergeArr878104(fd.partides,cv.partides,x=>`${x?.budgetId||"principal"}__${x?.codi||""}__${x?.cap||""}`);
-    next.certificacions=mergeArr878104(fd.certificacions,cv.certificacions,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||""}`);
-    next.factures=mergeArr878104(fd.factures,cv.factures,x=>`${x?.budgetId||"principal"}__${x?.id||x?.numero||x?.pfId||""}`);
-    // V87.181: també fusionem dades operatives. Abans, si la còpia completa era antiga
-    // i la còpia crítica sí que tenia tasques, la completa trepitjava la crítica i les tasques desapareixien.
-    next.tasques=mergeArrGeneric878181(cv.tasques,fd.tasques,x=>x?.id||`${x?.text||x?.titol||""}__${x?.dataMaxima||x?.data||""}`);
-    next.events=mergeArrGeneric878181(cv.events,fd.events,x=>x?.id||`${x?.title||x?.titol||""}__${x?.day||""}-${x?.month||""}-${x?.year||""}__${x?.hora||""}`);
-    next.hores=mergeArrGeneric878181(cv.hores,fd.hores,x=>x?.id||`${x?.data||""}__${x?.tasca||x?.etiqueta||""}`);
-    next.documents=mergeArrGeneric878181(cv.documents,fd.documents,x=>x?.id||`${x?.nom||x?.name||""}__${x?.createdAt||x?.data||""}`);
-    next.fotos=mergeArrGeneric878181(cv.fotos,fd.fotos,x=>x?.id||`${x?.nom||x?.name||""}__${x?.createdAt||x?.data||""}`);
-    next.actes=mergeArrGeneric878181(cv.actes,fd.actes,x=>x?.id||`${x?.titol||""}__${x?.data||""}`);
-    next.agents=mergeArrGeneric878181(cv.agents,fd.agents,x=>x?.id||`${x?.nom||""}__${x?.email||""}__${x?.rol||""}`);
-    if(cv.activeBudgetIdObra && !fd.activeBudgetIdObra) next.activeBudgetIdObra=cv.activeBudgetIdObra;
-    out[oid]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(next):next;
+  // V87.211 · integritat: la còpia completa és l'autoritat. La còpia crítica
+  // només és una reserva si falta l'expedient complet; no es poden unir files
+  // antigues amb les actuals perquè una baixa o un canvi de codi reapareixeria.
+  const primary=full&&typeof full==="object"&&!Array.isArray(full)?full:{};
+  const fallback=core&&typeof core==="object"&&!Array.isArray(core)?core:{};
+  const out={};
+  const ids=new Set([...Object.keys(fallback),...Object.keys(primary)]);
+  ids.forEach(oid=>{
+    const fd=primary[oid];
+    const cv=fallback[oid];
+    const chosen=fd&&typeof fd==="object"&&!Array.isArray(fd)?fd:cv;
+    if(!chosen||typeof chosen!=="object"||Array.isArray(chosen))return;
+    out[oid]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(chosen):chosen;
   });
   return out;
 }
@@ -2216,7 +2208,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.210",
+      version:"V87.211",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -2350,15 +2342,15 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
 
         let clientsMerged=mergeListBy("aco_clients",x=>x?.id||`${x?.nom||x?.rao||""}__${x?.nif||""}`);
         let obresMerged=mergeListBy("aco_obres",x=>x?.id||`${x?.nom||""}__${x?.client||""}`);
-        let odataMerged={};
-        const oCandidates=[
-          ...(buckets.aco_odata||[]).map(x=>({...x,base:"aco_odata"})),
-          ...(buckets.aco_odata_core_v87104||[]).map(x=>({...x,base:"aco_odata_core_v87104"}))
-        ].sort((a,b)=>a.rank-b.rank);
-        oCandidates.forEach(({value})=>{
-          const obj=parseMaybe(value,{});
-          if(obj&&typeof obj==="object"&&!Array.isArray(obj))odataMerged=mergeOdataImport878182(odataMerged,obj);
-        });
+        // V87.211 · una sola font d'autoritat. Un JSON complet porta appState,
+        // que és la fotografia exacta que l'usuari veia en exportar. No unim
+        // còpies antigues perquè això ressuscitava partides i certificacions.
+        const appStateOdata878211=data.appState?.odata;
+        const primaryOdata878211=parseMaybe(latestValue("aco_odata"),{});
+        const coreOdata878211=parseMaybe(latestValue("aco_odata_core_v87104"),{});
+        let odataMerged=(appStateOdata878211&&typeof appStateOdata878211==="object"&&!Array.isArray(appStateOdata878211)&&Object.keys(appStateOdata878211).length)
+          ? appStateOdata878211
+          : mergeOdataCore878104(primaryOdata878211,coreOdata878211);
 
         // V87.183: recuperació visible de tasques. Alguns backups tenen les tasques dins d'odata
         // però l'expedient corresponent no queda a la llista principal o bé queda sota una clau
@@ -2381,7 +2373,10 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
           next.fotos=mergeOneList878183(current.fotos,raw.fotos,x=>x?.id||`${x?.nom||x?.name||""}__${x?.data||x?.createdAt||""}`);
           next.actes=mergeOneList878183(current.actes,raw.actes,x=>x?.id||`${x?.titol||""}__${x?.data||""}`);
           next.agents=mergeOneList878183(current.agents,raw.agents,x=>x?.id||`${x?.nom||""}__${x?.email||""}__${x?.rol||""}`);
-          next.partides=mergeArr878104(current.partides,raw.partides,x=>`${x?.budgetId||"principal"}__${x?.codi||""}__${x?.cap||""}`);
+          // El llistat de partides del registre actual és una fotografia completa.
+          // No es fusiona per capítol+codi: dues descripcions diferents poden haver
+          // compartit codi, i una còpia antiga no pot reaparèixer aquí.
+          next.partides=Array.isArray(raw.partides)?raw.partides:(Array.isArray(current.partides)?current.partides:[]);
           next.pressupostos=mergeArr878104(current.pressupostos,raw.pressupostos,x=>`${x?.budgetId||"principal"}__${x?.id||x?.nom||x?.versio||""}`);
           next.budgetGroups=mergeArr878104(current.budgetGroups,raw.budgetGroups,x=>x?.id||x?.nom||"");
           normalizedOdata878183[targetId]=next;
@@ -2443,6 +2438,11 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
         if(Object.keys(odataMerged).length){
           write("aco_odata_core_v87104",stripHeavy878104(odataMerged));
           write("aco_odata",odataMerged);
+          // Les claus sense espai d'usuari només es conserven als JSON de
+          // seguretat; dins l'app no han de tornar a participar en la càrrega.
+          if(active==="hector"){
+            ["aco_odata","aco_odata_core_v87104","aco_odata__hector"].forEach(k=>{try{localStorage.removeItem(k)}catch{}});
+          }
         }
         Object.keys(buckets).forEach(base=>{
           if(["aco_clients","aco_obres","aco_odata","aco_odata_core_v87104"].includes(base))return;
@@ -2452,7 +2452,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
 
         const taskCount=Object.values(odataMerged||{}).reduce((s,d)=>s+(((d||{}).tasques||[]).length||0),0);
         const pendingTaskCount=Object.values(odataMerged||{}).reduce((s,d)=>s+(((d||{}).tasques||[]).filter(t=>!taskIsClosed878183(t)).length||0),0);
-        setStatus(`Dades importades i fusionades per l’usuari ${active}. Clients: ${clientsMerged.length}. Expedients: ${obresMerged.length}. Tasques totals: ${taskCount}. Pendents visibles a Inici: ${pendingTaskCount}. Blocs escrits: ${count}. Recarregant l’app...`);
+        setStatus(`Dades importades com a còpia autoritzada de l’usuari ${active}. Clients: ${clientsMerged.length}. Expedients: ${obresMerged.length}. Tasques totals: ${taskCount}. Pendents visibles a Inici: ${pendingTaskCount}. Blocs escrits: ${count}. Recarregant l’app...`);
         setTimeout(()=>window.location.reload(),900);
       }catch(err){setStatus("Error important JSON: "+String(err?.message||err))}
     };
@@ -2718,7 +2718,8 @@ useEffect(()=>{
     c=sanitizeClients8785(rawC,(isHector?clients0:[])).map(cleanClientFiscal87102).map(x=>x.id==="socoterm"?{...x,logo:x.logo||SOCOTERM_LOGO}:x);
     o=sanitizeObres8785(rawO,(isHector?obres0:[]));
     d=sanitizeOdata8785(mergeOdataCore878104(rawD,coreD),(isHector?data0:{}));
-    if(isHector) d=recoverBudgetAnnexesLocal8795(d,o,authUser8779);
+    // V87.211: no es recuperen automàticament annexos des de claus antigues.
+    // Una recuperació només pot entrar mitjançant una importació JSON explícita.
   }catch(e){
     console.error("Recuperació segura de login",e);
     backupUserState8785(authUser8779,"load_error",{message:String(e?.message||e)});
@@ -5626,8 +5627,8 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
       return {...d,certificacions:[...(d.certificacions||[]),nova],activeBudgetIdObra:activeBudgetId};
     });
   }
-  function scopedDeleteCert(id){if(!confirm("Eliminar aquesta certificació?"))return;setData(d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))}
-  function scopedUpdateCertDate(id,value){setData(d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))}
+  function scopedDeleteCert(id){if(!confirm("Eliminar aquesta certificació?"))return;setData(d=>({...d,certificacions:(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBudgetId&&c.id===id))}))}
+  function scopedUpdateCertDate(id,value){setData(d=>({...d,certificacions:(d.certificacions||[]).map(c=>(c.budgetId||"principal")===activeBudgetId&&c.id===id?{...c,data:value}:c)}))}
   const totalGlobal=(data.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   const totalActive=(activeData.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   return <div className="stack gestio-obra-v8746 gestio-obra-v8786">
@@ -5646,7 +5647,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
         <input aria-label="Nou nom del pressupost seleccionat" value={renameDraft878123} onChange={e=>setRenameDraft878123(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();commitRenameBudget878123(activeBudgetId,renameDraft878123,"enter");e.currentTarget.blur()} if(e.key==="Escape"){setRenameDraft878123(budgetLabel8786(data,activeBudgetId));e.currentTarget.blur()}}}/>
         <button type="button" className="primary small" onClick={()=>commitRenameBudget878123(activeBudgetId,renameDraft878123,"button")}>Guardar nom</button>
       </details>
-      <div className="budget-selected-actions-v8786 budget-selected-actions-v878123"><span>Seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · {money(totalActive)} / global obra {money(totalGlobal)} · pressupost, certificacions, factures i desviacions filtrades per aquest grup</span><div className="actions-inline"><button type="button" className="secondary small" onClick={fixarBudget8788}>Guardar/fixar</button><button type="button" className="secondary small" onClick={()=>renameBudget(activeBudgetId)}>Renombrar amb finestra</button>{activeBudgetId!=="principal"&&<button type="button" className="danger small" onClick={()=>deleteBudget(activeBudgetId)}>Eliminar annex</button>}</div></div>
+      <div className="budget-selected-actions-v8786 budget-selected-actions-v878123"><span>Pressupost seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · <strong>{money(totalActive)}</strong>. Els altres pressupostos són versions separades i no se sumen a aquest total.</span><div className="actions-inline"><button type="button" className="secondary small" onClick={fixarBudget8788}>Guardar/fixar</button><button type="button" className="secondary small" onClick={()=>renameBudget(activeBudgetId)}>Renombrar amb finestra</button>{activeBudgetId!=="principal"&&<button type="button" className="danger small" onClick={()=>deleteBudget(activeBudgetId)}>Eliminar annex</button>}</div></div>
     </Card></div>
     <div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button><button className={sub==="Gantt"?"active":""} onClick={()=>setSub("Gantt")}>Gantt</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>Rendibilitat / desviacions</button></div>
     {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
@@ -6376,6 +6377,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
   const realPressupostos=(data.pressupostos||[]).filter(p=>!String(p.id||"").startsWith("budget-marker-")&&p.versio!=="Annex");
   const visiblePressupostos=realPressupostos.length?realPressupostos:(data.pressupostos||[]).filter(p=>String(p.id||"").startsWith("budget-marker-")||p.versio==="Annex");
+  const budgetRows878211=Object.values(caps||{}).flat();
+  const duplicateBudgetCodes878211=Object.entries(group(budgetRows878211.map(r=>({...r,_integrityKey878211:`${r.cap||""}__${r.codi||""}`})),"_integrityKey878211")).filter(([,items])=>items.length>1);
+  const savedSelectedTotal878211=Number(totalActive)||0;
+  const integrityDifference878211=total-savedSelectedTotal878211;
+  const integrityOk878211=editBudget8760b||(!duplicateBudgetCodes878211.length&&Math.abs(integrityDifference878211)<0.01);
 
   return <div className="stack">
     {budgetMeasureTarget878194&&<MedicioModal8780 row={(caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}} contextLabel="PRESSUPOST" initial={((caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}).pressupostMesures||[]} close={()=>setBudgetMeasureTarget878194(null)} save={saveBudgetMeasures878194}/>} 
@@ -6383,18 +6389,19 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     <details className="budget-origin-drawer-v87196">
       <summary><span>Origen, importació i altres pressupostos</span><small>Obre només quan vulguis importar, començar de zero o canviar de pressupost</small></summary>
       <div className="budget-origin-content-v87196">
-        {budgetGroups?.length>0&&<label><span>Pressupost actiu</span><select value={activeBudgetId} onChange={e=>selectBudget?.(e.target.value)}>{budgetGroups.map(g=><option key={g.id} value={g.id}>{g.nom}</option>)}</select><small>{money(totalActive)} seleccionat · {money(totalGlobal)} global</small></label>}
+        {budgetGroups?.length>0&&<label><span>Pressupost actiu</span><select value={activeBudgetId} onChange={e=>selectBudget?.(e.target.value)}>{budgetGroups.map(g=><option key={g.id} value={g.id}>{g.nom}</option>)}</select><small>{money(totalActive)} · només el pressupost seleccionat</small></label>}
         <div className="budget-origin-actions-v87196"><button type="button" className="secondary" onClick={startManualBudget87115}>+ Manual des de zero</button><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label>{budgetGroups?.length>0&&<><button type="button" className="secondary" onClick={()=>addBudget?.("Imprevist / sobrecost")}>+ Imprevist</button><button type="button" className="secondary" onClick={()=>addBudget?.("Modificat aprovat")}>+ Annex</button></>}</div>
         <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura recomanada: A = codi, B = unitat, C = concepte/descripció, E = quantitat, F = preu unitari i G = total.</p></details>
       </div>
     </details>
 
-    <Card title="Pressupost obra per capítols" action={<span className="budget-grand-total budget-total-right-v87196"><small>Total pressupost</small><b>{money(total)}</b></span>}>
+    <Card title="Pressupost obra per capítols" action={<div className="actions-inline budget-direct-edit-v87211"><span className="budget-grand-total budget-total-right-v87196"><small>Total pressupost seleccionat</small><b>{money(total)}</b></span>{!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}>Editar pressupost</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar</button></>}</div>}>
       {quickMode&&<div className={`rapid-budget-edit-toolbar-v87204 ${editBudget8760b?"editing":""}`}><div><b>{editBudget8760b?"Edició del pressupost ràpid activada":"Vols modificar quantitats, preus o conceptes?"}</b><span>{editBudget8760b?"Tots els capítols estan oberts i els camps principals són editables directament.":"Prem el botó blau. No cal buscar l’opció dins de cap desplegable."}</span></div><div>{!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}>Editar quantitats i preus</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar</button></>}</div></div>}
       <details className="budget-actions-drawer-v87196">
         <summary>Què vols fer amb el pressupost?</summary>
         <div className="budget-actions-grid-v87196">{!editBudget8760b&&<button type="button" className="primary" onClick={beginBudgetEdit878176}>Editar pressupost</button>}{editBudget8760b&&<><label className="secondary upload-label">Importar descompostos<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar edició</button></>}<button type="button" className="secondary" onClick={()=>setLibraryOpen87115(v=>!v)}>Obrir llibreria</button><button type="button" className="secondary" onClick={saveBudgetDocument878179}>Guardar a Documents</button><button type="button" className="primary" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button><button type="button" className="secondary" onClick={exportBudgetExcel878180}>Exportar Excel</button><button className="secondary" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar email</button></div>
       </details>
+      <div className={`module-note-v8738 budget-integrity-v87211 ${integrityOk878211?"ok":"error"}`}><b>{integrityOk878211?"Control de suma correcte":"Atenció: pressupost incoherent"}</b><span>{budgetRows878211.length} partides · {Object.keys(caps||{}).length} capítols · suma visible {money(total)}{editBudget8760b?" · edició encara no guardada":` · diferència amb les dades guardades ${money(integrityDifference878211)}`}{duplicateBudgetCodes878211.length?` · ${duplicateBudgetCodes878211.length} codi/s repetit/s dins del mateix capítol`:" · cap codi repetit dins del mateix capítol"}.</span></div>
       <div className="module-note-v8738 budget-measure-note-v878194"><b>Quantitat directa o amidaments detallats.</b><span>La quantitat importada/manual es pot editar directament. En mode edició, el botó ∑ Amidaments permet introduir línies i aplicar-ne automàticament la suma.</span></div>
       <label className="budget-work-select-v87196"><span>Vista de treball</span><select value={budgetWorkTab878180} onChange={e=>setBudgetWorkTab878180(e.target.value)}><option>Pressupost</option><option>Validar descompostos</option><option>Exportar</option></select></label>
     <div className={editBudget8760b?"edit-warning-v8760b":"view-warning-v8760b"}>{editBudget8760b?"Mode edició actiu. Guarda els canvis quan acabis.":"Mode consulta. Clica Editar per modificar capítols o partides."}</div>
@@ -6978,6 +6985,8 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
     <div className="actions-inline">
       <button className="secondary" onClick={()=>{setEditing(!editing);setCertMode8711("emplenar")}}>{editing?"Tancar edició":`Editar amidaments CERT. ${certNum}`}</button>
       <button className="primary" onClick={guardarAmidaments}><Save/> Guardar amidaments</button>
+      <button type="button" className="primary" onClick={()=>{setExtraOpen878125(v=>!v);setCertMode8711("emplenar")}}>+ Partida extra / provisió</button>
+      <button type="button" className="secondary" onClick={()=>{openAdminMonthlyNew878133();setCertMode8711("emplenar")}}>+ Hores / administració</button>
       <div className="cert-global-actions-v878134"><button type="button" className="secondary" onClick={()=>setCertGlobalActionsOpen878134(v=>!v)}>Accions generals</button>{certGlobalActionsOpen878134&&<div className="cert-global-actions-panel-v878134"><button type="button" onClick={()=>{setExtraOpen878125(v=>!v);setCertGlobalActionsOpen878134(false)}}>Crear partida extra / provisió</button><button type="button" onClick={()=>{openAdminMonthlyNew878133();setCertGlobalActionsOpen878134(false)}}>Quadre administració sense partida</button>{savedAdmin878132&&<button type="button" onClick={()=>printSavedAdmin878132(savedAdmin878132)}>Imprimir quadre admin. guardat</button>}{hiddenCount878132>0&&<button type="button" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar retirades":"Mostrar retirades"} ({hiddenCount878132})</button>}</div>}</div>
       <label className="check-print-v8780"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Imprimir línies de medició</label>
       <button className="primary" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*(+r.pu||0),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Imprimir / PDF</button>
@@ -7415,7 +7424,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.210.0",
+    app_version:"87.211.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

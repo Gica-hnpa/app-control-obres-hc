@@ -1,4 +1,13 @@
-# APP Control d’Obres V87.210
+# APP Control d’Obres V87.211
+
+## Integritat de pressupostos i certificacions V87.211
+
+- Cada expedient utilitza com a font autoritzada el pressupost guardat a la còpia principal; ja no fusiona automàticament còpies antigues o de recuperació.
+- Els pressupostos inicials, principals i annexos es mantenen separats i no se sumen en un total global ambigu.
+- Abans d’importar una còpia JSON, les dades principals prevalen i s’eliminen les claus antigues que podien tornar a injectar partides.
+- El pressupost mostra un control visible de suma, nombre de partides, capítols i codis repetits.
+- `Editar pressupost`, `+ Partida extra / provisió` i `+ Hores / administració` són accions directes i visibles.
+- S’inclou una còpia reparada de les dades del 22/07/2026, sense perdre les 8 certificacions de l’expedient DAVID FUS.
 
 ## Promotor independent i accions clares V87.210
 

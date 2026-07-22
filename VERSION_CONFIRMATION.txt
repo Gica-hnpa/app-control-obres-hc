@@ -1,7 +1,7 @@
 APP CONTROL D'OBRES
-VERSIÓ: V87.210 - PROMOTOR INDEPENDENT I ACCIONS CLARES
-BASE: V87.209 - SELECCIÓ MÚLTIPLE I UNITATS VISIBLES
+VERSIÓ: V87.211 - INTEGRITAT DE PRESSUPOSTOS I CERTIFICACIONS
+BASE: V87.210 - PROMOTOR INDEPENDENT I ACCIONS CLARES
 
 La V87.190 queda descartada perquè bloquejava l'app.
 Ús local amb Vite: la carpeta dist no és necessària.
-Build Vite verificat el 21/07/2026.
+Build Vite verificat el 22/07/2026.
