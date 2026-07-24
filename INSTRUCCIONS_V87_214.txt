@@ -1,0 +1,24 @@
+V87.214 · BLINDATGE ECONÒMIC I RECUPERACIÓ AUTOMÀTICA
+
+1. Descomprimeix la carpeta completa de la V87.214.
+2. Obre-la de la mateixa manera que la versió anterior, amb el mateix navegador,
+   perfil d'usuari i adreça local.
+3. NO importis cap JSON: aquesta versió utilitza les dades actuals del navegador.
+4. Entra amb l'usuari Héctor i obre:
+   2025-002-ALT-BRAVA-OBRADAVIDFUS
+5. Si detecta la pèrdua massiva d'imports, apareix un avís verd:
+   «Dades econòmiques recuperades».
+
+QUÈ FA AUTOMÀTICAMENT
+
+- Recupera quantitats i preus unitaris de les partides conegudes que han passat
+  massivament a zero.
+- No reemplaça l'expedient i no toca les línies de medició noves de la
+  certificació 8.
+- Manté separats el pressupost principal, l'inicial i els annexos.
+- Bloqueja un guardat si intenta deixar a zero totes les quantitats, tots els
+  preus o tot el total d'un pressupost amb dades.
+- Desa una còpia econòmica d'emergència al navegador abans de bloquejar el canvi.
+
+Les partides noves de la certificació 8 que no existien a la base estable es
+conserven exactament com estan; la versió no inventa imports que no coneix.

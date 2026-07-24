@@ -1,7 +1,7 @@
 APP CONTROL D'OBRES
-VERSIÓ: V87.212 - CERTIFICACIONS RECUPERADES
-BASE: V87.211 - INTEGRITAT DE PRESSUPOSTOS I CERTIFICACIONS
+VERSIÓ: V87.214 - BLINDATGE ECONÒMIC I RECUPERACIÓ AUTOMÀTICA
+BASE: V87.213 - INTERFÍCIE SIMPLE I DADES ESTABLES
 
 La V87.190 queda descartada perquè bloquejava l'app.
 Ús local amb Vite: la carpeta dist no és necessària.
-Build Vite verificat el 22/07/2026.
+Build Vite verificat el 24/07/2026.

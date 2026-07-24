@@ -1,4 +1,23 @@
-# APP Control d’Obres V87.212
+# APP Control d’Obres V87.214
+
+## Blindatge econòmic i recuperació automàtica V87.214
+
+- Detecta automàticament la pèrdua massiva de quantitats o preus del pressupost de DAVID FUS i recupera només aquests camps des de la base estable.
+- Conserva les línies de medició, quantitats i dades noves de la certificació 8: no cal importar cap JSON antic.
+- Pressupost i certificacions treballen sempre amb el pressupost seleccionat; editar-ne un ja no pot substituir ni modificar els altres.
+- Guardar un pressupost actualitza només les seves partides i conserva íntegrament el pressupost inicial i els annexos.
+- Guardar una quantitat certificada ja no elimina les línies de medició que la justifiquen.
+- La protecció d’integritat bloqueja qualsevol operació que intenti convertir de cop un pressupost complet a zero.
+
+## Interfície simple i coherent V87.213
+
+- Totes les pantalles començaran a seguir el mateix patró: una vista, una acció principal i un únic menú `Més accions`.
+- Certificacions elimina els dos selectors duplicats i la filera de botons; ara mostra `Resum general` o `Partides de la certificació`.
+- `Editar certificació` és l’acció principal. Guardar i cancel·lar només apareixen durant l’edició.
+- Extres/provisions i administració passen a finestres superposades.
+- Pressupost manté `Editar pressupost` com a única acció principal i agrupa PDF, Documents, Excel, email i llibreria.
+- Els controls de suma correctes i les explicacions permanents s’amaguen; només apareix una alerta si existeix una incoherència real.
+- El menú d’accions es converteix en un panell inferior al mòbil.
 
 ## Certificacions recuperades V87.212
 
