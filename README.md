@@ -1,4 +1,14 @@
-# APP Control d’Obres V87.215
+# APP Control d’Obres V87.216
+
+## Certificació simple i dos formats d’impressió V87.216
+
+- Permet escollir entre el document acumulat `A origen + deduccions` i `Només la certificació actual`.
+- El segon format imprimeix exclusivament les partides amb quantitat a la certificació seleccionada, agrupades per capítol.
+- El resum de l’obra mostra totes les certificacions en una llista pròpia amb desplaçament vertical.
+- El quadre resum de certificacions conserva totes les columnes i incorpora desplaçament horitzontal.
+- Cada partida té una única finestra `Fitxa / accions` amb codi, capítol, unitat, preu, concepte, descripció, amidaments i administració.
+- Obrir les línies d’amidament activa l’edició automàticament i torna a la mateixa certificació sense obligar a tancar altres modes.
+- Al mòbil, la barra d’accions i la fitxa passen a una disposició compacta.
 
 ## Certificacions recuperades V87.215
 

@@ -1,0 +1,32 @@
+V87.216 · CERTIFICACIÓ SIMPLE
+
+1. Descomprimeix la carpeta completa de la V87.216.
+2. Obre-la de la mateixa manera que la versió anterior, amb el mateix navegador,
+   perfil d'usuari i adreça local.
+3. NO importis cap JSON: aquesta versió utilitza les dades actuals del navegador.
+4. Entra amb l'usuari Héctor i obre:
+   2025-002-ALT-BRAVA-OBRADAVIDFUS
+5. Entra a Certificacions d'obra. Si detecta la pèrdua massiva, apareix l'avís
+   verd «Certificacions recuperades».
+
+6. A la Certificació 8, tria el camp «Document»:
+   - «A origen + deduccions» manté el format acumulat.
+   - «Només la Cert. 8» imprimeix només les partides d'aquesta certificació.
+
+7. Prem «Fitxa / accions» dins una partida per modificar-la o obrir-ne les
+   línies d'amidament sense sortir de la certificació.
+
+QUÈ FA AUTOMÀTICAMENT
+
+- Converteix correctament els valors locals com 4.000,00 a números reals.
+- Recupera les quantitats certificades conegudes de les certificacions 1 a 8
+  quan detecta una caiguda massiva a zero.
+- No reemplaça l'expedient ni toca les línies de medició noves de la
+  certificació 8. Aquestes dades actuals sempre tenen prioritat.
+- Manté separats el pressupost principal, l'inicial i els annexos.
+- Bloqueja un guardat si intenta deixar a zero totes les quantitats, tots els
+  preus, el total del pressupost o totes les certificacions.
+- Desa una còpia econòmica d'emergència al navegador abans de bloquejar el canvi.
+
+Les partides noves de la certificació 8 que no existien a la base estable es
+conserven exactament com estan; la versió no inventa imports que no coneix.

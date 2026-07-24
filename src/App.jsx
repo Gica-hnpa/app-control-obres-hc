@@ -2368,7 +2368,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.215",
+      version:"V87.216",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -5465,7 +5465,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.215",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.216",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6196,6 +6196,7 @@ function certImportResum878126(c){const n=+c.numero||0;const calc=(data.partides
 const certMapResum878137=new Map();
 certs.forEach(c=>{const key=String(c.numero||c.id||'');const t=Math.max(clampActivityTime878134(c.updatedAt),clampActivityTime878134(c.createdAt),clampActivityTime878134(c.data),timeValue8783(c.id));const prev=certMapResum878137.get(key);if(!prev||t>prev.t)certMapResum878137.set(key,{c,t});});
 const certsUnique=[...certMapResum878137.values()].sort((a,b)=>(b.t||0)-(a.t||0)||(+b.c.numero||0)-(+a.c.numero||0));
+const certsByNumber87216=[...certMapResum878137.values()].sort((a,b)=>(+b.c.numero||0)-(+a.c.numero||0));
 const lastCertByNum=[...certMapResum878137.values()].sort((a,b)=>(+b.c.numero||0)-(+a.c.numero||0))[0];
 let latest=[];
 const addLatest=(tipus,txt,time,detail='')=>{if(time&&time<=now+60*60*1000)latest.push({tipus,txt,time,detail})};
@@ -6219,6 +6220,7 @@ return <div className="resum-dashboard-v8748 resum-dashboard-v878137">
       <div className="obra-today-card-v878137 amber"><small>Feines pendents</small><b>{pendingTasks.length}</b><span>{pendingTasks[0]?pendingTasks[0].text||'Tasca pendent':'Cap pendent'}</span></div>
       <div className="obra-today-card-v878137"><small>Temps</small><b>{totalHores.toFixed(2)} h</b><span>{money(costTemps)} valor intern</span></div>
     </div>
+    <Card title={`Certificacions de l’obra · ${certsByNumber87216.length}`}><div className="resum-cert-list-v87216">{certsByNumber87216.length===0?<Empty text="Aquesta obra encara no té certificacions."/>:certsByNumber87216.map(({c,t})=><div className="resum-cert-row-v87216" key={c.id||c.numero}><b>Certificació {c.numero}</b><span>{fmtDate8714(c.data)||"Sense data"}</span><strong>{money(certImportResum878126(c))}</strong><em>{c.estat||"Guardada"}</em></div>)}</div></Card>
     <Card title="Darreres actuacions reals"><div className="activity-list-v8748 activity-list-v878137">{latest.length===0&&<div className="activity-empty-v8738"><b>Sense activitat recent</b><span>Les actes, certificacions, factures i temps apareixeran aquí quan siguin reals.</span></div>}{latest.map((x,i)=><div className="activity-row-v8748" key={`${x.tipus}-${x.time}-${i}`}><strong>{x.tipus}</strong><span>{x.txt}</span><em>{fmtActivityDate8783(x.time)}</em></div>)}</div></Card>
     <Card title="Feines pendents de l’expedient"><div className="task-home-list-v878137 compact">{pendingTasks.length===0?<Empty text="No hi ha tasques pendents en aquest expedient."/>:pendingTasks.slice(0,5).map(t=><div key={t.id} className={`task-home-row-v878137 ${taskStatusTone878137(t.estat)}`}><div className="task-main-v878137"><b>{t.text||'Tasca pendent'}</b><span>{t.estat||'Pendent'} · {t.data?fmtAppDate8748(t.data):'Sense data'} · {t.prioritat||'Normal'}</span></div></div>)}</div></Card>
   </section>
@@ -7055,19 +7057,50 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
   </Modal>
 }
 
+function CertPartidaModal87216({row,certNum,capOptions=[],editing,close,saveMeta,openMesures,openAdmin,remove,restore,hidden}){
+  const[f,setF]=useState(()=>({codi:row?.codi||"",cap:row?.cap||"",ut:row?.ut||"",concepte:row?.concepte||"",desc:row?.desc||"",pu:String(row?.pu??"")}));
+  const ch=(k,v)=>setF(x=>({...x,[k]:v}));
+  function save(){
+    saveMeta?.(row,{codi:String(f.codi||"").trim(),cap:String(f.cap||"").trim(),ut:String(f.ut||"").trim(),concepte:String(f.concepte||"").trim(),desc:String(f.desc||"").trim(),pu:parseNum8770(f.pu)});
+    close?.();
+  }
+  return <Modal title={`Partida ${row?.codi||""} · Certificació ${certNum}`} close={close}>
+    <div className="cert-partida-modal-v87216">
+      {!editing&&<div className="module-note-v8738"><b>Mode consulta</b><span>Pots veure tota la partida. Per modificar dades, activa “Editar certificació”.</span></div>}
+      <div className="cert-partida-fields-v87216">
+        <label><span>Codi</span><input value={f.codi} disabled={!editing} onChange={e=>ch("codi",e.target.value)}/></label>
+        <label><span>Unitat</span><input value={f.ut} disabled={!editing} onChange={e=>ch("ut",e.target.value)}/></label>
+        <label><span>Preu unitari</span><input inputMode="decimal" value={f.pu} disabled={!editing} onChange={e=>ch("pu",e.target.value)}/></label>
+        <label className="wide"><span>Capítol</span><select value={f.cap} disabled={!editing} onChange={e=>ch("cap",e.target.value)}><option value={f.cap}>{f.cap||"Sense capítol"}</option>{capOptions.filter(c=>c!==f.cap).map(c=><option key={c} value={c}>{c}</option>)}</select></label>
+        <label className="wide"><span>Concepte</span><input value={f.concepte} disabled={!editing} onChange={e=>ch("concepte",e.target.value)}/></label>
+        <label className="wide"><span>Descripció completa</span><textarea value={f.desc} disabled={!editing} onChange={e=>ch("desc",e.target.value)} placeholder="Descripció llarga de la partida..."/></label>
+      </div>
+      <div className="cert-partida-quick-v87216">
+        <button type="button" className="secondary" onClick={()=>openMesures?.(row)}>Línies d’amidament</button>
+        <button type="button" className="secondary" onClick={()=>openAdmin?.(row)}>Hores / administració</button>
+        {hidden&&<button type="button" className="secondary" onClick={()=>{restore?.(row);close?.()}}>Recuperar a la certificació</button>}
+      </div>
+    </div>
+    <div className="modal-actions">
+      {editing&&<button type="button" className="danger" onClick={()=>{remove?.(row);close?.()}}>{(row?.noPressupost||row?.createdFromCert||row?.adminMonthlyAuto)?"Eliminar partida":"Treure d’aquesta certificació"}</button>}
+      <button type="button" className="secondary" onClick={close}>Tancar</button>
+      {editing&&<button type="button" className="primary" onClick={save}>Guardar partida</button>}
+    </div>
+  </Modal>
+}
+
 function Cert({data,setData,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
 const[editing,setEditing]=useState(false);
 const[draft,setDraft]=useState({});
-const[certDescOpen875,setCertDescOpen875]=useState({});
 const[certCapsOpen879,setCertCapsOpen879]=useState({});
 const[certMode8711,setCertMode8711]=useState("resum");
 const[medicioTarget8780,setMedicioTarget8780]=useState(null);
 const[adminTarget878126,setAdminTarget878126]=useState(null);
 const[adminMonthlyOpen878127,setAdminMonthlyOpen878127]=useState(null);
-const[certActionOpen878133,setCertActionOpen878133]=useState({});
-const[certGlobalActionsOpen878134,setCertGlobalActionsOpen878134]=useState(false);
+const[partidaPanel87216,setPartidaPanel87216]=useState(null);
+const[certPrintMode87216,setCertPrintMode87216]=useState("origen");
 const[includeMesures8780,setIncludeMesures8780]=useState(false);
 const[showHiddenCert878132,setShowHiddenCert878132]=useState(false);
 const[extraOpen878125,setExtraOpen878125]=useState(false);
@@ -7106,6 +7139,11 @@ function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qD
 function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,n))*parseNum8770(r.pu),0)}
 function certListTotal878215(c){const calculated=rows.reduce((sum,row)=>sum+qFor(row,+c.numero)*parseNum8770(row.pu),0);return Math.abs(calculated)>0.000001?calculated:parseNum8770(c.import)}
 function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*parseNum8770(r.pu),0)}
+function openCertPdf87216(){
+  const allPrintRows=sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*parseNum8770(r.pu),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]}));
+  const printRows=certPrintMode87216==="actual"?allPrintRows.filter(r=>Math.abs(+r.qAct||0)>0.000001):allPrintRows;
+  openDoc({type:"certificacio",autoPrint:false,printMode:certPrintMode87216,title:certPrintMode87216==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum}`,subtitle:certPrintMode87216==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
+}
 function commitOne(codi,v){let val=parseNum8770(v);if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
 function updatePartidaMeta878132(row,patch){
@@ -7303,17 +7341,19 @@ function openAdminMonthlyForRow878133(r){
 function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMonthlyByNum||{})[String(certNum)]||{});}
 return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127}/>}
 {medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>}
+{partidaPanel87216&&<CertPartidaModal87216 row={partidaPanel87216} certNum={certNum} capOptions={capNames878125()} editing={editing} close={()=>setPartidaPanel87216(null)} saveMeta={updatePartidaMeta878132} openMesures={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);setMedicioTarget8780(r)}} openAdmin={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);openAdminMonthlyForRow878133(r)}} remove={deleteCertLine878131} restore={restoreCertLine878132} hidden={isCertHidden878132(partidaPanel87216,certNum)}/>}
 <Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
-  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={toInputDate8743(dateVal8721(c))} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(certListTotal878215(c))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
+  <div className="version-list cert-version-list-v87216">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={toInputDate8743(dateVal8721(c))} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(certListTotal878215(c))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
 <Card title={`Certificació ${certNum}`} action={<div className="cert-selected-total-v87213"><small>{prevNum?`Anterior: Cert. ${prevNum}`:"Primera certificació"}</small><b>{money(certTotal(certNum))}</b></div>}>
   <div className="cert-simple-toolbar-v87213">
     <label><span>Vista</span><select value={certMode8711} onChange={e=>setCertMode8711(e.target.value)}><option value="resum">Resum general</option><option value="emplenar">Partides de la Cert. {certNum}</option></select></label>
+    <label><span>Document</span><select value={certPrintMode87216} onChange={e=>setCertPrintMode87216(e.target.value)}><option value="origen">A origen + deduccions</option><option value="actual">Només la Cert. {certNum}</option></select></label>
     {!editing?<button type="button" className="primary" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}>Editar certificació</button>:<><button type="button" className="primary" onClick={guardarAmidaments}><Save/> Guardar canvis</button><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>Cancel·lar</button></>}
+    <button type="button" className="secondary cert-pdf-main-v87216" onClick={openCertPdf87216}>Previsualitzar / PDF</button>
     <ActionMenu87213 label="Més accions">
       <button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}>Afegir partida extra / provisió</button>
       <button type="button" onClick={()=>{openAdminMonthlyNew878133();setCertMode8711("emplenar")}}>Afegir hores / administració</button>
-      <button type="button" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*parseNum8770(r.pu),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Previsualitzar / PDF</button>
       <label className="action-check-v87213"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Incloure línies d’amidament al PDF</label>
       {savedAdmin878132&&<button type="button" onClick={()=>printSavedAdmin878132(savedAdmin878132)}>Imprimir administració guardada</button>}
       {hiddenCount878132>0&&<button type="button" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar partides retirades":"Mostrar partides retirades"} ({hiddenCount878132})</button>}
@@ -7342,9 +7382,9 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
       {isOpen&&items.map((r,rowIdx)=>{
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*parseNum8770(r.pu), ia=qa*parseNum8770(r.pu), qo=qOrigin(r), io=qo*parseNum8770(r.pu);
         return <div className="cert-grid-v69 row" key={r.id||`${cap}-${rowIdx}`}>
-          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877 cert-concept-v878133"><div className="concept-line-v877"><span>{r.concepte}</span><button type="button" className="secondary small cert-actions-btn-v878133" onClick={()=>setCertActionOpen878133(o=>({...o,[r.id||r.codi]:!o[r.id||r.codi]}))}>Accions</button></div>{certActionOpen878133[r.id||r.codi]&&<div className="cert-actions-panel-v878133">{r.desc&&<button type="button" className="secondary small" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar descripció":"Veure descripció"}</button>}{editing&&<button type="button" className="secondary small" onClick={()=>openAdminMonthlyForRow878133(r)}>Quadre administració / justificar</button>}{editing&&<button type="button" className="danger small" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar partida":"Treure certificació"}</button>}{editing&&isCertHidden878132(r,certNum)&&<button type="button" className="secondary small" onClick={()=>restoreCertLine878132(r)}>Recuperar a certificació</button>}{editing&&<div className="cert-reorder-controls-v878132 cert-reorder-controls-v878133"><label>Codi <input defaultValue={r.codi||""} onBlur={e=>updatePartidaMeta878132(r,{codi:e.target.value})} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/></label><label>Capítol <select value={r.cap||""} onChange={e=>updatePartidaMeta878132(r,{cap:e.target.value})}>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}</select></label></div>}</div>}{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*parseNum8770(r.pu))}</div>
+          <div>{r.codi}</div><div className="cert-unit-v87216">{r.ut}</div><div className="concept cert-concept-v877 cert-concept-v87216"><div className="concept-line-v877"><span>{r.concepte}</span><button type="button" className="secondary small cert-actions-btn-v878133" onClick={()=>setPartidaPanel87216(r)}>Fitxa / accions</button></div>{r.desc&&<small className="cert-desc-hint-v87216">Descripció completa disponible a la fitxa</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*parseNum8770(r.pu))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
-          <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
+          <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title="Línies d’amidament" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:<><span>{qty2(qFor(r,certNum))}</span><button type="button" className="measure-btn-v8780 cert-measure-view-v87216" title="Obrir línies d’amidament" onClick={()=>{setEditing(true);setMedicioTarget8780(r)}}>∑</button></>}</div></div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
           <div className={qo>0?"origin-fill":""}>{qty2(qo)}</div><div className={qo>0?"origin-fill":""}>{pct(pc(qo,r))}</div><div className={qo>0?"origin-fill":""}>{money(io)}</div>
         </div>
@@ -7375,7 +7415,7 @@ let capRows=Object.entries(caps).map(([cap,items])=>{
 let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
 let totalCerts=certs.map(c=>Math.max(rows.reduce((s,r)=>s+impFor(r,+c.numero),0),Number(c.import)||0));
 let totalExec=totalCerts.reduce((s,v)=>s+v,0);
-return <div className="cert-resum-v8717">
+return <div className="cert-resum-scroll-v87216"><div className="cert-resum-v8717" style={{"--cert-count":certs.length,"--cert-cols":certs.length}}>
   <div className="cert-resum-row-v8717 head">
     <span className="cap">CAPÍTOL</span><span className="pres">PRESSUPOST</span>{certs.map(c=><span className="cert" key={c.id}>CERT. {c.numero}</span>)}<span className="total">TOTAL CERT.</span><span className="pct">% EXECUTAT</span><span className="pendent">IMPORT PENDENT</span>
   </div>
@@ -7385,7 +7425,7 @@ return <div className="cert-resum-v8717">
   <div className="cert-resum-row-v8717 total-row">
     <b className="cap">TOTAL</b><span className="pres">{money(totalPres)}</span>{totalCerts.map((v,i)=><span className="cert" key={i}>{money(v)}</span>)}<strong className="total">{money(totalExec)}</strong><ProgressV69 v={totalPres?totalExec/totalPres*100:0}/><span className="pendent">{money(Math.max(totalPres-totalExec,0))}</span>
   </div>
-</div>
+</div></div>
 }
 function ProgressV69({v}){return <div className="progress-v69"><div><i style={{width:`${Math.min(v,100)}%`}}/></div><em>{pct(v)}</em></div>}
 
@@ -7752,7 +7792,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.215.0",
+    app_version:"87.216.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -8321,9 +8361,26 @@ function issuerFiscalName87100(client){return cleanFiscalName87101(client)}
 function issuerLogoHtml87100(client){const src=client?.logo||"";return src?`<img class="brand-logo-v87100" src="${escHtmlV8772(src)}"/>`:`<div class="brand-logo-placeholder-v87100">LOGO</div>`}
 function issuerFiscalBlockHtml87100(client){const name=issuerFiscalName87100(client);const nif=(client?.nif||"").trim();const nifLine=nif&&!sameFiscalValue87101(nif,name)?`<span>NIF/CIF: ${escHtmlV8772(nif)}</span>`:"";return `<div class="issuer-v87100"><div class="issuer-logo-box-v87100">${issuerLogoHtml87100(client)}</div><div><b>${escHtmlV8772(name)}</b>${nifLine}<span>${escHtmlV8772(client?.adreca||"")}</span><span>${escHtmlV8772([client?.codiPostal,client?.poblacio,client?.provincia?`(${client.provincia})`:""].filter(Boolean).join(" "))}</span><span>${escHtmlV8772(client?.email||"")}${client?.telefon?` · ${escHtmlV8772(client.telefon)}`:""}</span></div></div>`}
 
+function certCurrentPrintHtml87216(doc,obra,client,rows){
+  const certNum=+doc.certNum||1;
+  const current=sortPartides878132(rows||[]).filter(r=>Math.abs(+r.qAct||0)>0.000001);
+  const total=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
+  let lastCap="__none__";
+  const body=current.map(r=>{
+    const cap=r.cap||"PRESSUPOST IMPORTAT";
+    const show=cap!==lastCap;lastCap=cap;
+    const measures=doc.includeMesures&&(r.mesures||[]).length?`<tr class="measure"><td></td><td colspan="5"><b>Línies d’amidament</b><table><thead><tr><th>Concepte</th><th>Ut.</th><th>Llargada</th><th>Amplada</th><th>Alçada</th><th>Total</th></tr></thead><tbody>${r.mesures.map(m=>`<tr><td>${escHtmlV8772(m.concepte||"")}</td><td>${escHtmlV8772(m.unitats||"")}</td><td>${escHtmlV8772(m.llargada||"")}</td><td>${escHtmlV8772(m.amplada||"")}</td><td>${escHtmlV8772(m.alcada||"")}</td><td>${qty2(medicioCalc8780(m,r.ut))}</td></tr>`).join("")}</tbody></table></td></tr>`:"";
+    return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qAct)}</td><td>${money(r.pu)}</td><td>${money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr>${measures}`;
+  }).join("")||`<tr><td colspan="6" class="empty">No hi ha partides certificades en aquesta certificació.</td></tr>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||`Certificació ${certNum}`)}</title><style>
+  *{box-sizing:border-box}body{margin:0;background:#fff;color:#0f172a;font-family:Arial,Helvetica,sans-serif;font-size:10px}@page{size:A4 portrait;margin:15mm 13mm}.page{width:184mm;min-height:267mm}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}.head b,.head span{display:block}.head span{color:#475569;margin-top:2px}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8}h1{font-size:19px;color:#0f2d5c;margin:0 0 4px}.sub{color:#475569;margin:0 0 12px}.mode{display:flex;justify-content:space-between;gap:10px;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:9px;margin:0 0 12px}.mode b{color:#166534;font-size:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #94a3b8;padding:4px;text-align:right;vertical-align:top;font-variant-numeric:tabular-nums}th{background:#dbeafe}.concept{text-align:left;white-space:normal;overflow-wrap:anywhere}.cap td{background:#9fbad4;text-align:left;font-weight:900}.measure td{background:#f8fafc;text-align:left}.measure table{margin-top:4px;font-size:8px}.empty{text-align:left;color:#64748b}.total{margin:9mm 0 0 auto;width:80mm;border:2px solid #0f2d5c;padding:9px;display:flex;justify-content:space-between;font-size:14px}.total b{color:#0f2d5c}@media screen{body{background:#e5e7eb;padding:16px}.page{background:#fff;padding:10mm;margin:auto;box-shadow:0 2px 12px #94a3b8}}@media print{.page{padding:0}}
+  </style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div><b>Client / promotor</b><span>${fiscalClientBlock878134(obra,client,doc.agents||[])}</span></div></div><h1>${escHtmlV8772(doc.title||`CERTIFICACIÓ ${certNum}`)}</h1><p class="sub">${doc.data?`Data: ${escHtmlV8772(doc.data)} · `:""}${escHtmlV8772(doc.subtitle||"")}</p><div class="mode"><b>Només aquesta certificació</b><span>${current.length} partides amb quantitat a la Cert. ${certNum}</span></div><table><colgroup><col style="width:17mm"><col style="width:8mm"><col><col style="width:20mm"><col style="width:23mm"><col style="width:25mm"></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quant. Cert. ${certNum}</th><th>€/ut</th><th>Import</th></tr></thead><tbody>${body}</tbody></table><div class="total"><span>TOTAL CERT. ${certNum}</span><b>${money(total)}</b></div></section></body></html>`;
+}
+
 function certPrintHtmlV8772(doc,obra,client){
   const rows=sortPartides878132(doc.rows||[]);
   const certNum=+doc.certNum||1;
+  if(doc.printMode==="actual")return certCurrentPrintHtml87216(doc,obra,client,rows);
   const originRows=originRowsFromDoc8794(rows,certNum);
   const fin=certFinancialSummaryFromDoc8794(rows,certNum,doc);
   const total=fin.actual;
@@ -8385,6 +8442,16 @@ function certPrintHtmlV8772(doc,obra,client){
 function CertPreviewV8772({doc}){
   const rows=doc.rows||[];
   const certNum=+doc.certNum||1;
+  if(doc.printMode==="actual"){
+    const current=sortPartides878132(rows).filter(r=>Math.abs(+r.qAct||0)>0.000001);
+    const total=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
+    let lastCap="__none__";
+    return <div className="cert-preview-v8772 cert-preview-current-v87216">
+      <div className="cert-preview-head-v8772"><h1>{doc.title}</h1><p>{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p><b>{money(total)}</b><small>Total Certificació {certNum}</small></div>
+      <div className="cert-preview-note-v8772 current-v87216"><b>Només aquesta certificació.</b><span>Es mostren exclusivament les partides amb quantitat introduïda a la Certificació {certNum}; no s’inclouen les certificacions anteriors.</span></div>
+      <div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772 stable-num-table-v8783"><thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Quant. Cert. {certNum}</th><th>€/ut</th><th>Import</th></tr></thead><tbody>{current.length===0?<tr><td colSpan="6">No hi ha partides certificades en aquesta certificació.</td></tr>:current.map(r=>{const cap=r.cap||"PRESSUPOST IMPORTAT";const show=cap!==lastCap;lastCap=cap;return <React.Fragment key={`${cap}-${r.id||r.codi}`}>{show&&<tr className="cap-print-row-v8771"><td colSpan="6">{cap}</td></tr>}<tr><td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr></React.Fragment>})}</tbody><tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ {certNum}</th><th>{money(total)}</th></tr></tfoot></table></div>
+    </div>
+  }
   const fin=certFinancialSummaryFromDoc8794(rows,certNum,doc);
   const originRows=originRowsFromDoc8794(rows,certNum);
   const totalOrigen=fin.totalOrigen;

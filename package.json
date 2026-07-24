@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-215-certificacions-recuperades",
+  "name": "app-control-obres-v87-216-certificacio-simple",
   "private": true,
-  "version": "87.215.0",
+  "version": "87.216.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

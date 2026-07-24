@@ -5307,4 +5307,21 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 
 .economic-recovery-banner-v87214{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:11px 14px;border:1px solid #55a978;border-radius:12px;background:#ecf9f1;color:#14532d}.economic-recovery-banner-v87214 b,.economic-recovery-banner-v87214 span{display:block}.economic-recovery-banner-v87214 span{font-size:12px;font-weight:700}
 @media(max-width:700px){.economic-recovery-banner-v87214{align-items:flex-start;flex-direction:column}}
-body::after{content:"APP V87.215";position:fixed;right:6px;bottom:5px;z-index:5000;padding:3px 7px;border-radius:999px;background:rgba(15,45,92,.9);color:#fff;font:800 10px/1.2 system-ui,sans-serif;letter-spacing:.03em;pointer-events:none}
+body::after{content:"APP V87.216";position:fixed;right:6px;bottom:5px;z-index:5000;padding:3px 7px;border-radius:999px;background:rgba(15,45,92,.9);color:#fff;font:800 10px/1.2 system-ui,sans-serif;letter-spacing:.03em;pointer-events:none}
+
+/* V87.216 · certificació simple, llistes completes i impressió actual/a origen */
+.resum-cert-list-v87216{display:flex;flex-direction:column;gap:7px;max-height:330px;overflow-y:auto;overscroll-behavior:contain;padding:8px}
+.resum-cert-row-v87216{display:grid;grid-template-columns:minmax(130px,.8fr) 110px minmax(120px,.7fr) 90px;gap:10px;align-items:center;border:1px solid #dbe3ef;border-left:5px solid #16a34a;border-radius:12px;background:#fff;padding:10px 12px}
+.resum-cert-row-v87216 b{color:#0f2d5c}.resum-cert-row-v87216 strong{text-align:right;font-size:16px;color:#166534}.resum-cert-row-v87216 em{text-align:right;color:#64748b;font-style:normal}
+.cert-version-list-v87216{max-height:360px;overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
+.cert-resum-scroll-v87216{width:100%;overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:8px}
+.cert-resum-scroll-v87216 .cert-resum-v8717{min-width:max(1040px,calc(690px + var(--cert-count, 1) * 118px))}
+.cert-partida-modal-v87216{display:grid;gap:14px}.cert-partida-fields-v87216{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.cert-partida-fields-v87216 label{display:flex;flex-direction:column;gap:5px}.cert-partida-fields-v87216 label span{font-weight:900;color:#0f2d5c}.cert-partida-fields-v87216 .wide{grid-column:1/-1}.cert-partida-fields-v87216 textarea{min-height:190px;font-size:15px;line-height:1.45;resize:vertical}.cert-partida-fields-v87216 input:disabled,.cert-partida-fields-v87216 textarea:disabled,.cert-partida-fields-v87216 select:disabled{opacity:1;color:#0f172a;background:#f8fafc}
+.cert-partida-quick-v87216{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border:1px solid #bfdbfe;border-radius:12px;background:#eff6ff}
+.cert-concept-v87216 .concept-line-v877{align-items:flex-start}.cert-desc-hint-v87216{display:block;margin-top:4px;color:#64748b!important;font-size:11px}.cert-unit-v87216{font-size:13px!important;font-weight:900!important;color:#0f2d5c!important}.cert-measure-view-v87216{opacity:.8}.cert-pdf-main-v87216{white-space:nowrap}.cert-preview-note-v8772.current-v87216{background:#ecfdf5;border-color:#86efac}.cert-preview-current-v87216 .cert-preview-head-v8772 b{color:#166534}.cert-simple-toolbar-v87213>label:not(:first-child){margin-right:0}
+@media(max-width:800px){
+  .resum-cert-row-v87216{grid-template-columns:1fr auto}.resum-cert-row-v87216 strong,.resum-cert-row-v87216 em{text-align:left}
+  .cert-partida-fields-v87216{grid-template-columns:1fr}.cert-partida-fields-v87216 .wide{grid-column:auto}
+  .cert-simple-toolbar-v87213{display:grid!important;grid-template-columns:1fr 1fr!important}.cert-simple-toolbar-v87213 label,.cert-simple-toolbar-v87213 button{width:100%!important}.cert-simple-toolbar-v87213 .action-menu-v87213{grid-column:1/-1}
+}
+@media(max-width:520px){.cert-simple-toolbar-v87213{grid-template-columns:1fr!important}.cert-simple-toolbar-v87213 .action-menu-v87213{grid-column:auto}.cert-partida-quick-v87216{display:grid}.resum-cert-row-v87216{grid-template-columns:1fr}}
