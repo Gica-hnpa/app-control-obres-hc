@@ -1,4 +1,14 @@
-# APP Control d’Obres V87.214
+# APP Control d’Obres V87.215
+
+## Certificacions recuperades V87.215
+
+- Corregeix l’origen dels imports a zero: els preus i quantitats guardats com `4.000,00` es convertien amb JavaScript com si no fossin números.
+- En carregar les dades, quantitats, preus i camps certificats es normalitzen a números reals sense substituir les línies de medició.
+- Recupera automàticament les certificacions 1–8 de DAVID FUS si detecta que diverses han passat massivament a zero.
+- La certificació 8 conserva totes les línies i quantitats actuals; només utilitza la base estable quan el valor existent és realment zero.
+- La llista de certificacions mostra el registre guardat com a seguretat si temporalment no pot calcular el detall.
+- Un nou blindatge bloqueja qualsevol guardat que intenti deixar totes les certificacions d’un pressupost a zero.
+- Els pressupostos deixen de guardar `q` i `pu` com a textos amb format local: a partir d’ara es desen com a valors numèrics.
 
 ## Blindatge econòmic i recuperació automàtica V87.214
 

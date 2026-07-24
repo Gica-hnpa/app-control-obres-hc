@@ -6,6 +6,7 @@ import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
 import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen} from "lucide-react";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
+import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 
 const APP_USERS8779={hector:"0000",pol:"1919"};
 const STORAGE_NS8782="aco_v8782";
@@ -221,9 +222,11 @@ function sanitizeOdata8785(value,fallback={}){
       const base={...empty(),...v};
       // V87.91: normalització de pressupostos múltiples en carregar l'usuari.
       // Evita perdre annexos / fora pressupost si venen de versions anteriors o d'un marcador sense partides.
-      const normalized=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(base):base;
+      const numeric=typeof normalizeEconomicNumbers878215==="function"?normalizeEconomicNumbers878215(base):base;
+      const normalized=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(numeric):numeric;
       const recovered=typeof recoverKnownEconomicZero878214==="function"?recoverKnownEconomicZero878214(normalized,k):normalized;
-      out[k]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(recovered):recovered;
+      const certifications=typeof recoverKnownCertificationZero878215==="function"?recoverKnownCertificationZero878215(recovered,k):recovered;
+      out[k]=typeof normalizeBudgetedData8791==="function"?normalizeBudgetedData8791(certifications):certifications;
     }
   });
   return out;
@@ -458,13 +461,27 @@ function groupPartidesCapitols8756(rows){
       out.push(current);
     }
     current.rows.push(r);
-    current.total+=(+r.q||0)*(+r.pu||0);
+    current.total+=(+r.q||0)*parseNum8770(r.pu);
   });
   return out;
 }
 
-function money(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)+" €"}
+function money(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseNum8770(n))+" €"}
 function parseNum8770(v){const raw=String(v??"").trim().replace(/\s/g,"").replace(/€/g,""); const normalized=raw.includes(",")?raw.replace(/\./g,"").replace(",","."):raw; const n=Number(normalized); return Number.isFinite(n)?n:0}
+function normalizeEconomicNumbers878215(data={}){
+  const partides=(data.partides||[]).map(row=>{
+    const next={...row,q:parseNum8770(row.q),pu:parseNum8770(row.pu)};
+    if(row.certAnterior!==undefined)next.certAnterior=parseNum8770(row.certAnterior);
+    if(row.certActual!==undefined)next.certActual=parseNum8770(row.certActual);
+    if(row.certsByNum&&typeof row.certsByNum==="object"){
+      next.certsByNum=Object.fromEntries(Object.entries(row.certsByNum).map(([num,value])=>[String(num),parseNum8770(value)]));
+    }
+    Object.keys(row).filter(key=>/^cert_\d+$/.test(key)).forEach(key=>{next[key]=parseNum8770(row[key])});
+    return next;
+  });
+  const certificacions=(data.certificacions||[]).map(cert=>({...cert,import:parseNum8770(cert.import)}));
+  return {...data,partides,certificacions};
+}
 function recoveryText878214(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}
 function recoveryRowKeys878214(r={}){
   const bid=r.budgetId||"principal";
@@ -525,8 +542,88 @@ function recoverKnownEconomicZero878214(data={},obraId=""){
     updatedAt:new Date().toISOString()
   };
 }
+function currentCertQuantity878215(row={},num=1){
+  const key=String(num);
+  const lines=(row.certMesuresByNum||{})[key];
+  if(lines&&lines.length){
+    const lineTotal=medicioTotal8780(lines,row.ut);
+    if(Math.abs(lineTotal)>0.000001)return {value:lineTotal,source:"mesures"};
+  }
+  if(row.certsByNum&&row.certsByNum[key]!==undefined){
+    const value=parseNum8770(row.certsByNum[key]);
+    if(Math.abs(value)>0.000001)return {value,source:"certsByNum"};
+  }
+  if(row[`cert_${key}`]!==undefined){
+    const value=parseNum8770(row[`cert_${key}`]);
+    if(Math.abs(value)>0.000001)return {value,source:"legacy"};
+  }
+  if(num===1&&Math.abs(parseNum8770(row.certAnterior))>0.000001)return {value:parseNum8770(row.certAnterior),source:"anterior"};
+  if(num===2&&Math.abs(parseNum8770(row.certActual))>0.000001)return {value:parseNum8770(row.certActual),source:"actual"};
+  return {value:0,source:"zero"};
+}
+function recoverKnownCertificationZero878215(data={},obraId=""){
+  if(String(obraId)!==String(CERTIFICATION_RECOVERY_V87215.obraId))return data;
+  if(data?.certificationRecoveryV87215?.applied)return data;
+  const rows=Array.isArray(data.partides)?data.partides:[];
+  const baseRows=CERTIFICATION_RECOVERY_V87215.rows||[];
+  if(!rows.length||!baseRows.length)return data;
+  const expected=CERTIFICATION_RECOVERY_V87215.expectedTotals||{};
+  const nums=Object.keys(expected).map(Number).filter(n=>n>0).sort((a,b)=>a-b);
+  const totals=Object.fromEntries(nums.map(num=>[String(num),rows.reduce((sum,row)=>sum+currentCertQuantity878215(row,num).value*parseNum8770(row.pu),0)]));
+  const missing=nums.filter(num=>Math.abs(parseNum8770(expected[String(num)]))>1&&Math.abs(totals[String(num)]||0)<1);
+  if(missing.length<3)return data;
+  const baseIndex=new Map();
+  baseRows.forEach(row=>recoveryRowKeys878214(row).forEach(key=>{if(!baseIndex.has(key))baseIndex.set(key,row)}));
+  let restoredValues=0;
+  const partides=rows.map(row=>{
+    let base=null;
+    for(const key of recoveryRowKeys878214(row)){if(baseIndex.has(key)){base=baseIndex.get(key);break}}
+    if(!base)return row;
+    const certsByNum={...(row.certsByNum||{})};
+    const patch={};
+    missing.forEach(num=>{
+      const key=String(num);
+      const current=currentCertQuantity878215(row,num);
+      if(Math.abs(current.value)>0.000001)return;
+      const baseline=parseNum8770(base.certsByNum?.[key]);
+      if(Math.abs(baseline)<0.000001)return;
+      certsByNum[key]=baseline;
+      patch[`cert_${key}`]=baseline;
+      restoredValues++;
+    });
+    return Object.keys(patch).length?{...row,...patch,certsByNum,certificationRecoveryV87215:true,certificationRecoveredAt:new Date().toISOString()}:row;
+  });
+  if(!restoredValues)return data;
+  const recalculated=Object.fromEntries(nums.map(num=>[String(num),partides.reduce((sum,row)=>sum+currentCertQuantity878215(row,num).value*parseNum8770(row.pu),0)]));
+  const currentRecords=[...(data.certificacions||[])];
+  const seen=new Set();
+  const certificacions=currentRecords.filter(cert=>{
+    const key=`${cert.budgetId||"principal"}:${cert.numero||""}`;
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  }).map(cert=>{
+    const key=String(cert.numero||"");
+    if((cert.budgetId||"principal")!=="principal"||!missing.includes(Number(key)))return cert;
+    const amount=recalculated[key]||parseNum8770(expected[key]);
+    return {...cert,import:amount,updatedAt:new Date().toISOString()};
+  });
+  (CERTIFICATION_RECOVERY_V87215.records||[]).forEach(base=>{
+    const key=`${base.budgetId||"principal"}:${base.numero}`;
+    if(seen.has(key))return;
+    seen.add(key);
+    certificacions.push({...base,id:`cert-recovered-v87215-${base.numero}`,estat:base.estat||"Guardada",import:recalculated[String(base.numero)]||base.import,createdAt:new Date().toISOString()});
+  });
+  return {
+    ...data,
+    partides,
+    certificacions:certificacions.sort((a,b)=>String(a.budgetId||"principal").localeCompare(String(b.budgetId||"principal"))||Number(a.numero)-Number(b.numero)),
+    certificationRecoveryV87215:{applied:true,restoredValues,certifications:missing,totals:recalculated,sourceVersion:CERTIFICATION_RECOVERY_V87215.sourceVersion,appliedAt:new Date().toISOString()},
+    updatedAt:new Date().toISOString()
+  };
+}
 function moneyInput8770(v){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseNum8770(v))}
-function qty2(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0)}
+function qty2(n){return new Intl.NumberFormat("ca-ES",{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseNum8770(n))}
 
 function clientBudgetDefaultsKey878160(client){return `aco_budget_defaults_v87160_${String(client?.id||client?.nom||client?.rao||"general").toLowerCase().replace(/[^a-z0-9_-]+/g,"_")}`}
 function clientBudgetCode878194(client={}){
@@ -2271,7 +2368,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.214",
+      version:"V87.215",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3541,7 +3638,7 @@ function saveCert(){
   setD(obraId,d=>{
     const activeBid=d.activeBudgetIdObra||"principal";
     const rows=(d.partides||[]).filter(r=>(r.budgetId||"principal")===activeBid);
-    const total=rows.reduce((s,r)=>s+certQty8783(r,n)*(+r.pu||0),0);
+    const total=rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
     const rest=(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBid&&+c.numero===n));
     const cert={id:"c"+Date.now(),budgetId:activeBid,numero:String(n),data:certInfo.data,estat:"Guardada",import:total,updatedAt:new Date().toISOString()};
     return {...d,certificacions:[...rest,cert].sort((a,b)=>String(a.budgetId||"principal").localeCompare(String(b.budgetId||"principal"))||(+a.numero)-(+b.numero))};
@@ -4470,7 +4567,7 @@ function collectActivities8783(obres=[],odata={},clients=[]){
     (d.facturesTecnic||[]).forEach(f=>push('Factura',f.concepte||'Factura honoraris',`${money(f.base||0)} · ${f.estat||'Pendent'}`,itemTime8783(f),'Honoraris'));
     const certMap878136=new Map();
     (d.certificacions||[]).forEach(c=>{const key=String(c.numero||c.id||'');const t=Math.max(clampActivityTime878134(c.updatedAt),clampActivityTime878134(c.createdAt),clampActivityTime878134(c.data));const prev=certMap878136.get(key);if(!prev||t>prev.t)certMap878136.set(key,{c,t});});
-    [...certMap878136.values()].forEach(({c,t})=>{const n=+c.numero||0;const calc=(d.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*(+r.pu||0),0);push('Certificació',`Certificació ${c.numero||''}`,`${money(calc||c.import||0)} · ${expedientCode8739(o)}`,t||itemTime8783(c),'Gestió obra')});
+    [...certMap878136.values()].forEach(({c,t})=>{const n=+c.numero||0;const calc=(d.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*parseNum8770(r.pu),0);push('Certificació',`Certificació ${c.numero||''}`,`${money(calc||c.import||0)} · ${expedientCode8739(o)}`,t||itemTime8783(c),'Gestió obra')});
     (d.hores||[]).forEach(h=>push('Temps',h.tasca||h.etiqueta||'Registre de temps',`${qty2(h.hores||0)} h · ${money((+h.hores||0)*(+h.preu||0))}`,itemTime8783(h),'Gestió temps'));
   }
   return out.filter(a=>a.time).sort((a,b)=>b.time-a.time);
@@ -4479,34 +4576,40 @@ function certQty8783(r,n){
   if(n<=0)return 0;
   if(isCertHidden878132(r,n))return 0;
   const lines=(r.certMesuresByNum||{})[String(n)];
-  if(lines&&lines.length)return medicioTotal8780(lines,r.ut);
-  if(r.certsByNum&&r.certsByNum[String(n)]!==undefined)return +r.certsByNum[String(n)]||0;
+  if(lines&&lines.length){
+    const measured=medicioTotal8780(lines,r.ut);
+    if(Math.abs(measured)>0.000001)return measured;
+  }
+  if(r.certsByNum&&r.certsByNum[String(n)]!==undefined){
+    const modern=parseNum8770(r.certsByNum[String(n)]);
+    if(Math.abs(modern)>0.000001)return modern;
+  }
   // V87.212 · compatibilitat amb certificacions creades en versions antigues.
   // Durant anys també es van guardar com cert_1, cert_2...; si el resum
   // certsByNum no existeix, aquestes quantitats continuen sent vàlides.
-  if(r[`cert_${n}`]!==undefined)return +r[`cert_${n}`]||0;
-  if(n===1)return +r.certAnterior||0;
-  if(n===2)return +r.certActual||0;
+  if(r[`cert_${n}`]!==undefined)return parseNum8770(r[`cert_${n}`]);
+  if(n===1)return parseNum8770(r.certAnterior);
+  if(n===2)return parseNum8770(r.certActual);
   return 0;
 }
 function certTotalsForPrint8780(rows=[],doc={}){
   const nums=new Set([...(doc.prevNum?[doc.prevNum]:[]),...(doc.certNum?[doc.certNum]:[])]);
   rows.forEach(r=>{Object.keys(r.certsByNum||{}).forEach(n=>nums.add(+n));Object.keys(r.certMesuresByNum||{}).forEach(n=>nums.add(+n));});
-  return [...nums].filter(n=>Number.isFinite(+n)&&+n>0).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certQty8783(r,+n)*(+r.pu||0),0)}));
+  return [...nums].filter(n=>Number.isFinite(+n)&&+n>0).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certQty8783(r,+n)*parseNum8770(r.pu),0)}));
 }
 function certTotalsUpTo8793(rows=[],certNum=1){
   const max=Number(certNum)||1;
   const nums=new Set();
   for(let i=1;i<=max;i++)nums.add(i);
   rows.forEach(r=>{Object.keys(r.certsByNum||{}).forEach(n=>{n=+n;if(n>0&&n<=max)nums.add(n)});Object.keys(r.certMesuresByNum||{}).forEach(n=>{n=+n;if(n>0&&n<=max)nums.add(n)});});
-  return [...nums].filter(n=>Number.isFinite(n)&&n>0&&n<=max).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certQty8783(r,n)*(+r.pu||0),0)}));
+  return [...nums].filter(n=>Number.isFinite(n)&&n>0&&n<=max).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0)}));
 }
 function originRowsForCert8793(rows=[],certNum=1){
   const max=Number(certNum)||1;
   return (rows||[]).map(r=>{
     let qOrigin=0;
     for(let i=1;i<=max;i++)qOrigin+=certQty8783(r,i);
-    const impOrigin=qOrigin*(+r.pu||0);
+    const impOrigin=qOrigin*parseNum8770(r.pu);
     return {...r,qOrigin,impOrigin,pctOrigin:(+r.q||0)?qOrigin/(+r.q)*100:0};
   }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0).sort((a,b)=>capOrder878132(a.cap)-capOrder878132(b.cap)||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||compareCodi878132(a.codi,b.codi));
 }
@@ -4523,7 +4626,7 @@ function originRowsFromDoc8794(rows=[],certNum=1){
   const max=Number(certNum)||1;
   return (rows||[]).map(r=>{
     const qOrigin = r.qOrigen!==undefined ? (+r.qOrigen||0) : (r.qOrigin!==undefined ? (+r.qOrigin||0) : (()=>{let t=0;for(let i=1;i<=max;i++)t+=certQty8783(r,i);return t;})());
-    const impOrigin = r.impOrigen!==undefined ? (+r.impOrigen||0) : (r.impOrigin!==undefined ? (+r.impOrigin||0) : qOrigin*(+r.pu||0));
+    const impOrigin = r.impOrigen!==undefined ? (+r.impOrigen||0) : (r.impOrigin!==undefined ? (+r.impOrigin||0) : qOrigin*parseNum8770(r.pu));
     const pctOrigin = r.pctOrigen!==undefined ? (+r.pctOrigen||0) : (r.pctOrigin!==undefined ? (+r.pctOrigin||0) : ((+r.q||0)?qOrigin/(+r.q)*100:0));
     return {...r,qOrigin,impOrigin,pctOrigin};
   }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0).sort((a,b)=>capOrder878132(a.cap)-capOrder878132(b.cap)||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||compareCodi878132(a.codi,b.codi));
@@ -4541,7 +4644,7 @@ function certFinancialSummaryFromDoc8794(rows=[],certNum=1,doc={}){
     total:(rows||[]).reduce((sum,r)=>{
       let q=certQty8783(r,n);
       if(n===max && r.qAct!==undefined) q=+r.qAct||0;
-      return sum+q*(+r.pu||0);
+      return sum+q*parseNum8770(r.pu);
     },0)
   }));
   const originRows=originRowsFromDoc8794(rows,max);
@@ -5346,11 +5449,23 @@ function economicStats878214(data={},bid="principal"){
     total:rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0)
   };
 }
+function certificationStats878215(data={},bid="principal"){
+  const rows=(data.partides||[]).filter(row=>(row?.budgetId||"principal")===(bid||"principal"));
+  const nums=new Set();
+  rows.forEach(row=>{
+    Object.keys(row.certsByNum||{}).forEach(num=>{if(Number(num)>0)nums.add(Number(num))});
+    Object.keys(row.certMesuresByNum||{}).forEach(num=>{if(Number(num)>0)nums.add(Number(num))});
+    Object.keys(row).filter(key=>/^cert_\d+$/.test(key)).forEach(key=>nums.add(Number(key.slice(5))));
+  });
+  (data.certificacions||[]).filter(cert=>(cert.budgetId||"principal")===(bid||"principal")).forEach(cert=>{if(Number(cert.numero)>0)nums.add(Number(cert.numero))});
+  const totals=[...nums].sort((a,b)=>a-b).map(num=>({num,total:rows.reduce((sum,row)=>sum+certQty8783(row,num)*parseNum8770(row.pu),0)}));
+  return {bid:bid||"principal",rowCount:rows.length,totals,nonZero:totals.filter(item=>Math.abs(item.total)>0.000001).length,totalAbs:totals.reduce((sum,item)=>sum+Math.abs(item.total),0)};
+}
 function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.214",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.215",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -5370,6 +5485,16 @@ function guardEconomicWrite878214(current={},next={},obraId=""){
       return {blocked:true,bid,before,after,reason};
     }
   }
+  for(const bid of ids){
+    const before=certificationStats878215(current,bid);
+    const after=certificationStats878215(next,bid);
+    const keepsRows=before.rowCount>=8&&after.rowCount>=Math.max(5,Math.floor(before.rowCount*.7));
+    if(keepsRows&&before.nonZero>=3&&before.totalAbs>1000&&after.nonZero===0){
+      const reason=`Bloquejada una caiguda massiva de certificacions a zero al pressupost ${bid}: ${before.nonZero} certificacions amb import han passat a 0.`;
+      saveEmergencyEconomicSnapshot878214(obraId,current,reason);
+      return {blocked:true,bid,before,after,reason};
+    }
+  }
   return {blocked:false};
 }
 function warnEconomicGuard878214(info={}){
@@ -5378,7 +5503,7 @@ function warnEconomicGuard878214(info={}){
   globalThis.__acoEconomicGuardAlert878214=now;
   setTimeout(()=>alert(`GUARDAT BLOQUEJAT PER SEGURETAT
 
-L'app ha detectat que una operació intentava deixar totes les quantitats o preus a zero. No s'ha desat aquest canvi i s'ha conservat una còpia econòmica d'emergència.
+L'app ha detectat que una operació intentava deixar totes les quantitats, preus o certificacions a zero. No s'ha desat aquest canvi i s'ha conservat una còpia econòmica d'emergència.
 
 Pressupost: ${info.bid||"principal"}`),0);
 }
@@ -5428,7 +5553,7 @@ function normalizeBudgetedData8791(data={}){
     const bid=c.budgetId||"principal";
     const calculat=(d.partides||[])
       .filter(r=>(r.budgetId||"principal")===bid)
-      .reduce((s,r)=>s+certQty8783(r,n)*(+r.pu||0),0);
+      .reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
     return {...c,import:Math.abs(calculat)>0.000001?calculat:(+c.import||0)};
   });
   return {...d,budgetGroups:groups,pressupostos,certificacions,activeBudgetIdObra:active};
@@ -5522,14 +5647,14 @@ function budgetImpact8789(g){
 function budgetMetric8789(data,g){
   const id=g.id||"principal";
   const rows=(data.partides||[]).filter(r=>(r.budgetId||"principal")===id);
-  const pressupost=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
-  const certificatPartides=rows.reduce((s,r)=>s+certQtyTotal8789(r)*(+r.pu||0),0);
+  const pressupost=rows.reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
+  const certificatPartides=rows.reduce((s,r)=>s+certQtyTotal8789(r)*parseNum8770(r.pu),0);
   const certificatRegistres=certRecordTotal8791(data,id);
   // V87.91: si una certificació està guardada com a registre però les partides antigues no conserven certsByNum,
   // fem servir el valor més alt per no perdre la Cert. 1 en la lectura global.
   const certificat=Math.max(certificatPartides,certificatRegistres);
   const capMap={};
-  rows.forEach(r=>{const cap=r.cap||"Sense capítol";if(!capMap[cap])capMap[cap]={cap,pressupost:0,certificat:0,partides:0};capMap[cap].pressupost+=(+r.q||0)*(+r.pu||0);capMap[cap].certificat+=certQtyTotal8789(r)*(+r.pu||0);capMap[cap].partides+=1;});
+  rows.forEach(r=>{const cap=r.cap||"Sense capítol";if(!capMap[cap])capMap[cap]={cap,pressupost:0,certificat:0,partides:0};capMap[cap].pressupost+=(+r.q||0)*parseNum8770(r.pu);capMap[cap].certificat+=certQtyTotal8789(r)*parseNum8770(r.pu);capMap[cap].partides+=1;});
   const impact=budgetImpact8789(g);
   return {...g,rows,pressupost,certificat,certificatPartides,certificatRegistres,capitols:Object.values(capMap),impact};
 }
@@ -5593,8 +5718,8 @@ function RentabilitatObra8773({data,setData}){
   const caps=Object.values(rows.reduce((m,r)=>{
     const k=r.cap||"Sense capítol";
     if(!m[k])m[k]={cap:k,pressupost:0,certificat:0,partides:0};
-    const pressup=(+r.q||0)*(+r.pu||0);
-    const cert=certQtyTotal8773(r)*(+r.pu||0);
+    const pressup=(+r.q||0)*parseNum8770(r.pu);
+    const cert=certQtyTotal8773(r)*parseNum8770(r.pu);
     m[k].pressupost+=pressup;
     m[k].certificat+=cert;
     m[k].partides+=1;
@@ -5754,7 +5879,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     const n=+certInfo.num;
     setData(d=>{
       const rows=(d.partides||[]).filter(r=>(r.budgetId||"principal")===activeBudgetId);
-      const total=rows.reduce((s,r)=>s+certQty8783(r,n)*(+r.pu||0),0);
+      const total=rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
       const rest=(d.certificacions||[]).filter(c=>!(((c.budgetId||"principal")===activeBudgetId)&&(+c.numero===n)));
       const cert={id:"c"+Date.now(),budgetId:activeBudgetId,numero:String(n),data:certInfo.data,estat:"Guardada",import:total,updatedAt:new Date().toISOString()};
       return {...d,activeBudgetIdObra:activeBudgetId,certificacions:[...rest,cert].sort((a,b)=>(+a.numero)-(+b.numero)),updatedAt:new Date().toISOString()};
@@ -5967,6 +6092,7 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
   return <div className="obra-page obra-page-v87105">
     {editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>Dades econòmiques recuperades</b><span>S’han restaurat {data.economicRecoveryV87214.restored||0} preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.</span></div>}
+    {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>Certificacions recuperades</b><span>S’han reconstruït les certificacions {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} sense substituir les línies de medició actuals de la certificació 8.</span></div>}
     <section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777 obra-head-access-v87105">
       <button type="button" className="secondary obra-tabs-toggle-v87105" onClick={()=>setTabsOpen(v=>!v)}><Menu/> Pestanyes</button>
       <div className="obra-head-main-v87105">
@@ -6066,7 +6192,7 @@ const proper=futureEvents[0]||null;
 const pendingTasks=tasques.filter(t=>!['Fet','Anul·lat'].includes(String(t.estat||'Pendent'))).sort((a,b)=>(timeValue8783(a.data)||9999999999999)-(timeValue8783(b.data)||9999999999999));
 let totalHores=hores.reduce((s,h)=>s+(+h.hores||0),0);
 let costTemps=hores.reduce((s,h)=>s+(+h.hores||0)*(+h.preu||+h.preuHora||0)+(+h.despeses||0),0);
-function certImportResum878126(c){const n=+c.numero||0;const calc=(data.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*(+r.pu||0),0);return calc||(+c.import||0)||0}
+function certImportResum878126(c){const n=+c.numero||0;const calc=(data.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*parseNum8770(r.pu),0);return calc||(+c.import||0)||0}
 const certMapResum878137=new Map();
 certs.forEach(c=>{const key=String(c.numero||c.id||'');const t=Math.max(clampActivityTime878134(c.updatedAt),clampActivityTime878134(c.createdAt),clampActivityTime878134(c.data),timeValue8783(c.id));const prev=certMapResum878137.get(key);if(!prev||t>prev.t)certMapResum878137.set(key,{c,t});});
 const certsUnique=[...certMapResum878137.values()].sort((a,b)=>(b.t||0)-(a.t||0)||(+b.c.numero||0)-(+a.c.numero||0));
@@ -6245,7 +6371,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       let next=arr.length+1;
       let printedCode=base?`${base}.${String(next).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
       while(used.has(printedCode)&&base)printedCode=`${base}.${String(++next).padStart(2,"0")}`;
-      const row={...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,codi:printedCode,codiPressupost:printedCode,q:"1,00",pu:qty2(+item.pu||0),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
+      const row={...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
       return {...p,[dest]:[...arr,row]};
     });
     setOpen(o=>({...o,[dest]:true}));
@@ -6470,7 +6596,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
 
   const total=Object.values(caps).flat().reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   function flattenCapsForBudget878179(nextCaps=caps){
-    return sortedCapEntries8779(nextCaps||{}).flatMap(([cap,items])=>sortPartides8779(items).map(r=>({...r,cap,q:qty2(parseNum8770(r.q)||0),pu:qty2(parseNum8770(r.pu)||0)})));
+    return sortedCapEntries8779(nextCaps||{}).flatMap(([cap,items])=>sortPartides8779(items).map(r=>({...r,cap,q:parseNum8770(r.q)||0,pu:parseNum8770(r.pu)||0})));
   }
   function persistBudgetCaps878179(nextCaps=caps){
     const normalized=normalizeBudgetCaps878176(nextCaps||{});
@@ -6712,6 +6838,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
 function medicioCalc8780(line,ut=""){
   const has=(k)=>line?.[k]!==undefined && String(line?.[k]??"").trim()!=="";
   const num=(k,def=0)=>{const v=parseNum8770(line?.[k]);return Number.isFinite(v)?v:def};
+  const hasDimensions=has("unitats")||has("llargada")||has("amplada")||has("alcada");
+  if(!hasDimensions){
+    for(const key of ["total","quantitat","q","resultat","medicio","amidament"]){
+      if(has(key))return num(key,0);
+    }
+  }
   const u=num("unitats",1)||0;
   const l=num("llargada",0), a=num("amplada",0), h=num("alcada",0);
   const unit=String(ut||"").toLowerCase();
@@ -6969,10 +7101,11 @@ function saveDatesSafe8720(){
 function fieldFor(n){return "cert_"+n}
 function qFor(r,n){return certQty8783(r,n)}
 function qDraft(r){let raw=draft[r.codi]??String(qFor(r,certNum));let q=parseNum8770(raw);return Number.isFinite(q)?q:qFor(r,certNum)}
-function imp(r,n){return qFor(r,n)*(+r.pu||0)}
+function imp(r,n){return qFor(r,n)*parseNum8770(r.pu)}
 function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qDraft(r):qFor(r,i);return total}
-function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,n))*(+r.pu||0),0)}
-function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*(+r.pu||0),0)}
+function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,n))*parseNum8770(r.pu),0)}
+function certListTotal878215(c){const calculated=rows.reduce((sum,row)=>sum+qFor(row,+c.numero)*parseNum8770(row.pu),0);return Math.abs(calculated)>0.000001?calculated:parseNum8770(c.import)}
+function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*parseNum8770(r.pu),0)}
 function commitOne(codi,v){let val=parseNum8770(v);if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
 function updatePartidaMeta878132(row,patch){
@@ -7013,7 +7146,7 @@ function saveMesures8780(target,lines,total){
   setDraft(x=>({...x,[targetCode]:String(total)}));
   setMedicioTarget8780(null);
 }
-function saveAdminCost878126(codi,lines,total){setData?.(d=>({...d,partides:(d.partides||[]).map(r=>{if(r.codi!==codi)return r;const effectivePu=(+r.pu||0)||1;const certQty=total/effectivePu;return {...r,pu:(+r.pu||0)?r.pu:1,certAdminLinesByNum:{...(r.certAdminLinesByNum||{}),[String(certNum)]:lines},certsByNum:{...(r.certsByNum||{}),[String(certNum)]:certQty},certAnterior:certNum===1?certQty:r.certAnterior,certActual:certNum===2?certQty:r.certActual};})}));const current=(rows||[]).find(r=>r.codi===codi);const effectivePu=(+current?.pu||0)||1;setDraft(x=>({...x,[codi]:String(total/effectivePu)}));setAdminTarget878126(null)}
+function saveAdminCost878126(codi,lines,total){setData?.(d=>({...d,partides:(d.partides||[]).map(r=>{if(r.codi!==codi)return r;const effectivePu=parseNum8770(r.pu)||1;const certQty=total/effectivePu;return {...r,pu:parseNum8770(r.pu)?r.pu:1,certAdminLinesByNum:{...(r.certAdminLinesByNum||{}),[String(certNum)]:lines},certsByNum:{...(r.certsByNum||{}),[String(certNum)]:certQty},certAnterior:certNum===1?certQty:r.certAnterior,certActual:certNum===2?certQty:r.certActual};})}));const current=(rows||[]).find(r=>r.codi===codi);const effectivePu=parseNum8770(current?.pu)||1;setDraft(x=>({...x,[codi]:String(total/effectivePu)}));setAdminTarget878126(null)}
 function saveAdminMonthly878127(payload){
   const key=String(certNum);
   const cap=String(payload.cap||"C98 FEINES PER ADMINISTRACIÓ").trim();
@@ -7032,7 +7165,7 @@ function saveAdminMonthly878127(payload){
       const sameTarget=targetCode && sameBudget && String(r.codi||"").trim()===targetCode;
       if(sameTarget){
         found=true;
-        const effectivePu=(Number(r.pu)||0) || (total||1);
+        const effectivePu=parseNum8770(r.pu) || (total||1);
         appliedQty=effectivePu?total/effectivePu:0;
         return {
           ...r,
@@ -7066,7 +7199,7 @@ function saveAdminMonthly878127(payload){
   setCertCapsOpen879(o=>({...o,[cap]:true}));
   // Si s'ha assignat a una partida existent, la quantitat visible és total/PU per no canviar el pressupost base.
   const targetRow=(rows||[]).find(r=>String(r.codi||"").trim()===(targetCode||codi));
-  const effectivePu=(Number(targetRow?.pu)||0) || (targetCode ? (total||1) : total);
+  const effectivePu=parseNum8770(targetRow?.pu) || (targetCode ? (total||1) : total);
   setDraft(x=>({...x,[targetCode||codi]:String(targetCode?(effectivePu?total/effectivePu:0):(total?1:0))}));
   setAdminMonthlyOpen878127(null);
 }
@@ -7171,7 +7304,7 @@ function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMo
 return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127}/>}
 {medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>}
 <Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
-  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={toInputDate8743(dateVal8721(c))} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(rows.reduce((s,r)=>s+qFor(r,+c.numero)*(+r.pu||0),0))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
+  <div className="version-list">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={toInputDate8743(dateVal8721(c))} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(certListTotal878215(c))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
 <Card title={`Certificació ${certNum}`} action={<div className="cert-selected-total-v87213"><small>{prevNum?`Anterior: Cert. ${prevNum}`:"Primera certificació"}</small><b>{money(certTotal(certNum))}</b></div>}>
   <div className="cert-simple-toolbar-v87213">
@@ -7180,7 +7313,7 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
     <ActionMenu87213 label="Més accions">
       <button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}>Afegir partida extra / provisió</button>
       <button type="button" onClick={()=>{openAdminMonthlyNew878133();setCertMode8711("emplenar")}}>Afegir hores / administració</button>
-      <button type="button" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*(+r.pu||0),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Previsualitzar / PDF</button>
+      <button type="button" onClick={()=>openDoc({type:"certificacio",autoPrint:true,title:`CERTIFICACIÓ ${certNum}`,subtitle:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*parseNum8770(r.pu),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]})),totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)})}>Previsualitzar / PDF</button>
       <label className="action-check-v87213"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Incloure línies d’amidament al PDF</label>
       {savedAdmin878132&&<button type="button" onClick={()=>printSavedAdmin878132(savedAdmin878132)}>Imprimir administració guardada</button>}
       {hiddenCount878132>0&&<button type="button" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar partides retirades":"Mostrar partides retirades"} ({hiddenCount878132})</button>}
@@ -7207,9 +7340,9 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
       return <div key={cap}>
       <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><b>{items.length} partides</b></button>
       {isOpen&&items.map((r,rowIdx)=>{
-        let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*(+r.pu||0), ia=qa*(+r.pu||0), qo=qOrigin(r), io=qo*(+r.pu||0);
+        let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*parseNum8770(r.pu), ia=qa*parseNum8770(r.pu), qo=qOrigin(r), io=qo*parseNum8770(r.pu);
         return <div className="cert-grid-v69 row" key={r.id||`${cap}-${rowIdx}`}>
-          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877 cert-concept-v878133"><div className="concept-line-v877"><span>{r.concepte}</span><button type="button" className="secondary small cert-actions-btn-v878133" onClick={()=>setCertActionOpen878133(o=>({...o,[r.id||r.codi]:!o[r.id||r.codi]}))}>Accions</button></div>{certActionOpen878133[r.id||r.codi]&&<div className="cert-actions-panel-v878133">{r.desc&&<button type="button" className="secondary small" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar descripció":"Veure descripció"}</button>}{editing&&<button type="button" className="secondary small" onClick={()=>openAdminMonthlyForRow878133(r)}>Quadre administració / justificar</button>}{editing&&<button type="button" className="danger small" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar partida":"Treure certificació"}</button>}{editing&&isCertHidden878132(r,certNum)&&<button type="button" className="secondary small" onClick={()=>restoreCertLine878132(r)}>Recuperar a certificació</button>}{editing&&<div className="cert-reorder-controls-v878132 cert-reorder-controls-v878133"><label>Codi <input defaultValue={r.codi||""} onBlur={e=>updatePartidaMeta878132(r,{codi:e.target.value})} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/></label><label>Capítol <select value={r.cap||""} onChange={e=>updatePartidaMeta878132(r,{cap:e.target.value})}>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}</select></label></div>}</div>}{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
+          <div>{r.codi}</div><div>{r.ut}</div><div className="concept cert-concept-v877 cert-concept-v878133"><div className="concept-line-v877"><span>{r.concepte}</span><button type="button" className="secondary small cert-actions-btn-v878133" onClick={()=>setCertActionOpen878133(o=>({...o,[r.id||r.codi]:!o[r.id||r.codi]}))}>Accions</button></div>{certActionOpen878133[r.id||r.codi]&&<div className="cert-actions-panel-v878133">{r.desc&&<button type="button" className="secondary small" onClick={()=>setCertDescOpen875(o=>({...o,[r.codi]:!o[r.codi]}))}>{certDescOpen875[r.codi]?"Amagar descripció":"Veure descripció"}</button>}{editing&&<button type="button" className="secondary small" onClick={()=>openAdminMonthlyForRow878133(r)}>Quadre administració / justificar</button>}{editing&&<button type="button" className="danger small" onClick={()=>deleteCertLine878131(r)}>{(r.noPressupost||r.createdFromCert||r.adminMonthlyAuto)?"Eliminar partida":"Treure certificació"}</button>}{editing&&isCertHidden878132(r,certNum)&&<button type="button" className="secondary small" onClick={()=>restoreCertLine878132(r)}>Recuperar a certificació</button>}{editing&&<div className="cert-reorder-controls-v878132 cert-reorder-controls-v878133"><label>Codi <input defaultValue={r.codi||""} onBlur={e=>updatePartidaMeta878132(r,{codi:e.target.value})} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/></label><label>Capítol <select value={r.cap||""} onChange={e=>updatePartidaMeta878132(r,{cap:e.target.value})}>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}</select></label></div>}</div>}{r.desc&&certDescOpen875[r.codi]&&<small>{r.desc}</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*parseNum8770(r.pu))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
           <div className={qa>0?"current-fill":""}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title="Línies de medició" onClick={()=>setMedicioTarget8780(r)}>∑</button></>:qty2(qFor(r,certNum))}</div></div>
           <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
@@ -7230,16 +7363,16 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
 function CertResumV69({data}){
 let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
 function qFor(r,n){return certQty8783(r,n)}
-function impFor(r,n){return qFor(r,n)*(+r.pu||0)}
+function impFor(r,n){return qFor(r,n)*parseNum8770(r.pu)}
 let capRows=Object.entries(caps).map(([cap,items])=>{
-  let pressupost=items.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+  let pressupost=items.reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
   let vals=certs.map(c=>items.reduce((s,r)=>s+impFor(r,+c.numero),0));
   let total=vals.reduce((s,v)=>s+v,0);
   let pendent=Math.max(pressupost-total,0);
   let percent=pressupost?Math.min(total/pressupost*100,999):0;
   return{cap,pressupost,vals,total,pendent,percent}
 });
-let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+let totalPres=rows.reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
 let totalCerts=certs.map(c=>Math.max(rows.reduce((s,r)=>s+impFor(r,+c.numero),0),Number(c.import)||0));
 let totalExec=totalCerts.reduce((s,v)=>s+v,0);
 return <div className="cert-resum-v8717">
@@ -7271,10 +7404,10 @@ function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}
 function qFor(r,c){let n=+c.numeroCert||+c.numero;return certQty8783(r,n)}
 function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,{numeroCert:c.numero,numero:c.numero})>0)}
 function originRowsForProforma(c){return originRowsForCert8793(data.partides||[],+c.numero)}
-let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let allRows=originRowsForProforma(c);let fin=certFinancialSummary8793(data.partides||[],+c.numero);let base=fin.actual || rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*(+r.pu||0),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows,allRows,certTotals:fin.certTotals,totalOrigen:fin.totalOrigen,anterior:fin.anterior}});
+let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let allRows=originRowsForProforma(c);let fin=certFinancialSummary8793(data.partides||[],+c.numero);let base=fin.actual || rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*parseNum8770(r.pu),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows,allRows,certTotals:fin.certTotals,totalOrigen:fin.totalOrigen,anterior:fin.anterior}});
 let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
 function calc(f){let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total}}
-const basePressupostObra=(data.partides||[]).reduce((s,r)=>s+(+r.q||0)*(+r.pu||0),0);
+const basePressupostObra=(data.partides||[]).reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
 const totalBaseProformes=proformes.reduce((s,f)=>s+(+f.base||0),0);
 const totalProformes=proformes.reduce((s,f)=>s+calc(f).total,0);
 const factPct=basePressupostObra?Math.min(totalBaseProformes/basePressupostObra*100,999):0;
@@ -7299,7 +7432,7 @@ const totalOrigen=f.totalOrigen||originRows.reduce((s,r)=>s+(+r.impOrigin||0),0)
 return <div className="proforma-a4-wrap-v8748"><div className="proforma-preview-doc-v61 proforma-a4-v8748">
   <div className="doc-title-row"><div><h2>FACTURA PROFORMA</h2><p>{f.numero} · Certificació {f.numeroCert} · {fmtDate8714(f.data)}</p></div><b>{money(calc.total)}</b></div>
   <h3>Partides certificades a origen</h3>
-  <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.map(r=><tr key={r.codi}><td>{r.codi}</td><td className="concept">{r.concepte}</td><td className="num">{qty2(r.qOrigin??originRowsForCert8793([r],f.numeroCert)[0]?.qOrigin??qFor(r,f))}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin??((r.qOrigin??qFor(r,f))*(+r.pu||0)))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL A ORIGEN</th><th className="num">{money(totalOrigen)}</th></tr></tfoot></table>
+  <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.map(r=><tr key={r.codi}><td>{r.codi}</td><td className="concept">{r.concepte}</td><td className="num">{qty2(r.qOrigin??originRowsForCert8793([r],f.numeroCert)[0]?.qOrigin??qFor(r,f))}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin??((r.qOrigin??qFor(r,f))*parseNum8770(r.pu)))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL A ORIGEN</th><th className="num">{money(totalOrigen)}</th></tr></tfoot></table>
   <h3>Deducció de certificacions anteriors</h3>
   <table className="totals-preview"><tbody><tr><th>Total certificat a origen</th><td className="num">{money(totalOrigen)}</td></tr>{prevTotals.length===0?<tr><th>No hi ha certificacions anteriors</th><td className="num">{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><th>Deducció Certificació {c.n}</th><td className="num">-{money(c.total)}</td></tr>)}<tr className="total"><th>Import sense IVA Cert. {certNum}</th><td className="num">{money(f.base)}</td></tr></tbody></table>
   <table className="totals-preview"><tbody><tr><th>Deducció ({calc.ded}%)</th><td>-{money(f.base-calc.base)}</td></tr><tr><th>Base imposable</th><td>{money(calc.base)}</td></tr><tr><th>IVA ({calc.iva}%)</th><td>{money(calc.ivaImp)}</td></tr><tr><th>Retenció ({calc.ret}%)</th><td>-{money(calc.retImp)}</td></tr><tr className="total"><th>Total proforma</th><td>{money(calc.total)}</td></tr></tbody></table>
@@ -7444,7 +7577,7 @@ function moveDoc(d,newFolder){setDocs(p=>p.map(x=>x.id===d.id?{...x,folder:newFo
 function sizeTxt(n){return n?((n/1024/1024).toFixed(2)+" MB"):"—"}
 function storageLabel(d){if(d.storage==="generat")return "Document generat dins l’app"; if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
 const generatedDocs878148=[
-  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impOrigen:qOrigen*(+r.pu||0),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.qAct||0)*(+r.pu||0),0)||(+c.import||0);const totalOrigen=rows.reduce((sum,r)=>sum+(+r.qOrigen||0)*(+r.pu||0),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
+  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impOrigen:qOrigen*parseNum8770(r.pu),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.qAct||0)*parseNum8770(r.pu),0)||(+c.import||0);const totalOrigen=rows.reduce((sum,r)=>sum+(+r.qOrigen||0)*parseNum8770(r.pu),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
   ...((data.factures||[]).map(f=>{const base=+f.base||+f.total||0,ded=+f.ded||+f.descompte||0,iva=+f.iva||21,ret=+f.ret||+f.retencio||0,baseImposable=base*(1-ded/100),ivaImp=baseImposable*iva/100,retImp=baseImposable*ret/100,total=+f.total||baseImposable+ivaImp-retImp;return {id:`auto-fac-obra-${f.id||f.numero||Date.now()}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`${f.tipus||"Factura / proforma obra"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"FACTURA").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:total,origen:"Facturació d’obra",docData:{type:"proforma",title:`Proforma ${f.numero||""}`,subtitle:f.data||"",proforma:f,agents:data.agents||[],iva,ret,ded,total,base:baseImposable,ivaImp,retImp}}})),
   ...((data.pressupostosTecnic||[]).map(p=>({id:`auto-pres-tec-${p.id||p.numero||Date.now()}`,auto878148:true,sourceId878193:p.id,folder:"00_DESPATX_TECNIC",nom:`Pressupost honoraris ${p.numero||""}`.trim(),tipus:"PRESSUPOST HONORARIS",data:p.data||"—",size:0,import:baseIva8743(p),origen:"Honoraris tècnics",docData:{...p,type:"pressuposttecnic",title:`PRESSUPOST D’HONORARIS${p.numero?` · ${p.numero}`:""}`}}))),
   ...((data.facturesTecnic||[]).map(f=>({id:`auto-fac-tec-${f.id||f.numero||Date.now()}`,auto878148:true,sourceId878193:f.id,folder:"00_DESPATX_TECNIC",nom:`${f.tipus||"Factura / proforma honoraris"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"HONORARIS").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:totalFactura878120(f),origen:"Honoraris tècnics",docData:{...f,type:"facturatecnica",title:`FACTURA / PROFORMA${f.numero?` · ${f.numero}`:""}`}})))
@@ -7619,7 +7752,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.214.0",
+    app_version:"87.215.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -8024,21 +8157,21 @@ function Modal({title,children,close}){return <div className="modal-backdrop"><d
 function CertPrintV79({doc}){
   const rows=doc.rows||[];
   const current=rows.filter(r=>(+r.qAct||0)>0);
-  const totalAct=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+  const totalAct=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
   return <div className="cert-print-v79">
     <h1>{doc.title}</h1>
     <p className="doc-sub">{doc.subtitle}</p>
     <h3>Relació de partides certificades</h3>
-    <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(totalAct)}</th></tr></tfoot></table>
+    <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(totalAct)}</th></tr></tfoot></table>
     <div className="page-break-v79"></div>
     <h2>Quadre resum de certificació</h2>
     <div className="cert-grid-print-v79">
       <div className="h">Partida</div><div className="h">Ut</div><div className="h">Resum</div><div className="h">CanPres</div><div className="h">PrPres</div><div className="h">ImpPres</div><div className="h">Q ant.</div><div className="h">% ant.</div><div className="h">Imp ant.</div><div className="h">Q act.</div><div className="h">% act.</div><div className="h">Imp act.</div><div className="h">Total origen</div>
       {rows.map(r=><React.Fragment key={r.codi}>
-        <div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div>
-        <div>{qty2(r.qPrev)}</div><div>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div>{money((+r.qPrev||0)*(+r.pu||0))}</div>
-        <div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</div>
-        <div>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</div>
+        <div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*parseNum8770(r.pu))}</div>
+        <div>{qty2(r.qPrev)}</div><div>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div>{money((+r.qPrev||0)*parseNum8770(r.pu))}</div>
+        <div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*parseNum8770(r.pu))}</div>
+        <div>{money(((+r.qPrev||0)+(+r.qAct||0))*parseNum8770(r.pu))}</div>
       </React.Fragment>)}
     </div>
   </div>
@@ -8083,16 +8216,16 @@ function ProformaPrintV81({doc,pf}){
 function CertPrintV81({doc}){
   const rows=doc.rows||[];
   const current=rows.filter(r=>(+r.qAct||0)>0);
-  const totalAct=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+  const totalAct=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
   return <div className="cert-print-v81">
     <h1>{doc.title}</h1><p className="doc-sub">{doc.subtitle}</p>
     <h3>Resum de partides certificades</h3>
-    <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ</th><th>{money(totalAct)}</th></tr></tfoot></table>
+    <table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL CERTIFICACIÓ</th><th>{money(totalAct)}</th></tr></tfoot></table>
     <div className="page-break-v81"></div>
     <h2>Quadre resum de certificació</h2>
     <div className="cert-grid-print-v81">
       <div className="h">Partida</div><div className="h">Ut</div><div className="h">Resum</div><div className="h">CanPres</div><div className="h">PrPres</div><div className="h">ImpPres</div><div className="h">Q ant.</div><div className="h">% ant.</div><div className="h">Imp ant.</div><div className="h">Q act.</div><div className="h">% act.</div><div className="h">Imp act.</div><div className="h">Total origen</div>
-      {rows.map(r=><React.Fragment key={r.codi}><div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*(+r.pu||0))}</div><div>{qty2(r.qPrev)}</div><div>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div>{money((+r.qPrev||0)*(+r.pu||0))}</div><div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</div><div>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</div></React.Fragment>)}
+      {rows.map(r=><React.Fragment key={r.codi}><div>{r.codi}</div><div>{r.ut}</div><div className="concept">{r.concepte}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*parseNum8770(r.pu))}</div><div>{qty2(r.qPrev)}</div><div>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</div><div>{money((+r.qPrev||0)*parseNum8770(r.pu))}</div><div className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</div><div className={(+r.qAct||0)>0?"green":""}>{pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</div><div className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*parseNum8770(r.pu))}</div><div>{money(((+r.qPrev||0)+(+r.qAct||0))*parseNum8770(r.pu))}</div></React.Fragment>)}
     </div>
   </div>
 }
@@ -8101,14 +8234,14 @@ function CertPrintV81({doc}){
 function CertPrintV82({doc}){
 const rows=doc.rows||[];
 const current=rows.filter(r=>(+r.qAct||0)>0);
-const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+const total=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
 return <div className="cert-print-v82">
 <h1>{doc.title}</h1><p>{doc.subtitle}</p>
 <h3>Resum de partides certificades</h3>
-<table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL</th><th>{money(total)}</th></tr></tfoot></table>
+<table><thead><tr><th>Partida</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead><tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr>)}</tbody><tfoot><tr><th colSpan="4">TOTAL</th><th>{money(total)}</th></tr></tfoot></table>
 <div className="page-break-v82"></div>
 <h2>Quadre resum</h2>
-<table><thead><tr><th>Partida</th><th>Concepte</th><th>Q anterior</th><th>Q actual</th><th>Import actual</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qPrev)}</td><td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*(+r.pu||0))}</td><td>{money(((+r.qPrev||0)+(+r.qAct||0))*(+r.pu||0))}</td></tr>)}</tbody></table>
+<table><thead><tr><th>Partida</th><th>Concepte</th><th>Q anterior</th><th>Q actual</th><th>Import actual</th><th>Total origen</th></tr></thead><tbody>{rows.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.concepte}</td><td>{qty2(r.qPrev)}</td><td className={(+r.qAct||0)>0?"green":""}>{qty2(r.qAct)}</td><td className={(+r.qAct||0)>0?"green":""}>{money((+r.qAct||0)*parseNum8770(r.pu))}</td><td>{money(((+r.qPrev||0)+(+r.qAct||0))*parseNum8770(r.pu))}</td></tr>)}</tbody></table>
 </div>
 }
 
@@ -8116,10 +8249,10 @@ return <div className="cert-print-v82">
 function CertPrintV87({doc}){
 const rows=doc.rows||[];
 const current=rows.filter(r=>(+r.qAct||0)>0);
-const total=current.reduce((s,r)=>s+(+r.qAct||0)*(+r.pu||0),0);
+const total=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
 const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
   const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
-  return s+((+r.impOrigen||0)||qOri*(+r.pu||0));
+  return s+((+r.impOrigen||0)||qOri*parseNum8770(r.pu));
 },0);
 let lastCap="__none__";
 return <div className="cert-print-v8718 cert-print-v8771">
@@ -8136,7 +8269,7 @@ return <div className="cert-print-v8718 cert-print-v8771">
     {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718 cert-summary-table-v8771">
       <colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-qty"/><col className="c-pu"/><col className="c-import"/></colgroup>
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
-      <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*(+r.pu||0))}</td></tr>)}</tbody>
+      <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr>)}</tbody>
       <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
     </table>}
   </section>
@@ -8156,9 +8289,9 @@ return <div className="cert-print-v8718 cert-print-v8771">
         <tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q pres.</th><th>PU pres.</th><th>Imp. pres.</th><th>Q ant.</th><th>% ant.</th><th>Imp. ant.</th><th>Q act.</th><th>% act.</th><th>Imp. act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
       </thead>
       <tbody>{rows.map(r=>{
-        const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
+        const pres=(+r.q||0)*parseNum8770(r.pu), ant=(+r.qPrev||0)*parseNum8770(r.pu), act=(+r.qAct||0)*parseNum8770(r.pu);
         const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
-        const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
+        const impOri=(+r.impOrigen||0)||qOri*parseNum8770(r.pu);
         const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
         const showCap=(r.cap||"")!==lastCap;
         if(showCap) lastCap=r.cap||"";
@@ -8206,9 +8339,9 @@ function certPrintHtmlV8772(doc,obra,client){
   const wideRows=printRows.map(r=>{
     const cap=r.cap||"PRESSUPOST IMPORTAT";
     const showCap=cap!==lastCap; lastCap=cap;
-    const pres=(+r.q||0)*(+r.pu||0), ant=(+r.qPrev||0)*(+r.pu||0), act=(+r.qAct||0)*(+r.pu||0);
+    const pres=(+r.q||0)*parseNum8770(r.pu), ant=(+r.qPrev||0)*parseNum8770(r.pu), act=(+r.qAct||0)*parseNum8770(r.pu);
     const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
-    const impOri=(+r.impOrigen||0)||qOri*(+r.pu||0);
+    const impOri=(+r.impOrigen||0)||qOri*parseNum8770(r.pu);
     const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
     return `${showCap?`<tr class="cap"><td colspan="15">${escHtmlV8772(cap)}</td></tr>`:""}<tr>
       <td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b></td><td>${qty2(r.q)}</td><td>${money(r.pu)}</td><td>${money(pres)}</td>
