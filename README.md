@@ -1,4 +1,40 @@
-# APP Control d’Obres V87.216
+# APP Control d’Obres V87.220
+
+## Partida d’administració sense preu previ V87.220
+
+- El formulari de nova partida de certificació incorpora el tipus `Treballs per administració · suma de línies`.
+- En aquest tipus no es demanen ni quantitat ni preu unitari abans de crear la partida.
+- L’usuari passa directament al quadre de feines, hores i materials; el total de les línies és l’import certificat.
+- La partida resultant es desa amb `PU 1 €` i quantitat igual a l’import, de manera que conserva el total exacte i mostra el `100%` quan és nova.
+- Una partida existent sense preu també adopta automàticament aquest model d’import quan s’hi guarden feines per administració.
+
+## Administració acumulativa i percentatges V87.219
+
+- En tornar a obrir un quadre de feines per administració es recuperen totes les línies guardades.
+- Es poden modificar línies existents i afegir-ne de noves sense substituir el contingut anterior.
+- Una línia només desapareix quan l’usuari prem explícitament `Eliminar` i després guarda.
+- Les partides resum d’administració utilitzen `PU 1 €` i una quantitat igual a l’import, preservant els imports de certificacions anteriors.
+- Una partida creada en la certificació actual mostra el `100%` quan el certificat representa la totalitat de la partida.
+- Les provisions i altres partides noves incorporen com a base la mateixa quantitat certificada.
+
+## Dates fixes i biblioteca del client V87.218
+
+- La data de cada certificació queda desada com una data documental fixa i no es recalcula en tornar a obrir l’app.
+- Les dades antigues buides o guardades com `Avui` es consoliden una sola vegada; mai no tornen a canviar diàriament.
+- Crear o editar un pressupost incorpora un botó directe `Afegir partides de la llibreria`.
+- La finestra de selecció comença per les partides relacionades amb el client actual i permet passar a la biblioteca general.
+- Es poden cercar, filtrar per capítol, marcar diverses partides i afegir-les juntes al capítol de destí.
+- La pantalla indica sempre quantes partides hi ha, quantes se’n mostren i permet carregar-ne més sense ocultar la resta.
+
+## Seguiment econòmic, dates i Gantt V87.217
+
+- Facturació mostra les dates en format `DD/MM/AAAA` i comparteix una única data amb la certificació corresponent.
+- El seguiment econòmic compara el pressupost inicial amb el principal actual; mai no suma les dues versions.
+- Mostra pressupost inicial, principal amb modificacions, desviació, import certificat a origen i percentatge executat.
+- Afegeix comparació per capítols i detall de partides, incloent les partides identificades com a fora de pressupost.
+- El Gantt permet configurar inici previst i real, industrials propis/autònoms/externalitzats, personal i hores diàries.
+- La durada pot sortir dels rendiments de mà d’obra dels descompostos o introduir-se manualment.
+- La planificació es veu per capítols i per partides, amb barres previstes, certificades, marques de certificació i percentatges executats.
 
 ## Certificació simple i dos formats d’impressió V87.216
 

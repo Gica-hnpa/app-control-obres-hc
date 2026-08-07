@@ -1,0 +1,22 @@
+V87.220 · PARTIDA D'ADMINISTRACIÓ SENSE PREU PREVI
+
+1. Descomprimeix la carpeta completa de la V87.220.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local que la versió anterior.
+3. NO importis cap JSON: aquesta versió utilitza les dades actuals del navegador.
+
+NOVA PARTIDA PER ADMINISTRACIÓ
+
+1. Entra a l'expedient i obre la certificació corresponent.
+2. Prem «Més accions» i després «Afegir partida extra / provisió».
+3. A «Tipus», escull «Treballs per administració · suma de línies».
+4. Indica el capítol, el codi i el concepte. No cal posar quantitat ni preu.
+5. Prem «Continuar i introduir línies».
+6. Introdueix les feines, hores d'oficial i ajudant/peó i els materials.
+7. Prem «Guardar canvis sense perdre línies».
+
+L'app calcula automàticament la suma de totes les línies i crea la partida amb
+PU 1 € i quantitat igual a l'import certificat. Si la partida és nova, mostra
+el 100%. En tornar a obrir-la, es conserven totes les línies anteriors i se'n
+poden afegir de noves.
+
+La resta de correccions i proteccions de la V87.219 es mantenen íntegrament.

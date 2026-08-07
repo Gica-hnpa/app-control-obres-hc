@@ -451,6 +451,28 @@ function openGmailCompose(to, subject, body){
 
 function todayShort8713(){const d=new Date();return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getFullYear()).slice(-2)}`;}
 
+// V87.218 · La data documental d'una certificació és un valor fix, no una etiqueta dinàmica.
+// Les dades antigues podien contenir "Avui" o una data local. Es consoliden una sola vegada en ISO.
+function certDateISO87218(value,fallback=""){
+  const parsed=parseDate8776(value);
+  return parsed?isoDate8776(parsed):fallback;
+}
+function stableCertificationDate87218(cert={}){
+  const raw=String(cert.data||cert.date||cert.fecha||"").trim();
+  if(raw&&raw.toLowerCase()!=="avui"){
+    const fixed=certDateISO87218(raw,"");
+    if(fixed)return fixed;
+  }
+  const historical=cert.certificationDateSetAt||cert.createdAt||cert.updatedAt||"";
+  return certDateISO87218(historical,todayISO8743());
+}
+function stampCertificationDate87218(cert={},value){
+  const fixed=certDateISO87218(value,"");
+  if(!fixed)return cert;
+  const now=new Date().toISOString();
+  return {...cert,data:fixed,certificationDateSetAt:now,updatedAt:now};
+}
+
 function groupPartidesCapitols8756(rows){
   const out=[];
   let current=null;
@@ -1444,7 +1466,7 @@ function invoiceIvaAmount8746(d){return invoiceNetBase8746(d)*((+d?.iva||0)/100)
 function invoiceRetencioAmount8746(d){return invoiceNetBase8746(d)*((+d?.retencio||0)/100)}
 function invoiceTotal8746(d){return invoiceNetBase8746(d)+invoiceIvaAmount8746(d)-invoiceRetencioAmount8746(d)}
 function pressupostFooter8746(d){const v=d?.validesa||"2 mesos";const taxes=d?.taxesIncloses==="incloses"?"Les taxes, visats o drets administratius necessaris s’inclouen en aquest pressupost, sempre que no s’indiqui el contrari.":"Les taxes, visats, drets administratius o imports d’organismes externs no estan inclosos, llevat que s’indiqui expressament.";return `IVA no inclòs. Pressupost vàlid durant ${v} des de la data d’emissió. ${taxes}`}
-function todayISO8743(){return new Date().toISOString().slice(0,10)}
+function todayISO8743(){return isoDate8776(new Date())}
 function toInputDate8743(v){
   if(!v)return todayISO8743();
   const s=String(v);
@@ -2368,7 +2390,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.216",
+      version:"V87.220",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3575,7 +3597,8 @@ function addCertificacio(){
     const activeBid=d.activeBudgetIdObra||"principal";
     const certs=(d.certificacions||[]).filter(c=>(c.budgetId||"principal")===activeBid);
     const nextNum=(certs.reduce((m,c)=>Math.max(m,+c.numero||0),0)||0)+1;
-    const nova={id:"c"+Date.now(),budgetId:activeBid,numero:String(nextNum),data:todayShort8713(),estat:"Pendent",import:0};
+    const now=new Date().toISOString();
+    const nova={id:"c"+Date.now(),budgetId:activeBid,numero:String(nextNum),data:todayISO8743(),certificationDateSetAt:now,createdAt:now,updatedAt:now,estat:"Pendent",import:0};
     return {...d,certificacions:[...(d.certificacions||[]),nova]};
   });
 }
@@ -3595,10 +3618,10 @@ setD(obraId,d=>({...d,partides:d.partides.map(r=>{
   return next;
 })}))
 }
-function updateCertDate(id,value){setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))}
+function updateCertDate(id,value){setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))}
 
 function updateCertDateSafe8720(id,value){
-  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))
+  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))
 }
 function deleteCertificacioSafe8720(id){
   if(!confirm("Eliminar aquesta certificació?"))return;
@@ -3606,7 +3629,7 @@ function deleteCertificacioSafe8720(id){
 }
 
 function updateCertDate8721(id,value){
-  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))
+  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))
 }
 function deleteCertificacio8721(id){
   if(!confirm("Eliminar aquesta certificació?"))return;
@@ -3640,7 +3663,8 @@ function saveCert(){
     const rows=(d.partides||[]).filter(r=>(r.budgetId||"principal")===activeBid);
     const total=rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
     const rest=(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBid&&+c.numero===n));
-    const cert={id:"c"+Date.now(),budgetId:activeBid,numero:String(n),data:certInfo.data,estat:"Guardada",import:total,updatedAt:new Date().toISOString()};
+    const now=new Date().toISOString();
+    const cert={id:"c"+Date.now(),budgetId:activeBid,numero:String(n),data:certDateISO87218(certInfo.data,todayISO8743()),certificationDateSetAt:now,createdAt:now,estat:"Guardada",import:total,updatedAt:now};
     return {...d,certificacions:[...rest,cert].sort((a,b)=>String(a.budgetId||"principal").localeCompare(String(b.budgetId||"principal"))||(+a.numero)-(+b.numero))};
   });
 }
@@ -5431,6 +5455,7 @@ function mergeBudgetData8786(globalData,bid,nextScope){
   return normalizeBudgetedData8791({
     ...globalData,
     activeBudgetIdObra:id,
+    ganttConfig87217:nextScope.ganttConfig87217??globalData.ganttConfig87217,
     budgetGroups:ensureBudgetGroups8786(globalData).groups.filter(g=>g.id!=="principal"),
     partides:[...(globalData.partides||[]).filter(not),...(nextScope.partides||[]).map(r=>({...r,budgetId:id}))],
     pressupostos:[...(globalData.pressupostos||[]).filter(not),...(nextScope.pressupostos||[]).map(p=>({...p,budgetId:id}))],
@@ -5465,7 +5490,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.216",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.220",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -5549,12 +5574,13 @@ function normalizeBudgetedData8791(data={}){
   const active=validIds.has(d.activeBudgetIdObra)?d.activeBudgetIdObra:"principal";
   const certificacions=(d.certificacions||[]).map(c=>{
     const n=+c.numero||0;
-    if(!n)return c;
+    const fixedDate=stableCertificationDate87218(c);
+    if(!n)return {...c,data:fixedDate};
     const bid=c.budgetId||"principal";
     const calculat=(d.partides||[])
       .filter(r=>(r.budgetId||"principal")===bid)
       .reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
-    return {...c,import:Math.abs(calculat)>0.000001?calculat:(+c.import||0)};
+    return {...c,data:fixedDate,import:Math.abs(calculat)>0.000001?calculat:(+c.import||0)};
   });
   return {...d,budgetGroups:groups,pressupostos,certificacions,activeBudgetIdObra:active};
 }
@@ -5660,54 +5686,72 @@ function budgetMetric8789(data,g){
 }
 function GlobalRendibilitat8789({data,setData,activeBudgetId,setActiveBudgetId}){
   const groups=ensureBudgetGroups8786(data).groups;
-  const metricsRaw=groups.map(g=>budgetMetric8789(data,g));
-  const seenMetrics878108=new Set();
-  const metrics=metricsRaw.filter(m=>{const sig=m.rows.map(r=>`${r.codi||""}:${r.cap||""}`).sort().join("|")+`__${Math.round((m.pressupost||0)*100)}`; if(m.id!=="principal"&&sig&&seenMetrics878108.has(sig))return false; seenMetrics878108.add(sig); return true;});
-  const principal=metrics.find(m=>m.id==="principal")||metrics[0]||{pressupost:0,certificat:0};
-  const base=principal.pressupost||0;
-  const afegits=metrics.filter(m=>m.id!=="principal"&&!["estalvi","imprevist","pendent"].includes(m.impact.key)).reduce((s,m)=>s+m.pressupost,0);
-  const imprevistos=metrics.filter(m=>m.impact.key==="imprevist").reduce((s,m)=>s+m.pressupost,0);
-  const pendents=metrics.filter(m=>m.impact.key==="pendent"||m.impact.key==="fora").reduce((s,m)=>s+m.pressupost,0);
-  const estalvis=metrics.filter(m=>m.impact.key==="estalvi").reduce((s,m)=>s+m.pressupost,0);
-  const totalActual=base+afegits+imprevistos+pendents-estalvis;
-  const totalCert=metrics.reduce((s,m)=>s+m.certificat,0);
-  const desviacioActual=totalActual-base;
-  const pctActual=base?desviacioActual/base*100:0;
-  const pctCert=base?totalCert/base*100:0;
-  const byImpact={base,afegits,imprevistos,pendents,estalvis};
-  function updateGroup(id,patch){
-    if(id==="principal")return;
-    setData?.(d=>{const groups=ensureBudgetGroups8786(d).groups.filter(g=>g.id!=="principal").map(g=>g.id===id?{...g,...patch}:g);return {...d,budgetGroups:groups,updatedAt:new Date().toISOString()}})
-  }
-  const allCaps={};
-  metrics.forEach(m=>m.capitols.forEach(c=>{if(!allCaps[c.cap])allCaps[c.cap]={cap:c.cap,pressupost:0,certificat:0};allCaps[c.cap].pressupost+=c.pressupost;allCaps[c.cap].certificat+=c.certificat;}));
-  const caps=Object.values(allCaps).sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
+  const metrics=groups.map(g=>budgetMetric8789(data,g));
+  const label=m=>normalizeSearch878191(`${m?.nom||""} ${m?.tipus||""}`);
+  const initial=metrics.find(m=>m.id!=="principal"&&label(m).includes("PRESSUPOST INICIAL"))
+    ||metrics.find(m=>m.id!=="principal"&&label(m).includes("INICIAL"))
+    ||metrics.find(m=>m.id!=="principal"&&m.pressupost>0)
+    ||metrics.find(m=>m.id==="principal")
+    ||metrics[0]
+    ||{id:"principal",nom:"Pressupost inicial",rows:[],pressupost:0,certificat:0};
+  const current=metrics.find(m=>m.id==="principal")
+    ||metrics.find(m=>label(m).includes("MODIFIC"))
+    ||metrics[0]
+    ||initial;
+  const initialTotal=initial.pressupost||0;
+  const currentTotal=current.pressupost||0;
+  const deviation=currentTotal-initialTotal;
+  const deviationPct=initialTotal?deviation/initialTotal*100:0;
+  const outsideRows=(current.rows||[]).filter(r=>{
+    const txt=normalizeSearch878191(`${r.cap||""} ${r.tipus||""} ${r.concepte||""}`);
+    return !!r.noPressupost||txt.includes("FORA PRESSUPOST");
+  });
+  const outsideTotal=outsideRows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+  const totalCert=current.certificat||0;
+  const pctCert=currentTotal?totalCert/currentTotal*100:0;
+  const initialByCode=new Map((initial.rows||[]).map(r=>[String(r.codi||"").trim(),r]));
+  const capMap=new Map();
+  const addCap=(row,kind)=>{
+    const cap=String(row.cap||"Sense capítol").trim()||"Sense capítol";
+    if(!capMap.has(cap))capMap.set(cap,{cap,initial:0,current:0,certified:0,rows:[]});
+    const item=capMap.get(cap);
+    const value=(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0);
+    if(kind==="initial")item.initial+=value;
+    else{
+      item.current+=value;
+      item.certified+=certQtyTotal8789(row)*parseNum8770(row.pu);
+      item.rows.push(row);
+    }
+  };
+  (initial.rows||[]).forEach(r=>addCap(r,"initial"));
+  (current.rows||[]).forEach(r=>addCap(r,"current"));
+  const caps=[...capMap.values()].sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
+  const otherVersions=metrics.filter(m=>m.id!==initial.id&&m.id!==current.id);
   return <div className="stack rend-global-v8789">
-    <Card title="Rendibilitat i desviacions · visió global de l’obra">
-      <div className="rend-dashboard-v8789">
-        <div className={`rend-main-kpi-v8789 ${desviacioActual>0?"bad":"good"}`}><span>Desviació prevista sobre pressupost inicial</span><b>{desviacioActual>0?"+":""}{money(desviacioActual)}</b><small>{pct(pctActual)} respecte del pressupost principal</small></div>
-        <div className="rend-ring-card-v8789"><div className="ring-v8774" style={{background:`conic-gradient(#2563eb 0 ${Math.min(140,pctCert)*3.6}deg,#e5e7eb ${Math.min(140,pctCert)*3.6}deg 360deg)`}}><b>{new Intl.NumberFormat("ca-ES",{minimumFractionDigits:1,maximumFractionDigits:1}).format(pctCert)}%</b><span>certificat</span></div><em>Certificat total a origen: {money(totalCert)}</em></div>
-        <div className="rend-metric-grid-v8789">
-          <div><span>Pressupost inicial</span><b>{money(base)}</b></div>
-          <div className="info"><span>Modificats / extres aprovats</span><b>{money(afegits)}</b></div>
-          <div className="bad"><span>Imprevistos / sobrecostos</span><b>{money(imprevistos)}</b></div>
-          <div className="warn"><span>Fora pressupost / pendents</span><b>{money(pendents)}</b></div>
-          <div className="good"><span>Estalvis</span><b>-{money(estalvis)}</b></div>
-          <div><span>Total actual previst</span><b>{money(totalActual)}</b></div>
-        </div>
+    <Card title="Seguiment econòmic · pressupost inicial i pressupost actual">
+      <div className="economic-definition-v87217"><b>Aquesta pantalla no calcula rendibilitat empresarial.</b><span>Compara el pressupost inicial amb el pressupost principal actual, que ja incorpora les modificacions. Les dues versions no se sumen mai.</span></div>
+      <div className="economic-summary-v87217">
+        <div className="economic-card-v87217 initial"><small>1 · Pressupost inicial de referència</small><b>{money(initialTotal)}</b><span>{initial.nom||"Pressupost inicial"} · {(initial.rows||[]).length} partides</span></div>
+        <div className="economic-arrow-v87217">→</div>
+        <div className="economic-card-v87217 current"><small>2 · Pressupost actual amb modificacions</small><b>{money(currentTotal)}</b><span>{current.nom||"Pressupost principal"} · {(current.rows||[]).length} partides</span></div>
+        <div className={`economic-card-v87217 deviation ${deviation>0?"bad":"good"}`}><small>Desviació respecte de l’inicial</small><b>{deviation>0?"+":""}{money(deviation)}</b><span>{deviation>0?"+":""}{pct(deviationPct)} sobre {money(initialTotal)}</span></div>
       </div>
-      <div className="rend-stack-bars-v8789">
-        <div><span>Base</span><b style={{width:`${totalActual?Math.max(8,base/totalActual*100):0}%`}}/></div>
-        <div><span>Aprovats</span><b className="info" style={{width:`${totalActual?Math.max(4,afegits/totalActual*100):0}%`}}/></div>
-        <div><span>Imprevistos</span><b className="bad" style={{width:`${totalActual?Math.max(4,imprevistos/totalActual*100):0}%`}}/></div>
-        <div><span>Pendents</span><b className="warn" style={{width:`${totalActual?Math.max(4,pendents/totalActual*100):0}%`}}/></div>
+      <div className="economic-kpis-v87217">
+        <div><span>Total previst actual</span><b>{money(currentTotal)}</b><small>No se suma el pressupost inicial</small></div>
+        <div className="warn"><span>Fora pressupost inclòs a l’actual</span><b>{money(outsideTotal)}</b><small>{outsideRows.length} partides detectades</small></div>
+        <div className="info"><span>Certificat total a origen</span><b>{money(totalCert)}</b><small>Només sobre el pressupost actual</small></div>
+        <div><span>Execució econòmica</span><b>{pct(pctCert)}</b><small>{money(totalCert)} / {money(currentTotal)}</small></div>
       </div>
     </Card>
-    <Card title="Paquets econòmics de l’obra" action={<span className="muted">Classifica cada pressupost perquè la desviació surti amb el color correcte.</span>}>
-      <div className="budget-analysis-grid-v8789">{metrics.map(m=>{const selected=(activeBudgetId||"principal")===m.id;return <button key={m.id} className={`budget-analysis-card-v8789 ${m.impact.tone} ${selected?"active":""}`} onClick={()=>setActiveBudgetId?.(m.id)}><div><b>{m.nom}</b><small>{m.impact.label}</small></div><strong>{money(m.pressupost)}</strong><em>Certificat: {money(m.certificat)}</em><span>{m.rows.length} partides</span>{m.id!=="principal"&&<select value={m.tipus||"Fora pressupost"} onClick={e=>e.stopPropagation()} onChange={e=>updateGroup(m.id,{tipus:e.target.value})}><option>Fora pressupost</option><option>Imprevist / sobrecost</option><option>Modificat aprovat</option><option>Extra aprovat pel client</option><option>Extra pendent d’aprovació</option><option>Estalvi / partida no executada</option><option>Altres</option></select>}</button>})}</div>
+    <Card title="Versions utilitzades en el càlcul">
+      <div className="economic-version-pair-v87217">
+        <button className={activeBudgetId===initial.id?"active":""} onClick={()=>setActiveBudgetId?.(initial.id)}><small>BASE DE COMPARACIÓ</small><b>{initial.nom}</b><strong>{money(initialTotal)}</strong><span>No se suma: només serveix de referència inicial.</span></button>
+        <button className={activeBudgetId===current.id?"active":""} onClick={()=>setActiveBudgetId?.(current.id)}><small>PRESSUPOST VIGENT</small><b>{current.nom}</b><strong>{money(currentTotal)}</strong><span>Aquest és el total previst actual.</span></button>
+      </div>
+      {otherVersions.length>0&&<details className="economic-other-versions-v87217"><summary>Altres versions separades ({otherVersions.length})</summary><div>{otherVersions.map(m=><button key={m.id} onClick={()=>setActiveBudgetId?.(m.id)}><span>{m.nom}</span><b>{money(m.pressupost)}</b><small>No inclosa automàticament en el total actual</small></button>)}</div></details>}
     </Card>
-    <Card title="Desviació global per capítols">
-      <div className="rent-table-wrap-v8774"><table className="rent-table-v8774"><thead><tr><th>Capítol</th><th>Pressupost actual</th><th>Certificat a origen</th><th>Desviació certificada</th><th>% certificat</th><th>Visual</th></tr></thead><tbody>{caps.length===0?<tr><td colSpan="6"><Empty text="Encara no hi ha pressupost."/></td></tr>:caps.map(c=>{const dif=c.certificat-c.pressupost;const pc=c.pressupost?c.certificat/c.pressupost*100:0;return <tr key={c.cap}><td className="text-left"><b>{c.cap}</b></td><td>{money(c.pressupost)}</td><td>{money(c.certificat)}</td><td><b className={dif>0?"bad-text":"good-text"}>{dif>0?"+":""}{money(dif)}</b></td><td>{pct(pc)}</td><td><div className="cap-bar-v8774"><span className={dif>0?"bad":"good"} style={{width:`${Math.min(100,Math.abs(pc))}%`}}/></div></td></tr>})}</tbody></table></div>
+    <Card title="Comparació i execució per capítols">
+      <div className="economic-chapter-table-wrap-v87217"><table className="economic-chapter-table-v87217"><thead><tr><th>Capítol</th><th>Inicial</th><th>Actual + modificacions</th><th>Desviació</th><th>Certificat a origen</th><th>% executat</th><th>Detall</th></tr></thead><tbody>{caps.length===0?<tr><td colSpan="7"><Empty text="Encara no hi ha pressupost."/></td></tr>:caps.map(c=>{const dif=c.current-c.initial;const exec=c.current?c.certified/c.current*100:0;return <tr key={c.cap}><td className="text-left"><b>{c.cap}</b><small>{c.rows.length} partides actuals</small></td><td>{money(c.initial)}</td><td>{money(c.current)}</td><td><b className={dif>0?"bad-text":dif<0?"good-text":""}>{dif>0?"+":""}{money(dif)}</b></td><td>{money(c.certified)}</td><td><div className="economic-progress-v87217"><span><i style={{width:`${Math.min(100,Math.max(0,exec))}%`}}/></span><b>{pct(exec)}</b></div></td><td><details className="economic-cap-detail-v87217"><summary>Partides</summary><div>{c.rows.map(r=>{const old=initialByCode.get(String(r.codi||"").trim());const oldValue=old?(parseNum8770(old.q)||0)*(parseNum8770(old.pu)||0):0;const nowValue=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);const certValue=certQtyTotal8789(r)*parseNum8770(r.pu);return <span key={r.id||`${c.cap}-${r.codi}`}><b>{r.codi||"—"} · {r.concepte}</b><em>Inicial {money(oldValue)} · Actual {money(nowValue)} · Certificat {money(certValue)}</em></span>})}</div></details></td></tr>})}</tbody></table></div>
     </Card>
   </div>
 }
@@ -5752,19 +5796,127 @@ function RentabilitatObra8773({data,setData}){
     <div className="rent-two-v8774"><Card title="Capítols amb estalvi"><div className="chapter-bars-v8774 good">{caps.filter(c=>c.pressupost>=c.certificat).slice(0,8).map(c=><div key={c.cap}><span>{c.cap}</span><em>{money(c.pressupost-c.certificat)}</em><b style={{width:`${pressupost?Math.max(4,(c.pressupost-c.certificat)/pressupost*100):0}%`}}/></div>)}</div></Card><Card title="Capítols amb sobrecost"><div className="chapter-bars-v8774 bad">{caps.filter(c=>c.certificat>c.pressupost).slice(0,8).map(c=><div key={c.cap}><span>{c.cap}</span><em>{money(c.certificat-c.pressupost)}</em><b style={{width:`${pressupost?Math.max(4,(c.certificat-c.pressupost)/pressupost*100):0}%`}}/></div>)}</div></Card></div>
   </div>
 }
-function GanttObra878149({data}){
-  const parts=(data?.partides||[]).filter(r=>String(r.concepte||"").trim()).slice(0,18);
-  const certs=(data?.certificacions||[]).filter(Boolean);
-  const total=parts.reduce((s,r)=>s+(+r.q||0),0)||1;
-  let acc=0;
-  const rows=parts.map((r,i)=>{
-    const q=(+r.q||1); const w=Math.max(6,Math.min(100,(q/total)*100)); const left=Math.min(88,(acc/total)*100); acc+=q;
-    const certPct=Math.min(100,Math.max(0,((+r.certActual||0)+Object.values(r.certsByNum||{}).reduce((a,b)=>a+(+b||0),0))/(+r.q||1)*100));
-    return {...r,left,w,certPct,i};
+function laborHoursFromBreakdown87217(row){
+  const lines=row?.descompostTable?.rows||[];
+  let section="";
+  return lines.reduce((sum,line)=>{
+    const concept=normalizeSearch878191(line?.concepte||"");
+    if(line?.isSection){section=concept;return sum}
+    const unit=normalizeSearch878191(line?.ut||"");
+    const isLabor=unit==="H"||unit.includes("HORA")||section.includes("MA D OBRA")||section.includes("MANO DE OBRA");
+    return isLabor?sum+(parseNum8770(line?.q)||0):sum;
+  },0)*(parseNum8770(row?.q)||0);
+}
+function addCalendarDays87217(value,days){
+  const d=parseDate8776(value)||new Date();
+  const out=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  out.setDate(out.getDate()+Math.max(0,Math.round(days||0)));
+  return isoDate8776(out);
+}
+function addWorkDays87217(value,days){
+  const d=parseDate8776(value)||new Date();
+  const out=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  let remaining=Math.max(0,Math.round(days||0));
+  while(remaining>0){out.setDate(out.getDate()+1);if(out.getDay()!==0&&out.getDay()!==6)remaining--}
+  return isoDate8776(out);
+}
+function calendarDiff87217(a,b){
+  const aa=parseDate8776(a),bb=parseDate8776(b);
+  return aa&&bb?Math.max(0,Math.round((bb-aa)/86400000)):0;
+}
+function GanttObra878149({data,setData}){
+  const parts=(data?.partides||[]).filter(r=>String(r.concepte||"").trim());
+  const certs=(data?.certificacions||[]).filter(Boolean).slice().sort((a,b)=>(+a.numero||0)-(+b.numero||0));
+  const earliestCert=certs.map(c=>isoDate8776(parseDate8776(c.data))).filter(Boolean).sort()[0]||"";
+  const stored=data?.ganttConfig87217||{};
+  const cfg={
+    plannedStart:stored.plannedStart||todayISO8743(),
+    actualStart:stored.actualStart||earliestCert||"",
+    resources:stored.resources||[],
+    capPlans:stored.capPlans||{},
+    ...stored
+  };
+  const[setupOpen,setSetupOpen]=useState(()=>!(stored.resources||[]).length);
+  const[openCaps,setOpenCaps]=useState({});
+  const[view,setView]=useState("capitols");
+  function saveCfg(patch){setData?.(d=>({...d,ganttConfig87217:{...(d.ganttConfig87217||{}),...patch,updatedAt:new Date().toISOString()},updatedAt:new Date().toISOString()}))}
+  function addResource(){
+    const id=`rec-${Date.now()}`;
+    saveCfg({resources:[...(cfg.resources||[]),{id,nom:"Nou industrial / colla",tipus:"Propi",persones:2,horesDia:8}]});
+    setSetupOpen(true);
+  }
+  function updateResource(id,patch){saveCfg({resources:(cfg.resources||[]).map(r=>r.id===id?{...r,...patch}:r)})}
+  function deleteResource(id){if(!confirm("Eliminar aquest industrial o recurs del planning?"))return;saveCfg({resources:(cfg.resources||[]).filter(r=>r.id!==id),capPlans:Object.fromEntries(Object.entries(cfg.capPlans||{}).map(([cap,p])=>[cap,p.resourceId===id?{...p,resourceId:""}:p]))})}
+  function updateCapPlan(cap,patch){saveCfg({capPlans:{...(cfg.capPlans||{}),[cap]:{...(cfg.capPlans||{})[cap],...patch}}})}
+  const capRows=Object.values(parts.reduce((map,row)=>{
+    const cap=String(row.cap||"Sense capítol").trim()||"Sense capítol";
+    if(!map[cap])map[cap]={cap,rows:[],budget:0,laborHours:0,certified:0};
+    map[cap].rows.push(row);
+    map[cap].budget+=(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0);
+    map[cap].laborHours+=laborHoursFromBreakdown87217(row);
+    map[cap].certified+=certQtyTotal8789(row)*parseNum8770(row.pu);
+    return map;
+  },{})).sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
+  const resourceCursor={};
+  const planned=capRows.map((cap,index)=>{
+    const saved=cfg.capPlans?.[cap.cap]||{};
+    const resource=cfg.resources.find(r=>r.id===saved.resourceId)||cfg.resources[index%Math.max(cfg.resources.length,1)]||null;
+    const capacity=Math.max(1,(parseNum8770(resource?.persones)||1)*(parseNum8770(resource?.horesDia)||8));
+    const estimatedDays=cap.laborHours>0?Math.max(1,Math.ceil(cap.laborHours/capacity)):0;
+    const duration=Math.max(1,parseNum8770(saved.durationDays)||estimatedDays||1);
+    const cursorKey=resource?.id||`unassigned-${index}`;
+    const automaticStart=resourceCursor[cursorKey]||cfg.plannedStart;
+    const start=saved.start||automaticStart;
+    const end=addWorkDays87217(start,duration-1);
+    resourceCursor[cursorKey]=addWorkDays87217(end,1);
+    const events=certs.map(c=>{
+      const value=cap.rows.reduce((s,r)=>s+certQty8783(r,+c.numero)*parseNum8770(r.pu),0);
+      return {cert:c,value,date:isoDate8776(parseDate8776(c.data))};
+    }).filter(x=>x.value>0&&x.date);
+    const actualStart=events[0]?.date||"";
+    const actualEnd=events[events.length-1]?.date||"";
+    const executed=cap.budget?cap.certified/cap.budget*100:0;
+    return {...cap,resource,saved,duration,estimatedDays,start,end,actualStart,actualEnd,executed,events,needsDuration:!saved.durationDays&&!estimatedDays};
   });
-  return <Card title="Planificació / Gantt orientatiu" action={<span className="gantt-note-v87149">Pressupost vs certificació</span>}>
-    <div className="gantt-wrap-v87149">{rows.length===0?<Empty text="Encara no hi ha partides per generar diagrama."/>:rows.map(r=><div className="gantt-row-v87149" key={(r.codi||'')+r.i}><div><b>{r.codi||'—'}</b><span>{r.concepte}</span></div><div className="gantt-track-v87149"><i style={{left:r.left+'%',width:r.w+'%'}}/><em style={{left:r.left+'%',width:(r.w*r.certPct/100)+'%'}}/></div><small>{Math.round(r.certPct)}%</small></div>)}<div className="gantt-legend-v87149"><span><i/> Pressupost previst</span><span><em/> Certificat a origen</span><b>{certs.length} certificació/ns</b></div></div>
-  </Card>
+  const timelineDates=[cfg.plannedStart,cfg.actualStart,...planned.flatMap(x=>[x.start,x.end,x.actualStart,x.actualEnd])].filter(Boolean).sort();
+  const timelineStart=timelineDates[0]||todayISO8743();
+  const timelineEnd=timelineDates[timelineDates.length-1]||addCalendarDays87217(timelineStart,27);
+  const totalDays=Math.max(28,calendarDiff87217(timelineStart,timelineEnd)+7);
+  const pos=date=>Math.min(100,Math.max(0,calendarDiff87217(timelineStart,date)/totalDays*100));
+  const width=(a,b)=>Math.max(1.5,(calendarDiff87217(a,b)+1)/totalDays*100);
+  const weeks=Array.from({length:Math.ceil(totalDays/7)+1},(_,i)=>({date:addCalendarDays87217(timelineStart,i*7),left:i*7/totalDays*100}));
+  const partPlan=(row,capPlan,index)=>{
+    const totalWeight=capPlan.rows.reduce((s,r)=>s+(laborHoursFromBreakdown87217(r)||((parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0))||1),0)||1;
+    const before=capPlan.rows.slice(0,index).reduce((s,r)=>s+(laborHoursFromBreakdown87217(r)||((parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0))||1),0);
+    const weight=laborHoursFromBreakdown87217(row)||((parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0))||1;
+    const start=addWorkDays87217(capPlan.start,Math.floor(before/totalWeight*capPlan.duration));
+    const days=Math.max(1,Math.ceil(weight/totalWeight*capPlan.duration));
+    const end=addWorkDays87217(start,days-1);
+    const events=certs.map(c=>({c,date:isoDate8776(parseDate8776(c.data)),q:certQty8783(row,+c.numero)})).filter(x=>x.q>0&&x.date);
+    const actualStart=events[0]?.date||"",actualEnd=events[events.length-1]?.date||"";
+    const progress=(parseNum8770(row.q)||0)?certQtyTotal8789(row)/(parseNum8770(row.q)||1)*100:0;
+    return {start,end,actualStart,actualEnd,progress};
+  };
+  return <div className="stack gantt-pro-v87217">
+    <Card title="1 · Configuració prèvia del planning" action={<button className="secondary" onClick={()=>setSetupOpen(v=>!v)}>{setupOpen?"Tancar configuració":"Obrir configuració"}</button>}>
+      <div className="gantt-config-summary-v87217"><div><small>Inici previst</small><b>{fmtAppDate8748(cfg.plannedStart)}</b></div><div><small>Inici real</small><b>{cfg.actualStart?fmtAppDate8748(cfg.actualStart):"Pendent"}</b></div><div><small>Industrials / colles</small><b>{cfg.resources.length}</b></div><div><small>Capítols</small><b>{capRows.length}</b></div></div>
+      {setupOpen&&<div className="gantt-config-v87217">
+        <div className="gantt-date-config-v87217"><label><span>Data prevista d’inici d’obra</span><input type="date" value={cfg.plannedStart} onChange={e=>saveCfg({plannedStart:e.target.value})}/></label><label><span>Data real d’inici</span><input type="date" value={cfg.actualStart||""} onChange={e=>saveCfg({actualStart:e.target.value})}/><small>Si queda buida, s’utilitza la primera certificació.</small></label></div>
+        <div className="gantt-resource-head-v87217"><div><b>Quins industrials o recursos intervindran?</b><span>Indica si són propis, autònoms o externalitzats i la capacitat de treball.</span></div><button className="primary" onClick={addResource}>+ Afegir industrial / colla</button></div>
+        <div className="gantt-resource-list-v87217">{cfg.resources.length===0?<Empty text="Afegeix com a mínim un industrial o una colla abans de generar el Gantt."/>:cfg.resources.map(r=><div key={r.id}><input value={r.nom||""} onChange={e=>updateResource(r.id,{nom:e.target.value})}/><select value={r.tipus||"Propi"} onChange={e=>updateResource(r.id,{tipus:e.target.value})}><option>Propi</option><option>Autònom</option><option>Externalitzat</option></select><label><span>Persones</span><input type="number" min="1" value={r.persones||1} onChange={e=>updateResource(r.id,{persones:+e.target.value||1})}/></label><label><span>Hores/dia</span><input type="number" min="1" max="24" value={r.horesDia||8} onChange={e=>updateResource(r.id,{horesDia:+e.target.value||8})}/></label><button className="danger small" onClick={()=>deleteResource(r.id)}>Eliminar</button></div>)}</div>
+      </div>}
+    </Card>
+    <Card title="2 · Assignació de capítols i durades" action={<span className="gantt-note-v87149">Rendiments del descompost + capacitat de la colla</span>}>
+      {cfg.resources.length===0?<div className="gantt-blocked-v87217"><b>Primer configura els industrials.</b><span>No es genera un planning fictici sense saber qui executarà les feines.</span><button className="primary" onClick={()=>setSetupOpen(true)}>Configurar ara</button></div>:<div className="gantt-cap-config-list-v87217">{planned.map(cap=><div key={cap.cap}><b>{cap.cap}</b><span>{cap.rows.length} partides · {cap.laborHours>0?`${qty2(cap.laborHours)} h de mà d’obra detectades`:"Sense hores detectades al descompost"}</span><select value={cap.resource?.id||""} onChange={e=>updateCapPlan(cap.cap,{resourceId:e.target.value})}>{cfg.resources.map(r=><option key={r.id} value={r.id}>{r.nom} · {r.tipus}</option>)}</select><label><span>Durada (dies)</span><input type="number" min="1" value={cap.saved.durationDays||cap.estimatedDays||""} placeholder="Manual" onChange={e=>updateCapPlan(cap.cap,{durationDays:+e.target.value||""})}/></label><label><span>Inici manual</span><input type="date" value={cap.saved.start||""} onChange={e=>updateCapPlan(cap.cap,{start:e.target.value})}/></label>{cap.needsDuration?<em className="warn-text">Falta durada</em>:<em>{fmtAppDate8748(cap.start)} → {fmtAppDate8748(cap.end)}</em>}</div>)}</div>}
+    </Card>
+    <Card title="3 · Gantt previst comparat amb certificacions" action={<div className="actions-inline"><select value={view} onChange={e=>setView(e.target.value)}><option value="capitols">Vista general per capítols</option><option value="partides">Capítols + partides obertes</option></select><button className="secondary" onClick={()=>setOpenCaps(Object.fromEntries(planned.map(c=>[c.cap,true])))}>Obrir tots</button><button className="secondary" onClick={()=>setOpenCaps({})}>Tancar tots</button></div>}>
+      {cfg.resources.length===0?<Empty text="Configura primer els industrials i les dates de l’obra."/>:<div className="gantt-scroll-v87217"><div className="gantt-canvas-v87217">
+        <div className="gantt-axis-v87217"><div>Capítol / partida</div><div className="gantt-axis-track-v87217">{weeks.map(w=><span key={w.date} style={{left:`${w.left}%`}}>{fmtAppDate8748(w.date)}</span>)}{certs.map(c=>{const date=isoDate8776(parseDate8776(c.data));return date?<b className="cert-point-v87217" key={c.id||c.numero} style={{left:`${pos(date)}%`}} title={`Certificació ${c.numero} · ${fmtAppDate8748(date)}`}>C{c.numero}</b>:null})}</div><div>%</div></div>
+        {planned.map(cap=>{const open=view==="partides"&&(openCaps[cap.cap]??false);return <React.Fragment key={cap.cap}><div className="gantt-line-v87217 chapter"><button onClick={()=>{setView("partides");setOpenCaps(o=>({...o,[cap.cap]:!open}))}}><b>{open?"▾":"▸"} {cap.cap}</b><span>{cap.resource?.nom||"Recurs pendent"} · {cap.duration} dies</span></button><div className="gantt-time-v87217">{weeks.map(w=><i key={w.date} style={{left:`${w.left}%`}}/>)}<span className="planned" style={{left:`${pos(cap.start)}%`,width:`${width(cap.start,cap.end)}%`}} title={`Previst ${fmtAppDate8748(cap.start)} - ${fmtAppDate8748(cap.end)}`}/>{cap.actualStart&&<span className="actual" style={{left:`${pos(cap.actualStart)}%`,width:`${width(cap.actualStart,cap.actualEnd||cap.actualStart)}%`}} title={`Certificat entre ${fmtAppDate8748(cap.actualStart)} i ${fmtAppDate8748(cap.actualEnd)} · ${cap.events.map(e=>`C${e.cert.numero}`).join(", ")}`}/>}</div><strong>{pct(cap.executed)}</strong></div>{open&&cap.rows.map((row,index)=>{const pp=partPlan(row,cap,index);return <div className="gantt-line-v87217 part" key={row.id||`${cap.cap}-${row.codi}-${index}`}><div><b>{row.codi||"—"}</b><span>{row.concepte}</span></div><div className="gantt-time-v87217">{weeks.map(w=><i key={w.date} style={{left:`${w.left}%`}}/>)}<span className="planned" style={{left:`${pos(pp.start)}%`,width:`${width(pp.start,pp.end)}%`}}/>{pp.actualStart&&<span className="actual" style={{left:`${pos(pp.actualStart)}%`,width:`${width(pp.actualStart,pp.actualEnd||pp.actualStart)}%`}}/>}</div><strong>{pct(pp.progress)}</strong></div>})}</React.Fragment>})}
+      </div></div>}
+      <div className="gantt-legend-v87217"><span><i className="planned"/> Planificació prevista</span><span><i className="actual"/> Execució detectada per certificacions</span><b>{certs.length} certificacions · escala de {fmtAppDate8748(timelineStart)} a {fmtAppDate8748(addCalendarDays87217(timelineStart,totalDays))}</b></div>
+    </Card>
+  </div>
 }
 
 function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert,client,obra,clientHistoricalPartides=[],partidaLibrary=[],setPartidaLibrary}){
@@ -5881,7 +6033,8 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
       const rows=(d.partides||[]).filter(r=>(r.budgetId||"principal")===activeBudgetId);
       const total=rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
       const rest=(d.certificacions||[]).filter(c=>!(((c.budgetId||"principal")===activeBudgetId)&&(+c.numero===n)));
-      const cert={id:"c"+Date.now(),budgetId:activeBudgetId,numero:String(n),data:certInfo.data,estat:"Guardada",import:total,updatedAt:new Date().toISOString()};
+      const now=new Date().toISOString();
+      const cert={id:"c"+Date.now(),budgetId:activeBudgetId,numero:String(n),data:certDateISO87218(certInfo.data,todayISO8743()),certificationDateSetAt:now,createdAt:now,estat:"Guardada",import:total,updatedAt:now};
       return {...d,activeBudgetIdObra:activeBudgetId,certificacions:[...rest,cert].sort((a,b)=>(+a.numero)-(+b.numero)),updatedAt:new Date().toISOString()};
     });
   }
@@ -5889,12 +6042,13 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     setData(d=>{
       const certs=(d.certificacions||[]).filter(c=>(c.budgetId||"principal")===activeBudgetId);
       const nextNum=(certs.reduce((m,c)=>Math.max(m,+c.numero||0),0)||0)+1;
-      const nova={id:"c"+Date.now(),budgetId:activeBudgetId,numero:String(nextNum),data:todayShort8713(),estat:"Pendent",import:0};
+      const now=new Date().toISOString();
+      const nova={id:"c"+Date.now(),budgetId:activeBudgetId,numero:String(nextNum),data:todayISO8743(),certificationDateSetAt:now,createdAt:now,updatedAt:now,estat:"Pendent",import:0};
       return {...d,certificacions:[...(d.certificacions||[]),nova],activeBudgetIdObra:activeBudgetId};
     });
   }
   function scopedDeleteCert(id){if(!confirm("Eliminar aquesta certificació?"))return;setData(d=>({...d,certificacions:(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBudgetId&&c.id===id))}))}
-  function scopedUpdateCertDate(id,value){setData(d=>({...d,certificacions:(d.certificacions||[]).map(c=>(c.budgetId||"principal")===activeBudgetId&&c.id===id?{...c,data:value}:c)}))}
+  function scopedUpdateCertDate(id,value){setData(d=>({...d,certificacions:(d.certificacions||[]).map(c=>(c.budgetId||"principal")===activeBudgetId&&c.id===id?stampCertificationDate87218(c,value):c)}))}
   const totalGlobal=(data.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   const totalActive=(activeData.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   return <div className="stack gestio-obra-v8746 gestio-obra-v8786">
@@ -5915,11 +6069,11 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
       </details>
       <div className="budget-selected-actions-v8786 budget-selected-actions-v878123"><span>Pressupost seleccionat: <b>{budgetLabel8786(data,activeBudgetId)}</b> · <strong>{money(totalActive)}</strong>. Els altres pressupostos són versions separades i no se sumen a aquest total.</span><div className="actions-inline"><button type="button" className="secondary small" onClick={fixarBudget8788}>Guardar/fixar</button><button type="button" className="secondary small" onClick={()=>renameBudget(activeBudgetId)}>Renombrar amb finestra</button>{activeBudgetId!=="principal"&&<button type="button" className="danger small" onClick={()=>deleteBudget(activeBudgetId)}>Eliminar annex</button>}</div></div>
     </Card></div>
-    <div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button><button className={sub==="Gantt"?"active":""} onClick={()=>setSub("Gantt")}>Gantt</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>Rendibilitat / desviacions</button></div>
+    <div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>Pressupost obra</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>Certificacions obra</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>Facturació obra</button><button className={sub==="Gantt"?"active":""} onClick={()=>setSub("Gantt")}>Planning / Gantt</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>Seguiment econòmic</button></div>
     {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {sub==="Certificacions obra"&&<Cert data={activeData} setData={setScopedData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Facturació obra"&&<Fact data={activeData} openEmail={openEmail} openDoc={openDoc}/>} 
-    {sub==="Gantt"&&<GanttObra878149 data={activeData}/>}
+    {sub==="Gantt"&&<GanttObra878149 data={activeData} setData={setScopedData}/>}
     {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} setActiveBudgetId={selectBudget8788}/>}
   </div>
 }
@@ -6052,14 +6206,15 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
     setDirectBudgetData878214(scope=>{
       const certs=scope.certificacions||[];
       const nextNum=(certs.reduce((m,c)=>Math.max(m,+c.numero||0),0)||0)+1;
-      return {...scope,certificacions:[...certs,{id:"c"+Date.now(),budgetId:directBudgetId878214,numero:String(nextNum),data:todayShort8713(),estat:"Pendent",import:0}]};
+      const now=new Date().toISOString();
+      return {...scope,certificacions:[...certs,{id:"c"+Date.now(),budgetId:directBudgetId878214,numero:String(nextNum),data:todayISO8743(),certificationDateSetAt:now,createdAt:now,updatedAt:now,estat:"Pendent",import:0}]};
     });
   }
   function deleteDirectCert878214(id){
     if(!confirm("Eliminar aquesta certificació?"))return;
     setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).filter(c=>c.id!==id)}));
   }
-  function updateDirectCertDate878214(id,value){setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).map(c=>c.id===id?{...c,data:value}:c)}))}
+  function updateDirectCertDate878214(id,value){setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))}
   let activeTab=tabs.includes(tab)?tab:"Resum";
   const renderTab=()=> <>
     {activeTab==="Resum"&&<Resum obra={obra} client={client} data={data} openAgent={openAgent}/>} 
@@ -6341,9 +6496,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [descompostModal87173,setDescompostModal87173]=useState(null);
   const [editSnapshot878176,setEditSnapshot878176]=useState(null);
   const [budgetWorkTab878180,setBudgetWorkTab878180]=useState("Pressupost");
-  const [libraryScope87160,setLibraryScope87160]=useState("all");
+  const [libraryScope87160,setLibraryScope87160]=useState("client");
+  const [librarySelected87218,setLibrarySelected87218]=useState({});
+  const [libraryLimit87218,setLibraryLimit87218]=useState(80);
   const [budgetMeasureTarget878194,setBudgetMeasureTarget878194]=useState(null);
-  useEffect(()=>{setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("");setLibraryScope87160("all")},[currentClientId87196]);
+  useEffect(()=>{setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("");setLibraryScope87160("client");setLibrarySelected87218({});setLibraryLimit87218(80)},[currentClientId87196]);
+  useEffect(()=>{setLibraryLimit87218(80)},[libraryScope87160,librarySearch87115,libraryCap87115]);
   // V87.199: els pressupostos i Excel importats NO alimenten la llibreria automàticament.
   // Només s'hi incorpora una partida quan l'usuari prem explícitament "Desar a la llibreria".
   function currentLibraryDestinationCap87115(){return libraryTargetCap87115||sortedCapEntries8779(caps)[0]?.[0]||"C01 NOU CAPÍTOL"}
@@ -6360,7 +6518,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const hasRows=Object.values(caps||{}).some(arr=>(arr||[]).length);
     if(hasRows&&!confirm("Aquest pressupost ja té partides. Vols substituir la vista d'edició per un pressupost manual buit? Primer guarda o crea un annex si vols conservar l'actual."))return;
     const nom="C01 NOU CAPÍTOL";
-    setCaps({[nom]:[]});setOpen({[nom]:true});setEditBudget8760b(true);setLibraryOpen87115(true);setLibraryTargetCap87115(nom);
+    setCaps({[nom]:[]});setOpen({[nom]:true});setEditBudget8760b(true);setLibraryOpen87115(true);setLibraryScope87160("client");setLibrarySelected87218({});setLibraryTargetCap87115(nom);
   }
   function addLibraryPartidaToBudget87115(item){
     if(!editBudget8760b){alert("Primer activa el mode edició del pressupost.");return;}
@@ -6398,6 +6556,52 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const okCap=!libraryCap87115||String(x.cap||"")===libraryCap87115;
     return okQ&&okCap;
   });
+  const libraryDisplayed87218=libraryFiltered87115.slice(0,libraryLimit87218);
+  const librarySelectedItems87218=centralLibrary87196.filter(item=>librarySelected87218[item.id]);
+  function openBudgetLibrary87218(targetCap="",scope="client"){
+    if(!editBudget8760b)beginBudgetEdit878176();
+    setLibraryScope87160(scope);
+    setLibrarySearch87115("");
+    setLibraryCap87115("");
+    setLibrarySelected87218({});
+    setLibraryLimit87218(80);
+    setLibraryTargetCap87115(targetCap||sortedCapEntries8779(caps)[0]?.[0]||"C01 NOU CAPÍTOL");
+    setLibraryOpen87115(true);
+  }
+  function createLibraryTargetCap87218(){
+    const suggested=`C${String(Object.keys(caps||{}).length+1).padStart(2,"0")} NOU CAPÍTOL`;
+    const name=String(prompt("Nom del nou capítol del pressupost:",suggested)||"").trim();
+    if(!name)return;
+    setCaps(prev=>prev[name]?prev:{...prev,[name]:[]});
+    setOpen(prev=>({...prev,[name]:true}));
+    setLibraryTargetCap87115(name);
+  }
+  function toggleLibrarySelection87218(id){setLibrarySelected87218(prev=>({...prev,[id]:!prev[id]}))}
+  function selectDisplayedLibrary87218(){setLibrarySelected87218(prev=>({...prev,...Object.fromEntries(libraryDisplayed87218.map(item=>[item.id,true]))}))}
+  function addSelectedLibraryPartides87218(){
+    if(!librarySelectedItems87218.length){alert("Selecciona com a mínim una partida.");return;}
+    const dest=currentLibraryDestinationCap87115();
+    if(currentClientId87196){
+      const selectedIds=new Set(librarySelectedItems87218.map(item=>String(item.id)));
+      setPartidaLibrary?.(prev=>dedupePartidaLibrary87196((prev||[]).map(item=>selectedIds.has(String(item.id))?{...item,clientIds:[...new Set([...(item.clientIds||[]),currentClientId87196])],updatedAt:new Date().toISOString()}:item)));
+    }
+    setCaps(prev=>{
+      const arr=[...(prev[dest]||[])];
+      const base=(String(dest).match(/(\d+)/)?.[1]||"").padStart(2,"0");
+      const used=new Set(arr.map(r=>String(r.codi||"")));
+      let next=arr.length+1;
+      const additions=librarySelectedItems87218.map(item=>{
+        let printedCode=base?`${base}.${String(next++).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
+        while(used.has(printedCode)&&base)printedCode=`${base}.${String(next++).padStart(2,"0")}`;
+        used.add(printedCode);
+        return {...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
+      });
+      return {...prev,[dest]:[...arr,...additions]};
+    });
+    setOpen(prev=>({...prev,[dest]:true}));
+    setLibrarySelected87218({});
+    setLibraryOpen87115(false);
+  }
   function beginBudgetEdit878176(){
     const syncCaps=normalizeBudgetCaps878176(group(data.partides||[],"cap"));
     setCaps(syncCaps);
@@ -6710,9 +6914,9 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {quickMode&&<div className={`rapid-budget-edit-toolbar-v87204 ${editBudget8760b?"editing":""}`}><div><b>{editBudget8760b?"Edició del pressupost ràpid activada":"Vols modificar quantitats, preus o conceptes?"}</b><span>{editBudget8760b?"Tots els capítols estan oberts i els camps principals són editables directament.":"Prem el botó blau. No cal buscar l’opció dins de cap desplegable."}</span></div><div>{!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}>Editar quantitats i preus</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" className="secondary" onClick={cancelBudget8760b}>Cancel·lar</button></>}</div></div>}
       <div className="budget-simple-toolbar-v87213">
         <label><span>Vista</span><select value={budgetWorkTab878180} onChange={e=>setBudgetWorkTab878180(e.target.value)}><option>Pressupost</option><option>Validar descompostos</option></select></label>
+        <button type="button" className="primary budget-library-main-v87218" onClick={()=>openBudgetLibrary87218("","client")}>+ Afegir partides de la llibreria</button>
         <ActionMenu87213 label="Més accions">
           {editBudget8760b&&<label className="action-upload-v87213">Importar descompostos<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label>}
-          <button type="button" onClick={()=>setLibraryOpen87115(v=>!v)}>{libraryOpen87115?"Tancar llibreria":"Obrir llibreria"}</button>
           <button type="button" onClick={saveBudgetDocument878179}>Guardar a Documents</button>
           <button type="button" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button>
           <button type="button" onClick={exportBudgetExcel878180}>Exportar Excel</button>
@@ -6721,21 +6925,18 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       </div>
       {!integrityOk878211&&<div className="module-note-v8738 budget-integrity-v87211 error"><b>Cal revisar aquest pressupost</b><span>Suma visible {money(total)} · diferència {money(integrityDifference878211)}{duplicateBudgetCodes878211.length?` · ${duplicateBudgetCodes878211.length} codi/s repetit/s`:""}.</span></div>}
       {editBudget8760b&&<div className="budget-edit-help-v87213"><b>Editant pressupost</b><span>Modifica les files. El botó ∑ de cada partida obre els amidaments detallats.</span></div>}
-    {libraryOpen87115&&<div className="client-library-panel-v87115">
-      <div className="client-library-head-v87115"><div><b>Llibreria única de partides</b><span>{centralLibrary87196.length} partides totals · {libraryItems87115.length} relacionades amb {client?.nom||client?.rao||"aquest client"}</span></div><div className="library-head-actions-v87149"><button type="button" className="secondary small" onClick={()=>{const q=librarySearch87115||prompt("Quina partida o descomposat vols buscar amb IA?","")||"";if(!q)return;const promptTxt=`Busca una partida d'obra o descomposat per: ${q}. Dona'm unitat, descripció curta, descripció llarga, rendiment orientatiu i preu unitari orientatiu per incorporar-ho a la llibreria.`;navigator.clipboard?.writeText(promptTxt);alert("He copiat un prompt de cerca IA al porta-retalls. Enganxa'l a ChatGPT i després incorpora la partida a la llibreria.");}}>Buscar amb IA</button></div></div>
-      <div className="library-policy-note-v87199"><b>Una sola llibreria</b><span>El client només és un filtre. Quan afegeixes una partida al pressupost, queda relacionada automàticament amb aquest client.</span></div>
-      <div className="client-library-filters-v87115">
-        <select value={libraryScope87160} onChange={e=>{setLibraryScope87160(e.target.value);setLibraryCap87115("")}}><option value="all">Tota la llibreria</option><option value="client">Relacionades amb aquest client</option></select>
-        <input value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Cercar per nom, codi o descripció"/>
-        <select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select>
-        <select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}><option value="">Capítol de destí del pressupost</option>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}</select>
+    {libraryOpen87115&&<Modal title="Afegir partides al pressupost" close={()=>setLibraryOpen87115(false)}>
+      <div className="budget-library-modal-v87218">
+        <div className="budget-library-steps-v87218"><span className="done">1 · Client</span><span className="active">2 · Buscar i seleccionar</span><span>3 · Afegir al capítol</span></div>
+        <div className="budget-library-client-v87218"><div><small>Client d'aquest pressupost</small><b>{client?.nom||client?.rao||"Client sense nom"}</b><span>Les partides que afegeixis quedaran automàticament relacionades amb aquest client.</span></div><div><small>Capítol de destí</small><select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}{!Object.keys(caps||{}).length&&<option value="C01 NOU CAPÍTOL">C01 NOU CAPÍTOL</option>}</select><button type="button" className="secondary small" onClick={createLibraryTargetCap87218}>+ Nou capítol</button></div></div>
+        <div className="budget-library-tabs-v87218"><button type="button" className={libraryScope87160==="client"?"active":""} onClick={()=>{setLibraryScope87160("client");setLibrarySelected87218({})}}>Partides de {client?.nom||client?.rao||"client"} <b>{libraryItems87115.length}</b></button><button type="button" className={libraryScope87160==="all"?"active":""} onClick={()=>{setLibraryScope87160("all");setLibrarySelected87218({})}}>Biblioteca general <b>{centralLibrary87196.length}</b></button></div>
+        <div className="budget-library-search-v87218"><label><span>Cercar</span><input autoFocus value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Nom, codi, descripció o unitat..."/></label><label><span>Capítol de la biblioteca</span><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select></label></div>
+        <div className="budget-library-result-head-v87218"><div><b>{libraryFiltered87115.length} partides trobades</b><span>Mostrant {Math.min(libraryDisplayed87218.length,libraryFiltered87115.length)} · {librarySelectedItems87218.length} seleccionades</span></div><div><button type="button" className="secondary small" onClick={selectDisplayedLibrary87218}>Marcar les visibles</button><button type="button" className="secondary small" onClick={()=>setLibrarySelected87218({})}>Netejar selecció</button></div></div>
+        <div className="budget-library-list-v87218">{libraryFiltered87115.length===0?<div className="empty-mini-v87115"><b>No hi ha partides amb aquest filtre.</b><span>{libraryScope87160==="client"?"Pots obrir la Biblioteca general i, en afegir una partida, quedarà vinculada a aquest client.":"Canvia el text o selecciona Tots els capítols."}</span></div>:libraryDisplayed87218.map(item=><label className={`budget-library-row-v87218 ${librarySelected87218[item.id]?"selected":""}`} key={item.id}><input type="checkbox" checked={!!librarySelected87218[item.id]} onChange={()=>toggleLibrarySelection87218(item.id)}/><div><strong>{item.concepte||"Partida sense concepte"}</strong><span><b>{item.codiIntern||item.codi||"Sense codi"}</b> · {item.cap||"General"}</span>{item.desc&&<small>{item.desc}</small>}</div><em>{item.ut||"ut"}</em><b>{money(item.pu||0)}</b></label>)}</div>
+        {libraryDisplayed87218.length<libraryFiltered87115.length&&<button type="button" className="secondary budget-library-more-v87218" onClick={()=>setLibraryLimit87218(n=>n+80)}>Mostrar 80 partides més · en queden {libraryFiltered87115.length-libraryDisplayed87218.length}</button>}
+        <div className="modal-actions budget-library-actions-v87218"><button type="button" className="secondary" onClick={()=>setLibraryOpen87115(false)}>Cancel·lar</button><button type="button" className="primary" disabled={!librarySelectedItems87218.length} onClick={addSelectedLibraryPartides87218}>Afegir {librarySelectedItems87218.length||""} {librarySelectedItems87218.length===1?"partida":"partides"} al capítol</button></div>
       </div>
-      <div className="client-library-list-v87115">{libraryFiltered87115.length===0?<div className="empty-mini-v87115">No hi ha partides amb aquest filtre.</div>:libraryFiltered87115.slice(0,80).map(item=><div className="client-library-row-v87115" key={item.id}>
-        <div><strong>{item.concepte}</strong><span>{item.codiIntern} · {item.cap} · {item.ut} · PU {money(item.pu||0)}</span>{item.desc&&<details className="lib-desc-v87117"><summary>Veure descripció llarga</summary><small>{item.desc}</small></details>}<details className="lib-desc-v87117 lib-descompost-v878156"><summary>Descomposat Excel / IA / BEDEC</summary><div className="descompost-import-actions-v87161"><label className="secondary small upload-label">Importar Excel<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importLibraryDescompost878161(item.id,e.target.files?.[0])}/></label><small>{item.descompostSource?`Origen: ${item.descompostSource}`:"Excel de descomposat de IA, BEDEC, TCQ o base pròpia"}</small></div><textarea value={item.descompost||""} onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,descompost:e.target.value}:x))} placeholder="Materials, rendiments, mà d'obra, mitjans auxiliars..."/></details></div>
-        <div className="client-library-row-actions-v87117"><select value={item.cap||"General"} title="Canviar el capítol de la llibreria" onChange={e=>setLibraryItems87115(prev=>(prev||[]).map(x=>x.id===item.id?{...x,cap:e.target.value}:x))}>{sharedLibraryChapters87201.map(c=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="primary small" onClick={()=>addLibraryPartidaToBudget87115(item)}>Afegir al pressupost</button></div>
-        <select className="client-library-mobile-action-v87117" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="add")addLibraryPartidaToBudget87115(item)}}><option value="" disabled>Accions</option><option value="add">Afegir al pressupost</option></select>
-      </div>)}</div>
-    </div>}
+    </Modal>}
     {budgetWorkTab878180==="Validar descompostos"?<div className="descompost-validator-v878180"><div className="validator-head-v878180"><div><b>Validació de descompostos</b><span>{descompostValidationRows878180.length} partida/es amb descomposat carregat</span></div><div className="actions-inline"><button type="button" className="secondary" onClick={fillDetectedDescompostos878180}>Carregar preus detectats</button><button type="button" className="primary" onClick={applyAllValidatedDescompostos878180}>Aplicar i guardar</button></div></div>{descompostValidationRows878180.length===0?<Empty text="No hi ha descompostos carregats. En mode edició, obre Més accions i selecciona Importar descompostos."/>:<div className="descompost-validator-table-wrap-v878180"><table className="descompost-validator-table-v878180"><thead><tr><th>Capítol</th><th>Codi</th><th>Concepte</th><th>Total detectat</th><th>PU actual</th><th>PU validat</th><th>Estat</th><th>Acció</th></tr></thead><tbody>{descompostValidationRows878180.map(x=><tr key={`${x.cap}-${x.i}`}><td>{x.cap}</td><td><b>{x.row.codi||"—"}</b></td><td className="text-left"><span>{x.row.concepte}</span><small>{[x.row.descompostSource,x.row.descompostSheet].filter(Boolean).join(" · ")}</small></td><td>{money(x.detected)}</td><td>{money(x.current)}</td><td><input inputMode="decimal" value={x.row.descompostValidatedPu||qty2(x.detected||0)} onChange={e=>setValidatedPu878180(x.cap,x.i,e.target.value)} onBlur={e=>normalizeValidatedPu878180(x.cap,x.i,e.target.value)}/></td><td>{x.row.puFromDescompost?<b className="good-text">Aplicat</b>:<b className="warn-text">Pendent</b>}</td><td><button type="button" className="secondary small" onClick={()=>openDescompostModal87173(x.cap,x.i)}>Obrir</button></td></tr>)}</tbody></table></div>}</div>:<div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
         {sortedCapEntries8779(caps).map(([cap,items])=>{
@@ -6770,12 +6971,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                   {rowEditableV87204?<input type="text" inputMode="decimal" value={r.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num">{qty2(parseNum8770(r.pu)||0)}</span>}
                   <small className="budget-mobile-field-label-v87196">Total de la partida</small>
                   <b>{money(t)}</b>
-                  {editBudget8760b&&<select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-library")savePartidaToLibrary87115(r,cap);if(v==="library"){setLibraryOpen87115(true);setLibraryScope87160("all");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}if(v.startsWith("move::"))movePartidaCap878128(cap,i,v.slice(6));if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>Accions ▾</option><option value="toggle">{rowOpenV87173?"Tancar edició":"Editar partida"}</option><option value="measure">Introduir amidaments</option><option value="desc">Veure / editar descripció</option><option value="decomp">Veure / editar descompost</option><option value="save-library">Desar a la llibreria general + vincular client</option><option value="library">Buscar a tota la llibreria</option><optgroup label="Moure a un altre capítol">{sortedCapEntries8779(caps).filter(([target])=>target!==cap).map(([target])=><option key={target} value={`move::${target}`}>{target}</option>)}</optgroup><option value="delete">Eliminar del pressupost</option></select>}
+                  {editBudget8760b&&<select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-library")savePartidaToLibrary87115(r,cap);if(v==="library")openBudgetLibrary87218(cap,"client");if(v.startsWith("move::"))movePartidaCap878128(cap,i,v.slice(6));if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>Accions ▾</option><option value="toggle">{rowOpenV87173?"Tancar edició":"Editar partida"}</option><option value="measure">Introduir amidaments</option><option value="desc">Veure / editar descripció</option><option value="decomp">Veure / editar descompost</option><option value="save-library">Desar a la llibreria general + vincular client</option><option value="library">Afegir des de la llibreria del client</option><optgroup label="Moure a un altre capítol">{sortedCapEntries8779(caps).filter(([target])=>target!==cap).map(([target])=><option key={target} value={`move::${target}`}>{target}</option>)}</optgroup><option value="delete">Eliminar del pressupost</option></select>}
                   {editBudget8760b?<div className="budget-line-actions-v878128 budget-line-actions-v87173">
                     <button type="button" className="secondary small" onClick={()=>toggleBudgetRow87173(cap,i)}>{rowOpenV87173?"Tancar partida":"Editar partida"}</button>
                     <button type="button" className="secondary small" onClick={()=>setBudgetMeasureTarget878194({cap,i})}>∑ Amidaments</button>
                     <button type="button" className="secondary small" onClick={()=>openDescompostModal87173(cap,i)}>Descomposat</button>
-                    {rowOpenV87173&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115(r,cap)}>Desar a llibreria general</button><button type="button" className="secondary small" onClick={()=>{setLibraryOpen87115(true);setLibraryScope87160("all");setLibrarySearch87115("");setLibraryTargetCap87115(cap)}}>Buscar a tota la llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}
+                    {rowOpenV87173&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115(r,cap)}>Desar a llibreria general</button><button type="button" className="secondary small" onClick={()=>openBudgetLibrary87218(cap,"client")}>Afegir des de la llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}
                   </div>:<span/>}
                 </div>
               })}
@@ -6918,6 +7119,28 @@ function adminMaterialSum878131(l){
   return parseNum8770(l?.material)||0;
 }
 function adminConceptKey878131(v){return String(v||"Sense concepte").trim()||"Sense concepte"}
+function mergeAdminMonthlyPayload87219(existing={},incoming={}){
+  const deleted=new Set((incoming.deletedLineIds||[]).map(String));
+  const byId=new Map();
+  const order=[];
+  const add=(line,index,source)=>{
+    if(!line)return;
+    const id=String(line.id||`${source}-${index}-${line.data||""}-${line.concepte||""}`);
+    if(deleted.has(id))return;
+    if(!byId.has(id))order.push(id);
+    byId.set(id,{...(byId.get(id)||{}),...line,id,materials:Array.isArray(line.materials)?line.materials:[]});
+  };
+  (existing.lines||[]).forEach((line,index)=>add(line,index,"old"));
+  (incoming.lines||[]).forEach((line,index)=>add(line,index,"new"));
+  const lines=order.map(id=>byId.get(id)).filter(Boolean);
+  const costOficial=parseNum8770(incoming.costOficial??existing.costOficial)||0;
+  const costAjudant=parseNum8770(incoming.costAjudant??existing.costAjudant)||0;
+  const totalOficial=lines.reduce((sum,line)=>sum+(parseNum8770(line.horesOficial)||0),0);
+  const totalAjudant=lines.reduce((sum,line)=>sum+(parseNum8770(line.horesAjudant)||0),0);
+  const totalMaterial=lines.reduce((sum,line)=>sum+adminMaterialSum878131(line),0);
+  const total=lines.reduce((sum,line)=>sum+(parseNum8770(line.horesOficial)||0)*costOficial+(parseNum8770(line.horesAjudant)||0)*costAjudant+adminMaterialSum878131(line),0);
+  return {...existing,...incoming,lines,costOficial:String(incoming.costOficial??existing.costOficial??""),costAjudant:String(incoming.costAjudant??existing.costAjudant??""),totalOficial,totalAjudant,totalMaterial,total,deletedLineIds:[],updatedAt:new Date().toISOString()};
+}
 function printAdminMonthly878131({certNum,meta,lines,totalOficial,totalAjudant,totalMaterial,total,lineTotal}){
   const rows=Array.isArray(lines)?lines:[];
   const groups={};
@@ -6962,6 +7185,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     targetPartidaConcepte:initial.targetPartidaConcepte||""
   });
   const [lines,setLines]=useState(((initial.lines&&initial.lines.length)?initial.lines:[{id:"adm-m-"+Date.now(),concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:"",materials:[]}]).map(x=>({...x,id:x.id||("adm-m-"+Date.now()+"-"+Math.random()),materials:Array.isArray(x.materials)?x.materials:[]})));
+  const [deletedLineIds87219,setDeletedLineIds87219]=useState([]);
   const histKey878131=lsKey8779("aco_admin_monthly_concepts_v87131");
   const matHistKey878131=lsKey8779("aco_admin_monthly_material_concepts_v87131");
   const [conceptHistory878131,setConceptHistory878131]=useState(()=>{try{return JSON.parse(localStorage.getItem(histKey878131)||"[]")}catch{return []}});
@@ -6998,7 +7222,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
   }
   function upd(id,k,v){setLines(p=>p.map(l=>l.id===id?{...l,[k]:v}:l))}
   function add(){setLines(p=>[...p,{id:"adm-m-"+Date.now()+"-"+p.length,concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:"",materials:[]}])}
-  function del(id){setLines(p=>p.length>1?p.filter(l=>l.id!==id):p)}
+  function del(id){if(lines.length<=1)return;setDeletedLineIds87219(old=>[...new Set([...old,String(id)])]);setLines(p=>p.filter(l=>l.id!==id))}
   function materialRows878131(id){return (lines.find(l=>l.id===id)?.materials)||[]}
   function materialTotalLine878131(l){return adminMaterialSum878131(l)}
   function updMaterial878131(id,mid,k,v){setLines(p=>p.map(l=>{if(l.id!==id)return l;const materials=(l.materials||[]).map(m=>m.id===mid?{...m,[k]:v}:m);return {...l,materials,material:String(materials.reduce((s,m)=>s+(parseNum8770(m.import)||0),0))}}))}
@@ -7022,12 +7246,12 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     const normalized=lines.map(l=>({...l,material:String(materialTotalLine878131(l))}));
     storeHistories878131(normalized);
     try{localStorage.setItem(cfgKey,JSON.stringify({costOficial:meta.costOficial,costAjudant:meta.costAjudant}))}catch{}
-    save({...meta,lines:normalized,total,totalOficial,totalAjudant,totalMaterial});
+    save({...meta,lines:normalized,total,totalOficial,totalAjudant,totalMaterial,deletedLineIds:deletedLineIds87219});
   }
   function printCurrent878131(){const normalized=lines.map(l=>({...l,material:String(materialTotalLine878131(l))}));storeHistories878131(normalized);printAdminMonthly878131({certNum,meta,lines:normalized,totalOficial,totalAjudant,totalMaterial,total,lineTotal});}
   return <Modal title={`Quadre mensual d’administració · CERT. ${certNum}`} close={close}>
     <div className="admin-monthly-v878127 admin-monthly-v878129">
-      <div className="module-note-v8738"><b>Funcionament correcte</b><span>Primer tries el capítol i després la partida. Si tries una partida existent, el quadre s’aplica directament a aquella partida en aquesta certificació, sense crear cap línia nova ni cap codi .ADM. Si no existeix, escrius manualment capítol/codi/nom i llavors es crea una única partida resum reutilitzable.</span></div>
+      <div className="module-note-v8738 admin-lines-safe-v87219"><b>{initial.lines?.length?`${initial.lines.length} línies guardades recuperades`:`Quadre nou de la Certificació ${certNum}`}</b><span>Pots afegir o modificar feines i tornar a guardar. Les línies existents es conserven; només desapareixen si prems «Eliminar» expressament.</span></div>
       <div className="admin-target-flow-v878129">
         <label><span>1. Capítol</span><select value={capList.includes(meta.cap)?meta.cap:"__manual__"} onChange={e=>{if(e.target.value==="__manual__")return;setCap879129(e.target.value)}}>
           {capList.map(c=><option key={c} value={c}>{c}</option>)}
@@ -7053,7 +7277,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
       </tbody><tfoot><tr><th colSpan="2">TOTALS</th><th>{qty2(totalOficial)} h</th><th>{qty2(totalAjudant)} h</th><th>{money(totalMaterial)}</th><th>{money(total)}</th><th></th></tr></tfoot></table></div>
       {materialLine878131&&<div className="admin-material-panel-v878131"><div className="admin-material-panel-head-v878131"><b>Materials de: {materialLine878131.concepte||"línia sense concepte"}</b><button type="button" className="secondary small" onClick={()=>setMaterialEditId878131(null)}>Tancar materials</button></div><table><thead><tr><th>Concepte material</th><th>Import</th><th></th></tr></thead><tbody>{materialRows878131(materialLine878131.id).map(m=><tr key={m.id}><td><input list={materialDatalistId878131} value={m.concepte||""} onChange={e=>updMaterial878131(materialLine878131.id,m.id,"concepte",e.target.value)} placeholder="Ex: sacs morter, lloguer, runa..."/></td><td><input inputMode="decimal" value={m.import||""} onChange={e=>updMaterial878131(materialLine878131.id,m.id,"import",e.target.value)}/></td><td><button type="button" className="danger small" onClick={()=>delMaterial878131(materialLine878131.id,m.id)}>Eliminar</button></td></tr>)}</tbody><tfoot><tr><th>Total materials</th><th>{money(materialTotalLine878131(materialLine878131))}</th><th></th></tr></tfoot></table><button type="button" className="secondary small" onClick={()=>addMaterial878131(materialLine878131.id)}>+ Afegir material</button></div>}
     </div>
-    <div className="modal-actions"><button type="button" className="secondary" onClick={add}>+ Afegir línia</button><button type="button" className="secondary" onClick={printCurrent878131}>Imprimir quadre justificatiu</button><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={saveAndClose}>Guardar quadre i aplicar 1 ut × total</button></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={add}>+ Afegir una altra feina</button><button type="button" className="secondary" onClick={printCurrent878131}>Imprimir quadre justificatiu</button><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={saveAndClose}>Guardar canvis sense perdre línies</button></div>
   </Modal>
 }
 
@@ -7116,7 +7340,7 @@ let rows=allRows878132.filter(r=>showHiddenCert878132||!isCertHidden878132(r,cer
 let caps=groupSorted878132(rows,"cap");
 useEffect(()=>{setDraft({})},[selected]);
 useEffect(()=>{if(certs.length){setSelected(certs[certs.length-1].id)}},[certs.length]);
-function dateVal8721(c){return dateDraft8721[c.id]??fmtDate8714(c.data)}
+function dateVal8721(c){return dateDraft8721[c.id]??certDateISO87218(c.data,"")}
 function saveDates8721(){
   certs.forEach(c=>{
     if(dateDraft8721[c.id]!==undefined)updateCertDate8721?.(c.id,dateDraft8721[c.id])
@@ -7124,7 +7348,7 @@ function saveDates8721(){
   setDateDraft8721({});
 }
 
-function dateValSafe8720(c){return dateDraftSafe8720[c.id]??fmtDate8714(c.data)}
+function dateValSafe8720(c){return dateDraftSafe8720[c.id]??certDateISO87218(c.data,"")}
 function saveDatesSafe8720(){
   certs.forEach(c=>{if(dateDraftSafe8720[c.id]!==undefined)updateCertDateSafe8720?.(c.id,dateDraftSafe8720[c.id])});
   setDateDraftSafe8720({});
@@ -7172,7 +7396,13 @@ function printSavedAdmin878132(payload){
   printAdminMonthly878131({certNum,meta:payload,lines,totalOficial,totalAjudant,totalMaterial,total,lineTotal});
 }
 const savedAdmin878132=(data.certAdminMonthlyByNum||{})[String(certNum)]||rows.map(r=>(r.certAdminMonthlyByNum||{})[String(certNum)]).find(Boolean)||null;
-function pc(q,r){return (+r.q||0)?q/(+r.q)*100:0}
+function pc(q,r){
+  const value=parseNum8770(q)||0;
+  // Una partida nascuda en aquesta certificació té com a total previst exactament el que s'hi certifica.
+  if(value>0&&Number(r?.createdFromCert)===Number(certNum))return 100;
+  const base=parseNum8770(r?.q)||0;
+  return base?value/base*100:0;
+}
 function saveMesures8780(target,lines,total){
   const targetId=target?.id;
   const targetCode=String(target?.codi||"");
@@ -7188,12 +7418,19 @@ function saveAdminCost878126(codi,lines,total){setData?.(d=>({...d,partides:(d.p
 function saveAdminMonthly878127(payload){
   const key=String(certNum);
   const cap=String(payload.cap||"C98 FEINES PER ADMINISTRACIÓ").trim();
-  const total=Number(payload.total)||0;
   const targetCode=String(payload.targetPartidaCodi||"").trim();
   const manualCodi=String(payload.codi||`ADM.${String(certNum).padStart(2,"0")}`).trim();
   const codi=targetCode||manualCodi;
   const concepte=String(payload.conceptePartida||"AJUDES A INDUSTRIALS / FEINES PER ADMINISTRACIÓ").trim();
-  const adminData={...payload,codi,cap,conceptePartida:concepte,total,targetPartidaCodi:targetCode,updatedAt:new Date().toISOString()};
+  const targetIdentity=targetCode||manualCodi;
+  const existingRow=(rows||[]).find(r=>String(r.codi||"").trim()===targetIdentity);
+  const existingRowData=(existingRow?.certAdminMonthlyByNum||{})[key]||null;
+  const globalCandidate=(data.certAdminMonthlyByNum||{})[key]||null;
+  const globalIdentity=String(globalCandidate?.targetPartidaCodi||globalCandidate?.codi||"").trim();
+  const existingData=existingRowData||(globalIdentity===targetIdentity?globalCandidate:null)||{};
+  const mergedPayload=mergeAdminMonthlyPayload87219(existingData,payload);
+  const total=Number(mergedPayload.total)||0;
+  const adminData={...mergedPayload,entryId:mergedPayload.entryId||`admin-${data.activeBudgetIdObra||"principal"}-${key}-${targetIdentity}`,codi,cap,conceptePartida:concepte,total,targetPartidaCodi:targetCode,updatedAt:new Date().toISOString()};
   setData?.(d=>{
     const bid=d.activeBudgetIdObra||"principal";
     let found=false;
@@ -7203,12 +7440,20 @@ function saveAdminMonthly878127(payload){
       const sameTarget=targetCode && sameBudget && String(r.codi||"").trim()===targetCode;
       if(sameTarget){
         found=true;
-        const effectivePu=parseNum8770(r.pu) || (total||1);
+        const storedPu=parseNum8770(r.pu)||0;
+        const amountBased=!storedPu;
+        const effectivePu=amountBased?1:storedPu;
         appliedQty=effectivePu?total/effectivePu:0;
+        const certsByNum={...(r.certsByNum||{}),[key]:appliedQty};
+        const certOnly=!!(r.createdFromCert||r.noPressupost||r.adminMonthlyAuto);
+        const plannedQty=certOnly?Object.values(certsByNum).reduce((sum,value)=>sum+(parseNum8770(value)||0),0):r.q;
         return {
           ...r,
+          pu:amountBased?1:r.pu,
+          ut:amountBased?"€":r.ut,
           certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},
-          certsByNum:{...(r.certsByNum||{}),[key]:appliedQty},
+          certsByNum,
+          q:certOnly?plannedQty:r.q,
           certAnterior:certNum===1?appliedQty:r.certAnterior,
           certActual:certNum===2?appliedQty:r.certActual,
           updatedAt:new Date().toISOString()
@@ -7224,21 +7469,28 @@ function saveAdminMonthly878127(payload){
         const same=(r.adminMonthlyId===markerId)||(((r.budgetId||"principal")===bid)&&String(r.codi||"").trim()===manualCodi&&r.adminMonthlyAuto);
         if(same){
           found=true;
-          partides[i]={...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"ut",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:0,pu:total||r.pu||0,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},certsByNum:{...(r.certsByNum||{}),[key]:total?1:0},certAnterior:certNum===1?(total?1:0):r.certAnterior,certActual:certNum===2?(total?1:0):r.certActual,updatedAt:new Date().toISOString()};
+          const previousPu=parseNum8770(r.pu)||1;
+          const certsByNum=Object.fromEntries(Object.entries(r.certsByNum||{}).map(([num,value])=>{
+            const savedTotal=parseNum8770((r.certAdminMonthlyByNum||{})[num]?.total);
+            return [num,savedTotal||(parseNum8770(value)||0)*previousPu];
+          }));
+          certsByNum[key]=total;
+          const plannedQty=Object.values(certsByNum).reduce((sum,value)=>sum+(parseNum8770(value)||0),0);
+          partides[i]={...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"€",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:plannedQty,pu:1,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},certsByNum,certAnterior:certNum===1?total:r.certAnterior,certActual:certNum===2?total:r.certActual,updatedAt:new Date().toISOString()};
           break;
         }
       }
       if(!found){
-        partides.push({id:markerId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"ut",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:0,pu:total,certAdminMonthlyByNum:{[key]:adminData},certsByNum:{[key]:total?1:0},certAnterior:certNum===1?(total?1:0):0,certActual:certNum===2?(total?1:0):0,tipus:"Administració mensual certificable",createdFromCert:certNum,createdAt:new Date().toISOString()});
+        partides.push({id:markerId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"€",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:total,pu:1,certAdminMonthlyByNum:{[key]:adminData},certsByNum:{[key]:total},certAnterior:certNum===1?total:0,certActual:certNum===2?total:0,tipus:"Administració mensual certificable",createdFromCert:certNum,createdAt:new Date().toISOString()});
       }
     }
     return {...d,certAdminMonthlyByNum:{...(d.certAdminMonthlyByNum||{}),[key]:adminData},partides,updatedAt:new Date().toISOString()};
   });
   setCertCapsOpen879(o=>({...o,[cap]:true}));
-  // Si s'ha assignat a una partida existent, la quantitat visible és total/PU per no canviar el pressupost base.
+  // Partida existent: quantitat equivalent total/PU. Partida resum nova: PU 1 € i quantitat igual a l'import.
   const targetRow=(rows||[]).find(r=>String(r.codi||"").trim()===(targetCode||codi));
-  const effectivePu=parseNum8770(targetRow?.pu) || (targetCode ? (total||1) : total);
-  setDraft(x=>({...x,[targetCode||codi]:String(targetCode?(effectivePu?total/effectivePu:0):(total?1:0))}));
+  const effectivePu=parseNum8770(targetRow?.pu) || 1;
+  setDraft(x=>({...x,[targetCode||codi]:String(targetCode?(effectivePu?total/effectivePu:0):total)}));
   setAdminMonthlyOpen878127(null);
 }
 
@@ -7297,8 +7549,27 @@ function nextCertExtraCode878125(cap){
 }
 function addExtraCertLine878125(){
   const tipus=extraDraft878125.tipus||"modificacio";
-  const cap=String(extraDraft878125.cap||capNames878125()[0]||"C99 EXTRES / MODIFICACIONS").trim();
+  const isAdmin=tipus==="administracio";
+  const cap=String(extraDraft878125.cap||(isAdmin?"C98 FEINES PER ADMINISTRACIÓ":capNames878125()[0])||"C99 EXTRES / MODIFICACIONS").trim();
   const isProv=tipus==="provisio";
+  if(isAdmin){
+    const codi=String(extraDraft878125.codi||nextCertExtraCode878125(cap)).trim();
+    const concepte=String(extraDraft878125.concepte||"").trim()||"FEINES PER ADMINISTRACIÓ";
+    setExtraOpen878125(false);
+    setAdminMonthlyOpen878127({
+      cap,
+      codi,
+      conceptePartida:concepte,
+      unitat:"€",
+      targetPartidaCodi:"",
+      targetPartidaConcepte:"",
+      lines:[],
+      desc:String(extraDraft878125.desc||"").trim(),
+      createdFromExtraFlow87220:true
+    });
+    setExtraDraft878125({tipus:"modificacio",cap:"",codi:"",ut:"ut",concepte:"",q:"1",pu:"0",desc:""});
+    return;
+  }
   const qRaw=parseNum8770(extraDraft878125.q);
   const puRaw=parseNum8770(extraDraft878125.pu);
   const q=Number.isFinite(qRaw)?qRaw:0;
@@ -7308,7 +7579,7 @@ function addExtraCertLine878125(){
   if(!pu)return alert("Indica el preu unitari o import de la partida.");
   const codi=String(extraDraft878125.codi||nextCertExtraCode878125(cap)).trim();
   const certQty=isProv?1:q;
-  const pressQty=isProv?0:q;
+  const pressQty=certQty;
   const row={
     id:"extra-cert-"+Date.now(),
     budgetId:data.activeBudgetIdObra||"principal",
@@ -7335,15 +7606,21 @@ function addExtraCertLine878125(){
 }
 
 function openAdminMonthlyForRow878133(r){
-  const saved=(r?.certAdminMonthlyByNum||{})[String(certNum)]||{};
-  setAdminMonthlyOpen878127({...saved,cap:r?.cap||saved.cap||"",codi:r?.codi||saved.codi||"",conceptePartida:r?.concepte||saved.conceptePartida||"",targetPartidaCodi:r?.codi||saved.targetPartidaCodi||"",targetPartidaConcepte:r?.concepte||saved.targetPartidaConcepte||""});
+  const key=String(certNum);
+  const rowSaved=(r?.certAdminMonthlyByNum||{})[key]||null;
+  const globalSaved=(data.certAdminMonthlyByNum||{})[key]||null;
+  const rowCode=String(r?.codi||"").trim();
+  const globalCode=String(globalSaved?.targetPartidaCodi||globalSaved?.codi||"").trim();
+  const saved=rowSaved||(globalCode===rowCode?globalSaved:null)||{};
+  const auto=!!r?.adminMonthlyAuto;
+  setAdminMonthlyOpen878127({...saved,cap:saved.cap||r?.cap||"",codi:saved.codi||r?.codi||"",conceptePartida:saved.conceptePartida||r?.concepte||"",targetPartidaCodi:auto?(saved.targetPartidaCodi||""):(saved.targetPartidaCodi||r?.codi||""),targetPartidaConcepte:auto?(saved.targetPartidaConcepte||""):(saved.targetPartidaConcepte||r?.concepte||"")});
 }
 function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMonthlyByNum||{})[String(certNum)]||{});}
-return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127}/>}
+return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 key={`${certNum}-${adminMonthlyOpen878127.entryId||adminMonthlyOpen878127.targetPartidaCodi||adminMonthlyOpen878127.codi||"nou"}`} certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127}/>} 
 {medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>}
 {partidaPanel87216&&<CertPartidaModal87216 row={partidaPanel87216} certNum={certNum} capOptions={capNames878125()} editing={editing} close={()=>setPartidaPanel87216(null)} saveMeta={updatePartidaMeta878132} openMesures={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);setMedicioTarget8780(r)}} openAdmin={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);openAdminMonthlyForRow878133(r)}} remove={deleteCertLine878131} restore={restoreCertLine878132} hidden={isCertHidden878132(partidaPanel87216,certNum)}/>}
-<Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><button className="secondary" onClick={saveDates8721}>Guardar dates</button><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
-  <div className="version-list cert-version-list-v87216">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={toInputDate8743(dateVal8721(c))} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>setDateDraft8721(d=>({...d,[c.id]:e.target.value}))}/><strong>{money(certListTotal878215(c))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
+<Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><span className="autosave-note-v87217">Data fixa i desada automàticament</span><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
+  <div className="version-list cert-version-list-v87216">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={dateVal8721(c)||""} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>{const value=e.target.value;setDateDraft8721(d=>({...d,[c.id]:value}));updateCertDate8721?.(c.id,value)}}/><strong>{money(certListTotal878215(c))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
 <Card title={`Certificació ${certNum}`} action={<div className="cert-selected-total-v87213"><small>{prevNum?`Anterior: Cert. ${prevNum}`:"Primera certificació"}</small><b>{money(certTotal(certNum))}</b></div>}>
   <div className="cert-simple-toolbar-v87213">
@@ -7361,7 +7638,7 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
   </div>
   {editing&&<div className="cert-edit-step-v87213"><b>Editant la Certificació {certNum}</b><span>Introdueix les quantitats a les partides i acaba amb “Guardar canvis”.</span></div>}
   {certMode8711==="resum"&&<CertResumV69 data={data}/>} 
-  {extraOpen878125&&<Modal title={`Afegir partida a la Certificació ${certNum}`} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p>Escull si és una modificació del pressupost o una provisió que només afecta aquesta certificació.</p><div className="cert-extra-form-v878125"><label><span>Tipus</span><select value={extraDraft878125.tipus} onChange={e=>setExtraDraft878125(x=>({...x,tipus:e.target.value}))}><option value="modificacio">Extra / modificació incorporada al pressupost</option><option value="provisio">Provisió de fons · només certificació</option></select></label><label><span>Capítol</span><select value={extraDraft878125.cap} onChange={e=>setExtraDraft878125(x=>({...x,cap:e.target.value}))}><option value="">Primer capítol / C99</option>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}<option value="C99 EXTRES / MODIFICACIONS">C99 EXTRES / MODIFICACIONS</option></select></label><label><span>Codi</span><input value={extraDraft878125.codi} onChange={e=>setExtraDraft878125(x=>({...x,codi:e.target.value}))} placeholder="Automàtic"/></label><label><span>Unitat</span><input value={extraDraft878125.ut} onChange={e=>setExtraDraft878125(x=>({...x,ut:e.target.value}))}/></label><label className="wide"><span>Concepte</span><input value={extraDraft878125.concepte} onChange={e=>setExtraDraft878125(x=>({...x,concepte:e.target.value}))} placeholder="Ex: Reforç extra / provisió de fons"/></label><label><span>Quantitat certificada</span><input inputMode="decimal" value={extraDraft878125.q} onChange={e=>setExtraDraft878125(x=>({...x,q:e.target.value}))}/></label><label><span>Preu unitari / import</span><input inputMode="decimal" value={extraDraft878125.pu} onChange={e=>setExtraDraft878125(x=>({...x,pu:e.target.value}))}/></label><label className="wide"><span>Descripció</span><input value={extraDraft878125.desc} onChange={e=>setExtraDraft878125(x=>({...x,desc:e.target.value}))}/></label></div></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setExtraOpen878125(false)}>Cancel·lar</button><button type="button" className="primary" onClick={addExtraCertLine878125}>Afegir partida</button></div></Modal>}
+  {extraOpen878125&&<Modal title={`Afegir partida a la Certificació ${certNum}`} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p>Escull el tipus de partida. Si és per administració, l’import es calcularà amb la suma de les línies i no cal indicar cap preu previ.</p><div className="cert-extra-form-v878125"><label><span>Tipus</span><select value={extraDraft878125.tipus} onChange={e=>{const tipus=e.target.value;setExtraDraft878125(x=>({...x,tipus,cap:tipus==="administracio"?(x.cap||"C98 FEINES PER ADMINISTRACIÓ"):x.cap,ut:tipus==="administracio"?"€":(x.ut==="€"?"ut":x.ut),q:tipus==="administracio"?"":(x.q||"1"),pu:tipus==="administracio"?"":(x.pu||"0")}))}}><option value="modificacio">Extra / modificació incorporada al pressupost</option><option value="provisio">Provisió de fons · només certificació</option><option value="administracio">Treballs per administració · suma de línies</option></select></label><label><span>Capítol</span><select value={extraDraft878125.cap} onChange={e=>setExtraDraft878125(x=>({...x,cap:e.target.value}))}><option value="">{extraDraft878125.tipus==="administracio"?"C98 FEINES PER ADMINISTRACIÓ":"Primer capítol / C99"}</option>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}{!capNames878125().includes("C98 FEINES PER ADMINISTRACIÓ")&&<option value="C98 FEINES PER ADMINISTRACIÓ">C98 FEINES PER ADMINISTRACIÓ</option>}<option value="C99 EXTRES / MODIFICACIONS">C99 EXTRES / MODIFICACIONS</option></select></label><label><span>Codi</span><input value={extraDraft878125.codi} onChange={e=>setExtraDraft878125(x=>({...x,codi:e.target.value}))} placeholder="Automàtic"/></label>{extraDraft878125.tipus!=="administracio"&&<label><span>Unitat</span><input value={extraDraft878125.ut} onChange={e=>setExtraDraft878125(x=>({...x,ut:e.target.value}))}/></label>}<label className="wide"><span>Concepte</span><input value={extraDraft878125.concepte} onChange={e=>setExtraDraft878125(x=>({...x,concepte:e.target.value}))} placeholder={extraDraft878125.tipus==="administracio"?"Ex: Feines per administració juliol":"Ex: Reforç extra / provisió de fons"}/></label>{extraDraft878125.tipus==="administracio"?<div className="module-note-v8738 cert-admin-auto-price-v87220 wide"><b>Preu calculat automàticament</b><span>A continuació introduiràs totes les feines, hores i materials. La suma de les línies serà l’import certificat de la partida.</span></div>:<><label><span>Quantitat certificada</span><input inputMode="decimal" value={extraDraft878125.q} onChange={e=>setExtraDraft878125(x=>({...x,q:e.target.value}))}/></label><label><span>Preu unitari / import</span><input inputMode="decimal" value={extraDraft878125.pu} onChange={e=>setExtraDraft878125(x=>({...x,pu:e.target.value}))}/></label></>}<label className="wide"><span>Descripció</span><input value={extraDraft878125.desc} onChange={e=>setExtraDraft878125(x=>({...x,desc:e.target.value}))}/></label></div></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setExtraOpen878125(false)}>Cancel·lar</button><button type="button" className="primary" onClick={addExtraCertLine878125}>{extraDraft878125.tipus==="administracio"?"Continuar i introduir línies":"Afegir partida"}</button></div></Modal>}
   {certMode8711==="emplenar"&&<div className="cert-grid-wrap-v69">
     <div className="cert-grid-v69 group">
       <div className="g pressupost">PRESSUPOST</div>
@@ -7431,8 +7708,8 @@ function ProgressV69({v}){return <div className="progress-v69"><div><i style={{w
 
 
 function fmtDate8714(v){
-  if(!v || String(v).toLowerCase()==="avui") return todayShort8713();
-  return String(v);
+  if(!v || String(v).toLowerCase()==="avui") return "Sense data";
+  return fmtAppDate8748(v);
 }
 function Fact({data,openEmail,openDoc}){
 const key=lsKey8779("aco_fact_params_v61");
@@ -7453,12 +7730,13 @@ const totalProformes=proformes.reduce((s,f)=>s+calc(f).total,0);
 const factPct=basePressupostObra?Math.min(totalBaseProformes/basePressupostObra*100,999):0;
 function openPrint(f){let c=calc(f);openDoc({type:"proforma",autoPrint:true,title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${fmtDate8714(f.data)}`,proforma:f,agents:data.agents||[],iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp})}
 return <div className="fact-layout-v61 fact-layout-v87101">
-<Card title={`Factures proforma de certificacions · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`}>
+<Card title={`Facturació vinculada a certificacions · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`}>
   <div className="fact-summary-v87101"><div><span>Pressupost obra</span><b>{money(basePressupostObra)}</b></div><div><span>Base facturada/proforma</span><b>{money(totalBaseProformes)}</b></div><div><span>Total IVA inclòs</span><b>{money(totalProformes)}</b></div><div className="ring-mini-v87101"><i style={{background:`conic-gradient(#2563eb 0 ${Math.min(factPct,100)}%, #e5e7eb ${Math.min(factPct,100)}% 100%)`}}/><b>{pct(factPct)}</b><span>Facturat sobre pressupost</span></div></div>
+  <div className="invoice-date-note-v87217"><b>Una única data vinculada.</b><span>La data de cada proforma/factura és exactament la data de la seva certificació. Si canvies la data de la Certificació 8, aquí s’actualitza automàticament. A la pantalla i als documents sempre es mostra com DD/MM/AAAA.</span></div>
   <div className="verifactu-note-v87101"><b>VERI*FACTU / factura definitiva</b><span>Bloc reservat per la futura emissió de factura definitiva verificable: QR, registre d’alta, empremta/hash i enviament a AEAT quan s’integri el servei. Les proformes actuals no són factura definitiva.</span></div>
-  <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70 fact-table-v87101"><thead><tr><th>Proforma</th><th>Cert.</th><th>Data</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Accions</th></tr></thead><tbody>
+  <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70 fact-table-v87101"><thead><tr><th>Proforma</th><th>Cert.</th><th>Data cert. / factura</th><th>Base</th><th>IVA</th><th>Retenció</th><th>Deducció</th><th>Total</th><th>Accions</th></tr></thead><tbody>
   {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
-  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td>{fmtDate8714(f.data)}</td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button className="primary small" onClick={()=>openPrint(f)}>Imprimir / PDF</button></td></tr>})}
+  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td><b>{fmtAppDate8748(f.data)}</b></td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button className="primary small" onClick={()=>openPrint(f)}>Imprimir / PDF</button></td></tr>})}
   </tbody></table></div>
 </Card>
 
@@ -7792,7 +8070,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.216.0",
+    app_version:"87.220.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
