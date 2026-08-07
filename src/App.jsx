@@ -2390,7 +2390,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.220",
+      version:"V87.221",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -5490,7 +5490,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.220",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.221",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -7281,7 +7281,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
   </Modal>
 }
 
-function CertPartidaModal87216({row,certNum,capOptions=[],editing,close,saveMeta,openMesures,openAdmin,remove,restore,hidden}){
+function CertPartidaModal87216({row,certNum,capOptions=[],editing,close,saveMeta,openMesures,openAdmin,printAdmin,adminPayload,remove,restore,hidden}){
   const[f,setF]=useState(()=>({codi:row?.codi||"",cap:row?.cap||"",ut:row?.ut||"",concepte:row?.concepte||"",desc:row?.desc||"",pu:String(row?.pu??"")}));
   const ch=(k,v)=>setF(x=>({...x,[k]:v}));
   function save(){
@@ -7302,6 +7302,7 @@ function CertPartidaModal87216({row,certNum,capOptions=[],editing,close,saveMeta
       <div className="cert-partida-quick-v87216">
         <button type="button" className="secondary" onClick={()=>openMesures?.(row)}>Línies d’amidament</button>
         <button type="button" className="secondary" onClick={()=>openAdmin?.(row)}>Hores / administració</button>
+        {(adminPayload?.lines||[]).length>0&&<button type="button" className="primary" onClick={()=>printAdmin?.(row,adminPayload)}>Imprimir administració · Cert. {certNum}</button>}
         {hidden&&<button type="button" className="secondary" onClick={()=>{restore?.(row);close?.()}}>Recuperar a la certificació</button>}
       </div>
     </div>
@@ -7323,6 +7324,7 @@ const[certMode8711,setCertMode8711]=useState("resum");
 const[medicioTarget8780,setMedicioTarget8780]=useState(null);
 const[adminTarget878126,setAdminTarget878126]=useState(null);
 const[adminMonthlyOpen878127,setAdminMonthlyOpen878127]=useState(null);
+const[adminPrintOpen87221,setAdminPrintOpen87221]=useState(false);
 const[partidaPanel87216,setPartidaPanel87216]=useState(null);
 const[certPrintMode87216,setCertPrintMode87216]=useState("origen");
 const[includeMesures8780,setIncludeMesures8780]=useState(false);
@@ -7385,17 +7387,41 @@ function updatePartidaMeta878132(row,patch){
 }
 function printSavedAdmin878132(payload){
   if(!payload||!(payload.lines||[]).length){alert("No hi ha cap quadre d’administració guardat en aquesta certificació.");return;}
-  const lines=(payload.lines||[]).map(l=>({...l,material:String(adminMaterialSum878131(l))}));
+  const lines=(payload.lines||[]).map(l=>({...l,horesAjudant:l.horesAjudant??l.horesPeo??"",material:String(adminMaterialSum878131(l))}));
   const costOficial=parseNum8770(payload.costOficial)||0;
   const costAjudant=parseNum8770(payload.costAjudant)||0;
-  const lineTotal=(l)=>(parseNum8770(l.horesOficial)||0)*costOficial+(parseNum8770(l.horesAjudant)||0)*costAjudant+adminMaterialSum878131(l);
+  const lineTotal=(l)=>(parseNum8770(l.horesOficial)||0)*(parseNum8770(l.costOficial)||costOficial)+(parseNum8770(l.horesAjudant)||0)*(parseNum8770(l.costAjudant??l.costPeo)||costAjudant)+adminMaterialSum878131(l);
   const totalOficial=lines.reduce((s,l)=>s+(parseNum8770(l.horesOficial)||0),0);
   const totalAjudant=lines.reduce((s,l)=>s+(parseNum8770(l.horesAjudant)||0),0);
   const totalMaterial=lines.reduce((s,l)=>s+adminMaterialSum878131(l),0);
   const total=lines.reduce((s,l)=>s+lineTotal(l),0);
   printAdminMonthly878131({certNum,meta:payload,lines,totalOficial,totalAjudant,totalMaterial,total,lineTotal});
 }
-const savedAdmin878132=(data.certAdminMonthlyByNum||{})[String(certNum)]||rows.map(r=>(r.certAdminMonthlyByNum||{})[String(certNum)]).find(Boolean)||null;
+function adminPayloadForRow87221(row){
+  if(!row)return null;
+  const key=String(certNum);
+  const direct=(row.certAdminMonthlyByNum||{})[key];
+  if((direct?.lines||[]).length)return {...direct,cap:direct.cap||row.cap||"",codi:direct.codi||row.codi||"",conceptePartida:direct.conceptePartida||row.concepte||""};
+  const legacy=(row.certAdminLinesByNum||{})[key];
+  if((legacy||[]).length){
+    const first=legacy[0]||{};
+    return {cap:row.cap||"",codi:row.codi||"",conceptePartida:row.concepte||"",targetPartidaCodi:row.codi||"",targetPartidaConcepte:row.concepte||"",costOficial:first.costOficial||"",costAjudant:first.costAjudant??first.costPeo??"",lines:legacy.map(l=>({...l,horesAjudant:l.horesAjudant??l.horesPeo??""})),legacy87221:true};
+  }
+  const global=(data.certAdminMonthlyByNum||{})[key];
+  const globalCode=String(global?.targetPartidaCodi||global?.codi||"").trim();
+  if((global?.lines||[]).length&&globalCode&&globalCode===String(row.codi||"").trim())return {...global,cap:global.cap||row.cap||"",codi:global.codi||row.codi||"",conceptePartida:global.conceptePartida||row.concepte||""};
+  return null;
+}
+function adminPayloadTotal87221(payload){
+  const costOficial=parseNum8770(payload?.costOficial)||0;
+  const costAjudant=parseNum8770(payload?.costAjudant)||0;
+  return (payload?.lines||[]).reduce((sum,line)=>sum+(parseNum8770(line.horesOficial)||0)*(parseNum8770(line.costOficial)||costOficial)+(parseNum8770(line.horesAjudant??line.horesPeo)||0)*(parseNum8770(line.costAjudant??line.costPeo)||costAjudant)+adminMaterialSum878131(line),0);
+}
+const adminPrintableRows87221=allRows878132.map(row=>({row,payload:adminPayloadForRow87221(row)})).filter(item=>(item.payload?.lines||[]).length>0);
+function printAdminForRow87221(row,payload=adminPayloadForRow87221(row)){
+  if(!payload)return alert(`La partida ${row?.codi||""} no té línies d’administració guardades a la Certificació ${certNum}.`);
+  printSavedAdmin878132({...payload,cap:payload.cap||row?.cap||"",codi:payload.codi||row?.codi||"",conceptePartida:payload.conceptePartida||row?.concepte||"",targetPartidaCodi:payload.targetPartidaCodi||row?.codi||"",targetPartidaConcepte:payload.targetPartidaConcepte||row?.concepte||""});
+}
 function pc(q,r){
   const value=parseNum8770(q)||0;
   // Una partida nascuda en aquesta certificació té com a total previst exactament el que s'hi certifica.
@@ -7617,8 +7643,9 @@ function openAdminMonthlyForRow878133(r){
 }
 function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMonthlyByNum||{})[String(certNum)]||{});}
 return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 key={`${certNum}-${adminMonthlyOpen878127.entryId||adminMonthlyOpen878127.targetPartidaCodi||adminMonthlyOpen878127.codi||"nou"}`} certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127}/>} 
-{medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>}
-{partidaPanel87216&&<CertPartidaModal87216 row={partidaPanel87216} certNum={certNum} capOptions={capNames878125()} editing={editing} close={()=>setPartidaPanel87216(null)} saveMeta={updatePartidaMeta878132} openMesures={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);setMedicioTarget8780(r)}} openAdmin={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);openAdminMonthlyForRow878133(r)}} remove={deleteCertLine878131} restore={restoreCertLine878132} hidden={isCertHidden878132(partidaPanel87216,certNum)}/>}
+{medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>} 
+{adminPrintOpen87221&&<Modal title={`Partides per administració · Certificació ${certNum}`} close={()=>setAdminPrintOpen87221(false)}><div className="admin-print-list-v87221"><div className="module-note-v8738 admin-print-note-v87221"><b>{adminPrintableRows87221.length} partida/es amb línies guardades</b><span>Pots imprimir qualsevol partida, també les noves i les de fora de pressupost. Cada quadre manté separades les seves pròpies feines, hores i materials.</span></div>{adminPrintableRows87221.map(({row,payload})=><div className="admin-print-row-v87221" key={row.id||`${row.cap}-${row.codi}`}><div><small>{row.cap||"Sense capítol"}</small><b>{row.codi||"s/codi"} · {row.concepte||"Partida sense concepte"}</b><span>{payload.lines.length} línia/es · Total: {money(adminPayloadTotal87221(payload))}</span>{(row.noPressupost||row.createdFromCert||row.adminMonthlyAuto)&&<em>Partida nova / fora de pressupost</em>}</div><button type="button" className="primary" onClick={()=>printAdminForRow87221(row,payload)}>Previsualitzar / imprimir</button></div>)}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setAdminPrintOpen87221(false)}>Tancar</button></div></Modal>}
+{partidaPanel87216&&<CertPartidaModal87216 row={partidaPanel87216} certNum={certNum} capOptions={capNames878125()} editing={editing} close={()=>setPartidaPanel87216(null)} saveMeta={updatePartidaMeta878132} openMesures={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);setMedicioTarget8780(r)}} openAdmin={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);openAdminMonthlyForRow878133(r)}} printAdmin={printAdminForRow87221} adminPayload={adminPayloadForRow87221(partidaPanel87216)} remove={deleteCertLine878131} restore={restoreCertLine878132} hidden={isCertHidden878132(partidaPanel87216,certNum)}/>} 
 <Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><span className="autosave-note-v87217">Data fixa i desada automàticament</span><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
   <div className="version-list cert-version-list-v87216">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={dateVal8721(c)||""} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>{const value=e.target.value;setDateDraft8721(d=>({...d,[c.id]:value}));updateCertDate8721?.(c.id,value)}}/><strong>{money(certListTotal878215(c))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
@@ -7632,7 +7659,7 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
       <button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}>Afegir partida extra / provisió</button>
       <button type="button" onClick={()=>{openAdminMonthlyNew878133();setCertMode8711("emplenar")}}>Afegir hores / administració</button>
       <label className="action-check-v87213"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Incloure línies d’amidament al PDF</label>
-      {savedAdmin878132&&<button type="button" onClick={()=>printSavedAdmin878132(savedAdmin878132)}>Imprimir administració guardada</button>}
+      {adminPrintableRows87221.length>0&&<button type="button" onClick={()=>setAdminPrintOpen87221(true)}>Imprimir partides per administració ({adminPrintableRows87221.length})</button>}
       {hiddenCount878132>0&&<button type="button" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar partides retirades":"Mostrar partides retirades"} ({hiddenCount878132})</button>}
     </ActionMenu87213>
   </div>
@@ -8070,7 +8097,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.220.0",
+    app_version:"87.221.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

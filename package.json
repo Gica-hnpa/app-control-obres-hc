@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-220-partida-administracio-sense-preu",
+  "name": "app-control-obres-v87-221-impressio-administracio-per-partida",
   "private": true,
-  "version": "87.220.0",
+  "version": "87.221.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,0 +1,20 @@
+V87.221 · IMPRESSIÓ D'ADMINISTRACIÓ PER PARTIDA
+
+1. Descomprimeix la carpeta completa de la V87.221.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+IMPRIMIR QUALSEVOL PARTIDA PER ADMINISTRACIÓ
+
+1. Entra a l'expedient i selecciona la certificació corresponent.
+2. Obre «Més accions».
+3. Prem «Imprimir partides per administració».
+4. Veuràs totes les partides amb línies guardades en aquella certificació,
+   incloses les partides noves i les de fora de pressupost.
+5. Prem «Previsualitzar / imprimir» a la partida que necessitis.
+
+També pots obrir «Fitxa / accions» d'una partida concreta. Quan tingui línies
+d'administració guardades, hi apareixerà el botó «Imprimir administració».
+
+Cada partida imprimeix només les seves feines, hores, materials i total. La
+resta de correccions i proteccions de la V87.220 es mantenen íntegrament.

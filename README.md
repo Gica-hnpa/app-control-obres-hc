@@ -1,4 +1,12 @@
-# APP Control d’Obres V87.220
+# APP Control d’Obres V87.221
+
+## Impressió d’administració per partida V87.221
+
+- El menú `Més accions` mostra totes les partides de la certificació que tenen línies d’administració guardades.
+- Cada partida es pot previsualitzar i imprimir individualment, sense dependre del nom `Ajudes`.
+- S’hi inclouen les partides originals, les noves i les marcades com a fora de pressupost.
+- La fitxa de cada partida incorpora directament el botó `Imprimir administració` quan té línies a la certificació seleccionada.
+- Es manté compatibilitat amb els quadres nous i amb les línies d’administració del format anterior.
 
 ## Partida d’administració sense preu previ V87.220
 
