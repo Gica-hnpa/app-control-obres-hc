@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-221-impressio-administracio-per-partida",
+  "name": "app-control-obres-v87-222-menu-imprimir-i-administracio-unificada",
   "private": true,
-  "version": "87.221.0",
+  "version": "87.222.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

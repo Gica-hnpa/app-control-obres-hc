@@ -2390,7 +2390,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.221",
+      version:"V87.222",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -5490,7 +5490,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.221",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.222",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -7326,7 +7326,6 @@ const[adminTarget878126,setAdminTarget878126]=useState(null);
 const[adminMonthlyOpen878127,setAdminMonthlyOpen878127]=useState(null);
 const[adminPrintOpen87221,setAdminPrintOpen87221]=useState(false);
 const[partidaPanel87216,setPartidaPanel87216]=useState(null);
-const[certPrintMode87216,setCertPrintMode87216]=useState("origen");
 const[includeMesures8780,setIncludeMesures8780]=useState(false);
 const[showHiddenCert878132,setShowHiddenCert878132]=useState(false);
 const[extraOpen878125,setExtraOpen878125]=useState(false);
@@ -7365,10 +7364,11 @@ function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qD
 function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,n))*parseNum8770(r.pu),0)}
 function certListTotal878215(c){const calculated=rows.reduce((sum,row)=>sum+qFor(row,+c.numero)*parseNum8770(row.pu),0);return Math.abs(calculated)>0.000001?calculated:parseNum8770(c.import)}
 function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*parseNum8770(r.pu),0)}
-function openCertPdf87216(){
+function openCertPdf87216(mode="origen"){
+  const printMode=mode==="actual"?"actual":"origen";
   const allPrintRows=sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*parseNum8770(r.pu),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]}));
-  const printRows=certPrintMode87216==="actual"?allPrintRows.filter(r=>Math.abs(+r.qAct||0)>0.000001):allPrintRows;
-  openDoc({type:"certificacio",autoPrint:false,printMode:certPrintMode87216,title:certPrintMode87216==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum}`,subtitle:certPrintMode87216==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Import: ${money(certTotal(certNum))}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
+  const printRows=printMode==="actual"?allPrintRows.filter(r=>Math.abs(+r.qAct||0)>0.000001):allPrintRows;
+  openDoc({type:"certificacio",autoPrint:false,printMode,title:printMode==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum} · GENERAL A ORIGEN`,subtitle:printMode==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Acumulat fins a la Certificació ${certNum} · ${money(totalOrigin())}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
 }
 function commitOne(codi,v){let val=parseNum8770(v);if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
@@ -7412,15 +7412,42 @@ function adminPayloadForRow87221(row){
   if((global?.lines||[]).length&&globalCode&&globalCode===String(row.codi||"").trim())return {...global,cap:global.cap||row.cap||"",codi:global.codi||row.codi||"",conceptePartida:global.conceptePartida||row.concepte||""};
   return null;
 }
-function adminPayloadTotal87221(payload){
+function adminLineTotal87222(payload,line){
   const costOficial=parseNum8770(payload?.costOficial)||0;
   const costAjudant=parseNum8770(payload?.costAjudant)||0;
-  return (payload?.lines||[]).reduce((sum,line)=>sum+(parseNum8770(line.horesOficial)||0)*(parseNum8770(line.costOficial)||costOficial)+(parseNum8770(line.horesAjudant??line.horesPeo)||0)*(parseNum8770(line.costAjudant??line.costPeo)||costAjudant)+adminMaterialSum878131(line),0);
+  return (parseNum8770(line?.horesOficial)||0)*(parseNum8770(line?.costOficial)||costOficial)+(parseNum8770(line?.horesAjudant??line?.horesPeo)||0)*(parseNum8770(line?.costAjudant??line?.costPeo)||costAjudant)+adminMaterialSum878131(line);
+}
+function adminPayloadTotal87221(payload){
+  return (payload?.lines||[]).reduce((sum,line)=>sum+adminLineTotal87222(payload,line),0);
 }
 const adminPrintableRows87221=allRows878132.map(row=>({row,payload:adminPayloadForRow87221(row)})).filter(item=>(item.payload?.lines||[]).length>0);
 function printAdminForRow87221(row,payload=adminPayloadForRow87221(row)){
   if(!payload)return alert(`La partida ${row?.codi||""} no té línies d’administració guardades a la Certificació ${certNum}.`);
   printSavedAdmin878132({...payload,cap:payload.cap||row?.cap||"",codi:payload.codi||row?.codi||"",conceptePartida:payload.conceptePartida||row?.concepte||"",targetPartidaCodi:payload.targetPartidaCodi||row?.codi||"",targetPartidaConcepte:payload.targetPartidaConcepte||row?.concepte||""});
+}
+function printAdminCombined87222(){
+  if(!adminPrintableRows87221.length){alert(`No hi ha partides amb línies d’administració guardades a la Certificació ${certNum}.`);return;}
+  let totalOficial=0,totalAjudant=0,totalMaterials=0,totalGeneral=0;
+  const sections=adminPrintableRows87221.map(({row,payload})=>{
+    let subOficial=0,subAjudant=0,subMaterials=0,subTotal=0;
+    const body=(payload.lines||[]).map(line=>{
+      const ho=parseNum8770(line.horesOficial)||0;
+      const ha=parseNum8770(line.horesAjudant??line.horesPeo)||0;
+      const mat=adminMaterialSum878131(line);
+      const imp=adminLineTotal87222(payload,line);
+      subOficial+=ho;subAjudant+=ha;subMaterials+=mat;subTotal+=imp;
+      const materialDetail=(line.materials||[]).length?(line.materials||[]).map(m=>`${escapeHtml878131(m.concepte||"Material")}: ${money(parseNum8770(m.import)||0)}`).join("<br>"):money(mat);
+      return `<tr><td class="left">${escapeHtml878131(line.concepte||"")}</td><td>${escapeHtml878131(fmtAppDate8748(line.data||""))}</td><td>${qty2(ho)}</td><td>${qty2(ha)}</td><td class="left">${materialDetail}</td><td>${money(imp)}</td></tr>`;
+    }).join("");
+    totalOficial+=subOficial;totalAjudant+=subAjudant;totalMaterials+=subMaterials;totalGeneral+=subTotal;
+    return `<section class="partida"><div class="partida-head"><div><small>${escapeHtml878131(row.cap||"Sense capítol")}</small><h2>${escapeHtml878131(row.codi||"s/codi")} · ${escapeHtml878131(row.concepte||"Partida sense concepte")}</h2></div><b>${money(subTotal)}</b></div><div class="rates">Cost hora oficial: <b>${money(parseNum8770(payload.costOficial)||0)}</b> · Cost hora ajudant/peó: <b>${money(parseNum8770(payload.costAjudant)||0)}</b>${(row.noPressupost||row.createdFromCert||row.adminMonthlyAuto)?` · <strong>PARTIDA NOVA / FORA DE PRESSUPOST</strong>`:""}</div><table><thead><tr><th class="left">Concepte feina</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th class="left">Materials</th><th>Total línia</th></tr></thead><tbody>${body}</tbody><tfoot><tr><th class="left">Subtotal partida</th><th></th><th>${qty2(subOficial)} h</th><th>${qty2(subAjudant)} h</th><th>${money(subMaterials)}</th><th>${money(subTotal)}</th></tr></tfoot></table></section>`;
+  }).join("");
+  const obraNom=String(data.nomTreball||data.nom||data.titol||"").trim();
+  const css=`<style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:0;font-size:10.5px}button{margin-bottom:12px;padding:7px 12px}.head{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #0f2d5c;padding-bottom:9px;margin-bottom:14px}.head h1{margin:0;color:#0f2d5c;font-size:21px}.head p{margin:5px 0 0;color:#475569}.grand{min-width:55mm;text-align:right;background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:9px}.grand small,.grand b{display:block}.grand b{margin-top:3px;font-size:20px;color:#0f2d5c}.partida{margin:0 0 14px;break-inside:auto}.partida-head{display:flex;justify-content:space-between;align-items:end;gap:15px;padding:7px 9px;background:#dbeafe;border:1px solid #93c5fd}.partida-head small{color:#475569;font-weight:700}.partida-head h2{margin:2px 0 0;font-size:14px;color:#0f2d5c}.partida-head>b{font-size:16px}.rates{padding:5px 9px;border:1px solid #cbd5e1;border-top:0;color:#475569}.rates strong{color:#9a3412}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:4px}thead{display:table-header-group}th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:right;vertical-align:top}th{background:#e2e8f0}.left{text-align:left;white-space:normal;overflow-wrap:anywhere}tfoot th{background:#f1f5f9}.global{margin-top:18px;border:2px solid #0f2d5c}.global th{background:#0f2d5c;color:white;font-size:12px}@media print{button{display:none}.partida-head{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>`;
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Administració unificada · Certificació ${certNum}</title>${css}</head><body><button onclick="window.print()">Imprimir document</button><header class="head"><div><h1>FEINES PER ADMINISTRACIÓ · CERTIFICACIÓ ${certNum}</h1><p>${escapeHtml878131(obraNom||"Document únic de totes les partides")} · ${escapeHtml878131(fmtDate8714(cert?.data))}</p><p>${adminPrintableRows87221.length} partides amb administració</p></div><div class="grand"><small>TOTAL ADMINISTRACIÓ</small><b>${money(totalGeneral)}</b></div></header>${sections}<table class="global"><tfoot><tr><th class="left">TOTAL DOCUMENT</th><th>${adminPrintableRows87221.length} partides</th><th>${qty2(totalOficial)} h oficial</th><th>${qty2(totalAjudant)} h ajudant</th><th>${money(totalMaterials)}</th><th>${money(totalGeneral)}</th></tr></tfoot></table></body></html>`;
+  const w=window.open("","_blank");
+  if(!w){alert("El navegador ha bloquejat la finestra d’impressió. Permet pop-ups per imprimir el document.");return;}
+  w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);
 }
 function pc(q,r){
   const value=parseNum8770(q)||0;
@@ -7652,14 +7679,17 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
 <Card title={`Certificació ${certNum}`} action={<div className="cert-selected-total-v87213"><small>{prevNum?`Anterior: Cert. ${prevNum}`:"Primera certificació"}</small><b>{money(certTotal(certNum))}</b></div>}>
   <div className="cert-simple-toolbar-v87213">
     <label><span>Vista</span><select value={certMode8711} onChange={e=>setCertMode8711(e.target.value)}><option value="resum">Resum general</option><option value="emplenar">Partides de la Cert. {certNum}</option></select></label>
-    <label><span>Document</span><select value={certPrintMode87216} onChange={e=>setCertPrintMode87216(e.target.value)}><option value="origen">A origen + deduccions</option><option value="actual">Només la Cert. {certNum}</option></select></label>
     {!editing?<button type="button" className="primary" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}>Editar certificació</button>:<><button type="button" className="primary" onClick={guardarAmidaments}><Save/> Guardar canvis</button><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>Cancel·lar</button></>}
-    <button type="button" className="secondary cert-pdf-main-v87216" onClick={openCertPdf87216}>Previsualitzar / PDF</button>
+    <ActionMenu87213 label="Imprimir">
+      <button type="button" onClick={()=>openCertPdf87216("actual")}>Certificació actual · Cert. {certNum}</button>
+      <button type="button" onClick={()=>openCertPdf87216("origen")}>Certificació general · a origen</button>
+      {adminPrintableRows87221.length>0&&<button type="button" onClick={printAdminCombined87222}>Administració · document únic ({adminPrintableRows87221.length} partides)</button>}
+      {adminPrintableRows87221.length>0&&<button type="button" onClick={()=>setAdminPrintOpen87221(true)}>Administració · escollir una partida</button>}
+      <label className="action-check-v87213"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Incloure línies d’amidament a la certificació</label>
+    </ActionMenu87213>
     <ActionMenu87213 label="Més accions">
       <button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}>Afegir partida extra / provisió</button>
       <button type="button" onClick={()=>{openAdminMonthlyNew878133();setCertMode8711("emplenar")}}>Afegir hores / administració</button>
-      <label className="action-check-v87213"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> Incloure línies d’amidament al PDF</label>
-      {adminPrintableRows87221.length>0&&<button type="button" onClick={()=>setAdminPrintOpen87221(true)}>Imprimir partides per administració ({adminPrintableRows87221.length})</button>}
       {hiddenCount878132>0&&<button type="button" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?"Amagar partides retirades":"Mostrar partides retirades"} ({hiddenCount878132})</button>}
     </ActionMenu87213>
   </div>
@@ -8097,7 +8127,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.221.0",
+    app_version:"87.222.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

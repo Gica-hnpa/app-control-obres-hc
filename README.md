@@ -1,4 +1,12 @@
-# APP Control d’Obres V87.221
+# APP Control d’Obres V87.222
+
+## Menú únic d’impressió i administració unificada V87.222
+
+- Totes les impressions de la certificació s’agrupen en un únic desplegable `Imprimir`.
+- El desplegable ofereix `Certificació actual · Cert. N` i `Certificació general · a origen`.
+- També permet imprimir l’administració d’una partida concreta o totes les partides en un únic document.
+- El document unificat separa les línies per partida i mostra subtotals i totals generals d’hores, materials i import.
+- `Més accions` queda reservat a crear o modificar contingut i ja no conté opcions d’impressió.
 
 ## Impressió d’administració per partida V87.221
 

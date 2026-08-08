@@ -1,0 +1,21 @@
+V87.222 · MENÚ IMPRIMIR I ADMINISTRACIÓ UNIFICADA
+
+1. Descomprimeix la carpeta completa de la V87.222.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+MENÚ IMPRIMIR
+
+Entra a una certificació i obre el desplegable «Imprimir». Hi trobaràs:
+
+- «Certificació actual · Cert. N»: només les partides certificades en aquella certificació.
+- «Certificació general · a origen»: acumulat fins a la certificació seleccionada.
+- «Administració · document únic»: totes les partides d'administració agrupades
+  en un sol document, amb subtotals per partida i total general.
+- «Administració · escollir una partida»: llistat per imprimir-ne només una.
+- «Incloure línies d'amidament a la certificació»: opció aplicable als dos
+  documents de certificació.
+
+«Més accions» queda només per crear o modificar partides, provisions i feines
+per administració. La resta de correccions i proteccions de la V87.221 es
+mantenen íntegrament.
