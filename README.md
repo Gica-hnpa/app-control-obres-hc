@@ -1,4 +1,12 @@
-# APP Control d’Obres V87.222
+# APP Control d’Obres V87.223
+
+## Totals per capítol, partides alçades i divisió d’administració V87.223
+
+- Cada capítol blau de la certificació mostra el pressupost, el certificat del mes seleccionat i el total acumulat a origen, tant obert com plegat.
+- Els imports d’administració es guarden també per número de certificació, perquè una modificació posterior del preu no alteri l’històric.
+- Una partida nova o fora de pressupost d’administració queda com `1 p.a.` i el seu preu és el total real de les hores, feines i materials guardats.
+- En reobrir una partida d’administració es poden marcar dies o feines i passar-los a una segona o tercera partida sense esborrar ni tornar a introduir les línies.
+- La impressió de la certificació actual utilitza els imports fixats i incorpora el subtotal del capítol.
 
 ## Menú únic d’impressió i administració unificada V87.222
 

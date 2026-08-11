@@ -1,7 +1,7 @@
 APP CONTROL D'OBRES
-VERSIÓ: V87.222 - MENÚ IMPRIMIR I ADMINISTRACIÓ UNIFICADA
-BASE: V87.221 - IMPRESSIÓ D'ADMINISTRACIÓ PER PARTIDA
+VERSIÓ: V87.223 - TOTALS DE CAPÍTOL, P.A. I DIVISIÓ D'ADMINISTRACIÓ
+BASE: V87.222 - MENÚ IMPRIMIR I ADMINISTRACIÓ UNIFICADA
 
 La V87.190 queda descartada perquè bloquejava l'app.
 Ús local amb Vite: la carpeta dist no és necessària.
-Build Vite verificat el 07/08/2026.
+Build Vite verificat l'11/08/2026.

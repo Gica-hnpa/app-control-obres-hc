@@ -498,6 +498,9 @@ function normalizeEconomicNumbers878215(data={}){
     if(row.certsByNum&&typeof row.certsByNum==="object"){
       next.certsByNum=Object.fromEntries(Object.entries(row.certsByNum).map(([num,value])=>[String(num),parseNum8770(value)]));
     }
+    if(row.certAmountsByNum&&typeof row.certAmountsByNum==="object"){
+      next.certAmountsByNum=Object.fromEntries(Object.entries(row.certAmountsByNum).map(([num,value])=>[String(num),parseNum8770(value)]));
+    }
     Object.keys(row).filter(key=>/^cert_\d+$/.test(key)).forEach(key=>{next[key]=parseNum8770(row[key])});
     return next;
   });
@@ -591,7 +594,7 @@ function recoverKnownCertificationZero878215(data={},obraId=""){
   if(!rows.length||!baseRows.length)return data;
   const expected=CERTIFICATION_RECOVERY_V87215.expectedTotals||{};
   const nums=Object.keys(expected).map(Number).filter(n=>n>0).sort((a,b)=>a-b);
-  const totals=Object.fromEntries(nums.map(num=>[String(num),rows.reduce((sum,row)=>sum+currentCertQuantity878215(row,num).value*parseNum8770(row.pu),0)]));
+  const totals=Object.fromEntries(nums.map(num=>[String(num),rows.reduce((sum,row)=>sum+certAmount878223(row,num,currentCertQuantity878215(row,num).value),0)]));
   const missing=nums.filter(num=>Math.abs(parseNum8770(expected[String(num)]))>1&&Math.abs(totals[String(num)]||0)<1);
   if(missing.length<3)return data;
   const baseIndex=new Map();
@@ -616,7 +619,7 @@ function recoverKnownCertificationZero878215(data={},obraId=""){
     return Object.keys(patch).length?{...row,...patch,certsByNum,certificationRecoveryV87215:true,certificationRecoveredAt:new Date().toISOString()}:row;
   });
   if(!restoredValues)return data;
-  const recalculated=Object.fromEntries(nums.map(num=>[String(num),partides.reduce((sum,row)=>sum+currentCertQuantity878215(row,num).value*parseNum8770(row.pu),0)]));
+  const recalculated=Object.fromEntries(nums.map(num=>[String(num),partides.reduce((sum,row)=>sum+certAmount878223(row,num,currentCertQuantity878215(row,num).value),0)]));
   const currentRecords=[...(data.certificacions||[])];
   const seen=new Set();
   const certificacions=currentRecords.filter(cert=>{
@@ -2390,7 +2393,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.222",
+      version:"V87.223",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3661,7 +3664,7 @@ function saveCert(){
   setD(obraId,d=>{
     const activeBid=d.activeBudgetIdObra||"principal";
     const rows=(d.partides||[]).filter(r=>(r.budgetId||"principal")===activeBid);
-    const total=rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
+    const total=rows.reduce((s,r)=>s+certAmount878223(r,n),0);
     const rest=(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBid&&+c.numero===n));
     const now=new Date().toISOString();
     const cert={id:"c"+Date.now(),budgetId:activeBid,numero:String(n),data:certDateISO87218(certInfo.data,todayISO8743()),certificationDateSetAt:now,createdAt:now,estat:"Guardada",import:total,updatedAt:now};
@@ -4591,7 +4594,7 @@ function collectActivities8783(obres=[],odata={},clients=[]){
     (d.facturesTecnic||[]).forEach(f=>push('Factura',f.concepte||'Factura honoraris',`${money(f.base||0)} · ${f.estat||'Pendent'}`,itemTime8783(f),'Honoraris'));
     const certMap878136=new Map();
     (d.certificacions||[]).forEach(c=>{const key=String(c.numero||c.id||'');const t=Math.max(clampActivityTime878134(c.updatedAt),clampActivityTime878134(c.createdAt),clampActivityTime878134(c.data));const prev=certMap878136.get(key);if(!prev||t>prev.t)certMap878136.set(key,{c,t});});
-    [...certMap878136.values()].forEach(({c,t})=>{const n=+c.numero||0;const calc=(d.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*parseNum8770(r.pu),0);push('Certificació',`Certificació ${c.numero||''}`,`${money(calc||c.import||0)} · ${expedientCode8739(o)}`,t||itemTime8783(c),'Gestió obra')});
+    [...certMap878136.values()].forEach(({c,t})=>{const n=+c.numero||0;const calc=(d.partides||[]).reduce((sum,r)=>sum+certAmount878223(r,n),0);push('Certificació',`Certificació ${c.numero||''}`,`${money(calc||c.import||0)} · ${expedientCode8739(o)}`,t||itemTime8783(c),'Gestió obra')});
     (d.hores||[]).forEach(h=>push('Temps',h.tasca||h.etiqueta||'Registre de temps',`${qty2(h.hores||0)} h · ${money((+h.hores||0)*(+h.preu||0))}`,itemTime8783(h),'Gestió temps'));
   }
   return out.filter(a=>a.time).sort((a,b)=>b.time-a.time);
@@ -4616,24 +4619,41 @@ function certQty8783(r,n){
   if(n===2)return parseNum8770(r.certActual);
   return 0;
 }
+// V87.223 · L'import certificat pot quedar fixat independentment del PU actual.
+// És imprescindible per a partides d'administració 1 p.a. quan cada certificació
+// pot tenir un total diferent: canviar el PU actual no altera l'històric.
+function certAmount878223(r,n,quantityOverride){
+  if(n<=0||isCertHidden878132(r,n))return 0;
+  const key=String(n);
+  if(r?.certAmountsByNum&&Object.prototype.hasOwnProperty.call(r.certAmountsByNum,key))return parseNum8770(r.certAmountsByNum[key]);
+  const admin=(r?.certAdminMonthlyByNum||{})[key];
+  if(admin&&Object.prototype.hasOwnProperty.call(admin,"total"))return parseNum8770(admin.total);
+  const q=quantityOverride===undefined?certQty8783(r,n):parseNum8770(quantityOverride);
+  return q*parseNum8770(r?.pu);
+}
+function certOriginAmount878223(r,maxCert=1,currentQuantityOverride){
+  let total=0;
+  for(let n=1;n<=Number(maxCert||1);n++)total+=certAmount878223(r,n,n===Number(maxCert)&&currentQuantityOverride!==undefined?currentQuantityOverride:undefined);
+  return total;
+}
 function certTotalsForPrint8780(rows=[],doc={}){
   const nums=new Set([...(doc.prevNum?[doc.prevNum]:[]),...(doc.certNum?[doc.certNum]:[])]);
   rows.forEach(r=>{Object.keys(r.certsByNum||{}).forEach(n=>nums.add(+n));Object.keys(r.certMesuresByNum||{}).forEach(n=>nums.add(+n));});
-  return [...nums].filter(n=>Number.isFinite(+n)&&+n>0).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certQty8783(r,+n)*parseNum8770(r.pu),0)}));
+  return [...nums].filter(n=>Number.isFinite(+n)&&+n>0).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certAmount878223(r,+n),0)}));
 }
 function certTotalsUpTo8793(rows=[],certNum=1){
   const max=Number(certNum)||1;
   const nums=new Set();
   for(let i=1;i<=max;i++)nums.add(i);
   rows.forEach(r=>{Object.keys(r.certsByNum||{}).forEach(n=>{n=+n;if(n>0&&n<=max)nums.add(n)});Object.keys(r.certMesuresByNum||{}).forEach(n=>{n=+n;if(n>0&&n<=max)nums.add(n)});});
-  return [...nums].filter(n=>Number.isFinite(n)&&n>0&&n<=max).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0)}));
+  return [...nums].filter(n=>Number.isFinite(n)&&n>0&&n<=max).sort((a,b)=>a-b).map(n=>({n,total:rows.reduce((s,r)=>s+certAmount878223(r,n),0)}));
 }
 function originRowsForCert8793(rows=[],certNum=1){
   const max=Number(certNum)||1;
   return (rows||[]).map(r=>{
     let qOrigin=0;
     for(let i=1;i<=max;i++)qOrigin+=certQty8783(r,i);
-    const impOrigin=qOrigin*parseNum8770(r.pu);
+    const impOrigin=certOriginAmount878223(r,max);
     return {...r,qOrigin,impOrigin,pctOrigin:(+r.q||0)?qOrigin/(+r.q)*100:0};
   }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0).sort((a,b)=>capOrder878132(a.cap)-capOrder878132(b.cap)||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||compareCodi878132(a.codi,b.codi));
 }
@@ -4650,7 +4670,7 @@ function originRowsFromDoc8794(rows=[],certNum=1){
   const max=Number(certNum)||1;
   return (rows||[]).map(r=>{
     const qOrigin = r.qOrigen!==undefined ? (+r.qOrigen||0) : (r.qOrigin!==undefined ? (+r.qOrigin||0) : (()=>{let t=0;for(let i=1;i<=max;i++)t+=certQty8783(r,i);return t;})());
-    const impOrigin = r.impOrigen!==undefined ? (+r.impOrigen||0) : (r.impOrigin!==undefined ? (+r.impOrigin||0) : qOrigin*parseNum8770(r.pu));
+    const impOrigin = r.impOrigen!==undefined ? (+r.impOrigen||0) : (r.impOrigin!==undefined ? (+r.impOrigin||0) : certOriginAmount878223(r,max));
     const pctOrigin = r.pctOrigen!==undefined ? (+r.pctOrigen||0) : (r.pctOrigin!==undefined ? (+r.pctOrigin||0) : ((+r.q||0)?qOrigin/(+r.q)*100:0));
     return {...r,qOrigin,impOrigin,pctOrigin};
   }).filter(r=>(+r.qOrigin||0)>0 || (+r.impOrigin||0)>0).sort((a,b)=>capOrder878132(a.cap)-capOrder878132(b.cap)||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||compareCodi878132(a.codi,b.codi));
@@ -4668,7 +4688,8 @@ function certFinancialSummaryFromDoc8794(rows=[],certNum=1,doc={}){
     total:(rows||[]).reduce((sum,r)=>{
       let q=certQty8783(r,n);
       if(n===max && r.qAct!==undefined) q=+r.qAct||0;
-      return sum+q*parseNum8770(r.pu);
+      if(n===max&&r.impActual!==undefined)return sum+(+r.impActual||0);
+      return sum+certAmount878223(r,n,q);
     },0)
   }));
   const originRows=originRowsFromDoc8794(rows,max);
@@ -5483,14 +5504,14 @@ function certificationStats878215(data={},bid="principal"){
     Object.keys(row).filter(key=>/^cert_\d+$/.test(key)).forEach(key=>nums.add(Number(key.slice(5))));
   });
   (data.certificacions||[]).filter(cert=>(cert.budgetId||"principal")===(bid||"principal")).forEach(cert=>{if(Number(cert.numero)>0)nums.add(Number(cert.numero))});
-  const totals=[...nums].sort((a,b)=>a-b).map(num=>({num,total:rows.reduce((sum,row)=>sum+certQty8783(row,num)*parseNum8770(row.pu),0)}));
+  const totals=[...nums].sort((a,b)=>a-b).map(num=>({num,total:rows.reduce((sum,row)=>sum+certAmount878223(row,num),0)}));
   return {bid:bid||"principal",rowCount:rows.length,totals,nonZero:totals.filter(item=>Math.abs(item.total)>0.000001).length,totalAbs:totals.reduce((sum,item)=>sum+Math.abs(item.total),0)};
 }
 function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.222",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.223",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -5579,7 +5600,7 @@ function normalizeBudgetedData8791(data={}){
     const bid=c.budgetId||"principal";
     const calculat=(d.partides||[])
       .filter(r=>(r.budgetId||"principal")===bid)
-      .reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
+      .reduce((s,r)=>s+certAmount878223(r,n),0);
     return {...c,data:fixedDate,import:Math.abs(calculat)>0.000001?calculat:(+c.import||0)};
   });
   return {...d,budgetGroups:groups,pressupostos,certificacions,activeBudgetIdObra:active};
@@ -5854,7 +5875,7 @@ function GanttObra878149({data,setData}){
     map[cap].rows.push(row);
     map[cap].budget+=(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0);
     map[cap].laborHours+=laborHoursFromBreakdown87217(row);
-    map[cap].certified+=certQtyTotal8789(row)*parseNum8770(row.pu);
+    map[cap].certified+=certs.reduce((sum,cert)=>sum+certAmount878223(row,+cert.numero||0),0);
     return map;
   },{})).sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
   const resourceCursor={};
@@ -5870,7 +5891,7 @@ function GanttObra878149({data,setData}){
     const end=addWorkDays87217(start,duration-1);
     resourceCursor[cursorKey]=addWorkDays87217(end,1);
     const events=certs.map(c=>{
-      const value=cap.rows.reduce((s,r)=>s+certQty8783(r,+c.numero)*parseNum8770(r.pu),0);
+      const value=cap.rows.reduce((s,r)=>s+certAmount878223(r,+c.numero),0);
       return {cert:c,value,date:isoDate8776(parseDate8776(c.data))};
     }).filter(x=>x.value>0&&x.date);
     const actualStart=events[0]?.date||"";
@@ -6031,7 +6052,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     const n=+certInfo.num;
     setData(d=>{
       const rows=(d.partides||[]).filter(r=>(r.budgetId||"principal")===activeBudgetId);
-      const total=rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
+      const total=rows.reduce((s,r)=>s+certAmount878223(r,n),0);
       const rest=(d.certificacions||[]).filter(c=>!(((c.budgetId||"principal")===activeBudgetId)&&(+c.numero===n)));
       const now=new Date().toISOString();
       const cert={id:"c"+Date.now(),budgetId:activeBudgetId,numero:String(n),data:certDateISO87218(certInfo.data,todayISO8743()),certificationDateSetAt:now,createdAt:now,estat:"Guardada",import:total,updatedAt:now};
@@ -6347,7 +6368,7 @@ const proper=futureEvents[0]||null;
 const pendingTasks=tasques.filter(t=>!['Fet','Anul·lat'].includes(String(t.estat||'Pendent'))).sort((a,b)=>(timeValue8783(a.data)||9999999999999)-(timeValue8783(b.data)||9999999999999));
 let totalHores=hores.reduce((s,h)=>s+(+h.hores||0),0);
 let costTemps=hores.reduce((s,h)=>s+(+h.hores||0)*(+h.preu||+h.preuHora||0)+(+h.despeses||0),0);
-function certImportResum878126(c){const n=+c.numero||0;const calc=(data.partides||[]).reduce((sum,r)=>sum+certQty8783(r,n)*parseNum8770(r.pu),0);return calc||(+c.import||0)||0}
+function certImportResum878126(c){const n=+c.numero||0;const calc=(data.partides||[]).reduce((sum,r)=>sum+certAmount878223(r,n),0);return calc||(+c.import||0)||0}
 const certMapResum878137=new Map();
 certs.forEach(c=>{const key=String(c.numero||c.id||'');const t=Math.max(clampActivityTime878134(c.updatedAt),clampActivityTime878134(c.createdAt),clampActivityTime878134(c.data),timeValue8783(c.id));const prev=certMapResum878137.get(key);if(!prev||t>prev.t)certMapResum878137.set(key,{c,t});});
 const certsUnique=[...certMapResum878137.values()].sort((a,b)=>(b.t||0)-(a.t||0)||(+b.c.numero||0)-(+a.c.numero||0));
@@ -7141,6 +7162,36 @@ function mergeAdminMonthlyPayload87219(existing={},incoming={}){
   const total=lines.reduce((sum,line)=>sum+(parseNum8770(line.horesOficial)||0)*costOficial+(parseNum8770(line.horesAjudant)||0)*costAjudant+adminMaterialSum878131(line),0);
   return {...existing,...incoming,lines,costOficial:String(incoming.costOficial??existing.costOficial??""),costAjudant:String(incoming.costAjudant??existing.costAjudant??""),totalOficial,totalAjudant,totalMaterial,total,deletedLineIds:[],updatedAt:new Date().toISOString()};
 }
+function rebuildAdminPayload87223(payload={},lines=[],patch={}){
+  const normalized=(lines||[]).map(line=>({...line,materials:Array.isArray(line.materials)?line.materials:[],material:String(adminMaterialSum878131(line))}));
+  const costOficial=parseNum8770(payload.costOficial)||0;
+  const costAjudant=parseNum8770(payload.costAjudant)||0;
+  const totalOficial=normalized.reduce((sum,line)=>sum+(parseNum8770(line.horesOficial)||0),0);
+  const totalAjudant=normalized.reduce((sum,line)=>sum+(parseNum8770(line.horesAjudant??line.horesPeo)||0),0);
+  const totalMaterial=normalized.reduce((sum,line)=>sum+adminMaterialSum878131(line),0);
+  const total=normalized.reduce((sum,line)=>sum+(parseNum8770(line.horesOficial)||0)*(parseNum8770(line.costOficial)||costOficial)+(parseNum8770(line.horesAjudant??line.horesPeo)||0)*(parseNum8770(line.costAjudant??line.costPeo)||costAjudant)+adminMaterialSum878131(line),0);
+  return {...payload,...patch,lines:normalized,totalOficial,totalAjudant,totalMaterial,total,deletedLineIds:[],updatedAt:new Date().toISOString()};
+}
+function adminCertAmounts87223(row={},currentKey,currentTotal){
+  const amounts={...(row.certAmountsByNum||{})};
+  const oldPu=parseNum8770(row.pu)||0;
+  const nums=new Set([
+    ...Object.keys(row.certsByNum||{}),
+    ...Object.keys(row.certAdminMonthlyByNum||{}),
+    ...Object.keys(amounts)
+  ]);
+  nums.forEach(num=>{
+    if(Object.prototype.hasOwnProperty.call(amounts,num))return;
+    const saved=(row.certAdminMonthlyByNum||{})[num];
+    if(saved&&Object.prototype.hasOwnProperty.call(saved,"total"))amounts[num]=parseNum8770(saved.total)||0;
+    else amounts[num]=(parseNum8770((row.certsByNum||{})[num])||0)*oldPu;
+  });
+  amounts[String(currentKey)]=parseNum8770(currentTotal)||0;
+  return amounts;
+}
+function adminAggregateAmount87223(amounts={}){
+  return Object.values(amounts||{}).reduce((sum,value)=>sum+(parseNum8770(value)||0),0);
+}
 function printAdminMonthly878131({certNum,meta,lines,totalOficial,totalAjudant,totalMaterial,total,lineTotal}){
   const rows=Array.isArray(lines)?lines:[];
   const groups={};
@@ -7170,7 +7221,7 @@ function printAdminMonthly878131({certNum,meta,lines,totalOficial,totalAjudant,t
   if(!w){alert("El navegador ha bloquejat la finestra d'impressió. Permet pop-ups per imprimir el quadre.");return;}
   w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);
 }
-function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[],partidaOptions=[]}){
+function AdminMonthlyCostModal878127({certNum,initial={},close,save,split,capOptions=[],partidaOptions=[]}){
   const cfgKey=lsKey8779("aco_admin_monthly_defaults_v87127");
   const defaults=(()=>{try{return JSON.parse(localStorage.getItem(cfgKey)||"{}")}catch{return {}}})();
   const defaultCap=initial.cap||"C98 FEINES PER ADMINISTRACIÓ";
@@ -7182,10 +7233,24 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     costOficial:String(initial.costOficial??defaults.costOficial??"27"),
     costAjudant:String(initial.costAjudant??defaults.costAjudant??"18"),
     targetPartidaCodi:initial.targetPartidaCodi||"",
-    targetPartidaConcepte:initial.targetPartidaConcepte||""
+    targetPartidaConcepte:initial.targetPartidaConcepte||"",
+    sourceRowId:initial.sourceRowId||"",
+    sourceRowCodi:initial.sourceRowCodi||initial.codi||"",
+    sourceRowIsCertOnly:!!initial.sourceRowIsCertOnly
   });
   const [lines,setLines]=useState(((initial.lines&&initial.lines.length)?initial.lines:[{id:"adm-m-"+Date.now(),concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:"",materials:[]}]).map(x=>({...x,id:x.id||("adm-m-"+Date.now()+"-"+Math.random()),materials:Array.isArray(x.materials)?x.materials:[]})));
   const [deletedLineIds87219,setDeletedLineIds87219]=useState([]);
+  const [splitOpen87223,setSplitOpen87223]=useState(false);
+  const [splitSelected87223,setSplitSelected87223]=useState([]);
+  const [splitSequence87223,setSplitSequence87223]=useState(2);
+  function suggestedSplitCode87223(sequence=2){
+    const base=String(initial.sourceRowCodi||initial.codi||meta?.codi||"ADM").trim()||"ADM";
+    const used=new Set((partidaOptions||[]).map(row=>String(row.codi||"").trim()));
+    let n=Math.max(2,sequence),candidate="";
+    do{candidate=`${base}.${String(n++).padStart(2,"0")}`;}while(used.has(candidate));
+    return candidate;
+  }
+  const [splitDraft87223,setSplitDraft87223]=useState(()=>({cap:defaultCap,codi:suggestedSplitCode87223(2),concepte:`${initial.conceptePartida||"Feines per administració"} · PART 2`}));
   const histKey878131=lsKey8779("aco_admin_monthly_concepts_v87131");
   const matHistKey878131=lsKey8779("aco_admin_monthly_material_concepts_v87131");
   const [conceptHistory878131,setConceptHistory878131]=useState(()=>{try{return JSON.parse(localStorage.getItem(histKey878131)||"[]")}catch{return []}});
@@ -7223,6 +7288,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
   function upd(id,k,v){setLines(p=>p.map(l=>l.id===id?{...l,[k]:v}:l))}
   function add(){setLines(p=>[...p,{id:"adm-m-"+Date.now()+"-"+p.length,concepte:"",data:todayISO8743(),horesOficial:"",horesAjudant:"",material:"",materials:[]}])}
   function del(id){if(lines.length<=1)return;setDeletedLineIds87219(old=>[...new Set([...old,String(id)])]);setLines(p=>p.filter(l=>l.id!==id))}
+  function toggleSplitLine87223(id){setSplitSelected87223(list=>list.includes(id)?list.filter(value=>value!==id):[...list,id])}
   function materialRows878131(id){return (lines.find(l=>l.id===id)?.materials)||[]}
   function materialTotalLine878131(l){return adminMaterialSum878131(l)}
   function updMaterial878131(id,mid,k,v){setLines(p=>p.map(l=>{if(l.id!==id)return l;const materials=(l.materials||[]).map(m=>m.id===mid?{...m,[k]:v}:m);return {...l,materials,material:String(materials.reduce((s,m)=>s+(parseNum8770(m.import)||0),0))}}))}
@@ -7249,6 +7315,27 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
     save({...meta,lines:normalized,total,totalOficial,totalAjudant,totalMaterial,deletedLineIds:deletedLineIds87219});
   }
   function printCurrent878131(){const normalized=lines.map(l=>({...l,material:String(materialTotalLine878131(l))}));storeHistories878131(normalized);printAdminMonthly878131({certNum,meta,lines:normalized,totalOficial,totalAjudant,totalMaterial,total,lineTotal});}
+  function confirmSplit87223(){
+    const selectedSet=new Set(splitSelected87223);
+    const selectedLines=lines.filter(line=>selectedSet.has(line.id));
+    const remainingLines=lines.filter(line=>!selectedSet.has(line.id));
+    if(!selectedLines.length)return alert("Selecciona almenys una feina per passar-la a la partida nova.");
+    if(!remainingLines.length)return alert("Deixa almenys una feina a la partida original. Si vols moure-les totes, canvia directament el nom de la partida.");
+    const codi=String(splitDraft87223.codi||"").trim();
+    const concepte=String(splitDraft87223.concepte||"").trim();
+    if(!codi||!concepte)return alert("Indica el codi i el nom de la partida nova.");
+    const normalized=lines.map(line=>({...line,material:String(materialTotalLine878131(line))}));
+    const chosen=normalized.filter(line=>selectedSet.has(line.id));
+    const remaining=normalized.filter(line=>!selectedSet.has(line.id));
+    const ok=split?.({...meta,lines:normalized,total,totalOficial,totalAjudant,totalMaterial},splitDraft87223,chosen,remaining);
+    if(ok===false)return;
+    storeHistories878131(normalized);
+    setLines(remaining);
+    setSplitSelected87223([]);
+    setSplitOpen87223(false);
+    const next=splitSequence87223+1;setSplitSequence87223(next);
+    setSplitDraft87223(d=>({...d,codi:suggestedSplitCode87223(next),concepte:`${meta.conceptePartida||"Feines per administració"} · PART ${next}`}));
+  }
   return <Modal title={`Quadre mensual d’administració · CERT. ${certNum}`} close={close}>
     <div className="admin-monthly-v878127 admin-monthly-v878129">
       <div className="module-note-v8738 admin-lines-safe-v87219"><b>{initial.lines?.length?`${initial.lines.length} línies guardades recuperades`:`Quadre nou de la Certificació ${certNum}`}</b><span>Pots afegir o modificar feines i tornar a guardar. Les línies existents es conserven; només desapareixen si prems «Eliminar» expressament.</span></div>
@@ -7262,7 +7349,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
           <option value="">Sense partida concreta · crear/usar partida resum manual</option>
           {partidesCap.map((r,idx)=><option key={`${r.codi||idx}-${idx}`} value={String(r.codi||"")}>{r.codi||"s/codi"} · {r.concepte}</option>)}
         </select><small>{partidesCap.length?`${partidesCap.length} partida/es disponibles en aquest capítol.`:"Aquest capítol encara no té partides; pots crear la partida resum amb els camps següents."}</small></label>
-        {meta.targetPartidaCodi&&<div className="admin-existing-note-v878130">S'aplicarà directament a la partida {meta.targetPartidaCodi} · {meta.targetPartidaConcepte}. No es crearà cap partida nova ni codi ADM. L'import aplicat serà exactament el total del quadre; l'app calcula la quantitat equivalent segons el PU de la partida.</div>}
+        {meta.targetPartidaCodi&&<div className="admin-existing-note-v878130">S'aplicarà directament a la partida {meta.targetPartidaCodi} · {meta.targetPartidaConcepte}. No es crearà cap partida nova ni codi ADM. {meta.sourceRowIsCertOnly?"Com que és una partida nova o fora de pressupost, quedarà com 1 p.a. i el preu serà el total del quadre.":"L'import aplicat serà exactament el total del quadre; l'app calcula la quantitat equivalent segons el PU pressupostat."}</div>}
       </div>
       <div className="admin-monthly-config-v878127 admin-monthly-config-v878129">
         <label><span>Codi partida resum</span><input value={meta.codi} onChange={e=>updMeta("codi",e.target.value)} placeholder="Ex: 04.01.ADM"/></label>
@@ -7272,12 +7359,13 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,capOptions=[
       </div>
       <datalist id={conceptDatalistId878131}>{conceptHistory878131.map(c=><option key={c} value={c}/>)}</datalist>
       <datalist id={materialDatalistId878131}>{materialConceptHistory878131.map(c=><option key={c} value={c}/>)}</datalist>
-      <div className="table-wrap"><table className="admin-monthly-table-v878127 admin-monthly-table-v878131"><thead><tr><th>Concepte feina</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant / peó (h)</th><th>Materials</th><th>Total línia</th><th></th></tr></thead><tbody>
-        {lines.map(l=><tr key={l.id}><td><input list={conceptDatalistId878131} value={l.concepte||""} onChange={e=>upd(l.id,"concepte",e.target.value)} placeholder="Ex: estintolament cuina - terrassa"/></td><td><input type="date" value={toInputDate8743(l.data||todayISO8743())} onChange={e=>upd(l.id,"data",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesOficial||""} onChange={e=>upd(l.id,"horesOficial",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesAjudant||""} onChange={e=>upd(l.id,"horesAjudant",e.target.value)}/></td><td><div className="admin-material-cell-v878131"><input inputMode="decimal" value={String(materialTotalLine878131(l)||"")} onChange={e=>upd(l.id,"material",e.target.value)} disabled={(l.materials||[]).length>0}/><button type="button" className="secondary small" onClick={()=>{setMaterialEditId878131(l.id);if(!(l.materials||[]).length)addMaterial878131(l.id)}}>{(l.materials||[]).length?`${(l.materials||[]).length} materials`:"Desglossar"}</button></div></td><td><b>{money(lineTotal(l))}</b></td><td><button type="button" className="danger small" onClick={()=>del(l.id)}>Eliminar</button></td></tr>)}
-      </tbody><tfoot><tr><th colSpan="2">TOTALS</th><th>{qty2(totalOficial)} h</th><th>{qty2(totalAjudant)} h</th><th>{money(totalMaterial)}</th><th>{money(total)}</th><th></th></tr></tfoot></table></div>
+      <div className="table-wrap"><table className="admin-monthly-table-v878127 admin-monthly-table-v878131 admin-split-table-v87223"><thead><tr><th className="admin-split-check-v87223">{splitOpen87223?"Moure":""}</th><th>Concepte feina</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant / peó (h)</th><th>Materials</th><th>Total línia</th><th></th></tr></thead><tbody>
+        {lines.map(l=><tr key={l.id} className={splitSelected87223.includes(l.id)?"admin-split-selected-v87223":""}><td className="admin-split-check-v87223">{splitOpen87223&&<input type="checkbox" checked={splitSelected87223.includes(l.id)} onChange={()=>toggleSplitLine87223(l.id)} aria-label={`Moure ${l.concepte||"feina"}`}/>}</td><td><input list={conceptDatalistId878131} value={l.concepte||""} onChange={e=>upd(l.id,"concepte",e.target.value)} placeholder="Ex: estintolament cuina - terrassa"/></td><td><input type="date" value={toInputDate8743(l.data||todayISO8743())} onChange={e=>upd(l.id,"data",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesOficial||""} onChange={e=>upd(l.id,"horesOficial",e.target.value)}/></td><td><input inputMode="decimal" value={l.horesAjudant||""} onChange={e=>upd(l.id,"horesAjudant",e.target.value)}/></td><td><div className="admin-material-cell-v878131"><input inputMode="decimal" value={String(materialTotalLine878131(l)||"")} onChange={e=>upd(l.id,"material",e.target.value)} disabled={(l.materials||[]).length>0}/><button type="button" className="secondary small" onClick={()=>{setMaterialEditId878131(l.id);if(!(l.materials||[]).length)addMaterial878131(l.id)}}>{(l.materials||[]).length?`${(l.materials||[]).length} materials`:"Desglossar"}</button></div></td><td><b>{money(lineTotal(l))}</b></td><td><button type="button" className="danger small" onClick={()=>del(l.id)}>Eliminar</button></td></tr>)}
+      </tbody><tfoot><tr><th colSpan="3">TOTALS</th><th>{qty2(totalOficial)} h</th><th>{qty2(totalAjudant)} h</th><th>{money(totalMaterial)}</th><th>{money(total)}</th><th></th></tr></tfoot></table></div>
+      {splitOpen87223&&<div className="admin-split-panel-v87223"><div><b>Crear una altra partida amb les feines marcades</b><span>Les línies seleccionades es mouran a la partida nova. Les altres continuaran aquí; no hauràs de reintroduir res.</span></div><label><span>Capítol</span><select value={splitDraft87223.cap} onChange={e=>setSplitDraft87223(d=>({...d,cap:e.target.value}))}>{capList.map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label><label><span>Codi partida nova</span><input value={splitDraft87223.codi} onChange={e=>setSplitDraft87223(d=>({...d,codi:e.target.value}))}/></label><label className="wide"><span>Nom partida nova</span><input value={splitDraft87223.concepte} onChange={e=>setSplitDraft87223(d=>({...d,concepte:e.target.value}))}/></label><div className="admin-split-actions-v87223"><button type="button" className="secondary" onClick={()=>{setSplitOpen87223(false);setSplitSelected87223([])}}>Cancel·lar divisió</button><button type="button" className="primary" onClick={confirmSplit87223}>Crear partida amb {splitSelected87223.length} línia/es</button></div></div>}
       {materialLine878131&&<div className="admin-material-panel-v878131"><div className="admin-material-panel-head-v878131"><b>Materials de: {materialLine878131.concepte||"línia sense concepte"}</b><button type="button" className="secondary small" onClick={()=>setMaterialEditId878131(null)}>Tancar materials</button></div><table><thead><tr><th>Concepte material</th><th>Import</th><th></th></tr></thead><tbody>{materialRows878131(materialLine878131.id).map(m=><tr key={m.id}><td><input list={materialDatalistId878131} value={m.concepte||""} onChange={e=>updMaterial878131(materialLine878131.id,m.id,"concepte",e.target.value)} placeholder="Ex: sacs morter, lloguer, runa..."/></td><td><input inputMode="decimal" value={m.import||""} onChange={e=>updMaterial878131(materialLine878131.id,m.id,"import",e.target.value)}/></td><td><button type="button" className="danger small" onClick={()=>delMaterial878131(materialLine878131.id,m.id)}>Eliminar</button></td></tr>)}</tbody><tfoot><tr><th>Total materials</th><th>{money(materialTotalLine878131(materialLine878131))}</th><th></th></tr></tfoot></table><button type="button" className="secondary small" onClick={()=>addMaterial878131(materialLine878131.id)}>+ Afegir material</button></div>}
     </div>
-    <div className="modal-actions"><button type="button" className="secondary" onClick={add}>+ Afegir una altra feina</button><button type="button" className="secondary" onClick={printCurrent878131}>Imprimir quadre justificatiu</button><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={saveAndClose}>Guardar canvis sense perdre línies</button></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={add}>+ Afegir una altra feina</button>{meta.sourceRowId&&meta.sourceRowIsCertOnly&&lines.length>1&&<button type="button" className="secondary" onClick={()=>setSplitOpen87223(v=>!v)}>Dividir en diverses partides</button>}<button type="button" className="secondary" onClick={printCurrent878131}>Imprimir quadre justificatiu</button><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={saveAndClose}>Guardar canvis sense perdre línies</button></div>
   </Modal>
 }
 
@@ -7359,15 +7447,15 @@ function saveDatesSafe8720(){
 function fieldFor(n){return "cert_"+n}
 function qFor(r,n){return certQty8783(r,n)}
 function qDraft(r){let raw=draft[r.codi]??String(qFor(r,certNum));let q=parseNum8770(raw);return Number.isFinite(q)?q:qFor(r,certNum)}
-function imp(r,n){return qFor(r,n)*parseNum8770(r.pu)}
+function imp(r,n){return certAmount878223(r,n)}
 function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qDraft(r):qFor(r,i);return total}
-function certTotal(n){return rows.reduce((s,r)=>s+(n===certNum?qDraft(r):qFor(r,n))*parseNum8770(r.pu),0)}
-function certListTotal878215(c){const calculated=rows.reduce((sum,row)=>sum+qFor(row,+c.numero)*parseNum8770(row.pu),0);return Math.abs(calculated)>0.000001?calculated:parseNum8770(c.import)}
-function totalOrigin(){return rows.reduce((s,r)=>s+qOrigin(r)*parseNum8770(r.pu),0)}
+function certTotal(n){return rows.reduce((s,r)=>s+certAmount878223(r,n,n===certNum?qDraft(r):undefined),0)}
+function certListTotal878215(c){const calculated=rows.reduce((sum,row)=>sum+certAmount878223(row,+c.numero),0);return Math.abs(calculated)>0.000001?calculated:parseNum8770(c.import)}
+function totalOrigin(){return rows.reduce((s,r)=>s+certOriginAmount878223(r,certNum,qDraft(r)),0)}
 function openCertPdf87216(mode="origen"){
   const printMode=mode==="actual"?"actual":"origen";
-  const allPrintRows=sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impOrigen:qOrigin(r)*parseNum8770(r.pu),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]}));
-  const printRows=printMode==="actual"?allPrintRows.filter(r=>Math.abs(+r.qAct||0)>0.000001):allPrintRows;
+  const allPrintRows=sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impPrev:certAmount878223(r,prevNum),impActual:certAmount878223(r,certNum,qDraft(r)),impOrigen:certOriginAmount878223(r,certNum,qDraft(r)),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]}));
+  const printRows=printMode==="actual"?allPrintRows.filter(r=>Math.abs(+r.impActual||0)>0.000001):allPrintRows;
   openDoc({type:"certificacio",autoPrint:false,printMode,title:printMode==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum} · GENERAL A ORIGEN`,subtitle:printMode==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Acumulat fins a la Certificació ${certNum} · ${money(totalOrigin())}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
 }
 function commitOne(codi,v){let val=parseNum8770(v);if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
@@ -7487,28 +7575,28 @@ function saveAdminMonthly878127(payload){
   setData?.(d=>{
     const bid=d.activeBudgetIdObra||"principal";
     let found=false;
-    let appliedQty=0;
     const partides=(d.partides||[]).map(r=>{
       const sameBudget=(r.budgetId||"principal")===bid;
       const sameTarget=targetCode && sameBudget && String(r.codi||"").trim()===targetCode;
       if(sameTarget){
         found=true;
         const storedPu=parseNum8770(r.pu)||0;
-        const amountBased=!storedPu;
-        const effectivePu=amountBased?1:storedPu;
-        appliedQty=effectivePu?total/effectivePu:0;
+        const certOnly=!!(r.createdFromCert||r.noPressupost||r.adminMonthlyAuto||!storedPu);
+        const appliedQty=certOnly?1:(storedPu?total/storedPu:0);
         const certsByNum={...(r.certsByNum||{}),[key]:appliedQty};
-        const certOnly=!!(r.createdFromCert||r.noPressupost||r.adminMonthlyAuto);
-        const plannedQty=certOnly?Object.values(certsByNum).reduce((sum,value)=>sum+(parseNum8770(value)||0),0):r.q;
+        const certAmountsByNum=adminCertAmounts87223(r,key,total);
+        const aggregate=adminAggregateAmount87223(certAmountsByNum);
         return {
           ...r,
-          pu:amountBased?1:r.pu,
-          ut:amountBased?"€":r.ut,
+          pu:certOnly?aggregate:r.pu,
+          ut:certOnly?"p.a.":r.ut,
           certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},
           certsByNum,
-          q:certOnly?plannedQty:r.q,
+          certAmountsByNum,
+          q:certOnly?1:r.q,
           certAnterior:certNum===1?appliedQty:r.certAnterior,
           certActual:certNum===2?appliedQty:r.certActual,
+          desc:certOnly?`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(total)}`:r.desc,
           updatedAt:new Date().toISOString()
         };
       }
@@ -7522,29 +7610,59 @@ function saveAdminMonthly878127(payload){
         const same=(r.adminMonthlyId===markerId)||(((r.budgetId||"principal")===bid)&&String(r.codi||"").trim()===manualCodi&&r.adminMonthlyAuto);
         if(same){
           found=true;
-          const previousPu=parseNum8770(r.pu)||1;
-          const certsByNum=Object.fromEntries(Object.entries(r.certsByNum||{}).map(([num,value])=>{
-            const savedTotal=parseNum8770((r.certAdminMonthlyByNum||{})[num]?.total);
-            return [num,savedTotal||(parseNum8770(value)||0)*previousPu];
-          }));
-          certsByNum[key]=total;
-          const plannedQty=Object.values(certsByNum).reduce((sum,value)=>sum+(parseNum8770(value)||0),0);
-          partides[i]={...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"€",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:plannedQty,pu:1,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},certsByNum,certAnterior:certNum===1?total:r.certAnterior,certActual:certNum===2?total:r.certActual,updatedAt:new Date().toISOString()};
+          const certAmountsByNum=adminCertAmounts87223(r,key,total);
+          const aggregate=adminAggregateAmount87223(certAmountsByNum);
+          const certsByNum={...(r.certsByNum||{}),[key]:1};
+          partides[i]={...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"p.a.",concepte,desc:`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(total)}`,q:1,pu:aggregate,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},certsByNum,certAmountsByNum,certAnterior:certNum===1?1:r.certAnterior,certActual:certNum===2?1:r.certActual,updatedAt:new Date().toISOString()};
           break;
         }
       }
       if(!found){
-        partides.push({id:markerId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"€",concepte,desc:`Quadre mensual d’administració. Total CERT. ${certNum}: ${money(total)}`,q:total,pu:1,certAdminMonthlyByNum:{[key]:adminData},certsByNum:{[key]:total},certAnterior:certNum===1?total:0,certActual:certNum===2?total:0,tipus:"Administració mensual certificable",createdFromCert:certNum,createdAt:new Date().toISOString()});
+        partides.push({id:markerId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"p.a.",concepte,desc:`Partida alçada d’administració. Total CERT. ${certNum}: ${money(total)}`,q:1,pu:total,certAdminMonthlyByNum:{[key]:adminData},certsByNum:{[key]:1},certAmountsByNum:{[key]:total},certAnterior:certNum===1?1:0,certActual:certNum===2?1:0,tipus:"Administració mensual certificable",createdFromCert:certNum,createdAt:new Date().toISOString()});
       }
     }
     return {...d,certAdminMonthlyByNum:{...(d.certAdminMonthlyByNum||{}),[key]:adminData},partides,updatedAt:new Date().toISOString()};
   });
   setCertCapsOpen879(o=>({...o,[cap]:true}));
-  // Partida existent: quantitat equivalent total/PU. Partida resum nova: PU 1 € i quantitat igual a l'import.
+  // Partida pressupostada: quantitat equivalent total/PU. Partida nova: 1 p.a. amb PU igual a l'import calculat.
   const targetRow=(rows||[]).find(r=>String(r.codi||"").trim()===(targetCode||codi));
-  const effectivePu=parseNum8770(targetRow?.pu) || 1;
-  setDraft(x=>({...x,[targetCode||codi]:String(targetCode?(effectivePu?total/effectivePu:0):total)}));
+  const targetIsCertOnly=!targetCode||!!(targetRow?.createdFromCert||targetRow?.noPressupost||targetRow?.adminMonthlyAuto)||!parseNum8770(targetRow?.pu);
+  const effectivePu=parseNum8770(targetRow?.pu)||1;
+  setDraft(x=>({...x,[targetCode||codi]:String(targetIsCertOnly?1:(total/effectivePu))}));
   setAdminMonthlyOpen878127(null);
+}
+
+function splitAdminMonthly87223(sourcePayload,targetDraft,selectedLines,remainingLines){
+  const key=String(certNum);
+  const sourceId=String(sourcePayload?.sourceRowId||"");
+  const sourceCode=String(sourcePayload?.sourceRowCodi||sourcePayload?.codi||"").trim();
+  const newCode=String(targetDraft?.codi||"").trim();
+  const newCap=String(targetDraft?.cap||sourcePayload?.cap||"C98 FEINES PER ADMINISTRACIÓ").trim();
+  const newConcept=String(targetDraft?.concepte||"Feines per administració").trim();
+  if(!newCode||!newConcept)return false;
+  const collision=(rows||[]).some(r=>String(r.codi||"").trim()===newCode && String(r.id||"")!==sourceId);
+  if(collision){alert(`Ja existeix una partida amb el codi ${newCode}. Escriu-ne un altre.`);return false;}
+  const sourceData=rebuildAdminPayload87223(sourcePayload,remainingLines,{codi:sourceCode,cap:sourcePayload.cap,conceptePartida:sourcePayload.conceptePartida,targetPartidaCodi:"",targetPartidaConcepte:""});
+  const newEntryId=`admin-split-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+  const newData=rebuildAdminPayload87223(sourcePayload,selectedLines,{entryId:newEntryId,codi:newCode,cap:newCap,conceptePartida:newConcept,targetPartidaCodi:"",targetPartidaConcepte:"",sourceRowId:"",sourceRowCodi:""});
+  setData?.(d=>{
+    const bid=d.activeBudgetIdObra||"principal";
+    let sourceFound=false;
+    const partides=(d.partides||[]).map(r=>{
+      const same=sourceId?String(r.id||"")===sourceId:String(r.codi||"").trim()===sourceCode;
+      if(!same)return r;
+      sourceFound=true;
+      const certAmountsByNum=adminCertAmounts87223(r,key,sourceData.total);
+      const aggregate=adminAggregateAmount87223(certAmountsByNum);
+      return {...r,q:1,pu:aggregate,ut:"p.a.",noPressupost:true,adminMonthlyAuto:true,certsByNum:{...(r.certsByNum||{}),[key]:1},certAmountsByNum,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:sourceData},certAnterior:certNum===1?1:r.certAnterior,certActual:certNum===2?1:r.certActual,desc:`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(sourceData.total)}`,updatedAt:new Date().toISOString()};
+    });
+    if(!sourceFound){alert("No s’ha pogut localitzar la partida original. Guarda-la i torna a obrir-la abans de dividir-la.");return d;}
+    partides.push({id:newEntryId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:newEntryId,noPressupost:true,cap:newCap,codi:newCode,ut:"p.a.",concepte:newConcept,desc:`Partida alçada d’administració. Total CERT. ${certNum}: ${money(newData.total)}`,q:1,pu:newData.total,certAdminMonthlyByNum:{[key]:newData},certsByNum:{[key]:1},certAmountsByNum:{[key]:newData.total},certAnterior:certNum===1?1:0,certActual:certNum===2?1:0,tipus:"Administració mensual certificable",createdFromCert:certNum,splitFromAdminRowId:sourceId||sourceCode,createdAt:new Date().toISOString()});
+    return {...d,certAdminMonthlyByNum:{...(d.certAdminMonthlyByNum||{}),[key]:sourceData},partides,updatedAt:new Date().toISOString()};
+  });
+  setDraft(x=>({...x,[sourceCode]:"1",[newCode]:"1"}));
+  setCertCapsOpen879(o=>({...o,[sourcePayload.cap]:true,[newCap]:true}));
+  return true;
 }
 
 function deleteCertLine878131(row){
@@ -7565,8 +7683,9 @@ function deleteCertLine878131(row){
       const certMesuresByNum={...(r.certMesuresByNum||{})};delete certMesuresByNum[key];
       const certAdminLinesByNum={...(r.certAdminLinesByNum||{})};delete certAdminLinesByNum[key];
       const certAdminMonthlyByNum={...(r.certAdminMonthlyByNum||{})};delete certAdminMonthlyByNum[key];
+      const certAmountsByNum={...(r.certAmountsByNum||{})};delete certAmountsByNum[key];
       const certHiddenByNum={...(r.certHiddenByNum||{}),[key]:true};
-      return [{...r,certsByNum,certMesuresByNum,certAdminLinesByNum,certAdminMonthlyByNum,certHiddenByNum,certAnterior:certNum===1?0:r.certAnterior,certActual:certNum===2?0:r.certActual,updatedAt:new Date().toISOString()}];
+      return [{...r,certsByNum,certAmountsByNum,certMesuresByNum,certAdminLinesByNum,certAdminMonthlyByNum,certHiddenByNum,certAnterior:certNum===1?0:r.certAnterior,certActual:certNum===2?0:r.certActual,updatedAt:new Date().toISOString()}];
     });
     return {...d,partides,updatedAt:new Date().toISOString()};
   });
@@ -7666,10 +7785,10 @@ function openAdminMonthlyForRow878133(r){
   const globalCode=String(globalSaved?.targetPartidaCodi||globalSaved?.codi||"").trim();
   const saved=rowSaved||(globalCode===rowCode?globalSaved:null)||{};
   const auto=!!r?.adminMonthlyAuto;
-  setAdminMonthlyOpen878127({...saved,cap:saved.cap||r?.cap||"",codi:saved.codi||r?.codi||"",conceptePartida:saved.conceptePartida||r?.concepte||"",targetPartidaCodi:auto?(saved.targetPartidaCodi||""):(saved.targetPartidaCodi||r?.codi||""),targetPartidaConcepte:auto?(saved.targetPartidaConcepte||""):(saved.targetPartidaConcepte||r?.concepte||"")});
+  setAdminMonthlyOpen878127({...saved,cap:saved.cap||r?.cap||"",codi:saved.codi||r?.codi||"",conceptePartida:saved.conceptePartida||r?.concepte||"",targetPartidaCodi:auto?(saved.targetPartidaCodi||""):(saved.targetPartidaCodi||r?.codi||""),targetPartidaConcepte:auto?(saved.targetPartidaConcepte||""):(saved.targetPartidaConcepte||r?.concepte||""),sourceRowId:r?.id||"",sourceRowCodi:r?.codi||"",sourceRowIsCertOnly:!!(r?.noPressupost||r?.createdFromCert||r?.adminMonthlyAuto)});
 }
 function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMonthlyByNum||{})[String(certNum)]||{});}
-return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 key={`${certNum}-${adminMonthlyOpen878127.entryId||adminMonthlyOpen878127.targetPartidaCodi||adminMonthlyOpen878127.codi||"nou"}`} certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127}/>} 
+return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 key={`${certNum}-${adminMonthlyOpen878127.entryId||adminMonthlyOpen878127.targetPartidaCodi||adminMonthlyOpen878127.codi||"nou"}`} certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127} split={splitAdminMonthly87223}/>} 
 {medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>} 
 {adminPrintOpen87221&&<Modal title={`Partides per administració · Certificació ${certNum}`} close={()=>setAdminPrintOpen87221(false)}><div className="admin-print-list-v87221"><div className="module-note-v8738 admin-print-note-v87221"><b>{adminPrintableRows87221.length} partida/es amb línies guardades</b><span>Pots imprimir qualsevol partida, també les noves i les de fora de pressupost. Cada quadre manté separades les seves pròpies feines, hores i materials.</span></div>{adminPrintableRows87221.map(({row,payload})=><div className="admin-print-row-v87221" key={row.id||`${row.cap}-${row.codi}`}><div><small>{row.cap||"Sense capítol"}</small><b>{row.codi||"s/codi"} · {row.concepte||"Partida sense concepte"}</b><span>{payload.lines.length} línia/es · Total: {money(adminPayloadTotal87221(payload))}</span>{(row.noPressupost||row.createdFromCert||row.adminMonthlyAuto)&&<em>Partida nova / fora de pressupost</em>}</div><button type="button" className="primary" onClick={()=>printAdminForRow87221(row,payload)}>Previsualitzar / imprimir</button></div>)}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setAdminPrintOpen87221(false)}>Tancar</button></div></Modal>}
 {partidaPanel87216&&<CertPartidaModal87216 row={partidaPanel87216} certNum={certNum} capOptions={capNames878125()} editing={editing} close={()=>setPartidaPanel87216(null)} saveMeta={updatePartidaMeta878132} openMesures={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);setMedicioTarget8780(r)}} openAdmin={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);openAdminMonthlyForRow878133(r)}} printAdmin={printAdminForRow87221} adminPayload={adminPayloadForRow87221(partidaPanel87216)} remove={deleteCertLine878131} restore={restoreCertLine878132} hidden={isCertHidden878132(partidaPanel87216,certNum)}/>} 
@@ -7711,10 +7830,13 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
     </div>
     {Object.entries(caps).map(([cap,items],capIdx)=>{
       const isOpen=certCapsOpen879[cap]??(capIdx===0);
+      const capBudget=items.reduce((sum,r)=>sum+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+      const capCurrent=items.reduce((sum,r)=>sum+certAmount878223(r,certNum,qDraft(r)),0);
+      const capOrigin=items.reduce((sum,r)=>sum+certOriginAmount878223(r,certNum,qDraft(r)),0);
       return <div key={cap}>
-      <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><b>{items.length} partides</b></button>
+      <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><span className="cert-cap-totals-v87223"><small>{items.length} partides · Pressupost {money(capBudget)}</small><b>Cert. {certNum}: {money(capCurrent)}</b><strong>A origen: {money(capOrigin)}</strong></span></button>
       {isOpen&&items.map((r,rowIdx)=>{
-        let qp=qFor(r,prevNum), qa=qDraft(r), ip=qp*parseNum8770(r.pu), ia=qa*parseNum8770(r.pu), qo=qOrigin(r), io=qo*parseNum8770(r.pu);
+        let qp=qFor(r,prevNum), qa=qDraft(r), ip=certAmount878223(r,prevNum), ia=certAmount878223(r,certNum,qa), qo=qOrigin(r), io=certOriginAmount878223(r,certNum,qa);
         return <div className="cert-grid-v69 row" key={r.id||`${cap}-${rowIdx}`}>
           <div>{r.codi}</div><div className="cert-unit-v87216">{r.ut}</div><div className="concept cert-concept-v877 cert-concept-v87216"><div className="concept-line-v877"><span>{r.concepte}</span><button type="button" className="secondary small cert-actions-btn-v878133" onClick={()=>setPartidaPanel87216(r)}>Fitxa / accions</button></div>{r.desc&&<small className="cert-desc-hint-v87216">Descripció completa disponible a la fitxa</small>}</div><div>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*parseNum8770(r.pu))}</div>
           <div className={qp>0?"prev-fill":""}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
@@ -7737,7 +7859,7 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
 function CertResumV69({data}){
 let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
 function qFor(r,n){return certQty8783(r,n)}
-function impFor(r,n){return qFor(r,n)*parseNum8770(r.pu)}
+function impFor(r,n){return certAmount878223(r,n)}
 let capRows=Object.entries(caps).map(([cap,items])=>{
   let pressupost=items.reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
   let vals=certs.map(c=>items.reduce((s,r)=>s+impFor(r,+c.numero),0));
@@ -7952,7 +8074,7 @@ function moveDoc(d,newFolder){setDocs(p=>p.map(x=>x.id===d.id?{...x,folder:newFo
 function sizeTxt(n){return n?((n/1024/1024).toFixed(2)+" MB"):"—"}
 function storageLabel(d){if(d.storage==="generat")return "Document generat dins l’app"; if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
 const generatedDocs878148=[
-  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impOrigen:qOrigen*parseNum8770(r.pu),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.qAct||0)*parseNum8770(r.pu),0)||(+c.import||0);const totalOrigen=rows.reduce((sum,r)=>sum+(+r.qOrigen||0)*parseNum8770(r.pu),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
+  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impPrev:certAmount878223(r,prev),impActual:certAmount878223(r,n),impOrigen:certOriginAmount878223(r,n),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.impActual||0),0)||(+c.import||0);const totalOrigen=rows.reduce((sum,r)=>sum+(+r.impOrigen||0),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
   ...((data.factures||[]).map(f=>{const base=+f.base||+f.total||0,ded=+f.ded||+f.descompte||0,iva=+f.iva||21,ret=+f.ret||+f.retencio||0,baseImposable=base*(1-ded/100),ivaImp=baseImposable*iva/100,retImp=baseImposable*ret/100,total=+f.total||baseImposable+ivaImp-retImp;return {id:`auto-fac-obra-${f.id||f.numero||Date.now()}`,auto878148:true,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`${f.tipus||"Factura / proforma obra"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"FACTURA").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:total,origen:"Facturació d’obra",docData:{type:"proforma",title:`Proforma ${f.numero||""}`,subtitle:f.data||"",proforma:f,agents:data.agents||[],iva,ret,ded,total,base:baseImposable,ivaImp,retImp}}})),
   ...((data.pressupostosTecnic||[]).map(p=>({id:`auto-pres-tec-${p.id||p.numero||Date.now()}`,auto878148:true,sourceId878193:p.id,folder:"00_DESPATX_TECNIC",nom:`Pressupost honoraris ${p.numero||""}`.trim(),tipus:"PRESSUPOST HONORARIS",data:p.data||"—",size:0,import:baseIva8743(p),origen:"Honoraris tècnics",docData:{...p,type:"pressuposttecnic",title:`PRESSUPOST D’HONORARIS${p.numero?` · ${p.numero}`:""}`}}))),
   ...((data.facturesTecnic||[]).map(f=>({id:`auto-fac-tec-${f.id||f.numero||Date.now()}`,auto878148:true,sourceId878193:f.id,folder:"00_DESPATX_TECNIC",nom:`${f.tipus||"Factura / proforma honoraris"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"HONORARIS").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:totalFactura878120(f),origen:"Honoraris tècnics",docData:{...f,type:"facturatecnica",title:`FACTURA / PROFORMA${f.numero?` · ${f.numero}`:""}`}})))
@@ -8127,7 +8249,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.222.0",
+    app_version:"87.223.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -8623,8 +8745,8 @@ return <div className="cert-print-v82">
 
 function CertPrintV87({doc}){
 const rows=doc.rows||[];
-const current=rows.filter(r=>(+r.qAct||0)>0);
-const total=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
+const current=rows.filter(r=>Math.abs(r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu))>0.000001);
+const total=current.reduce((s,r)=>s+(r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu)),0);
 const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
   const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
   return s+((+r.impOrigen||0)||qOri*parseNum8770(r.pu));
@@ -8644,7 +8766,7 @@ return <div className="cert-print-v8718 cert-print-v8771">
     {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718 cert-summary-table-v8771">
       <colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-qty"/><col className="c-pu"/><col className="c-import"/></colgroup>
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
-      <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr>)}</tbody>
+      <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money(r.impActual!==undefined?r.impActual:(+r.qAct||0)*parseNum8770(r.pu))}</td></tr>)}</tbody>
       <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
     </table>}
   </section>
@@ -8664,7 +8786,7 @@ return <div className="cert-print-v8718 cert-print-v8771">
         <tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q pres.</th><th>PU pres.</th><th>Imp. pres.</th><th>Q ant.</th><th>% ant.</th><th>Imp. ant.</th><th>Q act.</th><th>% act.</th><th>Imp. act.</th><th>Q origen</th><th>% origen</th><th>Total origen</th></tr>
       </thead>
       <tbody>{rows.map(r=>{
-        const pres=(+r.q||0)*parseNum8770(r.pu), ant=(+r.qPrev||0)*parseNum8770(r.pu), act=(+r.qAct||0)*parseNum8770(r.pu);
+        const pres=(+r.q||0)*parseNum8770(r.pu), ant=r.impPrev!==undefined?(+r.impPrev||0):(+r.qPrev||0)*parseNum8770(r.pu), act=r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu);
         const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
         const impOri=(+r.impOrigen||0)||qOri*parseNum8770(r.pu);
         const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
@@ -8698,14 +8820,16 @@ function issuerFiscalBlockHtml87100(client){const name=issuerFiscalName87100(cli
 
 function certCurrentPrintHtml87216(doc,obra,client,rows){
   const certNum=+doc.certNum||1;
-  const current=sortPartides878132(rows||[]).filter(r=>Math.abs(+r.qAct||0)>0.000001);
-  const total=current.reduce((s,r)=>s+(+r.qAct||0)*parseNum8770(r.pu),0);
+  const current=sortPartides878132(rows||[]).filter(r=>Math.abs(r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu))>0.000001);
+  const total=current.reduce((s,r)=>s+(r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu)),0);
+  const capTotals=current.reduce((map,r)=>{const cap=r.cap||"PRESSUPOST IMPORTAT";map[cap]=(map[cap]||0)+(r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu));return map;},{});
   let lastCap="__none__";
   const body=current.map(r=>{
     const cap=r.cap||"PRESSUPOST IMPORTAT";
     const show=cap!==lastCap;lastCap=cap;
     const measures=doc.includeMesures&&(r.mesures||[]).length?`<tr class="measure"><td></td><td colspan="5"><b>Línies d’amidament</b><table><thead><tr><th>Concepte</th><th>Ut.</th><th>Llargada</th><th>Amplada</th><th>Alçada</th><th>Total</th></tr></thead><tbody>${r.mesures.map(m=>`<tr><td>${escHtmlV8772(m.concepte||"")}</td><td>${escHtmlV8772(m.unitats||"")}</td><td>${escHtmlV8772(m.llargada||"")}</td><td>${escHtmlV8772(m.amplada||"")}</td><td>${escHtmlV8772(m.alcada||"")}</td><td>${qty2(medicioCalc8780(m,r.ut))}</td></tr>`).join("")}</tbody></table></td></tr>`:"";
-    return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qAct)}</td><td>${money(r.pu)}</td><td>${money((+r.qAct||0)*parseNum8770(r.pu))}</td></tr>${measures}`;
+    const amount=r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu);
+    return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap)}</td><td>${money(capTotals[cap]||0)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qAct)}</td><td>${money(r.pu)}</td><td>${money(amount)}</td></tr>${measures}`;
   }).join("")||`<tr><td colspan="6" class="empty">No hi ha partides certificades en aquesta certificació.</td></tr>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||`Certificació ${certNum}`)}</title><style>
   *{box-sizing:border-box}body{margin:0;background:#fff;color:#0f172a;font-family:Arial,Helvetica,sans-serif;font-size:10px}@page{size:A4 portrait;margin:15mm 13mm}.page{width:184mm;min-height:267mm}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}.head b,.head span{display:block}.head span{color:#475569;margin-top:2px}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8}h1{font-size:19px;color:#0f2d5c;margin:0 0 4px}.sub{color:#475569;margin:0 0 12px}.mode{display:flex;justify-content:space-between;gap:10px;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:9px;margin:0 0 12px}.mode b{color:#166534;font-size:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #94a3b8;padding:4px;text-align:right;vertical-align:top;font-variant-numeric:tabular-nums}th{background:#dbeafe}.concept{text-align:left;white-space:normal;overflow-wrap:anywhere}.cap td{background:#9fbad4;text-align:left;font-weight:900}.measure td{background:#f8fafc;text-align:left}.measure table{margin-top:4px;font-size:8px}.empty{text-align:left;color:#64748b}.total{margin:9mm 0 0 auto;width:80mm;border:2px solid #0f2d5c;padding:9px;display:flex;justify-content:space-between;font-size:14px}.total b{color:#0f2d5c}@media screen{body{background:#e5e7eb;padding:16px}.page{background:#fff;padding:10mm;margin:auto;box-shadow:0 2px 12px #94a3b8}}@media print{.page{padding:0}}
@@ -8731,7 +8855,7 @@ function certPrintHtmlV8772(doc,obra,client){
   const wideRows=printRows.map(r=>{
     const cap=r.cap||"PRESSUPOST IMPORTAT";
     const showCap=cap!==lastCap; lastCap=cap;
-    const pres=(+r.q||0)*parseNum8770(r.pu), ant=(+r.qPrev||0)*parseNum8770(r.pu), act=(+r.qAct||0)*parseNum8770(r.pu);
+    const pres=(+r.q||0)*parseNum8770(r.pu), ant=r.impPrev!==undefined?(+r.impPrev||0):(+r.qPrev||0)*parseNum8770(r.pu), act=r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu);
     const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
     const impOri=(+r.impOrigen||0)||qOri*parseNum8770(r.pu);
     const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);

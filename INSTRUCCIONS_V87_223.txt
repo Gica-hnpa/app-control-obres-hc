@@ -1,0 +1,27 @@
+V87.223 · TOTALS DE CAPÍTOL, P.A. I DIVISIÓ D'ADMINISTRACIÓ
+
+1. Descomprimeix la carpeta completa de la V87.223.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+TOTALS DE CERTIFICACIÓ
+
+Cada barra blava de capítol mostra tres dades sense necessitat d'obrir-la:
+- pressupost del capítol;
+- certificat de la certificació seleccionada;
+- total certificat a origen.
+
+PARTIDES PER ADMINISTRACIÓ
+
+Una partida nova o de fora de pressupost queda com 1 p.a. El preu de la partida
+és la suma de totes les hores, feines i materials introduïts. Els imports de cada
+certificació es guarden separadament per no modificar l'històric.
+
+Per dividir un llistat ja guardat:
+1. Obre «Fitxa / accions» de la partida i entra a «Administració».
+2. Prem «Dividir en diverses partides».
+3. Marca les línies que vols passar a la partida nova.
+4. Indica capítol, codi i nom, i confirma.
+
+Les línies no marcades continuen a la partida original i les marcades passen a
+la nova: no cal esborrar-les ni tornar-les a escriure.
