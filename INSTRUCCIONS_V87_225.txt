@@ -1,0 +1,27 @@
+V87.225 · RESUM SIMPLE I TOTALS DE CAPÍTOL A ORIGEN
+
+1. Descomprimeix la carpeta completa de la V87.225.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+EDICIÓ DE LA CERTIFICACIÓ
+
+La capçalera blava de cada capítol mostra només els dos totals útils:
+
+- Cert. N: total certificat en la certificació seleccionada;
+- A origen: total acumulat del capítol fins a la certificació seleccionada.
+
+Ja no repeteix el nombre de partides ni l'import del pressupost del capítol.
+
+El resum en pantalla de la vista «a origen» mostra només el total certificat a
+origen; el nombre de partides i l'import de la certificació no es repeteixen.
+
+CERTIFICACIÓ A ORIGEN
+
+La previsualització, el document A4 i el quadre general horitzontal mostren el
+subtotal a origen de cada capítol al costat del seu nom.
+
+SEGURETAT DE DADES
+
+Aquesta versió no transforma ni modifica les partides, els amidaments ni els
+imports guardats. Només canvia la informació que es mostra als resums.

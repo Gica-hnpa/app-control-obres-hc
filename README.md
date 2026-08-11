@@ -1,4 +1,13 @@
-# APP Control d’Obres V87.224
+# APP Control d’Obres V87.225
+
+## Resum simple i totals de capítol a origen V87.225
+
+- A l’edició de la certificació, la capçalera de cada capítol deixa de repetir el nombre de partides i l’import del pressupost.
+- Cada capítol mostra directament el total de la certificació seleccionada i el total acumulat a origen.
+- El resum en pantalla «a origen» queda reduït a una única dada: el total certificat a origen.
+- La previsualització «a origen» incorpora el subtotal acumulat de cada capítol.
+- Els documents A4 i el quadre general horitzontal mostren també el total a origen a la capçalera de cada capítol.
+- No es modifica cap partida, amidament ni import guardat: el canvi és de resum i presentació.
 
 ## Normalització completa d’administració i canvis de partida V87.224
 

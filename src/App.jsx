@@ -2393,7 +2393,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.224",
+      version:"V87.225",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -5585,7 +5585,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.224",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.225",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -7926,11 +7926,10 @@ return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878
     </div>
     {Object.entries(caps).map(([cap,items],capIdx)=>{
       const isOpen=certCapsOpen879[cap]??(capIdx===0);
-      const capBudget=items.reduce((sum,r)=>sum+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
       const capCurrent=items.reduce((sum,r)=>sum+certAmount878223(r,certNum,qDraft(r)),0);
       const capOrigin=items.reduce((sum,r)=>sum+certOriginAmount878223(r,certNum,qDraft(r)),0);
       return <div key={cap}>
-      <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><span className="cert-cap-totals-v87223"><small>{items.length} partides · Pressupost {money(capBudget)}</small><b>Cert. {certNum}: {money(capCurrent)}</b><strong>A origen: {money(capOrigin)}</strong></span></button>
+      <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><span className="cert-cap-totals-v87223"><b>Cert. {certNum}: {money(capCurrent)}</b><strong>A origen: {money(capOrigin)}</strong></span></button>
       {isOpen&&items.map((r,rowIdx)=>{
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=certAmount878223(r,prevNum), ia=certAmount878223(r,certNum,qa), qo=qOrigin(r), io=certOriginAmount878223(r,certNum,qa);
         return <div className="cert-grid-v69 row" key={r.id||`${cap}-${rowIdx}`}>
@@ -8345,7 +8344,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.224.0",
+    app_version:"87.225.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -8847,6 +8846,12 @@ const totalOrigen=doc.totalOrigen ?? rows.reduce((s,r)=>{
   const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
   return s+((+r.impOrigen||0)||qOri*parseNum8770(r.pu));
 },0);
+const originCapTotals87225=rows.reduce((totals,r)=>{
+  const cap=r.cap||"PRESSUPOST IMPORTAT";
+  const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
+  totals[cap]=(totals[cap]||0)+((+r.impOrigen||0)||qOri*parseNum8770(r.pu));
+  return totals;
+},{});
 let lastCap="__none__";
 return <div className="cert-print-v8718 cert-print-v8771">
   <section className="cert-page-v8718 cert-page-v8771 portrait">
@@ -8889,7 +8894,7 @@ return <div className="cert-print-v8718 cert-print-v8771">
         const showCap=(r.cap||"")!==lastCap;
         if(showCap) lastCap=r.cap||"";
         return <React.Fragment key={(r.cap||"")+"-"+r.codi}>
-          {showCap&&<tr className="cap-print-row-v8771"><td colSpan="15">{r.cap||"PRESSUPOST IMPORTAT"}</td></tr>}
+          {showCap&&<tr className="cap-print-row-v8771"><td colSpan="14">{r.cap||"PRESSUPOST IMPORTAT"}</td><td className="num">{money(originCapTotals87225[r.cap||"PRESSUPOST IMPORTAT"]||0)}</td></tr>}
           <tr>
             <td>{r.codi}</td><td>{r.ut}</td><td className="concept">{r.concepte}</td><td>{qty2(r.q)}</td><td>{money(r.pu)}</td><td>{money(pres)}</td>
             <td className={(+r.qPrev||0)>0?"green":""}>{qty2(r.qPrev)}</td><td className={(+r.qPrev||0)>0?"green":""}>{pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td className={(+r.qPrev||0)>0?"green":""}>{money(ant)}</td>
@@ -8945,8 +8950,9 @@ function certPrintHtmlV8772(doc,obra,client){
   const prevTotals=fin.prevTotals||[];
   const deductionRows=prevTotals.length?prevTotals.map(c=>`<tr><td>Deducció Certificació ${c.n}</td><td class="num">-${money(c.total)}</td></tr>`).join(""):`<tr><td>No hi ha certificacions anteriors</td><td class="num">${money(0)}</td></tr>`;
   const summaryTotalsRows=certTotals.map(c=>`<tr><td>CERT. ${c.n}</td><td>${money(c.total)}</td></tr>`).join("");
+  const originCapTotals87225=originRows.reduce((totals,r)=>{const cap=r.cap||"PRESSUPOST IMPORTAT";totals[cap]=(totals[cap]||0)+(+r.impOrigin||0);return totals},{});
   let lastOriginCap878132="__none__";
-  const originRowsHtml=originRows.map(r=>{const cap=r.cap||"PRESSUPOST IMPORTAT";const show=cap!==lastOriginCap878132;lastOriginCap878132=cap;return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b></td><td class="num">${qty2(r.qOrigin)}</td><td class="num">${money(r.pu)}</td><td class="num">${money(r.impOrigin)}</td></tr>`}).join("") || `<tr><td colspan="6" class="empty">No hi ha partides certificades a origen.</td></tr>`;
+  const originRowsHtml=originRows.map(r=>{const cap=r.cap||"PRESSUPOST IMPORTAT";const show=cap!==lastOriginCap878132;lastOriginCap878132=cap;return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap)}</td><td class="num">${money(originCapTotals87225[cap]||0)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b></td><td class="num">${qty2(r.qOrigin)}</td><td class="num">${money(r.pu)}</td><td class="num">${money(r.impOrigin)}</td></tr>`}).join("") || `<tr><td colspan="6" class="empty">No hi ha partides certificades a origen.</td></tr>`;
   const printRows=sortPartides878132(rows).filter(r=>((+r.qOrigen||0)||(+r.qPrev||0)||(+r.qAct||0)||(+r.impOrigen||0))>0);
   let lastCap="__none__";
   const wideRows=printRows.map(r=>{
@@ -8956,7 +8962,7 @@ function certPrintHtmlV8772(doc,obra,client){
     const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
     const impOri=(+r.impOrigen||0)||qOri*parseNum8770(r.pu);
     const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
-    return `${showCap?`<tr class="cap"><td colspan="15">${escHtmlV8772(cap)}</td></tr>`:""}<tr>
+    return `${showCap?`<tr class="cap"><td colspan="14">${escHtmlV8772(cap)}</td><td class="num">${money(originCapTotals87225[cap]||0)}</td></tr>`:""}<tr>
       <td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"><b>${escHtmlV8772(r.concepte)}</b></td><td>${qty2(r.q)}</td><td>${money(r.pu)}</td><td>${money(pres)}</td>
       <td class="${(+r.qPrev||0)>0?'green':''}">${qty2(r.qPrev)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${money(ant)}</td>
       <td class="${(+r.qAct||0)>0?'green':''}">${qty2(r.qAct)}</td><td class="${(+r.qAct||0)>0?'green':''}">${pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td class="${(+r.qAct||0)>0?'green':''}">${money(act)}</td>
@@ -8973,7 +8979,7 @@ function certPrintHtmlV8772(doc,obra,client){
     .cover{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px;margin:8px 0 10px}.cover b{grid-column:1/-1;font-size:13px}.cover span{background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:7px;font-weight:700;color:#334155}
     table{width:100%;border-collapse:collapse;table-layout:fixed} th,td{border:1px solid #94a3b8;padding:3px 4px;text-align:right;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden} th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow:hidden!important;overflow-wrap:anywhere!important;word-break:normal!important;line-height:1.16}.concept b{font-weight:700}.print-desc-static-v878126{display:block;white-space:pre-wrap;color:#475569;line-height:1.22;margin-top:2px;font-size:8px;font-weight:400}
     .summary{font-size:9.6px}.summary .part{width:13mm}.summary .ut{width:6mm}.summary .concept-col{width:auto}.summary .num{width:16mm}.summary .imp{width:22mm}.summary tfoot th{background:#b7c9dd;border-top:2px solid #0f172a}.deduction-box{width:112mm;margin:5mm 0 0 auto;border:1px solid #94a3b8;border-radius:6px;overflow:hidden}.deduction-box div{display:flex;justify-content:space-between;padding:5px 7px;border-bottom:1px solid #cbd5e1}.deduction-box div:last-child{border-bottom:0;background:#dbeafe;font-weight:900}.certs-list{width:95mm;margin:4mm 0 0 auto}.certs-list table{font-size:9px}.certs-list h3{margin-bottom:4px;text-align:left}
-    .wide{font-size:6.2px;line-height:1.04}.wide col.part{width:5.0%}.wide col.ut{width:2.4%}.wide col.concept-col{width:39.0%}.wide col.q{width:3.1%}.wide col.pu{width:4.0%}.wide col.imp{width:4.8%}.wide col.pct{width:2.7%}.wide col.imp-total{width:5.0%}.wide th,.wide td{padding:1.5px 1.5px}.wide .blocks th{background:#b7c9dd;border-top:2px solid #0f172a;border-bottom:2px solid #0f172a;text-align:center}.wide .green{background:#d9ead3;font-weight:700}.wide th:nth-child(6),.wide td:nth-child(6),.wide th:nth-child(9),.wide td:nth-child(9),.wide th:nth-child(12),.wide td:nth-child(12){border-right:2px solid #0f172a}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900;border-top:2px solid #0f172a;border-bottom:1.5px solid #0f172a;white-space:normal!important;font-size:7px}.measure td{background:#fff!important;text-align:left!important;white-space:normal!important}.measure-inner{margin-top:3px;font-size:6.5px}.measure-inner th,.measure-inner td{padding:1.8px 2px}.cert-bottom-summary{margin-top:6mm;max-width:110mm;margin-left:auto}.cert-bottom-summary table{font-size:8px}.cert-bottom-summary th,.cert-bottom-summary td{text-align:right!important;padding:3px 4px}.cert-bottom-summary h3{text-align:left;margin:0 0 4px}
+    .wide{font-size:6.2px;line-height:1.04}.wide col.part{width:5.0%}.wide col.ut{width:2.4%}.wide col.concept-col{width:39.0%}.wide col.q{width:3.1%}.wide col.pu{width:4.0%}.wide col.imp{width:4.8%}.wide col.pct{width:2.7%}.wide col.imp-total{width:5.0%}.wide th,.wide td{padding:1.5px 1.5px}.wide .blocks th{background:#b7c9dd;border-top:2px solid #0f172a;border-bottom:2px solid #0f172a;text-align:center}.wide .green{background:#d9ead3;font-weight:700}.wide th:nth-child(6),.wide td:nth-child(6),.wide th:nth-child(9),.wide td:nth-child(9),.wide th:nth-child(12),.wide td:nth-child(12){border-right:2px solid #0f172a}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900;border-top:2px solid #0f172a;border-bottom:1.5px solid #0f172a;white-space:normal!important;font-size:7px}.cap td.num{text-align:right!important}.measure td{background:#fff!important;text-align:left!important;white-space:normal!important}.measure-inner{margin-top:3px;font-size:6.5px}.measure-inner th,.measure-inner td{padding:1.8px 2px}.cert-bottom-summary{margin-top:6mm;max-width:110mm;margin-left:auto}.cert-bottom-summary table{font-size:8px}.cert-bottom-summary th,.cert-bottom-summary td{text-align:right!important;padding:3px 4px}.cert-bottom-summary h3{text-align:left;margin:0 0 4px}
     thead{display:table-header-group} tfoot{display:table-footer-group}.wide th{white-space:normal!important;line-height:1.05}.empty{text-align:left;color:#64748b;padding:10px!important}
     @media screen{body{background:#e5e7eb;padding:16px}.page{box-shadow:0 2px 12px rgba(15,23,42,.15);margin:0 auto 16px;background:#fff;padding:8mm}.landscape{padding:6mm}}
     @media print{body{background:#fff!important;padding:0!important}.page{box-shadow:none!important;margin:0!important}.portrait{padding:0!important;width:182mm!important}.landscape{padding:0!important;width:277mm!important;min-height:185mm!important}.wide{table-layout:fixed!important;width:100%!important}.wide .concept{overflow:visible!important}}
@@ -9013,12 +9019,14 @@ function CertPreviewV8772({doc}){
   const totalOrigen=fin.totalOrigen;
   const totalActual=fin.actual;
   const prevTotals=fin.prevTotals||[];
+  const originCapTotals87225=originRows.reduce((totals,r)=>{const cap=r.cap||"PRESSUPOST IMPORTAT";totals[cap]=(totals[cap]||0)+(+r.impOrigin||0);return totals},{});
+  let lastOriginCap87225="__none__";
   return <div className="cert-preview-v8772 cert-preview-lite-v8783">
     <div className="cert-preview-head-v8772"><h1>{doc.title}</h1><p>{doc.data?`Data: ${doc.data} · `:""}{doc.subtitle}</p><b>{money(totalOrigen)}</b><small>Total certificat a origen</small></div>
     <div className="cert-preview-note-v8772"><b>Previsualització a origen.</b><span>La certificació en curs es presenta a origen; a sota es dedueixen les certificacions anteriors per obtenir l'import d'aquesta certificació. El quadre horitzontal no es modifica.</span></div>
-    <div className="cert-lite-kpis-v8783"><div><span>Partides amb certificació a origen</span><b>{originRows.length}</b></div><div><span>Total certificat a origen</span><b>{money(totalOrigen)}</b></div><div><span>Import certificació {certNum}</span><b>{money(totalActual)}</b></div></div>
+    <div className="cert-lite-kpis-v8783 cert-lite-kpis-single-v87225"><div><span>Total certificat a origen</span><b>{money(totalOrigen)}</b></div></div>
     <h3>Partides certificades a origen</h3>
-    {originRows.length===0?<div className="empty">No hi ha partides certificades a origen.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772 stable-num-table-v8783 cert-summary-cols-v87117"><colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-q"/><col className="c-pu"/><col className="c-total"/></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte / descripció</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.slice(0,80).map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td className="concept"><b>{r.concepte}</b></td><td className="num">{qty2(r.qOrigin)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin)}</td></tr>)}</tbody><tfoot><tr><th colSpan="5">TOTAL A ORIGEN</th><th>{money(totalOrigen)}</th></tr></tfoot></table>{originRows.length>80&&<p className="muted">Hi ha més partides. El document complet sortirà a la impressió.</p>}</div>}
+    {originRows.length===0?<div className="empty">No hi ha partides certificades a origen.</div>:<div className="cert-preview-table-wrap-v8772"><table className="cert-preview-summary-v8772 stable-num-table-v8783 cert-summary-cols-v87117"><colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-q"/><col className="c-pu"/><col className="c-total"/></colgroup><thead><tr><th>Partida</th><th>Ut</th><th>Concepte / descripció</th><th>Q origen</th><th>PU</th><th>Total origen</th></tr></thead><tbody>{originRows.slice(0,80).map(r=>{const cap=r.cap||"PRESSUPOST IMPORTAT";const showCap=cap!==lastOriginCap87225;lastOriginCap87225=cap;return <React.Fragment key={`${cap}-${r.id||r.codi}`}>{showCap&&<tr className="cap-print-row-v8771"><td colSpan="5">{cap}</td><td className="num">{money(originCapTotals87225[cap]||0)}</td></tr>}<tr><td>{r.codi}</td><td>{r.ut}</td><td className="concept"><b>{r.concepte}</b></td><td className="num">{qty2(r.qOrigin)}</td><td className="num">{money(r.pu)}</td><td className="num">{money(r.impOrigin)}</td></tr></React.Fragment>})}</tbody><tfoot><tr><th colSpan="5">TOTAL A ORIGEN</th><th>{money(totalOrigen)}</th></tr></tfoot></table>{originRows.length>80&&<p className="muted">Hi ha més partides. El document complet sortirà a la impressió.</p>}</div>}
     <div className="cert-preview-totals-v8780"><h3>Deducció de certificacions anteriors</h3><table className="stable-num-table-v8783"><thead><tr><th>Concepte</th><th>Import</th></tr></thead><tbody><tr><td><b>Total certificat a origen</b></td><td><b>{money(totalOrigen)}</b></td></tr>{prevTotals.length===0?<tr><td>No hi ha certificacions anteriors</td><td>{money(0)}</td></tr>:prevTotals.map(c=><tr key={c.n}><td>Deducció Certificació {c.n}</td><td>-{money(c.total)}</td></tr>)}</tbody><tfoot><tr><th>Import sense IVA certificació {certNum}</th><th>{money(totalActual)}</th></tr></tfoot></table></div>
   </div>
 }
