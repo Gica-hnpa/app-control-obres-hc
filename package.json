@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-223-totals-capitols-pa-i-divisio-administracio",
+  "name": "app-control-obres-v87-224-normalitzacio-administracio-i-canvis-partida",
   "private": true,
-  "version": "87.223.0",
+  "version": "87.224.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

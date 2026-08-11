@@ -1,0 +1,27 @@
+V87.224 · NORMALITZACIÓ D'ADMINISTRACIÓ I CANVIS DE PARTIDA
+
+1. Descomprimeix la carpeta completa de la V87.224.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+CORRECCIÓ AUTOMÀTICA
+
+En carregar les dades, l'app revisa totes les partides que tenen un llistat de
+feines per administració, inclosos els formats antics. Aquestes partides queden:
+
+- quantitat: 1;
+- unitat: p.a.;
+- preu: suma de les hores, jornades i materials del llistat;
+- import certificat: fixat separadament per cada número de certificació.
+
+CANVIAR CODI O CAPÍTOL
+
+Quan es modifica el codi, el capítol o el nom d'una partida, l'app conserva
+primer els imports certificats i actualitza també el vincle del llistat
+d'administració. El canvi de classificació no pot deixar la partida a zero.
+
+DOCUMENTS
+
+La certificació actual mostra com a €/ut el valor real que correspon a l'import
+certificat. Per exemple, una partida d'1 p.a. i 2.160,00 € mostra PU 2.160,00 €,
+no un preu antic de 50,00 €.

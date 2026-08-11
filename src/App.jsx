@@ -2393,7 +2393,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.223",
+      version:"V87.224",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -4625,9 +4625,13 @@ function certQty8783(r,n){
 function certAmount878223(r,n,quantityOverride){
   if(n<=0||isCertHidden878132(r,n))return 0;
   const key=String(n);
-  if(r?.certAmountsByNum&&Object.prototype.hasOwnProperty.call(r.certAmountsByNum,key))return parseNum8770(r.certAmountsByNum[key]);
   const admin=(r?.certAdminMonthlyByNum||{})[key];
-  if(admin&&Object.prototype.hasOwnProperty.call(admin,"total"))return parseNum8770(admin.total);
+  const adminTotal=adminPayloadTotal87224(admin);
+  if(adminTotal>0.000001)return adminTotal;
+  const legacy=(r?.certAdminLinesByNum||{})[key];
+  const legacyTotal=adminPayloadTotal87224({lines:Array.isArray(legacy)?legacy:[]});
+  if(legacyTotal>0.000001)return legacyTotal;
+  if(r?.certAmountsByNum&&Object.prototype.hasOwnProperty.call(r.certAmountsByNum,key))return parseNum8770(r.certAmountsByNum[key]);
   const q=quantityOverride===undefined?certQty8783(r,n):parseNum8770(quantityOverride);
   return q*parseNum8770(r?.pu);
 }
@@ -4635,6 +4639,76 @@ function certOriginAmount878223(r,maxCert=1,currentQuantityOverride){
   let total=0;
   for(let n=1;n<=Number(maxCert||1);n++)total+=certAmount878223(r,n,n===Number(maxCert)&&currentQuantityOverride!==undefined?currentQuantityOverride:undefined);
   return total;
+}
+function adminLineAmount87224(line={},payload={}){
+  const horesOficial=parseNum8770(line.horesOficial)||0;
+  const horesAjudant=parseNum8770(line.horesAjudant??line.horesPeo)||0;
+  const costOficial=parseNum8770(line.costOficial??payload.costOficial)||0;
+  const costAjudant=parseNum8770(line.costAjudant??line.costPeo??payload.costAjudant??payload.costPeo)||0;
+  const materials=Array.isArray(line.materials)&&line.materials.length
+    ? line.materials.reduce((sum,material)=>sum+(parseNum8770(material.import)||0),0)
+    : (parseNum8770(line.material)||0);
+  const calculated=horesOficial*costOficial+horesAjudant*costAjudant+materials;
+  return calculated||parseNum8770(line.total)||parseNum8770(line.import)||0;
+}
+function adminPayloadTotal87224(payload){
+  if(!payload||typeof payload!=="object")return 0;
+  const lines=Array.isArray(payload.lines)?payload.lines:[];
+  const calculated=lines.reduce((sum,line)=>sum+adminLineAmount87224(line,payload),0);
+  return calculated>0.000001?calculated:(parseNum8770(payload.total)||0);
+}
+function normalizeAdministrationRows87224(data={}){
+  const globals=data.certAdminMonthlyByNum||{};
+  const partides=(data.partides||[]).map(row=>{
+    const oldPu=parseNum8770(row.pu)||0;
+    const monthly={...(row.certAdminMonthlyByNum||{})};
+    const legacy=row.certAdminLinesByNum||{};
+    const rowCode=String(row.codi||"").trim();
+    const rowId=String(row.id||"");
+    const marker=String(row.adminMonthlyId||"");
+    Object.entries(globals).forEach(([num,payload])=>{
+      if(!payload||monthly[num])return;
+      if(payload.budgetId&&String(payload.budgetId)!==String(row.budgetId||"principal"))return;
+      const globalCode=String(payload.targetPartidaCodi||payload.codi||"").trim();
+      const sameId=(marker&&String(payload.entryId||"")===marker)||(rowId&&String(payload.sourceRowId||"")===rowId);
+      if(sameId||(globalCode&&globalCode===rowCode))monthly[num]=payload;
+    });
+    const nums=new Set([...Object.keys(monthly),...Object.keys(legacy)]);
+    if(!nums.size){
+      const fixed={...(row.certAmountsByNum||{})};
+      const isFixedPa=/^p\.?\s*a\.?$/i.test(String(row.ut||"").trim());
+      const aggregate=Object.values(fixed).reduce((sum,value)=>sum+(parseNum8770(value)||0),0);
+      return isFixedPa&&aggregate>0?{...row,q:1,pu:aggregate,ut:"p.a.",certAmountsByNum:fixed,administracioNormalitzada87224:true}:row;
+    }
+    const amounts={...(row.certAmountsByNum||{})};
+    const certs={...(row.certsByNum||{})};
+    const nextMonthly={...monthly};
+    nums.forEach(rawNum=>{
+      const num=String(rawNum);
+      let payload=nextMonthly[num];
+      const legacyLines=Array.isArray(legacy[num])?legacy[num]:[];
+      if(!payload&&legacyLines.length){
+        const first=legacyLines[0]||{};
+        payload={codi:rowCode,cap:row.cap||"",conceptePartida:row.concepte||"",targetPartidaCodi:rowCode,targetPartidaConcepte:row.concepte||"",costOficial:first.costOficial||"",costAjudant:first.costAjudant??first.costPeo??"",lines:legacyLines};
+      }
+      const lines=Array.isArray(payload?.lines)?payload.lines:legacyLines;
+      const calculated=adminPayloadTotal87224({...payload,lines});
+      const previous=Object.prototype.hasOwnProperty.call(amounts,num)?parseNum8770(amounts[num]):(certQty8783(row,+num)*oldPu);
+      const total=calculated>0.000001?calculated:previous;
+      nextMonthly[num]={...(payload||{}),codi:rowCode,cap:row.cap||payload?.cap||"",conceptePartida:row.concepte||payload?.conceptePartida||"",targetPartidaCodi:rowCode,targetPartidaConcepte:row.concepte||"",lines,total,normalitzat87224:true};
+      if(total>0.000001||lines.length){
+        amounts[num]=total;
+        certs[num]=1;
+      }
+    });
+    const aggregate=Object.values(amounts).reduce((sum,value)=>sum+(parseNum8770(value)||0),0);
+    const next={...row,q:1,pu:aggregate>0.000001?aggregate:oldPu,ut:"p.a.",adminMonthlyAuto:true,certAdminMonthlyByNum:nextMonthly,certAmountsByNum:amounts,certsByNum:certs,administracioNormalitzada87224:true};
+    Object.keys(certs).forEach(num=>{if(parseNum8770(certs[num]))next[`cert_${num}`]=1;});
+    if(parseNum8770(certs["1"]))next.certAnterior=1;
+    if(parseNum8770(certs["2"]))next.certActual=1;
+    return next;
+  });
+  return {...data,partides};
 }
 function certTotalsForPrint8780(rows=[],doc={}){
   const nums=new Set([...(doc.prevNum?[doc.prevNum]:[]),...(doc.certNum?[doc.certNum]:[])]);
@@ -5511,7 +5585,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.223",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.224",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -5555,7 +5629,7 @@ Pressupost: ${info.bid||"principal"}`),0);
 }
 
 function normalizeBudgetedData8791(data={}){
-  const d={...empty(),...(data||{})};
+  const d=normalizeAdministrationRows87224({...empty(),...(data||{})});
   const groupsById={};
   function addGroup(g){
     if(!g)return;
@@ -7131,8 +7205,8 @@ function AdminCostModal878126({row,certNum,initial=[],close,save}){
 }
 
 
-// V87.127 · Quadre mensual d'administració independent de la graella de certificació.
-// No deforma la taula: es gestiona amb un botó superior i crea una sola partida certificable 1 ut × total.
+// Quadre mensual d'administració independent de la graella de certificació.
+// V87.224: qualsevol llistat queda normalitzat com una sola partida 1 p.a. × total del llistat.
 function escapeHtml878131(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]||ch))}
 function adminMaterialSum878131(l){
   const mats=Array.isArray(l?.materials)?l.materials:[];
@@ -7349,7 +7423,7 @@ function AdminMonthlyCostModal878127({certNum,initial={},close,save,split,capOpt
           <option value="">Sense partida concreta · crear/usar partida resum manual</option>
           {partidesCap.map((r,idx)=><option key={`${r.codi||idx}-${idx}`} value={String(r.codi||"")}>{r.codi||"s/codi"} · {r.concepte}</option>)}
         </select><small>{partidesCap.length?`${partidesCap.length} partida/es disponibles en aquest capítol.`:"Aquest capítol encara no té partides; pots crear la partida resum amb els camps següents."}</small></label>
-        {meta.targetPartidaCodi&&<div className="admin-existing-note-v878130">S'aplicarà directament a la partida {meta.targetPartidaCodi} · {meta.targetPartidaConcepte}. No es crearà cap partida nova ni codi ADM. {meta.sourceRowIsCertOnly?"Com que és una partida nova o fora de pressupost, quedarà com 1 p.a. i el preu serà el total del quadre.":"L'import aplicat serà exactament el total del quadre; l'app calcula la quantitat equivalent segons el PU pressupostat."}</div>}
+        {meta.targetPartidaCodi&&<div className="admin-existing-note-v878130">S'aplicarà directament a la partida {meta.targetPartidaCodi} · {meta.targetPartidaConcepte}. No es crearà cap partida nova ni codi ADM. Tota partida amb un llistat d’administració queda com <b>1 p.a.</b> i el preu s’actualitza amb el total real de les feines, hores i materials.</div>}
       </div>
       <div className="admin-monthly-config-v878127 admin-monthly-config-v878129">
         <label><span>Codi partida resum</span><input value={meta.codi} onChange={e=>updMeta("codi",e.target.value)} placeholder="Ex: 04.01.ADM"/></label>
@@ -7465,11 +7539,37 @@ function updatePartidaMeta878132(row,patch){
   const oldCode=String(row.codi||"").trim();
   const rowId=row.id;
   setData?.(d=>{
+    const newCode=String(patch.codi||oldCode).trim()||oldCode;
+    const newCap=String(patch.cap??row.cap??"").trim();
+    const newConcept=String(patch.concepte??row.concepte??"").trim();
+    const remapAdmin=(payload={})=>{
+      const safe=payload&&typeof payload==="object"?payload:{};
+      const target=String(safe.targetPartidaCodi||"").trim();
+      return {...safe,codi:newCode,cap:newCap,conceptePartida:newConcept,targetPartidaCodi:target===oldCode?newCode:target,targetPartidaConcepte:target===oldCode?newConcept:(safe.targetPartidaConcepte||""),sourceRowCodi:String(safe.sourceRowCodi||"").trim()===oldCode?newCode:safe.sourceRowCodi};
+    };
     const partides=(d.partides||[]).map(r=>{
       const same=rowId?(r.id===rowId):String(r.codi||"").trim()===oldCode;
-      return same?{...r,...patch,updatedAt:new Date().toISOString()}:r;
+      if(!same)return r;
+      const amounts={...(r.certAmountsByNum||{})};
+      const nums=new Set([...Object.keys(r.certsByNum||{}),...Object.keys(r.certAdminMonthlyByNum||{}),...Object.keys(r.certAdminLinesByNum||{}),...Object.keys(amounts)]);
+      Object.keys(r).filter(key=>/^cert_\d+$/.test(key)).forEach(key=>nums.add(key.slice(5)));
+      nums.forEach(num=>{
+        if(Object.prototype.hasOwnProperty.call(amounts,num)&&parseNum8770(amounts[num])>0)return;
+        const monthly=(r.certAdminMonthlyByNum||{})[num];
+        const legacy=(r.certAdminLinesByNum||{})[num];
+        const adminTotal=adminPayloadTotal87224(monthly)||adminPayloadTotal87224({lines:Array.isArray(legacy)?legacy:[]});
+        const current=certQty8783(r,+num)*parseNum8770(r.pu);
+        if(adminTotal>0.000001||current>0.000001)amounts[num]=adminTotal||current;
+      });
+      const monthly=Object.fromEntries(Object.entries(r.certAdminMonthlyByNum||{}).map(([num,payload])=>[num,remapAdmin(payload)]));
+      return {...r,...patch,codi:newCode,cap:newCap,concepte:newConcept,certAmountsByNum:amounts,certAdminMonthlyByNum:monthly,previousCodes87224:Array.from(new Set([...(r.previousCodes87224||[]),oldCode].filter(Boolean))),updatedAt:new Date().toISOString()};
     });
-    return {...d,partides,updatedAt:new Date().toISOString()};
+    const globalAdmin=Object.fromEntries(Object.entries(d.certAdminMonthlyByNum||{}).map(([num,payload])=>{
+      const code=String(payload?.targetPartidaCodi||payload?.codi||"").trim();
+      const sameId=rowId&&String(payload?.sourceRowId||"")===String(rowId);
+      return [num,(code===oldCode||sameId)?remapAdmin(payload):payload];
+    }));
+    return normalizeAdministrationRows87224({...d,partides,certAdminMonthlyByNum:globalAdmin,updatedAt:new Date().toISOString()});
   });
   if(patch.codi && patch.codi!==oldCode){setDraft(x=>{const n={...x}; if(n[oldCode]!==undefined){n[patch.codi]=n[oldCode]; delete n[oldCode];} return n;});}
 }
@@ -7555,7 +7655,7 @@ function saveMesures8780(target,lines,total){
   setDraft(x=>({...x,[targetCode]:String(total)}));
   setMedicioTarget8780(null);
 }
-function saveAdminCost878126(codi,lines,total){setData?.(d=>({...d,partides:(d.partides||[]).map(r=>{if(r.codi!==codi)return r;const effectivePu=parseNum8770(r.pu)||1;const certQty=total/effectivePu;return {...r,pu:parseNum8770(r.pu)?r.pu:1,certAdminLinesByNum:{...(r.certAdminLinesByNum||{}),[String(certNum)]:lines},certsByNum:{...(r.certsByNum||{}),[String(certNum)]:certQty},certAnterior:certNum===1?certQty:r.certAnterior,certActual:certNum===2?certQty:r.certActual};})}));const current=(rows||[]).find(r=>r.codi===codi);const effectivePu=parseNum8770(current?.pu)||1;setDraft(x=>({...x,[codi]:String(total/effectivePu)}));setAdminTarget878126(null)}
+function saveAdminCost878126(codi,lines,total){const key=String(certNum);setData?.(d=>normalizeAdministrationRows87224({...d,partides:(d.partides||[]).map(r=>{if(r.codi!==codi)return r;const certAmountsByNum=adminCertAmounts87223(r,key,total);return {...r,q:1,pu:adminAggregateAmount87223(certAmountsByNum),ut:"p.a.",adminMonthlyAuto:true,certAdminLinesByNum:{...(r.certAdminLinesByNum||{}),[key]:lines},certsByNum:{...(r.certsByNum||{}),[key]:1},certAmountsByNum,certAnterior:certNum===1?1:r.certAnterior,certActual:certNum===2?1:r.certActual};})}));setDraft(x=>({...x,[codi]:"1"}));setAdminTarget878126(null)}
 function saveAdminMonthly878127(payload){
   const key=String(certNum);
   const cap=String(payload.cap||"C98 FEINES PER ADMINISTRACIÓ").trim();
@@ -7580,23 +7680,22 @@ function saveAdminMonthly878127(payload){
       const sameTarget=targetCode && sameBudget && String(r.codi||"").trim()===targetCode;
       if(sameTarget){
         found=true;
-        const storedPu=parseNum8770(r.pu)||0;
-        const certOnly=!!(r.createdFromCert||r.noPressupost||r.adminMonthlyAuto||!storedPu);
-        const appliedQty=certOnly?1:(storedPu?total/storedPu:0);
-        const certsByNum={...(r.certsByNum||{}),[key]:appliedQty};
+        const appliedQty=1;
+        const certsByNum={...(r.certsByNum||{}),[key]:1};
         const certAmountsByNum=adminCertAmounts87223(r,key,total);
         const aggregate=adminAggregateAmount87223(certAmountsByNum);
         return {
           ...r,
-          pu:certOnly?aggregate:r.pu,
-          ut:certOnly?"p.a.":r.ut,
+          pu:aggregate,
+          ut:"p.a.",
+          adminMonthlyAuto:true,
           certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},
           certsByNum,
           certAmountsByNum,
-          q:certOnly?1:r.q,
+          q:1,
           certAnterior:certNum===1?appliedQty:r.certAnterior,
           certActual:certNum===2?appliedQty:r.certActual,
-          desc:certOnly?`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(total)}`:r.desc,
+          desc:`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(total)}`,
           updatedAt:new Date().toISOString()
         };
       }
@@ -7613,7 +7712,7 @@ function saveAdminMonthly878127(payload){
           const certAmountsByNum=adminCertAmounts87223(r,key,total);
           const aggregate=adminAggregateAmount87223(certAmountsByNum);
           const certsByNum={...(r.certsByNum||{}),[key]:1};
-          partides[i]={...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:true,cap,codi:manualCodi,ut:"p.a.",concepte,desc:`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(total)}`,q:1,pu:aggregate,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},certsByNum,certAmountsByNum,certAnterior:certNum===1?1:r.certAnterior,certActual:certNum===2?1:r.certActual,updatedAt:new Date().toISOString()};
+          partides[i]={...r,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:markerId,noPressupost:!!r.noPressupost,cap,codi:manualCodi,ut:"p.a.",concepte,desc:`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(total)}`,q:1,pu:aggregate,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:adminData},certsByNum,certAmountsByNum,certAnterior:certNum===1?1:r.certAnterior,certActual:certNum===2?1:r.certActual,updatedAt:new Date().toISOString()};
           break;
         }
       }
@@ -7624,11 +7723,8 @@ function saveAdminMonthly878127(payload){
     return {...d,certAdminMonthlyByNum:{...(d.certAdminMonthlyByNum||{}),[key]:adminData},partides,updatedAt:new Date().toISOString()};
   });
   setCertCapsOpen879(o=>({...o,[cap]:true}));
-  // Partida pressupostada: quantitat equivalent total/PU. Partida nova: 1 p.a. amb PU igual a l'import calculat.
-  const targetRow=(rows||[]).find(r=>String(r.codi||"").trim()===(targetCode||codi));
-  const targetIsCertOnly=!targetCode||!!(targetRow?.createdFromCert||targetRow?.noPressupost||targetRow?.adminMonthlyAuto)||!parseNum8770(targetRow?.pu);
-  const effectivePu=parseNum8770(targetRow?.pu)||1;
-  setDraft(x=>({...x,[targetCode||codi]:String(targetIsCertOnly?1:(total/effectivePu))}));
+  // Regla única: qualsevol llistat d'administració és 1 p.a. i el seu import surt del llistat.
+  setDraft(x=>({...x,[targetCode||codi]:"1"}));
   setAdminMonthlyOpen878127(null);
 }
 
@@ -7654,7 +7750,7 @@ function splitAdminMonthly87223(sourcePayload,targetDraft,selectedLines,remainin
       sourceFound=true;
       const certAmountsByNum=adminCertAmounts87223(r,key,sourceData.total);
       const aggregate=adminAggregateAmount87223(certAmountsByNum);
-      return {...r,q:1,pu:aggregate,ut:"p.a.",noPressupost:true,adminMonthlyAuto:true,certsByNum:{...(r.certsByNum||{}),[key]:1},certAmountsByNum,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:sourceData},certAnterior:certNum===1?1:r.certAnterior,certActual:certNum===2?1:r.certActual,desc:`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(sourceData.total)}`,updatedAt:new Date().toISOString()};
+      return {...r,q:1,pu:aggregate,ut:"p.a.",noPressupost:!!r.noPressupost,adminMonthlyAuto:true,certsByNum:{...(r.certsByNum||{}),[key]:1},certAmountsByNum,certAdminMonthlyByNum:{...(r.certAdminMonthlyByNum||{}),[key]:sourceData},certAnterior:certNum===1?1:r.certAnterior,certActual:certNum===2?1:r.certActual,desc:`Partida alçada d’administració. Total acumulat: ${money(aggregate)} · CERT. ${certNum}: ${money(sourceData.total)}`,updatedAt:new Date().toISOString()};
     });
     if(!sourceFound){alert("No s’ha pogut localitzar la partida original. Guarda-la i torna a obrir-la abans de dividir-la.");return d;}
     partides.push({id:newEntryId,budgetId:bid,adminMonthlyAuto:true,adminMonthlyId:newEntryId,noPressupost:true,cap:newCap,codi:newCode,ut:"p.a.",concepte:newConcept,desc:`Partida alçada d’administració. Total CERT. ${certNum}: ${money(newData.total)}`,q:1,pu:newData.total,certAdminMonthlyByNum:{[key]:newData},certsByNum:{[key]:1},certAmountsByNum:{[key]:newData.total},certAnterior:certNum===1?1:0,certActual:certNum===2?1:0,tipus:"Administració mensual certificable",createdFromCert:certNum,splitFromAdminRowId:sourceId||sourceCode,createdAt:new Date().toISOString()});
@@ -8249,7 +8345,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.223.0",
+    app_version:"87.224.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -8766,7 +8862,7 @@ return <div className="cert-print-v8718 cert-print-v8771">
     {current.length===0?<div className="empty-print-v8718">No hi ha partides amb amidament certificat en aquesta certificació.</div>:<table className="cert-table-print-v8718 cert-summary-table-v8771">
       <colgroup><col className="c-partida"/><col className="c-ut"/><col className="c-concepte"/><col className="c-qty"/><col className="c-pu"/><col className="c-import"/></colgroup>
       <thead><tr><th>Partida</th><th>Ut</th><th>Concepte</th><th>Q certificada</th><th>PU</th><th>Import</th></tr></thead>
-      <tbody>{current.map(r=><tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(r.pu)}</td><td>{money(r.impActual!==undefined?r.impActual:(+r.qAct||0)*parseNum8770(r.pu))}</td></tr>)}</tbody>
+      <tbody>{current.map(r=>{const amount=r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu);const displayPu=Math.abs(+r.qAct||0)>0.000001?amount/(+r.qAct):parseNum8770(r.pu);return <tr key={r.codi}><td>{r.codi}</td><td>{r.ut}</td><td>{r.concepte}</td><td>{qty2(r.qAct)}</td><td>{money(displayPu)}</td><td>{money(amount)}</td></tr>})}</tbody>
       <tfoot><tr><th colSpan="5">TOTAL CERTIFICACIÓ ACTUAL</th><th>{money(total)}</th></tr></tfoot>
     </table>}
   </section>
@@ -8829,7 +8925,8 @@ function certCurrentPrintHtml87216(doc,obra,client,rows){
     const show=cap!==lastCap;lastCap=cap;
     const measures=doc.includeMesures&&(r.mesures||[]).length?`<tr class="measure"><td></td><td colspan="5"><b>Línies d’amidament</b><table><thead><tr><th>Concepte</th><th>Ut.</th><th>Llargada</th><th>Amplada</th><th>Alçada</th><th>Total</th></tr></thead><tbody>${r.mesures.map(m=>`<tr><td>${escHtmlV8772(m.concepte||"")}</td><td>${escHtmlV8772(m.unitats||"")}</td><td>${escHtmlV8772(m.llargada||"")}</td><td>${escHtmlV8772(m.amplada||"")}</td><td>${escHtmlV8772(m.alcada||"")}</td><td>${qty2(medicioCalc8780(m,r.ut))}</td></tr>`).join("")}</tbody></table></td></tr>`:"";
     const amount=r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*parseNum8770(r.pu);
-    return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap)}</td><td>${money(capTotals[cap]||0)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qAct)}</td><td>${money(r.pu)}</td><td>${money(amount)}</td></tr>${measures}`;
+    const displayPu=Math.abs(+r.qAct||0)>0.000001?amount/(+r.qAct):parseNum8770(r.pu);
+    return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap)}</td><td>${money(capTotals[cap]||0)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept">${escHtmlV8772(r.concepte)}</td><td>${qty2(r.qAct)}</td><td>${money(displayPu)}</td><td>${money(amount)}</td></tr>${measures}`;
   }).join("")||`<tr><td colspan="6" class="empty">No hi ha partides certificades en aquesta certificació.</td></tr>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||`Certificació ${certNum}`)}</title><style>
   *{box-sizing:border-box}body{margin:0;background:#fff;color:#0f172a;font-family:Arial,Helvetica,sans-serif;font-size:10px}@page{size:A4 portrait;margin:15mm 13mm}.page{width:184mm;min-height:267mm}.head{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}.head b,.head span{display:block}.head span{color:#475569;margin-top:2px}.issuer-v87100{display:grid;grid-template-columns:34mm 1fr;gap:6mm}.issuer-logo-box-v87100{width:34mm;min-height:18mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center}.brand-logo-v87100{max-width:32mm;max-height:20mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8}h1{font-size:19px;color:#0f2d5c;margin:0 0 4px}.sub{color:#475569;margin:0 0 12px}.mode{display:flex;justify-content:space-between;gap:10px;background:#ecfdf5;border:1px solid #86efac;border-radius:8px;padding:9px;margin:0 0 12px}.mode b{color:#166534;font-size:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #94a3b8;padding:4px;text-align:right;vertical-align:top;font-variant-numeric:tabular-nums}th{background:#dbeafe}.concept{text-align:left;white-space:normal;overflow-wrap:anywhere}.cap td{background:#9fbad4;text-align:left;font-weight:900}.measure td{background:#f8fafc;text-align:left}.measure table{margin-top:4px;font-size:8px}.empty{text-align:left;color:#64748b}.total{margin:9mm 0 0 auto;width:80mm;border:2px solid #0f2d5c;padding:9px;display:flex;justify-content:space-between;font-size:14px}.total b{color:#0f2d5c}@media screen{body{background:#e5e7eb;padding:16px}.page{background:#fff;padding:10mm;margin:auto;box-shadow:0 2px 12px #94a3b8}}@media print{.page{padding:0}}

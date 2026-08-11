@@ -1,4 +1,12 @@
-# APP Control d’Obres V87.223
+# APP Control d’Obres V87.224
+
+## Normalització completa d’administració i canvis de partida V87.224
+
+- Totes les partides que tenen feines per administració, tant noves com antigues, passen al mateix model: `1 p.a.` i preu igual al total calculat del llistat.
+- Es reconstrueixen també els llistats del format antic d’oficials/peons i els imports fixos ja guardats per número de certificació.
+- El total de les hores, jornades i materials és la font econòmica prioritària; un PU antic de 50 € ja no pot desquadrar el document.
+- En canviar codi, capítol o nom es conserven primer els imports certificats i s’actualitzen els vincles dels llistats al nou codi.
+- La certificació actual i el PDF mostren un `€/ut` coherent amb l’import real certificat.
 
 ## Totals per capítol, partides alçades i divisió d’administració V87.223
 
