@@ -1,4 +1,13 @@
-# APP Control d’Obres V87.226
+# APP Control d’Obres V87.227
+
+## Jerarquia Excel completa V87.227
+
+- Corregeix el nivell que faltava a la V87.226: ara la lectura és àmbit → capítol → subcapítol → partida.
+- Les partides `F-00.xx.xx` queden dins `Façana → 00 Treballs previs`; les `C-00.xx.xx` queden dins `Coberta → 00 Treballs previs` sense barrejar els dos àmbits.
+- El pressupost COMODORO queda classificat en 3 àmbits, 7 capítols, 20 subcapítols i 120 partides.
+- La pantalla mostra un encapçalament i un total per a l’àmbit, un altre per al capítol i, a continuació, els seus subcapítols desplegables.
+- El total econòmic es conserva exactament: la classificació no canvia quantitats, preus ni imports.
+- Els Excels sense encapçalaments complets continuen utilitzant la numeració de la partida com a sistema de seguretat.
 
 ## Importador Excel jeràrquic V87.226
 

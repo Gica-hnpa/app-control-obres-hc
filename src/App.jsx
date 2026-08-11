@@ -2394,7 +2394,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.226",
+      version:"V87.227",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3435,7 +3435,7 @@ function parseRows(rows,sheetName){
     out=hierarchy87226.rows;
     const realCaps=[...new Set(out.map(x=>x.cap).filter(c=>c && c!=="PRESSUPOST IMPORTAT"))];
     if(realCaps.length===1){out=out.map(x=>x.cap==="PRESSUPOST IMPORTAT"?{...x,cap:realCaps[0]}:x)}
-    return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,mainCaps:hierarchy87226.mainCaps,subCaps:hierarchy87226.subCaps,inferredCaps:hierarchy87226.inferredCaps,hierarchyHeadings:hierarchy87226.headings,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
+    return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,scopes:hierarchy87226.scopes,mainCaps:hierarchy87226.mainCaps,subCaps:hierarchy87226.subCaps,inferredCaps:hierarchy87226.inferredCaps,hierarchyHeadings:hierarchy87226.headings,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
   }
 
   // V87.154 · quan un Excel té full PRESSUPOST + fulls AMIDAMENTS/DESCOMPOST,
@@ -5592,7 +5592,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.226",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.227",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6629,12 +6629,13 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setCaps(p=>{
       const arr=[...(p[dest]||[])];
       const capPrincipal=String(arr.find(row=>row.capPrincipal)?.capPrincipal||"");
+      const scopePrincipal=String(arr.find(row=>row.scopePrincipal)?.scopePrincipal||"");
       const base=(String(dest).match(/(\d+)/)?.[1]||"").padStart(2,"0");
       const used=new Set(arr.map(r=>String(r.codi||"")));
       let next=arr.length+1;
       let printedCode=base?`${base}.${String(next).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
       while(used.has(printedCode)&&base)printedCode=`${base}.${String(++next).padStart(2,"0")}`;
-      const row={...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,subcap:dest,capPrincipal,capPath:[capPrincipal,dest].filter(Boolean),codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
+      const row={...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,subcap:dest,capPrincipal,scopePrincipal,excelScope:scopePrincipal,capPath:[scopePrincipal,capPrincipal,dest].filter(Boolean),codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
       return {...p,[dest]:[...arr,row]};
     });
     setOpen(o=>({...o,[dest]:true}));
@@ -6691,6 +6692,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setCaps(prev=>{
       const arr=[...(prev[dest]||[])];
       const targetMain87226=String(arr.find(row=>row.capPrincipal)?.capPrincipal||"");
+      const targetScope87227=String(arr.find(row=>row.scopePrincipal)?.scopePrincipal||"");
       const base=(String(dest).match(/(\d+)/)?.[1]||"").padStart(2,"0");
       const used=new Set(arr.map(r=>String(r.codi||"")));
       let next=arr.length+1;
@@ -6698,7 +6700,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         let printedCode=base?`${base}.${String(next++).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
         while(used.has(printedCode)&&base)printedCode=`${base}.${String(next++).padStart(2,"0")}`;
         used.add(printedCode);
-        return {...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,subcap:dest,capPrincipal:targetMain87226,capPath:[targetMain87226,dest].filter(Boolean),codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
+        return {...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,subcap:dest,capPrincipal:targetMain87226,scopePrincipal:targetScope87227,excelScope:targetScope87227,capPath:[targetScope87227,targetMain87226,dest].filter(Boolean),codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
       });
       return {...prev,[dest]:[...arr,...additions]};
     });
@@ -6809,7 +6811,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setCaps(p=>{
       const n={};
       Object.entries(p).forEach(([k,items])=>{
-        n[k===oldName?nv:k]=k===oldName?(items||[]).map(row=>({...row,cap:nv,subcap:nv,capPath:[row.capPrincipal,nv].filter(Boolean)})):items;
+        n[k===oldName?nv:k]=k===oldName?(items||[]).map(row=>({...row,cap:nv,subcap:nv,capPath:[row.scopePrincipal,row.capPrincipal,nv].filter(Boolean)})):items;
       });
       return n;
     });
@@ -6841,7 +6843,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
 
   function addPartida(cap){
     if(!editBudget8760b)return;
-    setCaps(p=>{const arr=[...(p[cap]||[])];const base=(String(cap).match(/(\d+)/)?.[1]||"").padStart(2,"0");const next=arr.length+1;const capPrincipal=String(arr.find(row=>row.capPrincipal)?.capPrincipal||"");return {...p,[cap]:[...arr,{codi:base?`${base}.${String(next).padStart(2,"0")}`:"",cap,subcap:cap,capPrincipal,capPath:[capPrincipal,cap].filter(Boolean),concepte:"Nova partida",desc:"",ut:"ut",q:"1,00",pu:"0,00",tipus:"Base"}]}});
+    setCaps(p=>{const arr=[...(p[cap]||[])];const base=(String(cap).match(/(\d+)/)?.[1]||"").padStart(2,"0");const next=arr.length+1;const capPrincipal=String(arr.find(row=>row.capPrincipal)?.capPrincipal||"");const scopePrincipal=String(arr.find(row=>row.scopePrincipal)?.scopePrincipal||"");return {...p,[cap]:[...arr,{codi:base?`${base}.${String(next).padStart(2,"0")}`:"",cap,subcap:cap,capPrincipal,scopePrincipal,excelScope:scopePrincipal,capPath:[scopePrincipal,capPrincipal,cap].filter(Boolean),concepte:"Nova partida",desc:"",ut:"ut",q:"1,00",pu:"0,00",tipus:"Base"}]}});
     setOpen(o=>({...o,[cap]:true}));
   }
 
@@ -6867,7 +6869,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       source.splice(i,1);
       const target=[...(p[newCap]||[])];
       const targetMain87226=String(target.find(item=>item.capPrincipal)?.capPrincipal||"");
-      return {...p,[cap]:source,[newCap]:[...target,{...row,cap:newCap,subcap:newCap,capPrincipal:targetMain87226,capPath:[targetMain87226,newCap].filter(Boolean)}]};
+      const targetScope87227=String(target.find(item=>item.scopePrincipal)?.scopePrincipal||"");
+      return {...p,[cap]:source,[newCap]:[...target,{...row,cap:newCap,subcap:newCap,capPrincipal:targetMain87226,scopePrincipal:targetScope87227,excelScope:targetScope87227,capPath:[targetScope87227,targetMain87226,newCap].filter(Boolean)}]};
     });
     setOpen(o=>({...o,[newCap]:true}));
   }
@@ -7003,15 +7006,25 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const integrityDifference878211=total-savedSelectedTotal878211;
   const integrityOk878211=editBudget8760b||(!duplicateBudgetCodes878211.length&&Math.abs(integrityDifference878211)<0.01);
   const budgetChapterEntries87226=Object.entries(caps||{}).sort(([capA,itemsA],[capB,itemsB])=>{
+    const scopeA=String((itemsA||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
+    const scopeB=String((itemsB||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
     const mainA=String((itemsA||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
     const mainB=String((itemsB||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
-    return mainA.localeCompare(mainB,"ca",{numeric:true})||String(capA).localeCompare(String(capB),"ca",{numeric:true});
+    return scopeA.localeCompare(scopeB,"ca",{numeric:true})||mainA.localeCompare(mainB,"ca",{numeric:true})||String(capA).localeCompare(String(capB),"ca",{numeric:true});
   });
   const budgetMainTotals87226=budgetChapterEntries87226.reduce((totals,[,items])=>{
+    const scope=String((items||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
     const main=String((items||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
-    if(main)totals[main]=(totals[main]||0)+(items||[]).reduce((sum,row)=>sum+(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0),0);
+    const key=`${scope}__${main}`;
+    if(main)totals[key]=(totals[key]||0)+(items||[]).reduce((sum,row)=>sum+(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0),0);
     return totals;
   },{});
+  const budgetScopeTotals87227=budgetChapterEntries87226.reduce((totals,[,items])=>{
+    const scope=String((items||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
+    if(scope)totals[scope]=(totals[scope]||0)+(items||[]).reduce((sum,row)=>sum+(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0),0);
+    return totals;
+  },{});
+  let lastBudgetScope87227="__none__";
   let lastBudgetMain87226="__none__";
 
   return <div className="stack">
@@ -7022,7 +7035,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       <div className="budget-origin-content-v87196">
         {budgetGroups?.length>0&&<label><span>Pressupost actiu</span><select value={activeBudgetId} onChange={e=>selectBudget?.(e.target.value)}>{budgetGroups.map(g=><option key={g.id} value={g.id}>{g.nom}</option>)}</select><small>{money(totalActive)} · només el pressupost seleccionat</small></label>}
         <div className="budget-origin-actions-v87196"><button type="button" className="secondary" onClick={startManualBudget87115}>+ Manual des de zero</button><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label>{budgetGroups?.length>0&&<><button type="button" className="secondary" onClick={()=>addBudget?.("Imprevist / sobrecost")}>+ Imprevist</button><button type="button" className="secondary" onClick={()=>addBudget?.("Modificat aprovat")}>+ Annex</button></>}</div>
-        <details className="excel-help-v8746"><summary>ⓘ Com interpreta els capítols de l’Excel</summary><p>L’app detecta capítols i subcapítols escrits al full. Si falten, utilitza la numeració de la partida: per exemple, F-01.06.10 queda dins 01.06. Estructura recomanada: A = codi, B = unitat, C = descripció, E = quantitat, F = preu unitari i G = total.</p></details>
+        <details className="excel-help-v8746"><summary>ⓘ Com interpreta la jerarquia de l’Excel</summary><p>L’app llegeix quatre nivells: àmbit, capítol, subcapítol i partida. Per exemple: Façana → 00 Treballs previs → 00.01 Seguretat i salut → F-00.01.01. Si falten encapçalaments, utilitza la numeració del codi. Estructura recomanada: A = codi, B = unitat, C = descripció, E = quantitat, F = preu unitari i G = total.</p></details>
       </div>
     </details>
 
@@ -7057,11 +7070,16 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
         {budgetChapterEntries87226.map(([cap,items])=>{
           const capTotal=items.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+          const scopeChapter87227=String((items||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
           const mainChapter87226=String((items||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
-          const showMainChapter87226=!!mainChapter87226&&mainChapter87226!==lastBudgetMain87226;
-          if(mainChapter87226)lastBudgetMain87226=mainChapter87226;
-          return <React.Fragment key={`${mainChapter87226}-${cap}`}>
-          {showMainChapter87226&&<div className="budget-main-chapter-v87226"><span>Capítol principal</span><b>{mainChapter87226}</b><strong>{money(budgetMainTotals87226[mainChapter87226]||0)}</strong></div>}
+          const mainChapterKey87227=`${scopeChapter87227}__${mainChapter87226}`;
+          const showScopeChapter87227=!!scopeChapter87227&&scopeChapter87227!==lastBudgetScope87227;
+          const showMainChapter87226=!!mainChapter87226&&mainChapterKey87227!==lastBudgetMain87226;
+          if(scopeChapter87227)lastBudgetScope87227=scopeChapter87227;
+          if(mainChapter87226)lastBudgetMain87226=mainChapterKey87227;
+          return <React.Fragment key={`${scopeChapter87227}-${mainChapter87226}-${cap}`}>
+          {showScopeChapter87227&&<div className="budget-scope-v87227"><span>Àmbit de l’Excel</span><b>{scopeChapter87227}</b><strong>{money(budgetScopeTotals87227[scopeChapter87227]||0)}</strong></div>}
+          {showMainChapter87226&&<div className="budget-main-chapter-v87226"><span>Capítol</span><b>{mainChapter87226}</b><strong>{money(budgetMainTotals87226[mainChapterKey87227]||0)}</strong></div>}
           <div className="budget-v25-cap">
             <div className="budget-v25-cap-head">
               <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
@@ -8370,7 +8388,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.226.0",
+    app_version:"87.227.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

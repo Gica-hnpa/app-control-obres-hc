@@ -1,0 +1,29 @@
+V87.227 · JERARQUIA EXCEL COMPLETA
+
+1. Descomprimeix la carpeta completa de la V87.227.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+LECTURA CORRECTA DEL PRESSUPOST COMODORO
+
+La jerarquia ja no s'atura a 00.01, 01.01 o 02.01. Ara llegeix:
+
+- àmbit: Façana, Coberta o Logística;
+- capítol: 00 Treballs previs, 01, 02 o 03;
+- subcapítol: 00.01, 00.02, 01.01, 01.02...;
+- partida: F-00.01.01, C-01.02.03, etc.
+
+Exemple comprovat:
+
+Façana -> 00 Treballs previs -> 00.01 Seguretat i salut -> F-00.01.01.
+
+RESULTAT DE LA PROVA
+
+- 120 partides;
+- 3 àmbits;
+- 7 capítols;
+- 20 subcapítols;
+- import total sense cap canvi.
+
+La correcció s'aplica quan tornes a importar l'Excel. No modifica automàticament
+els pressupostos que ja estan guardats.
