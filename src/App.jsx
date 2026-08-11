@@ -7,6 +7,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
 import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen} from "lucide-react";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
+import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
 
 const APP_USERS8779={hector:"0000",pol:"1919"};
 const STORAGE_NS8782="aco_v8782";
@@ -2393,7 +2394,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.225",
+      version:"V87.226",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3342,7 +3343,10 @@ function parseRows(rows,sheetName){
     let cap="PRESSUPOST IMPORTAT";
     let last=null;
 
-    for(const row of rows.slice(headerIndex+1)){
+    const importRows87226=rows.slice(headerIndex+1);
+    for(let importRowOffset87226=0;importRowOffset87226<importRows87226.length;importRowOffset87226++){
+      const row=importRows87226[importRowOffset87226];
+      const excelSourceRow=headerIndex+1+importRowOffset87226;
       if(!row || !row.some(x=>clean(x)))continue;
       const cells=nonEmptyCells(row);
       if(!cells.length)continue;
@@ -3408,6 +3412,7 @@ function parseRows(rows,sheetName){
           certAnterior:0,
           certActual:0,
           certsByNum:{},
+          excelSourceRow,
           tipus:"Import Excel"
         };
         out.push(partida);
@@ -3421,14 +3426,16 @@ function parseRows(rows,sheetName){
         let q=amounts.q||0, pu=amounts.pu||0, imp=amounts.imp||0;
         if(!imp && q && pu)imp=q*pu;
         if(!pu && q && imp)pu=imp/q;
-        const partida={codi:fallback,cap,ut:isUnit(Uraw)?Uraw:(isUnit(second)?second:(Uraw||"ut")),concepte:Rraw||textWithoutTrailingAmounts(row,1)||"Partida importada",desc:"",q:q||0,pu:pu||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import Excel"};
+        const partida={codi:fallback,cap,ut:isUnit(Uraw)?Uraw:(isUnit(second)?second:(Uraw||"ut")),concepte:Rraw||textWithoutTrailingAmounts(row,1)||"Partida importada",desc:"",q:q||0,pu:pu||0,certAnterior:0,certActual:0,certsByNum:{},excelSourceRow,tipus:"Import Excel"};
         out.push(partida);last=partida;
       }
     }
 
+    const hierarchy87226=repairImportedBudgetHierarchyV87226(rows,out);
+    out=hierarchy87226.rows;
     const realCaps=[...new Set(out.map(x=>x.cap).filter(c=>c && c!=="PRESSUPOST IMPORTAT"))];
     if(realCaps.length===1){out=out.map(x=>x.cap==="PRESSUPOST IMPORTAT"?{...x,cap:realCaps[0]}:x)}
-    return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
+    return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,mainCaps:hierarchy87226.mainCaps,subCaps:hierarchy87226.subCaps,inferredCaps:hierarchy87226.inferredCaps,hierarchyHeadings:hierarchy87226.headings,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
   }
 
   // V87.154 · quan un Excel té full PRESSUPOST + fulls AMIDAMENTS/DESCOMPOST,
@@ -3518,7 +3525,7 @@ function parseRows(rows,sheetName){
           versio:"v"+String(oldPress.filter(p=>(p.budgetId||"principal")===bid).length+1).padStart(2,"0"),
           data:new Date().toLocaleDateString("ca-ES"),
           nom:file.name,
-          estat:`${groupName} · Importat · ${best.rows.length} partides · ${best.caps||1} capítols · ${best.sheet}`,
+          estat:`${groupName} · Importat · ${best.rows.length} partides · ${importedBudgetHierarchyLabelV87226(best)} · ${best.sheet}`,
           import:best.total,
           updatedAt:new Date().toISOString()
         }],
@@ -3528,7 +3535,7 @@ function parseRows(rows,sheetName){
         updatedAt:new Date().toISOString()
       };
     });
-    alert(`${newGroup878122?"Importació segura creada com a nou pressupost/annex":"Pressupost importat correctament"}: ${best.rows.length} partides en ${best.caps||1} capítols. S'ha guardat una còpia local de recuperació abans d'importar.`);
+    alert(`${newGroup878122?"Importació segura creada com a nou pressupost/annex":"Pressupost importat correctament"}: ${best.rows.length} partides · ${importedBudgetHierarchyLabelV87226(best)}.${best.inferredCaps?` ${best.inferredCaps} partida/es s'han classificat per la numeració del codi.`:""} S'ha guardat una còpia local de recuperació abans d'importar.`);
   }catch(err){
     setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),budgetId:activeBudgetId8786,versio:"v"+String((d.pressupostos||[]).filter(p=>(p.budgetId||"principal")===activeBudgetId8786).length+1).padStart(2,"0"),data:new Date().toLocaleDateString("ca-ES"),nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
   }
@@ -5585,7 +5592,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.225",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.226",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6621,12 +6628,13 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const dest=currentLibraryDestinationCap87115();
     setCaps(p=>{
       const arr=[...(p[dest]||[])];
+      const capPrincipal=String(arr.find(row=>row.capPrincipal)?.capPrincipal||"");
       const base=(String(dest).match(/(\d+)/)?.[1]||"").padStart(2,"0");
       const used=new Set(arr.map(r=>String(r.codi||"")));
       let next=arr.length+1;
       let printedCode=base?`${base}.${String(next).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
       while(used.has(printedCode)&&base)printedCode=`${base}.${String(++next).padStart(2,"0")}`;
-      const row={...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
+      const row={...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,subcap:dest,capPrincipal,capPath:[capPrincipal,dest].filter(Boolean),codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
       return {...p,[dest]:[...arr,row]};
     });
     setOpen(o=>({...o,[dest]:true}));
@@ -6682,6 +6690,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     }
     setCaps(prev=>{
       const arr=[...(prev[dest]||[])];
+      const targetMain87226=String(arr.find(row=>row.capPrincipal)?.capPrincipal||"");
       const base=(String(dest).match(/(\d+)/)?.[1]||"").padStart(2,"0");
       const used=new Set(arr.map(r=>String(r.codi||"")));
       let next=arr.length+1;
@@ -6689,7 +6698,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         let printedCode=base?`${base}.${String(next++).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
         while(used.has(printedCode)&&base)printedCode=`${base}.${String(next++).padStart(2,"0")}`;
         used.add(printedCode);
-        return {...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
+        return {...item,id:undefined,libraryItemId:item.id,codiIntern:item.codiIntern,cap:dest,subcap:dest,capPrincipal:targetMain87226,capPath:[targetMain87226,dest].filter(Boolean),codi:printedCode,codiPressupost:printedCode,q:1,pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única"};
       });
       return {...prev,[dest]:[...arr,...additions]};
     });
@@ -6800,7 +6809,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setCaps(p=>{
       const n={};
       Object.entries(p).forEach(([k,items])=>{
-        n[k===oldName?nv:k]=items;
+        n[k===oldName?nv:k]=k===oldName?(items||[]).map(row=>({...row,cap:nv,subcap:nv,capPath:[row.capPrincipal,nv].filter(Boolean)})):items;
       });
       return n;
     });
@@ -6832,7 +6841,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
 
   function addPartida(cap){
     if(!editBudget8760b)return;
-    setCaps(p=>{const arr=[...(p[cap]||[])];const base=(String(cap).match(/(\d+)/)?.[1]||"").padStart(2,"0");const next=arr.length+1;return {...p,[cap]:[...arr,{codi:base?`${base}.${String(next).padStart(2,"0")}`:"",cap,concepte:"Nova partida",desc:"",ut:"ut",q:"1,00",pu:"0,00",tipus:"Base"}]}});
+    setCaps(p=>{const arr=[...(p[cap]||[])];const base=(String(cap).match(/(\d+)/)?.[1]||"").padStart(2,"0");const next=arr.length+1;const capPrincipal=String(arr.find(row=>row.capPrincipal)?.capPrincipal||"");return {...p,[cap]:[...arr,{codi:base?`${base}.${String(next).padStart(2,"0")}`:"",cap,subcap:cap,capPrincipal,capPath:[capPrincipal,cap].filter(Boolean),concepte:"Nova partida",desc:"",ut:"ut",q:"1,00",pu:"0,00",tipus:"Base"}]}});
     setOpen(o=>({...o,[cap]:true}));
   }
 
@@ -6857,7 +6866,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       if(!row)return p;
       source.splice(i,1);
       const target=[...(p[newCap]||[])];
-      return {...p,[cap]:source,[newCap]:[...target,{...row,cap:newCap}]};
+      const targetMain87226=String(target.find(item=>item.capPrincipal)?.capPrincipal||"");
+      return {...p,[cap]:source,[newCap]:[...target,{...row,cap:newCap,subcap:newCap,capPrincipal:targetMain87226,capPath:[targetMain87226,newCap].filter(Boolean)}]};
     });
     setOpen(o=>({...o,[newCap]:true}));
   }
@@ -6992,6 +7002,17 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const savedSelectedTotal878211=Number(totalActive)||0;
   const integrityDifference878211=total-savedSelectedTotal878211;
   const integrityOk878211=editBudget8760b||(!duplicateBudgetCodes878211.length&&Math.abs(integrityDifference878211)<0.01);
+  const budgetChapterEntries87226=Object.entries(caps||{}).sort(([capA,itemsA],[capB,itemsB])=>{
+    const mainA=String((itemsA||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
+    const mainB=String((itemsB||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
+    return mainA.localeCompare(mainB,"ca",{numeric:true})||String(capA).localeCompare(String(capB),"ca",{numeric:true});
+  });
+  const budgetMainTotals87226=budgetChapterEntries87226.reduce((totals,[,items])=>{
+    const main=String((items||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
+    if(main)totals[main]=(totals[main]||0)+(items||[]).reduce((sum,row)=>sum+(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0),0);
+    return totals;
+  },{});
+  let lastBudgetMain87226="__none__";
 
   return <div className="stack">
     {budgetMeasureTarget878194&&<MedicioModal8780 row={(caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}} contextLabel="PRESSUPOST" initial={((caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}).pressupostMesures||[]} close={()=>setBudgetMeasureTarget878194(null)} save={saveBudgetMeasures878194}/>} 
@@ -7001,7 +7022,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       <div className="budget-origin-content-v87196">
         {budgetGroups?.length>0&&<label><span>Pressupost actiu</span><select value={activeBudgetId} onChange={e=>selectBudget?.(e.target.value)}>{budgetGroups.map(g=><option key={g.id} value={g.id}>{g.nom}</option>)}</select><small>{money(totalActive)} · només el pressupost seleccionat</small></label>}
         <div className="budget-origin-actions-v87196"><button type="button" className="secondary" onClick={startManualBudget87115}>+ Manual des de zero</button><label className="secondary upload-label"><Upload/> Importar Excel<input type="file" onChange={importExcel}/></label>{budgetGroups?.length>0&&<><button type="button" className="secondary" onClick={()=>addBudget?.("Imprevist / sobrecost")}>+ Imprevist</button><button type="button" className="secondary" onClick={()=>addBudget?.("Modificat aprovat")}>+ Annex</button></>}</div>
-        <details className="excel-help-v8746"><summary>ⓘ Guia per importar Excel correctament</summary><p>Estructura recomanada: A = codi, B = unitat, C = concepte/descripció, E = quantitat, F = preu unitari i G = total.</p></details>
+        <details className="excel-help-v8746"><summary>ⓘ Com interpreta els capítols de l’Excel</summary><p>L’app detecta capítols i subcapítols escrits al full. Si falten, utilitza la numeració de la partida: per exemple, F-01.06.10 queda dins 01.06. Estructura recomanada: A = codi, B = unitat, C = descripció, E = quantitat, F = preu unitari i G = total.</p></details>
       </div>
     </details>
 
@@ -7034,9 +7055,14 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     </Modal>}
     {budgetWorkTab878180==="Validar descompostos"?<div className="descompost-validator-v878180"><div className="validator-head-v878180"><div><b>Validació de descompostos</b><span>{descompostValidationRows878180.length} partida/es amb descomposat carregat</span></div><div className="actions-inline"><button type="button" className="secondary" onClick={fillDetectedDescompostos878180}>Carregar preus detectats</button><button type="button" className="primary" onClick={applyAllValidatedDescompostos878180}>Aplicar i guardar</button></div></div>{descompostValidationRows878180.length===0?<Empty text="No hi ha descompostos carregats. En mode edició, obre Més accions i selecciona Importar descompostos."/>:<div className="descompost-validator-table-wrap-v878180"><table className="descompost-validator-table-v878180"><thead><tr><th>Capítol</th><th>Codi</th><th>Concepte</th><th>Total detectat</th><th>PU actual</th><th>PU validat</th><th>Estat</th><th>Acció</th></tr></thead><tbody>{descompostValidationRows878180.map(x=><tr key={`${x.cap}-${x.i}`}><td>{x.cap}</td><td><b>{x.row.codi||"—"}</b></td><td className="text-left"><span>{x.row.concepte}</span><small>{[x.row.descompostSource,x.row.descompostSheet].filter(Boolean).join(" · ")}</small></td><td>{money(x.detected)}</td><td>{money(x.current)}</td><td><input inputMode="decimal" value={x.row.descompostValidatedPu||qty2(x.detected||0)} onChange={e=>setValidatedPu878180(x.cap,x.i,e.target.value)} onBlur={e=>normalizeValidatedPu878180(x.cap,x.i,e.target.value)}/></td><td>{x.row.puFromDescompost?<b className="good-text">Aplicat</b>:<b className="warn-text">Pendent</b>}</td><td><button type="button" className="secondary small" onClick={()=>openDescompostModal87173(x.cap,x.i)}>Obrir</button></td></tr>)}</tbody></table></div>}</div>:<div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
-        {sortedCapEntries8779(caps).map(([cap,items])=>{
+        {budgetChapterEntries87226.map(([cap,items])=>{
           const capTotal=items.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
-          return <div className="budget-v25-cap" key={cap}>
+          const mainChapter87226=String((items||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
+          const showMainChapter87226=!!mainChapter87226&&mainChapter87226!==lastBudgetMain87226;
+          if(mainChapter87226)lastBudgetMain87226=mainChapter87226;
+          return <React.Fragment key={`${mainChapter87226}-${cap}`}>
+          {showMainChapter87226&&<div className="budget-main-chapter-v87226"><span>Capítol principal</span><b>{mainChapter87226}</b><strong>{money(budgetMainTotals87226[mainChapter87226]||0)}</strong></div>}
+          <div className="budget-v25-cap">
             <div className="budget-v25-cap-head">
               <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
               <input value={capNameDraft8761[cap]??cap} onChange={e=>setCapNameDraft8761(p=>({...p,[cap]:e.target.value}))} onBlur={e=>renameCap(cap,e.target.value)} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/>
@@ -7077,7 +7103,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               })}
               {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
             </div>}
-          </div>
+          </div></React.Fragment>
         })}
         {editBudget8760b&&<button type="button" className="primary add-chapter-bottom-v8779" onClick={addCapitol}><Plus/> Nou capítol</button>}
       </div>}
@@ -8344,7 +8370,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.225.0",
+    app_version:"87.226.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

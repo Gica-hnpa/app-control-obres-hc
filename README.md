@@ -1,4 +1,13 @@
-# APP Control d’Obres V87.225
+# APP Control d’Obres V87.226
+
+## Importador Excel jeràrquic V87.226
+
+- Detecta capítols principals i subcapítols encara que estiguin escrits com una fila visual combinada.
+- Interpreta codis com `F-00.01.01`, `F-01.06.10` o `X-12.04.003` i dedueix el subcapítol eliminant l’últim nivell de la partida.
+- Quan l’Excel porta títols, conserva el nom real del subcapítol; si no en porta, crea un `CAPÍTOL INFERIT` amb la numeració.
+- La pantalla del pressupost separa els capítols principals, mostra els seus subcapítols i calcula el total de cada nivell principal.
+- Prova real superada amb `Pressupost_SOCOTERM_CP_EDIFICI_COMODORO_2026-SOCOTE-007_v01`: 120 partides, 3 capítols principals i 20 subcapítols.
+- Es manté la importació segura: no se substitueix un pressupost amb certificacions o factures i es crea una còpia local de recuperació.
 
 ## Resum simple i totals de capítol a origen V87.225
 

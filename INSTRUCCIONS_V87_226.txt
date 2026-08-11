@@ -1,0 +1,29 @@
+V87.226 · IMPORTADOR EXCEL JERÀRQUIC
+
+1. Descomprimeix la carpeta completa de la V87.226.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+PROVA AMB EL PRESSUPOST COMODORO
+
+En tornar a importar l'Excel del pressupost COMODORO, l'app ha de detectar:
+
+- 120 partides;
+- 3 capítols principals;
+- 20 subcapítols.
+
+Els codis de partida determinen el subcapítol. Exemples:
+
+- F-00.01.01 -> 00.01;
+- F-01.06.10 -> 01.06;
+- F-01.07.01 -> 01.07.
+
+Si un altre Excel no porta files de capítol clares, l'app elimina l'últim nivell
+del codi de partida i crea el capítol inferit. Si sí que hi ha un títol al full,
+conserva aquest títol.
+
+SEGURETAT
+
+No s'han modificat pressupostos ja guardats. La correcció actua quan s'importa
+un Excel. Si el pressupost de destí ja té certificacions o factures, l'Excel es
+guarda com un pressupost/annex independent.
