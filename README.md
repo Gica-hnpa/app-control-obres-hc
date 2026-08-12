@@ -1,4 +1,16 @@
-# APP Control d’Obres V87.229
+# APP Control d’Obres V87.230
+
+## Capítols, resums econòmics i llibreria validada V87.230
+
+- Cada capítol del pressupost té un únic desplegable d’accions per editar-ne el número i el nom, marcar les partides, afegir-ne una o eliminar-lo.
+- En canviar el número del capítol es pot renumerar també el prefix de totes les seves partides, per exemple `02.01 → 03.01`.
+- L’importador descarta les files resum que dupliquen exactament la suma econòmica de les partides interiors del capítol.
+- La pantalla, la previsualització i l’A4 mostren sempre el subtotal de cada capítol.
+- El final del pressupost incorpora un resum econòmic per capítols amb import i percentatge sobre el total.
+- Cada partida té un sol desplegable d’accions; s’elimina la segona botonera repetida.
+- La llibreria principal només mostra partides guardades expressament i permet veure tota la llibreria, les d’ús general o les habituals d’un client.
+- La lectura de propostes dels expedients queda com una eina opcional i no es calcula ni es mostra fins que l’usuari la demana.
+- Es pot deixar la llibreria buida d’un sol cop; les partides passen a la paperera recuperable i els pressupostos existents no canvien.
 
 ## Descompostos industrials i accions massives V87.229
 

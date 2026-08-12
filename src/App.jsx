@@ -2510,7 +2510,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.229",
+      version:"V87.230",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3430,6 +3430,30 @@ async function importExcel(e,budgetId="principal"){
     return {rows:cleaned,observacions:obsLines.join("\n").trim(),formaPagament:payLines.join("\n").trim()};
   }
 
+  // V87.230 · alguns Excels dibuixen el subtotal del capítol com si fos una partida
+  // (codi 01, quantitat 1 i PU igual a la suma de 01.01, 01.02...). No s'ha de duplicar.
+  function removeImportedChapterSummaryRows878230(rows=[]){
+    const code=v=>clean(v).replace(/,/g,".").replace(/\s+/g,"").replace(/[.]+$/g,"");
+    const amount=row=>(parseNum8770(row?.q)||0)*(parseNum8770(row?.pu)||0);
+    const removed=[];
+    const keep=(rows||[]).filter((candidate,index,all)=>{
+      const parentCode=code(candidate?.codi);
+      if(!parentCode)return true;
+      const children=all.filter((row,rowIndex)=>rowIndex!==index&&code(row?.codi).startsWith(parentCode+"."));
+      if(children.length<2)return true;
+      const childTotal=children.reduce((sum,row)=>sum+amount(row),0);
+      const candidateTotal=amount(candidate);
+      const tolerance=Math.max(0.05,Math.abs(childTotal)*0.0005);
+      const sameTotal=candidateTotal>0&&Math.abs(candidateTotal-childTotal)<=tolerance;
+      const summaryWords=/\b(total|subtotal|resum|resumen|import\s+cap[ií]tol|cap[ií]tol)\b/i.test(`${candidate?.concepte||""} ${candidate?.desc||""}`);
+      const summaryShape=(Math.abs((parseNum8770(candidate?.q)||0)-1)<0.0001)||summaryWords;
+      if(!sameTotal||!summaryShape)return true;
+      removed.push({...candidate,summaryDetected878230:true,summaryChildren878230:children.length,summaryAmount878230:candidateTotal});
+      return false;
+    });
+    return {rows:keep,removed};
+  }
+
   // V87.153 · lector estàndard de pressupost ràpid: partida/codi/unitat/descripció/quantitat/preu unitari/total
   function standardBudgetMap878153(row){
     const h=(row||[]).map(norm);
@@ -3548,10 +3572,11 @@ function parseRows(rows,sheetName){
     }
 
     const hierarchy87226=repairImportedBudgetHierarchyV87226(rows,out);
-    out=hierarchy87226.rows;
+    const summaries878230=removeImportedChapterSummaryRows878230(hierarchy87226.rows);
+    out=summaries878230.rows;
     const realCaps=[...new Set(out.map(x=>x.cap).filter(c=>c && c!=="PRESSUPOST IMPORTAT"))];
     if(realCaps.length===1){out=out.map(x=>x.cap==="PRESSUPOST IMPORTAT"?{...x,cap:realCaps[0]}:x)}
-    return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,scopes:hierarchy87226.scopes,mainCaps:hierarchy87226.mainCaps,subCaps:hierarchy87226.subCaps,inferredCaps:hierarchy87226.inferredCaps,hierarchyHeadings:hierarchy87226.headings,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
+    return {rows:out,sheet:sheetName,caps:new Set(out.map(x=>x.cap)).size,scopes:hierarchy87226.scopes,mainCaps:hierarchy87226.mainCaps,subCaps:hierarchy87226.subCaps,inferredCaps:hierarchy87226.inferredCaps,hierarchyHeadings:hierarchy87226.headings,summaryRowsIgnored878230:summaries878230.removed,total:out.reduce((s,x)=>s+(+x.q||0)*(+x.pu||0),0)};
   }
 
   // V87.154 · quan un Excel té full PRESSUPOST + fulls AMIDAMENTS/DESCOMPOST,
@@ -3653,7 +3678,7 @@ function parseRows(rows,sheetName){
           versio:"v"+String(oldPress.filter(p=>(p.budgetId||"principal")===bid).length+1).padStart(2,"0"),
           data:new Date().toLocaleDateString("ca-ES"),
           nom:file.name,
-          estat:`${groupName} · Importat · ${best.rows.length} partides · ${best.descompostosVinculats||0} descompostos · ${importedBudgetHierarchyLabelV87226(best)} · ${best.sheet}`,
+          estat:`${groupName} · Importat · ${best.rows.length} partides · ${(best.summaryRowsIgnored878230||[]).length} resum/s descartat/s · ${best.descompostosVinculats||0} descompostos · ${importedBudgetHierarchyLabelV87226(best)} · ${best.sheet}`,
           import:best.total,
           excelDescompostos:{
             detectats:best.descompostosDetectats||0,
@@ -3672,7 +3697,8 @@ function parseRows(rows,sheetName){
     const decompMsg878228=best.descompostosDetectats
       ? ` Descompostos: ${best.descompostosVinculats} vinculats de ${best.descompostosDetectats} fulls detectats.${best.descompostosSenseCoincidencia?.length?` Sense coincidència: ${best.descompostosSenseCoincidencia.slice(0,6).join(", ")}${best.descompostosSenseCoincidencia.length>6?"...":""}.`:""} Els preus detectats queden pendents de validar i no alteren el pressupost.`
       : " No s'han detectat fulls de descompost; si l'Excel en té, comprova que cada full porti el mateix codi de la partida.";
-    alert(`${newGroup878122?"Importació segura creada com a nou pressupost/annex":"Pressupost importat correctament"}: ${best.rows.length} partides · ${importedBudgetHierarchyLabelV87226(best)}.${best.inferredCaps?` ${best.inferredCaps} partida/es s'han classificat per la numeració del codi.`:""}${decompMsg878228} S'ha guardat una còpia local de recuperació abans d'importar.`);
+    const ignoredSummaryMsg878230=(best.summaryRowsIgnored878230||[]).length?` S'han descartat automàticament ${(best.summaryRowsIgnored878230||[]).length} fila/es resum de capítol perquè repetien exactament la suma de les partides interiors.`:"";
+    alert(`${newGroup878122?"Importació segura creada com a nou pressupost/annex":"Pressupost importat correctament"}: ${best.rows.length} partides · ${importedBudgetHierarchyLabelV87226(best)}.${best.inferredCaps?` ${best.inferredCaps} partida/es s'han classificat per la numeració del codi.`:""}${ignoredSummaryMsg878230}${decompMsg878228} S'ha guardat una còpia local de recuperació abans d'importar.`);
   }catch(err){
     setD(obraId,d=>({...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),budgetId:activeBudgetId8786,versio:"v"+String((d.pressupostos||[]).filter(p=>(p.budgetId||"principal")===activeBudgetId8786).length+1).padStart(2,"0"),data:new Date().toLocaleDateString("ca-ES"),nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}));
   }
@@ -4142,6 +4168,8 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   const[candidateDestinationChapter,setCandidateDestinationChapter]=useState("");
   const[candidateOverrides,setCandidateOverrides]=useState({});
   const[candidateLimit,setCandidateLimit]=useState(100);
+  const[showCandidateImporter878230,setShowCandidateImporter878230]=useState(false);
+  const[showLibraryTools878230,setShowLibraryTools878230]=useState(false);
   const[insertAfterChapter,setInsertAfterChapter]=useState("");
   const[insertChapterTitle,setInsertChapterTitle]=useState("");
   const[chapterCatalog,setChapterCatalog]=useState(()=>{
@@ -4162,7 +4190,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   useEffect(()=>{lsSet8779("aco_library_chapters_v87201",JSON.stringify(chapterCatalog))},[chapterCatalog]);
   useEffect(()=>{lsSet8779("aco_library_trash_v87203",JSON.stringify(stripHeavy878185(trashBatches.slice(0,30))))},[trashBatches]);
   useEffect(()=>{lsSet8779("aco_library_ignored_v87203",JSON.stringify([...new Set(ignoredFingerprints)].slice(-4000)))},[ignoredFingerprints]);
-  const candidateData=useMemo(()=>collectLibraryCandidates871200(clients,obres,odata),[clients,obres,odata]);
+  const candidateData=useMemo(()=>showCandidateImporter878230?collectLibraryCandidates871200(clients,obres,odata):{unique:[],legacyCount:0,budgetCount:0},[showCandidateImporter878230,clients,obres,odata]);
   const storedFingerprints=useMemo(()=>new Set(rows.map(libFingerprint87196)),[rows]);
   const ignoredFingerprintSet=useMemo(()=>new Set(ignoredFingerprints),[ignoredFingerprints]);
   const pendingCandidates=useMemo(()=>candidateData.unique.filter(x=>!storedFingerprints.has(x.candidateFingerprint)&&!ignoredFingerprintSet.has(x.candidateFingerprint)),[candidateData,storedFingerprints,ignoredFingerprintSet]);
@@ -4180,17 +4208,20 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   });
   const linkedCount=rows.filter(x=>(x.clientIds||[]).length).length;
   const unlinkedCount=rows.length-linkedCount;
-  const managedChapterStats=useMemo(()=>{
+  const visibleCuratedRows878230=useMemo(()=>rows.filter(item=>{
     const q=libNormText87196(managerSearch);
+    const okText=!q||libNormText87196([item.cap,item.codiIntern,item.codiPressupost,item.concepte,item.desc,item.ut,item.descompost].join(" ")).includes(q);
+    const okClient=!clientFilter||(clientFilter==="__none__"?!(item.clientIds||[]).length:(item.clientIds||[]).some(id=>String(id)===String(clientFilter)));
+    return okText&&okClient;
+  }),[rows,managerSearch,clientFilter]);
+  const managedChapterStats=useMemo(()=>{
     return caps.map(cap=>{
-      const chapterItems=rows.filter(item=>libText87196(item.cap||"General")===cap);
-      const capMatches=!q||libNormText87196(cap).includes(q);
-      const itemMatches=chapterItems.some(item=>libNormText87196([item.codiIntern,item.concepte,item.desc,item.ut,item.descompost].join(" ")).includes(q));
+      const chapterItems=visibleCuratedRows878230.filter(item=>libText87196(item.cap||"General")===cap);
       const clientsSet=new Set();
       chapterItems.forEach(item=>(item.clientIds||[]).forEach(id=>clientsSet.add(String(id))));
-      return {cap,total:chapterItems.length,clients:clientsSet,visible:capMatches||itemMatches};
+      return {cap,total:chapterItems.length,clients:clientsSet,visible:chapterItems.length>0||(!managerSearch&&!clientFilter&&chapterCatalog.includes(cap))};
     }).filter(entry=>entry.visible).sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
-  },[rows,caps.join("\u0001"),managerSearch]);
+  },[visibleCuratedRows878230,caps.join("\u0001"),managerSearch,clientFilter,chapterCatalog]);
   const duplicateChapterGroups=(()=>{
     const groups=new Map();
     caps.forEach(cap=>{
@@ -4277,6 +4308,16 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     const deleted=rows.filter(item=>ids.has(item.id));
     sendToLibraryTrash87203(deleted,`Eliminació de ${deleted.length} partides seleccionades`,[...new Set(deleted.map(item=>item.cap||"General"))]);
     setItems?.(prev=>(prev||[]).filter(x=>!ids.has(x.id)));setSelectedIds([]);
+  }
+  function clearCuratedLibrary878230(){
+    if(!rows.length)return alert("La llibreria ja no té cap partida guardada.");
+    if(!confirm(`Deixar buida la llibreria actual?\n\nLes ${rows.length} partides es mouran a la paperera recuperable. Els pressupostos i certificacions existents NO es modificaran.`))return;
+    sendToLibraryTrash87203(rows,`Reinici manual de la llibreria: ${rows.length} partides`,[...new Set(rows.map(item=>item.cap||"General"))]);
+    setItems?.([]);
+    setSelectedIds([]);
+    setOpenLibraryChapter("");
+    setLibraryItemModal87208("");
+    alert("La llibreria ha quedat buida. Ara només hi entraran les partides que creïs o desis expressament des d'un pressupost.");
   }
   function moveSelected87199(){
     let cap=bulkChapter;
@@ -4550,24 +4591,24 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     {chapterActionModal87208&&(()=>{const ch=managedChapterStats.find(entry=>entry.cap===chapterActionModal87208)||{cap:chapterActionModal87208,total:rows.filter(item=>libText87196(item.cap||"General")===chapterActionModal87208).length};return <Modal title={`Accions del capítol · ${ch.cap}`} close={()=>setChapterActionModal87208("")}><div className="library-chapter-modal-v87208"><section><div><b>Renombrar el capítol</b><span>Les partides continuaran vinculades a aquest capítol.</span></div><label><span>Nom nou</span><input value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))}/></label><button type="button" className="primary" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Guardar nom</button></section><section><div><b>Fusionar amb un altre</b><span>Mou totes les partides al capítol que conserves.</span></div><label><span>Capítol que vols conservar</span><select value={capMergeTargets[ch.cap]||""} onChange={e=>setCapMergeTargets(prev=>({...prev,[ch.cap]:e.target.value}))}><option value="">Selecciona el destí...</option>{caps.filter(cap=>cap!==ch.cap).map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label><button type="button" className="secondary" disabled={!capMergeTargets[ch.cap]} onClick={()=>renameChapter87197(ch.cap,capMergeTargets[ch.cap])}>Fusionar</button></section><section className="library-chapter-danger-v87206"><div><b>Eliminar</b><span>{ch.total?`Envia el capítol i ${ch.total} partida/es a la paperera.`:"El capítol és buit."}</span></div><span></span><button type="button" className="danger" onClick={()=>ch.total?deleteChapterAndItems87203(ch.cap):deleteEmptyChapter87201(ch.cap)}>{ch.total?`Eliminar capítol i ${ch.total} partides`:"Eliminar capítol buit"}</button></section></div><div className="modal-actions"><button type="button" className="primary" onClick={()=>setChapterActionModal87208("")}>Tancar i tornar</button></div></Modal>})()}
     {libraryItemModal87208&&(()=>{const item=rows.find(entry=>String(entry.id)===String(libraryItemModal87208));return item?renderLibraryItemModal87208(item):null})()}
     {draft&&<Modal title={`Nova partida${draft.cap?` · ${draft.cap}`:""}`} close={()=>setDraft(null)}><div className="library-new-modal-v87208"><div className="library-new-code-note-v87199">Codi curt editable: prefix del capítol + paraula clau + número correlatiu. Exemple: <b>MA_BAST_001</b>.</div><div className="library-editor-grid-v87196"><label><span>Concepte *</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>Unitat</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>Capítol de la llibreria</span><select value={draft.cap} onChange={e=>changeDraftChapter87201(e.target.value)}><option value="">Selecciona un capítol...</option>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select></label><label><span>Prefix del codi</span><input maxLength="4" value={draft.codiPrefix} onChange={e=>setDraft({...draft,codiPrefix:e.target.value})} placeholder={libChapterInitials87199(draft.cap)}/></label><label><span>Paraula clau del codi</span><input maxLength="6" value={draft.codiParaula} onChange={e=>setDraft({...draft,codiParaula:e.target.value})} placeholder={libConceptKeyword87199(draft.concepte)}/></label><label><span>Preu unitari</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label className="span-all"><span>Descripció llarga</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label>{clients.length>0&&<label><span>Client relacionat (opcional)</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveNew}>Guardar a la llibreria</button></div></div></Modal>}
-    <section className="library-hero-v87196"><div><small>LLIBRERIA DE PARTIDES</small><h2>Treballa directament per capítols</h2><p>Obre un capítol per veure les seves partides. Les accions del capítol i cada fitxa s’obren en una finestra de treball clara.</p></div><div className="actions-inline"><button type="button" className="secondary" onClick={()=>startNew()}><Plus/> Crear partida</button><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear capítol</button></div></section>
-    <div className="library-policy-note-v87199"><b>Model únic i clar</b><span>No hi ha una llibreria global i una altra per client. Hi ha una única llibreria, un únic catàleg de capítols i vinculacions opcionals amb clients.</span></div>
-    <div className="library-stats-v87196 library-stats-v87201"><div><small>Partides de la llibreria</small><b>{rows.length}</b></div><div><small>Capítols únics</small><b>{caps.length}</b></div><div><small>Relacionades amb clients</small><b>{linkedCount}</b></div><div><small>Sense client concret</small><b>{unlinkedCount}</b></div><button type="button" className="secondary" onClick={rebuildCodes87199}>Regenerar codis</button></div>
+    <section className="library-hero-v87196"><div><small>LLIBRERIA VALIDADA</small><h2>Només les partides que tu decideixes guardar</h2><p>Els pressupostos nous no alimenten automàticament aquesta llibreria. Crea una partida aquí o desa-la expressament des del pressupost quan ja l’hagis revisat.</p></div><div className="actions-inline"><button type="button" className="primary" onClick={()=>startNew()}><Plus/> Nova partida validada</button><button type="button" className="secondary" onClick={createStandaloneChapter87201}><Plus/> Nou capítol</button></div></section>
+    <div className="library-policy-note-v87199"><b>Una sola llibreria, amb filtre de client</b><span>Les partides són comunes. La vinculació amb un client serveix per veure primer les que utilitzes habitualment amb aquell client, sense duplicar-les.</span></div>
+    <div className="library-primary-filters-v87230"><label><span>Quines partides vols veure?</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([]);setOpenLibraryChapter("")}}><option value="">Tota la llibreria validada ({rows.length})</option><option value="__none__">Ús general / sense client ({unlinkedCount})</option>{clients.map(client=><option key={client.id} value={client.id}>Habituals de {client.nom||client.rao}</option>)}</select></label><label><span>Cercar</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder="Concepte, descripció, codi o unitat..."/></label><div><small>Resultats</small><b>{visibleCuratedRows878230.length} partides</b></div></div>
+    <div className="library-stats-v87196 library-stats-v87201"><div><small>Partides validades</small><b>{rows.length}</b></div><div><small>Capítols</small><b>{caps.length}</b></div><div><small>Relacionades amb clients</small><b>{linkedCount}</b></div><div><small>Ús general</small><b>{unlinkedCount}</b></div><button type="button" className="secondary" onClick={()=>setShowLibraryTools878230(value=>!value)}>{showLibraryTools878230?"Tancar eines":"Eines opcionals"}</button></div>
+    {showLibraryTools878230&&<div className="library-optional-tools-v87230"><div><b>Manteniment de la llibreria</b><span>Aquestes accions no modifiquen mai els pressupostos ni les certificacions existents.</span></div><button type="button" className="secondary" onClick={rebuildCodes87199}>Regenerar codis interns</button><button type="button" className="secondary" onClick={()=>setShowCandidateImporter878230(value=>!value)}>{showCandidateImporter878230?"Amagar propostes d'expedients":"Buscar propostes als expedients"}</button><button type="button" className="danger" onClick={clearCuratedLibrary878230}>Deixar la llibreria buida</button></div>}
     <details open className="library-chapters-v87197 library-chapters-step-v87202">
       <summary><div><b>Capítols i partides</b><span>{caps.length} capítol/s · {rows.length} partida/es · obre un capítol per veure-les</span></div><em>Obrir ▾</em></summary>
-      <div className="library-chapter-controls-v87199 library-chapter-controls-v87201"><label><span>Cercar capítol o partida</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder="Nom, descripció, codi o unitat..."/></label><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear capítol</button></div>
-      <div className="library-insert-chapter-v87205"><div><b>Afegir un capítol entremig</b><span>Tria després de quin capítol va. L’app crea el número nou i desplaça els següents, conservant totes les partides.</span></div><label><span>Inserir després de</span><select value={insertAfterChapter} onChange={e=>setInsertAfterChapter(e.target.value)}><option value="">Selecciona un capítol numerat...</option>{numberedChapters87205.map(entry=><option key={entry.cap} value={entry.cap}>{entry.cap}</option>)}</select></label><label><span>Nom del nou capítol (sense número)</span><input value={insertChapterTitle} onChange={e=>setInsertChapterTitle(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();insertAndRenumberChapter87205()}}} placeholder="Ex.: TANCAMENTS I DIVISÒRIES"/></label><button type="button" className="primary" onClick={insertAndRenumberChapter87205}>Inserir i renumerar</button><button type="button" className="secondary" onClick={compactNumberedChapters87205}>Compactar numeració</button></div>
+      <div className="library-chapter-controls-v87199 library-chapter-controls-v87201"><span><b>{visibleCuratedRows878230.length} partides visibles</b><small>Obre un capítol o canvia el filtre superior.</small></span><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear capítol</button></div>
+      {showLibraryTools878230&&<div className="library-insert-chapter-v87205"><div><b>Afegir un capítol entremig</b><span>Tria després de quin capítol va. L’app crea el número nou i desplaça els següents, conservant totes les partides.</span></div><label><span>Inserir després de</span><select value={insertAfterChapter} onChange={e=>setInsertAfterChapter(e.target.value)}><option value="">Selecciona un capítol numerat...</option>{numberedChapters87205.map(entry=><option key={entry.cap} value={entry.cap}>{entry.cap}</option>)}</select></label><label><span>Nom del nou capítol (sense número)</span><input value={insertChapterTitle} onChange={e=>setInsertChapterTitle(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();insertAndRenumberChapter87205()}}} placeholder="Ex.: TANCAMENTS I DIVISÒRIES"/></label><button type="button" className="primary" onClick={insertAndRenumberChapter87205}>Inserir i renumerar</button><button type="button" className="secondary" onClick={compactNumberedChapters87205}>Compactar numeració</button></div>}
       <div className="library-chapters-note-v87197"><b>Com funciona?</b><span>Obre el capítol i veuràs directament les seves partides. Obre una partida per completar la descripció, modificar el preu o editar-ne el descompost.</span></div>
-      {duplicateChapterGroups.length>0&&<div className="library-duplicate-groups-v87202"><div className="library-duplicate-groups-head-v87202"><b>Possibles repetits detectats ({duplicateChapterGroups.length})</b><span>He ignorat la numeració inicial i petites diferències de plural. No es canvia res fins que tu triïs quin nom conservar.</span></div>{duplicateChapterGroups.map((group,index)=><div className="library-duplicate-group-v87202" key={`${group.join("-")}-${index}`}><span>{group.join(" · ")}</span><div>{group.map(cap=><button type="button" className="secondary small" key={cap} onClick={()=>mergeChapterGroup87202(group,cap)}>Conservar «{cap}»</button>)}</div></div>)}</div>}
+      {showLibraryTools878230&&duplicateChapterGroups.length>0&&<div className="library-duplicate-groups-v87202"><div className="library-duplicate-groups-head-v87202"><b>Possibles repetits detectats ({duplicateChapterGroups.length})</b><span>He ignorat la numeració inicial i petites diferències de plural. No es canvia res fins que tu triïs quin nom conservar.</span></div>{duplicateChapterGroups.map((group,index)=><div className="library-duplicate-group-v87202" key={`${group.join("-")}-${index}`}><span>{group.join(" · ")}</span><div>{group.map(cap=><button type="button" className="secondary small" key={cap} onClick={()=>mergeChapterGroup87202(group,cap)}>Conservar «{cap}»</button>)}</div></div>)}</div>}
       <div className="library-chapters-list-v87197 library-chapters-list-v87206">{managedChapterStats.length===0?<Empty text="No hi ha capítols ni partides amb aquesta cerca."/>:managedChapterStats.map(ch=>{
-        const q=libNormText87196(managerSearch);
-        const capMatches=!q||libNormText87196(ch.cap).includes(q);
-        const chapterItems=rows.filter(item=>libText87196(item.cap||"General")===ch.cap).filter(item=>capMatches||libNormText87196([item.codiIntern,item.concepte,item.desc,item.ut,item.descompost].join(" ")).includes(q));
+        const chapterItems=visibleCuratedRows878230.filter(item=>libText87196(item.cap||"General")===ch.cap);
         const isOpen=openLibraryChapter===ch.cap;
         return <details open={isOpen} className="library-chapter-actions-v87206 library-chapter-with-items-v87207" key={ch.cap}>
           <summary onClick={event=>{event.preventDefault();setOpenLibraryChapter(current=>current===ch.cap?"":ch.cap);setOpenLibraryItem("")}}><div><b>{ch.cap}</b><span>{ch.total} partida/es · {ch.clients.size} client/s relacionat/s</span></div><em>Veure partides ▾</em></summary>
           {isOpen&&<div className="library-chapter-content-v87207">
-            <div className="library-chapter-content-head-v87207"><div className="library-chapter-head-main-v87209"><div><b>{chapterItems.length} partida/es {q&&!capMatches?"coincidents amb la cerca":"en aquest capítol"}</b><span>Marca les que vulguis moure o obre una fitxa individual.</span></div><div className="actions-inline"><button type="button" className="secondary small" disabled={!chapterItems.length} onClick={()=>toggleChapterSelection87209(chapterItems)}>{chapterItems.length&&chapterItems.every(item=>selectedIds.includes(item.id))?"Desmarcar totes":"Seleccionar totes"}</button><button type="button" className="secondary small" onClick={()=>setChapterActionModal87208(ch.cap)}>Accions del capítol</button><button type="button" className="primary small" onClick={()=>startNew(ch.cap)}><Plus/> Nova partida aquí</button></div></div>{selectedIds.length>0&&<div className="library-chapter-bulk-v87209"><b>{selectedIds.length} partida/es seleccionada/es</b><select value={bulkChapter} onChange={e=>setBulkChapter(e.target.value)}><option value="">Moure al capítol...</option>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select><button type="button" className="primary" onClick={moveSelected87199}>Moure seleccionades</button><button type="button" className="secondary" onClick={()=>setSelectedIds([])}>Desmarcar</button><button type="button" className="danger" onClick={deleteSelected87199}>Eliminar</button></div>}</div>
+            <div className="library-chapter-content-head-v87207"><div className="library-chapter-head-main-v87209"><div><b>{chapterItems.length} partida/es visibles en aquest capítol</b><span>Marca les que vulguis moure o obre una fitxa individual.</span></div><div className="actions-inline"><button type="button" className="secondary small" disabled={!chapterItems.length} onClick={()=>toggleChapterSelection87209(chapterItems)}>{chapterItems.length&&chapterItems.every(item=>selectedIds.includes(item.id))?"Desmarcar totes":"Seleccionar totes"}</button><button type="button" className="secondary small" onClick={()=>setChapterActionModal87208(ch.cap)}>Accions del capítol</button><button type="button" className="primary small" onClick={()=>startNew(ch.cap)}><Plus/> Nova partida aquí</button></div></div>{selectedIds.length>0&&<div className="library-chapter-bulk-v87209"><b>{selectedIds.length} partida/es seleccionada/es</b><select value={bulkChapter} onChange={e=>setBulkChapter(e.target.value)}><option value="">Moure al capítol...</option>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select><button type="button" className="primary" onClick={moveSelected87199}>Moure seleccionades</button><button type="button" className="secondary" onClick={()=>setSelectedIds([])}>Desmarcar</button><button type="button" className="danger" onClick={deleteSelected87199}>Eliminar</button></div>}</div>
             <div className="library-chapter-items-v87207">{chapterItems.length?chapterItems.map(renderLibraryItemRow87208):<Empty text="Aquest capítol encara no té partides."/>}</div>
             {false&&<details className="library-chapter-tools-v87207"><summary><div><b>Accions del capítol</b><span>Renombrar, fusionar o eliminar</span></div><em>Obrir accions ▾</em></summary><div className="library-chapter-actions-body-v87206">
               <section><div><b>Renombrar</b><span>Canvia el nom sense perdre ni moure les partides.</span></div><label><span>Nom nou del capítol</span><input value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}}}/></label><button type="button" className="primary" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>Guardar nom</button></section>
@@ -4584,7 +4625,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
       <div className="library-trash-list-v87203">{trashBatches.length===0?<Empty text="La paperera és buida."/>:trashBatches.map(batch=><div className="library-trash-row-v87203" key={batch.id}><div><b>{batch.reason||"Eliminació de la llibreria"}</b><span>{(batch.chapters||[]).length?`Capítol/s d’origen: ${(batch.chapters||[]).join(", ")} · `:""}{(batch.items||[]).length} {batch.kind==="candidates"?"proposta/es":"partida/es"}</span><small>{batch.deletedAt?new Date(batch.deletedAt).toLocaleString("ca-ES"):""}{(batch.items||[]).length?` · ${(batch.items||[]).slice(0,3).map(item=>item.concepte).join(" · ")}${batch.items.length>3?"…":""}`:""}</small></div><div><button type="button" className="primary small" onClick={()=>restoreTrashBatch87203(batch)}>{batch.kind==="candidates"?"Tornar a pendents":"Restaurar"}</button><button type="button" className="danger small" onClick={()=>deleteTrashBatchForever87203(batch)}>Eliminar definitivament</button></div></div>)}</div>
     </details>
     {draft&&<details open className="library-new-v87196"><summary>Crear una partida de llibreria</summary><div className="library-new-code-note-v87199">Codi curt editable: prefix del capítol + paraula clau + número correlatiu. Exemple: <b>MA_BAST_001</b>.</div><div className="library-editor-grid-v87196"><label><span>Concepte *</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>Unitat</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>Capítol de la llibreria</span><select value={draft.cap} onChange={e=>changeDraftChapter87201(e.target.value)}><option value="">Selecciona un capítol...</option>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select></label><label><span>Prefix del codi</span><input maxLength="4" value={draft.codiPrefix} onChange={e=>setDraft({...draft,codiPrefix:e.target.value})} placeholder={libChapterInitials87199(draft.cap)}/></label><label><span>Paraula clau del codi</span><input maxLength="6" value={draft.codiParaula} onChange={e=>setDraft({...draft,codiParaula:e.target.value})} placeholder={libConceptKeyword87199(draft.concepte)}/></label><label><span>Preu unitari</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label className="span-all"><span>Descripció llarga</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label>{clients.length>0&&<label><span>Client relacionat (opcional)</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveNew}>Guardar a la llibreria</button></div></details>}
-    {pendingCandidates.length===0?<div className="library-no-pending-v87206"><b>No hi ha cap partida pendent de classificar</b><span>Tot el que s’ha detectat ja està guardat a la llibreria o descartat. Aquí no has de fer res.</span></div>:<details className="library-candidate-inbox-v871200">
+    {showLibraryTools878230&&showCandidateImporter878230&&(pendingCandidates.length===0?<div className="library-no-pending-v87206"><b>No hi ha propostes noves als expedients</b><span>La llibreria validada no canvia. Pots tancar les eines opcionals.</span></div>:<details className="library-candidate-inbox-v871200">
       <summary><div><b>Partides pendents d’incorporar ({pendingCandidates.length})</b><span>Propostes detectades que encara has de guardar en un capítol o descartar</span></div><em>Obrir pendents ▾</em></summary>
       <div className="library-candidate-stats-v871200"><div><small>Antigues llibreries de clients</small><b>{candidateData.legacyCount}</b></div><div><small>Línies de pressupostos</small><b>{candidateData.budgetCount}</b></div><div><small>Ja guardades</small><b>{rows.length}</b></div><div><small>Pendents úniques</small><b>{pendingCandidates.length}</b></div></div>
       <div className="library-candidate-note-v871200"><b>Això encara NO és la llibreria.</b><span>El capítol que veus és només el que tenia la proposta al pressupost o fitxer d’origen. Selecciona-la i decideix: incorporar-la al capítol final que vulguis o descartar-la a la paperera.</span></div>
@@ -4596,7 +4637,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
         return <div className={`library-candidate-row-v871200 ${candidateSelected.includes(item.id)?"selected":""}`} key={item.id}><input type="checkbox" checked={candidateSelected.includes(item.id)} onChange={()=>toggleCandidate871200(item.id)} aria-label="Seleccionar proposta pendent"/><div><b>{item.concepte}</b><span>Proposta de capítol d’origen — encara no assignada: {item.cap||"General"} · {item.ut||"ut"}</span><small>{(item.candidateSourceNames||[]).slice(0,3).join(" · ")}{ownerNames.length?` · Client: ${ownerNames.join(", ")}`:""}{item.candidateOccurrences>1?` · ${item.candidateOccurrences} aparicions`:""}</small>{item.desc&&<details><summary>Veure descripció</summary><p>{item.desc}</p></details>}</div><div className="library-candidate-price-v87204"><label><span>Preu a guardar</span><input inputMode="decimal" value={candidateOverrides[item.id]?.pu??qty2(item.pu||0)} onChange={e=>setCandidateOverrides(prev=>({...prev,[item.id]:{...(prev[item.id]||{}),pu:e.target.value}}))}/></label><small>Marca-la i tria incorporar o descartar</small></div></div>
       })}</div>
       {candidateFiltered.length>candidateLimit&&<button type="button" className="secondary library-candidate-more-v871200" onClick={()=>setCandidateLimit(x=>x+100)}>Mostrar 100 més · en queden {candidateFiltered.length-candidateLimit}</button>}
-    </details>}
+    </details>)}
     {false&&<details id="library-saved-items-v87206" className="library-items-step-v87202">
       <summary><div><b>Partides guardades a la llibreria ({rows.length})</b><span>Obre per consultar, modificar, moure o eliminar partides</span></div><em>Obrir partides ▾</em></summary>
     <Card title="Partides guardades" action={<div className="actions-inline"><button type="button" className="primary" onClick={startNew}><Plus/> Crear partida</button><button type="button" className="secondary" onClick={consolidate}>Unificar partides idèntiques</button></div>}>
@@ -5729,7 +5770,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.229",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.230",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6743,6 +6784,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [budgetBulkTarget878229,setBudgetBulkTarget878229]=useState("");
   const [budgetSummaryModal878229,setBudgetSummaryModal878229]=useState(false);
   const [budgetSummaryForm878229,setBudgetSummaryForm878229]=useState({codi:"",concepte:"Preu global industrial / instal·lacions",ut:"p.a.",cap:""});
+  const [chapterEditModal878230,setChapterEditModal878230]=useState(null);
   useEffect(()=>{setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("");setLibraryScope87160("client");setLibrarySelected87218({});setLibraryLimit87218(80)},[currentClientId87196]);
   useEffect(()=>{setLibraryLimit87218(80)},[libraryScope87160,librarySearch87115,libraryCap87115]);
   // V87.199: els pressupostos i Excel importats NO alimenten la llibreria automàticament.
@@ -6755,7 +6797,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       const existing=item.id?(prev||[]).find(entry=>String(entry.id)===String(item.id)):null;
       return upsertPartidaLibrary87196(prev,{...item,clientIds:[...new Set([...(existing?.clientIds||[]),...(item.clientIds||[])])]});
     });
-    alert("Partida desada a la llibreria general i vinculada amb aquest client. No s'ha creat cap llibreria separada.");
+    alert("Partida desada a la llibreria validada i vinculada amb aquest client.");
   }
   function startManualBudget87115(){
     const hasRows=Object.values(caps||{}).some(arr=>(arr||[]).length);
@@ -7050,14 +7092,30 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setBudgetMeasureTarget878194(null);
   }
 
-  function renameCap(oldName,v){
+  function chapterLabelParts878230(value){
+    const raw=String(value||"").trim();
+    const match=raw.match(/^([A-Za-z]?\d{1,3}(?:[.,]\d{1,3})*)\s*(?:[·\-–—:]\s*|\s+)(.*)$/);
+    return match?{numero:match[1],nom:String(match[2]||"").trim()}:{numero:"",nom:raw};
+  }
+  function chapterNumericPrefix878230(value){return String(value||"").trim().replace(/^C/i,"").replace(/,/g,".")}
+  function renameCap(oldName,v,renumberItems=false,oldNumber="",newNumber=""){
     if(!editBudget8760b)return;
     const nv=String(v||"").trim();
     if(!nv || nv===oldName)return;
+    if(caps[nv]&&nv!==oldName)return alert("Ja existeix un capítol amb aquest número i nom. Escull una altra numeració o mou-hi les partides amb l'acció massiva.");
+    const oldPrefix=chapterNumericPrefix878230(oldNumber);
+    const newPrefix=chapterNumericPrefix878230(newNumber);
     setCaps(p=>{
       const n={};
       Object.entries(p).forEach(([k,items])=>{
-        n[k===oldName?nv:k]=k===oldName?(items||[]).map(row=>({...row,cap:nv,subcap:nv,capPath:[row.scopePrincipal,row.capPrincipal,nv].filter(Boolean)})):items;
+        n[k===oldName?nv:k]=k===oldName?(items||[]).map(row=>{
+          let nextCode=String(row.codi||"");
+          if(renumberItems&&oldPrefix&&newPrefix){
+            const normalized=nextCode.replace(/,/g,".");
+            if(normalized===oldPrefix||normalized.startsWith(oldPrefix+"."))nextCode=newPrefix+normalized.slice(oldPrefix.length);
+          }
+          return {...row,codi:nextCode,codiPressupost:nextCode,cap:nv,subcap:nv,capCode:newNumber||row.capCode,chapterCode:chapterNumericPrefix878230(newNumber).split(".")[0]||row.chapterCode,capPath:[row.scopePrincipal,row.capPrincipal,nv].filter(Boolean)};
+        }):items;
       });
       return n;
     });
@@ -7068,6 +7126,44 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       });
       return n;
     });
+    setCapNameDraft8761({});
+  }
+  function openChapterEditor878230(cap){
+    const parts=chapterLabelParts878230(cap);
+    setChapterEditModal878230({kind:"sub",original:cap,numero:parts.numero,nom:parts.nom,renumberItems:false});
+  }
+  function openMainChapterEditor878230(cap,scope=""){
+    const parts=chapterLabelParts878230(cap);
+    setChapterEditModal878230({kind:"main",scope,original:cap,numero:parts.numero,nom:parts.nom,renumberItems:false});
+  }
+  function renameMainChapter878230(oldName,newName,scope="",renumberItems=false,oldNumber="",newNumber=""){
+    const oldPrefix=chapterNumericPrefix878230(oldNumber);
+    const newPrefix=chapterNumericPrefix878230(newNumber);
+    setCaps(prev=>Object.fromEntries(Object.entries(prev||{}).map(([cap,rows])=>[cap,(rows||[]).map(row=>{
+      if(String(row.capPrincipal||"")!==oldName||(scope&&String(row.scopePrincipal||"")!==scope))return row;
+      let nextCode=String(row.codi||"");
+      if(renumberItems&&oldPrefix&&newPrefix){const normalized=nextCode.replace(/,/g,".");if(normalized===oldPrefix||normalized.startsWith(oldPrefix+"."))nextCode=newPrefix+normalized.slice(oldPrefix.length)}
+      return {...row,codi:nextCode,codiPressupost:nextCode,capPrincipal:newName,chapterCode:chapterNumericPrefix878230(newNumber).split(".")[0]||row.chapterCode,capPath:[row.scopePrincipal,newName,row.subcap||row.cap].filter(Boolean)};
+    })])));
+  }
+  function saveChapterEditor878230(){
+    const draft=chapterEditModal878230;
+    if(!draft)return;
+    const numero=String(draft.numero||"").trim();
+    const nom=String(draft.nom||"").trim();
+    if(!numero&&!nom)return alert("Escriu com a mínim el número o el nom del capítol.");
+    const next=[numero,nom].filter(Boolean).join(" ").trim();
+    if(next===draft.original){setChapterEditModal878230(null);return;}
+    const oldParts=chapterLabelParts878230(draft.original);
+    if(draft.kind==="main"){
+      const existingMain=new Set(Object.values(caps||{}).flat().filter(row=>!draft.scope||String(row.scopePrincipal||"")===String(draft.scope)).map(row=>String(row.capPrincipal||"")).filter(Boolean));
+      if(existingMain.has(next)&&next!==draft.original)return alert("Ja existeix un capítol principal amb aquest número i nom.");
+      renameMainChapter878230(draft.original,next,draft.scope||"",!!draft.renumberItems,oldParts.numero,numero);
+    }else{
+      if(caps[next]&&next!==draft.original)return alert("Ja existeix un capítol amb aquest número i nom.");
+      renameCap(draft.original,next,!!draft.renumberItems,oldParts.numero,numero);
+    }
+    setChapterEditModal878230(null);
   }
 
   function addCapitol(){
@@ -7440,14 +7536,15 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!integrityOk878211&&<div className="module-note-v8738 budget-integrity-v87211 error"><b>Cal revisar aquest pressupost</b><span>Suma visible {money(total)} · diferència {money(integrityDifference878211)}{duplicateBudgetCodes878211.length?` · ${duplicateBudgetCodes878211.length} codi/s repetit/s`:""}.</span></div>}
       {editBudget8760b&&<div className="budget-edit-help-v87213"><b>Editant pressupost</b><span>Modifica les files. El botó ∑ de cada partida obre els amidaments detallats.</span></div>}
     {budgetSummaryModal878229&&<Modal title="Crear una partida resum" close={()=>setBudgetSummaryModal878229(false)}><div className="budget-summary-modal-v87229"><div className="module-note-v8738"><b>{selectedBudgetRefs878229().length} partides seleccionades · {money(selectedBudgetRefs878229().reduce((sum,ref)=>sum+(parseNum8770(ref.row.q)||0)*(parseNum8770(ref.row.pu)||0),0))}</b><span>Les partides originals quedaran guardades dins la nova partida com a detall d'origen, però desapareixeran del llistat principal.</span></div><div className="form-grid"><label><span>Codi nou</span><input value={budgetSummaryForm878229.codi} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,codi:e.target.value}))}/></label><label className="span-2"><span>Concepte</span><input value={budgetSummaryForm878229.concepte} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,concepte:e.target.value}))} placeholder="Ex.: Instal·lació elèctrica · preu global"/></label><label><span>Unitat</span><select value={budgetSummaryForm878229.ut} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,ut:e.target.value}))}><option>p.a.</option><option>ut</option><option>lot</option></select></label><label className="span-2"><span>Capítol de destí</span><select value={budgetSummaryForm878229.cap} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,cap:e.target.value}))}>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}</select></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setBudgetSummaryModal878229(false)}>Cancel·lar</button><button type="button" className="primary" onClick={createBudgetSummary878229}>Crear partida resum</button></div></div></Modal>}
+    {chapterEditModal878230&&<Modal title={`Editar número i nom · ${chapterEditModal878230.kind==="main"?"capítol principal":"capítol"}`} close={()=>setChapterEditModal878230(null)}><div className="budget-chapter-modal-v87230"><div className="module-note-v8738"><b>{chapterEditModal878230.original}</b><span>El canvi ordenarà el capítol per la numeració nova. Pots decidir si també vols canviar automàticament el prefix dels codis de les partides.</span></div><div className="form-grid"><label><span>Número del capítol</span><input autoFocus value={chapterEditModal878230.numero} onChange={e=>setChapterEditModal878230(prev=>({...prev,numero:e.target.value}))} placeholder="Ex.: 03"/></label><label className="span-2"><span>Nom del capítol</span><input value={chapterEditModal878230.nom} onChange={e=>setChapterEditModal878230(prev=>({...prev,nom:e.target.value}))} placeholder="Ex.: REVESTIMENTS"/></label><label className="span-2 budget-renumber-check-v87230"><input type="checkbox" checked={!!chapterEditModal878230.renumberItems} onChange={e=>setChapterEditModal878230(prev=>({...prev,renumberItems:e.target.checked}))}/><span>Canviar també el prefix de les partides del capítol (per exemple, 02.01 → 03.01)</span></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setChapterEditModal878230(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveChapterEditor878230}>Guardar capítol</button></div></div></Modal>}
     {libraryOpen87115&&<Modal title="Afegir partides al pressupost" close={()=>setLibraryOpen87115(false)}>
       <div className="budget-library-modal-v87218">
         <div className="budget-library-steps-v87218"><span className="done">1 · Client</span><span className="active">2 · Buscar i seleccionar</span><span>3 · Afegir al capítol</span></div>
         <div className="budget-library-client-v87218"><div><small>Client d'aquest pressupost</small><b>{client?.nom||client?.rao||"Client sense nom"}</b><span>Les partides que afegeixis quedaran automàticament relacionades amb aquest client.</span></div><div><small>Capítol de destí</small><select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}{!Object.keys(caps||{}).length&&<option value="C01 NOU CAPÍTOL">C01 NOU CAPÍTOL</option>}</select><button type="button" className="secondary small" onClick={createLibraryTargetCap87218}>+ Nou capítol</button></div></div>
-        <div className="budget-library-tabs-v87218"><button type="button" className={libraryScope87160==="client"?"active":""} onClick={()=>{setLibraryScope87160("client");setLibrarySelected87218({})}}>Partides de {client?.nom||client?.rao||"client"} <b>{libraryItems87115.length}</b></button><button type="button" className={libraryScope87160==="all"?"active":""} onClick={()=>{setLibraryScope87160("all");setLibrarySelected87218({})}}>Biblioteca general <b>{centralLibrary87196.length}</b></button></div>
+        <div className="budget-library-tabs-v87218"><button type="button" className={libraryScope87160==="client"?"active":""} onClick={()=>{setLibraryScope87160("client");setLibrarySelected87218({})}}>Habituals de {client?.nom||client?.rao||"client"} <b>{libraryItems87115.length}</b></button><button type="button" className={libraryScope87160==="all"?"active":""} onClick={()=>{setLibraryScope87160("all");setLibrarySelected87218({})}}>Tota la llibreria validada <b>{centralLibrary87196.length}</b></button></div>
         <div className="budget-library-search-v87218"><label><span>Cercar</span><input autoFocus value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Nom, codi, descripció o unitat..."/></label><label><span>Capítol de la biblioteca</span><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select></label></div>
         <div className="budget-library-result-head-v87218"><div><b>{libraryFiltered87115.length} partides trobades</b><span>Mostrant {Math.min(libraryDisplayed87218.length,libraryFiltered87115.length)} · {librarySelectedItems87218.length} seleccionades</span></div><div><button type="button" className="secondary small" onClick={selectDisplayedLibrary87218}>Marcar les visibles</button><button type="button" className="secondary small" onClick={()=>setLibrarySelected87218({})}>Netejar selecció</button></div></div>
-        <div className="budget-library-list-v87218">{libraryFiltered87115.length===0?<div className="empty-mini-v87115"><b>No hi ha partides amb aquest filtre.</b><span>{libraryScope87160==="client"?"Pots obrir la Biblioteca general i, en afegir una partida, quedarà vinculada a aquest client.":"Canvia el text o selecciona Tots els capítols."}</span></div>:libraryDisplayed87218.map(item=><label className={`budget-library-row-v87218 ${librarySelected87218[item.id]?"selected":""}`} key={item.id}><input type="checkbox" checked={!!librarySelected87218[item.id]} onChange={()=>toggleLibrarySelection87218(item.id)}/><div><strong>{item.concepte||"Partida sense concepte"}</strong><span><b>{item.codiIntern||item.codi||"Sense codi"}</b> · {item.cap||"General"}</span>{item.desc&&<small>{item.desc}</small>}</div><em>{item.ut||"ut"}</em><b>{money(item.pu||0)}</b></label>)}</div>
+        <div className="budget-library-list-v87218">{libraryFiltered87115.length===0?<div className="empty-mini-v87115"><b>No hi ha partides amb aquest filtre.</b><span>{libraryScope87160==="client"?"Obre Tota la llibreria validada; quan afegeixis una partida quedarà vinculada a aquest client.":"Canvia el text o selecciona Tots els capítols."}</span></div>:libraryDisplayed87218.map(item=><label className={`budget-library-row-v87218 ${librarySelected87218[item.id]?"selected":""}`} key={item.id}><input type="checkbox" checked={!!librarySelected87218[item.id]} onChange={()=>toggleLibrarySelection87218(item.id)}/><div><strong>{item.concepte||"Partida sense concepte"}</strong><span><b>{item.codiIntern||item.codi||"Sense codi"}</b> · {item.cap||"General"}</span>{item.desc&&<small>{item.desc}</small>}</div><em>{item.ut||"ut"}</em><b>{money(item.pu||0)}</b></label>)}</div>
         {libraryDisplayed87218.length<libraryFiltered87115.length&&<button type="button" className="secondary budget-library-more-v87218" onClick={()=>setLibraryLimit87218(n=>n+80)}>Mostrar 80 partides més · en queden {libraryFiltered87115.length-libraryDisplayed87218.length}</button>}
         <div className="modal-actions budget-library-actions-v87218"><button type="button" className="secondary" onClick={()=>setLibraryOpen87115(false)}>Cancel·lar</button><button type="button" className="primary" disabled={!librarySelectedItems87218.length} onClick={addSelectedLibraryPartides87218}>Afegir {librarySelectedItems87218.length||""} {librarySelectedItems87218.length===1?"partida":"partides"} al capítol</button></div>
       </div>
@@ -7465,13 +7562,13 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           if(mainChapter87226)lastBudgetMain87226=mainChapterKey87227;
           return <React.Fragment key={`${scopeChapter87227}-${mainChapter87226}-${cap}`}>
           {showScopeChapter87227&&<div className="budget-scope-v87227"><span>Àmbit de l’Excel</span><b>{scopeChapter87227}</b><strong>{money(budgetScopeTotals87227[scopeChapter87227]||0)}</strong></div>}
-          {showMainChapter87226&&<div className="budget-main-chapter-v87226"><span>Capítol</span><b>{mainChapter87226}</b><strong>{money(budgetMainTotals87226[mainChapterKey87227]||0)}</strong></div>}
+          {showMainChapter87226&&<div className="budget-main-chapter-v87226 budget-main-chapter-v87230"><span>Capítol principal</span><b>{mainChapter87226}</b><strong>{money(budgetMainTotals87226[mainChapterKey87227]||0)}</strong>{editBudget8760b&&<button type="button" className="secondary small" onClick={()=>openMainChapterEditor878230(mainChapter87226,scopeChapter87227)}>Editar número i nom</button>}</div>}
           <div className="budget-v25-cap">
             <div className="budget-v25-cap-head">
               <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
-              <input value={capNameDraft8761[cap]??cap} onChange={e=>setCapNameDraft8761(p=>({...p,[cap]:e.target.value}))} onBlur={e=>renameCap(cap,e.target.value)} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}}/>
+              <div className="budget-chapter-title-v87230"><b>{cap}</b><small>{editBudget8760b?"Número i nom editables des d’Accions":"Capítol"}</small></div>
               <span>{items.length} partides</span>
-              <strong>{money(capTotal)}</strong>{editBudget8760b&&<div className="budget-cap-actions-v87229"><button type="button" className="secondary small" onClick={()=>toggleBudgetChapterSelection878229(cap)}>Marcar capítol</button><button type="button" className="danger small" onClick={()=>deleteCapitol(cap)}>Eliminar capítol</button></div>}
+              <strong className="budget-chapter-total-v87230"><small>Total capítol</small>{money(capTotal)}</strong>{editBudget8760b&&<select className="budget-chapter-actions-v87230" defaultValue="" onChange={e=>{const value=e.target.value;e.currentTarget.value="";if(value==="edit")openChapterEditor878230(cap);if(value==="select")toggleBudgetChapterSelection878229(cap);if(value==="add")addPartida(cap);if(value==="delete")deleteCapitol(cap)}}><option value="" disabled>Accions del capítol ▾</option><option value="edit">Editar número i nom</option><option value="select">Marcar / desmarcar totes les partides</option><option value="add">Afegir partida</option><option value="delete">Eliminar capítol</option></select>}
             </div>
 
             {open[cap]&&<div className="budget-v25-lines">
@@ -7496,13 +7593,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                   {rowEditableV87204?<input type="text" inputMode="decimal" value={r.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num">{qty2(parseNum8770(r.pu)||0)}</span>}
                   <small className="budget-mobile-field-label-v87196">Total de la partida</small>
                   <b>{money(t)}</b>
-                  {editBudget8760b&&<div className="budget-select-action-v87229"><label><input type="checkbox" checked={!!budgetSelectedRows878229[budgetSelectKey878229(cap,i)]} onChange={()=>toggleBudgetSelection878229(cap,i)}/><span>Marcar</span></label><select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-library")savePartidaToLibrary87115(r,cap);if(v==="library")openBudgetLibrary87218(cap,"client");if(v.startsWith("move::"))movePartidaCap878128(cap,i,v.slice(6));if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>Accions ▾</option><option value="toggle">{rowOpenV87173?"Tancar edició":"Editar partida"}</option><option value="measure">Introduir amidaments</option><option value="desc">Veure / editar descripció</option><option value="decomp">Veure / editar descompost</option><option value="save-library">Desar a la llibreria general + vincular client</option><option value="library">Afegir des de la llibreria del client</option><optgroup label="Moure a un altre capítol">{sortedCapEntries8779(caps).filter(([target])=>target!==cap).map(([target])=><option key={target} value={`move::${target}`}>{target}</option>)}</optgroup><option value="delete">Eliminar del pressupost</option></select></div>}
-                  {editBudget8760b?<div className="budget-line-actions-v878128 budget-line-actions-v87173">
-                    <button type="button" className="secondary small" onClick={()=>toggleBudgetRow87173(cap,i)}>{rowOpenV87173?"Tancar partida":"Editar partida"}</button>
-                    <button type="button" className="secondary small" onClick={()=>setBudgetMeasureTarget878194({cap,i})}>∑ Amidaments</button>
-                    <button type="button" className="secondary small" onClick={()=>openDescompostModal87173(cap,i)}>Descomposat</button>
-                    {rowOpenV87173&&<><select value={cap} title="Canviar de capítol" onChange={e=>movePartidaCap878128(cap,i,e.target.value)}>{sortedCapEntries8779(caps).map(([c])=><option key={c} value={c}>{c}</option>)}</select><button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115(r,cap)}>Desar a llibreria general</button><button type="button" className="secondary small" onClick={()=>openBudgetLibrary87218(cap,"client")}>Afegir des de la llibreria</button><button type="button" className="danger small budget-delete-line-v878125" onClick={()=>deletePartida878125(cap,i)}>Eliminar</button></>}
-                  </div>:<span/>}
+                  {editBudget8760b&&<div className="budget-select-action-v87229"><label><input type="checkbox" checked={!!budgetSelectedRows878229[budgetSelectKey878229(cap,i)]} onChange={()=>toggleBudgetSelection878229(cap,i)}/><span>Marcar</span></label><select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-library")savePartidaToLibrary87115(r,cap);if(v==="library")openBudgetLibrary87218(cap,"client");if(v.startsWith("move::"))movePartidaCap878128(cap,i,v.slice(6));if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>Accions ▾</option><option value="toggle">{rowOpenV87173?"Tancar edició":"Editar partida"}</option><option value="measure">Introduir amidaments</option><option value="desc">Veure / editar descripció</option><option value="decomp">Editar cost / descompost</option><option value="save-library">Desar com a partida validada + vincular client</option><option value="library">Afegir des de la llibreria validada</option><optgroup label="Moure a un altre capítol">{sortedCapEntries8779(caps).filter(([target])=>target!==cap).map(([target])=><option key={target} value={`move::${target}`}>{target}</option>)}</optgroup><option value="delete">Eliminar del pressupost</option></select></div>}
                 </div>
               })}
               {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>+ Afegir partida</button>}
@@ -8773,7 +8864,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.229.0",
+    app_version:"87.230.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -9540,6 +9631,8 @@ function proformaPrintHtml8783(doc,obra,client){
 function pressupostObraPrintHtml878153(doc,obra,client){
   const rows=sortPartides878132(doc.rows||[]);
   const total=doc.total ?? rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+  const chapterTotals878230=rows.reduce((map,row)=>{const cap=row.cap||"PRESSUPOST";map[cap]=(map[cap]||0)+(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0);return map},{});
+  const chapterSummary878230=Object.entries(chapterTotals878230).map(([cap,amount])=>`<tr><td>${escHtmlV8772(cap)}</td><td class="num"><b>${money(amount)}</b></td><td class="num">${total?qty2(amount/total*100):"0,00"}%</td></tr>`).join("");
   const obs=String(doc.observacions||"").trim()||"Observacions pendents d’indicar.";
   const forma=String(doc.formaPagament||"").trim()||"Forma de pagament pendent d’indicar.";
   const numPres=String(doc.numeroPressupost||"").trim();
@@ -9561,13 +9654,14 @@ function pressupostObraPrintHtml878153(doc,obra,client){
     const q=parseNum8770(r.q)||0, pu=parseNum8770(r.pu)||0;
     const cap=r.cap||"PRESSUPOST";
     const show=cap!==lastCap; lastCap=cap;
-    return `${show?`<tr class="cap"><td colspan="6">${escHtmlV8772(cap)}</td></tr>`:""}<tr><td class="code">${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b>${r.desc?`<p class="long-desc">${escHtmlV8772(r.desc)}</p>`:""}</td><td class="num">${qty2(q)}</td><td class="num">${money(pu)}</td><td class="num"><b>${money(q*pu)}</b></td></tr>`
+    return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap)}</td><td class="num">${money(chapterTotals878230[cap]||0)}</td></tr>`:""}<tr><td class="code">${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b>${r.desc?`<p class="long-desc">${escHtmlV8772(r.desc)}</p>`:""}</td><td class="num">${qty2(q)}</td><td class="num">${money(pu)}</td><td class="num"><b>${money(q*pu)}</b></td></tr>`
   }).join("") || `<tr><td colspan="6" class="empty">Sense partides.</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Pressupost")}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.totals{width:68mm;margin-left:auto;margin-top:6mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div class="client-head"><h3>Client / promotor</h3><p>${thirdBlock}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"PRESSUPOST D’OBRA")}</h1><div class="title-meta">${metaLines}</div></div><div class="budget-id">${numPres?`<small>Núm. pressupost</small><b>${escHtmlV8772(numPres)}</b>`:""}${versioPres?`<small>Versió</small><b>${escHtmlV8772(versioPres)}</b>`:""}</div></div><table><colgroup><col style="width:14mm"><col style="width:8mm"><col style="width:auto"><col style="width:14mm"><col style="width:19mm"><col style="width:23mm"></colgroup><thead><tr><th>Part.</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>€/ut</th><th>Total</th></tr></thead><tbody>${body}</tbody></table><div class="totals"><div><span>TOTAL PRESSUPOST</span><b>${money(total)}</b></div></div><div class="notes-stack"><div><h3>Observacions</h3><p>${escHtmlV8772(obs)}</p></div><div><h3>Forma de pagament</h3><p>${escHtmlV8772(forma)}</p></div></div><div class="signatures"><div class="signature"><b>${escHtmlV8772(clientEmissor)}</b><span>Signatura</span></div><div class="signature right"><small>Client</small><b>${escHtmlV8772(clientPressupost)}</b><span>Signatura / conformitat</span></div></div></section></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Pressupost")}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:112mm;margin:6mm 0 0 auto;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f2d5c;margin-bottom:2mm}.chapter-summary td:first-child{text-align:left;white-space:normal}.chapter-summary th{background:#eff6ff}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div class="client-head"><h3>Client / promotor</h3><p>${thirdBlock}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"PRESSUPOST D’OBRA")}</h1><div class="title-meta">${metaLines}</div></div><div class="budget-id">${numPres?`<small>Núm. pressupost</small><b>${escHtmlV8772(numPres)}</b>`:""}${versioPres?`<small>Versió</small><b>${escHtmlV8772(versioPres)}</b>`:""}</div></div><table><colgroup><col style="width:14mm"><col style="width:8mm"><col style="width:auto"><col style="width:14mm"><col style="width:19mm"><col style="width:23mm"></colgroup><thead><tr><th>Part.</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>€/ut</th><th>Total</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>RESUM ECONÒMIC PER CAPÍTOLS</caption><thead><tr><th>Capítol</th><th>Import</th><th>% pressupost</th></tr></thead><tbody>${chapterSummary878230}</tbody></table><div class="totals"><div><span>TOTAL PRESSUPOST</span><b>${money(total)}</b></div></div><div class="notes-stack"><div><h3>Observacions</h3><p>${escHtmlV8772(obs)}</p></div><div><h3>Forma de pagament</h3><p>${escHtmlV8772(forma)}</p></div></div><div class="signatures"><div class="signature"><b>${escHtmlV8772(clientEmissor)}</b><span>Signatura</span></div><div class="signature right"><small>Client</small><b>${escHtmlV8772(clientPressupost)}</b><span>Signatura / conformitat</span></div></div></section></body></html>`;
 }
 function PressupostObraPreview878153({doc}){
   const rows=sortPartides878132(doc.rows||[]);
   const total=doc.total ?? rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+  const chapterTotals878230=rows.reduce((map,row)=>{const cap=row.cap||"PRESSUPOST";map[cap]=(map[cap]||0)+(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0);return map},{});
   const obs=String(doc.observacions||"").trim()||"Observacions pendents d’indicar.";
   const forma=String(doc.formaPagament||"").trim()||"Forma de pagament pendent d’indicar.";
   const numPres=String(doc.numeroPressupost||"").trim();
@@ -9589,7 +9683,8 @@ function PressupostObraPreview878153({doc}){
         {versioPres&&<><small>Versió</small><b>{versioPres}</b></>}
       </div>
     </div>
-    <table><thead><tr><th>Part.</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>€/ut</th><th>Total</th></tr></thead><tbody>{rows.map((r,i)=>{const q=parseNum8770(r.q)||0, pu=parseNum8770(r.pu)||0;const cap=r.cap||"PRESSUPOST";const show=cap!==last;last=cap;return <React.Fragment key={i}>{show&&<tr className="cap-row"><td colSpan="6">{cap}</td></tr>}<tr><td className="budget-code-v87158">{r.codi}</td><td>{r.ut}</td><td className="text-left budget-concept-v87158"><b>{r.concepte}</b>{r.desc&&<small className="budget-preview-desc-v87155">{r.desc}</small>}</td><td>{qty2(q)}</td><td>{money(pu)}</td><td><b>{money(q*pu)}</b></td></tr></React.Fragment>})}</tbody><tfoot><tr><th colSpan="5">TOTAL PRESSUPOST</th><th>{money(total)}</th></tr></tfoot></table>
+    <table><thead><tr><th>Part.</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>€/ut</th><th>Total</th></tr></thead><tbody>{rows.map((r,i)=>{const q=parseNum8770(r.q)||0, pu=parseNum8770(r.pu)||0;const cap=r.cap||"PRESSUPOST";const show=cap!==last;last=cap;return <React.Fragment key={i}>{show&&<tr className="cap-row"><td colSpan="5">{cap}</td><td><b>{money(chapterTotals878230[cap]||0)}</b></td></tr>}<tr><td className="budget-code-v87158">{r.codi}</td><td>{r.ut}</td><td className="text-left budget-concept-v87158"><b>{r.concepte}</b>{r.desc&&<small className="budget-preview-desc-v87155">{r.desc}</small>}</td><td>{qty2(q)}</td><td>{money(pu)}</td><td><b>{money(q*pu)}</b></td></tr></React.Fragment>})}</tbody><tfoot><tr><th colSpan="5">TOTAL PRESSUPOST</th><th>{money(total)}</th></tr></tfoot></table>
+    <div className="budget-chapter-summary-v87230"><h3>Resum econòmic per capítols</h3><table><thead><tr><th>Capítol</th><th>Import</th><th>% pressupost</th></tr></thead><tbody>{Object.entries(chapterTotals878230).map(([cap,amount])=><tr key={cap}><td>{cap}</td><td><b>{money(amount)}</b></td><td>{total?qty2(amount/total*100):"0,00"}%</td></tr>)}</tbody></table></div>
     <div className="budget-final-notes-v87155"><div><b>Observacions</b><p>{obs}</p></div><div><b>Forma de pagament</b><p>{forma}</p></div></div>
     <div className="budget-signatures-v878194"><div><b>{typeof doc.realitzadorPressupost==="string"?doc.realitzadorPressupost:"Client emissor"}</b><span>Signatura</span></div><div><small>Client</small><b>{doc.tercerNom||doc.clientFinalPressupost||"Client"}</b><span>Signatura / conformitat</span></div></div>
   </div>
