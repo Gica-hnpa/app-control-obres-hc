@@ -1,4 +1,22 @@
-# APP Control d’Obres V87.227
+# APP Control d’Obres V87.229
+
+## Descompostos industrials i accions massives V87.229
+
+- El descompost té accions reals per afegir, duplicar, eliminar, guardar i aplicar el preu calculat a la partida.
+- Cada partida pot treballar amb tres models: descompost detallat, preu tancat de subcontracta o paquet global d’instal·lacions.
+- Els preus tancats permeten introduir el cost de l’industrial i afegir CI, DGE, BI i altres marges d’empresa sense inventar mà d’obra ni materials.
+- Els paquets globals poden reunir imports d’electricitat, aigua, climatització o altres lots dins d’una sola partida.
+- Es poden marcar diverses partides i moure-les, eliminar-les o agrupar-les en una partida resum, conservant el detall original dins d’aquesta partida.
+- `Més accions` permet buidar de cop el pressupost actual quan encara no té certificacions ni factures. Les partides ja certificades queden protegides contra l’eliminació.
+
+## Excel complet amb descompostos V87.228
+
+- Un únic fitxer Excel pot importar el full `PRESSUPOST` i tots els fulls individuals de descompost.
+- Els fulls `CONFIGURACIÓ` i `AMIDAMENTS` es reconeixen com a auxiliars i no es confonen amb el pressupost ni amb una partida.
+- Cada descompost es vincula a la seva partida pel codi del nom del full o de les primeres files.
+- El preu del full `PRESSUPOST` es conserva: el total calculat del descompost queda pendent de validar i només s’aplica quan l’usuari ho decideix.
+- La importació informa dels fulls detectats, els vinculats i els que no tenen coincidència.
+- Cap partida s’afegeix automàticament a la llibreria; la selecció continua sent expressa i els descompostos importats són editables.
 
 ## Jerarquia Excel completa V87.227
 

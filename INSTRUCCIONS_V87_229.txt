@@ -1,0 +1,73 @@
+V87.229 · DESCOMPOSTOS INDUSTRIALS I ACCIONS MASSIVES
+
+1. Descomprimeix la carpeta completa de la V87.229.
+2. Obre-la amb el mateix navegador, perfil d'usuari i adreça local.
+3. NO importis cap JSON: utilitza les dades actuals del navegador.
+
+EDITAR DESCOMPOSTOS I PREUS D'INDUSTRIALS
+
+1. Entra a Pressupost obra i prem "Editar pressupost".
+2. A la partida, obre "Accions -> Veure / editar descompost".
+3. Escull un dels tres models: detallat, preu tancat de subcontracta o paquet global.
+4. En subcontracta, introdueix el preu rebut i els marges CI, DGE, BI o altres.
+5. En paquet global, afegeix els imports disponibles d'electricitat, aigua, climatització o altres lots.
+6. Prem "Guardar descompost" per conservar-lo sense canviar el pressupost, o "Guardar i aplicar el preu" per actualitzar el preu unitari.
+
+ACCIONS MASSIVES
+
+- Marca partides individualment o prem "Marcar capítol".
+- La barra de selecció permet moure, agrupar en una partida resum o eliminar totes les marcades.
+- La partida resum conserva a dins les partides originals per poder consultar-ne el detall.
+- A "Més accions" pots buidar el pressupost actual de cop si encara no té certificacions ni factures.
+- Les partides i capítols certificats no es poden eliminar, per protegir l'històric.
+
+IMPORTAR UN EXCEL COMPLET
+
+1. Entra a l'expedient i obre Pressupost obra.
+2. Obre "Origen, importació i altres pressupostos".
+3. Prem "Importar Excel complet" i selecciona un únic fitxer .xlsx.
+4. L'app utilitza PRESSUPOST per crear les partides i vincula automàticament
+   els fulls individuals de descompost pel codi.
+5. Obre la vista "Validar descompostos" per revisar els totals detectats.
+
+ESTRUCTURA RECOMANADA
+
+- CONFIGURACIÓ: paràmetres auxiliars; no s'importa com a pressupost.
+- AMIDAMENTS: amidaments auxiliars; no s'importa com a descompost.
+- PRESSUPOST: codi, unitat, descripció, amidament, preu/ut i import.
+- Un full per partida: el mateix codi al nom o a les primeres files.
+- Columnes del descompost: Concepte, Unitat, Rendiment, Preu/ut i Import.
+
+SEGURETAT
+
+- El preu del PRESSUPOST no canvia durant la importació.
+- El total del descompost queda pendent de validar.
+- La llibreria no rep cap partida automàticament.
+
+LECTURA CORRECTA DEL PRESSUPOST COMODORO
+
+La jerarquia ja no s'atura a 00.01, 01.01 o 02.01. Ara llegeix:
+
+- àmbit: Façana, Coberta o Logística;
+- capítol: 00 Treballs previs, 01, 02 o 03;
+- subcapítol: 00.01, 00.02, 01.01, 01.02...;
+- partida: F-00.01.01, C-01.02.03, etc.
+
+Exemple comprovat:
+
+Façana -> 00 Treballs previs -> 00.01 Seguretat i salut -> F-00.01.01.
+
+RESULTAT DE LA PROVA
+
+- 120 partides;
+- 120 descompostos vinculats a la partida correcta;
+- 0 fulls sense coincidència;
+- 0 diferències de preu unitari final;
+- 3 àmbits;
+- 7 capítols;
+- 20 subcapítols;
+- import total sense cap canvi.
+
+La importació completa s'aplica als nous Excels. Per afegir o actualitzar
+descompostos d'un pressupost ja guardat, activa Editar pressupost i utilitza
+"Més accions -> Adjuntar / actualitzar descompostos".
