@@ -8,6 +8,7 @@ import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,Cal
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
+import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 
 const APP_USERS8779={hector:"0000",pol:"1919"};
 const STORAGE_NS8782="aco_v8782";
@@ -853,6 +854,9 @@ function upsertPartidaLibrary87196(rows=[],patch={}){
 }
 function migratePartidaLibrary87196(clients=[],user=currentAppUser8779()){
   const saved=lsJson8779("aco_partides_library_v87196",[],user);
+  // V87.231 · quan l'usuari decideix construir una llibreria pròpia, una
+  // llibreria buida és un estat vàlid i no s'ha de repoblar des de claus antigues.
+  if(lsGet8779("aco_library_manual_only_v87231","0",user)==="1")return dedupePartidaLibrary87196(Array.isArray(saved)?saved:[]);
   if(Array.isArray(saved)&&saved.length)return dedupePartidaLibrary87196(saved);
   const legacy=[];
   const marker="aco_partides_client_v87115_";
@@ -1693,7 +1697,7 @@ function createLocalRecoverySnapshot878122(state={},label="Còpia de recuperaci�
     id:"rec-"+Date.now(),
     label,
     createdAt:new Date().toISOString(),
-    appVersion:"87.162.0",
+    appVersion:"87.231.0",
     user:user||currentAppUser8779()||"hector",
     clients:stripHeavy878104(state.clients||[]),
     obres:stripHeavy878104(state.obres||[]),
@@ -2510,7 +2514,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.230",
+      version:"V87.231",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -4173,8 +4177,8 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   const[insertAfterChapter,setInsertAfterChapter]=useState("");
   const[insertChapterTitle,setInsertChapterTitle]=useState("");
   const[chapterCatalog,setChapterCatalog]=useState(()=>{
-    const saved=lsJson8779("aco_library_chapters_v87201",["General"]);
-    return [...new Set((Array.isArray(saved)?saved:["General"]).map(x=>libText87196(x)).filter(Boolean))];
+    const saved=lsJson8779("aco_library_chapters_v87201",[]);
+    return [...new Set((Array.isArray(saved)?saved:[]).map(x=>libText87196(x)).filter(Boolean))];
   });
   const[draft,setDraft]=useState(null);
   const[trashBatches,setTrashBatches]=useState(()=>{
@@ -4310,13 +4314,19 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     setItems?.(prev=>(prev||[]).filter(x=>!ids.has(x.id)));setSelectedIds([]);
   }
   function clearCuratedLibrary878230(){
-    if(!rows.length)return alert("La llibreria ja no té cap partida guardada.");
-    if(!confirm(`Deixar buida la llibreria actual?\n\nLes ${rows.length} partides es mouran a la paperera recuperable. Els pressupostos i certificacions existents NO es modificaran.`))return;
-    sendToLibraryTrash87203(rows,`Reinici manual de la llibreria: ${rows.length} partides`,[...new Set(rows.map(item=>item.cap||"General"))]);
+    if(!rows.length&&!chapterCatalog.length)return alert("La llibreria ja és buida.");
+    if(!confirm(`Començar amb una llibreria neta?\n\nEs retiraran ${rows.length} partides i ${chapterCatalog.length} capítols de la llibreria. Tot quedarà a la paperera recuperable.\n\nEls pressupostos, expedients i certificacions existents NO es modificaran.`))return;
+    sendToLibraryTrash87203(rows,`Reinici manual de la llibreria: ${rows.length} partides i ${chapterCatalog.length} capítols`,[...new Set([...chapterCatalog,...rows.map(item=>item.cap||"General")])]);
     setItems?.([]);
+    setChapterCatalog([]);
     setSelectedIds([]);
     setOpenLibraryChapter("");
     setLibraryItemModal87208("");
+    setClientFilter("");
+    setManagerSearch("");
+    setCapFilter("");
+    setSearch("");
+    lsSet8779("aco_library_manual_only_v87231","1");
     alert("La llibreria ha quedat buida. Ara només hi entraran les partides que creïs o desis expressament des d'un pressupost.");
   }
   function moveSelected87199(){
@@ -4385,6 +4395,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     if(!libText87196(draft?.concepte))return alert("Escriu el concepte de la partida.");
     if(!libText87196(draft?.cap))return alert("Selecciona un capítol o crea’n un de nou abans de guardar la partida.");
     const cap=registerChapter87201(draft.cap);
+    lsSet8779("aco_library_manual_only_v87231","1");
     setItems?.(prev=>upsertPartidaLibrary87196(prev,{...draft,cap,global:true,id:undefined,codiIntern:"",updatedAt:new Date().toISOString()}));
     setDraft(null);
   }
@@ -4595,7 +4606,9 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     <div className="library-policy-note-v87199"><b>Una sola llibreria, amb filtre de client</b><span>Les partides són comunes. La vinculació amb un client serveix per veure primer les que utilitzes habitualment amb aquell client, sense duplicar-les.</span></div>
     <div className="library-primary-filters-v87230"><label><span>Quines partides vols veure?</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([]);setOpenLibraryChapter("")}}><option value="">Tota la llibreria validada ({rows.length})</option><option value="__none__">Ús general / sense client ({unlinkedCount})</option>{clients.map(client=><option key={client.id} value={client.id}>Habituals de {client.nom||client.rao}</option>)}</select></label><label><span>Cercar</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder="Concepte, descripció, codi o unitat..."/></label><div><small>Resultats</small><b>{visibleCuratedRows878230.length} partides</b></div></div>
     <div className="library-stats-v87196 library-stats-v87201"><div><small>Partides validades</small><b>{rows.length}</b></div><div><small>Capítols</small><b>{caps.length}</b></div><div><small>Relacionades amb clients</small><b>{linkedCount}</b></div><div><small>Ús general</small><b>{unlinkedCount}</b></div><button type="button" className="secondary" onClick={()=>setShowLibraryTools878230(value=>!value)}>{showLibraryTools878230?"Tancar eines":"Eines opcionals"}</button></div>
-    {showLibraryTools878230&&<div className="library-optional-tools-v87230"><div><b>Manteniment de la llibreria</b><span>Aquestes accions no modifiquen mai els pressupostos ni les certificacions existents.</span></div><button type="button" className="secondary" onClick={rebuildCodes87199}>Regenerar codis interns</button><button type="button" className="secondary" onClick={()=>setShowCandidateImporter878230(value=>!value)}>{showCandidateImporter878230?"Amagar propostes d'expedients":"Buscar propostes als expedients"}</button><button type="button" className="danger" onClick={clearCuratedLibrary878230}>Deixar la llibreria buida</button></div>}
+    {(rows.length>0||chapterCatalog.length>0)&&<div className="library-clean-start-v87231"><div><b>Vols començar la teva llibreria des de zero?</b><span>Aquesta acció només neteja la llibreria. No elimina ni modifica cap partida dels expedients, pressupostos o certificacions.</span></div><button type="button" className="danger" onClick={clearCuratedLibrary878230}>Començar amb una llibreria neta</button></div>}
+    {rows.length===0&&caps.length===0&&<div className="library-empty-start-v87231"><div><small>LLIBRERIA BUIDA</small><h3>Ara només hi entrarà allò que tu validis</h3><p>Crea un capítol i una partida, o desa expressament una partida revisada des d’un pressupost. Cap Excel ni cap expedient l’omplirà automàticament.</p></div><div><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear primer capítol</button><button type="button" className="secondary" onClick={()=>startNew()}><Plus/> Crear primera partida</button></div></div>}
+    {showLibraryTools878230&&<div className="library-optional-tools-v87230"><div><b>Manteniment de la llibreria</b><span>Aquestes accions no modifiquen mai els pressupostos ni les certificacions existents.</span></div><button type="button" className="secondary" onClick={rebuildCodes87199}>Regenerar codis interns</button></div>}
     <details open className="library-chapters-v87197 library-chapters-step-v87202">
       <summary><div><b>Capítols i partides</b><span>{caps.length} capítol/s · {rows.length} partida/es · obre un capítol per veure-les</span></div><em>Obrir ▾</em></summary>
       <div className="library-chapter-controls-v87199 library-chapter-controls-v87201"><span><b>{visibleCuratedRows878230.length} partides visibles</b><small>Obre un capítol o canvia el filtre superior.</small></span><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> Crear capítol</button></div>
@@ -4625,7 +4638,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
       <div className="library-trash-list-v87203">{trashBatches.length===0?<Empty text="La paperera és buida."/>:trashBatches.map(batch=><div className="library-trash-row-v87203" key={batch.id}><div><b>{batch.reason||"Eliminació de la llibreria"}</b><span>{(batch.chapters||[]).length?`Capítol/s d’origen: ${(batch.chapters||[]).join(", ")} · `:""}{(batch.items||[]).length} {batch.kind==="candidates"?"proposta/es":"partida/es"}</span><small>{batch.deletedAt?new Date(batch.deletedAt).toLocaleString("ca-ES"):""}{(batch.items||[]).length?` · ${(batch.items||[]).slice(0,3).map(item=>item.concepte).join(" · ")}${batch.items.length>3?"…":""}`:""}</small></div><div><button type="button" className="primary small" onClick={()=>restoreTrashBatch87203(batch)}>{batch.kind==="candidates"?"Tornar a pendents":"Restaurar"}</button><button type="button" className="danger small" onClick={()=>deleteTrashBatchForever87203(batch)}>Eliminar definitivament</button></div></div>)}</div>
     </details>
     {draft&&<details open className="library-new-v87196"><summary>Crear una partida de llibreria</summary><div className="library-new-code-note-v87199">Codi curt editable: prefix del capítol + paraula clau + número correlatiu. Exemple: <b>MA_BAST_001</b>.</div><div className="library-editor-grid-v87196"><label><span>Concepte *</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>Unitat</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>Capítol de la llibreria</span><select value={draft.cap} onChange={e=>changeDraftChapter87201(e.target.value)}><option value="">Selecciona un capítol...</option>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option></select></label><label><span>Prefix del codi</span><input maxLength="4" value={draft.codiPrefix} onChange={e=>setDraft({...draft,codiPrefix:e.target.value})} placeholder={libChapterInitials87199(draft.cap)}/></label><label><span>Paraula clau del codi</span><input maxLength="6" value={draft.codiParaula} onChange={e=>setDraft({...draft,codiParaula:e.target.value})} placeholder={libConceptKeyword87199(draft.concepte)}/></label><label><span>Preu unitari</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label className="span-all"><span>Descripció llarga</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label>{clients.length>0&&<label><span>Client relacionat (opcional)</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveNew}>Guardar a la llibreria</button></div></details>}
-    {showLibraryTools878230&&showCandidateImporter878230&&(pendingCandidates.length===0?<div className="library-no-pending-v87206"><b>No hi ha propostes noves als expedients</b><span>La llibreria validada no canvia. Pots tancar les eines opcionals.</span></div>:<details className="library-candidate-inbox-v871200">
+    {false&&showLibraryTools878230&&showCandidateImporter878230&&(pendingCandidates.length===0?<div className="library-no-pending-v87206"><b>No hi ha propostes noves als expedients</b><span>La llibreria validada no canvia. Pots tancar les eines opcionals.</span></div>:<details className="library-candidate-inbox-v871200">
       <summary><div><b>Partides pendents d’incorporar ({pendingCandidates.length})</b><span>Propostes detectades que encara has de guardar en un capítol o descartar</span></div><em>Obrir pendents ▾</em></summary>
       <div className="library-candidate-stats-v871200"><div><small>Antigues llibreries de clients</small><b>{candidateData.legacyCount}</b></div><div><small>Línies de pressupostos</small><b>{candidateData.budgetCount}</b></div><div><small>Ja guardades</small><b>{rows.length}</b></div><div><small>Pendents úniques</small><b>{pendingCandidates.length}</b></div></div>
       <div className="library-candidate-note-v871200"><b>Això encara NO és la llibreria.</b><span>El capítol que veus és només el que tenia la proposta al pressupost o fitxer d’origen. Selecciona-la i decideix: incorporar-la al capítol final que vulguis o descartar-la a la paperera.</span></div>
@@ -5770,7 +5783,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.230",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.231",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6785,6 +6798,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [budgetSummaryModal878229,setBudgetSummaryModal878229]=useState(false);
   const [budgetSummaryForm878229,setBudgetSummaryForm878229]=useState({codi:"",concepte:"Preu global industrial / instal·lacions",ut:"p.a.",cap:""});
   const [chapterEditModal878230,setChapterEditModal878230]=useState(null);
+  const [bulkRenumberModal878231,setBulkRenumberModal878231]=useState(null);
   useEffect(()=>{setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("");setLibraryScope87160("client");setLibrarySelected87218({});setLibraryLimit87218(80)},[currentClientId87196]);
   useEffect(()=>{setLibraryLimit87218(80)},[libraryScope87160,librarySearch87115,libraryCap87115]);
   // V87.199: els pressupostos i Excel importats NO alimenten la llibreria automàticament.
@@ -6793,6 +6807,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function libDesc87118(row={}){return libLongDesc87196(row)}
   function savePartidaToLibrary87115(row,cap){
     const item={...row,id:row.libraryItemId||undefined,codiIntern:row.codiIntern||"",codiPressupost:row.codi||row.codiPressupost||"",cap:cap||row.cap||"General",clientIds:currentClientId87196?[currentClientId87196]:[],global:true,tipus:"Alta expressa des del pressupost",updatedAt:new Date().toISOString()};
+    lsSet8779("aco_library_manual_only_v87231","1");
     setPartidaLibrary?.(prev=>{
       const existing=item.id?(prev||[]).find(entry=>String(entry.id)===String(item.id)):null;
       return upsertPartidaLibrary87196(prev,{...item,clientIds:[...new Set([...(existing?.clientIds||[]),...(item.clientIds||[])])]});
@@ -7166,6 +7181,57 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setChapterEditModal878230(null);
   }
 
+  function openBulkRenumber878231(){
+    if(!Object.values(caps||{}).flat().length)return alert("Aquest pressupost encara no té partides per renumerar.");
+    if(!editBudget8760b)beginBudgetEdit878176();
+    setBulkRenumberModal878231({start:"1",digits:"2",restartByChapter:true,separator:"."});
+  }
+  function budgetChapterPrefix878231(cap,index){
+    const number=chapterLabelParts878230(cap).numero||String(index+1).padStart(2,"0");
+    const normalized=chapterNumericPrefix878230(number).replace(/[^0-9.]/g,"").replace(/^\.+|\.+$/g,"");
+    return normalized||String(index+1).padStart(2,"0");
+  }
+  function bulkRenumberPlan878231(settings=bulkRenumberModal878231){
+    if(!settings)return [];
+    const start=Math.max(0,Math.floor(parseNum8770(settings.start)||1));
+    const digits=Math.max(1,Math.min(4,Math.floor(parseNum8770(settings.digits)||2)));
+    const separator=String(settings.separator||".").slice(0,1)||".";
+    let globalSequence=start;
+    const plan=[];
+    sortedCapEntries8779(caps||{}).forEach(([cap,items],chapterIndex)=>{
+      const prefix=budgetChapterPrefix878231(cap,chapterIndex);
+      let chapterSequence=start;
+      sortPartides8779(items||[]).forEach(row=>{
+        const sequence=settings.restartByChapter?chapterSequence++:globalSequence++;
+        plan.push({cap,row,oldCode:String(row.codi||""),newCode:`${prefix}${separator}${String(sequence).padStart(digits,"0")}`});
+      });
+    });
+    return plan;
+  }
+  function applyBulkRenumber878231(){
+    const plan=bulkRenumberPlan878231();
+    if(!plan.length)return;
+    const next={};
+    sortedCapEntries8779(caps||{}).forEach(([cap])=>{next[cap]=[]});
+    plan.forEach(entry=>{
+      const oldCode=entry.oldCode,newCode=entry.newCode;
+      const remapPayload=payload=>{
+        if(!payload||typeof payload!=="object")return payload;
+        const target=String(payload.targetPartidaCodi||"").trim();
+        const source=String(payload.sourceRowCodi||"").trim();
+        const code=String(payload.codi||"").trim();
+        return {...payload,codi:code===oldCode?newCode:payload.codi,targetPartidaCodi:target===oldCode?newCode:payload.targetPartidaCodi,sourceRowCodi:source===oldCode?newCode:payload.sourceRowCodi};
+      };
+      const monthly=Object.fromEntries(Object.entries(entry.row.certAdminMonthlyByNum||{}).map(([num,payload])=>[num,remapPayload(payload)]));
+      next[entry.cap].push({...entry.row,codiOriginalImport878231:entry.row.codiOriginalImport878231||oldCode,codi:newCode,codiPressupost:newCode,previousCodes87224:[...new Set([...(entry.row.previousCodes87224||[]),oldCode].filter(Boolean))],certAdminMonthlyByNum:monthly,updatedAt:new Date().toISOString()});
+    });
+    setCaps(next);
+    setOpen(prev=>({...prev,...Object.fromEntries(Object.keys(next).map(cap=>[cap,prev[cap]??false]))}));
+    setBudgetSelectedRows878229({});
+    setBulkRenumberModal878231(null);
+    alert(`${plan.length} partides renumerades correlativament. Revisa el resultat i prem «Guardar canvis» per confirmar-lo.`);
+  }
+
   function addCapitol(){
     if(!editBudget8760b)return;
     const nums=Object.keys(caps).map(capOrder8779).filter(n=>n<9999);
@@ -7525,6 +7591,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         <button type="button" className="primary budget-library-main-v87218" onClick={()=>openBudgetLibrary87218("","client")}>+ Afegir partides de la llibreria</button>
         <ActionMenu87213 label="Més accions">
           {editBudget8760b&&<label className="action-upload-v87213">Adjuntar / actualitzar descompostos<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label>}
+          <button type="button" onClick={openBulkRenumber878231}>Renumerar totes les partides</button>
           <button type="button" className="danger-text-v87229" onClick={clearCurrentBudget878229}>Buidar tot el pressupost actual</button>
           <button type="button" onClick={saveBudgetDocument878179}>Guardar a Documents</button>
           <button type="button" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button>
@@ -7536,6 +7603,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!integrityOk878211&&<div className="module-note-v8738 budget-integrity-v87211 error"><b>Cal revisar aquest pressupost</b><span>Suma visible {money(total)} · diferència {money(integrityDifference878211)}{duplicateBudgetCodes878211.length?` · ${duplicateBudgetCodes878211.length} codi/s repetit/s`:""}.</span></div>}
       {editBudget8760b&&<div className="budget-edit-help-v87213"><b>Editant pressupost</b><span>Modifica les files. El botó ∑ de cada partida obre els amidaments detallats.</span></div>}
     {budgetSummaryModal878229&&<Modal title="Crear una partida resum" close={()=>setBudgetSummaryModal878229(false)}><div className="budget-summary-modal-v87229"><div className="module-note-v8738"><b>{selectedBudgetRefs878229().length} partides seleccionades · {money(selectedBudgetRefs878229().reduce((sum,ref)=>sum+(parseNum8770(ref.row.q)||0)*(parseNum8770(ref.row.pu)||0),0))}</b><span>Les partides originals quedaran guardades dins la nova partida com a detall d'origen, però desapareixeran del llistat principal.</span></div><div className="form-grid"><label><span>Codi nou</span><input value={budgetSummaryForm878229.codi} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,codi:e.target.value}))}/></label><label className="span-2"><span>Concepte</span><input value={budgetSummaryForm878229.concepte} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,concepte:e.target.value}))} placeholder="Ex.: Instal·lació elèctrica · preu global"/></label><label><span>Unitat</span><select value={budgetSummaryForm878229.ut} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,ut:e.target.value}))}><option>p.a.</option><option>ut</option><option>lot</option></select></label><label className="span-2"><span>Capítol de destí</span><select value={budgetSummaryForm878229.cap} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,cap:e.target.value}))}>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}</select></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setBudgetSummaryModal878229(false)}>Cancel·lar</button><button type="button" className="primary" onClick={createBudgetSummary878229}>Crear partida resum</button></div></div></Modal>}
+    {bulkRenumberModal878231&&<Modal title="Renumerar totes les partides" close={()=>setBulkRenumberModal878231(null)}><div className="budget-renumber-modal-v87231"><div className="module-note-v8738"><b>Numeració curta i correlativa per capítol</b><span>Només canvia el codi imprès. Manté intactes quantitats, preus, descomposats, amidaments i totes les certificacions ja guardades.</span></div><div className="form-grid"><label><span>Primer número</span><input type="number" min="0" value={bulkRenumberModal878231.start} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,start:e.target.value}))}/></label><label><span>Nombre de dígits</span><select value={bulkRenumberModal878231.digits} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,digits:e.target.value}))}><option value="2">2 dígits · 01, 02...</option><option value="3">3 dígits · 001, 002...</option></select></label><label><span>Separador</span><select value={bulkRenumberModal878231.separator} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,separator:e.target.value}))}><option value=".">Punt · 01.01</option><option value="-">Guió · 01-01</option></select></label><label className="span-all budget-renumber-check-v87230"><input type="checkbox" checked={!!bulkRenumberModal878231.restartByChapter} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,restartByChapter:e.target.checked}))}/><span>Recomençar la seqüència a cada capítol</span></label></div><div className="budget-renumber-preview-v87231"><div><b>Vista prèvia</b><span>{bulkRenumberPlan878231().length} partides</span></div>{bulkRenumberPlan878231().slice(0,24).map((entry,index)=><p key={`${entry.cap}-${index}`}><small>{entry.cap}</small><span>{entry.oldCode||"Sense codi"}</span><b>→ {entry.newCode}</b></p>)}{bulkRenumberPlan878231().length>24&&<em>… i {bulkRenumberPlan878231().length-24} partides més</em>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setBulkRenumberModal878231(null)}>Cancel·lar</button><button type="button" className="primary" onClick={applyBulkRenumber878231}>Aplicar la renumeració</button></div></div></Modal>}
     {chapterEditModal878230&&<Modal title={`Editar número i nom · ${chapterEditModal878230.kind==="main"?"capítol principal":"capítol"}`} close={()=>setChapterEditModal878230(null)}><div className="budget-chapter-modal-v87230"><div className="module-note-v8738"><b>{chapterEditModal878230.original}</b><span>El canvi ordenarà el capítol per la numeració nova. Pots decidir si també vols canviar automàticament el prefix dels codis de les partides.</span></div><div className="form-grid"><label><span>Número del capítol</span><input autoFocus value={chapterEditModal878230.numero} onChange={e=>setChapterEditModal878230(prev=>({...prev,numero:e.target.value}))} placeholder="Ex.: 03"/></label><label className="span-2"><span>Nom del capítol</span><input value={chapterEditModal878230.nom} onChange={e=>setChapterEditModal878230(prev=>({...prev,nom:e.target.value}))} placeholder="Ex.: REVESTIMENTS"/></label><label className="span-2 budget-renumber-check-v87230"><input type="checkbox" checked={!!chapterEditModal878230.renumberItems} onChange={e=>setChapterEditModal878230(prev=>({...prev,renumberItems:e.target.checked}))}/><span>Canviar també el prefix de les partides del capítol (per exemple, 02.01 → 03.01)</span></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setChapterEditModal878230(null)}>Cancel·lar</button><button type="button" className="primary" onClick={saveChapterEditor878230}>Guardar capítol</button></div></div></Modal>}
     {libraryOpen87115&&<Modal title="Afegir partides al pressupost" close={()=>setLibraryOpen87115(false)}>
       <div className="budget-library-modal-v87218">
@@ -8014,6 +8082,8 @@ const[extraOpen878125,setExtraOpen878125]=useState(false);
 const[extraDraft878125,setExtraDraft878125]=useState({tipus:"modificacio",cap:"",codi:"",ut:"ut",concepte:"",q:"1",pu:"0",desc:""});
 const[dateDraft8721,setDateDraft8721]=useState({});
 const[dateDraftSafe8720,setDateDraftSafe8720]=useState({});
+const[certImportPreview878231,setCertImportPreview878231]=useState(null);
+const[certImportBusy878231,setCertImportBusy878231]=useState(false);
 let cert=certs.find(c=>c.id===selected)||certs.find(c=>+c.numero===2)||certs[0]||null;
 let certNum=cert?+cert.numero:1;
 let prevNum=certNum>1?certNum-1:0;
@@ -8046,6 +8116,91 @@ function qOrigin(r){let total=0;for(let i=1;i<=certNum;i++)total+=i===certNum?qD
 function certTotal(n){return rows.reduce((s,r)=>s+certAmount878223(r,n,n===certNum?qDraft(r):undefined),0)}
 function certListTotal878215(c){const calculated=rows.reduce((sum,row)=>sum+certAmount878223(row,+c.numero),0);return Math.abs(calculated)>0.000001?calculated:parseNum8770(c.import)}
 function totalOrigin(){return rows.reduce((s,r)=>s+certOriginAmount878223(r,certNum,qDraft(r)),0)}
+async function readCertificationExcel878231(file){
+  if(!file)return;
+  setCertImportBusy878231(true);
+  try{
+    const buffer=await file.arrayBuffer();
+    const workbook=XLSX.read(buffer,{type:"array",cellStyles:true,cellFormula:true,cellDates:false,dense:false,sheetRows:600});
+    const parsed=parseCertificationWorkbookV87231(workbook,XLSX);
+    const matching=matchCertificationItemsV87231(parsed,data.partides||[]);
+    setCertImportPreview878231({fileName:file.name,parsed,matching,selectedNums:Object.fromEntries(parsed.certifications.map(item=>[String(item.numero),true])),includeExtras:true,replaceExisting:false});
+  }catch(error){
+    alert("No he pogut interpretar aquest Excel de certificacions: "+String(error?.message||error));
+  }finally{setCertImportBusy878231(false)}
+}
+function toggleCertificationImport878231(numero){
+  setCertImportPreview878231(prev=>prev?{...prev,selectedNums:{...prev.selectedNums,[String(numero)]:!prev.selectedNums[String(numero)]}}:prev);
+}
+function applyCertificationImport878231(){
+  const preview=certImportPreview878231;
+  if(!preview)return;
+  const selectedNums=new Set(Object.entries(preview.selectedNums||{}).filter(([,enabled])=>enabled).map(([numero])=>String(numero)));
+  if(!selectedNums.size)return alert("Selecciona almenys una certificació per importar.");
+  const importedCerts=preview.parsed.certifications.filter(item=>selectedNums.has(String(item.numero)));
+  const now=new Date().toISOString();
+  const certIds=Object.fromEntries(importedCerts.map(item=>[String(item.numero),`cert-excel-${Date.now()}-${item.numero}`]));
+  try{
+    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.231",createdAt:now,fileName:preview.fileName,data}));
+  }catch(error){console.warn("No s'ha pogut crear la còpia prèvia de la importació",error)}
+  setData?.(current=>{
+    const sourceByTarget=new Map();
+    preview.matching.matches.forEach(match=>{
+      const key=match.target?.id?`id:${match.target.id}`:`index:${match.targetIndex}`;
+      sourceByTarget.set(key,match.source);
+    });
+    const existingCodes=new Set((current.partides||[]).map(row=>String(row.codi||"").trim()).filter(Boolean));
+    const partides=(current.partides||[]).map((row,index)=>{
+      const source=sourceByTarget.get(row?.id?`id:${row.id}`:`index:${index}`);
+      if(!source)return row;
+      const certsByNum={...(row.certsByNum||{})};
+      const certAmountsByNum={...(row.certAmountsByNum||{})};
+      const next={...row};
+      selectedNums.forEach(numero=>{
+        const imported=source.certs?.[numero]||{};
+        const existingQuantity=certQty8783(row,+numero);
+        const hasExistingAmount=Object.prototype.hasOwnProperty.call(certAmountsByNum,numero)&&Math.abs(parseNum8770(certAmountsByNum[numero]))>0.000001;
+        if(preview.replaceExisting||Math.abs(existingQuantity)<0.000001)certsByNum[numero]=parseNum8770(imported.quantity)||0;
+        if(preview.replaceExisting||!hasExistingAmount)certAmountsByNum[numero]=parseNum8770(imported.amount)||0;
+        if(+numero===1)next.certAnterior=certsByNum[numero]||0;
+        if(+numero===2)next.certActual=certsByNum[numero]||0;
+        next[`cert_${numero}`]=certsByNum[numero]||0;
+      });
+      return {...next,certsByNum,certAmountsByNum,certImportedExcelV87231:{fileName:preview.fileName,sourceRow:source.sourceRow,importedAt:now},updatedAt:now};
+    });
+    if(preview.includeExtras){
+      preview.matching.newExtras.forEach((source,extraIndex)=>{
+        let code=String(source.code||`EXT.${extraIndex+1}`).trim()||`EXT.${extraIndex+1}`;
+        const baseCode=code;
+        let suffix=2;
+        while(existingCodes.has(code))code=`${baseCode}-${String(suffix++).padStart(2,"0")}`;
+        existingCodes.add(code);
+        const certsByNum={},certAmountsByNum={};
+        selectedNums.forEach(numero=>{
+          const imported=source.certs?.[numero]||{};
+          certsByNum[numero]=parseNum8770(imported.quantity)||0;
+          certAmountsByNum[numero]=parseNum8770(imported.amount)||0;
+        });
+        const firstCert=[...selectedNums].map(Number).sort((a,b)=>a-b).find(numero=>Math.abs(certsByNum[String(numero)]||0)>0.000001||Math.abs(certAmountsByNum[String(numero)]||0)>0.000001);
+        const maxOrigin=Math.max(0,...Object.values(source.certs||{}).map(value=>parseNum8770(value?.originQuantity)||0));
+        const q=parseNum8770(source.budgetQuantity)||maxOrigin||1;
+        const pu=parseNum8770(source.budgetUnitPrice)||(q?parseNum8770(source.budgetAmount)/q:0);
+        partides.push({id:`extra-excel-${Date.now()}-${extraIndex}`,budgetId:current.activeBudgetIdObra||"principal",cap:source.chapter||"C99 EXTRES / FORA PRESSUPOST",codi:code,codiPressupost:code,codiOriginalImport878231:source.code||"",ut:source.unit||"ut",concepte:source.concept||"Partida nova importada",desc:"Partida marcada amb color com a nova / fora de pressupost a l’Excel de certificació.",q,pu,certsByNum,certAmountsByNum,certAnterior:certsByNum["1"]||0,certActual:certsByNum["2"]||0,tipus:"Partida nova / fora pressupost importada d’Excel",noPressupost:true,foraPressupost:true,createdFromCert:firstCert||undefined,certImportedExcelV87231:{fileName:preview.fileName,sourceRow:source.sourceRow,importedAt:now,colorDetected:true},createdAt:now,updatedAt:now});
+      });
+    }
+    const existingByNumber=new Map((current.certificacions||[]).map(item=>[String(item.numero),item]));
+    importedCerts.forEach(item=>{
+      const key=String(item.numero),existing=existingByNumber.get(key);
+      const next={...(existing||{}),id:existing?.id||certIds[key],numero:item.numero,data:item.date||existing?.data||todayISO8743(),import:item.total,estat:"Importada i revisable des d’Excel",budgetId:current.activeBudgetIdObra||"principal",excelImportV87231:{fileName:preview.fileName,importedAt:now,totalOrigin:item.totalOrigin},updatedAt:now,createdAt:existing?.createdAt||now};
+      existingByNumber.set(key,next);
+    });
+    return normalizeAdministrationRows87224({...current,partides,certificacions:[...existingByNumber.values()].sort((a,b)=>(+a.numero||0)-(+b.numero||0)),updatedAt:now});
+  });
+  const last=importedCerts.slice().sort((a,b)=>a.numero-b.numero).at(-1);
+  if(last)setSelected((data.certificacions||[]).find(item=>+item.numero===last.numero)?.id||certIds[String(last.numero)]);
+  setCertImportPreview878231(null);
+  alert(`Importació completada: ${importedCerts.length} certificacions, ${preview.matching.matches.length} partides vinculades${preview.includeExtras?` i ${preview.matching.newExtras.length} partides noves / fora de pressupost`:""}. Les files vermelles d'avís no s'han importat.`);
+}
 function openCertPdf87216(mode="origen"){
   const printMode=mode==="actual"?"actual":"origen";
   const allPrintRows=sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impPrev:certAmount878223(r,prevNum),impActual:certAmount878223(r,certNum,qDraft(r)),impOrigen:certOriginAmount878223(r,certNum,qDraft(r)),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]}));
@@ -8407,8 +8562,9 @@ function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMo
 return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 key={`${certNum}-${adminMonthlyOpen878127.entryId||adminMonthlyOpen878127.targetPartidaCodi||adminMonthlyOpen878127.codi||"nou"}`} certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127} split={splitAdminMonthly87223}/>} 
 {medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>} 
 {adminPrintOpen87221&&<Modal title={`Partides per administració · Certificació ${certNum}`} close={()=>setAdminPrintOpen87221(false)}><div className="admin-print-list-v87221"><div className="module-note-v8738 admin-print-note-v87221"><b>{adminPrintableRows87221.length} partida/es amb línies guardades</b><span>Pots imprimir qualsevol partida, també les noves i les de fora de pressupost. Cada quadre manté separades les seves pròpies feines, hores i materials.</span></div>{adminPrintableRows87221.map(({row,payload})=><div className="admin-print-row-v87221" key={row.id||`${row.cap}-${row.codi}`}><div><small>{row.cap||"Sense capítol"}</small><b>{row.codi||"s/codi"} · {row.concepte||"Partida sense concepte"}</b><span>{payload.lines.length} línia/es · Total: {money(adminPayloadTotal87221(payload))}</span>{(row.noPressupost||row.createdFromCert||row.adminMonthlyAuto)&&<em>Partida nova / fora de pressupost</em>}</div><button type="button" className="primary" onClick={()=>printAdminForRow87221(row,payload)}>Previsualitzar / imprimir</button></div>)}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setAdminPrintOpen87221(false)}>Tancar</button></div></Modal>}
+{certImportPreview878231&&<Modal title="Revisar la importació de certificacions" close={()=>setCertImportPreview878231(null)}><div className="cert-import-modal-v87231"><div className="module-note-v8738"><b>{certImportPreview878231.fileName}</b><span>Primer revisa el recompte. No es modifica res fins que premis «Importar certificacions».</span></div><div className="cert-import-stats-v87231"><div><small>Certificacions detectades</small><b>{certImportPreview878231.parsed.certifications.length}</b></div><div><small>Partides vinculades</small><b>{certImportPreview878231.matching.matches.length}</b></div><div><small>Noves / fora pressupost</small><b>{certImportPreview878231.matching.newExtras.length}</b></div><div><small>Pendents de correspondència</small><b>{certImportPreview878231.matching.unmatched.length}</b></div><div className={certImportPreview878231.matching.warnings.length?"warn":""}><small>Files vermelles d’avís</small><b>{certImportPreview878231.matching.warnings.length}</b></div></div><section className="cert-import-section-v87231"><h3>1 · Certificacions que vols importar</h3><div className="cert-import-cert-list-v87231">{certImportPreview878231.parsed.certifications.map(item=><label key={item.numero}><input type="checkbox" checked={!!certImportPreview878231.selectedNums[String(item.numero)]} onChange={()=>toggleCertificationImport878231(item.numero)}/><span><b>Certificació {item.numero}</b><small>{item.date?fmtAppDate8748(item.date):"Data no detectada"} · {item.itemCount} partides</small></span><strong>{money(item.total)}</strong></label>)}</div></section><section className="cert-import-section-v87231"><h3>2 · Criteris de seguretat</h3><label className="cert-import-option-v87231"><input type="checkbox" checked={!!certImportPreview878231.includeExtras} onChange={e=>setCertImportPreview878231(prev=>({...prev,includeExtras:e.target.checked}))}/><span><b>Incorporar les {certImportPreview878231.matching.newExtras.length} partides marcades amb color com a noves / fora de pressupost</b><small>Es creen al pressupost actual i conserven el codi original com a dada d’origen.</small></span></label><label className="cert-import-option-v87231"><input type="checkbox" checked={!!certImportPreview878231.replaceExisting} onChange={e=>setCertImportPreview878231(prev=>({...prev,replaceExisting:e.target.checked}))}/><span><b>Substituir valors de certificació que ja existeixin</b><small>Desmarcat per seguretat: per defecte només s’omplen valors buits. Activa-ho només si l’Excel és la font definitiva.</small></span></label>{certImportPreview878231.matching.warnings.length>0&&<div className="cert-import-warning-v87231"><b>{certImportPreview878231.matching.warnings.length} files amb vermell intens no s’importaran</b><span>Es consideren anul·lacions o avisos manuals i queden fora fins que les revisis.</span></div>}{certImportPreview878231.matching.unmatched.length>0&&<div className="cert-import-warning-v87231 neutral"><b>{certImportPreview878231.matching.unmatched.length} partides base no tenen correspondència segura</b><span>No es crearan automàticament. Així s’eviten duplicats o assignacions errònies.</span></div>}</section><section className="cert-import-section-v87231"><h3>3 · Mostra de la correspondència</h3><div className="cert-import-preview-list-v87231">{[...certImportPreview878231.matching.matches.slice(0,60).map(item=>({status:"Vinculada",tone:"ok",source:item.source,target:item.target})),...certImportPreview878231.matching.newExtras.slice(0,30).map(source=>({status:"Nova / fora pressupost",tone:"extra",source})),...certImportPreview878231.matching.unmatched.slice(0,20).map(source=>({status:"No importada",tone:"pending",source}))].map((item,index)=><div key={`${item.source.sourceRow}-${index}`} className={item.tone}><span><small>Fila {item.source.sourceRow} · {item.source.chapter}</small><b>{item.source.code} · {item.source.concept}</b>{item.target&&<em>→ {item.target.codi} · {item.target.concepte}</em>}</span><strong>{item.status}</strong></div>)}</div></section><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setCertImportPreview878231(null)}>Cancel·lar</button><button type="button" className="primary" onClick={applyCertificationImport878231}>Importar certificacions</button></div></div></Modal>}
 {partidaPanel87216&&<CertPartidaModal87216 row={partidaPanel87216} certNum={certNum} capOptions={capNames878125()} editing={editing} close={()=>setPartidaPanel87216(null)} saveMeta={updatePartidaMeta878132} openMesures={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);setMedicioTarget8780(r)}} openAdmin={r=>{setEditing(true);setCertMode8711("emplenar");setPartidaPanel87216(null);openAdminMonthlyForRow878133(r)}} printAdmin={printAdminForRow87221} adminPayload={adminPayloadForRow87221(partidaPanel87216)} remove={deleteCertLine878131} restore={restoreCertLine878132} hidden={isCertHidden878132(partidaPanel87216,certNum)}/>} 
-<Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><span className="autosave-note-v87217">Data fixa i desada automàticament</span><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
+<Card title={`Certificacions obra realitzades · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`} action={<div className="actions-inline"><span className="autosave-note-v87217">Data fixa i desada automàticament</span><label className={`secondary upload-label ${certImportBusy878231?"disabled":""}`}><Upload/> {certImportBusy878231?"Llegint Excel...":"Importar Excel de certificacions"}<input type="file" accept=".xlsx,.xls" disabled={certImportBusy878231} onChange={e=>{const file=e.target.files?.[0];readCertificationExcel878231(file);e.target.value=""}}/></label><button className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar")}}>+ Nova certificació</button></div>}>
   <div className="version-list cert-version-list-v87216">{certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:certs.map(c=><div className={`version-row cert-row-v8721 ${selected===c.id?"active":""}`} key={c.id} onClick={()=>{setSelected(c.id);setCertMode8711("resum")}}><b>Certificació {c.numero}</b><input type="date" className="cert-date-input-v8721" value={dateVal8721(c)||""} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onChange={e=>{const value=e.target.value;setDateDraft8721(d=>({...d,[c.id]:value}));updateCertDate8721?.(c.id,value)}}/><strong>{money(certListTotal878215(c))}</strong><button className="danger mini-v8721" onClick={e=>{e.stopPropagation();deleteCertificacio8721?.(c.id)}}>Eliminar</button><em>{selected===c.id?"Seleccionada":"Veure"}</em></div>)}</div>
 </Card>
 <Card title={`Certificació ${certNum}`} action={<div className="cert-selected-total-v87213"><small>{prevNum?`Anterior: Cert. ${prevNum}`:"Primera certificació"}</small><b>{money(certTotal(certNum))}</b></div>}>
@@ -8864,7 +9020,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.230.0",
+    app_version:"87.231.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -9656,7 +9812,7 @@ function pressupostObraPrintHtml878153(doc,obra,client){
     const show=cap!==lastCap; lastCap=cap;
     return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap)}</td><td class="num">${money(chapterTotals878230[cap]||0)}</td></tr>`:""}<tr><td class="code">${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b>${r.desc?`<p class="long-desc">${escHtmlV8772(r.desc)}</p>`:""}</td><td class="num">${qty2(q)}</td><td class="num">${money(pu)}</td><td class="num"><b>${money(q*pu)}</b></td></tr>`
   }).join("") || `<tr><td colspan="6" class="empty">Sense partides.</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Pressupost")}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:112mm;margin:6mm 0 0 auto;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f2d5c;margin-bottom:2mm}.chapter-summary td:first-child{text-align:left;white-space:normal}.chapter-summary th{background:#eff6ff}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div class="client-head"><h3>Client / promotor</h3><p>${thirdBlock}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"PRESSUPOST D’OBRA")}</h1><div class="title-meta">${metaLines}</div></div><div class="budget-id">${numPres?`<small>Núm. pressupost</small><b>${escHtmlV8772(numPres)}</b>`:""}${versioPres?`<small>Versió</small><b>${escHtmlV8772(versioPres)}</b>`:""}</div></div><table><colgroup><col style="width:14mm"><col style="width:8mm"><col style="width:auto"><col style="width:14mm"><col style="width:19mm"><col style="width:23mm"></colgroup><thead><tr><th>Part.</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>€/ut</th><th>Total</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>RESUM ECONÒMIC PER CAPÍTOLS</caption><thead><tr><th>Capítol</th><th>Import</th><th>% pressupost</th></tr></thead><tbody>${chapterSummary878230}</tbody></table><div class="totals"><div><span>TOTAL PRESSUPOST</span><b>${money(total)}</b></div></div><div class="notes-stack"><div><h3>Observacions</h3><p>${escHtmlV8772(obs)}</p></div><div><h3>Forma de pagament</h3><p>${escHtmlV8772(forma)}</p></div></div><div class="signatures"><div class="signature"><b>${escHtmlV8772(clientEmissor)}</b><span>Signatura</span></div><div class="signature right"><small>Client</small><b>${escHtmlV8772(clientPressupost)}</b><span>Signatura / conformitat</span></div></div></section></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||"Pressupost")}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8.7px;line-height:1.12}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:100%;margin:6mm 0 0;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f172a;background:#9fbad4;border:1px solid #0f172a;border-bottom:0;padding:5px}.chapter-summary td:first-child{text-align:left;white-space:normal;font-weight:900}.chapter-summary th{background:#dbeafe}.chapter-summary td:nth-child(n+2){text-align:right}.chapter-summary tbody tr:last-child td{border-bottom:2px solid #0f172a}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div class="client-head"><h3>Client / promotor</h3><p>${thirdBlock}</p></div></div><div class="title"><div><h1>${escHtmlV8772(doc.title||"PRESSUPOST D’OBRA")}</h1><div class="title-meta">${metaLines}</div></div><div class="budget-id">${numPres?`<small>Núm. pressupost</small><b>${escHtmlV8772(numPres)}</b>`:""}${versioPres?`<small>Versió</small><b>${escHtmlV8772(versioPres)}</b>`:""}</div></div><table><colgroup><col style="width:18mm"><col style="width:7mm"><col style="width:auto"><col style="width:14mm"><col style="width:17mm"><col style="width:22mm"></colgroup><thead><tr><th>Part.</th><th>Ut</th><th>Concepte / descripció</th><th>Quant.</th><th>€/ut</th><th>Total</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>RESUM ECONÒMIC PER CAPÍTOLS</caption><colgroup><col style="width:auto"><col style="width:32mm"><col style="width:24mm"></colgroup><thead><tr><th>Capítol</th><th>Import</th><th>% pressupost</th></tr></thead><tbody>${chapterSummary878230}</tbody></table><div class="totals"><div><span>TOTAL PRESSUPOST</span><b>${money(total)}</b></div></div><div class="notes-stack"><div><h3>Observacions</h3><p>${escHtmlV8772(obs)}</p></div><div><h3>Forma de pagament</h3><p>${escHtmlV8772(forma)}</p></div></div><div class="signatures"><div class="signature"><b>${escHtmlV8772(clientEmissor)}</b><span>Signatura</span></div><div class="signature right"><small>Client</small><b>${escHtmlV8772(clientPressupost)}</b><span>Signatura / conformitat</span></div></div></section></body></html>`;
 }
 function PressupostObraPreview878153({doc}){
   const rows=sortPartides878132(doc.rows||[]);

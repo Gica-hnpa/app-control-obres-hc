@@ -1,0 +1,47 @@
+V87.231 · RENUMERACIÓ, CERTIFICACIONS EXCEL I LLIBRERIA NETA
+
+1. Descomprimeix la carpeta completa de la V87.231.
+2. Obre-la amb el mateix navegador, perfil d’usuari i adreça local.
+3. No importis cap JSON: utilitza les dades actuals del navegador.
+
+RENUMERAR TOTES LES PARTIDES
+
+1. Entra a l’expedient i obre Pressupost obra.
+2. A “Més accions”, prem “Renumerar totes les partides”.
+3. Revisa la vista prèvia. Per defecte genera 01.01, 01.02... i torna a començar a cada capítol.
+4. Prem “Aplicar la renumeració”.
+5. Revisa el pressupost i prem “Guardar canvis”. Cancel·lar recupera l’estat anterior.
+
+La renumeració només canvia el codi imprès. Conserva quantitats, preus,
+descomposats, amidaments i certificacions.
+
+IMPORTAR CERTIFICACIONS DES D’EXCEL
+
+1. Entra a Certificacions obra.
+2. Prem “Importar Excel de certificacions” i selecciona el fitxer .xlsx.
+3. Revisa les certificacions detectades, les partides vinculades, les noves
+   marcades per color i les files pendents.
+4. Per seguretat, els valors existents no se substitueixen si no actives
+   expressament aquesta opció.
+5. Prem “Importar certificacions”.
+
+El lector utilitza els subtotals i totals oficials de l’Excel. Les files amb
+vermell intens queden excloses i les partides sense coincidència segura no es
+creen automàticament.
+
+COMENÇAR AMB UNA LLIBRERIA NETA
+
+1. Entra a Llibreria.
+2. Prem el botó visible “Començar amb una llibreria neta”.
+3. Confirma el recompte de partides i capítols.
+
+Les partides i els capítols passen a la paperera recuperable. No s’elimina ni
+es modifica res de cap expedient, pressupost o certificació. Des d’aquell
+moment només entren a la llibreria les partides que creïs o desis expressament.
+
+SEGURETAT
+
+- Abans d’importar certificacions es crea una còpia local de recuperació.
+- La importació sempre mostra una revisió prèvia.
+- La llibreria no s’alimenta automàticament dels expedients.
+- La carpeta dist no és necessària per treballar en local amb Vite.

@@ -1,4 +1,14 @@
-# APP Control d’Obres V87.230
+# APP Control d’Obres V87.231
+
+## Renumeració, certificacions Excel i llibreria neta V87.231
+
+- El pressupost incorpora una renumeració massiva: genera codis curts i correlatius per capítol sense alterar imports, descomposats, amidaments ni certificacions.
+- La impressió reserva més amplada al codi, evita que envaeixi la unitat i mostra el resum econòmic a tota l’amplada amb els mateixos blaus de la resta del pressupost.
+- Les certificacions es poden importar des d’un Excel amb previsualització obligatòria: dates, imports oficials, coincidències, partides noves i avisos.
+- El lector segueix les fórmules de subtotals i del total general; no suma alternatives o línies auxiliars que l’Excel conserva fora del total oficial.
+- En el fitxer real de Cala Rovira detecta 7 certificacions, 123 línies tècniques, 29 línies de color candidates a nova/fora pressupost i 1 fila vermella exclosa per seguretat.
+- La llibreria té un botó visible per començar neta. També elimina el catàleg de capítols antic, guarda tot a la paperera i activa un mode manual perquè no es torni a omplir en reiniciar.
+- Cap reinici de llibreria modifica expedients, pressupostos ni certificacions.
 
 ## Capítols, resums econòmics i llibreria validada V87.230
 
