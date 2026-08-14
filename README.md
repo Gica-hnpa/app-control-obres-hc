@@ -1,4 +1,13 @@
-# APP Control d’Obres V87.231
+# APP Control d’Obres V87.232
+
+## Descompostos recalculats V87.232
+
+- En modificar el rendiment o el preu unitari d’un recurs es recalcula immediatament l’import de la línia.
+- Les files de percentatge —CI, despeses generals, benefici industrial, marges i costos complementaris— actualitzen la seva base i el seu import.
+- Els subtotals i el preu unitari final deixen d’utilitzar els imports antics importats des de l’Excel.
+- El nou total calculat passa automàticament al camp «Preu/ut que s’aplicarà»; només es manté un valor diferent quan l’usuari l’escriu expressament com a ajust manual.
+- «Guardar i aplicar el preu» actualitza el preu unitari i, per tant, el total de la partida i del pressupost.
+- El mateix motor de càlcul s’utilitza als descompostos de la llibreria.
 
 ## Renumeració, certificacions Excel i llibreria neta V87.231
 
