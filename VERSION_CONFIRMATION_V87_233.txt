@@ -1,0 +1,7 @@
+VERSIÓ: V87.233 - NUMERACIÓ PER CLIENT I DATES DE CREACIÓ
+
+Canvis principals:
+- Numeració interna del despatx preservada.
+- Numeració correlativa independent per client (P-001, P-002...).
+- Data de creació visible per projectes i registres nous, inclòs el pressupost ràpid des del primer ús.
+- Migració idempotent de dades antigues sense alterar el codi intern.

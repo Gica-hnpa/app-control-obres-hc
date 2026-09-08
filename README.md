@@ -1,4 +1,8 @@
-# APP Control d’Obres V87.232
+# APP Control d’Obres V87.233
+
+## Numeració per client i dates de creació
+
+La V87.233 manté el codi intern del despatx i afegeix una numeració correlativa independent per client (`P-001`, `P-002`...). També registra i mostra la data de creació dels projectes, documents, pressupostos, certificacions, factures, actes, fotos i partides noves; el pressupost ràpid queda datat des del primer ús.
 
 ## Descompostos recalculats V87.232
 

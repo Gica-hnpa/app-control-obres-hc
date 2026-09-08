@@ -1,0 +1,8 @@
+V87.233 · NUMERACIÓ PER CLIENT I DATES DE CREACIÓ
+
+1. Descomprimeix la carpeta completa de la V87.233.
+2. Executa `npm install` i després `npm run dev`.
+3. El codi intern del despatx continua sent el codi llarg de l’expedient.
+4. Cada client té una numeració independent dels seus projectes, visible com P-001, P-002, etc.
+5. Els projectes i els elements nous mostren la data de creació, inclòs el pressupost ràpid des del primer ús. La data comercial/documental continua separada de la data de creació.
+6. Les dades antigues sense una data exacta mostren «Data de creació no registrada» i no s’hi inventa una data.

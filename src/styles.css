@@ -4920,7 +4920,7 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 /* V87.160 · Pressupost progressiu + llibreries + descomposats */
 .pressupost-rapid-v87160{display:flex;flex-direction:column;gap:14px}
 .compact-actions-v87160{gap:8px;align-items:center;flex-wrap:wrap}
-.rapid-summary-strip-v87160{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px 18px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+.rapid-summary-strip-v87160{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:14px 18px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
 .rapid-summary-strip-v87160>div{background:white;border:1px solid #d6dde7;border-radius:14px;padding:12px;min-width:0}
 .rapid-summary-strip-v87160 span{display:block;font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;margin-bottom:5px}
 .rapid-summary-strip-v87160 b{display:block;font-size:16px;color:#0f2d5c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -5404,7 +5404,7 @@ body::after{content:"APP V87.229"}
 @media(max-width:900px){.budget-bulk-toolbar-v87229{position:static;grid-template-columns:1fr}.budget-bulk-toolbar-v87229>div:last-child{display:grid;grid-template-columns:1fr 1fr;justify-content:stretch}.budget-bulk-toolbar-v87229 select{min-width:0;width:100%}.budget-summary-modal-v87229 .form-grid,.cost-mode-picker-v87229,.closed-cost-main-v87229{grid-template-columns:1fr}.company-margins-v87229{grid-template-columns:1fr 1fr}.cost-calculation-v87229{grid-template-columns:1fr 1fr}.cost-calculation-v87229 strong{grid-column:1/-1}.package-cost-row-v87229{grid-template-columns:1fr}.budget-cap-actions-v87229{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.budget-cap-actions-v87229 button{width:100%!important}.budget-select-action-v87229{grid-template-columns:1fr}.grouped-source-v87229>div{grid-template-columns:1fr}.grouped-source-v87229>div strong{text-align:left}}
 
 /* V87.230 · capítols editables, resums econòmics i llibreria validada */
-body::after{content:"APP V87.232"}
+body::after{content:"APP V87.233"}
 .budget-v25-cap-head{grid-template-columns:38px minmax(0,1fr) 105px 150px minmax(160px,205px)!important}
 .budget-chapter-title-v87230{min-width:0}.budget-chapter-title-v87230 b{display:block;overflow-wrap:anywhere;font-size:14px;color:#0f2d5c}.budget-chapter-title-v87230 small{display:block;margin-top:2px;color:#64748b;font-size:9px;font-weight:800}
 .budget-main-chapter-v87230{grid-template-columns:auto minmax(0,1fr) auto auto}.budget-main-chapter-v87230 button{white-space:nowrap}
