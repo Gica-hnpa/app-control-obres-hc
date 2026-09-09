@@ -1,0 +1,11 @@
+VERSIÓ: V87.234
+
+Aquesta versió incorpora:
+- dates de creació només amb dia, mes i any;
+- accés de client amb usuari de prova `socoterm` i contrasenya inicial `socoterm`;
+- associació usuari-client, filtres de pestanyes i canvi de contrasenya;
+- vista de client limitada als seus expedients, en mode lectura, amb opció controlada de crear un expedient;
+- llibreria manual per capítols, filtrada per client i ordenada per ús;
+- consolidació de partides equivalents per concepte i unitat, amb històric de preus;
+- incorporació selectiva al pressupost sense duplicats;
+- amplades de columna revisades per a les dates.

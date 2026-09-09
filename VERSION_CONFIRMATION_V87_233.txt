@@ -1,7 +1,10 @@
-VERSIÓ: V87.233 - NUMERACIÓ PER CLIENT I DATES DE CREACIÓ
+VERSIÓ: V87.234 - ACCÉS PER CLIENT I LLIBRERIA MANUAL
 
 Canvis principals:
 - Numeració interna del despatx preservada.
 - Numeració correlativa independent per client (P-001, P-002...).
 - Data de creació visible per projectes i registres nous, inclòs el pressupost ràpid des del primer ús.
 - Migració idempotent de dades antigues sense alterar el codi intern.
+- Usuari de prova socoterm / socoterm, associat a SOCOTERM i amb vista de client.
+- Llibreria manual per capítols, ús del client i consolidació sense duplicats.
+- Dates de creació només amb dia, mes i any.

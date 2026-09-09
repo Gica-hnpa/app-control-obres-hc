@@ -1,0 +1,12 @@
+V87.234 · ACCÉS PER CLIENT I LLIBRERIA MANUAL
+
+1. Inicia l’app amb el compte de despatx `hector` / `0000`.
+2. El compte de prova és `socoterm` / `socoterm` i queda associat al client SOCOTERM.
+3. El client només veu els seus expedients i les pestanyes que li autoritzis. Per defecte pot consultar el resum, documents, actes, fotografies, certificacions i facturació.
+4. El compte de prova és de només lectura, però pot obrir un expedient nou si l’opció està activa. Les modificacions de l’obra les fa el despatx.
+5. A Configuració, un administrador pot crear usuaris, associar-los a un client, escollir pestanyes i canviar permisos. Cada usuari també pot canviar la seva contrasenya.
+6. La llibreria només incorpora partides guardades expressament. Es mostra per capítols i el selector de pressupost pot ordenar-les per ús del client.
+7. El mateix concepte i unitat es consoliden encara que el codi o el preu canviïn; es conserva l’històric de preus i no s’incorporen duplicats al pressupost.
+8. Les dates de creació es mostren com DD/MM/AAAA, sense hora. Les columnes de llistats tenen amplades compactes per evitar que la data envaeixi altres camps.
+
+Avís: els comptes i contrasenyes d’aquesta versió es guarden al navegador. Per a clients en ordinadors diferents caldrà connectar una autenticació de servidor abans de posar-ho en producció.

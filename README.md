@@ -1,8 +1,23 @@
-# APP Control d’Obres V87.233
+# APP Control d’Obres V87.234
 
-## Numeració per client i dates de creació
+## Accés per client, llibreria manual i dates
 
-La V87.233 manté el codi intern del despatx i afegeix una numeració correlativa independent per client (`P-001`, `P-002`...). També registra i mostra la data de creació dels projectes, documents, pressupostos, certificacions, factures, actes, fotos i partides noves; el pressupost ràpid queda datat des del primer ús.
+La V87.234 manté el codi intern del despatx i la numeració correlativa independent per client (`P-001`, `P-002`...). Mostra la data de creació només amb dia, mes i any, sense hora, per als projectes, documents, pressupostos, certificacions, factures, actes, fotos i partides noves.
+
+## Usuaris de prova i vista del client
+
+- Compte inicial de prova: socoterm / socoterm, associat al client SOCOTERM.
+- El client només veu els seus expedients i la vista de l’obra amb les pestanyes autoritzades.
+- El compte inicial és de només lectura, però pot obrir un expedient nou perquè el despatx el continuï. La resta de canvis els fa el despatx.
+- A Configuració es pot canviar la contrasenya pròpia i, des d’un compte administrador, crear usuaris, associar-los a un client i escollir les pestanyes visibles.
+
+## Llibreria de partides
+
+- La llibreria buida és un estat vàlid i no es torna a omplir automàticament.
+- Només hi entren les partides que es desen expressament des d’un pressupost o que s’incorporen manualment.
+- El selector del pressupost agrupa per capítols i ordena per les més utilitzades pel client.
+- Les partides amb el mateix concepte i unitat es consoliden encara que tinguin codi o preu diferent; es conserva l’històric de preus.
+- En incorporar partides a un pressupost, les que ja hi són s’ometen per evitar duplicats.
 
 ## Descompostos recalculats V87.232
 

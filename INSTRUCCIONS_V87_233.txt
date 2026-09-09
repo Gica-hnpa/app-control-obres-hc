@@ -1,8 +1,11 @@
-V87.233 · NUMERACIÓ PER CLIENT I DATES DE CREACIÓ
+V87.234 · ACCÉS PER CLIENT I LLIBRERIA MANUAL
 
-1. Descomprimeix la carpeta completa de la V87.233.
+1. Descomprimeix la carpeta completa de la V87.234.
 2. Executa `npm install` i després `npm run dev`.
 3. El codi intern del despatx continua sent el codi llarg de l’expedient.
 4. Cada client té una numeració independent dels seus projectes, visible com P-001, P-002, etc.
-5. Els projectes i els elements nous mostren la data de creació, inclòs el pressupost ràpid des del primer ús. La data comercial/documental continua separada de la data de creació.
+5. Els projectes i els elements nous mostren la data de creació només amb dia, mes i any, inclòs el pressupost ràpid des del primer ús. La data comercial/documental continua separada.
 6. Les dades antigues sense una data exacta mostren «Data de creació no registrada» i no s’hi inventa una data.
+7. Usuari de prova: socoterm / socoterm. Veu només SOCOTERM, té vista de client de només lectura i pot obrir un expedient nou.
+8. A Configuració, un administrador pot crear usuaris, associar-los a un client, canviar permisos/pestanyes i establir contrasenyes.
+9. La llibreria només incorpora partides seleccionades expressament, les mostra per capítols i ordena per ús del client. Les partides similars es consoliden i no es dupliquen dins el pressupost.

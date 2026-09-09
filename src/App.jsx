@@ -11,7 +11,41 @@ import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} 
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
 
-const APP_USERS8779={hector:"0000",pol:"1919"};
+const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
+const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Tasques"];
+const DEFAULT_APP_ACCOUNTS878233={
+  hector:{username:"hector",password:"0000",role:"admin",displayName:"Héctor",ownerUser:"hector",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
+  pol:{username:"pol",password:"1919",role:"admin",displayName:"Pol",ownerUser:"pol",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
+  socoterm:{username:"socoterm",password:"socoterm",role:"client",displayName:"SOCOTERM · prova",ownerUser:"hector",clientId:"socoterm",readOnly:true,canCreateProject:true,allowedTabs:["Resum","Documents","Actes","Fotografies","Certificacions obra","Facturació obra"]}
+};
+function readAppAccounts878233(){
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem(APP_ACCOUNTS_KEY878233)||"{}")||{}}catch{}
+  const merged={...DEFAULT_APP_ACCOUNTS878233,...saved};
+  return Object.fromEntries(Object.entries(merged).map(([key,raw])=>{
+    const base=DEFAULT_APP_ACCOUNTS878233[key]||{};
+    const src=raw&&typeof raw==="object"?raw:{};
+    return [String(key).toLowerCase(),{
+      ...base,...src,
+      username:String(src.username||key).trim().toLowerCase(),
+      password:String(src.password??base.password??""),
+      role:src.role||base.role||"client",
+      ownerUser:String(src.ownerUser||base.ownerUser||"hector").trim().toLowerCase(),
+      clientId:String(src.clientId||base.clientId||""),
+      allowedTabs:Array.isArray(src.allowedTabs)?src.allowedTabs:[...(base.allowedTabs||[])],
+      readOnly:src.readOnly??base.readOnly??true,
+      canCreateProject:src.canCreateProject??base.canCreateProject??false
+    }];
+  }));
+}
+function saveAppAccounts878233(accounts={}){
+  try{localStorage.setItem(APP_ACCOUNTS_KEY878233,JSON.stringify(accounts||{}));return true}catch(e){console.warn("No s'han pogut guardar els comptes",e);return false}
+}
+function getAppAccount878233(user){const u=String(user||"").trim().toLowerCase();return readAppAccounts878233()[u]||null}
+function appAccountOwner878233(account={},user=""){return String(account?.ownerUser||user||"hector").trim().toLowerCase()||"hector"}
+function appAccountIsAdmin878233(account={}){return account?.role==="admin"}
+function appAccountTabs878233(account={}){return Array.isArray(account?.allowedTabs)&&account.allowedTabs.length?account.allowedTabs:CLIENT_TAB_OPTIONS878233.slice()}
+function accountUsernameSlug878233(value=""){return String(value||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,32)||"client"}
 const STORAGE_NS8782="aco_v8782";
 function currentAppUser8779(){return sessionStorage.getItem("aco_current_user8779")||""}
 function lsKey8779(key,user=currentAppUser8779()){
@@ -745,6 +779,13 @@ function libFingerprint87196(row={}){
   const unit=libNormText87196(row.ut||"ut");
   return `${concept}__${desc}__${unit}`;
 }
+// V87.234: la biblioteca unifica la partida funcional per concepte i unitat.
+// El codi i el preu poden variar segons l'obra; es conserven a l'històric.
+function librarySimilarityKey878234(row={}){
+  const concept=libNormText87196(row.concepte||row.resum||row.resumen||"");
+  const unit=libNormText87196(row.ut||"ut");
+  return concept?`${concept}__${unit}`:"";
+}
 function libHash87196(text=""){
   let h=2166136261;
   for(let i=0;i<String(text).length;i++){h^=String(text).charCodeAt(i);h=Math.imul(h,16777619)}
@@ -817,7 +858,7 @@ function collectLibraryCandidates871200(clients=[],obres=[],odata={},user=curren
   const usable=raw.filter(row=>libText87196(row?.concepte||row?.resum||row?.resumen));
   const map=new Map();
   usable.forEach(row=>{
-    const fingerprint=libFingerprint87196(row);
+    const fingerprint=librarySimilarityKey878234(row)||libFingerprint87196(row);
     const prev=map.get(fingerprint);
     const clientIds=row._candidateClientId?[String(row._candidateClientId)]:[];
     if(!prev){
@@ -837,7 +878,7 @@ function dedupePartidaLibrary87196(rows=[]){
     const updatedAt=raw.updatedAt||raw.modifiedAt||raw.createdAt||new Date().toISOString();
     const item={...raw,id:raw.id||`libp-${libHash87196(libFingerprint87196(raw))}`,codiIntern:libText87196(raw.codiIntern||raw.internalCode||""),codiPressupost,codi:codiPressupost,cap:libText87196(raw.cap||"General")||"General",ut:libText87196(raw.ut||"ut")||"ut",concepte:libText87196(raw.concepte||raw.resum||raw.resumen||"Nova partida"),desc:libLongDesc87196(raw),pu,global:true,clientIds:[...new Set((Array.isArray(raw.clientIds)?raw.clientIds:(raw.clientId?[raw.clientId]:[])).filter(Boolean).map(String))],priceHistory:Array.isArray(raw.priceHistory)?raw.priceHistory:[],createdAt:raw.createdAt||updatedAt,updatedAt};
     if(pu&&!item.priceHistory.some(x=>Math.abs((+x?.pu||0)-pu)<0.0001))item.priceHistory=[...item.priceHistory,{pu,data:String(updatedAt).slice(0,10),origen:raw.sourceObra||raw.origen||raw.tipus||"Llibreria"}];
-    const key=libFingerprint87196(item);
+    const key=librarySimilarityKey878234(item)||libFingerprint87196(item);
     if(!map.has(key)){map.set(key,item);return;}
     const prev=map.get(key);
     const desc=item.desc.length>String(prev.desc||"").length?item.desc:prev.desc;
@@ -854,10 +895,12 @@ function upsertPartidaLibrary87196(rows=[],patch={}){
   return dedupePartidaLibrary87196([...rest,{...(old||{}),...patch,updatedAt:new Date().toISOString()}]);
 }
 function migratePartidaLibrary87196(clients=[],user=currentAppUser8779()){
-  const saved=lsJson8779("aco_partides_library_v87196",[],user);
+  const savedRaw=lsGet8779("aco_partides_library_v87196",null,user);
+  const saved=safeJsonParse8784(savedRaw,[]);
+  const hasSavedLibrary=savedRaw!==null;
   // V87.231 · quan l'usuari decideix construir una llibreria pròpia, una
   // llibreria buida és un estat vàlid i no s'ha de repoblar des de claus antigues.
-  if(lsGet8779("aco_library_manual_only_v87231","0",user)==="1")return dedupePartidaLibrary87196(Array.isArray(saved)?saved:[]);
+  if(lsGet8779("aco_library_manual_only_v87231","0",user)==="1"||hasSavedLibrary)return dedupePartidaLibrary87196(Array.isArray(saved)?saved:[]);
   if(Array.isArray(saved)&&saved.length)return dedupePartidaLibrary87196(saved);
   const legacy=[];
   const marker="aco_partides_client_v87115_";
@@ -1695,7 +1738,7 @@ function createLocalRecoverySnapshot878122(state={},label="Còpia de recuperaci�
     id:"rec-"+Date.now(),
     label,
     createdAt:new Date().toISOString(),
-    appVersion:"87.233.0",
+    appVersion:"87.234.0",
     user:user||currentAppUser8779()||"hector",
     clients:stripHeavy878104(state.clients||[]),
     obres:stripHeavy878104(state.obres||[]),
@@ -1850,7 +1893,7 @@ function needsExpedientCodeRepair878191(obres=[]){
 }
 function expedientCode8739(o){return o?.codiExpedient||o?.codi||o?.expedientBase||"Sense codi"}
 
-// V87.233 · numeració visible pròpia de cada client i dates de creació.
+// V87.234 · numeració visible pròpia de cada client i dates de creació sense hora.
 // El codi de l'expedient continua sent intern del despatx. Aquest número és
 // només la referència correlativa que el client veurà dins els seus projectes.
 function clientProjectNumber878233(o={}){
@@ -1913,7 +1956,7 @@ function fmtCreationDate878233(value){
   if(!raw)return "Data de creació no registrada";
   const d=parseDate8776(raw);
   if(!d||isNaN(d))return "Data de creació no registrada";
-  return d.toLocaleString("ca-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  return d.toLocaleDateString("ca-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
 }
 function normalizeCreationDates878233(data={},obres=[]){
   const src=data&&typeof data==="object"&&!Array.isArray(data)?{...data}:{};
@@ -2560,7 +2603,8 @@ function LoginScreen8778({onLogin}){
   function submit(e){
     e.preventDefault();
     const u=user.trim().toLowerCase();
-    if(APP_USERS8779[u]&&APP_USERS8779[u]===pwd){
+    const account=getAppAccount878233(u);
+    if(account&&account.password===pwd){
       try{remember?localStorage.setItem("aco_login_remember_v8798",JSON.stringify({user:u})):localStorage.removeItem("aco_login_remember_v8798")}catch{}
       try{if(window.PasswordCredential&&navigator.credentials){navigator.credentials.store(new PasswordCredential({id:u,password:pwd,name:u})).catch(()=>{})}}catch{}
       sessionStorage.setItem("aco_current_user8779",u);onLogin?.(u);return
@@ -2614,7 +2658,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.233",
+      version:"V87.234",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -3086,13 +3130,20 @@ const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(fals
 const[authUser8779,setAuthUser8779]=useState("");
 const[dataLoadedUser8781,setDataLoadedUser8781]=useState("");
 const authOk8778=!!authUser8779;
-const appCfg=lsJson8779("aco_config",{} ,authUser8779)||{};
+const currentAccount878233=getAppAccount878233(authUser8779)||{};
+const dataOwnerUser878233=appAccountOwner878233(currentAccount878233,authUser8779);
+const scopedClientId878233=currentAccount878233.role!=="admin"?String(currentAccount878233.clientId||""):"";
+const appCfg=lsJson8779("aco_config",{} ,dataOwnerUser878233)||{};
 const lang=appCfg.idioma||"Català";
 const tt=(ca,es,en)=>lang==="Castellà"?es:(lang==="Anglès"?en:ca);
 const[clients,setClients]=useState([]),
 [obres,setObres]=useState([]),
 [odata,setOdata]=useState({}),
 [partidaLibrary,setPartidaLibrary]=useState([]);
+const viewClients878233=scopedClientId878233?clients.filter(c=>String(c.id)===scopedClientId878233):clients;
+const viewObres878233=scopedClientId878233?obres.filter(o=>String(o.client)===scopedClientId878233):obres;
+const viewOdata878233=scopedClientId878233?Object.fromEntries(viewObres878233.map(o=>[o.id,odata[o.id]]).filter(([,value])=>value)):odata;
+const viewPartidaLibrary878233=scopedClientId878233?partidaLibrary.filter(item=>(item.clientIds||[]).some(id=>String(id)===scopedClientId878233)):partidaLibrary;
 const[clientId,setClientId]=useState(""),[obraId,setObraId]=useState(""),[tab,setTab]=useState("Resum");
 const[cs,setCs]=useState(""),[ct,setCt]=useState(""),[os,setOs]=useState(""),[oc,setOc]=useState(""),[oy,setOy]=useState(""),[ost,setOst]=useState(""),[ot,setOt]=useState("");
 const[modal,setModal]=useState(null),[certInfo,setCertInfo]=useState({num:"2",data:"18/06/26",anteriorNum:"1",anteriorData:"12/05/26"});
@@ -3112,15 +3163,17 @@ useEffect(()=>{
   setDataLoadedUser8781("");
   setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setObraId("");setClientId("");
   sessionStorage.setItem("aco_current_user8779",authUser8779);
-  migrateStorageForUser8782(authUser8779);
-  const isHector=authUser8779==="hector";
+  const account=getAppAccount878233(authUser8779)||{};
+  const storageUser=appAccountOwner878233(account,authUser8779);
+  migrateStorageForUser8782(storageUser);
+  const isHector=storageUser==="hector";
   // V87.85: càrrega blindada real. Encara que hi hagi dades locals corruptes o amb format antic, l'usuari ha de poder entrar.
   let c=[],o=[],d={};
   try{
-    const rawC=loadUserJson8784("aco_clients",(isHector?clients0:[]),authUser8779);
-    const rawO=loadUserJson8784("aco_obres",(isHector?obres0:[]),authUser8779);
-    const rawD=loadUserJson8784("aco_odata",(isHector?data0:{}),authUser8779);
-    const coreD=loadUserJson8784("aco_odata_core_v87104",{},authUser8779);
+    const rawC=loadUserJson8784("aco_clients",(isHector?clients0:[]),storageUser);
+    const rawO=loadUserJson8784("aco_obres",(isHector?obres0:[]),storageUser);
+    const rawD=loadUserJson8784("aco_odata",(isHector?data0:{}),storageUser);
+    const coreD=loadUserJson8784("aco_odata_core_v87104",{},storageUser);
     c=sanitizeClients8785(rawC,(isHector?clients0:[])).map(cleanClientFiscal87102).map(x=>x.id==="socoterm"?{...x,logo:x.logo||SOCOTERM_LOGO}:x);
     o=sanitizeObres8785(rawO,(isHector?obres0:[]));
     d=sanitizeOdata8785(mergeOdataCore878104(rawD,coreD),(isHector?data0:{}));
@@ -3135,31 +3188,31 @@ useEffect(()=>{
     o=assignClientProjectNumbers878233(isHector?sanitizeObres8785(obres0,[]):[]);
     d=Object.fromEntries(Object.entries(isHector?sanitizeOdata8785(data0,{}):{}).map(([id,value])=>[id,normalizeCreationDates878233(value,o)]));
   }
-  setClients(c);setObres(o);setOdata(d);setPartidaLibrary(migratePartidaLibrary87196(c,authUser8779));
-  setClientId(c[0]?.id||"");setObraId(o[0]?.id||"");setTab("Resum");setScreen("Inici");
+  setClients(c);setObres(o);setOdata(d);setPartidaLibrary(migratePartidaLibrary87196(c,storageUser));
+  setClientId(account.clientId||c[0]?.id||"");setObraId((account.clientId?o.find(x=>String(x.client)===String(account.clientId)):o[0])?.id||o[0]?.id||"");setTab("Resum");setScreen("Inici");
   setDataLoadedUser8781(authUser8779);
 },[authUser8779]);
-useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),authUser8779)},[clients,authUser8779,dataLoadedUser8781]);
-useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),authUser8779)},[obres,authUser8779,dataLoadedUser8781]);
-useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,authUser8779)},[odata,authUser8779,dataLoadedUser8781]);
-useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_partides_library_v87196",JSON.stringify(stripHeavy878185(dedupePartidaLibrary87196(partidaLibrary))),authUser8779)},[partidaLibrary,authUser8779,dataLoadedUser8781]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),dataOwnerUser878233)},[clients,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),dataOwnerUser878233)},[obres,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,dataOwnerUser878233)},[odata,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
+useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_partides_library_v87196",JSON.stringify(stripHeavy878185(dedupePartidaLibrary87196(partidaLibrary))),dataOwnerUser878233)},[partidaLibrary,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{
   if(!authUser8779||dataLoadedUser8781!==authUser8779)return;
   const cfg=getSyncCfg878121();
   if(!isSyncReady878121(cfg)||!cfg.auto)return;
-  const t=setTimeout(()=>pushStateToSupabase878121({clients,obres,odata,partidaLibrary},authUser8779).catch(e=>console.warn("Supabase sync pendent",e)),1400);
+  const t=setTimeout(()=>pushStateToSupabase878121({clients,obres,odata,partidaLibrary},dataOwnerUser878233).catch(e=>console.warn("Supabase sync pendent",e)),1400);
   return()=>clearTimeout(t);
-},[clients,obres,odata,partidaLibrary,authUser8779,dataLoadedUser8781]);
+},[clients,obres,odata,partidaLibrary,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{
   if(authUser8779&&dataLoadedUser8781===authUser8779&&needsExpedientCodeRepair878191(obres)){
     setObres(p=>assignMissingCodes8739(p,clients));
   }
 },[authUser8779,dataLoadedUser8781,obres,clients]);
-const obraBase=obres.find(o=>o.id===obraId)||obres[0]||{id:"",client:"",nom:"Sense expedient",propietat:"Client pendent",nifPropietat:"Pendent",adreca:"",poblacio:"",tipusTreball:"Altres",tipologia:"Altres",estat:"Pendent",any:String(new Date().getFullYear())};
-const obraSnapshot=(obraBase?.id&&odata?.[obraBase.id]?.obra)?odata[obraBase.id].obra:{};
+const obraBase=viewObres878233.find(o=>o.id===obraId)||viewObres878233[0]||{id:"",client:"",nom:"Sense expedient",propietat:"Client pendent",nifPropietat:"Pendent",adreca:"",poblacio:"",tipusTreball:"Altres",tipologia:"Altres",estat:"Pendent",any:String(new Date().getFullYear())};
+const obraSnapshot=(obraBase?.id&&viewOdata878233?.[obraBase.id]?.obra)?viewOdata878233[obraBase.id].obra:{};
 const obra=applyWorkTemplate878121({...obraBase,...obraSnapshot,id:obraBase.id||obraSnapshot.id||""},obraSnapshot.tipusTreball||obraBase.tipusTreball||obraBase.tipologia,false);
-const client=clients.find(c=>c.id===obra?.client)||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(odata[obra.id]||empty()):empty();
-const fObres=obres.filter(o=>{let c=clients.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||normalizeExpedientStatus878136(o.estat)===normalizeExpedientStatus878136(ost))&&(!ot||canonicalWorkType8740(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+clientProjectLabel878233(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
+const client=viewClients878233.find(c=>c.id===obra?.client)||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(viewOdata878233[obra.id]||empty()):empty();
+const fObres=viewObres878233.filter(o=>{let c=viewClients878233.find(x=>x.id===o.client);return(!oc||o.client===oc)&&(!oy||o.any===oy)&&(!ost||normalizeExpedientStatus878136(o.estat)===normalizeExpedientStatus878136(ost))&&(!ot||canonicalWorkType8740(o.tipusTreball||o.tipologia)===ot)&&((expedientCode8739(o)+" "+clientProjectLabel878233(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
 const byClient=useMemo(()=>{let m={};fObres.forEach(o=>{m[o.client]??={};m[o.client][o.any]??=[];m[o.client][o.any].push(o)});return m},[fObres]);
 const setD=(id,up)=>{
   const now=new Date().toISOString();
@@ -3176,11 +3229,15 @@ const setD=(id,up)=>{
   });
   if(id)setObres(prev=>prev.map(o=>o.id===id?{...o,updatedAt:now}:o));
 };
-function nav(s){setScreen(s);setMenuOpen(false)}
+function userCanSeeScreen878233(s){
+  if(currentAccount878233.role==="admin")return true;
+  return ["Inici","Treballs / Expedients","Obra","Configuració"].includes(s);
+}
+function nav(s){if(!userCanSeeScreen878233(s))return;setScreen(s);setMenuOpen(false)}
 function openObra(id){
   const now=new Date().toISOString();
   setObraId(id);setTab("Resum");setSelActa(null);
-  if(id){
+  if(id&&!currentAccount878233.readOnly){
     setObres(prev=>prev.map(o=>o.id===id?{...o,lastOpenedAt:now,lastWorkedAt:now,updatedAt:now}:o));
     setOdata(prev=>({...prev,[id]:{...(prev[id]||empty()),lastOpenedAt:now,lastWorkedAt:now,updatedAt:now}}));
   }
@@ -3189,7 +3246,7 @@ function openObra(id){
 function openObraTab(id,t){
   const now=new Date().toISOString();
   setObraId(id);setTab(t||"Resum");setSelActa(null);
-  if(id){
+  if(id&&!currentAccount878233.readOnly){
     setObres(prev=>prev.map(o=>o.id===id?{...o,lastOpenedAt:now,lastWorkedAt:now,updatedAt:now}:o));
     setOdata(prev=>({...prev,[id]:{...(prev[id]||empty()),lastOpenedAt:now,lastWorkedAt:now,updatedAt:now}}));
   }
@@ -4003,8 +4060,8 @@ function addObra(e){
   e.preventDefault();
   const f=new FormData(e.currentTarget);
   const year=String(f.get("any")||new Date().getFullYear()).trim()||String(new Date().getFullYear());
-  const selectedClient=String(f.get("client")||"");
-  const createClient=selectedClient==="__new__"||!selectedClient;
+  const selectedClient=currentAccount878233.role!=="admin"?scopedClientId878233:String(f.get("client")||"");
+  const createClient=currentAccount878233.role==="admin"&&(selectedClient==="__new__"||!selectedClient);
   let clientFinal=createClient?null:clients.find(c=>c.id===selectedClient);
   if(createClient){
     const clientNom=String(f.get("clientNouNom")||"Nou client").trim()||"Nou client";
@@ -4108,21 +4165,21 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
-return <><div className="user-global-badge-v8782"><span>USUARI ACTIU</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/><MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/><MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen!=="Inici"&&<MobileBackBar878146 screen={screen} goBack={()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}}/>}
-{screen==="Inici"&&<Inici clients={clients} setClients={setClients} obres={obres} setObres={setObres} odata={odata} setOdata={setOdata} events={[...Object.values(odata).flatMap(d=>d.events||[]),...invoiceAlerts8776(obres,odata)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={()=>setModal("obra")}/>}
+{screen==="Inici"&&<Inici clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
-{screen==="Fitxa client"&&<FitxaClient client={clients.find(c=>c.id===clientId)} obres={obres.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
+{screen==="Fitxa client"&&<FitxaClient client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Agents"&&<SafeRenderBoundary878108><AgentsGeneral878188 odata={odata} setOdata={setOdata} clients={clients}/></SafeRenderBoundary878108>}
-{screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={clients} openObra={openObra} deleteObra={deleteObra878112} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={()=>setModal("obra")} setScreen={nav}/>}
-{screen==="Obra"&&<Obra obra={obra} client={client} clients={clients} setClients={setClients} allAgents={allAgents8749(odata,clients)} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={()=>setModal("agent")} openActa={()=>setModal("acta")} openPartida={()=>setModal("partida")} openEvent={()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(obres,odata,obra?.client,obra?.id)} clientHistoricalPartides={(obres||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((odata||{})[o.id]?.partides)||[]).map(r=>({...r,sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>}
+{screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"}/>}
+{screen==="Obra"&&<Obra obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} data={data} setData={currentAccount878233.readOnly?()=>{}:up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)}/>}
 {screen==="Agenda"&&<SafeRenderBoundary878108><Agenda events={[...Object.entries(odata||{}).flatMap(([oid,d])=>Array.isArray(d?.events)?d.events.map(e=>({...e,obraId:e.obraId||oid,client:e.client||clients.find(c=>c.id===obres.find(o=>o.id===oid)?.client)?.nom,obra:e.obra||obres.find(o=>o.id===oid)?.nom,adreca:e.adreca||obres.find(o=>o.id===oid)?.adreca})):[]),...invoiceAlerts8776(obres,odata)]} clients={clients} obres={obres} openObra={openObra} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={setCalY} selDay={selDay} setSelDay={setSelDay} setOdata={setOdata}/></SafeRenderBoundary878108>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
 {screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={partidaLibrary} setItems={setPartidaLibrary} clients={clients} obres={obres} odata={odata}/></SafeRenderBoundary878108>}
 {screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
-{screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={clients} obres={obres} odata={odata} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>} 
-{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={clients} allAgents={allAgents8749(odata,clients)} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
+{screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
+{modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={viewClients878233} allAgents={allAgents8749(viewOdata878233,viewClients878233)} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
 }
 
 
@@ -4315,7 +4372,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   useEffect(()=>{lsSet8779("aco_library_trash_v87203",JSON.stringify(stripHeavy878185(trashBatches.slice(0,30))))},[trashBatches]);
   useEffect(()=>{lsSet8779("aco_library_ignored_v87203",JSON.stringify([...new Set(ignoredFingerprints)].slice(-4000)))},[ignoredFingerprints]);
   const candidateData=useMemo(()=>showCandidateImporter878230?collectLibraryCandidates871200(clients,obres,odata):{unique:[],legacyCount:0,budgetCount:0},[showCandidateImporter878230,clients,obres,odata]);
-  const storedFingerprints=useMemo(()=>new Set(rows.map(libFingerprint87196)),[rows]);
+  const storedFingerprints=useMemo(()=>new Set(rows.map(item=>librarySimilarityKey878234(item)||libFingerprint87196(item))),[rows]);
   const ignoredFingerprintSet=useMemo(()=>new Set(ignoredFingerprints),[ignoredFingerprints]);
   const pendingCandidates=useMemo(()=>candidateData.unique.filter(x=>!storedFingerprints.has(x.candidateFingerprint)&&!ignoredFingerprintSet.has(x.candidateFingerprint)),[candidateData,storedFingerprints,ignoredFingerprintSet]);
   const candidateCaps=useMemo(()=>[...new Set(pendingCandidates.map(x=>x.cap||"General"))].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true})),[pendingCandidates]);
@@ -5482,7 +5539,7 @@ function ClientExpedientsList878108({obres=[],openObra,clientName="client"}){
   </Card>
 }
 
-function Projectes({byClient,clients,openObra,deleteObra,f,newObra,setScreen}){
+function Projectes({byClient,clients,openObra,deleteObra,f,newObra,setScreen,allowAdminActions=false}){
 const [sort878192,setSort878192]=useState({key:"numero",dir:"desc"});
 let flat=[];Object.entries(byClient||{}).forEach(([cid,ys])=>Object.entries(ys||{}).forEach(([y,items])=>(items||[]).forEach(o=>flat.push(o))));
 let clientNom=o=>clients.find(x=>x.id===o.client)?.nom||o.propietat||"—";
@@ -5534,14 +5591,14 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     </div>
     <div className="exp-list-header-v8741"><span>{total} expedients filtrats</span><div className="actions-inline exp-sort-controls-v878192"><label><span>Ordenar per</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{o.label}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?"Ascendent ▲":"Descendent ▼"}</button><button className="secondary" onClick={clearAll}>Netejar filtres</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>Tornar a tots els tipus</button>}</div></div>
     <div className="exp-mobile-tree-v87119">
-      {flat.length===0?<Empty text="No hi ha expedients amb aquest filtre."/>:anys.map((any,idx)=><details key={any} open={idx===0} className="exp-year-drawer-v87119"><summary><span>{any}</span><b>{flat.filter(o=>String(yearLabel878192(o))===String(any)).length} expedients</b></summary><div>{Object.entries(byYearClient[any]||{}).sort((a,b)=>flat.indexOf(a[1][0])-flat.indexOf(b[1][0])).map(([cn,items])=><details key={cn} className="exp-client-drawer-v87119"><summary><span>{cn}</span><b>{items.length}</b></summary><div>{items.map(o=><div key={o.id} className="exp-mobile-card-v87119"><button type="button" onClick={()=>openObra(o.id)}><small>{expedientCode8739(o)} · Client {clientProjectLabel878233(o)}</small><strong>{o.nom}</strong><span>{moduleLabel8737(o)}</span><em>{o.adreca||"—"} · {o.poblacio||"—"} · Creat: {fmtCreationDate878233(o.createdAt)}</em></button><div><Badge estat={o.estat}/><select defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="open")openObra(o.id);if(v==="delete")deleteObra?.(o.id)}}><option value="" disabled>Accions</option><option value="open">Obrir expedient</option><option value="delete">Eliminar</option></select></div></div>)}</div></details>)}</div></details>)}
+      {flat.length===0?<Empty text="No hi ha expedients amb aquest filtre."/>:anys.map((any,idx)=><details key={any} open={idx===0} className="exp-year-drawer-v87119"><summary><span>{any}</span><b>{flat.filter(o=>String(yearLabel878192(o))===String(any)).length} expedients</b></summary><div>{Object.entries(byYearClient[any]||{}).sort((a,b)=>flat.indexOf(a[1][0])-flat.indexOf(b[1][0])).map(([cn,items])=><details key={cn} className="exp-client-drawer-v87119"><summary><span>{cn}</span><b>{items.length}</b></summary><div>{items.map(o=><div key={o.id} className="exp-mobile-card-v87119"><button type="button" onClick={()=>openObra(o.id)}><small>{expedientCode8739(o)} · Client {clientProjectLabel878233(o)}</small><strong>{o.nom}</strong><span>{moduleLabel8737(o)}</span><em>{o.adreca||"—"} · {o.poblacio||"—"} · Creat: {fmtCreationDate878233(o.createdAt)}</em></button><div><Badge estat={o.estat}/><select defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="open")openObra(o.id);if(v==="delete")deleteObra?.(o.id)}}><option value="" disabled>Accions</option><option value="open">Obrir expedient</option>{allowAdminActions&&<option value="delete">Eliminar</option>}</select></div></div>)}</div></details>)}</div></details>)}
     </div>
     <div className="exp-table-wrap-v8741 exp-table-wrap-v87119">
       <table className="exp-table-v8741 exp-table-v8742">
         <thead><tr><th>{sortHead878192("numero","Número intern")}</th><th>Núm. client</th><th>{sortHead878192("codi","Codi expedient")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th><th>Accions</th></tr></thead>
         <tbody>{flat.length===0&&<tr><td colSpan="9"><Empty text="No hi ha expedients amb aquest filtre."/></td></tr>}{anys.map(any=><React.Fragment key={any}>
           <tr className="year-row-v8742"><td colSpan="9">{any}</td></tr>
-          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b><small>Creat: {fmtCreationDate878233(o.createdAt)}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td>{clientNom(o)}</td><td><strong>{o.nom}</strong><small>{o.subtitol}</small></td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td><Badge estat={o.estat}/></td><td><button type="button" className="danger small-v8777" onClick={(e)=>{e.stopPropagation();deleteObra?.(o.id)}}>Eliminar</button></td></tr>)}
+          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b><small>Creat: {fmtCreationDate878233(o.createdAt)}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td>{clientNom(o)}</td><td><strong>{o.nom}</strong><small>{o.subtitol}</small></td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td><Badge estat={o.estat}/></td><td>{allowAdminActions&&<button type="button" className="danger small-v8777" onClick={(e)=>{e.stopPropagation();deleteObra?.(o.id)}}>Eliminar</button>}</td></tr>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
@@ -5551,7 +5608,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     <div className="exp-side-drawer-grid-v87148">
       <Card title="Resum del filtre"><div className="exp-side-kpis-v8741"><div><span>Total filtrat</span><b>{total}</b></div><div><span>Oberts</span><b>{actius}</b></div></div><div className="active-filter-box-v8742"><b>Filtre actual</b><span>{f.ot||f.oc||f.oy||f.ost||f.os?`${f.ot||"Tots els tipus"} · ${f.ost||"Tots els estats"}`:"Sense filtres actius"}</span><button className="secondary" onClick={clearAll}>Veure tots</button></div><div className="exp-side-list-v8741"><h4>Estat dels expedients</h4>{Object.entries(estatCount).map(([t,n])=><button key={t} onClick={()=>f.setOst(t)}><span>{t}</span><b>{n}</b></button>)}</div></Card>
       <Card title="Filtrar per tipus de treball"><div className="exp-side-list-v8741 type-filter-list-v8742"><button className={!f.ot?"active":""} onClick={()=>f.setOt("")}><span>Tots els tipus</span><b>{flat.length}</b></button>{topTipus.length===0?<p>Sense dades.</p>:topTipus.map(([t,n])=><button key={t} className={f.ot===t?"active":""} onClick={()=>f.setOt(t)}><span>{t}</span><b>{n}</b></button>)}</div></Card>
-      <Card title="Accions ràpides"><div className="quick-side-v8742"><button className="primary" onClick={newObra}>+ Nou expedient</button><button className="secondary" onClick={()=>setScreen?.("Agenda")}>Obrir agenda</button><button className="secondary" onClick={()=>setScreen?.("Pressupostos")}>Pressupostos</button><button className="secondary" onClick={()=>setScreen?.("Factures")}>Factures</button></div></Card>
+      <Card title="Accions ràpides"><div className="quick-side-v8742"><button className="primary" onClick={newObra}>+ Nou expedient</button>{allowAdminActions&&<><button className="secondary" onClick={()=>setScreen?.("Agenda")}>Obrir agenda</button><button className="secondary" onClick={()=>setScreen?.("Pressupostos")}>Pressupostos</button><button className="secondary" onClick={()=>setScreen?.("Factures")}>Factures</button></>}</div></Card>
     </div>
   </details>
 </div>}function ObraRow({o,d={},open}){const last=obraRecentScore878134(o,d);return <button onClick={()=>open(o.id)} className="obra-row obra-row-code-v8739"><div className="thumb">{o.imatge?<img src={o.imatge}/> : "FOTO"}</div><div className="grow"><small className="exp-code-v8739">Intern: {expedientCode8739(o)} · Client: {clientProjectLabel878233(o)}</small><strong>{o.nom}</strong><span>{o.subtitol}</span><em>{moduleLabel8737(o)} · {o.poblacio||"Sense municipi"} · Creat: {fmtCreationDate878233(o.createdAt)}</em>{last>0&&<small className="last-worked-v878133">Darrer treball / accés: {fmtRecentActivity878134(last)}</small>}</div><Badge estat={o.estat}/></button>}
@@ -5900,7 +5957,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.233",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.234",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6573,7 +6630,8 @@ function PressupostRapid878150(props){
   </div>
 }
 
-function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,deleteObra,allAgents=[],clientHistoricalPartides=[],clientBudgetNumbers878194=[],partidaLibrary=[],setPartidaLibrary}){
+function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,deleteObra,allAgents=[],clientHistoricalPartides=[],clientBudgetNumbers878194=[],partidaLibrary=[],setPartidaLibrary,readOnly=false,allowedTabs=[]}){
+  const setData=readOnly?()=>{}:rawSetData;
   const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");
   const[editObra,setEditObra]=useState(false);
   const[tabsOpen,setTabsOpen]=useState(()=>!(typeof window!=="undefined"&&(window.innerWidth||0)<951));
@@ -6581,14 +6639,23 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
   const[mobileActionsOpen87119,setMobileActionsOpen87119]=useState(false);
   useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
   let tabs=tabsForWork8737(obra,data);
+  if(readOnly){
+    // Certificacions i facturació són mòduls de consulta del portal client,
+    // encara que internament el despatx els gestioni dins de «Gestió obra».
+    tabs=[...tabs,...allowedTabs.filter(t=>["Certificacions obra","Facturació obra"].includes(t))];
+    tabs=tabs.filter(t=>allowedTabs.includes(t));
+  }
+  else if(allowedTabs.length)tabs=tabs.filter(t=>allowedTabs.includes(t)||t==="Resum");
+  if(!tabs.length)tabs=["Resum"];
+  useEffect(()=>{if(!tabs.includes(tab))setTab(tabs[0]||"Resum")},[obra?.id,tab,readOnly,allowedTabs.join("|")]);
   const workType878193=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
   const canQuickBudget878193=["Pressupost d’obra / amidaments","Elaboració de pressupost per client"].includes(workType878193)||tabs.includes("Pressupost ràpid");
   const hasBudgetCapability878194=canQuickBudget878193||tabs.includes("Pressupost obra")||tabs.includes("Gestió obra");
   const autoBudgetNumber878194=useMemo(()=>nextClientBudgetNumber878194(client,clientBudgetNumbers878194,data?.pressupostRapidData||todayISO8743()),[client?.id,client?.nom,client?.rao,(clientBudgetNumbers878194||[]).join("|"),data?.pressupostRapidData]);
   useEffect(()=>{
-    if(!hasBudgetCapability878194||data?.pressupostRapidNumero||!autoBudgetNumber878194)return;
+    if(readOnly||!hasBudgetCapability878194||data?.pressupostRapidNumero||!autoBudgetNumber878194)return;
     setData?.(d=>d.pressupostRapidNumero?d:{...d,pressupostRapidNumero:autoBudgetNumber878194,pressupostRapidVersio:d.pressupostRapidVersio||"v01",pressupostRapidCreatedAt:d.pressupostRapidCreatedAt||new Date().toISOString(),updatedAt:new Date().toISOString()});
-  },[obra?.id,hasBudgetCapability878194,autoBudgetNumber878194]);
+  },[obra?.id,hasBudgetCapability878194,autoBudgetNumber878194,readOnly]);
   const directBudgetInfo878214=ensureBudgetGroups8786(data);
   const directBudgetId878214=directBudgetInfo878214.active||"principal";
   const directBudgetData878214=filterBudgetData8786(data,directBudgetId878214);
@@ -6647,9 +6714,9 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Pressupost obra"&&<Pressupost data={directBudgetData878214} setData={setDirectBudgetData878214} importExcel={(e)=>importExcel?.(e,directBudgetId878214)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={directBudgetInfo878214.groups} activeBudgetId={directBudgetId878214} selectBudget={selectDirectBudget878214} totalActive={directBudgetTotal878214} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {activeTab==="Pressupost ràpid"&&<PressupostRapid878150 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
-    {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
-    {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc}/>} 
+    {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client}/>} 
     {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents}/>} 
@@ -6658,8 +6725,9 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
     {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>} 
     {activeTab==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>} 
   </>;
-  return <div className="obra-page obra-page-v87105">
-    {editObra&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
+  return <div className={`obra-page obra-page-v87105 ${readOnly?"client-readonly-obra-v878234":""}`}>
+    {readOnly&&<div className="module-note-v8738 client-readonly-banner-v878234"><b>Vista de client · només lectura</b><span>Pots consultar la informació compartida d’aquesta obra. Les modificacions les farà el despatx.</span></div>}
+    {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>Dades econòmiques recuperades</b><span>S’han restaurat {data.economicRecoveryV87214.restored||0} preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>Certificacions recuperades</b><span>S’han reconstruït les certificacions {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} sense substituir les línies de medició actuals de la certificació 8.</span></div>}
     <section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777 obra-head-access-v87105">
@@ -6672,10 +6740,10 @@ function Obra({obra,client,clients,setClients,data,setData,tab,setTab,setScreen,
           <button type="button" className="primary" onClick={()=>setMobileFlowOpen87119(v=>!v)}>Obrir opcions de l’expedient</button>
           <button type="button" className="secondary" onClick={()=>setMobileActionsOpen87119(v=>!v)}>Accions</button>
           {mobileFlowOpen87119&&<div className="obra-mobile-flow-panel-v87119"><div className="flow-title-v87119"><b>Què vols obrir?</b><button type="button" onClick={()=>setMobileFlowOpen87119(false)}>Tancar</button></div>{tabs.map(t=><button type="button" key={t} onClick={()=>{setTab(t);setTabsOpen(false);setMobileFlowOpen87119(false)}} className={activeTab===t?"active":""}><span>{t}</span><small>{activeTab===t?"Oberta":"Entrar"}</small></button>)}</div>}
-          {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button></div>}
+          {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button>{!readOnly&&<button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button>}{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button>}</div>}
         </div>
       </div>
-      <div className="obra-mini-actions-v8776 obra-evolution-actions-v878193"><Badge estat={estatObra}/>{canQuickBudget878193&&<button type="button" className="primary" onClick={()=>setTab("Pressupost ràpid")}>Crear / editar pressupost</button>}<button type="button" className="secondary" onClick={()=>setEditObra(true)}>Ampliar encàrrec</button><button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button><button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button></div>
+      <div className="obra-mini-actions-v8776 obra-evolution-actions-v878193"><Badge estat={estatObra}/>{canQuickBudget878193&&<button type="button" className="primary" onClick={()=>setTab("Pressupost ràpid")}>Crear / editar pressupost</button>}{!readOnly&&<button type="button" className="secondary" onClick={()=>setEditObra(true)}>Ampliar encàrrec</button>}<button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button>{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button>}</div>
     </section>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105">
@@ -6913,6 +6981,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [libraryScope87160,setLibraryScope87160]=useState("client");
   const [librarySelected87218,setLibrarySelected87218]=useState({});
   const [libraryLimit87218,setLibraryLimit87218]=useState(80);
+  const [librarySort878234,setLibrarySort878234]=useState("usage");
   const [budgetMeasureTarget878194,setBudgetMeasureTarget878194]=useState(null);
   const [budgetSelectedRows878229,setBudgetSelectedRows878229]=useState({});
   const [budgetBulkTarget878229,setBudgetBulkTarget878229]=useState("");
@@ -6920,7 +6989,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [budgetSummaryForm878229,setBudgetSummaryForm878229]=useState({codi:"",concepte:"Preu global industrial / instal·lacions",ut:"p.a.",cap:""});
   const [chapterEditModal878230,setChapterEditModal878230]=useState(null);
   const [bulkRenumberModal878231,setBulkRenumberModal878231]=useState(null);
-  useEffect(()=>{setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("");setLibraryScope87160("client");setLibrarySelected87218({});setLibraryLimit87218(80)},[currentClientId87196]);
+  useEffect(()=>{setLibrarySearch87115("");setLibraryCap87115("");setLibraryTargetCap87115("");setLibraryScope87160("client");setLibrarySelected87218({});setLibraryLimit87218(80);setLibrarySort878234("usage")},[currentClientId87196]);
   useEffect(()=>{setLibraryLimit87218(80)},[libraryScope87160,librarySearch87115,libraryCap87115]);
   // V87.199: els pressupostos i Excel importats NO alimenten la llibreria automàticament.
   // Només s'hi incorpora una partida quan l'usuari prem explícitament "Desar a la llibreria".
@@ -6944,6 +7013,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
   function addLibraryPartidaToBudget87115(item){
     if(!editBudget8760b){alert("Primer activa el mode edició del pressupost.");return;}
+    const existingRows=Object.values(caps||{}).flat();
+    if(existingRows.some(row=>String(row.libraryItemId||"")===String(item?.id||"")||librarySimilarityKey878234(row)===librarySimilarityKey878234(item))){alert("Aquesta partida ja és dins del pressupost.");return;}
     if(currentClientId87196&&!(item.clientIds||[]).some(cid=>String(cid)===currentClientId87196))setPartidaLibrary?.(prev=>upsertPartidaLibrary87196(prev,{...item,clientIds:[...(item.clientIds||[]),currentClientId87196]}));
     const dest=currentLibraryDestinationCap87115();
     setCaps(p=>{
@@ -6972,6 +7043,18 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const centralLibrary87196=useMemo(()=>dedupePartidaLibrary87196(partidaLibrary||[]),[partidaLibrary]);
   const libraryItems87115=centralLibrary87196.filter(x=>(x.clientIds||[]).some(cid=>String(cid)===currentClientId87196));
   const visibleLibraryItems87160=libraryScope87160==="client"?libraryItems87115:centralLibrary87196;
+  const libraryUsage878234=useMemo(()=>{
+    const byId={},byKey={};
+    [...(clientHistoricalPartides||[]),...(data.partides||[])].forEach(row=>{
+      if(row?.libraryItemId)byId[String(row.libraryItemId)]=(byId[String(row.libraryItemId)]||0)+1;
+      const key=librarySimilarityKey878234(row);
+      if(key)byKey[key]=(byKey[key]||0)+1;
+    });
+    return {byId,byKey};
+  },[clientHistoricalPartides,data.partides]);
+  function libraryUsageCount878234(item){
+    return libraryUsage878234.byId[String(item?.id)]||libraryUsage878234.byKey[librarySimilarityKey878234(item)]||0;
+  }
   const sharedLibraryChapters87201=[...new Set(["General",...(lsJson8779("aco_library_chapters_v87201",[])||[]),...centralLibrary87196.map(x=>x.cap||"General")].map(x=>libText87196(x)).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),"ca",{numeric:true}));
   function setLibraryItems87115(updater){setPartidaLibrary?.(prev=>dedupePartidaLibrary87196(typeof updater==="function"?updater(prev||[]):updater||[]))}
   const libraryCaps87115=sharedLibraryChapters87201;
@@ -6981,7 +7064,17 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const okCap=!libraryCap87115||String(x.cap||"")===libraryCap87115;
     return okQ&&okCap;
   });
-  const libraryDisplayed87218=libraryFiltered87115.slice(0,libraryLimit87218);
+  const librarySorted878234=[...libraryFiltered87115].sort((a,b)=>{
+    if(librarySort878234==="usage")return libraryUsageCount878234(b)-libraryUsageCount878234(a)||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||String(a.concepte||"").localeCompare(String(b.concepte||""),"ca");
+    if(librarySort878234==="chapter")return String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true})||String(a.concepte||"").localeCompare(String(b.concepte||""),"ca");
+    return String(a.concepte||"").localeCompare(String(b.concepte||""),"ca")||String(a.cap||"").localeCompare(String(b.cap||""),"ca",{numeric:true});
+  });
+  const libraryDisplayed87218=librarySorted878234.slice(0,libraryLimit87218);
+  const libraryChapterGroups878234=libraryDisplayed87218.reduce((groups,item)=>{
+    const chapter=String(item.cap||"General");
+    (groups[chapter]??=[]).push(item);
+    return groups;
+  },{});
   const librarySelectedItems87218=centralLibrary87196.filter(item=>librarySelected87218[item.id]);
   function openBudgetLibrary87218(targetCap="",scope="client"){
     if(!editBudget8760b)beginBudgetEdit878176();
@@ -7006,8 +7099,14 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function addSelectedLibraryPartides87218(){
     if(!librarySelectedItems87218.length){alert("Selecciona com a mínim una partida.");return;}
     const dest=currentLibraryDestinationCap87115();
+    const existingRows=Object.values(caps||{}).flat();
+    const existingLibraryIds=new Set(existingRows.map(row=>String(row.libraryItemId||"")).filter(Boolean));
+    const existingSimilarityKeys=new Set(existingRows.map(librarySimilarityKey878234).filter(Boolean));
+    const selectedLibraryItems=librarySelectedItems87218.filter(item=>!existingLibraryIds.has(String(item.id))&&!existingSimilarityKeys.has(librarySimilarityKey878234(item)));
+    if(!selectedLibraryItems.length){alert("Aquestes partides ja són dins del pressupost. No s'han duplicat.");return;}
+    if(selectedLibraryItems.length<librarySelectedItems87218.length)alert("S'han omès les partides que ja existien al pressupost per evitar duplicats.");
     if(currentClientId87196){
-      const selectedIds=new Set(librarySelectedItems87218.map(item=>String(item.id)));
+      const selectedIds=new Set(selectedLibraryItems.map(item=>String(item.id)));
       setPartidaLibrary?.(prev=>dedupePartidaLibrary87196((prev||[]).map(item=>selectedIds.has(String(item.id))?{...item,clientIds:[...new Set([...(item.clientIds||[]),currentClientId87196])],updatedAt:new Date().toISOString()}:item)));
     }
     setCaps(prev=>{
@@ -7017,7 +7116,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       const base=(String(dest).match(/(\d+)/)?.[1]||"").padStart(2,"0");
       const used=new Set(arr.map(r=>String(r.codi||"")));
       let next=arr.length+1;
-      const additions=librarySelectedItems87218.map(item=>{
+      const additions=selectedLibraryItems.map(item=>{
         let printedCode=base?`${base}.${String(next++).padStart(2,"0")}`:(item.codiPressupost||item.codi||"");
         while(used.has(printedCode)&&base)printedCode=`${base}.${String(next++).padStart(2,"0")}`;
         used.add(printedCode);
@@ -7754,9 +7853,9 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         <div className="budget-library-steps-v87218"><span className="done">1 · Client</span><span className="active">2 · Buscar i seleccionar</span><span>3 · Afegir al capítol</span></div>
         <div className="budget-library-client-v87218"><div><small>Client d'aquest pressupost</small><b>{client?.nom||client?.rao||"Client sense nom"}</b><span>Les partides que afegeixis quedaran automàticament relacionades amb aquest client.</span></div><div><small>Capítol de destí</small><select value={libraryTargetCap87115} onChange={e=>setLibraryTargetCap87115(e.target.value)}>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{cap}</option>)}{!Object.keys(caps||{}).length&&<option value="C01 NOU CAPÍTOL">C01 NOU CAPÍTOL</option>}</select><button type="button" className="secondary small" onClick={createLibraryTargetCap87218}>+ Nou capítol</button></div></div>
         <div className="budget-library-tabs-v87218"><button type="button" className={libraryScope87160==="client"?"active":""} onClick={()=>{setLibraryScope87160("client");setLibrarySelected87218({})}}>Habituals de {client?.nom||client?.rao||"client"} <b>{libraryItems87115.length}</b></button><button type="button" className={libraryScope87160==="all"?"active":""} onClick={()=>{setLibraryScope87160("all");setLibrarySelected87218({})}}>Tota la llibreria validada <b>{centralLibrary87196.length}</b></button></div>
-        <div className="budget-library-search-v87218"><label><span>Cercar</span><input autoFocus value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Nom, codi, descripció o unitat..."/></label><label><span>Capítol de la biblioteca</span><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select></label></div>
+        <div className="budget-library-search-v87218"><label><span>Cercar</span><input autoFocus value={librarySearch87115} onChange={e=>setLibrarySearch87115(e.target.value)} placeholder="Nom, codi, descripció o unitat..."/></label><label><span>Capítol de la biblioteca</span><select value={libraryCap87115} onChange={e=>setLibraryCap87115(e.target.value)}><option value="">Tots els capítols</option>{libraryCaps87115.map(c=><option key={c}>{c}</option>)}</select></label><label><span>Ordenar</span><select value={librarySort878234} onChange={e=>setLibrarySort878234(e.target.value)}><option value="usage">Més utilitzades per aquest client</option><option value="chapter">Per capítol</option><option value="name">Per concepte</option></select></label></div>
         <div className="budget-library-result-head-v87218"><div><b>{libraryFiltered87115.length} partides trobades</b><span>Mostrant {Math.min(libraryDisplayed87218.length,libraryFiltered87115.length)} · {librarySelectedItems87218.length} seleccionades</span></div><div><button type="button" className="secondary small" onClick={selectDisplayedLibrary87218}>Marcar les visibles</button><button type="button" className="secondary small" onClick={()=>setLibrarySelected87218({})}>Netejar selecció</button></div></div>
-        <div className="budget-library-list-v87218">{libraryFiltered87115.length===0?<div className="empty-mini-v87115"><b>No hi ha partides amb aquest filtre.</b><span>{libraryScope87160==="client"?"Obre Tota la llibreria validada; quan afegeixis una partida quedarà vinculada a aquest client.":"Canvia el text o selecciona Tots els capítols."}</span></div>:libraryDisplayed87218.map(item=><label className={`budget-library-row-v87218 ${librarySelected87218[item.id]?"selected":""}`} key={item.id}><input type="checkbox" checked={!!librarySelected87218[item.id]} onChange={()=>toggleLibrarySelection87218(item.id)}/><div><strong>{item.concepte||"Partida sense concepte"}</strong><span><b>{item.codiIntern||item.codi||"Sense codi"}</b> · {item.cap||"General"}</span>{item.desc&&<small>{item.desc}</small>}</div><em>{item.ut||"ut"}</em><b>{money(item.pu||0)}</b></label>)}</div>
+        <div className="budget-library-list-v87218">{libraryFiltered87115.length===0?<div className="empty-mini-v87115"><b>No hi ha partides amb aquest filtre.</b><span>{libraryScope87160==="client"?"Obre Tota la llibreria validada; quan afegeixis una partida quedarà vinculada a aquest client.":"Canvia el text o selecciona Tots els capítols."}</span></div>:Object.entries(libraryChapterGroups878234).map(([chapter,items])=><section className="budget-library-chapter-v878234" key={chapter}><div className="budget-library-chapter-head-v878234"><b>{chapter}</b><span>{items.length} partides</span></div>{items.map(item=><label className={`budget-library-row-v87218 ${librarySelected87218[item.id]?"selected":""}`} key={item.id}><input type="checkbox" checked={!!librarySelected87218[item.id]} onChange={()=>toggleLibrarySelection87218(item.id)}/><div><strong>{item.concepte||"Partida sense concepte"}</strong><span><b>{item.codiIntern||item.codi||"Sense codi"}</b> · {item.cap||"General"}</span>{item.desc&&<small>{item.desc}</small>}</div><em>{item.ut||"ut"}</em><b>{money(item.pu||0)}</b><small className="budget-library-usage-v878234">{libraryUsageCount878234(item)} usos del client</small></label>) }</section>)}</div>
         {libraryDisplayed87218.length<libraryFiltered87115.length&&<button type="button" className="secondary budget-library-more-v87218" onClick={()=>setLibraryLimit87218(n=>n+80)}>Mostrar 80 partides més · en queden {libraryFiltered87115.length-libraryDisplayed87218.length}</button>}
         <div className="modal-actions budget-library-actions-v87218"><button type="button" className="secondary" onClick={()=>setLibraryOpen87115(false)}>Cancel·lar</button><button type="button" className="primary" disabled={!librarySelectedItems87218.length} onClick={addSelectedLibraryPartides87218}>Afegir {librarySelectedItems87218.length||""} {librarySelectedItems87218.length===1?"partida":"partides"} al capítol</button></div>
       </div>
@@ -8210,7 +8309,7 @@ function CertPartidaModal87216({row,certNum,capOptions=[],editing,close,saveMeta
   </Modal>
 }
 
-function Cert({data,setData,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc}){
+function Cert({data,setData,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc,readOnly=false}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
 const[editing,setEditing]=useState(false);
@@ -8287,7 +8386,7 @@ function applyCertificationImport878231(){
   const now=new Date().toISOString();
   const certIds=Object.fromEntries(importedCerts.map(item=>[String(item.numero),`cert-excel-${Date.now()}-${item.numero}`]));
   try{
-    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.233",createdAt:now,fileName:preview.fileName,data}));
+    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.234",createdAt:now,fileName:preview.fileName,data}));
   }catch(error){console.warn("No s'ha pogut crear la còpia prèvia de la importació",error)}
   setData?.(current=>{
     const sourceByTarget=new Map();
@@ -8705,7 +8804,7 @@ function openAdminMonthlyForRow878133(r){
   setAdminMonthlyOpen878127({...saved,cap:saved.cap||r?.cap||"",codi:saved.codi||r?.codi||"",conceptePartida:saved.conceptePartida||r?.concepte||"",targetPartidaCodi:auto?(saved.targetPartidaCodi||""):(saved.targetPartidaCodi||r?.codi||""),targetPartidaConcepte:auto?(saved.targetPartidaConcepte||""):(saved.targetPartidaConcepte||r?.concepte||""),sourceRowId:r?.id||"",sourceRowCodi:r?.codi||"",sourceRowIsCertOnly:!!(r?.noPressupost||r?.createdFromCert||r?.adminMonthlyAuto)});
 }
 function openAdminMonthlyNew878133(){setAdminMonthlyOpen878127((data.certAdminMonthlyByNum||{})[String(certNum)]||{});}
-return <div className="stack">{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 key={`${certNum}-${adminMonthlyOpen878127.entryId||adminMonthlyOpen878127.targetPartidaCodi||adminMonthlyOpen878127.codi||"nou"}`} certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127} split={splitAdminMonthly87223}/>} 
+return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{adminMonthlyOpen878127&&<AdminMonthlyCostModal878127 key={`${certNum}-${adminMonthlyOpen878127.entryId||adminMonthlyOpen878127.targetPartidaCodi||adminMonthlyOpen878127.codi||"nou"}`} certNum={certNum} initial={adminMonthlyOpen878127||{}} capOptions={Object.keys(caps||{})} partidaOptions={rows||[]} close={()=>setAdminMonthlyOpen878127(null)} save={saveAdminMonthly878127} split={splitAdminMonthly87223}/>} 
 {medicioTarget8780&&<MedicioModal8780 row={medicioTarget8780} certNum={certNum} initial={(medicioTarget8780.certMesuresByNum||{})[String(certNum)]||[]} close={()=>setMedicioTarget8780(null)} save={(lines,total)=>saveMesures8780(medicioTarget8780,lines,total)}/>} 
 {adminPrintOpen87221&&<Modal title={`Partides per administració · Certificació ${certNum}`} close={()=>setAdminPrintOpen87221(false)}><div className="admin-print-list-v87221"><div className="module-note-v8738 admin-print-note-v87221"><b>{adminPrintableRows87221.length} partida/es amb línies guardades</b><span>Pots imprimir qualsevol partida, també les noves i les de fora de pressupost. Cada quadre manté separades les seves pròpies feines, hores i materials.</span></div>{adminPrintableRows87221.map(({row,payload})=><div className="admin-print-row-v87221" key={row.id||`${row.cap}-${row.codi}`}><div><small>{row.cap||"Sense capítol"}</small><b>{row.codi||"s/codi"} · {row.concepte||"Partida sense concepte"}</b><span>{payload.lines.length} línia/es · Total: {money(adminPayloadTotal87221(payload))}</span>{(row.noPressupost||row.createdFromCert||row.adminMonthlyAuto)&&<em>Partida nova / fora de pressupost</em>}</div><button type="button" className="primary" onClick={()=>printAdminForRow87221(row,payload)}>Previsualitzar / imprimir</button></div>)}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setAdminPrintOpen87221(false)}>Tancar</button></div></Modal>}
 {certImportPreview878231&&<Modal title="Revisar la importació de certificacions" close={()=>setCertImportPreview878231(null)}><div className="cert-import-modal-v87231"><div className="module-note-v8738"><b>{certImportPreview878231.fileName}</b><span>Primer revisa el recompte. No es modifica res fins que premis «Importar certificacions».</span></div><div className="cert-import-stats-v87231"><div><small>Certificacions detectades</small><b>{certImportPreview878231.parsed.certifications.length}</b></div><div><small>Partides vinculades</small><b>{certImportPreview878231.matching.matches.length}</b></div><div><small>Noves / fora pressupost</small><b>{certImportPreview878231.matching.newExtras.length}</b></div><div><small>Pendents de correspondència</small><b>{certImportPreview878231.matching.unmatched.length}</b></div><div className={certImportPreview878231.matching.warnings.length?"warn":""}><small>Files vermelles d’avís</small><b>{certImportPreview878231.matching.warnings.length}</b></div></div><section className="cert-import-section-v87231"><h3>1 · Certificacions que vols importar</h3><div className="cert-import-cert-list-v87231">{certImportPreview878231.parsed.certifications.map(item=><label key={item.numero}><input type="checkbox" checked={!!certImportPreview878231.selectedNums[String(item.numero)]} onChange={()=>toggleCertificationImport878231(item.numero)}/><span><b>Certificació {item.numero}</b><small>{item.date?fmtAppDate8748(item.date):"Data no detectada"} · {item.itemCount} partides</small></span><strong>{money(item.total)}</strong></label>)}</div></section><section className="cert-import-section-v87231"><h3>2 · Criteris de seguretat</h3><label className="cert-import-option-v87231"><input type="checkbox" checked={!!certImportPreview878231.includeExtras} onChange={e=>setCertImportPreview878231(prev=>({...prev,includeExtras:e.target.checked}))}/><span><b>Incorporar les {certImportPreview878231.matching.newExtras.length} partides marcades amb color com a noves / fora de pressupost</b><small>Es creen al pressupost actual i conserven el codi original com a dada d’origen.</small></span></label><label className="cert-import-option-v87231"><input type="checkbox" checked={!!certImportPreview878231.replaceExisting} onChange={e=>setCertImportPreview878231(prev=>({...prev,replaceExisting:e.target.checked}))}/><span><b>Substituir valors de certificació que ja existeixin</b><small>Desmarcat per seguretat: per defecte només s’omplen valors buits. Activa-ho només si l’Excel és la font definitiva.</small></span></label>{certImportPreview878231.matching.warnings.length>0&&<div className="cert-import-warning-v87231"><b>{certImportPreview878231.matching.warnings.length} files amb vermell intens no s’importaran</b><span>Es consideren anul·lacions o avisos manuals i queden fora fins que les revisis.</span></div>}{certImportPreview878231.matching.unmatched.length>0&&<div className="cert-import-warning-v87231 neutral"><b>{certImportPreview878231.matching.unmatched.length} partides base no tenen correspondència segura</b><span>No es crearan automàticament. Així s’eviten duplicats o assignacions errònies.</span></div>}</section><section className="cert-import-section-v87231"><h3>3 · Mostra de la correspondència</h3><div className="cert-import-preview-list-v87231">{[...certImportPreview878231.matching.matches.slice(0,60).map(item=>({status:"Vinculada",tone:"ok",source:item.source,target:item.target})),...certImportPreview878231.matching.newExtras.slice(0,30).map(source=>({status:"Nova / fora pressupost",tone:"extra",source})),...certImportPreview878231.matching.unmatched.slice(0,20).map(source=>({status:"No importada",tone:"pending",source}))].map((item,index)=><div key={`${item.source.sourceRow}-${index}`} className={item.tone}><span><small>Fila {item.source.sourceRow} · {item.source.chapter}</small><b>{item.source.code} · {item.source.concept}</b>{item.target&&<em>→ {item.target.codi} · {item.target.concepte}</em>}</span><strong>{item.status}</strong></div>)}</div></section><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setCertImportPreview878231(null)}>Cancel·lar</button><button type="button" className="primary" onClick={applyCertificationImport878231}>Importar certificacions</button></div></div></Modal>}
@@ -8807,7 +8906,7 @@ function fmtDate8714(v){
   if(!v || String(v).toLowerCase()==="avui") return "Sense data";
   return fmtAppDate8748(v);
 }
-function Fact({data,openEmail,openDoc}){
+function Fact({data,openEmail,openDoc,readOnly=false}){
 const key=lsKey8779("aco_fact_params_v61");
 const[params,setParams]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
 const[selected,setSelected]=useState(null);
@@ -8825,7 +8924,7 @@ const totalBaseProformes=proformes.reduce((s,f)=>s+(+f.base||0),0);
 const totalProformes=proformes.reduce((s,f)=>s+calc(f).total,0);
 const factPct=basePressupostObra?Math.min(totalBaseProformes/basePressupostObra*100,999):0;
 function openPrint(f){let c=calc(f);openDoc({type:"proforma",autoPrint:true,title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${fmtDate8714(f.data)}`,proforma:f,agents:data.agents||[],iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp})}
-return <div className="fact-layout-v61 fact-layout-v87101">
+return <div className={`fact-layout-v61 fact-layout-v87101 ${readOnly?"client-readonly-fact-v878234":""}`}>
 <Card title={`Facturació vinculada a certificacions · ${budgetLabel8786(data,data.activeBudgetIdObra||"principal")}`}>
   <div className="fact-summary-v87101"><div><span>Pressupost obra</span><b>{money(basePressupostObra)}</b></div><div><span>Base facturada/proforma</span><b>{money(totalBaseProformes)}</b></div><div><span>Total IVA inclòs</span><b>{money(totalProformes)}</b></div><div className="ring-mini-v87101"><i style={{background:`conic-gradient(#2563eb 0 ${Math.min(factPct,100)}%, #e5e7eb ${Math.min(factPct,100)}% 100%)`}}/><b>{pct(factPct)}</b><span>Facturat sobre pressupost</span></div></div>
   <div className="invoice-date-note-v87217"><b>Una única data vinculada.</b><span>La data de cada proforma/factura és exactament la data de la seva certificació. Si canvies la data de la Certificació 8, aquí s’actualitza automàticament. A la pantalla i als documents sempre es mostra com DD/MM/AAAA.</span></div>
@@ -9165,7 +9264,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.233.0",
+    app_version:"87.234.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -9243,9 +9342,90 @@ function RecoverySnapshotsPanel878122({setClients,setObres,setOdata,authUser}){
   </Card>
 }
 
+function accountDraft878233(account={},clients=[],owner="hector"){
+  return {
+    username:String(account.username||""),
+    password:String(account.password||""),
+    displayName:String(account.displayName||""),
+    role:String(account.role||"client"),
+    ownerUser:String(account.ownerUser||owner||"hector"),
+    clientId:String(account.clientId||clients[0]?.id||""),
+    readOnly:account.readOnly??true,
+    canCreateProject:account.canCreateProject??false,
+    allowedTabs:Array.isArray(account.allowedTabs)?account.allowedTabs.slice():["Resum","Documents","Actes","Fotografies","Certificacions obra","Facturació obra"]
+  };
+}
+function AccountAccessPanel878233({clients=[],authUser=""}){
+  const currentAccount=getAppAccount878233(authUser)||{};
+  const admin=appAccountIsAdmin878233(currentAccount);
+  const [accounts,setAccounts]=useState(()=>readAppAccounts878233());
+  const [selected,setSelected]=useState(()=>String(authUser||"").toLowerCase());
+  const [newMode,setNewMode]=useState(false);
+  const [form,setForm]=useState(()=>accountDraft878233(getAppAccount878233(authUser)||{},clients,authUser||"hector"));
+  const [newPwd,setNewPwd]=useState("");
+  const [newPwd2,setNewPwd2]=useState("");
+  useEffect(()=>{
+    if(!newMode){
+      const account=accounts[selected];
+      if(account)setForm(accountDraft878233(account,clients,authUser||"hector"));
+    }
+  },[selected,accounts,newMode,clients,authUser]);
+  function change(k,v){setForm(prev=>({...prev,[k]:v}))}
+  function toggleTab(tab){
+    setForm(prev=>({...prev,allowedTabs:prev.allowedTabs.includes(tab)?prev.allowedTabs.filter(x=>x!==tab):[...prev.allowedTabs,tab]}));
+  }
+  function newAccount(){
+    setNewMode(true);
+    setSelected("");
+    setForm(accountDraft878233({role:"client",readOnly:true,canCreateProject:false,allowedTabs:["Resum","Documents","Actes","Fotografies","Certificacions obra","Facturació obra"]},clients,authUser||"hector"));
+  }
+  function saveAccount(){
+    const username=accountUsernameSlug878233(form.username||form.displayName);
+    if(!username){alert("Escriu un usuari o un nom de client.");return}
+    if(!String(form.password||"")){alert("Cal indicar una contrasenya inicial.");return}
+    if(newMode&&accounts[username]){alert("Aquest usuari ja existeix.");return}
+    const normalized={...form,username,password:String(form.password),role:form.role==="admin"?"admin":"client",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:(form.allowedTabs||[]).length?form.allowedTabs:["Resum"],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject};
+    const next={...accounts,[username]:normalized};
+    if(!saveAppAccounts878233(next)){alert("No s'ha pogut guardar el compte.");return}
+    setAccounts(next);setSelected(username);setNewMode(false);alert("Usuari guardat.");
+  }
+  function changeMyPassword(){
+    if(!newPwd||newPwd!==newPwd2){alert("Les dues contrasenyes han de coincidir.");return}
+    const username=String(authUser||"").toLowerCase();
+    const next={...accounts,[username]:{...(accounts[username]||currentAccount),username,password:newPwd}};
+    if(!saveAppAccounts878233(next)){alert("No s'ha pogut guardar la contrasenya.");return}
+    setAccounts(next);setNewPwd("");setNewPwd2("");alert("Contrasenya canviada en aquest navegador.");
+  }
+  const linkedClient=clients.find(c=>String(c.id)===String(currentAccount.clientId||""));
+  return <Card title="Usuaris, clients i permisos">
+    <div className="module-note-v8738 account-note-v878233"><b>Accés de prova</b><span>El compte inicial és <b>socoterm</b> amb contrasenya <b>socoterm</b>. Associa’l a un client i limita les pestanyes abans de compartir l’accés.</span></div>
+    {admin&&<div className="account-admin-panel-v878233">
+      <div className="account-admin-head-v878233"><div><b>Comptes disponibles</b><span>Crea un usuari amb el nom del client o edita’n els permisos.</span></div><div className="actions-inline"><select value={newMode?"":selected} onChange={e=>{setNewMode(false);setSelected(e.target.value)}}><option value="">Selecciona un usuari</option>{Object.values(accounts).map(a=><option key={a.username} value={a.username}>{a.displayName||a.username} · {a.username}</option>)}</select><button type="button" className="secondary" onClick={newAccount}>+ Nou usuari</button></div></div>
+      <div className="form-grid account-form-grid-v878233">
+        <label><span>Usuari</span><input value={form.username||""} readOnly={!newMode} onChange={e=>change("username",e.target.value)} placeholder="ex. socoterm"/></label>
+        <label><span>Nom visible</span><input value={form.displayName||""} onChange={e=>change("displayName",e.target.value)} placeholder="Nom del client"/></label>
+        <label><span>Contrasenya inicial</span><input type="password" value={form.password||""} onChange={e=>change("password",e.target.value)} placeholder="Afegeix una contrasenya"/></label>
+        <label><span>Tipus d’usuari</span><select value={form.role||"client"} onChange={e=>change("role",e.target.value)}><option value="client">Client</option><option value="admin">Despatx / administrador</option></select></label>
+        <label><span>Client associat</span><select value={form.clientId||""} onChange={e=>change("clientId",e.target.value)}><option value="">Selecciona client</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao||c.id}</option>)}</select></label>
+        <label><span>Propietari de les dades</span><input value={form.ownerUser||""} onChange={e=>change("ownerUser",e.target.value)} placeholder="hector"/></label>
+        {form.role!=="admin"&&<><label className="check-label-v878233"><input type="checkbox" checked={!!form.readOnly} onChange={e=>change("readOnly",e.target.checked)}/><span>Només lectura</span></label><label className="check-label-v878233"><input type="checkbox" checked={!!form.canCreateProject} onChange={e=>change("canCreateProject",e.target.checked)}/><span>Pot obrir un expedient nou</span></label></>}
+        {form.role!=="admin"&&<div className="span-all account-tabs-picker-v878233"><b>Pestanyes visibles</b><div>{CLIENT_TAB_OPTIONS878233.map(tab=><label key={tab}><input type="checkbox" checked={(form.allowedTabs||[]).includes(tab)} onChange={()=>toggleTab(tab)}/><span>{tab}</span></label>)}</div></div>}
+      </div>
+      <div className="modal-actions"><button type="button" className="primary" onClick={saveAccount}>Guardar usuari i permisos</button></div>
+    </div>}
+    {!admin&&<div className="module-note-v8738"><b>Compte actual: {currentAccount.displayName||authUser}</b><span>{linkedClient?"Client associat: "+(linkedClient.nom||linkedClient.rao||linkedClient.id)+".":"Aquest compte encara no té cap client associat."} La vista de client no mostra la llibreria ni les pantalles tècniques generals.</span></div>}
+    <div className="password-change-panel-v878233">
+      <div><b>Canviar la meva contrasenya</b><span>El canvi queda guardat per a aquest accés.</span></div>
+      <div className="form-grid"><label><span>Nova contrasenya</span><input type="password" value={newPwd} onChange={e=>setNewPwd(e.target.value)} /></label><label><span>Repetir contrasenya</span><input type="password" value={newPwd2} onChange={e=>setNewPwd2(e.target.value)} /></label></div>
+      <button type="button" className="secondary" onClick={changeMyPassword}>Canviar contrasenya</button>
+    </div>
+  </Card>;
+}
+
 function Configuracio({clients=[],obres=[],odata={},partidaLibrary=[],setPartidaLibrary,setClients,setObres,setOdata,authUser}){
 const key=lsKey8779("aco_config_v60");
 const[cfg,setCfg]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
+const admin=appAccountIsAdmin878233(getAppAccount878233(authUser)||{});
 function upd(k,v){setCfg(p=>({...p,[k]:v}))}
 function save(){
   localStorage.setItem(key,JSON.stringify(cfg));
@@ -9253,7 +9433,8 @@ function save(){
   alert("Configuració guardada");
 }
 return <div className="stack">
-<PlansModuls8736/>
+<AccountAccessPanel878233 clients={clients} authUser={authUser}/>
+{admin&&<><PlansModuls8736/>
 <DataJsonTools8778 clients={clients} obres={obres} odata={odata}/>
 <RecoverySnapshotsPanel878122 setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
 <Card title="Configuració general" action={<button className="primary" onClick={save}><Save/> Guardar configuració</button>}>
@@ -9271,7 +9452,7 @@ return <div className="stack">
     <Input label="Anon key" value={cfg.supabaseKey||""} onChange={e=>upd("supabaseKey",e.target.value)} />
     <Input label="Bucket" value={cfg.bucket||"app-control-obres"} onChange={e=>upd("bucket",e.target.value)} />
   </div>
-</Card>
+</Card></>}
 </div>
 }
 
