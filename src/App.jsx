@@ -31,10 +31,13 @@ function readAppAccounts878233(){
     const builtInAdmin=keyNorm==="hector"||keyNorm==="pol";
     const role=builtInAdmin?"admin":(src.role||base.role||"client");
     const initialTabs=Array.isArray(src.allowedTabs)?src.allowedTabs:[...(base.allowedTabs||[])];
-    // Migració única de la prova Socoterm: les versions anteriors no tenien
-    // el pressupost com a pestanya de consulta. No ho tornem a afegir si
-    // l'administrador ja ha revisat els permisos manualment.
-    const migratedClientTabs=keyNorm==="socoterm"&&!src.clientPortalV87235
+    // V87.239 · reparació de permisos antics de Socoterm. Algunes còpies
+    // guardades pel navegador només conservaven «Resum», encara que el
+    // compte ja tingués el portal client del Mòdul 2 activat. Aquesta
+    // migració s'aplica una sola vegada; després Configuració pot retallar
+    // els permisos manualment sense que es tornin a afegir.
+    const needsSocotermTabsFix=keyNorm==="socoterm"&&!src.clientTabsFixedV878239;
+    const migratedClientTabs=needsSocotermTabsFix
       ? [...new Set([...initialTabs,...CLIENT_MODULE_TABS878235])]
       : initialTabs;
     return [keyNorm,{
@@ -47,6 +50,7 @@ function readAppAccounts878233(){
       clientId:String(src.clientId||base.clientId||""),
       allowedTabs:builtInAdmin?[]:migratedClientTabs,
       clientPortalV87235:true,
+      clientTabsFixedV878239:keyNorm==="socoterm"?true:!!src.clientTabsFixedV878239,
       readOnly:builtInAdmin?false:(src.readOnly??base.readOnly??true),
       canCreateProject:builtInAdmin?true:(src.canCreateProject??base.canCreateProject??false)
     }];
@@ -58,7 +62,11 @@ function saveAppAccounts878233(accounts={}){
 function getAppAccount878233(user){const u=String(user||"").trim().toLowerCase();return readAppAccounts878233()[u]||null}
 function appAccountOwner878233(account={},user=""){return String(account?.ownerUser||user||"hector").trim().toLowerCase()||"hector"}
 function appAccountIsAdmin878233(account={}){return account?.role==="admin"}
-function appAccountTabs878233(account={}){return appAccountIsAdmin878233(account)?[]:(Array.isArray(account?.allowedTabs)&&account.allowedTabs.length?account.allowedTabs:CLIENT_TAB_OPTIONS878233.slice())}
+function appAccountTabs878233(account={}){
+  if(appAccountIsAdmin878233(account))return [];
+  if(Array.isArray(account?.allowedTabs)&&account.allowedTabs.length)return account.allowedTabs;
+  return account?.module==="module2"?CLIENT_MODULE_TABS878235.slice():CLIENT_TAB_OPTIONS878233.slice();
+}
 function accountUsernameSlug878233(value=""){return String(value||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,32)||"client"}
 const STORAGE_NS8782="aco_v8782";
 function currentAppUser8779(){return sessionStorage.getItem("aco_current_user8779")||""}
@@ -1777,7 +1785,7 @@ function createLocalRecoverySnapshot878122(state={},label="Còpia de recuperaci�
     id:"rec-"+Date.now(),
     label,
     createdAt:new Date().toISOString(),
-    appVersion:"87.238.0",
+    appVersion:"87.239.0",
     user:user||currentAppUser8779()||"hector",
     clients:stripHeavy878104(state.clients||[]),
     obres:stripHeavy878104(state.obres||[]),
@@ -2697,7 +2705,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.238",
+      version:"V87.239",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -5996,7 +6004,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.238",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.239",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6681,8 +6689,9 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
   if(readOnly){
     // Pressupost, certificacions i facturació són mòduls de consulta del portal client,
     // encara que internament el despatx els gestioni dins de «Gestió obra».
-    tabs=[...tabs,...allowedTabs.filter(t=>CLIENT_TAB_OPTIONS878233.includes(t))];
-    tabs=tabs.filter(t=>allowedTabs.includes(t));
+    const clientAllowedTabs878239=allowedTabs.length?allowedTabs:CLIENT_MODULE_TABS878235;
+    tabs=[...tabs,...clientAllowedTabs878239.filter(t=>CLIENT_TAB_OPTIONS878233.includes(t))];
+    tabs=tabs.filter(t=>clientAllowedTabs878239.includes(t));
   }
   else if(allowedTabs.length)tabs=tabs.filter(t=>allowedTabs.includes(t)||t==="Resum");
   if(!tabs.length)tabs=["Resum"];
@@ -8429,7 +8438,7 @@ function applyCertificationImport878231(){
   const now=new Date().toISOString();
   const certIds=Object.fromEntries(importedCerts.map(item=>[String(item.numero),`cert-excel-${Date.now()}-${item.numero}`]));
   try{
-    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.238",createdAt:now,fileName:preview.fileName,data}));
+    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.239",createdAt:now,fileName:preview.fileName,data}));
   }catch(error){console.warn("No s'ha pogut crear la còpia prèvia de la importació",error)}
   setData?.(current=>{
     const sourceByTarget=new Map();
@@ -9360,7 +9369,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.238.0",
+    app_version:"87.239.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -9449,6 +9458,7 @@ function accountDraft878233(account={},clients=[],owner="hector"){
     clientId:String(account.clientId||clients[0]?.id||""),
     readOnly:account.readOnly??true,
     canCreateProject:account.canCreateProject??false,
+    clientTabsFixedV878239:!!account.clientTabsFixedV878239,
     allowedTabs:Array.isArray(account.allowedTabs)?account.allowedTabs.slice():["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra"]
   };
 }
@@ -9481,7 +9491,7 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
     if(!username){alert("Escriu un usuari o un nom de client.");return}
     if(!String(form.password||"")){alert("Cal indicar una contrasenya inicial.");return}
     if(newMode&&accounts[username]){alert("Aquest usuari ja existeix.");return}
-    const normalized={...form,username,password:String(form.password),role:form.role==="admin"?"admin":"client",module:form.role==="admin"?"technical":"module2",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:(form.allowedTabs||[]).length?form.allowedTabs:["Resum"],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject};
+    const normalized={...form,username,password:String(form.password),role:form.role==="admin"?"admin":"client",module:form.role==="admin"?"technical":"module2",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:(form.allowedTabs||[]).length?form.allowedTabs:["Resum"],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject,clientTabsFixedV878239:form.role==="admin"?false:!!form.clientTabsFixedV878239};
     const next={...accounts,[username]:normalized};
     if(!saveAppAccounts878233(next)){alert("No s'ha pogut guardar el compte.");return}
     setAccounts(next);setSelected(username);setNewMode(false);alert("Usuari guardat.");

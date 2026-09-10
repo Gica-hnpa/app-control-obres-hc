@@ -1,0 +1,11 @@
+VERSIÓ: V87.239
+
+- Reparat el cas en què Socoterm només veia «Resum» per permisos antics
+  guardats al navegador.
+- Recuperades les seccions comercials del portal client Mòdul 2 al selector
+  de l’obra.
+
+- Corregida la duplicació de pestanyes en la versió tècnica.
+- Recuperada la navegació pràctica segons el tipus de treball.
+- Separats els permisos del compte global i del portal client Mòdul 2.
+- Es manté el pressupost i les certificacions del client en només lectura.
