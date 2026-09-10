@@ -36,7 +36,8 @@ function readAppAccounts878233(){
     // compte ja tingués el portal client del Mòdul 2 activat. Aquesta
     // migració s'aplica una sola vegada; després Configuració pot retallar
     // els permisos manualment sense que es tornin a afegir.
-    const needsSocotermTabsFix=keyNorm==="socoterm"&&!src.clientTabsFixedV878239;
+    const onlyResumeTab=initialTabs.length===1&&initialTabs[0]==="Resum";
+    const needsSocotermTabsFix=keyNorm==="socoterm"&&(!src.clientTabsFixedV878239||onlyResumeTab);
     const migratedClientTabs=needsSocotermTabsFix
       ? [...new Set([...initialTabs,...CLIENT_MODULE_TABS878235])]
       : initialTabs;
@@ -1612,8 +1613,8 @@ function workTabGroups878238(tabs=[]){
 }
 function ExpedientSectionSelect878238({tabs=[],value,onChange,compact=false}){
   return <label className={`obra-section-select-v878238 ${compact?"compact":""}`}>
-    <span>{compact?"Secció actual":"Secció de l’expedient"}</span>
-    <select value={value||tabs[0]||"Resum"} onChange={e=>onChange?.(e.target.value)} aria-label="Secció de l’expedient">
+    <span>{compact?"Apartat actual":"Apartats de l’obra"}</span>
+    <select value={value||tabs[0]||"Resum"} onChange={e=>onChange?.(e.target.value)} aria-label="Apartats de l’obra">
       {workTabGroups878238(tabs).map(group=><optgroup key={group.label} label={group.label}>{group.tabs.map(tab=><option key={tab} value={tab}>{tab}</option>)}</optgroup>)}
     </select>
   </label>;
@@ -1785,7 +1786,7 @@ function createLocalRecoverySnapshot878122(state={},label="Còpia de recuperaci�
     id:"rec-"+Date.now(),
     label,
     createdAt:new Date().toISOString(),
-    appVersion:"87.239.0",
+    appVersion:"87.240.0",
     user:user||currentAppUser8779()||"hector",
     clients:stripHeavy878104(state.clients||[]),
     obres:stripHeavy878104(state.obres||[]),
@@ -2705,7 +2706,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.239",
+      version:"V87.240",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -6004,7 +6005,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.239",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.240",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6780,15 +6781,15 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>Dades econòmiques recuperades</b><span>S’han restaurat {data.economicRecoveryV87214.restored||0} preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>Certificacions recuperades</b><span>S’han reconstruït les certificacions {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} sense substituir les línies de medició actuals de la certificació 8.</span></div>}
     <section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777 obra-head-access-v87105">
-      <button type="button" className="secondary obra-tabs-toggle-v87105" onClick={()=>setTabsOpen(v=>!v)}><Menu/> Pestanyes</button>
+      <button type="button" className="secondary obra-tabs-toggle-v87105" onClick={()=>setTabsOpen(v=>!v)}><Menu/> Apartats</button>
       <div className="obra-head-main-v87105">
         <small>Intern: {expedientCode8739(obra)} · Client: {clientProjectLabel878233(obra)}</small>
         <h2>{obra.nom}</h2>
         <p>{client.nom} · {moduleLabel8737(obra)} · Creat: {fmtCreationDate878233(obra.createdAt)}</p>
         <div className="obra-mobile-flow-v87119">
-          <button type="button" className="primary" onClick={()=>setMobileFlowOpen87119(v=>!v)}>Seccions de l’expedient</button>
+          <button type="button" className="primary" onClick={()=>setMobileFlowOpen87119(v=>!v)}>Apartats de l’obra</button>
           <button type="button" className="secondary" onClick={()=>setMobileActionsOpen87119(v=>!v)}>Accions</button>
-          {mobileFlowOpen87119&&<div className="obra-mobile-flow-panel-v87119"><div className="flow-title-v87119"><b>Seccions de l’expedient</b><button type="button" onClick={()=>setMobileFlowOpen87119(false)}>Tancar</button></div><ExpedientSectionSelect878238 tabs={navigationTabs} value={activeTab} compact onChange={next=>{setTab(next);setTabsOpen(false);setMobileFlowOpen87119(false)}}/><small className="obra-section-help-v878238">Les opcions es mostren agrupades segons el tipus d’expedient i el mòdul actiu.</small></div>}
+          {mobileFlowOpen87119&&<div className="obra-mobile-flow-panel-v87119"><div className="flow-title-v87119"><b>Apartats de l’obra</b><button type="button" onClick={()=>setMobileFlowOpen87119(false)}>Tancar</button></div><ExpedientSectionSelect878238 tabs={navigationTabs} value={activeTab} compact onChange={next=>{setTab(next);setTabsOpen(false);setMobileFlowOpen87119(false)}}/><small className="obra-section-help-v878238">Tria l’apartat que vols consultar. Les opcions s’agrupen segons el tipus d’expedient i el mòdul actiu.</small></div>}
           {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button>{!readOnly&&<button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button>}{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button>}</div>}
         </div>
       </div>
@@ -6796,7 +6797,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     </section>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
-        <div className="obra-tabs-title-v87105"><b>Seccions de l’expedient</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
+        <div className="obra-tabs-title-v87105"><b>Apartats de l’obra</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
         <ExpedientSectionSelect878238 tabs={navigationTabs} value={activeTab} onChange={next=>{setTab(next);if(window.innerWidth<950)setTabsOpen(false)}}/>
         <div className="obra-section-current-v878238"><small>Oberta ara</small><b>{activeTab}</b></div>
       </aside>
@@ -8438,7 +8439,7 @@ function applyCertificationImport878231(){
   const now=new Date().toISOString();
   const certIds=Object.fromEntries(importedCerts.map(item=>[String(item.numero),`cert-excel-${Date.now()}-${item.numero}`]));
   try{
-    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.239",createdAt:now,fileName:preview.fileName,data}));
+    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.240",createdAt:now,fileName:preview.fileName,data}));
   }catch(error){console.warn("No s'ha pogut crear la còpia prèvia de la importació",error)}
   setData?.(current=>{
     const sourceByTarget=new Map();
@@ -9369,7 +9370,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.239.0",
+    app_version:"87.240.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

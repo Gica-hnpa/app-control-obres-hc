@@ -1,0 +1,7 @@
+VERSIÓ: V87.240
+
+- Corregit el bloqueig accidental del desplegable de navegació en la vista
+  només lectura de Socoterm.
+- Reanomenada la navegació com a «Apartats de l’obra».
+- Recuperats els apartats del Mòdul 2 quan el compte antic només conservava
+  «Resum».

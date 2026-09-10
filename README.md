@@ -1,8 +1,8 @@
-# APP Control d’Obres V87.239
+# APP Control d’Obres V87.240
 
-## Reparació del portal client Socoterm
+## Selector d’apartats i portal client Socoterm
 
-La V87.239 repara els permisos antics guardats al navegador que podien deixar el compte `socoterm` amb només «Resum». En obrir una obra, el selector torna a mostrar les seccions comercials del Mòdul 2: documents, actes, fotografies, pressupost, certificacions i facturació. La migració només s’aplica a l’antic compte de prova; després els permisos es poden ajustar des de Configuració.
+La V87.240 corregeix el selector del portal client: el compte Socoterm pot obrir «Apartats de l’obra» encara que l’obra estigui en només lectura. També repara els permisos antics guardats al navegador que podien deixar el compte amb només «Resum». Es mantenen Documents, Actes, Fotografies, Pressupost obra, Certificacions obra i Facturació obra.
 
 ## Navegació agrupada i accions netes
 

@@ -1,0 +1,14 @@
+V87.240 · SELECTOR D’APARTATS DE L’OBRA
+
+- El selector de navegació del portal client torna a ser actiu en només
+  lectura; els camps d’edició continuen bloquejats.
+- El nom visible passa de «Seccions de l’expedient» a «Apartats de l’obra».
+- En obrir el selector es mostren els apartats autoritzats del Mòdul 2:
+  Documents, Actes, Fotografies, Pressupost obra, Certificacions obra i
+  Facturació obra.
+- Si el navegador conservava només «Resum» per una configuració antiga de
+  Socoterm, es recuperen automàticament els apartats del Mòdul 2.
+
+Compte de prova client:
+  Usuari: socoterm
+  Contrasenya: socoterm

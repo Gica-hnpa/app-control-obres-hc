@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-239-socoterm-tabs-fix",
+  "name": "app-control-obres-v87-240-socoterm-apartats",
   "private": true,
-  "version": "87.239.0",
+  "version": "87.240.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

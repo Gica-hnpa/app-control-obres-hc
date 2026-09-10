@@ -5443,8 +5443,8 @@ body::after{content:"APP V87.237"}
 @media(max-width:760px){.client-budget-v87235,.client-cert-summary-v87235{padding:10px}.client-budget-head-v87235,.client-cert-summary-head-v87235{align-items:stretch;flex-direction:column;padding:14px}.client-budget-total-v87235,.client-cert-total-v87235{min-width:0;text-align:left}.client-budget-kpis-v87235{grid-template-columns:1fr 1fr}.client-budget-kpis-v87235>div:last-child{grid-column:1/-1}.client-budget-line-head-v87235{display:none}.client-budget-line-v87235{grid-template-columns:1fr 1fr;gap:5px 12px;padding:10px 12px}.client-budget-line-v87235>div{grid-column:1/-1}.client-budget-line-v87235>span:nth-of-type(1):before{content:"Unitat · ";color:#64748b;font-weight:800}.client-budget-line-v87235>span:nth-of-type(2):before{content:"Quantitat · ";color:#64748b;font-weight:800}.client-budget-line-v87235>span:nth-of-type(3):before{content:"Preu/ut · ";color:#64748b;font-weight:800}.client-budget-line-v87235>strong:before{content:"Total · ";color:#64748b;font-weight:800}.client-budget-line-v87235>span,.client-budget-line-v87235>strong{text-align:left}.client-budget-grand-total-v87235{align-items:flex-start;flex-direction:column}.client-cert-row-v87235{min-width:760px}.client-cert-summary-head-v87235 p{max-width:48ch}}
 .account-module-help-v87235{display:block;margin-top:-2px;color:#64748b;line-height:1.35;font-size:11px}
 
-/* V87.239 · reparació de pestanyes del portal Socoterm */
-body::after{content:"APP V87.239"}
+/* V87.240 · selector d’apartats actiu en mode només lectura */
+body::after{content:"APP V87.240"}
 .obra-side-tabs-v878238{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;padding:14px!important;align-content:start!important;background:#fff!important;border:1px solid #d6dde7!important;border-radius:18px!important;box-shadow:0 2px 10px rgba(15,23,42,.04)!important}
 .obra-side-tabs-v878238 .obra-tabs-title-v87105{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:0 0 10px!important;border-bottom:1px solid #e2e8f0!important}
 .obra-side-tabs-v878238 .obra-tabs-title-v87105 b{font-size:13px!important;color:#0f2d5c!important}
@@ -5461,6 +5461,9 @@ body::after{content:"APP V87.239"}
 .budget-direct-edit-v87211 .action-menu-v87213>summary span{color:#dbeafe}
 .budget-toolbar-note-v878238{align-self:center;color:#64748b;font-size:11px;font-weight:800}
 .budget-simple-toolbar-v87213{justify-content:flex-start}
+/* Els camps del portal client són només lectura, però el selector de
+   navegació continua sent interactiu. */
+.client-readonly-obra-v878234 .obra-section-select-v878238 select{pointer-events:auto!important;opacity:1!important;cursor:pointer!important}
 @media(min-width:951px){
   .obra-layout-v87105,.obra-layout-v87105.tabs-open{display:grid!important;grid-template-columns:236px minmax(0,1fr)!important;gap:16px!important;align-items:start!important}
   .obra-layout-v87105.tabs-closed{display:grid!important;grid-template-columns:1fr!important}
