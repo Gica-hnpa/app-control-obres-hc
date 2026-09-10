@@ -1,7 +1,7 @@
 {
-  "name": "app-control-obres-v87-234-client-access-library",
+  "name": "app-control-obres-v87-236-modul2-client-portal",
   "private": true,
-  "version": "87.234.0",
+  "version": "87.236.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

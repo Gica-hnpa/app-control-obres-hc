@@ -1,0 +1,16 @@
+V87.235 · PORTAL CLIENT COMPACTE
+
+1. Descomprimeix el ZIP i conserva la carpeta completa que hi ha a dins.
+2. Per provar el client, obre l’adreça de l’app i entra amb:
+   Usuari: socoterm
+   Contrasenya: socoterm
+3. Dins d’una obra del client trobaràs:
+   - Pressupost: consulta del pressupost per capítols i partides.
+   - Certificacions obra: resum compacte per capítols.
+   - Facturació obra: consulta de les factures/proformes compartides.
+4. El client continua en mode només lectura. Pot consultar la informació i, si està
+   autoritzat, crear un expedient nou perquè el despatx el continuï.
+5. Per canviar la contrasenya, entra amb l’usuari corresponent i obre Configuració.
+
+Aquesta versió millora la vista client local. La sincronització bidireccional real
+entre ordinadors amb Supabase/Auth/RLS encara no forma part d’aquesta entrega.

@@ -1,0 +1,20 @@
+V87.236 · GLOBAL COMPLET I CLIENT MÒDUL 2
+
+Millores:
+- La versió global d’Héctor/Pol recupera totes les pestanyes de treball:
+  dades, agents, documents, plànols, memòria, renders, amidaments,
+  industrials, tràmits, seguretat i salut, actes, fotografies, pressupostos,
+  certificacions, facturació, honoraris, agenda, tasques, gestió d’obra,
+  gestió del temps, rendiment i tancament.
+- Els comptes d’administrador no queden filtrats pels permisos del portal client.
+- El client queda identificat com a Mòdul 2 · Portal de client.
+- El Mòdul 2 només mostra les pestanyes client autoritzades i permet activar-ne
+  més des de Configuració quan corresponguin a nous mòduls comercials.
+- El pressupost i les certificacions del client continuen en només lectura.
+
+Compte de prova:
+  Usuari: socoterm
+  Contrasenya: socoterm
+
+La sincronització bidireccional real amb Supabase/Auth/RLS encara queda fora
+d’aquesta versió.

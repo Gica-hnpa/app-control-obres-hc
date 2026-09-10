@@ -13,10 +13,13 @@ import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Tasques"];
+const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra"];
+const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
+const GLOBAL_WORK_TABS878235=["Resum","Dades","Agents","Documents","Plànols","Memòria / Informe / Certificat","Renders / Presentació","Amidaments","Industrials / Comparatius","Tràmits","Seguretat i salut","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Pressupostos","Factures","Honoraris","Agenda / Avisos","Tasques","Gestió obra","Gestió temps","Rendiment","Tancament / Entrega"];
 const DEFAULT_APP_ACCOUNTS878233={
-  hector:{username:"hector",password:"0000",role:"admin",displayName:"Héctor",ownerUser:"hector",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
-  pol:{username:"pol",password:"1919",role:"admin",displayName:"Pol",ownerUser:"pol",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
-  socoterm:{username:"socoterm",password:"socoterm",role:"client",displayName:"SOCOTERM · prova",ownerUser:"hector",clientId:"socoterm",readOnly:true,canCreateProject:true,allowedTabs:["Resum","Documents","Actes","Fotografies","Certificacions obra","Facturació obra"]}
+  hector:{username:"hector",password:"0000",role:"admin",module:"technical",displayName:"Héctor",ownerUser:"hector",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
+  pol:{username:"pol",password:"1919",role:"admin",module:"technical",displayName:"Pol",ownerUser:"pol",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
+  socoterm:{username:"socoterm",password:"socoterm",role:"client",module:"module2",displayName:"SOCOTERM · prova",ownerUser:"hector",clientId:"socoterm",readOnly:true,canCreateProject:true,allowedTabs:CLIENT_MODULE_TABS878235.slice()}
 };
 function readAppAccounts878233(){
   let saved={};
@@ -25,16 +28,28 @@ function readAppAccounts878233(){
   return Object.fromEntries(Object.entries(merged).map(([key,raw])=>{
     const base=DEFAULT_APP_ACCOUNTS878233[key]||{};
     const src=raw&&typeof raw==="object"?raw:{};
-    return [String(key).toLowerCase(),{
+    const keyNorm=String(key).toLowerCase();
+    const builtInAdmin=keyNorm==="hector"||keyNorm==="pol";
+    const role=builtInAdmin?"admin":(src.role||base.role||"client");
+    const initialTabs=Array.isArray(src.allowedTabs)?src.allowedTabs:[...(base.allowedTabs||[])];
+    // Migració única de la prova Socoterm: les versions anteriors no tenien
+    // el pressupost com a pestanya de consulta. No ho tornem a afegir si
+    // l'administrador ja ha revisat els permisos manualment.
+    const migratedClientTabs=keyNorm==="socoterm"&&!src.clientPortalV87235
+      ? [...new Set([...initialTabs,...CLIENT_MODULE_TABS878235])]
+      : initialTabs;
+    return [keyNorm,{
       ...base,...src,
       username:String(src.username||key).trim().toLowerCase(),
       password:String(src.password??base.password??""),
-      role:src.role||base.role||"client",
+      role,
+      module:builtInAdmin?"technical":String(src.module||base.module||"module2"),
       ownerUser:String(src.ownerUser||base.ownerUser||"hector").trim().toLowerCase(),
       clientId:String(src.clientId||base.clientId||""),
-      allowedTabs:Array.isArray(src.allowedTabs)?src.allowedTabs:[...(base.allowedTabs||[])],
-      readOnly:src.readOnly??base.readOnly??true,
-      canCreateProject:src.canCreateProject??base.canCreateProject??false
+      allowedTabs:builtInAdmin?[]:migratedClientTabs,
+      clientPortalV87235:true,
+      readOnly:builtInAdmin?false:(src.readOnly??base.readOnly??true),
+      canCreateProject:builtInAdmin?true:(src.canCreateProject??base.canCreateProject??false)
     }];
   }));
 }
@@ -44,7 +59,7 @@ function saveAppAccounts878233(accounts={}){
 function getAppAccount878233(user){const u=String(user||"").trim().toLowerCase();return readAppAccounts878233()[u]||null}
 function appAccountOwner878233(account={},user=""){return String(account?.ownerUser||user||"hector").trim().toLowerCase()||"hector"}
 function appAccountIsAdmin878233(account={}){return account?.role==="admin"}
-function appAccountTabs878233(account={}){return Array.isArray(account?.allowedTabs)&&account.allowedTabs.length?account.allowedTabs:CLIENT_TAB_OPTIONS878233.slice()}
+function appAccountTabs878233(account={}){return appAccountIsAdmin878233(account)?[]:(Array.isArray(account?.allowedTabs)&&account.allowedTabs.length?account.allowedTabs:CLIENT_TAB_OPTIONS878233.slice())}
 function accountUsernameSlug878233(value=""){return String(value||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,32)||"client"}
 const STORAGE_NS8782="aco_v8782";
 function currentAppUser8779(){return sessionStorage.getItem("aco_current_user8779")||""}
@@ -1738,7 +1753,7 @@ function createLocalRecoverySnapshot878122(state={},label="Còpia de recuperaci�
     id:"rec-"+Date.now(),
     label,
     createdAt:new Date().toISOString(),
-    appVersion:"87.234.0",
+    appVersion:"87.236.0",
     user:user||currentAppUser8779()||"hector",
     clients:stripHeavy878104(state.clients||[]),
     obres:stripHeavy878104(state.obres||[]),
@@ -2658,7 +2673,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.234",
+      version:"V87.236",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -5957,7 +5972,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.234",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.236",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6639,10 +6654,15 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
   const[mobileActionsOpen87119,setMobileActionsOpen87119]=useState(false);
   useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
   let tabs=tabsForWork8737(obra,data);
-  if(readOnly){
-    // Certificacions i facturació són mòduls de consulta del portal client,
+  const fullTechnicalAccess878235=!readOnly&&!allowedTabs.length;
+  if(fullTechnicalAccess878235){
+    // El compte global d’Héctor/Pol sempre conserva totes les eines de treball.
+    // Les limitacions comercials només s’apliquen als comptes client.
+    tabs=uniqueTabs8769([...GLOBAL_WORK_TABS878235,...tabs]);
+  }else if(readOnly){
+    // Pressupost, certificacions i facturació són mòduls de consulta del portal client,
     // encara que internament el despatx els gestioni dins de «Gestió obra».
-    tabs=[...tabs,...allowedTabs.filter(t=>["Certificacions obra","Facturació obra"].includes(t))];
+    tabs=[...tabs,...allowedTabs.filter(t=>CLIENT_TAB_OPTIONS878233.includes(t))];
     tabs=tabs.filter(t=>allowedTabs.includes(t));
   }
   else if(allowedTabs.length)tabs=tabs.filter(t=>allowedTabs.includes(t)||t==="Resum");
@@ -6726,7 +6746,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {activeTab==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>} 
   </>;
   return <div className={`obra-page obra-page-v87105 ${readOnly?"client-readonly-obra-v878234":""}`}>
-    {readOnly&&<div className="module-note-v8738 client-readonly-banner-v878234"><b>Vista de client · només lectura</b><span>Pots consultar la informació compartida d’aquesta obra. Les modificacions les farà el despatx.</span></div>}
+    {readOnly&&<div className="module-note-v8738 client-readonly-banner-v878234"><b>{CLIENT_MODULE_LABEL878235} · només lectura</b><span>Pots consultar la informació compartida d’aquesta obra. Les modificacions les farà el despatx.</span></div>}
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>Dades econòmiques recuperades</b><span>S’han restaurat {data.economicRecoveryV87214.restored||0} preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>Certificacions recuperades</b><span>S’han reconstruït les certificacions {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} sense substituir les línies de medició actuals de la certificació 8.</span></div>}
@@ -6750,7 +6770,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
         <div className="obra-tabs-title-v87105"><b>{obra.nom}</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
         {tabs.map(t=><button key={t} onClick={()=>{setTab(t); if(window.innerWidth<950)setTabsOpen(false)}} className={activeTab===t?"active":""}>{t}</button>)}
       </aside>
-      <div className="obra-content">{renderTab()}</div>
+      <div className="obra-content">{readOnly&&activeTab==="Pressupost obra"?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client}/>:renderTab()}</div>
     </section>
   </div>
 }
@@ -8386,7 +8406,7 @@ function applyCertificationImport878231(){
   const now=new Date().toISOString();
   const certIds=Object.fromEntries(importedCerts.map(item=>[String(item.numero),`cert-excel-${Date.now()}-${item.numero}`]));
   try{
-    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.234",createdAt:now,fileName:preview.fileName,data}));
+    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.236",createdAt:now,fileName:preview.fileName,data}));
   }catch(error){console.warn("No s'ha pogut crear la còpia prèvia de la importació",error)}
   setData?.(current=>{
     const sourceByTarget=new Map();
@@ -8830,7 +8850,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{a
     </ActionMenu87213>
   </div>
   {editing&&<div className="cert-edit-step-v87213"><b>Editant la Certificació {certNum}</b><span>Introdueix les quantitats a les partides i acaba amb “Guardar canvis”.</span></div>}
-  {certMode8711==="resum"&&<CertResumV69 data={data}/>} 
+  {certMode8711==="resum"&&(readOnly?<ClientCertSummaryV87235 data={data}/>:<CertResumV69 data={data}/>)} 
   {extraOpen878125&&<Modal title={`Afegir partida a la Certificació ${certNum}`} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p>Escull el tipus de partida. Si és per administració, l’import es calcularà amb la suma de les línies i no cal indicar cap preu previ.</p><div className="cert-extra-form-v878125"><label><span>Tipus</span><select value={extraDraft878125.tipus} onChange={e=>{const tipus=e.target.value;setExtraDraft878125(x=>({...x,tipus,cap:tipus==="administracio"?(x.cap||"C98 FEINES PER ADMINISTRACIÓ"):x.cap,ut:tipus==="administracio"?"€":(x.ut==="€"?"ut":x.ut),q:tipus==="administracio"?"":(x.q||"1"),pu:tipus==="administracio"?"":(x.pu||"0")}))}}><option value="modificacio">Extra / modificació incorporada al pressupost</option><option value="provisio">Provisió de fons · només certificació</option><option value="administracio">Treballs per administració · suma de línies</option></select></label><label><span>Capítol</span><select value={extraDraft878125.cap} onChange={e=>setExtraDraft878125(x=>({...x,cap:e.target.value}))}><option value="">{extraDraft878125.tipus==="administracio"?"C98 FEINES PER ADMINISTRACIÓ":"Primer capítol / C99"}</option>{capNames878125().map(c=><option key={c} value={c}>{c}</option>)}{!capNames878125().includes("C98 FEINES PER ADMINISTRACIÓ")&&<option value="C98 FEINES PER ADMINISTRACIÓ">C98 FEINES PER ADMINISTRACIÓ</option>}<option value="C99 EXTRES / MODIFICACIONS">C99 EXTRES / MODIFICACIONS</option></select></label><label><span>Codi</span><input value={extraDraft878125.codi} onChange={e=>setExtraDraft878125(x=>({...x,codi:e.target.value}))} placeholder="Automàtic"/></label>{extraDraft878125.tipus!=="administracio"&&<label><span>Unitat</span><input value={extraDraft878125.ut} onChange={e=>setExtraDraft878125(x=>({...x,ut:e.target.value}))}/></label>}<label className="wide"><span>Concepte</span><input value={extraDraft878125.concepte} onChange={e=>setExtraDraft878125(x=>({...x,concepte:e.target.value}))} placeholder={extraDraft878125.tipus==="administracio"?"Ex: Feines per administració juliol":"Ex: Reforç extra / provisió de fons"}/></label>{extraDraft878125.tipus==="administracio"?<div className="module-note-v8738 cert-admin-auto-price-v87220 wide"><b>Preu calculat automàticament</b><span>A continuació introduiràs totes les feines, hores i materials. La suma de les línies serà l’import certificat de la partida.</span></div>:<><label><span>Quantitat certificada</span><input inputMode="decimal" value={extraDraft878125.q} onChange={e=>setExtraDraft878125(x=>({...x,q:e.target.value}))}/></label><label><span>Preu unitari / import</span><input inputMode="decimal" value={extraDraft878125.pu} onChange={e=>setExtraDraft878125(x=>({...x,pu:e.target.value}))}/></label></>}<label className="wide"><span>Descripció</span><input value={extraDraft878125.desc} onChange={e=>setExtraDraft878125(x=>({...x,desc:e.target.value}))}/></label></div></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setExtraOpen878125(false)}>Cancel·lar</button><button type="button" className="primary" onClick={addExtraCertLine878125}>{extraDraft878125.tipus==="administracio"?"Continuar i introduir línies":"Afegir partida"}</button></div></Modal>}
   {certMode8711==="emplenar"&&<div className="cert-grid-wrap-v69">
     <div className="cert-grid-v69 group">
@@ -8870,6 +8890,59 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{a
   </div>}
 </Card>
 </div>
+}
+
+function ClientBudgetReadOnlyV87235({data={},obra={},client={}}){
+  const rows=sortPartides878132(data.partides||[]);
+  const caps=group(rows,"cap")||{};
+  const entries=Object.entries(caps);
+  const lineTotal=row=> (parseNum8770(row?.q)||0)*(parseNum8770(row?.pu)||0);
+  const total=rows.reduce((sum,row)=>sum+lineTotal(row),0);
+  return <div className="client-budget-v87235">
+    <div className="client-budget-head-v87235">
+      <div><small>PRESSUPOST D’OBRA · CONSULTA</small><h3>{obra.nom||"Pressupost de l’obra"}</h3><p>{client.nom||"Client"} · Vista actualitzada pel despatx</p></div>
+      <div className="client-budget-total-v87235"><span>Total pressupost</span><b>{money(total)}</b></div>
+    </div>
+    <div className="client-budget-kpis-v87235"><div><small>Capítols</small><b>{entries.length}</b></div><div><small>Partides</small><b>{rows.length}</b></div><div><small>Estat</small><b>En consulta</b></div></div>
+    {entries.length===0?<div className="client-budget-empty-v87235"><b>Encara no hi ha un pressupost compartit.</b><span>Quan el despatx l’incorpori a aquesta obra, el veuràs aquí automàticament.</span></div>:<div className="client-budget-chapters-v87235">
+      {entries.map(([cap,items],index)=>{
+        const capTotal=items.reduce((sum,row)=>sum+lineTotal(row),0);
+        return <details className="client-budget-chapter-v87235" key={cap} open={index===0}>
+          <summary><span><b>{cap||"Sense capítol"}</b><small>{items.length} {items.length===1?"partida":"partides"}</small></span><strong>{money(capTotal)}</strong></summary>
+          <div className="client-budget-lines-v87235">
+            <div className="client-budget-line-head-v87235"><span>Partida</span><span>Unitat</span><span>Quantitat</span><span>Preu/ut</span><span>Total</span></div>
+            {items.map((row,rowIndex)=><div className="client-budget-line-v87235" key={row.id||`${cap}-${row.codi||rowIndex}`}><div><b>{row.codi||"—"}</b><span>{row.concepte||"Partida sense descripció"}</span></div><span>{row.ut||"—"}</span><span>{qty2(row.q)}</span><span>{money(row.pu)}</span><strong>{money(lineTotal(row))}</strong></div>)}
+          </div>
+        </details>
+      })}
+    </div>}
+    {entries.length>0&&<div className="client-budget-grand-total-v87235"><span>Total pressupost</span><strong>{money(total)}</strong></div>}
+  </div>
+}
+
+function ClientCertSummaryV87235({data={}}){
+  const rows=data.partides||[];
+  const certs=data.certificacions||[];
+  const caps=group(rows,"cap")||{};
+  const capRows=Object.entries(caps).map(([cap,items])=>{
+    const pressupost=items.reduce((sum,row)=>sum+(parseNum8770(row.q)||0)*parseNum8770(row.pu),0);
+    const certificat=certs.reduce((sum,cert)=>sum+items.reduce((inner,row)=>inner+certAmount878223(row,+cert.numero),0),0);
+    const percent=pressupost?Math.min(certificat/pressupost*100,999):0;
+    return {cap,pressupost,certificat,percent,pendent:Math.max(pressupost-certificat,0)};
+  });
+  const totalPres=rows.reduce((sum,row)=>sum+(parseNum8770(row.q)||0)*parseNum8770(row.pu),0);
+  const totalCerts=certs.map(cert=>Math.max(rows.reduce((sum,row)=>sum+certAmount878223(row,+cert.numero),0),Number(cert.import)||0));
+  const totalCert=totalCerts.reduce((sum,value)=>sum+value,0);
+  const totalPct=totalPres?Math.min(totalCert/totalPres*100,999):0;
+  return <div className="client-cert-summary-v87235">
+    <div className="client-cert-summary-head-v87235"><div><small>SEGUIMENT ECONÒMIC · CONSULTA</small><h3>Certificacions de l’obra</h3><p>Resum compacte per capítols. Les dades s’actualitzen quan el despatx desa canvis.</p></div><div className="client-cert-total-v87235"><span>{certs.length} {certs.length===1?"certificació":"certificacions"}</span><b>{money(totalCert)}</b><small>total certificat</small></div></div>
+    <div className="client-cert-table-v87235">
+      <div className="client-cert-row-v87235 head"><b>Capítol</b><span>Pressupost</span><span>Certificat</span><span>Execució</span><span>Pendent</span></div>
+      {capRows.map(row=><div className="client-cert-row-v87235" key={row.cap}><b>{row.cap||"Sense capítol"}</b><span>{money(row.pressupost)}</span><span>{money(row.certificat)}</span><div className="client-cert-progress-v87235"><div><i style={{width:`${Math.min(row.percent,100)}%`}}/></div><em>{pct(row.percent)}</em></div><span>{money(row.pendent)}</span></div>)}
+      <div className="client-cert-row-v87235 total"><b>Total</b><strong>{money(totalPres)}</strong><strong>{money(totalCert)}</strong><div className="client-cert-progress-v87235"><div><i style={{width:`${Math.min(totalPct,100)}%`}}/></div><em>{pct(totalPct)}</em></div><strong>{money(Math.max(totalPres-totalCert,0))}</strong></div>
+    </div>
+    {capRows.length===0&&<div className="client-cert-empty-v87235">Encara no hi ha partides pressupostades per mostrar.</div>}
+  </div>
 }
 
 function CertResumV69({data}){
@@ -9264,7 +9337,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.234.0",
+    app_version:"87.236.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -9348,11 +9421,12 @@ function accountDraft878233(account={},clients=[],owner="hector"){
     password:String(account.password||""),
     displayName:String(account.displayName||""),
     role:String(account.role||"client"),
+    module:String(account.module||(account.role==="admin"?"technical":"module2")),
     ownerUser:String(account.ownerUser||owner||"hector"),
     clientId:String(account.clientId||clients[0]?.id||""),
     readOnly:account.readOnly??true,
     canCreateProject:account.canCreateProject??false,
-    allowedTabs:Array.isArray(account.allowedTabs)?account.allowedTabs.slice():["Resum","Documents","Actes","Fotografies","Certificacions obra","Facturació obra"]
+    allowedTabs:Array.isArray(account.allowedTabs)?account.allowedTabs.slice():["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra"]
   };
 }
 function AccountAccessPanel878233({clients=[],authUser=""}){
@@ -9377,14 +9451,14 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
   function newAccount(){
     setNewMode(true);
     setSelected("");
-    setForm(accountDraft878233({role:"client",readOnly:true,canCreateProject:false,allowedTabs:["Resum","Documents","Actes","Fotografies","Certificacions obra","Facturació obra"]},clients,authUser||"hector"));
+    setForm(accountDraft878233({role:"client",module:"module2",readOnly:true,canCreateProject:false,allowedTabs:CLIENT_MODULE_TABS878235.slice()},clients,authUser||"hector"));
   }
   function saveAccount(){
     const username=accountUsernameSlug878233(form.username||form.displayName);
     if(!username){alert("Escriu un usuari o un nom de client.");return}
     if(!String(form.password||"")){alert("Cal indicar una contrasenya inicial.");return}
     if(newMode&&accounts[username]){alert("Aquest usuari ja existeix.");return}
-    const normalized={...form,username,password:String(form.password),role:form.role==="admin"?"admin":"client",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:(form.allowedTabs||[]).length?form.allowedTabs:["Resum"],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject};
+    const normalized={...form,username,password:String(form.password),role:form.role==="admin"?"admin":"client",module:form.role==="admin"?"technical":"module2",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:(form.allowedTabs||[]).length?form.allowedTabs:["Resum"],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject};
     const next={...accounts,[username]:normalized};
     if(!saveAppAccounts878233(next)){alert("No s'ha pogut guardar el compte.");return}
     setAccounts(next);setSelected(username);setNewMode(false);alert("Usuari guardat.");
@@ -9409,11 +9483,11 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
         <label><span>Client associat</span><select value={form.clientId||""} onChange={e=>change("clientId",e.target.value)}><option value="">Selecciona client</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao||c.id}</option>)}</select></label>
         <label><span>Propietari de les dades</span><input value={form.ownerUser||""} onChange={e=>change("ownerUser",e.target.value)} placeholder="hector"/></label>
         {form.role!=="admin"&&<><label className="check-label-v878233"><input type="checkbox" checked={!!form.readOnly} onChange={e=>change("readOnly",e.target.checked)}/><span>Només lectura</span></label><label className="check-label-v878233"><input type="checkbox" checked={!!form.canCreateProject} onChange={e=>change("canCreateProject",e.target.checked)}/><span>Pot obrir un expedient nou</span></label></>}
-        {form.role!=="admin"&&<div className="span-all account-tabs-picker-v878233"><b>Pestanyes visibles</b><div>{CLIENT_TAB_OPTIONS878233.map(tab=><label key={tab}><input type="checkbox" checked={(form.allowedTabs||[]).includes(tab)} onChange={()=>toggleTab(tab)}/><span>{tab}</span></label>)}</div></div>}
+        {form.role!=="admin"&&<div className="span-all account-tabs-picker-v878233"><b>{CLIENT_MODULE_LABEL878235} · pestanyes activables</b><small className="account-module-help-v87235">El portal client parteix del Mòdul 2. Pots activar altres funcions quan les comercialitzis, sense exposar les pestanyes tècniques del despatx.</small><div>{CLIENT_TAB_OPTIONS878233.map(tab=><label key={tab}><input type="checkbox" checked={(form.allowedTabs||[]).includes(tab)} onChange={()=>toggleTab(tab)}/><span>{tab}</span></label>)}</div></div>}
       </div>
       <div className="modal-actions"><button type="button" className="primary" onClick={saveAccount}>Guardar usuari i permisos</button></div>
     </div>}
-    {!admin&&<div className="module-note-v8738"><b>Compte actual: {currentAccount.displayName||authUser}</b><span>{linkedClient?"Client associat: "+(linkedClient.nom||linkedClient.rao||linkedClient.id)+".":"Aquest compte encara no té cap client associat."} La vista de client no mostra la llibreria ni les pantalles tècniques generals.</span></div>}
+    {!admin&&<div className="module-note-v8738"><b>{CLIENT_MODULE_LABEL878235} · {currentAccount.displayName||authUser}</b><span>{linkedClient?"Client associat: "+(linkedClient.nom||linkedClient.rao||linkedClient.id)+".":"Aquest compte encara no té cap client associat."} La vista de client no mostra la llibreria ni les pantalles tècniques generals.</span></div>}
     <div className="password-change-panel-v878233">
       <div><b>Canviar la meva contrasenya</b><span>El canvi queda guardat per a aquest accés.</span></div>
       <div className="form-grid"><label><span>Nova contrasenya</span><input type="password" value={newPwd} onChange={e=>setNewPwd(e.target.value)} /></label><label><span>Repetir contrasenya</span><input type="password" value={newPwd2} onChange={e=>setNewPwd2(e.target.value)} /></label></div>

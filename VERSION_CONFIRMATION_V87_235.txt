@@ -1,0 +1,12 @@
+VERSIÓ: V87.235
+
+Millores incloses:
+- Pressupost visible per al client Socoterm en només lectura.
+- Capítols del pressupost plegables, compactes i sense espais verticals innecessaris.
+- Resum de certificacions per capítol amb pressupost, certificat, percentatge executat i pendent.
+- Migració automàtica dels permisos de l’usuari socoterm per mostrar la pestanya Pressupost.
+- Etiqueta de versió corregida a APP V87.235.
+- Es manté la numeració interna del despatx separada de la numeració de client.
+- Es mantenen les dates de creació sense mostrar l’hora.
+
+No inclou encara sincronització bidireccional completa entre ordinadors.

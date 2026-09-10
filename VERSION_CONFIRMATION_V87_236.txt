@@ -1,0 +1,7 @@
+VERSIÓ: V87.236
+
+- Recuperades totes les pestanyes de treball per als comptes globals d’Héctor i Pol.
+- Separació estricta entre accés tècnic global i portal client.
+- Perfil client identificat com a `module2` / Mòdul 2 · Portal de client.
+- Pestanyes comercials del client configurables sense exposar pestanyes tècniques.
+- Es manté pressupost i certificacions client en només lectura.

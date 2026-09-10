@@ -1,8 +1,22 @@
-# APP Control d’Obres V87.234
+# APP Control d’Obres V87.236
+
+## Global tècnic complet i portal client modular
+
+La V87.236 separa clarament els dos usos de l’aplicació: l’accés global d’Héctor/Pol conserva totes les pestanyes de treball, mentre que el client entra al portal del **Mòdul 2** amb una selecció de funcions comercials i sense les eines tècniques del despatx.
+
+- Els comptes globals d’Héctor i Pol recuperen sempre totes les pestanyes de treball.
+- El client utilitza el perfil `module2` i només veu les pestanyes client autoritzades.
+- La configuració permet activar més pestanyes comercials per client quan es publiquin nous mòduls.
+- El pressupost i les certificacions del client continuen en només lectura.
+
+- La pestanya **Pressupost** mostra els capítols plegables, les partides i el total actualitzat.
+- La pestanya **Certificacions obra** mostra el pressupost, el certificat, el percentatge executat i l’import pendent per capítol.
+- El client no pot editar preus, certificacions ni factures; les dades les actualitza el despatx.
+- La contrasenya de prova continua sent `socoterm / socoterm` i es pot canviar des de Configuració.
 
 ## Accés per client, llibreria manual i dates
 
-La V87.234 manté el codi intern del despatx i la numeració correlativa independent per client (`P-001`, `P-002`...). Mostra la data de creació només amb dia, mes i any, sense hora, per als projectes, documents, pressupostos, certificacions, factures, actes, fotos i partides noves.
+La data de creació continua mostrant-se només amb dia, mes i any, sense hora, per als projectes, documents, pressupostos, certificacions, factures, actes, fotos i partides noves.
 
 ## Usuaris de prova i vista del client
 
