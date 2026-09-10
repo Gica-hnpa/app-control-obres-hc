@@ -1,0 +1,21 @@
+V87.238 · NAVEGACIÓ AGRUPADA I ACCIONS NETES
+
+- Les seccions de cada expedient es trien des d’un únic selector agrupat.
+- A l’ordinador el selector queda al lateral i al mòbil s’obre des de
+  «Seccions de l’expedient».
+- Les accions del pressupost queden reunides dins del menú «Accions».
+- Es manté la navegació real segons el tipus de treball i el portal client
+  del Mòdul 2, sense afegir pestanyes tècniques noves.
+
+- S’elimina la llista universal de pestanyes que provocava duplicacions.
+- La versió tècnica d’Héctor/Pol torna a utilitzar les pestanyes corresponents
+  al tipus de treball de cada expedient.
+- No s’afegeixen artificialment «Pressupostos», «Pressupost obra» ni «Gestió
+  obra» si no corresponen a aquella vista.
+- Els comptes administradors no queden filtrats pels permisos del client.
+- El portal client del Mòdul 2 es manté separat, amb les seves pestanyes
+  comercials configurables.
+
+Compte de prova client:
+  Usuari: socoterm
+  Contrasenya: socoterm

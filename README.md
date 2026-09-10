@@ -1,8 +1,14 @@
-# APP Control d’Obres V87.237
+# APP Control d’Obres V87.238
+
+## Navegació agrupada i accions netes
+
+La V87.238 manté les pestanyes reals de cada tipus d’expedient, però les presenta en un únic selector agrupat per àrees: general, documentació, pressupost i econòmic, seguiment i tancament. A l’ordinador el selector queda al lateral; al mòbil s’obre des de «Seccions de l’expedient».
+
+Les accions del pressupost —editar, guardar, cancel·lar, afegir partides de la llibreria, descompostos, renumerar, documents, PDF, Excel i email— queden reunides dins d’«Accions». Es conserva la vista per capítols i el comportament de només lectura del portal client.
 
 ## Pestanyes de treball pràctiques i portal client modular
 
-La V87.237 separa clarament els dos usos de l’aplicació: l’accés global d’Héctor/Pol conserva les pestanyes que corresponen a cada tipus de treball, sense afegir una llista universal ni duplicar pressupostos o gestió d’obra. El client entra al portal del **Mòdul 2** amb una selecció de funcions comercials i sense les eines tècniques del despatx.
+La V87.238 separa clarament els dos usos de l’aplicació: l’accés global d’Héctor/Pol conserva les pestanyes que corresponen a cada tipus de treball, sense afegir una llista universal ni duplicar pressupostos o gestió d’obra. El client entra al portal del **Mòdul 2** amb una selecció de funcions comercials i sense les eines tècniques del despatx.
 
 - Els comptes globals d’Héctor i Pol no queden filtrats pels permisos del portal client.
 - Les pestanyes del despatx continuen depenent del tipus de treball i no es força una llista universal.

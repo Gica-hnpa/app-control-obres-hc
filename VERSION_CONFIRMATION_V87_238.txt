@@ -1,0 +1,6 @@
+VERSIÓ: V87.238
+
+- Corregida la duplicació de pestanyes en la versió tècnica.
+- Recuperada la navegació pràctica segons el tipus de treball.
+- Separats els permisos del compte global i del portal client Mòdul 2.
+- Es manté el pressupost i les certificacions del client en només lectura.
