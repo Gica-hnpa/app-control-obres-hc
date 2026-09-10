@@ -1,10 +1,11 @@
-# APP Control d’Obres V87.236
+# APP Control d’Obres V87.237
 
-## Global tècnic complet i portal client modular
+## Pestanyes de treball pràctiques i portal client modular
 
-La V87.236 separa clarament els dos usos de l’aplicació: l’accés global d’Héctor/Pol conserva totes les pestanyes de treball, mentre que el client entra al portal del **Mòdul 2** amb una selecció de funcions comercials i sense les eines tècniques del despatx.
+La V87.237 separa clarament els dos usos de l’aplicació: l’accés global d’Héctor/Pol conserva les pestanyes que corresponen a cada tipus de treball, sense afegir una llista universal ni duplicar pressupostos o gestió d’obra. El client entra al portal del **Mòdul 2** amb una selecció de funcions comercials i sense les eines tècniques del despatx.
 
-- Els comptes globals d’Héctor i Pol recuperen sempre totes les pestanyes de treball.
+- Els comptes globals d’Héctor i Pol no queden filtrats pels permisos del portal client.
+- Les pestanyes del despatx continuen depenent del tipus de treball i no es força una llista universal.
 - El client utilitza el perfil `module2` i només veu les pestanyes client autoritzades.
 - La configuració permet activar més pestanyes comercials per client quan es publiquin nous mòduls.
 - El pressupost i les certificacions del client continuen en només lectura.

@@ -15,7 +15,6 @@ const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
-const GLOBAL_WORK_TABS878235=["Resum","Dades","Agents","Documents","Plànols","Memòria / Informe / Certificat","Renders / Presentació","Amidaments","Industrials / Comparatius","Tràmits","Seguretat i salut","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Pressupostos","Factures","Honoraris","Agenda / Avisos","Tasques","Gestió obra","Gestió temps","Rendiment","Tancament / Entrega"];
 const DEFAULT_APP_ACCOUNTS878233={
   hector:{username:"hector",password:"0000",role:"admin",module:"technical",displayName:"Héctor",ownerUser:"hector",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
   pol:{username:"pol",password:"1919",role:"admin",module:"technical",displayName:"Pol",ownerUser:"pol",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
@@ -1753,7 +1752,7 @@ function createLocalRecoverySnapshot878122(state={},label="Còpia de recuperaci�
     id:"rec-"+Date.now(),
     label,
     createdAt:new Date().toISOString(),
-    appVersion:"87.236.0",
+    appVersion:"87.237.0",
     user:user||currentAppUser8779()||"hector",
     clients:stripHeavy878104(state.clients||[]),
     obres:stripHeavy878104(state.obres||[]),
@@ -2673,7 +2672,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
     const pref=userPrefix878105(user);
     Object.entries(storage).forEach(([k,v])=>{if(k.startsWith(pref))simple[k.slice(pref.length)]=v});
     const data={
-      version:"V87.236",
+      version:"V87.237",
       user,
       exportedAt:new Date().toISOString(),
       mode:"FULL_USER_STORAGE_LIGHT_SAFE",
@@ -5972,7 +5971,7 @@ function saveEmergencyEconomicSnapshot878214(obraId,current,reason){
   try{
     const key=lsKey8779(`aco_economic_emergency_${obraId||"expedient"}_v87214`);
     safeSetLocalStorage878185(key,stripHeavy878185({
-      version:"V87.236",createdAt:new Date().toISOString(),obraId,reason,
+      version:"V87.237",createdAt:new Date().toISOString(),obraId,reason,
       data:{partides:current.partides||[],certificacions:current.certificacions||[],pressupostos:current.pressupostos||[],budgetGroups:current.budgetGroups||[],activeBudgetIdObra:current.activeBudgetIdObra||"principal"}
     }));
   }catch(e){console.warn("No s'ha pogut crear la còpia econòmica d'emergència",e)}
@@ -6654,12 +6653,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
   const[mobileActionsOpen87119,setMobileActionsOpen87119]=useState(false);
   useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
   let tabs=tabsForWork8737(obra,data);
-  const fullTechnicalAccess878235=!readOnly&&!allowedTabs.length;
-  if(fullTechnicalAccess878235){
-    // El compte global d’Héctor/Pol sempre conserva totes les eines de treball.
-    // Les limitacions comercials només s’apliquen als comptes client.
-    tabs=uniqueTabs8769([...GLOBAL_WORK_TABS878235,...tabs]);
-  }else if(readOnly){
+  if(readOnly){
     // Pressupost, certificacions i facturació són mòduls de consulta del portal client,
     // encara que internament el despatx els gestioni dins de «Gestió obra».
     tabs=[...tabs,...allowedTabs.filter(t=>CLIENT_TAB_OPTIONS878233.includes(t))];
@@ -8406,7 +8400,7 @@ function applyCertificationImport878231(){
   const now=new Date().toISOString();
   const certIds=Object.fromEntries(importedCerts.map(item=>[String(item.numero),`cert-excel-${Date.now()}-${item.numero}`]));
   try{
-    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.236",createdAt:now,fileName:preview.fileName,data}));
+    safeSetLocalStorage878185(lsKey8779(`aco_certification_import_backup_v87231_${Date.now()}`),stripHeavy878185({version:"V87.237",createdAt:now,fileName:preview.fileName,data}));
   }catch(error){console.warn("No s'ha pogut crear la còpia prèvia de la importació",error)}
   setData?.(current=>{
     const sourceByTarget=new Map();
@@ -9337,7 +9331,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.236.0",
+    app_version:"87.237.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
