@@ -1,0 +1,16 @@
+V87.241 · PRESSUPOST, PDF I LLIBRERIA DE PARTIDES
+
+- El botó «Crear / editar pressupost» obre l’apartat de pressupost disponible
+  per al tipus d’expedient; no torna al resum per una pestanya inexistent.
+- Els imports del pressupost, el resum per capítols i la previsualització A4
+  queden alineats a la dreta.
+- La vista de pressupost de Socoterm és de consulta i incorpora «Veure PDF».
+- La llibreria nova comença buida. Només s’hi guarden partides que l’usuari
+  valida expressament.
+- La llibreria es pot filtrar per client i tipologia i agrupar per capítol o
+  tipologia de feina. Els pressupostos i certificacions existents no es
+  modifiquen.
+
+Compte de prova client:
+  Usuari: socoterm
+  Contrasenya: socoterm

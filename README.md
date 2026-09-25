@@ -1,4 +1,14 @@
-# APP Control d’Obres V87.240
+# APP Control d’Obres V87.241
+
+## Pressupost, PDF i llibreria de partides
+
+La V87.241 corregeix l’entrada a l’edició del pressupost, manté tots els imports numèrics alineats a la dreta i afegeix una acció PDF també a la vista de consulta del client Socoterm. La llibreria comença buida en instal·lacions noves i només incorpora partides guardades expressament.
+
+- El botó «Crear / editar pressupost» obre l’apartat de pressupost real de l’expedient.
+- «Previsualitzar / PDF» continua dins d’«Accions» i Socoterm disposa de «Veure PDF» en consulta.
+- La llibreria es pot filtrar per client i tipologia, i agrupar per capítol o tipologia de feina.
+- Les partides guardades conserven codi, unitat, descripció, preu, descompost i historial; les coincidències no es dupliquen.
+- Els pressupostos, annexos i certificacions existents no es buiden ni es fusionen.
 
 ## Selector d’apartats i portal client Socoterm
 

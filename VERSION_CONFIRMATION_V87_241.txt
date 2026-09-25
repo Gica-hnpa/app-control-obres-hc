@@ -1,0 +1,7 @@
+VERSIÓ: V87.241
+
+- Corregida l’entrada a l’edició del pressupost.
+- Imports numèrics alineats a la dreta en pantalla i en la previsualització.
+- Afegida la vista PDF del pressupost per al client Socoterm.
+- Llibreria buida per defecte, amb filtre i agrupació per tipologia o capítol.
+- Mantinguda la separació entre pressupost, annexos i certificacions.

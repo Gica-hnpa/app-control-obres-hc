@@ -5480,3 +5480,20 @@ body::after{content:"APP V87.240"}
   .budget-simple-toolbar-v87213{grid-template-columns:1fr!important}
   .budget-simple-toolbar-v87213>label{grid-column:auto!important}
 }
+
+/* V87.241 · imports numèrics sempre a la dreta i llibreria per tipologia */
+body::after{content:"APP V87.241"}
+.budget-num-cell-v878241,.budget-total-cell-v878241,.budget-num-input-v878241{text-align:right!important;font-variant-numeric:tabular-nums!important}
+.budget-num-input-v878241{width:100%;min-width:0}
+.pressupost-preview-v87158 td:nth-child(n+4),.pressupost-preview-v87158 th:nth-child(n+4){text-align:right!important;font-variant-numeric:tabular-nums!important}
+.pressupost-preview-v87158 .budget-code-v87158,.pressupost-preview-v87158 .budget-concept-v87158{ text-align:left!important}
+.client-budget-head-actions-v878241{display:flex;align-items:flex-end;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.client-budget-head-actions-v878241 .client-budget-total-v87235{min-width:170px}
+.library-primary-filters-v878240{grid-template-columns:minmax(210px,1fr) minmax(230px,1.2fr) minmax(170px,.8fr) minmax(170px,.8fr) 145px}
+@media(max-width:1100px){.library-primary-filters-v878240{grid-template-columns:1fr 1fr}.library-primary-filters-v878240>div{grid-column:1/-1;border-left:0;border-top:1px solid #d7e2ef;padding:9px 0 0}}
+@media(max-width:760px){
+  .client-budget-head-actions-v878241{align-items:stretch;justify-content:stretch;flex-direction:column}
+  .client-budget-head-actions-v878241 .client-budget-total-v87235{min-width:0;text-align:right}
+  .client-budget-head-actions-v878241 button{width:100%;justify-content:center}
+  .client-budget-line-v87235>span:nth-of-type(n+2),.client-budget-line-v87235>strong{text-align:right!important}
+}
