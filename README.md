@@ -1,8 +1,8 @@
-# APP Control d’Obres V87.244
+# APP Control d’Obres V87.245
 
 ## Portal client modular · pressupost, certificacions i llibreria validada
 
-La V87.244 activa per al Mòdul 2 del client les funcions econòmiques que el
+La V87.245 activa per al Mòdul 2 del client les funcions econòmiques que el
 despatx decideixi donar-li, mantenint la resta de l’expedient neta i en
 consulta.
 
@@ -29,6 +29,14 @@ consulta.
   pantalla activa i el menú «Accions» del pressupost queda accessible.
 - «Començar pressupost buit» entra directament en edició manual; la llibreria
   només s’obre quan l’usuari decideix afegir-hi partides.
+- Cap selector, títol o barra de treball de l’expedient queda fix mentre es
+  desplaça el contingut; les finestres de treball tenen el seu propi scroll.
+- Quan s’importa un Excel complet, l’original queda arxivat a Documents i es
+  pot obrir dins una vista de fulls i descarregar de nou. Les importacions
+  antigues sense original permeten exportar una còpia actual del pressupost.
+- «Preparar amb ChatGPT» obre ChatGPT i copia un context estructurat del
+  pressupost. És una connexió assistida: l’usuari revisa el resultat i torna a
+  importar l’Excel. La connexió API automàtica requereix un backend segur.
 
 El compte de prova `socoterm / socoterm` ja porta les tres funcions econòmiques
 activades. La sincronització real entre ordinadors continua depenent de tenir

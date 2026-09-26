@@ -5498,8 +5498,8 @@ body::after{content:"APP V87.241"}
   .client-budget-line-v87235>span:nth-of-type(n+2),.client-budget-line-v87235>strong{text-align:right!important}
 }
 
-/* V87.244 · capçalera de l’expedient sense bloquejar les pantalles de treball */
-body::after{content:"APP V87.244"}
+/* V87.245 · capçalera i barres de treball sense enganxar-se a la pantalla */
+body::after{content:"APP V87.245"}
 .client-budget-chapter-v87235>summary{position:relative;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto!important;padding-left:38px!important}
 .client-budget-chapter-v87235>summary:before{position:absolute!important;left:15px;top:50%;transform:translateY(-50%);grid-column:auto!important;grid-row:auto!important;width:auto!important}
 .client-budget-chapter-v87235>summary>span{grid-column:1!important;grid-row:1!important;grid-template-columns:minmax(0,1fr)!important;gap:2px!important;min-width:0}
@@ -5537,3 +5537,68 @@ body::after{content:"APP V87.244"}
 .obra-mini-fixed-v8776,.obra-head-access-v87105{position:relative!important;top:auto!important;z-index:2!important}
 .obra-page-overlay-open-v878244>.obra-head-access-v87105{visibility:hidden!important;pointer-events:none!important}
 .obra-page-overlay-open-v878244>.obra-edit-overlay-v878242{z-index:90!important}
+
+/* V87.245 · cap element de treball queda enganxat a la pantalla */
+.obra-page .obra-mini-fixed-v8776,
+.obra-page .obra-head-access-v87105,
+.obra-page .obra-side-tabs,
+.obra-page .obra-side-tabs-v87105,
+.obra-page .obra-tabs-toggle-v87105,
+.obra-page .subtabs-v8746,
+.obra-page .acta-panel-tabs-v8799,
+.obra-page .active-session-top-v8781,
+.obra-page .agenda-panel-head-v87119,
+.obra-page .agenda-form-title-v87119,
+.obra-page .cert-toolbar-v64,
+.obra-page .cert-toolbar-v67,
+.obra-page .cert-toolbar-v68,
+.obra-page .cert-toolbar-v69,
+.obra-page .budget-bulk-toolbar-v87229,
+.obra-page .library-bulk-bar-v87199,
+.obra-page .library-candidate-bulk-v871200,
+.obra-page .library-candidate-bulk-v87201,
+.obra-page .library-candidate-bulk-v87204,
+.obra-page .library-chapter-content-head-v87207,
+.obra-page .pressupost-editor-panel-v87160>summary,
+.obra-page .budget-renumber-preview-v87231>div,
+.obra-page .gantt-axis-v87217,
+.obra-page .exp-table-v8740 th,
+.obra-page .cert-preview-summary-v8772 th,
+.obra-page .cert-preview-wide-v8772 th{
+  position:relative!important;
+  top:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  right:auto!important;
+  z-index:2!important;
+  backdrop-filter:none!important;
+}
+.action-menu-panel-v87213{
+  position:absolute!important;
+  left:auto!important;
+  right:0!important;
+  top:calc(100% + 7px)!important;
+  bottom:auto!important;
+  max-height:min(70dvh,520px)!important;
+  overflow:auto!important;
+}
+.modal .modal-head,
+.modal .modal-actions,
+.modal .library-modal-tabs-v87208,
+.modal .library-new-modal-v87208>.modal-actions,
+.modal .library-item-modal-v87208>.modal-actions,
+.modal .partida-reading-modal-v87208>.modal-actions,
+.modal .promoter-modal-v87210>.modal-actions{
+  position:static!important;
+  top:auto!important;
+  bottom:auto!important;
+  z-index:auto!important;
+  backdrop-filter:none!important;
+}
+.excel-document-preview-v878245{display:grid;gap:12px;padding:14px;background:#f8fafc}
+.excel-preview-intro-v878245{display:flex;justify-content:space-between;align-items:end;gap:14px;padding:13px 15px;border:1px solid #cbd9e8;border-radius:13px;background:#fff}
+.excel-preview-intro-v878245>div{display:grid;gap:4px}.excel-preview-intro-v878245 b{color:#0f2d5c;font-size:16px}.excel-preview-intro-v878245 span{color:#64748b;font-size:12px}
+.excel-preview-intro-v878245 label{display:grid;gap:4px;min-width:220px}.excel-preview-intro-v878245 label>span{color:#64748b;font-size:10px;font-weight:950;text-transform:uppercase}.excel-preview-intro-v878245 select{min-height:40px;border:1px solid #9fb3c9;border-radius:9px;background:#fff;padding:8px 10px;font-weight:850}
+.excel-preview-meta-v878245{display:flex;gap:8px;flex-wrap:wrap}.excel-preview-meta-v878245 span{padding:6px 9px;border-radius:999px;background:#eaf3ff;color:#1e4f87;font-size:11px;font-weight:850}
+.excel-preview-table-wrap-v878245{max-width:100%;max-height:62vh;overflow:auto;border:1px solid #9fb3c9;border-radius:11px;background:#fff}.excel-preview-table-wrap-v878245 table{min-width:760px;margin:0;border-collapse:collapse;font-size:11px}.excel-preview-table-wrap-v878245 th,.excel-preview-table-wrap-v878245 td{padding:6px 8px;border:1px solid #cbd5e1;white-space:pre-wrap;vertical-align:top;text-align:left;max-width:260px;overflow-wrap:anywhere}.excel-preview-table-wrap-v878245 thead th{position:static!important;background:#dbeafe;color:#0f2d5c}.excel-preview-table-wrap-v878245 tbody th{background:#f1f5f9;color:#64748b;text-align:right;min-width:42px}
+@media(max-width:700px){.excel-preview-intro-v878245{align-items:stretch;flex-direction:column}.excel-preview-intro-v878245 label{min-width:0}.excel-preview-table-wrap-v878245{max-height:58vh}.excel-document-preview-v878245{padding:8px}}

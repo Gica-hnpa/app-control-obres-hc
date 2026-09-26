@@ -1,0 +1,16 @@
+VERSIÓ CONFIRMADA · APP CONTROL D’OBRES V87.245
+
+Correccions i millores incloses:
+- Eliminació real de la capçalera general darrere de les pantalles de treball.
+- Eliminació de títols, selectors i barres enganxats durant el desplaçament.
+- Menú d’accions del pressupost en posició normal, també al mòbil.
+- Conservació automàtica de l’Excel original importat dins Documents.
+- Vista interna dels fulls de l’Excel i descàrrega de l’original.
+- Entrada informativa per als Excels importats abans d’aquesta versió, amb
+  exportació d’una còpia actual del pressupost.
+- Acció «Preparar amb ChatGPT» amb context estructurat copiat i redirecció
+  assistida a ChatGPT.
+- Supabase Storage accepta tant el camp «anon» com el camp «key» de la
+  configuració existent.
+
+La compilació Vite s’ha verificat amb npm run build.

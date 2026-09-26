@@ -1,0 +1,42 @@
+APP CONTROL D’OBRES · V87.245
+
+CANVIS PRINCIPALS
+
+1. Capçalera i desplegables
+- El títol principal de l’obra no es manté fix mentre es consulta una pantalla.
+- En obrir Documents, Pressupost, Certificacions o qualsevol altre apartat,
+  desapareix la capçalera general que quedava al darrere.
+- Els selectors, títols i barres d’accions del contingut no queden enganxats
+  a la pantalla. El desplaçament es fa dins la finestra de treball.
+
+2. Excel original a Documents
+- Quan importes un Excel complet des de «Pressupost obra», l’app en guarda
+  també l’original a «Documents · Amidaments / pressupost d’obra».
+- Prem «Veure Excel» per consultar els fulls i les primeres files dins l’app.
+- Des de la mateixa pantalla pots descarregar l’Excel original.
+- Sense Supabase Storage, l’original queda guardat en aquest navegador. Per
+  compartir-lo entre ordinadors cal configurar Supabase Storage.
+- Els pressupostos importats en versions anteriors poden mostrar una entrada
+  informativa i permeten exportar una còpia actual, però no poden recuperar
+  l’Excel original si mai no es va guardar.
+
+3. Preparar pressupostos amb ChatGPT
+- A «Pressupost obra» → «Accions» hi ha «Preparar amb ChatGPT».
+- A «Pressupost ràpid» també hi ha la mateixa acció.
+- L’app obre https://chatgpt.com/ i copia un context estructurat del client,
+  l’obra i les partides actuals. Enganxa’l al xat.
+- Quan tinguis l’Excel revisat, torna a l’app i utilitza «Importar Excel
+  complet».
+- Aquesta primera connexió és assistida i segura; no posa cap clau de l’API
+  dins del navegador. Una automatització completa requerirà una funció de
+  servidor / Supabase Edge Function amb la clau protegida.
+
+4. Prova
+- Usuari: socoterm
+- Contrasenya inicial: socoterm
+- El compte continua tenint activades les funcions econòmiques del Mòdul 2.
+
+COMPILACIÓ
+
+npm install
+npm run build

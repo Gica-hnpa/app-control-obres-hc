@@ -3870,6 +3870,17 @@ function parseRows(rows,sheetName){
       }
     }
 
+    // V87.245 · l'Excel que origina un pressupost queda arxivat dins Documents.
+    // El pressupost continua sent editable a l'app, però l'original sempre es pot
+    // consultar després des de l'expedient i queda vinculat al pressupost importat.
+    const importedExcelDoc878245=await persistImportedExcelDocument878245(file,{
+      obraId,
+      budgetId:targetBid878122,
+      budgetName:newGroup878122?.nom||currentLabel878122||"Pressupost principal",
+      rows:best.rows.length,
+      total:best.total
+    });
+
     setD(obraId,d=>{
       const bid=targetBid878122;
       const now=new Date().toISOString();
@@ -3892,6 +3903,7 @@ function parseRows(rows,sheetName){
         partides:[...oldPartides,...rowsWithBudget],
         certificacions:oldCerts,
         factures:oldFacts,
+        documents:[importedExcelDoc878245,...(d.documents||[])],
         pressupostos:[...oldPress,{
           id:"px-"+Date.now(),
           budgetId:bid,
@@ -3920,7 +3932,10 @@ function parseRows(rows,sheetName){
       ? ` Descompostos: ${best.descompostosVinculats} vinculats de ${best.descompostosDetectats} fulls detectats.${best.descompostosSenseCoincidencia?.length?` Sense coincidència: ${best.descompostosSenseCoincidencia.slice(0,6).join(", ")}${best.descompostosSenseCoincidencia.length>6?"...":""}.`:""} Els preus detectats queden pendents de validar i no alteren el pressupost.`
       : " No s'han detectat fulls de descompost; si l'Excel en té, comprova que cada full porti el mateix codi de la partida.";
     const ignoredSummaryMsg878230=(best.summaryRowsIgnored878230||[]).length?` S'han descartat automàticament ${(best.summaryRowsIgnored878230||[]).length} fila/es resum de capítol perquè repetien exactament la suma de les partides interiors.`:"";
-    alert(`${newGroup878122?"Importació segura creada com a nou pressupost/annex":"Pressupost importat correctament"}: ${best.rows.length} partides · ${importedBudgetHierarchyLabelV87226(best)}.${best.inferredCaps?` ${best.inferredCaps} partida/es s'han classificat per la numeració del codi.`:""}${ignoredSummaryMsg878230}${decompMsg878228} S'ha guardat una còpia local de recuperació abans d'importar.`);
+    const excelDocMsg878245=importedExcelDoc878245.originalAvailable
+      ? ` L’Excel original també ha quedat guardat a Documents · Amidaments / pressupost d’obra (${importedExcelDoc878245.storage==="supabase"?"Supabase Storage":"aquest navegador"}).`
+      : " L’Excel s’ha importat, però no s’ha pogut conservar l’original; revisa l’avís de Documents.";
+    alert(`${newGroup878122?"Importació segura creada com a nou pressupost/annex":"Pressupost importat correctament"}: ${best.rows.length} partides · ${importedBudgetHierarchyLabelV87226(best)}.${best.inferredCaps?` ${best.inferredCaps} partida/es s'han classificat per la numeració del codi.`:""}${ignoredSummaryMsg878230}${decompMsg878228}${excelDocMsg878245} S'ha guardat una còpia local de recuperació abans d'importar.`);
   }catch(err){
     setD(obraId,d=>{const now=new Date().toISOString();return {...d,pressupostos:[...(d.pressupostos||[]),{id:"p"+Date.now(),budgetId:activeBudgetId8786,versio:"v"+String((d.pressupostos||[]).filter(p=>(p.budgetId||"principal")===activeBudgetId8786).length+1).padStart(2,"0"),data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,nom:file.name,estat:"Error lectura Excel: "+String(err?.message||err),import:0}]}});
   }
@@ -6612,6 +6627,41 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
   </div>
 }
 
+function chatGPTBudgetPrompt878245({obra={},client={},data={},mode="pressupost d’obra"}={}){
+  const rows=(data.partides||[]).slice(0,500).map(row=>({codi:row.codi||"",unitat:row.ut||"",capitol:row.cap||"",concepte:row.concepte||"",descripcio:row.desc||"",quantitat:row.q??"",preuUnitari:row.pu??""}));
+  return `Actua com a tècnic de pressupostos d’obra i prepara’m una revisió professional per a l’app Control d’Obres.
+
+Obra: ${obra.nom||"pendent"}
+Adreça: ${[obra.adreca,obra.codiPostal,obra.poblacio].filter(Boolean).join(" · ")||"pendent"}
+Client: ${client.nom||client.rao||obra.propietat||"pendent"}
+Mode de treball: ${mode}
+
+Necessito un Excel complet i importable amb aquesta estructura:
+1. CONFIGURACIÓ
+2. PRESSUPOST amb capítols, codis, unitats, quantitats, preus unitaris i totals
+3. AMIDAMENTS si n’hi ha
+4. Un full de descompost per partida quan sigui necessari, amb Concepte, Unitat, Rendiment, Preu/Ut i Preu total.
+
+Criteris obligatoris: no duplicar partides semblants, mantenir el codi i el capítol correctes, no inventar preus que no estiguin justificats, separar observacions i forma de pagament, i deixar clar qualsevol dada pendent de validar. Retorna també un resum dels canvis i dels dubtes abans de donar l’Excel definitiu.
+
+Dades actuals del pressupost en format estructurat:
+${JSON.stringify(rows,null,2)}`;
+}
+async function openChatGPTBudget878245(context={}){
+  const prompt=chatGPTBudgetPrompt878245(context);
+  let copied=false;
+  try{
+    if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(prompt);copied=true;}
+    else{
+      const area=document.createElement("textarea");area.value=prompt;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();copied=document.execCommand("copy");area.remove();
+    }
+  }catch{}
+  const win=window.open("https://chatgpt.com/","_blank","noopener,noreferrer");
+  if(!win)alert("El navegador ha bloquejat la finestra de ChatGPT. Permet les finestres emergents per a aquesta app.");
+  else if(copied)alert("He obert ChatGPT i he copiat el context del pressupost. Enganxa’l al xat i, quan tinguis l’Excel, torna a l’app i importa’l.");
+  else alert("He obert ChatGPT. Copia-hi el context del pressupost des de l’acció Preparar amb ChatGPT i després torna a importar l’Excel.");
+}
+
 function PressupostRapid878150(props){
   const rows=props.data?.partides||[];
   const total=rows.reduce((sum,r)=>sum+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -6662,7 +6712,7 @@ function PressupostRapid878150(props){
   }
   function exportRapidExcel878180(){exportBudgetDocExcel878180(doc878153(),`pressupost_rapid_${numeroPressupost||props.obra?.nom||"export"}`)}
   return <div className="pressupost-rapid-v87150 pressupost-rapid-v87153 pressupost-rapid-v87155 pressupost-rapid-v87160">
-    <Card title="Pressupost ràpid" action={<div className="actions-inline compact-actions-v87160">{!props.clientMode&&<label className="secondary upload-label"><Upload/> Importar Excel<input type="file" accept=".xlsx,.xls" onChange={props.importExcel}/></label>}<button className="secondary" onClick={addManual878153}>+ Partida manual</button><button className="secondary" onClick={saveAsDocument878153}>Guardar a Documents</button><button className="primary" onClick={()=>props.openDoc?.(doc878153())}>Previsualitzar / PDF</button>{!props.clientMode&&<button className="secondary" onClick={exportRapidExcel878180}>Exportar Excel</button>}</div>}>
+    <Card title="Pressupost ràpid" action={<div className="actions-inline compact-actions-v87160">{!props.clientMode&&<label className="secondary upload-label"><Upload/> Importar Excel<input type="file" accept=".xlsx,.xls" onChange={props.importExcel}/></label>}{!props.clientMode&&<button className="secondary" onClick={()=>openChatGPTBudget878245({obra:props.obra,client:props.client,data:props.data,mode:"pressupost ràpid"})}>Preparar amb ChatGPT</button>}<button className="secondary" onClick={addManual878153}>+ Partida manual</button><button className="secondary" onClick={saveAsDocument878153}>Guardar a Documents</button><button className="primary" onClick={()=>props.openDoc?.(doc878153())}>Previsualitzar / PDF</button>{!props.clientMode&&<button className="secondary" onClick={exportRapidExcel878180}>Exportar Excel</button>}</div>}>
       <div className="rapid-summary-strip-v87160"><div><span>Total pressupost</span><b>{money(total)}</b></div><div><span>Partides</span><b>{parts}</b></div><div><span>Client</span><b>{props.client?.nom||props.client?.rao||"Pendent"}</b></div><div><span>Obra</span><b>{props.obra?.nom||"Pendent"}</b></div><div><span>Creat</span><b>{fmtCreationDate878233(props.data?.pressupostRapidCreatedAt)}</b></div></div>
       <details className="progressive-panel-v87160">
         <summary><b>Dades del pressupost</b><span>Número, referència, versió i dades del tercer</span></summary>
@@ -6807,7 +6857,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>Dades econòmiques recuperades</b><span>S’han restaurat {data.economicRecoveryV87214.restored||0} preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>Certificacions recuperades</b><span>S’han reconstruït les certificacions {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} sense substituir les línies de medició actuals de la certificació 8.</span></div>}
-    <section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777 obra-head-access-v87105">
+    {!editOverlayOpen878242&&<section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777 obra-head-access-v87105">
       <button type="button" className="secondary obra-tabs-toggle-v87105" onClick={()=>setTabsOpen(v=>!v)}><Menu/> Apartats</button>
       <div className="obra-head-main-v87105">
         <small>Intern: {expedientCode8739(obra)} · Client: {clientProjectLabel878233(obra)}</small>
@@ -6821,7 +6871,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
         </div>
       </div>
       <div className="obra-mini-actions-v8776 obra-evolution-actions-v878193"><Badge estat={estatObra}/>{(!readOnly||clientEditBudget)&&preferredBudgetTab878239&&<button type="button" className="primary" onClick={()=>{setTab(preferredBudgetTab878239);setTabsOpen(false)}}>Crear / editar pressupost</button>}{!readOnly&&<button type="button" className="secondary" onClick={()=>setEditObra(true)}>Ampliar encàrrec</button>}<button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button>{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button>}</div>
-    </section>
+    </section>}
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
         <div className="obra-tabs-title-v87105"><b>Apartats de l’obra</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
@@ -7933,6 +7983,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!clientMode&&<button type="button" className="danger-text-v87229" onClick={clearCurrentBudget878229}>Buidar tot el pressupost actual</button>}
       <button type="button" onClick={saveBudgetDocument878179}>Guardar a Documents</button>
       <button type="button" onClick={()=>openDoc?.(budgetPrintDoc878179())}>Previsualitzar / PDF</button>
+      {!clientMode&&<button type="button" onClick={()=>openChatGPTBudget878245({obra,client,data,mode:"pressupost d’obra"})}>Preparar amb ChatGPT</button>}
       {!clientMode&&<button type="button" onClick={exportBudgetExcel878180}>Exportar Excel</button>}
       {!clientMode&&<button type="button" onClick={()=>openEmail("Pressupost obra")}><Mail/> Enviar per email</button>}
     </ActionMenu87213></div>}>
@@ -9184,28 +9235,62 @@ function saveStorageCfg(cfg){
   localStorage.setItem(lsKey8779("aco_supabase_storage"),JSON.stringify(cfg||{}));
 }
 function isStorageReady(cfg){
-  return !!(cfg?.url && cfg?.anon && cfg?.bucket);
+  return !!(cfg?.url && (cfg?.anon||cfg?.key) && cfg?.bucket);
 }
 function cleanStoragePath(s){
   return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9._/-]+/g,"-").replace(/-+/g,"-");
 }
+function publicStorageDocumentUrl878245(d={}){
+  const cfg=getStorageCfg();
+  if(!d?.path||!isStorageReady(cfg))return "";
+  return `${cfg.url.replace(/\/$/,"")}/storage/v1/object/public/${encodeURIComponent(cfg.bucket)}/${d.path}`;
+}
 async function uploadToSupabaseStorage(file,meta={}){
   const cfg=getStorageCfg();
   if(!isStorageReady(cfg)) throw new Error("Supabase Storage no configurat");
+  const anon=cfg.anon||cfg.key;
   const obraId=cleanStoragePath(meta.obraId||"obra");
   const id=meta.id||("d"+Date.now());
   const name=cleanStoragePath(file.name||"document");
   const path=`${obraId}/${id}-${name}`;
   const url=`${cfg.url.replace(/\/$/,"")}/storage/v1/object/${encodeURIComponent(cfg.bucket)}/${path}`;
-  const res=await fetch(url,{method:"POST",headers:{apikey:cfg.anon,Authorization:`Bearer ${cfg.anon}`,"Content-Type":file.type||"application/octet-stream","x-upsert":"true"},body:file});
+  const res=await fetch(url,{method:"POST",headers:{apikey:anon,Authorization:`Bearer ${anon}`,"Content-Type":file.type||"application/octet-stream","x-upsert":"true"},body:file});
   if(!res.ok){throw new Error(await res.text())}
   return {path,publicUrl:`${cfg.url.replace(/\/$/,"")}/storage/v1/object/public/${encodeURIComponent(cfg.bucket)}/${path}`};
 }
 async function deleteFromSupabaseStorage(path){
   const cfg=getStorageCfg();
   if(!isStorageReady(cfg)||!path) return false;
-  const res=await fetch(`${cfg.url.replace(/\/$/,"")}/storage/v1/object/${encodeURIComponent(cfg.bucket)}`,{method:"DELETE",headers:{apikey:cfg.anon,Authorization:`Bearer ${cfg.anon}`,"Content-Type":"application/json"},body:JSON.stringify({prefixes:[path]})});
+  const anon=cfg.anon||cfg.key;
+  const res=await fetch(`${cfg.url.replace(/\/$/,"")}/storage/v1/object/${encodeURIComponent(cfg.bucket)}`,{method:"DELETE",headers:{apikey:anon,Authorization:`Bearer ${anon}`,"Content-Type":"application/json"},body:JSON.stringify({prefixes:[path]})});
   return res.ok;
+}
+
+async function persistImportedExcelDocument878245(file,{obraId,budgetId,budgetName="Pressupost",rows=0,total=0}={}){
+  const now=new Date().toISOString();
+  const id=`doc-excel-${obraId||"obra"}-${Date.now()}`;
+  const base={
+    id,obraId,nom:file?.name||"pressupost-importat.xlsx",tipus:"EXCEL",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",
+    data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:file?.size||0,
+    linkedType:"pressupostExcel",linkedId:budgetId||"principal",budgetId:budgetId||"principal",budgetName,
+    sourceImport:"Importació de pressupost",import:total,rowsImported:rows
+  };
+  const cfg=getStorageCfg();
+  try{
+    if(isStorageReady(cfg)){
+      const uploaded=await uploadToSupabaseStorage(file,{id,obraId:obraId||"expedient",folder:base.folder});
+      return {...base,...uploaded,storage:"supabase",hasFile:true,originalAvailable:true};
+    }
+    await saveDocFile(id,file);
+    return {...base,storage:"indexeddb",hasFile:true,originalAvailable:true};
+  }catch(error){
+    try{
+      await saveDocFile(id,file);
+      return {...base,storage:"indexeddb",hasFile:true,originalAvailable:true,error:`No s’ha pogut pujar a Supabase: ${String(error?.message||error)}`};
+    }catch(localError){
+      return {...base,storage:"registre",hasFile:false,originalAvailable:false,error:`No s’ha pogut guardar l’Excel original: ${String(localError?.message||localError)}`};
+    }
+  }
 }
 
 function documentFolders8775(obra,data={}){
@@ -9259,17 +9344,65 @@ function linkedDocumentData878193(d){
   }
   return null;
 }
-async function openOriginal(d){const linked=linkedDocumentData878193(d);if(linked){openDoc?.(linked);return}if(d?.docData){openDoc?.(d.docData);return}if(d?.storage==="generat"&&String(d?.tipus||"").toUpperCase().includes("PRESSUPOST")){openDoc?.(budgetDocFromCurrent878189(d));return}if(d.storage==="supabase"&&d.url){window.open(d.url,"_blank");return}if(d.hasFile){let file=await getDocFile(d.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}openDoc({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."})}
+function isExcelDocument878245(d){return d?.linkedType==="pressupostExcel"||/\.(xlsx?|xlsm|csv)$/i.test(String(d?.nom||""))||String(d?.tipus||"").toUpperCase().includes("EXCEL")}
+async function openExcelPreview878245(d){
+  try{
+    let file=null;
+    const remoteUrl=d?.url||publicStorageDocumentUrl878245(d);
+    if(d?.storage==="supabase"&&remoteUrl){
+      const response=await fetch(remoteUrl);
+      if(!response.ok)throw new Error("No s’ha pogut descarregar l’Excel des de Storage.");
+      const blob=await response.blob();
+      file=new File([blob],d.nom||"pressupost.xlsx",{type:blob.type||"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    }else if(d?.hasFile){
+      file=await getDocFile(d.id);
+    }
+    if(!file)throw new Error("L’original d’aquest Excel no està disponible en aquest dispositiu.");
+    const workbook=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});
+    const excelSheets=workbook.SheetNames.map(name=>{
+      const sourceRows=XLSX.utils.sheet_to_json(workbook.Sheets[name],{header:1,defval:""});
+      const rows=sourceRows.slice(0,120).map(row=>Array.from(row||[]).slice(0,24));
+      const colCount=Math.min(24,Math.max(1,...rows.map(row=>row.length),1));
+      return {name,rows,colCount,totalRows:sourceRows.length};
+    });
+    openDoc?.({type:"excel",title:d.nom||"Excel del pressupost",subtitle:`Excel original · ${d.budgetName||"Pressupost d’obra"} · ${excelSheets.length} full/s`,excelSheets,originalFile:file});
+  }catch(error){
+    const remoteUrl=d?.url||publicStorageDocumentUrl878245(d);
+    if(remoteUrl){window.open(remoteUrl,"_blank");return;}
+    openDoc?.({type:"document",title:d.nom,subtitle:`L’Excel està registrat, però no s’ha pogut obrir en aquest dispositiu. ${String(error?.message||error)}`});
+  }
+}
+function budgetRowsForDocument878245(d){
+  const bid=d?.sourceBudgetId878245||d?.budgetId||"principal";
+  const rows=(data.partides||[]).filter(row=>(row.budgetId||"principal")===bid);
+  return {rows,bid,total:rows.reduce((sum,row)=>sum+(parseNum8770(row.q)||0)*(parseNum8770(row.pu)||0),0)};
+}
+function exportImportedBudgetCopy878245(d){
+  const scope=budgetRowsForDocument878245(d);
+  exportBudgetDocExcel878180({rows:scope.rows,total:scope.total,numeroPressupost:data?.pressupostRapidNumero||"",referencia:obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",observacions:data?.pressupostRapidObservacions||"",formaPagament:data?.pressupostRapidFormaPagament||""},`copia_pressupost_${scope.bid||"principal"}`);
+}
+async function openOriginal(d){
+  const linked=linkedDocumentData878193(d);
+  if(linked){openDoc?.(linked);return}
+  if(d?.docData){openDoc?.(d.docData);return}
+  if(isExcelDocument878245(d)){await openExcelPreview878245(d);return}
+  if(d?.storage==="generat"&&String(d?.tipus||"").toUpperCase().includes("PRESSUPOST")){openDoc?.(budgetDocFromCurrent878189(d));return}
+  const remoteUrl=d?.url||publicStorageDocumentUrl878245(d);
+  if(d?.storage==="supabase"&&remoteUrl){window.open(remoteUrl,"_blank");return}
+  if(d?.hasFile){let file=await getDocFile(d.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}
+  openDoc?.({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."});
+}
 async function remove(d){if(!confirm("Segur que vols eliminar aquest document d’aquest expedient?"))return;if(d.storage==="supabase"&&d.path) await deleteFromSupabaseStorage(d.path).catch(()=>{});if(d.storage==="indexeddb"||d.hasFile) await deleteDocFile(d.id).catch(()=>{});setDocs(p=>p.filter(x=>x.id!==d.id))}
 function moveDoc(d,newFolder){setDocs(p=>p.map(x=>x.id===d.id?{...x,folder:newFolder}:x))}
 function sizeTxt(n){return n?((n/1024/1024).toFixed(2)+" MB"):"—"}
 function storageLabel(d){if(d.storage==="generat")return "Document generat dins l’app"; if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
 const generatedDocs878148=[
+  ...((data.pressupostos||[]).filter(p=>/\.(xlsx?|xlsm|csv)$/i.test(String(p?.nom||""))||/importat.*excel|importaci[oó].*excel/i.test(String(p?.estat||""))).map(p=>({id:`auto-excel-pressupost-${p.id||p.budgetId||Date.now()}`,auto878148:true,createdAt:p.createdAt,sourceId878193:p.id,sourceBudgetId878245:p.budgetId||"principal",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",nom:`Excel d’origen · ${p.nom||"Pressupost importat"}`,tipus:"EXCEL PRESSUPOST",data:p.data||"—",size:0,import:+p.import||0,origen:"Importació de pressupost",storage:"registre",hasFile:false,originalAvailable:false,note:"L’Excel original es començarà a conservar automàticament en les importacions noves. Aquesta entrada permet exportar una còpia actual del pressupost."})) ),
   ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impPrev:certAmount878223(r,prev),impActual:certAmount878223(r,n),impOrigen:certOriginAmount878223(r,n),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.impActual||0),0)||(+c.import||0);const totalOrigen=rows.reduce((sum,r)=>sum+(+r.impOrigen||0),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,createdAt:c.createdAt,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
   ...((data.factures||[]).map(f=>{const base=+f.base||+f.total||0,ded=+f.ded||+f.descompte||0,iva=+f.iva||21,ret=+f.ret||+f.retencio||0,baseImposable=base*(1-ded/100),ivaImp=baseImposable*iva/100,retImp=baseImposable*ret/100,total=+f.total||baseImposable+ivaImp-retImp;return {id:`auto-fac-obra-${f.id||f.numero||Date.now()}`,auto878148:true,createdAt:f.createdAt,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`${f.tipus||"Factura / proforma obra"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"FACTURA").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:total,origen:"Facturació d’obra",docData:{type:"proforma",title:`Proforma ${f.numero||""}`,subtitle:f.data||"",proforma:f,agents:data.agents||[],iva,ret,ded,total,base:baseImposable,ivaImp,retImp}}})),
   ...((data.pressupostosTecnic||[]).map(p=>({id:`auto-pres-tec-${p.id||p.numero||Date.now()}`,auto878148:true,createdAt:p.createdAt,sourceId878193:p.id,folder:"00_DESPATX_TECNIC",nom:`Pressupost honoraris ${p.numero||""}`.trim(),tipus:"PRESSUPOST HONORARIS",data:p.data||"—",size:0,import:baseIva8743(p),origen:"Honoraris tècnics",docData:{...p,type:"pressuposttecnic",title:`PRESSUPOST D’HONORARIS${p.numero?` · ${p.numero}`:""}`}}))),
   ...((data.facturesTecnic||[]).map(f=>({id:`auto-fac-tec-${f.id||f.numero||Date.now()}`,auto878148:true,createdAt:f.createdAt,sourceId878193:f.id,folder:"00_DESPATX_TECNIC",nom:`${f.tipus||"Factura / proforma honoraris"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"HONORARIS").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:totalFactura878120(f),origen:"Honoraris tècnics",docData:{...f,type:"facturatecnica",title:`FACTURA / PROFORMA${f.numero?` · ${f.numero}`:""}`}})))
-].filter(g=>!g.sourceId878193||!docs.some(d=>String(d?.linkedId||"")===String(g.sourceId878193)));
+].filter(g=>(!g.sourceId878193||!docs.some(d=>String(d?.linkedId||"")===String(g.sourceId878193)))&&(!g.sourceBudgetId878245||!docs.some(d=>d?.linkedType==="pressupostExcel"&&String(d?.budgetId||d?.linkedId||"")===String(g.sourceBudgetId878245))));
 const shown=docs.filter(d=>docFolder(d)===folder);
 const shownGenerated878148=generatedDocs878148.filter(d=>docFolder(d)===folder);
 const totalDocs=docs.length+generatedDocs878148.length;
@@ -9281,7 +9414,7 @@ return <Card title={`Documents de l’expedient${obra?.nom?` · ${obra.nom}`:""}
       <summary><b>Classificació documental</b><span>{activeFolder?.label} · {shown.length+shownGenerated878148.length} docs</span></summary>
       <div className="doc-folder-grid-v87152">{folders.map(f=>{const count=docs.filter(d=>docFolder(d)===f.id).length+generatedDocs878148.filter(d=>docFolder(d)===f.id).length;return <button type="button" key={f.id} className={folder===f.id?"active":""} onClick={()=>setFolder(f.id)}><b>{f.label}</b><span>{count} document{count===1?"":"s"}</span><em>{f.desc}</em></button>})}</div>
     </details>
-    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152"><div className="folder-head-v8775"><div><h3>{activeFolder?.label}</h3><p>{activeFolder?.desc}</p></div><span>{shown.length+shownGenerated878148.length} / {totalDocs} docs</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {d.import?money(d.import):"import pendent"} · generat automàticament des de {d.origen}</span><em>Creat: {fmtCreationDate878233(d.createdAt)} · Obre el document amb el mateix format que s’utilitzarà per imprimir-lo o guardar-lo en PDF.</em></div><div className="actions-inline"><button className="secondary small" onClick={()=>d.docData?openDoc?.(d.docData):openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}.`})}>{d.docData?"Obrir":"Info"}</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · Creat: {fmtCreationDate878233(d.createdAt)} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>Obrir</button><button className="danger small" onClick={()=>remove(d)}>Eliminar</button></div></details>)}</>}</div></section>
+    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152"><div className="folder-head-v8775"><div><h3>{activeFolder?.label}</h3><p>{activeFolder?.desc}</p></div><span>{shown.length+shownGenerated878148.length} / {totalDocs} docs</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {d.import?money(d.import):"import pendent"} · generat automàticament des de {d.origen}</span><em>Creat: {fmtCreationDate878233(d.createdAt)} · Obre el document amb el mateix format que s’utilitzarà per imprimir-lo o guardar-lo en PDF.</em>{d.note&&<em>{d.note}</em>}</div><div className="actions-inline">{d.tipus==="EXCEL PRESSUPOST"&&<button className="secondary small" onClick={()=>exportImportedBudgetCopy878245(d)}>Exportar còpia Excel</button>}<button className="secondary small" onClick={()=>d.docData?openDoc?.(d.docData):openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}.`})}>{d.docData?"Obrir":"Info"}</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · Creat: {fmtCreationDate878233(d.createdAt)} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>{isExcelDocument878245(d)?"Veure Excel":"Obrir"}</button><button className="danger small" onClick={()=>remove(d)}>Eliminar</button></div></details>)}</>}</div></section>
   </div>
 </Card>
 }
@@ -10357,6 +10490,18 @@ function PressupostObraPreview878153({doc}){
   </div>
 }
 
+function ExcelDocumentPreview878245({doc}){
+  const sheets=doc?.excelSheets||[];
+  const [active,setActive]=useState(sheets[0]?.name||"");
+  const sheet=sheets.find(item=>item.name===active)||sheets[0];
+  const rows=sheet?.rows||[];
+  const colCount=sheet?.colCount||Math.min(24,Math.max(1,...rows.map(row=>row.length),1));
+  return <div className="excel-document-preview-v878245">
+    <div className="excel-preview-intro-v878245"><div><b>Vista de l’Excel original</b><span>No és una còpia reconstruïda: és el fitxer que es va importar al pressupost.</span></div><label><span>Full</span><select value={sheet?.name||""} onChange={e=>setActive(e.target.value)}>{sheets.map(item=><option key={item.name} value={item.name}>{item.name}</option>)}</select></label></div>
+    <div className="excel-preview-meta-v878245"><span>{sheets.length} full/s</span><span>{sheet?.totalRows||rows.length} files al full · es mostren les primeres {rows.length}</span><span>{colCount} columnes visibles</span></div>
+    <div className="excel-preview-table-wrap-v878245"><table><thead><tr><th>#</th>{Array.from({length:colCount},(_,index)=><th key={index}>Col. {index+1}</th>)}</tr></thead><tbody>{rows.map((row,rowIndex)=><tr key={rowIndex}><th>{rowIndex+1}</th>{Array.from({length:colCount},(_,colIndex)=><td key={colIndex}>{String(row[colIndex]??"")}</td>)}</tr>)}</tbody></table></div>
+  </div>;
+}
 
 function DocViewer({doc,obra,client,close,email}){
   const pf=doc.proforma;
@@ -10379,6 +10524,13 @@ function DocViewer({doc,obra,client,close,email}){
     const a=document.createElement("a");
     a.href=url; a.download=((doc.title||"document").replace(/[^a-z0-9_\-]+/gi,"_")||"document")+".html";
     document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+  function downloadOriginalExcel878245(){
+    if(!doc?.originalFile)return;
+    const url=URL.createObjectURL(doc.originalFile);
+    const a=document.createElement("a");
+    a.href=url;a.download=doc.title||"pressupost.xlsx";document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1500);
   }
   async function shareHtmlDoc(){
@@ -10441,7 +10593,7 @@ function DocViewer({doc,obra,client,close,email}){
   if(doc?.autoPrint)return null;
   return <Modal title={doc.title} close={close}>
     <div ref={printRef} className={`document-preview print-area clean-doc-preview-v8799 ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}>
-      {exactHtml878193?<ExactHtmlPreview878193 html={exactHtml878193} title={doc.title||"Document"}/>:<div className="document-page modern-acta-page">
+      {doc.type==="excel"&&doc.excelSheets?<ExcelDocumentPreview878245 doc={doc}/>:exactHtml878193?<ExactHtmlPreview878193 html={exactHtml878193} title={doc.title||"Document"}/>:<div className="document-page modern-acta-page">
         {doc.type!=="acta"&&doc.type!=="certificacio"&&doc.type!=="proforma"&&<div className="cert-header-pro">
           <div>{client?.logo?<img className="doc-logo" src={client.logo}/>:<div className="fake-logo">LOGO</div>}<h3>{client?.rao||client?.nom||"Despatx tècnic"}</h3><p>NIF: {client?.nif||"Pendent"}<br/>Adreça: {client?.adreca||"Pendent"}<br/>{client?.email||""}<br/>{client?.telefon||""}</p></div>
           <div><h3>{obra?.propietat||client?.nom||"Client"}</h3><p>NIF: {obra?.nifPropietat||"Pendent"}<br/>{obra?.adreca||""}<br/>{obra?.poblacio||""}</p></div>
@@ -10452,6 +10604,7 @@ function DocViewer({doc,obra,client,close,email}){
     <div className="modal-actions doc-mobile-actions-v87107">
       <button className="secondary" onClick={close}>Tancar / tornar</button>
       <button className="secondary" onClick={()=>email(doc.title)}>Enviar per Gmail</button>
+      {doc.type==="excel"&&doc.originalFile&&<button className="secondary" onClick={downloadOriginalExcel878245}>Descarregar Excel original</button>}
       <button className="secondary" onClick={downloadHtmlDoc}>Descarregar document</button>
       <button className="secondary" onClick={shareHtmlDoc}>Compartir</button>
       <button className="primary" onClick={printIsolated}>Imprimir / Guardar PDF</button>
