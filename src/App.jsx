@@ -6802,7 +6802,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     window.addEventListener("keydown",onKeyDown);
     return()=>window.removeEventListener("keydown",onKeyDown);
   },[editOverlayOpen878242,setTab]);
-  return <div className={`obra-page obra-page-v87105 ${strictClientReadOnly878242?"client-readonly-obra-v878234":""} ${readOnly&&!strictClientReadOnly878242?"client-portal-edit-v878242":""}`}>
+  return <div className={`obra-page obra-page-v87105 ${strictClientReadOnly878242?"client-readonly-obra-v878234":""} ${readOnly&&!strictClientReadOnly878242?"client-portal-edit-v878242":""} ${editOverlayOpen878242?"obra-page-overlay-open-v878244":""}`}>
     {readOnly&&<div className="module-note-v8738 client-readonly-banner-v878234"><b>{CLIENT_MODULE_LABEL878235} · {strictClientReadOnly878242?"consulta":"consulta i treball"}</b><span>{strictClientReadOnly878242?"Pots consultar la informació compartida d’aquesta obra. Les modificacions les farà el despatx.":"Pots consultar l’obra i treballar només les funcions que el despatx t’ha activat."}</span></div>}
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>Dades econòmiques recuperades</b><span>S’han restaurat {data.economicRecoveryV87214.restored||0} preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.</span></div>}
@@ -7097,7 +7097,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const hasRows=Object.values(caps||{}).some(arr=>(arr||[]).length);
     if(hasRows&&!confirm("Aquest pressupost ja té partides. Vols substituir la vista d'edició per un pressupost manual buit? Primer guarda o crea un annex si vols conservar l'actual."))return;
     const nom="C01 NOU CAPÍTOL";
-    setCaps({[nom]:[]});setOpen({[nom]:true});setEditBudget8760b(true);setLibraryOpen87115(!!clientLibraryEnabled);setLibraryScope87160("client");setLibrarySelected87218({});setLibraryTargetCap87115(nom);
+    setCaps({[nom]:[]});setOpen({[nom]:true});setEditBudget8760b(true);setLibraryOpen87115(false);setLibraryScope87160("client");setLibrarySelected87218({});setLibraryTargetCap87115(nom);
   }
   function addLibraryPartidaToBudget87115(item){
     if(!editBudget8760b){alert("Primer activa el mode edició del pressupost.");return;}

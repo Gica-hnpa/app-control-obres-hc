@@ -1,8 +1,8 @@
-# APP Control d’Obres V87.243
+# APP Control d’Obres V87.244
 
 ## Portal client modular · pressupost, certificacions i llibreria validada
 
-La V87.243 activa per al Mòdul 2 del client les funcions econòmiques que el
+La V87.244 activa per al Mòdul 2 del client les funcions econòmiques que el
 despatx decideixi donar-li, mantenint la resta de l’expedient neta i en
 consulta.
 
@@ -24,6 +24,11 @@ consulta.
 - Quan el client entra en qualsevol apartat diferent del resum, s’obre una
   finestra de treball superposada amb scroll propi; al mòbil ocupa tota la
   pantalla.
+- La capçalera de l’expedient ja no queda enganxada damunt del contingut.
+  Quan s’obre la finestra de treball, només queda visible la capçalera de la
+  pantalla activa i el menú «Accions» del pressupost queda accessible.
+- «Començar pressupost buit» entra directament en edició manual; la llibreria
+  només s’obre quan l’usuari decideix afegir-hi partides.
 
 El compte de prova `socoterm / socoterm` ja porta les tres funcions econòmiques
 activades. La sincronització real entre ordinadors continua depenent de tenir

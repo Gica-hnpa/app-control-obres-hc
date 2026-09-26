@@ -1,0 +1,11 @@
+VERSIÓ CONFIRMADA: V87.244
+
+- Corregida la capçalera enganxada de l’expedient: ja no tapa el contingut.
+- La finestra de pressupost manté accessible el menú «Accions».
+- «Començar pressupost buit» entra directament en edició manual.
+- Mantinguts els permisos del Mòdul 2 per a pressupost, certificacions i
+  llibreria validada.
+- Mantinguda la llibreria buida i controlada, amb màxim de recomanades per
+  capítol i control anti-duplicats.
+- Compilació Vite verificada correctament.
+- El lliurament no inclou `dist`, `node_modules` ni confirmacions anteriors.

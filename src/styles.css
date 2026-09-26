@@ -5498,8 +5498,8 @@ body::after{content:"APP V87.241"}
   .client-budget-line-v87235>span:nth-of-type(n+2),.client-budget-line-v87235>strong{text-align:right!important}
 }
 
-/* V87.243 · portal de client amb pressupost, certificacions i llibreria validada */
-body::after{content:"APP V87.243"}
+/* V87.244 · capçalera de l’expedient sense bloquejar les pantalles de treball */
+body::after{content:"APP V87.244"}
 .client-budget-chapter-v87235>summary{position:relative;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto!important;padding-left:38px!important}
 .client-budget-chapter-v87235>summary:before{position:absolute!important;left:15px;top:50%;transform:translateY(-50%);grid-column:auto!important;grid-row:auto!important;width:auto!important}
 .client-budget-chapter-v87235>summary>span{grid-column:1!important;grid-row:1!important;grid-template-columns:minmax(0,1fr)!important;gap:2px!important;min-width:0}
@@ -5534,3 +5534,6 @@ body::after{content:"APP V87.243"}
   .client-budget-editor-v878242 .budget-direct-edit-v87211 .actions-inline>button{flex:1 1 auto}
   .client-library-note-v878242{font-size:12px;line-height:1.45}
 }
+.obra-mini-fixed-v8776,.obra-head-access-v87105{position:relative!important;top:auto!important;z-index:2!important}
+.obra-page-overlay-open-v878244>.obra-head-access-v87105{visibility:hidden!important;pointer-events:none!important}
+.obra-page-overlay-open-v878244>.obra-edit-overlay-v878242{z-index:90!important}

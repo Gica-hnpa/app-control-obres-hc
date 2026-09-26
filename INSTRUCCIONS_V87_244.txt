@@ -1,0 +1,37 @@
+APP CONTROL D’OBRES · V87.244
+
+1. CAPÇALERA DE L’EXPEDIENT
+
+- El títol de l’obra queda dins del flux normal i no tapa el contingut.
+- Quan obres Pressupost obra o Certificacions obra, la finestra superposada
+  mostra la seva pròpia capçalera i el selector d’apartats.
+- «Tancar i tornar» retorna al resum.
+
+2. CREAR O EDITAR PRESSUPOST
+
+- Entra a Pressupost obra.
+- Obre Accions → Editar pressupost si vols modificar el pressupost actual.
+- Obre Accions → Començar pressupost buit si vols crear un pressupost manual
+  nou des de zero.
+- Aquesta opció entra directament en mode edició; no obre automàticament la
+  llibreria buida.
+- Pots afegir capítols i partides manuals, modificar quantitats i preus, i
+  acabar amb Accions → Guardar canvis.
+- La llibreria s’obre separadament amb Accions → Afegir partides de la
+  llibreria.
+
+3. PERMISOS DEL CLIENT
+
+- A Configuració activa «Pot crear / modificar pressupostos» per permetre
+  aquest flux al client.
+- Activa «Pot emplenar certificacions» per permetre-li editar certificacions.
+- Activa «Pot utilitzar la llibreria validada» per mostrar les partides
+  vinculades i aprovades pel despatx.
+
+4. COMPILACIÓ
+
+  npm install
+  npm run build
+
+El ZIP de lliurament només porta una carpeta del projecte i no inclou `dist`,
+`node_modules` ni fitxers de versions anteriors.
