@@ -5498,8 +5498,8 @@ body::after{content:"APP V87.241"}
   .client-budget-line-v87235>span:nth-of-type(n+2),.client-budget-line-v87235>strong{text-align:right!important}
 }
 
-/* V87.242 · resum del pressupost en ordre natural i edició en pantalla superposada */
-body::after{content:"APP V87.242"}
+/* V87.243 · portal de client amb pressupost, certificacions i llibreria validada */
+body::after{content:"APP V87.243"}
 .client-budget-chapter-v87235>summary{position:relative;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto!important;padding-left:38px!important}
 .client-budget-chapter-v87235>summary:before{position:absolute!important;left:15px;top:50%;transform:translateY(-50%);grid-column:auto!important;grid-row:auto!important;width:auto!important}
 .client-budget-chapter-v87235>summary>span{grid-column:1!important;grid-row:1!important;grid-template-columns:minmax(0,1fr)!important;gap:2px!important;min-width:0}
@@ -5520,4 +5520,17 @@ body::after{content:"APP V87.242"}
   .obra-edit-title-v878242 h2{font-size:18px}.obra-edit-title-v878242 p{font-size:11px}
   .obra-edit-head-actions-v878242{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}.obra-edit-head-actions-v878242 .obra-section-select-v878238{min-width:0}.obra-edit-close-v878242{min-height:46px;padding:9px 11px}
   .obra-edit-body-v878242{padding:8px}.obra-edit-body-v878242 .card-head{padding:13px 14px}.obra-edit-body-v878242 .form-grid{padding:13px 12px;gap:10px}.obra-edit-body-v878242 .card-actions,.obra-edit-body-v878242 .modal-actions{padding:13px 12px}
+}
+.client-portal-edit-v878242 .client-readonly-banner-v878234{border-color:#a7c7ee;background:linear-gradient(135deg,#f5faff,#eef6ff)}
+.client-budget-editor-v878242 .budget-toolbar-note-v878238{color:#2563eb;font-weight:750}
+.client-budget-editor-v878242 .budget-edit-help-v87213{border-color:#b8d3f2;background:#f4f9ff}
+.client-library-note-v878242{margin:10px 0 12px;border-color:#b8d3f2;background:#f6faff}
+.client-library-note-v878242 b{color:#164b8d}
+.client-budget-editor-v878242 .budget-direct-edit-v87211 .actions-inline{gap:7px}
+.client-budget-editor-v878242 .budget-v25-line .budget-select-action-v87229{grid-column:1/-1}
+@media(max-width:760px){
+  .client-budget-editor-v878242 .budget-direct-edit-v87211 .budget-grand-total-v87196{width:100%;text-align:left}
+  .client-budget-editor-v878242 .budget-direct-edit-v87211 .actions-inline{width:100%}
+  .client-budget-editor-v878242 .budget-direct-edit-v87211 .actions-inline>button{flex:1 1 auto}
+  .client-library-note-v878242{font-size:12px;line-height:1.45}
 }

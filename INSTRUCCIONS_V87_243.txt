@@ -1,0 +1,47 @@
+APP CONTROL D’OBRES · V87.243
+
+1. FUNCIONS DEL CLIENT SOCOTERM
+
+- Entra amb socoterm / socoterm.
+- Obre Treballs / Expedients i entra a una obra.
+- Des del selector d’apartats obre Pressupost obra o Certificacions obra.
+- Cada apartat s’obre en una finestra superposada i amb scroll intern.
+
+2. PRESSUPOST DEL CLIENT
+
+- A Accions pots prémer Editar pressupost.
+- Pots afegir o modificar partides manuals, capítols i amidaments.
+- «Afegir partides de la llibreria» només mostra les partides validades i
+  vinculades al client. Per defecte en mostra fins a 3 per capítol.
+- «Començar pressupost buit» crea una base manual; després pots afegir les
+  partides que vulguis i guardar els canvis.
+- «Previsualitzar / PDF» obre el format de pressupost.
+
+3. CERTIFICACIONS
+
+- A Certificacions obra prem «+ Nova certificació».
+- Selecciona la certificació, prem «Editar certificació» i emplena les
+  quantitats, dates, amidaments o administració.
+- Prem «Guardar canvis» per escriure-ho al mateix expedient.
+
+4. CONFIGURACIÓ DE PERMISOS
+
+Des de l’usuari administrador:
+
+- Configuració → Usuaris i accessos.
+- Selecciona el client.
+- Activa o desactiva pressupostos, certificacions i llibreria validada.
+- Ajusta «Recomanades per capítol» si vols mostrar 1, 2, 3 o més partides.
+- Guarda l’usuari.
+
+La llibreria es conserva buida fins que Héctor hi incorpori partides
+expressament. Les candidates pendents no apareixen al client.
+
+5. COMPILACIÓ
+
+Des de la carpeta del projecte:
+
+  npm install
+  npm run build
+
+No cal incloure `dist` ni `node_modules` al ZIP.

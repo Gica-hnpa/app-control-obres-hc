@@ -1,4 +1,35 @@
-# APP Control d’Obres V87.242
+# APP Control d’Obres V87.243
+
+## Portal client modular · pressupost, certificacions i llibreria validada
+
+La V87.243 activa per al Mòdul 2 del client les funcions econòmiques que el
+despatx decideixi donar-li, mantenint la resta de l’expedient neta i en
+consulta.
+
+- A Configuració es pot activar «Pot crear / modificar pressupostos», «Pot
+  emplenar certificacions» i «Pot utilitzar la llibreria validada».
+- El client pot obrir l’edició del pressupost, afegir partides manuals, crear
+  capítols, introduir amidaments i guardar el resultat. També pot previsualitzar
+  o guardar el pressupost a Documents.
+- El client pot crear certificacions, introduir quantitats, dates, amidaments i
+  treballs d’administració amb el mateix formulari de certificacions de la
+  versió general.
+- La llibreria del client no s’omple automàticament: només mostra partides que
+  Héctor ha validat i vinculat a aquell client. Per defecte mostra com a màxim
+  tres recomanades per capítol; el límit es pot canviar des de Configuració.
+- Les partides semblants no es dupliquen dins del pressupost: la comprovació
+  utilitza la partida vinculada i el concepte/unitat, no només el codi o el preu.
+- Les accions tècniques —Excel de descompostos, renumeració massiva, buidatge,
+  exportació tècnica i email intern— no apareixen al portal client.
+- Quan el client entra en qualsevol apartat diferent del resum, s’obre una
+  finestra de treball superposada amb scroll propi; al mòbil ocupa tota la
+  pantalla.
+
+El compte de prova `socoterm / socoterm` ja porta les tres funcions econòmiques
+activades. La sincronització real entre ordinadors continua depenent de tenir
+Supabase/Auth configurat: aquesta versió prepara permisos i escriptura segura,
+però no converteix per si sola el navegador local en una sincronització de
+servidor.
 
 ## Vista del pressupost i edició en pantalla de treball
 
@@ -36,7 +67,7 @@ La V87.240 corregeix el selector del portal client: el compte Socoterm pot obrir
 
 La V87.238 manté les pestanyes reals de cada tipus d’expedient, però les presenta en un únic selector agrupat per àrees: general, documentació, pressupost i econòmic, seguiment i tancament. A l’ordinador el selector queda al lateral; al mòbil s’obre des de «Seccions de l’expedient».
 
-Les accions del pressupost —editar, guardar, cancel·lar, afegir partides de la llibreria, descompostos, renumerar, documents, PDF, Excel i email— queden reunides dins d’«Accions». Es conserva la vista per capítols i el comportament de només lectura del portal client.
+Les accions del pressupost —editar, guardar, cancel·lar, afegir partides de la llibreria, descompostos, renumerar, documents, PDF, Excel i email— queden reunides dins d’«Accions». A la V87.243 el portal client pot tenir edició econòmica activada per permisos, mentre la resta d’eines tècniques continua oculta.
 
 ## Pestanyes de treball pràctiques i portal client modular
 
@@ -46,11 +77,11 @@ La V87.238 separa clarament els dos usos de l’aplicació: l’accés global d�
 - Les pestanyes del despatx continuen depenent del tipus de treball i no es força una llista universal.
 - El client utilitza el perfil `module2` i només veu les pestanyes client autoritzades.
 - La configuració permet activar més pestanyes comercials per client quan es publiquin nous mòduls.
-- El pressupost i les certificacions del client continuen en només lectura.
+- El pressupost i les certificacions del client depenen dels permisos activats a Configuració.
 
 - La pestanya **Pressupost** mostra els capítols plegables, les partides i el total actualitzat.
 - La pestanya **Certificacions obra** mostra el pressupost, el certificat, el percentatge executat i l’import pendent per capítol.
-- El client no pot editar preus, certificacions ni factures; les dades les actualitza el despatx.
+- El client només pot editar pressupostos i certificacions quan Héctor activa aquests permisos; les factures continuen en consulta.
 - La contrasenya de prova continua sent `socoterm / socoterm` i es pot canviar des de Configuració.
 
 ## Accés per client, llibreria manual i dates
@@ -61,7 +92,7 @@ La data de creació continua mostrant-se només amb dia, mes i any, sense hora, 
 
 - Compte inicial de prova: socoterm / socoterm, associat al client SOCOTERM.
 - El client només veu els seus expedients i la vista de l’obra amb les pestanyes autoritzades.
-- El compte inicial és de només lectura, però pot obrir un expedient nou perquè el despatx el continuï. La resta de canvis els fa el despatx.
+- El compte inicial té el portal limitat i les funcions econòmiques de prova activades; les altres modificacions les continua fent el despatx.
 - A Configuració es pot canviar la contrasenya pròpia i, des d’un compte administrador, crear usuaris, associar-los a un client i escollir les pestanyes visibles.
 
 ## Llibreria de partides

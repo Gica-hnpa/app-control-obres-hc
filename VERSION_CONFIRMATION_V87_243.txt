@@ -1,0 +1,16 @@
+VERSIÓ CONFIRMADA: V87.243
+
+- Compilació Vite verificada correctament.
+- Activats els permisos modulars del portal client per a pressupostos,
+  certificacions i llibreria validada.
+- El compte Socoterm de prova porta les tres funcions activades i manté la
+  resta del portal neta.
+- El client pot editar pressupostos i emplenar certificacions des de la mateixa
+  estructura de l’expedient.
+- La llibreria del client és manual i validada: sense càrrega automàtica,
+  màxim 3 recomanades per capítol per defecte i control anti-duplicats.
+- Les pantalles de treball s’obren en una superposició amb scroll propi,
+  adaptada al mòbil.
+- No s’han inclòs `dist`, `node_modules` ni documents de versions anteriors.
+- La sincronització servidor entre ordinadors encara requereix Supabase/Auth
+  configurat i connectat.
