@@ -5497,3 +5497,27 @@ body::after{content:"APP V87.241"}
   .client-budget-head-actions-v878241 button{width:100%;justify-content:center}
   .client-budget-line-v87235>span:nth-of-type(n+2),.client-budget-line-v87235>strong{text-align:right!important}
 }
+
+/* V87.242 · resum del pressupost en ordre natural i edició en pantalla superposada */
+body::after{content:"APP V87.242"}
+.client-budget-chapter-v87235>summary{position:relative;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto!important;padding-left:38px!important}
+.client-budget-chapter-v87235>summary:before{position:absolute!important;left:15px;top:50%;transform:translateY(-50%);grid-column:auto!important;grid-row:auto!important;width:auto!important}
+.client-budget-chapter-v87235>summary>span{grid-column:1!important;grid-row:1!important;grid-template-columns:minmax(0,1fr)!important;gap:2px!important;min-width:0}
+.client-budget-chapter-v87235>summary>span b,.client-budget-chapter-v87235>summary>span small{grid-column:1!important}
+.client-budget-chapter-v87235>summary>strong{grid-column:2!important;grid-row:1!important;justify-self:end!important;text-align:right!important}
+.obra-edit-overlay-v878242{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:clamp(10px,2vw,24px);background:rgba(15,23,42,.58);overscroll-behavior:contain}
+.obra-edit-shell-v878242{display:flex;flex-direction:column;width:min(1540px,100%);height:min(94vh,1200px);min-height:0;overflow:hidden;background:#f4f6f8;border:1px solid #bfcee0;border-radius:22px;box-shadow:0 24px 80px rgba(15,23,42,.28)}
+.obra-edit-head-v878242{display:flex;align-items:center;justify-content:space-between;gap:18px;flex:0 0 auto;padding:14px 18px;border-bottom:1px solid #cbd9e8;background:linear-gradient(135deg,#f8fbff,#edf5ff)}
+.obra-edit-title-v878242{min-width:0;display:grid;gap:3px}.obra-edit-title-v878242 small{color:#2563eb;font-size:10px;font-weight:950;letter-spacing:.08em}.obra-edit-title-v878242 h2{margin:0;color:#0f2d5c;font-size:21px;overflow-wrap:anywhere}.obra-edit-title-v878242 p{margin:0;color:#64748b;font-size:12px;overflow-wrap:anywhere}
+.obra-edit-head-actions-v878242{display:flex;align-items:flex-end;justify-content:flex-end;gap:9px;flex-wrap:wrap}.obra-edit-head-actions-v878242 .obra-section-select-v878238{min-width:260px}.obra-edit-head-actions-v878242 .obra-section-select-v878238>span{font-size:9px}.obra-edit-close-v878242{white-space:nowrap}
+.obra-edit-body-v878242{min-height:0;overflow:auto;padding:16px;background:#f4f6f8;overscroll-behavior:contain}.obra-edit-body-v878242>.card,.obra-edit-body-v878242>.stack>.card{border-radius:16px}.obra-edit-body-v878242 .obra-content{min-width:0}
+@media(max-width:760px){
+  .client-budget-chapter-v87235>summary{padding-right:12px!important;padding-left:34px!important}
+  .client-budget-chapter-v87235>summary>strong{font-size:14px}
+  .obra-edit-overlay-v878242{align-items:stretch;padding:0}
+  .obra-edit-shell-v878242{width:100%;height:100%;max-height:none;border:0;border-radius:0}
+  .obra-edit-head-v878242{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px;padding:11px 12px}
+  .obra-edit-title-v878242 h2{font-size:18px}.obra-edit-title-v878242 p{font-size:11px}
+  .obra-edit-head-actions-v878242{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}.obra-edit-head-actions-v878242 .obra-section-select-v878238{min-width:0}.obra-edit-close-v878242{min-height:46px;padding:9px 11px}
+  .obra-edit-body-v878242{padding:8px}.obra-edit-body-v878242 .card-head{padding:13px 14px}.obra-edit-body-v878242 .form-grid{padding:13px 12px;gap:10px}.obra-edit-body-v878242 .card-actions,.obra-edit-body-v878242 .modal-actions{padding:13px 12px}
+}

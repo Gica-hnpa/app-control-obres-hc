@@ -1,4 +1,22 @@
-# APP Control d’Obres V87.241
+# APP Control d’Obres V87.242
+
+## Vista del pressupost i edició en pantalla de treball
+
+La V87.242 corregeix l’ordre visual del pressupost de consulta: el nom del
+capítol i el text queden a l’esquerra i els imports queden alineats a la dreta,
+com en la previsualització PDF. També fa que qualsevol apartat d’edició de
+l’expedient s’obri en una finestra de treball superposada, amb selector ràpid
+d’apartats, capçalera fixa i scroll intern. En mòbil la finestra ocupa tota la
+pantalla per evitar haver de desplaçar tota la pàgina.
+
+- La vista Socoterm manté els capítols plegables amb import a la dreta.
+- «Tancar i tornar» retorna al resum de l’expedient sense perdre dades.
+- El selector de la finestra permet passar directament a un altre apartat.
+- La vista PDF continua disponible des de «Veure PDF».
+
+L’avís de contrasenya no prové de la maquetació del pressupost: el compte de
+prova `socoterm / socoterm` utilitza una contrasenya curta i molt comuna, i el
+navegador pot marcar-la com a poc segura. Es pot canviar des de Configuració.
 
 ## Pressupost, PDF i llibreria de partides
 

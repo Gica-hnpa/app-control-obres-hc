@@ -1,0 +1,11 @@
+VERSIÓ CONFIRMADA: V87.242
+
+- Compilació Vite verificada correctament.
+- Corregit l’ordre visual del resum de pressupost Socoterm.
+- Imports i totals alineats a la dreta.
+- Afegida finestra superposada per als apartats d’edició de l’expedient.
+- Selector d’apartats dins de la finestra i scroll intern.
+- Adaptació específica per a mòbil.
+- Mantinguda la previsualització PDF.
+- Mantingut el compte de prova socoterm / socoterm.
+- No s’han inclòs `dist`, `node_modules` ni arxius de versions anteriors.

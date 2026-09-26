@@ -6789,6 +6789,13 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>} 
     {activeTab==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>} 
   </>;
+  const editOverlayOpen878242=!readOnly&&activeTab!=="Resum";
+  useEffect(()=>{
+    if(!editOverlayOpen878242||typeof window==="undefined")return;
+    const onKeyDown=e=>{if(e.key==="Escape")setTab("Resum")};
+    window.addEventListener("keydown",onKeyDown);
+    return()=>window.removeEventListener("keydown",onKeyDown);
+  },[editOverlayOpen878242,setTab]);
   return <div className={`obra-page obra-page-v87105 ${readOnly?"client-readonly-obra-v878234":""}`}>
     {readOnly&&<div className="module-note-v8738 client-readonly-banner-v878234"><b>{CLIENT_MODULE_LABEL878235} · només lectura</b><span>Pots consultar la informació compartida d’aquesta obra. Les modificacions les farà el despatx.</span></div>}
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
@@ -6815,8 +6822,17 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
         <ExpedientSectionSelect878238 tabs={navigationTabs} value={activeTab} onChange={next=>{setTab(next);if(window.innerWidth<950)setTabsOpen(false)}}/>
         <div className="obra-section-current-v878238"><small>Oberta ara</small><b>{activeTab}</b></div>
       </aside>
-      <div className="obra-content">{readOnly&&activeTab==="Pressupost obra"?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:renderTab()}</div>
+      <div className="obra-content">{!editOverlayOpen878242&&(readOnly&&activeTab==="Pressupost obra"?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:renderTab())}</div>
     </section>
+    {editOverlayOpen878242&&<div className="obra-edit-overlay-v878242" role="dialog" aria-modal="true" aria-label={`Editar ${activeTab}`}>
+      <div className="obra-edit-shell-v878242">
+        <div className="obra-edit-head-v878242">
+          <div className="obra-edit-title-v878242"><small>EDITANT L’EXPEDIENT</small><h2>{activeTab}</h2><p>{obra.nom} · {client.nom||"Client"}</p></div>
+          <div className="obra-edit-head-actions-v878242"><ExpedientSectionSelect878238 tabs={navigationTabs} value={activeTab} compact onChange={next=>{setTab(next);setTabsOpen(false)}}/><button type="button" className="secondary obra-edit-close-v878242" onClick={()=>setTab("Resum")}><ArrowLeft/> Tancar i tornar</button></div>
+        </div>
+        <div className="obra-edit-body-v878242">{renderTab()}</div>
+      </div>
+    </div>}
   </div>
 }
 function ObraAgentsResum({data,openAgent}){

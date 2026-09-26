@@ -1,0 +1,31 @@
+APP CONTROL D’OBRES · V87.242
+
+1. PRESSUPOST EN CONSULTA
+
+- Els capítols mostren el nom i les partides a l’esquerra.
+- Els imports de capítol, partida i total queden a la dreta.
+- «Veure PDF» obre la previsualització del pressupost compartit.
+
+2. EDICIÓ EN FINESTRA DE TREBALL
+
+- En el compte del despatx, qualsevol apartat diferent de «Resum» s’obre en una finestra superposada.
+- El selector superior permet canviar d’apartat sense tornar al llistat.
+- «Tancar i tornar» retorna al resum de l’expedient.
+- Al mòbil la finestra ocupa tota la pantalla i el desplaçament queda limitat al contingut.
+
+3. CONTRASENYA DE PROVA
+
+- Compte inicial: socoterm
+- Contrasenya inicial: socoterm
+- El navegador pot avisar que no és segura perquè és curta i comuna.
+- Per canviar-la: Configuració → Usuaris i accessos → Canviar la meva contrasenya.
+- Recomanació: utilitza una contrasenya llarga i exclusiva, amb lletres, números i símbols.
+
+4. COMPILACIÓ
+
+Des de la carpeta del projecte:
+
+  npm install
+  npm run build
+
+No cal afegir la carpeta `dist` ni `node_modules` al ZIP de lliurament.
