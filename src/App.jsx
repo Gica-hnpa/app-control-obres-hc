@@ -398,6 +398,7 @@ function normalizeExpedientStatus878136(v){
   return v||"Pendent de resposta";
 }
 function isExpedientOpen878136(v){const n=normalizeExpedientStatus878136(v);return !["Tancat","Anul·lat","No acceptat"].includes(n)}
+function isExpedientInExecution878247(v){return normalizeExpedientStatus878136(v)==="En curs / Actiu"}
 function statusOptions878136(current){const n=normalizeExpedientStatus878136(current);return [...new Set([n,...EXPEDIENT_STATUS878136].filter(Boolean))]}
 function todayStartMs878136(){const d=new Date();d.setHours(0,0,0,0);return d.getTime()}
 function isFutureOrTodayEvent878136(e){const t=eventTime8783(e);return t>=todayStartMs878136()}
@@ -4161,6 +4162,21 @@ function updateObraFitxa8721(patch){
     return next;
   });
 }
+function updateObraStatus878247(id,status){
+  const normalized=normalizeExpedientStatus878136(status);
+  const now=new Date().toISOString();
+  setOdata(prev=>{
+    const current=normalizeBudgetedData8791(prev[id]||empty());
+    const next={...prev,[id]:normalizeBudgetedData8791({...current,obra:{...(current.obra||{}),estat:normalized,updatedAt:now},updatedAt:now})};
+    try{saveOdata878104(next,authUser8779)}catch(e){}
+    return next;
+  });
+  setObres(prev=>{
+    const next=assignClientProjectNumbers878233(prev.map(o=>o.id===id?{...o,estat:normalized,updatedAt:now}:o));
+    try{lsSet8779("aco_obres",JSON.stringify(next),authUser8779)}catch(e){}
+    return next;
+  });
+}
 function saveCert(){
   const n=+certInfo.num;
   setD(obraId,d=>{
@@ -4328,12 +4344,12 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
 {screen==="Fitxa client"&&<FitxaClient client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Agents"&&<SafeRenderBoundary878108><AgentsGeneral878188 odata={odata} setOdata={setOdata} clients={clients}/></SafeRenderBoundary878108>}
-{screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"}/>}
+{screen==="Treballs / Expedients"&&<Projectes byClient={byClient} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"}/>} 
 {screen==="Obra"&&<Obra obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>f2u(file,u=>setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u}:o)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
 {screen==="Agenda"&&<SafeRenderBoundary878108><Agenda events={[...Object.entries(viewOdata878233||{}).flatMap(([oid,d])=>Array.isArray(d?.events)?d.events.map(e=>({...e,obraId:e.obraId||oid,client:e.client||viewClients878233.find(c=>c.id===viewObres878233.find(o=>o.id===oid)?.client)?.nom,obra:e.obra||viewObres878233.find(o=>o.id===oid)?.nom,adreca:e.adreca||viewObres878233.find(o=>o.id===oid)?.adreca})):[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} clients={viewClients878233} obres={viewObres878233} openObra={openObra} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={calY} selDay={selDay} setSelDay={setSelDay} setOdata={currentAccount878233.role==="admin"?setOdata:undefined} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
-{screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={viewPartidaLibrary878233} setItems={currentAccount878233.role==="admin"?setPartidaLibrary:undefined} clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}{screen==="Rendiments"&&<SafeRenderBoundary878108><RendimentsClient878246 obres={viewObres878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}
+{screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={viewPartidaLibrary878233} setItems={currentAccount878233.role==="admin"?setPartidaLibrary:undefined} clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}{screen==="Rendiments"&&<SafeRenderBoundary878108><RendimentsClient878247 obres={viewObres878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}
 {screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<TracaGeneral obres={obres} odata={odata} openObra={openObra}/>}
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><SafeFormExpedient8751 clients={viewClients878233} allAgents={allAgents8749(viewOdata878233,viewClients878233)} onSubmit={addObra}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
@@ -5720,7 +5736,7 @@ function ClientExpedientsList878108({obres=[],openObra,clientName="client"}){
   </Card>
 }
 
-function Projectes({byClient,clients,openObra,deleteObra,f,newObra,setScreen,allowAdminActions=false}){
+function Projectes({byClient,clients,openObra,deleteObra,updateStatus,f,newObra,setScreen,allowAdminActions=false}){
 const [sort878192,setSort878192]=useState({key:"numero",dir:"desc"});
 let flat=[];Object.entries(byClient||{}).forEach(([cid,ys])=>Object.entries(ys||{}).forEach(([y,items])=>(items||[]).forEach(o=>flat.push(o))));
 let clientNom=o=>clients.find(x=>x.id===o.client)?.nom||o.propietat||"—";
@@ -5750,6 +5766,7 @@ const byYearClient=flat.reduce((acc,o)=>{const y=yearLabel878192(o);const cn=cli
 const SORT_OPTIONS878192=[{key:"numero",label:"Número"},{key:"codi",label:"Codi expedient"},{key:"client",label:"Client"},{key:"nom",label:"Nom treball"},{key:"tipus",label:"Tipologia"},{key:"adreca",label:"Adreça / municipi"},{key:"estat",label:"Estat"}];
 const chooseSort878192=key=>setSort878192(s=>s.key===key?{key,dir:s.dir==="asc"?"desc":"asc"}:{key,dir:key==="numero"?"desc":"asc"});
 const sortHead878192=(key,label)=><button type="button" className={`exp-sort-head-v878192 ${sort878192.key===key?"active":""}`} onClick={()=>chooseSort878192(key)} title={`Ordenar per ${label.toLowerCase()}`}><span>{label}</span><b>{sort878192.key===key?(sort878192.dir==="asc"?"▲":"▼"):"↕"}</b></button>;
+const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)return;updateStatus(obra.id,value)};
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
   <Card title="Llistat professional d’expedients" action={<button className="primary" onClick={newObra}><Plus/> Nou expedient</button>}>
     <details className="mobile-filter-drawer-v87119">
@@ -5772,14 +5789,14 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     </div>
     <div className="exp-list-header-v8741"><span>{total} expedients filtrats</span><div className="actions-inline exp-sort-controls-v878192"><label><span>Ordenar per</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{o.label}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?"Ascendent ▲":"Descendent ▼"}</button><button className="secondary" onClick={clearAll}>Netejar filtres</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>Tornar a tots els tipus</button>}</div></div>
     <div className="exp-mobile-tree-v87119">
-      {flat.length===0?<Empty text="No hi ha expedients amb aquest filtre."/>:anys.map((any,idx)=><details key={any} open={idx===0} className="exp-year-drawer-v87119"><summary><span>{any}</span><b>{flat.filter(o=>String(yearLabel878192(o))===String(any)).length} expedients</b></summary><div>{Object.entries(byYearClient[any]||{}).sort((a,b)=>flat.indexOf(a[1][0])-flat.indexOf(b[1][0])).map(([cn,items])=><details key={cn} className="exp-client-drawer-v87119"><summary><span>{cn}</span><b>{items.length}</b></summary><div>{items.map(o=><div key={o.id} className="exp-mobile-card-v87119"><button type="button" onClick={()=>openObra(o.id)}><small>{expedientCode8739(o)} · Client {clientProjectLabel878233(o)}</small><strong>{o.nom}</strong><span>{moduleLabel8737(o)}</span><em>{o.adreca||"—"} · {o.poblacio||"—"} · Creat: {fmtCreationDate878233(o.createdAt)}</em></button><div><Badge estat={o.estat}/><select defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="open")openObra(o.id);if(v==="delete")deleteObra?.(o.id)}}><option value="" disabled>Accions</option><option value="open">Obrir expedient</option>{allowAdminActions&&<option value="delete">Eliminar</option>}</select></div></div>)}</div></details>)}</div></details>)}
+      {flat.length===0?<Empty text="No hi ha expedients amb aquest filtre."/>:anys.map((any,idx)=><details key={any} open={idx===0} className="exp-year-drawer-v87119"><summary><span>{any}</span><b>{flat.filter(o=>String(yearLabel878192(o))===String(any)).length} expedients</b></summary><div>{Object.entries(byYearClient[any]||{}).sort((a,b)=>flat.indexOf(a[1][0])-flat.indexOf(b[1][0])).map(([cn,items])=><details key={cn} className="exp-client-drawer-v87119"><summary><span>{cn}</span><b>{items.length}</b></summary><div>{items.map(o=><div key={o.id} className="exp-mobile-card-v87119"><button type="button" onClick={()=>openObra(o.id)}><small>{expedientCode8739(o)} · Client {clientProjectLabel878233(o)}</small><strong>{o.nom}</strong><span>{moduleLabel8737(o)}</span><em>{o.adreca||"—"} · {o.poblacio||"—"} · Creat: {fmtCreationDate878233(o.createdAt)}</em></button><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onClick={e=>e.stopPropagation()} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select>}<select defaultValue="" onClick={e=>e.stopPropagation()} onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="open")openObra(o.id);if(v==="delete")deleteObra?.(o.id)}}><option value="" disabled>Accions</option><option value="open">Obrir expedient</option>{allowAdminActions&&<option value="delete">Eliminar</option>}</select></div></div>)}</div></details>)}</div></details>)}
     </div>
     <div className="exp-table-wrap-v8741 exp-table-wrap-v87119">
       <table className="exp-table-v8741 exp-table-v8742">
         <thead><tr><th>{sortHead878192("numero","Número intern")}</th><th>Núm. client</th><th>{sortHead878192("codi","Codi expedient")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th><th>Accions</th></tr></thead>
         <tbody>{flat.length===0&&<tr><td colSpan="9"><Empty text="No hi ha expedients amb aquest filtre."/></td></tr>}{anys.map(any=><React.Fragment key={any}>
           <tr className="year-row-v8742"><td colSpan="9">{any}</td></tr>
-          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b><small>Creat: {fmtCreationDate878233(o.createdAt)}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td>{clientNom(o)}</td><td><strong>{o.nom}</strong><small>{o.subtitol}</small></td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td><Badge estat={o.estat}/></td><td>{allowAdminActions&&<button type="button" className="danger small-v8777" onClick={(e)=>{e.stopPropagation();deleteObra?.(o.id)}}>Eliminar</button>}</td></tr>)}
+          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b><small>Creat: {fmtCreationDate878233(o.createdAt)}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td>{clientNom(o)}</td><td><strong>{o.nom}</strong><small>{o.subtitol}</small></td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select>}</div></td><td>{allowAdminActions&&<button type="button" className="danger small-v8777" onClick={(e)=>{e.stopPropagation();deleteObra?.(o.id)}}>Eliminar</button>}</td></tr>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
@@ -6947,7 +6964,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour}/>} 
     {activeTab==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>} 
-    {activeTab==="Rendiments"&&<RendimentsClient878246 obres={[obra]} odata={{[obra.id]:data}} openObra={()=>{}}/>}
+    {activeTab==="Rendiments"&&<RendimentsClient878247 obres={[obra]} odata={{[obra.id]:data}} openObra={()=>{}}/>}
   </>;
   const editOverlayOpen878242=activeTab!=="Resum";
   useEffect(()=>{
@@ -6974,7 +6991,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
           {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button>{!readOnly&&<button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button>}{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button>}</div>}
         </div>
       </div>
-      <div className="obra-mini-actions-v8776 obra-evolution-actions-v878193"><Badge estat={estatObra}/>{(!readOnly||clientEditBudget)&&preferredBudgetTab878239&&<button type="button" className="primary" onClick={()=>{setTab(preferredBudgetTab878239);setTabsOpen(false)}}>Crear / editar pressupost</button>}{!readOnly&&<button type="button" className="secondary" onClick={()=>setEditObra(true)}>Ampliar encàrrec</button>}<button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button>{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button>}</div>
+      <div className="obra-mini-actions-v8776 obra-evolution-actions-v878193"><Badge estat={estatObra}/>{!readOnly&&<label className="obra-status-editor-v878247"><span>Estat</span><select value={normalizeExpedientStatus878136(estatObra)} onChange={e=>{const next=e.target.value;setEstatObra(next);updateObraFitxa8721?.({estat:next})}}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select></label>}{(!readOnly||clientEditBudget)&&preferredBudgetTab878239&&<button type="button" className="primary" onClick={()=>{setTab(preferredBudgetTab878239);setTabsOpen(false)}}>Crear / editar pressupost</button>}{!readOnly&&<button type="button" className="secondary" onClick={()=>setEditObra(true)}>Ampliar encàrrec</button>}<button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button>{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button>}</div>
     </section>}
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
@@ -9607,8 +9624,8 @@ function splitOdataSyncMeta878146(raw={}){
   const clean={...src}; delete clean.__syncMeta878146;
   return {clean,meta};
 }
-function RendimentsClient878246({obres=[],odata={},openObra}){
-  const rows=(Array.isArray(obres)?obres:[]).map(obra=>{
+function RendimentsClient878247({obres=[],odata={},openObra}){
+  const rows=(Array.isArray(obres)?obres:[]).filter(obra=>isExpedientInExecution878247(obra?.estat)).map(obra=>{
     const source=odata?.[obra.id]||{};
     const scope=filterBudgetData8786(source,ensureBudgetGroups8786(source).active||"principal");
     const partides=Array.isArray(scope.partides)?scope.partides:[];
@@ -9617,13 +9634,39 @@ function RendimentsClient878246({obres=[],odata={},openObra}){
     const last=certificacions.reduce((best,current)=>(+current?.numero||0)>(+best?.numero||0)?current:best,null);
     const certificat=last?partides.reduce((sum,row)=>sum+(+certOriginAmount878223(row,+last.numero)||0),0):0;
     const certificatReal=certificat||(+last?.import||0);
-    const percent=pressupost?Math.min(100,(certificatReal/pressupost)*100):0;
-    return {obra,pressupost,certificat:certificatReal,percent,certificacio:last?.numero||"—",actes:Array.isArray(source.actes)?source.actes.length:0,fotos:Array.isArray(source.fotografies)?source.fotografies.length:0};
+    const percent=pressupost?Math.min(100,Math.max(0,(certificatReal/pressupost)*100)):0;
+    const hores=(Array.isArray(source.hores)?source.hores:[]).reduce((sum,row)=>sum+timeHours878120(row),0);
+    const costHores=(Array.isArray(source.hores)?source.hores:[]).reduce((sum,row)=>sum+timeImport878120(row),0);
+    const tasques=Array.isArray(source.tasques)?source.tasques:[];
+    const pendents=tasques.filter(task=>!task?.fet).length;
+    const darrerTreball=obraRecentScore878134(obra,source);
+    return {obra,pressupost,certificat:certificatReal,percent,certificacio:last?.numero||"—",actes:Array.isArray(source.actes)?source.actes.length:0,fotos:Array.isArray(source.fotografies)?source.fotografies.length:0,hores,costHores,pendents,darrerTreball};
   });
-  return <div className="stack client-rendiments-v878246"><Card title="Rendiments i avanç de les obres" action={<span className="module-note-inline-v878246">Consulta del client · dades actualitzades pel despatx</span>}>
-    <div className="client-rendiment-summary-v878246"><div><b>{rows.length}</b><span>Obres compartides</span></div><div><b>{money(rows.reduce((sum,row)=>sum+row.pressupost,0))}</b><span>Pressupost total</span></div><div><b>{money(rows.reduce((sum,row)=>sum+row.certificat,0))}</b><span>Certificat acumulat</span></div></div>
-    <div className="client-rendiment-table-wrap-v878246"><table className="client-rendiment-table-v878246"><thead><tr><th>Obra</th><th>Pressupost</th><th>Última cert.</th><th>Avanç</th><th>Seguiment</th><th></th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="6"><Empty text="Encara no hi ha obres compartides amb aquest usuari."/></td></tr>}{rows.map(row=><tr key={row.obra.id}><td><b>{row.obra.nom||"Obra sense nom"}</b><small>{expedientCode8739(row.obra)} · {row.obra.adreca||""}</small></td><td>{money(row.pressupost)}</td><td>{row.certificacio!=="—"?`C-${row.certificacio} · ${money(row.certificat)}`:"—"}</td><td><div className="client-rendiment-progress-v878246"><span><i style={{width:`${row.percent}%`}}/></span><b>{row.percent.toFixed(1)}%</b></div></td><td>{row.actes} actes · {row.fotos} fotos</td><td>{openObra&&<button className="secondary" type="button" onClick={()=>openObra(row.obra.id)}>Obrir obra</button>}</td></tr>)}</tbody></table></div>
-  </Card></div>;
+  const totalPressupost=rows.reduce((sum,row)=>sum+row.pressupost,0);
+  const totalCertificat=rows.reduce((sum,row)=>sum+row.certificat,0);
+  const totalHores=rows.reduce((sum,row)=>sum+row.hores,0);
+  const totalPendents=rows.reduce((sum,row)=>sum+row.pendents,0);
+  const percentGlobal=totalPressupost?Math.min(100,Math.max(0,(totalCertificat/totalPressupost)*100)):0;
+  return <div className="rendiments-dashboard-v878247">
+    <section className="rendiments-hero-v878247">
+      <div><span className="rendiments-eyebrow-v878247">MÒDUL DE SEGUIMENT</span><h1>Rendiments d’obra</h1><p>Una lectura ràpida del progrés econòmic i del treball actiu, actualitzada amb la informació compartida pel despatx.</p></div>
+      <div className="rendiments-live-v878247"><span className="rendiments-live-dot-v878247"/><b>Només obres en execució</b><small>Estat requerit: En curs / Actiu</small></div>
+    </section>
+    <div className="rendiments-kpi-grid-v878247">
+      <div className="rendiments-kpi-v878247 accent"><span className="rendiments-kpi-icon-v878247">▦</span><b>{rows.length}</b><small>Obres actives</small></div>
+      <div className="rendiments-kpi-v878247"><span className="rendiments-kpi-icon-v878247">€</span><b>{money(totalPressupost)}</b><small>Pressupost en curs</small></div>
+      <div className="rendiments-kpi-v878247"><span className="rendiments-kpi-icon-v878247">✓</span><b>{money(totalCertificat)}</b><small>Certificat acumulat</small></div>
+      <div className="rendiments-kpi-v878247"><span className="rendiments-kpi-icon-v878247">↗</span><b>{percentGlobal.toFixed(1)}%</b><small>Avanç econòmic global</small></div>
+      <div className="rendiments-kpi-v878247"><span className="rendiments-kpi-icon-v878247">◷</span><b>{totalHores.toFixed(1)} h</b><small>Hores registrades</small></div>
+    </div>
+    <div className="rendiments-section-head-v878247"><div><span className="rendiments-section-kicker-v878247">VISTA OPERATIVA</span><h2>Obres en execució</h2></div><div className="rendiments-section-meta-v878247"><span>{totalPendents} tasques pendents</span><span>Actualitzat en obrir l’obra</span></div></div>
+    {rows.length===0?<div className="rendiments-empty-v878247"><div className="rendiments-empty-icon-v878247">✓</div><h3>No hi ha obres en execució</h3><p>Aquí només apareixen les obres amb estat <b>En curs / Actiu</b>. Les pressupostades, acceptades, tancades o pendents de resposta queden fora del panell.</p></div>:<div className="rendiments-work-grid-v878247">{rows.map(row=><article className="rendiment-work-card-v878247" key={row.obra.id}>
+      <header className="rendiment-work-card-head-v878247"><div><span className="rendiment-work-code-v878247">{expedientCode8739(row.obra)}</span><h3>{row.obra.nom||"Obra sense nom"}</h3><p>{[row.obra.adreca,row.obra.poblacio].filter(Boolean).join(" · ")||"Ubicació pendent"}</p></div><Badge estat={row.obra.estat}/></header>
+      <div className="rendiment-work-progress-v878247"><div className="rendiment-progress-label-v878247"><span>Progrés certificat</span><b>{row.percent.toFixed(1)}%</b></div><div className="rendiment-progress-track-v878247"><i style={{width:`${row.percent}%`}}/></div><div className="rendiment-progress-foot-v878247"><span>{money(row.certificat)} certificat</span><span>{money(Math.max(0,row.pressupost-row.certificat))} pendent</span></div></div>
+      <div className="rendiment-work-metrics-v878247"><div><span>Pressupost</span><b>{money(row.pressupost)}</b></div><div><span>Última cert.</span><b>{row.certificacio!=="—"?`C-${row.certificacio}`:"—"}</b></div><div><span>Hores</span><b>{row.hores.toFixed(1)} h</b></div><div><span>Seguiment</span><b>{row.actes} actes · {row.fotos} fotos</b></div></div>
+      <footer className="rendiment-work-card-foot-v878247"><span>{row.pendents?`${row.pendents} tasques pendents`:(row.darrerTreball?`Darrer moviment: ${fmtRecentActivity878134(row.darrerTreball)}`:"Sense tasques pendents")}</span>{openObra&&<button type="button" className="secondary" onClick={()=>openObra(row.obra.id)}>Obrir seguiment <span>→</span></button>}</footer>
+    </article>)}</div>}
+  </div>;
 }
 
 function Agenda({events=[],clients=[],obres=[],openObra,calM,setCalM,calY,setCalY,selDay,setSelDay,setOdata,readOnly=false}){
@@ -9721,7 +9764,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.246.0",
+    app_version:"87.247.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

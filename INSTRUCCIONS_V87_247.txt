@@ -1,0 +1,30 @@
+APP CONTROL D’OBRES · V87.247
+
+CANVIS D’AQUESTA VERSIÓ
+
+1. RENDIMENTS NOMÉS PER A OBRES EN EXECUCIÓ
+   El panell Rendiments només mostra expedients amb estat «En curs / Actiu».
+   Queden fora Pressupostat, En procés, Acceptat, Tancat, Anul·lat, No acceptat,
+   Pendent de resposta i En revisió.
+
+2. CANVIAR L’ESTAT DE L’OBRA
+   - Des del llistat «Treballs / Expedients», el compte administrador pot usar
+     el selector de la columna Estat.
+   - Dins de l’obra, el selector «Estat» queda visible a la capçalera.
+   - El canvi es desa també a la fitxa interna i a les dades de l’expedient.
+   - Quan una obra passa a «En curs / Actiu» apareix al panell Rendiments.
+
+3. NOU PANELL DE RENDIMENTS
+   El panell mostra targetes responsives amb obres actives, pressupost, certificat
+   acumulat, percentatge global, hores, progrés per obra, import pendent, última
+   certificació, actes, fotos i tasques pendents.
+
+4. PROVA RÀPIDA
+   - Entra amb l’usuari d’administració.
+   - Obre Treballs / Expedients i canvia una obra a «En curs / Actiu».
+   - Entra a Rendiments: només aquesta obra hi ha d’aparèixer.
+   - Torna a canviar-la a «Tancat» o «Pendent de resposta»: ha de desaparèixer.
+
+El compte Socoterm continua veient només la informació compartida i no pot
+canviar l’estat. La sincronització entre ordinadors continua depenent de la
+configuració de Supabase/Auth del projecte publicat.
