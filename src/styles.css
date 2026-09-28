@@ -5602,3 +5602,30 @@ body::after{content:"APP V87.245"}
 .excel-preview-meta-v878245{display:flex;gap:8px;flex-wrap:wrap}.excel-preview-meta-v878245 span{padding:6px 9px;border-radius:999px;background:#eaf3ff;color:#1e4f87;font-size:11px;font-weight:850}
 .excel-preview-table-wrap-v878245{max-width:100%;max-height:62vh;overflow:auto;border:1px solid #9fb3c9;border-radius:11px;background:#fff}.excel-preview-table-wrap-v878245 table{min-width:760px;margin:0;border-collapse:collapse;font-size:11px}.excel-preview-table-wrap-v878245 th,.excel-preview-table-wrap-v878245 td{padding:6px 8px;border:1px solid #cbd5e1;white-space:pre-wrap;vertical-align:top;text-align:left;max-width:260px;overflow-wrap:anywhere}.excel-preview-table-wrap-v878245 thead th{position:static!important;background:#dbeafe;color:#0f2d5c}.excel-preview-table-wrap-v878245 tbody th{background:#f1f5f9;color:#64748b;text-align:right;min-width:42px}
 @media(max-width:700px){.excel-preview-intro-v878245{align-items:stretch;flex-direction:column}.excel-preview-intro-v878245 label{min-width:0}.excel-preview-table-wrap-v878245{max-height:58vh}.excel-document-preview-v878245{padding:8px}}
+
+/* V87.246 · portal client: llibreria consultable, rendiments i agenda */
+body::after{content:"APP V87.246"}
+.library-readonly-note-v878246{margin:0 0 12px;border-color:#b8d3f2;background:linear-gradient(135deg,#f5faff,#eef6ff);color:#21476f}
+.library-readonly-note-v878246 b{color:#164b8d}
+.library-readonly-v878246 .library-hero-v87196 .actions-inline,
+.library-readonly-v878246 .library-policy-note-v87199,
+.library-readonly-v878246 .library-clean-start-v87231,
+.library-readonly-v878246 .library-optional-tools-v87230,
+.library-readonly-v878246 .library-chapter-controls-v87199>button,
+.library-readonly-v878246 .library-trash-v87203,
+.library-readonly-v878246 .library-new-v87196{display:none!important}
+.library-readonly-v878246 .library-item-work-v87207 input,
+.library-readonly-v878246 .library-item-work-v87207 select,
+.library-readonly-v878246 .library-item-work-v87207 textarea,
+.library-readonly-v878246 .library-item-work-v87207 button,
+.library-readonly-v878246 .library-item-modal-v87208 input,
+.library-readonly-v878246 .library-item-modal-v87208 select,
+.library-readonly-v878246 .library-item-modal-v87208 textarea,
+.library-readonly-v878246 .library-item-modal-v87208 button:not(.primary:last-child){pointer-events:none}
+.library-readonly-v878246 .library-item-modal-v87208 .modal-actions .danger{display:none!important}
+.module-note-inline-v878246{font-size:11px;color:#64748b;font-weight:750}
+.client-rendiments-v878246{min-width:0}
+.client-rendiment-summary-v878246{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:14px 16px;border-bottom:1px solid #dbe5ef;background:#f8fbff}
+.client-rendiment-summary-v878246>div{display:grid;gap:3px;padding:11px 12px;border:1px solid #d5e2f0;border-radius:12px;background:#fff}.client-rendiment-summary-v878246 b{font-size:18px;color:#123b70;font-variant-numeric:tabular-nums}.client-rendiment-summary-v878246 span{font-size:11px;color:#64748b;font-weight:750}
+.client-rendiment-table-wrap-v878246{overflow:auto}.client-rendiment-table-v878246{width:100%;min-width:760px;border-collapse:collapse}.client-rendiment-table-v878246 th,.client-rendiment-table-v878246 td{padding:11px 12px;border-bottom:1px solid #e1e8f0;text-align:left;vertical-align:middle}.client-rendiment-table-v878246 th{background:#f1f6fb;color:#52677f;font-size:10px;letter-spacing:.04em;text-transform:uppercase}.client-rendiment-table-v878246 td{font-size:12px;color:#293c52}.client-rendiment-table-v878246 td:first-child{min-width:210px}.client-rendiment-table-v878246 td:first-child b,.client-rendiment-table-v878246 td:first-child small{display:block}.client-rendiment-table-v878246 td:first-child small{margin-top:3px;color:#7b8da2;font-size:10px}.client-rendiment-progress-v878246{display:flex;align-items:center;gap:7px;min-width:120px}.client-rendiment-progress-v878246>span{display:block;width:88px;height:8px;overflow:hidden;border-radius:999px;background:#e3eaf1}.client-rendiment-progress-v878246 i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#13a7b8,#2563eb)}.client-rendiment-progress-v878246 b{font-size:11px;color:#164b8d;white-space:nowrap}
+@media(max-width:760px){.client-rendiment-summary-v878246{grid-template-columns:1fr}.client-rendiment-summary-v878246>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px}.module-note-inline-v878246{display:block;max-width:210px;line-height:1.35}.client-rendiment-table-v878246 th,.client-rendiment-table-v878246 td{padding:9px 10px}}

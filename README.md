@@ -1,10 +1,16 @@
-# APP Control d’Obres V87.245
+# APP Control d’Obres V87.246
 
 ## Portal client modular · pressupost, certificacions i llibreria validada
 
-La V87.245 activa per al Mòdul 2 del client les funcions econòmiques que el
+La V87.246 activa per al Mòdul 2 del client les funcions econòmiques que el
 despatx decideixi donar-li, mantenint la resta de l’expedient neta i en
 consulta.
+
+La V87.246 afegeix el format visual de pressupost a l’Excel exportat, elimina
+duplicats de l’Excel d’origen als Documents i incorpora al portal Socoterm la
+Llibreria validada, Agenda / Avisos i Rendiments en consulta. La llibreria
+permet classificar cada partida per capítol, tipologia i paraules clau o
+sinònims, sense incorporar automàticament tot el contingut dels pressupostos.
 
 - A Configuració es pot activar «Pot crear / modificar pressupostos», «Pot
   emplenar certificacions» i «Pot utilitzar la llibreria validada».
