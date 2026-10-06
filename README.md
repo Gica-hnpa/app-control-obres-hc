@@ -1,14 +1,20 @@
-# APP Control d’Obres V87.247
+# APP Control d’Obres V87.248
 
 ## Portal client modular · pressupost, certificacions i llibreria validada
 
-La V87.247 activa per al Mòdul 2 del client les funcions econòmiques que el
+La V87.248 activa per al Mòdul 2 del client les funcions econòmiques que el
 despatx decideixi donar-li, mantenint la resta de l’expedient neta i en
 consulta.
 
-La V87.247 afegeix el filtre real d’obres en execució al panell de rendiments,
+La V87.248 afegeix el filtre real d’obres en execució al panell de rendiments,
 un selector d’estat accessible des del llistat i la fitxa de l’obra i una vista
 operativa amb KPIs, progrés, certificació, hores, actes, fotos i tasques.
+
+La V87.248 també manté la capçalera i les accions del pressupost accessibles
+durant el scroll, deixa les accions de capítol i partida al seu costat, elimina
+els avisos tècnics de color taronja de la vista de treball i reforça el guardat
+del preu unitari perquè l’últim canvi escrit es conservi en prémer «Guardar
+canvis».
 
 La V87.246 afegeix el format visual de pressupost a l’Excel exportat, elimina
 duplicats de l’Excel d’origen als Documents i incorpora al portal Socoterm la

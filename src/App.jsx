@@ -394,7 +394,7 @@ function normalizeExpedientStatus878136(v){
   if(s.includes("anul"))return "Anul·lat";
   if(s.includes("no accept")||s.includes("descart")||s.includes("rebutj")||s.includes("no contest"))return "No acceptat";
   if(s.includes("revis"))return "En revisió";
-  if(s.includes("pendent"))return "Pendent de resposta";
+  if(s.includes("pendent")||s.includes("espera")||s.includes("resposta"))return "Pendent de resposta";
   return v||"Pendent de resposta";
 }
 function isExpedientOpen878136(v){const n=normalizeExpedientStatus878136(v);return !["Tancat","Anul·lat","No acceptat"].includes(n)}
@@ -5039,7 +5039,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   </div>
 }
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
-function Card({title,children,action}){return <div className="card"><div className="card-head"><h2>{title}</h2>{action}</div>{children}</div>}
+function Card({title,children,action,className=""}){return <div className={`card ${className}`.trim()}><div className="card-head"><h2>{title}</h2>{action}</div>{children}</div>}
 function ActionMenu87213({label="Més accions",children}){
   return <details className="action-menu-v87213"><summary>{label}<span aria-hidden="true">⌄</span></summary><div className="action-menu-panel-v87213" onClick={e=>{if(e.target.closest("button,a,label"))e.currentTarget.parentElement?.removeAttribute("open")}}>{children}</div></details>
 }
@@ -7208,7 +7208,14 @@ function PartidaReadingModal87208({row={},title="Fitxa de la partida",editable=f
   return <Modal title={title} close={close}><div className="partida-reading-modal-v87208"><div className="partida-reading-meta-v87208"><div><small>Codi</small><b>{row.codi||row.codiIntern||"—"}</b></div><div><small>Unitat</small><b>{row.ut||"ut"}</b></div><div><small>Preu unitari</small><b>{money(parseNum8770(row.pu)||0)}</b></div><div><small>Total descompost</small><b>{hasBreakdown?money(detected):"Sense descompost"}</b></div></div><div className={`partida-reading-split-v87208 ${hasBreakdown?"has-breakdown":""}`}><section><h3>Descripció completa</h3>{editable?<textarea value={row.desc||""} onChange={e=>onChange?.("desc",e.target.value)} placeholder="Escriu la descripció llarga de la partida..."/>:<div className="partida-reading-description-v87208">{libText87196(row.desc)?row.desc:<em>Aquesta partida encara no té descripció llarga.</em>}</div>}</section>{hasBreakdown&&<section><div className="partida-reading-section-head-v87208"><h3>Descompost</h3>{editable&&openBreakdown&&<button type="button" className="secondary small" onClick={openBreakdown}>Editar descompost</button>}</div>{table?.rows?.length?<div className="partida-reading-table-wrap-v87208"><table><thead><tr><th>Concepte</th><th>Ut.</th><th>Rend.</th><th>Preu/ut</th><th>Total</th></tr></thead><tbody>{table.rows.map((item,index)=>item.isSection?<tr className="breakdown-section-v87207" key={item.id||index}><td colSpan="5"><b>{item.concepte}</b></td></tr>:<tr key={item.id||index}><td>{item.concepte||"—"}</td><td>{item.ut||"—"}</td><td>{item.q||"—"}</td><td>{item.pu||"—"}</td><td>{item.total||"—"}</td></tr>)}</tbody></table></div>:<pre className="partida-reading-breakdown-text-v87208">{row.descompost}</pre>}</section>}</div><div className="modal-actions">{editable&&openBreakdown&&<button type="button" className="secondary" onClick={openBreakdown}>Editar descompost</button>}<button type="button" className="primary" onClick={close}>Tancar i tornar al pressupost</button></div></div></Modal>;
 }
 function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,client,obra,clientHistoricalPartides=[],budgetGroups=[],activeBudgetId="principal",selectBudget,addBudget,totalGlobal=0,totalActive=0,partidaLibrary=[],setPartidaLibrary,quickMode=false,clientMode=false,clientLibraryEnabled=true,clientLibraryMaxPerChapter=3}){
-  const [caps,setCaps]=useState(()=>group(data.partides||[],"cap"));
+  const [caps,setCapsState]=useState(()=>group(data.partides||[],"cap"));
+  const capsRef878247=useRef(caps);
+  function setCaps(updater){
+    const previous=capsRef878247.current||{};
+    const next=typeof updater==="function"?updater(previous):updater;
+    capsRef878247.current=next||{};
+    setCapsState(next||{});
+  }
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
   const [descOpen875,setDescOpen875]=useState({});
   const [budgetPartidaView87208,setBudgetPartidaView87208]=useState(null);
@@ -7406,7 +7413,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setEditBudget8760b(true);
   }
   function saveBudget8760b(){
-    const normalized=normalizeBudgetCaps878176(caps);
+    const normalized=normalizeBudgetCaps878176(capsRef878247.current||caps);
     setCaps(normalized);
     persistBudgetCaps878179(normalized);
     setEditSnapshot878176(null);
@@ -7965,7 +7972,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function flattenCapsForBudget878179(nextCaps=caps){
     return sortedCapEntries8779(nextCaps||{}).flatMap(([cap,items])=>sortPartides8779(items).map(r=>({...r,cap,q:parseNum8770(r.q)||0,pu:parseNum8770(r.pu)||0})));
   }
-  function persistBudgetCaps878179(nextCaps=caps){
+  function persistBudgetCaps878179(nextCaps=capsRef878247.current||caps){
     const normalized=normalizeBudgetCaps878176(nextCaps||{});
     const flat=flattenCapsForBudget878179(normalized);
     const totalFlat=flat.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -7984,7 +7991,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     });
   }
   function budgetPrintDoc878179(){
-    const rows=flattenCapsForBudget878179(caps);
+    const rows=flattenCapsForBudget878179(capsRef878247.current||caps);
     const docTotal=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
     return {
       type:"pressupostobra",
@@ -8010,7 +8017,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
   function saveBudgetDocument878179(){
     const doc=budgetPrintDoc878179();
-    persistBudgetCaps878179(caps);
+    persistBudgetCaps878179(capsRef878247.current||caps);
     const now=new Date().toISOString();
     setData?.(d=>({...d,documents:[{id:"doc-pres-obra-"+Date.now(),nom:`Pressupost obra · ${doc.numeroPressupost||doc.versioPressupost||new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:0,storage:"generat",hasFile:false,import:doc.total,origen:"Pressupost obra",observacions:doc.observacions,formaPagament:doc.formaPagament,docData:doc},...(d.documents||[])],updatedAt:now}));
     alert("Pressupost guardat a Documents amb format de pressupost.");
@@ -8046,11 +8053,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setCaps(next);persistBudgetCaps878179(next);alert(`Descomposats aplicats i guardats: ${count}.`);
   }
   function saveOnlyDescompostos878180(){
-    persistBudgetCaps878179(caps);
+    persistBudgetCaps878179(capsRef878247.current||caps);
     alert("Descomposats i preus validats guardats dins del pressupost.");
   }
   function exportBudgetExcel878180(){
-    persistBudgetCaps878179(caps);
+    persistBudgetCaps878179(capsRef878247.current||caps);
     exportBudgetDocExcelStyled878246(budgetPrintDoc878179(),`pressupost_obra_${data?.pressupostRapidNumero||budgetLabel8786(data,activeBudgetId)||"export"}`);
   }
   const realPressupostos=(data.pressupostos||[]).filter(p=>!String(p.id||"").startsWith("budget-marker-")&&p.versio!=="Annex");
@@ -8094,7 +8101,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       </div>
     </details>}
 
-    <Card title="Pressupost obra per capítols" action={<div className="actions-inline budget-direct-edit-v87211"><span className="budget-grand-total budget-total-right-v87196"><small>Total pressupost seleccionat</small><b>{money(total)}</b></span><ActionMenu87213 label="Accions">
+    <Card className="budget-card-v878248" title="Pressupost obra per capítols" action={<div className="actions-inline budget-direct-edit-v87211"><span className="budget-grand-total budget-total-right-v87196"><small>Total pressupost seleccionat</small><b>{money(total)}</b></span><ActionMenu87213 label="Accions">
       {!editBudget8760b&&<button type="button" onClick={beginBudgetEdit878176}>Editar pressupost</button>}
       {editBudget8760b&&<><button type="button" onClick={saveBudget8760b}>Guardar canvis</button><button type="button" onClick={cancelBudget8760b}>Cancel·lar edició</button></>}
       {clientMode&&<button type="button" onClick={startManualBudget87115}>Començar pressupost buit</button>}
@@ -9764,7 +9771,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.247.0",
+    app_version:"87.248.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
