@@ -5643,8 +5643,8 @@ body::after{content:"APP V87.247"}
 @media(max-width:1050px){.rendiments-kpi-grid-v878247{grid-template-columns:repeat(3,minmax(0,1fr))}.rendiments-work-grid-v878247{grid-template-columns:1fr}}
 @media(max-width:700px){.rendiments-hero-v878247{display:grid;padding:20px;border-radius:17px}.rendiments-live-v878247{min-width:0}.rendiments-kpi-grid-v878247{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.rendiments-kpi-v878247{min-height:94px;padding:12px}.rendiments-kpi-v878247 b{font-size:17px}.rendiments-section-head-v878247{display:grid;align-items:start}.rendiments-section-meta-v878247{justify-content:start}.rendiment-work-card-v878247{padding:14px;border-radius:15px}.rendiment-work-card-head-v878247{display:grid}.rendiment-work-card-head-v878247 .badge{justify-self:start}.rendiment-work-card-foot-v878247{align-items:start;flex-direction:column}.rendiment-work-card-foot-v878247 button{width:100%;justify-content:center}.obra-status-editor-v878247{width:100%;justify-content:space-between}.obra-status-editor-v878247 select{flex:1;min-width:0}}
 
-/* V87.248 · accions contextuals del pressupost i guardat fiable de preus */
-body::after{content:"APP V87.248"}
+/* V87.249 · desat fiable del text i preu del descompost */
+body::after{content:"APP V87.249"}
 .budget-card-v878248{overflow:visible!important}
 .budget-card-v878248>.card-head{position:sticky;top:8px;z-index:62;background:rgba(255,255,255,.97);box-shadow:0 5px 16px rgba(15,45,92,.08);backdrop-filter:blur(8px)}
 .budget-card-v878248>.card-head .action-menu-v87213{z-index:80}

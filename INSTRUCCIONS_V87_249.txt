@@ -1,0 +1,15 @@
+APP CONTROL D’OBRES · V87.249
+
+Correcció del pressupost i descompostos
+
+1. Accions contextuals
+   Les accions generals, de capítol i de partida continuen agrupades en menús
+   contextuals i accessibles durant el desplaçament.
+
+2. Desat fiable de la partida
+   El descompost i el preu validat es desen sempre amb l’última dada escrita,
+   encara que es premi el botó immediatament després d’editar.
+
+3. Prova recomanada
+   Obre el pressupost, edita la partida 02.18, canvia el preu o el text,
+   prem «Guardar» i torna a obrir la partida. El canvi ha de continuar-hi.

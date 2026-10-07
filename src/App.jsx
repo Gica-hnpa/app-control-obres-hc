@@ -7435,7 +7435,9 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(!file)return;
     try{
       const items=await workbookDescompostsMassius878176(file);
-      const prevCaps=cloneJson878176(caps);
+      // V87.249: en una edició ràpida, la referència React `caps` pot quedar
+      // un render enrere. La ref conté sempre l'últim text/preu escrit.
+      const prevCaps=cloneJson878176(capsRef878247.current||caps);
       const next=cloneJson878176(prevCaps);
       const flat=[];
       Object.entries(next||{}).forEach(([cap,rows])=>(rows||[]).forEach((r,idx)=>flat.push({cap,idx,row:r,code:normCode878176(r.codi),canon:canonCode878177(r.codi),text:normText878176(`${r.codi||""} ${r.concepte||""}`)})));
@@ -7910,7 +7912,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setDescompostModal87173(null);
   }
   function saveDescompostChanges878229(cap,i,applyPrice=false){
-    const current=cloneJson878176((caps?.[cap]||[])[i]||{});
+    // V87.249: no llegir la captura antiga del render. Això era el motiu pel
+    // qual una partida podia conservar el descompost/preu anterior quan es
+    // premia desar immediatament després d'escriure.
+    const currentCaps=cloneJson878176(capsRef878247.current||caps);
+    const current=cloneJson878176((currentCaps?.[cap]||[])[i]||{});
     const mode=current.costMode878229||"detallat";
     if(mode!=="detallat"){
       const table=buildClosedCostTable878229(current);
@@ -7928,7 +7934,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(applyPrice&&!validated)return alert("No hi ha cap import calculat. Introdueix el preu de subcontracta, els lots o les línies del descompost.");
     current.descompostValidatedPu=qty2(validated||0);
     if(applyPrice){current.pu=qty2(validated);current.puFromDescompost=true;}
-    const next=cloneJson878176(caps);
+    const next=currentCaps;
     next[cap]=[...(next[cap]||[])];
     next[cap][i]=current;
     setCaps(next);
@@ -7965,7 +7971,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function closeBudgetRow87173(){setOpenBudgetRow87173(null)}
   function openDescompostModal87173(cap,i){
     setOpenBudgetRow87173(budgetRowKey87173(cap,i));
-    setDescompostModal87173({cap,i,snapshot:cloneJson878176((caps?.[cap]||[])[i]||{})});
+    setDescompostModal87173({cap,i,snapshot:cloneJson878176((capsRef878247.current?.[cap]||caps?.[cap]||[])[i]||{})});
   }
 
   const total=Object.values(caps).flat().reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -9771,7 +9777,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.248.0",
+    app_version:"87.249.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

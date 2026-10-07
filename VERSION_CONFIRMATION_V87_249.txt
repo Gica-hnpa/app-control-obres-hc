@@ -1,0 +1,7 @@
+CONFIRMACIÓ DE VERSIÓ · APP CONTROL D’OBRES V87.249
+
+Correcció aplicada al guardat de partides i descompostos.
+
+- La partida 02.18 ja no depèn d’un estat anterior del formulari.
+- El text i el preu més recents es conserven en desar.
+- Es manté el disseny d’accions contextuals de la V87.248.
