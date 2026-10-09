@@ -12474,6 +12474,7 @@ function ShareObra878259({obra}){
   const c=typeof window!=="undefined"?window.__acoCloud:null;
   const[open,setOpen]=useState(false);
   if(!c?.shareObra||!obra?.id)return null;
+  if(!obra.compartida&&!c.status?.()?.connected)return <div className="share-bar-v878259"><span>Per compartir aquesta obra cal que entris al núvol amb el teu compte.</span><button type="button" className="secondary" onClick={()=>c.connect()}>Entrar al núvol</button></div>;
   if(obra.compartida)return <div className="share-bar-v878259 foreign"><span>Obra compartida per <b>{obra.compartida.ownerNom||"un altre compte"}</b> · {obra.compartida.perm==="edicio"?"pots fer-hi canvis i els veurà":"només consulta: els teus canvis no s’hi desen"}</span></div>;
   const shared=!!c.sharedOwned?.()?.has(obra.id);
   return <><div className={`share-bar-v878259${shared?" on":""}`}><span>{shared?"Obra compartida amb altres comptes.":"Només la veus tu."}</span><button type="button" className="secondary" onClick={()=>setOpen(true)}>{shared?"Amb qui es comparteix":"Compartir"}</button></div>{open&&<ShareModal878259 obra={obra} close={()=>setOpen(false)}/>}</>;
