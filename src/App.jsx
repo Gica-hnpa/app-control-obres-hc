@@ -8327,7 +8327,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setCaps({});setOpen({});setBudgetSelectedRows878229({});setEditBudget8760b(true);
   }
 
-  useEffect(()=>{if(editBudget8760b)return;const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(Object.fromEntries(Object.keys(syncCapsV874).map((k,i)=>[k,i===0])));},[data.partides,editBudget8760b]);
+  // V87.258 · el comptador de temps refresca la pantalla cada segon: es conserva quins capítols tens oberts.
+  useEffect(()=>{if(editBudget8760b)return;const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(prev=>{const keys=Object.keys(syncCapsV874);const had=keys.some(k=>k in (prev||{}));return Object.fromEntries(keys.map((k,i)=>[k,had?!!prev[k]:i===0]))});},[data.partides,editBudget8760b]);
 
 
   function upd(cap,i,k,v){
@@ -10522,7 +10523,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.257.4",
+    app_version:"87.257.5",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
