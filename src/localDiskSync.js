@@ -13,7 +13,7 @@
 //   tocar res); si no, el rètol de baix et deixa actualitzar amb un clic.
 const ENDPOINT = "/__dades-locals";
 const APP_KEY = /^aco_/;
-const VERSION = "V87.258";
+const VERSION = "V87.259";
 const DEVICE_KEY = "dispositiu-app-control-obres";
 let active = false, timer = null, dirty = false, saving = false, badge = null, lastSaved = "", lastError = "";
 let known = {}, device = "", remotePending = false, lastInput = Date.now(), conflictAt = "", unloading = false;

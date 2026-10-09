@@ -210,7 +210,7 @@ html body ::-webkit-scrollbar-thumb:hover{background:#9FAFB6;background-clip:pad
 @media screen{
 /* Etiquetes flotants que tapaven botons */
 html body .user-global-badge-v8782{display:none!important}
-html body::after{content:"V87.258.2"!important;background:transparent!important;color:var(--co-ink-3)!important;font:500 10px/1.2 var(--app-font)!important;letter-spacing:.04em!important;opacity:.7}
+html body::after{content:"V87.259"!important;background:transparent!important;color:var(--co-ink-3)!important;font:500 10px/1.2 var(--app-font)!important;letter-spacing:.04em!important;opacity:.7}
 
 /* Menú lateral: marca */
 html body .sidebar .brand{display:flex;align-items:center;gap:10px}

@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.258";
+const VERSION = "V87.259";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -105,17 +105,38 @@ async function pushRows(rows) {
 // ---------- dades locals ----------
 function entries() {
   const out = {};
+  // V87.259 · les obres que m'han compartit altres comptes viuen a la taula aco_shared,
+  // no al meu espai: no es pugen ni es compten aquí.
+  const foreign = foreignIds();
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
     if (!k || !APP_KEY.test(k) || EXCLUDE.test(k) || !inScope(k)) continue;
-    const v = localStorage.getItem(k);
+    let v = localStorage.getItem(k);
+    if (foreign.size && OBRES_RE.test(k)) { try { const a = JSON.parse(v); if (Array.isArray(a) && a.some(o => foreign.has(o?.id))) v = JSON.stringify(a.filter(o => !foreign.has(o?.id))); } catch {} }
+    if (foreign.size && FOTO_RE.test(k) && foreign.has(k.replace(FOTO_RE, "$1"))) continue;
     if (SPLIT.test(k)) {
       let o = null; try { o = JSON.parse(v); } catch {}
-      if (o && typeof o === "object" && !Array.isArray(o)) { for (const id of Object.keys(o)) out[`${k}#${id}`] = JSON.stringify(o[id]); continue; }
+      if (o && typeof o === "object" && !Array.isArray(o)) { for (const id of Object.keys(o)) { if (!foreign.has(id)) out[`${k}#${id}`] = JSON.stringify(o[id]); } continue; }
     }
     out[k] = v;
   }
   return out;
+}
+const OBRES_RE = /__aco_obres$/, FOTO_RE = /^.*__aco_obra_foto_v878259_(.+)$/;
+function foreignIds() {
+  const ids = new Set();
+  try { const a = JSON.parse(localStorage.getItem(kObres()) || "[]"); if (Array.isArray(a)) a.forEach(o => { if (o?.compartida && o.compartida.owner !== session?.user_id) ids.add(o.id); }); } catch {}
+  return ids;
+}
+// Quan arriba del núvol la llista d'obres pròpia, es conserven les compartides per altres.
+function keepForeign(key, val) {
+  if (!OBRES_RE.test(key) || val == null) return val;
+  try {
+    const cur = JSON.parse(localStorage.getItem(key) || "[]"), inc = JSON.parse(val);
+    if (!Array.isArray(cur) || !Array.isArray(inc)) return val;
+    const extra = cur.filter(o => o?.compartida && o.compartida.owner !== session?.user_id && !inc.some(x => x?.id === o.id));
+    return extra.length ? JSON.stringify([...inc, ...extra]) : val;
+  } catch { return val; }
 }
 function splitKey(key) { const i = key.indexOf("#"); if (i > 0 && SPLIT.test(key.slice(0, i))) return [key.slice(0, i), key.slice(i + 1)]; return [key, null]; }
 function pendingKeys(local) {
@@ -135,7 +156,7 @@ function applyRows(rows, skip = new Set()) {
     const [base, id] = splitKey(r.key);
     if (id !== null) (patches[base] ??= {})[id] = val;
     else if (val === undefined) removeRaw(r.key);
-    else { try { writeRaw(r.key, val); } catch (e) { console.warn("Núvol: no hi cap", r.key, e); continue; } }
+    else { try { writeRaw(r.key, keepForeign(r.key, val)); } catch (e) { console.warn("Núvol: no hi cap", r.key, e); continue; } }
     if (val === undefined) delete meta.known[r.key]; else meta.known[r.key] = hash(val);
     n++;
   }
@@ -281,6 +302,91 @@ async function firstSync() {
   meta = m;
   saveMeta();
 }
+// ---------- V87.259 · obres compartides (taula aco_shared) ----------
+function ownNs() { const c = companyOf(session?.email); return c ? c.internal : "hector"; }
+function kObres() { return `aco_v8782__${ownNs()}__aco_obres`; }
+function kOdata() { return `aco_v8782__${ownNs()}__aco_odata`; }
+function kFoto(id) { return `aco_v8782__${ownNs()}__aco_obra_foto_v878259_${id}`; }
+function sharedMetaKey() { return `nuvol-aco-compartits__${session?.user_id || ""}`; }
+function readArr(k, f) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? f; } catch { return f; } }
+function stripShareMeta(o) { const { compartida, imatge, ...rest } = o || {}; return rest; }
+function localShare(id) {
+  const o = readArr(kObres(), []).find(x => x?.id === id); if (!o) return null;
+  const d = readArr(kOdata(), {})[id];
+  const obra = stripShareMeta(o);
+  if (!o.compartida) { const c = readArr(`aco_v8782__${ownNs()}__aco_clients`, []).find(x => String(x?.id) === String(o.client)); if (c) obra.clientNomCompartit = c.nom || c.rao || ""; }
+  return { obra: JSON.stringify(obra), dades: JSON.stringify(d ?? null), foto: localStorage.getItem(kFoto(id)) || "" };
+}
+function shHash(x) { return hash((x?.obra || "") + "\u0001" + (x?.dades || "") + "\u0001" + (x?.foto || "")); }
+function ownerNom() { const e = readArr(`aco_v8782__${ownNs()}__aco_empresa_v878259`, null); return e?.nom || companyOf(session?.email)?.username || "Héctor Cubero"; }
+function applyShared(r, owned, editor) {
+  let o = {}; try { o = JSON.parse(r.obra || "{}") || {}; } catch {}
+  if (!owned) o.compartida = { owner: r.owner, ownerEmail: r.owner_email || "", ownerNom: r.owner_nom || "", perm: editor ? "edicio" : "consulta" };
+  const list = readArr(kObres(), []); const prev = list.find(x => x?.id === r.obra_id);
+  if (owned && prev) { delete o.compartida; delete o.clientNomCompartit; }
+  writeRaw(kObres(), JSON.stringify(prev ? list.map(x => x?.id === r.obra_id ? o : x) : [...list, o]));
+  const od = readArr(kOdata(), {}); let d = null; try { d = JSON.parse(r.dades || "null"); } catch {}
+  if (d == null) delete od[r.obra_id]; else od[r.obra_id] = d;
+  writeRaw(kOdata(), JSON.stringify(od));
+  if (r.foto) writeRaw(kFoto(r.obra_id), r.foto); else removeRaw(kFoto(r.obra_id));
+}
+function removeForeign(ids) {
+  const set = new Set(ids);
+  writeRaw(kObres(), JSON.stringify(readArr(kObres(), []).filter(o => !set.has(o?.id))));
+  const od = readArr(kOdata(), {}); ids.forEach(id => { delete od[id]; removeRaw(kFoto(id)); }); writeRaw(kOdata(), JSON.stringify(od));
+}
+let sharedOwned = new Set(), sharedTableMissing = false;
+async function sharedCycle(canApply) {
+  if (sharedTableMissing) return { applied: 0, waiting: false };
+  let rows;
+  try { rows = await api(`/rest/v1/aco_shared?select=*`); }
+  catch (e) { if (e.status === 404 || /aco_shared/.test(e.message)) { sharedTableMissing = true; return { applied: 0, waiting: false }; } throw e; }
+  const me = session.user_id, email = session.email;
+  const sm = readArr(sharedMetaKey(), null) || { known: {} };
+  let applied = 0, waiting = false;
+  sharedOwned = new Set(rows.filter(r => r.owner === me).map(r => r.obra_id));
+  for (const r of rows) {
+    const owned = r.owner === me, editor = owned || (r.editors || []).includes(email);
+    const remote = { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" }, rh = shHash(remote);
+    const loc = localShare(r.obra_id), lh = loc ? shHash(loc) : "";
+    const known = sm.known[r.obra_id];
+    if (lh === rh) { sm.known[r.obra_id] = rh; continue; }
+    const remoteChanged = rh !== known, localChanged = !!loc && lh !== known;
+    if (remoteChanged || !loc) {
+      // Guanya el núvol (com a la resta de dades). Només s'aplica si es pot recarregar.
+      if (!canApply) { waiting = true; continue; }
+      applyShared(r, owned, editor); sm.known[r.obra_id] = rh; applied++;
+    } else if (localChanged && editor) {
+      await api(`/rest/v1/aco_shared?obra_id=eq.${encodeURIComponent(r.obra_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: { ...loc, updated_by: email } });
+      sm.known[r.obra_id] = lh;
+    }
+  }
+  const ids = new Set(rows.map(r => r.obra_id));
+  const gone = readArr(kObres(), []).filter(o => o?.compartida && o.compartida.owner !== me && !ids.has(o.id)).map(o => o.id);
+  if (gone.length) { if (canApply) { removeForeign(gone); gone.forEach(id => delete sm.known[id]); applied++; } else waiting = true; }
+  writeRaw(sharedMetaKey(), JSON.stringify(sm));
+  try { window.dispatchEvent(new CustomEvent("aco-shared-changed")); } catch {}
+  return { applied, waiting };
+}
+async function shareObra(obraId, lectors = [], editors = []) {
+  if (!session) throw new Error("Cal estar connectat al núvol.");
+  const loc = localShare(obraId); if (!loc) throw new Error("No trobo aquesta obra.");
+  const norm = a => [...new Set(a.map(toEmail).filter(e => e && e !== session.email))];
+  await api(`/rest/v1/aco_shared?on_conflict=obra_id`, { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: [{ obra_id: obraId, owner: session.user_id, owner_email: session.email, owner_nom: ownerNom(), lectors: norm(lectors), editors: norm(editors), ...loc, updated_by: session.email }] });
+  const sm = readArr(sharedMetaKey(), null) || { known: {} }; sm.known[obraId] = shHash(loc); writeRaw(sharedMetaKey(), JSON.stringify(sm));
+  sharedOwned.add(obraId);
+}
+async function unshareObra(obraId) {
+  await api(`/rest/v1/aco_shared?obra_id=eq.${encodeURIComponent(obraId)}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
+  const sm = readArr(sharedMetaKey(), null) || { known: {} }; delete sm.known[obraId]; writeRaw(sharedMetaKey(), JSON.stringify(sm));
+  sharedOwned.delete(obraId);
+}
+async function sharedInfo(obraId) {
+  const rows = await api(`/rest/v1/aco_shared?select=obra_id,owner,owner_nom,lectors,editors,updated_at,updated_by&obra_id=eq.${encodeURIComponent(obraId)}`);
+  const r = rows?.[0]; if (!r) return null;
+  const short = e => companyOf(e)?.username || e;
+  return { ...r, propi: r.owner === session.user_id, lectors: (r.lectors || []).map(short), editors: (r.editors || []).map(short) };
+}
 // Un cicle: baixa el que ha canviat, puja el que és d'aquí i decideix si cal recarregar.
 async function cycle({ startup = false, returning = false } = {}) {
   if (!active || !session) return;
@@ -316,11 +422,16 @@ async function cycle({ startup = false, returning = false } = {}) {
       // Les files pròpies o iguals també serveixen per avançar el cursor.
       rows.forEach(r => { if (!pendSet.has(r.key) && r.device !== device) { if (r.deleted) delete meta.known[r.key]; else meta.known[r.key] = hash(r.value ?? ""); } });
       meta.cursor = maxTime(rows, meta.cursor); saveMeta();
-      lastOk = new Date().toISOString(); lastErr = ""; paint("ok");
+      // Obres compartides
+      const canApply = startup || (!typing() && (returning || Date.now() - lastInput > 60000));
+      const sh = await sharedCycle(canApply);
+      if (sh.applied && !startup) { lastOk = new Date().toISOString(); await reloadSafely(); return; }
+      lastOk = new Date().toISOString(); lastErr = ""; paint(sh.waiting ? "remote" : "ok");
     } else if (startup || conflicts.length || (!typing() && (returning || Date.now() - lastInput > 60000))) {
       applyRows(remote);
       meta.cursor = maxTime(rows, meta.cursor); saveMeta();
       lastOk = new Date().toISOString(); lastErr = "";
+      if (startup) { try { await sharedCycle(true); } catch (e) { console.warn("Compartides:", e); } }
       if (!startup) { await reloadSafely(); return; }
       paint("ok");
     } else {
@@ -448,7 +559,7 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "" };
   session = readJson(SESSION_KEY, null);
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {

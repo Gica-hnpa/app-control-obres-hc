@@ -6167,7 +6167,7 @@ function ClientExpedientsList878108({obres=[],openObra,clientName="client"}){
 function Projectes({byClient,clients,openObra,deleteObra,updateStatus,f,newObra,setScreen,allowAdminActions=false}){
 const [sort878192,setSort878192]=useState({key:"numero",dir:"desc"});
 let flat=[];Object.entries(byClient||{}).forEach(([cid,ys])=>Object.entries(ys||{}).forEach(([y,items])=>(items||[]).forEach(o=>flat.push(o))));
-let clientNom=o=>clients.find(x=>x.id===o.client)?.nom||o.propietat||"—";
+let clientNom=o=>clients.find(x=>x.id===o.client)?.nom||o.clientNomCompartit||o.propietat||"—";
 const textSort878192=v=>String(v??"").trim();
 const compareText878192=(a,b)=>textSort878192(a).localeCompare(textSort878192(b),"ca",{numeric:true,sensitivity:"base"});
 const compareExpedients878192=(a,b)=>{
@@ -6224,7 +6224,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
         <thead><tr><th>{sortHead878192("numero","Número intern")}</th><th>Núm. client</th><th>{sortHead878192("codi","Codi expedient")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th><th>Accions</th></tr></thead>
         <tbody>{flat.length===0&&<tr><td colSpan="9"><Empty text="No hi ha expedients amb aquest filtre."/></td></tr>}{anys.map(any=><React.Fragment key={any}>
           <tr className="year-row-v8742"><td colSpan="9">{any}</td></tr>
-          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b><small>Creat: {fmtCreationDate878233(o.createdAt)}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td>{clientNom(o)}</td><td>{(()=>{const foto=obraFoto878259(o);return <div className="exp-name-v878259">{foto?<img className="exp-thumb-v878259" src={foto} alt=""/>:null}<div><strong>{o.nom}</strong><small>{o.subtitol}</small></div></div>})()}</td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select>}</div></td><td>{allowAdminActions&&<button type="button" className="danger small-v8777" onClick={(e)=>{e.stopPropagation();deleteObra?.(o.id)}}>Eliminar</button>}</td></tr>)}
+          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b><small>Creat: {fmtCreationDate878233(o.createdAt)}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td>{clientNom(o)}</td><td>{(()=>{const foto=obraFoto878259(o);return <div className="exp-name-v878259">{foto?<img className="exp-thumb-v878259" src={foto} alt=""/>:null}<div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select>}</div></td><td>{allowAdminActions&&<button type="button" className="danger small-v8777" onClick={(e)=>{e.stopPropagation();deleteObra?.(o.id)}}>Eliminar</button>}</td></tr>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
@@ -7553,7 +7553,7 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
       </div>
       <div className="obra-hero-info-v878252">
         <div className="meta"><span className="code">{expedientCode8739(obra)}</span><span className={`st ${statusKeyPress8776(estat)}`}>{estat}</span><span>{moduleLabel8737(obra)}</span></div>
-        <h2>{obra.nom}</h2>
+        <h2>{obra.nom}</h2><ShareObra878259 obra={obra}/>
         <p>{[client?.nom,[obra.adreca,obra.poblacio].filter(x=>x&&x!=="Pendent").join(", ")].filter(Boolean).join(" · ")}</p>
         {hasBudget?<div className="obra-hero-progress-v878252">
           <div className="lbl"><span>{s.lastN?`Certificat a origen · C-${s.lastN}`:"Pressupost preparat, sense certificacions"}</span><b>{pct878252(s.executed)}</b></div>
@@ -10542,7 +10542,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.258.2",
+    app_version:"87.259.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12461,4 +12461,56 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}
     <label className="notes"><span>Notes</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)} placeholder="Ex. material per a la coberta"/></label>
     <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>Eliminar</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>Obrir l’obra</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={()=>save({...a,base:a.base||(sumLines?String(sumLines.toFixed(2)).replace(".",","):"")})}>Desar l’albarà</button></div>
   </div></Modal>;
+}
+
+
+// =====================================================================
+// V87.259 · Obres compartides entre comptes (la feina la fa cloudSync.js)
+// =====================================================================
+const SHARE_SUGGEST878259=["brava","socoterm","oriol","marti"];
+function useSharedTick878259(){const[t,setT]=useState(0);useEffect(()=>{const h=()=>setT(x=>x+1);window.addEventListener("aco-shared-changed",h);return()=>window.removeEventListener("aco-shared-changed",h)},[]);return t}
+function ShareObra878259({obra}){
+  useSharedTick878259();
+  const c=typeof window!=="undefined"?window.__acoCloud:null;
+  const[open,setOpen]=useState(false);
+  if(!c?.shareObra||!obra?.id)return null;
+  if(obra.compartida)return <div className="share-bar-v878259 foreign"><span>Obra compartida per <b>{obra.compartida.ownerNom||"un altre compte"}</b> · {obra.compartida.perm==="edicio"?"pots fer-hi canvis i els veurà":"només consulta: els teus canvis no s’hi desen"}</span></div>;
+  const shared=!!c.sharedOwned?.()?.has(obra.id);
+  return <><div className={`share-bar-v878259${shared?" on":""}`}><span>{shared?"Obra compartida amb altres comptes.":"Només la veus tu."}</span><button type="button" className="secondary" onClick={()=>setOpen(true)}>{shared?"Amb qui es comparteix":"Compartir"}</button></div>{open&&<ShareModal878259 obra={obra} close={()=>setOpen(false)}/>}</>;
+}
+function ShareModal878259({obra,close}){
+  const c=window.__acoCloud;
+  const me=String(window.__acoEmpresa?.username||"");
+  const[rows,setRows]=useState(null);
+  const[err,setErr]=useState("");
+  const[busy,setBusy]=useState(false);
+  const[nou,setNou]=useState("");
+  const[perm,setPerm]=useState("edicio");
+  useEffect(()=>{let ok=true;c.sharedInfo(obra.id).then(r=>{if(ok)setRows(r?[...r.editors.map(u=>({usuari:u,perm:"edicio"})),...r.lectors.map(u=>({usuari:u,perm:"consulta"}))]:[])}).catch(e=>{if(ok){setRows([]);setErr(/aco_shared|404/.test(e.message)?"Encara no s’ha creat la taula d’obres compartides a Supabase (fitxer supabase/aco_compartits_v87259.sql).":e.message)}});return()=>{ok=false}},[]);
+  function add(u=nou){u=String(u||"").trim().toLowerCase();if(!u||u===me)return;setRows(r=>[...(r||[]).filter(x=>x.usuari!==u),{usuari:u,perm}]);setNou("")}
+  async function save(){
+    setBusy(true);setErr("");
+    try{
+      const list=rows||[];
+      if(!list.length)await c.unshareObra(obra.id);
+      else await c.shareObra(obra.id,list.filter(x=>x.perm==="consulta").map(x=>x.usuari),list.filter(x=>x.perm==="edicio").map(x=>x.usuari));
+      window.dispatchEvent(new CustomEvent("aco-shared-changed"));close();
+    }catch(e){setErr(e?.message||String(e))}finally{setBusy(false)}
+  }
+  return <Modal title={`Compartir «${obra.nom||"obra"}»`} close={close}><div className="share-modal-v878259">
+    <p>Tria amb qui la comparteixes. La veuran a la seva llista d’obres, al mòbil i a l’ordinador, amb el pressupost, les certificacions i la foto.</p>
+    {rows===null?<p className="muted">Carregant…</p>:<>
+      <div className="who">{rows.length===0?<span className="muted">Encara no la comparteixes amb ningú.</span>:rows.map(r=><div key={r.usuari} className="row"><b>{r.usuari}</b><select value={r.perm} onChange={e=>setRows(x=>x.map(y=>y.usuari===r.usuari?{...y,perm:e.target.value}:y))}><option value="edicio">Pot editar</option><option value="consulta">Només consulta</option></select><button type="button" className="link" onClick={()=>setRows(x=>x.filter(y=>y.usuari!==r.usuari))}>Treure</button></div>)}</div>
+      <div className="add"><input value={nou} onChange={e=>setNou(e.target.value)} placeholder="Usuari (ex. socoterm)" autoCapitalize="none" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();add()}}}/><select value={perm} onChange={e=>setPerm(e.target.value)}><option value="edicio">Pot editar</option><option value="consulta">Només consulta</option></select><button type="button" className="secondary" onClick={()=>add()}>Afegir</button></div>
+      <div className="sugg">{SHARE_SUGGEST878259.filter(u=>u!==me&&!rows.some(r=>r.usuari===u)).map(u=><button type="button" key={u} onClick={()=>add(u)}>+ {u}</button>)}</div>
+    </>}
+    {err&&<p className="err">{err}</p>}
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" disabled={busy||rows===null} onClick={save}>{busy?"Desant…":"Desar"}</button></div>
+  </div></Modal>;
+}
+function SharedBadge878259({o}){
+  useSharedTick878259();
+  if(o?.compartida)return <em className="shared-badge-v878259">Compartida per {o.compartida.ownerNom||"un altre compte"}{o.compartida.perm==="consulta"?" · consulta":""}</em>;
+  if(typeof window!=="undefined"&&window.__acoCloud?.sharedOwned?.()?.has(o?.id))return <em className="shared-badge-v878259 own">Compartida</em>;
+  return null;
 }

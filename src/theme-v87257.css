@@ -158,3 +158,28 @@ html body .alb-editor-v878259 .modal-actions .sp{flex:1}
 /* V87.258.1 · miniatura de la foto a la llista d'expedients */
 html body .exp-name-v878259{display:flex;align-items:center;gap:10px}
 html body .exp-thumb-v878259{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;border:1px solid var(--co-line)}
+
+/* =====================================================================
+   V87.259 · Obres compartides
+   ===================================================================== */
+html body .share-bar-v878259{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:6px 0 2px;padding:8px 12px;border-radius:10px;background:var(--co-surface-2);border:1px solid var(--co-line);font-size:13px;color:var(--co-ink-2)}
+html body .share-bar-v878259.on{background:#EEF7F1;border-color:#CBE7D5;color:#1F4D33}
+html body .share-bar-v878259.foreign{background:var(--co-accent-soft);border-color:#CFDDF7;color:var(--co-accent-ink)}
+html body .share-bar-v878259 .secondary{padding:6px 12px!important;font-size:13px!important;min-height:0!important}
+html body .shared-badge-v878259{display:inline-block;margin-top:3px;padding:1px 8px;border-radius:99px;background:var(--co-accent-soft);color:var(--co-accent-ink);font-style:normal;font-size:11px;font-weight:600}
+html body .shared-badge-v878259.own{background:#EEF7F1;color:#1F6A3F}
+html body .share-modal-v878259{display:flex;flex-direction:column;gap:12px;padding:4px 20px 18px}
+html body .share-modal-v878259 p{margin:0;font-size:13.5px;color:var(--co-ink-2)}
+html body .share-modal-v878259 .muted{color:var(--co-ink-3)}
+html body .share-modal-v878259 .who{display:flex;flex-direction:column;border:1px solid var(--co-line);border-radius:10px;overflow:hidden}
+html body .share-modal-v878259 .who>.muted{padding:12px}
+html body .share-modal-v878259 .row{display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--co-line)}
+html body .share-modal-v878259 .row:last-child{border-bottom:0}
+html body .share-modal-v878259 .add{display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:8px}
+html body .share-modal-v878259 .sugg{display:flex;flex-wrap:wrap;gap:6px}
+html body .share-modal-v878259 .sugg button{all:unset;cursor:pointer;padding:5px 12px;border-radius:99px;border:1px solid var(--co-line-strong);font-size:13px;color:var(--co-ink)}
+html body .share-modal-v878259 .sugg button:hover{border-color:var(--co-accent);color:var(--co-accent-ink)}
+html body .share-modal-v878259 .link{all:unset;cursor:pointer;color:var(--co-accent-ink);text-decoration:underline;font-size:13px}
+html body .share-modal-v878259 .err{color:#B93A33}
+html body .share-modal-v878259 .modal-actions{display:flex;justify-content:flex-end;gap:8px}
+@media (max-width:560px){html body .share-modal-v878259 .row,html body .share-modal-v878259 .add{grid-template-columns:1fr 1fr}html body .share-modal-v878259 .add .secondary{grid-column:1/-1}}
