@@ -1,7 +1,7 @@
 {
   "name": "app-control-obres-v87-257-nuvol",
   "private": true,
-  "version": "87.257.1",
+  "version": "87.257.2",
   "type": "module",
   "scripts": {
     "dev": "vite",

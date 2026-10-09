@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.257.1";
+const VERSION = "V87.257.2";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -144,9 +144,10 @@ function replaceWithCloud(live) {
   for (const base in split) plain[base] = JSON.stringify(split[base]);
   const failed = [];
   Object.entries(plain).sort((a, b) => a[1].length - b[1].length).forEach(([k, v]) => { try { writeRaw(k, v); } catch { failed.push(k); } });
-  meta.known = {};
-  live.forEach(r => { meta.known[r.key] = hash(r.value ?? ""); });
+  const known = {};
+  live.forEach(r => { known[r.key] = hash(r.value ?? ""); });
   if (failed.length) { const e = new Error(`Aquest aparell no té prou espai per a les dades del núvol (${failed.length} parts).`); e.space = true; throw e; }
+  return known;
 }
 function countObres(rowsOrEntries) {
   const list = Array.isArray(rowsOrEntries) ? rowsOrEntries : Object.entries(rowsOrEntries).map(([key, value]) => ({ key, value }));
@@ -240,24 +241,27 @@ async function firstSync() {
   const rows = await pullSince("");
   const live = rows.filter(r => !r.deleted);
   const local = entries();
-  meta = { userId: session.user_id, cursor: maxTime(rows, ""), known: {} };
+  // L'estat del núvol només es desa si TOT acaba bé; si falla a mig camí, aquest
+  // aparell no puja res i la pregunta tornarà a sortir la propera vegada.
+  const m = { userId: session.user_id, cursor: maxTime(rows, ""), known: {} };
   const cloudObres = live.some(r => /(^|__)aco_obres$/.test(r.key) && String(r.value || "").length > 10);
   if (!cloudObres) {
     await pushRows(Object.keys(local).map(k => ({ key: k, value: local[k] })));
-    for (const k in local) meta.known[k] = hash(local[k]);
+    for (const k in local) m.known[k] = hash(local[k]);
   } else if (!hasObres(local)) {
-    replaceWithCloud(live);
+    m.known = replaceWithCloud(live);
   } else {
     const last = live.reduce((m, r) => (r.updated_at > (m?.updated_at || "") ? r : m), null);
     const choice = await askChoice({ cloudWhen: last?.updated_at, cloudDevice: last?.device, localObres: countObres(local), cloudObres: countObres(live) });
     if (choice === "cloud") {
-      replaceWithCloud(live);
+      m.known = replaceWithCloud(live);
     } else {
       const localKeys = new Set(Object.keys(local));
       await pushRows([...Object.keys(local).map(k => ({ key: k, value: local[k] })), ...live.filter(r => !localKeys.has(r.key)).map(r => ({ key: r.key, deleted: true }))]);
-      for (const k in local) meta.known[k] = hash(local[k]);
+      for (const k in local) m.known[k] = hash(local[k]);
     }
   }
+  meta = m;
   saveMeta();
 }
 // Un cicle: baixa el que ha canviat, puja el que és d'aquí i decideix si cal recarregar.
@@ -297,6 +301,7 @@ async function cycle({ startup = false, returning = false } = {}) {
     }
   } catch (e) {
     lastErr = String(e?.message || e);
+    if (meta.userId !== session?.user_id) active = false;
     if (e.relogin) paint("login"); else if (e.space) paint("error", "Núvol · aquest aparell no té prou espai"); else paint(e.offline ? "offline" : "error");
     if (startup) throw e;
   } finally {

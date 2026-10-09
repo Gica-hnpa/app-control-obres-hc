@@ -10516,7 +10516,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.257.1",
+    app_version:"87.257.2",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
