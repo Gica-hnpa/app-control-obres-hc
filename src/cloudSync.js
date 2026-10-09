@@ -409,6 +409,15 @@ async function reloadSafely() {
 function typing() { const el = document.activeElement; return !!el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable); }
 function schedule(ms = 4000) { clearTimeout(timer); timer = setTimeout(() => cycle(), ms); }
 async function syncNow() { await cycle({ returning: true }); }
+// V87.258.2 · entrar amb un altre compte des de la pantalla d'entrada de l'app.
+async function switchTo(user, pass) {
+  const was = active; active = false;
+  try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
+  try { localStorage.setItem("nuvol-aco-correu", String(user).trim()); localStorage.removeItem(SKIP_KEY); sessionStorage.removeItem(SKIP_KEY); sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
+  try { await window.__acoLocalDisk?.flush?.(); } catch {}
+  try { await window.__acoStore?.flush?.(); } catch {}
+  location.reload();
+}
 async function connect() { try { localStorage.removeItem(SKIP_KEY); sessionStorage.removeItem(SKIP_KEY); } catch {} try { await window.__acoStore?.flush?.(); } catch {} location.reload(); }
 // Tancar la sessió: les dades d'aquest compte es queden en aquest aparell i en
 // tornar a entrar continuen sincronitzant. En recarregar surt «Entra al núvol».
@@ -439,7 +448,7 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo };
   session = readJson(SESSION_KEY, null);
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
