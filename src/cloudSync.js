@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.257.2";
+const VERSION = "V87.257.4";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -279,24 +279,35 @@ async function cycle({ startup = false, returning = false } = {}) {
     const local = entries();
     const pend = pendingKeys(local);
     const pendSet = new Set(pend);
-    const remote = rows.filter(r => r.device !== device && !pendSet.has(r.key) && (r.deleted ? r.key in local : local[r.key] !== (r.value ?? "")));
-    if (pend.length) {
-      await pushRows(pend.map(k => (k in local ? { key: k, value: local[k] } : { key: k, deleted: true })));
-      pend.forEach(k => { if (k in local) meta.known[k] = hash(local[k]); else delete meta.known[k]; });
+    // Canvis d'altres aparells que encara no tenim.
+    const remote = rows.filter(r => r.device !== device && (r.deleted ? r.key in local : local[r.key] !== (r.value ?? "")));
+    const remoteKeys = new Set(remote.map(r => r.key));
+    const waitingKeys = new Set((remoteWaiting?.rows || []).map(r => r.key));
+    // Regla: si una peça ha canviat al núvol des d'un altre aparell, GUANYA EL NÚVOL.
+    // Així un aparell endarrerit (amb dades velles a la pantalla) no pot trepitjar res.
+    const conflicts = pend.filter(k => remoteKeys.has(k));
+    if (conflicts.length) saveConflicts(conflicts, local);
+    const toPush = pend.filter(k => !remoteKeys.has(k) && !waitingKeys.has(k));
+    if (toPush.length) {
+      const risk = massChange(toPush, local);
+      if (risk) { await stopForSafety(risk); return; }
+      await pushRows(toPush.map(k => (k in local ? { key: k, value: local[k] } : { key: k, deleted: true })));
+      toPush.forEach(k => { if (k in local) meta.known[k] = hash(local[k]); else delete meta.known[k]; });
     }
+    meta.obres = countObres(local) || meta.obres || 0;
     if (!remote.length) {
       // Les files pròpies o iguals també serveixen per avançar el cursor.
       rows.forEach(r => { if (!pendSet.has(r.key) && r.device !== device) { if (r.deleted) delete meta.known[r.key]; else meta.known[r.key] = hash(r.value ?? ""); } });
       meta.cursor = maxTime(rows, meta.cursor); saveMeta();
       lastOk = new Date().toISOString(); lastErr = ""; paint("ok");
-    } else if (startup || (!typing() && (returning || Date.now() - lastInput > 60000))) {
-      applyRows(remote, pendSet);
+    } else if (startup || conflicts.length || (!typing() && (returning || Date.now() - lastInput > 60000))) {
+      applyRows(remote);
       meta.cursor = maxTime(rows, meta.cursor); saveMeta();
       lastOk = new Date().toISOString(); lastErr = "";
       if (!startup) { await reloadSafely(); return; }
       paint("ok");
     } else {
-      remoteWaiting = { rows: remote, all: rows, skip: pendSet };
+      remoteWaiting = { rows: remote, all: rows, skip: new Set() };
       saveMeta(); paint("remote");
     }
   } catch (e) {
@@ -309,6 +320,61 @@ async function cycle({ startup = false, returning = false } = {}) {
     if (again) { again = false; schedule(1500); }
   }
 }
+// Quan guanya el núvol, la versió d'aquí es guarda a part (només en aquest aparell).
+function saveConflicts(keys, local) {
+  try {
+    const list = readJson("nuvol-aco-conflictes", []) || [];
+    keys.forEach(k => list.push({ key: k, at: new Date().toISOString(), value: local[k] ?? null }));
+    localStorage.setItem("nuvol-aco-conflictes", JSON.stringify(list.slice(-20)));
+  } catch {}
+}
+// Fre de seguretat: si d'una tirada es buiden o s'esborren diverses obres, no es puja res.
+function massChange(keys, local) {
+  let dels = 0, shrinks = 0;
+  for (const k of keys) {
+    if (splitKey(k)[1] === null) continue;
+    if (!(k in local) || local[k] === "null") { dels++; continue; }
+    const oldLen = +String(meta.known[k] || "").split(":")[1] || 0;
+    if (oldLen > 20000 && local[k].length < oldLen * 0.4) shrinks++;
+  }
+  const obresNow = countObres(local), obresBefore = meta.obres || 0;
+  const lost = obresBefore && obresNow < obresBefore - 2;
+  if (dels + shrinks >= 3 || lost) return { dels, shrinks, obresNow, obresBefore, lost };
+  return null;
+}
+async function stopForSafety(risk) {
+  active = false;
+  lastErr = "Aturat per seguretat: aquest aparell volia esborrar o buidar diverses obres del núvol.";
+  paint("error", "Núvol · aturat per seguretat");
+  const el = overlay(`
+    <h1>Aturat per seguretat</h1>
+    <p>Aquest aparell volia ${risk.dels ? `esborrar ${risk.dels} obres` : ""}${risk.dels && risk.shrinks ? " i " : ""}${risk.shrinks ? `buidar ${risk.shrinks} obres` : ""}${risk.lost ? ` deixar el núvol amb ${risk.obresNow} expedients (n’hi havia ${risk.obresBefore})` : ""} del núvol. Segurament té dades velles. No s’ha pujat res.</p>
+    <div class="choices">
+      <button type="button" data-v="cloud"><b>Carregar les dades del núvol</b><span>Recomanat. Aquest aparell es posa igual que el núvol.</span></button>
+      <button type="button" data-v="later"><b>Ara no</b><span>Aquest aparell continua sense sincronitzar fins que el tornis a obrir.</span></button>
+    </div>`);
+  const choice = await new Promise(res => el.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { el.remove(); res(b.dataset.v); })));
+  if (choice === "cloud") {
+    const rows = await pullSince("");
+    const live = rows.filter(r => !r.deleted);
+    const known = replaceWithCloud(live);
+    meta = { userId: session.user_id, cursor: maxTime(rows, ""), known, obres: countObres(live) };
+    saveMeta();
+    await reloadSafely();
+  }
+}
+// Restauració: el núvol queda exactament igual que aquest aparell (només des de l'ordinador,
+// quan el fitxer de DADES porta la marca «forcarNuvol»).
+async function forcePushAll() {
+  const rows = await pullSince("");
+  const local = entries();
+  const live = rows.filter(r => !r.deleted);
+  await pushRows([...Object.keys(local).map(k => ({ key: k, value: local[k] })), ...live.filter(r => !(r.key in local)).map(r => ({ key: r.key, deleted: true }))]);
+  const known = {}; for (const k in local) known[k] = hash(local[k]);
+  meta = { userId: session.user_id, cursor: maxTime(rows, ""), known, obres: countObres(local) };
+  saveMeta();
+  try { await fetch("/__dades-locals/netejar-marca", { method: "POST" }); } catch {}
+}
 async function applyWaitingAndReload() {
   if (!remoteWaiting) { await cycle({ returning: true }); return; }
   const w = remoteWaiting; remoteWaiting = null;
@@ -318,6 +384,7 @@ async function applyWaitingAndReload() {
 }
 async function reloadSafely() {
   active = false;
+  try { sessionStorage.setItem("aco-reentrar-auto", sessionStorage.getItem("aco_current_user8779") || ""); } catch {}
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   location.reload();
 }
@@ -359,6 +426,11 @@ export async function startCloudSync() {
   hook();
   active = true;
   try {
+    if (window.__acoLocalDisk?.forcarNuvol) {
+      paint("busy", "Núvol · restaurant amb les dades d’aquest ordinador…");
+      await forcePushAll();
+      lastOk = new Date().toISOString(); paint("ok");
+    }
     await cycle({ startup: true });
   } catch (e) {
     if (e.relogin) {

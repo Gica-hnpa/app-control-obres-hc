@@ -13,7 +13,7 @@
 //   tocar res); si no, el rètol de baix et deixa actualitzar amb un clic.
 const ENDPOINT = "/__dades-locals";
 const APP_KEY = /^aco_/;
-const VERSION = "V87.257";
+const VERSION = "V87.257.4";
 const DEVICE_KEY = "dispositiu-app-control-obres";
 let active = false, timer = null, dirty = false, saving = false, badge = null, lastSaved = "", lastError = "";
 let known = {}, device = "", remotePending = false, lastInput = Date.now(), conflictAt = "", unloading = false;
@@ -118,6 +118,7 @@ async function applyRemote(force = false) {
   if (dirty || saving) return;
   active = false;
   applyStorage(info.storage);
+  try { sessionStorage.setItem("aco-reentrar-auto", sessionStorage.getItem("aco_current_user8779") || ""); } catch {}
   location.reload();
 }
 async function checkRemote(returning = false) {
@@ -173,5 +174,5 @@ export async function startLocalDiskSync() {
   else save(); // primera vegada: crea el fitxer a partir de la còpia o del navegador
   // El núvol (cloudSync.js) el fa servir abans de recarregar la pàgina.
   const flush = async () => { clearTimeout(timer); for (let i = 0; i < 100 && saving; i++) await new Promise(r => setTimeout(r, 100)); if (dirty) await save(); unloading = true; };
-  window.__acoLocalDisk = { file: info.file, mode: info.mode, device, flush };
+  window.__acoLocalDisk = { file: info.file, mode: info.mode, device, flush, forcarNuvol: !!info.forcarNuvol };
 }

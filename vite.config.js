@@ -65,11 +65,17 @@ function handler(req, res, next) {
   }
   if (req.method === "GET" && url === "/estat") {
     const saved = readJson(DATA_FILE);
-    if (saved?.storage) return send(res, 200, { mode: "fitxer", file: DATA_FILE, savedAt: saved.savedAt || "", device: saved.device || "", storage: saved.storage });
+    if (saved?.storage) return send(res, 200, { mode: "fitxer", file: DATA_FILE, savedAt: saved.savedAt || "", device: saved.device || "", forcarNuvol: !!saved.forcarNuvol, storage: saved.storage });
     const b = newestBackup();
     const backup = b ? readJson(path.join(DADES_DIR, b)) : null;
     if (backup?.storage) return send(res, 200, { mode: "copia", file: path.join(DADES_DIR, b), savedAt: backup.exportedAt || "", storage: backup.storage });
     return send(res, 200, { mode: "buit", file: DATA_FILE });
+  }
+  // V87.257.4 · treu la marca «forcarNuvol» un cop el núvol s'ha restaurat.
+  if (req.method === "POST" && url === "/netejar-marca") {
+    const saved = readJson(DATA_FILE);
+    if (saved?.forcarNuvol) { delete saved.forcarNuvol; const tmp = DATA_FILE + ".tmp"; fs.writeFileSync(tmp, JSON.stringify(saved)); fs.renameSync(tmp, DATA_FILE); }
+    return send(res, 200, { ok: true });
   }
   if (req.method === "POST" && url === "/desar") {
     const chunks = [];

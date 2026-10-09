@@ -3488,7 +3488,11 @@ function directPrintDocV87103(doc,obra,client){
 
 export default function App(){
 const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(false),[menuOpen,setMenuOpen]=useState(false);
-const[authUser8779,setAuthUser8779]=useState("");
+// V87.257 · quan l'app es recarrega sola per posar-se al dia (núvol o wifi), no torna
+// a demanar l'usuari i torna a la mateixa pantalla on eres.
+const reentry878257=useRef((()=>{try{const u=sessionStorage.getItem("aco-reentrar-auto")||"";sessionStorage.removeItem("aco-reentrar-auto");return u&&u===sessionStorage.getItem("aco_current_user8779")?u:""}catch{return ""}})());
+const[authUser8779,setAuthUser8779]=useState(()=>reentry878257.current);
+const navBack878257=useRef((()=>{try{return reentry878257.current?JSON.parse(sessionStorage.getItem("aco-on-era")||"null"):null}catch{return null}})());
 const[dataLoadedUser8781,setDataLoadedUser8781]=useState("");
 const authOk8778=!!authUser8779;
 const currentAccount878233=getAppAccount878233(authUser8779)||{};
@@ -3558,8 +3562,10 @@ useEffect(()=>{
   }
   setClients(c);setObres(o);setOdata(d);setPartidaLibrary(migratePartidaLibrary87196(c,storageUser));
   setClientId(account.clientId||c[0]?.id||"");setObraId((account.clientId?o.find(x=>String(x.client)===String(account.clientId)):o[0])?.id||o[0]?.id||"");setTab("Resum");setScreen("Inici");
+  {const w=navBack878257.current;if(w){if(w.obraId&&o.some(x=>x.id===w.obraId))setObraId(w.obraId);if(w.tab)setTab(w.tab);if(w.screen)setScreen(w.screen);setTimeout(()=>{navBack878257.current=null},2000)}}
   setDataLoadedUser8781(authUser8779);
 },[authUser8779]);
+useEffect(()=>{try{sessionStorage.setItem("aco-on-era",JSON.stringify({screen,obraId,tab}))}catch{}},[screen,obraId,tab]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),dataOwnerUser878233)},[clients,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),dataOwnerUser878233)},[obres,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,dataOwnerUser878233)},[odata,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
@@ -10516,7 +10522,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.257.2",
+    app_version:"87.257.4",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
