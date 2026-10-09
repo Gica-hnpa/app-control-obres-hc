@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.257";
+const VERSION = "V87.257.1";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -117,16 +117,41 @@ function applyRows(rows, skip = new Set()) {
     const [base, id] = splitKey(r.key);
     if (id !== null) (patches[base] ??= {})[id] = val;
     else if (val === undefined) (rawRemove || Storage.prototype.removeItem).call(localStorage, r.key);
-    else writeRaw(r.key, val);
+    else { try { writeRaw(r.key, val); } catch (e) { console.warn("Núvol: no hi cap", r.key, e); continue; } }
     if (val === undefined) delete meta.known[r.key]; else meta.known[r.key] = hash(val);
     n++;
   }
   for (const base in patches) {
     let o = {}; try { o = JSON.parse(localStorage.getItem(base) || "{}") || {}; } catch {}
     for (const id in patches[base]) { const v = patches[base][id]; if (v === undefined) delete o[id]; else { try { o[id] = JSON.parse(v); } catch {} } }
-    writeRaw(base, JSON.stringify(o));
+    try { writeRaw(base, JSON.stringify(o)); } catch (e) { console.warn("Núvol: no hi cap", base, e); }
   }
   return n;
+}
+// Deixa l'aparell igual que el núvol. Primer s'esborren les dades d'aquí (així hi ha
+// lloc per a les noves, encara que les velles ocupessin molt) i després s'escriuen.
+function replaceWithCloud(live) {
+  const remove = rawRemove || Storage.prototype.removeItem;
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && APP_KEY.test(k) && !EXCLUDE.test(k)) keys.push(k); }
+  keys.forEach(k => { try { remove.call(localStorage, k); } catch {} });
+  const plain = {}, split = {};
+  for (const r of live) {
+    const [base, id] = splitKey(r.key);
+    if (id !== null) { split[base] ??= {}; try { split[base][id] = JSON.parse(r.value); } catch {} }
+    else plain[r.key] = r.value ?? "";
+  }
+  for (const base in split) plain[base] = JSON.stringify(split[base]);
+  const failed = [];
+  Object.entries(plain).sort((a, b) => a[1].length - b[1].length).forEach(([k, v]) => { try { writeRaw(k, v); } catch { failed.push(k); } });
+  meta.known = {};
+  live.forEach(r => { meta.known[r.key] = hash(r.value ?? ""); });
+  if (failed.length) { const e = new Error(`Aquest aparell no té prou espai per a les dades del núvol (${failed.length} parts).`); e.space = true; throw e; }
+}
+function countObres(rowsOrEntries) {
+  const list = Array.isArray(rowsOrEntries) ? rowsOrEntries : Object.entries(rowsOrEntries).map(([key, value]) => ({ key, value }));
+  const r = list.find(x => /__hector__aco_obres$/.test(x.key)) || list.find(x => /(^|__)aco_obres$/.test(x.key));
+  try { return JSON.parse(r.value).length; } catch { return 0; }
 }
 function maxTime(rows, cur) { return rows.reduce((m, r) => (r.updated_at && r.updated_at > m ? r.updated_at : m), cur || ""); }
 
@@ -189,16 +214,24 @@ function askLogin({ allowSkip = true, message = "" } = {}) {
     el.querySelector("[data-skip]")?.addEventListener("click", () => { el.remove(); resolve("skip"); });
   });
 }
-function askChoice({ cloudWhen, cloudDevice, localObres }) {
+function askChoice({ cloudWhen, cloudDevice, localObres, cloudObres }) {
   return new Promise(resolve => {
     const el = overlay(`
       <h1>Ja hi ha dades al núvol</h1>
-      <p>Al núvol hi ha dades desades el <b>${fmtTime(cloudWhen)}</b>${cloudDevice ? ` des de <b>${cloudDevice}</b>` : ""}. En aquest aparell també n’hi ha (${localObres} expedients). Quines vols fer servir?</p>
+      <p>Al núvol hi ha <b>${cloudObres} expedients</b>, desats el ${fmtTime(cloudWhen)}. En aquest aparell n’hi ha <b>${localObres}</b>. Quines dades vols fer servir?</p>
       <div class="choices">
-        <button type="button" data-v="cloud"><b>Les del núvol</b><span>Aquest aparell es posa igual que el núvol. Recomanat si ja treballes amb el núvol des d’un altre aparell.</span></button>
-        <button type="button" data-v="local"><b>Les d’aquest aparell</b><span>El núvol es substitueix per les dades d’aquí. Recomanat la primera vegada, des de l’ordinador on tens totes les dades.</span></button>
+        <button type="button" data-v="cloud"><b>Les del núvol (${cloudObres} expedients)</b><span>Aquest aparell es posa igual que el núvol. És el normal al mòbil, a la tauleta o a qualsevol aparell nou.</span></button>
+        <button type="button" data-v="local"><b>Les d’aquest aparell (${localObres} expedients)</b><span>Esborra el que hi ha al núvol i hi posa les dades d’aquí. Només si saps que aquestes són les bones.</span></button>
+      </div>
+      <div class="confirm" hidden>
+        <p><b>Segur?</b> Les ${cloudObres} obres del núvol se substituiran per les ${localObres} d’aquest aparell, també als altres aparells.</p>
+        <div class="choices"><button type="button" data-ok><b>Sí, substituir el núvol</b></button><button type="button" data-back><b>No, tornar enrere</b></button></div>
       </div>`);
-    el.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { el.remove(); resolve(b.dataset.v); }));
+    const first = el.querySelector(".choices"), confirm = el.querySelector(".confirm");
+    el.querySelector("[data-v=cloud]").addEventListener("click", () => { el.remove(); resolve("cloud"); });
+    el.querySelector("[data-v=local]").addEventListener("click", () => { first.hidden = true; confirm.hidden = false; });
+    el.querySelector("[data-back]").addEventListener("click", () => { first.hidden = false; confirm.hidden = true; });
+    el.querySelector("[data-ok]").addEventListener("click", () => { el.remove(); resolve("local"); });
   });
 }
 
@@ -213,16 +246,12 @@ async function firstSync() {
     await pushRows(Object.keys(local).map(k => ({ key: k, value: local[k] })));
     for (const k in local) meta.known[k] = hash(local[k]);
   } else if (!hasObres(local)) {
-    applyRows(live);
+    replaceWithCloud(live);
   } else {
     const last = live.reduce((m, r) => (r.updated_at > (m?.updated_at || "") ? r : m), null);
-    let localObres = 0; try { const k = Object.keys(local).find(k => /(^|__)aco_obres$/.test(k)); localObres = JSON.parse(local[k]).length; } catch {}
-    const choice = await askChoice({ cloudWhen: last?.updated_at, cloudDevice: last?.device, localObres });
+    const choice = await askChoice({ cloudWhen: last?.updated_at, cloudDevice: last?.device, localObres: countObres(local), cloudObres: countObres(live) });
     if (choice === "cloud") {
-      // Treure les claus locals que no són al núvol i posar les del núvol.
-      const cloudKeys = new Set(live.map(r => r.key));
-      const removeRows = Object.keys(local).filter(k => !cloudKeys.has(k)).map(k => ({ key: k, deleted: true, device: "" }));
-      applyRows([...live, ...removeRows]);
+      replaceWithCloud(live);
     } else {
       const localKeys = new Set(Object.keys(local));
       await pushRows([...Object.keys(local).map(k => ({ key: k, value: local[k] })), ...live.filter(r => !localKeys.has(r.key)).map(r => ({ key: r.key, deleted: true }))]);
@@ -238,7 +267,10 @@ async function cycle({ startup = false, returning = false } = {}) {
   busy = true; paint("busy");
   try {
     // Primera vegada amb aquest compte en aquest aparell: cal decidir com s'ajunten les dades.
-    if (meta.userId !== session.user_id) { await firstSync(); if (!startup) { busy = false; await reloadSafely(); return; } }
+    if (meta.userId !== session.user_id) {
+      if (!startup) { lastErr = "Tanca i torna a obrir l'app per acabar de connectar-la al núvol."; paint("error", "Núvol · torna a obrir l’app"); return; }
+      await firstSync();
+    }
     const rows = await pullSince(meta.cursor);
     const local = entries();
     const pend = pendingKeys(local);
@@ -265,7 +297,7 @@ async function cycle({ startup = false, returning = false } = {}) {
     }
   } catch (e) {
     lastErr = String(e?.message || e);
-    if (e.relogin) paint("login"); else paint(e.offline ? "offline" : "error");
+    if (e.relogin) paint("login"); else if (e.space) paint("error", "Núvol · aquest aparell no té prou espai"); else paint(e.offline ? "offline" : "error");
     if (startup) throw e;
   } finally {
     busy = false;

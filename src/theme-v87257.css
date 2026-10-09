@@ -39,3 +39,4 @@ html body .cloud-panel-v878257 .st span{font-size:13px;color:var(--co-ink-2)}
 html body .cloud-panel-v878257 .acts{display:flex;flex-wrap:wrap;gap:8px}
 html body .cloud-panel-v878257 details{margin-top:12px}
 html body .cloud-panel-v878257 details summary{cursor:pointer;font-size:13px;color:var(--co-ink-2)}
+.cloud-overlay-v878257 [hidden]{display:none!important}
