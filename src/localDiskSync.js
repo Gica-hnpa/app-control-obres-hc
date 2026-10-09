@@ -13,7 +13,7 @@
 //   tocar res); si no, el rètol de baix et deixa actualitzar amb un clic.
 const ENDPOINT = "/__dades-locals";
 const APP_KEY = /^aco_/;
-const VERSION = "V87.257.5";
+const VERSION = "V87.258";
 const DEVICE_KEY = "dispositiu-app-control-obres";
 let active = false, timer = null, dirty = false, saving = false, badge = null, lastSaved = "", lastError = "";
 let known = {}, device = "", remotePending = false, lastInput = Date.now(), conflictAt = "", unloading = false;
@@ -37,7 +37,7 @@ function snapshot() {
   const out = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && APP_KEY.test(k)) out[k] = localStorage.getItem(k);
+    if (k && APP_KEY.test(k) && !/(^|__)emp_/.test(k.replace(/^aco_v8782__/,""))) out[k] = localStorage.getItem(k);
   }
   return out;
 }
@@ -45,14 +45,15 @@ function hasObres(storage) {
   return Object.keys(storage || {}).some(k => /(^|__)aco_obres$/.test(k) && String(storage[k] || "").length > 10);
 }
 function applyStorage(storage) {
-  const set = Storage.prototype.setItem, remove = Storage.prototype.removeItem;
+  // (active és fals mentre s'aplica: aquests canvis no es tornen a desar)
+  const set = (k, v) => localStorage.setItem(k, v), remove = k => localStorage.removeItem(k);
   const current = [];
   for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && APP_KEY.test(k)) current.push(k); }
-  current.forEach(k => { if (!(k in storage)) remove.call(localStorage, k); });
+  current.forEach(k => { if (!(k in storage) && !/(^|__)emp_/.test(k.replace(/^aco_v8782__/,""))) remove(k); });
   // Primer les claus petites, i les grans al final, per aprofitar l'espai.
   Object.entries(storage).filter(([k, v]) => APP_KEY.test(k) && v != null)
     .sort((a, b) => String(a[1]).length - String(b[1]).length)
-    .forEach(([k, v]) => { try { set.call(localStorage, k, String(v)); } catch (e) { console.warn("No cap al navegador:", k, e); } });
+    .forEach(([k, v]) => { try { set(k, String(v)); } catch (e) { console.warn("No cap al navegador:", k, e); } });
 }
 function fmtTime(iso) {
   try { return new Date(iso).toLocaleString("ca-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch { return ""; }
@@ -119,6 +120,7 @@ async function applyRemote(force = false) {
   active = false;
   applyStorage(info.storage);
   try { sessionStorage.setItem("aco-reentrar-auto", sessionStorage.getItem("aco_current_user8779") || ""); } catch {}
+  try { await window.__acoStore?.flush?.(); } catch {}
   location.reload();
 }
 async function checkRemote(returning = false) {
@@ -134,10 +136,15 @@ async function checkRemote(returning = false) {
   else paint("remote");
 }
 function hook() {
-  const set = Storage.prototype.setItem, remove = Storage.prototype.removeItem, clear = Storage.prototype.clear;
-  Storage.prototype.setItem = function (k, v) { set.call(this, k, v); if (active && this === window.localStorage && APP_KEY.test(String(k))) schedule(); };
-  Storage.prototype.removeItem = function (k) { remove.call(this, k); if (active && this === window.localStorage && APP_KEY.test(String(k))) schedule(); };
-  Storage.prototype.clear = function () { clear.call(this); if (active && this === window.localStorage) schedule(); };
+  if (window.__acoStore) {
+    // V87.258 · dades a IndexedDB (bigStore.js): s'escolten els canvis.
+    window.__acoStore.onChange(k => { if (active && (k === null || APP_KEY.test(String(k)))) schedule(); });
+  } else {
+    const set = Storage.prototype.setItem, remove = Storage.prototype.removeItem, clear = Storage.prototype.clear;
+    Storage.prototype.setItem = function (k, v) { set.call(this, k, v); if (active && this === window.localStorage && APP_KEY.test(String(k))) schedule(); };
+    Storage.prototype.removeItem = function (k) { remove.call(this, k); if (active && this === window.localStorage && APP_KEY.test(String(k))) schedule(); };
+    Storage.prototype.clear = function () { clear.call(this); if (active && this === window.localStorage) schedule(); };
+  }
   // Les dades pesen massa per enviar-les en tancar la pestanya (els navegadors
   // limiten aquest enviament a 64 KB). Si queda alguna cosa per desar, es desa
   // de seguida i el navegador demana confirmació abans de tancar.

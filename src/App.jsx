@@ -25,6 +25,9 @@ function readAppAccounts878233(){
   let saved={};
   try{saved=JSON.parse(localStorage.getItem(APP_ACCOUNTS_KEY878233)||"{}")||{}}catch{}
   const merged={...DEFAULT_APP_ACCOUNTS878233,...saved};
+  // V87.259 · compte d'empresa del núvol (brava, oriol…): administrador del seu propi espai.
+  const emp878259=typeof window!=="undefined"?window.__acoEmpresa:null;
+  if(emp878259&&!merged[emp878259.internal])merged[emp878259.internal]={username:emp878259.internal,password:"",role:"admin",module:"technical",displayName:emp878259.username,ownerUser:emp878259.internal,clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]};
   return Object.fromEntries(Object.entries(merged).map(([key,raw])=>{
     const base=DEFAULT_APP_ACCOUNTS878233[key]||{};
     const src=raw&&typeof raw==="object"?raw:{};
@@ -90,6 +93,8 @@ function migrateStorageForUser8782(user){
     Object.keys(localStorage).forEach(k=>{if(k.startsWith(`${STORAGE_NS8782}__pol__`)||k.endsWith("__pol"))localStorage.removeItem(k)});
     return;
   }
+  // V87.259 · els comptes d'empresa (emp_…) comencen buits: mai hereten dades antigues d'aquest navegador.
+  if(u.startsWith("emp_"))return;
   if(localStorage.getItem(`${STORAGE_NS8782}__migrated__${u}`)==="1")return;
   Object.keys(localStorage).forEach(k=>{
     if(!isAppStorageKey8782(k))return;
@@ -3186,7 +3191,8 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
   // V87.250 · Alliberar espai. Substitueix «Netejar espai local», que feia servir la
   // neteja profunda i podia esborrar la fitxa d'obres. Aquí només s'esborra el que
   // l'usuari marca, mai les claus protegides, i sempre després d'exportar una còpia.
-  const STORAGE_LIMIT_CHARS878250=5*1024*1024;
+  // V87.258 · amb IndexedDB (bigStore.js) el límit real és molt més gran.
+const STORAGE_LIMIT_CHARS878250=(typeof window!=="undefined"&&window.__acoStore)?500*1024*1024:5*1024*1024;
   function storageGroups878250(){
     const pref=userPrefix878105(user);
     const all=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k)all.push(k)}}catch{}
@@ -3270,7 +3276,7 @@ function DataJsonTools8778({clients=[],obres=[],odata={}}={}){
   const selChars878250=groups878250.filter(isSel878250).reduce((s,g)=>s+g.chars,0);
   return <Card title="Còpia de seguretat / traspàs de dades JSON" action={<div className="actions-inline"><button className="primary" onClick={exportJson}>Exportar JSON segur</button><button className="secondary" onClick={()=>fileRef.current?.click()}>Importar JSON</button><button className="secondary" onClick={()=>repairRef878250.current?.click()}>Recuperar expedients des d’una còpia antiga</button><input ref={fileRef} type="file" accept="application/json" hidden onChange={e=>importJson(e.target.files?.[0])}/><input ref={repairRef878250} type="file" accept="application/json" hidden onChange={e=>{repairObresFromJson878250(e.target.files?.[0]);e.target.value=""}}/></div>}>
     <div className="storage-panel-v878250">
-      <div className="storage-head-v878250"><div><b>Espai al navegador</b><span>{usage878185.mb.replace(".",",")} MB de 5 MB · {usagePct878250} %</span></div><div className={`storage-bar-v878250 ${usagePct878250>=85?"high":usagePct878250>=65?"mid":""}`}><i style={{width:`${usagePct878250}%`}}/></div></div>
+      <div className="storage-head-v878250"><div><b>Espai al navegador</b><span>{usage878185.mb.replace(".",",")} MB de {typeof window!=="undefined"&&window.__acoStore?"500 MB (espai ampliat)":"5 MB"} · {usagePct878250} %</span></div><div className={`storage-bar-v878250 ${usagePct878250>=85?"high":usagePct878250>=65?"mid":""}`}><i style={{width:`${usagePct878250}%`}}/></div></div>
       {usagePct878250>=85&&<p className="storage-warning-v878250">El navegador és gairebé ple. Si s’omple, els canvis nous no es podran guardar. Allibera espai i exporta el JSON cada dia que treballis.</p>}
       {groups878250.length?<>
         <div className="storage-list-v878250">{groups878250.map(g=><label key={g.id} className="storage-item-v878250"><input type="checkbox" checked={isSel878250(g)} onChange={e=>setSpaceSel878250(s=>({...s,[g.id]:e.target.checked}))}/><span><b>{g.label}</b><small>{g.desc}</small></span><em>{mb878250(g.chars)} MB</em></label>)}</div>
@@ -3492,6 +3498,7 @@ const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(fals
 // a demanar l'usuari i torna a la mateixa pantalla on eres.
 const reentry878257=useRef((()=>{try{const u=sessionStorage.getItem("aco-reentrar-auto")||"";sessionStorage.removeItem("aco-reentrar-auto");return u&&u===sessionStorage.getItem("aco_current_user8779")?u:""}catch{return ""}})());
 const[authUser8779,setAuthUser8779]=useState(()=>reentry878257.current);
+const[empresa878259,setEmpresa878259]=useState(()=>{try{return empresaInfo878259()}catch{return null}});
 const navBack878257=useRef((()=>{try{return reentry878257.current?JSON.parse(sessionStorage.getItem("aco-on-era")||"null"):null}catch{return null}})());
 const[dataLoadedUser8781,setDataLoadedUser8781]=useState("");
 const authOk8778=!!authUser8779;
@@ -4616,7 +4623,8 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l="Rendiments" on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/>{empresa878259?.perfil!=="tecnic"&&<MB a={screen==="Albarans"} i={<Camera/>} l="Albarans" on={()=>nav("Albarans")}/>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l="Rendiments" on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen!=="Inici"&&<MobileBackBar878146 screen={screen} goBack={()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}}/>}
 {screen==="Inici"&&<Inici clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
@@ -4628,7 +4636,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
 {screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={viewPartidaLibrary878233} setItems={currentAccount878233.role==="admin"?setPartidaLibrary:undefined} clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}{screen==="Rendiments"&&<SafeRenderBoundary878108><RendimentsClient878247 obres={viewObres878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}
-{screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
+{screen==="Albarans"&&<SafeRenderBoundary878108><Albarans878259 obres={viewObres878233} clients={viewClients878233} openObra={openObra}/></SafeRenderBoundary878108>}{screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<SafeRenderBoundary878108><GestioTemps878255 obres={obres} clients={clients} odata={odata} openObra={openObra}/></SafeRenderBoundary878108>}
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><QuickExpedientForm878254 clients={viewClients878233} allAgents={allAgents8749(viewOdata878233,viewClients878233)} onSubmit={addObra} fixedClientId={currentAccount878233.role!=="admin"?(scopedClientId878233||""):""}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{authUser8779&&currentAccount878233.role==="admin"&&(screen==="Obra"||timer.running)&&<div className={`work-timer-v878254 ${timer.running?"on":""}`} role="status">
   <span className="dot"/>
@@ -5920,7 +5928,7 @@ function OverdueReview878255({tasks=[],update,clients=[]}){
 }
 function HomeHeader878251({obres=[],tasks=[],properes=[],todayLabel="",setScreen}){
   const account=getAppAccount878233(currentAppUser8779())||{};
-  const name=String(account.displayName||"").split("·")[0].trim();
+  const name=String(empresaInfo878259()?.nom||account.displayName||"").split("·")[0].trim();
   const estats=(obres||[]).map(o=>normalizeExpedientStatus878136(o.estat));
   const oberts=estats.filter(e=>!["Tancat","Anul·lat","No acceptat"].includes(e)).length;
   const execucio=estats.filter(e=>e==="En curs / Actiu").length;
@@ -6271,7 +6279,7 @@ function hasModule2Access8747(){
   }catch(e){}
   return lsGet8779("aco_modul2_actiu")==="1";
 }
-function ModulLocked8747(){return <Card title="Mòdul 2 · Control econòmic d’obra"><div className="locked-module-v8747"><div><b>Aquesta funcionalitat forma part del Mòdul 2</b><p>Inclou pressupost d’obra, certificacions, facturació d’obra i seguiment econòmic bàsic. El Mòdul 1 Tècnic manté els pressupostos i factures del tècnic al client.</p></div><button className="primary" onClick={()=>{lsSet8779("aco_modul2_actiu","1");location.reload()}}>Activar Mòdul 2 en mode prova</button></div></Card>}
+function ModulLocked8747(){return <Card title="Mòdul 2 · Control econòmic d’obra"><div className="locked-module-v8747"><div><b>Aquesta funcionalitat forma part del Mòdul 2</b><p>Inclou pressupost d’obra, certificacions, facturació d’obra i seguiment econòmic bàsic. El Mòdul 1 Tècnic manté els pressupostos i factures del tècnic al client.</p></div><button className="primary" onClick={()=>{lsSet8779("aco_modul2_actiu","1");Promise.resolve(window.__acoStore?.flush?.()).finally(()=>location.reload())}}>Activar Mòdul 2 en mode prova</button></div></Card>}
 
 
 function PrincipalAgentsPanel878134({obra,client,agents=[]}){
@@ -10523,7 +10531,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.257.5",
+    app_version:"87.258.0",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12260,8 +12268,186 @@ function CloudPanel878257(){
   useEffect(()=>{const t=setInterval(()=>setSt(window.__acoCloud?.status?.()||null),3000);return()=>clearInterval(t)},[]);
   return <Card title="Núvol · ordinador, mòbil i tauleta"><div className="cloud-panel-v878257">
     <div className="row">
-      <div className="st">{st?.connected?<><b>Connectat com {st.email}</b><span>{st.lastOk?`Última sincronització: ${new Date(st.lastOk).toLocaleString("ca-ES")}`:"Sincronitzant…"} · aquest aparell: {st.device}</span>{st.lastErr&&<span>{st.lastErr}</span>}</>:<><b>No connectat al núvol</b><span>Les dades només són en aquest aparell{typeof window!=="undefined"&&window.__acoLocalDisk?" i a la carpeta DADES de l’ordinador":""}.</span></>}</div>
-      <div className="acts">{st?.connected?<><button type="button" className="secondary" disabled={busy} onClick={async()=>{setBusy(true);try{await c.syncNow()}finally{setBusy(false);setSt(c.status())}}}>Sincronitzar ara</button><button type="button" className="secondary" onClick={()=>{if(confirm("Tancar la sessió del núvol en aquest aparell? Les dades es queden aquí, però deixaran de sincronitzar-se."))c.logout()}}>Tancar la sessió</button></>:c?<button type="button" className="primary" onClick={()=>c.connect()}>Connectar al núvol</button>:null}</div>
+      <div className="st">{st?.connected?<><b>Connectat com {st.usuari||st.email}</b><span>{st.lastOk?`Última sincronització: ${new Date(st.lastOk).toLocaleString("ca-ES")}`:"Sincronitzant…"} · aquest aparell: {st.device}</span>{st.lastErr&&<span>{st.lastErr}</span>}</>:<><b>No connectat al núvol</b><span>Les dades només són en aquest aparell{typeof window!=="undefined"&&window.__acoLocalDisk?" i a la carpeta DADES de l’ordinador":""}.</span></>}</div>
+      <div className="acts">{st?.connected?<><button type="button" className="secondary" disabled={busy} onClick={async()=>{setBusy(true);try{await c.syncNow()}finally{setBusy(false);setSt(c.status())}}}>Sincronitzar ara</button><button type="button" className="secondary" onClick={()=>{if(confirm("Tancar la sessió i entrar amb un altre compte? Les dades d’aquest compte es queden en aquest aparell i es tornaran a sincronitzar quan hi tornis a entrar."))c.logout()}}>Canviar de compte</button></>:c?<button type="button" className="primary" onClick={()=>c.connect()}>Connectar al núvol</button>:null}</div>
     </div>
   </div></Card>;
+}
+
+
+// =====================================================================
+// V87.259 · Comptes d'empresa (constructors i tècnics): benvinguda i perfil
+// =====================================================================
+function empresaInfo878259(){return lsJson8779("aco_empresa_v878259",null)}
+function EmpresaSetup878259({onDone}){
+  const emp=(typeof window!=="undefined"&&window.__acoEmpresa)||{};
+  const nice=String(emp.username||"").replace(/^\w/,c=>c.toUpperCase());
+  const[f,setF]=useState({nom:nice,fiscal:"",perfil:"constructor"});
+  function save(){
+    if(!f.nom.trim()){alert("Posa el nom de l’empresa o del despatx.");return}
+    lsSet8779("aco_empresa_v878259",JSON.stringify({...f,nom:f.nom.trim(),fiscal:f.fiscal.trim(),createdAt:new Date().toISOString()}));
+    onDone?.();
+  }
+  return <div className="empresa-setup-v878259"><div className="box">
+    <div className="logo">CO</div>
+    <h1>Benvinguts a Control d’Obres</h1>
+    <p>Abans de començar, digueu-nos qui sou. Ho podreu canviar després a Configuració.</p>
+    <label><span>Nom de l’empresa o del despatx</span><input value={f.nom} onChange={e=>setF(x=>({...x,nom:e.target.value}))} autoFocus/></label>
+    <label><span>Nom fiscal <em>opcional</em></span><input value={f.fiscal} onChange={e=>setF(x=>({...x,fiscal:e.target.value}))} placeholder="Ex. Vertical Trek España SL"/></label>
+    <div className="perfils">
+      <button type="button" aria-pressed={f.perfil==="constructor"} onClick={()=>setF(x=>({...x,perfil:"constructor"}))}><b>Constructor / contractista</b><span>Obres, pressupostos, control d’obra, albarans de material i hores de l’equip.</span></button>
+      <button type="button" aria-pressed={f.perfil==="tecnic"} onClick={()=>setF(x=>({...x,perfil:"tecnic"}))}><b>Tècnic / despatx</b><span>Expedients, pressupostos, certificacions, honoraris, agenda i gestió del temps.</span></button>
+    </div>
+    <button type="button" className="primary" onClick={save}>Començar</button>
+  </div></div>;
+}
+
+// =====================================================================
+// V87.259 · Albarans: foto de l'albarà, materials i cost imputat a cada obra
+// La foto es redueix (≈150 KB) i es guarda apart; els albarans, en una llista.
+// =====================================================================
+const ALBARANS_KEY878259="aco_albarans_v878259";
+function readAlbarans878259(){const v=lsJson8779(ALBARANS_KEY878259,[]);return Array.isArray(v)?v:[]}
+function writeAlbarans878259(list){lsSet8779(ALBARANS_KEY878259,JSON.stringify(list));try{window.dispatchEvent(new CustomEvent("aco-albarans-changed"))}catch{}}
+function albaraFotoKey878259(id){return `aco_albara_foto_v878259_${id}`}
+function compressImage878259(file,max=1400,quality=0.72){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);const img=new Image();
+    img.onload=()=>{try{const s=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL("image/jpeg",quality))}catch(e){reject(e)}};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("No s’ha pogut llegir la imatge"))};
+    img.src=url;
+  });
+}
+function albaraPrompt878259(){
+  return ["Llegeix l’albarà de la foto que t’adjunto i torna’m les dades EXACTAMENT en aquest format:",
+  "",
+  "Proveïdor: …",
+  "Número: …",
+  "Data: dd/mm/aaaa",
+  "Base imposable: …",
+  "IVA %: …",
+  "Total: …",
+  "",
+  "| Concepte | Quantitat | Unitat | Preu | Import |",
+  "|---|---|---|---|---|",
+  "| … | … | … | … | … |",
+  "",
+  "Normes: números amb coma decimal i sense el símbol €; una fila per cada material o línia de l’albarà; si una dada no es llegeix bé, escriu «?»."].join("\n");
+}
+function parseAlbara878259(text){
+  const t=String(text||"");
+  const field=re=>{const m=t.match(re);return m?m[1].trim().replace(/\*\*/g,""):""};
+  const out={proveidor:field(/prove[ïi]dor\s*:\s*(.+)/i),numero:field(/n[úu]mero\s*:\s*(.+)/i),data:"",base:aiNum878256(field(/base\s+imposable\s*:\s*(.+)/i)),iva:aiNum878256(field(/iva\s*%?\s*:\s*(.+)/i)),total:aiNum878256(field(/total\s*:\s*(.+)/i)),linies:[]};
+  const d=field(/data\s*:\s*(.+)/i).match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+  if(d){const y=d[3].length===2?"20"+d[3]:d[3];out.data=`${y}-${d[2].padStart(2,"0")}-${d[1].padStart(2,"0")}`}
+  t.split(/\r?\n/).forEach(line=>{
+    const l=line.trim();if(!l.includes("|")||/^[|:\-\s]+$/.test(l))return;
+    const c=l.replace(/^\|/,"").replace(/\|$/,"").split("|").map(x=>x.replace(/\*\*/g,"").trim());
+    if(c.length<5||/^concepte$/i.test(c[0]))return;
+    const q=aiNum878256(c[1]),p=aiNum878256(c[3]),imp=aiNum878256(c[4]);
+    if(!c[0]||(!q&&!p&&!imp))return;
+    out.linies.push({concepte:c[0],quantitat:q||1,unitat:c[2]||"ut",preu:p||(q?imp/q:imp),import:imp||q*p});
+  });
+  if(!out.total&&out.linies.length){const base=out.linies.reduce((s,x)=>s+x.import,0);out.base=out.base||base;out.total=base*(1+(out.iva||21)/100)}
+  return out;
+}
+function albaraBase878259(a){const b=parseNum8770(a.base);if(b)return b;const t=parseNum8770(a.total);const iva=a.iva===""||a.iva==null?21:parseNum8770(a.iva);return t?t/(1+iva/100):(a.linies||[]).reduce((s,x)=>s+(parseNum8770(x.import)||0),0)}
+
+function Albarans878259({obres=[],clients=[],openObra}){
+  const[tick,setTick]=useState(0);
+  useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
+  const list=useMemo(()=>readAlbarans878259(),[tick]);
+  const[obraF,setObraF]=useState("");
+  const[month,setMonth]=useState("");
+  const[edit,setEdit]=useState(null);
+  const fileRef=useRef(null);
+  const obresSorted=[...(obres||[])].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0)||String(x.nom||"").localeCompare(String(y.nom||""),"ca"));
+  const rows=list.filter(a=>(!obraF||a.obraId===obraF)&&(!month||String(a.data||"").startsWith(month))).sort((a,b)=>String(b.data||"").localeCompare(String(a.data||"")));
+  const total=rows.reduce((s,a)=>s+albaraBase878259(a),0);
+  const byObra={};rows.forEach(a=>{const k=a.obraId||"";(byObra[k]??={obra:obres.find(o=>o.id===k),n:0,base:0});byObra[k].n++;byObra[k].base+=albaraBase878259(a)});
+  const groups=Object.values(byObra).sort((a,b)=>b.base-a.base);
+  async function newFromPhoto(file){
+    let foto="";
+    if(file){try{foto=await compressImage878259(file)}catch(e){alert(e.message)}}
+    setEdit({id:"alb-"+Date.now(),isNew:true,data:todayISO8743(),obraId:obraF||obresSorted[0]?.id||"",proveidor:"",numero:"",base:"",iva:"21",total:"",linies:[],notes:"",foto});
+  }
+  function save(a){
+    if(!a.obraId){alert("Tria l’obra on s’imputa l’albarà.");return}
+    const {foto,isNew,...rest}=a;
+    if(foto)lsSet8779(albaraFotoKey878259(a.id),foto);
+    const clean={...rest,teFoto:!!foto||!!rest.teFoto,base:String(rest.base??""),total:String(rest.total??""),updatedAt:new Date().toISOString(),createdAt:rest.createdAt||new Date().toISOString()};
+    const cur=readAlbarans878259();
+    writeAlbarans878259(cur.some(x=>x.id===a.id)?cur.map(x=>x.id===a.id?clean:x):[clean,...cur]);
+    setEdit(null);
+  }
+  function remove(a){if(!confirm("Eliminar aquest albarà?"))return;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)))}catch{};setEdit(null)}
+  function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),"")})}
+  const proveidors=[...new Set(list.map(a=>a.proveidor).filter(Boolean))];
+  return <div className="albarans-v878259">
+    <div className="alb-head">
+      <div><span className="eyebrow">Control d’obra</span><h1>Albarans</h1><p>Fes una foto de l’albarà, tria l’obra i el cost dels materials hi queda imputat.</p></div>
+      <div className="actions">
+        <label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>Fer foto d’un albarà</label>
+        <button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>Entrar sense foto</button>
+      </div>
+    </div>
+    <div className="alb-filters">
+      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Obra"><option value="">Totes les obres</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
+      <input type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label="Mes"/>
+      {month&&<button type="button" className="link" onClick={()=>setMonth("")}>Tots els mesos</button>}
+    </div>
+    <div className="alb-kpis"><div><small>Material imputat (sense IVA)</small><b>{money(total)}</b><span>{rows.length} albarà{rows.length===1?"":"ns"}</span></div>{groups.slice(0,3).map((g,i)=><div key={i}><small>{g.obra?.nom||"Sense obra"}</small><b>{money(g.base)}</b><span>{g.n} albarà{g.n===1?"":"ns"}</span></div>)}</div>
+    {rows.length===0?<div className="alb-empty"><b>Encara no hi ha albarans.</b><span>Prem «Fer foto d’un albarà»: al mòbil s’obre la càmera.</span></div>
+    :<div className="alb-list">{rows.map(a=>{const o=obres.find(x=>x.id===a.obraId);return <button type="button" key={a.id} className="alb-row" onClick={()=>open(a)}>
+      <span className="ic">{a.teFoto?"📷":"🧾"}</span>
+      <span className="nm"><b>{a.proveidor||"Proveïdor pendent"}{a.numero?` · ${a.numero}`:""}</b><small>{fmtAppDate8748(a.data)} · {o?.nom||"Sense obra"}{(a.linies||[]).length?` · ${(a.linies||[]).length} línies`:""}</small></span>
+      <span className="num"><b>{money(albaraBase878259(a))}</b><small>sense IVA</small></span>
+    </button>})}</div>}
+    {edit&&<AlbaraEditor878259 a={edit} setA={setEdit} obres={obresSorted} proveidors={proveidors} save={save} remove={remove} close={()=>setEdit(null)} openObra={openObra}/>}
+  </div>;
+}
+function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}){
+  const[ai,setAi]=useState(false);
+  const[answer,setAnswer]=useState("");
+  const[msg,setMsg]=useState("");
+  const set=(k,v)=>setA(x=>({...x,[k]:v}));
+  const linies=a.linies||[];
+  const setLine=(i,k,v)=>setA(x=>{const l=[...(x.linies||[])];l[i]={...l[i],[k]:v};if(k==="quantitat"||k==="preu"){const q=parseNum8770(k==="quantitat"?v:l[i].quantitat),p=parseNum8770(k==="preu"?v:l[i].preu);l[i].import=Math.round(q*p*100)/100}return {...x,linies:l}});
+  const sumLines=linies.reduce((s,x)=>s+(parseNum8770(x.import)||0),0);
+  async function photo(file){if(!file)return;try{set("foto",await compressImage878259(file))}catch(e){alert(e.message)}}
+  function copyPrompt(open){const ok=copyText878256(albaraPrompt878259());setMsg(ok?"Instruccions copiades. A ChatGPT, adjunta-hi la foto de l’albarà i enganxa el text (Ctrl+V).":"No s’han pogut copiar: fes-ho des de «Veure el text».");if(open)window.open("https://chatgpt.com/","_blank","noopener,noreferrer")}
+  function applyAnswer(){const p=parseAlbara878259(answer);if(!p.total&&!p.linies.length&&!p.proveidor){setMsg("No hi he trobat les dades. Comprova que la resposta tingui «Proveïdor:», «Total:» i la taula.");return}
+    setA(x=>({...x,proveidor:p.proveidor&&p.proveidor!=="?"?p.proveidor:x.proveidor,numero:p.numero&&p.numero!=="?"?p.numero:x.numero,data:p.data||x.data,base:p.base?String(Math.round(p.base*100)/100).replace(".",","):x.base,iva:p.iva?String(p.iva):x.iva,total:p.total?String(Math.round(p.total*100)/100).replace(".",","):x.total,linies:p.linies.length?p.linies.map(l=>({...l,quantitat:String(l.quantitat).replace(".",","),preu:String(Math.round(l.preu*100)/100).replace(".",","),import:Math.round(l.import*100)/100})):x.linies}));
+    setAi(false);setAnswer("");setMsg(`Dades omplertes: ${p.linies.length} línies${p.total?` · total ${money(p.total)}`:""}. Revisa-les abans de desar.`)}
+  return <Modal title={a.isNew?"Nou albarà":"Albarà"} close={close}><div className="alb-editor-v878259">
+    <div className="alb-photo">{a.foto?<img src={a.foto} alt="Foto de l’albarà"/>:<span>Sense foto</span>}<label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto?"Canviar la foto":"Afegir foto"}</label></div>
+    <div className="alb-ai">
+      {!ai?<button type="button" className="secondary" onClick={()=>setAi(true)}>Llegir l’albarà amb IA (ChatGPT)</button>
+      :<div className="box"><b>Llegir amb IA</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>Copiar les instruccions i obrir ChatGPT</button></li><li>A ChatGPT, adjunta-hi la foto de l’albarà i enganxa les instruccions.</li><li>Copia la resposta i enganxa-la aquí:</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Proveïdor: …  Total: …  | Concepte | Quantitat | …"/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>Tancar</button><button type="button" className="primary" onClick={applyAnswer}>Omplir les dades</button></div></div>}
+      {msg&&<p className="msg">{msg}</p>}
+    </div>
+    <div className="grid">
+      <label className="wide"><span>Obra</span><select value={a.obraId||""} onChange={e=>set("obraId",e.target.value)}><option value="">Tria l’obra…</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>
+      <label><span>Proveïdor</span><input list="alb-proveidors" value={a.proveidor||""} onChange={e=>set("proveidor",e.target.value)}/><datalist id="alb-proveidors">{proveidors.map(p=><option key={p} value={p}/>)}</datalist></label>
+      <label><span>Número d’albarà</span><input value={a.numero||""} onChange={e=>set("numero",e.target.value)}/></label>
+      <label><span>Data</span><input type="date" value={a.data||""} onChange={e=>set("data",e.target.value)}/></label>
+      <label><span>Base sense IVA (€)</span><input inputMode="decimal" value={a.base||""} onChange={e=>set("base",e.target.value)} placeholder={sumLines?String(sumLines.toFixed(2)).replace(".",","):""}/></label>
+      <label><span>IVA %</span><input inputMode="decimal" value={a.iva??"21"} onChange={e=>set("iva",e.target.value)}/></label>
+      <label><span>Total amb IVA (€)</span><input inputMode="decimal" value={a.total||""} onChange={e=>set("total",e.target.value)}/></label>
+    </div>
+    <div className="alb-lines">
+      <div className="lh"><b>Materials</b><button type="button" className="link" onClick={()=>setA(x=>({...x,linies:[...(x.linies||[]),{concepte:"",quantitat:"1",unitat:"ut",preu:"",import:0}]}))}>+ Afegir línia</button></div>
+      {linies.length===0?<p className="hint">Opcional. Si només vols el cost total, n’hi ha prou amb la base o el total.</p>:linies.map((l,i)=><div className="ln" key={i}>
+        <input className="c" value={l.concepte} onChange={e=>setLine(i,"concepte",e.target.value)} placeholder="Material"/>
+        <input inputMode="decimal" value={l.quantitat} onChange={e=>setLine(i,"quantitat",e.target.value)} aria-label="Quantitat"/>
+        <input value={l.unitat} onChange={e=>setLine(i,"unitat",e.target.value)} aria-label="Unitat"/>
+        <input inputMode="decimal" value={l.preu} onChange={e=>setLine(i,"preu",e.target.value)} aria-label="Preu" placeholder="Preu"/>
+        <b>{money(parseNum8770(l.import)||0)}</b>
+        <button type="button" className="x" onClick={()=>setA(x=>({...x,linies:(x.linies||[]).filter((_,j)=>j!==i)}))} aria-label="Treure la línia">×</button>
+      </div>)}
+      {linies.length>0&&<p className="sum">Suma de les línies: <b>{money(sumLines)}</b></p>}
+    </div>
+    <label className="notes"><span>Notes</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)} placeholder="Ex. material per a la coberta"/></label>
+    <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>Eliminar</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>Obrir l’obra</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={()=>save({...a,base:a.base||(sumLines?String(sumLines.toFixed(2)).replace(".",","):"")})}>Desar l’albarà</button></div>
+  </div></Modal>;
 }

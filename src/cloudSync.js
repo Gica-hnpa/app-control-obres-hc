@@ -7,16 +7,33 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.257.5";
+const VERSION = "V87.258";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
 const SPLIT = /__aco_odata$/;
+// V87.259 · Comptes d'empresa: entren amb un usuari curt (brava, oriol…) que es
+// converteix en un correu intern. Cada compte té el seu espai de dades separat dins
+// del navegador (aco_v8782__emp_<usuari>__…), així es poden provar diversos comptes
+// al mateix ordinador sense barrejar res.
+const USER_DOMAIN = "usuaris.controlobres.app";
+function toEmail(v) { v = String(v || "").trim(); return v.includes("@") ? v.toLowerCase() : `${v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9._-]/g, "")}@${USER_DOMAIN}`; }
+function companyOf(email) { const e = String(email || "").toLowerCase(); if (!e.endsWith("@" + USER_DOMAIN)) return null; const u = e.split("@")[0]; return { username: u, internal: "emp_" + u.replace(/[^a-z0-9]/g, "") }; }
+function inScope(k) { const c = companyOf(session?.email); if (c) return k.startsWith(`aco_v8782__${c.internal}__`); return !/(^|__)emp_/.test(k.replace(/^aco_v8782__/, "")); }
+function metaKey() { return `nuvol-aco-estat__${session?.user_id || ""}`; }
+function applyCompanyContext() {
+  const c = companyOf(session?.email);
+  window.__acoEmpresa = c ? { ...c, email: session.email } : null;
+  try {
+    if (c) { sessionStorage.setItem("aco_current_user8779", c.internal); sessionStorage.setItem("aco-reentrar-auto", c.internal); }
+    else { const cur = sessionStorage.getItem("aco_current_user8779") || ""; if (cur.startsWith("emp_")) { sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } }
+  } catch {}
+}
 const SESSION_KEY = "nuvol-aco-sessio", META_KEY = "nuvol-aco-estat", SKIP_KEY = "nuvol-aco-ara-no", DEVICE_KEY = "dispositiu-app-control-obres";
 
 let session = null, meta = { userId: "", cursor: "", known: {} }, device = "", active = false;
 let timer = null, busy = false, again = false, badge = null, lastOk = "", lastErr = "", remoteWaiting = null, lastInput = Date.now();
-let rawSet = null, rawRemove = null;
+let applying = false; // canvis que venen del núvol: no s'han de tornar a pujar
 
 // ---------- utilitats ----------
 function hash(str) {
@@ -28,8 +45,9 @@ function hash(str) {
   return (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36) + ":" + str.length;
 }
 function readJson(k, f) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? f; } catch { return f; } }
-function writeRaw(k, v) { (rawSet || Storage.prototype.setItem).call(localStorage, k, v); }
-function saveMeta() { try { writeRaw(META_KEY, JSON.stringify(meta)); } catch (e) { console.warn("No es pot desar l'estat del núvol", e); } }
+function writeRaw(k, v) { applying = true; try { localStorage.setItem(k, v); } finally { applying = false; } }
+function removeRaw(k) { applying = true; try { localStorage.removeItem(k); } finally { applying = false; } }
+function saveMeta() { try { writeRaw(metaKey(), JSON.stringify(meta)); } catch (e) { console.warn("No es pot desar l'estat del núvol", e); } }
 function fmtTime(iso) { try { return new Date(iso).toLocaleString("ca-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch { return ""; } }
 function isLocalServer() { return !!window.__acoLocalDisk; }
 function makeDevice() {
@@ -89,7 +107,7 @@ function entries() {
   const out = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (!k || !APP_KEY.test(k) || EXCLUDE.test(k)) continue;
+    if (!k || !APP_KEY.test(k) || EXCLUDE.test(k) || !inScope(k)) continue;
     const v = localStorage.getItem(k);
     if (SPLIT.test(k)) {
       let o = null; try { o = JSON.parse(v); } catch {}
@@ -116,7 +134,7 @@ function applyRows(rows, skip = new Set()) {
     if (val === cur) { if (val === undefined) delete meta.known[r.key]; else meta.known[r.key] = hash(val); continue; }
     const [base, id] = splitKey(r.key);
     if (id !== null) (patches[base] ??= {})[id] = val;
-    else if (val === undefined) (rawRemove || Storage.prototype.removeItem).call(localStorage, r.key);
+    else if (val === undefined) removeRaw(r.key);
     else { try { writeRaw(r.key, val); } catch (e) { console.warn("Núvol: no hi cap", r.key, e); continue; } }
     if (val === undefined) delete meta.known[r.key]; else meta.known[r.key] = hash(val);
     n++;
@@ -131,10 +149,9 @@ function applyRows(rows, skip = new Set()) {
 // Deixa l'aparell igual que el núvol. Primer s'esborren les dades d'aquí (així hi ha
 // lloc per a les noves, encara que les velles ocupessin molt) i després s'escriuen.
 function replaceWithCloud(live) {
-  const remove = rawRemove || Storage.prototype.removeItem;
   const keys = [];
-  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && APP_KEY.test(k) && !EXCLUDE.test(k)) keys.push(k); }
-  keys.forEach(k => { try { remove.call(localStorage, k); } catch {} });
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && APP_KEY.test(k) && !EXCLUDE.test(k) && inScope(k)) keys.push(k); }
+  keys.forEach(k => { try { removeRaw(k); } catch {} });
   const plain = {}, split = {};
   for (const r of live) {
     const [base, id] = splitKey(r.key);
@@ -190,23 +207,23 @@ function askLogin({ allowSkip = true, message = "" } = {}) {
       <h1>Entra al núvol</h1>
       <p>Amb el teu compte veuràs les mateixes dades a l’ordinador, al mòbil i a la tauleta.</p>
       <form>
-        <label><span>Correu</span><input name="email" type="email" autocomplete="username" required></label>
+        <label><span>Usuari o correu</span><input name="email" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required></label>
         <label><span>Contrasenya</span><input name="password" type="password" autocomplete="current-password" required></label>
         <p class="err" role="alert">${message}</p>
         <button class="primary" type="submit">Entrar</button>
         ${allowSkip ? `<button class="link" type="button" data-skip>${isLocalServer() ? "Ara no · treballar només en aquest ordinador" : "Ara no · treballar sense núvol en aquest aparell"}</button>` : ""}
       </form>`);
     const form = el.querySelector("form"), err = el.querySelector(".err"), btn = el.querySelector("button.primary");
-    const email = form.elements.email; email.value = readJson(SESSION_KEY, null)?.email || localStorage.getItem("nuvol-aco-correu") || ""; (email.value ? form.elements.password : email).focus();
+    const email = form.elements.email; email.value = localStorage.getItem("nuvol-aco-correu") || ""; (email.value ? form.elements.password : email).focus();
     form.addEventListener("submit", async e => {
       e.preventDefault(); err.textContent = ""; btn.disabled = true; btn.textContent = "Entrant…";
       try {
-        await login(form.elements.email.value.trim(), form.elements.password.value);
+        await login(toEmail(form.elements.email.value), form.elements.password.value);
         try { localStorage.setItem("nuvol-aco-correu", form.elements.email.value.trim()); } catch {}
         el.remove(); resolve("ok");
       } catch (x) {
         err.textContent = x.offline ? "No hi ha connexió amb el núvol. Revisa Internet i torna-ho a provar."
-          : /invalid login|invalid_grant|credentials/i.test(x.message) ? "Correu o contrasenya incorrectes."
+          : /invalid login|invalid_grant|credentials/i.test(x.message) ? "Usuari o contrasenya incorrectes."
           : /not confirmed/i.test(x.message) ? "Aquest correu encara no està confirmat a Supabase."
           : x.message;
         btn.disabled = false; btn.textContent = "Entrar";
@@ -384,6 +401,7 @@ async function applyWaitingAndReload() {
 }
 async function reloadSafely() {
   active = false;
+  try { await window.__acoStore?.flush?.(); } catch {}
   try { sessionStorage.setItem("aco-reentrar-auto", sessionStorage.getItem("aco_current_user8779") || ""); } catch {}
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   location.reload();
@@ -391,17 +409,24 @@ async function reloadSafely() {
 function typing() { const el = document.activeElement; return !!el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable); }
 function schedule(ms = 4000) { clearTimeout(timer); timer = setTimeout(() => cycle(), ms); }
 async function syncNow() { await cycle({ returning: true }); }
-async function connect() { try { localStorage.removeItem(SKIP_KEY); sessionStorage.removeItem(SKIP_KEY); } catch {} location.reload(); }
-function logout() {
-  try { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(META_KEY); } catch {}
-  try { localStorage.setItem(SKIP_KEY, "1"); } catch {}
+async function connect() { try { localStorage.removeItem(SKIP_KEY); sessionStorage.removeItem(SKIP_KEY); } catch {} try { await window.__acoStore?.flush?.(); } catch {} location.reload(); }
+// Tancar la sessió: les dades d'aquest compte es queden en aquest aparell i en
+// tornar a entrar continuen sincronitzant. En recarregar surt «Entra al núvol».
+async function logout() {
+  active = false;
+  try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
+  try { await window.__acoLocalDisk?.flush?.(); } catch {}
+  try { await window.__acoStore?.flush?.(); } catch {}
   location.reload();
 }
 function hook() {
-  rawSet = Storage.prototype.setItem; rawRemove = Storage.prototype.removeItem;
-  const set = rawSet, remove = rawRemove;
-  Storage.prototype.setItem = function (k, v) { set.call(this, k, v); if (active && this === window.localStorage && APP_KEY.test(String(k)) && !EXCLUDE.test(String(k))) schedule(); };
-  Storage.prototype.removeItem = function (k) { remove.call(this, k); if (active && this === window.localStorage && APP_KEY.test(String(k))) schedule(); };
+  const watch = k => { if (active && !applying && k != null && APP_KEY.test(String(k)) && !EXCLUDE.test(String(k)) && inScope(String(k))) schedule(); };
+  if (window.__acoStore) window.__acoStore.onChange(watch);
+  else {
+    const set = Storage.prototype.setItem, remove = Storage.prototype.removeItem;
+    Storage.prototype.setItem = function (k, v) { set.call(this, k, v); if (this === window.localStorage) watch(k); };
+    Storage.prototype.removeItem = function (k) { remove.call(this, k); if (this === window.localStorage) watch(k); };
+  }
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => window.addEventListener(t, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") { clearTimeout(timer); cycle(); }
@@ -414,19 +439,22 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout };
   session = readJson(SESSION_KEY, null);
-  meta = readJson(META_KEY, { userId: "", cursor: "", known: {} }) || { userId: "", cursor: "", known: {} };
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
-    if (skipped) return;
+    if (skipped) { applyCompanyContext(); return; }
     const r = await askLogin({ allowSkip: true });
-    if (r === "skip") { try { (isLocalServer() ? localStorage : sessionStorage).setItem(SKIP_KEY, "1"); } catch {} return; }
+    if (r === "skip") { try { (isLocalServer() ? localStorage : sessionStorage).setItem(SKIP_KEY, "1"); } catch {} applyCompanyContext(); return; }
   }
+  applyCompanyContext();
+  // Estat de sincronització propi de cada compte (abans n'hi havia un de sol).
+  meta = readJson(metaKey(), null);
+  if (!meta) { const legacy = readJson(META_KEY, null); meta = legacy && legacy.userId === session.user_id ? legacy : { userId: "", cursor: "", known: {} }; }
   hook();
   active = true;
   try {
-    if (window.__acoLocalDisk?.forcarNuvol) {
+    if (window.__acoLocalDisk?.forcarNuvol && !window.__acoEmpresa) {
       paint("busy", "Núvol · restaurant amb les dades d’aquest ordinador…");
       await forcePushAll();
       lastOk = new Date().toISOString(); paint("ok");
@@ -435,7 +463,7 @@ export async function startCloudSync() {
   } catch (e) {
     if (e.relogin) {
       const r = await askLogin({ allowSkip: true, message: "La sessió ha caducat. Torna a entrar." });
-      if (r === "ok") { try { await cycle({ startup: true }); } catch {} }
+      if (r === "ok") { applyCompanyContext(); meta = readJson(metaKey(), null) || { userId: "", cursor: "", known: {} }; try { await cycle({ startup: true }); } catch {} }
       else { active = false; return; }
     }
     // Sense connexió: l'app s'obre igualment amb les dades d'aquest aparell.
