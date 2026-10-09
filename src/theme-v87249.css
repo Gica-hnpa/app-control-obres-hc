@@ -1,0 +1,508 @@
+/* =====================================================================
+   V87.249 · Capa de disseny modern
+   S'aplica DESPRÉS de styles.css. No canvia cap funció ni cap posició
+   de la interfície: només tipografia, colors de superfície, vores,
+   radis i pesos de lletra. Els documents A4 / impressió no es toquen.
+   Per tornar a l'aspecte anterior n'hi ha prou amb treure la línia
+   `import "./theme-v87249.css"` de src/main.jsx.
+   ===================================================================== */
+
+/* --- Tipografies locals (funcionen sense internet) -------------------
+   «CO Sans» és IBM Plex Sans. Els pesos 600–949 de l'app antiga
+   (hi ha més de 500 regles amb 800/900) es dibuixen amb el seminegre,
+   i 950+ amb el negre: el text deixa de veure's pesat sense haver de
+   reescriure cada regla. */
+@font-face{font-family:"CO Sans";src:url("./fonts/inter-latin-400-normal.woff2") format("woff2");font-weight:100 449;font-style:normal;font-display:swap}
+@font-face{font-family:"CO Sans";src:url("./fonts/inter-latin-500-normal.woff2") format("woff2");font-weight:450 549;font-style:normal;font-display:swap}
+@font-face{font-family:"CO Sans";src:url("./fonts/inter-latin-600-normal.woff2") format("woff2");font-weight:550 949;font-style:normal;font-display:swap}
+@font-face{font-family:"CO Sans";src:url("./fonts/inter-latin-700-normal.woff2") format("woff2");font-weight:950 1000;font-style:normal;font-display:swap}
+@font-face{font-family:"CO Display";src:url("./fonts/inter-latin-600-normal.woff2") format("woff2");font-weight:100 649;font-style:normal;font-display:swap}
+@font-face{font-family:"CO Display";src:url("./fonts/inter-latin-700-normal.woff2") format("woff2");font-weight:650 1000;font-style:normal;font-display:swap}
+
+:root{
+  --app-font:"CO Sans","Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  --co-display:"CO Display","Inter","Segoe UI",system-ui,sans-serif;
+  --co-bg:#F3F6F7;
+  --co-surface:#FFFFFF;
+  --co-surface-2:#F1F4F6;
+  --co-line:#DCE3E7;
+  --co-line-strong:#C5D0D6;
+  --co-ink:#152328;
+  --co-ink-2:#4B5D63;
+  --co-ink-3:#76878D;
+  --co-accent:#2563EB;
+  --co-accent-ink:#1D4ED8;
+  --co-accent-soft:#EAF1FD;
+  --co-radius:12px;
+  --co-radius-sm:8px;
+  --co-shadow:0 1px 2px rgba(21,35,40,.05),0 6px 18px -10px rgba(21,35,40,.16);
+  /* variables de versions anteriors que reaprofitem */
+  --line:var(--co-line);
+  --soft:var(--co-surface-2);
+  --ink:var(--co-ink);
+  --muted:var(--co-ink-2);
+}
+
+@media screen{
+
+/* --- Base ------------------------------------------------------------ */
+html body{
+  font-family:var(--app-font)!important;
+  font-size:14px!important;
+  line-height:1.5;
+  color:var(--co-ink);
+  background:var(--co-bg)!important;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+html body button,html body input,html body select,html body textarea{font-family:inherit}
+html body :focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body ::selection{background:#CFE0FB}
+
+/* Títols amb la tipografia de títols */
+html body h1,html body h2,html body h3,
+html body .brand,html body .hero h1,html body .card-head h2{
+  font-family:var(--co-display)!important;
+  letter-spacing:-.005em;
+  text-wrap:balance;
+}
+html body h1{font-weight:700}
+html body h2,html body h3{font-weight:600}
+html body .card-head h2{font-size:17px!important}
+
+/* Xifres alineades en taules i indicadors */
+html body td,html body th,html body .kpi strong,html body input[type="number"]{font-variant-numeric:tabular-nums}
+
+/* --- Menú lateral: clar i lleuger ------------------------------------ */
+html body .sidebar{
+  background:var(--co-surface)!important;
+  color:var(--co-ink)!important;
+  border-right:1px solid var(--co-line);
+}
+html body .sidebar .brand{font-size:18px!important;font-weight:700!important;color:var(--co-ink)}
+html body .sidebar .active-user-v8780{color:var(--co-ink-3)}
+html body .sidebar .collapse-btn{background:var(--co-surface-2)!important;color:var(--co-ink-2)!important;border:1px solid var(--co-line)!important;border-radius:var(--co-radius-sm)!important}
+html body .sidebar .close-menu{color:var(--co-ink-2)!important}
+html body .sidebar .logout-mini-v8778{background:var(--co-surface)!important;color:var(--co-ink-2)!important;border:1px solid var(--co-line)!important;border-radius:var(--co-radius-sm)!important;font-weight:500!important}
+html body .side-nav{gap:2px!important}
+html body .menu-btn{
+  background:transparent!important;
+  color:var(--co-ink-2)!important;
+  font-weight:500!important;
+  border-radius:var(--co-radius-sm)!important;
+  padding:9px 12px!important;
+  transition:background .12s,color .12s;
+}
+html body .menu-btn:hover{background:var(--co-surface-2)!important;color:var(--co-ink)!important}
+html body .menu-btn.active{background:var(--co-accent-soft)!important;color:var(--co-accent-ink)!important;font-weight:600!important}
+html body .menu-btn svg{width:18px!important;height:18px!important;opacity:.85}
+html body .mobile-top{background:var(--co-surface)!important;color:var(--co-ink)!important;border-bottom:1px solid var(--co-line)}
+html body .mobile-top .hamb{color:var(--co-ink)!important}
+
+/* --- Targetes i panells ---------------------------------------------- */
+html body .card,html body .hero,html body .kpi,html body .user-card{
+  background:var(--co-surface);
+  border:1px solid var(--co-line)!important;
+  border-radius:var(--co-radius)!important;
+  box-shadow:var(--co-shadow)!important;
+}
+html body .card-head{border-bottom-color:var(--co-line)}
+html body .hero p,html body .user-card span{color:var(--co-ink-2)}
+html body .app-logo{border-radius:16px!important;background:linear-gradient(135deg,#152328,#2563EB)!important;font-family:var(--co-display)!important}
+
+/* Indicadors */
+html body .kpi small{
+  color:var(--co-ink-3)!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  letter-spacing:.07em;
+}
+html body .kpi strong{font-family:var(--co-display)!important;font-weight:700!important;color:var(--co-ink)}
+
+/* --- Botons ---------------------------------------------------------- */
+html body .primary,html body .secondary{
+  border-radius:var(--co-radius-sm)!important;
+  font-weight:600!important;
+  letter-spacing:0;
+  transition:background .12s,border-color .12s,box-shadow .12s,filter .12s;
+}
+html body .primary{box-shadow:0 1px 2px rgba(37,99,235,.25)}
+html body .primary:hover{filter:brightness(1.07)}
+html body .secondary{background:var(--co-surface)!important;border:1px solid var(--co-line-strong)!important;color:var(--co-ink)!important}
+html body .secondary:hover{background:var(--co-surface-2)!important;border-color:var(--co-ink-3)!important}
+
+/* --- Camps de formulari ---------------------------------------------- */
+html body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+html body select,html body textarea{
+  border-color:var(--co-line-strong);
+  border-radius:var(--co-radius-sm);
+  color:var(--co-ink);
+}
+html body input:not([type="checkbox"]):not([type="radio"]):focus,html body select:focus,html body textarea:focus{
+  outline:none;
+  border-color:var(--co-accent)!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.16)!important;
+}
+html body label > span{color:var(--co-ink-2)}
+
+/* --- Etiquetes d'estat ----------------------------------------------- */
+html body .badge{font-weight:600!important;padding:4px 10px!important;letter-spacing:.01em}
+
+/* --- Taules de treball (no els documents A4) ------------------------- */
+html body th:not(.document-page th):not(.excel-cert th){
+  background:var(--co-surface-2);
+  color:var(--co-ink-2);
+  font-weight:600;
+  border-color:var(--co-line);
+}
+html body td:not(.document-page td):not(.excel-cert td){border-color:var(--co-line)}
+
+/* --- Finestres --------------------------------------------------------- */
+html body .modal{border-radius:14px!important;border-color:var(--co-line)!important;box-shadow:0 24px 60px -20px rgba(21,35,40,.35)!important}
+
+/* --- Barres de desplaçament discretes --------------------------------- */
+html body *{scrollbar-width:thin;scrollbar-color:#C5D0D6 transparent}
+html body ::-webkit-scrollbar{width:10px;height:10px}
+html body ::-webkit-scrollbar-thumb{background:#C5D0D6;border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+html body ::-webkit-scrollbar-thumb:hover{background:#9FAFB6;background-clip:padding-box}
+
+} /* fi @media screen */
+
+@media screen and (min-width:701px) and (max-width:1280px){
+  /* les tauletes tenien un fons blau i targetes amb vora blava: s'unifiquen */
+  html body{background:var(--co-bg)!important}
+  html body .card{border:1px solid var(--co-line)!important;box-shadow:var(--co-shadow)!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html body *{transition:none!important;animation:none!important}
+}
+
+/* --- V87.250 · Panell «Espai al navegador» ---------------------------- */
+.storage-panel-v878250{display:flex;flex-direction:column;gap:12px;padding:4px 0}
+.storage-head-v878250{display:flex;flex-direction:column;gap:6px}
+.storage-head-v878250>div:first-child{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.storage-head-v878250 span{color:var(--co-ink-2);font-variant-numeric:tabular-nums}
+.storage-bar-v878250{height:8px;border-radius:99px;background:var(--co-surface-2);overflow:hidden}
+.storage-bar-v878250 i{display:block;height:100%;border-radius:inherit;background:#2C7A4B}
+.storage-bar-v878250.mid i{background:#C98A12}
+.storage-bar-v878250.high i{background:#B93A33}
+.storage-warning-v878250{margin:0;padding:10px 12px;border-radius:8px;background:#FBE5E3;color:#7A2520}
+.storage-ok-v878250{margin:0;color:var(--co-ink-2)}
+.storage-list-v878250{display:flex;flex-direction:column;border:1px solid var(--co-line);border-radius:10px;overflow:hidden}
+.storage-item-v878250{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border-top:1px solid var(--co-line);cursor:pointer;background:var(--co-surface)}
+.storage-item-v878250:first-child{border-top:0}
+.storage-item-v878250:hover{background:var(--co-surface-2)}
+.storage-item-v878250 span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.storage-item-v878250 small{color:var(--co-ink-3)}
+.storage-item-v878250 em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--co-ink-2);white-space:nowrap}
+.storage-actions-v878250{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.storage-actions-v878250 span{color:var(--co-ink-2)}
+.storage-actions-v878250 .primary:disabled{opacity:.5;cursor:not-allowed}
+
+/* =====================================================================
+   V87.251 · Disseny 2.0
+   ===================================================================== */
+:root{
+  --co-s1:#2a78d6;--co-s2:#eb6834;--co-s3:#1baf7a;--co-s4:#eda100;--co-s5:#e87ba4;--co-s6:#008300;--co-s7:#4a3aa7;--co-s8:#e34948;--co-s0:#B8C4C7;
+}
+@media screen{
+/* Etiquetes flotants que tapaven botons */
+html body .user-global-badge-v8782{display:none!important}
+html body::after{content:"V87.257"!important;background:transparent!important;color:var(--co-ink-3)!important;font:500 10px/1.2 var(--app-font)!important;letter-spacing:.04em!important;opacity:.7}
+
+/* Menú lateral: marca */
+html body .sidebar .brand{display:flex;align-items:center;gap:10px}
+html body .sidebar .brand::before{content:"CO";flex:none;width:32px;height:32px;border-radius:8px;background:var(--co-accent);color:#fff;display:grid;place-items:center;font:700 13px/1 var(--co-display);letter-spacing:.02em}
+
+/* --- Inici ------------------------------------------------------------ */
+html body .home-head-v878251{display:flex;flex-direction:column;gap:16px}
+html body .home-head-title-v878251 span{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--co-ink-3)}
+html body .home-head-title-v878251 h1{margin:6px 0 4px;font-size:30px;font-weight:700;color:var(--co-ink)}
+html body .home-head-title-v878251 p{margin:0;color:var(--co-ink-2)}
+html body .home-head-title-v878251 .late{color:#B93A33}
+html body .home-kpis-v878251{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--co-line);border:1px solid var(--co-line);border-radius:var(--co-radius);overflow:hidden;box-shadow:var(--co-shadow)}
+html body .home-kpis-v878251 button{all:unset;box-sizing:border-box;cursor:pointer;background:var(--co-surface);padding:14px 18px;display:flex;flex-direction:column;gap:4px}
+html body .home-kpis-v878251 button:hover{background:var(--co-surface-2)}
+html body .home-kpis-v878251 button:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .home-kpis-v878251 small{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--co-ink-3)}
+html body .home-kpis-v878251 b{font:700 26px/1.1 var(--co-display);color:var(--co-ink)}
+html body .home-kpis-v878251 span{font-size:12px;color:var(--co-ink-2)}
+html body .home-kpis-v878251 .alert b{color:#B93A33}
+html body .home-donut-v878251{display:grid;grid-template-columns:140px minmax(0,1fr);gap:16px;align-items:center;padding:14px 16px}
+html body .home-donut-v878251 svg{width:140px;height:140px}
+html body .home-donut-v878251 text.n{font:700 22px var(--co-display);fill:var(--co-ink)}
+html body .home-donut-v878251 text.l{font:500 10px var(--app-font);fill:var(--co-ink-3)}
+html body .home-legend-v878251{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .home-legend-v878251 button{all:unset;cursor:pointer;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px;padding:2px 0}
+html body .home-legend-v878251 button:hover span{text-decoration:underline}
+html body .home-legend-v878251 i{width:10px;height:10px;border-radius:3px}
+html body .home-legend-v878251 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--co-ink-2)}
+html body .home-legend-v878251 b{font-variant-numeric:tabular-nums;font-weight:600}
+html body .home-bars-v878251{border-top:1px solid var(--co-line);padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+html body .home-bars-head-v878251{display:flex;justify-content:space-between;font-size:13px}
+html body .home-bars-head-v878251 span{color:var(--co-ink-3)}
+html body .home-bar-v878251{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;font-size:13px}
+html body .home-bar-v878251 .lab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .home-bar-v878251 .val{font-variant-numeric:tabular-nums;color:var(--co-ink-2)}
+html body .home-bar-v878251 .track{grid-column:1/-1;display:flex;gap:2px;height:8px;background:var(--co-surface-2);border-radius:0 4px 4px 0}
+html body .home-bar-v878251 .track i{display:block;height:100%}
+html body .home-bar-v878251 .track i:last-child{border-radius:0 4px 4px 0}
+html body .home-bar-v878251 .open,html body .home-bars-legend-v878251 .open{background:var(--co-s1)}
+html body .home-bar-v878251 .closed,html body .home-bars-legend-v878251 .closed{background:var(--co-s0)}
+html body .home-bars-legend-v878251{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--co-ink-2)}
+html body .home-bars-legend-v878251 span{display:inline-flex;gap:6px;align-items:center}
+html body .home-bars-legend-v878251 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* --- Apartats de l'obra: llista agrupada d'un clic -------------------- */
+html body .obra-section-nav-v878251{display:flex;flex-direction:column;gap:12px}
+html body .obra-section-group-v878251{display:flex;flex-direction:column;gap:1px}
+html body .obra-section-group-v878251 small{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--co-ink-3);padding:0 10px 4px}
+html body .obra-section-group-v878251 button{all:unset;box-sizing:border-box;cursor:pointer;padding:7px 10px;border-radius:var(--co-radius-sm);font-size:13.5px;color:var(--co-ink-2);font-weight:500}
+html body .obra-section-group-v878251 button:hover{background:var(--co-surface-2);color:var(--co-ink)}
+html body .obra-section-group-v878251 button.active{background:var(--co-accent-soft);color:var(--co-accent-ink);font-weight:600}
+html body .obra-section-group-v878251 button:focus-visible{outline:2px solid var(--co-accent);outline-offset:1px}
+html body .obra-side-tabs-v878238 .obra-section-current-v878238{display:none!important}
+
+/* --- Estat: un sol control (el desplegable fa d'etiqueta) ------------- */
+html body .exp-status-cell-v878247>.badge,
+html body .obra-evolution-actions-v878193>.badge{display:none!important}
+
+/* --- Eliminar: discret fins que hi passes per sobre ------------------- */
+html body button.danger.small-v8777,
+html body .obra-evolution-actions-v878193>button.danger{
+  background:transparent!important;border:1px solid transparent!important;color:var(--co-ink-3)!important;box-shadow:none!important;font-weight:500!important}
+html body button.danger.small-v8777:hover,
+html body .obra-evolution-actions-v878193>button.danger:hover{background:#FBE5E3!important;border-color:#F0B9B4!important;color:#B93A33!important}
+}
+@media screen and (max-width:900px){
+  html body .home-kpis-v878251{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .home-donut-v878251{grid-template-columns:minmax(0,1fr);justify-items:center}
+  html body .home-legend-v878251{width:100%}
+}
+
+/* --- V87.251 · Retocs de pantalles ------------------------------------ */
+@media screen{
+/* Apartats: sense aspecte de botó antic */
+html body .obra-section-group-v878251 button{background:transparent!important;border:0!important;box-shadow:none!important;padding:7px 10px!important;margin:0!important;min-height:0!important;text-align:left!important;width:100%!important}
+html body .obra-section-group-v878251 button:hover{background:var(--co-surface-2)!important}
+html body .obra-section-group-v878251 button.active{background:var(--co-accent-soft)!important;color:var(--co-accent-ink)!important}
+
+/* Usuari i capçalera d'obra: etiquetes clares */
+html body .sidebar .active-user-v8780{background:var(--co-surface-2)!important;color:var(--co-ink-2)!important;border:1px solid var(--co-line)!important}
+html body .obra-head-main-v87105>small{background:var(--co-surface-2)!important;color:var(--co-ink-2)!important;border:1px solid var(--co-line)!important;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace!important;font-weight:500!important}
+
+/* Resum de l'obra: caixes blanques; el color només marca el tipus */
+html body .resum-title-v8748,html body .resum-title-v878137{background:var(--co-surface)!important;border:1px solid var(--co-line)!important;box-shadow:var(--co-shadow)!important}
+html body .obra-today-card-v878137,html body .side-card-v8748{background:var(--co-surface)!important;border:1px solid var(--co-line)!important;box-shadow:var(--co-shadow)!important;position:relative}
+html body .obra-today-card-v878137 small,html body .side-card-v8748 small{display:flex!important;align-items:center;gap:6px;color:var(--co-ink-3)!important;font-weight:600!important;letter-spacing:.06em}
+html body .obra-today-card-v878137 small::before,html body .side-card-v8748 small::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--co-s0);flex:none}
+html body .obra-today-card-v878137.blue small::before,html body .side-card-v8748.blue small::before{background:var(--co-s1)}
+html body .obra-today-card-v878137.green small::before,html body .side-card-v8748.green small::before{background:var(--co-s3)}
+html body .obra-today-card-v878137.amber small::before,html body .side-card-v8748.amber small::before{background:var(--co-s4)}
+html body .obra-today-card-v878137 b,html body .side-card-v8748 b{color:var(--co-ink)!important}
+
+/* Llistes de certificacions i activitat: files netes */
+html body .resum-cert-row-v87216{display:grid!important;grid-template-columns:minmax(110px,1fr) 96px minmax(110px,auto) minmax(0,1.1fr)!important;gap:12px!important;align-items:center!important;border:0!important;border-bottom:1px solid var(--co-line)!important;border-left:3px solid var(--co-s3)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:9px 12px!important;margin:0!important;min-height:0!important}
+html body .resum-cert-row-v87216 em{font-size:12px!important;color:var(--co-ink-3)!important;text-align:right;font-style:normal}
+html body .resum-cert-row-v87216 strong{text-align:right;font-variant-numeric:tabular-nums}
+html body .activity-row-v8748{border:0!important;border-bottom:1px solid var(--co-line)!important;border-left:3px solid var(--co-s1)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;margin:0!important}
+
+/* Tasques de l'Inici: targeta blanca amb franja de color segons termini */
+html body .task-card-pro-v878140{background:var(--co-surface)!important;border:1px solid var(--co-line)!important;border-left:4px solid var(--co-s0)!important;border-radius:10px!important;box-shadow:none!important}
+html body .task-card-pro-v878140.overdue{border-left-color:#B93A33!important}
+html body .task-card-pro-v878140.critical{border-left-color:#E06A1B!important}
+html body .task-card-pro-v878140.soon{border-left-color:#C98A12!important}
+html body .task-card-pro-v878140.ok{border-left-color:#2C7A4B!important}
+html body .task-card-pro-v878140 .task-colorbar-v878140{display:none!important}
+html body .client-task-group-v878140{background:transparent!important;border:0!important;box-shadow:none!important}
+html body .home-collapsed-note-v878140 b{background:var(--co-accent-soft)!important;color:var(--co-accent-ink)!important}
+
+/* Llistat d'expedients: files planes, text alineat a l'esquerra */
+html body table.exp-table-v8742{border-collapse:collapse!important;border-spacing:0!important}
+html body table.exp-table-v8742 th{background:var(--co-surface-2)!important;color:var(--co-ink-3)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.06em;text-align:left!important;border:0!important;border-bottom:1px solid var(--co-line)!important}
+html body table.exp-table-v8742 td{background:transparent!important;border:0!important;border-bottom:1px solid var(--co-line)!important;box-shadow:none!important;text-align:left!important;border-radius:0!important}
+html body table.exp-table-v8742 tbody tr{background:var(--co-surface)!important;box-shadow:none!important;border-radius:0!important}
+html body table.exp-table-v8742 tbody tr:hover{background:#F6F9FA!important}
+html body table.exp-table-v8742 td strong{font-weight:600}
+html body table.exp-table-v8742 .exp-code-v8739{background:transparent!important;padding:0!important;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace!important;font-size:12px!important;color:var(--co-ink-2)!important;font-weight:500!important}
+}
+@media screen and (min-width:1101px){
+  html body .resum-dashboard-v878137{grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr)!important}
+  html body .obra-today-grid-v878137{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media screen{
+  html body table.exp-table-v8742 td,html body table.exp-table-v8742 th{padding:10px 10px!important;vertical-align:middle!important}
+  html body table.exp-table-v8742 .exp-status-cell-v878247{min-width:0!important;display:block!important}
+  html body table.exp-table-v8742 .exp-status-cell-v878247 select{width:100%!important;max-width:150px!important;min-width:0!important}
+  html body .resum-cert-row-v87216{grid-template-columns:minmax(100px,1fr) 92px minmax(100px,auto) minmax(90px,1fr)!important}
+}
+@media screen{
+  html body table.exp-table-v8742{table-layout:auto!important;width:100%!important}
+  html body table.exp-table-v8742 col{width:auto!important}
+  html body table.exp-table-v8742 th:nth-child(8),html body table.exp-table-v8742 td:nth-child(8){min-width:165px!important;width:165px!important}
+  html body table.exp-table-v8742 .exp-status-cell-v878247 select{max-width:none!important}
+  html body table.exp-table-v8742 th:nth-child(9),html body table.exp-table-v8742 td:nth-child(9){width:84px!important;text-align:right!important}
+  html body table.exp-table-v8742 td{overflow-wrap:anywhere}
+}
+@media screen{
+  html body table.exp-table-v8742{table-layout:fixed!important}
+  html body table.exp-table-v8742 td{overflow-wrap:break-word!important}
+  html body table.exp-table-v8742 th:nth-child(1){width:104px!important}
+  html body table.exp-table-v8742 th:nth-child(2){width:66px!important}
+  html body table.exp-table-v8742 th:nth-child(3){width:146px!important}
+  html body table.exp-table-v8742 th:nth-child(4){width:118px!important}
+  html body table.exp-table-v8742 th:nth-child(6){width:116px!important}
+  html body table.exp-table-v8742 th:nth-child(7){width:132px!important}
+  html body table.exp-table-v8742 th:nth-child(8){width:160px!important;min-width:0!important}
+  html body table.exp-table-v8742 td:nth-child(8){min-width:0!important;width:auto!important}
+  html body table.exp-table-v8742 th:nth-child(9){width:82px!important}
+}
+@media screen{
+  html body table.exp-table-v8742{min-width:0!important}
+  html body table.exp-table-v8742 th:nth-child(3){width:132px!important}
+  html body table.exp-table-v8742 th:nth-child(7){width:124px!important}
+  html body table.exp-table-v8742 th:nth-child(8){width:150px!important}
+}
+@media screen{
+  html body .exp-table-wrap-v8741{padding:0 12px 8px!important}
+  html body table.exp-table-v8742{margin:0!important;width:100%!important}
+}
+@media screen{
+  html body table.exp-table-v8742 th,html body table.exp-table-v8742 td{min-width:0!important}
+}
+@media screen{html body table.exp-table-v8742 th:nth-child(5){width:auto!important}}
+@media screen and (max-width:1180px){html body table.exp-table-v8742{min-width:980px!important}}
+@media screen{
+  /* Botons d'esborrar: contorn vermell suau en lloc de bloc rosa */
+  html body button.danger{background:var(--co-surface)!important;border:1px solid #EBC3BF!important;color:#B93A33!important;box-shadow:none!important;font-weight:600!important;border-radius:var(--co-radius-sm)!important}
+  html body button.danger:hover{background:#FBE5E3!important;border-color:#E09A93!important}
+  /* Mòbil: botó de menú clar */
+  html body .mobile-top .hamb{background:var(--co-surface-2)!important;border:1px solid var(--co-line)!important;color:var(--co-ink)!important;border-radius:var(--co-radius-sm)!important;box-shadow:none!important}
+  html body .mobile-top .hamb svg{color:var(--co-ink)!important;stroke:var(--co-ink)!important}
+  /* Panell d'espai amb marge interior */
+  html body .storage-panel-v878250{padding:14px 18px!important}
+}
+
+/* --- V87.252 · Indicador «Desat a l'ordinador» ------------------------ */
+.local-save-badge-v878252{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:6000;display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:99px;background:var(--co-surface,#fff);border:1px solid var(--co-line,#DCE3E7);box-shadow:0 2px 8px rgba(21,35,40,.08);font:500 11.5px/1.2 var(--app-font,system-ui,sans-serif);color:var(--co-ink-2,#4B5D63);pointer-events:auto}
+.local-save-badge-v878252::before{content:"";width:8px;height:8px;border-radius:50%;background:#2C7A4B;flex:none}
+.local-save-badge-v878252[data-state="saving"]::before{background:#C98A12}
+.local-save-badge-v878252[data-state="error"]{color:#B93A33;border-color:#EBC3BF;background:#FFF6F5}
+.local-save-badge-v878252[data-state="error"]::before{background:#B93A33}
+@media print{.local-save-badge-v878252{display:none!important}}
+
+/* --- V87.252 · Fitxa de l'obra ------------------------------------------ */
+@media screen{
+html body .resum-title-v878137{display:none!important}
+.obra-hero-v878252{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}
+.obra-hero-top-v878252{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;background:var(--co-surface);border:1px solid var(--co-line);border-radius:var(--co-radius);box-shadow:var(--co-shadow);padding:16px}
+.obra-hero-photo-v878252{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--co-surface-2);max-width:100%}
+.obra-hero-photo-v878252 img{width:100%;height:100%;object-fit:cover;display:block}
+.obra-hero-photo-v878252 .ph{width:100%;height:100%;display:grid;place-items:center;background:repeating-linear-gradient(135deg,var(--co-surface-2) 0 12px,#E8EEF0 12px 24px)}
+.obra-hero-photo-v878252 .ph span{font:700 34px var(--co-display);color:var(--co-ink-3)}
+.obra-hero-photo-v878252 button{position:absolute;left:8px;bottom:8px;background:rgba(255,255,255,.94)!important;border:1px solid var(--co-line)!important;color:var(--co-ink)!important;border-radius:8px!important;padding:6px 10px!important;font:600 12px var(--app-font)!important;cursor:pointer;box-shadow:none!important}
+.obra-hero-info-v878252{display:flex;flex-direction:column;gap:8px;min-width:0}
+.obra-hero-info-v878252 .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--co-ink-2)}
+.obra-hero-info-v878252 .meta .code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:12px;background:var(--co-surface-2);border:1px solid var(--co-line);padding:2px 7px;border-radius:6px}
+.obra-hero-info-v878252 .meta .st{padding:3px 9px;border-radius:99px;font-weight:600;background:var(--co-accent-soft);color:var(--co-accent-ink)}
+.obra-hero-info-v878252 h2{margin:2px 0 0;font:700 26px/1.15 var(--co-display)!important;color:var(--co-ink)}
+.obra-hero-info-v878252 p{margin:0;color:var(--co-ink-2)}
+.obra-hero-info-v878252 .hint{color:var(--co-ink-3)}
+.obra-hero-progress-v878252{display:flex;flex-direction:column;gap:5px;max-width:560px;margin-top:4px}
+.obra-hero-progress-v878252 .lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--co-ink-2)}
+.obra-hero-progress-v878252 .lbl b{color:var(--co-ink);font-variant-numeric:tabular-nums}
+.obra-hero-progress-v878252 .track{height:10px;border-radius:99px;background:var(--co-surface-2);overflow:hidden}
+.obra-hero-progress-v878252 .track i{display:block;height:100%;border-radius:inherit;background:var(--co-s3)}
+.obra-hero-progress-v878252 .sub{font-size:12.5px;color:var(--co-ink-3);font-variant-numeric:tabular-nums}
+.obra-hero-quick-v878252{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:6px}
+.obra-hero-quick-v878252 button{background:var(--co-surface)!important;border:1px solid var(--co-line-strong)!important;color:var(--co-ink)!important;border-radius:8px!important;padding:7px 12px!important;font:600 13px var(--app-font)!important;cursor:pointer;box-shadow:none!important}
+.obra-hero-quick-v878252 button:hover{border-color:var(--co-accent)!important;color:var(--co-accent-ink)!important;background:var(--co-accent-soft)!important}
+.obra-hero-kpis-v878252{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--co-line);border:1px solid var(--co-line);border-radius:var(--co-radius);overflow:hidden;box-shadow:var(--co-shadow)}
+.obra-hero-kpis-v878252>div{background:var(--co-surface);padding:13px 16px;display:flex;flex-direction:column;gap:3px}
+.obra-hero-kpis-v878252 small{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--co-ink-3)}
+.obra-hero-kpis-v878252 b{font:700 22px/1.15 var(--co-display);color:var(--co-ink)}
+.obra-hero-kpis-v878252 span{font-size:12px;color:var(--co-ink-2)}
+.obra-hero-charts-v878252{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:14px}
+.obra-hero-charts-v878252 .chart-card{background:var(--co-surface);border:1px solid var(--co-line);border-radius:var(--co-radius);box-shadow:var(--co-shadow);padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.obra-hero-charts-v878252 .chart-head{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.obra-hero-charts-v878252 .chart-head span{color:var(--co-ink-3)}
+.obra-hero-charts-v878252 .donut-row{display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px;align-items:center}
+.obra-hero-charts-v878252 svg{width:130px;height:130px}
+.obra-hero-charts-v878252 text.n{font:700 22px var(--co-display);fill:var(--co-ink)}
+.obra-hero-charts-v878252 text.l{font:500 10px var(--app-font);fill:var(--co-ink-3)}
+.obra-hero-charts-v878252 .legend{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:12.5px}
+.obra-hero-charts-v878252 .legend div{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:8px;align-items:center}
+.obra-hero-charts-v878252 .legend i{width:10px;height:10px;border-radius:3px}
+.obra-hero-charts-v878252 .legend span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--co-ink-2)}
+.obra-hero-charts-v878252 .legend b{font-variant-numeric:tabular-nums;font-weight:600}
+.cert-cols-v878252{display:flex;align-items:stretch;gap:6px;height:150px;overflow-x:auto;padding-bottom:2px}
+.cert-cols-v878252 button{all:unset;cursor:pointer;flex:1 0 34px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:34px}
+.cert-cols-v878252 .val{font-size:11px;color:var(--co-ink);font-variant-numeric:tabular-nums;white-space:nowrap;height:14px}
+.cert-cols-v878252 .bar{flex:1;width:100%;display:flex;align-items:flex-end;border-bottom:1px solid var(--co-line-strong)}
+.cert-cols-v878252 .bar i{display:block;width:100%;background:#C9D7EE;border-radius:4px 4px 0 0}
+.cert-cols-v878252 .bar i.last{background:var(--co-s1)}
+.cert-cols-v878252 button:hover .bar i{background:var(--co-s1)}
+.cert-cols-v878252 .lab{font-size:11px;color:var(--co-ink-3)}
+}
+@media screen and (max-width:900px){
+.obra-hero-top-v878252{grid-template-columns:minmax(0,1fr)}
+.obra-hero-kpis-v878252{grid-template-columns:repeat(2,minmax(0,1fr))}
+.obra-hero-charts-v878252{grid-template-columns:minmax(0,1fr)}
+}
+
+/* --- V87.252 · Gantt de l'obra ------------------------------------------ */
+@media screen{
+.gantt-sum-v878252{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:4px 0 12px}
+.gantt-sum-v878252 small{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--co-ink-3)}
+.gantt-sum-v878252 b{font:700 18px var(--co-display);color:var(--co-ink)}
+.gantt-legend-v878252{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--co-ink-2);padding-bottom:10px}
+.gantt-legend-v878252 span{display:inline-flex;align-items:center;gap:6px}
+.gantt-legend-v878252 i{display:inline-block;width:18px;height:9px;border-radius:3px}
+.gantt-legend-v878252 i.plan{border:1.5px dashed var(--co-ink-3);background:transparent}
+.gantt-legend-v878252 i.real{background:#C9D7EE}
+.gantt-legend-v878252 i.done{background:var(--co-s1)}
+.gantt-legend-v878252 i.mark{width:3px;height:12px;background:var(--co-ink)}
+.gantt-legend-v878252 i.today{width:2px;height:14px;background:#B93A33}
+.gantt-scroll-v878252{overflow-x:auto}
+.gantt-grid-v878252{min-width:900px;display:flex;flex-direction:column}
+.gantt-head-v878252,.gantt-row-v878252{display:grid!important;grid-template-columns:minmax(200px,1.3fr) 100px 76px minmax(420px,3fr);gap:10px;align-items:center;width:100%;text-align:left}
+.gantt-head-v878252{position:sticky;top:0;z-index:2;background:var(--co-surface);border-bottom:1px solid var(--co-line);padding:6px 6px 8px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--co-ink-3)}
+.gantt-row-v878252{all:unset;box-sizing:border-box;cursor:pointer;padding:7px 6px;border-bottom:1px solid var(--co-line);font-size:13px}
+.gantt-row-v878252:hover{background:#F6F9FA}
+.gantt-row-v878252.part{cursor:default;font-size:12px;color:var(--co-ink-2);background:#FAFCFC;padding-left:26px}
+.gantt-row-v878252 .cap{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gantt-row-v878252 .cap b{color:var(--co-ink-3);font-weight:500;margin-right:4px}
+.gantt-row-v878252 code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:11px;color:var(--co-ink-3)}
+.gantt-head-v878252 .num,.gantt-row-v878252 .num{text-align:right;font-variant-numeric:tabular-nums}
+.gantt-row-v878252 .pct{color:var(--co-ink-2)}
+.gantt-track-v878252{position:relative;height:22px}
+.gantt-track-v878252.small{height:16px}
+.gantt-track-v878252.head{height:34px}
+.gantt-track-v878252 .grid{position:absolute;top:0;bottom:0;width:1px;background:var(--co-line)}
+.gantt-track-v878252 .month{position:absolute;top:0;transform:translateX(3px);font-size:10.5px;letter-spacing:.02em;text-transform:none;color:var(--co-ink-3);white-space:nowrap}
+.gantt-track-v878252 .cert{position:absolute;bottom:0;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--co-ink-2);text-transform:none;letter-spacing:0}
+.gantt-track-v878252 .cert.last{color:var(--co-s1)}
+.gantt-track-v878252 .plan{position:absolute;top:2px;bottom:2px;border:1.5px dashed var(--co-ink-3);border-radius:5px}
+.gantt-track-v878252 .real{position:absolute;top:5px;bottom:5px;background:#C9D7EE;border-radius:4px;overflow:hidden}
+.gantt-track-v878252.small .real{top:4px;bottom:4px}
+.gantt-track-v878252 .real em{display:block;height:100%;background:var(--co-s1)}
+.gantt-track-v878252 .mark{position:absolute;top:2px;bottom:2px;width:2px;margin-left:-1px;background:var(--co-ink);opacity:.55}
+.gantt-track-v878252 .today{position:absolute;top:-6px;bottom:-6px;width:2px;margin-left:-1px;background:#B93A33;opacity:.75}
+.gantt-track-v878252.head .today em{position:absolute;top:0;left:4px;font-style:normal;font-size:10px;color:#B93A33;text-transform:none;letter-spacing:0}
+.gantt-track-v878252 .none{position:absolute;left:4px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--co-ink-3)}
+.gantt-note-v878252{margin:12px 0 0;font-size:12px;color:var(--co-ink-3)}
+}
+@media screen and (max-width:900px){.gantt-sum-v878252{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media screen{
+html body .gantt-v878252 .gantt-head-v878252,
+html body .gantt-v878252 .gantt-row-v878252{display:grid!important;grid-template-columns:minmax(200px,1.3fr) 100px 76px minmax(420px,3fr)!important;gap:10px!important;align-items:center!important;width:100%!important;min-height:0!important;margin:0!important;border-radius:0!important;box-shadow:none!important;background:transparent;text-align:left!important;justify-content:stretch!important;flex-direction:initial!important}
+html body .gantt-v878252 .gantt-row-v878252{border:0!important;border-bottom:1px solid var(--co-line)!important;padding:7px 6px!important;color:var(--co-ink)!important;font:400 13px var(--app-font)!important}
+html body .gantt-v878252 .gantt-row-v878252.part{font-size:12px!important;color:var(--co-ink-2)!important;background:#FAFCFC!important;padding-left:26px!important}
+html body .gantt-v878252 .gantt-row-v878252:hover{background:#F6F9FA!important}
+html body .gantt-v878252 .gantt-sum-v878252{padding:4px 2px 12px}
+}
+@media screen{html body .gantt-v878252 .gantt-row-v878252.part{padding-left:6px!important}html body .gantt-v878252 .gantt-row-v878252.part .cap{padding-left:20px}html body .gantt-v878252 .gantt-row-v878252 .num.over{color:#B93A33;font-weight:600}}
+
+@media screen{html body{font-feature-settings:"cv11","ss01";letter-spacing:-.003em}html body h1,html body h2,html body h3,html body .brand,html body .card-head h2{letter-spacing:-.018em!important}html body .home-head-title-v878251 h1,html body .obra-hero-info-v878252 h2{letter-spacing:-.025em!important}}

@@ -1,0 +1,41 @@
+/* =====================================================================
+   V87.257 · Núvol: pantalla d'entrada, rètol i apartat de Configuració
+   ===================================================================== */
+.cloud-overlay-v878257{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:16px;background:var(--co-bg,#F3F6F7);font-family:var(--app-font,"Inter",system-ui,sans-serif);color:var(--co-ink,#152328)}
+.cloud-overlay-v878257 .box{width:min(420px,100%);background:#fff;border:1px solid var(--co-line,#DCE3E7);border-radius:16px;padding:28px 24px;box-shadow:0 24px 60px -30px rgba(21,35,40,.35);display:flex;flex-direction:column;gap:12px}
+.cloud-overlay-v878257 .logo{width:44px;height:44px;border-radius:12px;background:var(--co-accent,#2563EB);color:#fff;display:grid;place-items:center;font:700 16px var(--app-font,system-ui)}
+.cloud-overlay-v878257 h1{margin:4px 0 0;font:600 22px var(--co-display,system-ui);letter-spacing:-.01em}
+.cloud-overlay-v878257 p{margin:0;font-size:14px;line-height:1.5;color:var(--co-ink-2,#4B5D63)}
+.cloud-overlay-v878257 form{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.cloud-overlay-v878257 label{display:flex;flex-direction:column;gap:5px;font:600 12.5px var(--app-font,system-ui);color:var(--co-ink-2,#4B5D63)}
+.cloud-overlay-v878257 input{height:44px;padding:0 12px;border:1px solid var(--co-line-strong,#C5D0D6);border-radius:10px;font:16px var(--app-font,system-ui);color:var(--co-ink,#152328);background:#fff}
+.cloud-overlay-v878257 input:focus{outline:2px solid var(--co-accent,#2563EB);outline-offset:1px;border-color:transparent}
+.cloud-overlay-v878257 .err{min-height:1em;color:#B93A33;font-size:13.5px}
+.cloud-overlay-v878257 button{font:600 15px var(--app-font,system-ui);cursor:pointer}
+.cloud-overlay-v878257 button.primary{height:46px;border:0;border-radius:10px;background:var(--co-accent,#2563EB);color:#fff}
+.cloud-overlay-v878257 button.primary:disabled{opacity:.6;cursor:wait}
+.cloud-overlay-v878257 button.link{border:0;background:transparent;color:var(--co-ink-2,#4B5D63);font-weight:500;font-size:13.5px;text-decoration:underline;padding:6px}
+.cloud-overlay-v878257 .choices{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.cloud-overlay-v878257 .choices button{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px;border:1px solid var(--co-line-strong,#C5D0D6);border-radius:12px;background:#fff;color:var(--co-ink,#152328)}
+.cloud-overlay-v878257 .choices button:hover{border-color:var(--co-accent,#2563EB);background:var(--co-accent-soft,#EAF1FD)}
+.cloud-overlay-v878257 .choices span{font-weight:400;font-size:13px;line-height:1.45;color:var(--co-ink-2,#4B5D63)}
+
+.cloud-badge-v878257{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:6000;display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:99px;background:var(--co-surface,#fff);border:1px solid var(--co-line,#DCE3E7);box-shadow:0 2px 8px rgba(21,35,40,.08);font:500 11.5px/1.2 var(--app-font,system-ui,sans-serif);color:var(--co-ink-2,#4B5D63);cursor:pointer;max-width:calc(100vw - 24px)}
+.cloud-badge-v878257.over-local{bottom:calc(44px + env(safe-area-inset-bottom,0px))}
+.cloud-badge-v878257::before{content:"";width:8px;height:8px;border-radius:50%;background:#2a78d6;flex:none}
+.cloud-badge-v878257[data-state="busy"]::before{background:#C98A12}
+.cloud-badge-v878257[data-state="offline"]{color:#7A5200;border-color:#F1D9A0;background:#FFF9EC}
+.cloud-badge-v878257[data-state="offline"]::before{background:#C98A12}
+.cloud-badge-v878257[data-state="error"],.cloud-badge-v878257[data-state="login"]{color:#B93A33;border-color:#EBC3BF;background:#FFF6F5}
+.cloud-badge-v878257[data-state="error"]::before,.cloud-badge-v878257[data-state="login"]::before{background:#B93A33}
+.cloud-badge-v878257[data-state="remote"]{background:var(--co-accent,#2563EB);color:#fff;border-color:var(--co-accent,#2563EB)}
+.cloud-badge-v878257[data-state="remote"]::before{background:#fff}
+@media print{.cloud-badge-v878257,.cloud-overlay-v878257{display:none!important}}
+
+html body .cloud-panel-v878257 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+html body .cloud-panel-v878257 .st{display:flex;flex-direction:column;gap:3px}
+html body .cloud-panel-v878257 .st b{font-size:15px;color:var(--co-ink)}
+html body .cloud-panel-v878257 .st span{font-size:13px;color:var(--co-ink-2)}
+html body .cloud-panel-v878257 .acts{display:flex;flex-wrap:wrap;gap:8px}
+html body .cloud-panel-v878257 details{margin-top:12px}
+html body .cloud-panel-v878257 details summary{cursor:pointer;font-size:13px;color:var(--co-ink-2)}

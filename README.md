@@ -1,22 +1,119 @@
-# APP Control d’Obres V87.249
+# APP Control d’Obres V87.257
+
+## Núvol V87.257
+
+- Dades compartides entre ordinador, mòbil i tauleta a través de Supabase, amb
+  correu i contrasenya (Supabase Auth) i regles per usuari.
+- Sincronització automàtica per peces (cada expedient per separat), funciona
+  sense cobertura i es posa al dia en tornar.
+- Preparació: supabase/aco_nuvol_v87257.sql i INSTRUCCIONS_V87_257.txt.
+## Agenda, factures des de les hores, pressupost amb IA i mòbil V87.256
+
+- Agenda tipus Google Calendar: vistes Dia, Setmana, Mes i Llista; cites amb
+  tipus i color, hora d’inici i de final, expedient, lloc, notes i avís; es poden
+  arrossegar per canviar-les de dia o d’hora; les tasques amb data hi surten.
+- Una cita d’un expedient pot «comptar com a hores de feina»: queda apuntada a la
+  Gestió del temps, pendent de facturar.
+- Factures: bloc «Pendent de facturar» amb les hores de cada expedient; «Fer
+  factura» crea la factura amb el detall i marca aquelles hores com a facturades.
+  «+ Apuntar visita o feina» per entrar hores a mà.
+- Pressupost amb IA (ChatGPT, Claude, Gemini): l’app prepara les instruccions,
+  enganxes la resposta i la converteix en pressupost amb l’importador de sempre.
+- OBRIR_APP_MOBIL.bat: el mòbil o la tauleta a la mateixa wifi fan servir les
+  dades de l’ordinador; es desa només el que canvia i cada aparell es posa al dia.
+## Certificacions, gestió del temps i tasques vençudes V87.255
+
+- Certificacions: barra uniforme, «+ Afegir feina» amb tres opcions explicades i
+  columnes amb noms entenedors.
+- Gestió del temps nova: per període, client i expedient; hores, import i pendent
+  de facturar; gràfic per dia; entrades manuals; CSV.
+- El comptador automàtic desa al registre d’hores de cada obra.
+- Inici: revisió guiada de les tasques vençudes.
+
+## Pressupost, certificacions, nou expedient i comptador V87.254
+
+- Pestanyes pròpies de Pressupost i Certificacions (i Facturació i Seguiment
+  econòmic dins «Més») en lloc de «Gestió obra» amb subpestanyes.
+- Pressupost amb files netes i capçalera compacta; certificacions amb «—» on no hi
+  ha import.
+- Nou expedient en un pas (client, nom, tipus de feina, població).
+- Comptador de temps automàtic en entrar a una obra.
+
+## Pressupost net V87.253
+
+- Les partides del pressupost amb hores d’administració ja no perden el preu
+  (cas 02.18 de Verbania); les partides creades com a administració no canvien.
+- Avisos reals: certificat per sobre del 100 % i codis repetits. Fora l’avís fals
+  de diferència de suma.
+- Tipografia Inter.
+- Fitxa d’obra amb pestanyes a dalt, franja de seguiment i sense resum repetit.
+- Gantt amb escala dies/setmanes/mesos i planning ràpid o per capítol.
+
+## Desat a l’ordinador, fitxa d’obra i Gantt V87.252
+
+- Amb `OBRIR_APP.bat` les dades es desen soles a
+  `DADES/app-control-obres-DADES-LOCALS.json`, compartit per totes les versions,
+  amb còpia diària a `DADES/COPIES_AUTOMATIQUES`. A Render no canvia res.
+- Fitxa d’obra amb foto, avanç, xifres clau, accessos ràpids i gràfics.
+- Apartat nou «Gantt»: capítols i partides amb les certificacions superposades.
+- Fórmules: IVA 0 % respectat, decimals amb punt a la calculadora d’honoraris i
+  hores amb format català.
+
+## Disseny 2.0 V87.251
+
+- Inici amb salutació, 4 indicadors d’activitat sense imports i un bloc
+  «Resum d’expedients» amb gràfic per estat i barres per client.
+- Apartats de l’obra visibles i d’un clic, agrupats com abans.
+- Llistat d’expedients amb files planes i l’estat en un sol control.
+- Resum de l’obra amb caixes blanques i files netes.
+- Fora l’etiqueta flotant d’usuari; versió discreta; botons d’esborrar suaus.
+- Inclou la memòria segura de la V87.250 i el disseny de la V87.249.
+
+## Memòria segura V87.250
+
+- Les obres es guarden una sola vegada (abans `aco_odata` i una còpia idèntica
+  `aco_odata_core_v87104`). Amb la còpia del 06/10 l’ocupació del navegador
+  passa del 94 % al 61 %.
+- Configuració → «Alliberar espai»: llista el que es pot esborrar, tu tries, i
+  sempre descarrega una còpia JSON abans. Substitueix «Netejar espai local».
+- Cap neteja automàtica pot esborrar obres, expedients, clients, llibreria,
+  capítols ni usuaris.
+- «Importar JSON» ja no deixa obres sense client, a l’any actual o amb el nom
+  «Expedient recuperat…», i ja no buida la paperera de la llibreria.
+- Nova eina «Recuperar expedients des d’una còpia antiga» per tornar el nom i el
+  client als expedients afectats per importacions anteriors.
+
+## Disseny modern V87.249
+
+La V87.249 renova l’aspecte de l’app sense canviar-ne el funcionament. Tot el
+disseny nou és a `src/theme-v87249.css`, que es carrega després de
+`styles.css`.
+
+- Tipografia IBM Plex Sans per al text i Archivo per als títols, incloses a
+  `src/fonts` perquè funcionin sense internet.
+- Els pesos 800/900 de les versions anteriors es dibuixen en seminegre: menys
+  pesat i més llegible. Mida base de 14 px.
+- Menú lateral clar, targetes, botons, camps, taules i finestres amb vores,
+  radis i ombres uniformes.
+- Els documents A4 i la impressió no canvien.
+- `App.jsx` és el mateix de la V87.248; només canvia `app_version`.
+- Les dependències tenen versió fixa en lloc de `latest`.
 
 ## Portal client modular · pressupost, certificacions i llibreria validada
 
-La V87.249 activa per al Mòdul 2 del client les funcions econòmiques que el
+La V87.248 activa per al Mòdul 2 del client les funcions econòmiques que el
 despatx decideixi donar-li, mantenint la resta de l’expedient neta i en
 consulta.
 
-La V87.249 afegeix el filtre real d’obres en execució al panell de rendiments,
+La V87.248 afegeix el filtre real d’obres en execució al panell de rendiments,
 un selector d’estat accessible des del llistat i la fitxa de l’obra i una vista
 operativa amb KPIs, progrés, certificació, hores, actes, fotos i tasques.
 
-La V87.249 també manté la capçalera i les accions del pressupost accessibles
+La V87.248 també manté la capçalera i les accions del pressupost accessibles
 durant el scroll, deixa les accions de capítol i partida al seu costat, elimina
 els avisos tècnics de color taronja de la vista de treball i reforça el guardat
 del preu unitari perquè l’últim canvi escrit es conservi en prémer «Guardar
-canvis». També corregeix el desat immediat del text i del preu dins del
-descompost: sempre es conserva l’última versió escrita, encara que es premi
-«Guardar» just després d’editar la partida.
+canvis».
 
 La V87.246 afegeix el format visual de pressupost a l’Excel exportat, elimina
 duplicats de l’Excel d’origen als Documents i incorpora al portal Socoterm la
