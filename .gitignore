@@ -18,6 +18,9 @@ INSTRUCCIONS_*.txt
 VERSION_CONFIRMATION*.txt
 *.bat
 
+# Configuració personal de Claude (les skills de .claude/skills sí que es pugen)
+.claude/settings.local.json
+
 # Claus i fitxers del sistema
 .env
 .env.*
