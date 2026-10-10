@@ -4635,7 +4635,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/>{empresa878259?.perfil!=="tecnic"&&<MB a={screen==="Albarans"} i={<Camera/>} l="Albarans" on={()=>nav("Albarans")}/>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l="Rendiments" on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Albarans"} i={<Camera/>} l="Albarans" on={()=>nav("Albarans")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l="Rendiments" on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
 {screen!=="Inici"&&<MobileBackBar878146 screen={screen} goBack={()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}}/>}
 {screen==="Inici"&&<Inici clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
@@ -10542,7 +10542,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.259.0",
+    app_version:"87.259.2",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12329,8 +12329,32 @@ function compressImage878259(file,max=1400,quality=0.72){
     img.src=url;
   });
 }
-function albaraPrompt878259(){
-  return ["Llegeix l’albarà de la foto que t’adjunto i torna’m les dades EXACTAMENT en aquest format:",
+function albaraPdfKey878259(id){return `aco_albara_pdf_v878259_${id}`}
+function readAsDataUrl878259(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(file)})}
+// PDF de l'albarà: primera pàgina com a imatge i el text (si en té) per a la IA.
+async function albaraFromPdf878259(file){
+  if(file.size>4*1024*1024)throw new Error("El PDF fa més de 4 MB. Redueix-lo o fes-ne una foto.");
+  const pdfData=await readAsDataUrl878259(file);
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const page=await pdf.getPage(1);const v0=page.getViewport({scale:1});const vp=page.getViewport({scale:Math.min(2,1400/Math.max(v0.width,v0.height))});
+  const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+  await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+  let text="";
+  for(let i=1;i<=Math.min(pdf.numPages,3);i++){
+    const p=await pdf.getPage(i);const tc=await p.getTextContent();
+    const rows=[];
+    tc.items.filter(x=>String(x.str||"").trim()).forEach(x=>{const y=x.transform[5],xx=x.transform[4];let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r){r={y,items:[]};rows.push(r)}r.items.push({x:xx,s:x.str})});
+    rows.sort((a,b)=>b.y-a.y).forEach(r=>{text+=r.items.sort((a,b)=>a.x-b.x).map(t=>t.s.trim()).join("   ")+"\n"});
+  }
+  return {foto:c.toDataURL("image/jpeg",0.72),pdf:pdfData,pdfNom:file.name,pdfText:text.trim()};
+}
+function openDataUrl878259(dataUrl){try{const [h,b]=String(dataUrl).split(",");const mime=(h.match(/data:([^;]+)/)||[])[1]||"application/pdf";const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);const url=URL.createObjectURL(new Blob([u],{type:mime}));window.open(url,"_blank","noopener");setTimeout(()=>URL.revokeObjectURL(url),60000)}catch(e){alert("No s’ha pogut obrir el PDF.")}}
+function albaraPrompt878259(text=""){
+  if(text&&text.length>40)return ["Aquest és el text d’un albarà (extret del PDF). Torna’m les dades EXACTAMENT en aquest format:",...albaraFormat878259(),"","TEXT DE L’ALBARÀ:",text.slice(0,6000)].join("\n");
+  return ["Llegeix l’albarà del fitxer o la foto que t’adjunto i torna’m les dades EXACTAMENT en aquest format:",...albaraFormat878259()].join("\n");
+}
+function albaraFormat878259(){
+  return [
   "",
   "Proveïdor: …",
   "Número: …",
@@ -12343,24 +12367,92 @@ function albaraPrompt878259(){
   "|---|---|---|---|---|",
   "| … | … | … | … | … |",
   "",
-  "Normes: números amb coma decimal i sense el símbol €; una fila per cada material o línia de l’albarà; si una dada no es llegeix bé, escriu «?»."].join("\n");
+  "Normes: números amb coma decimal i sense el símbol €; una fila per cada material o línia de l’albarà; si una dada no es llegeix bé, escriu «?»."];
+}
+function albaraDate878259(v){const iso0=String(v||"").match(/^\s*(\d{4})-(\d{2})-(\d{2})/);if(iso0)return iso0[1]+"-"+iso0[2]+"-"+iso0[3];const d=String(v||"").match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);if(d){const y=d[3].length===2?"20"+d[3]:d[3];return `${y}-${d[2].padStart(2,"0")}-${d[1].padStart(2,"0")}`}const iso=String(v||"").match(/(\d{4})-(\d{2})-(\d{2})/);return iso?iso[0]:""}
+// Separa una fila de taula: barres «|» (markdown), tabuladors (taula copiada de ChatGPT) o 2+ espais.
+function albaraCells878259(line){
+  const l=String(line||"").replace(/\*\*/g,"").trim();
+  if(!l||/^[|:\-\s\t]+$/.test(l))return null;
+  let c=null;
+  if(l.includes("|"))c=l.replace(/^\|/,"").replace(/\|$/,"").split("|");
+  else if(l.includes("\t"))c=l.split("\t");
+  else if(/\S {2,}\S/.test(l))c=l.split(/ {2,}/);
+  return c?c.map(x=>x.trim()):null;
 }
 function parseAlbara878259(text){
-  const t=String(text||"");
-  const field=re=>{const m=t.match(re);return m?m[1].trim().replace(/\*\*/g,""):""};
-  const out={proveidor:field(/prove[ïi]dor\s*:\s*(.+)/i),numero:field(/n[úu]mero\s*:\s*(.+)/i),data:"",base:aiNum878256(field(/base\s+imposable\s*:\s*(.+)/i)),iva:aiNum878256(field(/iva\s*%?\s*:\s*(.+)/i)),total:aiNum878256(field(/total\s*:\s*(.+)/i)),linies:[]};
-  const d=field(/data\s*:\s*(.+)/i).match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
-  if(d){const y=d[3].length===2?"20"+d[3]:d[3];out.data=`${y}-${d[2].padStart(2,"0")}-${d[1].padStart(2,"0")}`}
-  t.split(/\r?\n/).forEach(line=>{
-    const l=line.trim();if(!l.includes("|")||/^[|:\-\s]+$/.test(l))return;
-    const c=l.replace(/^\|/,"").replace(/\|$/,"").split("|").map(x=>x.replace(/\*\*/g,"").trim());
-    if(c.length<5||/^concepte$/i.test(c[0]))return;
-    const q=aiNum878256(c[1]),p=aiNum878256(c[3]),imp=aiNum878256(c[4]);
-    if(!c[0]||(!q&&!p&&!imp))return;
-    out.linies.push({concepte:c[0],quantitat:q||1,unitat:c[2]||"ut",preu:p||(q?imp/q:imp),import:imp||q*p});
+  const t=String(text||"").replace(/\r/g,"");
+  const clean=v=>String(v||"").replace(/\*\*|__/g,"").replace(/^[\s:·\-–]+/,"").trim();
+  const field=re=>{const m=t.match(re);return m?clean(m[1]):""};
+  const num=re=>aiNum878256(field(re).replace(/[^\d.,\-]/g," ").trim().split(/\s+/)[0]||"");
+  const out={
+    proveidor:field(/(?:prove[ïi]dor|proveedor|subministrador|supplier)\s*\**\s*:\s*(.+)/i),
+    numero:field(/(?:n[úu]mero(?:\s+d[’']?albar[àa])?|n[ºo°]\s*albar[àa]n?|albar[àa]n?\s*n[ºo°úu.]*)\s*\**\s*:\s*(.+)/i),
+    data:albaraDate878259(field(/(?:data|fecha|date)\s*\**\s*:\s*(.+)/i)),
+    base:num(/(?:base\s+impo\w*|subtotal)\s*\**\s*:\s*(.+)/i),
+    iva:num(/(?:iva|i\.v\.a\.)\s*%?\s*\**\s*:\s*(.+)/i),
+    total:num(/(?:^|\n)\s*\**\s*total(?:\s+(?:amb|con)\s+iva|\s+factura|\s+albar[àa]n?)?\s*\**\s*:\s*(.+)/i),
+    linies:[]
+  };
+  if(out.iva>50)out.iva=21;
+  // Taula: es busca la capçalera per saber quina columna és cada cosa.
+  const rows=t.split("\n").map(albaraCells878259).filter(c=>c&&c.length>=3);
+  const norm=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+  let hi=rows.findIndex(r=>r.some(c=>/concept|descrip|article|material|producte|producto/.test(norm(c))));
+  let col={c:0,q:1,u:2,p:3,i:4};
+  if(hi>=0){const h=rows[hi].map(norm);const f=re=>h.findIndex(x=>re.test(x));col={c:f(/concept|descrip|article|material|producte|producto/),q:f(/quant|cant|qty|unitats|uds/),u:f(/^u(nitat|nidad|t|d)?\.?$|unitat|unidad|ud\.?$/),p:f(/preu|precio|p\.?\s*u/),i:f(/import|total|subtotal/)}}
+  rows.slice(hi+1).forEach(c=>{
+    const g=k=>col[k]>=0?(c[col[k]]??""):"";
+    const concepte=g("c");if(!concepte||/^(total|subtotal|base|iva)\b/i.test(norm(concepte)))return;
+    const q=aiNum878256(g("q")),p=aiNum878256(g("p")),imp=aiNum878256(g("i"));
+    if(!q&&!p&&!imp)return;
+    out.linies.push({concepte,quantitat:q||1,unitat:g("u")||"ut",preu:p||(q?imp/q:imp),import:imp||(q||1)*p});
   });
+  if(!out.base&&out.total&&out.iva)out.base=out.total/(1+out.iva/100);
   if(!out.total&&out.linies.length){const base=out.linies.reduce((s,x)=>s+x.import,0);out.base=out.base||base;out.total=base*(1+(out.iva||21)/100)}
   return out;
+}
+// Lectura directa del text d'un PDF (sense IA): totals, número, data, proveïdor i línies.
+function readAlbaraText878259(text){
+  const t=String(text||"");const lines=t.split("\n").map(x=>x.trim()).filter(Boolean);
+  const amt=v=>aiNum878256(String(v||"").replace(/€/g,""));
+  const A="(\\d{1,3}(?:[.\\s]\\d{3})*,\\d{2}|\\d+[.,]\\d{2})";
+  const pick=(re,all=false)=>{const r=new RegExp(re,"gi");let m,last=null,first=null;while((m=r.exec(t))){if(!first)first=m;last=m}const x=all?last:first;return x?x[1]:""};
+  const total=amt(pick("(?<!sub)total(?:\\s+(?:a\\s+pagar|factura|albar[àa]n?|amb\\s+iva|con\\s+iva|eur|€))?[^0-9\\n]{0,25}"+A,true));
+  const base=amt(pick("(?:base\\s+impo\\w*|subtotal|total\\s+sense\\s+iva|total\\s+sin\\s+iva)[^0-9\\n]{0,25}"+A));
+  const ivaPct=parseFloat(pick("(?:iva|i\\.v\\.a\\.)[^0-9\\n%]{0,10}(\\d{1,2})(?:[.,]\\d+)?\\s*%"))||0;
+  const numero=pick("(?:albar[àa]n?|n[ºo°]\\.?|n[úu]m\\.?|n[úu]mero|document)\\s*(?:n[ºo°úu]m?\\.?|n[úu]mero)?\\s*[:#.]?\\s*([A-Z]{0,4}[-/]?\\d[\\w\\-/]{2,})");
+  const data=albaraDate878259(pick("(\\d{1,2}[\\/.-]\\d{1,2}[\\/.-]\\d{2,4})"));
+  const prov=lines.find(l=>/\b(s\.?\s?l\.?u?|s\.?\s?a\.?u?|s\.?\s?c\.?p?)\b\.?$|\b(sl|slu|sa|sau|scp)\b/i.test(l)&&!/client|destinatari|cliente/i.test(l))||lines[0]||"";
+  const linies=[];
+  lines.forEach(l=>{
+    const m=l.match(/^(.*?[A-Za-zÀ-ÿ].*?)\s{2,}(\d+(?:[.,]\d+)?)\s{2,}(?:([A-Za-z][A-Za-z0-9²³µ]{0,3}\.?)\s{2,})?(\d+(?:[.,]\d+)?)\s{2,}(\d+(?:[.,]\d+)?)\s*€?$/);
+    if(!m)return;const q=amt(m[2]),p=amt(m[4]),imp=amt(m[5]);
+    if(q&&p&&imp&&Math.abs(q*p-imp)<=Math.max(0.05,imp*0.03))linies.push({concepte:m[1].trim(),quantitat:q,unitat:m[3]||"ut",preu:p,import:imp});
+  });
+  return {proveidor:prov.replace(/\s{2,}.*/,"").slice(0,80),numero,data,base:base||(total&&ivaPct?total/(1+ivaPct/100):0),iva:ivaPct||(base&&total?Math.round((total/base-1)*100):0),total,linies};
+}
+// Lectura directa amb IA (funció «llegir-albara» de Supabase). Si no està configurada, retorna null.
+let albaraAiOff878259=false;
+async function readAlbaraAI878259(a){
+  if(albaraAiOff878259||!window.__acoCloud?.callFunction)return null;
+  const src=a.pdf||a.foto;if(!src)return null;
+  const [h,b]=String(src).split(",");const tipus=(h.match(/data:([^;]+)/)||[])[1]||"image/jpeg";
+  try{const r=await window.__acoCloud.callFunction("llegir-albara",{tipus,dades:b,text:String(a.pdfText||"").slice(0,8000)});if(r?.error)throw new Error(r.error);return r}
+  catch(e){if(e.status===404||/not found|requested function/i.test(e.message)){albaraAiOff878259=true;return null}
+    // Sense connexió o sense sessió del núvol: es passa al text del PDF / ChatGPT.
+    if(!e.status)return null;throw e}
+}
+function fillAlbara878259(x,p){
+  const fmt=v=>v?String(Math.round(v*100)/100).replace(".",","):"";
+  return {...x,
+    proveidor:p.proveidor&&p.proveidor!=="?"?p.proveidor:x.proveidor,
+    numero:p.numero&&p.numero!=="?"?p.numero:x.numero,
+    data:albaraDate878259(p.data)||p.data||x.data,
+    base:p.base?fmt(+p.base||aiNum878256(p.base)):x.base,
+    iva:p.iva?String(+p.iva||aiNum878256(p.iva)):x.iva,
+    total:p.total?fmt(+p.total||aiNum878256(p.total)):x.total,
+    linies:Array.isArray(p.linies)&&p.linies.length?p.linies.map(l=>({concepte:l.concepte||"",quantitat:String(l.quantitat??1).replace(".",","),unitat:l.unitat||"ut",preu:fmt(+l.preu||aiNum878256(l.preu)),import:Math.round((+l.import||aiNum878256(l.import)||0)*100)/100})):x.linies};
 }
 function albaraBase878259(a){const b=parseNum8770(a.base);if(b)return b;const t=parseNum8770(a.total);const iva=a.iva===""||a.iva==null?21:parseNum8770(a.iva);return t?t/(1+iva/100):(a.linies||[]).reduce((s,x)=>s+(parseNum8770(x.import)||0),0)}
 
@@ -12369,51 +12461,62 @@ function Albarans878259({obres=[],clients=[],openObra}){
   useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
   const list=useMemo(()=>readAlbarans878259(),[tick]);
   const[obraF,setObraF]=useState("");
+  const[clientF,setClientF]=useState("");
+  const[nomesPendents,setNomesPendents]=useState(false);
   const[month,setMonth]=useState("");
   const[edit,setEdit]=useState(null);
   const fileRef=useRef(null);
   const obresSorted=[...(obres||[])].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0)||String(x.nom||"").localeCompare(String(y.nom||""),"ca"));
-  const rows=list.filter(a=>(!obraF||a.obraId===obraF)&&(!month||String(a.data||"").startsWith(month))).sort((a,b)=>String(b.data||"").localeCompare(String(a.data||"")));
+  const clientOf=a=>{const o=obres.find(x=>x.id===a.obraId);return o?String(o.client||""):""};
+  const cName=id=>(clients||[]).find(c=>String(c.id)===String(id))?.nom||obres.find(o=>String(o.client)===String(id))?.clientNomCompartit||"Sense client";
+  const clientIds=[...new Set(list.map(clientOf).filter(Boolean))];
+  const rows=list.filter(a=>(!obraF||a.obraId===obraF)&&(!clientF||clientOf(a)===clientF)&&(!nomesPendents||!a.facturatClient)&&(!month||String(a.data||"").startsWith(month))).sort((a,b)=>String(b.data||"").localeCompare(String(a.data||"")));
   const total=rows.reduce((s,a)=>s+albaraBase878259(a),0);
+  const pendent=rows.filter(a=>!a.facturatClient).reduce((s,a)=>s+albaraBase878259(a),0);
+  function toggleFacturat(a){writeAlbarans878259(readAlbarans878259().map(x=>x.id===a.id?{...x,facturatClient:!x.facturatClient,facturatAt:!x.facturatClient?new Date().toISOString():""}:x))}
   const byObra={};rows.forEach(a=>{const k=a.obraId||"";(byObra[k]??={obra:obres.find(o=>o.id===k),n:0,base:0});byObra[k].n++;byObra[k].base+=albaraBase878259(a)});
   const groups=Object.values(byObra).sort((a,b)=>b.base-a.base);
   async function newFromPhoto(file){
-    let foto="";
-    if(file){try{foto=await compressImage878259(file)}catch(e){alert(e.message)}}
-    setEdit({id:"alb-"+Date.now(),isNew:true,data:todayISO8743(),obraId:obraF||obresSorted[0]?.id||"",proveidor:"",numero:"",base:"",iva:"21",total:"",linies:[],notes:"",foto});
+    let extra={foto:""};
+    if(file){try{extra=/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)?await albaraFromPdf878259(file):{foto:await compressImage878259(file)}}catch(e){alert(e.message);return}}
+    setEdit({id:"alb-"+Date.now(),isNew:true,data:todayISO8743(),obraId:obraF||obresSorted[0]?.id||"",proveidor:"",numero:"",base:"",iva:"21",total:"",linies:[],notes:"",facturatClient:false,...extra});
   }
   function save(a){
     if(!a.obraId){alert("Tria l’obra on s’imputa l’albarà.");return}
-    const {foto,isNew,...rest}=a;
+    const {foto,pdf,pdfText,isNew,__llegit,...rest}=a;
     if(foto)lsSet8779(albaraFotoKey878259(a.id),foto);
-    const clean={...rest,teFoto:!!foto||!!rest.teFoto,base:String(rest.base??""),total:String(rest.total??""),updatedAt:new Date().toISOString(),createdAt:rest.createdAt||new Date().toISOString()};
+    if(pdf)lsSet8779(albaraPdfKey878259(a.id),pdf);
+    const clean={...rest,teFoto:!!foto||!!rest.teFoto,tePdf:!!pdf||!!rest.tePdf,base:String(rest.base??""),total:String(rest.total??""),updatedAt:new Date().toISOString(),createdAt:rest.createdAt||new Date().toISOString()};
     const cur=readAlbarans878259();
     writeAlbarans878259(cur.some(x=>x.id===a.id)?cur.map(x=>x.id===a.id?clean:x):[clean,...cur]);
     setEdit(null);
   }
-  function remove(a){if(!confirm("Eliminar aquest albarà?"))return;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)))}catch{};setEdit(null)}
-  function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),"")})}
+  function remove(a){if(!confirm("Eliminar aquest albarà?"))return;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)));localStorage.removeItem(lsKey8779(albaraPdfKey878259(a.id)))}catch{};setEdit(null)}
+  function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),""),pdf:a.tePdf?lsGet8779(albaraPdfKey878259(a.id),""):""})}
   const proveidors=[...new Set(list.map(a=>a.proveidor).filter(Boolean))];
   return <div className="albarans-v878259">
     <div className="alb-head">
       <div><span className="eyebrow">Control d’obra</span><h1>Albarans</h1><p>Fes una foto de l’albarà, tria l’obra i el cost dels materials hi queda imputat.</p></div>
       <div className="actions">
         <label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>Fer foto d’un albarà</label>
-        <button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>Entrar sense foto</button>
+        <label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>Adjuntar PDF o imatge</label>
+        <button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>Entrar sense fitxer</button>
       </div>
     </div>
     <div className="alb-filters">
-      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Obra"><option value="">Totes les obres</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
+      {clientIds.length>0&&<select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label="Client"><option value="">Tots els clients</option>{clientIds.map(id=><option key={id} value={id}>{cName(id)}</option>)}</select>}
+      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Obra"><option value="">Totes les obres</option>{obresSorted.filter(o=>!clientF||String(o.client)===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
+      <label className="chk"><input type="checkbox" checked={nomesPendents} onChange={e=>setNomesPendents(e.target.checked)}/>Només pendents de facturar al client</label>
       <input type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label="Mes"/>
       {month&&<button type="button" className="link" onClick={()=>setMonth("")}>Tots els mesos</button>}
     </div>
-    <div className="alb-kpis"><div><small>Material imputat (sense IVA)</small><b>{money(total)}</b><span>{rows.length} albarà{rows.length===1?"":"ns"}</span></div>{groups.slice(0,3).map((g,i)=><div key={i}><small>{g.obra?.nom||"Sense obra"}</small><b>{money(g.base)}</b><span>{g.n} albarà{g.n===1?"":"ns"}</span></div>)}</div>
+    <div className="alb-kpis"><div><small>Material imputat (sense IVA)</small><b>{money(total)}</b><span>{rows.length} {rows.length===1?"albarà":"albarans"}</span></div><div className={pendent>0.005?"warn":""}><small>Pendent de facturar al client</small><b>{money(pendent)}</b><span>{rows.filter(a=>!a.facturatClient).length} {rows.filter(a=>!a.facturatClient).length===1?"albarà":"albarans"}</span></div>{groups.slice(0,3).map((g,i)=><div key={i}><small>{g.obra?.nom||"Sense obra"}</small><b>{money(g.base)}</b><span>{g.n} {g.n===1?"albarà":"albarans"}</span></div>)}</div>
     {rows.length===0?<div className="alb-empty"><b>Encara no hi ha albarans.</b><span>Prem «Fer foto d’un albarà»: al mòbil s’obre la càmera.</span></div>
-    :<div className="alb-list">{rows.map(a=>{const o=obres.find(x=>x.id===a.obraId);return <button type="button" key={a.id} className="alb-row" onClick={()=>open(a)}>
-      <span className="ic">{a.teFoto?"📷":"🧾"}</span>
-      <span className="nm"><b>{a.proveidor||"Proveïdor pendent"}{a.numero?` · ${a.numero}`:""}</b><small>{fmtAppDate8748(a.data)} · {o?.nom||"Sense obra"}{(a.linies||[]).length?` · ${(a.linies||[]).length} línies`:""}</small></span>
-      <span className="num"><b>{money(albaraBase878259(a))}</b><small>sense IVA</small></span>
-    </button>})}</div>}
+    :<div className="alb-list">{rows.map(a=>{const o=obres.find(x=>x.id===a.obraId);return <div key={a.id} className="alb-row" role="button" tabIndex={0} onClick={()=>open(a)} onKeyDown={e=>{if(e.key==="Enter")open(a)}}>
+      <span className="ic">{a.tePdf?"📄":a.teFoto?"📷":"🧾"}</span>
+      <span className="nm"><b>{a.proveidor||"Proveïdor pendent"}{a.numero?` · ${a.numero}`:""}</b><small>{fmtAppDate8748(a.data)} · {o?.nom||"Sense obra"}{o?` · ${cName(o.client)}`:""}{(a.linies||[]).length?` · ${(a.linies||[]).length} línies`:""}</small></span>
+      <span className="num"><b>{money(albaraBase878259(a))}</b><button type="button" className={`fact ${a.facturatClient?"on":""}`} onClick={e=>{e.stopPropagation();toggleFacturat(a)}} title="Marcar si ja l’has facturat o repercutit al client">{a.facturatClient?"Facturat al client":"Pendent de facturar"}</button></span>
+    </div>})}</div>}
     {edit&&<AlbaraEditor878259 a={edit} setA={setEdit} obres={obresSorted} proveidors={proveidors} save={save} remove={remove} close={()=>setEdit(null)} openObra={openObra}/>}
   </div>;
 }
@@ -12425,16 +12528,30 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}
   const linies=a.linies||[];
   const setLine=(i,k,v)=>setA(x=>{const l=[...(x.linies||[])];l[i]={...l[i],[k]:v};if(k==="quantitat"||k==="preu"){const q=parseNum8770(k==="quantitat"?v:l[i].quantitat),p=parseNum8770(k==="preu"?v:l[i].preu);l[i].import=Math.round(q*p*100)/100}return {...x,linies:l}});
   const sumLines=linies.reduce((s,x)=>s+(parseNum8770(x.import)||0),0);
-  async function photo(file){if(!file)return;try{set("foto",await compressImage878259(file))}catch(e){alert(e.message)}}
-  function copyPrompt(open){const ok=copyText878256(albaraPrompt878259());setMsg(ok?"Instruccions copiades. A ChatGPT, adjunta-hi la foto de l’albarà i enganxa el text (Ctrl+V).":"No s’han pogut copiar: fes-ho des de «Veure el text».");if(open)window.open("https://chatgpt.com/","_blank","noopener,noreferrer")}
+  const[llegint,setLlegint]=useState(false);
+  // Llegeix l'albarà sol: primer amb la IA directa (si està configurada) i, si no, amb el text del PDF.
+  async function autoRead(cur){
+    setLlegint(true);setMsg("Llegint l’albarà…");
+    try{
+      const ai=await readAlbaraAI878259(cur);
+      if(ai){setA(x=>fillAlbara878259(x,ai));setMsg(`Llegit amb IA: ${(ai.linies||[]).length} línies${ai.total?` · total ${money(+ai.total||0)}`:""}. Revisa-ho abans de desar.`);return}
+      if(String(cur.pdfText||"").length>40){const p=readAlbaraText878259(cur.pdfText);if(p.total||p.base||p.linies.length){setA(x=>fillAlbara878259(x,p));setMsg(`Llegit del PDF: ${p.linies.length} línies${p.total?` · total ${money(p.total)}`:""}. Revisa-ho abans de desar.`);return}}
+      setMsg(cur.pdf||cur.foto?"No l’he pogut llegir sol: posa el total a mà o fes servir «Llegir amb ChatGPT».":"");
+    }catch(e){setMsg("No s’ha pogut llegir amb IA: "+(e?.message||e)+". Pots fer-ho amb ChatGPT.")}
+    finally{setLlegint(false)}
+  }
+  useEffect(()=>{if(a.isNew&&(a.pdf||a.foto)&&!a.__llegit){setA(x=>({...x,__llegit:true}));autoRead(a)}},[]);
+  async function photo(file){if(!file)return;try{let r;if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)){r=await albaraFromPdf878259(file)}else{r={foto:await compressImage878259(file),pdf:"",tePdf:false,pdfNom:"",pdfText:""}}setA(x=>({...x,...r}));autoRead({...a,...r})}catch(e){alert(e.message)}}
+  const teText=String(a.pdfText||"").length>40;
+  function copyPrompt(open){const ok=copyText878256(albaraPrompt878259(a.pdfText||""));setMsg(ok?(teText?"Copiat, amb el text del PDF. A ChatGPT, enganxa-ho (Ctrl+V) i envia: no cal adjuntar res.":"Instruccions copiades. A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa el text (Ctrl+V)."):"No s’han pogut copiar.");if(open)window.open("https://chatgpt.com/","_blank","noopener,noreferrer")}
   function applyAnswer(){const p=parseAlbara878259(answer);if(!p.total&&!p.linies.length&&!p.proveidor){setMsg("No hi he trobat les dades. Comprova que la resposta tingui «Proveïdor:», «Total:» i la taula.");return}
-    setA(x=>({...x,proveidor:p.proveidor&&p.proveidor!=="?"?p.proveidor:x.proveidor,numero:p.numero&&p.numero!=="?"?p.numero:x.numero,data:p.data||x.data,base:p.base?String(Math.round(p.base*100)/100).replace(".",","):x.base,iva:p.iva?String(p.iva):x.iva,total:p.total?String(Math.round(p.total*100)/100).replace(".",","):x.total,linies:p.linies.length?p.linies.map(l=>({...l,quantitat:String(l.quantitat).replace(".",","),preu:String(Math.round(l.preu*100)/100).replace(".",","),import:Math.round(l.import*100)/100})):x.linies}));
+    setA(x=>fillAlbara878259(x,p));
     setAi(false);setAnswer("");setMsg(`Dades omplertes: ${p.linies.length} línies${p.total?` · total ${money(p.total)}`:""}. Revisa-les abans de desar.`)}
   return <Modal title={a.isNew?"Nou albarà":"Albarà"} close={close}><div className="alb-editor-v878259">
-    <div className="alb-photo">{a.foto?<img src={a.foto} alt="Foto de l’albarà"/>:<span>Sense foto</span>}<label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto?"Canviar la foto":"Afegir foto"}</label></div>
+    <div className="alb-photo">{a.foto?<img src={a.foto} alt="Albarà"/>:<span>Sense foto ni PDF</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?"Canviar la foto":"Fer foto"}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>Adjuntar PDF</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf)}>Obrir el PDF{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>
     <div className="alb-ai">
-      {!ai?<button type="button" className="secondary" onClick={()=>setAi(true)}>Llegir l’albarà amb IA (ChatGPT)</button>
-      :<div className="box"><b>Llegir amb IA</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>Copiar les instruccions i obrir ChatGPT</button></li><li>A ChatGPT, adjunta-hi la foto de l’albarà i enganxa les instruccions.</li><li>Copia la resposta i enganxa-la aquí:</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Proveïdor: …  Total: …  | Concepte | Quantitat | …"/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>Tancar</button><button type="button" className="primary" onClick={applyAnswer}>Omplir les dades</button></div></div>}
+      {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?"Llegint…":"Llegir l’albarà automàticament"}</button>}<button type="button" className="secondary" onClick={()=>setAi(true)}>Llegir amb ChatGPT (copiar i enganxar)</button></div>
+      :<div className="box"><b>Llegir amb IA</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>Copiar les instruccions{teText?" amb el text del PDF":""} i obrir ChatGPT</button></li><li>{teText?"A ChatGPT, enganxa-ho i envia (el text del PDF ja hi va inclòs).":"A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa les instruccions."}</li><li>Copia la resposta i enganxa-la aquí:</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Proveïdor: …  Total: …  | Concepte | Quantitat | …"/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>Tancar</button><button type="button" className="primary" onClick={applyAnswer}>Omplir les dades</button></div></div>}
       {msg&&<p className="msg">{msg}</p>}
     </div>
     <div className="grid">
@@ -12459,6 +12576,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}
       {linies.length>0&&<p className="sum">Suma de les línies: <b>{money(sumLines)}</b></p>}
     </div>
     <label className="notes"><span>Notes</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)} placeholder="Ex. material per a la coberta"/></label>
+    <label className="alb-fact"><input type="checkbox" checked={!!a.facturatClient} onChange={e=>set("facturatClient",e.target.checked)}/><span><b>Ja facturat o repercutit al client</b><small>Deixa-ho sense marcar mentre estigui pendent de facturar.</small></span></label>
     <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>Eliminar</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>Obrir l’obra</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={()=>save({...a,base:a.base||(sumLines?String(sumLines.toFixed(2)).replace(".",","):"")})}>Desar l’albarà</button></div>
   </div></Modal>;
 }

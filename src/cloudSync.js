@@ -521,6 +521,8 @@ function typing() { const el = document.activeElement; return !!el && (/^(INPUT|
 function schedule(ms = 4000) { clearTimeout(timer); timer = setTimeout(() => cycle(), ms); }
 async function syncNow() { await cycle({ returning: true }); }
 // V87.258.2 · entrar amb un altre compte des de la pantalla d'entrada de l'app.
+// V87.259.2 · funcions de Supabase (p. ex. «llegir-albara»), amb la sessió de l'usuari.
+async function callFunction(name, body) { if (!session) throw new Error("Cal estar connectat al núvol."); return api(`/functions/v1/${name}`, { method: "POST", body }); }
 async function switchTo(user, pass) {
   const was = active; active = false;
   try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
@@ -559,7 +561,7 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "" };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction };
   session = readJson(SESSION_KEY, null);
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {

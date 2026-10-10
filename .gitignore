@@ -1,0 +1,26 @@
+# Es tornen a generar sols
+node_modules/
+dist/
+
+# Proves automàtiques: hi ha contrasenyes
+tools/proves/
+
+# Dades i documents privats (ara són fora del projecte; per si de cas)
+DADES/
+DADES_REPARADES/
+GUIES_USUARIS/
+CAPTURES/
+JSON/
+
+# Notes locals de cada versió i llançadors
+PER_PUJAR_A_GITHUB/
+INSTRUCCIONS_*.txt
+VERSION_CONFIRMATION*.txt
+*.bat
+
+# Claus i fitxers del sistema
+.env
+.env.*
+*.log
+Thumbs.db
+desktop.ini

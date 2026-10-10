@@ -183,3 +183,20 @@ html body .share-modal-v878259 .link{all:unset;cursor:pointer;color:var(--co-acc
 html body .share-modal-v878259 .err{color:#B93A33}
 html body .share-modal-v878259 .modal-actions{display:flex;justify-content:flex-end;gap:8px}
 @media (max-width:560px){html body .share-modal-v878259 .row,html body .share-modal-v878259 .add{grid-template-columns:1fr 1fr}html body .share-modal-v878259 .add .secondary{grid-column:1/-1}}
+
+/* V87.259.1 · albarans: PDF, client i pendent de facturar */
+html body .albarans-v878259 .alb-cam.alt{background:var(--co-surface);color:var(--co-ink);border:1px solid var(--co-line-strong)}
+html body .albarans-v878259 .chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--co-ink-2)}
+html body .albarans-v878259 .chk input{width:16px!important;height:16px!important;margin:0!important}
+html body .albarans-v878259 .alb-kpis>div.warn b{color:#9A5B00}
+html body .albarans-v878259 .alb-row .num{gap:4px}
+html body .albarans-v878259 .alb-row .fact{all:unset;cursor:pointer;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:#FFF6E0;color:#7A5200;border:1px solid #F1D9A0;white-space:nowrap}
+html body .albarans-v878259 .alb-row .fact.on{background:#EEF7F1;color:#1F6A3F;border-color:#CBE7D5}
+html body .alb-editor-v878259 .alb-photo-acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+html body .alb-editor-v878259 .alb-fact{flex-direction:row!important;align-items:flex-start;gap:10px!important;padding:10px 12px;border-radius:10px;border:1px solid var(--co-line);background:var(--co-surface-2);cursor:pointer}
+html body .alb-editor-v878259 .alb-fact input{width:18px!important;height:18px!important;margin:2px 0 0!important}
+html body .alb-editor-v878259 .alb-fact span{display:flex;flex-direction:column;gap:2px}
+html body .alb-editor-v878259 .alb-fact b{font-size:14px;color:var(--co-ink)}
+html body .alb-editor-v878259 .alb-fact small{font-size:12px;color:var(--co-ink-3);font-weight:400}
+
+html body .alb-editor-v878259 .alb-ai-btns{display:flex;flex-wrap:wrap;gap:8px}
