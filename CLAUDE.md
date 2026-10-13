@@ -108,6 +108,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Auditoria de seguretat (10/10/2026)**: `docs/auditoria-seguretat.md`, ordenada per urgència. Resolts el
   13/10/2026: domini `controlobres.app` registrat i registre de comptes tancat a Supabase. Còpies del núvol actives
   des del 13/10/2026. Contrasenyes `0000`/`1919`/`socoterm` fora del codi i compte `pol` esborrat a la V87.260.
+- **App al mòbil sense cobertura (molt important a les obres)**: avui, a Render, si l’app no estava oberta i no
+  hi ha cobertura, la pàgina no carrega. Cal que carregui igualment (app instal·lable amb «service worker» que
+  guardi l’app al mòbil); les dades ja hi són (IndexedDB) i el núvol es posa al dia en tornar la connexió.
 - **Esborrar de l’historial de GitHub la còpia de dades de juliol**
   (`DADES_REPARADES/app-control-obres-hector-backup-reparat-v87-211-2026-07-22.json`, dades reals de clients).
   Es va treure del repositori a la V87.259.2, però continua als commits antics. Cal reescriure l’historial
