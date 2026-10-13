@@ -40,6 +40,13 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
   (privat, branca `main`) → **Render** `https://app-control-obres-hc.onrender.com`, que compila sol
   (`npm run build`) a cada pujada. El `dist` no es puja.
   Git és a `C:\Program Files\Git\cmd\git.exe` (si l’ordre `git` no es troba, fer servir la ruta sencera).
+- **Còpies del núvol** (V87.260, `tools/copies/`, instruccions a `tools/copies/LLEGEIX-ME.md`): `copia-nuvol.mjs`
+  entra amb el compte `copies@usuaris.controlobres.app` (només llegir, regla `supabase/aco_copies_v87260.sql`) i desa
+  cada dia a les 13:00 un `.json.gz` per compte a `DADES\COPIES_NUVOL\AAAA-MM-DD` i a
+  `C:\Users\Hector\Documents\COPIES_NUVOL\AAAA-MM-DD` (30 dies + dia 1 de cada mes, 12 mesos). Contrasenya xifrada
+  amb Windows a `%USERPROFILE%\.aco-copies\config.json` (fora del projecte). `restaurar-compte.mjs` restaura UN compte
+  (prova per defecte; `--de-debo` demana la clau secreta, que no es desa). El compte de còpies no s’ha de fer servir
+  mai per entrar a l’app.
 
 ## Estructura de carpetes
 
@@ -79,6 +86,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Comptes de prova al navegador**: provar `oriol`, `brava`… en una finestra InPrivate. Si el navegador
   queda amb la sessió del núvol d’una empresa, l’app obre l’espai buit d’aquella empresa (va passar el
   10/10/2026; les dades no es van perdre: «Sortir» i tornar a entrar amb el correu de l’Héctor).
+- **Domini `controlobres.app`** (DonDominio, registrat el 13/10/2026): és el domini dels comptes d'empresa
+  (`<usuari>@usuaris.controlobres.app`). **Renovar abans del 13/10/2027** (ara la renovació és manual) i **no
+  deixar-lo caducar mai**: qui el comprés rebria els correus de canvi de contrasenya de totes les empreses.
+- **Registre de comptes tancat a Supabase** (des del 13/10/2026). Els comptes nous es creen al panell:
+  Authentication → Users → Add user → Create new user, amb «Auto Confirm User». **Mai esborrar un usuari**:
+  s'esborrarien totes les seves dades (`on delete cascade`).
 - **Inici sense dades econòmiques** (l’Héctor té clients diversos); l’econòmic va dins de l’obra.
 - Interfície **«menys és més»**: res repetit, botons clars, pensat també per a tercers i per al mòbil.
 - **Mai tocar el fitxer real de `DADES`** en proves: fer servir còpies i `ACO_DADES_DIR`.
@@ -93,9 +106,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-- **Auditoria de seguretat (10/10/2026)**: `docs/auditoria-seguretat.md`, ordenada per urgència. Urgent: domini
-  `controlobres.app` no registrat, registre de comptes obert a Supabase, sense còpies del núvol de les empreses,
-  contrasenyes `0000`/`1919`/`socoterm` al codi.
+- **Auditoria de seguretat (10/10/2026)**: `docs/auditoria-seguretat.md`, ordenada per urgència. Resolts el
+  13/10/2026: domini `controlobres.app` registrat i registre de comptes tancat a Supabase. Queden: activar les còpies
+  del núvol (`tools/copies/LLEGEIX-ME.md`, falta el SQL i el compte de còpies), contrasenyes `0000`/`1919`/`socoterm` al codi (V87.260).
 - **Esborrar de l’historial de GitHub la còpia de dades de juliol**
   (`DADES_REPARADES/app-control-obres-hector-backup-reparat-v87-211-2026-07-22.json`, dades reals de clients).
   Es va treure del repositori a la V87.259.2, però continua als commits antics. Cal reescriure l’historial
@@ -124,5 +137,6 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - Servidor B (com Render, sense disc): `set ACO_SENSE_DISC=1&& set VITE_CLOUD_URL=http://localhost:5490&& npx vite --port 5198`
   - Proves amb Edge headless + CDP: `cloudtest*.mjs`, `sharetest.mjs`, `emptest.mjs`, `pdftest.mjs`, `fototest.mjs`…
     (perfil del navegador en una ruta curta, si no IndexedDB falla).
+  - `copiatest.mjs`: 26 proves de `tools/copies` (còpia i restauració) amb el Supabase de proves i carpetes temporals.
   - `compare.js` + `extractor.js`: comparar pressupostos i certificacions entre dues còpies.
 - Abans de llançar dos servidors de la mateixa carpeta, deixar arrencar el primer (memòria cau de Vite).

@@ -22,9 +22,9 @@ al codi ni a Supabase.
 
 | # | Tema | Estat | Urgència |
 |---|---|---|---|
-| A | Correu dels comptes d'empresa: el domini `controlobres.app` no és teu | ❌ | 🔴 |
-| B | Qualsevol persona es pot crear un compte al teu Supabase | ❌ | 🔴 |
-| C | Còpies de seguretat del núvol (pla gratuït: cap) | ❌ | 🔴 |
+| A | Correu dels comptes d'empresa: el domini `controlobres.app` no és teu | ✅ resolt 13/10 | — |
+| B | Qualsevol persona es pot crear un compte al teu Supabase | ✅ resolt 13/10 | — |
+| C | Còpies de seguretat del núvol (pla gratuït: cap) | ⚠️ preparat 13/10, falta activar-ho | 🔴 |
 | D | Contrasenyes escrites al codi (`hector`, `pol`, `socoterm`) | ❌ | 🔴 |
 | E | Rols: el portal de client només amaga botons | ❌ | 🟠 |
 | F | Sincronització quan dues persones editen alhora | ⚠️ | 🟠 |
@@ -39,7 +39,10 @@ al codi ni a Supabase.
 
 ---
 
-## 🔴 A. El correu dels comptes d'empresa és d'un domini que no és teu — ❌
+## ✅ A. El correu dels comptes d'empresa és d'un domini que no és teu — resolt
+
+> **13/10/2026:** domini registrat a DonDominio (comprovat: registre del 13/10/2026, caduca el 13/10/2027).
+> Cal renovar-lo cada any i no deixar-lo caducar mai.
 
 *(Punts 2 i 3 de la teva llista)*
 
@@ -60,7 +63,10 @@ podria crear comptes nous amb aquest domini i fer-se passar per una empresa de l
 
 ---
 
-## 🔴 B. Qualsevol persona es pot crear un compte al teu Supabase — ❌
+## ✅ B. Qualsevol persona es pot crear un compte al teu Supabase — resolt
+
+> **13/10/2026:** registre desactivat (comprovat: `disable_signup: true`; un intent de registre respon
+> «Signups not allowed»). Els comptes nous es creen des del panell amb «Auto Confirm User».
 
 *(Punts 2 i 3)*
 
@@ -82,7 +88,10 @@ com ja fas ara. És un sol clic i no afecta els comptes que ja existeixen.
 
 ---
 
-## 🔴 C. Còpies de seguretat del núvol — ❌
+## 🔴 C. Còpies de seguretat del núvol — ⚠️ preparat
+
+> **13/10/2026:** preparada la còpia diària a l'ordinador (`tools/copies/`, provada amb el Supabase de proves).
+> Falta que l'Héctor creï el compte de còpies i executi `supabase/aco_copies_v87260.sql` (vegeu `tools/copies/LLEGEIX-ME.md`).
 
 *(Punt 8)*
 
@@ -438,9 +447,9 @@ només ordre local. La seguretat real és la del servidor, i està bé.
 
 ## Llista de feina, per ordre
 
-1. 🔴 Registrar el domini `controlobres.app` (A).
-2. 🔴 Desactivar el registre de comptes nous a Supabase (B).
-3. 🔴 Fer una còpia del núvol (totes les empreses) i decidir-ne la freqüència (C).
+1. ✅ Registrar el domini `controlobres.app` (A) — fet 13/10/2026.
+2. ✅ Desactivar el registre de comptes nous a Supabase (B) — fet 13/10/2026.
+3. 🔴 Fer una còpia del núvol (totes les empreses) i decidir-ne la freqüència (C) — preparada, falta activar-la.
 4. 🔴 Treure del codi `0000`, `1919` i `socoterm`, i donar a les empreses un botó per canviar la
    contrasenya del núvol (D).
 5. 🟠 Abans del 30/10: mirar el Security Advisor de Supabase (I).
