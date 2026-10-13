@@ -10,6 +10,7 @@ import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
+import {persistObraFiles,loadObraFiles,fillObraFiles} from "./fileStore.js";
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
@@ -218,7 +219,8 @@ function stripHeavy878185(value){
     Object.entries(value).forEach(([k,v])=>{
       const lk=String(k||"").toLowerCase();
       if(["logo","logos","src","url","dataurl","base64","blob","raw","content","filedata","preview","imatge","image","foto","fotos","croquis"].includes(lk)){
-        if(Array.isArray(v)) out[k]=v.map((x,i)=>x&&typeof x==="object"?{id:x.id||`fitxer-${i}`,nom:x.nom||x.name||"Fitxer",data:x.data||x.createdAt||"",origen:x.origen||"",_light:true}:"[fitxer eliminat per pes]");
+        // V87.261 · es conserven les dades petites (nom, pàgina, dates…); el contingut es desa a part (fileStore.js).
+        if(Array.isArray(v)) out[k]=v.map((x,i)=>x&&typeof x==="object"?{...Object.fromEntries(Object.entries(x).filter(([kk,vv])=>(typeof vv==="string"&&vv.length<2000&&!/^data:/i.test(vv))||typeof vv==="number"||typeof vv==="boolean")),id:x.id||`fitxer-${i}`,nom:x.nom||x.name||"Fitxer",data:x.data||x.createdAt||"",origen:x.origen||"",_light:true}:"[fitxer eliminat per pes]");
         else out[k]="";
         return;
       }
@@ -473,6 +475,8 @@ function mergeOdataCore878104(full={},core={}){
   return out;
 }
 function saveOdata878104(odata,user=currentAppUser8779()){
+  // V87.261 · abans de treure les imatges per pes, cada foto/croquis/document es desa a part en aquest aparell.
+  persistObraFiles(odata,user).catch(e=>{console.warn(e);try{sessionStorage.setItem("aco_fitxers_error_v87261",String(e?.message||e))}catch{}});
   // V87.250 · les obres es guarden una sola vegada. Fins ara també es desaven a
   // aco_odata_core_v87104, una còpia idèntica que ocupava la meitat del navegador.
   // La còpia antiga s'elimina abans d'escriure perquè la nova tingui espai.
@@ -2606,6 +2610,8 @@ function resizeImageDataUrl8779(file,maxSide=1600,quality=0.82){
     reader.readAsDataURL(file);
   });
 }
+// V87.261 · si la imatge no és en aquest aparell (p. ex. es va perdre abans de la V87.261), es diu clarament.
+function FileImg878261({src}){return src?<img src={src}/>:<span className="file-absent-v878261">Imatge no disponible en aquest aparell</span>}
 async function addPhotoFiles8761(files,setData){
   const list=[...(files||[])];
   for(const file of list){
@@ -2668,7 +2674,7 @@ function PlanolsCroquisActa8769({draft,setDraft}){
     <div className="canvas-wrap-v8769"><canvas ref={canvasRef} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}/></div>
     <div className="croquis-list-v8769">
       {(draft?.croquis||[]).length===0&&<span>Encara no hi ha plànols marcats o croquis guardats en aquesta acta.</span>}
-      {(draft?.croquis||[]).map(c=><div key={c.id} className="croquis-card-v8769"><img src={c.src}/><div><b>{c.nom}</b><span>{fmtDate8761(c.data)} · {c.origen||"Full en blanc"}</span></div><button type="button" className="danger small" onClick={()=>removeCroquis(c.id)}>Eliminar</button></div>)}
+      {(draft?.croquis||[]).map(c=><div key={c.id} className="croquis-card-v8769"><FileImg878261 src={c.src}/><div><b>{c.nom}</b><span>{fmtDate8761(c.data)} · {c.origen||"Full en blanc"}</span></div><button type="button" className="danger small" onClick={()=>removeCroquis(c.id)}>Eliminar</button></div>)}
     </div>
   </div>
 }
@@ -2676,9 +2682,10 @@ function PlanolsCroquisActa8769({draft,setDraft}){
 function Fotografies8761({data,setData}){
   const fotos=data.fotos||[];
   return <Card title="Fotografies" action={<div className="actions-inline"><label className="secondary file-btn-v8761">Adjuntar fotos<input type="file" accept="image/*" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label><label className="primary file-btn-v8761">Fer foto<input type="file" accept="image/*" capture="environment" onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>}>
+    <small className="file-note-v878261">Les fotos es desen en aquest aparell. Aviat també arribaran als altres aparells.</small>
     <div className="photo-grid-v8761">
       {fotos.length===0&&<div className="empty-v8761">Encara no hi ha fotografies adjuntades.</div>}
-      {fotos.map(f=><div className="photo-card-v8761" key={f.id}><img src={f.src}/><div><b>{f.nom}</b><span>{fmtDate8761(f.data)} · Creat: {fmtCreationDate878233(f.createdAt)}</span></div></div>)}
+      {fotos.map(f=><div className="photo-card-v8761" key={f.id}><FileImg878261 src={f.src}/><div><b>{f.nom}</b><span>{fmtDate8761(f.data)} · Creat: {fmtCreationDate878233(f.createdAt)}</span></div></div>)}
     </div>
   </Card>
 }
@@ -2885,10 +2892,10 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
                     {actaPanel8799==="Observacions"&&<label className="span-all acta-textarea-v8768"><span>Text de l’acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents..."/></label>}
 
           {actaPanel8799==="Fotos"&&<div className="photo-select-v8761">
-            <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
+            <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><small className="file-note-v878261">Les fotos es desen en aquest aparell. Aviat també arribaran als altres aparells.</small><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
             <div className="photo-mini-grid-v8761">
               {fotos.length===0&&<span>No hi ha fotos a l’expedient.</span>}
-              {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><img src={f.src}/><span>{f.nom}</span></label>)}
+              {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><FileImg878261 src={f.src}/><span>{f.nom}</span></label>)}
             </div>
           </div>}
 
@@ -2951,8 +2958,8 @@ function ActaFormalPreview8768({obra,client,acta,agents=[],fotos=[],docs=[],croq
     <div className="preview-section-v8764 acta-a4-section-v8766">
       <h3>Documents adjunts</h3>{docs.length===0?<p>Sense documents adjunts.</p>:<ul>{docs.map(d=><li key={d.id}>{d.nom}</li>)}</ul>}
     </div>
-    {(croquis.length>0||(acta?.croquis||[]).length>0)&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>Plànols marcats i croquis d’obra</h3><div className="acta-photo-preview-v8761">{[...croquis,...(acta?.croquis||[])].filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i).map(c=><figure key={c.id}><img src={c.src}/><figcaption>{c.nom}{c.origen?` · Base: ${c.origen}`:""}</figcaption></figure>)}</div></div>}
-    {fotos.length>0&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>Reportatge fotogràfic</h3><div className="acta-photo-preview-v8761">{fotos.map(f=><figure key={f.id}><img src={f.src||f.url}/><figcaption>{f.nom}</figcaption></figure>)}</div></div>}
+    {(croquis.length>0||(acta?.croquis||[]).length>0)&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>Plànols marcats i croquis d’obra</h3><div className="acta-photo-preview-v8761">{[...croquis,...(acta?.croquis||[])].filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i).filter(c=>c.src).map(c=><figure key={c.id}><img src={c.src}/><figcaption>{c.nom}{c.origen?` · Base: ${c.origen}`:""}</figcaption></figure>)}</div></div>}
+    {fotos.length>0&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>Reportatge fotogràfic</h3><div className="acta-photo-preview-v8761">{fotos.filter(f=>f.src||f.url).map(f=><figure key={f.id}><img src={f.src||f.url}/><figcaption>{f.nom}</figcaption></figure>)}</div></div>}
     <div className="preview-section-v8764 acta-a4-section-v8766"><h3>Signatures electròniques</h3><div className="signature-grid-v8768"><span>Direcció facultativa / DO<br/>Nom i signatura</span><span>DEO / Arquitecte tècnic<br/>Nom i signatura</span><span>Constructora<br/>Nom i signatura</span><span>Promotor / propietat<br/>Nom i signatura</span></div></div>
   </div>
 }
@@ -3702,6 +3709,8 @@ useEffect(()=>{
   setClientId(account.clientId||c[0]?.id||"");setObraId((account.clientId?o.find(x=>String(x.client)===String(account.clientId)):o[0])?.id||o[0]?.id||"");setTab("Resum");setScreen("Inici");
   {const w=navBack878257.current;if(w){if(w.obraId&&o.some(x=>x.id===w.obraId))setObraId(w.obraId);if(w.tab)setTab(w.tab);if(w.screen)setScreen(w.screen);setTimeout(()=>{navBack878257.current=null},2000)}}
   setDataLoadedUser8781(authUser8779);
+  // V87.261 · torna a posar les fotos, croquis i documents de les actes desats en aquest aparell.
+  {const who=authUser8779;loadObraFiles(d,storageUser).then(found=>{if(found.size&&sessionStorage.getItem("aco_current_user8779")===who)setOdata(prev=>fillObraFiles(prev,found))}).catch(e=>console.warn("Fitxers:",e))}
 },[authUser8779]);
 useEffect(()=>{try{sessionStorage.setItem("aco-on-era",JSON.stringify({screen,obraId,tab}))}catch{}},[screen,obraId,tab]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),dataOwnerUser878233)},[clients,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
@@ -10662,7 +10671,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.260",
+    app_version:"87.261",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

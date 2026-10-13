@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.260";
+const VERSION = "V87.261";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -411,7 +411,12 @@ async function cycle({ startup = false, returning = false } = {}) {
     const pend = pendingKeys(local);
     const pendSet = new Set(pend);
     // Canvis d'altres aparells que encara no tenim.
-    const remote = rows.filter(r => r.device !== device && (r.deleted ? r.key in local : local[r.key] !== (r.value ?? "")));
+    // V87.261 · pullSince torna a llegir els últims 5 s abans del cursor: una peça que ja teníem (mateixa
+    // versió que meta.known) NO és un canvi nou encara que aquí l'haguem modificat després. Abans es
+    // prenia per nova, «guanyava el núvol» i el canvi fet aquí es perdia (p. ex. fotos posades al mòbil
+    // en una obra que l'ordinador acabava de tocar).
+    const isNew = r => r.deleted ? r.key in meta.known : meta.known[r.key] !== hash(r.value ?? "");
+    const remote = rows.filter(r => r.device !== device && (r.deleted ? r.key in local : local[r.key] !== (r.value ?? "")) && isNew(r));
     const remoteKeys = new Set(remote.map(r => r.key));
     const waitingKeys = new Set((remoteWaiting?.rows || []).map(r => r.key));
     // Regla: si una peça ha canviat al núvol des d'un altre aparell, GUANYA EL NÚVOL.

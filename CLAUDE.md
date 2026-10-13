@@ -95,9 +95,14 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - Interfície **«menys és més»**: res repetit, botons clars, pensat també per a tercers i per al mòbil.
 - **Mai tocar el fitxer real de `DADES`** en proves: fer servir còpies i `ACO_DADES_DIR`.
 - **Sincronització**: es puja només el que canvia; **si una peça ha canviat al núvol des d’un altre aparell,
-  guanya el núvol**; **fre de seguretat** si un aparell vol esborrar o buidar 3+ obres; la primera connexió
+  guanya el núvol** (només si la peça és de debò nova al núvol: des de la V87.261 es compara amb la versió coneguda;
+  abans, els últims 5 s es tornaven a llegir i podien trepitjar canvis fets aquí); **fre de seguretat** si un aparell vol esborrar o buidar 3+ obres; la primera connexió
   només es dona per bona si acaba sencera. Restauració forçada: marca `forcarNuvol: true` al fitxer DADES.
 - **Comptes separats al mateix navegador** per prefix `emp_`; les dades d’empresa no entren mai al fitxer DADES.
+- **Fotos, croquis i documents de les actes** (V87.261, `src/fileStore.js`): el desat de les obres en treu les
+  imatges per pes; cada fitxer es desa a part en l’aparell (IndexedDB `aco_fitxers`, clau `<espai>::<id>`) i es torna
+  a posar en obrir l’app. **Encara no viatgen entre aparells** (V87.262: Supabase Storage privat). Les 11 fotos de
+  l’acta del 13/10 de «Projecte piscina av. Rosello 10» es van perdre abans d’aquest arranjament.
 - **Fotos d’obra i albarans en claus pròpies** (`aco_obra_foto_v878259_<id>`, `aco_albara_foto_…`,
   `aco_albara_pdf_…`), reduïdes; abans es treien per pes i no es desaven.
 - **Obres compartides**: no es copien a l’espai de l’altre compte; viuen a `aco_shared`.
@@ -118,6 +123,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Lectura d’albarans amb IA directa**: falta clau d’Anthropic + desplegar la funció
   (`INSTRUCCIONS_LECTURA_ALBARANS_IA.txt`).
 - **Hores per treballador** (constructors) i mòduls per a **autònoms / operaris / promotors**.
+- **V87.262 · Supabase Storage privat** per a fotos, croquis i documents (actes i pestanya Documents), amb regles per
+  compte i obres compartides, cua sense cobertura i còpia diària dels arxius. Cal esborrar abans les regles antigues
+  d’arxius (informe, punt K).
 - **Portal de client amb compte de núvol propi** (avui els clients només tenen el portal intern).
 - Obres compartides: hores, agenda i albarans no es comparteixen; «només consulta» no es bloqueja a la pantalla.
 - Seguretat: polítiques antigues
@@ -141,6 +149,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     (perfil del navegador en una ruta curta, si no IndexedDB falla).
   - `contrasenyestest.mjs`: entrar a l’app sense contrasenyes al codi (ordinador, mòbil, empresa, sense connexió,
     portal), amb una còpia de DADES; comprova que el DADES real no canvia.
+  - `fitxerstest.mjs`: fotos/croquis/documents de les actes desats a l’aparell (ordinador i mòbil compilat).
+  - `synctest.mjs`: dos aparells; un canvi no es perd i «guanya el núvol» es manté (`WEBROOT=` per comparar versions).
   - `copiatest.mjs`: 26 proves de `tools/copies` (còpia i restauració) amb el Supabase de proves i carpetes temporals.
   - `compare.js` + `extractor.js`: comparar pressupostos i certificacions entre dues còpies.
 - **Abans de tocar `src/`, tancar `OBRIR_APP.bat`**: el servidor de Vite aplica els canvis a l’app oberta amb les

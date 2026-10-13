@@ -200,3 +200,7 @@ html body .alb-editor-v878259 .alb-fact b{font-size:14px;color:var(--co-ink)}
 html body .alb-editor-v878259 .alb-fact small{font-size:12px;color:var(--co-ink-3);font-weight:400}
 
 html body .alb-editor-v878259 .alb-ai-btns{display:flex;flex-wrap:wrap;gap:8px}
+
+/* V87.261 · fitxers desats en aquest aparell */
+.file-note-v878261{display:block;color:#64748b;font-size:12px;margin:2px 0 8px}
+.file-absent-v878261{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;aspect-ratio:4/3;padding:8px;background:#f1f5f9;color:#64748b;font-size:12px;border-radius:8px}

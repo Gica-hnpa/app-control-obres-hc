@@ -207,6 +207,10 @@ donar només les obres compartides amb ell, com ja fan les obres compartides. En
 
 ## 🟠 F. Sincronització: dues persones alhora o sense cobertura — ⚠️
 
+> **V87.261:** arreglat un error que feia perdre canvis: una peça que un altre aparell acabava de tocar es
+> tornava a llegir com si fos nova i «guanyava el núvol» sobre el canvi fet aquí (provat amb `synctest.mjs`:
+> falla a la V87.260, va bé a la V87.261). La resta d’aquest punt continua igual.
+
 *(Punt 6)*
 
 **Com funciona ara.** Les dades viatgen per **peces**. Cada obra és una peça amb tot el que porta
