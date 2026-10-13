@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.259";
+const VERSION = "V87.260";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -80,6 +80,14 @@ async function ensureToken() {
 }
 async function login(email, password) {
   setSession(await api("/auth/v1/token?grant_type=password", { method: "POST", body: { email, password }, auth: false }));
+  // V87.260 · l'Héctor ha entrat amb la contrasenya del núvol: aquest aparell torna a obrir el seu espai sol
+  // (treu la marca que hi posa el portal de client; mateix nom que PORTAL_LOCK_KEY878260 a App.jsx).
+  if (!companyOf(session.email)) { try { localStorage.removeItem("portal-bloqueig-app-control-obres"); } catch {} }
+}
+// V87.260 · canviar la contrasenya del núvol del compte connectat (Héctor o empresa).
+async function changePassword(password) {
+  if (!session) throw new Error("Cal estar connectat al núvol.");
+  await api("/auth/v1/user", { method: "PUT", body: { password } });
 }
 async function pullSince(cursor) {
   const out = []; let offset = 0;
@@ -561,7 +569,7 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword };
   session = readJson(SESSION_KEY, null);
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {

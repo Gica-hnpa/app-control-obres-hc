@@ -16,23 +16,127 @@ const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Press
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
 const LIBRARY_WORK_CATEGORIES878240=["Paleteria","Pintura","Paviments","Mitjans auxiliars","Fusteria","Instal·lacions","Impermeabilització","Enderrocs","Altres"];
+// V87.260 · cap contrasenya escrita al codi. L'Héctor entra amb el seu compte del núvol (o directament
+// en aquest aparell); el portal de client intern fa servir la contrasenya que l'Héctor tria a
+// Configuració, desada xifrada. El compte de prova «pol» ja no existeix.
 const DEFAULT_APP_ACCOUNTS878233={
-  hector:{username:"hector",password:"0000",role:"admin",module:"technical",displayName:"Héctor",ownerUser:"hector",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
-  pol:{username:"pol",password:"1919",role:"admin",module:"technical",displayName:"Pol",ownerUser:"pol",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
-  socoterm:{username:"socoterm",password:"socoterm",role:"client",module:"module2",displayName:"SOCOTERM · prova",ownerUser:"hector",clientId:"socoterm",readOnly:true,canCreateProject:true,canEditBudget:true,canEditCertifications:true,canUseClientLibrary:true,clientLibraryMaxPerChapter:3,allowedTabs:CLIENT_MODULE_TABS878235.slice()}
+  hector:{username:"hector",role:"admin",module:"technical",displayName:"Héctor",ownerUser:"hector",clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]},
+  client_socoterm:{username:"client_socoterm",role:"client",module:"module2",displayName:"SOCOTERM · portal",ownerUser:"hector",clientId:"socoterm",readOnly:true,canCreateProject:true,canEditBudget:true,canEditCertifications:true,canUseClientLibrary:true,clientLibraryMaxPerChapter:3,allowedTabs:CLIENT_MODULE_TABS878235.slice()}
 };
+// Contrasenyes que han estat escrites al codi (públiques): mai es poden tornar a fer servir.
+const OLD_PUBLIC_PASSWORDS878260=["0000","1919","socoterm"];
+// Marca d'aquest aparell (no es sincronitza): algú hi ha entrat al portal de client, i per tornar a
+// l'espai de l'Héctor cal la contrasenya del núvol (o no tenir connexió).
+const PORTAL_LOCK_KEY878260="portal-bloqueig-app-control-obres";
+// SHA-256 en JavaScript: el mòbil per wifi (http://192.168…) no té crypto.subtle.
+const SHA_K878260=(()=>{const k=[];for(let n=2;k.length<64;n++){let p=true;for(let d=2;d*d<=n;d++)if(n%d===0){p=false;break}if(p)k.push(Math.floor((Math.cbrt(n)%1)*4294967296)>>>0)}return k})();
+const SHA_H878260=(()=>{const h=[];for(let n=2;h.length<8;n++){let p=true;for(let d=2;d*d<=n;d++)if(n%d===0){p=false;break}if(p)h.push(Math.floor((Math.sqrt(n)%1)*4294967296)>>>0)}return h})();
+function sha256Hex878260(bytes){
+  const len=bytes.length,words=new Uint32Array(((len+9+63)>>6)<<4);
+  for(let i=0;i<len;i++)words[i>>2]|=bytes[i]<<(24-(i&3)*8);
+  words[len>>2]|=0x80<<(24-(len&3)*8);
+  words[words.length-1]=len*8;
+  const H=SHA_H878260.slice(),W=new Uint32Array(64),rot=(x,n)=>(x>>>n)|(x<<(32-n));
+  for(let o=0;o<words.length;o+=16){
+    for(let t=0;t<64;t++){
+      if(t<16)W[t]=words[o+t];
+      else{const a=W[t-15],b=W[t-2];W[t]=(W[t-16]+(rot(a,7)^rot(a,18)^(a>>>3))+W[t-7]+(rot(b,17)^rot(b,19)^(b>>>10)))>>>0}
+    }
+    let [a,b,c,d,e,f,g,h]=H;
+    for(let t=0;t<64;t++){
+      const t1=(h+(rot(e,6)^rot(e,11)^rot(e,25))+((e&f)^(~e&g))+SHA_K878260[t]+W[t])>>>0;
+      const t2=((rot(a,2)^rot(a,13)^rot(a,22))+((a&b)^(a&c)^(b&c)))>>>0;
+      h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+    }
+    H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;
+  }
+  return H.map(x=>x.toString(16).padStart(8,"0")).join("");
+}
+function passwordDigest878260(pwd,salt,iter){
+  const enc=s=>new TextEncoder().encode(s);
+  let h=sha256Hex878260(enc(salt+"\u0000"+String(pwd)));
+  for(let i=1;i<iter;i++)h=sha256Hex878260(enc(h+salt));
+  return h;
+}
+function hashPassword878260(pwd){
+  let salt="";
+  try{salt=[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,"0")).join("")}catch{salt=Date.now().toString(16)+Math.random().toString(16).slice(2)}
+  return `s256$10000$${salt}$${passwordDigest878260(pwd,salt,10000)}`;
+}
+function checkAccountPassword878260(account,pwd){
+  const [kind,iter,salt,digest]=String(account?.passwordHash||"").split("$");
+  if(kind!=="s256"||!salt||!digest||!pwd)return false;
+  const got=passwordDigest878260(pwd,salt,+iter||10000);
+  let diff=got.length^digest.length;for(let i=0;i<got.length;i++)diff|=got.charCodeAt(i)^(digest.charCodeAt(i)||0);
+  return diff===0;
+}
+function portalLocked878260(){try{return localStorage.getItem(PORTAL_LOCK_KEY878260)==="1"}catch{return false}}
+function setPortalLock878260(on){try{on?localStorage.setItem(PORTAL_LOCK_KEY878260,"1"):localStorage.removeItem(PORTAL_LOCK_KEY878260)}catch{}}
+// Aparell de l'Héctor: té el seu compte del núvol, és l'ordinador (OBRIR_APP.bat) o ja hi ha les seves dades.
+function hectorCloudEmail878260(){
+  try{const st=window.__acoCloud?.status?.();if(st?.email&&!window.__acoEmpresa)return st.email}catch{}
+  try{const m=String(localStorage.getItem("nuvol-aco-correu")||"").trim().toLowerCase();if(m.includes("@")&&!m.endsWith("@usuaris.controlobres.app"))return m}catch{}
+  return "";
+}
+function hectorDevice878260(){
+  if(typeof window==="undefined"||window.__acoEmpresa)return false;
+  if(window.__acoLocalDisk)return true;
+  try{if(window.__acoCloud?.status?.().email)return true}catch{}
+  try{return String(localStorage.getItem("aco_v8782__hector__aco_obres")||"").length>10}catch{return false}
+}
+// En obrir l'app: compte d'empresa → el seu espai; aparell de l'Héctor → directament al seu espai
+// (sense contrasenya: el protegeix el bloqueig de Windows o del mòbil), llevat que s'hi hagi fet servir
+// el portal de client. Si no, pantalla d'entrada.
+function autoEntryUser878260(){
+  if(typeof window!=="undefined"&&window.__acoEmpresa)return window.__acoEmpresa.internal;
+  if(portalLocked878260())return "";
+  return hectorDevice878260()?"hector":"";
+}
+// Una sola vegada per càrrega: fora el compte «pol» i les seves dades de prova, i cap contrasenya en clar
+// als comptes desats (es copien al núvol i al fitxer DADES).
+let accountsMigrated878260=false;
+function migrateAppAccounts878260(){
+  if(accountsMigrated878260)return;
+  accountsMigrated878260=true;
+  try{
+    const polKeys=[];
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i)||"";
+      if(k.startsWith("aco_v8782__pol__")||k==="aco_v8782__migrated__pol"||(k.startsWith("aco_")&&!k.startsWith("aco_v8782__")&&k.endsWith("__pol")))polKeys.push(k);
+    }
+    polKeys.forEach(k=>localStorage.removeItem(k));
+    const raw=localStorage.getItem(APP_ACCOUNTS_KEY878233);
+    const saved=raw?JSON.parse(raw):null;
+    if(!saved||typeof saved!=="object")return;
+    let changed=false;const next={};
+    for(const [key,acc] of Object.entries(saved)){
+      let k=String(key).toLowerCase();
+      if(!acc||typeof acc!=="object"||k==="pol"||k.startsWith("emp_")){changed=true;continue}
+      const a={...acc};
+      if(k==="socoterm"){changed=true;if(saved.client_socoterm)continue;k="client_socoterm";a.username=k;a.displayName=a.displayName&&a.displayName!=="SOCOTERM · prova"?a.displayName:"SOCOTERM · portal"}
+      if("password" in a){
+        const p=String(a.password||"");delete a.password;changed=true;
+        if(p&&k!=="hector"&&!OLD_PUBLIC_PASSWORDS878260.includes(p)&&!a.passwordHash)a.passwordHash=hashPassword878260(p);
+      }
+      if(k==="hector"&&a.passwordHash){delete a.passwordHash;changed=true}
+      next[k]=a;
+    }
+    if(changed)localStorage.setItem(APP_ACCOUNTS_KEY878233,JSON.stringify(next));
+  }catch(e){console.warn("No s'han pogut posar al dia els comptes",e)}
+}
 function readAppAccounts878233(){
+  migrateAppAccounts878260();
   let saved={};
   try{saved=JSON.parse(localStorage.getItem(APP_ACCOUNTS_KEY878233)||"{}")||{}}catch{}
   const merged={...DEFAULT_APP_ACCOUNTS878233,...saved};
   // V87.259 · compte d'empresa del núvol (brava, oriol…): administrador del seu propi espai.
   const emp878259=typeof window!=="undefined"?window.__acoEmpresa:null;
-  if(emp878259&&!merged[emp878259.internal])merged[emp878259.internal]={username:emp878259.internal,password:"",role:"admin",module:"technical",displayName:emp878259.username,ownerUser:emp878259.internal,clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]};
+  if(emp878259&&!merged[emp878259.internal])merged[emp878259.internal]={username:emp878259.internal,role:"admin",module:"technical",displayName:emp878259.username,ownerUser:emp878259.internal,clientId:"",readOnly:false,canCreateProject:true,allowedTabs:[]};
   return Object.fromEntries(Object.entries(merged).map(([key,raw])=>{
     const base=DEFAULT_APP_ACCOUNTS878233[key]||{};
     const src=raw&&typeof raw==="object"?raw:{};
     const keyNorm=String(key).toLowerCase();
-    const builtInAdmin=keyNorm==="hector"||keyNorm==="pol";
+    const builtInAdmin=keyNorm==="hector";
     const role=builtInAdmin?"admin":(src.role||base.role||"client");
     const initialTabs=Array.isArray(src.allowedTabs)?src.allowedTabs:[...(base.allowedTabs||[])];
     // V87.239 · reparació de permisos antics de Socoterm. Algunes còpies
@@ -41,21 +145,22 @@ function readAppAccounts878233(){
     // migració s'aplica una sola vegada; després Configuració pot retallar
     // els permisos manualment sense que es tornin a afegir.
     const onlyResumeTab=initialTabs.length===1&&initialTabs[0]==="Resum";
-    const needsSocotermTabsFix=keyNorm==="socoterm"&&(!src.clientTabsFixedV878239||onlyResumeTab||CLIENT_MODULE_TABS878235.some(tab=>!initialTabs.includes(tab)));
+    const needsSocotermTabsFix=keyNorm==="client_socoterm"&&(!src.clientTabsFixedV878239||onlyResumeTab||CLIENT_MODULE_TABS878235.some(tab=>!initialTabs.includes(tab)));
     const migratedClientTabs=needsSocotermTabsFix
       ? [...new Set([...initialTabs,...CLIENT_MODULE_TABS878235])]
       : initialTabs;
     return [keyNorm,{
       ...base,...src,
       username:String(src.username||key).trim().toLowerCase(),
-      password:String(src.password??base.password??""),
+      password:undefined,
+      passwordHash:builtInAdmin?"":String(src.passwordHash||""),
       role,
       module:builtInAdmin?"technical":String(src.module||base.module||"module2"),
       ownerUser:String(src.ownerUser||base.ownerUser||"hector").trim().toLowerCase(),
       clientId:String(src.clientId||base.clientId||""),
       allowedTabs:builtInAdmin?[]:migratedClientTabs,
       clientPortalV87235:true,
-      clientTabsFixedV878239:keyNorm==="socoterm"?true:!!src.clientTabsFixedV878239,
+      clientTabsFixedV878239:keyNorm==="client_socoterm"?true:!!src.clientTabsFixedV878239,
       readOnly:builtInAdmin?false:(src.readOnly??base.readOnly??true),
       canCreateProject:builtInAdmin?true:(src.canCreateProject??base.canCreateProject??false),
       canEditBudget:builtInAdmin?false:(src.canEditBudget??base.canEditBudget??false),
@@ -88,11 +193,6 @@ function isAppStorageKey8782(k){return /^aco_/.test(k)&&!k.startsWith(STORAGE_NS
 function migrateStorageForUser8782(user){
   const u=String(user||"").trim().toLowerCase();
   if(!u)return;
-  if(u==="pol"){
-    // Usuari de prova: mai ha d'arrossegar dades antigues d'Héctor ni dades contaminades de versions anteriors.
-    Object.keys(localStorage).forEach(k=>{if(k.startsWith(`${STORAGE_NS8782}__pol__`)||k.endsWith("__pol"))localStorage.removeItem(k)});
-    return;
-  }
   // V87.259 · els comptes d'empresa (emp_…) comencen buits: mai hereten dades antigues d'aquest navegador.
   if(u.startsWith("emp_"))return;
   if(localStorage.getItem(`${STORAGE_NS8782}__migrated__${u}`)==="1")return;
@@ -2866,30 +2966,48 @@ function LoginScreen8778({onLogin}){
   const[remember,setRemember]=useState(!!saved.user);
   const[err,setErr]=useState("");
   const[busy,setBusy]=useState(false);
+  // V87.260 · sense contrasenyes al codi:
+  // - portal de client (i altres comptes interns): contrasenya xifrada triada per l'Héctor;
+  // - Héctor: correu i contrasenya del núvol o, en un aparell seu, «Entrar al meu espai»;
+  //   si s'hi ha fet servir el portal de client, aquest botó només surt quan no hi ha connexió;
+  // - comptes d'empresa: usuari curt i contrasenya del núvol.
+  const locked=portalLocked878260(),hectorHere=hectorDevice878260();
+  const[offline,setOffline]=useState(()=>typeof navigator!=="undefined"&&navigator.onLine===false);
+  const showMine=hectorHere&&(!locked||offline);
+  function enter(u){sessionStorage.setItem("aco_current_user8779",u);onLogin?.(u)}
   async function submit(e){
     e.preventDefault();
     const u=user.trim().toLowerCase();
-    const account=getAppAccount878233(u);
-    // V87.258.2 · si no és un usuari intern d'aquest espai, es prova com a compte del núvol
-    // (brava, socoterm, oriol, marti…): si és correcte, l'app canvia de compte sola.
-    if(!(account&&account.password===pwd)&&typeof window!=="undefined"&&window.__acoCloud?.switchTo){
-      setBusy(true);setErr("");
-      try{await window.__acoCloud.switchTo(u,pwd);return}catch(x){setBusy(false);setErr(x?.offline?"No hi ha connexió amb el núvol.":"Usuari o contrasenya incorrectes.");return}
-    }
-    if(account&&account.password===pwd){
+    if(!u){setErr("Escriu l’usuari o el correu.");return}
+    const account=u!=="hector"&&!u.startsWith("emp_")?getAppAccount878233(u):null;
+    if(account&&checkAccountPassword878260(account,pwd)){
+      setPortalLock878260(true);
       try{remember?localStorage.setItem("aco_login_remember_v8798",JSON.stringify({user:u})):localStorage.removeItem("aco_login_remember_v8798")}catch{}
       try{if(window.PasswordCredential&&navigator.credentials){navigator.credentials.store(new PasswordCredential({id:u,password:pwd,name:u})).catch(()=>{})}}catch{}
-      sessionStorage.setItem("aco_current_user8779",u);onLogin?.(u);return
+      enter(u);return
     }
-    setErr("Usuari o contrasenya incorrectes.");
+    // V87.258.2 · si no és un usuari intern, es prova com a compte del núvol (correu de l'Héctor,
+    // o brava, socoterm, oriol, marti…): si és correcte, l'app canvia de compte sola.
+    if(typeof window==="undefined"||!window.__acoCloud?.switchTo){setErr("Usuari o contrasenya incorrectes.");return}
+    let login=user.trim();
+    if(u==="hector"){login=hectorCloudEmail878260();if(!login){setErr("Escriu el teu correu del núvol.");return}}
+    setBusy(true);setErr("");
+    try{await window.__acoCloud.switchTo(login,pwd);return}
+    catch(x){
+      setBusy(false);
+      if(x?.offline){setOffline(true);setErr(hectorHere?"No hi ha connexió amb el núvol. Pots entrar al teu espai d’aquest aparell amb el botó de sota.":"No hi ha connexió amb el núvol.")}
+      else setErr("Usuari o contrasenya incorrectes.");
+    }
   }
   return <div className="login-page-v8778"><form className="login-card-v8778" onSubmit={submit} autoComplete="on" method="post" action="/login">
     <div className="login-logo-v8778">CO</div><h1>APP Control d’Obres</h1><p>Accés privat al mòdul tècnic del despatx.</p>
-    <label><span>Usuari</span><input autoFocus name="username" id="username" value={user} onChange={e=>setUser(e.target.value)} placeholder="Usuari" autoComplete="username" inputMode="text"/></label>
+    <label><span>Usuari o correu</span><input autoFocus name="username" id="username" value={user} onChange={e=>setUser(e.target.value)} placeholder="Usuari o correu" autoComplete="username" inputMode="email" autoCapitalize="none"/></label>
     <label><span>Contrasenya</span><input type="password" name="password" id="password" value={pwd} onChange={e=>setPwd(e.target.value)} placeholder="Contrasenya" autoComplete="current-password"/></label>
     <label className="remember-login-v8798"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)}/><span>Recordar accés en aquest dispositiu</span></label>
     {err&&<div className="login-error-v8778">{err}</div>}
-    <button className="primary" type="submit" disabled={busy}>{busy?"Entrant…":"Entrar"}</button><small>El navegador també pot oferir desar la contrasenya si el gestor de contrasenyes està activat. En iPad/mòbil, el clauer pot emplenar-la amb Face ID / Touch ID.</small>
+    <button className="primary" type="submit" disabled={busy}>{busy?"Entrant…":"Entrar"}</button>
+    {showMine&&<button type="button" className="secondary login-mine-v878260" onClick={()=>enter("hector")}>{locked?"Sense connexió · entrar al meu espai":"Entrar al meu espai"}</button>}
+    <small>Héctor: el teu correu i la contrasenya del núvol. Empreses: l’usuari i la contrasenya de la guia d’inici. Portal de client: l’usuari i la contrasenya que us ha donat el despatx.</small>
     <button type="button" className="secondary login-repair-v8785" onClick={()=>{
       const u=(user||"hector").trim().toLowerCase();
       sessionStorage.removeItem("aco_current_user8779");
@@ -3508,7 +3626,9 @@ const[screen,setScreen]=useState("Inici"),[collapsed,setCollapsed]=useState(fals
 // V87.257 · quan l'app es recarrega sola per posar-se al dia (núvol o wifi), no torna
 // a demanar l'usuari i torna a la mateixa pantalla on eres.
 const reentry878257=useRef((()=>{try{const u=sessionStorage.getItem("aco-reentrar-auto")||"";sessionStorage.removeItem("aco-reentrar-auto");return u&&u===sessionStorage.getItem("aco_current_user8779")?u:""}catch{return ""}})());
-const[authUser8779,setAuthUser8779]=useState(()=>reentry878257.current);
+// V87.260 · si no és una recàrrega, s'entra sol (compte d'empresa o aparell de l'Héctor); un usuari
+// que ja no existeix (p. ex. «pol») no es recupera.
+const[authUser8779,setAuthUser8779]=useState(()=>{const u=reentry878257.current;if(u&&(u.startsWith("emp_")||getAppAccount878233(u)))return u;return autoEntryUser878260()});
 const[empresa878259,setEmpresa878259]=useState(()=>{try{return empresaInfo878259()}catch{return null}});
 const navBack878257=useRef((()=>{try{return reentry878257.current?JSON.parse(sessionStorage.getItem("aco-on-era")||"null"):null}catch{return null}})());
 const[dataLoadedUser8781,setDataLoadedUser8781]=useState("");
@@ -10542,7 +10662,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.259.2",
+    app_version:"87.260",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -10623,7 +10743,7 @@ function RecoverySnapshotsPanel878122({setClients,setObres,setOdata,authUser}){
 function accountDraft878233(account={},clients=[],owner="hector"){
   return {
     username:String(account.username||""),
-    password:String(account.password||""),
+    password:"",
     displayName:String(account.displayName||""),
     role:String(account.role||"client"),
     module:String(account.module||(account.role==="admin"?"technical":"module2")),
@@ -10666,31 +10786,49 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
   function saveAccount(){
     const username=accountUsernameSlug878233(form.username||form.displayName);
     if(!username){alert("Escriu un usuari o un nom de client.");return}
-    if(!String(form.password||"")){alert("Cal indicar una contrasenya inicial.");return}
     if(newMode&&accounts[username]){alert("Aquest usuari ja existeix.");return}
+    // V87.260 · contrasenya desada xifrada; l'Héctor no en té (entra amb el núvol).
+    const pwdNew=String(form.password||"");
+    if(username!=="hector"&&!pwdNew&&!accounts[username]?.passwordHash){alert("Cal indicar una contrasenya.");return}
+    if(pwdNew&&OLD_PUBLIC_PASSWORDS878260.includes(pwdNew)){alert("Aquesta contrasenya era pública. Tria'n una altra.");return}
+    if(pwdNew&&pwdNew.length<8){alert("La contrasenya ha de tenir com a mínim 8 caràcters.");return}
     const requestedClientTabs=form.allowedTabs||[];
     const requiredFeatureTabs=[form.canEditBudget?"Pressupost obra":"",form.canEditCertifications?"Certificacions obra":""].filter(Boolean);
-    const normalized={...form,username,password:String(form.password),role:form.role==="admin"?"admin":"client",module:form.role==="admin"?"technical":"module2",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:[...new Set([...(requestedClientTabs.length?requestedClientTabs:["Resum"]),...requiredFeatureTabs])],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject,canEditBudget:form.role==="admin"?false:!!form.canEditBudget,canEditCertifications:form.role==="admin"?false:!!form.canEditCertifications,canUseClientLibrary:form.role==="admin"?false:!!form.canUseClientLibrary,clientLibraryMaxPerChapter:form.role==="admin"?3:Math.max(1,Math.min(20,parseNum8770(form.clientLibraryMaxPerChapter)||3)),clientTabsFixedV878239:form.role==="admin"?false:!!form.clientTabsFixedV878239};
-    const next={...accounts,[username]:normalized};
+    const normalized={...form,username,password:undefined,passwordHash:username==="hector"?"":(pwdNew?hashPassword878260(pwdNew):String(accounts[username]?.passwordHash||"")),role:form.role==="admin"?"admin":"client",module:form.role==="admin"?"technical":"module2",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:[...new Set([...(requestedClientTabs.length?requestedClientTabs:["Resum"]),...requiredFeatureTabs])],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject,canEditBudget:form.role==="admin"?false:!!form.canEditBudget,canEditCertifications:form.role==="admin"?false:!!form.canEditCertifications,canUseClientLibrary:form.role==="admin"?false:!!form.canUseClientLibrary,clientLibraryMaxPerChapter:form.role==="admin"?3:Math.max(1,Math.min(20,parseNum8770(form.clientLibraryMaxPerChapter)||3)),clientTabsFixedV878239:form.role==="admin"?false:!!form.clientTabsFixedV878239};
+    const next=Object.fromEntries(Object.entries({...accounts,[username]:normalized}).filter(([k])=>!k.startsWith("emp_")).map(([k,v])=>{const {password,...rest}=v||{};return [k,rest]}));
     if(!saveAppAccounts878233(next)){alert("No s'ha pogut guardar el compte.");return}
-    setAccounts(next);setSelected(username);setNewMode(false);alert("Usuari guardat.");
+    setAccounts(readAppAccounts878233());setSelected(username);setNewMode(false);setForm(f=>({...f,password:""}));alert("Usuari guardat.");
   }
-  function changeMyPassword(){
+  // V87.260 · l'Héctor i les empreses canvien la contrasenya del núvol; els comptes interns, la seva (xifrada).
+  const cloudUser878260=String(authUser||"").toLowerCase()==="hector"||String(authUser||"").startsWith("emp_");
+  const [pwdBusy878260,setPwdBusy878260]=useState(false);
+  async function changeMyPassword(){
     if(!newPwd||newPwd!==newPwd2){alert("Les dues contrasenyes han de coincidir.");return}
+    if(newPwd.length<8){alert("La contrasenya ha de tenir com a mínim 8 caràcters.");return}
+    if(OLD_PUBLIC_PASSWORDS878260.includes(newPwd)){alert("Aquesta contrasenya era pública. Tria'n una altra.");return}
+    if(cloudUser878260){
+      if(!window.__acoCloud?.changePassword||!window.__acoCloud.status().email){alert("Cal estar connectat al núvol per canviar la contrasenya.");return}
+      setPwdBusy878260(true);
+      try{await window.__acoCloud.changePassword(newPwd);setNewPwd("");setNewPwd2("");alert("Contrasenya del núvol canviada. Fes-la servir a partir d'ara a tots els aparells.")}
+      catch(e){alert(e?.offline?"No hi ha connexió amb el núvol. Torna-ho a provar més tard.":/different/i.test(e?.message||"")?"La contrasenya nova ha de ser diferent de l'actual.":"No s'ha pogut canviar: "+(e?.message||e))}
+      finally{setPwdBusy878260(false)}
+      return;
+    }
     const username=String(authUser||"").toLowerCase();
-    const next={...accounts,[username]:{...(accounts[username]||currentAccount),username,password:newPwd}};
+    const {password,...rest}=accounts[username]||currentAccount;
+    const next=Object.fromEntries(Object.entries({...accounts,[username]:{...rest,username,passwordHash:hashPassword878260(newPwd)}}).filter(([k])=>!k.startsWith("emp_")).map(([k,v])=>{const {password,...r}=v||{};return [k,r]}));
     if(!saveAppAccounts878233(next)){alert("No s'ha pogut guardar la contrasenya.");return}
-    setAccounts(next);setNewPwd("");setNewPwd2("");alert("Contrasenya canviada en aquest navegador.");
+    setAccounts(readAppAccounts878233());setNewPwd("");setNewPwd2("");alert("Contrasenya canviada.");
   }
   const linkedClient=clients.find(c=>String(c.id)===String(currentAccount.clientId||""));
   return <Card title="Usuaris, clients i permisos">
-    <div className="module-note-v8738 account-note-v878233"><b>Accés de prova</b><span>El compte inicial és <b>socoterm</b> amb contrasenya <b>socoterm</b>. Associa’l a un client i limita les pestanyes abans de compartir l’accés.</span></div>
+    {admin&&<div className="module-note-v8738 account-note-v878233"><b>Portal de client intern</b><span>Només funciona en els teus aparells i amb les teves dades: fes-lo servir amb el client al davant. La contrasenya es desa xifrada. Si s'hi entra en un aparell, per tornar al teu espai caldrà la contrasenya del núvol (o no tenir connexió).</span></div>}
     {admin&&<div className="account-admin-panel-v878233">
       <div className="account-admin-head-v878233"><div><b>Comptes disponibles</b><span>Crea un usuari amb el nom del client o edita’n els permisos.</span></div><div className="actions-inline"><select value={newMode?"":selected} onChange={e=>{setNewMode(false);setSelected(e.target.value)}}><option value="">Selecciona un usuari</option>{Object.values(accounts).map(a=><option key={a.username} value={a.username}>{a.displayName||a.username} · {a.username}</option>)}</select><button type="button" className="secondary" onClick={newAccount}>+ Nou usuari</button></div></div>
       <div className="form-grid account-form-grid-v878233">
         <label><span>Usuari</span><input value={form.username||""} readOnly={!newMode} onChange={e=>change("username",e.target.value)} placeholder="ex. socoterm"/></label>
         <label><span>Nom visible</span><input value={form.displayName||""} onChange={e=>change("displayName",e.target.value)} placeholder="Nom del client"/></label>
-        <label><span>Contrasenya inicial</span><input type="password" value={form.password||""} onChange={e=>change("password",e.target.value)} placeholder="Afegeix una contrasenya"/></label>
+        {(newMode||selected!=="hector")&&<label><span>{!newMode&&accounts[selected]?.passwordHash?"Contrasenya nova (buit = no canviar-la)":"Contrasenya"}</span><input type="password" autoComplete="new-password" value={form.password||""} onChange={e=>change("password",e.target.value)} placeholder={!newMode&&accounts[selected]?.passwordHash?"Deixa-ho buit per no canviar-la":"Mínim 8 caràcters"}/></label>}
         <label><span>Tipus d’usuari</span><select value={form.role||"client"} onChange={e=>change("role",e.target.value)}><option value="client">Client</option><option value="admin">Despatx / administrador</option></select></label>
         <label><span>Client associat</span><select value={form.clientId||""} onChange={e=>change("clientId",e.target.value)}><option value="">Selecciona client</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao||c.id}</option>)}</select></label>
         <label><span>Propietari de les dades</span><input value={form.ownerUser||""} onChange={e=>change("ownerUser",e.target.value)} placeholder="hector"/></label>
@@ -10701,9 +10839,9 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
     </div>}
     {!admin&&<div className="module-note-v8738"><b>{CLIENT_MODULE_LABEL878235} · {currentAccount.displayName||authUser}</b><span>{linkedClient?"Client associat: "+(linkedClient.nom||linkedClient.rao||linkedClient.id)+".":"Aquest compte encara no té cap client associat."} La vista de client no mostra la llibreria ni les pantalles tècniques generals.</span></div>}
     <div className="password-change-panel-v878233">
-      <div><b>Canviar la meva contrasenya</b><span>El canvi queda guardat per a aquest accés.</span></div>
+      <div><b>{cloudUser878260?"Canviar la meva contrasenya del núvol":"Canviar la meva contrasenya"}</b><span>{cloudUser878260?"És la que fas servir per entrar al núvol des de qualsevol aparell. Cal connexió.":"El canvi queda guardat per a aquest accés."}</span></div>
       <div className="form-grid"><label><span>Nova contrasenya</span><input type="password" value={newPwd} onChange={e=>setNewPwd(e.target.value)} /></label><label><span>Repetir contrasenya</span><input type="password" value={newPwd2} onChange={e=>setNewPwd2(e.target.value)} /></label></div>
-      <button type="button" className="secondary" onClick={changeMyPassword}>Canviar contrasenya</button>
+      <button type="button" className="secondary" disabled={pwdBusy878260} onClick={changeMyPassword}>{pwdBusy878260?"Canviant…":"Canviar contrasenya"}</button>
     </div>
   </Card>;
 }

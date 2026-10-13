@@ -72,9 +72,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 | Compte | Com entra | Què veu |
 |---|---|---|
-| **Héctor** (propietari) | núvol amb el seu correu + app `hector` | Tot: expedients, pressupost, certificacions, factures, temps, agenda, albarans, configuració, compartir obres. Les seves dades també es desen a `DADES`. |
-| `pol` | intern (prova) | Administrador de prova, espai buit. |
-| Portal client intern (`socoterm` intern, mòdul 2) | pantalla interna | Només les obres del seu client i les pestanyes permeses (`allowedTabs`). Lectura, amb edició limitada de pressupost i certificacions. |
+| **Héctor** (propietari) | núvol amb el seu correu; en un aparell seu entra sol a `hector` (sense contrasenya local, des de la V87.260) | Tot: expedients, pressupost, certificacions, factures, temps, agenda, albarans, configuració, compartir obres. Les seves dades també es desen a `DADES`. |
+| Portal client intern (`client_socoterm`, mòdul 2) | pantalla interna, amb la contrasenya que l’Héctor tria a Configuració (desada xifrada) | Només les obres del seu client i les pestanyes permeses (`allowedTabs`). Lectura, amb edició limitada de pressupost i certificacions. |
 | **Comptes d’empresa del núvol** (`brava`, `socoterm`, `oriol`, `marti`) | usuari curt + contrasenya | Espai propi buit (`aco_v8782__emp_<usuari>__…`), administrador del seu espai. La primera vegada trien nom i perfil **Constructor** o **Tècnic**. Albarans per a tots dos perfils. Veuen les obres que algú els ha compartit, amb l’etiqueta «Compartida per…». |
 
 ## Decisions importants (no desfer sense parlar-ne)
@@ -107,8 +106,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 ## Pendent o a mitges
 
 - **Auditoria de seguretat (10/10/2026)**: `docs/auditoria-seguretat.md`, ordenada per urgència. Resolts el
-  13/10/2026: domini `controlobres.app` registrat i registre de comptes tancat a Supabase. Queden: activar les còpies
-  del núvol (`tools/copies/LLEGEIX-ME.md`, falta el SQL i el compte de còpies), contrasenyes `0000`/`1919`/`socoterm` al codi (V87.260).
+  13/10/2026: domini `controlobres.app` registrat i registre de comptes tancat a Supabase. Còpies del núvol actives
+  des del 13/10/2026. Contrasenyes `0000`/`1919`/`socoterm` fora del codi i compte `pol` esborrat a la V87.260.
 - **Esborrar de l’historial de GitHub la còpia de dades de juliol**
   (`DADES_REPARADES/app-control-obres-hector-backup-reparat-v87-211-2026-07-22.json`, dades reals de clients).
   Es va treure del repositori a la V87.259.2, però continua als commits antics. Cal reescriure l’historial
@@ -118,7 +117,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Hores per treballador** (constructors) i mòduls per a **autònoms / operaris / promotors**.
 - **Portal de client amb compte de núvol propi** (avui els clients només tenen el portal intern).
 - Obres compartides: hores, agenda i albarans no es comparteixen; «només consulta» no es bloqueja a la pantalla.
-- Seguretat: contrasenyes internes escrites al codi (comptes `hector`, `pol`, `socoterm`); polítiques antigues
+- Seguretat: polítiques antigues
   de Supabase Storage (documents) encara anònimes; considerar Supabase Pro en comercialitzar.
 - Dades a revisar amb l’Héctor: partides certificades per sobre del 100 %, codis repetits
   (CALA ROVIRA 01.16, Verbania 04.01), dates desordenades a JAVI PUADO i MARICEL.
@@ -137,6 +136,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - Servidor B (com Render, sense disc): `set ACO_SENSE_DISC=1&& set VITE_CLOUD_URL=http://localhost:5490&& npx vite --port 5198`
   - Proves amb Edge headless + CDP: `cloudtest*.mjs`, `sharetest.mjs`, `emptest.mjs`, `pdftest.mjs`, `fototest.mjs`…
     (perfil del navegador en una ruta curta, si no IndexedDB falla).
+  - `contrasenyestest.mjs`: entrar a l’app sense contrasenyes al codi (ordinador, mòbil, empresa, sense connexió,
+    portal), amb una còpia de DADES; comprova que el DADES real no canvia.
   - `copiatest.mjs`: 26 proves de `tools/copies` (còpia i restauració) amb el Supabase de proves i carpetes temporals.
   - `compare.js` + `extractor.js`: comparar pressupostos i certificacions entre dues còpies.
+- **Abans de tocar `src/`, tancar `OBRIR_APP.bat`**: el servidor de Vite aplica els canvis a l’app oberta amb les
+  dades reals (va passar el 13/10/2026 amb la V87.260: es van posar al dia els comptes de l’Héctor abans d’hora).
 - Abans de llançar dos servidors de la mateixa carpeta, deixar arrencar el primer (memòria cau de Vite).

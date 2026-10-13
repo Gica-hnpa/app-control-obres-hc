@@ -24,8 +24,8 @@ al codi ni a Supabase.
 |---|---|---|---|
 | A | Correu dels comptes d'empresa: el domini `controlobres.app` no és teu | ✅ resolt 13/10 | — |
 | B | Qualsevol persona es pot crear un compte al teu Supabase | ✅ resolt 13/10 | — |
-| C | Còpies de seguretat del núvol (pla gratuït: cap) | ⚠️ preparat 13/10, falta activar-ho | 🔴 |
-| D | Contrasenyes escrites al codi (`hector`, `pol`, `socoterm`) | ❌ | 🔴 |
+| C | Còpies de seguretat del núvol (pla gratuït: cap) | ✅ actives des del 13/10 | — |
+| D | Contrasenyes escrites al codi (`hector`, `pol`, `socoterm`) | ✅ resolt a la V87.260 | — |
 | E | Rols: el portal de client només amaga botons | ❌ | 🟠 |
 | F | Sincronització quan dues persones editen alhora | ⚠️ | 🟠 |
 | G | Espai: fotos i PDF dins la base de dades (límit 500 MB) | ⚠️ | 🟠 |
@@ -88,10 +88,10 @@ com ja fas ara. És un sol clic i no afecta els comptes que ja existeixen.
 
 ---
 
-## 🔴 C. Còpies de seguretat del núvol — ⚠️ preparat
+## ✅ C. Còpies de seguretat del núvol — resolt
 
-> **13/10/2026:** preparada la còpia diària a l'ordinador (`tools/copies/`, provada amb el Supabase de proves).
-> Falta que l'Héctor creï el compte de còpies i executi `supabase/aco_copies_v87260.sql` (vegeu `tools/copies/LLEGEIX-ME.md`).
+> **13/10/2026:** còpia diària activa (`tools/copies/`): cada dia a les 13:00, un fitxer per compte a
+> `DADESCOPIES_NUVOL` i a `DocumentsCOPIES_NUVOL`. Primera còpia: 4 comptes, 12 obres compartides.
 
 *(Punt 8)*
 
@@ -123,7 +123,11 @@ connecta fins que el reactives des del panell.
 
 ---
 
-## 🔴 D. Contrasenyes escrites al codi — ❌
+## ✅ D. Contrasenyes escrites al codi — resolt (V87.260)
+
+> **V87.260:** `0000`, `1919` i `socoterm` fora del codi; compte `pol` i les seves dades esborrats. L'Héctor entra
+> amb el núvol (o sol, en un aparell seu); el portal (`client_socoterm`) fa servir una contrasenya triada a
+> Configuració, desada xifrada. Empreses i Héctor poden canviar la contrasenya del núvol a Configuració.
 
 *(Punt 1)*
 
@@ -449,9 +453,9 @@ només ordre local. La seguretat real és la del servidor, i està bé.
 
 1. ✅ Registrar el domini `controlobres.app` (A) — fet 13/10/2026.
 2. ✅ Desactivar el registre de comptes nous a Supabase (B) — fet 13/10/2026.
-3. 🔴 Fer una còpia del núvol (totes les empreses) i decidir-ne la freqüència (C) — preparada, falta activar-la.
-4. 🔴 Treure del codi `0000`, `1919` i `socoterm`, i donar a les empreses un botó per canviar la
-   contrasenya del núvol (D).
+3. ✅ Fer una còpia del núvol (totes les empreses) i decidir-ne la freqüència (C) — activa des del 13/10/2026.
+4. ✅ Treure del codi `0000`, `1919` i `socoterm`, i donar a les empreses un botó per canviar la
+   contrasenya del núvol (D) — V87.260.
 5. 🟠 Abans del 30/10: mirar el Security Advisor de Supabase (I).
 6. 🟠 Pantalla de «canvis no desats» i peces més petites per als albarans (F).
 7. 🟠 Tancar els 3 punts febles de les obres compartides al SQL (H).

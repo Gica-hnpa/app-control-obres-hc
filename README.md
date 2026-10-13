@@ -153,7 +153,7 @@ sinònims, sense incorporar automàticament tot el contingut dels pressupostos.
   pressupost. És una connexió assistida: l’usuari revisa el resultat i torna a
   importar l’Excel. La connexió API automàtica requereix un backend segur.
 
-El compte de prova `socoterm / socoterm` ja porta les tres funcions econòmiques
+El compte del portal (des de la V87.260 `client_socoterm`) ja porta les tres funcions econòmiques
 activades. La sincronització real entre ordinadors continua depenent de tenir
 Supabase/Auth configurat: aquesta versió prepara permisos i escriptura segura,
 però no converteix per si sola el navegador local en una sincronització de
@@ -174,8 +174,8 @@ pantalla per evitar haver de desplaçar tota la pàgina.
 - La vista PDF continua disponible des de «Veure PDF».
 
 L’avís de contrasenya no prové de la maquetació del pressupost: el compte de
-prova `socoterm / socoterm` utilitza una contrasenya curta i molt comuna, i el
-navegador pot marcar-la com a poc segura. Es pot canviar des de Configuració.
+portal utilitzava una contrasenya curta i molt comuna. Des de la V87.260 no hi ha cap
+contrasenya al codi: la tria l’Héctor a Configuració i es desa xifrada.
 
 ## Pressupost, PDF i llibreria de partides
 
@@ -210,7 +210,7 @@ La V87.238 separa clarament els dos usos de l’aplicació: l’accés global d�
 - La pestanya **Pressupost** mostra els capítols plegables, les partides i el total actualitzat.
 - La pestanya **Certificacions obra** mostra el pressupost, el certificat, el percentatge executat i l’import pendent per capítol.
 - El client només pot editar pressupostos i certificacions quan Héctor activa aquests permisos; les factures continuen en consulta.
-- La contrasenya de prova continua sent `socoterm / socoterm` i es pot canviar des de Configuració.
+- Des de la V87.260, la contrasenya del portal la tria l’Héctor a Configuració i es desa xifrada.
 
 ## Accés per client, llibreria manual i dates
 
@@ -218,7 +218,7 @@ La data de creació continua mostrant-se només amb dia, mes i any, sense hora, 
 
 ## Usuaris de prova i vista del client
 
-- Compte inicial de prova: socoterm / socoterm, associat al client SOCOTERM.
+- Compte del portal: el compte del portal (des de la V87.260 `client_socoterm`, amb la contrasenya que tria l’Héctor a Configuració), associat al client SOCOTERM.
 - El client només veu els seus expedients i la vista de l’obra amb les pestanyes autoritzades.
 - El compte inicial té el portal limitat i les funcions econòmiques de prova activades; les altres modificacions les continua fent el despatx.
 - A Configuració es pot canviar la contrasenya pròpia i, des d’un compte administrador, crear usuaris, associar-los a un client i escollir les pestanyes visibles.
