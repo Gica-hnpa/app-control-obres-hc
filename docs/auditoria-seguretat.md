@@ -30,7 +30,7 @@ al codi ni a Supabase.
 | F | Sincronització quan dues persones editen alhora | ⚠️ | 🟠 |
 | G | Espai: fotos i PDF dins la base de dades (límit 500 MB) | ⚠️ | 🟠 |
 | H | Obres compartides: 3 punts febles | ⚠️ | 🟠 |
-| I | Canvi de Supabase del 30/10/2026 | ⚠️ | 🟠 (té data) |
+| I | Canvi de Supabase del 30/10/2026 | ✅ resolt (V87.262.1) | — |
 | J | Funció d'albarans amb IA (abans de posar-la en marxa) | ⚠️ | 🟠 |
 | K | Arxius (Storage) i taula antiga de juliol | ⚠️ | 🟡 |
 | L | Estructura de dades (`aco_kv` / `aco_shared`) | ⚠️ | 🟡 |
@@ -335,7 +335,12 @@ SQL. Tancar el registre (B) ja treu quasi tot el risc.
 
 ---
 
-## 🟠 I. Canvi de Supabase del 30/10/2026 — ⚠️ (té data)
+## ✅ I. Canvi de Supabase del 30/10/2026 — resolt (V87.262.1)
+
+> **V87.262.1:** revisats el Security i el Performance Advisor. Permisos justos a cada taula (abans `anon` ho tenia
+> tot), funcions amb el camí de cerca fixat, regles RLS més ràpides i ajuntades, índex per propietari, i la norma
+> nova per a taules futures ja activada. Provat amb usuaris inventats (42/42). La protecció de contrasenyes
+> filtrades només existeix al pla Pro.
 
 Supabase ha anunciat que, **a partir del 30/10/2026**, les taules que no tinguin permisos donats
 explícitament deixaran de ser accessibles des de l'app. L'anunci és poc clar sobre si afecta les taules
@@ -466,7 +471,7 @@ només ordre local. La seguretat real és la del servidor, i està bé.
 3. ✅ Fer una còpia del núvol (totes les empreses) i decidir-ne la freqüència (C) — activa des del 13/10/2026.
 4. ✅ Treure del codi `0000`, `1919` i `socoterm`, i donar a les empreses un botó per canviar la
    contrasenya del núvol (D) — V87.260.
-5. 🟠 Abans del 30/10: mirar el Security Advisor de Supabase (I).
+5. ✅ Abans del 30/10: mirar el Security Advisor de Supabase (I) — fet a la V87.262.1.
 6. 🟠 Pantalla de «canvis no desats» i peces més petites per als albarans (F).
 7. 🟠 Tancar els 3 punts febles de les obres compartides al SQL (H).
 8. 🟠 Abans d'activar la IA d'albarans: control d'usuari i límits (J).
