@@ -93,7 +93,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 - **Git en lloc d’una carpeta per versió** (des d’octubre 2026): es treballa sempre a `app-control-obres`;
   cada versió és un commit «V87.XXX – què canvia». Res es puja a GitHub sense el sí de l’Héctor
-  (cada pujada es publica a Render). El número es manté a `App.jsx` (`app_version`), `package.json`,
+  (cada pujada es publica a Render). El número es manté a `App.jsx` (`app_version` i `APP_VERSION878264`, que es veu al menú i a Configuració), `package.json`,
   `theme-v87249.css` (`content:"V87.XXX"`), `cloudSync.js`/`localDiskSync.js` (`VERSION`) i els `.bat`.
 - **Comptes de prova al navegador**: provar `oriol`, `brava`… en una finestra InPrivate. Si el navegador
   queda amb la sessió del núvol d’una empresa, l’app obre l’espai buit d’aquella empresa (va passar el

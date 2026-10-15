@@ -223,3 +223,29 @@ html body .alb-editor-v878259 .alb-ai-btns{display:flex;flex-wrap:wrap;gap:8px}
 .espai-bar-v878263{height:8px;border-radius:999px;background:#e2e8f0;overflow:hidden}
 .espai-bar-v878263 i{display:block;height:100%;background:#2563eb}
 .espai-bar-v878263 i.alerta{background:#dc2626}
+
+/* V87.264 · versió visible (menú i Configuració) */
+.nav-version-v878264{margin-top:auto;padding:12px 14px 6px;font:500 11px var(--app-font,system-ui);color:var(--co-ink-3,#64748b);letter-spacing:.03em}
+.config-version-v878264{font:500 13px var(--app-font,system-ui);color:var(--co-ink-3,#64748b)}
+.config-version-v878264 b{color:var(--co-ink,#0f172a)}
+html body .work-timer-v878254 .plegar{display:none!important}
+/* V87.264 · mòbil i tauleta (fins a 1180 px, també l'iPad apaïsat): el comptador és petit (punt + hora) a baix a la
+   dreta; si es toca, s'obre amb els botons. La versió ja no surt a la cantonada (és al menú i a Configuració), i les
+   pantalles deixen espai a baix perquè els rètols no tapin cap botó. */
+@media screen and (max-width:1180px){
+html body::after{display:none!important}
+html body .work-timer-v878254{left:auto!important;right:10px!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;padding:6px 12px!important;gap:8px!important;max-width:calc(100vw - 20px);cursor:pointer}
+html body .work-timer-v878254 .lbl,html body .work-timer-v878254>button,html body .work-timer-v878254>label{display:none!important}
+html body .work-timer-v878254.obert{z-index:6100!important;flex-wrap:wrap;justify-content:flex-start;align-items:center;border-radius:16px!important;padding:10px 12px!important;left:10px!important;max-width:none}
+html body .work-timer-v878254.obert .lbl{display:inline!important}
+html body .work-timer-v878254.obert .txt{flex:1 1 0;min-width:0;max-width:none!important;white-space:normal}
+html body .work-timer-v878254.obert .plegar{margin-left:auto}
+html body .work-timer-v878254.obert>button,html body .work-timer-v878254.obert>label{display:inline-flex!important;min-height:40px!important;align-items:center}
+html body .work-timer-v878254.obert .plegar{display:inline-flex!important;min-width:40px;justify-content:center}
+html body .main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))!important}
+html body .modal{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))!important}
+html body .obra-edit-body-v878242{padding-bottom:calc(130px + env(safe-area-inset-bottom,0px))!important}
+}
+
+/* V87.264 · ordinador: el comptador complet a baix a la dreta, lluny dels rètols del núvol (a l'esquerra) */
+@media screen and (min-width:1181px){html body .work-timer-v878254{left:auto!important;right:12px!important;bottom:calc(28px + env(safe-area-inset-bottom,0px))!important}}
