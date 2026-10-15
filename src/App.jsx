@@ -14,7 +14,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.265";
+const APP_VERSION878264="87.266";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2788,6 +2788,29 @@ function EspaiNuvol878263(){
   </Card>;
 }
 
+// V87.266 · versions que no es van triar quan es va canviar el mateix des de dos llocs alhora (cloudSync.js).
+function VersionsGuardades878266(){
+  const[list]=useState(()=>{try{return window.__acoCloud?.versions?.()||[]}catch{return []}});
+  if(!list.length)return null;
+  const quan=iso=>{try{return new Date(iso).toLocaleString("ca-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch{return ""}};
+  async function recuperar(v){
+    if(!confirm(`Recuperar aquesta versió de «${v.etiqueta}» (${quan(v.data)})?\n\nLa que hi ha ara també es guardarà aquí, per si de cas.`))return;
+    try{await window.__acoCloud.restoreVersion(v.id)}catch(e){alert(e.message||String(e))}
+  }
+  function descarregar(v){
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(v,null,2)],{type:"application/json"}));
+    a.download=`versio-${String(v.etiqueta||"dades").replace(/[^\w-]+/g,"_").replace(/^_+|_+$/g,"")}-${String(v.data).slice(0,10)}.json`;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  }
+  return <Card title="Versions guardades" className="versions-card-v878266">
+    <small className="muted">Quan s’ha canviat el mateix des de dos llocs alhora, la versió que no es va triar es guarda aquí (les 50 últimes, durant 90 dies).</small>
+    <div className="versions-list-v878266">{list.map(v=><div key={v.id} className="versions-row-v878266">
+      <div><b>{v.etiqueta}</b><span>{quan(v.data)} · {v.quina} · {v.origen}</span></div>
+      <div className="versions-actions-v878266"><button type="button" className="secondary" onClick={()=>recuperar(v)}>Recuperar</button><button type="button" className="secondary" onClick={()=>descarregar(v)}>Descarregar</button></div>
+    </div>)}</div>
+  </Card>;
+}
+
 function addActaDocFiles8764(files,setDraft){
   [...(files||[])].filter(confirmBigDocument878263).forEach(file=>{
     const reader=new FileReader();
@@ -2815,6 +2838,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
 
   const [editId,setEditId]=useState(null);
   const [draft,setDraft]=useState(null);
+  useHoldSync878266(!!draft);
   const [showActaPreview8763,setShowActaPreview8763]=useState(false);
   const [agentForm8764,setAgentForm8764]=useState({nom:"",rol:"",empresa:"",email:"",telefon:""});
   const [agentSearch87102,setAgentSearch87102]=useState("");
@@ -10805,7 +10829,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.265",
+    app_version:"87.266",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -11003,6 +11027,7 @@ return <div className="stack">
 <div className="config-version-v878264">APP Control d’Obres · versió <b>V{APP_VERSION878264}</b></div>
 <AccountAccessPanel878233 clients={clients} authUser={authUser}/>
 {admin&&!window.__acoEmpresa&&<EspaiNuvol878263/>}
+{admin&&<VersionsGuardades878266/>}
 {admin&&<><PlansModuls8736/>
 <DataJsonTools8778 clients={clients} obres={obres} odata={odata}/>
 <RecoverySnapshotsPanel878122 setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
@@ -11438,7 +11463,9 @@ return <Card title="Avisos i notes de l’obra" action={<button className="prima
 <span className={`priority-dot ${x.prioritat?.toLowerCase()}`}>{x.prioritat}</span><strong onClick={()=>setEditing(x.id)}>{x.titol}</strong><span>{x.client}</span><span>{x.obra}</span><span>{fmtAppDate8748(x.limit)}</span><span>{x.hora}</span><span>{x.estat}</span><button className="secondary" onClick={()=>setEditing(x.id)}>Veure / editar</button>
 </>}</div>})}</div>}
 </Card>}
-function Modal({title,children,close}){return <div className="modal-backdrop"><div className="modal"><button type="button" className="modal-back-mobile-v87146" onClick={close}>← Tancar / tornar</button><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
+// V87.266 · mentre hi ha una finestra oberta, la sincronització no recarrega l'app (es perdria el que no s'ha desat).
+function useHoldSync878266(on=true){useEffect(()=>{if(!on)return;const c=window.__acoCloud;c?.hold?.(true);return()=>c?.hold?.(false)},[on])}
+function Modal({title,children,close}){useHoldSync878266();return <div className="modal-backdrop"><div className="modal"><button type="button" className="modal-back-mobile-v87146" onClick={close}>← Tancar / tornar</button><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
 
 function CertPrintV79({doc}){
   const rows=doc.rows||[];

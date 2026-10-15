@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.265";
+const VERSION = "V87.266";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -43,6 +43,18 @@ function hash(str) {
   h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
   h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
   return (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36) + ":" + str.length;
+}
+// V87.266 · Dates que l'app posa sola en obrir una obra (no són feina de ningú). No compten per decidir si una peça
+// s'ha canviat «de debò» aquí i en un altre lloc: obrir la mateixa obra en dos aparells no ha de fer saltar cap pregunta.
+const TOUCH = new Set(["updatedAt", "lastOpenedAt", "lastWorkedAt"]);
+function contentHash(v) {
+  if (v == null || v === "") return "";
+  try { return hash(JSON.stringify(JSON.parse(v), (k, x) => (TOUCH.has(k) ? undefined : x))); } catch { return hash(v); }
+}
+// Versió coneguda d'una peça (la que hi ha al núvol segons aquest aparell) i el seu contingut sense dates.
+function know(k, v) {
+  meta.kc ||= {};
+  if (v === undefined) { delete meta.known[k]; delete meta.kc[k]; } else { meta.known[k] = hash(v); meta.kc[k] = contentHash(v); }
 }
 function readJson(k, f) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? f; } catch { return f; } }
 function writeRaw(k, v) { applying = true; try { localStorage.setItem(k, v); } finally { applying = false; } }
@@ -118,16 +130,167 @@ async function pullSince(cursor) {
   }
   return out;
 }
-async function pushRows(rows) {
-  let batch = [], size = 0;
-  const flush = async () => { if (!batch.length) return; await api("/rest/v1/aco_kv?on_conflict=user_id,key", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: batch }); batch = []; size = 0; };
+// V87.266 · Edició alhora. Pujada amb comprovació de versió: una peça que ja és al núvol només es desa si
+// encara hi ha la versió que aquest aparell coneixia (meta.at = data del servidor de cada peça). Si algú
+// l'ha canviada mentrestant, no es trepitja: es torna com a «canvi alhora» perquè l'usuari triï.
+// «force»: s'ha decidit expressament (primera connexió, restauració): es desa sense comprovar.
+async function pushRows(rows, { force = false } = {}) {
+  meta.at ||= {};
+  const clash = [], plain = [];
   for (const r of rows) {
+    const at = meta.at[r.key];
+    if (force || !at) { plain.push(r); continue; }
+    const body = { value: r.deleted ? null : r.value, deleted: !!r.deleted, device };
+    const patch = when => api(`/rest/v1/aco_kv?user_id=eq.${session.user_id}&key=eq.${encodeURIComponent(r.key)}&updated_at=eq.${encodeURIComponent(when)}&select=key,updated_at`, { method: "PATCH", headers: { Prefer: "return=representation" }, body });
+    let res = await patch(at);
+    if (!(Array.isArray(res) && res.length)) {
+      const cur = (await api(`/rest/v1/aco_kv?select=key,value,deleted,device,updated_at&user_id=eq.${session.user_id}&key=eq.${encodeURIComponent(r.key)}`))?.[0];
+      if (!cur) { plain.push(r); continue; } // ja no hi és: es torna a crear
+      // Al núvol hi ha el que coneixíem (només no quadrava la data): es torna a provar amb la data bona.
+      const same = cur.deleted ? !(r.key in meta.known) : meta.known[r.key] === hash(cur.value ?? "");
+      if (same) res = await patch(cur.updated_at);
+      if (!(Array.isArray(res) && res.length)) { clash.push({ key: r.key, theirs: cur }); continue; }
+    }
+    meta.at[r.key] = res[0].updated_at;
+  }
+  let batch = [], size = 0;
+  const flush = async () => {
+    if (!batch.length) return;
+    const res = await api("/rest/v1/aco_kv?on_conflict=user_id,key&select=key,updated_at", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: batch });
+    (Array.isArray(res) ? res : []).forEach(x => { meta.at[x.key] = x.updated_at; });
+    batch = []; size = 0;
+  };
+  for (const r of plain) {
     const s = String(r.value || "").length;
     if (batch.length && size + s > 1500000) await flush();
     batch.push({ user_id: session.user_id, key: r.key, value: r.deleted ? null : r.value, deleted: !!r.deleted, device });
     size += s;
   }
   await flush();
+  return clash;
+}
+// Data del servidor de cada peça (per a la comprovació de versió). Es carrega una vegada (o després d'una
+// primera connexió o una restauració) i després es manté sola amb el que es baixa i es puja.
+async function loadAt() {
+  const at = {};
+  for (let offset = 0; ; offset += 1000) {
+    const rows = await api(`/rest/v1/aco_kv?select=key,updated_at&order=key.asc&limit=1000&offset=${offset}`);
+    (rows || []).forEach(r => { at[r.key] = r.updated_at; });
+    if (!rows || rows.length < 1000) break;
+  }
+  meta.at = at;
+}
+
+// ---------- V87.266 · canvis alhora: avís, tria i versions guardades ----------
+const VERSIO_PREFIX = "aco_versio_v878266_";
+let carry = new Map(); // canvis alhora pendents de preguntar (es dictava o hi havia una finestra oberta)
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function pieceLabel(key) {
+  const [, id] = splitKey(key);
+  if (id !== null) { const o = readArr(kObres(), []).find(x => x?.id === id); return `Obra «${o?.nom || id}»`; }
+  const k = key.replace(/^aco_v8782__.+?__/, "");
+  const names = { aco_obres: "Llista d’expedients", aco_clients: "Clients", aco_agenda_v86: "Agenda" };
+  return names[k] || `Altres dades (${k.replace(/^aco_/, "").replace(/_v\d+$/, "")})`;
+}
+// Qui ha fet un canvi: l'aparell (ordinador, iPhone…) o, a les obres compartides, el compte.
+const KIND = { Windows: "ordinador Windows", Macintosh: "Mac o iPad", Linux: "ordinador Linux", iPhone: "iPhone", iPad: "iPad", Android: "Android" };
+function devLabel(dev) {
+  if (!dev) return "Un altre aparell";
+  if (String(dev).includes("@")) return `Usuari ${companyOf(dev)?.username || dev}`;
+  const k = KIND[String(dev).split("-")[0]];
+  return k ? `Aparell (${k})` : "Un altre aparell";
+}
+function whoLabel(dev) { return dev === device ? "Aquest aparell" : devLabel(dev); }
+function askConflict(items) {
+  hold(true);
+  return new Promise(resolve => {
+    const el = overlay(`
+      <h1>Canvis alhora</h1>
+      <p>Mentre treballaves aquí, s’ha canviat el mateix des d’un altre lloc:</p>
+      <ul class="conflict-list-v878266">${items.map(i => `<li><b>${esc(i.label)}</b><span>${esc(i.who)}${i.when ? " · " + esc(fmtTime(i.when)) : ""}</span></li>`).join("")}</ul>
+      <p>Tria quina versió es queda. <b>L’altra no es perd</b>: es guarda a Configuració → «Versions guardades» i la pots recuperar quan vulguis.</p>
+      <div class="choices">
+        <button type="button" data-v="meva"><b>Quedar-me la meva</b><span>La que tens en aquest aparell.</span></button>
+        <button type="button" data-v="altre"><b>Quedar-me la de l’altre</b><span>La que ja és al núvol.</span></button>
+      </div>`);
+    el.classList.add("conflict-v878266");
+    el.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { el.remove(); hold(false); resolve(b.dataset.v); }));
+  });
+}
+function versionPrefix() { return `aco_v8782__${ownNs()}__${VERSIO_PREFIX}`; }
+function listVersions() {
+  const pre = versionPrefix(), out = [];
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(pre)) { try { const v = JSON.parse(localStorage.getItem(k)); if (v?.id) out.push(v); } catch {} } }
+  return out.sort((a, b) => String(b.data).localeCompare(String(a.data)));
+}
+// Cada versió és una peça pròpia (es puja una sola vegada i no topa amb cap altra). Es guarden les 50 últimes
+// dels últims 90 dies.
+function saveVersion(v) {
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const item = { ...v, id, data: new Date().toISOString(), etiqueta: v.etiqueta || pieceLabel(v.peca) };
+  try { writeRaw(versionPrefix() + id, JSON.stringify(item)); } catch (e) { console.warn("No s'ha pogut guardar la versió", e); }
+  const old = Date.now() - 90 * 864e5;
+  listVersions().filter((x, i) => i >= 50 || Date.parse(x.data) < old).forEach(x => removeRaw(versionPrefix() + x.id));
+  schedule(2000);
+}
+// V87.266 · Abans de preguntar: si la diferència només són les dates que l'app posa sola, es decideix sense preguntar.
+//  - el mateix contingut als dos llocs, o aquí només s'ha obert l'obra → la del núvol («theirs»)
+//  - allà només s'ha obert (el contingut del núvol és el que ja coneixíem) → la d'aquí («mine»)
+//  - feina de debò als dos llocs → es pregunta («ask»)
+function triage(rows, local) {
+  const ask = [], theirs = [], mine = [];
+  for (const r of rows) {
+    const cm = contentHash(local[r.key]), ct = r.deleted ? "" : contentHash(r.value ?? ""), base = meta.kc?.[r.key];
+    if (cm === ct || (base !== undefined && cm === base)) theirs.push(r);
+    else if (base !== undefined && ct === base) mine.push(r);
+    else ask.push(r);
+  }
+  return { ask, theirs, mine };
+}
+// «La meva» sense preguntar: la del núvol es dona per vista i la d'aquí es puja damunt (amb comprovació de versió).
+function keepMine(r) { meta.at[r.key] = r.updated_at; know(r.key, r.deleted ? undefined : (r.value ?? "")); }
+// Pregunta quina versió es queda; la que no es tria es guarda.
+// «meva»: la del núvol es dona per vista (meta.known/at) i la d'aquí es puja damunt (amb comprovació de versió).
+// «altre»: torna les files del núvol que s'han d'aplicar.
+async function resolveConflicts(theirsRows, local) {
+  const choice = await askConflict(theirsRows.map(r => ({ label: pieceLabel(r.key), who: whoLabel(r.device), when: r.updated_at })));
+  const mine = [], theirs = [];
+  for (const r of theirsRows) {
+    if (choice === "meva") {
+      saveVersion({ peca: r.key, tipus: "dades", quina: "la de l’altre", origen: whoLabel(r.device), valor: r.deleted ? null : (r.value ?? "") });
+      meta.at[r.key] = r.updated_at;
+      know(r.key, r.deleted ? undefined : (r.value ?? ""));
+      mine.push(r.key);
+    } else {
+      saveVersion({ peca: r.key, tipus: "dades", quina: "la meva", origen: devLabel(device), valor: local[r.key] ?? null });
+      theirs.push(r);
+    }
+  }
+  return { mine, theirs };
+}
+function writePiece(key, value) {
+  const [base, id] = splitKey(key);
+  if (id !== null) {
+    let o = {}; try { o = JSON.parse(localStorage.getItem(base) || "{}") || {}; } catch {}
+    if (value == null) delete o[id]; else { try { o[id] = JSON.parse(value); } catch {} }
+    localStorage.setItem(base, JSON.stringify(o));
+  } else if (value == null) localStorage.removeItem(key);
+  else localStorage.setItem(key, value);
+}
+// Recuperar una versió guardada: la d'ara també es guarda abans (així tampoc es perd).
+async function restoreVersion(id) {
+  const v = listVersions().find(x => x.id === id); if (!v) throw new Error("No trobo aquesta versió.");
+  const { id: _id, data: _data, ...rest } = v;
+  if (v.tipus === "compartida") {
+    const loc = localShare(v.peca);
+    if (loc) saveVersion({ ...rest, quina: "la d’abans de recuperar", origen: devLabel(device), valor: loc });
+    applyShared({ obra_id: v.peca, ...v.valor, owner: v.owner, owner_email: v.ownerEmail, owner_nom: v.ownerNom }, !!v.owned, true);
+  } else {
+    const local = entries();
+    if (v.peca in local) saveVersion({ peca: v.peca, tipus: "dades", quina: "la d’abans de recuperar", origen: devLabel(device), valor: local[v.peca] });
+    writePiece(v.peca, v.valor);
+  }
+  await reloadSafely();
 }
 
 // ---------- dades locals ----------
@@ -176,16 +339,18 @@ function pendingKeys(local) {
 // Aplica files del núvol al navegador. «skip»: claus amb canvis locals que guanyen.
 function applyRows(rows, skip = new Set()) {
   const local = entries(); let n = 0; const patches = {};
+  meta.at ||= {};
   for (const r of rows) {
     if (skip.has(r.key)) continue;
     const val = r.deleted ? undefined : (r.value ?? "");
     const cur = local[r.key];
-    if (val === cur) { if (val === undefined) delete meta.known[r.key]; else meta.known[r.key] = hash(val); continue; }
+    if (r.updated_at) meta.at[r.key] = r.updated_at;
+    if (val === cur) { know(r.key, val); continue; }
     const [base, id] = splitKey(r.key);
     if (id !== null) (patches[base] ??= {})[id] = val;
     else if (val === undefined) removeRaw(r.key);
     else { try { writeRaw(r.key, keepForeign(r.key, val)); } catch (e) { console.warn("Núvol: no hi cap", r.key, e); continue; } }
-    if (val === undefined) delete meta.known[r.key]; else meta.known[r.key] = hash(val);
+    know(r.key, val);
     n++;
   }
   for (const base in patches) {
@@ -312,7 +477,7 @@ async function firstSync() {
   const m = { userId: session.user_id, cursor: maxTime(rows, ""), known: {} };
   const cloudObres = live.some(r => /(^|__)aco_obres$/.test(r.key) && String(r.value || "").length > 10);
   if (!cloudObres) {
-    await pushRows(Object.keys(local).map(k => ({ key: k, value: local[k] })));
+    await pushRows(Object.keys(local).map(k => ({ key: k, value: local[k] })), { force: true });
     for (const k in local) m.known[k] = hash(local[k]);
   } else if (!hasObres(local)) {
     m.known = replaceWithCloud(live);
@@ -323,7 +488,7 @@ async function firstSync() {
       m.known = replaceWithCloud(live);
     } else {
       const localKeys = new Set(Object.keys(local));
-      await pushRows([...Object.keys(local).map(k => ({ key: k, value: local[k] })), ...live.filter(r => !localKeys.has(r.key)).map(r => ({ key: r.key, deleted: true }))]);
+      await pushRows([...Object.keys(local).map(k => ({ key: k, value: local[k] })), ...live.filter(r => !localKeys.has(r.key)).map(r => ({ key: r.key, deleted: true }))], { force: true });
       for (const k in local) m.known[k] = hash(local[k]);
     }
   }
@@ -346,6 +511,8 @@ function localShare(id) {
   return { obra: JSON.stringify(obra), dades: JSON.stringify(d ?? null), foto: localStorage.getItem(kFoto(id)) || "" };
 }
 function shHash(x) { return hash((x?.obra || "") + "\u0001" + (x?.dades || "") + "\u0001" + (x?.foto || "")); }
+// V87.266 · contingut d'una obra compartida sense les dates que l'app posa sola en obrir-la
+function shContent(x) { return contentHash(x?.obra || "") + "\u0001" + contentHash(x?.dades || "") + "\u0001" + hash(x?.foto || ""); }
 function ownerNom() { const e = readArr(`aco_v8782__${ownNs()}__aco_empresa_v878259`, null); return e?.nom || companyOf(session?.email)?.username || "Héctor Cubero"; }
 function applyShared(r, owned, editor) {
   let o = {}; try { o = JSON.parse(r.obra || "{}") || {}; } catch {}
@@ -371,6 +538,8 @@ async function sharedCycle(canApply) {
   catch (e) { if (e.status === 404 || /aco_shared/.test(e.message)) { sharedTableMissing = true; return { applied: 0, waiting: false }; } throw e; }
   const me = session.user_id, email = session.email;
   const sm = readArr(sharedMetaKey(), null) || { known: {} };
+  sm.kc ||= {};
+  const knowSh = (id, x, h) => { sm.known[id] = h; sm.kc[id] = shContent(x); };
   let applied = 0, waiting = false;
   sharedOwned = new Set(rows.filter(r => r.owner === me).map(r => r.obra_id));
   for (const r of rows) {
@@ -378,20 +547,54 @@ async function sharedCycle(canApply) {
     const remote = { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" }, rh = shHash(remote);
     const loc = localShare(r.obra_id), lh = loc ? shHash(loc) : "";
     const known = sm.known[r.obra_id];
-    if (lh === rh) { sm.known[r.obra_id] = rh; continue; }
-    const remoteChanged = rh !== known, localChanged = !!loc && lh !== known;
+    if (lh === rh) { knowSh(r.obra_id, remote, rh); continue; }
+    if (!(r.obra_id in sm.kc)) { if (loc && lh === known) sm.kc[r.obra_id] = shContent(loc); else if (rh === known) sm.kc[r.obra_id] = shContent(remote); }
+    let remoteChanged = rh !== known;
+    let localChanged = !!loc && lh !== known;
+    if (remoteChanged && localChanged) {
+      // Si la diferència només són dates d'obrir l'obra, es decideix sense preguntar (com a la resta de dades).
+      const cm = shContent(loc), ct = shContent(remote), base = sm.kc[r.obra_id];
+      if (cm === ct || (base !== undefined && cm === base)) localChanged = false;
+      else if (base !== undefined && ct === base) { knowSh(r.obra_id, remote, rh); remoteChanged = false; }
+    }
+    // V87.266 · l'obra s'ha canviat aquí i també des d'un altre compte: es pregunta (abans guanyava el núvol)
+    if (remoteChanged && localChanged) {
+      const nom = (() => { try { return JSON.parse(r.obra || "{}").nom || r.obra_id; } catch { return r.obra_id; } })();
+      const who = r.updated_by ? whoLabel(r.updated_by) : "Un altre compte";
+      const version = (valor, quina, origen) => ({ peca: r.obra_id, tipus: "compartida", quina, origen, valor, owner: r.owner, ownerEmail: r.owner_email || "", ownerNom: r.owner_nom || "", owned, etiqueta: `Obra compartida «${nom}»` });
+      if (!editor) {
+        // Només consulta: el canvi d'aquí no es pot desar al núvol, però tampoc es perd (es guarda com a versió).
+        if (!canApply) { waiting = true; continue; }
+        saveVersion(version(loc, "la meva (sense permís per desar-la)", devLabel(device)));
+        applyShared(r, owned, editor); knowSh(r.obra_id, remote, rh); applied++;
+        continue;
+      }
+      if (holds) { waiting = true; continue; }
+      const choice = await askConflict([{ label: `Obra compartida «${nom}»`, who, when: r.updated_at }]);
+      if (choice === "altre") {
+        saveVersion(version(loc, "la meva", devLabel(device)));
+        applyShared(r, owned, editor); knowSh(r.obra_id, remote, rh); applied++;
+        continue;
+      }
+      // «La meva»: la de l'altre es guarda i es dona per vista; la d'aquí es puja damunt (amb comprovació).
+      saveVersion(version(remote, "la de l’altre", who));
+      knowSh(r.obra_id, remote, rh); remoteChanged = false;
+    }
     if (remoteChanged || !loc) {
       // Guanya el núvol (com a la resta de dades). Només s'aplica si es pot recarregar.
       if (!canApply) { waiting = true; continue; }
-      applyShared(r, owned, editor); sm.known[r.obra_id] = rh; applied++;
+      applyShared(r, owned, editor); knowSh(r.obra_id, remote, rh); applied++;
     } else if (localChanged && editor) {
-      await api(`/rest/v1/aco_shared?obra_id=eq.${encodeURIComponent(r.obra_id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: { ...loc, updated_by: email } });
-      sm.known[r.obra_id] = lh;
+      // V87.266 · només es desa si al núvol encara hi ha la versió que s'acaba de llegir; si algú l'ha canviada
+      // just ara, no es trepitja: el cicle següent ho veurà i preguntarà.
+      const res = await api(`/rest/v1/aco_shared?obra_id=eq.${encodeURIComponent(r.obra_id)}&updated_at=eq.${encodeURIComponent(r.updated_at)}&select=obra_id,updated_at`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: { ...loc, updated_by: email } });
+      if (Array.isArray(res) && res.length) { knowSh(r.obra_id, loc, lh); }
+      else again = true;
     }
   }
   const ids = new Set(rows.map(r => r.obra_id));
   const gone = readArr(kObres(), []).filter(o => o?.compartida && o.compartida.owner !== me && !ids.has(o.id)).map(o => o.id);
-  if (gone.length) { if (canApply) { removeForeign(gone); gone.forEach(id => delete sm.known[id]); applied++; } else waiting = true; }
+  if (gone.length) { if (canApply) { removeForeign(gone); gone.forEach(id => { delete sm.known[id]; delete sm.kc[id]; }); applied++; } else waiting = true; }
   writeRaw(sharedMetaKey(), JSON.stringify(sm));
   try { window.dispatchEvent(new CustomEvent("aco-shared-changed")); } catch {}
   return { applied, waiting };
@@ -401,12 +604,12 @@ async function shareObra(obraId, lectors = [], editors = []) {
   const loc = localShare(obraId); if (!loc) throw new Error("No trobo aquesta obra.");
   const norm = a => [...new Set(a.map(toEmail).filter(e => e && e !== session.email))];
   await api(`/rest/v1/aco_shared?on_conflict=obra_id`, { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: [{ obra_id: obraId, owner: session.user_id, owner_email: session.email, owner_nom: ownerNom(), lectors: norm(lectors), editors: norm(editors), ...loc, updated_by: session.email }] });
-  const sm = readArr(sharedMetaKey(), null) || { known: {} }; sm.known[obraId] = shHash(loc); writeRaw(sharedMetaKey(), JSON.stringify(sm));
+  const sm = readArr(sharedMetaKey(), null) || { known: {} }; sm.known[obraId] = shHash(loc); (sm.kc ||= {})[obraId] = shContent(loc); writeRaw(sharedMetaKey(), JSON.stringify(sm));
   sharedOwned.add(obraId);
 }
 async function unshareObra(obraId) {
   await api(`/rest/v1/aco_shared?obra_id=eq.${encodeURIComponent(obraId)}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
-  const sm = readArr(sharedMetaKey(), null) || { known: {} }; delete sm.known[obraId]; writeRaw(sharedMetaKey(), JSON.stringify(sm));
+  const sm = readArr(sharedMetaKey(), null) || { known: {} }; delete sm.known[obraId]; if (sm.kc) delete sm.kc[obraId]; writeRaw(sharedMetaKey(), JSON.stringify(sm));
   sharedOwned.delete(obraId);
 }
 async function sharedInfo(obraId) {
@@ -426,8 +629,11 @@ async function cycle({ startup = false, returning = false } = {}) {
       if (!startup) { lastErr = "Tanca i torna a obrir l'app per acabar de connectar-la al núvol."; paint("error", "Núvol · torna a obrir l’app"); return; }
       await firstSync();
     }
+    if (!meta.at) await loadAt();
     const rows = await pullSince(meta.cursor);
-    const local = entries();
+    let local = entries();
+    meta.kc ||= {};
+    for (const k in local) if (!(k in meta.kc) && meta.known[k] === hash(local[k])) meta.kc[k] = contentHash(local[k]);
     const pend = pendingKeys(local);
     const pendSet = new Set(pend);
     // Canvis d'altres aparells que encara no tenim.
@@ -436,31 +642,68 @@ async function cycle({ startup = false, returning = false } = {}) {
     // prenia per nova, «guanyava el núvol» i el canvi fet aquí es perdia (p. ex. fotos posades al mòbil
     // en una obra que l'ordinador acabava de tocar).
     const isNew = r => r.deleted ? r.key in meta.known : meta.known[r.key] !== hash(r.value ?? "");
-    const remote = rows.filter(r => r.device !== device && (r.deleted ? r.key in local : local[r.key] !== (r.value ?? "")) && isNew(r));
+    const differs = r => (r.deleted ? r.key in local : local[r.key] !== (r.value ?? ""));
+    let remote = rows.filter(r => r.device !== device && differs(r) && isNew(r));
+    // V87.266 · canvis alhora que s'havien deixat per més tard (es dictava o hi havia una finestra oberta)
+    for (const [k, r] of carry) if (!remote.some(x => x.key === k) && differs(r) && isNew(r)) remote.push(r);
+    carry = new Map();
+    // V87.266 · Edició alhora: una peça canviada aquí i també des d'un altre lloc. Abans guanyava el núvol en
+    // silenci; ara es pregunta quina es queda, i l'altra es guarda a «Versions guardades». Mentre es dicta o hi
+    // ha una finestra oberta no es pregunta: la peça espera (ni es puja ni s'aplica).
+    const held = new Set();
+    let tookTheirs = false;
+    const conflictRows = remote.filter(r => pendSet.has(r.key));
+    if (conflictRows.length) {
+      const t = triage(conflictRows, local);
+      const mine = new Set(t.mine.map(r => r.key));
+      t.mine.forEach(keepMine);
+      if (t.ask.length) {
+        if (holds) t.ask.forEach(r => { carry.set(r.key, r); held.add(r.key); });
+        else {
+          const res = await resolveConflicts(t.ask, local);
+          res.mine.forEach(k => mine.add(k));
+          if (res.theirs.length) tookTheirs = true;
+          local = entries(); // les versions guardades també es pugen
+        }
+      }
+      // «theirs» sense preguntar es queda a «remote» i s'aplica com qualsevol canvi d'un altre aparell.
+      remote = remote.filter(r => !mine.has(r.key) && !held.has(r.key));
+    }
     const remoteKeys = new Set(remote.map(r => r.key));
     const waitingKeys = new Set((remoteWaiting?.rows || []).map(r => r.key));
-    // Regla: si una peça ha canviat al núvol des d'un altre aparell, GUANYA EL NÚVOL.
-    // Així un aparell endarrerit (amb dades velles a la pantalla) no pot trepitjar res.
-    const conflicts = pend.filter(k => remoteKeys.has(k));
-    if (conflicts.length) saveConflicts(conflicts, local);
-    const toPush = pend.filter(k => !remoteKeys.has(k) && !waitingKeys.has(k));
+    const toPush = pendingKeys(local).filter(k => !remoteKeys.has(k) && !waitingKeys.has(k) && !held.has(k));
     if (toPush.length) {
       const risk = massChange(toPush, local);
       if (risk) { await stopForSafety(risk); return; }
-      await pushRows(toPush.map(k => (k in local ? { key: k, value: local[k] } : { key: k, deleted: true })));
-      toPush.forEach(k => { if (k in local) meta.known[k] = hash(local[k]); else delete meta.known[k]; });
+      const clash = await pushRows(toPush.map(k => (k in local ? { key: k, value: local[k] } : { key: k, deleted: true })));
+      const clashKeys = new Set(clash.map(c => c.key));
+      toPush.forEach(k => { if (!clashKeys.has(k)) know(k, local[k]); });
+      // Algú ha desat la mateixa peça just ara: no s'ha trepitjat. Es pregunta (o, si ara no es pot, després).
+      if (clash.length) {
+        const t = triage(clash.map(c => c.theirs), local);
+        t.mine.forEach(keepMine);
+        remote.push(...t.theirs);
+        if (t.ask.length) {
+          if (holds) t.ask.forEach(r => carry.set(r.key, r));
+          else {
+            const res = await resolveConflicts(t.ask, local);
+            if (res.theirs.length) { remote.push(...res.theirs); tookTheirs = true; }
+          }
+        }
+        again = true; // «la meva» es puja al cicle següent (damunt de la de l'altre, ja vista)
+      }
     }
     meta.obres = countObres(local) || meta.obres || 0;
     if (!remote.length) {
       // Les files pròpies o iguals també serveixen per avançar el cursor.
-      rows.forEach(r => { if (!pendSet.has(r.key) && r.device !== device) { if (r.deleted) delete meta.known[r.key]; else meta.known[r.key] = hash(r.value ?? ""); } });
+      rows.forEach(r => { if (!pendSet.has(r.key) && r.device !== device) { know(r.key, r.deleted ? undefined : (r.value ?? "")); meta.at[r.key] = r.updated_at; } });
       meta.cursor = maxTime(rows, meta.cursor); saveMeta();
       // Obres compartides
       const canApply = startup || (!typing() && (returning || Date.now() - lastInput > 60000));
       const sh = await sharedCycle(canApply);
       if (sh.applied && !startup) { lastOk = new Date().toISOString(); await reloadSafely(); return; }
-      lastOk = new Date().toISOString(); lastErr = ""; paint(sh.waiting ? "remote" : "ok");
-    } else if (startup || (conflicts.length && !holds) || (!typing() && (returning || Date.now() - lastInput > 60000))) {
+      lastOk = new Date().toISOString(); lastErr = ""; paint(sh.waiting || held.size ? "remote" : "ok");
+    } else if (startup || tookTheirs || (!typing() && (returning || Date.now() - lastInput > 60000))) {
       applyRows(remote);
       meta.cursor = maxTime(rows, meta.cursor); saveMeta();
       lastOk = new Date().toISOString(); lastErr = "";
@@ -481,14 +724,7 @@ async function cycle({ startup = false, returning = false } = {}) {
     if (again) { again = false; schedule(1500); }
   }
 }
-// Quan guanya el núvol, la versió d'aquí es guarda a part (només en aquest aparell).
-function saveConflicts(keys, local) {
-  try {
-    const list = readJson("nuvol-aco-conflictes", []) || [];
-    keys.forEach(k => list.push({ key: k, at: new Date().toISOString(), value: local[k] ?? null }));
-    localStorage.setItem("nuvol-aco-conflictes", JSON.stringify(list.slice(-20)));
-  } catch {}
-}
+
 // Fre de seguretat: si d'una tirada es buiden o s'esborren diverses obres, no es puja res.
 function massChange(keys, local) {
   let dels = 0, shrinks = 0;
@@ -530,18 +766,17 @@ async function forcePushAll() {
   const rows = await pullSince("");
   const local = entries();
   const live = rows.filter(r => !r.deleted);
-  await pushRows([...Object.keys(local).map(k => ({ key: k, value: local[k] })), ...live.filter(r => !(r.key in local)).map(r => ({ key: r.key, deleted: true }))]);
+  await pushRows([...Object.keys(local).map(k => ({ key: k, value: local[k] })), ...live.filter(r => !(r.key in local)).map(r => ({ key: r.key, deleted: true }))], { force: true });
   const known = {}; for (const k in local) known[k] = hash(local[k]);
   meta = { userId: session.user_id, cursor: maxTime(rows, ""), known, obres: countObres(local) };
   saveMeta();
   try { await fetch("/__dades-locals/netejar-marca", { method: "POST" }); } catch {}
 }
 async function applyWaitingAndReload() {
-  if (!remoteWaiting) { await cycle({ returning: true }); return; }
-  const w = remoteWaiting; remoteWaiting = null;
-  applyRows(w.rows, w.skip);
-  meta.cursor = maxTime(w.all, meta.cursor); saveMeta();
-  await reloadSafely();
+  // V87.266 · amb una finestra oberta (acta a mig fer, formulari…) no es recarrega: es perdria el que no s'ha desat.
+  if (holds) { alert("Hi ha canvis d’un altre aparell. Desa o tanca primer el que tens obert i torna a clicar «Actualitzar»."); return; }
+  remoteWaiting = null;
+  await cycle({ returning: true });
 }
 async function reloadSafely() {
   active = false;
@@ -550,10 +785,11 @@ async function reloadSafely() {
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   location.reload();
 }
-// V87.263 · «hold»: l'app està fent una feina sense tecles ni tocs (p. ex. dictat per veu, proposta de la IA per revisar).
+// V87.263 · «hold»: l'app està fent una feina sense tecles ni tocs (dictat per veu; des de la V87.266 també una
+// finestra oberta o una acta a mig fer).
 // Mentre duri, els canvis d'altres aparells esperen (com quan s'està escrivint) i l'app no es recarrega sola.
 let holds = 0;
-function hold(on) { holds = Math.max(0, holds + (on ? 1 : -1)); if (!on && !holds) lastInput = Date.now(); }
+function hold(on) { holds = Math.max(0, holds + (on ? 1 : -1)); if (!on && !holds) { lastInput = Date.now(); if (carry.size) schedule(1500); } }
 function typing() { if (holds) return true; const el = document.activeElement; return !!el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable); }
 function schedule(ms = 4000) { clearTimeout(timer); timer = setTimeout(() => cycle(), ms); }
 async function syncNow() { await cycle({ returning: true }); }
@@ -598,7 +834,7 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword, storageUpload, storageDownload, espai, hold, userId: () => session?.user_id || "" };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
   session = readJson(SESSION_KEY, null);
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
