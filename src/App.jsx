@@ -2692,29 +2692,19 @@ function Fotografies8761({data,setData}){
   </Card>
 }
 
-// V87.263 · Dictat per veu a les observacions de l'acta (català i castellà) i redacció formal amb IA.
+// V87.263 · Dictat per veu a les observacions de l'acta (català i castellà).
 // El dictat el fa el navegador (Chrome/Edge a Android i ordinador, Safari a iPhone/iPad): és gratuït i
 // necessita connexió. Sense connexió, el micròfon del teclat del mòbil sovint funciona igualment.
 const DICTAT_IDIOMA_KEY878263="dictat-idioma-app-control-obres";// només en aquest aparell (no es sincronitza)
-function actaFormalPrompt878263(idioma){
-  return idioma==="es"
-    ?"Redacta en castellano formal, como acta de visita de obra de un arquitecto técnico, el texto siguiente, dictado o escrito en la obra. Corrige ortografía y puntuación y ordénalo en apartados breves si conviene (comprobaciones, acuerdos, órdenes, incidencias, pendientes). No inventes nada: no añadas datos, nombres, fechas ni cifras que no estén en el texto. Responde solo con el texto del acta, sin comentarios."
-    :"Redacta en català formal, com a acta de visita d'obra d'un arquitecte tècnic, el text següent, dictat o escrit a l'obra. Corregeix l'ortografia i la puntuació i ordena-ho en apartats breus si escau (comprovacions, acords, ordres, incidències, pendents). No inventis res: no afegeixis dades, noms, dates ni xifres que no hi siguin. Respon només amb el text de l'acta, sense comentaris.";
-}
-let actaIaOff878263=false;// la funció «redactar-acta» no existeix: es fa servir el camí manual
 function DictatActa878263({value="",onChange}){
   const SR=typeof window!=="undefined"?(window.SpeechRecognition||window.webkitSpeechRecognition):null;
   const[lang,setLang]=useState(()=>{try{return localStorage.getItem(DICTAT_IDIOMA_KEY878263)||"ca-ES"}catch{return "ca-ES"}});
   const[on,setOn]=useState(false),[interim,setInterim]=useState(""),[msg,setMsg]=useState("");
-  const[ia,setIa]=useState(null);// null | {mode:"proposta",text} | {mode:"manual",text}
-  const[iaBusy,setIaBusy]=useState(false);
   const recRef=useRef(null),wantRef=useRef(false),valueRef=useRef(value);
   useEffect(()=>{valueRef.current=value},[value]);
   useEffect(()=>()=>{wantRef.current=false;try{recRef.current?.stop()}catch{}},[]);
-  // Mentre es dicta (sense tocar res) o hi ha una proposta per revisar, l'app no es recarrega sola per canvis d'un altre aparell.
-  const holding=on||!!ia;
-  useEffect(()=>{if(!holding)return;try{window.__acoCloud?.hold?.(true)}catch{}return()=>{try{window.__acoCloud?.hold?.(false)}catch{}}},[holding]);
-  const idioma=lang.startsWith("es")?"es":"ca";
+  // Mentre es dicta (sense tocar res), l'app no es recarrega sola per canvis d'un altre aparell.
+  useEffect(()=>{if(!on)return;try{window.__acoCloud?.hold?.(true)}catch{}return()=>{try{window.__acoCloud?.hold?.(false)}catch{}}},[on]);
   function chooseLang(l){setLang(l);try{localStorage.setItem(DICTAT_IDIOMA_KEY878263,l)}catch{};if(on){stop();setTimeout(()=>start(l),300)}}
   function append(t){
     t=String(t||"").trim();if(!t)return;
@@ -2740,42 +2730,13 @@ function DictatActa878263({value="",onChange}){
     recRef.current=r;wantRef.current=true;setMsg("");
     try{r.start();setOn(true)}catch{wantRef.current=false;setMsg("No s’ha pogut engegar el dictat.")}
   }
-  async function formal(){
-    const text=String(valueRef.current||"").trim();if(!text){setMsg("Primer escriu o dicta el text de l’acta.");return}
-    stop();setMsg("");
-    if(!actaIaOff878263&&window.__acoCloud?.callFunction&&window.__acoCloud.status?.().email){
-      setIaBusy(true);
-      try{const r=await window.__acoCloud.callFunction("redactar-acta",{text,idioma});if(r?.text){setIa({mode:"proposta",text:r.text});return}if(r?.error)setMsg(r.error)}
-      catch(e){if(e.status===404||/not found|requested function/i.test(e.message||"")){actaIaOff878263=true}else if(e.offline){setMsg("Sense connexió: la redacció amb IA necessita internet.");return}else{setMsg("La IA no ha pogut redactar el text: "+(e.message||e))}}
-      finally{setIaBusy(false)}
-    }
-    setIa({mode:"manual",text:""});
-  }
-  async function copyPrompt(){
-    const t=actaFormalPrompt878263(idioma)+"\n\n---\n"+String(valueRef.current||"");
-    try{await navigator.clipboard.writeText(t);setMsg("Instruccions copiades. Enganxa-les a ChatGPT o Claude.")}
-    catch{setMsg("No s’han pogut copiar soles: selecciona el text de l’acta i copia’l a mà.")}
-  }
-  function useText(mode){const t=String(ia?.text||"").trim();if(!t)return;const cur=String(valueRef.current||"");const next=mode==="afegir"&&cur.trim()?cur.replace(/\s*$/,"")+"\n\n"+t:t;valueRef.current=next;onChange?.(next);setIa(null);setMsg(mode==="afegir"?"Text formal afegit a sota.":"Text substituït per la versió formal.")}
   return <div className="span-all dictat-v878263">
     <div className="dictat-bar-v878263">
       <button type="button" className={on?"danger":"secondary"} onClick={()=>on?stop():start()} aria-pressed={on}>{on?"⏹ Aturar el dictat":"🎤 Dictar"}</button>
       <span className="dictat-lang-v878263" role="group" aria-label="Idioma del dictat">{[["ca-ES","Català"],["es-ES","Castellano"]].map(([l,n])=><button type="button" key={l} className={lang===l?"active":""} onClick={()=>chooseLang(l)}>{n}</button>)}</span>
-      <button type="button" className="secondary" disabled={iaBusy} onClick={formal}>{iaBusy?"Redactant…":"✨ Redacció formal (IA)"}</button>
     </div>
     {on&&<div className="dictat-live-v878263">Escoltant… {interim&&<em>{interim}</em>}</div>}
     {msg&&<div className="dictat-msg-v878263">{msg}</div>}
-    {ia?.mode==="manual"&&<div className="dictat-ia-v878263">
-      <b>Redacció formal amb IA (manual)</b>
-      <ol><li><button type="button" className="secondary" onClick={copyPrompt}>Copiar les instruccions i el text</button></li><li>Enganxa-ho a <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a> o <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Claude</a>.</li><li>Copia la resposta i enganxa-la aquí:</li></ol>
-      <textarea value={ia.text} onChange={e=>setIa({mode:"manual",text:e.target.value})} placeholder="Enganxa aquí el text formal"/>
-      <div className="actions-inline"><button type="button" className="primary" disabled={!ia.text.trim()} onClick={()=>useText("substituir")}>Substituir el text</button><button type="button" className="secondary" disabled={!ia.text.trim()} onClick={()=>useText("afegir")}>Afegir a sota</button><button type="button" className="secondary" onClick={()=>setIa(null)}>Cancel·lar</button></div>
-    </div>}
-    {ia?.mode==="proposta"&&<div className="dictat-ia-v878263">
-      <b>Proposta de redacció formal</b><small>Revisa-la abans de fer-la servir: la IA no ha d’haver afegit res que no diguessis.</small>
-      <textarea value={ia.text} onChange={e=>setIa({mode:"proposta",text:e.target.value})}/>
-      <div className="actions-inline"><button type="button" className="primary" onClick={()=>useText("substituir")}>Substituir el text</button><button type="button" className="secondary" onClick={()=>useText("afegir")}>Afegir a sota</button><button type="button" className="secondary" onClick={()=>setIa(null)}>Descartar</button></div>
-    </div>}
   </div>;
 }
 
