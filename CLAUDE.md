@@ -126,7 +126,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   l’obra): aquestes dates no compten com a feina (`contentHash`, `meta.kc`/`sm.kc` = contingut conegut sense dates).
   Si només difereixen les dates, o en un lloc només s’ha obert l’obra, es decideix sense preguntar (es queda la feina).
   La peça és l’obra sencera: si dos canvien apartats diferents de la mateixa obra, també es pregunta (fusió automàtica
-  per apartats: pendent).
+  per apartats: **prioritat pendent**, vegeu «Pendent»).
 - **Comptes separats al mateix navegador** per prefix `emp_`; les dades d’empresa no entren mai al fitxer DADES.
 - **Fotos, croquis i documents de les actes** (V87.261, `src/fileStore.js`): el desat de les obres en treu les
   imatges per pes; cada fitxer es desa a part en l’aparell (IndexedDB `aco_fitxers`, clau `<espai>::<id>`) i es torna
@@ -151,6 +151,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
+- **PRIORITAT · Ajuntar els canvis per apartats** (després de la V87.266): que dues persones puguin treballar la mateixa
+  obra en apartats diferents (p. ex. una el pressupost i l’altra una acta) sense que surti la pregunta «Canvis alhora».
+  Avui la peça és l’obra sencera. Idea: fusió automàtica per apartats i per element amb id (partides, actes, fotos…);
+  només es pregunta si s’ha tocat el mateix element als dos llocs.
+- **Pantalles (nota de l’Héctor, 15/10/2026)**: a Expedients, «accions» i «apartats de l’obra» van per separat →
+  ajuntar-les en una sola pestanya més simple. Simplificar les pestanyes de tota l’app i de tots els aparells: n’hi ha
+  moltes que fan el mateix. Detall a `docs/proposta-global.md`.
+- **Paperera de fotos de l’acta (V87.265) a les obres compartides**: avui la veu tothom qui obre l’acta (propietari,
+  editors i també els de «només consulta»). L’Héctor vol que només la tingui el propietari (pendent del seu sí).
 - **Auditoria de seguretat (10/10/2026)**: `docs/auditoria-seguretat.md`, ordenada per urgència. Resolts el
   13/10/2026: domini `controlobres.app` registrat i registre de comptes tancat a Supabase. Còpies del núvol actives
   des del 13/10/2026. Contrasenyes `0000`/`1919`/`socoterm` fora del codi i compte `pol` esborrat a la V87.260.
