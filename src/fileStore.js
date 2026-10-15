@@ -205,6 +205,12 @@ export async function fetchObraFiles(obraId, obra, space) {
   }
   return found;
 }
+// V87.265 · és al núvol? true / false; null si ara no es pot saber (sense connexió o sense sessió).
+export async function cloudHasFile(obraId, id) {
+  const c = cloud(), path = pathOf(obraId, id);
+  if (!c?.storageDownload || !c.status?.().email || !path) return null;
+  try { return !!(await c.storageDownload(path)); } catch { return null; }
+}
 // Document de la pestanya Documents que no és en aquest aparell.
 export async function fetchDoc(id, obraId, space) {
   const c = cloud(), path = pathOf(obraId, id);

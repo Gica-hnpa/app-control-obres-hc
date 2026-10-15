@@ -10,11 +10,11 @@ import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
-import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc} from "./fileStore.js";
+import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile} from "./fileStore.js";
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.264";
+const APP_VERSION878264="87.265";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2919,6 +2919,27 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
 
   function upd(k,v){setDraft(d=>({...d,[k]:v}))}
 
+  // V87.265 · esborrar fotos de l'obra (i de totes les actes on surten). Les «sense imatge» només es treuen si
+  // es comprova al núvol que s'han perdut de debò (una foto d'un altre aparell encara no baixada no es toca).
+  function removeFotos878265(ids){const set=new Set(ids);setData(d=>({...d,fotos:(d.fotos||[]).filter(x=>!set.has(x.id)),actes:(d.actes||[]).map(a=>(a.fotoIds||[]).some(x=>set.has(x))?{...a,fotoIds:a.fotoIds.filter(x=>!set.has(x))}:a)}));setDraft(d=>d?{...d,fotoIds:(d.fotoIds||[]).filter(x=>!set.has(x))}:d)}
+  async function lostToRemove878265(list){
+    const enNuvol=[],perdudes=[];
+    for(const f of list){const r=await cloudHasFile(obra?.id,f.id);if(r===null){alert("Cal connexió amb el núvol per comprovar que aquestes fotos s’han perdut de debò. Torna-ho a provar amb connexió.");return null}(r?enNuvol:perdudes).push(f)}
+    if(!perdudes.length){alert(list.length===1?"Aquesta foto és al núvol però encara no s’ha baixat en aquest aparell. Torna a obrir l’obra amb connexió i es veurà.":"Aquestes fotos són al núvol però encara no s’han baixat en aquest aparell. Torna a obrir l’obra amb connexió i es veuran.");return null}
+    // Una foto de les últimes 24 h potser es va fer amb un altre aparell que encara no l'ha pogut pujar.
+    const quan=f=>Number(String(f.id||"").split("-")[1])||Date.parse(f.createdAt||"")||0; // l'id porta l'hora en què es va fer
+    const recents=perdudes.filter(f=>Date.now()-quan(f)<864e5).length;
+    const avis=recents?`\n\nCompte: ${recents===1?"una és":recents+" són"} de les últimes 24 hores. Si es va fer amb un altre aparell sense cobertura, potser encara no s’ha pujat: millor esperar.`:"";
+    const extra=enNuvol.length?`\n\n(${enNuvol.length===1?"Una altra":enNuvol.length+" més"} sí que ${enNuvol.length===1?"és":"són"} al núvol: no es toca${enNuvol.length===1?"":"n"}, i es veuran en tornar a obrir l’obra amb connexió.)`:"";
+    return confirm((perdudes.length===1?`Treure «${perdudes[0].nom||"Foto"}»? No té imatge: es va perdre i no és al núvol.`:`Treure les ${perdudes.length} fotos sense imatge? Es van perdre i no són al núvol.`)+avis+extra)?perdudes:null;
+  }
+  async function deleteFoto878265(f){
+    if(!f.src){const l=await lostToRemove878265([f]);if(l)removeFotos878265(l.map(x=>x.id));return}
+    const altres=(data.actes||[]).filter(a=>a.id!==draft?.id&&(a.fotoIds||[]).includes(f.id)).length;
+    if(!confirm(`Esborrar la foto «${f.nom||"Foto"}» de l’obra${altres?` i de ${altres===1?"una altra acta":altres+" actes més"}`:""}?\n\nSi cal, es pot recuperar de les còpies de seguretat.`))return;
+    removeFotos878265([f.id]);
+  }
+  async function deleteLost878265(){const lost=fotos.filter(f=>!f.src);if(!lost.length)return;const l=await lostToRemove878265(lost);if(l)removeFotos878265(l.map(x=>x.id))}
   function toggleFoto(id){
     setDraft(d=>{
       const arr=d.fotoIds||[];
@@ -2992,9 +3013,10 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
 
           {actaPanel8799==="Fotos"&&<div className="photo-select-v8761">
             <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><small className="file-note-v878261">Les fotos es pugen al núvol i arriben als altres aparells. Sense cobertura, es pugen soles quan torna la connexió.</small><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
+            {fotos.some(f=>!f.src)&&<button type="button" className="secondary photo-del-lost-v878265" onClick={deleteLost878265}>Treure les {fotos.filter(f=>!f.src).length} fotos sense imatge</button>}
             <div className="photo-mini-grid-v8761">
               {fotos.length===0&&<span>No hi ha fotos a l’expedient.</span>}
-              {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><FileImg878261 src={f.src}/><span>{f.nom}</span></label>)}
+              {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><FileImg878261 src={f.src}/><span>{f.nom}</span><button type="button" className="photo-del-v878265" title={f.src?"Esborrar aquesta foto":"Treure aquesta foto (no té imatge)"} aria-label={f.src?"Esborrar la foto":"Treure la foto sense imatge"} onClick={e=>{e.preventDefault();e.stopPropagation();deleteFoto878265(f)}}>🗑</button></label>)}
             </div>
           </div>}
 
@@ -10783,7 +10805,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.264",
+    app_version:"87.265",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

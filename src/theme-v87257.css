@@ -249,3 +249,12 @@ html body .obra-edit-body-v878242{padding-bottom:calc(130px + env(safe-area-inse
 
 /* V87.264 · ordinador: el comptador complet a baix a la dreta, lluny dels rètols del núvol (a l'esquerra) */
 @media screen and (min-width:1181px){html body .work-timer-v878254{left:auto!important;right:12px!important;bottom:calc(28px + env(safe-area-inset-bottom,0px))!important}}
+
+/* V87.265 · esborrar fotos de l'acta */
+html body .photo-mini-grid-v8761{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+html body .photo-mini-grid-v8761 label{grid-template-columns:auto 48px minmax(0,1fr) auto}
+html body .photo-mini-grid-v8761 label>span:not(.file-absent-v878261){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.photo-del-v878265{border:1px solid #fecaca!important;background:#fff!important;color:#b91c1c!important;border-radius:8px!important;min-width:36px;min-height:36px;padding:0!important;font-size:16px;line-height:1;cursor:pointer}
+.photo-del-lost-v878265{margin-top:6px}
+html body .photo-mini-grid-v8761 .file-absent-v878261{width:48px;height:36px;aspect-ratio:auto;padding:0;font-size:0;border-radius:6px}
+html body .photo-mini-grid-v8761 .file-absent-v878261::after{content:"sense imatge";font-size:9px;line-height:1.1}

@@ -118,6 +118,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   moment si hi ha cobertura, si no en tornar-n’hi (Safari pot esborrar dades d’una web poc oberta). En obrir una obra,
   es baixen els que falten. Els Documents de l’obra fan el mateix camí. Rètol «X arxius pendents de pujar». Les 11 fotos de
   l’acta del 13/10 de «Projecte piscina av. Rosello 10» es van perdre abans d’aquest arranjament.
+  **V87.265**: a l’acta (Fotos) cada foto té 🗑 (la treu de l’obra i de totes les actes; l’arxiu del núvol no s’esborra)
+  i «Treure les N fotos sense imatge». Una foto sense imatge només es treu si es comprova al núvol que no hi és (sense
+  connexió no es treu res).
 - **Fotos d’obra i albarans en claus pròpies** (`aco_obra_foto_v878259_<id>`, `aco_albara_foto_…`,
   `aco_albara_pdf_…`), reduïdes; abans es treien per pes i no es desaven.
 - **Obres compartides**: no es copien a l’espai de l’altre compte; viuen a `aco_shared`.
@@ -168,6 +171,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - `contrasenyestest.mjs`: entrar a l’app sense contrasenyes al codi (ordinador, mòbil, empresa, sense connexió,
     portal), amb una còpia de DADES; comprova que el DADES real no canvia.
   - `fitxerstest.mjs`: fotos/croquis/documents de les actes desats a l’aparell (ordinador i mòbil compilat).
+  - `esborrarfotostest.mjs`: esborrar fotos de l’acta i treure les perdudes (ordinador, mòbil i iPad).
   - `nuvoltest.mjs`: arxius al núvol (ordinador → mòbil, sense connexió, fotos de la V87.261, obra compartida, permisos).
   - `dictattest.mjs`: dictat (reconeixement de veu simulat), croquis, fotos
     no reduïbles, documents grans i espai a Configuració; ordinador, mòbil compilat i compte d’empresa.
