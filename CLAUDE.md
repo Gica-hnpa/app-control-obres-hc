@@ -136,7 +136,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   l’acta del 13/10 de «Projecte piscina av. Rosello 10» es van perdre abans d’aquest arranjament.
   **V87.265**: a l’acta (Fotos) cada foto té 🗑 (la treu de l’obra i de totes les actes; l’arxiu del núvol no s’esborra)
   i «Treure les N fotos sense imatge». Una foto sense imatge només es treu si es comprova al núvol que no hi és (sense
-  connexió no es treu res).
+  connexió no es treu res). **V87.267**: la paperera només la té el propietari de l’obra (ni els editors ni els de
+  consulta d’una obra compartida, ni el portal de client).
 - **Fotos d’obra i albarans en claus pròpies** (`aco_obra_foto_v878259_<id>`, `aco_albara_foto_…`,
   `aco_albara_pdf_…`), reduïdes; abans es treien per pes i no es desaven.
 - **Obres compartides**: no es copien a l’espai de l’altre compte; viuen a `aco_shared`.
@@ -158,8 +159,6 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Pantalles (nota de l’Héctor, 15/10/2026)**: a Expedients, «accions» i «apartats de l’obra» van per separat →
   ajuntar-les en una sola pestanya més simple. Simplificar les pestanyes de tota l’app i de tots els aparells: n’hi ha
   moltes que fan el mateix. Detall a `docs/proposta-global.md`.
-- **Paperera de fotos de l’acta (V87.265) a les obres compartides**: avui la veu tothom qui obre l’acta (propietari,
-  editors i també els de «només consulta»). L’Héctor vol que només la tingui el propietari (pendent del seu sí).
 - **Auditoria de seguretat (10/10/2026)**: `docs/auditoria-seguretat.md`, ordenada per urgència. Resolts el
   13/10/2026: domini `controlobres.app` registrat i registre de comptes tancat a Supabase. Còpies del núvol actives
   des del 13/10/2026. Contrasenyes `0000`/`1919`/`socoterm` fora del codi i compte `pol` esborrat a la V87.260.

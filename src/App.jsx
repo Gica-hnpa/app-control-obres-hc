@@ -14,7 +14,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.266";
+const APP_VERSION878264="87.267";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2945,6 +2945,10 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
 
   // V87.265 · esborrar fotos de l'obra (i de totes les actes on surten). Les «sense imatge» només es treuen si
   // es comprova al núvol que s'han perdut de debò (una foto d'un altre aparell encara no baixada no es toca).
+  // V87.267 · esborrar fotos: només el propietari de l'obra. Ni els editors ni els de consulta d'una obra compartida,
+  // ni el portal de client (abans la paperera la veia tothom qui obria l'acta).
+  const acc878267=getAppAccount878233(currentAppUser8779());
+  const canDeleteFotos878267=!obra?.compartida&&!(acc878267?.role&&acc878267.role!=="admin");
   function removeFotos878265(ids){const set=new Set(ids);setData(d=>({...d,fotos:(d.fotos||[]).filter(x=>!set.has(x.id)),actes:(d.actes||[]).map(a=>(a.fotoIds||[]).some(x=>set.has(x))?{...a,fotoIds:a.fotoIds.filter(x=>!set.has(x))}:a)}));setDraft(d=>d?{...d,fotoIds:(d.fotoIds||[]).filter(x=>!set.has(x))}:d)}
   async function lostToRemove878265(list){
     const enNuvol=[],perdudes=[];
@@ -3037,10 +3041,10 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
 
           {actaPanel8799==="Fotos"&&<div className="photo-select-v8761">
             <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><small className="file-note-v878261">Les fotos es pugen al núvol i arriben als altres aparells. Sense cobertura, es pugen soles quan torna la connexió.</small><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
-            {fotos.some(f=>!f.src)&&<button type="button" className="secondary photo-del-lost-v878265" onClick={deleteLost878265}>Treure les {fotos.filter(f=>!f.src).length} fotos sense imatge</button>}
+            {canDeleteFotos878267&&fotos.some(f=>!f.src)&&<button type="button" className="secondary photo-del-lost-v878265" onClick={deleteLost878265}>Treure les {fotos.filter(f=>!f.src).length} fotos sense imatge</button>}
             <div className="photo-mini-grid-v8761">
               {fotos.length===0&&<span>No hi ha fotos a l’expedient.</span>}
-              {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><FileImg878261 src={f.src}/><span>{f.nom}</span><button type="button" className="photo-del-v878265" title={f.src?"Esborrar aquesta foto":"Treure aquesta foto (no té imatge)"} aria-label={f.src?"Esborrar la foto":"Treure la foto sense imatge"} onClick={e=>{e.preventDefault();e.stopPropagation();deleteFoto878265(f)}}>🗑</button></label>)}
+              {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><FileImg878261 src={f.src}/><span>{f.nom}</span>{canDeleteFotos878267&&<button type="button" className="photo-del-v878265" title={f.src?"Esborrar aquesta foto":"Treure aquesta foto (no té imatge)"} aria-label={f.src?"Esborrar la foto":"Treure la foto sense imatge"} onClick={e=>{e.preventDefault();e.stopPropagation();deleteFoto878265(f)}}>🗑</button>}</label>)}
             </div>
           </div>}
 
@@ -10829,7 +10833,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.266",
+    app_version:"87.267",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
