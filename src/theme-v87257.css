@@ -204,3 +204,6 @@ html body .alb-editor-v878259 .alb-ai-btns{display:flex;flex-wrap:wrap;gap:8px}
 /* V87.261 · fitxers desats en aquest aparell */
 .file-note-v878261{display:block;color:#64748b;font-size:12px;margin:2px 0 8px}
 .file-absent-v878261{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;aspect-ratio:4/3;padding:8px;background:#f1f5f9;color:#64748b;font-size:12px;border-radius:8px}
+/* V87.262 · arxius pendents de pujar al núvol */
+.files-badge-v878262{position:fixed;left:12px;bottom:12px;z-index:60;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:999px;padding:6px 12px;font-size:12px;box-shadow:0 2px 8px rgba(15,23,42,.12);cursor:pointer}
+.files-badge-v878262[hidden]{display:none}

@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.261";
+const VERSION = "V87.262";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -83,6 +83,24 @@ async function login(email, password) {
   // V87.260 · l'Héctor ha entrat amb la contrasenya del núvol: aquest aparell torna a obrir el seu espai sol
   // (treu la marca que hi posa el portal de client; mateix nom que PORTAL_LOCK_KEY878260 a App.jsx).
   if (!companyOf(session.email)) { try { localStorage.removeItem("portal-bloqueig-app-control-obres"); } catch {} }
+}
+// V87.262 · arxius (fotos, croquis, documents) a l'espai privat «aco-fitxers»; path = <propietari>/<obra>/<id>.
+async function storageFetch(path, opts = {}) {
+  await ensureToken();
+  let r;
+  try { r = await fetch(`${CLOUD_URL}/storage/v1/object/${path}`, { ...opts, headers: { apikey: CLOUD_KEY, Authorization: `Bearer ${session.access_token}`, ...(opts.headers || {}) }, cache: "no-store" }); }
+  catch { const e = new Error("No hi ha connexió amb el núvol."); e.offline = true; throw e; }
+  return r;
+}
+async function storageUpload(path, blob, contentType) {
+  const r = await storageFetch(`aco-fitxers/${path}`, { method: "POST", headers: { "Content-Type": contentType || "application/octet-stream", "x-upsert": "true" }, body: blob });
+  if (!r.ok) { const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch {} const e = new Error(j?.message || j?.error || t || `Error ${r.status}`); e.status = +(j?.statusCode || r.status); throw e; }
+}
+async function storageDownload(path) {
+  const r = await storageFetch(`authenticated/aco-fitxers/${path}`);
+  if (r.ok) return await r.blob();
+  if (r.status === 400 || r.status === 404) return null; // encara no s'ha pujat
+  const e = new Error(`Error ${r.status}`); e.status = r.status; throw e;
 }
 // V87.260 · canviar la contrasenya del núvol del compte connectat (Héctor o empresa).
 async function changePassword(password) {
@@ -329,7 +347,7 @@ function shHash(x) { return hash((x?.obra || "") + "\u0001" + (x?.dades || "") +
 function ownerNom() { const e = readArr(`aco_v8782__${ownNs()}__aco_empresa_v878259`, null); return e?.nom || companyOf(session?.email)?.username || "Héctor Cubero"; }
 function applyShared(r, owned, editor) {
   let o = {}; try { o = JSON.parse(r.obra || "{}") || {}; } catch {}
-  if (!owned) o.compartida = { owner: r.owner, ownerEmail: r.owner_email || "", ownerNom: r.owner_nom || "", perm: editor ? "edicio" : "consulta" };
+  if (!owned) o.compartida = { owner: r.owner, ownerEmail: r.owner_email || "", ownerNom: r.owner_nom || "", ownerUsuari: companyOf(r.owner_email)?.username || r.owner_email || "", perm: editor ? "edicio" : "consulta" };
   const list = readArr(kObres(), []); const prev = list.find(x => x?.id === r.obra_id);
   if (owned && prev) { delete o.compartida; delete o.clientNomCompartit; }
   writeRaw(kObres(), JSON.stringify(prev ? list.map(x => x?.id === r.obra_id ? o : x) : [...list, o]));
@@ -574,7 +592,7 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword, storageUpload, storageDownload, userId: () => session?.user_id || "" };
   session = readJson(SESSION_KEY, null);
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {

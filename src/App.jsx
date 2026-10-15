@@ -10,7 +10,7 @@ import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
-import {persistObraFiles,loadObraFiles,fillObraFiles} from "./fileStore.js";
+import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc} from "./fileStore.js";
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
@@ -2682,7 +2682,7 @@ function PlanolsCroquisActa8769({draft,setDraft}){
 function Fotografies8761({data,setData}){
   const fotos=data.fotos||[];
   return <Card title="Fotografies" action={<div className="actions-inline"><label className="secondary file-btn-v8761">Adjuntar fotos<input type="file" accept="image/*" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label><label className="primary file-btn-v8761">Fer foto<input type="file" accept="image/*" capture="environment" onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>}>
-    <small className="file-note-v878261">Les fotos es desen en aquest aparell. Aviat també arribaran als altres aparells.</small>
+    <small className="file-note-v878261">Les fotos es pugen al núvol i arriben als altres aparells. Sense cobertura, es pugen soles quan torna la connexió.</small>
     <div className="photo-grid-v8761">
       {fotos.length===0&&<div className="empty-v8761">Encara no hi ha fotografies adjuntades.</div>}
       {fotos.map(f=><div className="photo-card-v8761" key={f.id}><FileImg878261 src={f.src}/><div><b>{f.nom}</b><span>{fmtDate8761(f.data)} · Creat: {fmtCreationDate878233(f.createdAt)}</span></div></div>)}
@@ -2892,7 +2892,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
                     {actaPanel8799==="Observacions"&&<label className="span-all acta-textarea-v8768"><span>Text de l’acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents..."/></label>}
 
           {actaPanel8799==="Fotos"&&<div className="photo-select-v8761">
-            <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><small className="file-note-v878261">Les fotos es desen en aquest aparell. Aviat també arribaran als altres aparells.</small><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
+            <div className="photo-select-head-v8761"><b>Fotos que sortiran a l’acta</b><small className="file-note-v878261">Les fotos es pugen al núvol i arriben als altres aparells. Sense cobertura, es pugen soles quan torna la connexió.</small><label className="secondary file-btn-v8761">Adjuntar / fer foto<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
             <div className="photo-mini-grid-v8761">
               {fotos.length===0&&<span>No hi ha fotos a l’expedient.</span>}
               {fotos.map(f=><label key={f.id} className={(draft.fotoIds||[]).includes(f.id)?"selected":""}><input type="checkbox" checked={(draft.fotoIds||[]).includes(f.id)} onChange={()=>toggleFoto(f.id)}/><FileImg878261 src={f.src}/><span>{f.nom}</span></label>)}
@@ -3710,9 +3710,15 @@ useEffect(()=>{
   {const w=navBack878257.current;if(w){if(w.obraId&&o.some(x=>x.id===w.obraId))setObraId(w.obraId);if(w.tab)setTab(w.tab);if(w.screen)setScreen(w.screen);setTimeout(()=>{navBack878257.current=null},2000)}}
   setDataLoadedUser8781(authUser8779);
   // V87.261 · torna a posar les fotos, croquis i documents de les actes desats en aquest aparell.
-  {const who=authUser8779;loadObraFiles(d,storageUser).then(found=>{if(found.size&&sessionStorage.getItem("aco_current_user8779")===who)setOdata(prev=>fillObraFiles(prev,found))}).catch(e=>console.warn("Fitxers:",e))}
+  // V87.262 · i posa a la cua per pujar al núvol el que encara no s'hi ha pujat (p. ex. de la V87.261).
+  window.__acoFilesSpace=storageUser;
+  {const who=authUser8779;loadObraFiles(d,storageUser).then(found=>{if(found.size&&sessionStorage.getItem("aco_current_user8779")===who)setOdata(prev=>fillObraFiles(prev,found))}).catch(e=>console.warn("Fitxers:",e)).finally(()=>scanPending(storageUser,d,id=>getLocalDocFile878262(id).then(Boolean).catch(()=>false)))}
 },[authUser8779]);
 useEffect(()=>{try{sessionStorage.setItem("aco-on-era",JSON.stringify({screen,obraId,tab}))}catch{}},[screen,obraId,tab]);
+// V87.262 · de qui és cada obra (les compartides són d'un altre compte) i document local per a la cua.
+useEffect(()=>{window.__acoOwnerOf=id=>obres.find(o=>o.id===id)?.compartida?.owner||"";window.__acoGetLocalDoc=id=>getLocalDocFile878262(id).catch(()=>null)},[obres]);
+// V87.262 · en obrir una obra, es baixen del núvol els seus fitxers que no són en aquest aparell.
+useEffect(()=>{if(!obraId||!authUser8779||dataLoadedUser8781!==authUser8779)return;const who=authUser8779,space=dataOwnerUser878233;fetchObraFiles(obraId,odata[obraId],space).then(found=>{if(found.size&&sessionStorage.getItem("aco_current_user8779")===who)setOdata(prev=>fillObraFiles(prev,found))}).catch(e=>console.warn("Fitxers:",e))},[obraId,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),dataOwnerUser878233)},[clients,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),dataOwnerUser878233)},[obres,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,dataOwnerUser878233)},[odata,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
@@ -10251,8 +10257,12 @@ return <div className="agent-drawer-v878133" key={a.id}>
 function SeguimentFotos(){const[photos,setPhotos]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_photos"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_photos"),JSON.stringify(photos))},[photos]);function add(e){let files=[...(e.target.files||[])];files.forEach(f=>{let r=new FileReader();r.onload=()=>setPhotos(p=>[...p,{id:"ph-"+Date.now()+Math.random(),name:f.name,url:r.result}]);r.readAsDataURL(f)})}return <Card title="Fotografies" action={<label className="primary upload-label"><Plus/> Afegir fotografies<input type="file" multiple accept="image/*" onChange={add}/></label>}><div className="real-photo-grid">{photos.length===0?<Empty text="Encara no hi ha fotografies. També les podràs incorporar directament dins les actes."/>:photos.map(p=><div><img src={p.url}/><span>{p.name}</span></div>)}</div></Card>}
 
 function openDocsDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open("aco_documents_db",1);req.onupgradeneeded=()=>{req.result.createObjectStore("files")};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
-async function saveDocFile(id,file){const db=await openDocsDB();return new Promise((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").put(file,id);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error)})}
-async function getDocFile(id){const db=await openDocsDB();return new Promise((resolve,reject)=>{const tx=db.transaction("files","readonly");const req=tx.objectStore("files").get(id);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+// V87.262 · els documents també es pugen al núvol (cua de fileStore.js) i es baixen si no són en aquest aparell.
+async function saveDocFile(id,file,obraId){await saveLocalDocFile878262(id,file);if(obraId)enqueueDoc(currentFilesSpace878262(),id,obraId)}
+function currentFilesSpace878262(){try{return window.__acoFilesSpace||""}catch{return ""}}
+async function getDocFile(id,obraId){const local=await getLocalDocFile878262(id).catch(()=>null);if(local||!obraId)return local;const blob=await fetchDoc(id,obraId,currentFilesSpace878262()).catch(()=>null);if(blob){try{await saveLocalDocFile878262(id,blob)}catch{}}return blob}
+async function saveLocalDocFile878262(id,file){const db=await openDocsDB();return new Promise((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").put(file,id);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error)})}
+async function getLocalDocFile878262(id){const db=await openDocsDB();return new Promise((resolve,reject)=>{const tx=db.transaction("files","readonly");const req=tx.objectStore("files").get(id);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 async function deleteDocFile(id){const db=await openDocsDB();return new Promise((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").delete(id);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error)})}
 
 
@@ -10309,11 +10319,11 @@ async function persistImportedExcelDocument878245(file,{obraId,budgetId,budgetNa
       const uploaded=await uploadToSupabaseStorage(file,{id,obraId:obraId||"expedient",folder:base.folder});
       return {...base,...uploaded,storage:"supabase",hasFile:true,originalAvailable:true};
     }
-    await saveDocFile(id,file);
+    await saveDocFile(id,file,obraId);
     return {...base,storage:"indexeddb",hasFile:true,originalAvailable:true};
   }catch(error){
     try{
-      await saveDocFile(id,file);
+      await saveDocFile(id,file,obraId);
       return {...base,storage:"indexeddb",hasFile:true,originalAvailable:true,error:`No s’ha pogut pujar a Supabase: ${String(error?.message||error)}`};
     }catch(localError){
       return {...base,storage:"registre",hasFile:false,originalAvailable:false,error:`No s’ha pogut guardar l’Excel original: ${String(localError?.message||localError)}`};
@@ -10366,13 +10376,13 @@ const docs=dedupeDocumentRecords878246(data.documents||[]);
 const folders=documentFolders8775(obra,data);
 const[folder,setFolder]=useState(folders[0]?.id||"00_DESPATX_TECNIC");
 const[cfg,setCfg]=useState(()=>getStorageCfg());
-const[showCfg,setShowCfg]=useState(!isStorageReady(getStorageCfg()));
+const[showCfg,setShowCfg]=useState(false);// V87.262 · els documents ja van sols al núvol: fora la configuració manual antiga
 const[status,setStatus]=useState("");
 const activeFolder=folders.find(f=>f.id===folder)||folders[0];
 function setDocs(updater){setData(d=>{const current=dedupeDocumentRecords878246(d.documents||[]);const next=typeof updater==="function"?updater(current):updater;return {...d,documents:dedupeDocumentRecords878246(next)};});}
 function docFolder(d){return d.folder||"01_DOCUMENTACIO_PREVIA"}
 function saveCfg(){saveStorageCfg(cfg);setStatus(isStorageReady(cfg)?"Storage configurat. Prova pujar un document.":"Falten dades de configuració.")}
-async function add(e){let f=e.target.files?.[0];if(!f)return;let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC",now=new Date().toISOString();let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,folder,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size};try{if(isStorageReady(cfg)){setStatus("Pujant document a Supabase Storage...");let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient",folder});setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);setStatus("Document pujat a Supabase Storage.");return;}await saveDocFile(id,f);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);setStatus(`Document guardat a ${activeFolder?.label||"Documents"}.`);}catch(err){try{await saveDocFile(id,f);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}}finally{if(e?.target)e.target.value=""}}
+async function add(e){let f=e.target.files?.[0];if(!f)return;let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC",now=new Date().toISOString();let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,folder,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size};try{if(isStorageReady(cfg)){setStatus("Pujant document a Supabase Storage...");let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient",folder});setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);setStatus("Document pujat a Supabase Storage.");return;}await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);setStatus(`Document guardat a ${activeFolder?.label||"Documents"}.`);}catch(err){try{await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}}finally{if(e?.target)e.target.value=""}}
 function budgetDocFromCurrent878189(d){
   const rows=Array.isArray(data?.partides)?data.partides:[];
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -10401,7 +10411,7 @@ async function openExcelPreview878245(d){
       const blob=await response.blob();
       file=new File([blob],d.nom||"pressupost.xlsx",{type:blob.type||"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
     }else if(d?.hasFile){
-      file=await getDocFile(d.id);
+      file=await getDocFile(d.id,d.obraId);
     }
     if(!file)throw new Error("L’original d’aquest Excel no està disponible en aquest dispositiu.");
     const workbook=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});
@@ -10435,7 +10445,7 @@ async function openOriginal(d){
   if(d?.storage==="generat"&&String(d?.tipus||"").toUpperCase().includes("PRESSUPOST")){openDoc?.(budgetDocFromCurrent878189(d));return}
   const remoteUrl=d?.url||publicStorageDocumentUrl878245(d);
   if(d?.storage==="supabase"&&remoteUrl){window.open(remoteUrl,"_blank");return}
-  if(d?.hasFile){let file=await getDocFile(d.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}
+  if(d?.hasFile){let file=await getDocFile(d.id,d.obraId||obra?.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}
   openDoc?.({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."});
 }
 async function remove(d){if(!confirm("Segur que vols eliminar aquest document d’aquest expedient?"))return;if(d.storage==="supabase"&&d.path) await deleteFromSupabaseStorage(d.path).catch(()=>{});if(d.storage==="indexeddb"||d.hasFile) await deleteDocFile(d.id).catch(()=>{});setDocs(p=>p.filter(x=>x.id!==d.id))}
@@ -10457,7 +10467,7 @@ const generatedDocs878148=generatedDocs878148Raw.filter((doc,index,all)=>{
 const shown=docs.filter(d=>docFolder(d)===folder);
 const shownGenerated878148=generatedDocs878148.filter(d=>docFolder(d)===folder);
 const totalDocs=docs.length+generatedDocs878148.length;
-return <Card title={`Documents de l’expedient${obra?.nom?` · ${obra.nom}`:""}`} action={<div className="actions-inline"><label className="primary upload-label"><Upload/> Adjuntar a carpeta actual<input type="file" onChange={add}/></label><button className="secondary" onClick={()=>openEmail("Documents expedient")}>Enviar email</button><button className="secondary" onClick={()=>setShowCfg(!showCfg)}>Config. Storage</button></div>}>
+return <Card title={`Documents de l’expedient${obra?.nom?` · ${obra.nom}`:""}`} action={<div className="actions-inline"><label className="primary upload-label"><Upload/> Adjuntar a carpeta actual<input type="file" onChange={add}/></label><button className="secondary" onClick={()=>openEmail("Documents expedient")}>Enviar email</button></div>}>
   {showCfg&&<div className="storage-config"><b>Configuració opcional Supabase Storage</b><p>Si no configures Storage, els originals es guarden en local IndexedDB d’aquest navegador. Cada document queda vinculat a l’expedient i a una carpeta documental.</p><div className="form-grid no-pad"><label><span>URL Supabase</span><input value={cfg.url} onChange={e=>setCfg({...cfg,url:e.target.value})}/></label><label><span>Anon key</span><input value={cfg.key} onChange={e=>setCfg({...cfg,key:e.target.value})}/></label><label><span>Bucket</span><input value={cfg.bucket} onChange={e=>setCfg({...cfg,bucket:e.target.value})}/></label></div><button className="primary" onClick={saveCfg}>Guardar configuració</button></div>}
   {status&&<div className="doc-status-v38">{status}</div>}
   <div className="documents-pro-v87152">
@@ -10671,7 +10681,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.261",
+    app_version:"87.262",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12740,7 +12750,7 @@ function ShareObra878259({obra}){
   const[open,setOpen]=useState(false);
   if(!c?.shareObra||!obra?.id)return null;
   if(!obra.compartida&&!c.status?.()?.connected)return <div className="share-bar-v878259"><span>Per compartir aquesta obra cal que entris al núvol amb el teu compte.</span><button type="button" className="secondary" onClick={()=>c.connect()}>Entrar al núvol</button></div>;
-  if(obra.compartida)return <div className="share-bar-v878259 foreign"><span>Obra compartida per <b>{obra.compartida.ownerNom||"un altre compte"}</b> · {obra.compartida.perm==="edicio"?"pots fer-hi canvis i els veurà":"només consulta: els teus canvis no s’hi desen"}</span></div>;
+  if(obra.compartida)return <div className="share-bar-v878259 foreign"><span>Obra compartida per <b>{obra.compartida.ownerNom||"un altre compte"}</b>{obra.compartida.ownerUsuari&&obra.compartida.ownerUsuari!==obra.compartida.ownerNom?<> (usuari {obra.compartida.ownerUsuari})</>:null} · {obra.compartida.perm==="edicio"?"pots fer-hi canvis i els veurà":"només consulta: els teus canvis no s’hi desen"}</span></div>;
   const shared=!!c.sharedOwned?.()?.has(obra.id);
   return <><div className={`share-bar-v878259${shared?" on":""}`}><span>{shared?"Obra compartida amb altres comptes.":"Només la veus tu."}</span><button type="button" className="secondary" onClick={()=>setOpen(true)}>{shared?"Amb qui es comparteix":"Compartir"}</button></div>{open&&<ShareModal878259 obra={obra} close={()=>setOpen(false)}/>}</>;
 }
@@ -12776,7 +12786,7 @@ function ShareModal878259({obra,close}){
 }
 function SharedBadge878259({o}){
   useSharedTick878259();
-  if(o?.compartida)return <em className="shared-badge-v878259">Compartida per {o.compartida.ownerNom||"un altre compte"}{o.compartida.perm==="consulta"?" · consulta":""}</em>;
+  if(o?.compartida)return <em className="shared-badge-v878259">Compartida per {o.compartida.ownerNom||"un altre compte"}{o.compartida.ownerUsuari&&o.compartida.ownerUsuari!==o.compartida.ownerNom?" ("+o.compartida.ownerUsuari+")":""}{o.compartida.perm==="consulta"?" · consulta":""}</em>;
   if(typeof window!=="undefined"&&window.__acoCloud?.sharedOwned?.()?.has(o?.id))return <em className="shared-badge-v878259 own">Compartida</em>;
   return null;
 }

@@ -12,6 +12,9 @@ Dins de cada carpeta de dia hi ha:
 - `_obres-compartides.json.gz`;
 - `_resum.json`, amb les obres i la mida de cada compte.
 
+**Arxius (V87.262):** fotos, croquis i documents del núvol es copien a `<carpeta>/arxius/<compte>/<obra>/`. Cada
+dia només es baixen els nous, i no se n’esborra mai cap.
+
 Es guarden els **últims 30 dies** i el **dia 1 de cada mes** durant **12 mesos**. Cada carpeta té un
 `registre.txt` amb una línia per còpia: `OK` o `ERROR`.
 

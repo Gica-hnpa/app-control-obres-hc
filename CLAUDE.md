@@ -34,6 +34,10 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
   - Taula `aco_kv` (una fila per clau; `aco_odata` es parteix en una fila per obra) amb RLS per usuari.
   - Taula `aco_shared` (obres compartides entre comptes: lectors / editors).
   - Taula antiga `aco_user_state` (V87.121): ja sense accés anònim, dades velles de juliol.
+  - **Arxius (V87.262)**: espai privat de Supabase Storage `aco-fitxers` (`supabase/aco_fitxers_v87262.sql`), carpeta
+    `<compte propietari>/<obra>/<arxiu>`. Propietari: tot; obres compartides: lectors veuen, editors afegeixen; només
+    el propietari esborra; compte de còpies llegeix tot. L’identificador d’una obra compartida ja no es pot canviar
+    i el correu del propietari el posa el servidor.
   - Edge Function `llegir-albara` (codi a `supabase/functions/llegir-albara/index.ts`) per llegir albarans
     amb Claude (Anthropic, model Haiku 4.5). **Encara no desplegada.**
 - **Publicació**: Git a l’ordinador → GitHub `https://github.com/Gica-hnpa/app-control-obres-hc`
@@ -43,7 +47,8 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
 - **Còpies del núvol** (V87.260, `tools/copies/`, instruccions a `tools/copies/LLEGEIX-ME.md`): `copia-nuvol.mjs`
   entra amb el compte `copies@usuaris.controlobres.app` (només llegir, regla `supabase/aco_copies_v87260.sql`) i desa
   cada dia a les 13:00 un `.json.gz` per compte a `DADES\COPIES_NUVOL\AAAA-MM-DD` i a
-  `C:\Users\Hector\Documents\COPIES_NUVOL\AAAA-MM-DD` (30 dies + dia 1 de cada mes, 12 mesos). Contrasenya xifrada
+  `C:\Users\Hector\Documents\COPIES_NUVOL\AAAA-MM-DD` (30 dies + dia 1 de cada mes, 12 mesos); els arxius del núvol (V87.262) es copien a
+  `COPIES_NUVOL/arxius/<compte>/<obra>/` (només els nous; no se n’esborra cap). Contrasenya xifrada
   amb Windows a `%USERPROFILE%\.aco-copies\config.json` (fora del projecte). `restaurar-compte.mjs` restaura UN compte
   (prova per defecte; `--de-debo` demana la clau secreta, que no es desa). El compte de còpies no s’ha de fer servir
   mai per entrar a l’app.
@@ -101,7 +106,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Comptes separats al mateix navegador** per prefix `emp_`; les dades d’empresa no entren mai al fitxer DADES.
 - **Fotos, croquis i documents de les actes** (V87.261, `src/fileStore.js`): el desat de les obres en treu les
   imatges per pes; cada fitxer es desa a part en l’aparell (IndexedDB `aco_fitxers`, clau `<espai>::<id>`) i es torna
-  a posar en obrir l’app. **Encara no viatgen entre aparells** (V87.262: Supabase Storage privat). Les 11 fotos de
+  a posar en obrir l’app. **Des de la V87.262 es pugen al núvol** (`aco-fitxers`) amb una cua desada a l’aparell: al
+  moment si hi ha cobertura, si no en tornar-n’hi (Safari pot esborrar dades d’una web poc oberta). En obrir una obra,
+  es baixen els que falten. Els Documents de l’obra fan el mateix camí. Rètol «X arxius pendents de pujar». Les 11 fotos de
   l’acta del 13/10 de «Projecte piscina av. Rosello 10» es van perdre abans d’aquest arranjament.
 - **Fotos d’obra i albarans en claus pròpies** (`aco_obra_foto_v878259_<id>`, `aco_albara_foto_…`,
   `aco_albara_pdf_…`), reduïdes; abans es treien per pes i no es desaven.
@@ -123,13 +130,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Lectura d’albarans amb IA directa**: falta clau d’Anthropic + desplegar la funció
   (`INSTRUCCIONS_LECTURA_ALBARANS_IA.txt`).
 - **Hores per treballador** (constructors) i mòduls per a **autònoms / operaris / promotors**.
-- **V87.262 · Supabase Storage privat** per a fotos, croquis i documents (actes i pestanya Documents), amb regles per
-  compte i obres compartides, cua sense cobertura i còpia diària dels arxius. Cal esborrar abans les regles antigues
-  d’arxius (informe, punt K).
 - **Portal de client amb compte de núvol propi** (avui els clients només tenen el portal intern).
 - Obres compartides: hores, agenda i albarans no es comparteixen; «només consulta» no es bloqueja a la pantalla.
-- Seguretat: polítiques antigues
-  de Supabase Storage (documents) encara anònimes; considerar Supabase Pro en comercialitzar.
+- Seguretat: considerar Supabase Pro en comercialitzar (les regles antigues d’arxius anònimes es van esborrar a la V87.262).
 - Dades a revisar amb l’Héctor: partides certificades per sobre del 100 %, codis repetits
   (CALA ROVIRA 01.16, Verbania 04.01), dates desordenades a JAVI PUADO i MARICEL.
 - La foto de COMODORO s’ha de tornar a posar (la vella no es va desar mai).
@@ -150,6 +153,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - `contrasenyestest.mjs`: entrar a l’app sense contrasenyes al codi (ordinador, mòbil, empresa, sense connexió,
     portal), amb una còpia de DADES; comprova que el DADES real no canvia.
   - `fitxerstest.mjs`: fotos/croquis/documents de les actes desats a l’aparell (ordinador i mòbil compilat).
+  - `nuvoltest.mjs`: arxius al núvol (ordinador → mòbil, sense connexió, fotos de la V87.261, obra compartida, permisos).
   - `synctest.mjs`: dos aparells; un canvi no es perd i «guanya el núvol» es manté (`WEBROOT=` per comparar versions).
   - `copiatest.mjs`: 26 proves de `tools/copies` (còpia i restauració) amb el Supabase de proves i carpetes temporals.
   - `compare.js` + `extractor.js`: comparar pressupostos i certificacions entre dues còpies.

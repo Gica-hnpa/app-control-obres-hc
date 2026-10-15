@@ -80,6 +80,35 @@ async function readAll(cfg, token, table, select, order) {
   return out;
 }
 
+// ---------- V87.262 · arxius (fotos, croquis, documents) ----------
+// Es guarden a <destí>arxius<compte><obra><arxiu>, sense esborrar-ne mai cap; només es baixen els nous.
+async function listAll(cfg, token, prefix = "") {
+  const out = [];
+  for (let offset = 0; ; offset += 1000) {
+    const rows = await api(cfg, "/storage/v1/object/list/aco-fitxers", { method: "POST", token, body: { prefix, limit: 1000, offset, sortBy: { column: "name", order: "asc" } } });
+    for (const x of rows || []) {
+      if (x.id === null) out.push(...await listAll(cfg, token, prefix + x.name + "/"));
+      else out.push({ path: prefix + x.name, size: x.metadata?.size ?? null });
+    }
+    if (!rows || rows.length < 1000) break;
+  }
+  return out;
+}
+async function mirrorFiles(cfg, token, roots) {
+  const list = await listAll(cfg, token);
+  let nous = 0, mida = 0;
+  for (const it of list) {
+    const targets = roots.map(root => path.join(root, "arxius", ...it.path.split("/"))).filter(p => { try { const st = fs.statSync(p); return it.size != null && st.size !== it.size; } catch { return true; } });
+    if (!targets.length) continue;
+    const r = await fetch(`${cfg.url}/storage/v1/object/authenticated/aco-fitxers/${it.path.split("/").map(encodeURIComponent).join("/")}`, { headers: { apikey: cfg.clau, Authorization: `Bearer ${token}` } });
+    if (!r.ok) throw new Error(`No s'ha pogut baixar ${it.path} (${r.status})`);
+    const buf = Buffer.from(await r.arrayBuffer());
+    for (const t of targets) { fs.mkdirSync(path.dirname(t), { recursive: true }); fs.writeFileSync(t + ".part", buf); fs.renameSync(t + ".part", t); }
+    nous++; mida += buf.length;
+  }
+  return { total: list.length, nous, mida };
+}
+
 // ---------- fitxers ----------
 function accountName(rows) {
   const count = {};
@@ -163,9 +192,9 @@ async function copia() {
   const now = new Date(), when = now.toISOString();
   const day = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   const stamp = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16).replace("T", " ");
-  let files, resum;
+  let files, resum, token;
   try {
-    const token = await login(cfg, password(cfg));
+    token = await login(cfg, password(cfg));
     const kv = await readAll(cfg, token, "aco_kv", "user_id,key,value,deleted,device,updated_at", "user_id.asc,key.asc");
     const shared = await readAll(cfg, token, "aco_shared", "*", "obra_id.asc");
     // Si no es llegeix res, segurament falta la regla SQL o el compte no és el de còpies:
@@ -195,6 +224,17 @@ async function copia() {
     }
   }
   console.log(`${resum.comptes.length} comptes: ${text}`);
+  // Arxius: a part, perquè un problema amb els arxius no impedeixi la còpia de les dades.
+  try {
+    const roots = cfg.desti.filter(root => fs.existsSync(root));
+    const m = await mirrorFiles(cfg, token, roots);
+    for (const root of roots) log(root, `${stamp}  OK  arxius: ${m.total} al núvol, ${m.nous} nous (${mb(m.mida)})`);
+    console.log(`Arxius: ${m.total} al núvol, ${m.nous} nous`);
+  } catch (e) {
+    for (const root of cfg.desti) log(root, `${stamp}  ERROR  arxius: ${e.message}`);
+    console.error("ERROR arxius:", e.message);
+    process.exitCode = 1;
+  }
 }
 
 (process.argv.includes("--configurar") ? configurar() : copia()).catch(e => { console.error("ERROR:", e.message); process.exitCode = 1; });

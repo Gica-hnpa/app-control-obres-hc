@@ -310,6 +310,9 @@ d'un any.
 
 ## 🟠 H. Obres compartides: 3 punts febles — ⚠️
 
+> **V87.262:** tancats el 1 (el correu del propietari el posa el servidor; l’app mostra l’usuari real) i el 2
+> (l’identificador d’una obra compartida no es pot canviar). El 3 (ocupar un identificador) queda, poc probable.
+
 *(Punt 2)*
 
 La taula `aco_shared` té RLS activat ✅. Les proves confirmen que només veu una obra qui hi està
@@ -361,6 +364,9 @@ diari de lectures i un **límit de despesa mensual** al compte d'Anthropic.
 ---
 
 ## 🟡 K. Arxius (Storage) i taula antiga de juliol — ⚠️
+
+> **V87.262:** regles antigues anònimes esborrades; espai privat `aco-fitxers` amb regles per compte i obres
+> compartides (provat amb usuaris inventats, 29/29). Queda: esborrar la taula antiga `aco_user_state`.
 
 *(Punt 5)*
 
