@@ -7,7 +7,7 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 
-const VERSION = "V87.262.1";
+const VERSION = "V87.263";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -102,6 +102,8 @@ async function storageDownload(path) {
   if (r.status === 400 || r.status === 404) return null; // encara no s'ha pujat
   const e = new Error(`Error ${r.status}`); e.status = r.status; throw e;
 }
+// V87.263 · espai ocupat al núvol (funció aco_espai de supabase/aco_espai_v87263.sql; null per als comptes d'empresa).
+async function espai() { return api("/rest/v1/rpc/aco_espai", { method: "POST", body: {} }); }
 // V87.260 · canviar la contrasenya del núvol del compte connectat (Héctor o empresa).
 async function changePassword(password) {
   if (!session) throw new Error("Cal estar connectat al núvol.");
@@ -458,7 +460,7 @@ async function cycle({ startup = false, returning = false } = {}) {
       const sh = await sharedCycle(canApply);
       if (sh.applied && !startup) { lastOk = new Date().toISOString(); await reloadSafely(); return; }
       lastOk = new Date().toISOString(); lastErr = ""; paint(sh.waiting ? "remote" : "ok");
-    } else if (startup || conflicts.length || (!typing() && (returning || Date.now() - lastInput > 60000))) {
+    } else if (startup || (conflicts.length && !holds) || (!typing() && (returning || Date.now() - lastInput > 60000))) {
       applyRows(remote);
       meta.cursor = maxTime(rows, meta.cursor); saveMeta();
       lastOk = new Date().toISOString(); lastErr = "";
@@ -548,7 +550,11 @@ async function reloadSafely() {
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   location.reload();
 }
-function typing() { const el = document.activeElement; return !!el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable); }
+// V87.263 · «hold»: l'app està fent una feina sense tecles ni tocs (p. ex. dictat per veu, proposta de la IA per revisar).
+// Mentre duri, els canvis d'altres aparells esperen (com quan s'està escrivint) i l'app no es recarrega sola.
+let holds = 0;
+function hold(on) { holds = Math.max(0, holds + (on ? 1 : -1)); if (!on && !holds) lastInput = Date.now(); }
+function typing() { if (holds) return true; const el = document.activeElement; return !!el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable); }
 function schedule(ms = 4000) { clearTimeout(timer); timer = setTimeout(() => cycle(), ms); }
 async function syncNow() { await cycle({ returning: true }); }
 // V87.258.2 · entrar amb un altre compte des de la pantalla d'entrada de l'app.
@@ -592,7 +598,7 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword, storageUpload, storageDownload, userId: () => session?.user_id || "" };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword, storageUpload, storageDownload, espai, hold, userId: () => session?.user_id || "" };
   session = readJson(SESSION_KEY, null);
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {

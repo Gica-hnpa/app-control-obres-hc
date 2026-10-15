@@ -207,3 +207,22 @@ html body .alb-editor-v878259 .alb-ai-btns{display:flex;flex-wrap:wrap;gap:8px}
 /* V87.262 · arxius pendents de pujar al núvol */
 .files-badge-v878262{position:fixed;left:12px;bottom:12px;z-index:60;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:999px;padding:6px 12px;font-size:12px;box-shadow:0 2px 8px rgba(15,23,42,.12);cursor:pointer}
 .files-badge-v878262[hidden]{display:none}
+/* V87.263 · dictat i redacció formal a les actes */
+.dictat-v878263{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.dictat-bar-v878263{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dictat-bar-v878263>button{min-height:40px;max-width:100%}
+.dictat-lang-v878263{display:inline-flex;border:1px solid #cbd5e1;border-radius:999px;overflow:hidden}
+.dictat-lang-v878263 button{border:0;background:#fff;padding:6px 14px;min-height:40px;font-size:14px;cursor:pointer;color:#334155}
+.dictat-lang-v878263 button.active{background:#1e3a8a;color:#fff}
+.dictat-live-v878263{font-size:13px;color:#b91c1c}
+.dictat-live-v878263 em{color:#475569}
+.dictat-msg-v878263{font-size:13px;color:#334155;background:#f1f5f9;border-radius:8px;padding:6px 10px}
+.dictat-ia-v878263{border:1px solid #cbd5e1;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#fff}
+.dictat-ia-v878263 ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.dictat-ia-v878263 textarea{min-height:140px;width:100%}
+/* V87.263 · espai al núvol */
+.espai-row-v878263{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.espai-row-v878263>div:first-child{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.espai-bar-v878263{height:8px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+.espai-bar-v878263 i{display:block;height:100%;background:#2563eb}
+.espai-bar-v878263 i.alerta{background:#dc2626}

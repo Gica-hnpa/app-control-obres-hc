@@ -45,6 +45,12 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
     i el correu del propietari el posa el servidor.
   - Edge Function `llegir-albara` (codi a `supabase/functions/llegir-albara/index.ts`) per llegir albarans
     amb Claude (Anthropic, model Haiku 4.5). **Encara no desplegada.**
+  - Edge Function `redactar-acta` (V87.263, `supabase/functions/redactar-acta/index.ts`, SDK oficial `@anthropic-ai/sdk`,
+    model `claude-opus-5-5` amb esforç baix, només usuaris connectats). **Encara no desplegada**: mentre no ho estigui,
+    l’app ofereix el camí manual (copiar instruccions + text a ChatGPT/Claude i enganxar la resposta).
+  - Funció `aco_espai()` (V87.263, `supabase/aco_espai_v87263.sql`): mida de la base de dades i dels arxius per a
+    Configuració → «Espai al núvol» (només l’Héctor; els comptes d’empresa reben null). És «security definer»: el
+    Security Advisor la marca com a avís, i és d’esperar.
 - **Publicació**: Git a l’ordinador → GitHub `https://github.com/Gica-hnpa/app-control-obres-hc`
   (privat, branca `main`) → **Render** `https://app-control-obres-hc.onrender.com`, que compila sol
   (`npm run build`) a cada pujada. El `dist` no es puja.
@@ -119,6 +125,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   `aco_albara_pdf_…`), reduïdes; abans es treien per pes i no es desaven.
 - **Obres compartides**: no es copien a l’espai de l’altre compte; viuen a `aco_shared`.
 - Lectura d’albarans: 1) IA directa (si la funció existeix) → 2) text del PDF → 3) ChatGPT copiar/enganxar.
+- **Dictat a les actes** (V87.263): botó «Dictar» a Observacions amb el reconeixement de veu del navegador (Chrome/Edge,
+  Safari a iPhone/iPad; gratuït, necessita connexió; sense connexió, el micròfon del teclat del mòbil). Català o castellà,
+  recordat per aparell. «Redacció formal (IA)»: sempre proposta per revisar (substituir / afegir a sota), mai automàtic.
+  Mentre es dicta o hi ha una proposta oberta, la sincronització no recarrega l’app (`__acoCloud.hold`).
+- **Espai** (V87.263): fotos reduïdes a 1600 px / JPEG 82 %; si el navegador no les pot reduir i fan >1,5 MB, es
+  pregunta. Croquis: el més petit entre PNG i JPEG 92 % (línies → PNG; sobre foto → JPEG). Documents: avís >10 MB,
+  bloqueig >50 MB (límit del pla).
 
 ## Pendent o a mitges
 
@@ -159,6 +172,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     portal), amb una còpia de DADES; comprova que el DADES real no canvia.
   - `fitxerstest.mjs`: fotos/croquis/documents de les actes desats a l’aparell (ordinador i mòbil compilat).
   - `nuvoltest.mjs`: arxius al núvol (ordinador → mòbil, sense connexió, fotos de la V87.261, obra compartida, permisos).
+  - `dictattest.mjs`: dictat (reconeixement de veu simulat), redacció formal (funció i camí manual), croquis, fotos
+    no reduïbles, documents grans i espai a Configuració; ordinador, mòbil compilat i compte d’empresa.
   - `synctest.mjs`: dos aparells; un canvi no es perd i «guanya el núvol» es manté (`WEBROOT=` per comparar versions).
   - `copiatest.mjs`: 26 proves de `tools/copies` (còpia i restauració) amb el Supabase de proves i carpetes temporals.
   - `compare.js` + `extractor.js`: comparar pressupostos i certificacions entre dues còpies.

@@ -2589,7 +2589,8 @@ function fmtDate8761(v){
   return s;
 }
 function todayISO8761(){return new Date().toISOString().slice(0,10)}
-function resizeImageDataUrl8779(file,maxSide=1600,quality=0.82){
+// V87.263 · «info.notReduced» indica que el navegador no l'ha pogut reduir (p. ex. HEIC a Chrome d'ordinador).
+function resizeImageDataUrl8779(file,maxSide=1600,quality=0.82,info=null){
   return new Promise((resolve,reject)=>{
     const reader=new FileReader();
     reader.onload=()=>{
@@ -2601,9 +2602,9 @@ function resizeImageDataUrl8779(file,maxSide=1600,quality=0.82){
           const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
           const ctx=canvas.getContext("2d");ctx.drawImage(img,0,0,w,h);
           resolve(canvas.toDataURL("image/jpeg",quality));
-        }catch(e){resolve(reader.result)}
+        }catch(e){if(info)info.notReduced=true;resolve(reader.result)}
       };
-      img.onerror=()=>resolve(reader.result);
+      img.onerror=()=>{if(info)info.notReduced=true;resolve(reader.result)};
       img.src=reader.result;
     };
     reader.onerror=()=>reject(reader.error);
@@ -2616,7 +2617,8 @@ async function addPhotoFiles8761(files,setData){
   const list=[...(files||[])];
   for(const file of list){
     try{
-      const src=await resizeImageDataUrl8779(file);
+      const info={};const src=await resizeImageDataUrl8779(file,1600,0.82,info);
+      if(info.notReduced&&(file.size||0)>1.5*1048576&&!confirm(`La foto «${file.name||"Foto"}» no s’ha pogut reduir (${MB878263(file.size)} MB). Ocuparia molt espai al núvol.\n\nVols afegir-la igualment?`))continue;
       const now=new Date().toISOString();
       setData(d=>({...d,fotos:[...(d.fotos||[]),{
         id:"foto-"+Date.now()+"-"+Math.random().toString(16).slice(2),
@@ -2655,7 +2657,7 @@ function PlanolsCroquisActa8769({draft,setDraft}){
   function down(e){e.preventDefault();snapshot();drawingRef.current=true;const p=pos(e);lastRef.current=p;const context=ctx();context.beginPath();context.moveTo(p.x,p.y)}
   function move(e){if(!drawingRef.current)return;e.preventDefault();const p=pos(e),context=ctx();context.lineCap="round";context.lineJoin="round";context.strokeStyle=color;context.lineWidth=+size||4;context.lineTo(p.x,p.y);context.stroke();lastRef.current=p}
   function up(){drawingRef.current=false;lastRef.current=null}
-  function saveCroquis(){const c=canvasRef.current;if(!c)return;const src=c.toDataURL("image/png");const now=new Date().toISOString();const item={id:"croquis-"+Date.now(),nom:`Croquis / plànol marcat ${String((draft?.croquis||[]).length+1).padStart(2,"0")}`,src,origen:meta.nom,pagina:meta.pagina,data:todayISO8761(),createdAt:now,updatedAt:now};setDraft(d=>({...d,croquis:[...(d.croquis||[]),item]}));}
+  function saveCroquis(){const c=canvasRef.current;if(!c)return;const src=croquisDataUrl878263(c);const now=new Date().toISOString();const item={id:"croquis-"+Date.now(),nom:`Croquis / plànol marcat ${String((draft?.croquis||[]).length+1).padStart(2,"0")}`,src,origen:meta.nom,pagina:meta.pagina,data:todayISO8761(),createdAt:now,updatedAt:now};setDraft(d=>({...d,croquis:[...(d.croquis||[]),item]}));}
   function removeCroquis(id){setDraft(d=>({...d,croquis:(d.croquis||[]).filter(x=>x.id!==id)}))}
   return <div className="plan-acta-box-v8769">
     <div className="section-head-v8764"><div><b>Plànols marcats i croquis per inserir a l’acta</b><span>Pots carregar un PDF de plànol o una imatge, dibuixar-hi a sobre amb llapis/color, guardar el resultat i sortirà a l’acta formal. També pots començar amb un full en blanc per fer un croquis nou.</span></div></div>
@@ -2690,8 +2692,141 @@ function Fotografies8761({data,setData}){
   </Card>
 }
 
+// V87.263 · Dictat per veu a les observacions de l'acta (català i castellà) i redacció formal amb IA.
+// El dictat el fa el navegador (Chrome/Edge a Android i ordinador, Safari a iPhone/iPad): és gratuït i
+// necessita connexió. Sense connexió, el micròfon del teclat del mòbil sovint funciona igualment.
+const DICTAT_IDIOMA_KEY878263="dictat-idioma-app-control-obres";// només en aquest aparell (no es sincronitza)
+function actaFormalPrompt878263(idioma){
+  return idioma==="es"
+    ?"Redacta en castellano formal, como acta de visita de obra de un arquitecto técnico, el texto siguiente, dictado o escrito en la obra. Corrige ortografía y puntuación y ordénalo en apartados breves si conviene (comprobaciones, acuerdos, órdenes, incidencias, pendientes). No inventes nada: no añadas datos, nombres, fechas ni cifras que no estén en el texto. Responde solo con el texto del acta, sin comentarios."
+    :"Redacta en català formal, com a acta de visita d'obra d'un arquitecte tècnic, el text següent, dictat o escrit a l'obra. Corregeix l'ortografia i la puntuació i ordena-ho en apartats breus si escau (comprovacions, acords, ordres, incidències, pendents). No inventis res: no afegeixis dades, noms, dates ni xifres que no hi siguin. Respon només amb el text de l'acta, sense comentaris.";
+}
+let actaIaOff878263=false;// la funció «redactar-acta» no existeix: es fa servir el camí manual
+function DictatActa878263({value="",onChange}){
+  const SR=typeof window!=="undefined"?(window.SpeechRecognition||window.webkitSpeechRecognition):null;
+  const[lang,setLang]=useState(()=>{try{return localStorage.getItem(DICTAT_IDIOMA_KEY878263)||"ca-ES"}catch{return "ca-ES"}});
+  const[on,setOn]=useState(false),[interim,setInterim]=useState(""),[msg,setMsg]=useState("");
+  const[ia,setIa]=useState(null);// null | {mode:"proposta",text} | {mode:"manual",text}
+  const[iaBusy,setIaBusy]=useState(false);
+  const recRef=useRef(null),wantRef=useRef(false),valueRef=useRef(value);
+  useEffect(()=>{valueRef.current=value},[value]);
+  useEffect(()=>()=>{wantRef.current=false;try{recRef.current?.stop()}catch{}},[]);
+  // Mentre es dicta (sense tocar res) o hi ha una proposta per revisar, l'app no es recarrega sola per canvis d'un altre aparell.
+  const holding=on||!!ia;
+  useEffect(()=>{if(!holding)return;try{window.__acoCloud?.hold?.(true)}catch{}return()=>{try{window.__acoCloud?.hold?.(false)}catch{}}},[holding]);
+  const idioma=lang.startsWith("es")?"es":"ca";
+  function chooseLang(l){setLang(l);try{localStorage.setItem(DICTAT_IDIOMA_KEY878263,l)}catch{};if(on){stop();setTimeout(()=>start(l),300)}}
+  function append(t){
+    t=String(t||"").trim();if(!t)return;
+    const cur=valueRef.current||"";
+    const newSentence=!cur.trim()||/[.!?:]\s*$/.test(cur)||/\n\s*$/.test(cur);
+    if(newSentence)t=t.charAt(0).toUpperCase()+t.slice(1);
+    const next=cur+(cur&&!/\s$/.test(cur)?" ":"")+t;
+    valueRef.current=next;onChange?.(next);
+  }
+  function stop(){wantRef.current=false;try{recRef.current?.stop()}catch{};setOn(false);setInterim("")}
+  function start(l=lang){
+    if(!SR){setMsg("Aquest navegador no permet dictar. Fes servir el micròfon del teclat del mòbil.");return}
+    if(typeof navigator!=="undefined"&&navigator.onLine===false){setMsg("Sense connexió: el dictat de l’app necessita internet. Fes servir el micròfon del teclat del mòbil (en molts mòbils funciona sense connexió).");return}
+    const r=new SR();r.lang=l;r.continuous=true;r.interimResults=true;r.maxAlternatives=1;
+    r.onresult=e=>{let fin="",tmp="";for(let i=e.resultIndex;i<e.results.length;i++){const s=e.results[i][0]?.transcript||"";if(e.results[i].isFinal)fin+=s;else tmp+=s}if(fin)append(fin);setInterim(tmp)};
+    r.onerror=e=>{
+      const m={"not-allowed":"Cal donar permís al micròfon (configuració del navegador).","service-not-allowed":"Cal donar permís al micròfon (configuració del navegador).","network":"Sense connexió: fes servir el micròfon del teclat del mòbil.","audio-capture":"No es troba cap micròfon.","language-not-supported":"Aquest aparell no permet dictar en aquest idioma. Prova l’altre idioma o el micròfon del teclat."}[e.error];
+      if(m)setMsg(m);
+      if(e.error!=="no-speech"&&e.error!=="aborted")stop();
+    };
+    // Alguns mòbils aturen el dictat després d'un silenci: es torna a engegar sol mentre estigui actiu.
+    r.onend=()=>{if(wantRef.current){try{r.start()}catch{stop()}}else{setOn(false);setInterim("")}};
+    recRef.current=r;wantRef.current=true;setMsg("");
+    try{r.start();setOn(true)}catch{wantRef.current=false;setMsg("No s’ha pogut engegar el dictat.")}
+  }
+  async function formal(){
+    const text=String(valueRef.current||"").trim();if(!text){setMsg("Primer escriu o dicta el text de l’acta.");return}
+    stop();setMsg("");
+    if(!actaIaOff878263&&window.__acoCloud?.callFunction&&window.__acoCloud.status?.().email){
+      setIaBusy(true);
+      try{const r=await window.__acoCloud.callFunction("redactar-acta",{text,idioma});if(r?.text){setIa({mode:"proposta",text:r.text});return}if(r?.error)setMsg(r.error)}
+      catch(e){if(e.status===404||/not found|requested function/i.test(e.message||"")){actaIaOff878263=true}else if(e.offline){setMsg("Sense connexió: la redacció amb IA necessita internet.");return}else{setMsg("La IA no ha pogut redactar el text: "+(e.message||e))}}
+      finally{setIaBusy(false)}
+    }
+    setIa({mode:"manual",text:""});
+  }
+  async function copyPrompt(){
+    const t=actaFormalPrompt878263(idioma)+"\n\n---\n"+String(valueRef.current||"");
+    try{await navigator.clipboard.writeText(t);setMsg("Instruccions copiades. Enganxa-les a ChatGPT o Claude.")}
+    catch{setMsg("No s’han pogut copiar soles: selecciona el text de l’acta i copia’l a mà.")}
+  }
+  function useText(mode){const t=String(ia?.text||"").trim();if(!t)return;const cur=String(valueRef.current||"");const next=mode==="afegir"&&cur.trim()?cur.replace(/\s*$/,"")+"\n\n"+t:t;valueRef.current=next;onChange?.(next);setIa(null);setMsg(mode==="afegir"?"Text formal afegit a sota.":"Text substituït per la versió formal.")}
+  return <div className="span-all dictat-v878263">
+    <div className="dictat-bar-v878263">
+      <button type="button" className={on?"danger":"secondary"} onClick={()=>on?stop():start()} aria-pressed={on}>{on?"⏹ Aturar el dictat":"🎤 Dictar"}</button>
+      <span className="dictat-lang-v878263" role="group" aria-label="Idioma del dictat">{[["ca-ES","Català"],["es-ES","Castellano"]].map(([l,n])=><button type="button" key={l} className={lang===l?"active":""} onClick={()=>chooseLang(l)}>{n}</button>)}</span>
+      <button type="button" className="secondary" disabled={iaBusy} onClick={formal}>{iaBusy?"Redactant…":"✨ Redacció formal (IA)"}</button>
+    </div>
+    {on&&<div className="dictat-live-v878263">Escoltant… {interim&&<em>{interim}</em>}</div>}
+    {msg&&<div className="dictat-msg-v878263">{msg}</div>}
+    {ia?.mode==="manual"&&<div className="dictat-ia-v878263">
+      <b>Redacció formal amb IA (manual)</b>
+      <ol><li><button type="button" className="secondary" onClick={copyPrompt}>Copiar les instruccions i el text</button></li><li>Enganxa-ho a <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a> o <a href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Claude</a>.</li><li>Copia la resposta i enganxa-la aquí:</li></ol>
+      <textarea value={ia.text} onChange={e=>setIa({mode:"manual",text:e.target.value})} placeholder="Enganxa aquí el text formal"/>
+      <div className="actions-inline"><button type="button" className="primary" disabled={!ia.text.trim()} onClick={()=>useText("substituir")}>Substituir el text</button><button type="button" className="secondary" disabled={!ia.text.trim()} onClick={()=>useText("afegir")}>Afegir a sota</button><button type="button" className="secondary" onClick={()=>setIa(null)}>Cancel·lar</button></div>
+    </div>}
+    {ia?.mode==="proposta"&&<div className="dictat-ia-v878263">
+      <b>Proposta de redacció formal</b><small>Revisa-la abans de fer-la servir: la IA no ha d’haver afegit res que no diguessis.</small>
+      <textarea value={ia.text} onChange={e=>setIa({mode:"proposta",text:e.target.value})}/>
+      <div className="actions-inline"><button type="button" className="primary" onClick={()=>useText("substituir")}>Substituir el text</button><button type="button" className="secondary" onClick={()=>useText("afegir")}>Afegir a sota</button><button type="button" className="secondary" onClick={()=>setIa(null)}>Descartar</button></div>
+    </div>}
+  </div>;
+}
+
+// V87.263 · Espai al núvol (pla gratuït: 1 GB d'arxius i 500 MB de base de dades, per a tots els comptes junts).
+// Croquis: es desa el format que ocupi menys sense perdre llegibilitat. Amb línies (full en blanc, plànol en
+// PDF) sol ser el PNG; sobre una foto o un plànol escanejat, el JPEG al 92 % (provat: el text de 8 px es llegeix).
+function croquisDataUrl878263(canvas){
+  const png=canvas.toDataURL("image/png");
+  try{
+    const t=document.createElement("canvas");t.width=canvas.width;t.height=canvas.height;
+    const x=t.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,t.width,t.height);x.drawImage(canvas,0,0);// JPEG no té transparència: fons blanc
+    const jpg=t.toDataURL("image/jpeg",0.92);
+    return jpg.length<png.length?jpg:png;
+  }catch{return png}
+}
+const MB878263=n=>(n/1048576).toLocaleString("ca-ES",{maximumFractionDigits:1});
+// Documents grans: avís a partir de 10 MB; a partir de 50 MB no es poden pujar al núvol (límit del pla).
+function confirmBigDocument878263(file){
+  const size=file?.size||0,nom=file?.name||"Document";
+  if(size>50*1048576){alert(`«${nom}» ocupa ${MB878263(size)} MB i el núvol només admet fitxers de fins a 50 MB. Redueix-lo (per exemple, imprimint-lo de nou a PDF) i torna-ho a provar.`);return false}
+  if(size>10*1048576)return confirm(`«${nom}» ocupa ${MB878263(size)} MB. Els documents grans omplen ràpid l’espai del núvol (1 GB per a tots els comptes en el pla gratuït).\n\nVols pujar-lo igualment?`);
+  return true;
+}
+function EspaiNuvol878263(){
+  const[st,setSt]=useState({estat:"carregant"});
+  async function load(){
+    setSt({estat:"carregant"});
+    const c=window.__acoCloud;
+    if(!c?.espai||!c.status?.().email){setSt({estat:"sense-nuvol"});return}
+    try{const r=await c.espai();if(r==null){setSt({estat:"amagat"});return}setSt({estat:"ok",...r})}
+    catch(e){setSt({estat:e.offline?"sense-connexio":(e.status===404||/aco_espai|could not find/i.test(e.message||"")?"falta-sql":"error"),msg:e.message})}
+  }
+  useEffect(()=>{load()},[]);
+  if(st.estat==="amagat")return null;
+  const row=(label,used,limit)=>{const pct=Math.min(100,Math.round(used/limit*100));return <div className="espai-row-v878263"><div><b>{label}</b><span>{MB878263(used)} MB de {limit>=1073741824?"1 GB":MB878263(limit)+" MB"} · {pct} %</span></div><div className="espai-bar-v878263"><i style={{width:pct+"%"}} className={pct>=80?"alerta":""}/></div></div>};
+  return <Card title="Espai al núvol" action={<button type="button" className="secondary" onClick={load}>Actualitzar</button>}>
+    {st.estat==="carregant"&&<div className="muted">Calculant…</div>}
+    {st.estat==="ok"&&<>
+      {row("Arxius (fotos, croquis, documents)",+st.arxius||0,1073741824)}
+      {row("Base de dades (obres, pressupostos…)",+st.base_dades||0,524288000)}
+      <small className="muted">Pla gratuït de Supabase, per a tots els comptes junts ({+st.arxius_n||0} arxius). Quan una barra passi del 80 %, és el moment de passar al pla Pro (100 GB d’arxius i 8 GB de base de dades).</small>
+    </>}
+    {st.estat==="falta-sql"&&<div className="module-note-v8738"><span>Per veure l’espai, cal executar una vegada <b>supabase/aco_espai_v87263.sql</b> a Supabase.</span></div>}
+    {st.estat==="sense-connexio"&&<div className="muted">Sense connexió amb el núvol.</div>}
+    {st.estat==="sense-nuvol"&&<div className="muted">Cal estar connectat al núvol.</div>}
+    {st.estat==="error"&&<div className="muted">No s’ha pogut calcular: {st.msg}</div>}
+  </Card>;
+}
+
 function addActaDocFiles8764(files,setDraft){
-  [...(files||[])].forEach(file=>{
+  [...(files||[])].filter(confirmBigDocument878263).forEach(file=>{
     const reader=new FileReader();
     reader.onload=()=>setDraft(d=>({...d,docs:[...(d.docs||[]),{
       id:"doc-acta-"+Date.now()+"-"+Math.random().toString(16).slice(2),
@@ -2889,6 +3024,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
             {showManageAgents87103&&<div className="agent-library-edit-v87100 agent-library-edit-v87103"><h4>Gestionar biblioteca / agents de l’obra</h4><p>Edita dades bàsiques o elimina agents. Els canvis s’apliquen també a les actes on aquest agent està seleccionat.</p>{agents.filter(a=>`${a.nom||""} ${a.rol||""} ${a.empresa||""} ${a.email||""} ${a.telefon||""} ${a.nif||""}`.toLowerCase().includes(agentSearch87102.toLowerCase())).map(ag=><div className="agent-library-row-v87100 agent-library-row-v87145" key={ag.id}><input value={ag.nom||""} onChange={e=>updateAgent8764(ag.id,"nom",e.target.value)} placeholder="Nom"/><input value={ag.rol||""} onChange={e=>updateAgent8764(ag.id,"rol",e.target.value)} placeholder="Rol"/><input value={ag.empresa||""} onChange={e=>updateAgent8764(ag.id,"empresa",e.target.value)} placeholder="Empresa"/><input value={ag.email||""} onChange={e=>updateAgent8764(ag.id,"email",e.target.value)} placeholder="Email"/><input value={ag.telefon||""} onChange={e=>updateAgent8764(ag.id,"telefon",e.target.value)} placeholder="Telèfon"/><input value={ag.nif||""} onChange={e=>updateAgent8764(ag.id,"nif",e.target.value)} placeholder="NIF/CIF"/><button type="button" className="danger small" onClick={()=>deleteAgent8764(ag.id)}>Eliminar</button></div>)}</div>}
           </div>}
 
+                    {actaPanel8799==="Observacions"&&<DictatActa878263 value={draft.text||""} onChange={v=>upd("text",v)}/>}
                     {actaPanel8799==="Observacions"&&<label className="span-all acta-textarea-v8768"><span>Text de l’acta</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder="Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents..."/></label>}
 
           {actaPanel8799==="Fotos"&&<div className="photo-select-v8761">
@@ -10382,7 +10518,7 @@ const activeFolder=folders.find(f=>f.id===folder)||folders[0];
 function setDocs(updater){setData(d=>{const current=dedupeDocumentRecords878246(d.documents||[]);const next=typeof updater==="function"?updater(current):updater;return {...d,documents:dedupeDocumentRecords878246(next)};});}
 function docFolder(d){return d.folder||"01_DOCUMENTACIO_PREVIA"}
 function saveCfg(){saveStorageCfg(cfg);setStatus(isStorageReady(cfg)?"Storage configurat. Prova pujar un document.":"Falten dades de configuració.")}
-async function add(e){let f=e.target.files?.[0];if(!f)return;let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC",now=new Date().toISOString();let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,folder,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size};try{if(isStorageReady(cfg)){setStatus("Pujant document a Supabase Storage...");let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient",folder});setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);setStatus("Document pujat a Supabase Storage.");return;}await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);setStatus(`Document guardat a ${activeFolder?.label||"Documents"}.`);}catch(err){try{await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}}finally{if(e?.target)e.target.value=""}}
+async function add(e){let f=e.target.files?.[0];if(!f)return;if(!confirmBigDocument878263(f)){e.target.value="";return}let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC",now=new Date().toISOString();let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,folder,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size};try{if(isStorageReady(cfg)){setStatus("Pujant document a Supabase Storage...");let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient",folder});setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);setStatus("Document pujat a Supabase Storage.");return;}await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);setStatus(`Document guardat a ${activeFolder?.label||"Documents"}.`);}catch(err){try{await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}}finally{if(e?.target)e.target.value=""}}
 function budgetDocFromCurrent878189(d){
   const rows=Array.isArray(data?.partides)?data.partides:[];
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -10681,7 +10817,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.262.1",
+    app_version:"87.263",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -10877,6 +11013,7 @@ function save(){
 }
 return <div className="stack">
 <AccountAccessPanel878233 clients={clients} authUser={authUser}/>
+{admin&&!window.__acoEmpresa&&<EspaiNuvol878263/>}
 {admin&&<><PlansModuls8736/>
 <DataJsonTools8778 clients={clients} obres={obres} odata={odata}/>
 <RecoverySnapshotsPanel878122 setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
