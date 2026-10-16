@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2} from "lucide-react";
+import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText} from "lucide-react";
 import {t,t as i18nT,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.278";
+const APP_VERSION878264="87.279";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1829,7 +1829,7 @@ function uniqueTabs8769(arr){return [...new Set((arr||[]).filter(Boolean))]}
 const WORK_TAB_GROUPS878238=[
   {label:"General",tabs:["Resum","Dades","Agents"]},
   {label:"Documentació",tabs:["Documents","Actes","Notes","Fotografies","Plànols","Amidaments","Memòria / Informe / Certificat","Tràmits","Seguretat i salut"]},
-  {label:"Pressupost i econòmic",tabs:["Pressupost","Certificacions","Pressupost ràpid","Pressupost obra","Pressupostos","Gestió obra","Certificacions obra","Facturació","Facturació obra","Seguiment econòmic","Factures","Honoraris"]},
+  {label:"Pressupost i econòmic",tabs:["Pressupost","Certificacions","Albarans","Pressupost ràpid","Pressupost obra","Pressupostos","Gestió obra","Certificacions obra","Facturació","Facturació obra","Seguiment econòmic","Factures","Honoraris"]},
   {label:"Seguiment",tabs:["Gantt","Agenda / Avisos","Tasques","Gestió temps","Rendiment","Rendiments"]},
   {label:"Tancament",tabs:["Tancament / Entrega"]}
 ];
@@ -1883,6 +1883,8 @@ function tabsForWork8737(obra,data={}){
   if(!tabs.includes("Actes")){const i=tabs.indexOf("Agenda / Avisos");tabs.splice(i>=0?i+1:Math.min(5,tabs.length),0,"Actes")}
   // V87.278 · notes de visita (més lleugeres que l’acta) a tots els treballs
   if(!tabs.includes("Notes"))tabs.splice(tabs.indexOf("Actes")+1,0,"Notes");
+  // V87.279 · albarans de material dins de l’obra: a les obres en execució, o a qualsevol que ja en tingui d’imputats
+  if(!tabs.includes("Albarans")&&(["Gestió integral d’obra","Direcció / seguiment d’obra","Control econòmic d’obra"].includes(tipus)||(obra?.id&&readAlbarans878259().some(a=>a.obraId===obra.id))))tabs.push("Albarans");
   // V87.120: la gestió econòmica d'obra ha de ser disponible en qualsevol expedient,
   // encara que la feina principal no sigui una gestió integral. Això permet crear/importar
   // un pressupost d'obra quan calgui, en lloc de deixar-lo només com a PDF a Documents.
@@ -7824,6 +7826,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 key={activeTab} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>} 
+    {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} obraId={obra.id}/>}
     {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
     {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents}/>} 
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
@@ -11013,7 +11016,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.278",
+    app_version:"87.279",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -13030,11 +13033,11 @@ function fillAlbara878259(x,p){
 }
 function albaraBase878259(a){const b=parseNum8770(a.base);if(b)return b;const t=parseNum8770(a.total);const iva=a.iva===""||a.iva==null?21:parseNum8770(a.iva);return t?t/(1+iva/100):(a.linies||[]).reduce((s,x)=>s+(parseNum8770(x.import)||0),0)}
 
-function Albarans878259({obres=[],clients=[],openObra}){
+function Albarans878259({obres=[],clients=[],openObra,obraId:fixedObra=""}){
   const[tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
   const list=useMemo(()=>readAlbarans878259(),[tick]);
-  const[obraF,setObraF]=useState("");
+  const[obraF,setObraF]=useState(fixedObra||"");
   const[clientF,setClientF]=useState("");
   const[nomesPendents,setNomesPendents]=useState(false);
   const[month,setMonth]=useState("");
@@ -13056,7 +13059,7 @@ function Albarans878259({obres=[],clients=[],openObra}){
     setEdit({id:"alb-"+Date.now(),isNew:true,data:todayISO8743(),obraId:obraF||obresSorted[0]?.id||"",proveidor:"",numero:"",base:"",iva:"21",total:"",linies:[],notes:"",facturatClient:false,...extra});
   }
   function save(a){
-    if(!a.obraId){alert("Tria l’obra on s’imputa l’albarà.");return}
+    if(!a.obraId){alert(i18nT("Tria l’obra on s’imputa l’albarà."));return}
     const {foto,pdf,pdfText,isNew,__llegit,...rest}=a;
     if(foto)lsSet8779(albaraFotoKey878259(a.id),foto);
     if(pdf)lsSet8779(albaraPdfKey878259(a.id),pdf);
@@ -13065,31 +13068,31 @@ function Albarans878259({obres=[],clients=[],openObra}){
     writeAlbarans878259(cur.some(x=>x.id===a.id)?cur.map(x=>x.id===a.id?clean:x):[clean,...cur]);
     setEdit(null);
   }
-  function remove(a){if(!confirm("Eliminar aquest albarà?"))return;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)));localStorage.removeItem(lsKey8779(albaraPdfKey878259(a.id)))}catch{};setEdit(null)}
+  function remove(a){if(!confirm(i18nT("Eliminar aquest albarà?")))return;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)));localStorage.removeItem(lsKey8779(albaraPdfKey878259(a.id)))}catch{};setEdit(null)}
   function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),""),pdf:a.tePdf?lsGet8779(albaraPdfKey878259(a.id),""):""})}
   const proveidors=[...new Set(list.map(a=>a.proveidor).filter(Boolean))];
-  return <div className="albarans-v878259">
+  return <div className={`albarans-v878259 ${fixedObra?"alb-obra-v878279":""}`}>
     <div className="alb-head">
-      <div><span className="eyebrow">Control d’obra</span><h1>Albarans</h1><p>Fes una foto de l’albarà, tria l’obra i el cost dels materials hi queda imputat.</p></div>
+      {fixedObra?<div><h2 className="alb-obra-title-v878279">{i18nT("Albarans d’aquesta obra")}</h2><p>{i18nT("Fes una foto de l’albarà i el cost dels materials queda imputat a aquesta obra.")}</p></div>:<div><span className="eyebrow">{i18nT("Control d’obra")}</span><h1>{i18nT("Albarans")}</h1><p>{i18nT("Fes una foto de l’albarà, tria l’obra i el cost dels materials hi queda imputat.")}</p></div>}
       <div className="actions">
-        <label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>Fer foto d’un albarà</label>
-        <label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>Adjuntar PDF o imatge</label>
-        <button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>Entrar sense fitxer</button>
+        <label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Fer foto d’un albarà")}</label>
+        <label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Adjuntar PDF o imatge")}</label>
+        <button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>{i18nT("Entrar sense fitxer")}</button>
       </div>
     </div>
     <div className="alb-filters">
-      {clientIds.length>0&&<select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label="Client"><option value="">{t("Tots els clients")}</option>{clientIds.map(id=><option key={id} value={id}>{cName(id)}</option>)}</select>}
-      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Obra"><option value="">Totes les obres</option>{obresSorted.filter(o=>!clientF||String(o.client)===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
-      <label className="chk"><input type="checkbox" checked={nomesPendents} onChange={e=>setNomesPendents(e.target.checked)}/>Només pendents de facturar al client</label>
-      <input type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label="Mes"/>
-      {month&&<button type="button" className="link" onClick={()=>setMonth("")}>Tots els mesos</button>}
+      {!fixedObra&&clientIds.length>0&&<select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{clientIds.map(id=><option key={id} value={id}>{cName(id)}</option>)}</select>}
+      {!fixedObra&&<select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Obra")}><option value="">{i18nT("Totes les obres")}</option>{obresSorted.filter(o=>!clientF||String(o.client)===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>}
+      <label className="chk"><input type="checkbox" checked={nomesPendents} onChange={e=>setNomesPendents(e.target.checked)}/>{i18nT("Només pendents de facturar al client")}</label>
+      <input type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label={i18nT("Mes")}/>
+      {month&&<button type="button" className="link" onClick={()=>setMonth("")}>{i18nT("Tots els mesos")}</button>}
     </div>
-    <div className="alb-kpis"><div><small>Material imputat (sense IVA)</small><b>{money(total)}</b><span>{rows.length} {rows.length===1?"albarà":"albarans"}</span></div><div className={pendent>0.005?"warn":""}><small>Pendent de facturar al client</small><b>{money(pendent)}</b><span>{rows.filter(a=>!a.facturatClient).length} {rows.filter(a=>!a.facturatClient).length===1?"albarà":"albarans"}</span></div>{groups.slice(0,3).map((g,i)=><div key={i}><small>{g.obra?.nom||"Sense obra"}</small><b>{money(g.base)}</b><span>{g.n} {g.n===1?"albarà":"albarans"}</span></div>)}</div>
-    {rows.length===0?<div className="alb-empty"><b>Encara no hi ha albarans.</b><span>Prem «Fer foto d’un albarà»: al mòbil s’obre la càmera.</span></div>
+    <div className="alb-kpis"><div><small>{i18nT("Material imputat (sense IVA)")}</small><b>{money(total)}</b><span>{rows.length} {rows.length===1?i18nT("albarà"):i18nT("albarans")}</span></div><div className={pendent>0.005?"warn":""}><small>{i18nT("Pendent de facturar al client")}</small><b>{money(pendent)}</b><span>{rows.filter(a=>!a.facturatClient).length} {rows.filter(a=>!a.facturatClient).length===1?i18nT("albarà"):i18nT("albarans")}</span></div>{groups.slice(0,3).map((g,i)=><div key={i}><small>{g.obra?.nom||i18nT("Sense obra")}</small><b>{money(g.base)}</b><span>{g.n} {g.n===1?i18nT("albarà"):i18nT("albarans")}</span></div>)}</div>
+    {rows.length===0?<div className="alb-empty"><b>{i18nT("Encara no hi ha albarans.")}</b><span>{i18nT("Prem «Fer foto d’un albarà»: al mòbil s’obre la càmera.")}</span></div>
     :<div className="alb-list">{rows.map(a=>{const o=obres.find(x=>x.id===a.obraId);return <div key={a.id} className="alb-row" role="button" tabIndex={0} onClick={()=>open(a)} onKeyDown={e=>{if(e.key==="Enter")open(a)}}>
-      <span className="ic">{a.tePdf?"📄":a.teFoto?"📷":"🧾"}</span>
-      <span className="nm"><b>{a.proveidor||"Proveïdor pendent"}{a.numero?` · ${a.numero}`:""}</b><small>{fmtAppDate8748(a.data)} · {o?.nom||"Sense obra"}{o?` · ${cName(o.client)}`:""}{(a.linies||[]).length?` · ${(a.linies||[]).length} línies`:""}</small></span>
-      <span className="num"><b>{money(albaraBase878259(a))}</b><button type="button" className={`fact ${a.facturatClient?"on":""}`} onClick={e=>{e.stopPropagation();toggleFacturat(a)}} title="Marcar si ja l’has facturat o repercutit al client">{a.facturatClient?"Facturat al client":"Pendent de facturar"}</button></span>
+      <span className="ic" aria-hidden="true">{a.tePdf?<FileText size={20}/>:a.teFoto?<Camera size={20}/>:<ReceiptText size={20}/>}</span>
+      <span className="nm"><b>{a.proveidor||i18nT("Proveïdor pendent")}{a.numero?` · ${a.numero}`:""}</b><small>{fmtAppDate8748(a.data)} · {o?.nom||i18nT("Sense obra")}{o?` · ${cName(o.client)}`:""}{(a.linies||[]).length?` · ${i18nT("{n} línies",{n:(a.linies||[]).length})}`:""}</small></span>
+      <span className="num"><b>{money(albaraBase878259(a))}</b><button type="button" className={`fact ${a.facturatClient?"on":""}`} onClick={e=>{e.stopPropagation();toggleFacturat(a)}} title={i18nT("Marcar si ja l’has facturat o repercutit al client")}>{a.facturatClient?i18nT("Facturat al client"):i18nT("Pendent de facturar")}</button></span>
     </div>})}</div>}
     {edit&&<AlbaraEditor878259 a={edit} setA={setEdit} obres={obresSorted} proveidors={proveidors} save={save} remove={remove} close={()=>setEdit(null)} openObra={openObra}/>}
   </div>;
@@ -13105,53 +13108,53 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}
   const[llegint,setLlegint]=useState(false);
   // Llegeix l'albarà sol: primer amb la IA directa (si està configurada) i, si no, amb el text del PDF.
   async function autoRead(cur){
-    setLlegint(true);setMsg("Llegint l’albarà…");
+    setLlegint(true);setMsg(i18nT("Llegint l’albarà…"));
     try{
       const ai=await readAlbaraAI878259(cur);
-      if(ai){setA(x=>fillAlbara878259(x,ai));setMsg(`Llegit amb IA: ${(ai.linies||[]).length} línies${ai.total?` · total ${money(+ai.total||0)}`:""}. Revisa-ho abans de desar.`);return}
-      if(String(cur.pdfText||"").length>40){const p=readAlbaraText878259(cur.pdfText);if(p.total||p.base||p.linies.length){setA(x=>fillAlbara878259(x,p));setMsg(`Llegit del PDF: ${p.linies.length} línies${p.total?` · total ${money(p.total)}`:""}. Revisa-ho abans de desar.`);return}}
-      setMsg(cur.pdf||cur.foto?"No l’he pogut llegir sol: posa el total a mà o fes servir «Llegir amb ChatGPT».":"");
-    }catch(e){setMsg("No s’ha pogut llegir amb IA: "+(e?.message||e)+". Pots fer-ho amb ChatGPT.")}
+      if(ai){setA(x=>fillAlbara878259(x,ai));setMsg(i18nT("Llegit amb IA: {n} línies{total}. Revisa-ho abans de desar.",{n:(ai.linies||[]).length,total:ai.total?` · ${i18nT("total")} ${money(+ai.total||0)}`:""}));return}
+      if(String(cur.pdfText||"").length>40){const p=readAlbaraText878259(cur.pdfText);if(p.total||p.base||p.linies.length){setA(x=>fillAlbara878259(x,p));setMsg(i18nT("Llegit del PDF: {n} línies{total}. Revisa-ho abans de desar.",{n:p.linies.length,total:p.total?` · ${i18nT("total")} ${money(p.total)}`:""}));return}}
+      setMsg(cur.pdf||cur.foto?i18nT("No l’he pogut llegir sol: posa el total a mà o fes servir «Llegir amb ChatGPT».") :"");
+    }catch(e){setMsg(i18nT("No s’ha pogut llegir amb IA: {error}. Pots fer-ho amb ChatGPT.",{error:e?.message||e}))}
     finally{setLlegint(false)}
   }
   useEffect(()=>{if(a.isNew&&(a.pdf||a.foto)&&!a.__llegit){setA(x=>({...x,__llegit:true}));autoRead(a)}},[]);
   async function photo(file){if(!file)return;try{let r;if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)){r=await albaraFromPdf878259(file)}else{r={foto:await compressImage878259(file),pdf:"",tePdf:false,pdfNom:"",pdfText:""}}setA(x=>({...x,...r}));autoRead({...a,...r})}catch(e){alert(e.message)}}
   const teText=String(a.pdfText||"").length>40;
-  function copyPrompt(open){const ok=copyText878256(albaraPrompt878259(a.pdfText||""));setMsg(ok?(teText?"Copiat, amb el text del PDF. A ChatGPT, enganxa-ho (Ctrl+V) i envia: no cal adjuntar res.":"Instruccions copiades. A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa el text (Ctrl+V)."):"No s’han pogut copiar.");if(open)window.open("https://chatgpt.com/","_blank","noopener,noreferrer")}
-  function applyAnswer(){const p=parseAlbara878259(answer);if(!p.total&&!p.linies.length&&!p.proveidor){setMsg("No hi he trobat les dades. Comprova que la resposta tingui «Proveïdor:», «Total:» i la taula.");return}
+  function copyPrompt(open){const ok=copyText878256(albaraPrompt878259(a.pdfText||""));setMsg(ok?(teText?i18nT("Copiat, amb el text del PDF. A ChatGPT, enganxa-ho (Ctrl+V) i envia: no cal adjuntar res."):i18nT("Instruccions copiades. A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa el text (Ctrl+V).")):i18nT("No s’han pogut copiar."));if(open)window.open("https://chatgpt.com/","_blank","noopener,noreferrer")}
+  function applyAnswer(){const p=parseAlbara878259(answer);if(!p.total&&!p.linies.length&&!p.proveidor){setMsg(i18nT("No hi he trobat les dades. Comprova que la resposta tingui «Proveïdor:», «Total:» i la taula."));return}
     setA(x=>fillAlbara878259(x,p));
-    setAi(false);setAnswer("");setMsg(`Dades omplertes: ${p.linies.length} línies${p.total?` · total ${money(p.total)}`:""}. Revisa-les abans de desar.`)}
-  return <Modal title={a.isNew?"Nou albarà":"Albarà"} close={close}><div className="alb-editor-v878259">
-    <div className="alb-photo">{a.foto?<img src={a.foto} alt="Albarà"/>:<span>Sense foto ni PDF</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?"Canviar la foto":"Fer foto"}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>Adjuntar PDF</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf)}>Obrir el PDF{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>
+    setAi(false);setAnswer("");setMsg(i18nT("Dades omplertes: {n} línies{total}. Revisa-les abans de desar.",{n:p.linies.length,total:p.total?` · ${i18nT("total")} ${money(p.total)}`:""}))}
+  return <Modal title={a.isNew?i18nT("Nou albarà"):i18nT("Albarà")} close={close}><div className="alb-editor-v878259">
+    <div className="alb-photo">{a.foto?<img src={a.foto} alt={t("Albarà")}/>:<span>{t("Sense foto ni PDF")}</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?t("Canviar la foto"):t("Fer foto")}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{t("Adjuntar PDF")}</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf)}>{t("Obrir el PDF")}{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>
     <div className="alb-ai">
-      {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?"Llegint…":"Llegir l’albarà automàticament"}</button>}<button type="button" className="secondary" onClick={()=>setAi(true)}>Llegir amb ChatGPT (copiar i enganxar)</button></div>
-      :<div className="box"><b>Llegir amb IA</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>Copiar les instruccions{teText?" amb el text del PDF":""} i obrir ChatGPT</button></li><li>{teText?"A ChatGPT, enganxa-ho i envia (el text del PDF ja hi va inclòs).":"A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa les instruccions."}</li><li>Copia la resposta i enganxa-la aquí:</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Proveïdor: …  Total: …  | Concepte | Quantitat | …"/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>Tancar</button><button type="button" className="primary" onClick={applyAnswer}>Omplir les dades</button></div></div>}
+      {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?t("Llegint…"):t("Llegir l’albarà automàticament")}</button>}<button type="button" className="secondary" onClick={()=>setAi(true)}>{t("Llegir amb ChatGPT (copiar i enganxar)")}</button></div>
+      :<div className="box"><b>{t("Llegir amb IA")}</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>{t("Copiar les instruccions")}{teText?t(" amb el text del PDF"):""} {t("i obrir ChatGPT")}</button></li><li>{teText?t("A ChatGPT, enganxa-ho i envia (el text del PDF ja hi va inclòs)."):t("A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa les instruccions.")}</li><li>{t("Copia la resposta i enganxa-la aquí:")}</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder={t("Proveïdor: …  Total: …  | Concepte | Quantitat | …")}/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>{t("Tancar")}</button><button type="button" className="primary" onClick={applyAnswer}>{t("Omplir les dades")}</button></div></div>}
       {msg&&<p className="msg">{msg}</p>}
     </div>
     <div className="grid">
-      <label className="wide"><span>Obra</span><select value={a.obraId||""} onChange={e=>set("obraId",e.target.value)}><option value="">Tria l’obra…</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>
-      <label><span>Proveïdor</span><input list="alb-proveidors" value={a.proveidor||""} onChange={e=>set("proveidor",e.target.value)}/><datalist id="alb-proveidors">{proveidors.map(p=><option key={p} value={p}/>)}</datalist></label>
-      <label><span>Número d’albarà</span><input value={a.numero||""} onChange={e=>set("numero",e.target.value)}/></label>
-      <label><span>Data</span><input type="date" value={a.data||""} onChange={e=>set("data",e.target.value)}/></label>
-      <label><span>Base sense IVA (€)</span><input inputMode="decimal" value={a.base||""} onChange={e=>set("base",e.target.value)} placeholder={sumLines?String(sumLines.toFixed(2)).replace(".",","):""}/></label>
-      <label><span>IVA %</span><input inputMode="decimal" value={a.iva??"21"} onChange={e=>set("iva",e.target.value)}/></label>
-      <label><span>Total amb IVA (€)</span><input inputMode="decimal" value={a.total||""} onChange={e=>set("total",e.target.value)}/></label>
+      <label className="wide"><span>{t("Obra")}</span><select value={a.obraId||""} onChange={e=>set("obraId",e.target.value)}><option value="">{t("Tria l’obra…")}</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>
+      <label><span>{t("Proveïdor")}</span><input list="alb-proveidors" value={a.proveidor||""} onChange={e=>set("proveidor",e.target.value)}/><datalist id="alb-proveidors">{proveidors.map(p=><option key={p} value={p}/>)}</datalist></label>
+      <label><span>{t("Número d’albarà")}</span><input value={a.numero||""} onChange={e=>set("numero",e.target.value)}/></label>
+      <label><span>{t("Data")}</span><input type="date" value={a.data||""} onChange={e=>set("data",e.target.value)}/></label>
+      <label><span>{t("Base sense IVA (€)")}</span><input inputMode="decimal" value={a.base||""} onChange={e=>set("base",e.target.value)} placeholder={sumLines?String(sumLines.toFixed(2)).replace(".",","):""}/></label>
+      <label><span>{t("IVA %")}</span><input inputMode="decimal" value={a.iva??"21"} onChange={e=>set("iva",e.target.value)}/></label>
+      <label><span>{t("Total amb IVA (€)")}</span><input inputMode="decimal" value={a.total||""} onChange={e=>set("total",e.target.value)}/></label>
     </div>
     <div className="alb-lines">
-      <div className="lh"><b>Materials</b><button type="button" className="link" onClick={()=>setA(x=>({...x,linies:[...(x.linies||[]),{concepte:"",quantitat:"1",unitat:"ut",preu:"",import:0}]}))}>+ Afegir línia</button></div>
-      {linies.length===0?<p className="hint">Opcional. Si només vols el cost total, n’hi ha prou amb la base o el total.</p>:linies.map((l,i)=><div className="ln" key={i}>
-        <input className="c" value={l.concepte} onChange={e=>setLine(i,"concepte",e.target.value)} placeholder="Material"/>
-        <input inputMode="decimal" value={l.quantitat} onChange={e=>setLine(i,"quantitat",e.target.value)} aria-label="Quantitat"/>
-        <input value={l.unitat} onChange={e=>setLine(i,"unitat",e.target.value)} aria-label="Unitat"/>
-        <input inputMode="decimal" value={l.preu} onChange={e=>setLine(i,"preu",e.target.value)} aria-label="Preu" placeholder="Preu"/>
+      <div className="lh"><b>{t("Materials")}</b><button type="button" className="link" onClick={()=>setA(x=>({...x,linies:[...(x.linies||[]),{concepte:"",quantitat:"1",unitat:"ut",preu:"",import:0}]}))}>{t("+ Afegir línia")}</button></div>
+      {linies.length===0?<p className="hint">{t("Opcional. Si només vols el cost total, n’hi ha prou amb la base o el total.")}</p>:linies.map((l,i)=><div className="ln" key={i}>
+        <input className="c" value={l.concepte} onChange={e=>setLine(i,"concepte",e.target.value)} placeholder={t("Material")}/>
+        <input inputMode="decimal" value={l.quantitat} onChange={e=>setLine(i,"quantitat",e.target.value)} aria-label={t("Quantitat")}/>
+        <input value={l.unitat} onChange={e=>setLine(i,"unitat",e.target.value)} aria-label={t("Unitat")}/>
+        <input inputMode="decimal" value={l.preu} onChange={e=>setLine(i,"preu",e.target.value)} aria-label={t("Preu")} placeholder={t("Preu")}/>
         <b>{money(parseNum8770(l.import)||0)}</b>
-        <button type="button" className="x" onClick={()=>setA(x=>({...x,linies:(x.linies||[]).filter((_,j)=>j!==i)}))} aria-label="Treure la línia">×</button>
+        <button type="button" className="x" onClick={()=>setA(x=>({...x,linies:(x.linies||[]).filter((_,j)=>j!==i)}))} aria-label={t("Treure la línia")}>×</button>
       </div>)}
-      {linies.length>0&&<p className="sum">Suma de les línies: <b>{money(sumLines)}</b></p>}
+      {linies.length>0&&<p className="sum">{t("Suma de les línies:")} <b>{money(sumLines)}</b></p>}
     </div>
-    <label className="notes"><span>Notes</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)} placeholder="Ex. material per a la coberta"/></label>
-    <label className="alb-fact"><input type="checkbox" checked={!!a.facturatClient} onChange={e=>set("facturatClient",e.target.checked)}/><span><b>Ja facturat o repercutit al client</b><small>Deixa-ho sense marcar mentre estigui pendent de facturar.</small></span></label>
-    <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>Eliminar</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>Obrir l’obra</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={()=>save({...a,base:a.base||(sumLines?String(sumLines.toFixed(2)).replace(".",","):"")})}>Desar l’albarà</button></div>
+    <label className="notes"><span>{t("Notes")}</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)} placeholder={t("Ex. material per a la coberta")}/></label>
+    <label className="alb-fact"><input type="checkbox" checked={!!a.facturatClient} onChange={e=>set("facturatClient",e.target.checked)}/><span><b>{t("Ja facturat o repercutit al client")}</b><small>{t("Deixa-ho sense marcar mentre estigui pendent de facturar.")}</small></span></label>
+    <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>{t("Eliminar")}</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>{t("Obrir l’obra")}</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={()=>save({...a,base:a.base||(sumLines?String(sumLines.toFixed(2)).replace(".",","):"")})}>{t("Desar l’albarà")}</button></div>
   </div></Modal>;
 }
 

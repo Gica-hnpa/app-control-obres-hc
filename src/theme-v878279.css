@@ -1,0 +1,7 @@
+/* V87.279 · Albarans dins de l'obra (sense filtres d'obra ni de client) i icones en lloc d'emojis */
+.alb-obra-v878279 .alb-obra-title-v878279{margin:0 0 4px;font:700 17px var(--app-font,inherit);color:var(--co-ink,#0f172a)}
+html body .albarans-v878259 .alb-row .ic{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:#f1f5f9;color:var(--co-ink-2,#334155);font-size:0}
+/* Al mòbil i l'iPad el títol ja és a la capçalera fixa */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .albarans-v878259:not(.alb-obra-v878279) .alb-head .eyebrow,html body .albarans-v878259:not(.alb-obra-v878279) .alb-head h1{display:none!important}
+}
