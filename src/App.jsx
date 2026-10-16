@@ -15,7 +15,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.269";
+const APP_VERSION878264="87.270";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2207,6 +2207,15 @@ function needsExpedientCodeRepair878191(obres=[]){
   return false;
 }
 function expedientCode8739(o){return o?.codiExpedient||o?.codi||o?.expedientBase||"Sense codi"}
+// V87.270 · Codi curt per a l'app: any-número (2026-026). El codi llarg (2026-026-ALT-ALBA-PROJECTEPISC), pensat per a
+// les carpetes de l'ordinador, es conserva tal com és i es veu a Dades com a «Codi de carpeta».
+function codiCurt878270(o){const full=String(expedientCode8739(o)||"");return o?.expedientBase||(full.match(/^\d{4}-\d{2,4}/)||[full])[0]}
+function CodiCarpeta878270({obra}){
+  const[ok,setOk]=useState(false);
+  const code=expedientCode8739(obra);
+  async function copiar(){try{await navigator.clipboard.writeText(code);setOk(true);setTimeout(()=>setOk(false),1800)}catch{window.prompt(t("Copia el codi:"),code)}}
+  return <div className="codi-carpeta-v878270"><div><small>{t("Codi de carpeta (arxiu)")}</small><b>{code}</b><span>{t("És el codi de les carpetes de l’ordinador. A l’app es fa servir el curt: {curt}.",{curt:codiCurt878270(obra)})}</span></div><button type="button" className="secondary" onClick={copiar}>{ok?t("Copiat ✓"):t("Copiar")}</button></div>;
+}
 
 // V87.234 · numeració visible pròpia de cada client i dates de creació sense hora.
 // El codi de l'expedient continua sent intern del despatx. Aquest número és
@@ -5640,7 +5649,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
       <summary><div><b>Partides pendents d’incorporar ({pendingCandidates.length})</b><span>Propostes detectades que encara has de guardar en un capítol o descartar</span></div><em>Obrir pendents ▾</em></summary>
       <div className="library-candidate-stats-v871200"><div><small>Antigues llibreries de clients</small><b>{candidateData.legacyCount}</b></div><div><small>Línies de pressupostos</small><b>{candidateData.budgetCount}</b></div><div><small>Ja guardades</small><b>{rows.length}</b></div><div><small>Pendents úniques</small><b>{pendingCandidates.length}</b></div></div>
       <div className="library-candidate-note-v871200"><b>Això encara NO és la llibreria.</b><span>El capítol que veus és només el que tenia la proposta al pressupost o fitxer d’origen. Selecciona-la i decideix: incorporar-la al capítol final que vulguis o descartar-la a la paperera.</span></div>
-      <div className="library-candidate-filters-v871200"><label><span>Cercar</span><input value={candidateSearch} onChange={e=>{setCandidateSearch(e.target.value);setCandidateLimit(100);setCandidateSelected([])}} placeholder="Concepte, codi, capítol o obra"/></label><label><span>Origen de les dades</span><select value={candidateSource} onChange={e=>{setCandidateSource(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els orígens</option><option value="legacy">Antigues llibreries</option><option value="budget">Pressupostos</option></select></label><label><span>Client d’origen</span><select value={candidateClient} onChange={e=>{setCandidateClient(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label><label><span>Capítol d’origen</span><select value={candidateCap} onChange={e=>{setCandidateCap(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els capítols d’origen ({candidateCaps.length})</option>{candidateCaps.map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label></div>
+      <div className="library-candidate-filters-v871200"><label><span>Cercar</span><input value={candidateSearch} onChange={e=>{setCandidateSearch(e.target.value);setCandidateLimit(100);setCandidateSelected([])}} placeholder="Concepte, codi, capítol o obra"/></label><label><span>Origen de les dades</span><select value={candidateSource} onChange={e=>{setCandidateSource(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els orígens</option><option value="legacy">Antigues llibreries</option><option value="budget">Pressupostos</option></select></label><label><span>Client d’origen</span><select value={candidateClient} onChange={e=>{setCandidateClient(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">{t("Tots els clients")}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label><label><span>Capítol d’origen</span><select value={candidateCap} onChange={e=>{setCandidateCap(e.target.value);setCandidateLimit(100);setCandidateSelected([])}}><option value="">Tots els capítols d’origen ({candidateCaps.length})</option>{candidateCaps.map(cap=><option key={cap} value={cap}>{cap}</option>)}</select></label></div>
       <div className="library-candidate-head-v871200"><span><b>{candidateFiltered.length}</b> resultats pendents</span><button type="button" className="secondary small" onClick={selectCandidateResults871200}>{candidateFiltered.length&&candidateFiltered.every(x=>candidateSelected.includes(x.id))?"Desmarcar resultats":"Seleccionar resultats"}</button></div>
       {candidateSelected.length>0&&<div className="library-candidate-bulk-v871200 library-candidate-bulk-v87201 library-candidate-bulk-v87204"><b>{candidateSelected.length} seleccionada/es</b><label><span>Capítol FINAL on les vols guardar *</span><select value={candidateDestinationChapter} onChange={e=>setCandidateDestinationChapter(e.target.value)}><option value="">Selecciona el capítol final...</option>{caps.map(cap=><option key={cap} value={cap}>{cap}</option>)}<option value="__new__">+ Crear capítol nou</option><option value="__origin__">Conservar els capítols d’origen</option></select></label><label><span>Client relacionat (opcional)</span><select value={candidateTarget} onChange={e=>setCandidateTarget(e.target.value)}><option value="__origin__">Mantenir client/s d’origen</option><option value="__none__">Sense client concret</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label><button type="button" className="primary" onClick={()=>addCandidates871200(pendingCandidates.filter(x=>candidateSelected.includes(x.id)))}>Incorporar al capítol final</button><button type="button" className="danger" onClick={()=>discardCandidates87204(pendingCandidates.filter(x=>candidateSelected.includes(x.id)))}>Descartar a la paperera</button><button type="button" className="secondary" onClick={()=>setCandidateSelected([])}>Desmarcar</button></div>}
       <div className="library-candidate-list-v871200">{candidateFiltered.length===0?<Empty text="No hi ha partides pendents amb aquests filtres."/>:candidateFiltered.slice(0,candidateLimit).map(item=>{
@@ -6096,7 +6105,7 @@ function clientOptionsForHome878139(clients=[],obres=[]){
 function Inici({clients,setClients,obres,setObres,odata={},setOdata,events,setScreen,openObra,openObraTab,newObra}){
 const now=new Date();
 const monthName=monthName878137(now);
-const todayLabel878141=now.toLocaleDateString('ca-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+const todayLabel878141=now.toLocaleDateString(getLang()==='es'?'es-ES':'ca-ES',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 const agendaLocal878146=readGlobalAgenda878146();
 const allEvents=uniqueEvents878137([...(events||[]),...agendaLocal878146].map((e,i)=>cleanAgendaEvent87109?cleanAgendaEvent87109(e,i):e).filter(Boolean));
 const properes=allEvents.filter(e=>{const t=eventTime8783(e);return t&&t>=todayStartMs878136()}).sort((a,b)=>eventTime8783(a)-eventTime8783(b)).slice(0,8);
@@ -6189,7 +6198,7 @@ return <>
 <section className="home-pro-layout-v878140">
   <div className="home-pro-main-v878140">
     <OverdueReview878255 tasks={tasks} update={updateTaskField878140} clients={clients}/>
-    <Card title="Feines pendents a fer" action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?'Tancar':' + Afegir tasca'}</button>}>
+    <Card title={t("Feines pendents a fer")} action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?t('Tancar'):' + '+t('Afegir tasca')}</button>}>
       {showNewTask&&<div className="home-task-create-v878139 home-task-create-v878140">
         <div className="home-task-create-head-v878139"><b>Nova tasca / feina pendent</b><span>La data és la data màxima d’entrega. Pots crear client i expedient des d’aquí sense anar a una altra pestanya.</span></div>
         <div className="home-task-form-v878139 home-task-form-v878140">
@@ -6276,14 +6285,14 @@ function HomeHeader878251({obres=[],tasks=[],properes=[],todayLabel="",setScreen
   return <section className="home-head-v878251">
     <div className="home-head-title-v878251">
       <span>{todayLabel}</span>
-      <h1>{name?`Bon dia, ${name}`:"Bon dia"}</h1>
-      <p>{oberts} expedients oberts{vencudes?<> · <b className="late">{vencudes} tasques vençudes</b></>:""}{properes.length?` · ${properes.length} cites properes`:""}</p>
+      <h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1>
+      <p>{t("{n} expedients oberts",{n:oberts})}{vencudes?<> · <b className="late">{t("{n} tasques vençudes",{n:vencudes})}</b></>:""}{properes.length?" · "+t("{n} cites properes",{n:properes.length}):""}</p>
     </div>
     <div className="home-kpis-v878251">
-      <button type="button" onClick={go}><small>Expedients oberts</small><b>{oberts}</b><span>de {(obres||[]).length} en total</span></button>
-      <button type="button" onClick={go}><small>En execució</small><b>{execucio}</b><span>estat «En curs / Actiu»</span></button>
-      <button type="button" onClick={go}><small>Esperant resposta</small><b>{espera}</b><span>pressupostats o pendents</span></button>
-      <button type="button" className={vencudes?"alert":""} onClick={()=>setScreen?.("Agenda")}><small>Tasques vençudes</small><b>{vencudes}</b><span>de {(tasks||[]).length} pendents</span></button>
+      <button type="button" onClick={go}><small>{t("Expedients oberts")}</small><b>{oberts}</b><span>{t("de {n} en total",{n:(obres||[]).length})}</span></button>
+      <button type="button" onClick={go}><small>{t("En execució")}</small><b>{execucio}</b><span>{t("estat «En curs / Actiu»")}</span></button>
+      <button type="button" onClick={go}><small>{t("Esperant resposta")}</small><b>{espera}</b><span>{t("pressupostats o pendents")}</span></button>
+      <button type="button" className={vencudes?"alert":""} onClick={()=>setScreen?.("Agenda")}><small>{t("Tasques vençudes")}</small><b>{vencudes}</b><span>{t("de {n} pendents",{n:(tasks||[]).length})}</span></button>
     </div>
   </section>;
 }
@@ -6308,22 +6317,22 @@ function HomeCharts878251({obres=[],clients=[],setScreen}){
   (obres||[]).forEach(o=>{const id=o.client||"";const row=byClient.get(id)||{id,label:id?((clients||[]).find(c=>c.id===id)?.nom||id):"Sense client",open:0,total:0};row.total++;if(isExpedientOpen878136(o.estat))row.open++;byClient.set(id,row)});
   const rows=[...byClient.values()].sort((a,b)=>b.open-a.open||b.total-a.total).slice(0,7);
   const max=Math.max(1,...rows.map(r=>r.total));
-  return <Card title="Resum d’expedients" className="home-charts-v878251">
+  return <Card title={t("Resum d’expedients")} className="home-charts-v878251">
     <div className="home-donut-v878251">
       <svg viewBox="0 0 150 150" role="img" aria-label={`${(obres||[]).length} expedients per estat`}>
         {arcs.map(p=><path key={p.label} d={p.d} fill={p.color} stroke="var(--co-surface)" strokeWidth="2"><title>{`${p.label}: ${p.value} (${p.pct.toFixed(0)} %)`}</title></path>)}
         <text x="75" y="74" textAnchor="middle" className="n">{(obres||[]).length}</text>
-        <text x="75" y="92" textAnchor="middle" className="l">expedients</text>
+        <text x="75" y="92" textAnchor="middle" className="l">{t("expedients")}</text>
       </svg>
-      <div className="home-legend-v878251">{arcs.map(p=><button type="button" key={p.label} onClick={()=>setScreen?.("Treballs / Expedients")}><i style={{background:p.color}}/><span>{p.label}</span><b>{p.value}</b></button>)}</div>
+      <div className="home-legend-v878251">{arcs.map(p=><button type="button" key={p.label} onClick={()=>setScreen?.("Treballs / Expedients")}><i style={{background:p.color}}/><span>{t(p.label)}</span><b>{p.value}</b></button>)}</div>
     </div>
     <div className="home-bars-v878251">
-      <div className="home-bars-head-v878251"><b>Per client</b><span>oberts / total</span></div>
+      <div className="home-bars-head-v878251"><b>{t("Per client")}</b><span>{t("oberts / total")}</span></div>
       {rows.map(r=><div key={r.id||"__"} className="home-bar-v878251" title={`${r.label}: ${r.open} oberts de ${r.total}`}>
         <span className="lab">{r.label}</span><span className="val">{r.open} / {r.total}</span>
         <span className="track"><i style={{width:`${r.open/max*100}%`}} className="open"/><i style={{width:`${(r.total-r.open)/max*100}%`}} className="closed"/></span>
       </div>)}
-      <div className="home-bars-legend-v878251"><span><i className="open"/>Oberts</span><span><i className="closed"/>Tancats o no acceptats</span></div>
+      <div className="home-bars-legend-v878251"><span><i className="open"/>{t("Oberts")}</span><span><i className="closed"/>{t("Tancats o no acceptats")}</span></div>
     </div>
   </Card>;
 }
@@ -6485,7 +6494,7 @@ function ClientExpedientsList878108({obres=[],openObra,clientName="client"}){
   const estats=[...new Set((obres||[]).map(o=>o.estat||"Sense estat"))];
   const byYear=rows.reduce((m,o)=>{const y=o.any||"Sense any";(m[y]??=[]).push(o);return m;},{});
   return <Card title={`Expedients vinculats a ${clientName}`} action={<span className="muted">{rows.length} expedient{rows.length===1?"":"s"}</span>}>
-    <div className="filters client-exp-filters-v878108"><div className="search-field"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Filtrar expedients del client..."/></div><select value={any} onChange={e=>setAny(e.target.value)}><option value="">Tots els anys</option>{anys.map(y=><option key={y}>{y}</option>)}</select><select value={estat} onChange={e=>setEstat(e.target.value)}><option value="">Tots els estats</option>{estats.map(e=><option key={e}>{e}</option>)}</select></div>
+    <div className="filters client-exp-filters-v878108"><div className="search-field"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Filtrar expedients del client..."/></div><select value={any} onChange={e=>setAny(e.target.value)}><option value="">{t("Tots els anys")}</option>{anys.map(y=><option key={y}>{y}</option>)}</select><select value={estat} onChange={e=>setEstat(e.target.value)}><option value="">Tots els estats</option>{estats.map(e=><option key={e}>{e}</option>)}</select></div>
     <div className="list">{rows.length===0?<Empty text="Aquest client encara no té expedients amb aquest filtre."/>:Object.entries(byYear).sort((a,b)=>String(b[0]).localeCompare(String(a[0]),"ca",{numeric:true})).map(([y,items])=><section key={y} className="year-section"><div className="year-title">{y}</div>{items.map(o=><ObraRow key={o.id} o={o} open={openObra}/>)}</section>)}</div>
   </Card>
 }
@@ -6519,44 +6528,53 @@ let clearAll=()=>{f.setOs("");f.setOc("");f.setOt("");f.setOy("");f.setOst("")};
 const byYearClient=flat.reduce((acc,o)=>{const y=yearLabel878192(o);const cn=clientNom(o);acc[y]??={};acc[y][cn]??=[];acc[y][cn].push(o);return acc},{});
 const SORT_OPTIONS878192=[{key:"numero",label:"Número"},{key:"codi",label:"Codi expedient"},{key:"client",label:"Client"},{key:"nom",label:"Nom treball"},{key:"tipus",label:"Tipologia"},{key:"adreca",label:"Adreça / municipi"},{key:"estat",label:"Estat"}];
 const chooseSort878192=key=>setSort878192(s=>s.key===key?{key,dir:s.dir==="asc"?"desc":"asc"}:{key,dir:key==="numero"?"desc":"asc"});
-const sortHead878192=(key,label)=><button type="button" className={`exp-sort-head-v878192 ${sort878192.key===key?"active":""}`} onClick={()=>chooseSort878192(key)} title={`Ordenar per ${label.toLowerCase()}`}><span>{label}</span><b>{sort878192.key===key?(sort878192.dir==="asc"?"▲":"▼"):"↕"}</b></button>;
+const sortHead878192=(key,label)=><button type="button" className={`exp-sort-head-v878192 ${sort878192.key===key?"active":""}`} onClick={()=>chooseSort878192(key)} title={t("Ordenar per")+" "+t(label).toLowerCase()}><span>{t(label)}</span><b>{sort878192.key===key?(sort878192.dir==="asc"?"▲":"▼"):"↕"}</b></button>;
 const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)return;updateStatus(obra.id,value)};
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
-  <Card title="Llistat professional d’expedients" action={<button className="primary" onClick={newObra}><Plus/> Nou expedient</button>}>
+  <Card title={t("Expedients")} action={<button className="primary" onClick={newObra}><Plus/> {t("Nou expedient")}</button>}>
+    <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar expedient, client, obra o població…")} aria-label={t("Buscar")}/></div>
     <details className="mobile-filter-drawer-v87119">
-      <summary><span>Filtres i cerca</span><b>{f.ot||f.oc||f.oy||f.ost||f.os?"Filtres actius":"Tots"}</b></summary>
+      <summary><span>{t("Filtres")}</span><b>{f.ot||f.oc||f.oy||f.ost?t("Filtres actius"):t("Tots")}</b></summary>
       <div className="filters filters-v8741 filters-v8742 filters-v87119">
-        <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar expedient..."/></div>
-        <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
-        <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els tipus de treball</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select>
-        <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option>{[...new Set([...anys,"2026","2025"].filter(Boolean))].map(y=><option key={y}>{y}</option>)}</select>
-        <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option>{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select>
-        <button type="button" className="secondary" onClick={clearAll}>Netejar filtres</button>
+        
+        <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">{t("Tots els clients")}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
+        <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">{t("Tots els tipus de treball")}</option>{WORK_TYPES8737.map(x=><option key={x} value={x}>{t(x)}</option>)}</select>
+        <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">{t("Tots els anys")}</option>{[...new Set([...anys,"2026","2025"].filter(Boolean))].map(y=><option key={y}>{y}</option>)}</select>
+        <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">{t("Tots els estats")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>
+        <button type="button" className="secondary" onClick={clearAll}>{t("Netejar filtres")}</button>
       </div>
     </details>
     <div className="filters filters-v8741 filters-v8742 desktop-filters-v87119">
-      <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder="Buscar per número, codi, client, treball, adreça o municipi..."/></div>
-      <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">Tots els clients</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
-      <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">Tots els tipus de treball</option>{WORK_TYPES8737.map(t=><option key={t} value={t}>{t}</option>)}</select>
-      <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">Tots els anys</option><option>2026</option><option>2025</option></select>
-      <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">Tots els estats</option>{EXPEDIENT_STATUS878136.map(st=><option key={st}>{st}</option>)}</select>
+      <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar per número, codi, client, treball, adreça o municipi…")}/></div>
+      <select value={f.oc} onChange={e=>f.setOc(e.target.value)}><option value="">{t("Tots els clients")}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
+      <select value={f.ot||""} onChange={e=>f.setOt(e.target.value)}><option value="">{t("Tots els tipus de treball")}</option>{WORK_TYPES8737.map(x=><option key={x} value={x}>{t(x)}</option>)}</select>
+      <select value={f.oy} onChange={e=>f.setOy(e.target.value)}><option value="">{t("Tots els anys")}</option><option>2026</option><option>2025</option></select>
+      <select value={f.ost} onChange={e=>f.setOst(e.target.value)}><option value="">{t("Tots els estats")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>
     </div>
-    <div className="exp-list-header-v8741"><span>{total} expedients filtrats</span><div className="actions-inline exp-sort-controls-v878192"><label><span>Ordenar per</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{o.label}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?"Ascendent ▲":"Descendent ▼"}</button><button className="secondary" onClick={clearAll}>Netejar filtres</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>Tornar a tots els tipus</button>}</div></div>
-    <div className="exp-mobile-tree-v87119">
-      {flat.length===0?<Empty text="No hi ha expedients amb aquest filtre."/>:anys.map((any,idx)=><details key={any} open={idx===0} className="exp-year-drawer-v87119"><summary><span>{any}</span><b>{flat.filter(o=>String(yearLabel878192(o))===String(any)).length} expedients</b></summary><div>{Object.entries(byYearClient[any]||{}).sort((a,b)=>flat.indexOf(a[1][0])-flat.indexOf(b[1][0])).map(([cn,items])=><details key={cn} className="exp-client-drawer-v87119"><summary><span>{cn}</span><b>{items.length}</b></summary><div>{items.map(o=><div key={o.id} className="exp-mobile-card-v87119"><button type="button" onClick={()=>openObra(o.id)}><small>{expedientCode8739(o)} · Client {clientProjectLabel878233(o)}</small><strong>{o.nom}</strong><span>{moduleLabel8737(o)}</span><em>{o.adreca||"—"} · {o.poblacio||"—"} · Creat: {fmtCreationDate878233(o.createdAt)}</em></button><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onClick={e=>e.stopPropagation()} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select>}<select defaultValue="" onClick={e=>e.stopPropagation()} onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="open")openObra(o.id);if(v==="delete")deleteObra?.(o.id)}}><option value="" disabled>Accions</option><option value="open">Obrir expedient</option>{allowAdminActions&&<option value="delete">Eliminar</option>}</select></div></div>)}</div></details>)}</div></details>)}
+    <div className="exp-list-header-v8741"><span>{t("{n} expedients",{n:total})}</span><div className="actions-inline exp-sort-controls-v878192"><label><span>{t("Ordenar per")}</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{t(o.label)}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?t("Ascendent ▲"):t("Descendent ▼")}</button><button className="secondary" onClick={clearAll}>{t("Netejar filtres")}</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>{t("Tornar a tots els tipus")}</button>}</div></div>
+    <div className="exp-mobile-tree-v87119 exp-cards-v878270">
+      {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));return <section key={any} className="exp-year-v878270">
+        <h3><span>{any}</span><small>{t("{n} expedients",{n:items.length})}</small></h3>
+        {items.map(o=>{const st=normalizeExpedientStatus878136(o.estat);const lloc=[o.poblacio,o.adreca].find(x=>x&&x!=="Pendent")||"";return <button type="button" key={o.id} className="exp-card-v878270" onClick={()=>openObra(o.id)}>
+          <span className="l1"><b>{codiCurt878270(o)}</b><span>{clientNom(o)}</span></span>
+          <strong>{o.nom}</strong>
+          <span className="l3">{[t(moduleLabel8737(o)),lloc].filter(Boolean).join(" · ")}</span>
+          <span className="l4"><em className={`st ${statusKeyPress8776(st)}`}>{t(st)}</em><SharedBadge878259 o={o}/></span>
+        </button>})}
+      </section>})}
     </div>
     <div className="exp-table-wrap-v8741 exp-table-wrap-v87119">
       <table className="exp-table-v8741 exp-table-v8742">
-        <thead><tr><th>{sortHead878192("numero","Número intern")}</th><th>Núm. client</th><th>{sortHead878192("codi","Codi expedient")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th><th>Accions</th></tr></thead>
-        <tbody>{flat.length===0&&<tr><td colSpan="9"><Empty text="No hi ha expedients amb aquest filtre."/></td></tr>}{anys.map(any=><React.Fragment key={any}>
-          <tr className="year-row-v8742"><td colSpan="9">{any}</td></tr>
-          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td><b>{o.expedientBase||String(expedientCode8739(o)).slice(0,8)}</b><small>Creat: {fmtCreationDate878233(o.createdAt)}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td><span className="exp-code-v8739">{expedientCode8739(o)}</span></td><td>{clientNom(o)}</td><td>{(()=>{const foto=obraFoto878259(o);return <div className="exp-name-v878259">{foto?<img className="exp-thumb-v878259" src={foto} alt=""/>:null}<div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{moduleLabel8737(o)}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select>}</div></td><td>{allowAdminActions&&<button type="button" className="danger small-v8777" onClick={(e)=>{e.stopPropagation();deleteObra?.(o.id)}}>Eliminar</button>}</td></tr>)}
+        <thead><tr><th>{sortHead878192("numero","Número")}</th><th>{t("Núm. client")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
+        <tbody>{flat.length===0&&<tr><td colSpan="7"><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
+          <tr className="year-row-v8742"><td colSpan="7">{any}</td></tr>
+          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b><small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td>{clientNom(o)}</td><td>{(()=>{const foto=obraFoto878259(o);return <div className="exp-name-v878259">{foto?<img className="exp-thumb-v878259" src={foto} alt=""/>:null}<div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
   </Card>
   <details className="exp-side-drawer-v87148">
-    <summary><span>Filtres avançats i resum</span><b>{total} expedients · {actius} oberts</b></summary>
+    <summary><span>{t("Filtres avançats i resum")}</span><b>{t("{n} expedients · {m} oberts",{n:total,m:actius})}</b></summary>
     <div className="exp-side-drawer-grid-v87148">
       <Card title="Resum del filtre"><div className="exp-side-kpis-v8741"><div><span>Total filtrat</span><b>{total}</b></div><div><span>Oberts</span><b>{actius}</b></div></div><div className="active-filter-box-v8742"><b>Filtre actual</b><span>{f.ot||f.oc||f.oy||f.ost||f.os?`${f.ot||"Tots els tipus"} · ${f.ost||"Tots els estats"}`:"Sense filtres actius"}</span><button className="secondary" onClick={clearAll}>Veure tots</button></div><div className="exp-side-list-v8741"><h4>Estat dels expedients</h4>{Object.entries(estatCount).map(([t,n])=><button key={t} onClick={()=>f.setOst(t)}><span>{t}</span><b>{n}</b></button>)}</div></Card>
       <Card title="Filtrar per tipus de treball"><div className="exp-side-list-v8741 type-filter-list-v8742"><button className={!f.ot?"active":""} onClick={()=>f.setOt("")}><span>Tots els tipus</span><b>{flat.length}</b></button>{topTipus.length===0?<p>Sense dades.</p>:topTipus.map(([t,n])=><button key={t} className={f.ot===t?"active":""} onClick={()=>f.setOt(t)}><span>{t}</span><b>{n}</b></button>)}</div></Card>
@@ -6777,7 +6795,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     return <label><span>{label}</span><select value={selected} onChange={e=>{const v=e.target.value;if(v==="Pendent"){upd(field,"Pendent");return}if(v==="__custom__"){upd(field,"");return}const ag=choices.find(a=>a.id===v);if(ag){upd(field,ag.nom);addAgentToObraIfNeeded878159(ag)}}}><option value="Pendent">Pendent / no assignat</option>{choices.map(a=><option key={field+a.id} value={a.id}>{a.nom} · {a.empresa||a.rol||"Agent"}</option>)}<option value="__custom__">+ Crear / escriure nou</option></select>{(selected==="__custom__"||(!known&&current&&current!=="Pendent"))&&<div className="agent-inline-create-v87159"><input value={current==="Pendent"?"":current} onChange={e=>upd(field,e.target.value)} placeholder={filterField==="constructora"?"Nom de la constructora":"Nom del tècnic o empresa"}/><button type="button" className="secondary small" onClick={()=>{const nom=String(form[field]||"").trim();if(!nom){alert("Escriu el nom de l'agent.");return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>Crear fitxa agent</button></div>}</label>
   }
   const selectedClient=(clients||[]).find(c=>c.id===clientChoice);
-  return <div className="fitxa-dades-stack-v878133">{promoterModal87210&&<Modal title={`${promoterModal87210.id?"Editar":"Crear"} promotor / client final`} close={()=>setPromoterModal87210(null)}><div className="promoter-modal-v87210"><DatalistCP8773/><div className="module-note-v8738"><b>Independent del client de la carpeta</b><span>Aquesta fitxa identifica la propietat o client final que sortirà als documents de l’expedient.</span></div><div className="form-grid"><label><span>Nom complet / raó social *</span><input autoFocus value={promoterModal87210.nom||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nom:e.target.value}))}/></label><label><span>Empresa o nom fiscal</span><input value={promoterModal87210.empresa||""} onChange={e=>setPromoterModal87210(previous=>({...previous,empresa:e.target.value}))}/></label><label><span>DNI / NIF / CIF</span><input value={promoterModal87210.nif||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nif:e.target.value}))}/></label><label><span>Telèfon</span><input value={promoterModal87210.telefon||""} onChange={e=>setPromoterModal87210(previous=>({...previous,telefon:e.target.value}))}/></label><label className="span-all"><span>Adreça del promotor</span><input value={promoterModal87210.adreca||""} onChange={e=>setPromoterModal87210(previous=>({...previous,adreca:e.target.value}))}/></label><label><span>Email</span><input type="email" value={promoterModal87210.email||""} onChange={e=>setPromoterModal87210(previous=>({...previous,email:e.target.value}))}/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPromoterModal87210(null)}>Cancel·lar</button><button type="button" className="primary" onClick={savePromoterModal87210}>Guardar i seleccionar</button></div></div></Modal>}<PrincipalAgentsPanel878134 obra={form} client={selectedClient||client} agents={agents}/><Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
+  return <div className="fitxa-dades-stack-v878133"><CodiCarpeta878270 obra={obra}/>{promoterModal87210&&<Modal title={`${promoterModal87210.id?"Editar":"Crear"} promotor / client final`} close={()=>setPromoterModal87210(null)}><div className="promoter-modal-v87210"><DatalistCP8773/><div className="module-note-v8738"><b>Independent del client de la carpeta</b><span>Aquesta fitxa identifica la propietat o client final que sortirà als documents de l’expedient.</span></div><div className="form-grid"><label><span>Nom complet / raó social *</span><input autoFocus value={promoterModal87210.nom||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nom:e.target.value}))}/></label><label><span>Empresa o nom fiscal</span><input value={promoterModal87210.empresa||""} onChange={e=>setPromoterModal87210(previous=>({...previous,empresa:e.target.value}))}/></label><label><span>DNI / NIF / CIF</span><input value={promoterModal87210.nif||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nif:e.target.value}))}/></label><label><span>Telèfon</span><input value={promoterModal87210.telefon||""} onChange={e=>setPromoterModal87210(previous=>({...previous,telefon:e.target.value}))}/></label><label className="span-all"><span>Adreça del promotor</span><input value={promoterModal87210.adreca||""} onChange={e=>setPromoterModal87210(previous=>({...previous,adreca:e.target.value}))}/></label><label><span>Email</span><input type="email" value={promoterModal87210.email||""} onChange={e=>setPromoterModal87210(previous=>({...previous,email:e.target.value}))}/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPromoterModal87210(null)}>Cancel·lar</button><button type="button" className="primary" onClick={savePromoterModal87210}>Guardar i seleccionar</button></div></div></Modal>}<PrincipalAgentsPanel878134 obra={form} client={selectedClient||client} agents={agents}/><Card title="Dades generals de l’expedient" action={<div className="actions-inline"><button className="primary" onClick={saveAll}>Guardar dades</button></div>}>
     <div className="form-grid fitxa-form-v8773 fitxa-form-v87159"><DatalistCP8773/>
       <details className="span-all code-editor-v87162" open><summary>Codificació de l'expedient</summary><div className="form-grid compact-v87151 no-pad"><label><span>Any</span><input value={form.any||new Date().getFullYear()} onChange={e=>upd("any",e.target.value)}/></label><label><span>Número</span><input type="number" value={form.numExpedient||String(form.codiExpedient||"").match(/^\d{4}-(\d{3})/)?.[1]||""} onChange={e=>upd("numExpedient",e.target.value)}/></label><label><span>Inicials treball</span><input value={form.codiTipus||workCode8739(form.tipusTreball||form.tipologia)} onChange={e=>upd("codiTipus",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>Inicials client</span><input value={form.codiClient||clientCode8739(selectedClient||client,selectedClient?.nom||client?.nom)} onChange={e=>upd("codiClient",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>Paraula clau</span><input value={form.paraulaClau||""} onChange={e=>upd("paraulaClau",e.target.value)} placeholder="VERBANIA, SATE, BANY..."/></label><label className="span-all"><span>Codi complet editable</span><input value={form.codiExpedient||expedientCode8739(form)||expedientCode8739(obra)} onChange={e=>upd("codiExpedient",e.target.value)}/></label><div className="span-all actions-inline"><button type="button" className="secondary" onClick={()=>setForm(p=>recomputeExpedientCode878162(p,selectedClient||client))}>Recalcular codi</button><small>Format recomanat: any-número-inicials treball-inicials client-paraula clau. També pots escriure el codi complet manualment.</small></div></div></details>
       <label><span>Client / carpeta</span><select value={clientChoice||""} onChange={e=>setClientChoice(e.target.value)}><option value="" disabled>Selecciona client...</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}<option value="__new__">+ Crear client nou</option></select></label>
@@ -10904,7 +10922,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.269",
+    app_version:"87.270",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -11206,7 +11224,7 @@ function GestioTemps878255({obres=[],clients=[],odata={},openObra}){
       <div className="seg">{[["avui","Avui"],["setmana","Setmana"],["mes","Mes"],["rang","Interval"]].map(([k,l])=><button type="button" key={k} aria-pressed={period===k} onClick={()=>{setPeriod(k);setDayF("")}}>{l}</button>)}</div>
       {period==="mes"&&<input type="month" value={month} onChange={e=>{setMonth(e.target.value);setDayF("")}} aria-label="Mes"/>}
       {period==="rang"&&<><input type="date" value={from} onChange={e=>setFrom(e.target.value)} aria-label="Des de"/><input type="date" value={to} onChange={e=>setTo(e.target.value)} aria-label="Fins a"/></>}
-      <select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label="Client"><option value="">Tots els clients</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
+      <select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label="Client"><option value="">{t("Tots els clients")}</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Expedient"><option value="">Tots els expedients</option>{(obres||[]).filter(o=>!clientF||o.client===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={onlyPending} onChange={e=>setOnlyPending(e.target.checked)}/>Només pendent de facturar</label>
     </div>
@@ -12449,7 +12467,7 @@ function HoursToInvoice878256({obres=[],clients=[],onCreate}){
       <div><span className="eyebrow">De la gestió del temps</span><h2>Pendent de facturar</h2><p>Hores, visites i desplaçaments encara sense facturar. Fes la factura d’un expedient i aquelles hores queden marcades com a facturades.</p></div>
       <button type="button" className="secondary" onClick={()=>setManual({})}>+ Apuntar visita o feina</button>
     </header>
-    <div className="tobill-sum"><b>{money(total)}</b><span>{visible.length} expedient{visible.length===1?"":"s"} · {hours.toLocaleString("ca-ES",{maximumFractionDigits:2})} h</span>{clientNames.length>1&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label="Client"><option value="">Tots els clients</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select>}</div>
+    <div className="tobill-sum"><b>{money(total)}</b><span>{visible.length} expedient{visible.length===1?"":"s"} · {hours.toLocaleString("ca-ES",{maximumFractionDigits:2})} h</span>{clientNames.length>1&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label="Client"><option value="">{t("Tots els clients")}</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select>}</div>
     {visible.length===0?<p className="tobill-empty">No hi ha res pendent de facturar. Aquí surten les hores del comptador, les cites de l’agenda que compten com a feina i les que apuntis a mà.</p>
     :<div className="tobill-list">{visible.map(g=><div key={g.o.id} className="tobill-row">
       <span className="nm"><b>{g.o.nom}</b><small>{cName(g.o)} · {g.rows.length} registre{g.rows.length===1?"":"s"}{g.from?` · ${g.from.toLocaleDateString("ca-ES")}${g.to&&g.to-g.from>0?` – ${g.to.toLocaleDateString("ca-ES")}`:""}`:""}</small></span>
@@ -12890,7 +12908,7 @@ function Albarans878259({obres=[],clients=[],openObra}){
       </div>
     </div>
     <div className="alb-filters">
-      {clientIds.length>0&&<select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label="Client"><option value="">Tots els clients</option>{clientIds.map(id=><option key={id} value={id}>{cName(id)}</option>)}</select>}
+      {clientIds.length>0&&<select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label="Client"><option value="">{t("Tots els clients")}</option>{clientIds.map(id=><option key={id} value={id}>{cName(id)}</option>)}</select>}
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Obra"><option value="">Totes les obres</option>{obresSorted.filter(o=>!clientF||String(o.client)===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={nomesPendents} onChange={e=>setNomesPendents(e.target.checked)}/>Només pendents de facturar al client</label>
       <input type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label="Mes"/>
