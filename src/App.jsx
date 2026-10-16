@@ -1,6 +1,7 @@
 
 import React,{useEffect,useMemo,useRef,useState} from "react";
 import * as XLSX from "xlsx";
+import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
@@ -15,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.275";
+const APP_VERSION878264="87.276";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10944,7 +10945,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.275",
+    app_version:"87.276",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -11333,7 +11334,86 @@ function TracaGeneral({obres,odata,openObra}){
 }
 function MiniCal({events}){return <div className="calendar-mini">{Array.from({length:21}).map((_,i)=>{let d=i+1,ev=events.filter(e=>e.day===d&&e.month===5&&e.year===2026);return <button className="mini-day"><b>{d}</b>{ev[0]&&<span className="cal-event">{ev[0].type}</span>}</button>})}</div>}
 function FinanceFilters8776({rows,children}){return children}
+// V87.276 · VeriFactu (factures verificables per Hisenda). De moment, una demostració per ensenyar com funcionarà:
+// factura d'exemple (dades inventades), empremta SHA-256 encadenada amb la factura anterior (fórmula de l'AEAT),
+// enviament simulat i codi QR de l'entorn de proves de l'AEAT. No s'envia res enlloc ni es desa cap dada.
+function VerifactuBanner878276({open}){
+  return <div className="vf-banner-v878276">
+    <div className="vf-banner-txt-v878276"><b>VERI*FACTU</b><span>{t("Factures verificables per Hisenda: obligatori per a les societats des de l’1/1/2027 i per als autònoms des de l’1/7/2027.")}</span></div>
+    <button type="button" className="primary" onClick={open}>{t("Veure com funcionarà")}</button>
+  </div>
+}
+async function vfHash878276(txt){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(txt));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("").toUpperCase()}catch{let h=0;for(const c of txt)h=(h*31+c.charCodeAt(0))>>>0;return h.toString(16).toUpperCase().padStart(64,"0")}}
+// Cadena de l'empremta del registre d'alta, tal com la descriu l'AEAT (camps en aquest ordre, units amb &)
+function vfChain878276(r,prev){return `IDEmisorFactura=${r.nif}&NumSerieFactura=${r.num}&FechaExpedicionFactura=${r.data}&TipoFactura=F1&CuotaTotal=${r.iva.toFixed(2)}&ImporteTotal=${r.total.toFixed(2)}&Huella=${prev}&FechaHoraHusoGenRegistro=${r.at}`}
+function VerifactuDemo878276({close}){
+  const d=new Date();const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();
+  const base=1000,iva=210,total=1210;
+  const fac={nif:"B00000000",num:`F-${yy}-0042`,data:`${dd}-${mm}-${yy}`,iva,total,at:`${yy}-${mm}-${dd}T10:30:00+01:00`};
+  const ant={...fac,num:`F-${yy}-0041`,total:605,iva:105,at:`${yy}-${mm}-${dd}T09:12:00+01:00`};
+  const[pas,setPas]=useState(0);const[hash,setHash]=useState("");const[prev,setPrev]=useState("");const[qr,setQr]=useState("");
+  const url=`https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=${fac.nif}&numserie=${encodeURIComponent(fac.num)}&fecha=${fac.data}&importe=${total.toFixed(2)}`;
+  useEffect(()=>{let on=true;(async()=>{const p=await vfHash878276(vfChain878276(ant,""));const h=await vfHash878276(vfChain878276(fac,p));let q="";try{q=await QRCode.toDataURL(url,{margin:1,width:220,errorCorrectionLevel:"M"})}catch{}if(on){setPrev(p);setHash(h);setQr(q)}})();return()=>{on=false}},[]);
+  const timers=useRef([]);useEffect(()=>()=>timers.current.forEach(clearTimeout),[]);
+  // en acabar, es baixa fins al codi QR (al mòbil quedava a sota de tot)
+  useEffect(()=>{if(pas<4)return;const id=setTimeout(()=>{try{document.querySelector(".vf-qr-v878276")?.scrollIntoView({behavior:"smooth",block:"center"})}catch{}},150);return()=>clearTimeout(id)},[pas]);
+  function emetre(){if(pas)return;setPas(1);[2,3,4].forEach((n,i)=>timers.current.push(setTimeout(()=>setPas(n),900*(i+1))))}
+  const eur=x=>money(x);
+  const steps=[
+    [t("Número assignat"),fac.num],
+    [t("Empremta encadenada amb la factura anterior"),`${fac.num} ← ${ant.num} · ${hash.slice(0,16)}…`],
+    [t("Enviada a Hisenda a través de l’intermediari"),t("En pocs segons, sense entrar a cap web")],
+    [t("Acceptada per l’AEAT"),t("Simulat: en aquesta demostració no s’envia res")]
+  ];
+  return <Modal title={t("VeriFactu a Control d’Obres")} close={close}><div className="vf-demo-v878276">
+    <p className="vf-tag-v878276">{t("Demostració · dades d’exemple · no s’envia res a Hisenda")}</p>
+    <section className="vf-how-v878276">
+      <h3>{t("Com funcionarà")}</h3>
+      <ol>
+        <li><b>{t("Esborrany")}</b><span>{t("Fas la factura com sempre. Mentre és esborrany, es pot canviar tant com vulguis.")}</span></li>
+        <li><b>{t("Emetre")}</b><span>{t("L’app li posa el número correlatiu i calcula l’empremta que l’encadena amb l’anterior.")}</span></li>
+        <li><b>{t("Enviament automàtic")}</b><span>{t("S’envia sola a Hisenda en segons. Sense cobertura, s’envia quan en torna a haver.")}</span></li>
+        <li><b>{t("Codi QR a la factura")}</b><span>{t("El client l’escaneja amb el mòbil i la web d’Hisenda li confirma que la factura és registrada.")}</span></li>
+      </ol>
+    </section>
+    <section className="vf-try-v878276">
+      <h3>{t("Prova-ho")}</h3>
+      <div className="vf-inv-v878276">
+        <div className="vf-inv-head-v878276"><div><small>{t("Factura")}</small><b>{pas>=1?fac.num:t("Esborrany")}</b></div><em className={pas>=4?"ok":pas?"run":""}>{pas>=4?t("Emesa · VeriFactu"):pas?t("Emetent…"):t("Esborrany")}</em></div>
+        <dl>
+          <div><dt>{t("Client")}</dt><dd>{t("Comunitat de propietaris (exemple)")}</dd></div>
+          <div><dt>{t("Concepte")}</dt><dd>{t("Direcció d’execució d’obra · certificació 3")}</dd></div>
+          <div><dt>{t("Base")}</dt><dd>{eur(base)}</dd></div>
+          <div><dt>{t("IVA 21 %")}</dt><dd>{eur(iva)}</dd></div>
+          <div className="tot"><dt>{t("Total")}</dt><dd>{eur(total)}</dd></div>
+        </dl>
+        {pas>=4&&<div className="vf-qr-v878276">{qr?<img src={qr} alt={t("Codi QR de la factura")}/>:null}<div><b>VERI*FACTU</b><span>{t("Factura verificable en la seu electrònica de l’AEAT")}</span><small>{t("QR d’exemple, de l’entorn de proves de l’AEAT")}</small></div></div>}
+        <div className="vf-inv-act-v878276">
+          {!pas&&<button type="button" className="primary" onClick={emetre}>{t("Emetre la factura")}</button>}
+          {pas>=4&&<><button type="button" className="secondary" disabled title={t("Una factura emesa no es pot modificar")}>{t("Editar")}</button><button type="button" className="secondary" disabled>{t("Fer factura rectificativa")}</button><small>{t("Una factura emesa ja no es pot modificar ni esborrar: es corregeix amb una factura rectificativa.")}</small></>}
+        </div>
+      </div>
+      {pas>0&&<ol className="vf-steps-v878276">{steps.map(([a,b],i)=><li key={i} className={pas>=4||pas>i+1?"ok":pas===i+1?"run":""}><b>{a}</b><span>{b}</span></li>)}</ol>}
+      {pas>=4&&<details className="vf-hash-v878276"><summary>{t("Veure l’empremta (SHA-256)")}</summary><code>{hash}</code><small>{t("Empremta de la factura anterior:")} <code>{prev}</code></small><small>{t("Si algú canviés una factura antiga, totes les empremtes següents deixarien de quadrar.")}</small></details>}
+    </section>
+    <section className="vf-grid-v878276">
+      <div><h3>{t("Què cal per començar")}</h3><ul>
+        <li>{t("Les dades fiscals de l’empresa a l’app (NIF, raó social, adreça i sèrie de factures).")}</li>
+        <li>{t("Autoritzar una sola vegada l’intermediari perquè enviï les factures a Hisenda en nom de l’empresa.")}</li>
+        <li>{t("Activar «Factures amb VeriFactu» al compte. No cal cap certificat digital a l’app.")}</li>
+      </ul></div>
+      <div><h3>{t("Calendari")}</h3><ul className="vf-cal-v878276">
+        <li><b>{t("Ara")}</b><span>{t("Els programes de facturació ja han de complir la norma.")}</span></li>
+        <li><b>1/1/2027</b><span>{t("Obligatori per a les societats (impost de societats).")}</span></li>
+        <li><b>1/7/2027</b><span>{t("Obligatori per als autònoms i la resta.")}</span></li>
+        <li><b>{t("Desembre 2026")}</b><span>{t("Control d’Obres amb VeriFactu, provat i a punt.")}</span></li>
+      </ul></div>
+    </section>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Tancar")}</button></div>
+  </div></Modal>
+}
 function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openObraTab}){
+  const[vfOpen878276,setVfOpen878276]=useState(false);
   const[preview,setPreview]=useState(null);const[newOpen,setNewOpen]=useState(false);
   const[calcOpen,setCalcOpen]=useState(false);const[period,setPeriod]=useState("all"),[from,setFrom]=useState(""),[to,setTo]=useState(""),[client,setClient]=useState(""),[obra,setObra]=useState(""),[tipus,setTipus]=useState("");
   let all=obres.flatMap(o=>uniqueFactures8743(((odata[o.id]||empty()).facturesTecnic||[])).map((f,i)=>({...f,displayNumero:displayDocNumber8745(f,"factura",o,i+1),obra:o,clientNom:o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o)})));
@@ -11352,7 +11432,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
     setOdata(prev=>{const d=prev[row.obra.id]||empty();return {...prev,[row.obra.id]:{...d,facturesTecnic:(d.facturesTecnic||[]).map(f=>f.id===row.id?{...f,...patch}:f),updatedAt:new Date().toISOString()}}});
   }
   const fc=countBy87109(rows,f=>statusKeyFactura8776(f.estat));
-  return <div className="stack finance-general-v8743 finance-general-v8745 finance-v8776 finance-v87109">{preview&&<QuotePreview8743 type="factura" doc={preview.doc} obra={preview.obra} close={()=>setPreview(null)}/>} {newOpen&&<NewGlobalFactura8778 obres={obres} onSave={createFacturaGlobal8778} close={()=>setNewOpen(false)}/>}<HoursToInvoice878256 obres={obres} clients={clientList} onCreate={createFacturaGlobal8778}/><Card title={i18nT("Factures emeses")} action={<FilterBar8776><label><span>{i18nT("Període")}</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="all">{i18nT("Tot")}</option><option value="week">{i18nT("Setmana actual")}</option><option value="month">{i18nT("Mes en curs")}</option><option value="year">{i18nT("Any actual")}</option><option value="dates">{i18nT("Dates")}</option></select></label>{period==="dates"&&<><label><span>{i18nT("Des de")}</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>{i18nT("Fins")}</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>{i18nT("Client")}</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">{i18nT("Tots")}</option>{clients.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select></label><label><span>{i18nT("Obra")}</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">{i18nT("Totes")}</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>{i18nT("Tipologia")}</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">{i18nT("Totes")}</option>{tipologies.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</select></label></FilterBar8776>}><div className="card-actions"><button className="primary" onClick={()=>setNewOpen(true)}>{i18nT("+ Nova factura")}</button></div><div className="honor-kpis"><Kpi t="FACTURES" v={rows.length}/><Kpi t="BASE SENSE IVA" v={money(base)}/><Kpi t="TOTAL IVA INC." v={money(total)}/><Kpi t="PENDENTS +7 DIES" v={pendents.length}/></div><FinanceStatusCards87109 items={[{label:"Fetes",count:fc.fetes||0,kind:"info"},{label:"Cobrades",count:fc.cobrades||0,kind:"ok"},{label:"Pendents de cobrar",count:fc["no cobrades"]||0,kind:"warn"},{label:"Vençudes +7 dies",count:pendents.length,kind:"bad"}]}/>{pendents.length>0&&<div className="finance-alert-v8776">{pendents.map(f=><button key={f.obra.id+f.id} onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}><b>{i18nT("Factura pendent")}</b><span>{f.displayNumero} · {f.obra.nom} · {fmtAppDate8748(f.data)} · {money(totalIva8743(f))}</span></button>)}</div>}<div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={parts} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div><div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8745 finance-invoice-table-v87114"><colgroup><col className="c-num"/><col className="c-exp"/><col className="c-client"/><col className="c-tipus"/><col className="c-concepte"/><col className="c-data"/><col className="c-money"/><col className="c-money"/><col className="c-estat"/><col className="c-cobrament"/><col className="c-actions"/></colgroup><thead><tr><th>{i18nT("Factura")}</th><th>{i18nT("Expedient")}</th><th>{i18nT("Client")}</th><th>{i18nT("Tipologia")}</th><th>{i18nT("Concepte")}</th><th>{i18nT("Data")}</th><th>{i18nT("Base")}</th><th>{i18nT("Total IVA inclòs")}</th><th>{i18nT("Estat")}</th><th>{i18nT("Data cobrament")}</th><th>{i18nT("Accions")}</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="11"><Empty text="Encara no hi ha factures."/></td></tr>}{rows.map(f=><tr key={f.obra.id+f.id}><td><b>{f.displayNumero}</b></td><td><span className="exp-code-v8739">{expedientCode8739(f.obra)}</span><small>{f.obra.nom}</small></td><td>{f.clientNom}</td><td>{f.tipologia}</td><td>{f.concepte||i18nT("Factura")}</td><td>{fmtAppDate8748(f.data)||"—"}</td><td><b>{money(baseIva8743(f))}</b></td><td><strong>{money(totalIva8743(f))}</strong></td><td><select className={`finance-state-select-v87110 ${statusKeyFactura8776(f.estat)}`} value={f.estat||"Pendent"} onChange={e=>updateFacturaGlobal87109(f,{estat:e.target.value})}><option value="Esborrany">{i18nT("Esborrany")}</option><option value="Emesa">{i18nT("Emesa")}</option><option value="Pendent">{i18nT("Pendent")}</option><option value="Cobrada">{i18nT("Cobrada")}</option><option value="Anul·lada">{i18nT("Anul·lada")}</option></select></td><td><input className="date-cell-v87109" type="date" value={toInputDate8743(f.dataCobrament)||""} onChange={e=>updateFacturaGlobal87109(f,{dataCobrament:e.target.value,estat:e.target.value?"Cobrada":"Pendent"})}/></td><td><div className="actions-inline row-actions-desktop-v87114"><button className="primary small-v8777" onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}>{i18nT("Gestionar")}</button><button className="secondary" onClick={()=>setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}>{i18nT("PDF")}</button><button className="secondary" onClick={()=>printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}>{i18nT("Imprimir")}</button></div><select className="mobile-row-action-v87114" defaultValue="" aria-label={i18nT("Accions factura")} onChange={e=>{const v=e.target.value;e.target.value="";if(v==="gestionar"){openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}if(v==="pdf"){setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}if(v==="imprimir"){printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}}}><option value="">{i18nT("Accions")}</option><option value="gestionar">{i18nT("Gestionar factura")}</option><option value="pdf">{i18nT("Veure PDF")}</option><option value="imprimir">{i18nT("Imprimir / PDF")}</option></select></td></tr>)}</tbody></table></div></Card><FinanceReports87110 title={i18nT("Resum / informes de factures")} rows={rows} type="factures"/></div>
+  return <div className="stack finance-general-v8743 finance-general-v8745 finance-v8776 finance-v87109">{preview&&<QuotePreview8743 type="factura" doc={preview.doc} obra={preview.obra} close={()=>setPreview(null)}/>} {newOpen&&<NewGlobalFactura8778 obres={obres} onSave={createFacturaGlobal8778} close={()=>setNewOpen(false)}/>}<VerifactuBanner878276 open={()=>setVfOpen878276(true)}/>{vfOpen878276&&<VerifactuDemo878276 close={()=>setVfOpen878276(false)}/>}<HoursToInvoice878256 obres={obres} clients={clientList} onCreate={createFacturaGlobal8778}/><Card title={i18nT("Factures emeses")} action={<FilterBar8776><label><span>{i18nT("Període")}</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="all">{i18nT("Tot")}</option><option value="week">{i18nT("Setmana actual")}</option><option value="month">{i18nT("Mes en curs")}</option><option value="year">{i18nT("Any actual")}</option><option value="dates">{i18nT("Dates")}</option></select></label>{period==="dates"&&<><label><span>{i18nT("Des de")}</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>{i18nT("Fins")}</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>{i18nT("Client")}</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">{i18nT("Tots")}</option>{clients.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select></label><label><span>{i18nT("Obra")}</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">{i18nT("Totes")}</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>{i18nT("Tipologia")}</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">{i18nT("Totes")}</option>{tipologies.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</select></label></FilterBar8776>}><div className="card-actions"><button className="primary" onClick={()=>setNewOpen(true)}>{i18nT("+ Nova factura")}</button></div><div className="honor-kpis"><Kpi t="FACTURES" v={rows.length}/><Kpi t="BASE SENSE IVA" v={money(base)}/><Kpi t="TOTAL IVA INC." v={money(total)}/><Kpi t="PENDENTS +7 DIES" v={pendents.length}/></div><FinanceStatusCards87109 items={[{label:"Fetes",count:fc.fetes||0,kind:"info"},{label:"Cobrades",count:fc.cobrades||0,kind:"ok"},{label:"Pendents de cobrar",count:fc["no cobrades"]||0,kind:"warn"},{label:"Vençudes +7 dies",count:pendents.length,kind:"bad"}]}/>{pendents.length>0&&<div className="finance-alert-v8776">{pendents.map(f=><button key={f.obra.id+f.id} onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}><b>{i18nT("Factura pendent")}</b><span>{f.displayNumero} · {f.obra.nom} · {fmtAppDate8748(f.data)} · {money(totalIva8743(f))}</span></button>)}</div>}<div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={parts} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div><div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8745 finance-invoice-table-v87114"><colgroup><col className="c-num"/><col className="c-exp"/><col className="c-client"/><col className="c-tipus"/><col className="c-concepte"/><col className="c-data"/><col className="c-money"/><col className="c-money"/><col className="c-estat"/><col className="c-cobrament"/><col className="c-actions"/></colgroup><thead><tr><th>{i18nT("Factura")}</th><th>{i18nT("Expedient")}</th><th>{i18nT("Client")}</th><th>{i18nT("Tipologia")}</th><th>{i18nT("Concepte")}</th><th>{i18nT("Data")}</th><th>{i18nT("Base")}</th><th>{i18nT("Total IVA inclòs")}</th><th>{i18nT("Estat")}</th><th>{i18nT("Data cobrament")}</th><th>{i18nT("Accions")}</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="11"><Empty text="Encara no hi ha factures."/></td></tr>}{rows.map(f=><tr key={f.obra.id+f.id}><td><b>{f.displayNumero}</b></td><td><span className="exp-code-v8739">{expedientCode8739(f.obra)}</span><small>{f.obra.nom}</small></td><td>{f.clientNom}</td><td>{f.tipologia}</td><td>{f.concepte||i18nT("Factura")}</td><td>{fmtAppDate8748(f.data)||"—"}</td><td><b>{money(baseIva8743(f))}</b></td><td><strong>{money(totalIva8743(f))}</strong></td><td><select className={`finance-state-select-v87110 ${statusKeyFactura8776(f.estat)}`} value={f.estat||"Pendent"} onChange={e=>updateFacturaGlobal87109(f,{estat:e.target.value})}><option value="Esborrany">{i18nT("Esborrany")}</option><option value="Emesa">{i18nT("Emesa")}</option><option value="Pendent">{i18nT("Pendent")}</option><option value="Cobrada">{i18nT("Cobrada")}</option><option value="Anul·lada">{i18nT("Anul·lada")}</option></select></td><td><input className="date-cell-v87109" type="date" value={toInputDate8743(f.dataCobrament)||""} onChange={e=>updateFacturaGlobal87109(f,{dataCobrament:e.target.value,estat:e.target.value?"Cobrada":"Pendent"})}/></td><td><div className="actions-inline row-actions-desktop-v87114"><button className="primary small-v8777" onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}>{i18nT("Gestionar")}</button><button className="secondary" onClick={()=>setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}>{i18nT("PDF")}</button><button className="secondary" onClick={()=>printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}>{i18nT("Imprimir")}</button></div><select className="mobile-row-action-v87114" defaultValue="" aria-label={i18nT("Accions factura")} onChange={e=>{const v=e.target.value;e.target.value="";if(v==="gestionar"){openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}if(v==="pdf"){setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}if(v==="imprimir"){printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}}}><option value="">{i18nT("Accions")}</option><option value="gestionar">{i18nT("Gestionar factura")}</option><option value="pdf">{i18nT("Veure PDF")}</option><option value="imprimir">{i18nT("Imprimir / PDF")}</option></select></td></tr>)}</tbody></table></div></Card><FinanceReports87110 title={i18nT("Resum / informes de factures")} rows={rows} type="factures"/></div>
 }
 function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab}){
   const[preview,setPreview]=useState(null);
