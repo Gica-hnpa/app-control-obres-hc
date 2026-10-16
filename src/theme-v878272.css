@@ -1,0 +1,12 @@
+/* V87.272 · Agenda, Gestió del temps i Factures: retocs per al mòbil (i traduïdes al castellà) */
+
+/* Agenda: l'ajuda «Clica un espai buit… arrossega…» només té sentit amb ratolí */
+@media (hover:none) and (pointer:coarse){ html body .ag-hint{display:none!important} }
+
+/* Gestió del temps: els filtres no surten de la pantalla (abans el desplegable d'expedients sortia per la dreta) */
+@media (max-width:760px){
+  html body .temps-filters-v878255{display:flex;flex-wrap:wrap;gap:8px}
+  html body .temps-filters-v878255>select,html body .temps-filters-v878255>input{flex:1 1 100%;min-width:0;max-width:100%}
+  html body .temps-filters-v878255>.seg{flex:1 1 100%;display:flex}
+  html body .temps-filters-v878255>.seg>button{flex:1}
+}

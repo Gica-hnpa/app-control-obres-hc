@@ -5,7 +5,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
 import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft} from "lucide-react";
-import {t,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
+import {t,t as i18nT,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
@@ -15,7 +15,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.271";
+const APP_VERSION878264="87.272";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3777,14 +3777,14 @@ function HonorarisCalculator8790({obres=[],defaultObraId="",onCreatePressupost})
 function NewGlobalFactura8778({obres=[],onSave,close}){
   const [f,setF]=useState({obraId:obres[0]?.id||"",concepte:"Honoraris tècnics",base:"0",iva:"21",retencio:"0",descompte:"0",data:todayISO8743(),estat:"Pendent",text:"Factura corresponent als honoraris tècnics realitzats."});
   function set(k,v){setF(x=>({...x,[k]:v}))}
-  function submit(e){e.preventDefault();if(!f.obraId){alert("Selecciona un expedient.");return}onSave?.({...f,base:+f.base||0,iva:+f.iva||21,retencio:+f.retencio||0,descompte:+f.descompte||0});close?.()}
-  return <Modal title="Nova factura d’honoraris" close={close}><form onSubmit={submit}>
-    <div className="form-grid"><label className="span-all"><span>Expedient vinculat</span><select value={f.obraId} onChange={e=>set("obraId",e.target.value)}>{obres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label>
-    <label><span>Data</span><input type="date" value={f.data} onChange={e=>set("data",e.target.value)}/></label><label><span>Estat</span><select value={f.estat} onChange={e=>set("estat",e.target.value)}><option>Esborrany</option><option>Pendent</option><option>Enviada</option><option>Cobrada</option><option>Anul·lada</option></select></label>
-    <label><span>Base sense IVA</span><input type="number" step="0.01" value={f.base} onChange={e=>set("base",e.target.value)}/></label><label><span>IVA %</span><input type="number" step="1" value={f.iva} onChange={e=>set("iva",e.target.value)}/></label><label><span>Retenció %</span><input type="number" step="1" value={f.retencio} onChange={e=>set("retencio",e.target.value)}/></label><label><span>Descompte %</span><input type="number" step="1" value={f.descompte} onChange={e=>set("descompte",e.target.value)}/></label>
-    <label className="span-all"><span>Concepte</span><input value={f.concepte} onChange={e=>set("concepte",e.target.value)}/></label><label className="span-all"><span>Text / observacions</span><textarea value={f.text} onChange={e=>set("text",e.target.value)}/></label></div>
-    <div className="quote-total-v8742"><span>Total factura</span><b>{money(invoiceTotal8746({...f,base:+f.base||0,iva:+f.iva||21,retencio:+f.retencio||0,descompte:+f.descompte||0}))}</b></div>
-    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button className="primary">Guardar factura</button></div>
+  function submit(e){e.preventDefault();if(!f.obraId){alert(t("Selecciona un expedient."));return}onSave?.({...f,base:+f.base||0,iva:+f.iva||21,retencio:+f.retencio||0,descompte:+f.descompte||0});close?.()}
+  return <Modal title={t("Nova factura d’honoraris")} close={close}><form onSubmit={submit}>
+    <div className="form-grid"><label className="span-all"><span>{t("Expedient vinculat")}</span><select value={f.obraId} onChange={e=>set("obraId",e.target.value)}>{obres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label>
+    <label><span>{t("Data")}</span><input type="date" value={f.data} onChange={e=>set("data",e.target.value)}/></label><label><span>{t("Estat")}</span><select value={f.estat} onChange={e=>set("estat",e.target.value)}><option value="Esborrany">{t("Esborrany")}</option><option value="Pendent">{t("Pendent")}</option><option value="Enviada">{t("Enviada")}</option><option value="Cobrada">{t("Cobrada")}</option><option value="Anul·lada">{t("Anul·lada")}</option></select></label>
+    <label><span>{t("Base sense IVA")}</span><input type="number" step="0.01" value={f.base} onChange={e=>set("base",e.target.value)}/></label><label><span>{t("IVA %")}</span><input type="number" step="1" value={f.iva} onChange={e=>set("iva",e.target.value)}/></label><label><span>{t("Retenció %")}</span><input type="number" step="1" value={f.retencio} onChange={e=>set("retencio",e.target.value)}/></label><label><span>{t("Descompte %")}</span><input type="number" step="1" value={f.descompte} onChange={e=>set("descompte",e.target.value)}/></label>
+    <label className="span-all"><span>{t("Concepte")}</span><input value={f.concepte} onChange={e=>set("concepte",e.target.value)}/></label><label className="span-all"><span>{t("Text / observacions")}</span><textarea value={f.text} onChange={e=>set("text",e.target.value)}/></label></div>
+    <div className="quote-total-v8742"><span>{t("Total factura")}</span><b>{money(invoiceTotal8746({...f,base:+f.base||0,iva:+f.iva||21,retencio:+f.retencio||0,descompte:+f.descompte||0}))}</b></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button className="primary">{t("Guardar factura")}</button></div>
   </form></Modal>
 }
 
@@ -5134,6 +5134,8 @@ function BottomNav878268({screen,role,perfil,nav,onMore}){
     <button type="button" onClick={onMore}><Ellipsis/><span>{t("Més")}</span></button>
   </nav>;
 }
+// V87.272 · format de dates i números segons l'idioma de l'usuari
+function loc878272(){return getLang()==="es"?"es-ES":"ca-ES"}
 function MobileBackBar878146({screen,goBack}){return <div className="screen-return-v87146"><button type="button" onClick={goBack}>← Tornar</button><span>{screen}</span></div>}
 function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odata={},readOnly=false}){
   const[clientFilter,setClientFilter]=useState("");
@@ -10922,7 +10924,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.271",
+    app_version:"87.272",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -11196,13 +11198,13 @@ function GestioTemps878255({obres=[],clients=[],odata={},openObra}){
   const goalN=parseNum8770(goal)||8;
   const spanDays=Math.round((range[1]-range[0])/864e5)+1;
   const bars=[];
-  if(spanDays<=62){for(let d=new Date(range[0]);d<=range[1];d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)){const k=isoDay878255(d);bars.push({k,label:String(d.getDate()),title:d.toLocaleDateString("ca-ES",{weekday:"long",day:"numeric",month:"long"}),h:dayMap[k]||0,we:d.getDay()===0||d.getDay()===6})}}
-  else{const m={};Object.entries(dayMap).forEach(([k,h])=>{const mk=k.slice(0,7);m[mk]=(m[mk]||0)+h});for(let d=new Date(range[0].getFullYear(),range[0].getMonth(),1);d<=range[1];d=new Date(d.getFullYear(),d.getMonth()+1,1)){const mk=isoDay878255(d).slice(0,7);bars.push({k:"",label:d.toLocaleDateString("ca-ES",{month:"short"}),title:d.toLocaleDateString("ca-ES",{month:"long",year:"numeric"}),h:m[mk]||0})}}
+  if(spanDays<=62){for(let d=new Date(range[0]);d<=range[1];d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)){const k=isoDay878255(d);bars.push({k,label:String(d.getDate()),title:d.toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"}),h:dayMap[k]||0,we:d.getDay()===0||d.getDay()===6})}}
+  else{const m={};Object.entries(dayMap).forEach(([k,h])=>{const mk=k.slice(0,7);m[mk]=(m[mk]||0)+h});for(let d=new Date(range[0].getFullYear(),range[0].getMonth(),1);d<=range[1];d=new Date(d.getFullYear(),d.getMonth()+1,1)){const mk=isoDay878255(d).slice(0,7);bars.push({k:"",label:d.toLocaleDateString(loc878272(),{month:"short"}),title:d.toLocaleDateString(loc878272(),{month:"long",year:"numeric"}),h:m[mk]||0})}}
   const maxH=Math.max(goalN*1.15,...bars.map(b=>b.h*1.05),1);
   const byObra={};rows.forEach(r=>{const k=r._obra.id;(byObra[k]??={o:r._obra,rows:[],h:0,v:0,p:0,last:null});const g=byObra[k];g.rows.push(r);if(isHoursRow878255(r))g.h+=timeHours878120(r);const val=timeImport878120(r);g.v+=val;if(!r.facturat)g.p+=val;if(!g.last||r._d>g.last)g.last=r._d});
   const groups=Object.values(byObra).sort((x,y)=>y.v-x.v);
   function updateRow(r,patch){const list=readTimeRows878255(r._obra.id).map(x=>x.id===r.id?{...x,...patch}:x);writeTimeRows878255(r._obra.id,list)}
-  function removeRow(r){if(!confirm("Eliminar aquest registre d’hores?"))return;writeTimeRows878255(r._obra.id,readTimeRows878255(r._obra.id).filter(x=>x.id!==r.id))}
+  function removeRow(r){if(!confirm(i18nT("Eliminar aquest registre d’hores?")))return;writeTimeRows878255(r._obra.id,readTimeRows878255(r._obra.id).filter(x=>x.id!==r.id))}
   function markGroup(g,val){const ids=new Set(g.rows.map(r=>r.id));writeTimeRows878255(g.o.id,readTimeRows878255(g.o.id).map(x=>ids.has(x.id)?{...x,facturat:val,facturatAt:val?new Date().toISOString():""}:x))}
   function saveRate(v){setRate(v);lsSet8779("aco_default_hourly_rate_v878255",String(parseNum8770(v)||50))}
   function saveGoal(v){setGoal(v);lsSet8779("aco_daily_goal_v878255",String(parseNum8770(v)||8))}
@@ -11213,57 +11215,57 @@ function GestioTemps878255({obres=[],clients=[],odata={},openObra}){
     const blob=new Blob(["\ufeff"+lines.map(l=>l.join(";")).join("\r\n")],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob);const el=document.createElement("a");el.href=url;el.download=`hores-${isoDay878255(range[0])}-${isoDay878255(range[1])}.csv`;el.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
-  const fmtH=h=>`${(Math.round(h*100)/100).toLocaleString("ca-ES",{maximumFractionDigits:2})} h`;
-  const periodLabel=period==="avui"?"Avui":period==="setmana"?"Aquesta setmana":period==="mes"?new Date(range[0]).toLocaleDateString("ca-ES",{month:"long",year:"numeric"}):`${range[0].toLocaleDateString("ca-ES")} – ${range[1].toLocaleDateString("ca-ES")}`;
+  const fmtH=h=>`${(Math.round(h*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} h`;
+  const periodLabel=period==="avui"?"Avui":period==="setmana"?"Aquesta setmana":period==="mes"?new Date(range[0]).toLocaleDateString(loc878272(),{month:"long",year:"numeric"}):`${range[0].toLocaleDateString(loc878272())} – ${range[1].toLocaleDateString(loc878272())}`;
   return <div className="temps-v878255">
     <div className="temps-head-v878255">
-      <div><span className="eyebrow">Gestió del temps</span><h1>{periodLabel}</h1><p>Hores per expedient, l’import que representen i el que queda per facturar. Inclou el comptador automàtic i les entrades manuals.</p></div>
-      <div className="actions"><button type="button" className="secondary" onClick={exportCsv}>Exportar CSV</button><button type="button" className="primary" onClick={openManual}>+ Afegir hores</button></div>
+      <div><span className="eyebrow">{i18nT("Gestió del temps")}</span><h1>{periodLabel}</h1><p>{i18nT("Hores per expedient, l’import que representen i el que queda per facturar. Inclou el comptador automàtic i les entrades manuals.")}</p></div>
+      <div className="actions"><button type="button" className="secondary" onClick={exportCsv}>{i18nT("Exportar CSV")}</button><button type="button" className="primary" onClick={openManual}>{i18nT("+ Afegir hores")}</button></div>
     </div>
     <div className="temps-filters-v878255">
-      <div className="seg">{[["avui","Avui"],["setmana","Setmana"],["mes","Mes"],["rang","Interval"]].map(([k,l])=><button type="button" key={k} aria-pressed={period===k} onClick={()=>{setPeriod(k);setDayF("")}}>{l}</button>)}</div>
-      {period==="mes"&&<input type="month" value={month} onChange={e=>{setMonth(e.target.value);setDayF("")}} aria-label="Mes"/>}
-      {period==="rang"&&<><input type="date" value={from} onChange={e=>setFrom(e.target.value)} aria-label="Des de"/><input type="date" value={to} onChange={e=>setTo(e.target.value)} aria-label="Fins a"/></>}
-      <select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label="Client"><option value="">{t("Tots els clients")}</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
-      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Expedient"><option value="">Tots els expedients</option>{(obres||[]).filter(o=>!clientF||o.client===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
-      <label className="chk"><input type="checkbox" checked={onlyPending} onChange={e=>setOnlyPending(e.target.checked)}/>Només pendent de facturar</label>
+      <div className="seg">{[["avui","Avui"],["setmana","Setmana"],["mes","Mes"],["rang","Interval"]].map(([k,l])=><button type="button" key={k} aria-pressed={period===k} onClick={()=>{setPeriod(k);setDayF("")}}>{i18nT(l)}</button>)}</div>
+      {period==="mes"&&<input type="month" value={month} onChange={e=>{setMonth(e.target.value);setDayF("")}} aria-label={i18nT("Mes")}/>}
+      {period==="rang"&&<><input type="date" value={from} onChange={e=>setFrom(e.target.value)} aria-label={i18nT("Des de")}/><input type="date" value={to} onChange={e=>setTo(e.target.value)} aria-label={i18nT("Fins a")}/></>}
+      <select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
+      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Expedient")}><option value="">{i18nT("Tots els expedients")}</option>{(obres||[]).filter(o=>!clientF||o.client===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
+      <label className="chk"><input type="checkbox" checked={onlyPending} onChange={e=>setOnlyPending(e.target.checked)}/>{i18nT("Només pendent de facturar")}</label>
     </div>
     <div className="temps-kpis-v878255">
-      <div><small>Hores</small><b>{fmtH(hours)}</b><span>{dayF?`el ${new Date(dayF).toLocaleDateString("ca-ES")}`:`${worked} dies treballats`}</span></div>
-      <div><small>Import generat</small><b>{money(value)}</b><span>hores × preu + despeses</span></div>
-      <div><small>Pendent de facturar</small><b className={pending>0.005?"warn":""}>{money(pending)}</b><span>{rows.filter(r=>!r.facturat).length} registres</span></div>
-      <div><small>Mitjana per dia</small><b>{fmtH(worked?Object.values(dayMap).reduce((s,h)=>s+h,0)/worked:0)}</b><span>objectiu <input className="goal" value={goal} onChange={e=>saveGoal(e.target.value)} aria-label="Objectiu diari d’hores"/> h</span></div>
+      <div><small>{i18nT("Hores")}</small><b>{fmtH(hours)}</b><span>{dayF?i18nT("el {data}",{data:new Date(dayF).toLocaleDateString(getLang()==="es"?"es-ES":loc878272())}):i18nT("{n} dies treballats",{n:worked})}</span></div>
+      <div><small>{i18nT("Import generat")}</small><b>{money(value)}</b><span>{i18nT("hores × preu + despeses")}</span></div>
+      <div><small>{i18nT("Pendent de facturar")}</small><b className={pending>0.005?"warn":""}>{money(pending)}</b><span>{rows.filter(r=>!r.facturat).length} {i18nT("registres")}</span></div>
+      <div><small>{i18nT("Mitjana per dia")}</small><b>{fmtH(worked?Object.values(dayMap).reduce((s,h)=>s+h,0)/worked:0)}</b><span>{i18nT("objectiu")} <input className="goal" value={goal} onChange={e=>saveGoal(e.target.value)} aria-label={i18nT("Objectiu diari d’hores")}/> h</span></div>
     </div>
     <section className="temps-chart-v878255">
-      <div className="ch-head"><b>{spanDays<=62?"Hores per dia":"Hores per mes"}</b><span>{dayF?<button type="button" className="link" onClick={()=>setDayF("")}>Treure el filtre de dia</button>:(spanDays<=62?"Clica un dia per veure’n el detall":"")}</span></div>
+      <div className="ch-head"><b>{spanDays<=62?i18nT("Hores per dia"):i18nT("Hores per mes")}</b><span>{dayF?<button type="button" className="link" onClick={()=>setDayF("")}>{i18nT("Treure el filtre de dia")}</button>:(spanDays<=62?"Clica un dia per veure’n el detall":"")}</span></div>
       <div className="bars" style={{"--n":bars.length}}>
         <i className="goal-line" style={{bottom:`${goalN/maxH*100}%`}} title={`Objectiu: ${goalN} h`}/>
         {bars.map((b,i)=><button type="button" key={i} className={`bar ${b.we?"we":""} ${dayF&&b.k===dayF?"sel":""} ${b.h>=goalN?"ok":b.h>0?"mid":""}`} title={`${b.title}: ${fmtH(b.h)}`} onClick={()=>b.k&&setDayF(dayF===b.k?"":b.k)} disabled={!b.k}><span className="col"><em style={{height:`${b.h/maxH*100}%`}}/></span><small>{b.label}</small></button>)}
       </div>
-      <div className="legend"><span><i className="ok"/>Objectiu complert</span><span><i className="mid"/>Per sota de l’objectiu</span><span><i className="gl"/>Objectiu diari</span></div>
+      <div className="legend"><span><i className="ok"/>{i18nT("Objectiu complert")}</span><span><i className="mid"/>{i18nT("Per sota de l’objectiu")}</span><span><i className="gl"/>{i18nT("Objectiu diari")}</span></div>
     </section>
     <section className="temps-list-v878255">
-      <div className="ch-head"><b>Per expedient</b><span>Preu per hora per defecte <input className="rate" value={rate} onChange={e=>saveRate(e.target.value)} aria-label="Preu per hora per defecte"/> €</span></div>
+      <div className="ch-head"><b>{i18nT("Per expedient")}</b><span>{i18nT("Preu per hora per defecte")} <input className="rate" value={rate} onChange={e=>saveRate(e.target.value)} aria-label={i18nT("Preu per hora per defecte")}/> €</span></div>
       {groups.length===0?<Empty text="No hi ha hores en aquest període. Fes servir «+ Afegir hores» o entra a una obra amb el comptador automàtic."/>:groups.map(g=><div key={g.o.id} className="grp">
         <button type="button" className="grp-head" onClick={()=>setOpenObres(s=>({...s,[g.o.id]:!s[g.o.id]}))} aria-expanded={!!openObres[g.o.id]}>
           <span className="nm"><b>{openObres[g.o.id]?"▾":"▸"}</b> {g.o.nom}<small>{cName(g.o.client)} · {expedientCode8739(g.o)}</small></span>
-          <span className="num">{fmtH(g.h)}</span><span className="num">{money(g.v)}</span><span className={`num ${g.p>0.005?"warn":"done"}`}>{g.p>0.005?`Pendent ${money(g.p)}`:"Facturat"}</span>
+          <span className="num">{fmtH(g.h)}</span><span className="num">{money(g.v)}</span><span className={`num ${g.p>0.005?"warn":"done"}`}>{g.p>0.005?i18nT("Pendent {import}",{import:money(g.p)}):i18nT("Facturat")}</span>
         </button>
         {openObres[g.o.id]&&<div className="entries">
-          <div className="entry head"><span>Data</span><span>Feina</span><span className="num">Hores</span><span className="num">Import</span><span>Facturat</span><span/></div>
+          <div className="entry head"><span>{i18nT("Data")}</span><span>{i18nT("Feina")}</span><span className="num">{i18nT("Hores")}</span><span className="num">{i18nT("Import")}</span><span>{i18nT("Facturat")}</span><span/></div>
           {g.rows.sort((x,y)=>y._d-x._d).map(r=><div key={r.id} className="entry">
-            <span>{r._d.toLocaleDateString("ca-ES")}{r.inici?<small>{r.inici}–{r.final}</small>:null}</span>
-            <span>{r.tipusRegistre&&r.tipusRegistre!=="Honoraris"?r.tipusRegistre:(r.tipusFeina||r.tipus||r.tasca||"Hores")}{r.auto?<em className="auto">automàtic</em>:null}{r.observacions?<small>{r.observacions}</small>:null}</span>
+            <span>{r._d.toLocaleDateString(loc878272())}{r.inici?<small>{r.inici}–{r.final}</small>:null}</span>
+            <span>{r.tipusRegistre&&r.tipusRegistre!=="Honoraris"?r.tipusRegistre:(r.tipusFeina||r.tipus||r.tasca||"Hores")}{r.auto?<em className="auto">{i18nT("automàtic")}</em>:null}{r.observacions?<small>{r.observacions}</small>:null}</span>
             <span className="num">{isHoursRow878255(r)?fmtH(timeHours878120(r)):"—"}</span>
             <span className="num">{money(timeImport878120(r))}</span>
-            <span><input type="checkbox" checked={!!r.facturat} onChange={e=>updateRow(r,{facturat:e.target.checked,facturatAt:e.target.checked?new Date().toISOString():""})} aria-label="Facturat"/></span>
-            <span><button type="button" className="del" onClick={()=>removeRow(r)} aria-label="Eliminar registre">Eliminar</button></span>
+            <span><input type="checkbox" checked={!!r.facturat} onChange={e=>updateRow(r,{facturat:e.target.checked,facturatAt:e.target.checked?new Date().toISOString():""})} aria-label={i18nT("Facturat")}/></span>
+            <span><button type="button" className="del" onClick={()=>removeRow(r)} aria-label={i18nT("Eliminar registre")}>{i18nT("Eliminar")}</button></span>
           </div>)}
-          <div className="grp-actions"><button type="button" className="secondary" onClick={()=>markGroup(g,true)}>Marcar tot com a facturat</button>{openObra&&<button type="button" className="secondary" onClick={()=>openObra(g.o.id)}>Obrir l’expedient</button>}</div>
+          <div className="grp-actions"><button type="button" className="secondary" onClick={()=>markGroup(g,true)}>{i18nT("Marcar tot com a facturat")}</button>{openObra&&<button type="button" className="secondary" onClick={()=>openObra(g.o.id)}>{i18nT("Obrir l’expedient")}</button>}</div>
         </div>}
       </div>)}
     </section>
-    <details className="temps-legacy-v878255"><summary>Anàlisi d’honoraris per expedient (vista anterior)</summary><TracaGeneral obres={obres} odata={odata} openObra={openObra}/></details>
+    <details className="temps-legacy-v878255"><summary>{i18nT("Anàlisi d’honoraris per expedient (vista anterior)")}</summary><TracaGeneral obres={obres} odata={odata} openObra={openObra}/></details>
     {manual&&<ManualHours878256 obres={obres} clients={clients} initial={manual} close={()=>setManual(null)}/>}
   </div>;
 }
@@ -11330,7 +11332,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
     setOdata(prev=>{const d=prev[row.obra.id]||empty();return {...prev,[row.obra.id]:{...d,facturesTecnic:(d.facturesTecnic||[]).map(f=>f.id===row.id?{...f,...patch}:f),updatedAt:new Date().toISOString()}}});
   }
   const fc=countBy87109(rows,f=>statusKeyFactura8776(f.estat));
-  return <div className="stack finance-general-v8743 finance-general-v8745 finance-v8776 finance-v87109">{preview&&<QuotePreview8743 type="factura" doc={preview.doc} obra={preview.obra} close={()=>setPreview(null)}/>} {newOpen&&<NewGlobalFactura8778 obres={obres} onSave={createFacturaGlobal8778} close={()=>setNewOpen(false)}/>}<HoursToInvoice878256 obres={obres} clients={clientList} onCreate={createFacturaGlobal8778}/><Card title="Factures emeses" action={<FilterBar8776><label><span>Període</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="all">Tot</option><option value="week">Setmana actual</option><option value="month">Mes en curs</option><option value="year">Any actual</option><option value="dates">Dates</option></select></label>{period==="dates"&&<><label><span>Des de</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>Fins</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>Client</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">Tots</option>{clients.map(c=><option key={c}>{c}</option>)}</select></label><label><span>Obra</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">Totes</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>Tipologia</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">Totes</option>{tipologies.map(t=><option key={t}>{t}</option>)}</select></label></FilterBar8776>}><div className="card-actions"><button className="primary" onClick={()=>setNewOpen(true)}>+ Nova factura</button></div><div className="honor-kpis"><Kpi t="FACTURES" v={rows.length}/><Kpi t="BASE SENSE IVA" v={money(base)}/><Kpi t="TOTAL IVA INC." v={money(total)}/><Kpi t="PENDENTS +7 DIES" v={pendents.length}/></div><FinanceStatusCards87109 items={[{label:"Fetes",count:fc.fetes||0,kind:"info"},{label:"Cobrades",count:fc.cobrades||0,kind:"ok"},{label:"Pendents de cobrar",count:fc["no cobrades"]||0,kind:"warn"},{label:"Vençudes +7 dies",count:pendents.length,kind:"bad"}]}/>{pendents.length>0&&<div className="finance-alert-v8776">{pendents.map(f=><button key={f.obra.id+f.id} onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}><b>Factura pendent</b><span>{f.displayNumero} · {f.obra.nom} · {fmtAppDate8748(f.data)} · {money(totalIva8743(f))}</span></button>)}</div>}<div className="finance-charts-v8776"><Donut8776 title="Estat de facturació" parts={parts} total={rows.length} kind="count"/><Donut8776 title="Per client" parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title="Per tipologia" parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div><div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8745 finance-invoice-table-v87114"><colgroup><col className="c-num"/><col className="c-exp"/><col className="c-client"/><col className="c-tipus"/><col className="c-concepte"/><col className="c-data"/><col className="c-money"/><col className="c-money"/><col className="c-estat"/><col className="c-cobrament"/><col className="c-actions"/></colgroup><thead><tr><th>Factura</th><th>Expedient</th><th>Client</th><th>Tipologia</th><th>Concepte</th><th>Data</th><th>Base</th><th>Total IVA inclòs</th><th>Estat</th><th>Data cobrament</th><th>Accions</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="11"><Empty text="Encara no hi ha factures."/></td></tr>}{rows.map(f=><tr key={f.obra.id+f.id}><td><b>{f.displayNumero}</b></td><td><span className="exp-code-v8739">{expedientCode8739(f.obra)}</span><small>{f.obra.nom}</small></td><td>{f.clientNom}</td><td>{f.tipologia}</td><td>{f.concepte||"Factura"}</td><td>{fmtAppDate8748(f.data)||"—"}</td><td><b>{money(baseIva8743(f))}</b></td><td><strong>{money(totalIva8743(f))}</strong></td><td><select className={`finance-state-select-v87110 ${statusKeyFactura8776(f.estat)}`} value={f.estat||"Pendent"} onChange={e=>updateFacturaGlobal87109(f,{estat:e.target.value})}><option>Esborrany</option><option>Emesa</option><option>Pendent</option><option>Cobrada</option><option>Anul·lada</option></select></td><td><input className="date-cell-v87109" type="date" value={toInputDate8743(f.dataCobrament)||""} onChange={e=>updateFacturaGlobal87109(f,{dataCobrament:e.target.value,estat:e.target.value?"Cobrada":"Pendent"})}/></td><td><div className="actions-inline row-actions-desktop-v87114"><button className="primary small-v8777" onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}>Gestionar</button><button className="secondary" onClick={()=>setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}>PDF</button><button className="secondary" onClick={()=>printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}>Imprimir</button></div><select className="mobile-row-action-v87114" defaultValue="" aria-label="Accions factura" onChange={e=>{const v=e.target.value;e.target.value="";if(v==="gestionar"){openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}if(v==="pdf"){setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}if(v==="imprimir"){printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}}}><option value="">Accions</option><option value="gestionar">Gestionar factura</option><option value="pdf">Veure PDF</option><option value="imprimir">Imprimir / PDF</option></select></td></tr>)}</tbody></table></div></Card><FinanceReports87110 title="Resum / informes de factures" rows={rows} type="factures"/></div>
+  return <div className="stack finance-general-v8743 finance-general-v8745 finance-v8776 finance-v87109">{preview&&<QuotePreview8743 type="factura" doc={preview.doc} obra={preview.obra} close={()=>setPreview(null)}/>} {newOpen&&<NewGlobalFactura8778 obres={obres} onSave={createFacturaGlobal8778} close={()=>setNewOpen(false)}/>}<HoursToInvoice878256 obres={obres} clients={clientList} onCreate={createFacturaGlobal8778}/><Card title={i18nT("Factures emeses")} action={<FilterBar8776><label><span>{i18nT("Període")}</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="all">{i18nT("Tot")}</option><option value="week">{i18nT("Setmana actual")}</option><option value="month">{i18nT("Mes en curs")}</option><option value="year">{i18nT("Any actual")}</option><option value="dates">{i18nT("Dates")}</option></select></label>{period==="dates"&&<><label><span>{i18nT("Des de")}</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>{i18nT("Fins")}</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>{i18nT("Client")}</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">{i18nT("Tots")}</option>{clients.map(c=><option key={c}>{c}</option>)}</select></label><label><span>{i18nT("Obra")}</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">{i18nT("Totes")}</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>{i18nT("Tipologia")}</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">{i18nT("Totes")}</option>{tipologies.map(t=><option key={t}>{t}</option>)}</select></label></FilterBar8776>}><div className="card-actions"><button className="primary" onClick={()=>setNewOpen(true)}>{i18nT("+ Nova factura")}</button></div><div className="honor-kpis"><Kpi t="FACTURES" v={rows.length}/><Kpi t="BASE SENSE IVA" v={money(base)}/><Kpi t="TOTAL IVA INC." v={money(total)}/><Kpi t="PENDENTS +7 DIES" v={pendents.length}/></div><FinanceStatusCards87109 items={[{label:"Fetes",count:fc.fetes||0,kind:"info"},{label:"Cobrades",count:fc.cobrades||0,kind:"ok"},{label:"Pendents de cobrar",count:fc["no cobrades"]||0,kind:"warn"},{label:"Vençudes +7 dies",count:pendents.length,kind:"bad"}]}/>{pendents.length>0&&<div className="finance-alert-v8776">{pendents.map(f=><button key={f.obra.id+f.id} onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}><b>{i18nT("Factura pendent")}</b><span>{f.displayNumero} · {f.obra.nom} · {fmtAppDate8748(f.data)} · {money(totalIva8743(f))}</span></button>)}</div>}<div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={parts} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div><div className="finance-table-wrap-v8743"><table className="finance-table-v8743 finance-table-v8745 finance-invoice-table-v87114"><colgroup><col className="c-num"/><col className="c-exp"/><col className="c-client"/><col className="c-tipus"/><col className="c-concepte"/><col className="c-data"/><col className="c-money"/><col className="c-money"/><col className="c-estat"/><col className="c-cobrament"/><col className="c-actions"/></colgroup><thead><tr><th>{i18nT("Factura")}</th><th>{i18nT("Expedient")}</th><th>{i18nT("Client")}</th><th>{i18nT("Tipologia")}</th><th>{i18nT("Concepte")}</th><th>{i18nT("Data")}</th><th>{i18nT("Base")}</th><th>{i18nT("Total IVA inclòs")}</th><th>{i18nT("Estat")}</th><th>{i18nT("Data cobrament")}</th><th>{i18nT("Accions")}</th></tr></thead><tbody>{rows.length===0&&<tr><td colSpan="11"><Empty text="Encara no hi ha factures."/></td></tr>}{rows.map(f=><tr key={f.obra.id+f.id}><td><b>{f.displayNumero}</b></td><td><span className="exp-code-v8739">{expedientCode8739(f.obra)}</span><small>{f.obra.nom}</small></td><td>{f.clientNom}</td><td>{f.tipologia}</td><td>{f.concepte||i18nT("Factura")}</td><td>{fmtAppDate8748(f.data)||"—"}</td><td><b>{money(baseIva8743(f))}</b></td><td><strong>{money(totalIva8743(f))}</strong></td><td><select className={`finance-state-select-v87110 ${statusKeyFactura8776(f.estat)}`} value={f.estat||"Pendent"} onChange={e=>updateFacturaGlobal87109(f,{estat:e.target.value})}><option value="Esborrany">{i18nT("Esborrany")}</option><option value="Emesa">{i18nT("Emesa")}</option><option value="Pendent">{i18nT("Pendent")}</option><option value="Cobrada">{i18nT("Cobrada")}</option><option value="Anul·lada">{i18nT("Anul·lada")}</option></select></td><td><input className="date-cell-v87109" type="date" value={toInputDate8743(f.dataCobrament)||""} onChange={e=>updateFacturaGlobal87109(f,{dataCobrament:e.target.value,estat:e.target.value?"Cobrada":"Pendent"})}/></td><td><div className="actions-inline row-actions-desktop-v87114"><button className="primary small-v8777" onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}>{i18nT("Gestionar")}</button><button className="secondary" onClick={()=>setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}>{i18nT("PDF")}</button><button className="secondary" onClick={()=>printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}>{i18nT("Imprimir")}</button></div><select className="mobile-row-action-v87114" defaultValue="" aria-label={i18nT("Accions factura")} onChange={e=>{const v=e.target.value;e.target.value="";if(v==="gestionar"){openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}if(v==="pdf"){setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}if(v==="imprimir"){printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}}}><option value="">{i18nT("Accions")}</option><option value="gestionar">{i18nT("Gestionar factura")}</option><option value="pdf">{i18nT("Veure PDF")}</option><option value="imprimir">{i18nT("Imprimir / PDF")}</option></select></td></tr>)}</tbody></table></div></Card><FinanceReports87110 title={i18nT("Resum / informes de factures")} rows={rows} type="factures"/></div>
 }
 function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab}){
   const[preview,setPreview]=useState(null);
@@ -11414,7 +11416,7 @@ function FinanceReports87110({title,rows,type}){
   const total=rows.reduce((s,r)=>s+totalIva8743(r),0);
   const lastYear=[...byYear].sort((a,b)=>String(b.label).localeCompare(String(a.label))).slice(0,5);
   const lastMonth=[...byMonth].sort((a,b)=>String(b.label).localeCompare(String(a.label))).slice(0,6);
-  return <Card title={title||'Resum / informes'}><div className="finance-report-v87110"><div><h4>Comparatiu per anys</h4>{lastYear.map(x=><div className="report-line-v87110" key={x.label}><span>{x.label}</span><b>{money(x.value)}</b></div>)}</div><div><h4>Últims mesos</h4>{lastMonth.map(x=><div className="report-line-v87110" key={x.label}><span>{x.label.split('-').reverse().join('/')}</span><b>{money(x.value)}</b></div>)}</div><div><h4>Lectura ràpida</h4><p>Total filtrat: <b>{money(total)}</b></p><p>Registres: <b>{rows.length}</b></p><p className="muted">Aquest bloc servirà com a base dels informes comparatius mensuals i anuals.</p></div></div></Card>
+  return <Card title={title||'Resum / informes'}><div className="finance-report-v87110"><div><h4>{t("Comparatiu per anys")}</h4>{lastYear.map(x=><div className="report-line-v87110" key={x.label}><span>{x.label}</span><b>{money(x.value)}</b></div>)}</div><div><h4>{t("Últims mesos")}</h4>{lastMonth.map(x=><div className="report-line-v87110" key={x.label}><span>{x.label.split('-').reverse().join('/')}</span><b>{money(x.value)}</b></div>)}</div><div><h4>{t("Lectura ràpida")}</h4><p>{t("Total filtrat:")} <b>{money(total)}</b></p><p>{t("Registres:")} <b>{rows.length}</b></p><p className="muted">{t("Aquest bloc servirà com a base dels informes comparatius mensuals i anuals.")}</p></div></div></Card>
 }
 
 function DespesesMultiples({items,setItems}){
@@ -12197,7 +12199,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   all.forEach(e=>{(byDay[e.iso]??=[]).push(e)});
   Object.values(byDay).forEach(l=>l.sort((a,b)=>(a.allDay===b.allDay?0:a.allDay?-1:1)||String(a.hora).localeCompare(String(b.hora))));
   const todayIso=isoDay878255(now);
-  const fmt=(d,o)=>d.toLocaleDateString("ca-ES",o);
+  const fmt=(d,o)=>d.toLocaleDateString(loc878272(),o);
   const weekStart=(()=>{const d=new Date(cursor);d.setDate(d.getDate()-((d.getDay()+6)%7));return d})();
   const weekDays=Array.from({length:7},(_,i)=>{const d=new Date(weekStart);d.setDate(d.getDate()+i);return d});
   function shift(dir){const d=new Date(cursor);if(view==="mes")d.setMonth(d.getMonth()+dir,1);else if(view==="setmana")d.setDate(d.getDate()+7*dir);else if(view==="dia")d.setDate(d.getDate()+dir);else d.setDate(d.getDate()+30*dir);setCursor(d)}
@@ -12206,7 +12208,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   const title=view==="mes"?fmt(cursor,{month:"long",year:"numeric"})
     :view==="setmana"?(()=>{const e=weekDays[6];return `${weekStart.getDate()}${weekStart.getMonth()!==e.getMonth()?" "+fmt(weekStart,{month:"short"}):""} – ${e.getDate()} ${fmt(e,{month:"long",year:"numeric"})}`})()
     :view==="dia"?fmt(cursor,{weekday:"long",day:"numeric",month:"long",year:"numeric"})
-    :`Propers 30 dies des del ${fmt(cursor,{day:"numeric",month:"long"})}`;
+    :i18nT("Propers 30 dies des del {data}",{data:fmt(cursor,{day:"numeric",month:"long"})});
 
   function openNew(iso,hora="09:00"){
     if(readOnly)return;
@@ -12236,7 +12238,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   }
   function save(f){
     if(readOnly)return;
-    if(!String(f.title||"").trim()){alert("Posa un títol a la cita.");return}
+    if(!String(f.title||"").trim()){alert(i18nT("Posa un títol a la cita."));return}
     const o=safeObres.find(x=>x.id===f.obraId);
     const cName=o?((clients||[]).find(c=>c.id===o.client)?.nom||o.propietat||""):(f.client||"");
     const compta=!!f.compta&&!!f.obraId&&!f.allDay&&eventHours878256(f)>0;
@@ -12248,7 +12250,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   }
   function remove(f){
     if(readOnly||!f.id)return;
-    if(!confirm("Eliminar aquesta cita?"))return;
+    if(!confirm(i18nT("Eliminar aquesta cita?")))return;
     const prev=all.find(x=>x.id===f.id)||f;
     syncAgendaHours878256({...prev,compta:false},prev);
     persist(null,prev);setForm(null);
@@ -12279,7 +12281,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
       {["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div key={x} className="ag-wd">{x}</div>)}
       {cells.map(d=>{const iso=isoDay878255(d);const list=byDay[iso]||[];return <div key={iso} className={`ag-cell${d.getMonth()!==cursor.getMonth()?" out":""}${iso===todayIso?" today":""}${d.getDay()===0||d.getDay()===6?" we":""}`} onClick={()=>openNew(iso)} onDragOver={ev=>ev.preventDefault()} onDrop={ev=>{ev.preventDefault();moveTo(dragRef.current,iso,null)}}>
         <button type="button" className="ag-dnum" onClick={ev=>{ev.stopPropagation();goDay(d)}} aria-label={fmt(d,{weekday:"long",day:"numeric",month:"long"})}>{d.getDate()}</button>
-        <div className="ag-chips">{list.slice(0,3).map(chip)}{list.length>3&&<button type="button" className="ag-more" onClick={ev=>{ev.stopPropagation();goDay(d)}}>+{list.length-3} més</button>}</div>
+        <div className="ag-chips">{list.slice(0,3).map(chip)}{list.length>3&&<button type="button" className="ag-more" onClick={ev=>{ev.stopPropagation();goDay(d)}}>+{list.length-3} {i18nT("més")}</button>}</div>
       </div>})}
     </div>;
   };
@@ -12293,7 +12295,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     const pos=ev=>{const r=ev.currentTarget.getBoundingClientRect();return minToHm878256(Math.floor((h0*60+Math.max(0,ev.clientY-r.top)/PX*60)/30)*30)};
     return <div className={`ag-tg${daysArr.length===1?" one":""}`} style={{"--cols":daysArr.length}}>
       <div className="ag-tg-row ag-tg-head"><span/>{daysArr.map(d=>{const iso=isoDay878255(d);return <button type="button" key={iso} className={`ag-tg-day${iso===todayIso?" today":""}`} onClick={()=>goDay(d)}><small>{fmt(d,{weekday:"short"})}</small><b>{d.getDate()}</b></button>})}</div>
-      <div className="ag-tg-row ag-tg-allday"><span>Tot el dia</span>{daysArr.map(d=>{const iso=isoDay878255(d);return <div key={iso} className="ag-ad-cell" onDragOver={ev=>ev.preventDefault()} onDrop={ev=>{ev.preventDefault();moveTo(dragRef.current,iso,null)}}>{(byDay[iso]||[]).filter(e=>e.allDay||e.kind==="task").map(chip)}</div>})}</div>
+      <div className="ag-tg-row ag-tg-allday"><span>{i18nT("Tot el dia")}</span>{daysArr.map(d=>{const iso=isoDay878255(d);return <div key={iso} className="ag-ad-cell" onDragOver={ev=>ev.preventDefault()} onDrop={ev=>{ev.preventDefault();moveTo(dragRef.current,iso,null)}}>{(byDay[iso]||[]).filter(e=>e.allDay||e.kind==="task").map(chip)}</div>})}</div>
       <div className="ag-tg-row ag-tg-body" style={{height:(h1-h0)*PX}}>
         <div className="ag-tg-hours">{hours.map(h=><span key={h} style={{top:(h-h0)*PX}}>{String(h).padStart(2,"0")}:00</span>)}</div>
         {daysArr.map(d=>{const iso=isoDay878255(d);const items=layoutDay878256((byDay[iso]||[]).filter(e=>!e.allDay&&e.kind!=="task"));
@@ -12302,7 +12304,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
             {iso===todayIso&&nowMin>=h0*60&&nowMin<=h1*60&&<i className="ag-now" style={{top:(nowMin-h0*60)/60*PX}}/>}
             {items.map(it=>{const e=it.e;const short=(it.f-it.s)<45;return <button type="button" key={e.id} className={`ag-ev ${cls(e)}${short?" short":""}`} style={{top:(it.s-h0*60)/60*PX+1,height:Math.max(20,(it.f-it.s)/60*PX-3),left:`calc(${it.lane/it.lanes*100}% + 2px)`,width:`calc(${100/it.lanes}% - 4px)`}} draggable={canDrag(e)} onDragStart={dragStart(e)} onClick={ev=>{ev.stopPropagation();openEvent(e)}}>
               <b>{e.title}</b><small>{e.hora}{e.horaFi?`–${e.horaFi}`:""}{e.obra?` · ${e.obra}`:""}</small>
-              {(e.compta||(e.avis!==""&&e.avis!=null))&&<span className="ag-flags">{e.compta?<em title="Compta com a hores de feina">h</em>:null}{e.avis!==""&&e.avis!=null?<Bell size={11} aria-label="Té avís"/>:null}</span>}
+              {(e.compta||(e.avis!==""&&e.avis!=null))&&<span className="ag-flags">{e.compta?<em title={i18nT("Compta com a hores de feina")}>h</em>:null}{e.avis!==""&&e.avis!=null?<Bell size={11} aria-label={i18nT("Té avís")}/>:null}</span>}
             </button>})}
           </div>})}
       </div>
@@ -12310,33 +12312,33 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   };
   const renderList=()=>{
     const list=[];for(let i=0;i<30;i++){const d=new Date(cursor);d.setDate(d.getDate()+i);const iso=isoDay878255(d);if(byDay[iso]?.length)list.push([d,iso])}
-    if(!list.length)return <div className="ag-empty"><b>No hi ha res als propers 30 dies.</b>{!readOnly&&<button type="button" className="primary" onClick={()=>openNew(todayIso)}>+ Nova cita</button>}</div>;
+    if(!list.length)return <div className="ag-empty"><b>{i18nT("No hi ha res als propers 30 dies.")}</b>{!readOnly&&<button type="button" className="primary" onClick={()=>openNew(todayIso)}>{i18nT("+ Nova cita")}</button>}</div>;
     return <div className="ag-list">{list.map(([d,iso])=><section key={iso} className={iso===todayIso?"today":""}>
       <header onClick={()=>goDay(d)}><b>{d.getDate()}</b><span>{fmt(d,{weekday:"long"})}<small>{fmt(d,{month:"long"})}</small></span></header>
-      <div>{byDay[iso].map(e=><button type="button" key={e.id} className={`ag-li ${cls(e)}`} onClick={()=>openEvent(e)}><i/><time>{e.kind==="task"?"Tasca":e.allDay?"Tot el dia":`${e.hora}${e.horaFi?`–${e.horaFi}`:""}`}</time><span><b>{e.title}</b><small>{[e.kind==="task"?e.detail:e.tipus,e.obra,e.adreca].filter(Boolean).join(" · ")}</small></span></button>)}</div>
+      <div>{byDay[iso].map(e=><button type="button" key={e.id} className={`ag-li ${cls(e)}`} onClick={()=>openEvent(e)}><i/><time>{e.kind==="task"?i18nT("Tasca"):e.allDay?i18nT("Tot el dia"):`${e.hora}${e.horaFi?`–${e.horaFi}`:""}`}</time><span><b>{e.title}</b><small>{[e.kind==="task"?e.detail:e.tipus,e.obra,e.adreca].filter(Boolean).join(" · ")}</small></span></button>)}</div>
     </section>)}</div>;
   };
   const obresSorted=[...safeObres].sort((x,y)=>String(x.nom||"").localeCompare(String(y.nom||""),"ca"));
   return <div className="agenda-v878256">
     <div className="ag-top">
       <div className="ag-nav">
-        <button type="button" className="secondary" onClick={goToday}>Avui</button>
-        <button type="button" className="ag-arrow" onClick={()=>shift(-1)} aria-label="Anterior">‹</button>
-        <button type="button" className="ag-arrow" onClick={()=>shift(1)} aria-label="Següent">›</button>
+        <button type="button" className="secondary" onClick={goToday}>{i18nT("Avui")}</button>
+        <button type="button" className="ag-arrow" onClick={()=>shift(-1)} aria-label={i18nT("Anterior")}>‹</button>
+        <button type="button" className="ag-arrow" onClick={()=>shift(1)} aria-label={i18nT("Següent")}>›</button>
         <h1>{title}</h1>
       </div>
       <div className="ag-tools">
-        <div className="seg">{[["dia","Dia"],["setmana","Setmana"],["mes","Mes"],["llista","Llista"]].map(([k,l])=><button type="button" key={k} aria-pressed={view===k} onClick={()=>setView(k)}>{l}</button>)}</div>
-        {!readOnly&&<button type="button" className="primary" onClick={()=>openNew(view==="dia"?isoDay878255(cursor):todayIso)}>+ Nova cita</button>}
+        <div className="seg">{[["dia","Dia"],["setmana","Setmana"],["mes","Mes"],["llista","Llista"]].map(([k,l])=><button type="button" key={k} aria-pressed={view===k} onClick={()=>setView(k)}>{i18nT(l)}</button>)}</div>
+        {!readOnly&&<button type="button" className="primary" onClick={()=>openNew(view==="dia"?isoDay878255(cursor):todayIso)}>{i18nT("+ Nova cita")}</button>}
       </div>
     </div>
     <div className="ag-sub">
-      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label="Filtrar per expedient"><option value="">Tots els expedients</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
-      <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>Mostrar les tasques</label>
-      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{t.k}</span>)}<span className="t-tasca"><i/>Tasca</span></div>
+      <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Filtrar per expedient")}><option value="">{i18nT("Tots els expedients")}</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
+      <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les tasques")}</label>
+      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Tasca")}</span></div>
     </div>
     {view==="mes"?renderMonth():view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}
-    {!readOnly&&view!=="llista"&&<p className="ag-hint">Clica un espai buit per crear una cita i arrossega-la per canviar-la de dia o d’hora.</p>}
+    {!readOnly&&view!=="llista"&&<p className="ag-hint">{i18nT("Clica un espai buit per crear una cita i arrossega-la per canviar-la de dia o d’hora.")}</p>}
     {form&&<AgendaEditor878256 form={form} setForm={setForm} obres={safeObres} save={save} remove={remove} close={()=>setForm(null)} openObra={openObra} readOnly={readOnly||!!form.readOnly}/>}
   </div>;
 }
@@ -12354,23 +12356,23 @@ function AgendaEditor878256({form,setForm,obres=[],save,remove,close,openObra,re
   const canCount=!!form.obraId&&!form.allDay&&h>0;
   const sorted=[...obres].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0)||String(x.nom||"").localeCompare(String(y.nom||""),"ca"));
   const types=AGENDA_TYPES878256.some(t=>t.k===form.tipus)?AGENDA_TYPES878256:[...AGENDA_TYPES878256,{k:form.tipus,c:agendaTypeClass878256(form.tipus)}];
-  return <Modal title={readOnly?"Cita":form.isNew?"Nova cita":"Editar la cita"} close={close}><form className="ag-editor-v878256" onSubmit={e=>{e.preventDefault();save(form)}}><fieldset disabled={readOnly}>
-    <input className="ag-title" autoFocus={!readOnly} value={form.title||""} onChange={e=>set("title",e.target.value)} placeholder="Afegeix un títol" aria-label="Títol"/>
-    <div className="ag-types">{types.map(t=><button type="button" key={t.k} className={`t-${t.c}`} aria-pressed={form.tipus===t.k} onClick={()=>set("tipus",t.k)}><i/>{t.k}</button>)}</div>
+  return <Modal title={readOnly?i18nT("Cita"):form.isNew?i18nT("Nova cita"):i18nT("Editar la cita")} close={close}><form className="ag-editor-v878256" onSubmit={e=>{e.preventDefault();save(form)}}><fieldset disabled={readOnly}>
+    <input className="ag-title" autoFocus={!readOnly} value={form.title||""} onChange={e=>set("title",e.target.value)} placeholder={i18nT("Afegeix un títol")} aria-label={i18nT("Títol")}/>
+    <div className="ag-types">{types.map(t=><button type="button" key={t.k} className={`t-${t.c}`} aria-pressed={form.tipus===t.k} onClick={()=>set("tipus",t.k)}><i/>{i18nT(t.k)}</button>)}</div>
     <div className="ag-when">
-      <label><span>Data</span><input type="date" value={form.data||""} onChange={e=>set("data",e.target.value)} required/></label>
-      {!form.allDay&&<><label><span>De</span><input type="time" value={form.hora||""} onChange={e=>set("hora",e.target.value)}/></label><label><span>A</span><input type="time" value={form.horaFi||""} onChange={e=>set("horaFi",e.target.value)}/></label></>}
-      <label className="chk"><input type="checkbox" checked={!!form.allDay} onChange={e=>set("allDay",e.target.checked)}/>Tot el dia</label>
+      <label><span>{i18nT("Data")}</span><input type="date" value={form.data||""} onChange={e=>set("data",e.target.value)} required/></label>
+      {!form.allDay&&<><label><span>{i18nT("De")}</span><input type="time" value={form.hora||""} onChange={e=>set("hora",e.target.value)}/></label><label><span>A</span><input type="time" value={form.horaFi||""} onChange={e=>set("horaFi",e.target.value)}/></label></>}
+      <label className="chk"><input type="checkbox" checked={!!form.allDay} onChange={e=>set("allDay",e.target.checked)}/>{i18nT("Tot el dia")}</label>
     </div>
     <div className="ag-grid">
-      <label><span>Expedient</span><select value={form.obraId||""} onChange={e=>set("obraId",e.target.value)}><option value="">Sense expedient</option>{sorted.map(o=><option key={o.id} value={o.id}>{o.nom} · {expedientCode8739(o)}</option>)}</select></label>
-      <label><span>Lloc</span><input value={form.adreca||""} onChange={e=>set("adreca",e.target.value)} placeholder="Adreça o lloc"/></label>
-      <label><span>Avís</span><select value={form.avis??""} onChange={e=>set("avis",e.target.value)}>{AGENDA_ALERTS878256.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+      <label><span>{i18nT("Expedient")}</span><select value={form.obraId||""} onChange={e=>set("obraId",e.target.value)}><option value="">{i18nT("Sense expedient")}</option>{sorted.map(o=><option key={o.id} value={o.id}>{o.nom} · {expedientCode8739(o)}</option>)}</select></label>
+      <label><span>{i18nT("Lloc")}</span><input value={form.adreca||""} onChange={e=>set("adreca",e.target.value)} placeholder={i18nT("Adreça o lloc")}/></label>
+      <label><span>{i18nT("Avís")}</span><select value={form.avis??""} onChange={e=>set("avis",e.target.value)}>{AGENDA_ALERTS878256.map(([v,l])=><option key={v} value={v}>{i18nT(l)}</option>)}</select></label>
     </div>
-    <label className="ag-notes"><span>Notes</span><textarea rows={3} value={form.detail||""} onChange={e=>set("detail",e.target.value)} placeholder="Què s’ha de fer, què cal portar, acords…"/></label>
-    <label className={`ag-count${canCount?"":" off"}`}><input type="checkbox" checked={!!form.compta&&canCount} disabled={!canCount} onChange={e=>setForm(f=>({...f,compta:e.target.checked,comptaTouched:true}))}/><span><b>Comptar com a hores de feina</b><small>{canCount?`${h.toLocaleString("ca-ES",{maximumFractionDigits:2})} h × ${money(defaultRate878255())}/h = ${money(h*defaultRate878255())} · surt a Gestió temps i a Factures, pendent de facturar`:"Tria un expedient i posa l’hora d’inici i la de final."}</small></span></label>
+    <label className="ag-notes"><span>{i18nT("Notes")}</span><textarea rows={3} value={form.detail||""} onChange={e=>set("detail",e.target.value)} placeholder={i18nT("Què s’ha de fer, què cal portar, acords…")}/></label>
+    <label className={`ag-count${canCount?"":" off"}`}><input type="checkbox" checked={!!form.compta&&canCount} disabled={!canCount} onChange={e=>setForm(f=>({...f,compta:e.target.checked,comptaTouched:true}))}/><span><b>{i18nT("Comptar com a hores de feina")}</b><small>{canCount?i18nT("{h} h × {preu}/h = {total} · surt a Gestió temps i a Factures, pendent de facturar",{h:h.toLocaleString(getLang()==="es"?"es-ES":loc878272(),{maximumFractionDigits:2}),preu:money(defaultRate878255()),total:money(h*defaultRate878255())}):i18nT("Tria un expedient i posa l’hora d’inici i la de final.")}</small></span></label>
   </fieldset>
-  <div className="modal-actions">{!readOnly&&!form.isNew&&<button type="button" className="danger" onClick={()=>remove(form)}>Eliminar</button>}{form.obraId&&openObra&&<button type="button" className="secondary" onClick={()=>{close();openObra(form.obraId)}}>Obrir l’expedient</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{readOnly?"Tancar":"Cancel·lar"}</button>{!readOnly&&<button className="primary">Desar</button>}</div>
+  <div className="modal-actions">{!readOnly&&!form.isNew&&<button type="button" className="danger" onClick={()=>remove(form)}>{i18nT("Eliminar")}</button>}{form.obraId&&openObra&&<button type="button" className="secondary" onClick={()=>{close();openObra(form.obraId)}}>{i18nT("Obrir l’expedient")}</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{readOnly?i18nT("Tancar"):i18nT("Cancel·lar")}</button>{!readOnly&&<button className="primary">{i18nT("Desar")}</button>}</div>
   </form></Modal>;
 }
 
@@ -12393,7 +12395,7 @@ function AgendaReminders878256({odata={},openObra}){
       if(!hits.length)return;
       lsSet8779("aco_agenda_fired_v878256",JSON.stringify([...fired,...hits.map(x=>x.sig)].slice(-300)));
       setDue(d=>[...d,...hits.filter(x=>!d.some(y=>y.sig===x.sig))]);
-      hits.forEach(x=>{try{if("Notification" in window&&Notification.permission==="granted")new Notification(`${x.allDay?"Avui":x.hora} · ${x.title}`,{body:[x.obra,x.adreca,x.detail].filter(Boolean).join(" · "),tag:x.sig})}catch{}});
+      hits.forEach(x=>{try{if("Notification" in window&&Notification.permission==="granted")new Notification(`${x.allDay?i18nT("Avui"):x.hora} · ${x.title}`,{body:[x.obra,x.adreca,x.detail].filter(Boolean).join(" · "),tag:x.sig})}catch{}});
     }
     checkRef.current=check;
     const first=setTimeout(check,2500);const t=setInterval(check,30000);
@@ -12407,8 +12409,8 @@ function AgendaReminders878256({odata={},openObra}){
   const dismiss=sig=>setDue(d=>d.filter(x=>x.sig!==sig));
   return <div className="ag-toasts-v878256" role="status">{due.map(x=><div key={x.sig} className={`ag-toast t-${agendaTypeClass878256(x.tipus)}`}>
     <Bell size={18} aria-hidden="true"/>
-    <div><b>{x.title}</b><span>{new Date(x.st).toLocaleDateString("ca-ES",{weekday:"short",day:"numeric",month:"short"})}{x.allDay?"":` · ${x.hora}${x.horaFi?`–${x.horaFi}`:""}`}{x.obra?` · ${x.obra}`:""}</span>{x.detail?<small>{x.detail}</small>:null}</div>
-    <div className="act">{x.obraId&&openObra&&<button type="button" className="secondary" onClick={()=>{dismiss(x.sig);openObra(x.obraId)}}>Obrir</button>}<button type="button" className="primary" onClick={()=>dismiss(x.sig)}>D’acord</button></div>
+    <div><b>{x.title}</b><span>{new Date(x.st).toLocaleDateString(loc878272(),{weekday:"short",day:"numeric",month:"short"})}{x.allDay?"":` · ${x.hora}${x.horaFi?`–${x.horaFi}`:""}`}{x.obra?` · ${x.obra}`:""}</span>{x.detail?<small>{x.detail}</small>:null}</div>
+    <div className="act">{x.obraId&&openObra&&<button type="button" className="secondary" onClick={()=>{dismiss(x.sig);openObra(x.obraId)}}>{i18nT("Obrir")}</button>}<button type="button" className="primary" onClick={()=>dismiss(x.sig)}>{i18nT("D’acord")}</button></div>
   </div>)}</div>;
 }
 
@@ -12426,27 +12428,27 @@ function ManualHours878256({obres=[],clients=[],initial={},close}){
   const cName=id=>(clients||[]).find(c=>c.id===id)?.nom||"Sense client";
   const[m,setM]=useState(()=>({data:isoDay878255(new Date()),obraId:(obres||[]).find(o=>isExpedientOpen878136(o.estat))?.id||(obres||[])[0]?.id||"",tipus:"Visita d’obra",mode:"hores",hores:"1",inici:"09:00",final:"10:00",preu:String(defaultRate878255()),notes:"",km:"",...initial}));
   function save(){
-    if(!m?.obraId){alert("Tria l’expedient.");return}
+    if(!m?.obraId){alert(t("Tria l’expedient."));return}
     let h=parseNum8770(m.hores);
     if(m.mode==="interval"){const a=hmToMin878256(m.inici),b=hmToMin878256(m.final);h=a!=null&&b!=null?Math.max(0,(b-a)/60):0}
     const km=parseNum8770(m.km);
-    if(!(h>0)&&!(km>0)){alert("Posa les hores o els quilòmetres.");return}
+    if(!(h>0)&&!(km>0)){alert(t("Posa les hores o els quilòmetres."));return}
     const id="hr-"+Date.now();
     if(h>0)addTimeRow878255(m.obraId,{id,data:m.data,tipusRegistre:"Honoraris",tipusFeina:m.tipus,tasca:m.tipus,hores:h.toFixed(2),preuHora:(parseNum8770(m.preu)||defaultRate878255()).toFixed(2),km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:m.notes||"",inici:m.mode==="interval"?m.inici:"",final:m.mode==="interval"?m.final:"",manual:true,createdAt:new Date().toISOString()});
     if(km>0)addTimeRow878255(m.obraId,{id:id+"-km",data:m.data,tipusRegistre:"Kilometratge",tipusFeina:m.tipus,tasca:"Desplaçament",hores:"0",preuHora:"0",km:String(km),preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:m.notes||"",manual:true,createdAt:new Date().toISOString()});
     close();
   }
   const sorted=[...(obres||[])].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0));
-  return <Modal title="Apuntar hores o una visita" close={close}><div className="temps-manual-v878255">
-    <label><span>Data</span><input type="date" value={m.data} onChange={e=>setM(x=>({...x,data:e.target.value}))}/></label>
-    <label className="wide"><span>Expedient</span><select value={m.obraId} onChange={e=>setM(x=>({...x,obraId:e.target.value}))}>{sorted.map(o=><option key={o.id} value={o.id}>{o.nom} · {cName(o.client)}</option>)}</select></label>
-    <label className="wide"><span>Quina feina?</span><div className="kinds">{TIME_KINDS878255.map(k=><button type="button" key={k} aria-pressed={m.tipus===k} onClick={()=>setM(x=>({...x,tipus:k}))}>{k}</button>)}</div></label>
-    <label><span>Com ho vols apuntar?</span><select value={m.mode} onChange={e=>setM(x=>({...x,mode:e.target.value}))}><option value="hores">Total d’hores</option><option value="interval">Hora d’inici i de final</option></select></label>
-    {m.mode==="hores"?<label><span>Hores</span><input inputMode="decimal" value={m.hores} onChange={e=>setM(x=>({...x,hores:e.target.value}))}/></label>:<><label><span>Inici</span><input type="time" value={m.inici} onChange={e=>setM(x=>({...x,inici:e.target.value}))}/></label><label><span>Final</span><input type="time" value={m.final} onChange={e=>setM(x=>({...x,final:e.target.value}))}/></label></>}
-    <label><span>Preu per hora (€)</span><input inputMode="decimal" value={m.preu} onChange={e=>setM(x=>({...x,preu:e.target.value}))}/></label>
-    <label><span>Quilòmetres <em>opcional</em></span><input inputMode="decimal" value={m.km} onChange={e=>setM(x=>({...x,km:e.target.value}))} placeholder="0"/></label>
-    <label className="wide"><span>Notes <em>opcional</em></span><input value={m.notes} onChange={e=>setM(x=>({...x,notes:e.target.value}))} placeholder="Ex. revisió de plànols amb el client"/></label>
-    <div className="modal-actions wide"><button type="button" className="secondary" onClick={close}>Cancel·lar</button><button type="button" className="primary" onClick={save}>Desar</button></div>
+  return <Modal title={t("Apuntar hores o una visita")} close={close}><div className="temps-manual-v878255">
+    <label><span>{t("Data")}</span><input type="date" value={m.data} onChange={e=>setM(x=>({...x,data:e.target.value}))}/></label>
+    <label className="wide"><span>{t("Expedient")}</span><select value={m.obraId} onChange={e=>setM(x=>({...x,obraId:e.target.value}))}>{sorted.map(o=><option key={o.id} value={o.id}>{o.nom} · {cName(o.client)}</option>)}</select></label>
+    <label className="wide"><span>{t("Quina feina?")}</span><div className="kinds">{TIME_KINDS878255.map(k=><button type="button" key={k} aria-pressed={m.tipus===k} onClick={()=>setM(x=>({...x,tipus:k}))}>{k}</button>)}</div></label>
+    <label><span>{t("Com ho vols apuntar?")}</span><select value={m.mode} onChange={e=>setM(x=>({...x,mode:e.target.value}))}><option value="hores">{t("Total d’hores")}</option><option value="interval">{t("Hora d’inici i de final")}</option></select></label>
+    {m.mode==="hores"?<label><span>{t("Hores")}</span><input inputMode="decimal" value={m.hores} onChange={e=>setM(x=>({...x,hores:e.target.value}))}/></label>:<><label><span>{t("Inici")}</span><input type="time" value={m.inici} onChange={e=>setM(x=>({...x,inici:e.target.value}))}/></label><label><span>{t("Final")}</span><input type="time" value={m.final} onChange={e=>setM(x=>({...x,final:e.target.value}))}/></label></>}
+    <label><span>{t("Preu per hora (€)")}</span><input inputMode="decimal" value={m.preu} onChange={e=>setM(x=>({...x,preu:e.target.value}))}/></label>
+    <label><span>{t("Quilòmetres")} <em>{t("opcional")}</em></span><input inputMode="decimal" value={m.km} onChange={e=>setM(x=>({...x,km:e.target.value}))} placeholder="0"/></label>
+    <label className="wide"><span>{t("Notes")} <em>{t("opcional")}</em></span><input value={m.notes} onChange={e=>setM(x=>({...x,notes:e.target.value}))} placeholder={t("Ex. revisió de plànols amb el client")}/></label>
+    <div className="modal-actions wide"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={save}>{t("Desar")}</button></div>
   </div></Modal>;
 }
 function HoursToInvoice878256({obres=[],clients=[],onCreate}){
@@ -12464,16 +12466,16 @@ function HoursToInvoice878256({obres=[],clients=[],onCreate}){
   const clientNames=[...new Set(groups.map(g=>cName(g.o)))].sort((a,b)=>a.localeCompare(b,"ca"));
   return <section className="tobill-v878256">
     <header>
-      <div><span className="eyebrow">De la gestió del temps</span><h2>Pendent de facturar</h2><p>Hores, visites i desplaçaments encara sense facturar. Fes la factura d’un expedient i aquelles hores queden marcades com a facturades.</p></div>
-      <button type="button" className="secondary" onClick={()=>setManual({})}>+ Apuntar visita o feina</button>
+      <div><span className="eyebrow">{i18nT("De la gestió del temps")}</span><h2>{i18nT("Pendent de facturar")}</h2><p>{i18nT("Hores, visites i desplaçaments encara sense facturar. Fes la factura d’un expedient i aquelles hores queden marcades com a facturades.")}</p></div>
+      <button type="button" className="secondary" onClick={()=>setManual({})}>{i18nT("+ Apuntar visita o feina")}</button>
     </header>
-    <div className="tobill-sum"><b>{money(total)}</b><span>{visible.length} expedient{visible.length===1?"":"s"} · {hours.toLocaleString("ca-ES",{maximumFractionDigits:2})} h</span>{clientNames.length>1&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label="Client"><option value="">{t("Tots els clients")}</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select>}</div>
-    {visible.length===0?<p className="tobill-empty">No hi ha res pendent de facturar. Aquí surten les hores del comptador, les cites de l’agenda que compten com a feina i les que apuntis a mà.</p>
+    <div className="tobill-sum"><b>{money(total)}</b><span>{visible.length} {i18nT("expedient")}{visible.length===1?"":"s"} · {hours.toLocaleString("ca-ES",{maximumFractionDigits:2})} h</span>{clientNames.length>1&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{clientNames.map(c=><option key={c}>{c}</option>)}</select>}</div>
+    {visible.length===0?<p className="tobill-empty">{i18nT("No hi ha res pendent de facturar. Aquí surten les hores del comptador, les cites de l’agenda que compten com a feina i les que apuntis a mà.")}</p>
     :<div className="tobill-list">{visible.map(g=><div key={g.o.id} className="tobill-row">
-      <span className="nm"><b>{g.o.nom}</b><small>{cName(g.o)} · {g.rows.length} registre{g.rows.length===1?"":"s"}{g.from?` · ${g.from.toLocaleDateString("ca-ES")}${g.to&&g.to-g.from>0?` – ${g.to.toLocaleDateString("ca-ES")}`:""}`:""}</small></span>
+      <span className="nm"><b>{g.o.nom}</b><small>{cName(g.o)} · {g.rows.length} {i18nT("registre")}{g.rows.length===1?"":"s"}{g.from?` · ${g.from.toLocaleDateString("ca-ES")}${g.to&&g.to-g.from>0?` – ${g.to.toLocaleDateString("ca-ES")}`:""}`:""}</small></span>
       <span className="num">{g.h.toLocaleString("ca-ES",{maximumFractionDigits:2})} h</span>
       <span className="num"><b>{money(g.v)}</b></span>
-      <button type="button" className="primary" onClick={()=>setInvoice(g)}>Fer factura</button>
+      <button type="button" className="primary" onClick={()=>setInvoice(g)}>{i18nT("Fer factura")}</button>
     </div>)}</div>}
     {manual&&<ManualHours878256 obres={obres} clients={clients} initial={manual} close={()=>setManual(null)}/>}
     {invoice&&<InvoiceFromHours878256 group={invoice} clientName={cName(invoice.o)} onCreate={onCreate} close={()=>setInvoice(null)}/>}
