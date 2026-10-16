@@ -1,0 +1,64 @@
+/* V87.269 · Obra: una sola barra (dades, estat, ⋯ accions i apartats) i l'apartat a la mateixa pàgina */
+
+/* Fora la barra d'apartats vella (a l'ordinador anava a dalt; al mòbil, en un quadre a part) */
+html body .obra-page-v87105 .obra-layout.obra-layout-v87105.obra-layout-v87105>.obra-side-tabs.obra-side-tabs-v87105.obra-side-tabs-v87105{display:none!important}
+/* (havia de guanyar a la regla de theme-v87253.css que la tornava a mostrar a l’ordinador) */
+html body .obra-layout-v87105{display:block!important}
+
+.obra-bar-info-v878269{display:flex;align-items:center;gap:12px;padding:2px 0 10px}
+.obra-back-v878269{display:inline-flex;align-items:center;gap:2px;flex:none;border:0;background:none;color:var(--co-accent,#1d4ed8);font:600 14px/1 var(--app-font,inherit);padding:8px 8px 8px 0;cursor:pointer}
+.obra-back-v878269 svg{width:20px;height:20px}
+.obra-bar-txt-v878269{flex:1;min-width:0}
+.obra-bar-txt-v878269 h2{margin:0;font-size:22px;line-height:1.2;letter-spacing:0;color:var(--co-ink,#0f172a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.obra-bar-txt-v878269 small{display:block;margin-top:3px;color:var(--co-ink-3,#64748b);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.obra-bar-right-v878269{display:flex;align-items:center;gap:8px;flex:none}
+.sr-only-v878269{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.obra-estat-v878269 select{appearance:none;-webkit-appearance:none;min-height:36px;border-radius:999px;border:1px solid var(--co-line,#DCE3E7);background:#eef4ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color:var(--co-accent-ink,#1d4ed8);font:600 13px var(--app-font,inherit);padding:4px 30px 4px 12px;cursor:pointer;max-width:190px}
+.obra-estat-ro-v878269{display:inline-flex;align-items:center;min-height:30px;padding:2px 12px;border-radius:999px;background:#eef4ff;color:var(--co-accent-ink,#1d4ed8);font:600 13px var(--app-font,inherit)}
+.obra-acc-v878269{position:relative}
+.obra-acc-btn-v878269{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--co-line,#DCE3E7);border-radius:10px;background:#fff;color:var(--co-ink,#0f172a);cursor:pointer}
+.obra-acc-btn-v878269[aria-expanded="true"]{background:#f1f5f9}
+.obra-menu-v878269{position:absolute;right:0;top:calc(100% + 6px);z-index:70;min-width:240px;max-height:min(70vh,520px);overflow:auto;display:flex;flex-direction:column;padding:6px;
+  background:#fff;border:1px solid var(--co-line,#DCE3E7);border-radius:12px;box-shadow:0 14px 36px rgba(15,23,42,.16)}
+.obra-menu-v878269 button{all:unset;box-sizing:border-box;display:block;width:100%;padding:11px 12px;border-radius:8px;cursor:pointer;font:500 14px var(--app-font,inherit);color:var(--co-ink,#0f172a)}
+.obra-menu-v878269 button:hover,.obra-menu-v878269 button:focus-visible{background:#f1f5f9}
+.obra-menu-v878269 button.on{color:var(--co-accent-ink,#1d4ed8);font-weight:600}
+.obra-menu-v878269 button.danger{color:#b91c1c}
+.obra-menu-v878269 small{display:block;padding:10px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--co-ink-3,#64748b)}
+
+/* Apartats: una tira que es pot lliscar; es queda fixa en baixar */
+.obra-tabs-bar-v878269{position:sticky;top:0;z-index:60;margin:0 0 14px;display:flex;align-items:stretch;background:var(--co-bg,#f4f6f8);border-bottom:1px solid var(--co-line,#DCE3E7)}
+.obra-tabs-scroll-v878269{flex:1;min-width:0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.obra-tabs-scroll-v878269::-webkit-scrollbar{display:none}
+.obra-tabs-scroll-v878269 button,.obra-tabs-mes-v878269{all:unset;box-sizing:border-box;flex:none;white-space:nowrap;cursor:pointer;padding:12px 14px;font:500 14px var(--app-font,inherit);color:var(--co-ink-2,#334155);border-bottom:2px solid transparent}
+.obra-tabs-scroll-v878269 button:hover,.obra-tabs-mes-v878269:hover{color:var(--co-ink,#0f172a)}
+.obra-tabs-scroll-v878269 button.on,.obra-tabs-mes-v878269.on{color:var(--co-accent-ink,#1d4ed8);border-bottom-color:var(--co-accent,#2563eb);font-weight:600}
+.obra-tabs-scroll-v878269 button:focus-visible,.obra-tabs-mes-v878269:focus-visible{outline:2px solid var(--co-accent,#2563eb);outline-offset:-2px}
+.obra-tabs-mes-v878269{border-left:1px solid var(--co-line,#DCE3E7)}
+.obra-mes-menu-v878269{top:100%}
+
+/* L'apartat ja no s'obre en una finestra a sobre: es veu a la mateixa pàgina, sota la barra */
+html body .obra-edit-overlay-v878242{position:static!important;inset:auto!important;z-index:auto!important;display:block!important;padding:0!important;background:none!important;overscroll-behavior:auto!important}
+html body .obra-edit-shell-v878242{width:auto!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+html body .obra-edit-head-v878242{display:none!important}
+html body .obra-edit-body-v878242{overflow:visible!important;padding:0!important;background:transparent!important}
+
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  /* Al mòbil i l'iPad el nom de l'obra i «Tornar» ja són a la capçalera fixa */
+  .obra-back-v878269,.obra-bar-txt-v878269 h2{display:none}
+  .obra-bar-info-v878269{padding:0 0 8px}
+  .obra-bar-txt-v878269 small{font-size:13px;margin-top:0}
+  .obra-tabs-bar-v878269{top:53px;margin:0 calc(50% - 50vw) 12px;padding:0 6px;background:rgba(244,246,248,.97);backdrop-filter:blur(8px)}
+  .obra-tabs-scroll-v878269 button,.obra-tabs-mes-v878269{padding:12px 12px}
+  html body .obra-edit-body-v878242{padding-bottom:0!important}
+}
+@media (max-width:520px){
+  .obra-estat-v878269 select{max-width:150px}
+}
+
+/* La pàgina d'obra tallava el que sortia pels costats amb «overflow-x:hidden», i això impedia que la barra d'apartats
+   quedés fixa en baixar (el mateix que passava amb la capçalera). «clip» talla igual sense crear zona de scroll. */
+html body .obra-page-v87105{overflow-x:clip!important}
+/* Al resum, el nom, el codi, l'estat i el tipus ja són a la barra de dalt: no es repeteixen */
+html body .obra-hero-info-v878252>.meta,html body .obra-hero-info-v878252>h2{display:none!important}

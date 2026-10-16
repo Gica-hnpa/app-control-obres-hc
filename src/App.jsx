@@ -15,7 +15,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.268";
+const APP_VERSION878264="87.269";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7736,21 +7736,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>Dades econòmiques recuperades</b><span>S’han restaurat {data.economicRecoveryV87214.restored||0} preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>Certificacions recuperades</b><span>S’han reconstruït les certificacions {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} sense substituir les línies de medició actuals de la certificació 8.</span></div>}
-    {!editOverlayOpen878242&&<section className="obra-mini-fixed-v8776 obra-mini-fixed-single-v8777 obra-head-access-v87105">
-      <button type="button" className="secondary obra-tabs-toggle-v87105" onClick={()=>setTabsOpen(v=>!v)}><Menu/> Apartats</button>
-      <div className="obra-head-main-v87105">
-        <small>Intern: {expedientCode8739(obra)} · Client: {clientProjectLabel878233(obra)}</small>
-        <h2>{obra.nom}</h2>
-        <p>{client.nom} · {moduleLabel8737(obra)} · Creat: {fmtCreationDate878233(obra.createdAt)}</p>
-        <div className="obra-mobile-flow-v87119">
-          <button type="button" className="primary" onClick={()=>setMobileFlowOpen87119(v=>!v)}>Apartats de l’obra</button>
-          <button type="button" className="secondary" onClick={()=>setMobileActionsOpen87119(v=>!v)}>Accions</button>
-          {mobileFlowOpen87119&&<div className="obra-mobile-flow-panel-v87119"><div className="flow-title-v87119"><b>Apartats de l’obra</b><button type="button" onClick={()=>setMobileFlowOpen87119(false)}>Tancar</button></div><ExpedientSectionSelect878238 tabs={navigationTabs} value={activeTab} compact onChange={next=>{setTab(next);setTabsOpen(false);setMobileFlowOpen87119(false)}}/><small className="obra-section-help-v878238">Tria l’apartat que vols consultar. Les opcions s’agrupen segons el tipus d’expedient i el mòdul actiu.</small></div>}
-          {mobileActionsOpen87119&&<div className="obra-mobile-actions-panel-v87119"><button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setScreen("Treballs / Expedients")}}><ArrowLeft/> Tornar al llistat</button>{!readOnly&&<button type="button" className="secondary" onClick={()=>{setMobileActionsOpen87119(false);setEditObra(true)}}>Modificar fitxa</button>}{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar expedient</button>}</div>}
-        </div>
-      </div>
-      <div className="obra-mini-actions-v8776 obra-evolution-actions-v878193"><Badge estat={estatObra}/>{!readOnly&&<label className="obra-status-editor-v878247"><span>Estat</span><select value={normalizeExpedientStatus878136(estatObra)} onChange={e=>{const next=e.target.value;setEstatObra(next);updateObraFitxa8721?.({estat:next})}}><option value="" disabled>Canviar estat</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{st}</option>)}</select></label>}{(!readOnly||clientEditBudget)&&preferredBudgetTab878239&&<button type="button" className="primary" onClick={()=>{setTab(preferredBudgetTab878239);setTabsOpen(false)}}>Crear / editar pressupost</button>}{!readOnly&&<button type="button" className="secondary" onClick={()=>setEditObra(true)}>Ampliar encàrrec</button>}<button type="button" className="secondary" onClick={()=>setScreen("Treballs / Expedients")}><ArrowLeft/> Tornar</button>{!readOnly&&<button type="button" className="danger" onClick={()=>deleteObra?.(obra.id)}>Eliminar</button>}</div>
-    </section>}
+    <ObraBar878269 obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
         <div className="obra-tabs-title-v87105"><b>Apartats de l’obra</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
@@ -7769,6 +7755,52 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
       </div>
     </div>}
   </div>
+}
+// V87.269 · Obra: una sola barra. A dalt, les dades de l'obra (codi, client, tipus), l'estat i un menú ⋯ amb les
+// accions; a sota, els apartats en una tira que es pot lliscar, amb «Més» per a la resta. Abans hi havia «Apartats de
+// l'obra» i «Accions» per separat, i cada apartat s'obria en una finestra a sobre amb un altre selector.
+const OBRA_TABS_MAIN878269=["Resum","Pressupost","Pressupost ràpid","Pressupost obra","Certificacions","Gestió obra","Certificacions obra","Actes","Documents","Agenda / Avisos","Tasques","Gantt"];
+function tabLabel878269(tab,all=[]){
+  if(tab==="Certificacions obra")return t("Certificacions");
+  if(tab==="Agenda / Avisos")return t("Agenda");
+  if((tab==="Pressupost ràpid"||tab==="Pressupost obra")&&!all.includes("Pressupost"))return t("Pressupost");
+  return t(tab);
+}
+function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,readOnly,canBudget,budgetTab,onEdit,onDelete,onBack}){
+  const[menu,setMenu]=useState("");
+  // (la barra d'apartats va sola, sense bloc al voltant: així es pot quedar fixa en baixar per tota la pàgina)
+  useEffect(()=>{if(!menu)return;const off=e=>{if(!e.target.closest?.(".obra-acc-v878269,.obra-tabs-bar-v878269"))setMenu("")};document.addEventListener("pointerdown",off);return()=>document.removeEventListener("pointerdown",off)},[menu]);
+  const all=uniqueTabs8769(["Resum",...tabs]);
+  let main=all.filter(x=>OBRA_TABS_MAIN878269.includes(x));
+  if(main.includes("Pressupost ràpid")&&main.includes("Pressupost obra"))main=main.filter(x=>x!=="Pressupost ràpid");
+  main=main.slice(0,8);
+  const rest=all.filter(x=>!main.includes(x));
+  const pick=x=>{setMenu("");setTab(x);try{window.scrollTo({top:0})}catch{}};
+  const base=obra.expedientBase||(String(expedientCode8739(obra)).match(/^\d{4}-\d{2,4}/)||[""])[0];
+  const info=[base,client?.nom,t(moduleLabel8737(obra))].filter(Boolean).join(" · ");
+  const st=normalizeExpedientStatus878136(estat);
+  return <>
+    <div className="obra-bar-info-v878269">
+      <button type="button" className="obra-back-v878269" onClick={onBack}><ChevronLeft/><span>{t("Expedients")}</span></button>
+      <div className="obra-bar-txt-v878269"><h2>{obra.nom}</h2><small>{info}</small></div>
+      <div className="obra-bar-right-v878269">
+        {readOnly?<span className={`obra-estat-ro-v878269 ${statusKeyPress8776(st)}`}>{t(st)}</span>:<label className={`obra-estat-v878269 ${statusKeyPress8776(st)}`}><span className="sr-only-v878269">{t("Estat")}</span><select value={st} onChange={e=>onEstat?.(e.target.value)} aria-label={t("Estat")}>{EXPEDIENT_STATUS878136.map(x=><option key={x} value={x}>{t(x)}</option>)}</select></label>}
+        {(canBudget||!readOnly)&&<div className="obra-acc-v878269">
+          <button type="button" className="obra-acc-btn-v878269" aria-label={t("Accions")} aria-expanded={menu==="acc"} onClick={()=>setMenu(m=>m==="acc"?"":"acc")}><Ellipsis/></button>
+          {menu==="acc"&&<div className="obra-menu-v878269" role="menu">
+            {canBudget&&budgetTab&&<button type="button" role="menuitem" onClick={()=>pick(budgetTab)}>{t("Crear / editar pressupost")}</button>}
+            {!readOnly&&<button type="button" role="menuitem" onClick={()=>{setMenu("");onEdit?.()}}>{t("Modificar fitxa")}</button>}
+            {onDelete&&<button type="button" role="menuitem" className="danger" onClick={()=>{setMenu("");onDelete()}}>{t("Eliminar expedient")}</button>}
+          </div>}
+        </div>}
+      </div>
+    </div>
+    <div className="obra-tabs-bar-v878269">
+      <div className="obra-tabs-scroll-v878269" role="tablist" aria-label={t("Apartats de l’obra")}>{main.map(x=><button type="button" role="tab" key={x} aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{tabLabel878269(x,all)}</button>)}</div>
+      {rest.length>0&&<button type="button" className={`obra-tabs-mes-v878269 ${rest.includes(active)?"on":""}`} aria-expanded={menu==="mes"} onClick={()=>setMenu(m=>m==="mes"?"":"mes")}>{rest.includes(active)?tabLabel878269(active,all):t("Més")} ▾</button>}
+      {menu==="mes"&&<div className="obra-menu-v878269 obra-mes-menu-v878269">{workTabGroups878238(rest).map(g=><div key={g.label}><small>{t(g.label)}</small>{g.tabs.map(x=><button type="button" key={x} className={x===active?"on":""} onClick={()=>pick(x)}>{tabLabel878269(x,all)}</button>)}</div>)}</div>}
+    </div>
+  </>;
 }
 function ObraAgentsResum({data,openAgent}){
 const[q,setQ]=useState("");
@@ -7867,7 +7899,7 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
   const quick=[["Pressupost obra","Pressupost"],["Pressupost ràpid","Pressupost"],["Gestió obra","Gestió obra"],["Certificacions obra","Certificacions"],["Gantt","Gantt"],["Rendiment","Rendiment"],["Documents","Documents"],["Actes","Actes"]].filter(([t])=>tabs.includes(t)).filter((x,i,arr)=>arr.findIndex(y=>y[1]===x[1])===i);
   const top=[...s.caps].sort((a,b)=>b.budget-a.budget);
   const slices=top.slice(0,5).map((c,i)=>({label:c.cap,value:c.budget,color:CHART_COLORS878252[i]}));
-  if(top.length>5)slices.push({label:`Resta (${top.length-5} capítols)`,value:top.slice(5).reduce((a,c)=>a+c.budget,0),color:"var(--co-s0)"});
+  if(top.length>5)slices.push({label:t("Resta ({n} capítols)",{n:top.length-5}),value:top.slice(5).reduce((a,c)=>a+c.budget,0),color:"var(--co-s0)"});
   const arcs=donutArcs878251(slices);
   const maxCert=Math.max(1,...s.certs.map(c=>c.amount));
   const initials=String(obra.nom||"?").replace(/^obra\s+/i,"").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
@@ -7875,44 +7907,44 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
     <div className="obra-hero-top-v878252">
       <div className="obra-hero-photo-v878252">
         {obraFoto878259(obra)?<img src={obraFoto878259(obra)} alt={`Foto de ${obra.nom||"l’obra"}`}/>:<div className="ph"><span>{initials}</span></div>}
-        {uploadImage&&<><button type="button" onClick={()=>fileRef.current?.click()}>{obraFoto878259(obra)?"Canviar foto":"Afegir foto de l’obra"}</button><input ref={fileRef} type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)uploadImage(f);e.target.value=""}}/></>}
+        {uploadImage&&<><button type="button" onClick={()=>fileRef.current?.click()}>{obraFoto878259(obra)?t("Canviar foto"):t("Afegir foto de l’obra")}</button><input ref={fileRef} type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)uploadImage(f);e.target.value=""}}/></>}
       </div>
       <div className="obra-hero-info-v878252">
-        <div className="meta"><span className="code">{expedientCode8739(obra)}</span><span className={`st ${statusKeyPress8776(estat)}`}>{estat}</span><span>{moduleLabel8737(obra)}</span></div>
+        <div className="meta"><span className="code">{expedientCode8739(obra)}</span><span className={`st ${statusKeyPress8776(estat)}`}>{t(estat)}</span><span>{t(moduleLabel8737(obra))}</span></div>
         <h2>{obra.nom}</h2><ShareObra878259 obra={obra}/>
         <p>{[client?.nom,[obra.adreca,obra.poblacio].filter(x=>x&&x!=="Pendent").join(", ")].filter(Boolean).join(" · ")}</p>
         {hasBudget?<div className="obra-hero-progress-v878252">
-          <div className="lbl"><span>{s.lastN?`Certificat a origen · C-${s.lastN}`:"Pressupost preparat, sense certificacions"}</span><b>{pct878252(s.executed)}</b></div>
+          <div className="lbl"><span>{s.lastN?t("Certificat a origen · C-{n}",{n:s.lastN}):t("Pressupost preparat, sense certificacions")}</span><b>{pct878252(s.executed)}</b></div>
           <div className="track"><i style={{width:`${Math.min(100,s.executed)}%`}}/></div>
-          <div className="sub">{eur0878252(s.certified)} de {eur0878252(s.budget)}</div>
-        </div>:<p className="hint">Aquest expedient encara no té pressupost d’obra.</p>}
+          <div className="sub">{t("{a} de {b}",{a:eur0878252(s.certified),b:eur0878252(s.budget)})}</div>
+        </div>:<p className="hint">{t("Aquest expedient encara no té pressupost d’obra.")}</p>}
 
       </div>
     </div>
     {hasBudget&&<div className="obra-hero-kpis-v878252">
-      <div><small>Pressupost vigent</small><b>{eur0878252(s.budget)}</b><span>{s.rows.length} partides · {s.caps.length} capítols</span></div>
-      <div><small>Certificat a origen</small><b>{eur0878252(s.certified)}</b><span>{s.lastN?`${s.lastN} certificacions`:"cap certificació"}</span></div>
-      <div><small>Pendent d’executar</small><b>{eur0878252(s.pending)}</b><span>{pct878252(100-Math.min(100,s.executed))} del pressupost</span></div>
-      <div><small>Última certificació</small><b>{s.last?`C-${s.last.n}`:"—"}</b><span>{s.last?`${fmtAppDate8748(s.last.data)} · ${eur0878252(s.last.amount)}`:"—"}</span></div>
+      <div><small>{t("Pressupost vigent")}</small><b>{eur0878252(s.budget)}</b><span>{t("{n} partides · {m} capítols",{n:s.rows.length,m:s.caps.length})}</span></div>
+      <div><small>{t("Certificat a origen")}</small><b>{eur0878252(s.certified)}</b><span>{s.lastN?t("{n} certificacions",{n:s.lastN}):t("cap certificació")}</span></div>
+      <div><small>{t("Pendent d’executar")}</small><b>{eur0878252(s.pending)}</b><span>{t("{p} del pressupost",{p:pct878252(100-Math.min(100,s.executed))})}</span></div>
+      <div><small>{t("Última certificació")}</small><b>{s.last?`C-${s.last.n}`:"—"}</b><span>{s.last?`${fmtAppDate8748(s.last.data)} · ${eur0878252(s.last.amount)}`:"—"}</span></div>
     </div>}
     <ObraFollowUp878253 data={data} tabs={tabs} go={go}/>
     {hasBudget&&<div className="obra-hero-charts-v878252">
       <div className="chart-card">
-        <div className="chart-head"><b>Pes per capítol</b><span>sobre el pressupost</span></div>
+        <div className="chart-head"><b>{t("Pes per capítol")}</b><span>{t("sobre el pressupost")}</span></div>
         <div className="donut-row">
-          <svg viewBox="0 0 150 150" role="img" aria-label="Pes de cada capítol al pressupost">{arcs.map(p=><path key={p.label} d={p.d} fill={p.color} stroke="var(--co-surface)" strokeWidth="2"><title>{`${p.label}: ${eur0878252(p.value)} (${p.pct.toFixed(1)} %)`}</title></path>)}<text x="75" y="80" textAnchor="middle" className="n">{s.caps.length}</text><text x="75" y="95" textAnchor="middle" className="l">capítols</text></svg>
+          <svg viewBox="0 0 150 150" role="img" aria-label="Pes de cada capítol al pressupost">{arcs.map(p=><path key={p.label} d={p.d} fill={p.color} stroke="var(--co-surface)" strokeWidth="2"><title>{`${p.label}: ${eur0878252(p.value)} (${p.pct.toFixed(1)} %)`}</title></path>)}<text x="75" y="80" textAnchor="middle" className="n">{s.caps.length}</text><text x="75" y="95" textAnchor="middle" className="l">{t("capítols")}</text></svg>
           <div className="legend">{arcs.map(p=><div key={p.label}><i style={{background:p.color}}/><span>{p.label}</span><b>{p.pct.toFixed(0)} %</b></div>)}</div>
         </div>
       </div>
       <div className="chart-card">
-        <div className="chart-head"><b>Import per certificació</b><span>{s.certs.length?"clica per obrir les certificacions":"encara no n’hi ha"}</span></div>
+        <div className="chart-head"><b>{t("Import per certificació")}</b><span>{s.certs.length?t("clica per obrir les certificacions"):t("encara no n’hi ha")}</span></div>
         {s.certs.length?<div className="cert-cols-v878252" role="img" aria-label="Import de cada certificació">
           {s.certs.map(c=><button type="button" key={c.n} onClick={()=>go(tabs.includes("Certificacions")?"Certificacions":tabs.includes("Certificacions obra")?"Certificacions obra":"Gestió obra")} title={`C-${c.n} · ${fmtAppDate8748(c.data)} · ${money(c.amount)}`}>
             <span className="val">{c.n===s.lastN?eur0878252(c.amount):""}</span>
             <span className="bar"><i style={{height:`${Math.max(2,c.amount/maxCert*100)}%`}} className={c.n===s.lastN?"last":""}/></span>
             <span className="lab">C-{c.n}</span>
           </button>)}
-        </div>:<p className="hint">Quan hi hagi certificacions, aquí veuràs el ritme mensual.</p>}
+        </div>:<p className="hint">{t("Quan hi hagi certificacions, aquí veuràs el ritme mensual.")}</p>}
       </div>
     </div>}
   </section>;
@@ -7926,10 +7958,10 @@ function ObraFollowUp878253({data={},tabs=[],go}){
   const docs=(data.documents||[]).length,fotos=(data.fotos||data.fotografies||[]).length;
   const item=(tab,label,main,sub,tone="")=><button type="button" className={`fu-item-v878253 ${tone}`} onClick={()=>tabs.includes(tab)&&go(tab)} disabled={!tabs.includes(tab)}><small>{label}</small><b>{main}</b><span>{sub}</span></button>;
   return <div className="obra-followup-v878253">
-    {item("Agenda / Avisos","Pròxima cita",next?fmtEventDate878136(next):"Cap cita",next?(next.title||next.titol||next.tipus||"Cita"):"Afegeix-ne una a l’agenda")}
-    {item("Tasques","Tasques pendents",String(tasks.length),tasks.length?(late?`${late} vençudes · ${tasks[0].text||"Tasca"}`:tasks[0].text||"Tasca"):"Tot al dia",late?"late":"")}
-    {item("Actes","Última acta",actes[0]?(actes[0].titol||"Acta"):"Cap acta",actes[0]?fmtAppDate8748(actes[0].data):"Crea la primera des d’Actes")}
-    {item("Documents","Documents i fotos",`${docs} · ${fotos}`,"documents · fotos")}
+    {item("Agenda / Avisos",t("Pròxima cita"),next?fmtEventDate878136(next):t("Cap cita"),next?(next.title||next.titol||next.tipus||t("Cita")):t("Afegeix-ne una a l’agenda"))}
+    {item("Tasques",t("Tasques pendents"),String(tasks.length),tasks.length?(late?t("{n} vençudes · {tasca}",{n:late,tasca:tasks[0].text||t("Tasca")}):tasks[0].text||t("Tasca")):t("Tot al dia"),late?"late":"")}
+    {item("Actes",t("Última acta"),actes[0]?(actes[0].titol||t("Acta")):t("Cap acta"),actes[0]?fmtAppDate8748(actes[0].data):t("Crea la primera des d’Actes"))}
+    {item("Documents",t("Documents i fotos"),`${docs} · ${fotos}`,t("documents · fotos"))}
   </div>;
 }
 function GanttObraVisual878252({data={}}){
@@ -10872,7 +10904,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.268",
+    app_version:"87.269",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12946,10 +12978,10 @@ function ShareObra878259({obra}){
   const c=typeof window!=="undefined"?window.__acoCloud:null;
   const[open,setOpen]=useState(false);
   if(!c?.shareObra||!obra?.id)return null;
-  if(!obra.compartida&&!c.status?.()?.connected)return <div className="share-bar-v878259"><span>Per compartir aquesta obra cal que entris al núvol amb el teu compte.</span><button type="button" className="secondary" onClick={()=>c.connect()}>Entrar al núvol</button></div>;
-  if(obra.compartida)return <div className="share-bar-v878259 foreign"><span>Obra compartida per <b>{obra.compartida.ownerNom||"un altre compte"}</b>{obra.compartida.ownerUsuari&&obra.compartida.ownerUsuari!==obra.compartida.ownerNom?<> (usuari {obra.compartida.ownerUsuari})</>:null} · {obra.compartida.perm==="edicio"?"pots fer-hi canvis i els veurà":"només consulta: els teus canvis no s’hi desen"}</span></div>;
+  if(!obra.compartida&&!c.status?.()?.connected)return <div className="share-bar-v878259"><span>{t("Per compartir aquesta obra cal que entris al núvol amb el teu compte.")}</span><button type="button" className="secondary" onClick={()=>c.connect()}>{t("Entrar al núvol")}</button></div>;
+  if(obra.compartida)return <div className="share-bar-v878259 foreign"><span>{t("Obra compartida per")} <b>{obra.compartida.ownerNom||t("un altre compte")}</b>{obra.compartida.ownerUsuari&&obra.compartida.ownerUsuari!==obra.compartida.ownerNom?<> ({t("usuari")} {obra.compartida.ownerUsuari})</>:null} · {obra.compartida.perm==="edicio"?t("pots fer-hi canvis i els veurà"):t("només consulta: els teus canvis no s’hi desen")}</span></div>;
   const shared=!!c.sharedOwned?.()?.has(obra.id);
-  return <><div className={`share-bar-v878259${shared?" on":""}`}><span>{shared?"Obra compartida amb altres comptes.":"Només la veus tu."}</span><button type="button" className="secondary" onClick={()=>setOpen(true)}>{shared?"Amb qui es comparteix":"Compartir"}</button></div>{open&&<ShareModal878259 obra={obra} close={()=>setOpen(false)}/>}</>;
+  return <><div className={`share-bar-v878259${shared?" on":""}`}><span>{shared?t("Obra compartida amb altres comptes."):t("Només la veus tu.")}</span><button type="button" className="secondary" onClick={()=>setOpen(true)}>{shared?t("Amb qui es comparteix"):t("Compartir")}</button></div>{open&&<ShareModal878259 obra={obra} close={()=>setOpen(false)}/>}</>;
 }
 function ShareModal878259({obra,close}){
   const c=window.__acoCloud;
