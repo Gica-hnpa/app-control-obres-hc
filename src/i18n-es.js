@@ -1499,4 +1499,14 @@ export default {
   "Si s’esborra, algunes propostes descartades podrien tornar a la safata de la llibreria.": "Si se borra, algunas propuestas descartadas podrían volver a la bandeja de la biblioteca.",
   "Còpia de l’últim «buidar pressupost»": "Copia del último «vaciar presupuesto»",
   "Permetia recuperar l’últim pressupost buidat.": "Permitía recuperar el último presupuesto vaciado.",
+
+  // V87.275 · filtres d'expedients i portal de client
+  "{n} actius": "{n} activos",
+  "Any": "Año",
+  "Tipus de treball": "Tipo de trabajo",
+  "Treure els filtres": "Quitar los filtros",
+  "Deixa-ho buit per no canviar-la": "Déjalo vacío para no cambiarla",
+  "Mínim 8 caràcters": "Mínimo 8 caracteres",
+
+  "Mòdul 2 · Portal de client": "Módulo 2 · Portal de cliente",
 };

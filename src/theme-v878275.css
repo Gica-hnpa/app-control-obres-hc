@@ -1,0 +1,65 @@
+/* V87.275 · Expedients: un sol bloc de filtres (iguals a tots els aparells), foto petita de l'obra o inicials; i el
+   «Més» de l'obra just després de l'última pestanya, per sobre de la capçalera fixa del pressupost. */
+
+/* Filtres: botons que s'encenen i s'apaguen (es poden marcar diversos valors de cada grup) */
+.expf-v878275{margin:0 0 12px;background:#fff;border:1px solid var(--co-line,#DCE3E7);border-radius:12px}
+.expf-v878275>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;cursor:pointer;font:600 14px var(--app-font,inherit);color:var(--co-ink,#0f172a)}
+.expf-v878275>summary::-webkit-details-marker{display:none}
+.expf-v878275>summary::after{content:"▾";color:var(--co-ink-3,#64748b);font-size:12px}
+.expf-v878275[open]>summary::after{content:"▴"}
+.expf-v878275>summary b{margin-left:auto;padding:2px 10px;border-radius:999px;background:#eef4ff;color:var(--co-accent-ink,#1d4ed8);font-size:12.5px}
+.expf-v878275>summary em{margin-left:auto;font-style:normal;font-weight:400;font-size:13px;color:var(--co-ink-3,#64748b)}
+.expf-panel-v878275{display:flex;flex-direction:column;gap:12px;padding:4px 14px 14px;border-top:1px solid #EEF2F4}
+.expf-group-v878275{display:flex;flex-direction:column;gap:6px;padding-top:8px}
+.expf-group-v878275>small{font:600 11px var(--app-font,inherit);letter-spacing:.05em;text-transform:uppercase;color:var(--co-ink-3,#64748b)}
+.expf-group-v878275>div{display:flex;flex-wrap:wrap;gap:6px}
+.expf-group-v878275 button{all:unset;box-sizing:border-box;cursor:pointer;padding:7px 12px;border:1px solid var(--co-line,#DCE3E7);border-radius:999px;background:#fff;
+  font:500 13.5px var(--app-font,inherit);color:var(--co-ink-2,#334155);line-height:1.2}
+.expf-group-v878275 button:hover{background:#f8fafc}
+.expf-group-v878275 button.on{background:var(--co-accent,#2563eb);border-color:var(--co-accent,#2563eb);color:#fff}
+.expf-group-v878275 button:focus-visible{outline:2px solid var(--co-accent,#2563eb);outline-offset:2px}
+.expf-clear-v878275{align-self:flex-start}
+/* A l'ordinador, el bloc vell de desplegables ja només té el cercador */
+html body .expedients-page-v8741 .desktop-filters-v87119{grid-template-columns:minmax(0,1fr)!important}
+/* Mòbil i iPad: el bloc de filtres va enganxat a la llista, sota el cercador */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .expedients-page-v8741 .expf-v878275{margin:0 10px 12px}
+}
+
+/* Foto petita de l'obra o inicials */
+.obra-thumb-v878275{flex:none;width:52px;height:52px;border-radius:10px;overflow:hidden;display:grid;place-items:center;
+  background:hsl(var(--h,210) 55% 92%);color:hsl(var(--h,210) 45% 30%);font:700 15px var(--app-font,inherit);letter-spacing:.02em}
+.obra-thumb-v878275.foto{background:#e2e8f0}
+.obra-thumb-v878275 img{width:100%;height:100%;object-fit:cover;display:block}
+.obra-thumb-v878275 i{font-style:normal}
+html body .exp-card-v878270.exp-card-foto-v878275{grid-template-columns:52px minmax(0,1fr);column-gap:12px;align-items:center}
+.exp-card-body-v878275{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;min-width:0}
+html body .exp-table-v8741 .obra-thumb-v878275{width:38px;height:38px;border-radius:8px;font-size:12.5px}
+
+/* «Més» de l'obra: al costat de l'última pestanya (al mòbil, quan les pestanyes llisquen, queda a la dreta) */
+html body .obra-tabs-bar-v878269{z-index:66}
+html body .obra-tabs-scroll-v878269{flex:0 1 auto}
+.obra-mes-wrap-v878275{position:relative;flex:none;display:flex}
+html body .obra-tabs-mes-v878269{border-left:0}
+html body .obra-mes-wrap-v878275 .obra-mes-menu-v878269{left:0;right:auto;top:100%;z-index:90}
+@media (max-width:760px){
+  html body .obra-tabs-scroll-v878269{flex:1 1 auto}
+  html body .obra-tabs-mes-v878269{border-left:1px solid var(--co-line,#DCE3E7)}
+  html body .obra-mes-wrap-v878275 .obra-mes-menu-v878269{left:auto;right:0}
+}
+/* La capçalera fixa del pressupost (total i «Accions») es queda just sota la barra d'apartats, no a sota seu */
+html body .obra-page-v87105 .budget-card-v878248>.card-head{top:46px}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .obra-page-v87105 .budget-card-v878248>.card-head{top:99px}
+}
+@media (max-width:760px){
+  /* al mòbil no es queda fixa: ja hi ha la capçalera de l'app i la barra d'apartats */
+  html body .obra-page-v87105 .budget-card-v878248>.card-head{position:static!important}
+}
+
+/* Una regla de quan l'apartat s'obria en una finestra a sobre (z-index 90) el posava per sobre de la barra d'apartats
+   i tapava el menú «Més». L'apartat ja va dins de la pàgina: sense capa pròpia. */
+html body .obra-page-overlay-open-v878244>.obra-edit-overlay-v878242{z-index:auto!important}
+
+/* Les targetes del mòbil sortien també a l'ordinador, sota la taula (una regla de la V87.270 les tornava a mostrar) */
+html body .expedients-page-v8741 .exp-mobile-tree-v87119.exp-cards-v878270{display:none}
