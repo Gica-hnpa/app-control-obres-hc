@@ -129,5 +129,23 @@ function dadesLocalsPlugin() {
   };
 }
 
+// V87.271 · App sense cobertura: en compilar, es genera sw.js (src/sw-template.js) amb la llista de tots els arxius de
+// la versió (pàgina, codi, estils, lletres, icones). Només a la versió compilada (Render); OBRIR_APP.bat no en fa servir.
+const PUBLIC_FILES = ["manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "icon-180.png"];
+function offlinePlugin() {
+  return {
+    name: "aco-sense-cobertura",
+    apply: "build",
+    generateBundle(_options, bundle) {
+      const files = ["./", "./index.html", ...Object.keys(bundle).filter(f => f !== "index.html" && !f.endsWith(".map")).map(f => "./" + f), ...PUBLIC_FILES.map(f => "./" + f)];
+      const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
+      let h = 0; for (const c of files.join("|")) h = (Math.imul(h, 31) + c.charCodeAt(0)) | 0;
+      const version = `${pkg.version}-${(h >>> 0).toString(36)}`;
+      const source = fs.readFileSync(path.join(ROOT, "src", "sw-template.js"), "utf8").replace("__VERSION__", version).replace("__FILES__", JSON.stringify(files));
+      this.emitFile({ type: "asset", fileName: "sw.js", source });
+    }
+  };
+}
+
 // ACO_SENSE_DISC=1 només per a proves: simula l'app publicada (sense desat a l'ordinador).
-export default defineConfig({ base: "./", plugins: [react(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });
+export default defineConfig({ base: "./", plugins: [react(), offlinePlugin(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });

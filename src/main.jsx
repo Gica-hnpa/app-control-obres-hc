@@ -23,4 +23,9 @@ import { setLang, readLang } from "./i18n.js";
 startBigStore().catch(() => false).then(() => { try { setLang(readLang(sessionStorage.getItem("aco_current_user8779") || "")); } catch {} }).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
   const { default: App } = await import("./App.jsx");
   createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
+  // V87.271 · App sense cobertura: a la versió publicada, l'app es guarda dins de l'aparell (sw.js) i s'obre encara
+  // que no hi hagi cobertura. No a OBRIR_APP.bat (allà sempre hi ha el servidor de l'ordinador).
+  if (import.meta.env.PROD && "serviceWorker" in navigator && !window.__acoLocalDisk) {
+    navigator.serviceWorker.register("./sw.js").catch(e => console.warn("Sense cobertura: no s'ha pogut preparar", e));
+  }
 });
