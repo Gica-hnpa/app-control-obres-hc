@@ -4,7 +4,8 @@ import * as XLSX from "xlsx";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen} from "lucide-react";
+import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft} from "lucide-react";
+import {t,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
@@ -14,7 +15,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.267";
+const APP_VERSION878264="87.268";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2788,13 +2789,29 @@ function EspaiNuvol878263(){
   </Card>;
 }
 
+// V87.268 · Idioma de cada usuari: canvia tota l'app per a aquesta persona (no les dades ni el que veuen els altres).
+function IdiomaUsuari878268({user}){
+  const[v,setV]=useState(getLang());
+  async function change(code){
+    if(code===v)return;
+    saveLang(user||currentAppUser8779(),code);setV(code);
+    try{sessionStorage.setItem("aco-reentrar-auto",sessionStorage.getItem("aco_current_user8779")||"")}catch{}
+    try{await window.__acoStore?.flush?.()}catch{}
+    try{await window.__acoLocalDisk?.flush?.()}catch{}
+    location.reload();
+  }
+  return <Card title={t("Idioma")} className="idioma-card-v878268">
+    <div className="idioma-row-v878268">{LANGS.map(l=><button type="button" key={l.code} className={l.code===v?"primary":"secondary"} aria-pressed={l.code===v} onClick={()=>change(l.code)}>{l.nom}</button>)}</div>
+    <small className="muted">{t("Cada persona tria el seu idioma. No canvia les dades ni el que veuen els altres.")}</small>
+  </Card>;
+}
 // V87.266 · versions que no es van triar quan es va canviar el mateix des de dos llocs alhora (cloudSync.js).
 function VersionsGuardades878266(){
   const[list]=useState(()=>{try{return window.__acoCloud?.versions?.()||[]}catch{return []}});
   if(!list.length)return null;
-  const quan=iso=>{try{return new Date(iso).toLocaleString("ca-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch{return ""}};
+  const quan=iso=>{try{return new Date(iso).toLocaleString(getLang()==="es"?"es-ES":"ca-ES",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch{return ""}};
   async function recuperar(v){
-    if(!confirm(`Recuperar aquesta versió de «${v.etiqueta}» (${quan(v.data)})?\n\nLa que hi ha ara també es guardarà aquí, per si de cas.`))return;
+    if(!confirm(t("Recuperar aquesta versió de «{nom}» ({quan})?\n\nLa que hi ha ara també es guardarà aquí, per si de cas.",{nom:v.etiqueta,quan:quan(v.data)})))return;
     try{await window.__acoCloud.restoreVersion(v.id)}catch(e){alert(e.message||String(e))}
   }
   function descarregar(v){
@@ -2802,11 +2819,11 @@ function VersionsGuardades878266(){
     a.download=`versio-${String(v.etiqueta||"dades").replace(/[^\w-]+/g,"_").replace(/^_+|_+$/g,"")}-${String(v.data).slice(0,10)}.json`;
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
   }
-  return <Card title="Versions guardades" className="versions-card-v878266">
-    <small className="muted">Quan s’ha canviat el mateix des de dos llocs alhora, la versió que no es va triar es guarda aquí (les 50 últimes, durant 90 dies).</small>
+  return <Card title={t("Versions guardades")} className="versions-card-v878266">
+    <small className="muted">{t("Quan s’ha canviat el mateix des de dos llocs alhora, la versió que no es va triar es guarda aquí (les 50 últimes, durant 90 dies).")}</small>
     <div className="versions-list-v878266">{list.map(v=><div key={v.id} className="versions-row-v878266">
-      <div><b>{v.etiqueta}</b><span>{quan(v.data)} · {v.quina} · {v.origen}</span></div>
-      <div className="versions-actions-v878266"><button type="button" className="secondary" onClick={()=>recuperar(v)}>Recuperar</button><button type="button" className="secondary" onClick={()=>descarregar(v)}>Descarregar</button></div>
+      <div><b>{v.etiqueta}</b><span>{quan(v.data)} · {t(v.quina)} · {v.origen}</span></div>
+      <div className="versions-actions-v878266"><button type="button" className="secondary" onClick={()=>recuperar(v)}>{t("Recuperar")}</button><button type="button" className="secondary" onClick={()=>descarregar(v)}>{t("Descarregar")}</button></div>
     </div>)}</div>
   </Card>;
 }
@@ -3793,8 +3810,10 @@ const currentAccount878233=getAppAccount878233(authUser8779)||{};
 const dataOwnerUser878233=appAccountOwner878233(currentAccount878233,authUser8779);
 const scopedClientId878233=currentAccount878233.role!=="admin"?String(currentAccount878233.clientId||""):"";
 const appCfg=lsJson8779("aco_config",{} ,dataOwnerUser878233)||{};
-const lang=appCfg.idioma||"Català";
-const tt=(ca,es,en)=>lang==="Castellà"?es:(lang==="Anglès"?en:ca);
+// V87.268 · idioma de cada usuari (src/i18n.js). tt() es manté per als pocs textos antics traduïts a mà.
+setLang(readLang(authUser8779||currentAppUser8779()||""));
+const lang=getLang()==="es"?"Castellà":"Català";
+const tt=(ca,es)=>getLang()==="es"?es:ca;
 const[clients,setClients]=useState([]),
 [obres,setObres]=useState([]),
 [odata,setOdata]=useState({}),
@@ -4921,8 +4940,8 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">Usuari: <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title="Sortir" onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>Sortir</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={tt("Inici","Inicio","Home")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={tt("Clients","Clientes","Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l="Agents" on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={tt("Treballs / Expedients","Trabajos / Expedientes","Jobs / Files")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={tt("Pressupostos","Presupuestos","Quotes")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={tt("Factures","Facturas","Invoices")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={tt("Gestió temps","Gestión tiempo","Time tracking")} on={()=>nav("Traça")}/><MB a={screen==="Albarans"} i={<Camera/>} l="Albarans" on={()=>nav("Albarans")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l="Llibreria" on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l="Rendiments" on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={tt("Agenda / Calendari","Agenda / Calendario","Calendar")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={tt("Configuració","Configuración","Settings")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">Versió V{APP_VERSION878264}</div></nav></aside><main className="main"><div className="mobile-top"><button onClick={()=>setMenuOpen(true)} className="hamb"><Menu/></button><b>CONTROL D'OBRES</b></div>
-{screen!=="Inici"&&<MobileBackBar878146 screen={screen} goBack={()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}}/>}
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={t("Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l={t("Agents")} on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t("Treballs / Expedients")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria")} on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Factures")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={t("Gestió temps")} on={()=>nav("Traça")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Albarans")} on={()=>nav("Albarans")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda / Calendari")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda / Calendari")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Configuració")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t(SCREEN_TITLE878268[screen]||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
+
 {screen==="Inici"&&<Inici clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
 {screen==="Fitxa client"&&<FitxaClient client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
@@ -4942,7 +4961,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
   <label title="Engegar el comptador sol en entrar a una obra"><input type="checkbox" checked={autoTimerOn878254} onChange={toggleAutoTimer878254}/>Automàtic</label>
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
-{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main></div></>
+{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)}/></div></>
 }
 
 
@@ -5086,6 +5105,26 @@ function AgentsGeneral878188({odata={},setOdata,clients=[]}){
   </div>
 }
 
+// V87.268 · Navegació del mòbil i l'iPad: capçalera fixa d'una línia amb «Tornar» (sempre visible) i barra fixa a
+// baix amb el més habitual. «Més» obre el menú de sempre. A l'ordinador no surten (hi ha el menú lateral).
+const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Treballs / Expedients","Traça":"Gestió temps","Agenda":"Agenda / Calendari","Fitxa client":"Client","Pressupostos honoraris":"Pressupostos","Factures":"Factures","Clients":"Clients","Agents":"Agents","Llibreria":"Llibreria","Albarans":"Albarans","Configuració":"Configuració","Pressupostos":"Pressupostos","Rendiments":"Rendiments"};
+function AppHead878268({title,onBack,onMenu}){
+  return <div className="mobile-top app-head-v878268">
+    {onBack?<button type="button" className="back-v878268" onClick={onBack} aria-label={t("Tornar")}><ChevronLeft/><span>{t("Tornar")}</span></button>:<button type="button" className="brand-v878268" onClick={onMenu} aria-label={t("Menú")}>CO</button>}
+    <b className="title-v878268">{title}</b>
+  </div>;
+}
+function BottomNav878268({screen,role,perfil,nav,onMore}){
+  const items=[["Inici",<House/>,"Inici"],["Treballs / Expedients",<FolderOpen/>,"Obres"]];
+  if(role==="admin"&&perfil==="constructor")items.push(["Albarans",<Camera/>,"Albarans"]);
+  items.push(["Agenda",<CalendarDays/>,"Agenda"]);
+  if(role==="admin"&&perfil!=="constructor")items.push(["Traça",<Clock/>,"Temps"]);
+  const on=k=>k===screen||(k==="Treballs / Expedients"&&screen==="Obra");
+  return <nav className="bottom-nav-v878268" aria-label={t("Navegació")}>
+    {items.map(([k,ic,l])=><button type="button" key={k} className={on(k)?"on":""} aria-current={on(k)?"page":undefined} onClick={()=>nav(k)}>{ic}<span>{t(l)}</span></button>)}
+    <button type="button" onClick={onMore}><Ellipsis/><span>{t("Més")}</span></button>
+  </nav>;
+}
 function MobileBackBar878146({screen,goBack}){return <div className="screen-return-v87146"><button type="button" onClick={goBack}>← Tornar</button><span>{screen}</span></div>}
 function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odata={},readOnly=false}){
   const[clientFilter,setClientFilter]=useState("");
@@ -10833,7 +10872,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.267",
+    app_version:"87.268",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -11028,7 +11067,8 @@ function save(){
   alert("Configuració guardada");
 }
 return <div className="stack">
-<div className="config-version-v878264">APP Control d’Obres · versió <b>V{APP_VERSION878264}</b></div>
+<div className="config-version-v878264">APP Control d’Obres · {t("versió")} <b>V{APP_VERSION878264}</b></div>
+<IdiomaUsuari878268 user={authUser}/>
 <AccountAccessPanel878233 clients={clients} authUser={authUser}/>
 {admin&&!window.__acoEmpresa&&<EspaiNuvol878263/>}
 {admin&&<VersionsGuardades878266/>}
@@ -11469,7 +11509,7 @@ return <Card title="Avisos i notes de l’obra" action={<button className="prima
 </Card>}
 // V87.266 · mentre hi ha una finestra oberta, la sincronització no recarrega l'app (es perdria el que no s'ha desat).
 function useHoldSync878266(on=true){useEffect(()=>{if(!on)return;const c=window.__acoCloud;c?.hold?.(true);return()=>c?.hold?.(false)},[on])}
-function Modal({title,children,close}){useHoldSync878266();return <div className="modal-backdrop"><div className="modal"><button type="button" className="modal-back-mobile-v87146" onClick={close}>← Tancar / tornar</button><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
+function Modal({title,children,close}){useHoldSync878266();return <div className="modal-backdrop"><div className="modal"><button type="button" className="modal-back-mobile-v87146" onClick={close}>← {t("Tancar / tornar")}</button><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
 
 function CertPrintV79({doc}){
   const rows=doc.rows||[];

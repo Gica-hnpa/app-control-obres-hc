@@ -6,6 +6,7 @@
 // «<compte propietari>/<obra>/<id>». Una cua desada a l'aparell els puja com més aviat millor
 // (al moment si hi ha cobertura; si no, en tornar-n'hi), perquè Safari (iPhone/iPad) pot esborrar
 // les dades d'una web que fa dies que no s'obre. Els altres aparells els baixen en obrir l'obra.
+import { t } from "./i18n.js";
 const DB = "aco_fitxers", STORE = "fitxers", QUEUE = "cua", DONE = "pujats";
 // Llistes de l'obra que porten fitxers, i el camp on hi ha el contingut.
 const LISTS = { fotos: "src", croquis: "src", docs: "url" };
@@ -24,9 +25,9 @@ function open() {
 async function tx(mode, fn, store = STORE) {
   const db = await open();
   return new Promise((resolve, reject) => {
-    const t = db.transaction(store, mode), req = fn(t.objectStore(store));
-    t.oncomplete = () => resolve(req?.result);
-    t.onerror = t.onabort = () => reject(t.error);
+    const tx = db.transaction(store, mode), req = fn(tx.objectStore(store));
+    tx.oncomplete = () => resolve(req?.result);
+    tx.onerror = tx.onabort = () => reject(tx.error);
   });
 }
 const keyOf = (space, id) => `${space}::${id}`;
@@ -235,8 +236,8 @@ async function paint() {
   }
   badge.hidden = !n;
   badge.textContent = navigator.onLine === false
-    ? `${n} ${n === 1 ? "arxiu pendent" : "arxius pendents"} de pujar · sense connexió`
-    : `Pujant ${n} ${n === 1 ? "arxiu" : "arxius"} al núvol…`;
+    ? (n === 1 ? t("1 arxiu pendent de pujar · sense connexió") : t("{n} arxius pendents de pujar · sense connexió", { n }))
+    : (n === 1 ? t("Pujant 1 arxiu al núvol…") : t("Pujant {n} arxius al núvol…", { n }));
 }
 if (typeof window !== "undefined") {
   window.addEventListener("online", () => kick(500));

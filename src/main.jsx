@@ -7,15 +7,18 @@ import "./theme-v87254.css";
 import "./theme-v87255.css";
 import "./theme-v87256.css";
 import "./theme-v87257.css";
+import "./theme-v878268.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
+import { setLang, readLang } from "./i18n.js";
 
 // V87.252 · primer es carreguen les dades desades a l'ordinador (si l'app s'ha obert
 // amb OBRIR_APP.bat) i després l'app, perquè llegeixi les dades bones des del principi.
 // V87.257 · després, el núvol: baixa el que s'hagi fet des d'altres aparells.
 // V87.258 · abans de tot, l'espai gran (IndexedDB) en lloc dels 5 MB del navegador.
-startBigStore().catch(() => false).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
+// V87.268 · i l'idioma de l'usuari (o de l'aparell), perquè les finestres del núvol ja surtin en el seu idioma.
+startBigStore().catch(() => false).then(() => { try { setLang(readLang(sessionStorage.getItem("aco_current_user8779") || "")); } catch {} }).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
   const { default: App } = await import("./App.jsx");
   createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
 });

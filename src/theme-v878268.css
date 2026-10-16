@@ -1,0 +1,67 @@
+/* V87.268 · Base nova: capçalera fixa amb «Tornar», barra fixa a baix (mòbil i iPad), rètols petits, una sola lletra */
+:root{--nav-h-v878268:58px}
+
+/* Una sola lletra per a tot: els codis (expedient, partida, Gantt) ja no fan servir la lletra de màquina d'escriure.
+   Les xifres tenen la mateixa amplada perquè les columnes quedin alineades. */
+html body .obra-head-main-v87105>small,
+html body table.exp-table-v8742 .exp-code-v8739,
+html body .obra-hero-info-v878252 .meta .code,
+html body .gantt-row-v878252 code,
+html body .budget-warnings-v878253 code,
+html body .gt-left-v878253 code,
+html body .budget-v25-line>.budget-static-cell-v87173:first-of-type{font-family:inherit!important;font-variant-numeric:tabular-nums;letter-spacing:0!important}
+
+/* Barra de baix i capçalera nova: només al mòbil i l'iPad */
+.bottom-nav-v878268{display:none}
+html body .app-head-v878268{display:none}
+
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  /* La capçalera es queda fixa a dalt. Abans «overflow-x:hidden» (a html, body, #root i .main) la desenganxava;
+     «clip» talla igual el que surt pels costats però sense crear una zona de scroll pròpia. */
+  html,body,#root{overflow-x:clip!important}
+  html body .main{overflow-x:clip!important;padding-top:0!important;padding-bottom:calc(var(--nav-h-v878268) + 76px + env(safe-area-inset-bottom,0px))!important}
+  /* (76 px: hi cap el comptador de temps, que va just a sobre de la barra, sense tapar l’últim botó) */
+
+  html body .app-head-v878268{display:flex!important;position:sticky!important;top:0!important;z-index:80!important;align-items:center;gap:8px;
+    min-height:52px;margin:0 calc(50% - 50vw) 10px!important;padding:calc(6px + env(safe-area-inset-top,0px)) 96px 6px 8px!important;
+    background:rgba(255,255,255,.97)!important;border:0!important;border-bottom:1px solid var(--co-line,#DCE3E7)!important;border-radius:0!important;
+    box-shadow:0 4px 14px rgba(15,23,42,.06)!important;backdrop-filter:blur(10px)}
+  html body .app-head-v878268 .back-v878268{display:inline-flex;align-items:center;gap:2px;min-height:40px;padding:0 10px 0 4px;border:0;border-radius:10px;
+    background:transparent;color:var(--co-accent,#1d4ed8);font:600 15px/1 inherit;cursor:pointer;flex:none}
+  html body .app-head-v878268 .back-v878268 svg{width:22px;height:22px}
+  html body .app-head-v878268 .back-v878268:active{background:#eef2ff}
+  html body .app-head-v878268 .brand-v878268{width:36px;height:36px;flex:none;border:0;border-radius:10px;background:var(--co-accent,#1d4ed8);color:#fff;font:800 13px/1 inherit;letter-spacing:.04em;cursor:pointer}
+  html body .app-head-v878268 .title-v878268{flex:1;min-width:0;font-size:16px!important;font-weight:700;letter-spacing:0!important;color:var(--co-ink,#0f172a)!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* La franja blava antiga de «Tornar» ja no cal */
+  html body .screen-return-v87146{display:none!important}
+
+  .bottom-nav-v878268{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:85;height:calc(var(--nav-h-v878268) + env(safe-area-inset-bottom,0px));
+    padding:0 4px env(safe-area-inset-bottom,0px);background:rgba(255,255,255,.98);border-top:1px solid var(--co-line,#DCE3E7);
+    box-shadow:0 -6px 18px rgba(15,23,42,.06);backdrop-filter:blur(10px)}
+  .bottom-nav-v878268 button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;
+    color:#64748b;font:600 11px/1.1 inherit;cursor:pointer;padding:6px 2px;border-radius:12px}
+  .bottom-nav-v878268 button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bottom-nav-v878268 button svg{width:22px;height:22px}
+  .bottom-nav-v878268 button.on{color:var(--co-accent,#1d4ed8)}
+  .bottom-nav-v878268 button.on svg{stroke-width:2.4}
+  .bottom-nav-v878268 button:active{background:#f1f5f9}
+
+  /* Rètol del núvol: un punt petit a dalt a la dreta (amb una paraula si cal fer alguna cosa). No tapa res. */
+  html body .cloud-badge-v878257{top:calc(14px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:auto!important;right:12px!important;z-index:85!important;
+    font-size:0!important;gap:0!important;padding:6px 9px!important;min-height:26px;max-width:84px;box-shadow:none!important}
+  html body .cloud-badge-v878257.over-local{bottom:auto!important}
+  html body .cloud-badge-v878257::after{content:attr(data-short);font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html body .cloud-badge-v878257:not([data-short=""])::after{margin-left:6px}
+  /* «Desat a l'ordinador» només té sentit a l'ordinador */
+  html body .local-save-badge-v878252{display:none!important}
+  /* Comptador i «arxius pendents»: per sobre de la barra de baix */
+  html body .work-timer-v878254{bottom:calc(var(--nav-h-v878268) + 10px + env(safe-area-inset-bottom,0px))!important}
+  html body .files-badge-v878262{bottom:calc(var(--nav-h-v878268) + 10px + env(safe-area-inset-bottom,0px))!important}
+}
+
+/* Configuració → Idioma */
+.idioma-card-v878268 .idioma-row-v878268{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px 0}
+.idioma-card-v878268 .idioma-row-v878268 button{min-width:120px;min-height:40px}
+.idioma-card-v878268>small{display:block;margin:8px 16px 16px}
+@media print{.bottom-nav-v878268,.app-head-v878268{display:none!important}}

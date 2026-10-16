@@ -6,8 +6,9 @@
 // - Cada 20 s (i en tornar a l'app) es mira si un altre aparell ha canviat res.
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
+import { t } from "./i18n.js";
 
-const VERSION = "V87.267";
+const VERSION = "V87.268";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -75,9 +76,9 @@ async function api(path, { method = "GET", body, headers = {}, auth = true } = {
   if (auth) { await ensureToken(); h.Authorization = `Bearer ${session.access_token}`; }
   let r;
   try { r = await fetch(CLOUD_URL + path, { method, headers: h, body: body == null ? undefined : JSON.stringify(body), cache: "no-store" }); }
-  catch { const e = new Error("No hi ha connexió amb el núvol."); e.offline = true; throw e; }
-  const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch {}
-  if (!r.ok) { const e = new Error(j?.msg || j?.message || j?.error_description || j?.error || t || `Error ${r.status}`); e.status = r.status; throw e; }
+  catch { const e = new Error(t("No hi ha connexió amb el núvol.")); e.offline = true; throw e; }
+  const txt = await r.text(); let j = null; try { j = txt ? JSON.parse(txt) : null; } catch {}
+  if (!r.ok) { const e = new Error(j?.msg || j?.message || j?.error_description || j?.error || txt || `Error ${r.status}`); e.status = r.status; throw e; }
   return j;
 }
 function setSession(j) {
@@ -85,7 +86,7 @@ function setSession(j) {
   try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch {}
 }
 async function ensureToken() {
-  if (!session) throw new Error("Cal entrar al núvol.");
+  if (!session) throw new Error(t("Cal entrar al núvol."));
   if (Date.now() < session.expires_at - 60000) return;
   try { setSession(await api("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: session.refresh_token }, auth: false })); }
   catch (e) { if (!e.offline && e.status >= 400 && e.status < 500) { session = null; localStorage.removeItem(SESSION_KEY); e.relogin = true; } throw e; }
@@ -101,12 +102,12 @@ async function storageFetch(path, opts = {}) {
   await ensureToken();
   let r;
   try { r = await fetch(`${CLOUD_URL}/storage/v1/object/${path}`, { ...opts, headers: { apikey: CLOUD_KEY, Authorization: `Bearer ${session.access_token}`, ...(opts.headers || {}) }, cache: "no-store" }); }
-  catch { const e = new Error("No hi ha connexió amb el núvol."); e.offline = true; throw e; }
+  catch { const e = new Error(t("No hi ha connexió amb el núvol.")); e.offline = true; throw e; }
   return r;
 }
 async function storageUpload(path, blob, contentType) {
   const r = await storageFetch(`aco-fitxers/${path}`, { method: "POST", headers: { "Content-Type": contentType || "application/octet-stream", "x-upsert": "true" }, body: blob });
-  if (!r.ok) { const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch {} const e = new Error(j?.message || j?.error || t || `Error ${r.status}`); e.status = +(j?.statusCode || r.status); throw e; }
+  if (!r.ok) { const txt = await r.text(); let j = null; try { j = JSON.parse(txt); } catch {} const e = new Error(j?.message || j?.error || txt || `Error ${r.status}`); e.status = +(j?.statusCode || r.status); throw e; }
 }
 async function storageDownload(path) {
   const r = await storageFetch(`authenticated/aco-fitxers/${path}`);
@@ -118,7 +119,7 @@ async function storageDownload(path) {
 async function espai() { return api("/rest/v1/rpc/aco_espai", { method: "POST", body: {} }); }
 // V87.260 · canviar la contrasenya del núvol del compte connectat (Héctor o empresa).
 async function changePassword(password) {
-  if (!session) throw new Error("Cal estar connectat al núvol.");
+  if (!session) throw new Error(t("Cal estar connectat al núvol."));
   await api("/auth/v1/user", { method: "PUT", body: { password } });
 }
 async function pullSince(cursor) {
@@ -187,31 +188,31 @@ let carry = new Map(); // canvis alhora pendents de preguntar (es dictava o hi h
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function pieceLabel(key) {
   const [, id] = splitKey(key);
-  if (id !== null) { const o = readArr(kObres(), []).find(x => x?.id === id); return `Obra «${o?.nom || id}»`; }
+  if (id !== null) { const o = readArr(kObres(), []).find(x => x?.id === id); return t("Obra «{nom}»", { nom: o?.nom || id }); }
   const k = key.replace(/^aco_v8782__.+?__/, "");
-  const names = { aco_obres: "Llista d’expedients", aco_clients: "Clients", aco_agenda_v86: "Agenda" };
-  return names[k] || `Altres dades (${k.replace(/^aco_/, "").replace(/_v\d+$/, "")})`;
+  const names = { aco_obres: t("Llista d’expedients"), aco_clients: t("Clients"), aco_agenda_v86: t("Agenda") };
+  return names[k] || t("Altres dades ({nom})", { nom: k.replace(/^aco_/, "").replace(/_v\d+$/, "") });
 }
 // Qui ha fet un canvi: l'aparell (ordinador, iPhone…) o, a les obres compartides, el compte.
-const KIND = { Windows: "ordinador Windows", Macintosh: "Mac o iPad", Linux: "ordinador Linux", iPhone: "iPhone", iPad: "iPad", Android: "Android" };
+const KIND = { Windows: "ordinador Windows", Macintosh: "Mac o iPad", Linux: "ordinador Linux", iPhone: "iPhone", iPad: "iPad", Android: "Android" }; // es tradueix en mostrar-ho
 function devLabel(dev) {
-  if (!dev) return "Un altre aparell";
-  if (String(dev).includes("@")) return `Usuari ${companyOf(dev)?.username || dev}`;
+  if (!dev) return t("Un altre aparell");
+  if (String(dev).includes("@")) return t("Usuari {nom}", { nom: companyOf(dev)?.username || dev });
   const k = KIND[String(dev).split("-")[0]];
-  return k ? `Aparell (${k})` : "Un altre aparell";
+  return k ? t("Aparell ({nom})", { nom: t(k) }) : t("Un altre aparell");
 }
-function whoLabel(dev) { return dev === device ? "Aquest aparell" : devLabel(dev); }
+function whoLabel(dev) { return dev === device ? t("Aquest aparell") : devLabel(dev); }
 function askConflict(items) {
   hold(true);
   return new Promise(resolve => {
     const el = overlay(`
-      <h1>Canvis alhora</h1>
-      <p>Mentre treballaves aquí, s’ha canviat el mateix des d’un altre lloc:</p>
+      <h1>${t("Canvis alhora")}</h1>
+      <p>${t("Mentre treballaves aquí, s’ha canviat el mateix des d’un altre lloc:")}</p>
       <ul class="conflict-list-v878266">${items.map(i => `<li><b>${esc(i.label)}</b><span>${esc(i.who)}${i.when ? " · " + esc(fmtTime(i.when)) : ""}</span></li>`).join("")}</ul>
-      <p>Tria quina versió es queda. <b>L’altra no es perd</b>: es guarda a Configuració → «Versions guardades» i la pots recuperar quan vulguis.</p>
+      <p>${t("Tria quina versió es queda. <b>L’altra no es perd</b>: es guarda a Configuració → «Versions guardades» i la pots recuperar quan vulguis.")}</p>
       <div class="choices">
-        <button type="button" data-v="meva"><b>Quedar-me la meva</b><span>La que tens en aquest aparell.</span></button>
-        <button type="button" data-v="altre"><b>Quedar-me la de l’altre</b><span>La que ja és al núvol.</span></button>
+        <button type="button" data-v="meva"><b>${t("Quedar-me la meva")}</b><span>${t("La que tens en aquest aparell.")}</span></button>
+        <button type="button" data-v="altre"><b>${t("Quedar-me la de l’altre")}</b><span>${t("La que ja és al núvol.")}</span></button>
       </div>`);
     el.classList.add("conflict-v878266");
     el.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { el.remove(); hold(false); resolve(b.dataset.v); }));
@@ -279,7 +280,7 @@ function writePiece(key, value) {
 }
 // Recuperar una versió guardada: la d'ara també es guarda abans (així tampoc es perd).
 async function restoreVersion(id) {
-  const v = listVersions().find(x => x.id === id); if (!v) throw new Error("No trobo aquesta versió.");
+  const v = listVersions().find(x => x.id === id); if (!v) throw new Error(t("No trobo aquesta versió."));
   const { id: _id, data: _data, ...rest } = v;
   if (v.tipus === "compartida") {
     const loc = localShare(v.peca);
@@ -397,13 +398,16 @@ function paint(state, text) {
   }
   badge.dataset.state = state;
   badge.classList.toggle("over-local", !!document.querySelector(".local-save-badge-v878252"));
-  badge.textContent = text || (state === "busy" ? "Núvol · sincronitzant…"
-    : state === "offline" ? "Núvol · sense connexió (es pujarà després)"
-    : state === "error" ? "Núvol · error (clica per tornar-ho a provar)"
-    : state === "remote" ? "Canvis d’un altre aparell · Actualitzar"
-    : state === "login" ? "Núvol · cal tornar a entrar"
-    : `Núvol · al dia ${fmtTime(lastOk)}`);
-  badge.title = lastErr || (session ? `Connectat com ${session.email}` : "");
+  badge.textContent = text || (state === "busy" ? t("Núvol · sincronitzant…")
+    : state === "offline" ? t("Núvol · sense connexió (es pujarà després)")
+    : state === "error" ? t("Núvol · error (clica per tornar-ho a provar)")
+    : state === "remote" ? t("Canvis d’un altre aparell · Actualitzar")
+    : state === "login" ? t("Núvol · cal tornar a entrar")
+    : t("Núvol · al dia {quan}", { quan: fmtTime(lastOk) }));
+  // V87.268 · al mòbil i l'iPad el rètol és un punt petit a la capçalera amb una paraula
+  badge.dataset.short = state === "busy" ? "…" : state === "offline" ? t("Sense connexió") : state === "error" ? t("Error") : state === "remote" ? t("Actualitzar") : state === "login" ? t("Entrar") : "";
+  badge.setAttribute("aria-label", badge.textContent);
+  badge.title = lastErr || (session ? t("Connectat com {correu}", { correu: session.email }) : "");
 }
 
 // ---------- finestres d'inici ----------
@@ -418,29 +422,29 @@ function askLogin({ allowSkip = true, message = "" } = {}) {
   return new Promise(resolve => {
     const el = overlay(`
       <div class="logo">CO</div>
-      <h1>Entra al núvol</h1>
-      <p>Amb el teu compte veuràs les mateixes dades a l’ordinador, al mòbil i a la tauleta.</p>
+      <h1>${t("Entra al núvol")}</h1>
+      <p>${t("Amb el teu compte veuràs les mateixes dades a l’ordinador, al mòbil i a la tauleta.")}</p>
       <form>
-        <label><span>Usuari o correu</span><input name="email" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required></label>
-        <label><span>Contrasenya</span><input name="password" type="password" autocomplete="current-password" required></label>
+        <label><span>${t("Usuari o correu")}</span><input name="email" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required></label>
+        <label><span>${t("Contrasenya")}</span><input name="password" type="password" autocomplete="current-password" required></label>
         <p class="err" role="alert">${message}</p>
-        <button class="primary" type="submit">Entrar</button>
-        ${allowSkip ? `<button class="link" type="button" data-skip>${isLocalServer() ? "Ara no · treballar només en aquest ordinador" : "Ara no · treballar sense núvol en aquest aparell"}</button>` : ""}
+        <button class="primary" type="submit">${t("Entrar")}</button>
+        ${allowSkip ? `<button class="link" type="button" data-skip>${isLocalServer() ? t("Ara no · treballar només en aquest ordinador") : t("Ara no · treballar sense núvol en aquest aparell")}</button>` : ""}
       </form>`);
     const form = el.querySelector("form"), err = el.querySelector(".err"), btn = el.querySelector("button.primary");
     const email = form.elements.email; email.value = localStorage.getItem("nuvol-aco-correu") || ""; (email.value ? form.elements.password : email).focus();
     form.addEventListener("submit", async e => {
-      e.preventDefault(); err.textContent = ""; btn.disabled = true; btn.textContent = "Entrant…";
+      e.preventDefault(); err.textContent = ""; btn.disabled = true; btn.textContent = t("Entrant…");
       try {
         await login(toEmail(form.elements.email.value), form.elements.password.value);
         try { localStorage.setItem("nuvol-aco-correu", form.elements.email.value.trim()); } catch {}
         el.remove(); resolve("ok");
       } catch (x) {
-        err.textContent = x.offline ? "No hi ha connexió amb el núvol. Revisa Internet i torna-ho a provar."
-          : /invalid login|invalid_grant|credentials/i.test(x.message) ? "Usuari o contrasenya incorrectes."
-          : /not confirmed/i.test(x.message) ? "Aquest correu encara no està confirmat a Supabase."
+        err.textContent = x.offline ? t("No hi ha connexió amb el núvol. Revisa Internet i torna-ho a provar.")
+          : /invalid login|invalid_grant|credentials/i.test(x.message) ? t("Usuari o contrasenya incorrectes.")
+          : /not confirmed/i.test(x.message) ? t("Aquest correu encara no està confirmat a Supabase.")
           : x.message;
-        btn.disabled = false; btn.textContent = "Entrar";
+        btn.disabled = false; btn.textContent = t("Entrar");
       }
     });
     el.querySelector("[data-skip]")?.addEventListener("click", () => { el.remove(); resolve("skip"); });
@@ -449,15 +453,15 @@ function askLogin({ allowSkip = true, message = "" } = {}) {
 function askChoice({ cloudWhen, cloudDevice, localObres, cloudObres }) {
   return new Promise(resolve => {
     const el = overlay(`
-      <h1>Ja hi ha dades al núvol</h1>
-      <p>Al núvol hi ha <b>${cloudObres} expedients</b>, desats el ${fmtTime(cloudWhen)}. En aquest aparell n’hi ha <b>${localObres}</b>. Quines dades vols fer servir?</p>
+      <h1>${t("Ja hi ha dades al núvol")}</h1>
+      <p>${t("Al núvol hi ha <b>{n} expedients</b>, desats el {quan}. En aquest aparell n’hi ha <b>{m}</b>. Quines dades vols fer servir?", { n: cloudObres, quan: fmtTime(cloudWhen), m: localObres })}</p>
       <div class="choices">
-        <button type="button" data-v="cloud"><b>Les del núvol (${cloudObres} expedients)</b><span>Aquest aparell es posa igual que el núvol. És el normal al mòbil, a la tauleta o a qualsevol aparell nou.</span></button>
-        <button type="button" data-v="local"><b>Les d’aquest aparell (${localObres} expedients)</b><span>Esborra el que hi ha al núvol i hi posa les dades d’aquí. Només si saps que aquestes són les bones.</span></button>
+        <button type="button" data-v="cloud"><b>${t("Les del núvol ({n} expedients)", { n: cloudObres })}</b><span>${t("Aquest aparell es posa igual que el núvol. És el normal al mòbil, a la tauleta o a qualsevol aparell nou.")}</span></button>
+        <button type="button" data-v="local"><b>${t("Les d’aquest aparell ({n} expedients)", { n: localObres })}</b><span>${t("Esborra el que hi ha al núvol i hi posa les dades d’aquí. Només si saps que aquestes són les bones.")}</span></button>
       </div>
       <div class="confirm" hidden>
-        <p><b>Segur?</b> Les ${cloudObres} obres del núvol se substituiran per les ${localObres} d’aquest aparell, també als altres aparells.</p>
-        <div class="choices"><button type="button" data-ok><b>Sí, substituir el núvol</b></button><button type="button" data-back><b>No, tornar enrere</b></button></div>
+        <p>${t("<b>Segur?</b> Les {n} obres del núvol se substituiran per les {m} d’aquest aparell, també als altres aparells.", { n: cloudObres, m: localObres })}</p>
+        <div class="choices"><button type="button" data-ok><b>${t("Sí, substituir el núvol")}</b></button><button type="button" data-back><b>${t("No, tornar enrere")}</b></button></div>
       </div>`);
     const first = el.querySelector(".choices"), confirm = el.querySelector(".confirm");
     el.querySelector("[data-v=cloud]").addEventListener("click", () => { el.remove(); resolve("cloud"); });
@@ -600,8 +604,8 @@ async function sharedCycle(canApply) {
   return { applied, waiting };
 }
 async function shareObra(obraId, lectors = [], editors = []) {
-  if (!session) throw new Error("Cal estar connectat al núvol.");
-  const loc = localShare(obraId); if (!loc) throw new Error("No trobo aquesta obra.");
+  if (!session) throw new Error(t("Cal estar connectat al núvol."));
+  const loc = localShare(obraId); if (!loc) throw new Error(t("No trobo aquesta obra."));
   const norm = a => [...new Set(a.map(toEmail).filter(e => e && e !== session.email))];
   await api(`/rest/v1/aco_shared?on_conflict=obra_id`, { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: [{ obra_id: obraId, owner: session.user_id, owner_email: session.email, owner_nom: ownerNom(), lectors: norm(lectors), editors: norm(editors), ...loc, updated_by: session.email }] });
   const sm = readArr(sharedMetaKey(), null) || { known: {} }; sm.known[obraId] = shHash(loc); (sm.kc ||= {})[obraId] = shContent(loc); writeRaw(sharedMetaKey(), JSON.stringify(sm));
@@ -626,7 +630,7 @@ async function cycle({ startup = false, returning = false } = {}) {
   try {
     // Primera vegada amb aquest compte en aquest aparell: cal decidir com s'ajunten les dades.
     if (meta.userId !== session.user_id) {
-      if (!startup) { lastErr = "Tanca i torna a obrir l'app per acabar de connectar-la al núvol."; paint("error", "Núvol · torna a obrir l’app"); return; }
+      if (!startup) { lastErr = t("Tanca i torna a obrir l'app per acabar de connectar-la al núvol."); paint("error", t("Núvol · torna a obrir l’app")); return; }
       await firstSync();
     }
     if (!meta.at) await loadAt();
@@ -654,13 +658,13 @@ async function cycle({ startup = false, returning = false } = {}) {
     let tookTheirs = false;
     const conflictRows = remote.filter(r => pendSet.has(r.key));
     if (conflictRows.length) {
-      const t = triage(conflictRows, local);
-      const mine = new Set(t.mine.map(r => r.key));
-      t.mine.forEach(keepMine);
-      if (t.ask.length) {
-        if (holds) t.ask.forEach(r => { carry.set(r.key, r); held.add(r.key); });
+      const tri = triage(conflictRows, local);
+      const mine = new Set(tri.mine.map(r => r.key));
+      tri.mine.forEach(keepMine);
+      if (tri.ask.length) {
+        if (holds) tri.ask.forEach(r => { carry.set(r.key, r); held.add(r.key); });
         else {
-          const res = await resolveConflicts(t.ask, local);
+          const res = await resolveConflicts(tri.ask, local);
           res.mine.forEach(k => mine.add(k));
           if (res.theirs.length) tookTheirs = true;
           local = entries(); // les versions guardades també es pugen
@@ -680,13 +684,13 @@ async function cycle({ startup = false, returning = false } = {}) {
       toPush.forEach(k => { if (!clashKeys.has(k)) know(k, local[k]); });
       // Algú ha desat la mateixa peça just ara: no s'ha trepitjat. Es pregunta (o, si ara no es pot, després).
       if (clash.length) {
-        const t = triage(clash.map(c => c.theirs), local);
-        t.mine.forEach(keepMine);
-        remote.push(...t.theirs);
-        if (t.ask.length) {
-          if (holds) t.ask.forEach(r => carry.set(r.key, r));
+        const tri = triage(clash.map(c => c.theirs), local);
+        tri.mine.forEach(keepMine);
+        remote.push(...tri.theirs);
+        if (tri.ask.length) {
+          if (holds) tri.ask.forEach(r => carry.set(r.key, r));
           else {
-            const res = await resolveConflicts(t.ask, local);
+            const res = await resolveConflicts(tri.ask, local);
             if (res.theirs.length) { remote.push(...res.theirs); tookTheirs = true; }
           }
         }
@@ -717,7 +721,7 @@ async function cycle({ startup = false, returning = false } = {}) {
   } catch (e) {
     lastErr = String(e?.message || e);
     if (meta.userId !== session?.user_id) active = false;
-    if (e.relogin) paint("login"); else if (e.space) paint("error", "Núvol · aquest aparell no té prou espai"); else paint(e.offline ? "offline" : "error");
+    if (e.relogin) paint("login"); else if (e.space) paint("error", t("Núvol · aquest aparell no té prou espai")); else paint(e.offline ? "offline" : "error");
     if (startup) throw e;
   } finally {
     busy = false;
@@ -741,14 +745,14 @@ function massChange(keys, local) {
 }
 async function stopForSafety(risk) {
   active = false;
-  lastErr = "Aturat per seguretat: aquest aparell volia esborrar o buidar diverses obres del núvol.";
-  paint("error", "Núvol · aturat per seguretat");
+  lastErr = t("Aturat per seguretat: aquest aparell volia esborrar o buidar diverses obres del núvol.");
+  paint("error", t("Núvol · aturat per seguretat"));
   const el = overlay(`
-    <h1>Aturat per seguretat</h1>
-    <p>Aquest aparell volia ${risk.dels ? `esborrar ${risk.dels} obres` : ""}${risk.dels && risk.shrinks ? " i " : ""}${risk.shrinks ? `buidar ${risk.shrinks} obres` : ""}${risk.lost ? ` deixar el núvol amb ${risk.obresNow} expedients (n’hi havia ${risk.obresBefore})` : ""} del núvol. Segurament té dades velles. No s’ha pujat res.</p>
+    <h1>${t("Aturat per seguretat")}</h1>
+    <p>${t("Aquest aparell volia {que} del núvol. Segurament té dades velles. No s’ha pujat res.", { que: [risk.dels ? t("esborrar {n} obres", { n: risk.dels }) : "", risk.shrinks ? t("buidar {n} obres", { n: risk.shrinks }) : "", risk.lost ? t("deixar el núvol amb {n} expedients (n’hi havia {m})", { n: risk.obresNow, m: risk.obresBefore }) : ""].filter(Boolean).join(t(" i ")) })}</p>
     <div class="choices">
-      <button type="button" data-v="cloud"><b>Carregar les dades del núvol</b><span>Recomanat. Aquest aparell es posa igual que el núvol.</span></button>
-      <button type="button" data-v="later"><b>Ara no</b><span>Aquest aparell continua sense sincronitzar fins que el tornis a obrir.</span></button>
+      <button type="button" data-v="cloud"><b>${t("Carregar les dades del núvol")}</b><span>${t("Recomanat. Aquest aparell es posa igual que el núvol.")}</span></button>
+      <button type="button" data-v="later"><b>${t("Ara no")}</b><span>${t("Aquest aparell continua sense sincronitzar fins que el tornis a obrir.")}</span></button>
     </div>`);
   const choice = await new Promise(res => el.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { el.remove(); res(b.dataset.v); })));
   if (choice === "cloud") {
@@ -774,7 +778,7 @@ async function forcePushAll() {
 }
 async function applyWaitingAndReload() {
   // V87.266 · amb una finestra oberta (acta a mig fer, formulari…) no es recarrega: es perdria el que no s'ha desat.
-  if (holds) { alert("Hi ha canvis d’un altre aparell. Desa o tanca primer el que tens obert i torna a clicar «Actualitzar»."); return; }
+  if (holds) { alert(t("Hi ha canvis d’un altre aparell. Desa o tanca primer el que tens obert i torna a clicar «Actualitzar».")); return; }
   remoteWaiting = null;
   await cycle({ returning: true });
 }
@@ -795,7 +799,7 @@ function schedule(ms = 4000) { clearTimeout(timer); timer = setTimeout(() => cyc
 async function syncNow() { await cycle({ returning: true }); }
 // V87.258.2 · entrar amb un altre compte des de la pantalla d'entrada de l'app.
 // V87.259.2 · funcions de Supabase (p. ex. «llegir-albara»), amb la sessió de l'usuari.
-async function callFunction(name, body) { if (!session) throw new Error("Cal estar connectat al núvol."); return api(`/functions/v1/${name}`, { method: "POST", body }); }
+async function callFunction(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/functions/v1/${name}`, { method: "POST", body }); }
 async function switchTo(user, pass) {
   const was = active; active = false;
   try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
@@ -822,7 +826,7 @@ function hook() {
     Storage.prototype.setItem = function (k, v) { set.call(this, k, v); if (this === window.localStorage) watch(k); };
     Storage.prototype.removeItem = function (k) { remove.call(this, k); if (this === window.localStorage) watch(k); };
   }
-  ["pointerdown", "keydown", "wheel", "touchstart"].forEach(t => window.addEventListener(t, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
+  ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => window.addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") { clearTimeout(timer); cycle(); }
     else cycle({ returning: true });
