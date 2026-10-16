@@ -14,6 +14,7 @@ import "./theme-v878272.css";
 import "./theme-v878273.css";
 import "./theme-v878275.css";
 import "./theme-v878276.css";
+import "./theme-v878277.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";

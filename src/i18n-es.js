@@ -1557,4 +1557,9 @@ export default {
   "Obligatori per als autònoms i la resta.": "Obligatorio para los autónomos y el resto.",
   "Desembre 2026": "Diciembre 2026",
   "Control d’Obres amb VeriFactu, provat i a punt.": "Control de Obras con VeriFactu, probado y listo.",
+
+  // V87.277 · Pressupost per al client dins de Pressupost
+  "Pressupost per al client": "Presupuesto para el cliente",
+  "Número, condicions, forma de pagament i PDF": "Número, condiciones, forma de pago y PDF",
+  "PDF per al client": "PDF para el cliente",
 };

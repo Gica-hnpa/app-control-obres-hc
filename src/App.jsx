@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.276";
+const APP_VERSION878264="87.277";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1879,7 +1879,8 @@ function tabsForWork8737(obra,data={}){
     const idx=Math.max(1,tabs.indexOf("Documents")+1);
     tabs.splice(idx,0,"Pressupost ràpid");
   }
-  if((data?.actes||[]).length&&!tabs.includes("Actes")) tabs.splice(Math.min(5,tabs.length),0,"Actes");
+  // V87.277 · les actes serveixen a tothom (visites d’obra, visites prèvies…): a tots els tipus de treball
+  if(!tabs.includes("Actes")){const i=tabs.indexOf("Agenda / Avisos");tabs.splice(i>=0?i+1:Math.min(5,tabs.length),0,"Actes")}
   // V87.120: la gestió econòmica d'obra ha de ser disponible en qualsevol expedient,
   // encara que la feina principal no sigui una gestió integral. Això permet crear/importar
   // un pressupost d'obra quan calgui, en lloc de deixar-lo només com a PDF a Documents.
@@ -6570,10 +6571,10 @@ const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)ret
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
   <Card title={t("Expedients")} action={<button className="primary" onClick={newObra}><Plus/> {t("Nou expedient")}</button>}>
     <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar expedient, client, obra o població…")} aria-label={t("Buscar")}/></div>
-    <ExpFilters878275 all={allObres} clients={clients} f={f}/>
     <div className="filters filters-v8741 filters-v8742 desktop-filters-v87119">
       <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar per número, codi, client, treball, adreça o municipi…")}/></div>
     </div>
+    <ExpFilters878275 all={allObres} clients={clients} f={f}/>
     <div className="exp-list-header-v8741"><span>{t("{n} expedients",{n:total})}</span><div className="actions-inline exp-sort-controls-v878192"><label><span>{t("Ordenar per")}</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{t(o.label)}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?t("Ascendent ▲"):t("Descendent ▼")}</button><button className="secondary" onClick={clearAll}>{t("Netejar filtres")}</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>{t("Tornar a tots els tipus")}</button>}</div></div>
     <div className="exp-mobile-tree-v87119 exp-cards-v878270">
       {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));return <section key={any} className="exp-year-v878270">
@@ -6591,7 +6592,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
         <thead><tr><th>{sortHead878192("numero","Número")}</th><th>{t("Núm. client")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
         <tbody>{flat.length===0&&<tr><td colSpan="7"><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
           <tr className="year-row-v8742"><td colSpan="7">{any}</td></tr>
-          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b><small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small></td><td><b>{clientProjectLabel878233(o)}</b></td><td>{clientNom(o)}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca||"—"}</span><small>{o.poblacio||"—"}</small></td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}
+          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td><td><b>{clientProjectLabel878233(o)}</b></td><td>{clientNom(o)}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{o.poblacio}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
@@ -7625,7 +7626,7 @@ function PressupostRapid878150(props){
   }
   function exportRapidExcel878180(){exportBudgetDocExcelStyled878246(doc878153(),`pressupost_rapid_${numeroPressupost||props.obra?.nom||"export"}`)}
   return <div className="pressupost-rapid-v87150 pressupost-rapid-v87153 pressupost-rapid-v87155 pressupost-rapid-v87160">
-    <Card title={t("Pressupost ràpid")} action={<div className="actions-inline compact-actions-v87160">{!props.clientMode&&<label className="secondary upload-label"><Upload/> {t("Importar Excel")}<input type="file" accept=".xlsx,.xls" onChange={props.importExcel}/></label>}{!props.clientMode&&<button className="secondary" onClick={()=>openAiBudget878256({obra:props.obra,client:props.client,data:props.data,importExcel:props.importExcel})}>{t("Pressupost amb IA")}</button>}<button className="secondary" onClick={addManual878153}>{t("+ Partida manual")}</button><button className="secondary" onClick={saveAsDocument878153}>{t("Guardar a Documents")}</button><button className="primary" onClick={()=>props.openDoc?.(doc878153())}>{t("Previsualitzar / PDF")}</button>{!props.clientMode&&<button className="secondary" onClick={exportRapidExcel878180}>{t("Exportar Excel")}</button>}</div>}>
+    <Card title={props.headerOnly?t("PDF per al client"):t("Pressupost ràpid")} action={<div className="actions-inline compact-actions-v87160">{!props.clientMode&&!props.headerOnly&&<label className="secondary upload-label"><Upload/> {t("Importar Excel")}<input type="file" accept=".xlsx,.xls" onChange={props.importExcel}/></label>}{!props.clientMode&&!props.headerOnly&&<button className="secondary" onClick={()=>openAiBudget878256({obra:props.obra,client:props.client,data:props.data,importExcel:props.importExcel})}>{t("Pressupost amb IA")}</button>}{!props.headerOnly&&<button className="secondary" onClick={addManual878153}>{t("+ Partida manual")}</button>}<button className="secondary" onClick={saveAsDocument878153}>{t("Guardar a Documents")}</button><button className="primary" onClick={()=>props.openDoc?.(doc878153())}>{t("Previsualitzar / PDF")}</button>{!props.clientMode&&<button className="secondary" onClick={exportRapidExcel878180}>{t("Exportar Excel")}</button>}</div>}>
       {/* V87.273 · sense la franja de xifres: el total ja és a la capçalera del pressupost; client i obra, a la barra de l'obra */}
       <details className="progressive-panel-v87160">
         <summary><b>{t("Dades del pressupost")}</b><span>{t("Número, referència, versió i dades del tercer")}</span></summary>
@@ -7651,10 +7652,10 @@ function PressupostRapid878150(props){
         </div>
       </details>
     </Card>
-    <details className="progressive-panel-v87160 pressupost-editor-panel-v87160" open>
+    {!props.headerOnly&&<details className="progressive-panel-v87160 pressupost-editor-panel-v87160" open>
       <summary><b>{t("Pressupost per capítols, versions i llibreria")}</b><span>{t("Edita partides, afegeix des de llibreria o incorpora descomposats")}</span></summary>
       <Pressupost {...props} quickMode/>
-    </details>
+    </details>}
   </div>
 }
 
@@ -7667,6 +7668,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
   const[tabsOpen,setTabsOpen]=useState(()=>!(typeof window!=="undefined"&&(window.innerWidth||0)<951));
   const[mobileFlowOpen87119,setMobileFlowOpen87119]=useState(false);
   const[mobileActionsOpen87119,setMobileActionsOpen87119]=useState(false);
+  const[rapidOpen878277,setRapidOpen878277]=useState(false);
   useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
   let tabs=tabsForWork8737(obra,data);
   if(readOnly){
@@ -7679,9 +7681,12 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     tabs=tabs.filter(t=>clientAllowedAliases878239.includes(t));
   }
   else if(allowedTabs.length)tabs=tabs.filter(t=>allowedTabs.includes(t)||t==="Resum");
+  // V87.277 · una sola pestanya «Pressupost»: el ràpid hi va a dins («Pressupost per al client»: número, condicions i PDF)
+  const rapidMerged878277=!readOnly&&tabs.includes("Pressupost")&&tabs.includes("Pressupost ràpid");
+  if(rapidMerged878277)tabs=tabs.filter(t=>t!=="Pressupost ràpid");
   if(!tabs.length)tabs=["Resum"];
   const navigationTabs=tabs.filter(t=>t!=="Renders / Presentació");
-  useEffect(()=>{if(!navigationTabs.includes(tab))setTab(navigationTabs[0]||"Resum")},[obra?.id,tab,readOnly,allowedTabs.join("|"),tabs.join("|")]);
+  useEffect(()=>{if(!navigationTabs.includes(tab))setTab(tab==="Pressupost ràpid"&&navigationTabs.includes("Pressupost")?"Pressupost":(navigationTabs[0]||"Resum"))},[obra?.id,tab,readOnly,allowedTabs.join("|"),tabs.join("|")]);
   const workType878193=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
   const canQuickBudget878193=["Pressupost d’obra / amidaments","Elaboració de pressupost per client"].includes(workType878193)||tabs.includes("Pressupost ràpid");
   const preferredBudgetTab878239=tabs.includes("Pressupost")?"Pressupost":tabs.includes("Pressupost ràpid")?"Pressupost ràpid":tabs.includes("Pressupost obra")?"Pressupost obra":tabs.includes("Gestió obra")?"Gestió obra":"";
@@ -7754,6 +7759,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly&&!clientEditCertifications} clientMode={readOnly}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
+    {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Pressupost per al client")}</b><span>{i18nT("Número, condicions, forma de pagament i PDF")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 key={activeTab} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>} 
@@ -10945,7 +10951,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.276",
+    app_version:"87.277",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
