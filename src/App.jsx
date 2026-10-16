@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.277";
+const APP_VERSION878264="87.278";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1828,7 +1828,7 @@ const TAB_TEMPLATES8769={
 function uniqueTabs8769(arr){return [...new Set((arr||[]).filter(Boolean))]}
 const WORK_TAB_GROUPS878238=[
   {label:"General",tabs:["Resum","Dades","Agents"]},
-  {label:"Documentació",tabs:["Documents","Actes","Fotografies","Plànols","Amidaments","Memòria / Informe / Certificat","Tràmits","Seguretat i salut"]},
+  {label:"Documentació",tabs:["Documents","Actes","Notes","Fotografies","Plànols","Amidaments","Memòria / Informe / Certificat","Tràmits","Seguretat i salut"]},
   {label:"Pressupost i econòmic",tabs:["Pressupost","Certificacions","Pressupost ràpid","Pressupost obra","Pressupostos","Gestió obra","Certificacions obra","Facturació","Facturació obra","Seguiment econòmic","Factures","Honoraris"]},
   {label:"Seguiment",tabs:["Gantt","Agenda / Avisos","Tasques","Gestió temps","Rendiment","Rendiments"]},
   {label:"Tancament",tabs:["Tancament / Entrega"]}
@@ -1881,6 +1881,8 @@ function tabsForWork8737(obra,data={}){
   }
   // V87.277 · les actes serveixen a tothom (visites d’obra, visites prèvies…): a tots els tipus de treball
   if(!tabs.includes("Actes")){const i=tabs.indexOf("Agenda / Avisos");tabs.splice(i>=0?i+1:Math.min(5,tabs.length),0,"Actes")}
+  // V87.278 · notes de visita (més lleugeres que l’acta) a tots els treballs
+  if(!tabs.includes("Notes"))tabs.splice(tabs.indexOf("Actes")+1,0,"Notes");
   // V87.120: la gestió econòmica d'obra ha de ser disponible en qualsevol expedient,
   // encara que la feina principal no sigui una gestió integral. Això permet crear/importar
   // un pressupost d'obra quan calgui, en lloc de deixar-lo només com a PDF a Documents.
@@ -2839,6 +2841,65 @@ function VersionsGuardades878266(){
   </Card>;
 }
 
+// V87.278 · Notes de visita: per a visites prèvies, anar a mirar una feina… Més lleugeres que l'acta: número i data
+// automàtics, text o dictat, fotos i documents. Es numeren soles (1, 2, 3…) i surten de la més nova a la més antiga.
+async function addNotePhotos878278(files,setDraft){
+  for(const file of [...(files||[])]){
+    try{
+      const info={};const src=await resizeImageDataUrl8779(file,1600,0.82,info);
+      if(info.notReduced&&(file.size||0)>1.5*1048576&&!confirm(t("La foto «{nom}» no s’ha pogut reduir ({mb} MB). Ocuparia molt espai al núvol.\n\nVols afegir-la igualment?",{nom:file.name||"Foto",mb:MB878263(file.size)})))continue;
+      const now=new Date().toISOString();
+      setDraft(d=>d?{...d,fotos:[...(d.fotos||[]),{id:"foto-nota-"+Date.now()+"-"+Math.random().toString(16).slice(2),nom:file.name||"Foto",src,data:todayISO8761(),createdAt:now}]}:d);
+    }catch{alert(t("No s’ha pogut afegir la foto. Prova amb una imatge més petita."))}
+  }
+}
+function Notes878278({obra={},data={},setData,readOnly=false}){
+  const notes=[...(data.notes||[])].sort((a,b)=>(+b.numero||0)-(+a.numero||0));
+  const[draft,setDraft]=useState(null);
+  useHoldSync878266(!!draft);
+  const acc=getAppAccount878233(currentAppUser8779());
+  const canDelete=!readOnly&&!obra?.compartida&&!(acc?.role&&acc.role!=="admin");
+  const nextNum=()=>(data.notes||[]).reduce((m,n)=>Math.max(m,+n.numero||0),0)+1;
+  function nova(){const now=new Date().toISOString();setDraft({id:"nota-"+Date.now(),numero:nextNum(),data:todayISO8743(),text:"",fotos:[],docs:[],createdAt:now,isNew:true})}
+  function obrir(n){setDraft({...n,fotos:[...(n.fotos||[])],docs:[...(n.docs||[])]})}
+  const set=(k,v)=>setDraft(d=>({...d,[k]:v}));
+  function desar(){
+    if(!String(draft.text||"").trim()&&!(draft.fotos||[]).length&&!(draft.docs||[]).length){alert(t("Escriu alguna cosa o afegeix una foto o un document."));return}
+    const now=new Date().toISOString();const{isNew,...n}={...draft,updatedAt:now};
+    setData(d=>{const list=d.notes||[];
+      // si s'ha fet una altra nota amb el mateix número en un altre aparell, aquesta passa a la següent
+      if(isNew&&list.some(x=>+x.numero===+n.numero))n.numero=list.reduce((m,x)=>Math.max(m,+x.numero||0),0)+1;
+      return {...d,notes:list.some(x=>x.id===n.id)?list.map(x=>x.id===n.id?n:x):[...list,n],updatedAt:now}});
+    setDraft(null);
+  }
+  function esborrar(){if(!confirm(t("Eliminar la nota {n}? Les fotos i els documents de la nota també es treuen.",{n:draft.numero})))return;setData(d=>({...d,notes:(d.notes||[]).filter(x=>x.id!==draft.id),updatedAt:new Date().toISOString()}));setDraft(null)}
+  const resum=n=>{const txt=String(n.text||"").trim().split(/\n/)[0];return txt.length>140?txt.slice(0,140)+"…":txt};
+  if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={<button type="button" className="secondary" onClick={()=>setDraft(null)}>{t("Tancar")}</button>}>
+    <fieldset disabled={readOnly} className="notes-form-v878278">
+      <label className="notes-date-v878278"><span>{t("Dia")}</span><input type="date" value={draft.data||""} onChange={e=>set("data",e.target.value)}/></label>
+      <label className="notes-text-v878278"><span>{t("Què has vist o què s’ha de fer")}</span><textarea rows={6} value={draft.text||""} onChange={e=>set("text",e.target.value)} placeholder={t("Escriu o dicta la nota…")}/></label>
+      {!readOnly&&<DictatActa878263 value={draft.text||""} onChange={v=>set("text",v)}/>}
+      <div className="notes-files-v878278">
+        <div className="notes-files-head-v878278"><b>{t("Fotos")}</b>{!readOnly&&<span><label className="primary file-btn-v8761">{t("Fer foto")}<input type="file" accept="image/*" capture="environment" onChange={e=>{addNotePhotos878278(e.target.files,setDraft);e.target.value=""}}/></label><label className="secondary file-btn-v8761">{t("Afegir fotos")}<input type="file" accept="image/*" multiple onChange={e=>{addNotePhotos878278(e.target.files,setDraft);e.target.value=""}}/></label></span>}</div>
+        {(draft.fotos||[]).length>0?<div className="notes-photos-v878278">{draft.fotos.map(p=><div key={p.id} className="notes-photo-v878278"><FileImg878261 src={p.src}/>{!readOnly&&<button type="button" aria-label={t("Treure la foto")} onClick={()=>set("fotos",draft.fotos.filter(x=>x.id!==p.id))}><X size={14}/></button>}</div>)}</div>:<small>{t("Encara no hi ha fotos.")}</small>}
+      </div>
+      <div className="notes-files-v878278">
+        <div className="notes-files-head-v878278"><b>{t("Documents")}</b>{!readOnly&&<label className="secondary file-btn-v8761">{t("Adjuntar document")}<input type="file" multiple onChange={e=>{addActaDocFiles8764(e.target.files,setDraft);e.target.value=""}}/></label>}</div>
+        {(draft.docs||[]).length>0?<ul className="notes-docs-v878278">{draft.docs.map(x=><li key={x.id}><Paperclip size={14}/><span>{x.nom}</span>{!readOnly&&<button type="button" aria-label={t("Treure el document")} onClick={()=>set("docs",draft.docs.filter(y=>y.id!==x.id))}><X size={14}/></button>}</li>)}</ul>:<small>{t("Encara no hi ha documents.")}</small>}
+      </div>
+    </fieldset>
+    {!readOnly&&<div className="modal-actions notes-actions-v878278">{!draft.isNew&&canDelete&&<button type="button" className="danger" onClick={esborrar}>{t("Eliminar la nota")}</button>}<button type="button" className="secondary" onClick={()=>setDraft(null)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar la nota")}</button></div>}
+  </Card>;
+  return <Card className="notes-v878278" title={t("Notes")} action={!readOnly&&<button type="button" className="primary" onClick={nova}><Plus size={16}/> {t("Nova nota")}</button>}>
+    <p className="notes-help-v878278">{t("Per a visites prèvies o per anar a mirar una feina: escriu o dicta, fes fotos i adjunta documents. Cada nota es numera sola i porta la data del dia.")}</p>
+    {notes.length===0?<Empty text="Encara no hi ha notes en aquesta obra."/>:<div className="notes-list-v878278">{notes.map(n=><button type="button" key={n.id} className="notes-row-v878278" onClick={()=>obrir(n)}>
+      <span className="notes-num-v878278">{t("Nota {n}",{n:n.numero})}</span>
+      <span className="notes-day-v878278">{fmtDate8761(n.data)}</span>
+      <span className="notes-txt-v878278">{resum(n)||<em>{t("Sense text")}</em>}</span>
+      <span className="notes-meta-v878278">{(n.fotos||[]).length>0&&<span><Camera size={14}/> {(n.fotos||[]).length}</span>}{(n.docs||[]).length>0&&<span><Paperclip size={14}/> {(n.docs||[]).length}</span>}</span>
+    </button>)}</div>}
+  </Card>;
+}
 function addActaDocFiles8764(files,setDraft){
   [...(files||[])].filter(confirmBigDocument878263).forEach(file=>{
     const reader=new FileReader();
@@ -7763,6 +7824,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 key={activeTab} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>} 
+    {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
     {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents}/>} 
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
@@ -7805,7 +7867,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
 // V87.269 · Obra: una sola barra. A dalt, les dades de l'obra (codi, client, tipus), l'estat i un menú ⋯ amb les
 // accions; a sota, els apartats en una tira que es pot lliscar, amb «Més» per a la resta. Abans hi havia «Apartats de
 // l'obra» i «Accions» per separat, i cada apartat s'obria en una finestra a sobre amb un altre selector.
-const OBRA_TABS_MAIN878269=["Resum","Pressupost","Pressupost ràpid","Pressupost obra","Certificacions","Gestió obra","Certificacions obra","Actes","Documents","Agenda / Avisos","Tasques","Gantt"];
+const OBRA_TABS_MAIN878269=["Resum","Pressupost","Pressupost ràpid","Pressupost obra","Certificacions","Gestió obra","Certificacions obra","Actes","Notes","Documents","Agenda / Avisos","Tasques","Gantt"];
 function tabLabel878269(tab,all=[]){
   if(tab==="Certificacions obra")return t("Certificacions");
   if(tab==="Agenda / Avisos")return t("Agenda");
@@ -10951,7 +11013,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.277",
+    app_version:"87.278",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
