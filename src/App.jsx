@@ -8,6 +8,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
 import {Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
+import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary} from "./googleCal.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
@@ -17,7 +18,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.294";
+const APP_VERSION878264="87.295";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11111,7 +11112,7 @@ function dateParts87109(e){
 }
 function cleanAgendaEvent87109(e,i=0){
   const dp=dateParts87109(e); if(!dp)return null;
-  return {id:String(e.id||`ag-${Date.now()}-${i}`),title:String(e.title||e.titol||e.resum||e.note||"Cita / avís"),tipus:String(e.tipus||e.type||"Avís"),hora:String(e.hora||"09:00"),client:String(e.client||""),obra:String(e.obra||""),obraId:e.obraId||"",adreca:String(e.adreca||""),detail:String(e.detail||e.note||e.observacions||""),color:e.color||"blue",horaFi:String(e.horaFi||""),allDay:!!e.allDay,avis:e.avis==null?"":String(e.avis),compta:!!e.compta,hrId:String(e.hrId||""),...dp};
+  return {id:String(e.id||`ag-${Date.now()}-${i}`),title:String(e.title||e.titol||e.resum||e.note||"Cita / avís"),tipus:String(e.tipus||e.type||"Avís"),hora:String(e.hora||"09:00"),client:String(e.client||""),obra:String(e.obra||""),obraId:e.obraId||"",adreca:String(e.adreca||""),detail:String(e.detail||e.note||e.observacions||""),color:e.color||"blue",horaFi:String(e.horaFi||""),allDay:!!e.allDay,avis:e.avis==null?"":String(e.avis),compta:!!e.compta,hrId:String(e.hrId||""),...(e.gId?{gId:String(e.gId),gUpdated:String(e.gUpdated||""),gSynced:String(e.gSynced||"")}:{}),...(e.editAt?{editAt:String(e.editAt)}:{}),...dp};
 }
 
 // V87.146 · agenda global sincronitzable entre PC, iPad i mòbil.
@@ -11297,7 +11298,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.294",
+    app_version:"87.295",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12727,6 +12728,9 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   function setView(v){setViewState(v);try{lsSet8779("aco_agenda_view_v878256",v)}catch{}}
   const[cursor,setCursor]=useState(()=>{const d=new Date();d.setHours(0,0,0,0);return d});
   const[form,setForm]=useState(null);
+  // V87.295 · Google Calendar (estat d'aquest aparell: connectat, sincronitzant, cites del calendari principal)
+  const[gc,setGc]=useState(()=>({on:gcalConnected(),busy:false,last:"",err:"",primary:[]}));
+  const gcTimer=useRef(null);
   const[obraF,setObraF]=useState("");
   const[showTasks,setShowTasks]=useState(()=>lsGet8779("aco_agenda_tasks_v878256","1")!=="0");
   const[now,setNow]=useState(()=>new Date());
@@ -12736,7 +12740,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   const incoming=(Array.isArray(events)?events:[]).filter(e=>!String(e?.id||"").startsWith("task-")).map((e,i)=>{const c=cleanAgendaEvent87109(e,i);return c?{...c,auto:!!e.auto}:null}).filter(Boolean);
   const tasks=!showTasks?[]:collectPendingTasks878137(safeObres,odata).filter(x=>x.time).map(x=>{const d=new Date(x.time);return {id:`tk-${x.obra.id}-${x.task.id}`,kind:"task",title:x.task.text||"Tasca",obraId:x.obra.id,obra:x.obra.nom,day:d.getDate(),month:d.getMonth(),year:d.getFullYear(),iso:isoDay878255(d),hora:"",horaFi:"",allDay:true,tipus:"Tasca",urgent:x.task.prioritat==="Urgent",detail:[x.task.prioritat,x.task.estat].filter(Boolean).join(" · ")}});
   const seen=new Set();
-  const all=[...incoming,...local].filter(e=>{if(seen.has(e.id))return false;seen.add(e.id);return true}).concat(tasks).filter(e=>!obraF||e.obraId===obraF);
+  const all=[...incoming,...local].filter(e=>{if(seen.has(e.id))return false;seen.add(e.id);return true}).concat(tasks).concat(gc.primary||[]).filter(e=>!obraF||e.obraId===obraF);
   const byDay={};
   all.forEach(e=>{(byDay[e.iso]??=[]).push(e)});
   Object.values(byDay).forEach(l=>l.sort((a,b)=>(a.allDay===b.allDay?0:a.allDay?-1:1)||String(a.hora).localeCompare(String(b.hora))));
@@ -12764,7 +12768,31 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     const hora=p.hora||"09:00",s=hmToMin878256(hora)??540;
     setForm({id:"",isNew:true,data:p.data||(view==="dia"?isoDay878255(cursor):todayIso),hora,horaFi:p.horaFi||minToHm878256(s+60),allDay:!p.hora,title:p.titol||p.tipus,tipus:p.tipus,obraId:p.obraId||obraF||"",adreca:"",detail:p.text,avis:"",compta:!!p.hora&&(AGENDA_TYPES878256.find(x=>x.k===p.tipus)?.hours??true)});
   }
+  // V87.295 · Google Calendar: totes les cites pròpies (no les tasques, ni les automàtiques, ni les de les obres que ens han
+  // compartit altres comptes) van al calendari «Control d'Obres» i el que es canvia allà torna aquí (src/googleCal.js).
+  function gcEvents(){
+    const propies=safeObres.filter(o=>!o.compartida);
+    const deObres=propies.flatMap(o=>(((odata||{})[o.id]?.events)||[]).map((e,i)=>cleanAgendaEvent87109({...e,obraId:o.id,obra:o.nom},i)));
+    const seen=new Set();
+    return [...deObres,...readAgendaLocal878256()].filter(e=>e&&!e.auto&&!String(e.id).startsWith("task-")&&!seen.has(e.id)&&seen.add(e.id));
+  }
+  async function gcSync(){
+    if(readOnly||!gcalConfigured()||!gcalConnected())return;
+    setGc(s=>({...s,busy:true,err:""}));
+    try{
+      const key=lsKey8779("aco_google_cal_v878295");let st={};try{st=JSON.parse(localStorage.getItem(key)||"{}")||{}}catch{}
+      const res=await syncGoogle({events:gcEvents(),put:(next,prev)=>persist(cleanAgendaEvent87109(next)||next,prev),del:prev=>persist(null,prev),st});
+      try{localStorage.setItem(key,JSON.stringify(res.st))}catch{}
+      const d0=new Date();d0.setDate(d0.getDate()-30);const d1=new Date();d1.setDate(d1.getDate()+120);
+      let primary=[];try{primary=await gcalPrimary(isoDay878255(d0),isoDay878255(d1))}catch{}
+      setGc({on:true,busy:false,last:new Date().toISOString(),err:"",primary,out:res.out});
+    }catch(e){setGc(s=>({...s,busy:false,on:gcalConnected(),err:e?.relogin?"":(e?.message||String(e))}))}
+  }
+  function gcSoon(){if(!gcalConnected())return;clearTimeout(gcTimer.current);gcTimer.current=setTimeout(gcSync,1500)}
+  useEffect(()=>{if(gcalConnected())gcSync();return()=>clearTimeout(gcTimer.current)},[]);
+  async function gcConnect(){try{await gcalConnect();setGc(s=>({...s,on:true,err:""}));await gcSync()}catch(e){setGc(s=>({...s,on:false,err:e?.message||String(e)}))}}
   function openEvent(e){
+    if(e.kind==="google"){setForm({...e,data:e.iso,isNew:false,readOnly:true});return}
     if(e.kind==="task"||e.auto){if(e.obraId&&openObra)openObra(e.obraId);return}
     setForm({...e,data:e.iso,isNew:false,readOnly});
   }
@@ -12791,18 +12819,18 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     const o=safeObres.find(x=>x.id===f.obraId);
     const cName=o?((clients||[]).find(c=>c.id===o.client)?.nom||o.propietat||""):(f.client||"");
     const compta=!!f.compta&&!!f.obraId&&!f.allDay&&eventHours878256(f)>0;
-    const base=cleanAgendaEvent87109({...f,id:f.id||`ag-${Date.now()}`,iso:f.data,data:f.data,client:cName,obra:o?.nom||"",obraId:o?.id||"",compta});
+    const base=cleanAgendaEvent87109({...f,id:f.id||`ag-${Date.now()}`,iso:f.data,data:f.data,client:cName,obra:o?.nom||"",obraId:o?.id||"",compta,editAt:new Date().toISOString()});
     if(!base)return;
     const prev=all.find(x=>x.id===base.id)||null;
     persist(syncAgendaHours878256(base,prev),prev);
-    setForm(null);
+    setForm(null);gcSoon();
   }
   function remove(f){
     if(readOnly||!f.id)return;
     if(!confirm(i18nT("Eliminar aquesta cita?")))return;
     const prev=all.find(x=>x.id===f.id)||f;
     syncAgendaHours878256({...prev,compta:false},prev);
-    persist(null,prev);setForm(null);
+    persist(null,prev);setForm(null);gcSoon();
   }
   function moveTo(id,iso,hora){
     const e=all.find(x=>x.id===id);
@@ -12810,12 +12838,12 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     let patch={iso,data:iso};
     if(hora!=null&&!e.allDay){const s=hmToMin878256(e.hora)??540,f=hmToMin878256(e.horaFi);const dur=f!=null&&f>s?f-s:60;patch={...patch,hora,horaFi:minToHm878256(hmToMin878256(hora)+dur)}}
     if(patch.iso===e.iso&&(patch.hora==null||patch.hora===e.hora))return;
-    const base=cleanAgendaEvent87109({...e,...patch});if(!base)return;
-    persist(syncAgendaHours878256(base,e),e);
+    const base=cleanAgendaEvent87109({...e,...patch,editAt:new Date().toISOString()});if(!base)return;
+    persist(syncAgendaHours878256(base,e),e);gcSoon();
   }
-  const canDrag=e=>!readOnly&&e.kind!=="task"&&!e.auto;
+  const canDrag=e=>!readOnly&&e.kind!=="task"&&e.kind!=="google"&&!e.auto;
   const dragStart=e=>ev=>{dragRef.current=e.id;try{ev.dataTransfer.effectAllowed="move";ev.dataTransfer.setData("text/plain",e.id)}catch{}};
-  const cls=e=>`t-${e.kind==="task"?"tasca":agendaTypeClass878256(e.tipus)}${e.urgent?" urgent":""}${e.auto?" auto":""}`;
+  const cls=e=>`t-${e.kind==="task"?"tasca":e.kind==="google"?"google":agendaTypeClass878256(e.tipus)}${e.urgent?" urgent":""}${e.auto?" auto":""}`;
   const chip=e=><button type="button" key={e.id} className={`ag-chip ${cls(e)}`} draggable={canDrag(e)} onDragStart={dragStart(e)} onClick={x=>{x.stopPropagation();openEvent(e)}} title={[e.allDay||e.kind==="task"?"":`${e.hora}${e.horaFi?`–${e.horaFi}`:""}`,e.title,e.obra].filter(Boolean).join(" · ")}>
     {e.kind==="task"?<i className="tk" aria-hidden="true"/>:null}{!e.allDay&&e.kind!=="task"&&e.hora?<time>{e.hora}</time>:null}<span>{e.title}</span>
   </button>;
@@ -12886,8 +12914,13 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     <div className="ag-sub">
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Filtrar per expedient")}><option value="">{i18nT("Tots els expedients")}</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les tasques")}</label>
-      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Tasca")}</span></div>
+      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Tasca")}</span>{gc.primary?.length?<span className="t-google"><i/>{i18nT("Google (calendari principal)")}</span>:null}</div>
     </div>
+    {gcalConfigured()&&!readOnly&&<div className="ag-google-v878295">
+      {gc.on?<><span>{gc.busy?i18nT("Sincronitzant amb Google Calendar…"):gc.last?i18nT("Google Calendar · sincronitzat a les {h}",{h:new Date(gc.last).toLocaleTimeString(loc878272(),{hour:"2-digit",minute:"2-digit"})}):i18nT("Google Calendar · connectat")}</span><button type="button" className="secondary" disabled={gc.busy} onClick={gcSync}>{i18nT("Sincronitzar")}</button></>
+      :<button type="button" className="secondary" onClick={gcConnect}>{i18nT("Connectar amb Google Calendar")}</button>}
+      {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}
+    </div>}
     {view==="mes"?renderMonth():view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}
     {!readOnly&&view!=="llista"&&<p className="ag-hint">{i18nT("Clica un espai buit per crear una cita i arrossega-la per canviar-la de dia o d’hora.")}</p>}
     {form&&<AgendaEditor878256 form={form} setForm={setForm} obres={safeObres} save={save} remove={remove} close={()=>setForm(null)} openObra={openObra} readOnly={readOnly||!!form.readOnly}/>}

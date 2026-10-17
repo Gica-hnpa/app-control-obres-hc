@@ -2813,4 +2813,17 @@ export default {
   "Cap (la pots triar a la cita)": "Ninguna (la puedes elegir en la cita)",
   "Revisar i desar": "Revisar y guardar",
   "Per veu": "Por voz",
+
+  // V87.295 · Google Calendar
+  "Google (calendari principal)": "Google (calendario principal)",
+  "Sincronitzant amb Google Calendar…": "Sincronizando con Google Calendar…",
+  "Google Calendar · sincronitzat a les {h}": "Google Calendar · sincronizado a las {h}",
+  "Google Calendar · connectat": "Google Calendar · conectado",
+  "Sincronitzar": "Sincronizar",
+  "Connectar amb Google Calendar": "Conectar con Google Calendar",
+  "Cal tornar a connectar amb Google.": "Hay que volver a conectar con Google.",
+  "Sense connexió amb Google.": "Sin conexión con Google.",
+  "No s’ha pogut carregar Google (sense connexió?).": "No se ha podido cargar Google (¿sin conexión?).",
+  "Google no ha donat permís.": "Google no ha dado permiso.",
+  "Google Calendar encara no està configurat.": "Google Calendar todavía no está configurado.",
 };
