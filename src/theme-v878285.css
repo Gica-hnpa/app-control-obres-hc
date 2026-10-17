@@ -27,3 +27,18 @@
 .vf-compte-on-v878286{display:flex;flex-direction:column;gap:4px;padding:2px 18px 16px}
 .vf-compte-on-v878286 b{color:#14532d}
 .vf-compte-v878286 p{margin:0;padding:2px 18px 16px;color:var(--co-ink-3,#64748b);line-height:1.45;max-width:80ch}
+/* V87.297 · Fer factura a partir de la proforma */
+.fa-badge-v878297{display:flex;flex-direction:column;align-items:center;font-size:12px;line-height:1.25;border-radius:10px;padding:4px 8px;border:1px solid #86efac;background:#dcfce7;color:#14532d;text-align:center}
+.fa-badge-v878297 b{white-space:nowrap}.fa-badge-v878297 small{font-size:11px;font-weight:600}
+.fa-del-v878297{color:#b91c1c!important}
+.fer-factura-v878297{display:flex;flex-direction:column;gap:12px;padding:4px 16px 16px}
+.fer-factura-v878297 .ajuda{margin:0;color:var(--co-ink-3,#64748b)}
+.fer-factura-v878297 .num-v878297{display:flex;align-items:center;gap:4px}
+.fer-factura-v878297 .num-v878297 input{max-width:110px}
+.fer-factura-v878297 label small{display:block;margin-top:4px;color:var(--co-ink-3,#64748b)}
+.fer-factura-v878297 .actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.fact-client-v878297{border:1px solid var(--co-line,#DCE3E7);border-radius:10px;padding:8px 12px 12px;margin:0}
+.fact-client-v878297 legend{font-weight:800;padding:0 6px}
+.fact-client-camps-v878297{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:8px}
+.fact-client-camps-v878297 small{grid-column:1/-1;color:var(--co-ink-3,#64748b)}
+.fact-table-v87101 .row-actions .fa-fer-v878297{font-weight:700}
