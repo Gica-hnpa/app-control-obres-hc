@@ -44,10 +44,11 @@ Decisions de l'Héctor (16/10/2026):
 1. **Comprovar amb el compte de proves de Verifacti** el que la documentació pública no diu (està marcat a dalt de
    `index.ts`): la capçalera d'autenticació, el nom de l'entorn a `/nifs/keys/{entorn}/{nif}`, on ve la clau a la
    resposta i el nom del camp d'estat. També si `calificacion_operacion: "S2"` amb tipus 0 és com ho vol.
-2. **Anul·lar i rectificatives** a l'app: la funció ja sap anul·lar (`anular`); falta el botó i la factura rectificativa
-   (R1–R5, per diferència o per substitució).
+2. ~~Anul·lar~~ (fet, V87.286: botó «Anul·lar» amb confirmació, només per a factures emeses per error; la certificació
+   es pot tornar a facturar amb un número nou). Falta la **factura rectificativa** (R1–R5, per diferència o per
+   substitució): a parlar amb la gestoria, perquè a les obres les correccions solen anar a la certificació següent.
 3. **Factures d'honoraris del tècnic** pel mateix camí.
-4. **Configuració → «Factures amb VeriFactu»**: veure l'estat del compte (avui només es veu a Facturació obra).
+4. ~~Configuració → «Factures amb VERI*FACTU»~~ (fet, V87.286): estat del compte, qui emet, entorn i sèrie.
 5. Afegir el registre del servidor a les **còpies del núvol** (`tools/copies`; el compte de còpies ja el pot llegir).
 6. **Declaració responsable** dins de l'app (quan la gestoria digui qui és el fabricant).
 

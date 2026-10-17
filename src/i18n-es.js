@@ -2711,4 +2711,15 @@ export default {
   "Acceptada per Hisenda": "Aceptada por Hacienda",
   "Acceptada amb errors": "Aceptada con errores",
   "Rebutjada": "Rechazada",
+
+  // V87.286 · VeriFactu: anul·lar i Configuració
+  "Anul·lar la factura {n}? Només s’ha de fer si s’ha emès per error. Si l’import no és correcte, cal una factura rectificativa. Queda registrat a Hisenda i no es pot desfer.": "¿Anular la factura {n}? Solo se debe hacer si se ha emitido por error. Si el importe no es correcto, hace falta una factura rectificativa. Queda registrado en Hacienda y no se puede deshacer.",
+  "Anul·lades:": "Anuladas:",
+  "Factures amb VERI*FACTU": "Facturas con VERI*FACTU",
+  "Actiu": "Activo",
+  "Sèrie de les factures: {s}": "Serie de las facturas: {s}",
+  "Les factures s’emeten des de cada obra, a «Facturació obra».": "Las facturas se emiten desde cada obra, en «Facturación obra».",
+  "La funció del servidor «verifactu» encara no està instal·lada (vegeu docs/verifactu-pla.md).": "La función del servidor «verifactu» todavía no está instalada (ver docs/verifactu-pla.md).",
+  "Per veure l’estat cal connexió amb el núvol.": "Para ver el estado hace falta conexión con la nube.",
+  "Aquest compte encara no emet factures amb VERI*FACTU. Les societats (S.L.) ho necessiten des de l’1/1/2027 i els autònoms des de l’1/7/2027. Per activar-ho cal donar d’alta l’empresa a l’intermediari: ho fa l’administrador de l’app.": "Esta cuenta todavía no emite facturas con VERI*FACTU. Las sociedades (S.L.) lo necesitan desde el 1/1/2027 y los autónomos desde el 1/7/2027. Para activarlo hay que dar de alta la empresa en el intermediario: lo hace el administrador de la app.",
 };

@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.285";
+const APP_VERSION878264="87.286";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10618,6 +10618,8 @@ const vf=useVerifactu878285();
 const [emetreVF,setEmetreVF]=useState(null);
 const emeses=data.facturesVF878285||[];
 function emesaDe(f){return emeses.find(x=>x.certId===(f.certId||f.pfId)&&x.estat!=="Anulada")}
+async function vfAnular(em){if(!confirm(t("Anul·lar la factura {n}? Només s’ha de fer si s’ha emès per error. Si l’import no és correcte, cal una factura rectificativa. Queda registrat a Hisenda i no es pot desfer.",{n:em.numSerie})))return;await vfAccio(em,"anular")}
+function anuladesDe(f){return emeses.filter(x=>x.certId===(f.certId||f.pfId)&&x.estat==="Anulada").map(x=>x.numSerie)}
 async function vfAccio(em,accio){try{const r=await window.__acoCloud.callFunction("verifactu",{accio,id:em.id});await vfDesa878285(setData,em,r)}catch(e){if(e?.body?.registre)await vfDesa878285(setData,em,e.body.registre);alert(e?.message||String(e))}}
 async function openFactura(em){const qr=await vfQr878285(em.urlQr);openDoc({type:"facturavf",autoPrint:false,title:`${t("Factura")} ${em.numSerie}`,factura:{...em,qr}})}
 useEffect(()=>{if(vf.estat!=="actiu"||!canEdit)return;emeses.filter(x=>x.estat==="Pendiente").forEach(x=>{window.__acoCloud.callFunction("verifactu",{accio:"estat",id:x.id}).then(r=>{if(r?.estat&&r.estat!==x.estat)vfDesa878285(setData,x,r)}).catch(()=>{})})},[vf.estat]);
@@ -10644,7 +10646,7 @@ return <div className={`fact-layout-v61 fact-layout-v87101 ${readOnly?"client-re
   <VerifactuNota878285 vf={vf}/>
   <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70 fact-table-v87101"><thead><tr><th>{t("Proforma")}</th><th>{t("Cert.")}</th><th>{t("Data cert. / factura")}</th><th>{t("Base")}</th><th>{t("IVA")}</th><th>{t("Retenció")}</th><th>{t("Deducció")}</th><th>{t("Total")}</th><th>{t("Accions")}</th></tr></thead><tbody>
   {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
-  {proformes.map(f=>{const em=emesaDe(f);let c=em?{iva:em.iva,ret:em.ret,ded:em.ded,base:em.base,total:em.totalCobrar??em.total}:calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td><b>{fmtAppDate8748(f.data)}</b></td><td>{money(f.base)}</td><td><select disabled={!canEdit||!!em} value={c.iva} onChange={e=>setp(f,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select disabled={!canEdit||!!em} value={c.ret} onChange={e=>setp(f,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select disabled={!canEdit||!!em} value={c.ded} onChange={e=>setp(f,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option key={i} value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><div className="vf-actions-v878285">{em?<><span className={`vf-badge-v878285 vf-${vfEstat878285(em.estat).cls}`} title={`${t("Factura")} ${em.numSerie}`}><b>{em.numSerie}</b><small>{t(vfEstat878285(em.estat).txt)}</small></span><button className="primary small" onClick={()=>openFactura(em)}>{t("Factura PDF")}</button>{canEdit&&(em.estat==="error"||em.estat==="reservada")&&<button className="secondary small" onClick={()=>vfAccio(em,"reenviar")}>{t("Tornar a enviar")}</button>}{canEdit&&em.estat==="Pendiente"&&<button className="secondary small" onClick={()=>vfAccio(em,"estat")}>{t("Actualitzar estat")}</button>}</>:<><button className="primary small" onClick={()=>openPrint(f)}>{t("Imprimir / PDF")}</button>{canEdit&&vf.estat==="actiu"&&<button className="secondary small vf-emetre-btn-v878285" onClick={()=>setEmetreVF(f)}>{t("Emetre factura")}</button>}</>}</div></td></tr>})}
+  {proformes.map(f=>{const em=emesaDe(f);let c=em?{iva:em.iva,ret:em.ret,ded:em.ded,base:em.base,total:em.totalCobrar??em.total}:calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td><b>{fmtAppDate8748(f.data)}</b></td><td>{money(f.base)}</td><td><select disabled={!canEdit||!!em} value={c.iva} onChange={e=>setp(f,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select disabled={!canEdit||!!em} value={c.ret} onChange={e=>setp(f,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select disabled={!canEdit||!!em} value={c.ded} onChange={e=>setp(f,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option key={i} value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><div className="vf-actions-v878285">{em?<><span className={`vf-badge-v878285 vf-${vfEstat878285(em.estat).cls}`} title={`${t("Factura")} ${em.numSerie}`}><b>{em.numSerie}</b><small>{t(vfEstat878285(em.estat).txt)}</small></span><button className="primary small" onClick={()=>openFactura(em)}>{t("Factura PDF")}</button>{canEdit&&(em.estat==="error"||em.estat==="reservada")&&<button className="secondary small" onClick={()=>vfAccio(em,"reenviar")}>{t("Tornar a enviar")}</button>}{canEdit&&em.estat==="Pendiente"&&<button className="secondary small" onClick={()=>vfAccio(em,"estat")}>{t("Actualitzar estat")}</button>}{canEdit&&vf.estat==="actiu"&&!["error","reservada"].includes(em.estat)&&<button className="secondary small vf-anular-v878286" onClick={()=>vfAnular(em)}>{t("Anul·lar")}</button>}</>:<><button className="primary small" onClick={()=>openPrint(f)}>{t("Imprimir / PDF")}</button>{canEdit&&vf.estat==="actiu"&&<button className="secondary small vf-emetre-btn-v878285" onClick={()=>setEmetreVF(f)}>{t("Emetre factura")}</button>}</>}{!em&&anuladesDe(f).length>0&&<small className="vf-anulades-v878286">{t("Anul·lades:")} {anuladesDe(f).join(", ")}</small>}</div></td></tr>})}
   </tbody></table></div>
 </Card>
 {emetreVF&&<EmetreFactura878285 f={emetreVF} c={calc(emetreVF)} obra={obra} client={client} data={data} setData={setData} vf={vf} close={()=>setEmetreVF(null)}/>}
@@ -10681,6 +10683,18 @@ async function vfDesa878285(setData,base,r){
   fac.totalCobrar=r2_878285(fac.total-(fac.retImp||0));
   setData(d=>({...d,facturesVF878285:[...(d.facturesVF878285||[]).filter(x=>x.id!==fac.id),fac],updatedAt:new Date().toISOString()}));
   return fac;
+}
+// V87.286 · Configuració → «Factures amb VeriFactu»: estat del compte (l'activa l'Héctor al panell de Supabase)
+function VerifactuCompte878286({admin}){
+  const vf=useVerifactu878285();
+  if(vf.estat==="carregant")return null;
+  if(vf.estat==="sense-funcio"&&!admin)return null;
+  return <Card title={t("Factures amb VERI*FACTU")} className="vf-compte-v878286">
+    {vf.estat==="actiu"?<div className="vf-compte-on-v878286"><b>{t("Actiu")}{vf.entorn==="test"?` · ${t("entorn de proves (no té validesa)")}`:""}</b><span>{t("Emet: {nom} · NIF {nif}",{nom:vf.nom||"—",nif:vf.nif||"—"})}</span><span>{t("Sèrie de les factures: {s}",{s:`${vf.serie||"F"}${new Date().getFullYear()}-0001…`})}</span><span>{t("Les factures s’emeten des de cada obra, a «Facturació obra».")}</span></div>
+    :vf.estat==="sense-funcio"?<p>{t("La funció del servidor «verifactu» encara no està instal·lada (vegeu docs/verifactu-pla.md).")}</p>
+    :vf.estat==="sense-nuvol"||vf.estat==="sense-connexio"?<p>{t("Per veure l’estat cal connexió amb el núvol.")}</p>
+    :<p>{t("Aquest compte encara no emet factures amb VERI*FACTU. Les societats (S.L.) ho necessiten des de l’1/1/2027 i els autònoms des de l’1/7/2027. Per activar-ho cal donar d’alta l’empresa a l’intermediari: ho fa l’administrador de l’app.")}</p>}
+  </Card>
 }
 function VerifactuNota878285({vf}){
   if(vf.estat==="actiu")return <div className="verifactu-note-v87101 vf-on-v878285"><b>{t("VERI*FACTU actiu")}{vf.entorn==="test"?` · ${t("entorn de proves")}`:""}</b><span>{t("Emet: {nom} · NIF {nif}. Cada proforma es pot «Emetre» com a factura: el número el dona el servidor, s’envia a Hisenda i ja no es pot canviar.",{nom:vf.nom||"—",nif:vf.nif||"—"})}</span></div>;
@@ -11234,7 +11248,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.285",
+    app_version:"87.286",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -11432,6 +11446,7 @@ return <div className="stack">
 <div className="config-version-v878264">{t("APP Control d’Obres ·")} {t("versió")} <b>V{APP_VERSION878264}</b></div>
 <IdiomaUsuari878268 user={authUser}/>
 <AccountAccessPanel878233 clients={clients} authUser={authUser}/>
+<VerifactuCompte878286 admin={admin}/>
 {admin&&!window.__acoEmpresa&&<EspaiNuvol878263/>}
 {admin&&<VersionsGuardades878266/>}
 {admin&&<><PlansModuls8736/>

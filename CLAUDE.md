@@ -226,8 +226,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   `aco_verifactu_registres`). El número el dona el servidor; si l’intermediari falla, «Tornar a enviar» amb el mateix
   número; una factura per certificació. A l’obra: `data.facturesVF878285` (sense la imatge del QR: `stripHeavy878185`
   buida qualsevol `data:`; el QR es fa en obrir el PDF amb `urlQr`). Factura emesa → IVA bloquejat i certificació que
-  no es pot eliminar (`vfTeFactura878285`). PDF: `facturaVFPrintHtml878285` (tipus de document `facturavf`). Falta:
-  comprovar l’API amb el compte de proves de Verifacti, anul·lar/rectificatives a l’app, honoraris, Configuració.
+  no es pot eliminar (`vfTeFactura878285`). PDF: `facturaVFPrintHtml878285` (tipus de document `facturavf`).
+  **V87.286**: «Anul·lar» (només per a factures fetes per error; després es pot tornar a emetre amb número nou) i
+  Configuració → «Factures amb VERI*FACTU» (`VerifactuCompte878286`). Falta: comprovar l’API amb el compte de proves de
+  Verifacti, rectificatives, honoraris.
   Detall i passos de l’Héctor a `docs/verifactu-pla.md`.
 - **Filtres d'Expedients** (V87.275, `ExpFilters878275`, `src/theme-v878275.css`): un sol bloc «Filtres» igual a
   l'ordinador, l'iPad i el mòbil (abans: desplegables diferents a cada aparell; a l'ordinador l'any només tenia 2025/2026).
@@ -289,8 +291,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   Es va treure del repositori a la V87.259.2, però continua als commits antics. Cal reescriure l’historial
   (git filter-repo o BFG) i forçar la pujada; fer-ho amb calma i amb còpia abans.
 - **VeriFactu (abans de l’1/1/2027 per a les S.L.)**: fet a l’app i al simulador (V87.285). Falta instal·lar l’SQL i la
-  funció `verifactu`, el compte de proves de Verifacti (comprovar l’API), anul·lar/rectificatives, honoraris,
-  Configuració, còpies del registre i la declaració responsable (fabricant: gestoria). Tot a `docs/verifactu-pla.md`.
+  funció `verifactu`, el compte de proves de Verifacti (comprovar l’API), rectificatives, honoraris, còpies del
+  registre i la declaració responsable (fabricant: gestoria). Tot a `docs/verifactu-pla.md`.
 - **Revisar l’IVA de les proformes de cada obra** (V87.284): de la PF-001 a la PF-008 de totes les obres surt un 10 %
   (el valor vell era compartit entre obres).
 - **Lectura d’albarans amb IA directa**: falta clau d’Anthropic + desplegar la funció
