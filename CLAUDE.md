@@ -209,6 +209,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Expedients** (V87.270, `src/theme-v878270.css`): al mòbil i l’iPad, targetes per any (codi curt · client, nom,
   tipus · població, estat) i un cercador sempre a la vista (fix en baixar); la resta de filtres a «Filtres». A
   l’ordinador, la taula sense la columna del codi llarg ni «Eliminar» a cada fila (és al menú ⋯ de l’obra).
+- **VeriFactu ATURAT (17/10/2026, ordre de l'Héctor): no instal·lar res del servidor** (ni `aco_verifactu_v87285.sql` ni la
+  funció `verifactu`, ni secrets, ni comptes de Verifacti) **fins que l'Héctor ho hagi parlat amb la gestoria**. L'app
+  publicada (V87.287) no mostra «Emetre factura» mentre la funció no existeixi.
 - **VeriFactu** (decisions de l'Héctor, 16/10/2026): factura ell i també les constructores (S.L.: **obligatori des de
   l'1/1/2027**; autònoms 1/7/2027). Via **intermediari** (recomanat Verifacti, ~2,90 €/NIF/mes; alternativa fiskaly),
   **model A**: el compte és de l'Héctor i ho cobra dins la quota; interruptor per compte. Fabricant del programa:
@@ -292,9 +295,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   (`DADES_REPARADES/app-control-obres-hector-backup-reparat-v87-211-2026-07-22.json`, dades reals de clients).
   Es va treure del repositori a la V87.259.2, però continua als commits antics. Cal reescriure l’historial
   (git filter-repo o BFG) i forçar la pujada; fer-ho amb calma i amb còpia abans.
-- **VeriFactu (abans de l’1/1/2027 per a les S.L.)**: fet a l’app i al simulador (V87.285). Falta instal·lar l’SQL i la
+- **VeriFactu (abans de l’1/1/2027 per a les S.L.)**: **ATURAT fins que l’Héctor parli amb la gestoria** (no instal·lar res
+  del servidor). Fet a l’app i al simulador (V87.285). Falta instal·lar l’SQL i la
   funció `verifactu`, el compte de proves de Verifacti (comprovar l’API), rectificatives, honoraris, còpies del
   registre i la declaració responsable (fabricant: gestoria). Tot a `docs/verifactu-pla.md`.
+- **En obrir una obra sense número de «pressupost per al client», l’app n’hi posa un sol** (efecte `autoBudgetNumber878194`
+  a `Obra`, des de la V87.194). No toca imports, però és una escriptura en obrir: treure-la amb la fusió per apartats.
 - **Revisar l’IVA de les proformes de cada obra** (V87.284): de la PF-001 a la PF-008 de totes les obres surt un 10 %
   (el valor vell era compartit entre obres).
 - **Lectura d’albarans amb IA directa**: falta clau d’Anthropic + desplegar la funció

@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.287";
+const APP_VERSION878264="87.288";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3125,7 +3125,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
             <label><span>{t("Data *")}</span><input type="date" value={draft.data||""} onChange={e=>upd("data",e.target.value)}/></label>
             <label><span>{t("Estat")}</span><select value={draft.estat||"Esborrany"} onChange={e=>upd("estat",e.target.value)}><option value="Esborrany">{t("Esborrany")}</option><option value="Enviada">{t("Enviada")}</option><option value="Signada">{t("Signada")}</option><option value="Tancada">{t("Tancada")}</option></select></label>
             <label><span>{t("Promotor")}</span><input value={draft.promotor||""} onChange={e=>upd("promotor",e.target.value)}/></label>
-            <label><span>{t("Constructora")}</span><input value={draft.constructor||""} onChange={e=>upd("constructor",e.target.value)}/></label>
+            <label><span>{t("Constructora")}</span><input value={ownStr878288(draft,"constructor")} onChange={e=>upd("constructor",e.target.value)}/></label>
             <label><span>{t("Direcció d’obra (DO)")}</span><input value={draft.do||""} onChange={e=>upd("do",e.target.value)}/></label>
             <label><span>{t("Direcció execució (DEO)")}</span><input value={draft.deo||""} onChange={e=>upd("deo",e.target.value)}/></label>
             <label><span>{t("Coordinació S+S (CSS)")}</span><input value={draft.css||""} onChange={e=>upd("css",e.target.value)}/></label>
@@ -6850,6 +6850,9 @@ function recomputeExpedientCode878162(form={}, selectedClient=null){
   const built=buildExpedientCode8739({year,number,tipus,client:selectedClient,clientNom,keyword:form.paraulaClau,nom:form.nom,subtitol:form.subtitol,poblacio:form.poblacio});
   return {...form,...built,any:year,tipusTreball:tipus,tipologia:tipus,codiExpedient:built.codi};
 }
+// V87.288 · Text d'un camp propi de l'objecte. Compte amb «constructor» (la constructora): si l'obra no el té desat,
+// obra.constructor és una funció interna de JavaScript, no un text (avís de React a Dades i casella «escriure nou»).
+function ownStr878288(o,k){const v=o&&Object.prototype.hasOwnProperty.call(o,k)?o[k]:"";return typeof v==="string"?v:""}
 function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAgents=[],setData,openAgent}){
   const [form,setForm]=useState(()=>({...obra,codiPostal:obra.codiPostal||""}));
   const [clientChoice,setClientChoice]=useState(()=>obra.client||client?.id||"");
@@ -6975,11 +6978,11 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     if(finalClient)setClientChoice(finalClient.id);
   }
   function AgentPicker({field,label,roleHint,filterField}){
-    const current=form[field]||"Pendent";
+    const current=ownStr878288(form,field)||"Pendent";
     const choices=filteredAgentsForField878188(agentChoices,filterField||field);
     const known=choices.find(a=>String(a.nom||"")===String(current));
     const selected=known?known.id:(current&&current!=="Pendent"?"__custom__":"Pendent");
-    return <label><span>{label}</span><select value={selected} onChange={e=>{const v=e.target.value;if(v==="Pendent"){upd(field,"Pendent");return}if(v==="__custom__"){upd(field,"");return}const ag=choices.find(a=>a.id===v);if(ag){upd(field,ag.nom);addAgentToObraIfNeeded878159(ag)}}}><option value="Pendent">{i18nT("Pendent / no assignat")}</option>{choices.map(a=><option key={field+a.id} value={a.id}>{a.nom} · {a.empresa||a.rol||i18nT("Agent")}</option>)}<option value="__custom__">{i18nT("+ Crear / escriure nou")}</option></select>{(selected==="__custom__"||(!known&&current&&current!=="Pendent"))&&<div className="agent-inline-create-v87159"><input value={current==="Pendent"?"":current} onChange={e=>upd(field,e.target.value)} placeholder={filterField==="constructora"?"Nom de la constructora":"Nom del tècnic o empresa"}/><button type="button" className="secondary small" onClick={()=>{const nom=String(form[field]||"").trim();if(!nom){alert(i18nT("Escriu el nom de l'agent."));return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>{i18nT("Crear fitxa agent")}</button></div>}</label>
+    return <label><span>{label}</span><select value={selected} onChange={e=>{const v=e.target.value;if(v==="Pendent"){upd(field,"Pendent");return}if(v==="__custom__"){upd(field,"");return}const ag=choices.find(a=>a.id===v);if(ag){upd(field,ag.nom);addAgentToObraIfNeeded878159(ag)}}}><option value="Pendent">{i18nT("Pendent / no assignat")}</option>{choices.map(a=><option key={field+a.id} value={a.id}>{a.nom} · {a.empresa||a.rol||i18nT("Agent")}</option>)}<option value="__custom__">{i18nT("+ Crear / escriure nou")}</option></select>{(selected==="__custom__"||(!known&&current&&current!=="Pendent"))&&<div className="agent-inline-create-v87159"><input value={current==="Pendent"?"":current} onChange={e=>upd(field,e.target.value)} placeholder={filterField==="constructora"?"Nom de la constructora":"Nom del tècnic o empresa"}/><button type="button" className="secondary small" onClick={()=>{const nom=ownStr878288(form,field).trim();if(!nom){alert(i18nT("Escriu el nom de l'agent."));return}const ag={id:"agent-"+Date.now(),nom,rol:roleHint||label,empresa:nom,email:"",telefon:"",nif:"",adreca:"",collegiat:"",updatedAt:new Date().toISOString()};addAgentToObraIfNeeded878159(ag)}}>{i18nT("Crear fitxa agent")}</button></div>}</label>
   }
   const selectedClient=(clients||[]).find(c=>c.id===clientChoice);
   return <div className="fitxa-dades-stack-v878133"><CodiCarpeta878270 obra={obra}/>{promoterModal87210&&<Modal title={promoterModal87210.id?i18nT("Editar promotor / client final"):i18nT("Crear promotor / client final")} close={()=>setPromoterModal87210(null)}><div className="promoter-modal-v87210"><DatalistCP8773/><div className="module-note-v8738"><b>{i18nT("Independent del client de la carpeta")}</b><span>{i18nT("Aquesta fitxa identifica la propietat o client final que sortirà als documents de l’expedient.")}</span></div><div className="form-grid"><label><span>{i18nT("Nom complet / raó social *")}</span><input autoFocus value={promoterModal87210.nom||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nom:e.target.value}))}/></label><label><span>{i18nT("Empresa o nom fiscal")}</span><input value={promoterModal87210.empresa||""} onChange={e=>setPromoterModal87210(previous=>({...previous,empresa:e.target.value}))}/></label><label><span>{i18nT("DNI / NIF / CIF")}</span><input value={promoterModal87210.nif||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nif:e.target.value}))}/></label><label><span>{i18nT("Telèfon")}</span><input value={promoterModal87210.telefon||""} onChange={e=>setPromoterModal87210(previous=>({...previous,telefon:e.target.value}))}/></label><label className="span-all"><span>{i18nT("Adreça del promotor")}</span><input value={promoterModal87210.adreca||""} onChange={e=>setPromoterModal87210(previous=>({...previous,adreca:e.target.value}))}/></label><label><span>{i18nT("Email")}</span><input type="email" value={promoterModal87210.email||""} onChange={e=>setPromoterModal87210(previous=>({...previous,email:e.target.value}))}/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPromoterModal87210(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={savePromoterModal87210}>{i18nT("Guardar i seleccionar")}</button></div></div></Modal>}<PrincipalAgentsPanel878134 obra={form} client={selectedClient||client} agents={agents}/><Card title={i18nT("Dades generals de l’expedient")} action={<div className="actions-inline"><button className="primary" onClick={saveAll}>{i18nT("Guardar dades")}</button></div>}>
@@ -11248,7 +11251,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.287",
+    app_version:"87.288",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
