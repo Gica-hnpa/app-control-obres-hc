@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.284";
+const APP_VERSION878264="87.285";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4777,6 +4777,7 @@ function updateCertDate8721(id,value){
   setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))
 }
 function deleteCertificacio8721(id){
+  if(vfTeFactura878285(odata?.[obraId],id))return;
   if(!confirm("Eliminar aquesta certificació?"))return;
   setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))
 }
@@ -7689,7 +7690,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
       return {...d,certificacions:[...(d.certificacions||[]),nova],activeBudgetIdObra:activeBudgetId};
     });
   }
-  function scopedDeleteCert(id){if(!confirm(t("Eliminar aquesta certificació?")))return;setData(d=>({...d,certificacions:(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBudgetId&&c.id===id))}))}
+  function scopedDeleteCert(id){if(vfTeFactura878285(data,id))return;if(!confirm(t("Eliminar aquesta certificació?")))return;setData(d=>({...d,certificacions:(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBudgetId&&c.id===id))}))}
   function scopedUpdateCertDate(id,value){setData(d=>({...d,certificacions:(d.certificacions||[]).map(c=>(c.budgetId||"principal")===activeBudgetId&&c.id===id?stampCertificationDate87218(c,value):c)}))}
   const totalGlobal=(data.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   const totalActive=(activeData.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -7699,7 +7700,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} renameBudget={renameBudget} deleteBudget={deleteBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {sub==="Certificacions obra"&&<BudgetWarnings878253 rows={activeData.partides||[]}/>}
     {sub==="Certificacions obra"&&<Cert data={activeData} setData={setScopedData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
-    {sub==="Facturació obra"&&<Fact data={activeData} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
+    {sub==="Facturació obra"&&<Fact data={activeData} setData={setData} obra={obra} client={client} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Gantt"&&<><GanttObraVisual878253 data={activeData} setData={setScopedData}/><details className="gt-legacy-v878253"><summary>{t("Planificació avançada per industrials i colles (eina anterior)")}</summary><GanttObra878149 data={activeData} setData={setScopedData}/></details></>}
     {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} setActiveBudgetId={selectBudget8788}/>}
   </div>
@@ -7896,6 +7897,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     });
   }
   function deleteDirectCert878214(id){
+    if(vfTeFactura878285(data,id))return;
     if(!confirm(i18nT("Eliminar aquesta certificació?")))return;
     setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).filter(c=>c.id!==id)}));
   }
@@ -7922,7 +7924,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {activeTab==="Certificacions obra"&&<BudgetWarnings878253 rows={directBudgetData878214.partides||[]}/>}
     {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly&&!clientEditCertifications} clientMode={readOnly}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
-    {activeTab==="Facturació obra"&&<Fact data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
+    {activeTab==="Facturació obra"&&<Fact data={data} setData={setData} obra={obra} client={client} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
     {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Pressupost per al client")}</b><span>{i18nT("Número, condicions, forma de pagament i PDF")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 key={activeTab} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
@@ -10604,13 +10606,21 @@ function fmtDate8714(v){
   if(!v || String(v).toLowerCase()==="avui") return "Sense data";
   return fmtAppDate8748(v);
 }
-function Fact({data,setData,openEmail,openDoc,readOnly=false}){
-// V87.283: l'IVA, la retenció i la deducció de cada proforma es desen dins de l'obra (data.factParams, per certificació).
+function Fact({data,setData,obra,client,openEmail,openDoc,readOnly=false}){
+// V87.284: l’IVA, la retenció i la deducció de cada proforma es desen dins de l’obra (data.factParams, per certificació).
 // Abans es desaven per número (pf-1, pf-2…) per a tot el compte: la PF-001 de totes les obres compartia l'IVA.
 // Les proformes d'abans del 17/10/2026 que no en tenen de propis continuen mostrant els d'abans (no canvia res).
 const legacy=useMemo(()=>{try{return JSON.parse(localStorage.getItem(lsKey8779("aco_fact_params_v61"))||"{}")}catch(e){return {}}},[]);
 const[selected,setSelected]=useState(null);
 const canEdit=!!setData&&!readOnly;
+// V87.285 · VeriFactu: factures emeses d'aquesta obra (una per certificació)
+const vf=useVerifactu878285();
+const [emetreVF,setEmetreVF]=useState(null);
+const emeses=data.facturesVF878285||[];
+function emesaDe(f){return emeses.find(x=>x.certId===(f.certId||f.pfId)&&x.estat!=="Anulada")}
+async function vfAccio(em,accio){try{const r=await window.__acoCloud.callFunction("verifactu",{accio,id:em.id});await vfDesa878285(setData,em,r)}catch(e){if(e?.body?.registre)await vfDesa878285(setData,em,e.body.registre);alert(e?.message||String(e))}}
+async function openFactura(em){const qr=await vfQr878285(em.urlQr);openDoc({type:"facturavf",autoPrint:false,title:`${t("Factura")} ${em.numSerie}`,factura:{...em,qr}})}
+useEffect(()=>{if(vf.estat!=="actiu"||!canEdit)return;emeses.filter(x=>x.estat==="Pendiente").forEach(x=>{window.__acoCloud.callFunction("verifactu",{accio:"estat",id:x.id}).then(r=>{if(r?.estat&&r.estat!==x.estat)vfDesa878285(setData,x,r)}).catch(()=>{})})},[vf.estat]);
 function pkey(f){return f.certId||f.pfId}
 function legacyFor(f){const s=String(f.data||"");const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);const iso=/^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10):m?`${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`:"";return (!iso||iso<"2026-10-17")?legacy[f.pfId]:null}
 function params(f){return (data.factParams||{})[pkey(f)]||legacyFor(f)||{}}
@@ -10631,14 +10641,115 @@ return <div className={`fact-layout-v61 fact-layout-v87101 ${readOnly?"client-re
 <Card title={`${i18nT("Facturació vinculada a certificacions")} · ${i18nT(budgetLabel8786(data,data.activeBudgetIdObra||"principal"))}`}>
   <div className="fact-summary-v87101"><div><span>{t("Pressupost obra")}</span><b>{money(basePressupostObra)}</b></div><div><span>{t("Base facturada/proforma")}</span><b>{money(totalBaseProformes)}</b></div><div><span>{t("Total IVA inclòs")}</span><b>{money(totalProformes)}</b></div><div className="ring-mini-v87101"><i style={{background:`conic-gradient(#2563eb 0 ${Math.min(factPct,100)}%, #e5e7eb ${Math.min(factPct,100)}% 100%)`}}/><b>{pct(factPct)}</b><span>{t("Facturat sobre pressupost")}</span></div></div>
   <div className="invoice-date-note-v87217"><b>{t("Una única data vinculada.")}</b><span>{t("La data de cada proforma/factura és exactament la data de la seva certificació. Si canvies la data de la Certificació 8, aquí s’actualitza automàticament. A la pantalla i als documents sempre es mostra com DD/MM/AAAA.")}</span></div>
-  <div className="verifactu-note-v87101"><b>{t("VERI*FACTU / factura definitiva")}</b><span>{t("Bloc reservat per la futura emissió de factura definitiva verificable: QR, registre d’alta, empremta/hash i enviament a AEAT quan s’integri el servei. Les proformes actuals no són factura definitiva.")}</span></div>
+  <VerifactuNota878285 vf={vf}/>
   <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70 fact-table-v87101"><thead><tr><th>{t("Proforma")}</th><th>{t("Cert.")}</th><th>{t("Data cert. / factura")}</th><th>{t("Base")}</th><th>{t("IVA")}</th><th>{t("Retenció")}</th><th>{t("Deducció")}</th><th>{t("Total")}</th><th>{t("Accions")}</th></tr></thead><tbody>
   {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
-  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td><b>{fmtAppDate8748(f.data)}</b></td><td>{money(f.base)}</td><td><select disabled={!canEdit} value={c.iva} onChange={e=>setp(f,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select disabled={!canEdit} value={c.ret} onChange={e=>setp(f,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select disabled={!canEdit} value={c.ded} onChange={e=>setp(f,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option key={i} value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button className="primary small" onClick={()=>openPrint(f)}>{t("Imprimir / PDF")}</button></td></tr>})}
+  {proformes.map(f=>{const em=emesaDe(f);let c=em?{iva:em.iva,ret:em.ret,ded:em.ded,base:em.base,total:em.totalCobrar??em.total}:calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td><b>{fmtAppDate8748(f.data)}</b></td><td>{money(f.base)}</td><td><select disabled={!canEdit||!!em} value={c.iva} onChange={e=>setp(f,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select disabled={!canEdit||!!em} value={c.ret} onChange={e=>setp(f,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select disabled={!canEdit||!!em} value={c.ded} onChange={e=>setp(f,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option key={i} value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><div className="vf-actions-v878285">{em?<><span className={`vf-badge-v878285 vf-${vfEstat878285(em.estat).cls}`} title={`${t("Factura")} ${em.numSerie}`}><b>{em.numSerie}</b><small>{t(vfEstat878285(em.estat).txt)}</small></span><button className="primary small" onClick={()=>openFactura(em)}>{t("Factura PDF")}</button>{canEdit&&(em.estat==="error"||em.estat==="reservada")&&<button className="secondary small" onClick={()=>vfAccio(em,"reenviar")}>{t("Tornar a enviar")}</button>}{canEdit&&em.estat==="Pendiente"&&<button className="secondary small" onClick={()=>vfAccio(em,"estat")}>{t("Actualitzar estat")}</button>}</>:<><button className="primary small" onClick={()=>openPrint(f)}>{t("Imprimir / PDF")}</button>{canEdit&&vf.estat==="actiu"&&<button className="secondary small vf-emetre-btn-v878285" onClick={()=>setEmetreVF(f)}>{t("Emetre factura")}</button>}</>}</div></td></tr>})}
   </tbody></table></div>
 </Card>
-
+{emetreVF&&<EmetreFactura878285 f={emetreVF} c={calc(emetreVF)} obra={obra} client={client} data={data} setData={setData} vf={vf} close={()=>setEmetreVF(null)}/>}
 </div>}
+// ── V87.285 · VeriFactu dins de les obres ───────────────────────────────────────────────────────────────────────
+// Des de «Facturació obra», cada proforma es pot «Emetre» com a factura de debò. Ho fa la funció del servidor «verifactu»
+// (supabase/functions/verifactu): el número el dona el servidor, s'envia a l'intermediari (Verifacti) i queda al
+// registre del servidor. A l'obra es desa una còpia a data.facturesVF878285 (per certificació) i ja no es pot canviar.
+// Només els comptes activats (taula aco_verifactu_comptes, ho fa l'Héctor) veuen «Emetre factura».
+const VF_ESTATS878285={reservada:["No enviada","err"],error:["No enviada","err"],Pendiente:["Enviada, pendent de resposta","pend"],Correcto:["Acceptada per Hisenda","ok"],"Aceptado con errores":["Acceptada amb errors","warn"],"Aceptada con errores":["Acceptada amb errors","warn"],Incorrecto:["Rebutjada","err"],Rechazado:["Rebutjada","err"],Anulada:["Anul·lada","off"]};
+function vfTeFactura878285(d,certId){const em=(d?.facturesVF878285||[]).find(x=>x.certId===certId&&x.estat!=="Anulada");if(em)alert(i18nT("Aquesta certificació té la factura {n} emesa: no es pot eliminar. Per corregir-la caldrà anul·lar-la o fer-ne una de rectificativa.",{n:em.numSerie}));return !!em}
+function vfEstat878285(e){const x=VF_ESTATS878285[e]||[e||"—","pend"];return {txt:x[0],cls:x[1]}}
+const r2_878285=x=>Math.round((Number(x)||0)*100)/100;
+// Estat del compte (activat o no). Una sola consulta per sessió de pantalla.
+let vfCompteCache878285=null;
+function useVerifactu878285(){
+  const [st,setSt]=useState(()=>vfCompteCache878285||{estat:"carregant"});
+  useEffect(()=>{
+    if(vfCompteCache878285)return;let viu=true;
+    const c=window.__acoCloud;
+    if(!c?.status?.().connected){setSt({estat:"sense-nuvol"});return}
+    c.callFunction("verifactu",{accio:"compte"}).then(r=>{const v=r?.actiu?{estat:"actiu",...r}:{estat:"inactiu"};vfCompteCache878285=v;if(viu)setSt(v)})
+      .catch(e=>{const v={estat:e?.status===404?"sense-funcio":e?.offline?"sense-connexio":"inactiu"};if(viu)setSt(v)});
+    return ()=>{viu=false};
+  },[]);
+  return st;
+}
+async function vfQr878285(url){try{return await QRCode.toDataURL(url,{margin:1,width:220,errorCorrectionLevel:"M"})}catch(e){return ""}}
+// Desa (o posa al dia) una factura emesa dins de l'obra. El QR no es desa (el desat de les obres treu les imatges):
+// es desa l'adreça de comprovació de l'AEAT (urlQr) i la imatge es fa en obrir el PDF.
+async function vfDesa878285(setData,base,r){
+  const {qr:_qr,...rest}=base;
+  const fac={...rest,id:r.id,numSerie:r.numSerie,serie:r.serie,numero:r.numero,data:r.data,estat:r.estat,uuid:r.uuid||"",urlQr:r.urlQr,entorn:r.entorn,emissor:r.emissor,destinatari:{...(base.destinatari||{}),...(r.destinatari||{})},base:r.base??base.base,quota:r.quota??base.quota,total:r.total??base.total,actualitzadaAt:new Date().toISOString()};
+  fac.totalCobrar=r2_878285(fac.total-(fac.retImp||0));
+  setData(d=>({...d,facturesVF878285:[...(d.facturesVF878285||[]).filter(x=>x.id!==fac.id),fac],updatedAt:new Date().toISOString()}));
+  return fac;
+}
+function VerifactuNota878285({vf}){
+  if(vf.estat==="actiu")return <div className="verifactu-note-v87101 vf-on-v878285"><b>{t("VERI*FACTU actiu")}{vf.entorn==="test"?` · ${t("entorn de proves")}`:""}</b><span>{t("Emet: {nom} · NIF {nif}. Cada proforma es pot «Emetre» com a factura: el número el dona el servidor, s’envia a Hisenda i ja no es pot canviar.",{nom:vf.nom||"—",nif:vf.nif||"—"})}</span></div>;
+  return <div className="verifactu-note-v87101"><b>{t("Les proformes no són factures")}</b><span>{vf.estat==="sense-nuvol"||vf.estat==="sense-connexio"?t("Per emetre factures amb VERI*FACTU cal connexió amb el núvol."):t("Per emetre factures amb VERI*FACTU, aquest compte s’ha d’activar.")}</span></div>;
+}
+function EmetreFactura878285({f,c,obra,client,data,setData,vf,close}){
+  const lang=docLang878283(obra);
+  const prom=primaryPromotorAgent878134(data.agents||[],obra||{},client||{})||{};
+  const [dest,setDest]=useState({nif:String(prom.nif||obra?.nifPropietat||"").replace(/^pendent$/i,""),nom:prom.nom||obra?.propietat||"",adreca:prom.adreca||obra?.adrecaPropietat||""});
+  const [descripcio,setDescripcio]=useState(()=>tl(lang,"Certificació núm. {n} · {obra}",{n:f.numeroCert,obra:obra?.nom||""}));
+  const [estat,setEstat]=useState({fent:false,error:""});
+  const s2=c.iva===0;
+  const quota=s2?0:r2_878285(c.base*c.iva/100), total=r2_878285(c.base+quota), retImp=r2_878285(c.base*(c.ret||0)/100);
+  const nifOk=/^[A-Z0-9]{8,9}$/.test(String(dest.nif).toUpperCase().replace(/[\s.-]/g,""));
+  async function emet(){
+    if(!navigator.onLine){setEstat({fent:false,error:t("No hi ha connexió. Les factures només es poden emetre amb connexió.")});return}
+    setEstat({fent:true,error:""});
+    const base={certId:f.certId||f.pfId,pfNumero:f.numero,certNum:f.numeroCert,descripcio,ded:c.ded,baseBruta:r2_878285(f.base),iva:c.iva,ret:c.ret||0,retImp,qualificacio:s2?"S2":"S1",destinatari:{...dest,nif:String(dest.nif).toUpperCase().replace(/[\s.-]/g,"")},emesaAt:new Date().toISOString(),emesaPer:window.__acoCloud?.myEmail?.()||""};
+    try{
+      const r=await window.__acoCloud.callFunction("verifactu",{accio:"emetre",obraId:obra?.id,certId:base.certId,descripcio,destinatari:base.destinatari,linies:[{base:r2_878285(c.base),iva:c.iva,qualificacio:base.qualificacio}]});
+      await vfDesa878285(setData,base,r);close();
+    }catch(e){
+      // Si el número ja s'ha reservat però l'enviament ha fallat, es desa igualment: «Tornar a enviar» farà servir el mateix número
+      if(e?.body?.registre){await vfDesa878285(setData,base,e.body.registre);close();alert(t("La factura {n} s’ha numerat però no s’ha pogut enviar: {e}. Torna-ho a provar amb «Tornar a enviar».",{n:e.body.registre.numSerie,e:e.message}));return}
+      setEstat({fent:false,error:e?.message||String(e)});
+    }
+  }
+  return <Modal title={t("Emetre factura · {pf}",{pf:f.numero})} close={()=>{if(!estat.fent)close()}}>
+    <div className="vf-emetre-v878285">
+      <p className="vf-emissor-v878285">{t("Emet: {nom} · NIF {nif}",{nom:vf.nom||"—",nif:vf.nif||"—"})}{vf.entorn==="test"?<b> · {t("entorn de proves (no té validesa)")}</b>:null}</p>
+      <div className="form-grid compact-v87151 no-pad">
+        <label><span>{t("NIF del client")}</span><input value={dest.nif} onChange={e=>setDest(d=>({...d,nif:e.target.value}))} placeholder="B12345678"/></label>
+        <label><span>{t("Nom o raó social del client")}</span><input value={dest.nom} onChange={e=>setDest(d=>({...d,nom:e.target.value}))}/></label>
+        <label className="span-all"><span>{t("Adreça del client")}</span><input value={dest.adreca} onChange={e=>setDest(d=>({...d,adreca:e.target.value}))}/></label>
+        <label className="span-all"><span>{t("Descripció de la factura")}</span><input value={descripcio} onChange={e=>setDescripcio(e.target.value)}/></label>
+      </div>
+      <div className="vf-totals-v878285">
+        <div><span>{t("Base imposable")}</span><b>{money(c.base)}</b></div>
+        <div><span>{s2?t("IVA 0 % · inversió del subjecte passiu"):`IVA ${c.iva}%`}</span><b>{money(quota)}</b></div>
+        <div className="tot"><span>{t("Total factura")}</span><b>{money(total)}</b></div>
+        {retImp?<div><span>{t("Retenció")} {c.ret}%</span><b>-{money(retImp)}</b></div>:null}
+        {retImp?<div><span>{t("A cobrar")}</span><b>{money(total-retImp)}</b></div>:null}
+      </div>
+      <p className="vf-avis-v878285">{t("Un cop emesa, la factura no es pot canviar ni esborrar. Per corregir-la caldrà anul·lar-la o fer-ne una de rectificativa.")}</p>
+      {estat.error&&<p className="vf-error-v878285">{estat.error}</p>}
+      {!nifOk&&<small className="vf-falta-v878285">{t("Cal el NIF del client (8 o 9 lletres i números).")}</small>}
+      <div className="actions"><button type="button" className="secondary" disabled={estat.fent} onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={estat.fent||!nifOk||!String(dest.nom).trim()||!String(descripcio).trim()||!(c.base>0)} onClick={emet}>{estat.fent?t("Emetent…"):t("Emetre factura")}</button></div>
+    </div>
+  </Modal>
+}
+// PDF de la factura emesa (en l'idioma dels documents de l'obra)
+function facturaVFPrintHtml878285(doc,obra){
+  const D=(s,v)=>tl(docLang878283(obra),s,v);
+  const f=doc.factura||{};const e=f.emissor||{},dst=f.destinatari||{};
+  const esc=escHtmlV8772;
+  const dataF=f.data?`${String(f.data).slice(8,10)}/${String(f.data).slice(5,7)}/${String(f.data).slice(0,4)}`:"—";
+  const linies=[`<tr><td>${esc(f.descripcio||"")}</td><td class="num">${money(f.baseBruta??f.base)}</td></tr>`,
+    f.ded?`<tr><td>${D("Deducció provisió/descompte")} ${f.ded}%</td><td class="num">-${money((f.baseBruta||0)-(f.base||0))}</td></tr>`:""].join("");
+  const prova=f.entorn==="test"?`<div class="prova">${D("Factura de PROVA (entorn de proves de l’AEAT): no té validesa.")}</div>`:"";
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${D("Factura")} ${esc(f.numSerie||"")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:12px;margin:0;background:#fff}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12mm;border-bottom:2px solid #111827;padding-bottom:10px;margin-bottom:14px}h1{margin:0 0 4px;font-size:24px}.qr{text-align:center;font-size:9px;color:#111827;width:40mm}.qr img{width:36mm;height:36mm;display:block;margin:2px auto}.parties{display:grid;grid-template-columns:1fr 1fr;gap:10mm;margin-bottom:12px}.box{border:1px solid #cbd5e1;border-radius:6px;padding:9px}.box h3{margin:0 0 6px;font-size:11px;color:#64748b;text-transform:uppercase}.box b,.box span{display:block;margin-top:3px}.exp{border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;padding:9px;margin-bottom:12px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top;text-align:left}th{background:#f1f5f9}.num{text-align:right;white-space:nowrap;width:34mm}.totals{width:86mm;margin-left:auto;margin-top:16px}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:6px 0}.totals .total{border-top:2px solid #111827;border-bottom:0;font-size:17px;margin-top:5px;padding-top:9px}.nota{margin-top:14px;color:#334155}.prova{margin:0 0 12px;padding:8px;border:2px dashed #dc2626;color:#b91c1c;font-weight:700;text-align:center}.foot{margin-top:22px;border-top:1px solid #e5e7eb;padding-top:8px;color:#64748b;font-size:10px}</style></head><body>
+  ${prova}<div class="top"><div><h1>${D("FACTURA")}</h1><b>${esc(f.numSerie||"")}</b><br><span>${D("Data:")} ${esc(dataF)}</span></div>${f.qr?`<div class="qr">QR tributario:<img src="${esc(f.qr)}" alt="QR"/>VERI*FACTU</div>`:""}</div>
+  <div class="parties"><div class="box"><h3>${D("Emissor")}</h3><b>${esc(e.nom||"")}</b><span>NIF: ${esc(e.nif||"")}</span><span>${esc(e.adreca||"")}</span><span>${esc([e.cp,e.poblacio].filter(Boolean).join(" "))}</span></div><div class="box"><h3>${D("Client")}</h3><b>${esc(dst.nom||"")}</b><span>NIF: ${esc(dst.nif||"")}</span><span>${esc(dst.adreca||"")}</span></div></div>
+  <div class="exp"><b>${D("Obra")}</b><br>${esc(typeof expedientCode8739==="function"?expedientCode8739(obra):"")} · ${esc(obra?.nom||"")}${obra?.adreca?`<br><small>${esc(obra.adreca)}${obra?.poblacio?` · ${esc(obra.poblacio)}`:""}</small>`:""}</div>
+  <table><thead><tr><th>${D("Concepte")}</th><th class="num">${D("Import")}</th></tr></thead><tbody>${linies}</tbody></table>
+  <div class="totals"><div><span>${D("Base imposable")}</span><b>${money(f.base)}</b></div><div><span>IVA ${f.qualificacio==="S2"?"0":f.iva}%</span><b>${money(f.quota)}</b></div><div class="total"><span>${D("Total factura")}</span><b>${money(f.total)}</b></div>${f.retImp?`<div><span>${D("Retenció")} ${f.ret}%</span><b>-${money(f.retImp)}</b></div><div><span>${D("A cobrar")}</span><b>${money(f.totalCobrar)}</b></div>`:""}</div>
+  ${f.qualificacio==="S2"?`<p class="nota">${D("Operació amb inversió del subjecte passiu (art. 84.1.2n f de la Llei 37/1992 de l’IVA).")}</p>`:""}
+  <div class="foot">${D("Factura emesa amb VERI*FACTU. Es pot comprovar a la seu electrònica de l’AEAT amb el codi QR.")}</div>
+  </body></html>`;
+}
 function ProformaPreviewV61({f,calc,qFor}){
 const originRows=f.allRows||f.rows||[];
 const certNum=+f.numeroCert||+f.numero||1;
@@ -11123,7 +11234,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.284",
+    app_version:"87.285",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12290,7 +12401,7 @@ function DocViewer({doc,obra,client,close,email}){
   const actaDocs=doc.actaDocs||[];
   const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
   const printRef=useRef(null);
-  const exactHtml878193=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):null;
+  const exactHtml878193=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):doc.type==="facturavf"&&doc.factura?facturaVFPrintHtml878285(doc,obra):null;
   function htmlForCurrentDoc(){
     if(exactHtml878193)return exactHtml878193;
     const node=printRef.current;

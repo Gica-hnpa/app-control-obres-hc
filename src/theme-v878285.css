@@ -1,0 +1,23 @@
+/* V87.285 · VeriFactu dins de les obres: estat de cada factura emesa i finestra «Emetre factura» */
+.verifactu-note-v87101.vf-on-v878285{border-color:#bbf7d0;background:#f0fdf4;border-left-color:#16a34a}
+.verifactu-note-v87101.vf-on-v878285 b{color:#14532d}
+.vf-actions-v878285{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.vf-badge-v878285{display:flex;flex-direction:column;align-items:center;font-size:12px;line-height:1.25;border-radius:10px;padding:4px 8px;white-space:normal;text-align:center;border:1px solid}
+.vf-badge-v878285 b{font-weight:800;white-space:nowrap}
+.vf-badge-v878285 small{font-size:11px;font-weight:600}
+.vf-badge-v878285.vf-ok{color:#14532d;background:#dcfce7;border-color:#86efac}
+.vf-badge-v878285.vf-pend{color:#1e3a8a;background:#dbeafe;border-color:#93c5fd}
+.vf-badge-v878285.vf-warn{color:#78350f;background:#fef3c7;border-color:#fcd34d}
+.vf-badge-v878285.vf-err{color:#7f1d1d;background:#fee2e2;border-color:#fca5a5}
+.vf-badge-v878285.vf-off{color:#475569;background:#f1f5f9;border-color:#cbd5e1}
+.vf-emetre-v878285{display:flex;flex-direction:column;gap:12px;padding:4px 16px 16px}
+.vf-emetre-v878285 .vf-emissor-v878285{margin:0;color:var(--co-ink-3,#64748b)}
+.vf-emetre-v878285 .vf-emissor-v878285 b{color:#b91c1c}
+.vf-totals-v878285{border:1px solid var(--co-line,#DCE3E7);border-radius:10px;padding:8px 12px;max-width:420px}
+.vf-totals-v878285 div{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid #eef2f5}
+.vf-totals-v878285 div:last-child{border-bottom:0}
+.vf-totals-v878285 .tot{font-size:16px;font-weight:800}
+.vf-avis-v878285{margin:0;padding:9px 12px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;color:#7c2d12;line-height:1.4}
+.vf-error-v878285{margin:0;padding:9px 12px;border-radius:10px;background:#fee2e2;border:1px solid #fca5a5;color:#7f1d1d}
+.vf-falta-v878285{color:#b45309}
+.vf-emetre-v878285 .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}

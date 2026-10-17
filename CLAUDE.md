@@ -47,6 +47,8 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
     `<compte propietari>/<obra>/<arxiu>`. Propietari: tot; obres compartides: lectors veuen, editors afegeixen; només
     el propietari esborra; compte de còpies llegeix tot. L’identificador d’una obra compartida ja no es pot canviar
     i el correu del propietari el posa el servidor.
+  - Edge Function `verifactu` (V87.285, `supabase/functions/verifactu/index.ts`) i SQL `aco_verifactu_v87285.sql`:
+    factures amb VeriFactu. **Encara no instal·lades** (vegeu `docs/verifactu-pla.md`).
   - Edge Function `llegir-albara` (codi a `supabase/functions/llegir-albara/index.ts`) per llegir albarans
     amb Claude (Anthropic, model Haiku 4.5). **Encara no desplegada.**
   - Funció `aco_espai()` (V87.263, `supabase/aco_espai_v87263.sql`): mida de la base de dades i dels arxius per a
@@ -217,6 +219,16 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   `aco_fact_params_v61`, i la PF-001 de totes les obres compartia l’IVA. Les proformes de certificacions d’abans del
   17/10/2026 sense valors propis continuen mostrant els de la clau vella (no canvia res en actualitzar); la clau vella
   ja no s’escriu. El portal de client no els pot canviar.
+  **V87.285 · Emetre factures (encara sense instal·lar al servidor)**: a Facturació obra, «Emetre factura» per proforma
+  si el compte és a `aco_verifactu_comptes` amb `actiu` (només ho activa l’Héctor, al panell). Funció del servidor
+  `verifactu` (`supabase/functions/verifactu/index.ts`, accions compte/emetre/reenviar/estat/anular) i SQL
+  `supabase/aco_verifactu_v87285.sql` (comptes, `aco_series` + `aco_seguent_numero`, registre
+  `aco_verifactu_registres`). El número el dona el servidor; si l’intermediari falla, «Tornar a enviar» amb el mateix
+  número; una factura per certificació. A l’obra: `data.facturesVF878285` (sense la imatge del QR: `stripHeavy878185`
+  buida qualsevol `data:`; el QR es fa en obrir el PDF amb `urlQr`). Factura emesa → IVA bloquejat i certificació que
+  no es pot eliminar (`vfTeFactura878285`). PDF: `facturaVFPrintHtml878285` (tipus de document `facturavf`). Falta:
+  comprovar l’API amb el compte de proves de Verifacti, anul·lar/rectificatives a l’app, honoraris, Configuració.
+  Detall i passos de l’Héctor a `docs/verifactu-pla.md`.
 - **Filtres d'Expedients** (V87.275, `ExpFilters878275`, `src/theme-v878275.css`): un sol bloc «Filtres» igual a
   l'ordinador, l'iPad i el mòbil (abans: desplegables diferents a cada aparell; a l'ordinador l'any només tenia 2025/2026).
   Any, estat, tipus i client amb botons que s'encenen: **diversos valors per grup alhora**, desats com a `"a|b"` als
@@ -276,6 +288,11 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   (`DADES_REPARADES/app-control-obres-hector-backup-reparat-v87-211-2026-07-22.json`, dades reals de clients).
   Es va treure del repositori a la V87.259.2, però continua als commits antics. Cal reescriure l’historial
   (git filter-repo o BFG) i forçar la pujada; fer-ho amb calma i amb còpia abans.
+- **VeriFactu (abans de l’1/1/2027 per a les S.L.)**: fet a l’app i al simulador (V87.285). Falta instal·lar l’SQL i la
+  funció `verifactu`, el compte de proves de Verifacti (comprovar l’API), anul·lar/rectificatives, honoraris,
+  Configuració, còpies del registre i la declaració responsable (fabricant: gestoria). Tot a `docs/verifactu-pla.md`.
+- **Revisar l’IVA de les proformes de cada obra** (V87.284): de la PF-001 a la PF-008 de totes les obres surt un 10 %
+  (el valor vell era compartit entre obres).
 - **Lectura d’albarans amb IA directa**: falta clau d’Anthropic + desplegar la funció
   (`INSTRUCCIONS_LECTURA_ALBARANS_IA.txt`).
 - **Hores per treballador** (constructors) i mòduls per a **autònoms / operaris / promotors**.
@@ -322,6 +339,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     les obres (només llegeix el DADES; l'informe porta dades de clients: es deixa a `tools/proves`, que no es puja).
     `verifactudemotest.mjs`: demostració de VeriFactu a Factures (ordinador en català, mòbil compilat en castellà).
     `proformestest.mjs`: IVA/retenció de les proformes per obra (una obra no canvia l’altra; les d’abans es veuen igual).
+    `vfemetretest.mjs`: emetre factures amb VeriFactu (simulat al Supabase de proves: `POST /__vf` activa un compte o fa
+    fallar l’intermediari; `GET /__vf` dona el registre): número del servidor, bloqueig, PDF amb QR, error i «Tornar a
+    enviar», una factura per certificació, no eliminar la certificació.
     `pestanyestest.mjs`: una sola pestanya «Pressupost» (el ràpid a dins, sense canviar dades en obrir), Actes a tots els
     treballs, taula d’Expedients proporcionada.
     `notestest.mjs`: Notes (numeració i data, text, foto i document, recarregar, mòbil amb la foto del núvol, eliminar).

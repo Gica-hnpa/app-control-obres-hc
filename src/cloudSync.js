@@ -8,7 +8,7 @@
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 
-const VERSION = "V87.284";
+const VERSION = "V87.285";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -78,7 +78,7 @@ async function api(path, { method = "GET", body, headers = {}, auth = true } = {
   try { r = await fetch(CLOUD_URL + path, { method, headers: h, body: body == null ? undefined : JSON.stringify(body), cache: "no-store" }); }
   catch { const e = new Error(t("No hi ha connexió amb el núvol.")); e.offline = true; throw e; }
   const txt = await r.text(); let j = null; try { j = txt ? JSON.parse(txt) : null; } catch {}
-  if (!r.ok) { const e = new Error(j?.msg || j?.message || j?.error_description || j?.error || txt || `Error ${r.status}`); e.status = r.status; throw e; }
+  if (!r.ok) { const e = new Error(j?.msg || j?.message || j?.error_description || j?.error || txt || `Error ${r.status}`); e.status = r.status; e.body = j; throw e; }
   return j;
 }
 function setSession(j) {
