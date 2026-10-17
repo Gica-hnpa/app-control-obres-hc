@@ -332,3 +332,170 @@ versió, tu la proves.
 3. Si vols, abans de la V87.269 et faig una **maqueta** de la pantalla d’Obra al mòbil (sense tocar l’app) perquè vegis
    com quedaria.
 4. Instal·lar la skill `frontend-design` (targeta que t’he passat) per al disseny de les pantalles.
+
+---
+
+## 10. Despeses, Facturació, menús per perfil i noms (17/10/2026)
+
+*Proposta a partir de la nota de l’Héctor del 17/10/2026. **No canvia res del codi** fins que la revisis.*
+*Com és ara: V87.293 (publicada).*
+
+### 10.1 «Albarans» passa a dir-se «Despeses»
+
+**Per què:** la majoria seran **factures** de material o de feina d’industrials, no només albarans.
+
+**Com és ara:** cada albarà té data, obra, proveïdor, número, base, IVA, total, línies de material (quantitat, unitat,
+preu), notes, foto o PDF i «Ja facturat o repercutit al client». **No** té tipus ni partida.
+
+**Proposta:**
+
+1. **Tipus** de cada despesa (camp obligatori, una tria):
+
+   | Tipus | Català (llista) | Castellà (llista) | Què és |
+   |---|---|---|---|
+   | Factura de proveïdor | Material | Material | Factura de material (magatzem, ferreteria…) |
+   | Factura d’industrial / subcontracta | Subcontracta | Subcontrata | Feina d’un industrial (paleta, lampista, electricista…) |
+   | Albarà | Albarà | Albarán | Entrega de material encara sense factura |
+
+2. **Imputació:** cada despesa va a **una obra** (obligatori). Opcionalment, a **una partida** del pressupost d’aquella
+   obra: es tria d’una llista amb codi i concepte, i es pot buscar. Més endavant, si cal, es podrà repartir per línies.
+3. **Albarà i factura, sense comptar dues vegades:** quan arriba la factura del proveïdor, es marquen els albarans que
+   cobreix. Aquests albarans queden «Facturats pel proveïdor» i **deixen de comptar**; compta la factura.
+   - Si un albarà no té factura, compta ell.
+4. **IVA (decisió de l’Héctor):**
+   - **El rendiment de l’obra es calcula sempre sense IVA (base imposable)**, perquè els pressupostos són sense IVA.
+   - Al llistat hi ha tres columnes: **Base**, **IVA** i **Total**. El total és només informatiu (el que s’ha pagat) i
+     **mai** entra al rendiment.
+   - A sota del llistat hi ha dos totals: **total base** i **total amb IVA**.
+   - Subcontractes amb **inversió del subjecte passiu** (IVA 0 %): base = total, i a la columna IVA hi diu «ISP».
+5. **Rendiment de l’obra** (cost real davant del pressupost, tot sense IVA):
+
+   | | Pressupost | Cost real | Diferència | % |
+   |---|---|---|---|---|
+   | Per capítol | des del pressupost | despeses imputades al capítol (per les seves partides) | | |
+   | Per partida | si la despesa porta partida | | | |
+   | Sense partida | — | despeses només imputades a l’obra | | |
+   | **Total obra** | | despeses + (amb el mòdul 3) hores × cost/hora | **marge** | |
+
+6. **Què passa amb el que ja hi ha:** tots els albarans d’ara passen a ser despeses de tipus «Albarà», amb la mateixa
+   obra i els mateixos imports. No es perd res ni canvia cap import. Les dades continuen al mateix lloc (canvia el nom,
+   no la clau on es desen).
+7. «Ja facturat o repercutit al client» es queda, amb el nom **«Repercutida al client»**. Serveix per al tècnic que passa
+   una despesa al seu client.
+
+### 10.2 On surten les Despeses
+
+- **Sempre dins de cada obra**: pestanya «Despeses» (a l’obra hi ha d’haver el cost real).
+- **Tècnic** (com l’Héctor): **no** surt al menú principal.
+- **Constructora:** sí, una vista general **«Despeses»** al menú principal amb les despeses de totes les obres:
+  - es pot filtrar per obra, proveïdor, tipus i mes;
+  - els totals surten amb base i amb IVA;
+  - hi ha «+ Nova despesa» (foto o PDF, i després triar obra i partida).
+- **Treballador de la constructora:** pot fer la foto d’un albarà o d’una factura des de l’obra («+ Despesa»). No veu els
+  imports dels altres, només els seus.
+
+### 10.3 «Factures» passa a dir-se «Facturació» (menú principal)
+
+- **Conté només les factures que emet l’usuari.** Per a l’Héctor, les factures a nom seu, que seran poques.
+- **Dues parts:**
+  1. **Pendent de facturar**: hores i visites encara sense facturar, el pas previ a fer una factura.
+  2. **Factures emeses**: el llistat amb la gràfica d’ingressos.
+- **Fora d’aquí:**
+  - Les **proformes i certificacions** d’una obra continuen dins de l’obra (pestanya «Facturació»).
+  - Les **despeses** (factures que rebem) van a «Despeses».
+- **VeriFactu** (quan es faci, ara aturat): aquí i a la pestanya «Facturació» de l’obra.
+
+### 10.4 Menús segons el perfil i el mòdul contractat
+
+**Perfils:** Tècnic · Constructor · Treballador de constructora (operari / encarregat) · Autònom (industrial) ·
+Promotor (client).
+
+**Mòduls** (els de Configuració → «Pla i mòduls»):
+- **M1 Tècnic**: expedients, actes, notes, documents, agenda, temps, honoraris i facturació del tècnic.
+- **M2 Econòmic d’obra**: pressupost, certificacions, facturació d’obra (proformes) i seguiment.
+- **M3 Empresa**: despeses, equip i hores per treballador, rendiment i marge per obra.
+
+#### Menú principal
+
+| Pestanya (ca · es) | Tècnic (M1) | Tècnic + M2 | Constructor (M2) | Constructor + M3 | Treballador | Autònom | Promotor |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Inici · Inicio | ✔ | ✔ | ✔ | ✔ | ✔ (la feina d’avui) | ✔ | ✔ |
+| Obres · Obras | ✔ | ✔ | ✔ | ✔ | ✔ (només les assignades) | ✔ | ✔ (només les seves) |
+| Agenda · Agenda | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ (visites) |
+| Hores · Horas | ✔ | ✔ | — | ✔ (equip) | ✔ (fitxar) | ✔ | — |
+| Facturació · Facturación | ✔ | ✔ | ✔ | ✔ | — | ✔ | — |
+| Despeses · Gastos | — | — | — | ✔ | — | ✔ | — |
+| Pressupostos · Presupuestos | — | ✔ | ✔ | ✔ | — | ✔ | — |
+| Clients · Clientes | ✔ | ✔ | ✔ | ✔ | — | ✔ | — |
+| Agents · Agentes | ✔ | ✔ | ✔ | ✔ | — | — | — |
+| Preus · Precios (ara «Llibreria») | — | ✔ | ✔ | ✔ | — | ✔ | — |
+| Ajustos · Ajustes (ara «Configuració») | ✔ | ✔ | ✔ | ✔ | ✔ (només el seu) | ✔ | ✔ (només el seu) |
+
+**Al mòbil i a l’iPad**, la barra de baix té les 4 primeres que facin servir més, i la resta va a «Més»:
+- Tècnic: Inici · Obres · Agenda · Hores.
+- Constructor: Inici · Obres · Agenda · Despeses.
+- Treballador: Inici · Obres · Hores · Agenda.
+
+#### Dins de l’obra
+
+| Pestanya (ca · es) | Tècnic (M1) | Tècnic + M2 | Constructor (M2) | Constructor + M3 | Treballador | Autònom | Promotor |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Resum · Resumen | ✔ | ✔ | ✔ | ✔ | ✔ (què cal fer) | ✔ | ✔ |
+| Pressupost · Presupuesto | — | ✔ | ✔ | ✔ | — | ✔ | ✔ (consulta) |
+| Certificacions · Certificaciones | — | ✔ | ✔ | ✔ | — | ✔ | ✔ (consulta) |
+| Facturació · Facturación (proformes) | — | ✔ | ✔ | ✔ | — | ✔ | — |
+| Despeses · Gastos | — | ✔ | — | ✔ | ✔ (fer foto) | ✔ | — |
+| Rendiment · Rendimiento | — | ✔ | ✔ | ✔ | — | ✔ | — |
+| Actes · Actas | ✔ | ✔ | ✔ | ✔ | — | — | ✔ (consulta) |
+| Notes · Notas | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ (consulta) |
+| Documents · Documentos | ✔ | ✔ | ✔ | ✔ | ✔ (plànols) | ✔ | ✔ |
+| Agenda · Agenda | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Tasques · Tareas | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | — |
+| Planning · Planning (ara «Gantt») | — | ✔ | ✔ | ✔ | ✔ (consulta) | — | ✔ (consulta) |
+| Hores · Horas | ✔ | ✔ | — | ✔ (equip) | ✔ (les seves) | ✔ | — |
+| Honoraris · Honorarios | ✔ | ✔ | — | — | — | — | — |
+| Agents · Agentes | ✔ | ✔ | ✔ | ✔ | — | — | — |
+| Fitxa · Ficha (ara «Dades») | ✔ | ✔ | ✔ | ✔ | — | ✔ | — |
+| Entrega · Entrega (ara «Tancament / Entrega») | ✔ | ✔ | ✔ | ✔ | — | — | ✔ (consulta) |
+
+*El tipus de treball continua decidint quines tenen sentit.* Per exemple, un certificat energètic no té Pressupost ni
+Certificacions encara que el compte tingui el mòdul 2.
+
+### 10.5 Noms de les pestanyes: curts, clars i d’obra
+
+| Ara | Proposta (ca) | Proposta (es) | Per què |
+|---|---|---|---|
+| Treballs / Expedients | **Obres** | **Obras** | Curt; per a tothom és «l’obra» (el tècnic hi veu també el codi d’expedient) |
+| Gestió temps · Traça | **Hores** | **Horas** | El que s’hi fa: apuntar hores |
+| Factures | **Facturació** | **Facturación** | Factures emeses i pendent de facturar |
+| Albarans | **Despeses** | **Gastos** | Factures de material, d’industrials i albarans |
+| Llibreria | **Preus** | **Precios** | És el banc de preus (partides i preus propis) |
+| Configuració | **Ajustos** | **Ajustes** | Més curt (al mòbil cap a la barra) |
+| Agenda / Calendari · Agenda / Avisos | **Agenda** | **Agenda** | Una sola paraula |
+| Dades (de l’obra) | **Fitxa** | **Ficha** | És la fitxa de l’obra |
+| Gantt | **Planning** | **Planning** | Paraula d’obra; «Gantt» no l’entén tothom |
+| Seguiment econòmic + Rendiment | **Rendiment** | **Rendimiento** | N’hi ha dues que fan el mateix: s’ajunten |
+| Tancament / Entrega | **Entrega** | **Entrega** | Més curt |
+| Pressupost ràpid | (dins de Pressupost: «Pressupost per al client») | «Presupuesto para el cliente» | Ja fet a la V87.277 |
+| Gestió obra · Certificacions obra · Pressupost obra | (desapareixen: són les velles) | — | Ja substituïdes per Pressupost i Certificacions |
+
+**Es queden igual:** Inici · Clients · Agents · Pressupost · Certificacions · Actes · Notes · Documents · Tasques ·
+Honoraris · Resum.
+
+### 10.6 Ordre de feina proposat (quan diguis sí)
+
+| Versió | Què | Temps |
+|---|---|---|
+| 1 | **Noms nous** (10.5) i **Facturació** (10.3). Només canvia el que es veu, no les dades | ½–1 dia |
+| 2 | **Despeses**: tipus, base/IVA/total, totals, partida, albarà ↔ factura (10.1), dins de l’obra (10.2) | 2 dies |
+| 3 | **Rendiment de l’obra** amb el cost real per capítol i partida (10.1.5) | 1–2 dies |
+| 4 | **Menús segons perfil i mòdul** (10.4): perfil i mòduls a la fitxa del compte, menú i pestanyes segons la taula | 2–3 dies |
+| 5 | Perfils nous **Treballador** i **Autònom** (comptes i què poden fer) | 3–4 dies |
+
+### 10.7 Què et demano
+
+1. Que revisis les dues taules del 10.4, sobretot el que veu el **treballador** i el **promotor**.
+2. Noms del 10.5: «**Preus**» per a Llibreria, «**Hores**» per a Gestió temps, «**Ajustos**» per a Configuració i
+   «**Planning**» per a Gantt. Et semblen bé?
+3. A «Facturació», hi deixem també **Pendent de facturar** (hores encara sense factura) o ho vols separat?
+4. Albarà i factura (10.1.3): et va bé marcar quins albarans cobreix cada factura?
