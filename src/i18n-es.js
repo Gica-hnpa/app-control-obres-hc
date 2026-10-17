@@ -2803,4 +2803,14 @@ export default {
   "import": "importe",
   "número": "número",
   "hora": "hora",
+
+  // V87.294 · Cites per veu
+  "Avui (no l’has dit)": "Hoy (no lo has dicho)",
+  "Cita per veu": "Cita por voz",
+  "Digues la cita com la diries, per exemple: «Dimarts a dos quarts de deu visita a Verbania». També la pots escriure.": "Di la cita como la dirías, por ejemplo: «El martes a las nueve y media visita a Verbania». También la puedes escribir.",
+  "Dimarts a les 10 visita a …": "El martes a las 10 visita a …",
+  "He entès:": "He entendido:",
+  "Cap (la pots triar a la cita)": "Ninguna (la puedes elegir en la cita)",
+  "Revisar i desar": "Revisar y guardar",
+  "Per veu": "Por voz",
 };

@@ -5,8 +5,9 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Menu,X,Search,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText} from "lucide-react";
+import {Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
+import {parseCita} from "./citaVeu.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
@@ -16,7 +17,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.293";
+const APP_VERSION878264="87.294";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2735,7 +2736,7 @@ function Fotografies8761({data,setData}){
 const DICTAT_IDIOMA_KEY878263="dictat-idioma-app-control-obres";// només en aquest aparell (no es sincronitza)
 function DictatActa878263({value="",onChange}){
   const SR=typeof window!=="undefined"?(window.SpeechRecognition||window.webkitSpeechRecognition):null;
-  const[lang,setLang]=useState(()=>{try{return localStorage.getItem(DICTAT_IDIOMA_KEY878263)||"ca-ES"}catch{return "ca-ES"}});
+  const[lang,setLang]=useState(()=>{const def=getLang()==="es"?"es-ES":"ca-ES";try{return localStorage.getItem(DICTAT_IDIOMA_KEY878263)||def}catch{return def}});
   const[on,setOn]=useState(false),[interim,setInterim]=useState(""),[msg,setMsg]=useState("");
   const recRef=useRef(null),wantRef=useRef(false),valueRef=useRef(value);
   useEffect(()=>{valueRef.current=value},[value]);
@@ -11296,7 +11297,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.293",
+    app_version:"87.294",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12698,6 +12699,26 @@ function layoutDay878256(list){
   return out;
 }
 
+// V87.294 · Cita per veu: es diu (o s'escriu) la cita com es diria i s'obre la fitxa de la cita ja omplerta per revisar-la.
+// Entén el dia, l'hora (també «dos quarts de deu»), el tipus i l'obra (src/citaVeu.js). No desa res sense revisar.
+function VeuCita878294({obres=[],clients=[],close,onDone}){
+  const[text,setText]=useState("");
+  const llista=useMemo(()=>(obres||[]).map(o=>({id:o.id,nom:o.nom,clientNom:(clients||[]).find(c=>c.id===o.client)?.nom||o.clientNomCompartit||""})),[obres,clients]);
+  const p=text.trim()?parseCita(text,{obres:llista}):null;
+  const dia=p?.data?new Date(p.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"}):t("Avui (no l’has dit)");
+  return <Modal title={t("Cita per veu")} close={close}><div className="veu-cita-v878294">
+    <p className="veu-ajuda-v878294">{t("Digues la cita com la diries, per exemple: «Dimarts a dos quarts de deu visita a Verbania». També la pots escriure.")}</p>
+    <textarea value={text} onChange={e=>setText(e.target.value)} rows={3} placeholder={t("Dimarts a les 10 visita a …")} aria-label={t("Cita")}/>
+    <DictatActa878263 value={text} onChange={setText}/>
+    {p&&<div className="veu-resum-v878294"><b>{t("He entès:")}</b>
+      <span><small>{t("Dia")}</small>{dia}</span>
+      <span><small>{t("Hora")}</small>{p.hora?`${p.hora} – ${p.horaFi}`:t("Tot el dia")}</span>
+      <span><small>{t("Tipus")}</small>{t(p.tipus)}</span>
+      <span><small>{t("Obra")}</small>{p.obraNom||t("Cap (la pots triar a la cita)")}</span>
+    </div>}
+    <div className="actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!p} onClick={()=>onDone(p)}>{t("Revisar i desar")}</button></div>
+  </div></Modal>;
+}
 function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,readOnly=false}){
   const safeObres=Array.isArray(obres)?obres:[];
   const[tick,setTick]=useState(0);
@@ -12735,6 +12756,13 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     if(readOnly)return;
     const s=hmToMin878256(hora)??540;
     setForm({id:"",isNew:true,data:iso||todayIso,hora,horaFi:minToHm878256(s+60),allDay:false,title:"",tipus:"Visita d’obra",obraId:obraF||"",adreca:"",detail:"",avis:"",compta:true});
+  }
+  const[veu,setVeu]=useState(false);
+  // V87.294 · la cita dita per veu: la fitxa ja omplerta (sense hora → tot el dia); es revisa i es desa com sempre
+  function openFromVoice(p){
+    if(readOnly||!p)return;
+    const hora=p.hora||"09:00",s=hmToMin878256(hora)??540;
+    setForm({id:"",isNew:true,data:p.data||(view==="dia"?isoDay878255(cursor):todayIso),hora,horaFi:p.horaFi||minToHm878256(s+60),allDay:!p.hora,title:p.titol||p.tipus,tipus:p.tipus,obraId:p.obraId||obraF||"",adreca:"",detail:p.text,avis:"",compta:!!p.hora&&(AGENDA_TYPES878256.find(x=>x.k===p.tipus)?.hours??true)});
   }
   function openEvent(e){
     if(e.kind==="task"||e.auto){if(e.obraId&&openObra)openObra(e.obraId);return}
@@ -12850,9 +12878,11 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
       </div>
       <div className="ag-tools">
         <div className="seg">{[["dia","Dia"],["setmana","Setmana"],["mes","Mes"],["llista","Llista"]].map(([k,l])=><button type="button" key={k} aria-pressed={view===k} onClick={()=>setView(k)}>{i18nT(l)}</button>)}</div>
+        {!readOnly&&<button type="button" className="secondary ag-veu-v878294" onClick={()=>setVeu(true)} title={i18nT("Cita per veu")}><Mic size={16} aria-hidden="true"/> {i18nT("Per veu")}</button>}
         {!readOnly&&<button type="button" className="primary" onClick={()=>openNew(view==="dia"?isoDay878255(cursor):todayIso)}>{i18nT("+ Nova cita")}</button>}
       </div>
     </div>
+    {veu&&<VeuCita878294 obres={safeObres} clients={clients} close={()=>setVeu(false)} onDone={p=>{setVeu(false);openFromVoice(p)}}/>}
     <div className="ag-sub">
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Filtrar per expedient")}><option value="">{i18nT("Tots els expedients")}</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les tasques")}</label>

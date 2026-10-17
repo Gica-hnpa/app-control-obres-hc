@@ -14,3 +14,13 @@
 .ing-llegenda-v878292 b{margin-left:4px}
 .ing-nota-v878292{display:block;padding:2px 18px 14px;color:var(--co-ink-3,#64748b);font-size:12px}
 @media (max-width:700px){.ing-svg-v878292 .ax{font-size:20px}.ing-v878292 .ing-head-v878292{padding:0 12px}.ing-resum-v878292{margin:10px 12px 4px;font-size:13px}}
+/* V87.294 · Cita per veu */
+.ag-veu-v878294{display:inline-flex;align-items:center;gap:6px}
+.veu-cita-v878294{display:flex;flex-direction:column;gap:12px;padding:4px 16px 16px}
+.veu-cita-v878294 .veu-ajuda-v878294{margin:0;color:var(--co-ink-3,#64748b);line-height:1.45}
+.veu-cita-v878294 textarea{width:100%;font:inherit;font-size:16px;border:1px solid var(--co-line,#DCE3E7);border-radius:10px;padding:10px 12px;resize:vertical}
+.veu-resum-v878294{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;padding:10px 12px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0}
+.veu-resum-v878294>b{grid-column:1/-1;color:#14532d}
+.veu-resum-v878294 span{display:flex;flex-direction:column;font-weight:700;color:var(--co-ink,#0f172a)}
+.veu-resum-v878294 small{font-weight:600;color:var(--co-ink-3,#64748b);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+.veu-cita-v878294 .actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
