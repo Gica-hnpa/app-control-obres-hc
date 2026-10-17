@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.279";
+const APP_VERSION878264="87.280";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5018,7 +5018,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 
 {screen==="Inici"&&<Inici clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
-{screen==="Fitxa client"&&<FitxaClient client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} openObra={openObra} back={()=>nav("Clients")}/>}
+{screen==="Fitxa client"&&<FitxaClient client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} odata={viewOdata878233} partidaLibrary={partidaLibrary} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} openObra={openObra} back={()=>nav("Clients")}/>}
 {screen==="Agents"&&<SafeRenderBoundary878108><AgentsGeneral878188 odata={odata} setOdata={setOdata} clients={clients}/></SafeRenderBoundary878108>}
 {screen==="Treballs / Expedients"&&<Projectes byClient={byClient} allObres={viewObres878233} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"}/>} 
 {screen==="Obra"&&<Obra obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>compressImage878259(file,1600,0.75).then(u=>{lsSet8779(obraFotoKey878259(obraId),u);setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u,teFoto:true,fotoAt:new Date().toISOString()}:o))}).catch(e=>alert("No s’ha pogut posar la foto: "+(e?.message||e)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
@@ -6509,7 +6509,7 @@ function ClientInlineEditor878134({client,tipusOpts=[],onSave,onDelete}){
   </div>
 }
 
-function FitxaClient({client,obres,openObra,back}){
+function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,openObra,back}){
   const [edit,setEdit]=useState(false);
   const [showDetails,setShowDetails]=useState(false);
   const [form,setForm]=useState({...client});
@@ -6547,9 +6547,88 @@ function FitxaClient({client,obres,openObra,back}){
       <label><span>{i18nT("Província")}</span><input value={form.provincia||provinciaForCp8773(form.codiPostal)||provinciaForPoblacio8773(form.poblacio)||""} onChange={e=>set("provincia",e.target.value)} disabled={!edit}/></label>
       <label className="span-all"><span>{i18nT("Observacions / criteris client")}</span><textarea value={form.observacions||""} onChange={e=>set("observacions",e.target.value)} disabled={!edit}/></label>
     </div>}
-  </Card><ClientExpedientsList878108 obres={obres} openObra={openObra} clientName={form.nom||client.nom}/></div>
+  </Card><ClientExpedientsList878108 obres={obres} openObra={openObra} clientName={form.nom||client.nom}/><ClientHabituals878280 client={client} obres={obres} odata={odata} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/></div>
 }
 
+// V87.280 · Partides habituals del client: les que més es fan servir als seus pressupostos, classificades en capítols
+// estàndard d'obra (com fan les bases de preus tipus BEDEC o CYPE, però amb les partides i els preus propis). Amb un botó
+// es posen a la llibreria del client: llavors surten al pressupost a «Afegir partides de la llibreria» → «Habituals de…».
+// Si una partida ja era a la llibreria, només s’hi vincula el client (no se li canvia el capítol ni el preu). Llibreria
+// petita: com a màxim 8 per capítol, primer les que surten en més obres i després les més recents.
+const CAPS_STD878280=[["01","Treballs previs i enderrocs"],["02","Moviment de terres"],["03","Fonaments i contencions"],["04","Estructures"],["05","Paleteria: tancaments i divisòries"],["06","Cobertes"],["07","Impermeabilitzacions i aïllaments"],["08","Revestiments i falsos sostres"],["09","Paviments"],["10","Fusteria"],["11","Serralleria i vidres"],["12","Pintura"],["13","Electricitat i telecomunicacions"],["14","Fontaneria i sanejament"],["15","Climatització i ventilació"],["16","Aparells sanitaris"],["17","Equipaments (cuina, mobles)"],["18","Exteriors, piscines i urbanització"],["19","Mitjans auxiliars"],["20","Gestió de residus i neteja"],["21","Seguretat i salut"],["22","Control de qualitat"],["23","Rehabilitació i reparacions"],["24","Feines per administració"],["25","Altres"]];
+// Regles per paraules (sense accents; «·» i apòstrofs com a espais), per ordre: la primera que encaixa mana
+const CAP_RULES878280=[
+  ["24",/administracio|per hores|hores d.oficial|hores de peo/],
+  ["21",/seguretat i salut|\bepi\b|proteccio colectiva|xarxa de seguretat|senyalitzacio d.obra/],
+  ["20",/\bruna\b|\brunes\b|residu|contenidor|abocador|bigbag|neteja final|neteja d.obra|neteja general/],
+  ["01",/enderroc|demolic|desmunt|arrencad|retirada|extraccio|repicat|picat de|desmuntatge|aixecament de paviment/],
+  ["02",/excavacio|terraple|rebliment|\brasa\b|desbrossa|moviment de terres|anivellament del terreny/],
+  ["03",/fonament|sabata|riostra|llosa de fonament|mur de contencio|micropilot/],
+  ["19",/bastida|plataforma elevadora|\bgrua\b|camio ploma|apuntalament|estintolament|mitjans auxiliars|provisionals/],
+  ["04",/forjat|\bbig(a|ues)\b|\bpilar|jasser|estructura|formigo armat|\bipn\b|\bheb?\b|perfil metal|cercol|reforc estructural|daus de formigo/],
+  ["06",/coberta|cobertga|teul|canalo|rafec|carener|xapa sandvitx|claraboia|xemeneia|formacio( de)? pendent/],
+  ["07",/impermeabil|aillament|lamina|tela asfaltica|\bsate\b|poliestire|llana de roca|\bxps\b|\beps\b/],
+  ["16",/sanitari|lavabo|vater|inodor|\bwc\b|plat de dutxa|banyera|aixet|griferia|mampara|bidet/],
+  ["15",/clima|aire a?condicionat|calefaccio|aerotermia|radiador|ventilacio|extractor|conducte|\bsplits?\b|terra radiant/],
+  ["14",/fontaneria|lampisteria|\baigu|canonada|desguas|desaigu|sanejament|baixant|claveguera|perico|arqueta|escomesa|termo|escalfador|pluvials/],
+  ["13",/electric|endoll|interruptor|punt de llum|quadre|cablejat|lluminaria|il luminacio|iluminacio|\bllum|\baplic|teleco|antena|xarxa de dades|porter/],
+  ["11",/serralleria|baran|reix(a|es)|passama|\bferro\b|acer inox|tanca metal|metal lic|\bvidre|mirall|climalit/],
+  ["10",/fusteria|\bport(a|es)\b|finestr|armari|persian|bastiment|tapajunt|galze|premarc|screen|\bestor|tendal/],
+  ["23",/reparacio|esquerd|fissur|raspatllat|passivat|volumetria|encastat|trencaaigu|volad(is|issos)|\bbalco|sanejat|repassos|parament|regularitzacio/],
+  ["08",/arrebossat|enguixat|\bguix|pladur|placa de guix|fals sostre|enrajolat|aplacat|revestiment|monocapa|estucat|tabica|cel ras|trasdossat/],
+  ["09",/pavim|parquet|tarima|\bgres\b|rajol(a|es) de terra|terratzo|socol|esglao|graonat|microciment|soler/],
+  ["12",/pintura|pintat|pintar|vernis|esmalt|lacat/],
+  ["17",/cuina|moble|mobiliari|electrodomestic|encimera|taulell|estenedor/],
+  ["18",/piscina|jacuzzi|\bspa\b|jardi|urbanitzacio|exterior|tanca de parcela|gespa|\breg\b/],
+  ["22",/control de qualitat|assaig|prova de pressio|proves de pressio/],
+  ["05",/\benva|\bparet|totxo|totxana|\bmao\b|bloc de formigo|tabic|tancament|ampit|regata|ajudes|recrescut|solera|paleteria|coronament/]
+];
+function normCap878280(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[·'’]/g," ")}
+function capStd878280(row={}){const c=normCap878280(row.concepte||row.resum||""),cap=normCap878280(row.cap||"");for(const [code,re] of CAP_RULES878280)if(re.test(c))return code;for(const [code,re] of CAP_RULES878280)if(re.test(cap))return code;return "25"}
+function clientHabituals878280(obres=[],odata={}){
+  const map=new Map();
+  for(const o of obres||[]){
+    const d=odata?.[o.id];const when=String(d?.updatedAt||o.updatedAt||o.createdAt||"");const seen=new Set();
+    for(const r of d?.partides||[]){
+      if(!r||r.adminMonthlyAuto)continue;
+      const key=librarySimilarityKey878234(r);if(!key)continue;
+      const pu=parseNum8770(r.pu)||0;
+      let e=map.get(key);if(!e){e={key,concepte:r.concepte||r.resum||"",ut:r.ut||"ut",desc:"",pu:0,when:"",ids:new Set(),cap:capStd878280(r)};map.set(key,e)}
+      if(!seen.has(key)){e.ids.add(o.id);seen.add(key)}
+      const desc=String(libLongDesc87196(r)||"");if(desc.length>e.desc.length)e.desc=desc;
+      if(pu>0&&when>=e.when){e.when=when;e.pu=pu;e.concepte=r.concepte||e.concepte}
+    }
+  }
+  return [...map.values()].map(({ids,...e})=>({...e,n:ids.size}));
+}
+function ClientHabituals878280({client={},obres=[],odata={},partidaLibrary=[],setPartidaLibrary}){
+  const all=useMemo(()=>clientHabituals878280(obres,odata),[obres,odata]);
+  const inLib=useMemo(()=>new Set((partidaLibrary||[]).filter(x=>(x.clientIds||[]).some(c=>String(c)===String(client.id))).map(x=>librarySimilarityKey878234(x))),[partidaLibrary,client.id]);
+  const[done,setDone]=useState("");
+  const groups=CAPS_STD878280.map(([code,label])=>({code,label,items:all.filter(x=>x.cap===code).sort((a,b)=>b.n-a.n||String(b.when).localeCompare(String(a.when))||(b.pu>0)-(a.pu>0)||String(a.concepte).localeCompare(String(b.concepte),"ca")).slice(0,8)})).filter(g=>g.items.length);
+  const chosen=groups.flatMap(g=>g.items),pending=chosen.filter(x=>!inLib.has(x.key));
+  if(!all.length)return null;
+  function addAll(){
+    const now=new Date().toISOString(),cid=String(client.id),n=pending.length;
+    setPartidaLibrary(prev=>{
+      const rows=[...(prev||[])];const at=new Map(rows.map((x,i)=>[librarySimilarityKey878234(x),i]));
+      for(const x of pending){const i=at.get(x.key);
+        if(i!=null)rows[i]={...rows[i],clientIds:[...new Set([...(rows[i].clientIds||[]).map(String),cid])],updatedAt:now};
+        else rows.push({id:`libp-hab-${Date.now().toString(36)}-${Math.random().toString(16).slice(2,8)}`,concepte:x.concepte,ut:x.ut,pu:x.pu,desc:x.desc,cap:`${x.cap} ${CAPS_STD878280.find(c=>c[0]===x.cap)?.[1]||""}`.trim(),clientIds:[cid],origen:"Habituals del client",createdAt:now,updatedAt:now});
+      }
+      return dedupePartidaLibrary87196(rows);
+    });
+    setDone(t("Fet: {n} partides a la llibreria de {client}. Al pressupost, les trobaràs a «Afegir partides de la llibreria» → «Habituals de {client}».",{n,client:client.nom||""}));
+  }
+  return <Card className="client-hab-v878280" title={t("Partides habituals")} action={pending.length>0&&setPartidaLibrary?<button type="button" className="primary" onClick={addAll}>{t("Posar-les a la llibreria del client ({n})",{n:pending.length})}</button>:null}>
+    <p className="client-hab-help-v878280">{t("Les partides que més fas servir als pressupostos d’aquest client, classificades per capítols, amb el preu de l’última vegada.")}</p>
+    {done&&<p className="client-hab-done-v878280" role="status">{done}</p>}
+    <div className="client-hab-list-v878280">{groups.map(g=><details key={g.code}>
+      <summary><b>{g.code} · {t(g.label)}</b><span>{t("{n} partides",{n:g.items.length})}</span></summary>
+      <ul>{g.items.map(x=><li key={x.key}><span className="c" title={x.desc||x.concepte}>{x.concepte}</span><span className="u">{x.ut}</span><span className="p">{x.pu?money(x.pu):"—"}</span><span className="n">{x.n>1?t("{n} obres",{n:x.n}):t("1 obra")}</span>{inLib.has(x.key)?<em>{t("a la llibreria")}</em>:<em className="no"/>}</li>)}</ul>
+    </details>)}</div>
+  </Card>
+}
 function ClientExpedientsList878108({obres=[],openObra,clientName="client"}){
   const [q,setQ]=useState("");
   const [estat,setEstat]=useState("");
@@ -11016,7 +11095,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.279",
+    app_version:"87.280",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

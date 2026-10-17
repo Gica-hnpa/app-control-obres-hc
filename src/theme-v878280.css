@@ -1,0 +1,21 @@
+/* V87.280 · Partides habituals del client, per capítols */
+.client-hab-help-v878280{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--co-ink-3,#64748b);max-width:70ch}
+.client-hab-done-v878280{margin:0 0 10px;padding:8px 12px;border-radius:10px;background:#f0fdf4;color:#166534;font-size:13.5px}
+.client-hab-list-v878280{display:flex;flex-direction:column;gap:6px}
+.client-hab-list-v878280 details{border:1px solid var(--co-line,#DCE3E7);border-radius:10px;background:#fff}
+.client-hab-list-v878280 summary{list-style:none;display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:10px 14px;cursor:pointer}
+.client-hab-list-v878280 summary::-webkit-details-marker{display:none}
+.client-hab-list-v878280 summary b{font-size:14px;color:var(--co-ink,#0f172a)}
+.client-hab-list-v878280 summary span{font-size:12.5px;color:var(--co-ink-3,#64748b);white-space:nowrap}
+.client-hab-list-v878280 ul{margin:0;padding:0 14px 10px;list-style:none;display:flex;flex-direction:column}
+.client-hab-list-v878280 li{display:grid;grid-template-columns:minmax(0,1fr) 44px 92px 70px 86px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid #EEF2F4;font-size:13.5px}
+.client-hab-list-v878280 li .c{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.client-hab-list-v878280 li .u{color:var(--co-ink-3,#64748b)}
+.client-hab-list-v878280 li .p{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.client-hab-list-v878280 li .n{color:var(--co-ink-3,#64748b);font-size:12.5px;text-align:right}
+.client-hab-list-v878280 li em{font-style:normal;font-size:11.5px;font-weight:600;color:#166534;text-align:right}
+@media (max-width:760px){
+  .client-hab-list-v878280 li{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"c p" "u n";row-gap:2px}
+  .client-hab-list-v878280 li .c{grid-area:c;white-space:normal}.client-hab-list-v878280 li .p{grid-area:p}
+  .client-hab-list-v878280 li .u{grid-area:u}.client-hab-list-v878280 li .n{grid-area:n}.client-hab-list-v878280 li em{display:none}
+}
