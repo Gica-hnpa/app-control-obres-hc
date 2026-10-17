@@ -252,6 +252,11 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Expedients** (V87.270, `src/theme-v878270.css`): al mòbil i l’iPad, targetes per any (codi curt · client, nom,
   tipus · població, estat) i un cercador sempre a la vista (fix en baixar); la resta de filtres a «Filtres». A
   l’ordinador, la taula sense la columna del codi llarg ni «Eliminar» a cada fila (és al menú ⋯ de l’obra).
+- **Proformes → Factures** (V87.296, decisió de l’Héctor del 17/10/2026): sense VeriFactu, el que l’app en deia «proforma»
+  són les seves factures: **«Factura»** a la pantalla i als PDF (Facturació obra, PDF, documents de l’obra, factures
+  d’honoraris, que deien «FACTURA / PROFORMA»). «Proforma» només quan VeriFactu està actiu (`ambVF878296()`, esborrany
+  abans d’emetre). **Els números (PF-001…) no es toquen** (ja s’han enviat a clients); la numeració nova, a parlar amb la
+  gestoria. La nota de VeriFactu de Facturació obra només surt si està actiu.
 - **VeriFactu ATURAT (17/10/2026, ordre de l'Héctor): no instal·lar res del servidor** (ni `aco_verifactu_v87285.sql` ni la
   funció `verifactu`, ni secrets, ni comptes de Verifacti) **fins que l'Héctor ho hagi parlat amb la gestoria**. L'app
   publicada (V87.287) no mostra «Emetre factura» mentre la funció no existeixi.

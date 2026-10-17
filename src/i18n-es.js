@@ -2826,4 +2826,12 @@ export default {
   "No s’ha pogut carregar Google (sense connexió?).": "No se ha podido cargar Google (¿sin conexión?).",
   "Google no ha donat permís.": "Google no ha dado permiso.",
   "Google Calendar encara no està configurat.": "Google Calendar todavía no está configurado.",
+
+  // V87.296 · Proformes → factures
+  "Base facturada": "Base facturada",
+  "La data de cada factura és la de la seva certificació. Si canvies la data de la certificació, aquí també canvia.": "La fecha de cada factura es la de su certificación. Si cambias la fecha de la certificación, aquí también cambia.",
+  "Encara no hi ha factures. Guarda una certificació i en sortirà la factura.": "Todavía no hay facturas. Guarda una certificación y saldrá la factura.",
+  "Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany.": "Todavía no hay proformas. Guarda una certificación para generar el borrador.",
+  "Factura obra": "Factura obra",
+  "Factura honoraris": "Factura honorarios",
 };
