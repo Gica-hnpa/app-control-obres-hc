@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.292";
+const APP_VERSION878264="87.293";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7862,12 +7862,8 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
   const workType878193=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
   const canQuickBudget878193=["Pressupost d’obra / amidaments","Elaboració de pressupost per client"].includes(workType878193)||tabs.includes("Pressupost ràpid");
   const preferredBudgetTab878239=tabs.includes("Pressupost")?"Pressupost":tabs.includes("Pressupost ràpid")?"Pressupost ràpid":tabs.includes("Pressupost obra")?"Pressupost obra":tabs.includes("Gestió obra")?"Gestió obra":"";
-  const hasBudgetCapability878194=canQuickBudget878193||tabs.includes("Pressupost obra")||tabs.includes("Gestió obra")||tabs.includes("Pressupost");
-  const autoBudgetNumber878194=useMemo(()=>nextClientBudgetNumber878194(client,clientBudgetNumbers878194,data?.pressupostRapidData||todayISO8743()),[client?.id,client?.nom,client?.rao,(clientBudgetNumbers878194||[]).join("|"),data?.pressupostRapidData]);
-  useEffect(()=>{
-    if(readOnly||!hasBudgetCapability878194||data?.pressupostRapidNumero||!autoBudgetNumber878194)return;
-    setData?.(d=>d.pressupostRapidNumero?d:{...d,pressupostRapidNumero:autoBudgetNumber878194,pressupostRapidVersio:d.pressupostRapidVersio||"v01",pressupostRapidCreatedAt:d.pressupostRapidCreatedAt||new Date().toISOString(),updatedAt:new Date().toISOString()});
-  },[obra?.id,hasBudgetCapability878194,autoBudgetNumber878194,readOnly]);
+  // V87.293 · Abans, en obrir una obra sense número de «pressupost per al client», n'hi posava un sol (era una escriptura
+  // en obrir l'obra). Ara el número es posa en obrir aquell apartat (PressupostRapid878150).
   const directBudgetInfo878214=ensureBudgetGroups8786(data);
   const directBudgetId878214=directBudgetInfo878214.active||"principal";
   const directBudgetData878214=filterBudgetData8786(data,directBudgetId878214);
@@ -11300,7 +11296,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.292",
+    app_version:"87.293",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
