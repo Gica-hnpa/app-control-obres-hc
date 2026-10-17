@@ -1,0 +1,14 @@
+/* V87.290 · Documents al mòbil i l'iPad: A4 sencer ajustat a l'amplada, sense desplaçament a dins; s'amplia amb els dits.
+   El document va en posició absoluta perquè la seva mida A4 no eixampli el contenidor (l'acta s'hi quedava a 794 px). */
+.fit-wrap-v878290{position:relative;width:100%;max-width:100%;min-width:0;overflow:hidden}
+.fit-wrap-v878290>iframe,.fit-wrap-v878290>.fit-inner-v878290{position:absolute;top:0;left:0;transform-origin:0 0}
+.fit-wrap-v878290>iframe{display:block;border:0!important;border-radius:0!important;max-width:none!important;min-height:0!important;pointer-events:none;background:#fff;box-shadow:0 2px 12px rgba(15,23,42,.15)}
+.fit-wrap-v878290>.fit-inner-v878290>.a4-acta-preview-v8761{max-width:none;margin-top:0}
+.exact-print-preview-v878193.fit-v878290{padding:8px;min-height:0}
+.exact-print-preview-v878193.fit-v878290 .exact-print-note-v878193{padding:6px 4px 10px}
+/* L'acta dins del marc A4: la disposició d'A4 (les regles del mòbil la posaven en una sola columna) */
+.fit-inner-v878290 .acta-a4-v8766{width:auto!important;min-height:1123px!important;padding:38px!important;margin:0!important}
+.fit-inner-v878290 .acta-a4-meta-v8766,.fit-inner-v878290 .acta-key-grid-v8768,.fit-inner-v878290 .acta-a4-v8766 .acta-photo-preview-v8761{grid-template-columns:1fr 1fr!important}
+.fit-inner-v878290 .signature-grid-v8768{grid-template-columns:repeat(4,1fr)!important}
+.fit-inner-v878290 .acta-a4-header-v8766{flex-direction:row!important}
+.fit-inner-v878290 .acta-a4-date-v8766{text-align:right!important}

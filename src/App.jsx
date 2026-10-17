@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.289";
+const APP_VERSION878264="87.290";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3185,7 +3185,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
 
 function ActaFormalPreview8768({obra,client,acta,agents=[],fotos=[],docs=[],croquis=[]}){
   const D=(s,v)=>tl(docLang878283(obra),s,v);
-  return <div className="a4-acta-preview-v8761 acta-a4-v8766 acta-formal-v8768">
+  return <FitBox878290><div className="a4-acta-preview-v8761 acta-a4-v8766 acta-formal-v8768">
     <div className="acta-a4-header-v8766">
       <div><span>{D("ACTA DE VISITA / SEGUIMENT D’OBRA")}</span><h2>{D("Acta núm.")} {acta?.numero||"—"}</h2></div>
       <div className="acta-a4-date-v8766"><small>{D("Data")}</small><b>{fmtDate8761(acta?.data)}</b><small>{D("Estat")}</small><b>{D(acta?.estat||"Esborrany")}</b></div>
@@ -3221,7 +3221,7 @@ function ActaFormalPreview8768({obra,client,acta,agents=[],fotos=[],docs=[],croq
     {(croquis.length>0||(acta?.croquis||[]).length>0)&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>{D("Plànols marcats i croquis d’obra")}</h3><div className="acta-photo-preview-v8761">{[...croquis,...(acta?.croquis||[])].filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i).filter(c=>c.src).map(c=><figure key={c.id}><img src={c.src}/><figcaption>{c.nom}{c.origen?` · ${D("Base:")} ${c.origen}`:""}</figcaption></figure>)}</div></div>}
     {fotos.length>0&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>{D("Reportatge fotogràfic")}</h3><div className="acta-photo-preview-v8761">{fotos.filter(f=>f.src||f.url).map(f=><figure key={f.id}><img src={f.src||f.url}/><figcaption>{f.nom}</figcaption></figure>)}</div></div>}
     <div className="preview-section-v8764 acta-a4-section-v8766"><h3>{D("Signatures electròniques")}</h3><div className="signature-grid-v8768"><span>{D("Direcció facultativa / DO")}<br/>{D("Nom i signatura")}</span><span>{D("DEO / Arquitecte tècnic")}<br/>{D("Nom i signatura")}</span><span>{D("Constructora")}<br/>{D("Nom i signatura")}</span><span>{D("Promotor / propietat")}<br/>{D("Nom i signatura")}</span></div></div>
-  </div>
+  </div></FitBox878290>
 }
 
 
@@ -8491,8 +8491,53 @@ function generate(){
 }
 return <div className="text-assist-v8744"><div className="assist-head-v8744"><b>{t("Textos tipus i ajuda ràpida")}</b><span>{t("Tria un text sencer o escriu una idea i genera una base editable. Més endavant això es podrà connectar amb IA real.")}</span></div><div className="ai-mini-v8743"><input value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder={t("Ex: informe d’humitats, cèdula, direcció d’obra, amidaments...")}/><button type="button" className="secondary" onClick={generate}>{t("Generar text base")}</button></div><div className="template-cards-v8744">{templates.map(x=><div className="template-card-v8744" key={x.t}><h4>{x.t}</h4><p>{x.v}</p><button type="button" className="secondary" onClick={()=>setText(x.v)}>{t("Aplicar aquest text")}</button></div>)}</div></div>
 }
+// V87.290 · Documents al mòbil i l'iPad: el document es dibuixa a mida A4 (794 px) i s'encongeix fins a l'amplada de la
+// pantalla, sencer i sense desplaçament a dins (el marc no captura els dits): es veu la pàgina sencera i s'amplia amb dos
+// dits com qualsevol document. A l'ordinador, com abans.
+const FIT_MQ878290="(max-width:1280px),(hover:none) and (pointer:coarse)";
+const A4_PX878290=794;
+function useFitDoc878290(){
+  const q=()=>{try{return !!window.matchMedia?.(FIT_MQ878290).matches}catch{return false}};
+  const [v,setV]=useState(q);
+  useEffect(()=>{let m;try{m=window.matchMedia?.(FIT_MQ878290)}catch{}if(!m)return;const on=()=>setV(m.matches);m.addEventListener?.("change",on);return ()=>m.removeEventListener?.("change",on)},[]);
+  return v;
+}
+function FitFrame878290({html,title}){
+  const wrap=useRef(null),frame=useRef(null);
+  const [m,setM]=useState(null);
+  function mesura(){
+    const f=frame.current,w=wrap.current;if(!f||!w)return;let d=null;try{d=f.contentDocument}catch{}
+    // encara és el document buit del principi: s'espera que carregui el de debò
+    if(!d?.documentElement||!d.body||!d.body.childElementCount)return;
+    f.style.width=A4_PX878290+"px";f.style.height="10px";
+    const docW=Math.max(A4_PX878290,d.documentElement.scrollWidth,d.body?.scrollWidth||0);f.style.width=docW+"px";
+    const docH=Math.max(d.documentElement.scrollHeight,d.body?.scrollHeight||0,100);f.style.height=docH+"px";
+    setM({docW,docH,s:Math.min(1,(w.clientWidth||docW)/docW)});
+  }
+  useEffect(()=>{const on=()=>mesura();window.addEventListener("resize",on);window.addEventListener("orientationchange",on);
+    // si la finestra encara s'obria quan es va mesurar, es torna a ajustar quan canvia l'amplada del contenidor
+    const ro=typeof ResizeObserver!=="undefined"&&wrap.current?new ResizeObserver(()=>setM(p=>{const cw=wrap.current?.clientWidth;if(!p||!cw)return p;const s=Math.min(1,cw/p.docW);return Math.abs(s-p.s)>0.001?{...p,s}:p})):null;ro?.observe(wrap.current);
+    return ()=>{window.removeEventListener("resize",on);window.removeEventListener("orientationchange",on);ro?.disconnect()}},[]);
+  useEffect(()=>{setM(null)},[html]);
+  const carregat=()=>{mesura();setTimeout(mesura,350);setTimeout(mesura,1200)};
+  return <div ref={wrap} className="fit-wrap-v878290" style={{height:m?Math.ceil(m.docH*m.s):"60vh"}}><iframe ref={frame} title={title} srcDoc={html} scrolling="no" onLoad={carregat} style={m?{width:m.docW,height:m.docH,transform:`scale(${m.s})`}:{width:A4_PX878290}}/></div>;
+}
+function FitBox878290({children}){
+  const fit=useFitDoc878290();
+  const wrap=useRef(null),inner=useRef(null);
+  const [m,setM]=useState(null);
+  useEffect(()=>{
+    if(!fit)return;const el=inner.current,w=wrap.current;if(!el||!w)return;
+    const calc=()=>setM({s:Math.min(1,(w.clientWidth||A4_PX878290)/A4_PX878290),h:el.scrollHeight});
+    calc();const ro=typeof ResizeObserver!=="undefined"?new ResizeObserver(calc):null;ro?.observe(el);ro?.observe(w);
+    return ()=>ro?.disconnect();
+  },[fit]);
+  if(!fit)return children;
+  return <div ref={wrap} className="fit-wrap-v878290" style={{height:m?Math.ceil(m.h*m.s):undefined}}><div ref={inner} className="fit-inner-v878290" style={{width:A4_PX878290,transform:m?`scale(${m.s})`:undefined}}>{children}</div></div>;
+}
 function ExactHtmlPreview878193({html,title="Vista prèvia exacta"}){
-  return <div className="exact-print-preview-v878193"><div className="exact-print-note-v878193"><b>{t("Vista prèvia fidel")}</b><span>{t("Aquesta és la mateixa plantilla que s’utilitzarà en imprimir o guardar el PDF, inclosa l’orientació i la mida de pàgina.")}</span></div><iframe title={title} srcDoc={html}/></div>
+  const fit=useFitDoc878290();
+  return <div className={`exact-print-preview-v878193 ${fit?"fit-v878290":""}`}><div className="exact-print-note-v878193"><b>{t("Vista prèvia fidel")}</b><span>{fit?t("Amplia-la amb dos dits."):t("Aquesta és la mateixa plantilla que s’utilitzarà en imprimir o guardar el PDF, inclosa l’orientació i la mida de pàgina.")}</span></div>{fit?<FitFrame878290 html={html} title={title}/>:<iframe title={title} srcDoc={html}/>}</div>
 }
 function QuotePreview8743({type="pressupost",doc,obra,close}){
   const isFactura=type==="factura";
@@ -11254,7 +11299,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.289",
+    app_version:"87.290",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

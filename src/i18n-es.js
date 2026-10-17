@@ -2735,4 +2735,7 @@ export default {
   "files al full · es mostren les primeres": "filas en la hoja · se muestran las primeras",
   "columnes visibles": "columnas visibles",
   "Col.": "Col.",
+
+  // V87.290 · Documents al mòbil
+  "Amplia-la amb dos dits.": "Amplíala con dos dedos.",
 };
