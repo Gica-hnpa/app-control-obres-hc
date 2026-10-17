@@ -2738,4 +2738,30 @@ export default {
 
   // V87.290 · Documents al mòbil
   "Amplia-la amb dos dits.": "Amplíala con dos dedos.",
+
+  // V87.291 · Temps a facturar i quota fixa
+  "Quota fixa mensual (€)": "Cuota fija mensual (€)",
+  "Buit si no en té": "Vacío si no tiene",
+  "Si et paga un fix al mes, les hores dels seus treballs compten però no surten com a pendents de facturar.": "Si te paga un fijo al mes, las horas de sus trabajos cuentan pero no salen como pendientes de facturar.",
+  "Import a facturar": "Importe a facturar",
+  "{h} a facturar (fraccions de 15’, mínim 30’) × preu + despeses": "{h} a facturar (fracciones de 15’, mínimo 30’) × precio + gastos",
+  "Quota fixa d’aquest client: {q} al mes. Les hores d’aquest mes valen {v} ({dif}).": "Cuota fija de este cliente: {q} al mes. Las horas de este mes valen {v} ({dif}).",
+  "{x} més que la quota": "{x} más que la cuota",
+  "{x} menys que la quota": "{x} menos que la cuota",
+  "Quota fixa d’aquest client: {q} al mes. Les hores del període valen {v}.": "Cuota fija de este cliente: {q} al mes. Las horas del periodo valen {v}.",
+  "Quota fixa {import}/mes": "Cuota fija {import}/mes",
+  "Marcar com a facturats els {n} registres pendents?": "¿Marcar como facturados los {n} registros pendientes?",
+  "HORES": "HORAS",
+  "A FACTURAR": "A FACTURAR",
+  "HONORARIS": "HONORARIOS",
+  "DESPESES": "GASTOS",
+  "TOTAL": "TOTAL",
+  "PENDENT": "PENDIENTE",
+  "Quota fixa": "Cuota fija",
+  "Aquest client paga una quota fixa de {q} al mes: aquestes hores compten, però no surten com a pendents de facturar.": "Este cliente paga una cuota fija de {q} al mes: estas horas cuentan, pero no salen como pendientes de facturar.",
+  "Les hores es facturen en fraccions de 15’ amb un mínim de 30’ per registre (el temps real es guarda igual).": "Las horas se facturan en fracciones de 15’ con un mínimo de 30’ por registro (el tiempo real se guarda igual).",
+  "Quota": "Cuota",
+  "Marcar com a facturades les {n} entrades de «{obra}» sense fer cap factura (p. ex. si ja les has facturat per un altre camí)?": "¿Marcar como facturadas las {n} entradas de «{obra}» sin hacer ninguna factura (p. ej. si ya las has facturado por otro camino)?",
+  "Ja facturat": "Ya facturado",
+  "{n} entrades de clients amb quota fixa no surten aquí: ja estan pagades amb la quota.": "{n} entradas de clientes con cuota fija no salen aquí: ya están pagadas con la cuota.",
 };

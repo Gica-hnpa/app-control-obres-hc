@@ -12,3 +12,11 @@
 .fit-inner-v878290 .signature-grid-v8768{grid-template-columns:repeat(4,1fr)!important}
 .fit-inner-v878290 .acta-a4-header-v8766{flex-direction:row!important}
 .fit-inner-v878290 .acta-a4-date-v8766{text-align:right!important}
+/* V87.291 · Temps a facturar i quota fixa */
+.temps-quota-v878291{margin:0 0 12px;padding:9px 12px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a}
+.temps-v878255 .num.quota{color:#1e40af;font-weight:700}
+.temps-regla-v878291{margin:8px 18px 14px;color:var(--co-ink-3,#64748b);font-size:13px;line-height:1.4}
+.tobill-btns-v878291{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tobill-quota-v878291{margin:8px 0 0;color:var(--co-ink-3,#64748b);font-size:13px}
+.quota-client-v878291 small{display:block;margin-top:4px;color:var(--co-ink-3,#64748b);font-size:12px;line-height:1.35}
+.time-table-v8754 small.quota{color:#1e40af;font-weight:700}
