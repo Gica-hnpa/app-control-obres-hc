@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.286";
+const APP_VERSION878264="87.287";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2057,7 +2057,7 @@ function printQuote8745(type,doc,obra){
     if(printHtmlInPlace878112(html,`${title} ${doc.numero||""}`))return;
   }
   const w=window.open("","_blank","width=900,height=1100");
-  if(!w){alert("El navegador ha bloquejat la finestra d’impressió. Permet finestres emergents.");return}
+  if(!w){alert(t("El navegador ha bloquejat la finestra d’impressió. Permet finestres emergents."));return}
   w.document.open();w.document.write(html+`<script>setTimeout(()=>{window.focus();window.print();},350)<\/script>`);w.document.close();w.focus();
 }
 function uniqueFactures8743(rows=[]){
@@ -8486,14 +8486,14 @@ function generate(){
 return <div className="text-assist-v8744"><div className="assist-head-v8744"><b>{t("Textos tipus i ajuda ràpida")}</b><span>{t("Tria un text sencer o escriu una idea i genera una base editable. Més endavant això es podrà connectar amb IA real.")}</span></div><div className="ai-mini-v8743"><input value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder={t("Ex: informe d’humitats, cèdula, direcció d’obra, amidaments...")}/><button type="button" className="secondary" onClick={generate}>{t("Generar text base")}</button></div><div className="template-cards-v8744">{templates.map(x=><div className="template-card-v8744" key={x.t}><h4>{x.t}</h4><p>{x.v}</p><button type="button" className="secondary" onClick={()=>setText(x.v)}>{t("Aplicar aquest text")}</button></div>)}</div></div>
 }
 function ExactHtmlPreview878193({html,title="Vista prèvia exacta"}){
-  return <div className="exact-print-preview-v878193"><div className="exact-print-note-v878193"><b>Vista prèvia fidel</b><span>Aquesta és la mateixa plantilla que s’utilitzarà en imprimir o guardar el PDF, inclosa l’orientació i la mida de pàgina.</span></div><iframe title={title} srcDoc={html}/></div>
+  return <div className="exact-print-preview-v878193"><div className="exact-print-note-v878193"><b>{t("Vista prèvia fidel")}</b><span>{t("Aquesta és la mateixa plantilla que s’utilitzarà en imprimir o guardar el PDF, inclosa l’orientació i la mida de pàgina.")}</span></div><iframe title={title} srcDoc={html}/></div>
 }
 function QuotePreview8743({type="pressupost",doc,obra,close}){
   const isFactura=type==="factura";
   const html=quotePrintHtml8745(type,doc,obra);
   return <Modal title={`Vista prèvia ${isFactura?"factura":"pressupost"}`} close={close}>
     <ExactHtmlPreview878193 html={html} title={isFactura?"Factura / proforma":"Pressupost"}/>
-    <div className="modal-actions"><button className="secondary" onClick={()=>printQuote8745(type,doc,obra)}>Imprimir / PDF</button><button className="primary" onClick={close}>Tancar</button></div>
+    <div className="modal-actions"><button className="secondary" onClick={()=>printQuote8745(type,doc,obra)}>{t("Imprimir / PDF")}</button><button className="primary" onClick={close}>{t("Tancar")}</button></div>
   </Modal>
 }
 function InlineQuotePreview8744({type="pressupost",doc,obra}){
@@ -9741,7 +9741,7 @@ function printAdminMonthly878131({certNum,meta,lines,totalOficial,totalAjudant,t
   const mats=Object.entries(materialGroups).map(([k,v])=>`<tr><td class="left">${escapeHtml878131(k)}</td><td>${money(v)}</td></tr>`).join("");
   const html=`<!doctype html><html><head><meta charset="utf-8"><title>Quadre administració CERT ${certNum}</title>${css}</head><body><button onclick="window.print()">Imprimir</button><h1>Quadre mensual de feines per administració · Certificació ${certNum}</h1><div class="sub">Capítol: <b>${escapeHtml878131(meta.cap)}</b> · Partida: <b>${escapeHtml878131(meta.targetPartidaCodi||meta.codi)}</b> · ${escapeHtml878131(meta.targetPartidaConcepte||meta.conceptePartida)}</div><div class="box">Cost hora oficial: <b>${money(parseNum8770(meta.costOficial)||0)}</b> · Cost hora ajudant/peó: <b>${money(parseNum8770(meta.costAjudant)||0)}</b></div><h2>Detall justificatiu</h2><table><thead><tr><th class="left">Concepte</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total línia</th></tr></thead><tbody>${detail}</tbody><tfoot><tr><td class="left">TOTAL</td><td></td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table><h2>Resum per concepte</h2><table><thead><tr><th class="left">Concepte</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total</th></tr></thead><tbody>${summary}</tbody><tfoot><tr><td class="left">TOTAL</td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table>${mats?`<h2>Resum de materials per concepte</h2><table><thead><tr><th class="left">Material</th><th>Import</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td class="left">TOTAL MATERIALS</td><td>${money(totalMaterial)}</td></tr></tfoot></table>`:""}</body></html>`;
   const w=window.open("","_blank");
-  if(!w){alert("El navegador ha bloquejat la finestra d'impressió. Permet pop-ups per imprimir el quadre.");return;}
+  if(!w){alert(t("El navegador ha bloquejat la finestra d'impressió. Permet pop-ups per imprimir el quadre."));return;}
   w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);
 }
 function AdminMonthlyCostModal878127({certNum,initial={},close,save,split,capOptions=[],partidaOptions=[]}){
@@ -11248,7 +11248,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.286",
+    app_version:"87.287",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12402,9 +12402,9 @@ function ExcelDocumentPreview878245({doc}){
   const rows=sheet?.rows||[];
   const colCount=sheet?.colCount||Math.min(24,Math.max(1,...rows.map(row=>row.length),1));
   return <div className="excel-document-preview-v878245">
-    <div className="excel-preview-intro-v878245"><div><b>Vista de l’Excel original</b><span>No és una còpia reconstruïda: és el fitxer que es va importar al pressupost.</span></div><label><span>Full</span><select value={sheet?.name||""} onChange={e=>setActive(e.target.value)}>{sheets.map(item=><option key={item.name} value={item.name}>{item.name}</option>)}</select></label></div>
-    <div className="excel-preview-meta-v878245"><span>{sheets.length} full/s</span><span>{sheet?.totalRows||rows.length} files al full · es mostren les primeres {rows.length}</span><span>{colCount} columnes visibles</span></div>
-    <div className="excel-preview-table-wrap-v878245"><table><thead><tr><th>#</th>{Array.from({length:colCount},(_,index)=><th key={index}>Col. {index+1}</th>)}</tr></thead><tbody>{rows.map((row,rowIndex)=><tr key={rowIndex}><th>{rowIndex+1}</th>{Array.from({length:colCount},(_,colIndex)=><td key={colIndex}>{String(row[colIndex]??"")}</td>)}</tr>)}</tbody></table></div>
+    <div className="excel-preview-intro-v878245"><div><b>{t("Vista de l’Excel original")}</b><span>{t("No és una còpia reconstruïda: és el fitxer que es va importar al pressupost.")}</span></div><label><span>{t("Full")}</span><select value={sheet?.name||""} onChange={e=>setActive(e.target.value)}>{sheets.map(item=><option key={item.name} value={item.name}>{item.name}</option>)}</select></label></div>
+    <div className="excel-preview-meta-v878245"><span>{sheets.length} {t("full/s")}</span><span>{sheet?.totalRows||rows.length} {t("files al full · es mostren les primeres")} {rows.length}</span><span>{colCount} {t("columnes visibles")}</span></div>
+    <div className="excel-preview-table-wrap-v878245"><table><thead><tr><th>#</th>{Array.from({length:colCount},(_,index)=><th key={index}>{t("Col.")} {index+1}</th>)}</tr></thead><tbody>{rows.map((row,rowIndex)=><tr key={rowIndex}><th>{rowIndex+1}</th>{Array.from({length:colCount},(_,colIndex)=><td key={colIndex}>{String(row[colIndex]??"")}</td>)}</tr>)}</tbody></table></div>
   </div>;
 }
 

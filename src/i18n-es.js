@@ -2722,4 +2722,17 @@ export default {
   "La funció del servidor «verifactu» encara no està instal·lada (vegeu docs/verifactu-pla.md).": "La función del servidor «verifactu» todavía no está instalada (ver docs/verifactu-pla.md).",
   "Per veure l’estat cal connexió amb el núvol.": "Para ver el estado hace falta conexión con la nube.",
   "Aquest compte encara no emet factures amb VERI*FACTU. Les societats (S.L.) ho necessiten des de l’1/1/2027 i els autònoms des de l’1/7/2027. Per activar-ho cal donar d’alta l’empresa a l’intermediari: ho fa l’administrador de l’app.": "Esta cuenta todavía no emite facturas con VERI*FACTU. Las sociedades (S.L.) lo necesitan desde el 1/1/2027 y los autónomos desde el 1/7/2027. Para activarlo hay que dar de alta la empresa en el intermediario: lo hace el administrador de la app.",
+
+  // V87.287 · Darreres pantalles (vista exacta, Excel original, impressió)
+  "El navegador ha bloquejat la finestra d’impressió. Permet finestres emergents.": "El navegador ha bloqueado la ventana de impresión. Permite las ventanas emergentes.",
+  "Vista prèvia fidel": "Vista previa fiel",
+  "Aquesta és la mateixa plantilla que s’utilitzarà en imprimir o guardar el PDF, inclosa l’orientació i la mida de pàgina.": "Esta es la misma plantilla que se usará al imprimir o guardar el PDF, incluida la orientación y el tamaño de página.",
+  "El navegador ha bloquejat la finestra d'impressió. Permet pop-ups per imprimir el quadre.": "El navegador ha bloqueado la ventana de impresión. Permite las ventanas emergentes para imprimir el cuadro.",
+  "Vista de l’Excel original": "Vista del Excel original",
+  "No és una còpia reconstruïda: és el fitxer que es va importar al pressupost.": "No es una copia reconstruida: es el archivo que se importó al presupuesto.",
+  "Full": "Hoja",
+  "full/s": "hoja/s",
+  "files al full · es mostren les primeres": "filas en la hoja · se muestran las primeras",
+  "columnes visibles": "columnas visibles",
+  "Col.": "Col.",
 };
