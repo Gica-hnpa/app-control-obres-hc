@@ -2764,4 +2764,15 @@ export default {
   "Marcar com a facturades les {n} entrades de «{obra}» sense fer cap factura (p. ex. si ja les has facturat per un altre camí)?": "¿Marcar como facturadas las {n} entradas de «{obra}» sin hacer ninguna factura (p. ej. si ya las has facturado por otro camino)?",
   "Ja facturat": "Ya facturado",
   "{n} entrades de clients amb quota fixa no surten aquí: ja estan pagades amb la quota.": "{n} entradas de clientes con cuota fija no salen aquí: ya están pagadas con la cuota.",
+
+  // V87.292 · Gràfica d'ingressos
+  "Total de l’any": "Total del año",
+  "Aquest any (fins a {mes}): {ara}": "Este año (hasta {mes}): {ara}",
+  "el mateix període de {any}: {abans}": "el mismo periodo de {any}: {abans}",
+  "Base sense IVA de les factures, per la data de la factura.": "Base sin IVA de las facturas, por la fecha de la factura.",
+  "Ingressos": "Ingresos",
+  "Ingressos d’aquesta obra": "Ingresos de esta obra",
+  "Per mesos": "Por meses",
+  "Per anys": "Por años",
+  "Encara no hi ha factures per fer la gràfica.": "Todavía no hay facturas para hacer el gráfico.",
 };

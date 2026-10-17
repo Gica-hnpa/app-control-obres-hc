@@ -1,0 +1,16 @@
+/* V87.292 · Gràfica d'ingressos */
+.ing-v878292 .ing-head-v878292{display:flex;justify-content:flex-end;padding:0 18px}
+.ing-v878292 .seg{display:inline-flex;border:1px solid var(--co-line,#DCE3E7);border-radius:10px;overflow:hidden}
+.ing-v878292 .seg button{border:0;background:#fff;padding:7px 12px;font-weight:700;color:var(--co-ink-3,#64748b);cursor:pointer}
+.ing-v878292 .seg button[aria-pressed="true"]{background:#2563eb;color:#fff}
+.ing-resum-v878292{margin:10px 18px 4px;color:var(--co-ink-2,#334155);font-size:14px;line-height:1.45}
+.ing-resum-v878292 b.up{color:#15803d}.ing-resum-v878292 b.down{color:#b91c1c}
+.ing-svg-v878292{display:block;width:100%;max-width:860px;height:auto;padding:4px 10px 0;margin:0 auto}
+.ing-svg-v878292 .grid{stroke:#e5e7eb;stroke-width:1}
+.ing-svg-v878292 .ax{fill:#64748b;font-size:11px;font-family:inherit}
+.ing-llegenda-v878292{display:flex;flex-wrap:wrap;gap:8px 18px;padding:6px 18px 4px}
+.ing-llegenda-v878292 span{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--co-ink-2,#334155)}
+.ing-llegenda-v878292 i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.ing-llegenda-v878292 b{margin-left:4px}
+.ing-nota-v878292{display:block;padding:2px 18px 14px;color:var(--co-ink-3,#64748b);font-size:12px}
+@media (max-width:700px){.ing-svg-v878292 .ax{font-size:20px}.ing-v878292 .ing-head-v878292{padding:0 12px}.ing-resum-v878292{margin:10px 12px 4px;font-size:13px}}
