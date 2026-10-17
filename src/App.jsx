@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.283";
+const APP_VERSION878264="87.284";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7699,7 +7699,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     {sub==="Pressupost obra"&&<Pressupost data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} renameBudget={renameBudget} deleteBudget={deleteBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {sub==="Certificacions obra"&&<BudgetWarnings878253 rows={activeData.partides||[]}/>}
     {sub==="Certificacions obra"&&<Cert data={activeData} setData={setScopedData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
-    {sub==="Facturació obra"&&<Fact data={activeData} openEmail={openEmail} openDoc={openDoc}/>} 
+    {sub==="Facturació obra"&&<Fact data={activeData} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Gantt"&&<><GanttObraVisual878253 data={activeData} setData={setScopedData}/><details className="gt-legacy-v878253"><summary>{t("Planificació avançada per industrials i colles (eina anterior)")}</summary><GanttObra878149 data={activeData} setData={setScopedData}/></details></>}
     {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} setActiveBudgetId={selectBudget8788}/>}
   </div>
@@ -7922,7 +7922,7 @@ function Obra({obra,client,clients,setClients,data,setData:rawSetData,tab,setTab
     {activeTab==="Certificacions obra"&&<BudgetWarnings878253 rows={directBudgetData878214.partides||[]}/>}
     {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly&&!clientEditCertifications} clientMode={readOnly}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
-    {activeTab==="Facturació obra"&&<Fact data={data} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
+    {activeTab==="Facturació obra"&&<Fact data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
     {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Pressupost per al client")}</b><span>{i18nT("Número, condicions, forma de pagament i PDF")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 key={activeTab} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
@@ -10604,19 +10604,24 @@ function fmtDate8714(v){
   if(!v || String(v).toLowerCase()==="avui") return "Sense data";
   return fmtAppDate8748(v);
 }
-function Fact({data,openEmail,openDoc,readOnly=false}){
-const key=lsKey8779("aco_fact_params_v61");
-const[params,setParams]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
+function Fact({data,setData,openEmail,openDoc,readOnly=false}){
+// V87.283: l'IVA, la retenció i la deducció de cada proforma es desen dins de l'obra (data.factParams, per certificació).
+// Abans es desaven per número (pf-1, pf-2…) per a tot el compte: la PF-001 de totes les obres compartia l'IVA.
+// Les proformes d'abans del 17/10/2026 que no en tenen de propis continuen mostrant els d'abans (no canvia res).
+const legacy=useMemo(()=>{try{return JSON.parse(localStorage.getItem(lsKey8779("aco_fact_params_v61"))||"{}")}catch(e){return {}}},[]);
 const[selected,setSelected]=useState(null);
-useEffect(()=>{localStorage.setItem(key,JSON.stringify(params))},[params,key]);
-function p(id,k,def){return params[id]?.[k]??def}
-function setp(id,k,v){setParams(x=>({...x,[id]:{...(x[id]||{}),[k]:v}}))}
+const canEdit=!!setData&&!readOnly;
+function pkey(f){return f.certId||f.pfId}
+function legacyFor(f){const s=String(f.data||"");const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);const iso=/^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10):m?`${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`:"";return (!iso||iso<"2026-10-17")?legacy[f.pfId]:null}
+function params(f){return (data.factParams||{})[pkey(f)]||legacyFor(f)||{}}
+function p(f,k,def){return params(f)[k]??def}
+function setp(f,k,v){if(!canEdit)return;setData(d=>{const all=d.factParams||{};const cur=all[pkey(f)]||legacyFor(f)||{};return {...d,factParams:{...all,[pkey(f)]:{...cur,[k]:v}},updatedAt:new Date().toISOString()}})}
 function qFor(r,c){let n=+c.numeroCert||+c.numero;return certQty8783(r,n)}
 function rowsForCert(c){return (data.partides||[]).filter(r=>qFor(r,{numeroCert:c.numero,numero:c.numero})>0)}
 function originRowsForProforma(c){return originRowsForCert8793(data.partides||[],+c.numero)}
-let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let allRows=originRowsForProforma(c);let fin=certFinancialSummary8793(data.partides||[],+c.numero);let base=fin.actual || rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*parseNum8770(r.pu),0);return{...c,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows,allRows,certTotals:fin.certTotals,totalOrigen:fin.totalOrigen,anterior:fin.anterior}});
+let proformes=(data.certificacions||[]).map(c=>{let rows=rowsForCert(c);let allRows=originRowsForProforma(c);let fin=certFinancialSummary8793(data.partides||[],+c.numero);let base=fin.actual || rows.reduce((s,r)=>s+qFor(r,{numeroCert:c.numero,numero:c.numero})*parseNum8770(r.pu),0);return{...c,certId:c.id,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0"),base:base||c.import||0,rows,allRows,certTotals:fin.certTotals,totalOrigen:fin.totalOrigen,anterior:fin.anterior}});
 let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
-function calc(f){let iva=+p(f.pfId,"iva",21),ret=+p(f.pfId,"ret",0),ded=+p(f.pfId,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total}}
+function calc(f){let iva=+p(f,"iva",21),ret=+p(f,"ret",0),ded=+p(f,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total}}
 const basePressupostObra=(data.partides||[]).reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
 const totalBaseProformes=proformes.reduce((s,f)=>s+(+f.base||0),0);
 const totalProformes=proformes.reduce((s,f)=>s+calc(f).total,0);
@@ -10629,7 +10634,7 @@ return <div className={`fact-layout-v61 fact-layout-v87101 ${readOnly?"client-re
   <div className="verifactu-note-v87101"><b>{t("VERI*FACTU / factura definitiva")}</b><span>{t("Bloc reservat per la futura emissió de factura definitiva verificable: QR, registre d’alta, empremta/hash i enviament a AEAT quan s’integri el servei. Les proformes actuals no són factura definitiva.")}</span></div>
   <div className="table-wrap fact-compact-wrap-v70"><table className="invoice-table fact-compact-v70 fact-table-v87101"><thead><tr><th>{t("Proforma")}</th><th>{t("Cert.")}</th><th>{t("Data cert. / factura")}</th><th>{t("Base")}</th><th>{t("IVA")}</th><th>{t("Retenció")}</th><th>{t("Deducció")}</th><th>{t("Total")}</th><th>{t("Accions")}</th></tr></thead><tbody>
   {proformes.length===0&&<tr><td colSpan="9"><Empty text="Encara no hi ha proformes. Guarda una certificació per generar-ne l’esborrany."/></td></tr>}
-  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td><b>{fmtAppDate8748(f.data)}</b></td><td>{money(f.base)}</td><td><select value={c.iva} onChange={e=>setp(f.pfId,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select value={c.ret} onChange={e=>setp(f.pfId,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select value={c.ded} onChange={e=>setp(f.pfId,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option key={i} value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button className="primary small" onClick={()=>openPrint(f)}>{t("Imprimir / PDF")}</button></td></tr>})}
+  {proformes.map(f=>{let c=calc(f);return <tr key={f.pfId} className={current?.pfId===f.pfId?"selected-row":""}><td><b>{f.numero}</b></td><td>{f.numeroCert}</td><td><b>{fmtAppDate8748(f.data)}</b></td><td>{money(f.base)}</td><td><select disabled={!canEdit} value={c.iva} onChange={e=>setp(f,"iva",+e.target.value)}><option value="21">21%</option><option value="10">10%</option><option value="0">0%</option></select></td><td><select disabled={!canEdit} value={c.ret} onChange={e=>setp(f,"ret",+e.target.value)}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option><option value="19">19%</option></select></td><td><select disabled={!canEdit} value={c.ded} onChange={e=>setp(f,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option key={i} value={i*5}>{i*5}%</option>)}</select></td><td><b>{money(c.total)}</b></td><td className="row-actions"><button className="primary small" onClick={()=>openPrint(f)}>{t("Imprimir / PDF")}</button></td></tr>})}
   </tbody></table></div>
 </Card>
 
@@ -11118,7 +11123,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.283",
+    app_version:"87.284",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

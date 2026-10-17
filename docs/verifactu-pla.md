@@ -11,7 +11,7 @@ Decisions de l'Héctor (16/10/2026):
 ## Com està ara
 
 - **«Facturació obra»** calcula una **proforma per certificació** (PF-001, PF-002…). Les proformes **no són factures**. Ja hi ha un bloc reservat «VERI*FACTU / factura definitiva».
-- **Error trobat:** l'IVA, la retenció i la deducció de cada proforma es desen per número (`pf-1`, `pf-2`…) i no per obra. L'IVA posat a la PF-001 d'una obra s'aplica també a la PF-001 de totes les altres. S'ha d'arreglar abans de fer factures de debò.
+- **Error trobat i arreglat (V87.284):** l'IVA, la retenció i la deducció de cada proforma es desaven per número (`pf-1`, `pf-2`…) i no per obra: l'IVA posat a la PF-001 d'una obra s'aplicava també a la PF-001 de totes les altres. Ara es desen dins de cada obra. Les proformes d'abans del 17/10/2026 es veuen igual que abans; **l'Héctor ha de revisar l'IVA de les proformes de cada obra** (ara mateix, de la PF-001 a la PF-008 de totes les obres surt un 10 %).
 - **Factures d'honoraris** (tècnic): es poden editar i esborrar en qualsevol moment. El número es calcula a l'aparell.
 - **Factura (V87.276):** demostració de com funcionarà, amb dades inventades.
 
@@ -56,7 +56,7 @@ Decisions de l'Héctor (16/10/2026):
 
 | Setmana | Què |
 |---|---|
-| 1 | Arreglar l'IVA de les proformes; «Emetre factura» a Facturació obra, bloqueig, numeració al servidor, PDF amb QR. Tot amb el simulador |
+| 1 | ~~Arreglar l'IVA de les proformes~~ (fet, V87.284); «Emetre factura» a Facturació obra, bloqueig, numeració al servidor, PDF amb QR. Tot amb el simulador |
 | 2 | Funció del servidor i connexió amb Verifacti (entorn de proves), estat, rectificatives i anul·lacions. Factures d'honoraris |
 | 3 | Proves amb dades de prova de Brava i Socoterm, declaració responsable, interruptor per compte |
 | Desembre | Producció per a les S.L. que vulguin facturar amb l'app abans de l'1/1/2027 |
