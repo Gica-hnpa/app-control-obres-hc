@@ -38,6 +38,13 @@ export function t(text, vars) {
   if (vars) s = String(s).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
   return s;
 }
+// V87.283 · Text en un idioma concret (p. ex. l'idioma dels documents d'una obra), encara que l'app sigui en un altre.
+export function tl(lang, text, vars) {
+  const code = known(lang) ? lang : current;
+  let s = code === "ca" ? text : (DICTS[code]?.[text] ?? text);
+  if (vars) s = String(s).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+  return s;
+}
 // Per a les proves: textos que encara no són al diccionari d'un idioma.
 export function missing(texts, code = "es") { return texts.filter(x => !(DICTS[code] && x in DICTS[code])); }
-if (typeof window !== "undefined") window.__acoI18n = { t, getLang, setLang, readLang, saveLang, LANGS, missing };
+if (typeof window !== "undefined") window.__acoI18n = { t, tl, getLang, setLang, readLang, saveLang, LANGS, missing };
