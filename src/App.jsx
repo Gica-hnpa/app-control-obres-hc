@@ -16,7 +16,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.288";
+const APP_VERSION878264="87.289";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4003,7 +4003,7 @@ const obraBase=viewObres878233.find(o=>o.id===obraId)||viewObres878233[0]||{id:"
 const obraSnapshot=(obraBase?.id&&viewOdata878233?.[obraBase.id]?.obra)?viewOdata878233[obraBase.id].obra:{};
 const obra=applyWorkTemplate878121({...obraBase,...obraSnapshot,id:obraBase.id||obraSnapshot.id||""},obraSnapshot.tipusTreball||obraBase.tipusTreball||obraBase.tipologia,false);
 const client=viewClients878233.find(c=>c.id===obra?.client)||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(viewOdata878233[obra.id]||empty()):empty();
-const fObres=viewObres878233.filter(o=>{let c=viewClients878233.find(x=>x.id===o.client);return sel878275(oc,o.client)&&sel878275(oy,o.any)&&sel878275(ost,o.estat,normalizeExpedientStatus878136)&&sel878275(ot,canonicalWorkType8740(o.tipusTreball||o.tipologia))&&((expedientCode8739(o)+" "+clientProjectLabel878233(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")).toLowerCase().includes(os.toLowerCase()))});
+const fObres=viewObres878233.filter(o=>{let c=viewClients878233.find(x=>x.id===o.client);return sel878275(oc,o.client)&&sel878275(oy,o.any)&&sel878275(ost,o.estat,normalizeExpedientStatus878136)&&sel878275(ot,canonicalWorkType8740(o.tipusTreball||o.tipologia))&&((expedientCode8739(o)+" "+clientProjectLabel878233(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")+" "+(o.propietat||"")).toLowerCase().includes(os.toLowerCase()))});
 const byClient=useMemo(()=>{let m={};fObres.forEach(o=>{m[o.client]??={};m[o.client][o.any]??=[];m[o.client][o.any].push(o)});return m},[fObres]);
 const setD=(id,up)=>{
   const now=new Date().toISOString();
@@ -6705,6 +6705,8 @@ function Projectes({byClient,allObres=[],clients,openObra,deleteObra,updateStatu
 const [sort878192,setSort878192]=useState({key:"numero",dir:"desc"});
 let flat=[];Object.entries(byClient||{}).forEach(([cid,ys])=>Object.entries(ys||{}).forEach(([y,items])=>(items||[]).forEach(o=>flat.push(o))));
 let clientNom=o=>clients.find(x=>x.id===o.client)?.nom||o.clientNomCompartit||o.propietat||"—";
+// V87.289 · Promotor: el client del client (on factura el client). Si és el mateix client o no se sap, «—».
+const promotorNom878289=o=>{const p=String(o.propietat||"").trim();return p&&!/^pendent$/i.test(p)&&normalizeSearch878191(p)!==normalizeSearch878191(clientNom(o))?p:""};
 const textSort878192=v=>String(v??"").trim();
 const compareText878192=(a,b)=>textSort878192(a).localeCompare(textSort878192(b),"ca",{numeric:true,sensitivity:"base"});
 const compareExpedients878192=(a,b)=>{
@@ -6712,6 +6714,7 @@ const compareExpedients878192=(a,b)=>{
   if(sort878192.key==="numero")result=compareText878192(expedientYear878191(a),expedientYear878191(b))||expedientNumber878191(a)-expedientNumber878191(b);
   else if(sort878192.key==="codi")result=compareText878192(expedientCode8739(a),expedientCode8739(b));
   else if(sort878192.key==="client")result=compareText878192(clientNom(a),clientNom(b));
+  else if(sort878192.key==="promotor")result=compareText878192(promotorNom878289(a)||"~",promotorNom878289(b)||"~");
   else if(sort878192.key==="nom")result=compareText878192(a.nom,b.nom)||compareText878192(a.subtitol,b.subtitol);
   else if(sort878192.key==="tipus")result=compareText878192(moduleLabel8737(a),moduleLabel8737(b));
   else if(sort878192.key==="adreca")result=compareText878192([a.adreca,a.poblacio].filter(Boolean).join(" "),[b.adreca,b.poblacio].filter(Boolean).join(" "));
@@ -6728,7 +6731,7 @@ let anys=[...new Set(flat.map(yearLabel878192))].sort((a,b)=>(yearDirection87819
 let topTipus=Object.entries(tipusCount).sort((a,b)=>b[1]-a[1]);
 let clearAll=()=>{f.setOs("");f.setOc("");f.setOt("");f.setOy("");f.setOst("")};
 const byYearClient=flat.reduce((acc,o)=>{const y=yearLabel878192(o);const cn=clientNom(o);acc[y]??={};acc[y][cn]??=[];acc[y][cn].push(o);return acc},{});
-const SORT_OPTIONS878192=[{key:"numero",label:"Número"},{key:"codi",label:"Codi expedient"},{key:"client",label:"Client"},{key:"nom",label:"Nom treball"},{key:"tipus",label:"Tipologia"},{key:"adreca",label:"Adreça / municipi"},{key:"estat",label:"Estat"}];
+const SORT_OPTIONS878192=[{key:"numero",label:"Número"},{key:"codi",label:"Codi expedient"},{key:"client",label:"Client"},{key:"promotor",label:"Promotor"},{key:"nom",label:"Nom treball"},{key:"tipus",label:"Tipologia"},{key:"adreca",label:"Adreça / municipi"},{key:"estat",label:"Estat"}];
 const chooseSort878192=key=>setSort878192(s=>s.key===key?{key,dir:s.dir==="asc"?"desc":"asc"}:{key,dir:key==="numero"?"desc":"asc"});
 const sortHead878192=(key,label)=><button type="button" className={`exp-sort-head-v878192 ${sort878192.key===key?"active":""}`} onClick={()=>chooseSort878192(key)} title={t("Ordenar per")+" "+t(label).toLowerCase()}><span>{t(label)}</span><b>{sort878192.key===key?(sort878192.dir==="asc"?"▲":"▼"):"↕"}</b></button>;
 const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)return;updateStatus(obra.id,value)};
@@ -6752,11 +6755,11 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
       </section>})}
     </div>
     <div className="exp-table-wrap-v8741 exp-table-wrap-v87119">
-      <table className="exp-table-v8741 exp-table-v8742">
-        <thead><tr><th>{sortHead878192("numero","Número")}</th><th>{t("Núm. client")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
-        <tbody>{flat.length===0&&<tr><td colSpan="7"><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
-          <tr className="year-row-v8742"><td colSpan="7">{any}</td></tr>
-          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td><td><b>{clientProjectLabel878233(o)}</b></td><td>{clientNom(o)}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{o.poblacio}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}
+      <table className="exp-table-v8741 exp-table-v8742 exp-table-v878289">
+        <thead><tr><th>{sortHead878192("numero","Número")}</th><th>{t("Núm. client")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("promotor","Promotor")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
+        <tbody>{flat.length===0&&<tr><td colSpan="8"><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
+          <tr className="year-row-v8742"><td colSpan="8">{any}</td></tr>
+          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td><td><b>{clientProjectLabel878233(o)}</b></td><td>{clientNom(o)}</td><td className="exp-prom-v878289">{promotorNom878289(o)||"—"}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{o.poblacio}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
@@ -11251,7 +11254,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.288",
+    app_version:"87.289",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
