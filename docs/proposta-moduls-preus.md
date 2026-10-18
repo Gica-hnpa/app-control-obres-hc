@@ -222,3 +222,24 @@ ningú en cobra.
 - STEL Order: https://www.cronomia.com/software/stel-order · https://www.stelorder.com/en/pricing/
 - Arquímedes, Presto: https://oneestimate.ai/es/blog/mejores-software-presupuestos-construccion
 - Buildertrend, Procore: https://costbench.com/compare/buildertrend-vs-procore/ · https://projul.com/blog/procore-pricing-analysis-2026/
+
+---
+
+## 7. Decisions de l’Héctor (18/10/2026)
+
+- **Menú de l’obra: tres blocs a dalt, en aquest ordre: Fitxa · Seguiment · Econòmic** (el nom «El dia a dia» no li
+  agrada). En tocar-ne un es despleguen els seus apartats; no hi ha tira que es llisca ni «Més».
+  - **Fitxa:** Resum · Dades i agents · Documents · Entrega.
+  - **Seguiment:** Visites · Agenda (cites i tasques) · Planning.
+  - **Econòmic:** Pressupost · Certificacions · Facturació · Despeses · Rendiment · Honoraris (les hores de l’obra, dins
+    d’Honoraris o de Rendiment).
+  - **Ordinador i iPad:** el bloc triat es queda obert a sota (una fila amb els seus apartats).
+  - **Mòbil:** es desplega, tries l’apartat i es tanca.
+  - **En obrir una obra, sempre al Resum.**
+- **No barra lateral** ni Resum de portada amb botons: el que s’ha dit a dalt.
+- **Actes + Notes → «Visites»** (una llista per data, «+ Nota» i «+ Acta», cada una amb la seva numeració).
+- **Barra de baix del mòbil: com ara** (Inici · Obres · Agenda · Temps · Més). **Dins de cada obra, un botó rodó ＋** a
+  baix a la dreta: foto, nota, acta o hores per a aquella obra.
+- **El ＋ no substitueix el «Més»** (el ＋ vol dir «afegir»).
+- **Mòduls: de moment 3** (Tècnic, Obra, Empresa), però s’hi ha de tornar a pensar.
+- **Preus apujats** (vegeu guia-comercial.md). Materials comercials: pendents.
