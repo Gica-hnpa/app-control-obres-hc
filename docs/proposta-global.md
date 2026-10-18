@@ -499,3 +499,17 @@ Honoraris · Resum.
    «**Planning**» per a Gantt. Et semblen bé?
 3. A «Facturació», hi deixem també **Pendent de facturar** (hores encara sense factura) o ho vols separat?
 4. Albarà i factura (10.1.3): et va bé marcar quins albarans cobreix cada factura?
+
+### 10.8 Decisions de l’Héctor (18/10/2026)
+
+- **«Promotor» dins de l’obra es queda «Promotor»**: és qui paga les feines al client de l’usuari (el promotor de l’obra).
+  No es canvia cap nom.
+- **No es fa el perfil d’usuari «Promotor».** Un promotor que vulgui controlar les seves despeses entraria com a
+  contractista (perfil Constructor). La columna «Promotor» de les taules del 10.4 queda fora.
+- **Treballador de constructora:**
+  - **L’encarregat veu més que l’operari.** Operari: les seves obres, tasques, plànols i documents, el planning (consulta)
+    i les seves hores. Encarregat, a més: els **amidaments del pressupost sense preus** i les **hores de l’equip** a les
+    seves obres.
+  - **Hores per obra i dia** (p. ex. «dilluns, 8 h a l’obra X», o repartides entre obres). Sense fitxar entrada/sortida.
+  - **Despeses: només la foto i l’obra.** Els imports i la partida els posa l’oficina de la constructora.
+  - **Notes i tasques: pot escriure notes (amb fotos) i marcar tasques com a fetes.** No pot esborrar res.
