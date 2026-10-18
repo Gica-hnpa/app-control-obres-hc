@@ -513,3 +513,6 @@ Honoraris · Resum.
   - **Hores per obra i dia** (p. ex. «dilluns, 8 h a l’obra X», o repartides entre obres). Sense fitxar entrada/sortida.
   - **Despeses: només la foto i l’obra.** Els imports i la partida els posa l’oficina de la constructora.
   - **Notes i tasques: pot escriure notes (amb fotos) i marcar tasques com a fetes.** No pot esborrar res.
+- **Noms (10.5): sí a «Preus», «Hores», «Ajustos» i «Planning».**
+- **«Pendent de facturar» dins de «Facturació»**, a dalt de tot, abans de les factures emeses.
+- **Albarà i factura (10.1.3): sí**, en entrar la factura del proveïdor es marquen els albarans que inclou i deixen de comptar.
