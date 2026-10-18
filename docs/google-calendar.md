@@ -14,7 +14,9 @@ client» creat amb el teu compte de Google. Es fa una sola vegada i són uns 10 
 
 ## Passos
 
-1. Entra a **https://console.cloud.google.com** amb el teu Gmail.
+1. Entra a **https://console.cloud.google.com** amb el teu Gmail. Si surt **«Prova gratuïta» de 90 dies** (300 $ de
+   crèdit), **no l’activis**: tanca l’avís («Ignora» / «Dismiss»). No cal cap compte de pagament ni targeta per a res
+   d’aquests passos. Si en algun pas et demana la targeta, para i digues-m’ho.
 2. A dalt, **Selecciona un projecte → Projecte nou**. Nom: `Control d'Obres`. **Crea**.
 3. Menú ☰ → **API i serveis → Biblioteca**. Busca **Google Calendar API** → **Habilita**.
 4. Menú ☰ → **API i serveis → Pantalla de consentiment d’OAuth** (o «Google Auth Platform»):
