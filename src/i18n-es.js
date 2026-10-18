@@ -2847,4 +2847,9 @@ export default {
   "Data de la factura": "Fecha de la factura",
   "Client (a qui es factura)": "Cliente (a quien se factura)",
   "Crear la factura {n}": "Crear la factura {n}",
+  "Econòmic": "Económico",
+  "Planning": "Planning",
+  "Despeses": "Gastos",
+  "Entrega": "Entrega",
+  "No tens tasques pendents. Afegeix-ne una amb el botó superior.": "No tienes tareas pendientes. Añade una con el botón superior.",
 };

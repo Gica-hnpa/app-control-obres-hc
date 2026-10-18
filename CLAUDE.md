@@ -206,6 +206,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   ara s’obre a la mateixa pàgina (`.obra-edit-overlay-v878242` passa a `position:static` i se n’amaga la capçalera).
   La barra vella d’apartats (`.obra-side-tabs-v87105`) s’amaga amb un selector molt específic perquè theme-v87253.css
   la tornava a mostrar a l’ordinador. Al «Resum» ja no es repeteixen nom, codi, estat ni tipus.
+- **Menú de l’obra en tres blocs** (V87.299, `OBRA_BLOCS878299`, `obraBlocs878299`, `src/theme-v878299.css`; decisió de
+  l’Héctor del 18/10/2026, `docs/proposta-moduls-preus.md` §7):
+  - **Els blocs:** a la barra de l’obra, en aquest ordre, **Fitxa · Seguiment · Econòmic**:
+    - **Fitxa:** Resum, Dades, Agents, Documents i Entrega, i els apartats de documentació d’alguns treballs.
+    - **Seguiment:** Actes, Notes, Agenda, Tasques i Planning.
+    - **Econòmic:** Pressupost, Certificacions, Facturació, Despeses, Rendiment, Seguiment econòmic, Honoraris i Hores.
+    - Un apartat que no és a cap bloc va a Fitxa.
+  - **Ordinador i iPad** (≥768 px): la fila del bloc es queda oberta a sota. Tocar un bloc obre el seu últim apartat, o
+    el primer.
+  - **Mòbil:** el bloc obre un quadre amb els seus apartats, que es tanca en triar; el bloc actiu diu l’apartat.
+  - Ja **no hi ha tira que es llisca ni «Més»**. En obrir una obra, sempre el Resum.
+  - **Noms nous dins de l’obra** (`tabLabel878269`): Gantt → Planning, Albarans → Despeses, Tancament / Entrega →
+    Entrega, Gestió temps → Hores. Només canvia el que es veu: les claus de les pestanyes no canvien.
+  - **Per a les proves:** `data-apartats` a `.obra-blocs-v878299` dona la llista per blocs.
+  - **Pendent:**
+    - ajuntar Actes + Notes («Visites»), Dades + Agents, Agenda + Tasques, Rendiment + Seguiment econòmic, i les hores
+      dins d’Honoraris o de Rendiment;
+    - el botó ＋ dins de l’obra;
+    - els noms nous del menú principal.
+- **Colors de l’estat dels expedients** (V87.299, `estatTone878299`): a la llista (etiqueta, desplegable de la taula i
+  targetes del mòbil) i a la barra de l’obra.
+  - **Verd:** En procés i En curs / Actiu.
+  - **Negre:** Tancat.
+  - **La resta:** blau (Pressupostat), taronja (Pendent de resposta), verd blavós (Acceptat), lila (En revisió), vermell
+    (No acceptat) i gris (Anul·lat).
+  - L’etiqueta de l’estat ara surt traduïda.
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -396,7 +422,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     no reduïbles, documents grans i espai a Configuració; ordinador, mòbil compilat i compte d’empresa.
   - `navtest.mjs`: capçalera fixa, barra de baix, menú, finestres i idioma (mòbil, iPad, ordinador; català i castellà).
     `i18ntest.mjs`: tots els `t("…")` tenen traducció al castellà. `obratest.mjs`: pantalla d’Obra (barra, menú ⋯,
-    estat, «Més», apartat a la mateixa pàgina, barra fixa en baixar, castellà). `expedientstest.mjs`: llista en targetes,
+    estat i els seus colors, els tres blocs Fitxa · Seguiment · Econòmic —fila a l’ordinador i l’iPad, quadre al mòbil—, apartat a la mateixa
+    pàgina, barra fixa en baixar, color de l’estat a la llista, castellà). `expedientstest.mjs`: llista en targetes,
     cercador fix, codi curt, codi de carpeta a Dades, Inici en castellà. `offlinetest.mjs`: l’app compilada s’obre
     amb el servidor i el núvol apagats, amb les dades de l’aparell, i en tornar la connexió es puja la feina.
     `pantallestest.mjs`: Agenda, Gestió temps i Factures (ordinador en català, mòbil en castellà, finestres de cita i

@@ -1,0 +1,53 @@
+/* V87.299 · Menú de l'obra en tres blocs (Fitxa · Seguiment · Econòmic) i colors de l'estat dels expedients */
+
+/* La barra continua sent la de sempre (es queda fixa en baixar); a dins, els blocs */
+html body .obra-tabs-bar-v878269.obra-blocs-bar-v878299{display:block;padding-top:6px}
+.obra-blocs-v878299{display:flex;gap:8px;padding:0 0 8px}
+.obra-blocs-v878299 button{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;cursor:pointer;padding:9px 16px;
+  border:1px solid var(--co-line,#DCE3E7);border-radius:10px;background:#fff;font:600 14px var(--app-font,inherit);color:var(--co-ink-2,#334155)}
+.obra-blocs-v878299 button svg{width:18px;height:18px;flex:none}
+.obra-blocs-v878299 button:hover{border-color:#94a3b8;color:var(--co-ink,#0f172a)}
+.obra-blocs-v878299 button.on{background:#eef4ff;border-color:var(--co-accent,#2563eb);color:var(--co-accent-ink,#1d4ed8)}
+.obra-blocs-v878299 button:focus-visible{outline:2px solid var(--co-accent,#2563eb);outline-offset:2px}
+
+/* Ordinador i iPad: els apartats del bloc triat, en una fila a sota */
+.obra-bloc-fila-v878299{display:flex;flex-wrap:wrap;gap:2px;border-top:1px solid var(--co-line,#DCE3E7)}
+.obra-bloc-fila-v878299 button{all:unset;box-sizing:border-box;cursor:pointer;padding:11px 14px;font:500 14px var(--app-font,inherit);
+  color:var(--co-ink-2,#334155);border-bottom:2px solid transparent;white-space:nowrap}
+.obra-bloc-fila-v878299 button:hover{color:var(--co-ink,#0f172a)}
+.obra-bloc-fila-v878299 button.on{color:var(--co-accent-ink,#1d4ed8);border-bottom-color:var(--co-accent,#2563eb);font-weight:600}
+.obra-bloc-fila-v878299 button:focus-visible{outline:2px solid var(--co-accent,#2563eb);outline-offset:-2px}
+
+/* Mòbil: tres botons iguals; en tocar-ne un, els seus apartats en un quadre que es tanca en triar */
+.obra-blocs-bar-v878299.narrow .obra-blocs-v878299{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button{flex-direction:column;justify-content:center;gap:2px;min-height:56px;padding:7px 4px;text-align:center;min-width:0}
+.obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font:500 11px var(--app-font,inherit);color:var(--co-accent-ink,#1d4ed8)}
+.obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.open{border-color:var(--co-accent,#2563eb);box-shadow:0 0 0 1px var(--co-accent,#2563eb) inset}
+.obra-bloc-panel-v878299{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px;margin:0 0 8px;background:#fff;
+  border:1px solid var(--co-line,#DCE3E7);border-radius:12px;box-shadow:0 10px 28px rgba(15,23,42,.12)}
+.obra-bloc-panel-v878299 button{all:unset;box-sizing:border-box;cursor:pointer;padding:12px;border-radius:8px;background:#f8fafc;
+  font:500 14px var(--app-font,inherit);color:var(--co-ink,#0f172a);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.obra-bloc-panel-v878299 button.on{background:#eef4ff;color:var(--co-accent-ink,#1d4ed8);font-weight:600}
+
+/* Colors de l'estat (llista d'expedients i obra). En procés i en curs: verd; tancat: negre. */
+html body .est-v878299{border:1px solid transparent!important}
+html body .est-v878299.est-pendent{background-color:#FAEEDA!important;color:#633806!important;border-color:#EF9F27!important}
+html body .est-v878299.est-press{background-color:#E6F1FB!important;color:#0C447C!important;border-color:#85B7EB!important}
+html body .est-v878299.est-revisio{background-color:#EEEDFE!important;color:#3C3489!important;border-color:#AFA9EC!important}
+html body .est-v878299.est-acceptat{background-color:#E1F5EE!important;color:#085041!important;border-color:#5DCAA5!important}
+html body .est-v878299.est-proces,html body .est-v878299.est-curs{background-color:#EAF3DE!important;color:#27500A!important;border-color:#639922!important}
+html body .est-v878299.est-tancat{background-color:#1F2328!important;color:#FFFFFF!important;border-color:#1F2328!important}
+html body .est-v878299.est-anulat{background-color:#F1EFE8!important;color:#5F5E5A!important;border-color:#B4B2A9!important}
+html body .est-v878299.est-noacc{background-color:#FCEBEB!important;color:#791F1F!important;border-color:#F09595!important}
+/* A l'obra, l'estat és un selector dins d'una etiqueta: el color va al selector */
+html body label.obra-estat-v878269.est-v878299{background:none!important;border:0!important}
+html body label.obra-estat-v878269.est-pendent select{background-color:#FAEEDA;color:#633806;border-color:#EF9F27}
+html body label.obra-estat-v878269.est-press select{background-color:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+html body label.obra-estat-v878269.est-revisio select{background-color:#EEEDFE;color:#3C3489;border-color:#AFA9EC}
+html body label.obra-estat-v878269.est-acceptat select{background-color:#E1F5EE;color:#085041;border-color:#5DCAA5}
+html body label.obra-estat-v878269.est-proces select,html body label.obra-estat-v878269.est-curs select{background-color:#EAF3DE;color:#27500A;border-color:#639922}
+html body label.obra-estat-v878269.est-tancat select{background-color:#1F2328;color:#fff;border-color:#1F2328;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")}
+html body label.obra-estat-v878269.est-anulat select{background-color:#F1EFE8;color:#5F5E5A;border-color:#B4B2A9}
+html body label.obra-estat-v878269.est-noacc select{background-color:#FCEBEB;color:#791F1F;border-color:#F09595}
