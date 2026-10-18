@@ -1,5 +1,7 @@
 # Estudi de viabilitat de l’app (18/10/2026)
 
+*Actualització 18/10: preus apujats i viabilitat nova a [guia-comercial.md](guia-comercial.md) (39 / 45 / 69 / 129 / 149 €).*
+
 *Per a l’Héctor. Continua [proposta-moduls-preus.md](proposta-moduls-preus.md). Números abans d’impostos i aproximats:
 s’han d’anar ajustant amb el que passi durant la prova.*
 
