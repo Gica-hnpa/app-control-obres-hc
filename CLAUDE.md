@@ -608,6 +608,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     per omplir sola la fitxa de la cèdula; **«Enllaços»** a cada obra (oficina virtual del CATGI —no s’hi pot entrar per ell—,
     Cadastre amb la referència cadastral de l’obra, ICAEN, Agència de l’Habitatge) i quins més vol.
   - **Agents principals** (`PrincipalAgentsPanel878134`, pestanya Agents): no hi surt la direcció d’obra triada a Dades (mirar-ho).
+  - **Mòdul tècnic, respostes de l’Héctor (19/10/2026):** programa dels certificats energètics: **CE3X**. Provant la cèdula de
+    Jaume I: els passos com a llista que s’ha de marcar per passar al següent **no l’ajuden gaire a la visita**. Prefereix una
+    **llista de consulta** (per no oblidar res) i un **apartat per entrar els documents del tràmit** abans de l’enllaç amb
+    Habitatge (cèdula) o Indústria (certificat energètic); MagicPlan: un enllaç i, si es pot, que l’app llegeixi el plànol
+    exportat per treure’n dades. Els plànols i fotos de MagicPlan els pujarà a la **bústia privada**
+    https://claude.ai/artifact/M1gGstHDmcNcuQQWvzA7zj (llegir-los amb l’eina Artifact: `list` amb `scope:"assets"` i la llista
+    `fitxers` amb ArtifactData; porten dades de clients, no copiar-los a les proves).
+  - **Menús segons el perfil:** nota de l’Héctor del 19/10/2026 a `docs/proposta-global.md` §10.9 (el menú principal és seu;
+    l’econòmic de l’obra, dins de l’obra), amb 3 preguntes pendents.
 - **Ajuntar els canvis per apartats: fet a la V87.293** (vegeu «Edició alhora»). Falta provar-ho de debò amb dues persones.
 - **Pantalles (nota de l’Héctor, 15/10/2026)**: a Expedients, «accions» i «apartats de l’obra» van per separat →
   ajuntar-les en una sola pestanya més simple. Simplificar les pestanyes de tota l’app i de tots els aparells: n’hi ha

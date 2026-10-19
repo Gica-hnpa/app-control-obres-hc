@@ -516,3 +516,32 @@ Honoraris · Resum.
 - **Noms (10.5): sí a «Preus», «Hores», «Ajustos» i «Planning».**
 - **«Pendent de facturar» dins de «Facturació»**, a dalt de tot, abans de les factures emeses.
 - **Albarà i factura (10.1.3): sí**, en entrar la factura del proveïdor es marquen els albarans que inclou i deixen de comptar.
+
+### 10.9 Nota de l’Héctor (19/10/2026): el menú principal és meu; l’econòmic de l’obra, dins de l’obra
+
+**Què diu l’Héctor:** al menú principal, «Facturació» i «Despeses» han de ser **les seves com a tècnic**. Quan sigui el mòdul
+de contractista, potser sí que hi han d’anar les de les obres. Ara a «Despeses» li surt una despesa que en realitat és **d’una
+obra**: un cost del seu client per a un capítol de l’obra. Cal diferenciar què va al menú principal i què va al control econòmic
+de cada obra o expedient, segons el mòdul o l’usuari.
+
+**Proposta:**
+
+- **Tècnic · menú principal** (el seu despatx):
+  - **Facturació:** les factures que ha fet ell i, a dalt, el **pendent de facturar** (honoraris acceptats encara sense
+    factura; les hores, només dels clients que es facturen per hores).
+  - **Hores:** el seu temps per expedient, **com a cost seu** (què li ha costat cada encàrrec), no com a feina a cobrar.
+  - **Despeses:** només les seves (si en vol portar). Les despeses d’una obra no hi surten.
+- **Dins de cada obra o expedient**, el bloc Econòmic en dues parts:
+  - **L’obra** (del client o promotor): Pressupost, Certificacions, Facturació de l’obra (proformes), **Despeses de l’obra**
+    (costos imputats a un capítol o a una partida) i Rendiment.
+  - **El meu encàrrec:** Honoraris (el seu pressupost i les seves factures) i Hores (el seu temps). Rendiment de l’encàrrec:
+    honoraris menys hores × cost per hora.
+- **Constructor (mòdul contractista) · menú principal:** Facturació (factures als clients de totes les obres), Despeses (de
+  totes les obres) i Hores (de l’equip), com a la taula del 10.4.
+- **Què passa amb el que hi ha:** la despesa que ara li surt al menú principal és un albarà lligat a una obra: es queda com a
+  despesa d’aquella obra i deixa de sortir al seu menú. No es perd res.
+
+**Preguntes:**
+1. Hores: algun client encara es factura per hores (les fraccions de 15’ i la quota fixa del 17/10), o des d’ara només són cost?
+2. Despeses pròpies (desplaçaments, visats, taxes…): les vols portar a l’app o traiem «Despeses» del menú del tècnic?
+3. Pendent de facturar: honoraris acceptats menys el que ja s’ha facturat de cada encàrrec. D’acord?
