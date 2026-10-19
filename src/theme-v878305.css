@@ -55,3 +55,6 @@
 .passos-v878305>.passos-fila-v878305,.passos-v878305>.passos-llista-v878305,.passos-v878305>.passos-afegir-v878305{margin-left:16px;margin-right:16px}
 .passos-v878305>.passos-fila-v878305{margin-top:12px}
 .encarrecs-inici-v878305>.encarrecs-grups-v878305{padding:12px 16px 16px}
+/* V87.305.1 · Llegir el PDF amb ChatGPT o Claude (dins de la finestra del PDF) */
+.pdf-press-v878305 .ai-budget-v878256.pdf-ia-v878305{padding:0}
+.pdf-press-v878305 .modal-actions{flex-wrap:wrap}

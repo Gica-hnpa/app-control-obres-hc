@@ -408,8 +408,25 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - En desar: si el pressupost actiu ja té partides, se’n crea un de nou («PDF · <nom del fitxer>») i no es toca res; si és buit,
     s’hi posen. Partides `tipus:"Import PDF"`. El PDF original va a Documents (com l’Excel, `persistImportedExcelDocument878245`).
     La finestra arriba a la funció de l’App per `window.__acoImportPdf878305` (el pressupost surt a molts llocs).
-  - Proves: `pdfpressupostunit.mjs` (29, sense navegador: formats de números, l’app, Presto, descripcions llargues, TCQ, avisos) i
-    `pdfpressuposttest.mjs` (16: el navegador fa dos PDF i es llegeixen des d’una obra; mòbil).
+  - Proves: `pdfpressupostunit.mjs` (sense navegador: formats de números, l’app, Presto, descripcions llargues, TCQ, avisos) i
+    `pdfpressuposttest.mjs` (el navegador fa els PDF i es llegeixen des d’una obra; mòbil).
+- **V87.305.1** (19/10/2026; l’Héctor: el PDF de Socoterm no es llegia, «o he de fer com els albarans amb ChatGPT?»):
+  - **Sense codis, com una factura** (Socoterm: «Nº · Descripción · Cant · PU sin IVA · IVA · PVP sin IVA»; `llegirSenseCodis`): cada
+    línia amb text i quantitat × preu = import és una partida; el títol en majúscules d’abans és el capítol; l’IVA (`10%`), «€» i
+    «Total sin IVA» no compten com a partida. **Honoraris** («Concepte · Import»): una partida de 1 pa × l’import.
+  - **Apartats que no són el pressupost** (provat amb `Pressupost_Llafranc.pdf` de Baixades, 135 pàg.: Pressupost, Amidaments i
+    Descomposats amb les mateixes partides, que es comptaven tres vegades): un títol «AMIDAMENTS», «MEDICIONES», «DESCOMPOSATS»,
+    «CUADRO DE PRECIOS»… (en majúscules o amb «Pàgina N» al peu) atura la lectura fins a «PRESSUPOST»; una partida repetida amb el
+    mateix codi i nom no es torna a comptar; «8.00 8.00» no és una partida.
+  - **Codis sense punts** («13001 u Finestra… 1.00 666.92 € 666.92 €», amb unitat i números que quadren) i **codis que no són del
+    capítol** (`080.15` dins de «09 PAVIMENTS»: es queda al capítol del títol; només es passa a un capítol nou pel codi si és el
+    següent amb les mateixes xifres). «13.020 mm de longitud…» dins d’una descripció no és un codi. Llafranc: 104 partides, 27
+    capítols, el total quadra al cèntim amb el PEM (132.816,84 €).
+  - **«Llegir-lo amb ChatGPT o Claude»** (`iaPdfPrompt878305`, `rowsDeIa878305`), com els albarans: surt destacat si l’app no hi troba
+    cap partida (també un PDF escanejat) i a la revisió. Copia les instruccions amb el text del PDF (si passa de 50.000 lletres, diu
+    que s’adjunti el PDF al xat), obre ChatGPT o Claude, s’enganxa la resposta (pot venir en diverses parts, «CONTINUARÀ») i les
+    partides passen a la mateixa revisió (lector de taules del «Pressupost amb IA», `parseAiBudget878256`). Res de pagament.
+  - `copyText878256`: si el navegador no deixa copiar, ja no queda un error sense recollir.
 - **Mòdul tècnic, versió 1** (V87.305, `src/encarrecsTecnics.js`; `docs/proposta-perfil-tecnic.md`):
   - **Passos de l’encàrrec** (`PassosEncarrec878305`, al Resum de l’obra) per a la cèdula d’habitabilitat, el certificat
     energètic i la inspecció d’edifici (`encarrecDe` pel tipus de feina): Encàrrec · Documentació · Visita · Oficina · Tràmit ·
@@ -620,6 +637,11 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Carpetes temporals i perfils del navegador de les proves a `D:\aco-tmp`** (des del 18/10/2026; `ACO_PROVES_TMP` per
     canviar-ho). El C: es va omplir (0,02 GB lliures) amb 86 carpetes que havien deixat proves aturades a mitges (2,96 GB).
     Si una prova s'atura, la carpeta pot quedar a `D:\aco-tmp`: es pot esborrar.
+    **19/10/2026: el C: es va tornar a omplir** (6 GB lliures): l’Edge de cada prova deixava a `C:\Users\Hector\AppData\Local\Temp`
+    una carpeta `scoped_dir…` de 0,39 GB (baixava components: llistes de seguretat i de bloqueig). N’hi havia 137 (uns 30 GB),
+    moguts a `D:\aco-tmp\restes-edge-C` (no serveixen per a res: es poden esborrar). Ara totes les proves obren l’Edge amb
+    `--disable-component-update` i amb `TEMP`/`TMP` a `D:\aco-tmp`: ja no en deixen cap. **Una prova nova que obri l’Edge ha de
+    fer el mateix.**
   - **Les dades reals de l’Héctor canvien** (el 18/10/2026: ha tret les fotos perdudes de la piscina, ha connectat Google
     Calendar, ha posat contrasenya al portal de Socoterm, ha omplert la llibreria, ha esborrat les obres de prova i ha desat
     l’idioma «ca»). Les proves no han de dependre d’aquest estat:

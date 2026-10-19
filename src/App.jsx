@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.305";
+const APP_VERSION878264="87.305.1";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9182,23 +9182,79 @@ function PartidaReadingModal87208({row={},title="Fitxa de la partida",editable=f
 }
 // V87.305 · Llegir un pressupost en PDF (encàrrec de l'Héctor del 19/10/2026): es tria el PDF, es llegeix (src/pressupostPdf.js) i
 // es revisa abans de desar: capítols, partides (es poden desmarcar i corregir) i el total comparat amb el del PDF.
+// V87.305.1 · Si l'app no el sap llegir bé, «Llegir-lo amb ChatGPT o Claude» (com els albarans): es copien les instruccions
+// (amb el text del PDF si n'hi ha i no és massa llarg; si no, es diu que s'adjunti el PDF al xat), s'enganxa la resposta i
+// les partides passen a la mateixa revisió d'abans de desar (parseAiBudget878256, el lector de taules del «Pressupost amb IA»).
+const IA_PDF_MAX878305=50000;
+function iaPdfPrompt878305(nom,text){
+  const amb=!!text&&text.length<=IA_PDF_MAX878305;
+  return [
+    t("Et passo un pressupost d’obra en PDF ({nom}). Passa’m totes les partides del pressupost en una taula perquè les importi a la meva aplicació.",{nom:nom||"PDF"}),
+    "",
+    t("QUÈ HAS DE FER:"),
+    t("- Copia les dades tal com surten al PDF: no inventis res, no arrodoneixis i no canviïs cap preu."),
+    t("- Només les partides del pressupost: no els amidaments, ni els descompostos, ni el resum, ni els totals."),
+    t("- Si una partida no té quantitat, posa-hi 1."),
+    "",
+    t("FORMAT DE LA RESPOSTA (l’aplicació el llegeix automàticament):"),
+    t("1. Una sola taula amb aquestes 7 columnes i en aquest ordre: | Codi | Unitat | Concepte | Descripció | Quantitat | Preu unitari | Import |"),
+    t("2. Cada capítol és una fila amb el codi del capítol (01, 02…) i el nom a «Concepte»; la resta de columnes, buides."),
+    t("3. Cada partida amb el codi del PDF (si no en té, 01.01, 01.02…), la unitat, un concepte curt, la descripció completa, la quantitat, el preu unitari sense IVA i l’import."),
+    t("4. Números amb coma decimal, sense punt de milers i sense el símbol €."),
+    t("5. Cap fila de totals ni de subtotals dins la taula."),
+    t("6. Si la taula no hi cap en una resposta, talla-la al final d’una fila i escriu «CONTINUARÀ»; quan et digui «continua», segueix amb la fila següent amb les mateixes columnes."),
+    t("7. Després de la taula, en una línia: «Total del PDF sense IVA: …»."),
+    "",
+    amb?t("TEXT DEL PDF:"):t("El PDF va adjunt."),
+    ...(amb?[text]:[])
+  ].join("\n");
+}
+function rowsDeIa878305(items){
+  let cap="",n=0;const out=[];
+  (items||[]).forEach(it=>{
+    if(it.type==="cap"){const c=(String(it.codi||"").replace(/\D/g,"")||String(out.length+1)).padStart(2,"0");cap=`${c} ${it.concepte||"Capítol "+c}`.trim();n=0;return}
+    if(!cap){const pre=(String(it.codi||"").match(/^(\d{1,3})[.\-]/)||[])[1];cap=pre?`${pre.padStart(2,"0")} Capítol ${pre.padStart(2,"0")}`:"01 Partides"}
+    n++;const q=Number(it.q)||0,pu=Number(it.pu)||0;
+    out.push({codi:String(it.codi||"")||`${cap.slice(0,2)}.${String(n).padStart(2,"0")}`,cap,ut:String(it.ut||"ut").replace(/^m2$/i,"m²").replace(/^m3$/i,"m³"),concepte:it.concepte||"Partida",desc:it.desc||"",q,pu,imp:Math.round(q*pu*100)/100});
+  });
+  return out;
+}
 function PdfPressupost878305({onImport,close}){
   const[estat,setEstat]=useState("tria");
   const[err,setErr]=useState("");
   const[res,setRes]=useState(null);
   const[files,setFiles]=useState([]);
   const[fitxer,setFitxer]=useState(null);
+  const[textPdf,setTextPdf]=useState("");
+  const[ia,setIa]=useState(null); // {de:"tria"|"revisa", answer, msg}
+  const iaRes=useMemo(()=>ia?.answer?parseAiBudget878256(ia.answer):null,[ia?.answer]);
   const nm=v=>typeof v==="number"?v:(numeroPdf878305(v)??0);
+  const coma=v=>String(Number(v)||0).replace(".",",");
   async function tria(f){
     if(!f)return;
     if(f.size>25*1024*1024){setErr(t("El PDF fa més de 25 MB."));return}
-    setErr("");setEstat("llegint");setFitxer(f);
+    setErr("");setEstat("llegint");setFitxer(f);setTextPdf("");setRes(null);setFiles([]);
     try{
       const {linies}=await liniesPdf(pdfjsLib,await f.arrayBuffer());
+      setTextPdf(linies.map(l=>l.text).join("\n"));
       const r=llegirPressupostPdf(linies);
-      if(!r.partides.length){setErr(t("No s’hi ha trobat cap partida. Si el PDF és una foto o un escaneig no té text per llegir: demana’l en Excel o en un PDF fet des del programa."));setEstat("tria");return}
-      setRes(r);const coma=v=>String(Number(v)||0).replace(".",",");setFiles(r.partides.map((p,i)=>({...p,q:coma(p.q),pu:coma(p.pu),_i:i,sel:!(p.revisar&&!p.imp)})));setEstat("revisa");
+      if(!r.partides.length){setErr(t("L’app no hi ha trobat cap partida (si el PDF és una foto o un escaneig, no té text per llegir). Prova de llegir-lo amb ChatGPT o Claude."));setEstat("tria");return}
+      setRes(r);setFiles(r.partides.map((p,i)=>({...p,q:coma(p.q),pu:coma(p.pu),_i:i,sel:!(p.revisar&&!p.imp)})));setEstat("revisa");
     }catch(e){setErr(t("No s’ha pogut llegir el PDF: {e}",{e:String(e?.message||e)}));setEstat("tria")}
+  }
+  function copiaIa(url,nom){
+    const amb=!!textPdf&&textPdf.length<=IA_PDF_MAX878305;
+    const ok=copyText878256(iaPdfPrompt878305(fitxer?.name,textPdf));
+    const msg=!ok?t("No s’ha pogut copiar sol: obre «Veure el text» i copia’l a mà."):amb?t("Copiat, amb el text del PDF. Al xat, enganxa-ho (Ctrl+V) i envia-ho: no cal adjuntar el PDF."):t("Copiat. Al xat, adjunta-hi el PDF «{nom}» i enganxa-hi les instruccions (Ctrl+V).",{nom:fitxer?.name||"PDF"});
+    setIa(x=>({...x,msg}));
+    if(url)window.open(url,"_blank","noopener,noreferrer");
+  }
+  function revisaIa(){
+    const rows=rowsDeIa878305(iaRes?.items);if(!rows.length)return;
+    const m=String(ia?.answer||"").match(/total del pdf[^0-9\n]*([\d.,]+)/i);const totIa=m?aiNum878256(m[1]):null;
+    setRes(r=>({...(r||{}),totalPdf:totIa||r?.totalPdf||null}));
+    setFiles(rows.map((p,i)=>({...p,q:coma(p.q),pu:coma(p.pu),_i:i,sel:true})));
+    setErr("");setIa(null);setEstat("revisa");
   }
   const sel=files.filter(p=>p.sel);
   const total=Math.round(sel.reduce((s,p)=>s+nm(p.q)*nm(p.pu),0)*100)/100;
@@ -9212,12 +9268,25 @@ function PdfPressupost878305({onImport,close}){
     if(r){alert(r.nou?t("Fet: s’ha creat el pressupost «{nom}» amb {n} partides. El que ja hi havia no s’ha tocat.",{nom:r.nom,n:r.partides}):t("Fet: s’han posat {n} partides al pressupost.",{n:r.partides}));close?.()}
     else{setErr(t("No s’ha pogut desar."));setEstat("revisa")}
   }
+  const botoIa=(cls="secondary")=><button type="button" className={`${cls} pdf-ia-obre-v878305`} onClick={()=>setIa({de:estat==="revisa"?"revisa":"tria",answer:"",msg:""})}>{t("Llegir-lo amb ChatGPT o Claude")}</button>;
   return <Modal title={t("Llegir un pressupost en PDF")} close={close}><div className="pdf-press-v878305">
-    {(estat==="tria"||estat==="llegint")?<>
+    {ia?<div className="ai-budget-v878256 pdf-ia-v878305">
+      <section>
+        <h3><em>1</em>{t("Copia les instruccions i obre la IA")}</h3>
+        <div className="ai-tools">{AI_TOOLS878256.filter(([n])=>n!=="Gemini").map(([n,u])=><button type="button" key={n} className={n==="ChatGPT"?"primary":"secondary"} onClick={()=>copiaIa(u,n)}>{t("Copiar i obrir")} {n}</button>)}<button type="button" className="secondary" onClick={()=>copiaIa("","")}>{t("Només copiar")}</button></div>
+        {ia.msg&&<p className="ai-msg">{ia.msg}</p>}
+        <details><summary>{t("Veure el text que es copia")}</summary><textarea readOnly rows={8} value={iaPdfPrompt878305(fitxer?.name,textPdf)} onFocus={e=>e.target.select()}/></details>
+      </section>
+      <section>
+        <h3><em>2</em>{t("Enganxa aquí la resposta de la IA")}</h3>
+        <textarea rows={7} value={ia.answer} onChange={e=>{const v=e.target.value;setIa(x=>({...x,answer:v}))}} placeholder={t("Copia la resposta sencera de la IA i enganxa-la aquí (Ctrl+V). Si te l’ha donat en diverses parts, enganxa-les totes, una darrere l’altra.")}/>
+        {ia.answer.trim()&&(iaRes?.partides?<p className="ai-msg">{t("{n} partides · total sense IVA {t}",{n:iaRes.partides,t:money(iaRes.total)})}</p>:<p className="ai-warn">{t("No hi trobo cap taula. Demana a la IA: «Torna-m’ho en una sola taula amb les columnes Codi, Unitat, Concepte, Descripció, Quantitat, Preu unitari i Import».")}</p>)}
+      </section>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>setIa(null)}>{t("Tornar")}</button><span className="sp"/><button type="button" className="primary" disabled={!iaRes?.partides} onClick={revisaIa}>{t("Revisar les partides")}{iaRes?.partides?` (${iaRes.partides})`:""}</button></div>
+    </div>:(estat==="tria"||estat==="llegint")?<>
       <p>{t("Tria el PDF del pressupost. L’app en llegeix els capítols i les partides i te les ensenya abans de desar-les.")}</p>
-      <p className="hint">{t("Ha de ser un PDF amb text (fet des d’un programa), no una foto ni un escaneig.")}</p>
       {err&&<p className="err-v878305">{err}</p>}
-      <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><label className={`primary action-upload-v87213 pdf-tria-v878305 ${estat==="llegint"?"off":""}`}>{estat==="llegint"?t("Llegint…"):t("Triar el PDF")}<input type="file" accept="application/pdf,.pdf" disabled={estat==="llegint"} onChange={e=>{tria(e.target.files?.[0]);e.target.value=""}}/></label></div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button>{fitxer&&err&&estat==="tria"&&botoIa("primary")}<label className={`${fitxer&&err?"secondary":"primary"} action-upload-v87213 pdf-tria-v878305 ${estat==="llegint"?"off":""}`}>{estat==="llegint"?t("Llegint…"):fitxer&&err?t("Un altre PDF"):t("Triar el PDF")}<input type="file" accept="application/pdf,.pdf" disabled={estat==="llegint"} onChange={e=>{tria(e.target.files?.[0]);e.target.value=""}}/></label></div>
     </>:<>
       <div className="pdf-resum-v878305"><b>{t("{n} partides en {c} capítols",{n:files.length,c:caps.length})}</b><span>{t("Total del que has triat: {t}",{t:money(total)})}{res?.totalPdf!=null?<> · {t("Total del PDF: {t}",{t:money(res.totalPdf)})}</>:null}</span>{nRevisar>0&&<em>⚠ {t("{n} partides per revisar (marcades en groc)",{n:nRevisar})}</em>}</div>
       {err&&<p className="err-v878305">{err}</p>}
@@ -9230,7 +9299,7 @@ function PdfPressupost878305({onImport,close}){
         <td><input className="num" inputMode="decimal" value={p.pu} onChange={e=>ch(p._i,"pu",e.target.value)}/></td>
         <td className="num">{money(nm(p.q)*nm(p.pu))}</td>
       </tr>)}</tbody></table></section>)}</div>
-      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>{setEstat("tria");setRes(null);setFiles([]);setErr("")}}>{t("Un altre PDF")}</button><button type="button" className="primary" disabled={!sel.length||estat==="desant"} onClick={desa}>{estat==="desant"?t("Desant…"):t("Crear el pressupost ({n} partides)",{n:sel.length})}</button></div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>{setEstat("tria");setRes(null);setFiles([]);setErr("");setFitxer(null)}}>{t("Un altre PDF")}</button>{botoIa()}<button type="button" className="primary" disabled={!sel.length||estat==="desant"} onClick={desa}>{estat==="desant"?t("Desant…"):t("Crear el pressupost ({n} partides)",{n:sel.length})}</button></div>
     </>}
   </div></Modal>;
 }
@@ -12033,7 +12102,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.305",
+    app_version:"87.305.1",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -13940,7 +14009,7 @@ function aiBudgetWorkbookFile878256(items){
 function copyText878256(t){
   let ok=false;
   try{const a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();ok=document.execCommand("copy");a.remove()}catch{}
-  if(!ok){try{navigator.clipboard.writeText(t);ok=true}catch{}}
+  if(!ok){try{navigator.clipboard.writeText(t).catch(()=>{});ok=true}catch{}}
   return ok;
 }
 function AiBudgetHost878256(){

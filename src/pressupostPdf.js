@@ -10,6 +10,7 @@ const TOTAL = /^(total|suma|subtotal|import total|importe total|total cap[ií]t|
 const CAP_PARAULA = /^(cap[ií]tol|cap[ií]tulo|cap\.)\s*(\d{1,3}(?:[.\-]\d{1,3})?)\s*[-.:·]?\s*(.*)$/i;
 const CAP_CODI = /^(c\s?\d{1,3}|\d{1,2})\s*[-.:·]?\s+([A-ZÀ-ÚÑÇ][^a-zà-úñç]{2,}.*)$/;      // «01 ENDERROCS», «C02 FAÇANES»
 const PARTIDA = /^((?:[A-Z]{1,4}\s?)?\d{1,3}(?:[.\-]\d{1,4}){1,4}[A-Z]?)\s+(.+)$/;      // 01.01, 1.1, E01.002, 02.01.03
+const PARTIDA_UT = /^([A-Z]{0,4}\d[A-Z0-9.\-/]{1,12})\s+(\S+)\s+(.+)$/i;                      // «13001 u Finestra…» (codi sense punts + unitat)
 const PARTIDA_TCQ = /^(\d{1,4})\s+([A-Z][A-Z0-9]{5,9})\s+(.+)$/;                              // «1 E222142A m3 Excavació…» (TCQ / BEDEC)
 const normUt = u => { const x = String(u || "").replace(/\.$/, ""); if (/^m2$/i.test(x)) return "m²"; if (/^m3$/i.test(x)) return "m³"; if (/^(u|ud|uds|un|und|uts)$/i.test(x)) return "ut"; if (/^p\.?a$/i.test(x)) return "pa"; return x; };
 
@@ -27,16 +28,28 @@ const esNum = s => numero(s) !== null && /\d/.test(String(s));
 const net = s => String(s ?? "").replace(/\s+/g, " ").trim();
 
 // Números del final de la línia (els que hi ha després de l'últim text)
+// V87.305.1 · el percentatge de l'IVA («10%», «21,00 %») i «€» / «EUR» se salten (pressupostos fets com una factura)
+const SALTA = tk => tk === "€" || tk === "" || /^eur$/i.test(tk) || tk === "%" || /^-?\d+(?:[.,]\d+)?%$/.test(tk);
 function numsFinals(tokens) {
   const out = [];
-  for (let i = tokens.length - 1; i >= 0; i--) { const tk = tokens[i].replace(/€$/, ""); if (tk === "€") continue; if (esNum(tk)) out.unshift(numero(tk)); else break; }
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    const tk = tokens[i].replace(/€$/, "");
+    if (SALTA(tk)) continue;
+    if (tokens[i + 1] === "%") continue; // «21,00 %»: el número del percentatge
+    if (esNum(tk)) out.unshift(numero(tk)); else break;
+  }
   return out;
 }
 function senseNumsFinals(tokens) {
   let i = tokens.length;
-  while (i > 0 && (esNum(tokens[i - 1].replace(/€$/, "")) || tokens[i - 1] === "€")) i--;
+  while (i > 0 && (esNum(tokens[i - 1].replace(/€$/, "")) || SALTA(tokens[i - 1].replace(/€$/, "")))) i--;
   return tokens.slice(0, i);
 }
+// Capçalera d'una taula («Nº Descripción Cant PU sin IVA IVA PVP sin IVA»): no és cap partida ni cap títol
+const CAPCALERA = l => (String(l).toLowerCase().match(/\b(descripci[oó]n?|concepte|concepto|cant|cantidad|quantitat|precio|preu|pu|importe|import|iva|pvp|ud|unidad|unitat|total)\b/g) || []).length >= 3 && !/\d[.,]\d/.test(l);
+// Després de les partides: observacions, condicions… (no són la descripció de l'última partida)
+const FI_DESC = /^(observacions|observaciones|condicions|condiciones|notes|notas|forma de pagament|forma de pago|validesa|validez|conforme|acceptat|aceptado)\b/i;
+const TOTAL_PDF = /(total sin iva|total sense iva|base imponible|base imposable|pressupost d.execuci|presupuesto de ejecuci|p\.?e\.?m\b|total pressupost|total presupuesto|^subtotal)/i;
 // Quantitat, preu i import a partir dels números del final: es busca la combinació que quadra (q × pu = import)
 export function quadra(nums) {
   const n = nums.filter(x => x !== null);
@@ -53,11 +66,25 @@ export function quadra(nums) {
   return null;
 }
 
+// V87.305.1 · Apartats que no són el pressupost (el PDF de Llafranc: Pressupost, després Amidaments i Descomposats amb les
+// mateixes partides, que es comptaven dues i tres vegades). Només si la paraula és en majúscules (un títol) o va amb «Pàgina N»
+// al peu; «Mediciones y presupuesto» (Presto, tot junt) no compta.
+const SECCIO_FORA = /^(amidaments|medicions|mediciones|estat d.amidaments|estado de mediciones|descompos[a-z]*|descompuestos?|preus descompostos|precios descompuestos|justificaci[oó]n? de pre(?:us|cios)|quadre de preus|cuadro de precios)\b/i;
+const SECCIO_DINS = /^(pressupost|presupuesto|pressupostos|presupuestos)\b/i;
+const titolSeccio = (re, l) => { const m = l.match(re); return !!m && !/(pressupost|presupuesto)/i.test(l.slice(m[0].length, m[0].length + 40)) && (m[1] === m[1].toUpperCase() || /p[àa]gina\s+\d/i.test(l)); };
+const clauNom = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\([^)]*\)|←.*$/g, "").replace(/[^a-z0-9]+/g, " ").trim().slice(0, 30);
+
 // files: [{ text }] o [{ items:[{x,s}] }] (una per línia, en ordre de lectura)
 export function llegirPressupostPdf(files) {
   const linies = (files || []).map(f => net(f.text ?? (f.items || []).map(i => i.s).join("  "))).filter(Boolean);
+  let r = llegirAmbCodis(linies, true);
+  if (!r.partides.length) r = llegirAmbCodis(linies, false); // un PDF que només fos d'amidaments: millor això que res
+  return r.partides.length ? r : llegirSenseCodis(linies);
+}
+function llegirAmbCodis(linies, apartats) {
   const caps = [], partides = [], avisos = [];
-  let cap = "", act = null, totalPdf = null;
+  let cap = "", act = null, totalPdf = null, fora = false;
+  const autos = new Set(); // capítols posats pel codi (no per un títol del PDF)
   const tanca = () => {
     if (!act) return;
     act.concepte = net(act.concepte).slice(0, 240) || "Partida importada del PDF";
@@ -65,9 +92,15 @@ export function llegirPressupostPdf(files) {
     if (!act.num) { act.revisar = "Sense quantitat ni preu: revisa-la"; act.q = 0; act.pu = 0; act.imp = 0; }
     else { Object.assign(act, { q: act.num.q, pu: act.num.pu, imp: act.num.imp }); if (!act.num.ok) act.revisar = act.num.dos ? "Només s’hi han trobat dos números (quantitat i preu?)" : "Quantitat × preu no dona l’import"; }
     delete act.num; delete act.font;
-    partides.push(act); act = null;
+    // la mateixa partida repetida més avall (amidaments, descompostos…) no es torna a comptar; dues partides diferents amb el
+    // mateix codi (passa) sí que es queden
+    const ja = partides.find(p => p.codi === act.codi && !p.revisar && clauNom(p.concepte) === clauNom(act.concepte));
+    if (!ja) partides.push(act);
+    act = null;
   };
   for (const linia of linies) {
+    if (apartats && titolSeccio(SECCIO_FORA, linia)) { tanca(); fora = true; continue; }
+    if (fora) { if (titolSeccio(SECCIO_DINS, linia)) fora = false; continue; }
     if (IGNORA.test(linia)) continue;
     const tokens = linia.split(" ");
     const nums = numsFinals(tokens);
@@ -76,17 +109,25 @@ export function llegirPressupostPdf(files) {
       // «TOTAL PARTIDA 12,50 31,20 390,00» (Presto): és de la partida oberta i mana sobre les línies de mides
       if (act && (!act.num || act.font === "text") && nums.length >= 2 && /^total\b/i.test(linia) && !/cap[ií]t|presupuesto|pressupost|p\.?e\.?m/i.test(linia) && (nums.length >= 3 || /partida/i.test(linia))) { act.num = quadra(nums); act.font = "total"; continue; }
       tanca();
-      if (/(pressupost d.execuci|presupuesto de ejecuci|p\.?e\.?m\b|total pressupost|total presupuesto)/i.test(linia) && nums.length) totalPdf = nums[nums.length - 1];
+      if (TOTAL_PDF.test(linia) && nums.length && totalPdf == null) totalPdf = nums[nums.length - 1];
       continue;
     }
+    // un total amb text al davant («Pago por Transferencia · Total sin IVA 989,00 €») també tanca la partida
+    if (nums.length === 1 && /\b(total|subtotal|base imponible|base imposable)\b/i.test(linia)) { tanca(); if (TOTAL_PDF.test(linia) && totalPdf == null) totalPdf = nums[0]; continue; }
     let m = linia.match(CAP_PARAULA);
     if (m && !PARTIDA.test(linia.replace(CAP_PARAULA, "$2 $3"))) {
       tanca(); const codi = m[2].replace(/\D+$/, "").padStart(2, "0"); const nom = net(senseNumsFinals(m[3].split(" ")).join(" ")) || `Capítol ${codi}`;
       cap = `${codi} ${nom}`.trim(); caps.push(cap); continue;
     }
     m = linia.match(PARTIDA);
+    if (m && !/[a-zà-úñç]/i.test(m[2])) m = null; // «8.00 8.00» (una línia d'amidament) no és cap partida
+    // «13.020 mm de longitud i alçada…»: una mida dins de la descripció de la partida oberta, no un codi
+    if (m && act && !nums.length) { const nx = m[2].split(" ")[0].replace(/[,.;:]$/, ""); if (/^[a-zà-úñç]/.test(nx) && !UNITATS.test(nx)) m = null; }
     const tcq = !m && linia.match(PARTIDA_TCQ);
     if (tcq && /\d/.test(tcq[2])) m = [linia, tcq[2], tcq[3]];
+    // V87.305.1 · codi sense punts («13001 u Finestra… 1.00 666.92 € 666.92 €», PDF de Llafranc): codi amb números + unitat +
+    // text, i els números del final quadren (una línia de descripció com «10 m de tub» no en porta)
+    if (!m) { const mu = linia.match(PARTIDA_UT); if (mu && UNITATS.test(mu[2]) && /[a-zà-úñç]/i.test(mu[3]) && nums.length >= 2 && quadra(nums)?.ok) m = [linia, mu[1], mu[2] + " " + mu[3]]; }
     if (m) {
       tanca();
       const codi = m[1].replace(/\s+/g, "");
@@ -97,9 +138,13 @@ export function llegirPressupostPdf(files) {
       // capítol a partir del codi si és de punts (01.02 → «01») i no coincideix amb el llegit; els codis del BEDEC (E2225223)
       // no en diuen el capítol: es queden al llegit
       const pre = /^(?:[A-Z]{1,4})?\d{1,3}[.\-]/.test(codi) ? (codi.match(/^(?:[A-Z]{1,4})?(\d{1,3})/)?.[1]?.padStart(2, "0") || "") : "";
-      if (pre && !cap.startsWith(pre + " ") && !cap.startsWith(pre + ".")) {
-        const trobat = caps.find(c => c.startsWith(pre + " ")); cap = trobat || `${pre} Capítol ${pre}`; if (!trobat) caps.push(cap);
-      } else if (!cap) { cap = "01 Partides"; caps.push(cap); }
+      // Si el capítol és d'un títol del PDF, un codi que no hi coincideix (080.15 dins de «09 PAVIMENTS») es queda on surt; només
+      // es passa a un capítol nou pel codi si és el següent amb el mateix nombre de xifres (el títol no s'ha sabut llegir)
+      const capNum = cap.split(" ")[0];
+      const pelCodi = pre && !cap.startsWith(pre + " ") && !cap.startsWith(pre + ".") && (autos.has(cap) || !cap || (pre.length === capNum.length && Number(pre) > Number(capNum)));
+      if (pelCodi) {
+        const trobat = caps.find(c => c.startsWith(pre + " ")); cap = trobat || `${pre} Capítol ${pre}`; if (!trobat) { caps.push(cap); autos.add(cap); }
+      } else if (!cap) { cap = "01 Partides"; caps.push(cap); autos.add(cap); }
       act = { codi, cap, ut: normUt(ut), concepte: resta.join(" "), desc: "", num: nums.length >= 2 ? quadra(nums) : null, font: "partida" };
       continue;
     }
@@ -135,6 +180,54 @@ export function llegirPressupostPdf(files) {
   if (revisar) avisos.push(`${revisar} partides per revisar`);
   if (totalPdf != null && Math.abs(totalPdf - total) > Math.max(1, totalPdf * 0.002)) avisos.push(`El total llegit (${total}) no coincideix amb el del PDF (${totalPdf})`);
   return { caps: capsFinals, partides, total, totalPdf, avisos };
+}
+
+// V87.305.1 · Pressupostos sense codis, fets com una factura (p. ex. el de Socoterm: «Nº · Descripción · Cant · PU sin IVA · IVA ·
+// PVP sin IVA»): cada línia amb text i quantitat × preu = import és una partida; les línies de text de sota en continuen la
+// descripció; el títol en majúscules d'abans («REPARACIÓN DE GRIETA EN FACHADA») és el capítol. Els codis es posen sols (01.01…).
+function llegirSenseCodis(linies) {
+  const caps = [], partides = [], avisos = [];
+  let cap = "", act = null, totalPdf = null, titol = [], nCap = 0, nPart = 0, nomesImport = false;
+  const tanca = () => { if (!act) return; act.concepte = net(act.concepte).slice(0, 240) || "Partida importada del PDF"; act.desc = net(act.desc).slice(0, 1500); partides.push(act); act = null; };
+  const capDe = () => { if (titol.length || !cap) { nCap++; nPart = 0; cap = `${String(nCap).padStart(2, "0")} ${titol.length ? net(titol.join(" ")) : "Partides"}`; caps.push(cap); titol = []; } return cap; };
+  for (const linia of linies) {
+    if (IGNORA.test(linia)) continue;
+    if (CAPCALERA(linia)) {
+      // «Concepte · Import sense IVA» (pressupost d'honoraris): cada concepte amb un sol import és una partida d'import tancat
+      const l = linia.toLowerCase();
+      nomesImport = /\b(concepte|concepto|descripci[oó]n?)\b/.test(l) && /\b(import|importe)\b/.test(l) && !/\b(cant|cantidad|quantitat|precio|preu|pu|ud|unidad|unitat|amidament|medici[oó]n)\b/.test(l);
+      continue;
+    }
+    if (FI_DESC.test(linia)) { tanca(); titol = []; continue; }
+    const tokens = linia.split(" ");
+    const nums = numsFinals(tokens);
+    if (TOTAL.test(linia) || (nums.length === 1 && /\b(total|subtotal|base imponible|base imposable)\b/i.test(linia))) {
+      tanca(); if (TOTAL_PDF.test(linia) && nums.length && totalPdf == null) totalPdf = nums[nums.length - 1]; titol = []; continue;
+    }
+    let txt = net(senseNumsFinals(tokens).join(" "));
+    let ordre = "";
+    const mo = txt.match(/^(\d{1,3})[.)]?\s+(.{6,})$/); if (mo) { ordre = mo[1]; txt = mo[2]; }
+    const q = nums.length >= 2 ? quadra(nums) : null;
+    if (q && q.ok && txt.length >= 6 && /[a-zà-úñç]/i.test(txt)) {
+      tanca(); capDe(); nPart++;
+      let ut = ""; const tt = txt.split(" "); if (tt.length > 1 && UNITATS.test(tt[tt.length - 1]) && tt[tt.length - 1] !== "%") ut = tt.pop();
+      act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: normUt(ut) || "ut", concepte: tt.join(" "), desc: "", q: q.q, pu: q.pu, imp: q.imp };
+      continue;
+    }
+    if (nomesImport && nums.length === 1 && nums[0] > 0 && txt.length >= 4 && /[a-zà-úñç]/i.test(txt)) {
+      tanca(); capDe(); nPart++;
+      act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: "pa", concepte: txt, desc: "", q: 1, pu: nums[0], imp: nums[0] };
+      continue;
+    }
+    // títol en majúscules (sense números): el capítol de les partides que vindran
+    if (!nums.length && /[A-ZÀ-ÚÑÇ]{3}/.test(linia) && !/[a-zà-úñç]/.test(linia) && !/\d/.test(linia)) { if (act) { tanca(); } titol.push(linia); continue; }
+    if (act && txt && !nums.length) { if (!act.desc && act.concepte.length < 200) act.concepte += " " + txt; else act.desc += " " + txt; continue; }
+    if (!act) titol = [];
+  }
+  tanca();
+  const total = Math.round(partides.reduce((s, p) => s + (p.imp || 0), 0) * 100) / 100;
+  if (totalPdf != null && Math.abs(totalPdf - total) > Math.max(1, totalPdf * 0.002)) avisos.push(`El total llegit (${total}) no coincideix amb el del PDF (${totalPdf})`);
+  return { caps: caps.filter(c => partides.some(p => p.cap === c)), partides, total, totalPdf, avisos, senseCodis: true };
 }
 
 // Text del PDF per línies (pdf.js): els trossos d'una mateixa altura fan una línia, d'esquerra a dreta
