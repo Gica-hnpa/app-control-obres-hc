@@ -18,7 +18,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.301";
+const APP_VERSION878264="87.302";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2877,9 +2877,12 @@ async function addNotePhotos878278(files,setDraft){
     }catch{alert(t("No s’ha pogut afegir la foto. Prova amb una imatge més petita."))}
   }
 }
-function Notes878278({obra={},data={},setData,readOnly=false}){
+function Notes878278({obra={},data={},setData,readOnly=false,start=null}){
   const notes=[...(data.notes||[])].sort((a,b)=>(+b.numero||0)-(+a.numero||0));
   const[draft,setDraft]=useState(null);
+  // V87.302 · el botó ＋ de l'obra obre una nota nova (i, si ve d'una foto, ja la hi posa)
+  const fet878302=useRef(0);
+  useEffect(()=>{if(!start?.token||readOnly||fet878302.current===start.token)return;fet878302.current=start.token;const now=new Date().toISOString();setDraft({id:"nota-"+Date.now(),numero:nextNum(),data:todayISO8743(),text:"",fotos:[],docs:[],createdAt:now,isNew:true});if(start.files?.length)addNotePhotos878278(start.files,setDraft)},[start?.token]);
   useHoldSync878266(!!draft);
   const acc=getAppAccount878233(currentAppUser8779());
   const canDelete=!readOnly&&!obra?.compartida&&!(acc?.role&&acc.role!=="admin");
@@ -2939,7 +2942,7 @@ function addActaDocFiles8764(files,setDraft){
   });
 }
 
-function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
+function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],start=null}){
   const actesRaw=data.actes||[];
   const fotos=data.fotos||[];
   const defaultAgents8768=baseAgentsForObra8768(obra,client);
@@ -2960,6 +2963,9 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[]}){
   const [actaPanel8799,setActaPanel8799]=useState("Observacions");
   useEffect(()=>{try{localStorage.setItem(lsKey8779("aco_global_agents_v87102"),JSON.stringify(globalAgents87102))}catch{}},[globalAgents87102]);
   useEffect(()=>{try{localStorage.setItem(lsKey8779("aco_deleted_agents_v87102"),JSON.stringify(deletedAgentIds87102))}catch{}},[deletedAgentIds87102]);
+  // V87.302 · el botó ＋ de l'obra obre una acta nova
+  const fet878302=useRef(0);
+  useEffect(()=>{if(!start?.token||fet878302.current===start.token)return;fet878302.current=start.token;addActa()},[start?.token]);
 
   // V87.301 · Abans, si l'obra no tenia agents, s'hi copiaven tots els de la llista general (i en desar o fer una acta, també):
   // per això algunes obres en tenien 22-24. Ara l'obra només guarda els que surten a les actes (en desar-les) o els que s'hi afegeixen.
@@ -7868,6 +7874,8 @@ function Obra({agentsLib878301=null,obra,client,clients,setClients,data,setData:
   const[mobileFlowOpen87119,setMobileFlowOpen87119]=useState(false);
   const[mobileActionsOpen87119,setMobileActionsOpen87119]=useState(false);
   const[rapidOpen878277,setRapidOpen878277]=useState(false);
+  const[plus878302,setPlus878302]=useState(false);
+  const[start878302,setStart878302]=useState(null);
   useEffect(()=>setEstatObra(obra.estat||"Pressupostada"),[obra.id,obra.estat]);
   let tabs=tabsForWork8737(obra,data);
   if(readOnly){
@@ -7960,8 +7968,8 @@ function Obra({agentsLib878301=null,obra,client,clients,setClients,data,setData:
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>} 
     {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} obraId={obra.id}/>}
-    {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
-    {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents}/>} 
+    {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>}
+    {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Actes"?start878302:null}/>} 
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>} 
@@ -7980,6 +7988,7 @@ function Obra({agentsLib878301=null,obra,client,clients,setClients,data,setData:
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Dades econòmiques recuperades")}</b><span>{i18nT("S’han restaurat")} {data.economicRecoveryV87214.restored||0} {i18nT("preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.")}</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Certificacions recuperades")}</b><span>{i18nT("S’han reconstruït les certificacions")} {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} {i18nT("sense substituir les línies de medició actuals de la certificació 8.")}</span></div>}
+    {!readOnly&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={navigationTabs} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
     <ObraBar878269 obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
@@ -8044,6 +8053,21 @@ function useNarrow878299(){
 function conceptTr878299(c){return String(c||"").split(" · ").map((p,i)=>i===0?i18nT(p):p).join(" · ")}
 // V87.299 · Color de l'estat de l'expedient, a la llista i a l'obra (decisió de l'Héctor: en procés verd, tancat negre).
 function estatTone878299(v){return ({"Pendent de resposta":"pendent","Pressupostat":"press","En revisió":"revisio","Acceptat":"acceptat","En procés":"proces","En curs / Actiu":"curs","Tancat":"tancat","Anul·lat":"anulat","No acceptat":"noacc"})[normalizeExpedientStatus878136(v)]||"pendent"}
+// V87.302 · Botó ＋ dins de l'obra (decisió de l'Héctor del 18/10/2026; mòbil i iPad): foto, nota, acta o hores per a aquesta
+// obra sense haver de buscar l'apartat. «Foto» obre la càmera i fa una nota nova amb la foto.
+function ObraPlus878302({open,setOpen,go,tabs=[]}){
+  const te=x=>tabs.includes(x);
+  useEffect(()=>{if(!open)return;const off=e=>{if(!e.target.closest?.(".obra-plus-v878302"))setOpen(false)};document.addEventListener("pointerdown",off);return()=>document.removeEventListener("pointerdown",off)},[open]);
+  return <div className="obra-plus-v878302">
+    {open&&<div className="obra-plus-menu-v878302" role="menu">
+      {te("Notes")&&<label role="menuitem" className="obra-plus-item-v878302"><Camera/><span>{t("Foto")}</span><input type="file" accept="image/*" capture="environment" onChange={e=>{const f=[...(e.target.files||[])];e.target.value="";if(f.length)go("Notes",{files:f})}}/></label>}
+      {te("Notes")&&<button type="button" role="menuitem" className="obra-plus-item-v878302" onClick={()=>go("Notes")}><PenLine/><span>{t("Nota")}</span></button>}
+      {te("Actes")&&<button type="button" role="menuitem" className="obra-plus-item-v878302" onClick={()=>go("Actes")}><ClipboardList/><span>{t("Acta")}</span></button>}
+      {te("Gestió temps")&&<button type="button" role="menuitem" className="obra-plus-item-v878302" onClick={()=>go("Gestió temps")}><Clock/><span>{t("Hores")}</span></button>}
+    </div>}
+    <button type="button" className={`obra-plus-btn-v878302 ${open?"on":""}`} aria-label={open?t("Tancar"):t("Afegir a aquesta obra")} aria-expanded={open} onClick={()=>setOpen(!open)}><Plus/></button>
+  </div>;
+}
 function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,readOnly,canBudget,budgetTab,onEdit,onDelete,onBack}){
   const[menu,setMenu]=useState("");
   // (la barra d'apartats va sola, sense bloc al voltant: així es pot quedar fixa en baixar per tota la pàgina)
@@ -11459,7 +11483,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.301",
+    app_version:"87.302",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

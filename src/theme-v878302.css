@@ -1,0 +1,17 @@
+/* V87.302 · Botó ＋ dins de l'obra (només mòbil i iPad): foto, nota, acta o hores */
+.obra-plus-v878302{display:none}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  /* a la dreta, per sobre del comptador de temps i de la barra de baix */
+  .obra-plus-v878302{display:block;position:fixed;right:16px;bottom:calc(140px + env(safe-area-inset-bottom,0px));z-index:86}
+  .obra-plus-btn-v878302{all:unset;box-sizing:border-box;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
+    background:var(--co-accent,#2563eb);color:#fff;box-shadow:0 8px 22px rgba(37,99,235,.35);cursor:pointer}
+  .obra-plus-btn-v878302 svg{width:26px;height:26px;transition:transform .15s}
+  .obra-plus-btn-v878302.on svg{transform:rotate(45deg)}
+  .obra-plus-btn-v878302:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+  .obra-plus-menu-v878302{position:absolute;right:0;bottom:64px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+  .obra-plus-item-v878302{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;
+    background:#fff;border:1px solid var(--co-line,#DCE3E7);box-shadow:0 6px 18px rgba(15,23,42,.14);font:600 15px var(--app-font,inherit);
+    color:var(--co-ink,#0f172a);cursor:pointer;white-space:nowrap}
+  .obra-plus-item-v878302 svg{width:18px;height:18px;color:var(--co-accent-ink,#1d4ed8)}
+  .obra-plus-item-v878302 input{display:none}
+}

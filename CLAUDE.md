@@ -262,6 +262,17 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     obrir-ne o fer-ne una i en desar-la. Ara l’obra guarda només els que surten a l’acta en desar-la i els que s’hi afegeixen.
     Les dades d’abans no s’han tocat: l’Héctor les pot ajuntar o treure des de l’avís.
   - **Botó «A dalt»** (`BackTop878301`): surt en baixar més de 700 px, a baix al mig (al mòbil, per sobre de la barra de baix).
+- **Botó ＋ dins de l’obra** (V87.302, `ObraPlus878302`, `src/theme-v878302.css`; decisió de l’Héctor del 18/10/2026):
+  - **On:** només al mòbil i l’iPad, a baix a la dreta, per sobre del comptador de temps i de la barra de baix.
+  - **Opcions:**
+    - **Foto:** obre la càmera i fa una nota nova amb la foto.
+    - **Nota:** nota nova.
+    - **Acta:** acta nova.
+    - **Hores:** porta a Econòmic › Hores de l’obra.
+  - **Com funciona:** l’Obra passa `start={tab,token,files}` a `Notes878278` i `Actes8761`. Un `useRef` fa que cada toc faci
+    una sola cosa: en desenvolupament React executa dues vegades els efectes, i es feien dues actes.
+  - **Pendent (decidit, encara no fet):** ajuntar Actes + Notes en «Visites», Dades + Agents, Agenda + Tasques i
+    Rendiment + Seguiment econòmic.
   - L’etiqueta de l’estat ara surt traduïda.
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
@@ -499,7 +510,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `notestest.mjs`: Notes (numeració i data, text, foto i document, recarregar, mòbil amb la foto del núvol, eliminar).
     `agentstest.mjs`: agents (V87.301): llista sense repetits i amb grups, «Editar» i «Treure de la llista», obra amb molts
     agents (avís, ajuntar repetits, triar quins treure), obra sense agents i selector, una acta nova no copia agents,
-    botó «A dalt» (ordinador i mòbil). `idiomapctest.mjs`: canviar l’idioma a l’ordinador des d’Ajustos (com l’Héctor).
+    botó «A dalt» (ordinador i mòbil). `plustest.mjs`: botó ＋ de l’obra (mòbil i iPad; Foto, Nota, Acta, Hores; no a l’ordinador).
+    `idiomapctest.mjs`: canviar l’idioma a l’ordinador des d’Ajustos (com l’Héctor).
     `albaranstest.mjs`: Albarans dins de l’obra (obra ja triada), a la pantalla general, icones i castellà al mòbil.
     `residualtest.mjs`: amb l’app en castellà, busca frases del diccionari que encara surten en català (pantalles del
     menú i totes les pestanyes d’una obra). `i18n-on.mjs`: on surt un text sense `t(…)`. `i18n-docs.mjs` i

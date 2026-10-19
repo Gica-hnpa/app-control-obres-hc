@@ -2882,4 +2882,5 @@ export default {
   "Afegir ({n})": "Añadir ({n})",
   "Tornar a dalt": "Volver arriba",
   "A dalt": "Arriba",
+  "Foto": "Foto",
 };
