@@ -344,6 +344,48 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   formulari es tornava a omplir amb el que hi havia desat. Triar el promotor l’afegeix als agents de l’obra (un desat), i
   tornava enrere abans de «Guardar dades». Ara, si s’ha començat a canviar el formulari (`editant878303`), no es torna a omplir
   fins a «Guardar dades» o fins que s’obre una altra obra. Prova: `dadestest.mjs` (V87.302: 4 de 8; V87.303: 8 de 8).
+- **Comptador de temps sense tornar a dibuixar l’app** (V87.304, `TimerClock878304`; 19/10/2026: «no aguanta el desplegable» de
+  la constructora). L’App posava al dia el temps del comptador a l’estat cada 500 ms: dins d’una obra (on el comptador sempre
+  corre) es tornava a dibuixar tota l’app dues vegades per segon, i els desplegables definits dins d’un altre component
+  (`AgentPicker` de Dades, `NewExpAgentPicker878159`) es tornaven a crear i es tancaven sols. Ara el rellotge es posa al dia ell
+  sol, i aquells desplegables es criden com a funció (`{AgentPicker({...})}`), no com a component. **Compte**: un component
+  definit dins d’un altre (`function X(){…}` dins del cos d’un component) es torna a crear a cada dibuix; no fer-ne amb camps.
+- **Població i codi postal automàtics a tot Catalunya** (V87.304, `src/poblacions-cat.js`): 1.412 codis postals dels 947
+  municipis (dades obertes de la Generalitat, «Codis postals per municipis de Catalunya», conjunt tp8v-a58g, baixat el
+  19/10/2026 amb el sí de l’Héctor; es pot reutilitzar citant la font). Primer van els de la llista feta a mà
+  (`CP_MUNICIPIS8773`, amb nuclis com S’Agaró, Platja d’Aro, l’Estartit, Calella, Llafranc, Tamariu) i els que ha escrit l’usuari.
+  El codi principal de cada municipi va primer (capitals: el més baix; la resta: els propis del municipi, i el que acaba en 0).
+  `cpRows8775` es calcula una sola vegada (abans es repassava tota la llista a cada lletra).
+- **Obra nova més ràpida** (V87.304, `QuickExpedientForm878254`, `promotorObra878304`): client nou amb totes les dades (NIF,
+  telèfon, correu, adreça, codi postal i població automàtics); «El promotor és el mateix client» marcat de sèrie (si no, nom i
+  NIF del promotor); l’adreça de l’obra a la vista amb «La mateixa adreça que el client». El promotor-client porta el NIF,
+  l’adreça i el contacte del client (abans un promotor diferent sense NIF es quedava el del client).
+  **Agents d’una obra nova** (`agentsObraNova878304`): només els de debò (el promotor, i la constructora i els tècnics escrits).
+  Abans n’hi anaven sempre tres: l’Héctor (escrit al codi, amb un correu inventat, també a les obres de les empreses), el
+  promotor i una «constructora» que, si no se n’escrivia cap, era el client. La DEO de sèrie («Héctor Cubero») només al compte de
+  l’Héctor i en obres que no són una feina tècnica senzilla.
+- **Dades de l’obra en pestanyes** (V87.304, encàrrec de l’Héctor del 19/10/2026; `FitxaDadesTab8769`, `src/theme-v878304.css`):
+  - **Pestanyes:** Obra · Client · Promotor · Constructora · Direcció d’obra · Direcció d’execució · Coordinació S+S · Industrials
+    (punt verd a les que tenen algú). En una feina tècnica senzilla (cèdula, certificat…) només Obra, Client i Promotor (i les
+    que ja tenen algú), amb «+ Altres agents». Tot es desa amb «Guardar dades» (a dalt i a baix).
+  - **Fitxa de persona** (`FitxaPersona878304`, també a la pestanya Agents de l’obra i a la llista principal d’Agents): nom
+    complet o raó social, NIF, telèfon (de l’empresa o del despatx), mòbil, correu, **persona de contacte amb el seu mòbil**
+    (`contacte`, `contacteMobil`), i **l’adreça separada** (`CampsAdreca878304`: carrer, codi postal, població, província; el codi
+    postal omple la població i al revés). Tècnics: titulació, núm. de col·legiat, despatx. Industrials: ofici.
+  - **Adreça:** es desen les parts (`carrer`, `codiPostal`, `poblacio`, `provincia`) i també `adreca` sencera («Carrer, 17230
+    Palamós»), que és la que fan servir els documents. Les fitxes d’abans amb l’adreça tota junta es separen soles
+    (`partsAdreca878304`). Promotor: `carrerPropietat`, `cpPropietat`, `poblacioPropietat`, `contactePropietat`,
+    `mobilPropietat`… i `adrecaPropietat` sencera.
+  - **Client:** és la fitxa de Clients (`clientPersona878304` ↔ `clientDeFitxa878304`): canviar-la aquí la canvia a Clients.
+  - **Promotor:** «El promotor és el mateix client» (copia les dades del client en desar) o un altre (triat de la llista o nou).
+  - **Constructora i tècnics** (`ROLS878304`): un per paper, triat de la llista d’agents o nou; el nom va a l’obra
+    (`constructor`, `do`, `deo`, `css`) i la fitxa als agents de l’obra (`desaAgentsDades878304`). **Industrials:** diversos.
+  - Ja no hi ha a dalt el codi de carpeta (és dins d’«Obra») ni «Agents principals» (és a la pestanya Agents).
+  - **Prova:** `fitxestest.mjs` (30 de 30). `dadestest.mjs` adaptada a les pestanyes.
+- **Resum de l’obra: contacte** (V87.304, `ContacteObra878304`): adreça de l’obra i contacte del client (telèfon i correu que es
+  poden tocar); si el promotor és un altre, el seu nom en **negreta** (`promotorDiferent878304`), també a la barra de l’obra.
+- **«Accions» del pressupost en 4 grups** (V87.304): Editar · Crear o importar · Compartir i imprimir · Aquest pressupost.
+  «Com ha de ser l’Excel» ja no és al menú: «Importar Excel…» ensenya l’ajuda amb «Triar l’Excel».
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -475,15 +517,24 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-- **Encàrrecs de l’Héctor del 19/10/2026 (després de la V87.303):**
-  - **Dades de l’obra en pestanyes**, com els blocs de dins de l’obra: Client, Promotor, Tècnics i Contractistes / industrials,
-    i a cadascuna totes les dades. Posar-hi les dades ha de ser més fàcil (també en crear l’obra: ara el promotor és un camp
-    de text plegat a «Més dades ara»).
-  - **Població automàtica** (codi postal ↔ població, com a la fitxa dels tècnics) amb tots els pobles de Girona, o com a mínim
-    del Baix Empordà, i després de Barcelona. La llista d’ara (`CP_MUNICIPIS8773`) en té pocs. Cal una font fiable (no
-    inventar codis postals): demanar a l’Héctor abans de baixar cap fitxer de dades.
-  - **Ordenar «Accions» del pressupost**: n’hi ha moltes; algunes (p. ex. l’ajuda per exportar a Excel) potser no serveixen.
-  - **Llegir un pressupost en PDF** d’un client i passar-lo a un pressupost de l’app (com la lectura d’albarans).
+- **Encàrrecs de l’Héctor del 19/10/2026 pendents (Dades en pestanyes, pobles i «Accions»: fets a la V87.304):**
+  - **Revisió amb clients inventats** («com si diversos clients inventats tastessin totes les parts de l’app, per veure errors
+    abans de sortir al mercat»): un tècnic, una constructora i un client particular fent servir de debò cada part (crear obres,
+    dades, actes, notes, pressupostos, certificacions, factures, hores, agenda, documents, despeses) al mòbil, l’iPad i
+    l’ordinador. Ampliar `auditoria.mjs` (ara només mira pantalles).
+  - **Comptador automàtic de temps**: compta com a feina el temps que només es consulta una obra (l’Héctor, 19/10/2026: «no pot
+    ser que entri a consultar i em compti com a feina executada»). Replantejar-lo a la versió següent (p. ex. que comenci quan
+    s’escriu o es fa alguna cosa, o preguntar en sortir).
+  - **Llegir un pressupost en PDF** d’un client i passar-lo a un pressupost de l’app (com la lectura d’albarans; el text dels PDF
+    ja es llegeix per files a `albaraFromPdf878259`).
+  - **Google Drive dins de l’app** (botó «Des de Google Drive», Google Picker): cal que l’Héctor creï una clau d’API al seu
+    projecte de Google. Mentrestant, a l’iPad: app Google Drive + app Fitxers › Navega › ⋯ › Edita › activar Drive.
+  - **Mòdul tècnic** (`docs/proposta-perfil-tecnic.md`): passos, llistes de comprovació, fitxa de visita i PDF de la visita per a
+    cèdules, certificats energètics i ITE. Preguntes pendents a l’Héctor: quants en fa i quin li fa perdre més temps; programa
+    dels certificats (CE3X, HULC, CYPETHERM); un plànol exportat de **MagicPlan** (PDF i, si en surt, la taula de superfícies)
+    per omplir sola la fitxa de la cèdula; **«Enllaços»** a cada obra (oficina virtual del CATGI —no s’hi pot entrar per ell—,
+    Cadastre amb la referència cadastral de l’obra, ICAEN, Agència de l’Habitatge) i quins més vol.
+  - **Agents principals** (`PrincipalAgentsPanel878134`, pestanya Agents): no hi surt la direcció d’obra triada a Dades (mirar-ho).
 - **Ajuntar els canvis per apartats: fet a la V87.293** (vegeu «Edició alhora»). Falta provar-ho de debò amb dues persones.
 - **Pantalles (nota de l’Héctor, 15/10/2026)**: a Expedients, «accions» i «apartats de l’obra» van per separat →
   ajuntar-les en una sola pestanya més simple. Simplificar les pestanyes de tota l’app i de tots els aparells: n’hi ha
@@ -595,6 +646,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `sessiotest.mjs`: sessió del núvol amb l’app en dues pestanyes (`MOCK_ROTA=1`). `fretest.mjs`: fre de seguretat del núvol.
     `agents303test.mjs`: buidar els agents de les obres, afegir i treure a l’obra, eliminar i tornar a crear a la llista.
     `dadestest.mjs`: Dades de l’obra (promotor triat que no torna enrere, el que s’escriu no es perd).
+    `fitxestest.mjs`: obra nova amb el client i el promotor, Resum amb el contacte, Dades en pestanyes (client, promotor,
+    constructora, direcció d’obra, industrials), adreça separada i automàtica, desplegable que no es tanca amb el comptador.
     Les proves que comparen amb una versió d’abans fan servir `WEBROOT=<carpeta>`: una còpia de la versió amb
     `git worktree add --detach D:/aco-tmp/wtXXX <commit>` i `node_modules` enllaçat (`New-Item -ItemType Junction`).
     `albaranstest.mjs`: Albarans dins de l’obra (obra ja triada), a la pantalla general, icones i castellà al mòbil.

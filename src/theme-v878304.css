@@ -1,0 +1,46 @@
+/* V87.304 · Dades de l'obra en pestanyes, fitxa de persona (contacte amb mòbil, adreça separada), obra nova més ràpida i
+   contacte del client i del promotor al Resum (encàrrecs de l'Héctor del 19/10/2026) */
+
+/* Pestanyes de Dades: Obra · Client · Promotor · Constructora · DO · DEO · CSS · Industrials (sense lliscar: es pleguen) */
+.dades-tabs-v878304{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px;padding:4px;background:#f1f5f9;border-radius:12px}
+.dades-tabs-v878304 button{border:0;background:transparent;padding:8px 12px;border-radius:9px;font-weight:600;color:#475569;font-size:14px;position:relative;cursor:pointer}
+.dades-tabs-v878304 button.on{background:#fff;color:#1d4ed8;box-shadow:0 1px 3px rgba(15,23,42,.12)}
+.dades-tabs-v878304 button.ple:not(.on)::after{content:"";position:absolute;top:6px;right:4px;width:6px;height:6px;border-radius:50%;background:#16a34a}
+.dades-tabs-v878304 .mes-v878304{color:#2563eb}
+.dades-desar-v878304{display:flex;justify-content:flex-end;padding:14px 0 4px}
+
+/* Fitxa d'una persona o empresa */
+.fitxa-persona-v878304.form-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px 14px!important;padding:0!important;margin:0!important}
+.fitxa-persona-v878304 .span-2{grid-column:span 2}
+.fitxa-persona-v878304 label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fitxa-persona-v878304 input,.fitxa-persona-v878304 select{width:100%;min-width:0}
+.fitxa-persona-v878304 input[readonly][tabindex="-1"]{background:#f8fafc;color:#475569}
+@media (max-width:900px){.fitxa-persona-v878304.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media (max-width:460px){.fitxa-persona-v878304.form-grid{grid-template-columns:1fr!important}.fitxa-persona-v878304 .span-2{grid-column:auto}}
+.rol-tab-v878304,.prom-tab-v878304{display:flex;flex-direction:column;gap:12px}
+.rol-tria-v878304{max-width:560px}
+.inds-tab-v878304{display:flex;flex-direction:column;gap:10px}
+.ind-v878304{border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:10px}
+.ind-head-v878304{display:flex;gap:8px;align-items:stretch}
+.ind-head-v878304>button:first-child{flex:1;text-align:left;background:transparent;border:0;display:flex;flex-direction:column;gap:2px;padding:4px;cursor:pointer}
+.ind-head-v878304>button:first-child span{color:#64748b;font-size:13px}
+
+/* Obra nova */
+.quick-exp-box-v878304{border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px 12px;margin:12px 0 0;min-width:0}
+.quick-exp-box-v878304 legend{font-weight:700;font-size:13px;color:#334155;padding:0 6px}
+.quick-exp-box-v878304 legend em{font-weight:400;color:#64748b;font-style:normal;font-size:12px}
+.quick-exp-check-v878304{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;font-weight:600;cursor:pointer;margin:2px 0 6px}
+.quick-exp-check-v878304 input{width:18px;height:18px;margin:0;flex:0 0 auto}
+.quick-exp-copy-v878304{margin:0 0 8px}
+
+/* Resum: contacte del client i del promotor */
+.contacte-obra-v878304{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}
+.contacte-obra-v878304 .adr{margin:0;color:#475569}
+.contacte-obra-v878304 .fila{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;font-size:14px}
+.contacte-obra-v878304 .lbl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#64748b;min-width:150px}
+.contacte-obra-v878304 .fila b{color:#0f172a}
+.contacte-obra-v878304 .fila.prom b{font-size:16px;font-weight:800}
+.contacte-obra-v878304 .dades a{color:#1d4ed8;text-decoration:none}
+.contacte-obra-v878304 .dades.buit{color:#94a3b8;font-size:13px}
+.prom-v878304{color:#0f172a;font-weight:800}
+@media (max-width:760px){.contacte-obra-v878304 .lbl{min-width:0;width:100%}}
