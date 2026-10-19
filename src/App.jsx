@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.307";
+const APP_VERSION878264="87.308";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6143,6 +6143,9 @@ function agentRoleOrder878134(a={}){
   if(r.includes('promotor')||r.includes('propiet')||r.includes('client'))return 0;
   if(r.includes('constructor')||r.includes('contractista'))return 1;
   if(r.includes('direcció facultativa')||r.includes('direccio facultativa'))return 2;
+  // V87.308 · els rols que posa Dades (V87.304): «Direcció d’obra» i «Direcció d’execució» (abans quedaven fora dels principals)
+  if(/direcci[oó] d.obra/.test(r))return 2;
+  if(/direcci[oó] d.execuci/.test(r))return 3;
   if(r.includes('arquitecte tècnic')||r.includes('arquitecte tecnic')||r.includes('deo'))return 3;
   if(r.includes('arquitecte'))return 4;
   if(r.includes('coordin'))return 5;
@@ -8369,8 +8372,22 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
   const rapidMerged878277=!readOnly&&tabs.includes("Pressupost")&&tabs.includes("Pressupost ràpid");
   if(rapidMerged878277)tabs=tabs.filter(t=>t!=="Pressupost ràpid");
   if(!tabs.length)tabs=["Resum"];
+  // V87.308 · Apartats ajuntats (decisions de l'Héctor del 18/10/2026 i proposta 10.9): Dades i agents; Agenda amb les tasques;
+  // tècnic: Honoraris amb les seves hores i el rendiment de l'encàrrec (el seguiment econòmic de l'obra es diu «Rendiment»);
+  // constructor: el rendiment dins del seguiment econòmic i les hores a part. Les claus velles porten a la nova (ALIAS878308):
+  // Inici, el ＋, Facturació… continuen funcionant. Al portal de client (readOnly) no s'ajunta res.
+  const ALIAS878308={};
+  if(!readOnly){
+    const hi=x=>tabs.includes(x),tecnic=PERFIL878304!=="constructor";
+    if(hi("Agents")&&hi("Dades"))ALIAS878308["Agents"]="Dades";
+    if(hi("Tasques")&&hi("Agenda / Avisos"))ALIAS878308["Tasques"]="Agenda / Avisos";
+    if(tecnic&&hi("Honoraris")){if(hi("Gestió temps"))ALIAS878308["Gestió temps"]="Honoraris";if(hi("Rendiment"))ALIAS878308["Rendiment"]="Honoraris"}
+    else if(!tecnic&&hi("Rendiment")&&hi("Seguiment econòmic"))ALIAS878308["Rendiment"]="Seguiment econòmic";
+  }
+  const tabsAmbAlies878308=tabs;
+  tabs=tabs.filter(x=>!ALIAS878308[x]);
   const navigationTabs=tabs.filter(t=>t!=="Renders / Presentació");
-  useEffect(()=>{if(!navigationTabs.includes(tab))setTab(tab==="Pressupost ràpid"&&navigationTabs.includes("Pressupost")?"Pressupost":(navigationTabs[0]||"Resum"))},[obra?.id,tab,readOnly,allowedTabs.join("|"),tabs.join("|")]);
+  useEffect(()=>{if(!navigationTabs.includes(tab))setTab(ALIAS878308[tab]&&navigationTabs.includes(ALIAS878308[tab])?ALIAS878308[tab]:tab==="Pressupost ràpid"&&navigationTabs.includes("Pressupost")?"Pressupost":(navigationTabs[0]||"Resum"))},[obra?.id,tab,readOnly,allowedTabs.join("|"),tabs.join("|")]);
   const workType878193=canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
   const canQuickBudget878193=["Pressupost d’obra / amidaments","Elaboració de pressupost per client"].includes(workType878193)||tabs.includes("Pressupost ràpid");
   const preferredBudgetTab878239=tabs.includes("Pressupost")?"Pressupost":tabs.includes("Pressupost ràpid")?"Pressupost ràpid":tabs.includes("Pressupost obra")?"Pressupost obra":tabs.includes("Gestió obra")?"Gestió obra":"";
@@ -8444,13 +8461,13 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).filter(c=>c.id!==id)}));
   }
   function updateDirectCertDate878214(id,value){setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))}
-  let activeTab=navigationTabs.includes(tab)?tab:(navigationTabs[0]||"Resum");
+  let activeTab=navigationTabs.includes(tab)?tab:(ALIAS878308[tab]&&navigationTabs.includes(ALIAS878308[tab])?ALIAS878308[tab]:(navigationTabs[0]||"Resum"));
   const renderTab=()=> <>
     {activeTab==="Resum"&&<ObraHero878252 obra={obra} client={client} data={data} scope={directBudgetData878214} tabs={navigationTabs} setTab={setTab} uploadImage={uploadImage}/>}
     {activeTab==="Resum"&&<EncarrecTecnic878306 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
     {activeTab==="Gantt"&&<GanttObraVisual878253 data={directBudgetData878214} setData={strictClientReadOnly878242?undefined:setDirectBudgetData878214}/>}
     {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} clients={clients} setClients={setClients} data={data} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent} keepAgent878303={keepAgent878303} agentsLib878301={agentsLib878301}/>} 
-    {activeTab==="Agents"&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145"><PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/><AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303}/></div>} 
+    {(activeTab==="Agents"||(activeTab==="Dades"&&ALIAS878308["Agents"]))&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145">{activeTab==="Agents"&&<PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/>}<AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303}/></div>} 
     {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} 
     {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} 
     {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} 
@@ -8472,14 +8489,15 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Pressupost per al client")}</b><span>{i18nT("Número, condicions, forma de pagament i PDF")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} key={activeTab} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
-    {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>} 
+    {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>}
+    {activeTab==="Agenda / Avisos"&&ALIAS878308["Tasques"]&&<TasquesTab8769 data={data} setData={setData}/>}
     {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} obraId={obra.id}/>}
     {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>}
     {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Actes"?start878302:null}/>} 
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
-    {activeTab==="Gestió temps"&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>} 
-    {activeTab==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>} 
+    {(activeTab==="Gestió temps"||activeTab===ALIAS878308["Gestió temps"])&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>} 
+    {(activeTab==="Rendiment"||activeTab===ALIAS878308["Rendiment"])&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>} 
     {activeTab==="Rendiments"&&<RendimentsClient878247 obres={[obra]} odata={{[obra.id]:data}} openObra={()=>{}}/>}
   </>;
   const editOverlayOpen878242=activeTab!=="Resum";
@@ -8494,7 +8512,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Dades econòmiques recuperades")}</b><span>{i18nT("S’han restaurat")} {data.economicRecoveryV87214.restored||0} {i18nT("preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.")}</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Certificacions recuperades")}</b><span>{i18nT("S’han reconstruït les certificacions")} {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} {i18nT("sense substituir les línies de medició actuals de la certificació 8.")}</span></div>}
-    {!readOnly&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={navigationTabs} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
+    {!readOnly&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={tabsAmbAlies878308} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
     <ObraBar878269 obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
@@ -8522,6 +8540,9 @@ const OBRA_TABS_MAIN878269=["Resum","Pressupost","Pressupost ràpid","Pressupost
 function tabLabel878269(tab,all=[]){
   if(tab==="Certificacions obra")return t("Certificacions");
   if(tab==="Agenda / Avisos")return t("Agenda");
+  // V87.308 · apartats ajuntats: Dades amb els agents; el seguiment econòmic amb el rendiment
+  if(tab==="Dades"&&all.length&&!all.includes("Agents"))return t("Dades i agents");
+  if(tab==="Seguiment econòmic"&&all.length&&!all.includes("Rendiment"))return t("Rendiment");
   // V87.299 · noms nous (decisió de l'Héctor del 18/10/2026). Només canvia el que es veu: les dades i les claus no.
   if(tab==="Gantt")return t("Planning");
   if(tab==="Albarans")return t("Despeses");
@@ -12190,7 +12211,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.307",
+    app_version:"87.308",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

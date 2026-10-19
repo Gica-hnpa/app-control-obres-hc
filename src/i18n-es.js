@@ -3114,4 +3114,5 @@ export default {
   "Expedient (opcional)": "Expediente (opcional)",
   "L’obra": "La obra",
   "El meu encàrrec": "Mi encargo",
+  "Dades i agents": "Datos y agentes",
 };

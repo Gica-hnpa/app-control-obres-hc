@@ -486,6 +486,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     després, amb el títol «El meu encàrrec», Honoraris, Hores i els pressupostos i factures d’honoraris
     (`ENCARREC_TABS878307`, `esEncarrec878307`). Estils: `src/theme-v878307.css`.
   - Proves: `menutecnictest.mjs` (13) i `tempstest.mjs` (14, adaptada al temps real).
+- **Apartats de l’obra ajuntats** (V87.308, decisions de l’Héctor del 18/10/2026 i 10.9): en lloc de canviar claus, **àlies**
+  (`ALIAS878308` a `Obra`): la clau vella porta a la nova (Inici, el ＋, Facturació… continuen funcionant). No al portal de client.
+  - **Dades i agents:** «Agents» → «Dades» (sota la fitxa, la llista d’agents de l’obra, sense el quadre d’agents principals).
+  - **Agenda:** «Tasques» → «Agenda / Avisos» (les tasques sota les cites).
+  - **Tècnic:** «Gestió temps» i «Rendiment» → «Honoraris» (honoraris, les seves hores i el rendiment de l’encàrrec); el
+    seguiment econòmic de l’obra es diu «Rendiment» (a la part de l’obra).
+  - **Constructor:** «Rendiment» → «Seguiment econòmic» (que es diu «Rendiment»); les hores, a part.
+  - Noms a `tabLabel878269` («Dades i agents»; «Seguiment econòmic» → «Rendiment» quan no hi ha «Rendiment»). El ＋ rep les
+    claus d’abans (`tabsAmbAlies878308`).
+  - **Agents principals:** «Direcció d’obra» i «Direcció d’execució» (els rols que posa Dades) ja hi surten
+    (`agentRoleOrder878134`).
+  - Proves: les ajudes `tab()` de 27 proves accepten «Dades i agents» quan demanen «Dades» o «Agents»; `obratest`, `plustest`,
+    `tempstest`, `graficatest` i `menutecnictest` adaptades.
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
