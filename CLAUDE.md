@@ -472,6 +472,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Enllaços:** MagicPlan (`https://cloud.magicplan.app/`) a la cèdula; els tràmits ja no hi són (són el botó de l’apartat).
     CE3X: programa d’ordinador, sense enllaç possible. Llegir el plànol de MagicPlan: quan l’Héctor en pugi un a la bústia.
   - Estils: `src/theme-v878306.css`. Prova: `tecnictest.mjs` (23).
+- **Menú del tècnic** (V87.307, proposta 10.9 acceptada per l’Héctor el 20/10/2026):
+  - **Hores reals:** fora les fraccions de 15’ i el mínim de 30’ de la V87.291 («si he fet 10’ no em posis 30’, no queda bé de
+    cares al client»). `billHours878291` torna el temps real (la funció es queda perquè la fan servir molts llocs); fora el text
+    de la regla. La quota fixa del client es queda.
+  - **Facturació › Pendent de facturar:** a dalt, els **honoraris acceptats** que falten per facturar (`honorarisPendents878307`:
+    pressupostos d’honoraris «Acceptat»/«Facturat» menys les factures amb `pressupostId`), amb «Fer factura» que obre l’obra a
+    Honoraris; a sota, les hores com abans. Fora l’explicació de la capçalera.
+  - **Despeses (menú principal) del tècnic** (`PERFIL878304!=="constructor"`): només les seves (`meva:true`, «Les meves
+    despeses»); l’expedient és opcional («Sense expedient»). Les d’una obra (costos del client) només surten dins de l’obra
+    («Despeses d’aquesta obra», `!a.meva`). El constructor ho veu tot com abans.
+  - **Bloc Econòmic de l’obra (tècnic):** primer el de l’obra (Pressupost, Certificacions, Facturació, Despeses, Rendiment…) i
+    després, amb el títol «El meu encàrrec», Honoraris, Hores i els pressupostos i factures d’honoraris
+    (`ENCARREC_TABS878307`, `esEncarrec878307`). Estils: `src/theme-v878307.css`.
+  - Proves: `menutecnictest.mjs` (13) i `tempstest.mjs` (14, adaptada al temps real).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -485,7 +499,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   qualsevol document. Val per als documents en marc (pressupost, certificacions, proformes, factures) i per a l’acta
   (amb la disposició d’A4, no la del mòbil). Només es mesura quan el document ja és carregat (si no, de vegades
   quedava a 100 px). A l’ordinador, com abans.
-- **Temps a facturar** (V87.291, decisió de l’Héctor del 17/10/2026): **fraccions de 15’ amb un mínim de 30’ per registre**
+- **Temps a facturar** (V87.291, decisió de l’Héctor del 17/10/2026; **les fraccions es van treure a la V87.307**: ara es factura
+  el temps real): **fraccions de 15’ amb un mínim de 30’ per registre**
   (10’→30’, 20’→30’, 40’→45’, 1 h 05’→1 h 15’; `billHours878291`, `timeBillImport878291`). Les hores reals es guarden igual
   (gràfiques, mitjanes, rendiment); l’import a facturar, el pendent, la factura de les hores i l’exportació fan servir les
   arrodonides. **Quota fixa mensual** a la fitxa del client (`client.quotaFixa`): les hores dels seus treballs compten però
@@ -628,8 +643,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     exportat per treure’n dades. Els plànols i fotos de MagicPlan els pujarà a la **bústia privada**
     https://claude.ai/artifact/M1gGstHDmcNcuQQWvzA7zj (llegir-los amb l’eina Artifact: `list` amb `scope:"assets"` i la llista
     `fitxers` amb ArtifactData; porten dades de clients, no copiar-los a les proves).
-  - **Menús segons el perfil:** nota de l’Héctor del 19/10/2026 a `docs/proposta-global.md` §10.9 (el menú principal és seu;
-    l’econòmic de l’obra, dins de l’obra), amb 3 preguntes pendents.
+  - **Menús segons el perfil:** nota de l’Héctor del 19/10/2026 a `docs/proposta-global.md` §10.9; respostes del 20/10 (temps
+    real, despeses pròpies sí, pendent = honoraris acceptats − facturat) i feta la part del tècnic a la V87.307. Falta el
+    mòdul contractista (menús de la taula del 10.4).
 - **Ajuntar els canvis per apartats: fet a la V87.293** (vegeu «Edició alhora»). Falta provar-ho de debò amb dues persones.
 - **Pantalles (nota de l’Héctor, 15/10/2026)**: a Expedients, «accions» i «apartats de l’obra» van per separat →
   ajuntar-les en una sola pestanya més simple. Simplificar les pestanyes de tota l’app i de tots els aparells: n’hi ha

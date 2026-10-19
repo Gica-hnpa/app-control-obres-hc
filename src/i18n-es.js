@@ -3105,4 +3105,13 @@ export default {
   "Acord o encàrrec de la comunitat": "Acuerdo o encargo de la comunidad",
   "Autorització de representació": "Autorización de representación",
   "Inspecció anterior (si n’hi ha)": "Inspección anterior (si la hay)",
+  "{h} a facturar × preu + despeses": "{h} a facturar × precio + gastos",
+  "Honoraris acceptats": "Honorarios aceptados",
+  "ja facturat {x}": "ya facturado {x}",
+  "No hi ha res pendent de facturar.": "No hay nada pendiente de facturar.",
+  "Les meves despeses": "Mis gastos",
+  "Total sense IVA": "Total sin IVA",
+  "Expedient (opcional)": "Expediente (opcional)",
+  "L’obra": "La obra",
+  "El meu encàrrec": "Mi encargo",
 };
