@@ -3069,4 +3069,6 @@ export default {
   "Copia la resposta sencera de la IA i enganxa-la aquí (Ctrl+V). Si te l’ha donat en diverses parts, enganxa-les totes, una darrere l’altra.": "Copia la respuesta entera de la IA y pégala aquí (Ctrl+V). Si te la ha dado en varias partes, pégalas todas, una detrás de otra.",
   "{n} partides · total sense IVA {t}": "{n} partidas · total sin IVA {t}",
   "Revisar les partides": "Revisar las partidas",
+  "És l’únic pressupost de l’obra. Per treure’n les partides, fes servir «Buidar tot el pressupost actual».": "Es el único presupuesto de la obra. Para quitar sus partidas, usa «Vaciar todo el presupuesto actual».",
+  "Eliminar el pressupost «{nom}» amb totes les seves partides i certificacions? No es pot desfer.": "¿Eliminar el presupuesto «{nom}» con todas sus partidas y certificaciones? No se puede deshacer.",
 };

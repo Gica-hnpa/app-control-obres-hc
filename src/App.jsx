@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.305.1";
+const APP_VERSION878264="87.305.2";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7567,6 +7567,22 @@ function ensureBudgetGroups8786(data={}){
   const all=[base,...explicit,...inferred].reduce((acc,g)=>{const id=g.id||("bg-"+acc.length);if(!acc.some(x=>x.id===id))acc.push({...g,id,nom:g.nom||g.name||id,tipus:g.tipus||"Fora pressupost"});return acc},[]);
   return {groups:all,active:(data.activeBudgetIdObra&&all.some(g=>g.id===data.activeBudgetIdObra)?data.activeBudgetIdObra:"principal")};
 }
+// V87.305.2 · Eliminar un pressupost de l'obra (19/10/2026: l'Héctor en va crear un de més llegint un PDF i no el podia treure).
+// També el principal, si n'hi ha un altre: el següent passa a ser el principal (amb el seu nom). No si és l'únic ni si alguna
+// de les seves certificacions té factura.
+function potEliminarPressupost878305(d,bid){
+  if(ensureBudgetGroups8786(d).groups.length<2){alert(i18nT("És l’únic pressupost de l’obra. Per treure’n les partides, fes servir «Buidar tot el pressupost actual»."));return false}
+  return !(d.certificacions||[]).some(c=>(c.budgetId||"principal")===bid&&vfTeFactura878285(d,c.id));
+}
+function treuPressupost878305(d,bid){
+  const is=x=>(x?.budgetId||"principal")===bid,keep=a=>(a||[]).filter(x=>!is(x));
+  let next={...d,partides:keep(d.partides),pressupostos:keep(d.pressupostos),certificacions:keep(d.certificacions),factures:keep(d.factures),budgetGroups:(d.budgetGroups||[]).filter(g=>g.id!==bid),activeBudgetIdObra:"principal",updatedAt:new Date().toISOString()};
+  if(bid==="principal"){
+    const g=ensureBudgetGroups8786(d).groups.find(x=>x.id!=="principal");
+    if(g){const re=a=>a.map(x=>x?.budgetId===g.id?{...x,budgetId:"principal"}:x);next={...next,partides:re(next.partides),pressupostos:re(next.pressupostos),certificacions:re(next.certificacions),factures:re(next.factures),budgetGroups:next.budgetGroups.filter(x=>x.id!==g.id),principalBudgetName:g.nom}}
+  }
+  return next;
+}
 function budgetLabel8786(data,bid){return ensureBudgetGroups8786(data).groups.find(g=>g.id===(bid||"principal"))?.nom||"Pressupost principal"}
 function filterBudgetData8786(data,bid){
   const id=bid||"principal";
@@ -8150,9 +8166,10 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     commitRenameBudget878123(bid,nom,"prompt");
   }
   function deleteBudget(id){
-    if(id==="principal")return alert(t("El pressupost principal no es pot eliminar."));
-    if(!confirm(t("Eliminar aquest pressupost annex i totes les seves partides/certificacions/factures?")))return;
-    setData(d=>({...d,budgetGroups:(d.budgetGroups||[]).filter(g=>g.id!==id),partides:(d.partides||[]).filter(r=>(r.budgetId||"principal")!==id),pressupostos:(d.pressupostos||[]).filter(p=>(p.budgetId||"principal")!==id),certificacions:(d.certificacions||[]).filter(c=>(c.budgetId||"principal")!==id),factures:(d.factures||[]).filter(f=>(f.budgetId||"principal")!==id),activeBudgetIdObra:"principal"}));
+    const bid=id||"principal";
+    if(!potEliminarPressupost878305(data,bid))return;
+    if(!confirm(t("Eliminar el pressupost «{nom}» amb totes les seves partides i certificacions? No es pot desfer.",{nom:budgetLabel8786(data,bid)})))return;
+    setData(d=>treuPressupost878305(d,bid));
     setActiveBudgetId("principal");
   }
   function scopedUpdateCert(codi,fieldOrValue,value){
@@ -8371,6 +8388,33 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     });
   }
   function selectDirectBudget878214(id){setEconomicData878242?.(d=>({...d,activeBudgetIdObra:id||"principal",updatedAt:new Date().toISOString()}))}
+  // V87.305.2 · La pestanya «Pressupost obra» no tenia «Pressupost nou», «Canviar el nom» ni «Eliminar aquest pressupost»
+  // (només la de «Pressupost», GestioObra8746): un pressupost de més no es podia treure.
+  function addDirectBudget878305(tipus="Nou pressupost"){
+    const nom=prompt(i18nT("Nom del nou pressupost:"),tipus.includes("Imprevist")?i18nT("Imprevistos 01"):i18nT("Nou pressupost 01"));
+    if(!nom||!String(nom).trim())return;
+    const id="bg-"+Date.now(),now=new Date().toISOString(),n=String(nom).trim();
+    setEconomicData878242?.(d=>({...d,activeBudgetIdObra:id,updatedAt:now,budgetGroups:[...(d.budgetGroups||[]),{id,nom:n,tipus,createdAt:now}],pressupostos:[...(d.pressupostos||[]),{id:"budget-marker-"+id,budgetId:id,versio:"Annex",data:todayShort8713(),nom:n,estat:`${tipus} · creat · 0 partides`,import:0,createdAt:now,updatedAt:now}]}));
+  }
+  function renameDirectBudget878305(id){
+    const bid=id||"principal",cur=directBudgetInfo878214.groups.find(g=>g.id===bid);
+    const nom=prompt(i18nT("Nom del pressupost:"),cur?.nom||i18nT("Pressupost"));
+    if(!nom||!String(nom).trim())return;
+    const n=String(nom).trim();
+    setEconomicData878242?.(d=>{
+      const now=new Date().toISOString();
+      const pres=(d.pressupostos||[]).map(p=>(p.budgetId||"principal")===bid?{...p,budgetNom:n,...(String(p.id||"").startsWith("budget-marker-")?{nom:n}:{})}:p);
+      if(bid==="principal")return {...d,principalBudgetName:n,pressupostos:pres,updatedAt:now};
+      const gs=d.budgetGroups||[];
+      return {...d,budgetGroups:gs.some(g=>g.id===bid)?gs.map(g=>g.id===bid?{...g,nom:n}:g):[...gs,{...(cur||{}),id:bid,nom:n}],pressupostos:pres,updatedAt:now};
+    });
+  }
+  function deleteDirectBudget878305(id){
+    const bid=id||"principal";
+    if(!potEliminarPressupost878305(data,bid))return;
+    if(!confirm(t("Eliminar el pressupost «{nom}» amb totes les seves partides i certificacions? No es pot desfer.",{nom:budgetLabel8786(data,bid)})))return;
+    setEconomicData878242?.(d=>treuPressupost878305(d,bid));
+  }
   function updateDirectCert878214(codi,fieldOrValue,value){
     const field=value===undefined?"certActual":fieldOrValue;
     const raw=value===undefined?fieldOrValue:value;
@@ -8417,7 +8461,8 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
     {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
-    {activeTab==="Pressupost obra"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<Pressupost data={directBudgetData878214} setData={setDirectBudgetData878214} importExcel={(e)=>importExcel?.(e,directBudgetId878214)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={directBudgetInfo878214.groups} activeBudgetId={directBudgetId878214} selectBudget={selectDirectBudget878214} totalActive={directBudgetTotal878214} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
+    {activeTab==="Pressupost obra"&&!readOnly&&<BudgetBar878273 data={data} groups={directBudgetInfo878214.groups} active={directBudgetId878214} select={selectDirectBudget878214}/>}
+    {activeTab==="Pressupost obra"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<Pressupost data={directBudgetData878214} setData={setDirectBudgetData878214} importExcel={(e)=>importExcel?.(e,directBudgetId878214)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={directBudgetInfo878214.groups} activeBudgetId={directBudgetId878214} selectBudget={selectDirectBudget878214} addBudget={readOnly?undefined:addDirectBudget878305} renameBudget={readOnly?undefined:renameDirectBudget878305} deleteBudget={readOnly?undefined:deleteDirectBudget878305} totalActive={directBudgetTotal878214} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
     {activeTab==="Pressupost ràpid"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<PressupostRapid878150 data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
     {activeTab==="Certificacions obra"&&<BudgetWarnings878253 rows={directBudgetData878214.partides||[]}/>}
     {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly&&!clientEditCertifications} clientMode={readOnly}/>} 
@@ -10214,7 +10259,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!clientMode&&<button type="button" onClick={exportBudgetExcel878180}>{i18nT("Exportar Excel")}</button>}
       <button type="button" onClick={saveBudgetDocument878179}>{i18nT("Guardar a Documents")}</button></>}
       {quickMode&&!clientMode&&<button type="button" onClick={()=>openEmail("Pressupost obra")}><Mail/> {i18nT("Enviar per email")}</button>}
-      {!clientMode&&<><small className="amh-v878273">{i18nT("Aquest pressupost")}</small>{renameBudget&&<button type="button" onClick={()=>renameBudget(activeBudgetId)}>{i18nT("Canviar el nom")}</button>}<button type="button" className="danger-text-v87229" onClick={clearCurrentBudget878229}>{i18nT("Buidar tot el pressupost actual")}</button>{deleteBudget&&activeBudgetId!=="principal"&&<button type="button" className="danger-text-v87229" onClick={()=>deleteBudget(activeBudgetId)}>{i18nT("Eliminar aquest pressupost")}</button>}</>}
+      {!clientMode&&<><small className="amh-v878273">{i18nT("Aquest pressupost")}</small>{renameBudget&&<button type="button" onClick={()=>renameBudget(activeBudgetId)}>{i18nT("Canviar el nom")}</button>}<button type="button" className="danger-text-v87229" onClick={clearCurrentBudget878229}>{i18nT("Buidar tot el pressupost actual")}</button>{deleteBudget&&budgetGroups?.length>1&&<button type="button" className="danger-text-v87229" onClick={()=>deleteBudget(activeBudgetId)}>{i18nT("Eliminar aquest pressupost")}</button>}</>}
     </ActionMenu87213></div>}>
       {quickMode&&<div className={`rapid-budget-edit-toolbar-v87204 ${editBudget8760b?"editing":""}`}><div><b>{editBudget8760b?i18nT("Edició del pressupost ràpid activada"):i18nT("Pressupost ràpid")}</b><span>{editBudget8760b?i18nT("Els capítols i les files editables estan oberts. Guarda o cancel·la des del menú Accions."):i18nT("Per modificar quantitats, preus o conceptes, obre el menú Accions.")}</span></div></div>}
       {(clientMode||budgetWorkTab878180==="Validar descompostos")&&<div className="budget-simple-toolbar-v87213">
@@ -12102,7 +12147,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.305.1",
+    app_version:"87.305.2",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

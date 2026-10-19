@@ -427,6 +427,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     que s’adjunti el PDF al xat), obre ChatGPT o Claude, s’enganxa la resposta (pot venir en diverses parts, «CONTINUARÀ») i les
     partides passen a la mateixa revisió (lector de taules del «Pressupost amb IA», `parseAiBudget878256`). Res de pagament.
   - `copyText878256`: si el navegador no deixa copiar, ja no queda un error sense recollir.
+  - **L’Héctor el va provar al mòbil (19/10/2026):** el PDF de Socoterm encara no es llegia bé (el PDF no és a l’ordinador: cal
+    que el passi). La via ChatGPT/Claude li sembla **mala solució** per a usuaris que no en saben («li has de dir com és cada
+    columna»); proposta: lectura amb IA directa a la funció del servidor (com la dels albarans), pendent del seu sí i de la clau
+    d’Anthropic.
+- **V87.305.2 · Eliminar qualsevol pressupost de l’obra** (19/10/2026; l’Héctor en va crear un de més amb el PDF i no el podia
+  treure): abans només s’eliminaven els annexos, mai el principal (ni sortia l’opció). Ara «Eliminar aquest pressupost» surt
+  sempre que n’hi ha més d’un (`potEliminarPressupost878305`, `treuPressupost878305`): si s’elimina el principal, el següent passa
+  a ser-ho (`principalBudgetName` = el seu nom, les seves partides, certificacions i factures passen a `budgetId` principal). No
+  si és l’únic (diu que es buidi) ni si alguna certificació té factura (`vfTeFactura878285`). La pestanya interna «Pressupost
+  obra» (portal i plantilles) tampoc tenia la tira de pressupostos (`BudgetBar878273`), «Pressupost nou», «Canviar el nom» ni
+  «Eliminar»: ara sí (`addDirectBudget878305`, `renameDirectBudget878305`, `deleteDirectBudget878305`), no al portal de client.
+  Proves: `pdfpressuposttest.mjs` (eliminar el nou i després el principal) i `pressuposttest.mjs`.
 - **Mòdul tècnic, versió 1** (V87.305, `src/encarrecsTecnics.js`; `docs/proposta-perfil-tecnic.md`):
   - **Passos de l’encàrrec** (`PassosEncarrec878305`, al Resum de l’obra) per a la cèdula d’habitabilitat, el certificat
     energètic i la inspecció d’edifici (`encarrecDe` pel tipus de feina): Encàrrec · Documentació · Visita · Oficina · Tràmit ·
