@@ -1,0 +1,35 @@
+/* V87.306 · Encàrrec tècnic al Resum de l'obra: «Documents per presentar» i «Llista per no oblidar res» */
+.encarrec-v878306{padding-bottom:14px}
+.encarrec-v878306>section{margin:12px 16px 0;display:flex;flex-direction:column;gap:8px}
+.encarrec-v878306 h4{margin:0;font-size:14px;color:#0f172a}
+.enc-docs-v878306>header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
+.enc-xip-v878306{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
+.enc-xip-v878306.ok{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.enc-xip-v878306.presentat{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.enc-docs-v878306 ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.enc-docs-v878306 li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:start;padding:8px 0;border-top:1px solid #f1f5f9}
+.enc-docs-v878306 li:first-child{border-top:0}
+.enc-marca-v878306{width:22px;height:22px;border-radius:50%;border:1.5px solid #cbd5e1;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;margin-top:1px}
+.enc-docs-v878306 li.fet .enc-marca-v878306{background:#16a34a;border-color:#16a34a}
+.enc-docs-v878306 li.nocal .enc-marca-v878306{border-style:dashed;color:#94a3b8}
+.enc-docs-v878306 li.nocal .enc-doc-v878306>span{color:#94a3b8;text-decoration:line-through}
+.enc-doc-v878306{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;font-size:14px;line-height:1.35}
+.enc-fitxer-v878306{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:0;color:#1d4ed8;font-size:12.5px;cursor:pointer;text-align:left;overflow-wrap:anywhere}
+.enc-acc-v878306{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.enc-puja-v878306{position:relative;overflow:hidden;cursor:pointer;font-size:13px;padding:5px 12px!important;min-height:0!important;border-radius:999px}
+.enc-puja-v878306 input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.enc-puja-v878306.off{opacity:.55;pointer-events:none}
+.enc-link-v878306{border:0;background:none;padding:2px 0;color:#64748b;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.enc-tramit-v878306{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:4px}
+.enc-tramit-btn-v878306{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.enc-llista-v878306 details{border:1px solid #e2e8f0;border-radius:10px;padding:0 12px}
+.enc-llista-v878306 summary{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;cursor:pointer;list-style:none}
+.enc-llista-v878306 summary::-webkit-details-marker{display:none}
+.enc-llista-v878306 summary small{color:#64748b;font-variant-numeric:tabular-nums}
+.enc-llista-v878306 details[open] summary{border-bottom:1px solid #f1f5f9;margin-bottom:8px}
+.enc-llista-v878306 details .passos-afegir-v878305{margin-bottom:10px}
+@media (max-width:600px){
+  .encarrec-v878306>section{margin-left:12px;margin-right:12px}
+  .enc-docs-v878306 li{grid-template-columns:22px minmax(0,1fr)}
+  .enc-acc-v878306{grid-column:2;justify-content:flex-start}
+}

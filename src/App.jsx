@@ -10,7 +10,7 @@ import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
 import {llegirPressupostPdf,liniesPdf,numero as numeroPdf878305} from "./pressupostPdf.js";
-import {encarrecDe,estatPassos} from "./encarrecsTecnics.js";
+import {encarrecDe,estatPassos,estatDocs} from "./encarrecsTecnics.js";
 import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary} from "./googleCal.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.305.3";
+const APP_VERSION878264="87.306";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2907,8 +2907,9 @@ function rcNet878305(rc){return String(rc||"").toUpperCase().replace(/[^0-9A-Z]/
 function enllacosBase878305(obra={}){
   const rc=rcNet878305(obra.rc);const tipus=canonicalWorkType8740(obra.tipusTreball||obra.tipologia||"");
   const out=[{nom:"Cadastre",url:rc.length>=14?`https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${rc.slice(0,7)}&rc2=${rc.slice(7,14)}`:"https://www1.sedecatastro.gob.es/",det:rc.length>=14?rc.slice(0,14):""}];
-  if(/cèdula/i.test(tipus))out.push({nom:"Cèdula de segona ocupació (tràmit)",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Cedula-dhabitabilitat-de-segona-ocupacio"});
-  if(/certificat energètic/i.test(tipus))out.push({nom:"Certificació energètica (ICAEN)",url:"https://icaen.gencat.cat/ca/energia/usos_energia/edificis/certificacio/index.html"},{nom:"Cercador de certificats energètics",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"});
+  // V87.306 · el tràmit (Habitatge, ICAEN) ja és el botó de «Documents per presentar» de l'encàrrec; aquí, MagicPlan per a la cèdula
+  if(/cèdula/i.test(tipus))out.push({nom:"MagicPlan",url:"https://cloud.magicplan.app/"});
+  if(/certificat energètic/i.test(tipus))out.push({nom:"Cercador de certificats energètics",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"});
   return out;
 }
 function enllacosPropis878305(){try{const l=JSON.parse(localStorage.getItem(lsKey8779(ENLLACOS_KEY878305))||"[]");return Array.isArray(l)?l.filter(x=>x&&String(x.url||"").trim()):[]}catch{return []}}
@@ -8446,7 +8447,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
   let activeTab=navigationTabs.includes(tab)?tab:(navigationTabs[0]||"Resum");
   const renderTab=()=> <>
     {activeTab==="Resum"&&<ObraHero878252 obra={obra} client={client} data={data} scope={directBudgetData878214} tabs={navigationTabs} setTab={setTab} uploadImage={uploadImage}/>}
-    {activeTab==="Resum"&&<PassosEncarrec878305 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
+    {activeTab==="Resum"&&<EncarrecTecnic878306 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
     {activeTab==="Gantt"&&<GanttObraVisual878253 data={directBudgetData878214} setData={strictClientReadOnly878242?undefined:setDirectBudgetData878214}/>}
     {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} clients={clients} setClients={setClients} data={data} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent} keepAgent878303={keepAgent878303} agentsLib878301={agentsLib878301}/>} 
     {activeTab==="Agents"&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145"><PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/><AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303}/></div>} 
@@ -8708,34 +8709,72 @@ function economicSummary878252(scope={}){
   return {rows,certs:certList,lastN,budget,certified,pending:Math.max(0,budget-certified),executed:budget?certified/budget*100:0,caps:capList,last:certList[certList.length-1]||null};
 }
 const CHART_COLORS878252=["var(--co-s1)","var(--co-s2)","var(--co-s3)","var(--co-s4)","var(--co-s5)","var(--co-s7)"];
-// V87.305 · Passos de l'encàrrec (cèdula, certificat energètic, inspecció d'edifici) al Resum de l'obra: en quin pas és i la
-// llista de comprovació de cada pas (src/encarrecsTecnics.js). Es poden afegir punts propis a cada pas. Es desa a l'obra.
-function PassosEncarrec878305({obra={},data={},setData,readOnly=false}){
-  const k=encarrecDe(obra);const ps=data.passos878305||{};const e=k?estatPassos(k,ps):null;
-  const[obert,setObert]=useState(null);const[nou,setNou]=useState("");
-  if(!e)return null;
-  const vist=obert??Math.min(e.actual,e.passos.length-1);
-  const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({fets:{...(cur.fets||{})},propis:{...(cur.propis||{})}});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
+// V87.306 · Encàrrec tècnic (cèdula, certificat energètic, inspecció d'edifici) al Resum de l'obra (l'Héctor, 19/10/2026, provant
+// la cèdula de Jaume I: els passos que s'havien de marcar per avançar no l'ajudaven a la visita). Ara:
+// 1) «Documents per presentar»: els que demana el tràmit (src/encarrecsTecnics.js, TRAMITS), cadascun es puja aquí (va a
+//    Documents de l'obra, carpeta de tràmits, amb `tramit878306`) o es marca «No cal»; quan hi són tots, «Tot a punt» i el botó
+//    del tràmit. «Marcar com a presentat» ho apunta (passos878305.presentat).
+// 2) «Llista per no oblidar res»: la de sempre, per consultar; marcar és opcional i no fa avançar res.
+function EncarrecTecnic878306({obra={},data={},setData,readOnly=false}){
+  const k=encarrecDe(obra);const ps=data.passos878305||{};
+  const e=k?estatPassos(k,ps):null;const dd=k?estatDocs(k,ps,data.documents||[]):null;
+  const[nou,setNou]=useState({});const[nouDoc,setNouDoc]=useState("");const[pujant,setPujant]=useState("");
+  if(!e||!dd)return null;
+  const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({...cur,fets:{...(cur.fets||{})},propis:{...(cur.propis||{})},docsNoCal:{...(cur.docsNoCal||{})},docsPropis:[...(cur.docsPropis||[])]});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
   const toggle=id=>desa(p=>{if(p.fets[id])delete p.fets[id];else p.fets[id]=true;return p});
-  const afegeix=pk=>{const tx=nou.trim();if(!tx)return;desa(p=>{p.propis[pk]=[...(p.propis[pk]||[]),tx];return p});setNou("")};
-  const pas=e.passos[vist];
-  return <Card title={e.acabat?`${t(e.nom)} · ${t("Acabat")}`:t("{tipus} · pas {n} de {m}: {pas}",{tipus:t(e.nom),n:e.actual+1,m:e.passos.length,pas:t(e.passos[e.actual].nom)})} className="passos-v878305">
-    <div className="passos-fila-v878305">{e.passos.map(p=><button type="button" key={p.k} className={`${p.complet?"fet":""} ${p.i===e.actual?"actual":""} ${p.i===vist?"on":""}`} aria-pressed={p.i===vist} onClick={()=>setObert(p.i)}><b>{p.complet?"✓":p.i+1}</b><span>{t(p.nom)}</span><small>{p.fet}/{p.total}</small></button>)}</div>
-    <ul className="passos-llista-v878305">{pas.items.map(it=><li key={it.id}><label><input type="checkbox" checked={!!(ps.fets||{})[it.id]} disabled={readOnly} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label></li>)}</ul>
-    {!readOnly&&<div className="passos-afegir-v878305"><input value={nou} onChange={e=>setNou(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")afegeix(pas.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(pas.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(pas.k)}><Plus/> {t("Afegir")}</button></div>}
+  const afegeix=pk=>{const tx=String(nou[pk]||"").trim();if(!tx)return;desa(p=>{p.propis[pk]=[...(p.propis[pk]||[]),tx];return p});setNou(x=>({...x,[pk]:""}))};
+  const noCal=(key,v)=>desa(p=>{if(v)p.docsNoCal[key]=true;else delete p.docsNoCal[key];return p});
+  const afegeixDoc=()=>{const tx=nouDoc.trim();if(!tx)return;desa(p=>{if(!p.docsPropis.includes(tx))p.docsPropis.push(tx);return p});setNouDoc("")};
+  const presentat=v=>desa(p=>{if(v)p.presentat=new Date().toISOString();else delete p.presentat;return p});
+  async function puja(doc,f){
+    if(!f||!confirmBigDocument878263(f))return;
+    setPujant(doc.key);
+    const id=`doc-${obra?.id||"exp"}-${Date.now()}`,now=new Date().toISOString();
+    try{
+      await saveDocFile(id,f,obra?.id);
+      setData?.(d=>({...d,documents:[{id,obraId:obra?.id,nom:f.name,tipus:f.name.split(".").pop()?.toUpperCase()||"DOC",folder:"01_TRAMITS_AJUNTAMENT",data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size,storage:"indexeddb",hasFile:true,tramit878306:doc.key},...(d.documents||[])]}));
+    }catch(err){alert(t("No s’ha pogut desar el document: {e}",{e:String(err?.message||err)}))}
+    finally{setPujant("")}
+  }
+  async function obre(x){const f=await getDocFile(x.id,x.obraId||obra?.id).catch(()=>null);if(f)window.open(URL.createObjectURL(f),"_blank");else alert(t("Aquest document no és en aquest aparell i no s’ha pogut baixar del núvol."))}
+  return <Card title={t(e.nom)} className="encarrec-v878306">
+    <section className="enc-docs-v878306">
+      <header><h4>{t("Documents per presentar")}</h4><span className={`enc-xip-v878306 ${dd.presentat?"presentat":dd.aPunt?"ok":""}`}>{dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("Tot a punt"):t("Falten {n} de {m}",{n:dd.falten,m:dd.total})}</span></header>
+      <ul>{dd.docs.map(doc=><li key={doc.key} className={doc.noCal?"nocal":doc.fet?"fet":""}>
+        <span className="enc-marca-v878306" aria-hidden="true">{doc.fet?"✓":doc.noCal?"–":""}</span>
+        <div className="enc-doc-v878306"><span>{doc.propi?doc.nom:t(doc.nom)}</span>{doc.fitxers.map(x=><button type="button" className="enc-fitxer-v878306" key={x.id} onClick={()=>obre(x)}><Paperclip size={12}/> {x.nom}</button>)}</div>
+        {!readOnly&&<div className="enc-acc-v878306">{doc.noCal?<button type="button" className="enc-link-v878306" onClick={()=>noCal(doc.key,false)}>{t("Cal")}</button>:<>
+          <label className={`secondary enc-puja-v878306 ${pujant===doc.key?"off":""}`}>{pujant===doc.key?t("Desant…"):doc.fet?t("Un altre"):t("Pujar")}<input type="file" disabled={!!pujant} onChange={ev=>{const f=ev.target.files?.[0];ev.target.value="";puja(doc,f)}}/></label>
+          {!doc.fet&&<button type="button" className="enc-link-v878306" onClick={()=>noCal(doc.key,true)}>{t("No cal")}</button>}</>}</div>}
+      </li>)}</ul>
+      {!readOnly&&<div className="passos-afegir-v878305"><input value={nouDoc} onChange={ev=>setNouDoc(ev.target.value)} onKeyDown={ev=>{if(ev.key==="Enter")afegeixDoc()}} placeholder={t("Afegir un document que demanin")}/><button type="button" className="secondary" onClick={afegeixDoc}><Plus/> {t("Afegir")}</button></div>}
+      <div className="enc-tramit-v878306">
+        {dd.url&&<a className={`${dd.aPunt&&!dd.presentat?"primary":"secondary"} enc-tramit-btn-v878306`} href={dd.url} target="_blank" rel="noopener noreferrer">{t(dd.nom)} <ExternalLink size={14}/></a>}
+        {!readOnly&&(dd.presentat?<button type="button" className="enc-link-v878306" onClick={()=>presentat(false)}>{t("Desfer")}</button>:<button type="button" className="secondary" onClick={()=>presentat(true)}>{t("Marcar com a presentat")}</button>)}
+      </div>
+    </section>
+    <section className="enc-llista-v878306">
+      <h4>{t("Llista per no oblidar res")}</h4>
+      {e.passos.map(p=><details key={p.k} open={p.k==="visita"}>
+        <summary><b>{t(p.nom)}</b><small>{p.fet}/{p.total}</small></summary>
+        <ul className="passos-llista-v878305">{p.items.map(it=><li key={it.id}><label><input type="checkbox" checked={!!(ps.fets||{})[it.id]} disabled={readOnly} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label></li>)}</ul>
+        {!readOnly&&<div className="passos-afegir-v878305"><input value={nou[p.k]||""} onChange={ev=>{const v=ev.target.value;setNou(x=>({...x,[p.k]:v}))}} onKeyDown={ev=>{if(ev.key==="Enter")afegeix(p.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(p.k)}><Plus/> {t("Afegir")}</button></div>}
+      </details>)}
+    </section>
   </Card>;
 }
-// V87.305 · Inici: els encàrrecs tècnics oberts, agrupats pel pas en què són («Visita 3 · Tràmit 2»)
+// V87.306 · Inici: els encàrrecs tècnics oberts segons els documents del tràmit: «Falten documents», «A punt per presentar» i
+// «Presentats» (abans, pel pas en què eren)
 function EncarrecsInici878305({obres=[],odata={},openObra}){
-  const perPas={};
+  const g={falten:[],apunt:[],presentats:[]};
   for(const o of obres||[]){
     const k=encarrecDe(o);if(!k||/tancat|anul|no acceptat/i.test(String(o.estat||"")))continue;
-    const e=estatPassos(k,(odata?.[o.id]||{}).passos878305||{});if(!e||e.acabat)continue;
-    const nom=e.passos[e.actual].nom;(perPas[nom]=perPas[nom]||[]).push({o,e});
+    const d=odata?.[o.id]||{};const dd=estatDocs(k,d.passos878305||{},d.documents||[]);if(!dd)continue;
+    (dd.presentat?g.presentats:dd.aPunt?g.apunt:g.falten).push({o,dd});
   }
-  const grups=["Encàrrec","Documentació","Visita","Oficina","Tràmit","Lliurament"].filter(x=>perPas[x]);
+  const grups=[["falten","Falten documents"],["apunt","A punt per presentar"],["presentats","Presentats"]].filter(([x])=>g[x].length);
   if(!grups.length)return null;
-  return <Card title={t("Encàrrecs tècnics")} className="encarrecs-inici-v878305"><div className="encarrecs-grups-v878305">{grups.map(x=><section key={x}><header><b>{t(x)}</b><span>{perPas[x].length}</span></header>{perPas[x].map(({o,e})=><button type="button" key={o.id} onClick={()=>openObra?.(o.id)}><b>{o.nom}</b><small>{t(e.nom)} · {e.fet}/{e.total}</small></button>)}</section>)}</div></Card>;
+  return <Card title={t("Encàrrecs tècnics")} className="encarrecs-inici-v878305"><div className="encarrecs-grups-v878305">{grups.map(([x,nom])=><section key={x}><header><b>{t(nom)}</b><span>{g[x].length}</span></header>{g[x].map(({o,dd})=><button type="button" key={o.id} onClick={()=>openObra?.(o.id)}><b>{o.nom}</b><small>{x==="falten"?t("Falten {n} de {m}",{n:dd.falten,m:dd.total}):x==="presentats"?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):t("Tot a punt")}</small></button>)}</section>)}</div></Card>;
 }
 function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploadImage}){
   const s=useMemo(()=>economicSummary878252(scope),[scope]);
@@ -12147,7 +12186,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.305.3",
+    app_version:"87.306",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

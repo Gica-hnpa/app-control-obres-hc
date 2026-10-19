@@ -43,6 +43,38 @@ export const ENCARRECS = {
   },
 };
 
+// V87.306 · Documents del tràmit (l'Héctor, 19/10/2026: els passos que s'han de marcar per avançar no l'ajuden a la visita;
+// vol una llista de consulta i «un apartat per entrar documents abans de l'enllaç amb Habitatge o Indústria»). Llista proposada
+// perquè la corregeixi. Cada document es puja a Documents de l'obra (camp `tramit878306` = la clau) o es marca «No cal»
+// (`passos878305.docsNoCal`); se n'hi poden afegir de propis (`passos878305.docsPropis`, la clau és «p:<nom>»).
+export const TRAMITS = {
+  cedula: {
+    nom: "Presentar a l’Agència de l’Habitatge",
+    url: "https://tramits.gencat.cat/ca/tramits/tramits-temes/Cedula-dhabitabilitat-de-segona-ocupacio",
+    docs: [["sollicitud", "Sol·licitud signada pel propietari"], ["certificat", "Certificat d’habitabilitat signat"], ["planol", "Plànol amb les superfícies (MagicPlan)"], ["fotos", "Fotos de l’habitatge"], ["dni", "DNI o NIF del propietari"], ["propietat", "Escriptura, nota simple o rebut de l’IBI"], ["representacio", "Autorització de representació (si ho tramites tu)"], ["anterior", "Cèdula anterior (si n’hi ha)"], ["taxa", "Justificant de pagament de la taxa"]],
+  },
+  cee: {
+    nom: "Registrar a l’ICAEN",
+    url: "https://icaen.gencat.cat/ca/energia/usos_energia/edificis/certificacio/index.html",
+    docs: [["certificat", "Certificat energètic signat (PDF del CE3X)"], ["xml", "Fitxer de registre del CE3X (XML)"], ["fotos", "Fotos de l’immoble"], ["dni", "DNI o NIF del propietari"], ["representacio", "Autorització de representació (si ho tramites tu)"], ["taxa", "Justificant de pagament de la taxa"]],
+  },
+  ite: {
+    nom: "Presentar a l’Agència de l’Habitatge",
+    url: "",
+    docs: [["informe", "Informe d’inspecció signat"], ["fotos", "Fotos de les deficiències"], ["encarrec", "Acord o encàrrec de la comunitat"], ["representacio", "Autorització de representació"], ["anterior", "Inspecció anterior (si n’hi ha)"], ["taxa", "Justificant de pagament de la taxa"]],
+  },
+};
+
+// Com van els documents d'un encàrrec: quins hi són (documents de l'obra amb `tramit878306`), quins no calen i quants en falten
+export function estatDocs(k, passos = {}, documents = []) {
+  const tr = TRAMITS[k]; if (!tr) return null;
+  const noCal = passos.docsNoCal || {};
+  const llista = [...tr.docs.map(([key, nom]) => ({ key, nom })), ...(passos.docsPropis || []).map(nom => ({ key: "p:" + nom, nom, propi: true }))]
+    .map(d => { const fitxers = (documents || []).filter(x => x && x.tramit878306 === d.key); return { ...d, fitxers, fet: fitxers.length > 0, noCal: !!noCal[d.key] }; });
+  const cal = llista.filter(d => !d.noCal), falten = cal.filter(d => !d.fet).length;
+  return { nom: tr.nom, url: tr.url, docs: llista, falten, total: cal.length, aPunt: cal.length > 0 && falten === 0, presentat: passos.presentat || null };
+}
+
 // Quin encàrrec tècnic és una obra (pel tipus de feina); null si no n'és cap
 export function encarrecDe(obra = {}) {
   const tipus = String(obra.tipusTreball || obra.tipologia || "");

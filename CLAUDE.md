@@ -459,6 +459,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     seus (`aco_enllacos_v878305`; `{rc}`, `{rc1}`, `{rc2}`, `{poblacio}`, `{adreca}`), amb un botó per a l’oficina virtual del
     CATGI (l’adreça no s’ha trobat: l’ha de posar l’Héctor; no s’hi pot entrar per ell).
   - Prova: `tecnictest.mjs` (14).
+- **Mòdul tècnic, versió 2** (V87.306, decisió de l’Héctor del 20/10/2026 provant la cèdula de Jaume I: els passos que s’havien
+  de marcar per avançar no l’ajudaven a la visita). `EncarrecTecnic878306` (substitueix `PassosEncarrec878305`, al Resum):
+  - **Documents per presentar** (`TRAMITS` i `estatDocs` de `src/encarrecsTecnics.js`): llista **proposada** per a la cèdula (9),
+    el certificat energètic (6, amb el PDF i l’XML del CE3X) i la ITE (6); l’Héctor l’ha de corregir. Cada document es puja aquí
+    i va a Documents de l’obra (carpeta `01_TRAMITS_AJUNTAMENT`, camp `tramit878306` = la clau), o es marca «No cal»
+    (`passos878305.docsNoCal`); se n’hi afegeixen de propis (`docsPropis`). Xip «Falten N de M» / «Tot a punt» / «Presentat el…».
+    Botó del tràmit (cèdula: tramits.gencat.cat; certificat: ICAEN; ITE sense enllaç, no s’ha trobat cap adreça que funcioni),
+    destacat quan tot és a punt, i «Marcar com a presentat» (`passos878305.presentat`).
+  - **Llista per no oblidar res:** els 6 apartats de sempre plegables («Visita» oberta), per consultar; marcar no fa avançar res.
+  - **Inici:** «Falten documents» · «A punt per presentar» · «Presentats» (abans, pel pas).
+  - **Enllaços:** MagicPlan (`https://cloud.magicplan.app/`) a la cèdula; els tràmits ja no hi són (són el botó de l’apartat).
+    CE3X: programa d’ordinador, sense enllaç possible. Llegir el plànol de MagicPlan: quan l’Héctor en pugi un a la bústia.
+  - Estils: `src/theme-v878306.css`. Prova: `tecnictest.mjs` (23).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
