@@ -439,6 +439,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   obra» (portal i plantilles) tampoc tenia la tira de pressupostos (`BudgetBar878273`), «Pressupost nou», «Canviar el nom» ni
   «Eliminar»: ara sí (`addDirectBudget878305`, `renameDirectBudget878305`, `deleteDirectBudget878305`), no al portal de client.
   Proves: `pdfpressuposttest.mjs` (eliminar el nou i després el principal) i `pressuposttest.mjs`.
+- **V87.305.3 · El PDF de Socoterm de debò** (l’Héctor el va passar el 19/10/2026: `D:\fotos de google\SÀBAT MOLÍ DE VENT II -
+  REPARACIÓN DE GRIETA EN FACHADA (1).pdf`; dades d’un client, no copiar-lo a les proves): el text de la partida i els números van
+  en **línies diferents** («Reparación de grieta… mediante» i a sota «1 989,00 € 10% 989,00 €»). `llegirSenseCodis`: després de la
+  capçalera de la taula, el text espera (`pendent`) fins que arriba una línia només de números que quadren, i en fa la partida; el
+  text de sota és la descripció. Entre dues partides, la nova comença a l’última frase abans dels seus números. «Pago por…» i
+  «Leído y aprobado» tanquen la descripció. Resultat: 1 partida de 989,00 € al capítol «01 REPARACIÓN DE GRIETA EN FACHADA».
+  Prova: cas 6b de `pdfpressupostunit.mjs` (45).
 - **Mòdul tècnic, versió 1** (V87.305, `src/encarrecsTecnics.js`; `docs/proposta-perfil-tecnic.md`):
   - **Passos de l’encàrrec** (`PassosEncarrec878305`, al Resum de l’obra) per a la cèdula d’habitabilitat, el certificat
     energètic i la inspecció d’edifici (`encarrecDe` pel tipus de feina): Encàrrec · Documentació · Visita · Oficina · Tràmit ·

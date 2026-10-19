@@ -48,7 +48,7 @@ function senseNumsFinals(tokens) {
 // Capçalera d'una taula («Nº Descripción Cant PU sin IVA IVA PVP sin IVA»): no és cap partida ni cap títol
 const CAPCALERA = l => (String(l).toLowerCase().match(/\b(descripci[oó]n?|concepte|concepto|cant|cantidad|quantitat|precio|preu|pu|importe|import|iva|pvp|ud|unidad|unitat|total)\b/g) || []).length >= 3 && !/\d[.,]\d/.test(l);
 // Després de les partides: observacions, condicions… (no són la descripció de l'última partida)
-const FI_DESC = /^(observacions|observaciones|condicions|condiciones|notes|notas|forma de pagament|forma de pago|validesa|validez|conforme|acceptat|aceptado)\b/i;
+const FI_DESC = /^(observacions|observaciones|condicions|condiciones|notes|notas|forma de pagament|forma de pago|pago\b|pagament\b|validesa|validez|conforme|acceptat|aceptado|le[íi]do y aprobado)/i;
 const TOTAL_PDF = /(total sin iva|total sense iva|base imponible|base imposable|pressupost d.execuci|presupuesto de ejecuci|p\.?e\.?m\b|total pressupost|total presupuesto|^subtotal)/i;
 // Quantitat, preu i import a partir dels números del final: es busca la combinació que quadra (q × pu = import)
 export function quadra(nums) {
@@ -188,7 +188,11 @@ function llegirAmbCodis(linies, apartats) {
 function llegirSenseCodis(linies) {
   const caps = [], partides = [], avisos = [];
   let cap = "", act = null, totalPdf = null, titol = [], nCap = 0, nPart = 0, nomesImport = false;
-  const tanca = () => { if (!act) return; act.concepte = net(act.concepte).slice(0, 240) || "Partida importada del PDF"; act.desc = net(act.desc).slice(0, 1500); partides.push(act); act = null; };
+  // V87.305.3 · Text i números en línies diferents (el PDF de Socoterm: «Reparación de grieta… mediante» i a sota «1 989,00 €
+  // 10% 989,00 €»): el text de després de la capçalera de la taula espera (`pendent`) fins que arriba la línia de números.
+  let pendent = [], taula = false;
+  const afegeix = txt => { if (!act.desc && act.concepte.length < 200) act.concepte += " " + txt; else act.desc += " " + txt; act.ultima = txt; };
+  const tanca = () => { if (!act) return; if (pendent.length) { pendent.forEach(afegeix); pendent = []; } delete act.ultima; act.concepte = net(act.concepte).slice(0, 240) || "Partida importada del PDF"; act.desc = net(act.desc).slice(0, 1500); partides.push(act); act = null; };
   const capDe = () => { if (titol.length || !cap) { nCap++; nPart = 0; cap = `${String(nCap).padStart(2, "0")} ${titol.length ? net(titol.join(" ")) : "Partides"}`; caps.push(cap); titol = []; } return cap; };
   for (const linia of linies) {
     if (IGNORA.test(linia)) continue;
@@ -196,22 +200,35 @@ function llegirSenseCodis(linies) {
       // «Concepte · Import sense IVA» (pressupost d'honoraris): cada concepte amb un sol import és una partida d'import tancat
       const l = linia.toLowerCase();
       nomesImport = /\b(concepte|concepto|descripci[oó]n?)\b/.test(l) && /\b(import|importe)\b/.test(l) && !/\b(cant|cantidad|quantitat|precio|preu|pu|ud|unidad|unitat|amidament|medici[oó]n)\b/.test(l);
+      taula = true; if (!act) pendent = [];
       continue;
     }
-    if (FI_DESC.test(linia)) { tanca(); titol = []; continue; }
     const tokens = linia.split(" ");
     const nums = numsFinals(tokens);
+    if (FI_DESC.test(linia)) { tanca(); if (TOTAL_PDF.test(linia) && nums.length && totalPdf == null) totalPdf = nums[nums.length - 1]; titol = []; pendent = []; continue; }
     if (TOTAL.test(linia) || (nums.length === 1 && /\b(total|subtotal|base imponible|base imposable)\b/i.test(linia))) {
-      tanca(); if (TOTAL_PDF.test(linia) && nums.length && totalPdf == null) totalPdf = nums[nums.length - 1]; titol = []; continue;
+      tanca(); if (TOTAL_PDF.test(linia) && nums.length && totalPdf == null) totalPdf = nums[nums.length - 1]; titol = []; pendent = []; continue;
     }
     let txt = net(senseNumsFinals(tokens).join(" "));
     let ordre = "";
     const mo = txt.match(/^(\d{1,3})[.)]?\s+(.{6,})$/); if (mo) { ordre = mo[1]; txt = mo[2]; }
     const q = nums.length >= 2 ? quadra(nums) : null;
     if (q && q.ok && txt.length >= 6 && /[a-zà-úñç]/i.test(txt)) {
-      tanca(); capDe(); nPart++;
+      tanca(); pendent = []; capDe(); nPart++;
       let ut = ""; const tt = txt.split(" "); if (tt.length > 1 && UNITATS.test(tt[tt.length - 1]) && tt[tt.length - 1] !== "%") ut = tt.pop();
       act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: normUt(ut) || "ut", concepte: tt.join(" "), desc: "", q: q.q, pu: q.pu, imp: q.imp };
+      continue;
+    }
+    // només números (quantitat, preu, import) i el text de la partida a sobre
+    if (q && q.ok && !/[a-zà-úñç]/i.test(txt) && pendent.length) {
+      let ls = pendent; pendent = [];
+      // amb una partida oberta, la nova comença a l'última frase («Pintado de barandillas…»); el d'abans («Incluye limpieza…») és
+      // la cua de la descripció de l'oberta
+      if (act && ls.length > 1) { let i = ls.length - 1; for (; i > 0; i--) if (/^[A-ZÀ-ÚÑÇ¿¡]/.test(ls[i]) && /[.:;]$/.test(ls[i - 1])) break; ls.slice(0, i).forEach(afegeix); ls = ls.slice(i); }
+      tanca(); capDe(); nPart++;
+      act = { codi: `${cap.slice(0, 2)}.${String(ordre || nPart).padStart(2, "0")}`, cap, ut: "ut", concepte: "", desc: "", q: q.q, pu: q.pu, imp: q.imp };
+      ls.forEach(afegeix);
+      const tt = act.concepte.trim().split(" "); if (tt.length > 1 && UNITATS.test(tt[0]) && tt[0] !== "%") { act.ut = normUt(tt.shift()); act.concepte = tt.join(" "); }
       continue;
     }
     if (nomesImport && nums.length === 1 && nums[0] > 0 && txt.length >= 4 && /[a-zà-úñç]/i.test(txt)) {
@@ -221,7 +238,13 @@ function llegirSenseCodis(linies) {
     }
     // títol en majúscules (sense números): el capítol de les partides que vindran
     if (!nums.length && /[A-ZÀ-ÚÑÇ]{3}/.test(linia) && !/[a-zà-úñç]/.test(linia) && !/\d/.test(linia)) { if (act) { tanca(); } titol.push(linia); continue; }
-    if (act && txt && !nums.length) { if (!act.desc && act.concepte.length < 200) act.concepte += " " + txt; else act.desc += " " + txt; continue; }
+    if (act && txt && !nums.length) {
+      // una frase que comença en majúscula després d'un punt pot ser la partida següent (si a sota hi arriben els seus números);
+      // si no, en acabar torna a la descripció d'aquesta
+      if (pendent.length || (/^[A-ZÀ-ÚÑÇ¿¡]/.test(txt) && /[.:;]$/.test(act.ultima || ""))) pendent.push(txt); else afegeix(txt);
+      continue;
+    }
+    if (!act && txt && !nums.length && /[a-zà-úñç]/i.test(txt)) { if (taula) pendent.push(txt); else titol = []; continue; }
     if (!act) titol = [];
   }
   tanca();
