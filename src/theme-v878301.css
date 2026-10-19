@@ -1,0 +1,40 @@
+/* V87.301 · Agents (selector classificat, revisar i ajuntar repetits) i botó per tornar a dalt */
+
+/* Pestanya Agents de l'obra: avís quan n'hi ha molts o repetits */
+.agents-review-v878301{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;padding:10px 12px;
+  border:1px solid #EF9F27;border-radius:10px;background:#FAEEDA;color:#633806;font:500 14px var(--app-font,inherit)}
+.agents-review-v878301 .actions-inline{display:flex;flex-wrap:wrap;gap:6px}
+.dup-v878301{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#FCEBEB;color:#791F1F;font:600 11px var(--app-font,inherit);font-style:normal}
+.agent-mark-v878301{display:flex;flex-wrap:wrap;align-items:center;gap:8px;cursor:pointer}
+.agent-mark-v878301 input{width:18px;height:18px;flex:none}
+.marked-v878301 .agent-mark-v878301{background:#FCEBEB}
+.obres-v878301{display:block;color:var(--co-ink-3,#64748b);font-size:12px}
+
+/* Selector d'agents: grups, cercador i llista amb caselles */
+.agent-picker-v878301{display:flex;flex-direction:column;gap:10px;min-width:min(560px,86vw)}
+.agent-picker-groups-v878301{display:flex;flex-wrap:wrap;gap:6px}
+.agent-picker-groups-v878301 button{all:unset;box-sizing:border-box;cursor:pointer;padding:7px 12px;border:1px solid var(--co-line,#DCE3E7);border-radius:999px;
+  background:#fff;font:500 13px var(--app-font,inherit);color:var(--co-ink-2,#334155)}
+.agent-picker-groups-v878301 button small{color:var(--co-ink-3,#64748b);font-size:12px}
+.agent-picker-groups-v878301 button.on{background:#eef4ff;border-color:var(--co-accent,#2563eb);color:var(--co-accent-ink,#1d4ed8)}
+.agent-picker-list-v878301{display:flex;flex-direction:column;gap:4px;max-height:min(52vh,460px);overflow:auto;padding-right:2px}
+.agent-picker-list-v878301 label{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--co-line,#DCE3E7);border-radius:10px;background:#fff;cursor:pointer}
+.agent-picker-list-v878301 label input{width:18px;height:18px;flex:none}
+.agent-picker-list-v878301 label span{display:flex;flex-direction:column;min-width:0;flex:1}
+.agent-picker-list-v878301 label b{font:600 14px var(--app-font,inherit);color:var(--co-ink,#0f172a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agent-picker-list-v878301 label small{font-size:12px;color:var(--co-ink-3,#64748b);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agent-picker-list-v878301 label.on{border-color:var(--co-accent,#2563eb);background:#eef4ff}
+.agent-picker-list-v878301 label.ja{opacity:.65;cursor:default}
+.agent-picker-list-v878301 label em{flex:none;font:600 11px var(--app-font,inherit);font-style:normal;color:#085041;background:#E1F5EE;padding:2px 8px;border-radius:999px}
+.agent-picker-foot-v878301{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.agent-picker-foot-v878301>span{flex:1}
+
+/* Botó per tornar a dalt: al mig, a baix; al mòbil i l'iPad, per sobre de la barra de baix */
+.backtop-v878301{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:85;display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:999px;border:1px solid var(--co-line,#DCE3E7);background:rgba(255,255,255,.96);color:var(--co-ink-2,#334155);
+  font:600 13px var(--app-font,inherit);box-shadow:0 6px 18px rgba(15,23,42,.14);cursor:pointer}
+.backtop-v878301 svg{width:16px;height:16px}
+.backtop-v878301:hover{color:var(--co-ink,#0f172a)}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  .backtop-v878301{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+}

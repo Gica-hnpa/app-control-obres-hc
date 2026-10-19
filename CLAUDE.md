@@ -242,6 +242,26 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     no canvien.
   - **Proves:** naveguen pels noms nous. Compte: «Configuración» → «Ajustes» (no «Ajustosn»).
   - **Pendent:** les guies de benvinguda (`tools/proves/guies.js`) encara diuen «Treballs / Expedients».
+- **Agents** (V87.301, encàrrec de l’Héctor del 18/10/2026; `src/theme-v878301.css`):
+  - **La mateixa persona surt una sola vegada.** Cada obra en desa una còpia amb un id propi, i abans la llista general en
+    comptava cada còpia (88 entrades per a 26 persones). `agentPersona878301` reconeix la persona pel nom (i, a la
+    biblioteca, també pel NIF); `agentsLibrary878301` ajunta les dades.
+  - **Grups:** Tècnics · Constructors · Industrials · Promotors / propietat · Administració · Altres (`agentGroup878301`).
+    «do» / «deo» compten com a paraula sencera: abans «CP EDIFICI COMODORO» sortia com a tècnic.
+  - **Pantalla Agents:** «Editar» (abans «Gestionar») i **«Treure de la llista»** (abans «Eliminar» / «Amagar d’Agents»).
+    Treure’l només l’amaga de la llista i del selector; no l’esborra de cap obra ni de cap acta. Es desa a la clau pròpia
+    `aco_agents_amagats_v878301` (amb el nom). La llista vella `hiddenAgentIdentities878192` de la pseudo-obra
+    `__global_agents_878188` no funcionava: les claus «data:…» es buidaven en desar (`stripHeavy878185`).
+    Cada agent diu a quantes obres surt.
+  - **Pestanya Agents de l’obra:** només els seus; sense cap, «encara no té agents».
+    - «+ Afegir agent» obre `AgentPicker878301`: grups, cercador i caselles; «Ja hi és» per als que ja hi són; «Crear un
+      agent nou». La llista és la mateixa que la de la pantalla Agents (`agentsLib878301`).
+    - Amb 10 o més agents, o amb repetits, surt un avís amb «Ajuntar els repetits» (una fitxa per persona, amb totes les
+      dades) i «Triar quins treure».
+  - **Causa de les obres amb 22-24 agents:** les actes (`Actes8761`) copiaven a l’obra tots els agents de la llista en
+    obrir-ne o fer-ne una i en desar-la. Ara l’obra guarda només els que surten a l’acta en desar-la i els que s’hi afegeixen.
+    Les dades d’abans no s’han tocat: l’Héctor les pot ajuntar o treure des de l’avís.
+  - **Botó «A dalt»** (`BackTop878301`): surt en baixar més de 700 px, a baix al mig (al mòbil, per sobre de la barra de baix).
   - L’etiqueta de l’estat ara surt traduïda.
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
@@ -477,6 +497,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `pestanyestest.mjs`: una sola pestanya «Pressupost» (el ràpid a dins, sense canviar dades en obrir), Actes a tots els
     treballs, taula d’Expedients proporcionada.
     `notestest.mjs`: Notes (numeració i data, text, foto i document, recarregar, mòbil amb la foto del núvol, eliminar).
+    `agentstest.mjs`: agents (V87.301): llista sense repetits i amb grups, «Editar» i «Treure de la llista», obra amb molts
+    agents (avís, ajuntar repetits, triar quins treure), obra sense agents i selector, una acta nova no copia agents,
+    botó «A dalt» (ordinador i mòbil). `idiomapctest.mjs`: canviar l’idioma a l’ordinador des d’Ajustos (com l’Héctor).
     `albaranstest.mjs`: Albarans dins de l’obra (obra ja triada), a la pantalla general, icones i castellà al mòbil.
     `residualtest.mjs`: amb l’app en castellà, busca frases del diccionari que encara surten en català (pantalles del
     menú i totes les pestanyes d’una obra). `i18n-on.mjs`: on surt un text sense `t(…)`. `i18n-docs.mjs` i
