@@ -19,7 +19,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.304";
+const APP_VERSION878264="87.304.1";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5147,7 +5147,8 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={t("Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l={t("Agents")} on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t("Obres")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={t("Hores")} on={()=>nav("Traça")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t(SCREEN_TITLE878268[screen]||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
+PERFIL878304=empresa878259?.perfil||"";
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={t("Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l={t("Agents")} on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={t("Hores")} on={()=>nav("Traça")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
 
 {screen==="Inici"&&<Inici clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
@@ -5359,7 +5360,12 @@ function AgentsGeneral878188({odata={},setOdata,clients=[],obres=[]}){
     amagarAgent878301(agent);setOdata(prev=>treureDeLaLlista878303(prev,agent));setAmagats878301(x=>x+1);
   }
   // es compten les obres de la llista (les dades que han quedat d'obres esborrades també es buiden, però no es compten)
-  const ambAgents878303=useMemo(()=>{const ids=new Set((obres||[]).map(o=>String(o.id)));const l=obresAmbAgents878303(odata,obres).filter(([k])=>ids.has(String(k)));return {obres:l.length,agents:l.reduce((s,[,d])=>s+d.agents.length,0)}},[odata,obres]);
+  const ambAgents878303=useMemo(()=>{const ids=new Set((obres||[]).map(o=>String(o.id)));const l=obresAmbAgents878303(odata,obres).filter(([k])=>ids.has(String(k)));
+    // V87.304.1 · l'avís és per a la neteja d'un sol cop: només si no s'ha fet mai i hi ha agents d'abans posats sols (els
+    // tres de cada obra nova d'abans, o obres amb 10 o més); si no, sortia cada vegada que una obra tenia algun agent
+    let fet=false;try{fet=!!localStorage.getItem(lsKey8779(AGENTS_COPIA_KEY878303))}catch{}
+    const vells=!fet&&l.some(([,d])=>d.agents.length>=10||d.agents.some(x=>/^agent-(hector|promotor|constructor)-default$/.test(String(x?.id||""))));
+    return {obres:l.length,agents:l.reduce((s,[,d])=>s+d.agents.length,0),vells}},[odata,obres]);
   function buidarObres878303(){
     const {obres:no,agents:na}=ambAgents878303;if(!no)return;
     if(!confirm(t("Treure els {m} agents de les {n} obres? Les actes ja fetes conserven els seus assistents i tots continuen en aquesta llista. Després afegeix a cada obra els que hi intervenen.",{m:na,n:no})))return;
@@ -5380,8 +5386,7 @@ function AgentsGeneral878188({odata={},setOdata,clients=[],obres=[]}){
   const labelCat=c=>agentGroupLabel878301(c);
   return <div className="stack agents-general-v878188 agents-general-v878189 agents-general-v878191">
     <Card title={t("Agents")} action={<button className="primary" type="button" onClick={()=>setShowAdd(v=>!v)}>{showAdd?t("Tancar alta"):t("+ Afegir agent")}</button>}>
-      {ambAgents878303.obres>0&&<div className="agents-buidar-v878303"><span><b>{t("Agents posats a les obres")}</b>{t("{n} obres tenen agents posats ({m} en total). Si s’hi van posar per error o per provar, els pots treure de totes alhora: les actes ja fetes conserven els seus assistents i tots continuen en aquesta llista.",{n:ambAgents878303.obres,m:ambAgents878303.agents})}</span><button type="button" className="secondary" onClick={buidarObres878303}>{t("Treure els agents de totes les obres")}</button></div>}
-      <div className="module-note-v8738"><b>{t("Biblioteca general d’agents")}</b><span>{t("Clients i agents continuen sent fitxes diferents. Tots els clients també apareixen aquí com a participants disponibles per a una obra, una visita o una acta.")}</span></div>
+      {ambAgents878303.obres>0&&ambAgents878303.vells&&<div className="agents-buidar-v878303"><span><b>{t("Agents posats a les obres")}</b>{t("{n} obres tenen agents posats ({m} en total). Si s’hi van posar per error o per provar, els pots treure de totes alhora: les actes ja fetes conserven els seus assistents i tots continuen en aquesta llista.",{n:ambAgents878303.obres,m:ambAgents878303.agents})}</span><button type="button" className="secondary" onClick={buidarObres878303}>{t("Treure els agents de totes les obres")}</button></div>}
       {showAdd&&<div className="form-grid compact-v87151 agents-add-grid-v878188 agents-add-grid-v878189">
         <label><span>{t("Rol")}</span><select value={draft.rol} onChange={e=>setDraft(d=>({...d,rol:e.target.value}))}>{AGENT_ROLE_OPTIONS878188.map(r=><option key={r} value={r}>{i18nT(r)}</option>)}</select></label>
         <div className="span-all"><FitxaPersona878304 v={draft} onChange={patch=>setDraft(d=>({...d,...patch}))} tipus={tipusFitxaAgent878304(draft)}/></div>
@@ -5399,6 +5404,11 @@ function AgentsGeneral878188({odata={},setOdata,clients=[],obres=[]}){
 // V87.268 · Navegació del mòbil i l'iPad: capçalera fixa d'una línia amb «Tornar» (sempre visible) i barra fixa a
 // baix amb el més habitual. «Més» obre el menú de sempre. A l'ordinador no surten (hi ha el menú lateral).
 // V87.300 · noms nous (Obres, Hores, Agenda, Facturació, Preus, Despeses, Ajustos); les claus de pantalla no canvien
+// V87.304.1 · nom de la llista d'obres segons el perfil del compte: «Obres» per als constructors i «Expedients» per als
+// tècnics (també l'Héctor, que no té perfil d'empresa). El posa l'App a cada dibuix.
+let PERFIL878304="";
+function etObres878304(){return PERFIL878304==="constructor"?"Obres":"Expedients"}
+function etNovaObra878304(){return PERFIL878304==="constructor"?"Nova obra":"Nou expedient"}
 const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Obres","Traça":"Hores","Agenda":"Agenda","Fitxa client":"Client","Pressupostos honoraris":"Pressupostos","Factures":"Facturació","Clients":"Clients","Agents":"Agents","Llibreria":"Preus","Albarans":"Despeses","Configuració":"Ajustos","Pressupostos":"Pressupostos","Rendiments":"Rendiments"};
 function AppHead878268({title,onBack,onMenu}){
   return <div className="mobile-top app-head-v878268">
@@ -5407,7 +5417,7 @@ function AppHead878268({title,onBack,onMenu}){
   </div>;
 }
 function BottomNav878268({screen,role,perfil,nav,onMore}){
-  const items=[["Inici",<House/>,"Inici"],["Treballs / Expedients",<FolderOpen/>,"Obres"]];
+  const items=[["Inici",<House/>,"Inici"],["Treballs / Expedients",<FolderOpen/>,etObres878304()]];
   if(role==="admin"&&perfil==="constructor")items.push(["Albarans",<Camera/>,"Despeses"]);
   items.push(["Agenda",<CalendarDays/>,"Agenda"]);
   if(role==="admin"&&perfil!=="constructor")items.push(["Traça",<Clock/>,"Hores"]);
@@ -6967,7 +6977,7 @@ const chooseSort878192=key=>setSort878192(s=>s.key===key?{key,dir:s.dir==="asc"?
 const sortHead878192=(key,label)=><button type="button" className={`exp-sort-head-v878192 ${sort878192.key===key?"active":""}`} onClick={()=>chooseSort878192(key)} title={t("Ordenar per")+" "+t(label).toLowerCase()}><span>{t(label)}</span><b>{sort878192.key===key?(sort878192.dir==="asc"?"▲":"▼"):"↕"}</b></button>;
 const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)return;updateStatus(obra.id,value)};
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
-  <Card title={t("Obres")} action={<button className="primary" onClick={newObra}><Plus/> {t("Nova obra")}</button>}>
+  <Card title={t(etObres878304())} action={<button className="primary" onClick={newObra}><Plus/> {t(etNovaObra878304())}</button>}>
     <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar expedient, client, obra o població…")} aria-label={t("Buscar")}/></div>
     <div className="filters filters-v8741 filters-v8742 desktop-filters-v87119">
       <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar per número, codi, client, treball, adreça o municipi…")}/></div>
@@ -7092,8 +7102,10 @@ function ownStr878288(o,k){const v=o&&Object.prototype.hasOwnProperty.call(o,k)?
 // Les fitxes d'abans tenien l'adreça tota junta («Carrer… · 17230 · Palamós»): es separa sola quan es pot. Es continua
 // desant també «adreca» sencera, que és la que fan servir els documents.
 function netV878304(v){const s=String(v??"").trim();return /^pendent$/i.test(s)?"":s}
+// V87.304.1 · el que es mostra a un camp mentre s'escriu: sense retallar (si no, l'espai entre paraules desapareixia en escriure'l)
+function rawV878304(v){const s=String(v??"");return /^\s*pendent\s*$/i.test(s)?"":s}
 function partsAdreca878304(x={}){
-  if(x.carrer!==undefined||netV878304(x.codiPostal)||netV878304(x.poblacio))return {carrer:netV878304(x.carrer??""),codiPostal:netV878304(x.codiPostal),poblacio:netV878304(x.poblacio)};
+  if(x.carrer!==undefined||netV878304(x.codiPostal)||netV878304(x.poblacio))return {carrer:rawV878304(x.carrer??""),codiPostal:rawV878304(x.codiPostal),poblacio:rawV878304(x.poblacio)};
   const s=netV878304(x.adreca);if(!s)return {carrer:"",codiPostal:"",poblacio:""};
   const m=s.match(/^(.*?)[\s,·-]*\b(\d{5})\b\s*[·,-]?\s*([^·,\d][^·,]*)?\s*$/);
   if(m)return {carrer:m[1].replace(/[\s,·-]+$/,"").trim(),codiPostal:m[2],poblacio:(m[3]||"").trim()||poblacioForCp8773(m[2])||""};
@@ -7118,7 +7130,7 @@ const TITULACIONS878304=["Arquitecte","Arquitecte tècnic","Enginyer","Enginyer 
 // Fitxa d'una persona o empresa. tipus: «persona» (client, promotor), «tecnic», «empresa» (constructora), «industrial».
 function FitxaPersona878304({v={},onChange,tipus="persona",readOnly=false}){
   const ch=k=>e=>onChange?.({[k]:e.target.value});
-  const inp=(k,lbl,o={})=><label className={o.cls||""}><span>{lbl}</span><input value={netV878304(v[k])} readOnly={readOnly} onChange={ch(k)} type={o.type||"text"} inputMode={o.im} placeholder={o.ph||""}/></label>;
+  const inp=(k,lbl,o={})=><label className={o.cls||""}><span>{lbl}</span><input value={rawV878304(v[k])} readOnly={readOnly} onChange={ch(k)} type={o.type||"text"} inputMode={o.im} placeholder={o.ph||""}/></label>;
   const emp=tipus==="tecnic"||tipus==="empresa"||tipus==="industrial";
   // V87.304 · persona de contacte amb el seu mòbil, a part del telèfon de l'empresa o del despatx, i l'adreça de l'empresa
   return <div className="form-grid fitxa-persona-v878304">
@@ -8483,7 +8495,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   const st=normalizeExpedientStatus878136(estat);
   return <>
     <div className="obra-bar-info-v878269">
-      <button type="button" className="obra-back-v878269" onClick={onBack}><ChevronLeft/><span>{t("Obres")}</span></button>
+      <button type="button" className="obra-back-v878269" onClick={onBack}><ChevronLeft/><span>{t(etObres878304())}</span></button>
       <div className="obra-bar-txt-v878269"><h2>{obra.nom}</h2><small>{info}</small></div>
       <div className="obra-bar-right-v878269">
         {readOnly?<span className={`obra-estat-ro-v878269 ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}>{t(st)}</span>:<label className={`obra-estat-v878269 ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}><span className="sr-only-v878269">{t("Estat")}</span><select value={st} onChange={e=>onEstat?.(e.target.value)} aria-label={t("Estat")}>{EXPEDIENT_STATUS878136.map(x=><option key={x} value={x}>{t(x)}</option>)}</select></label>}
@@ -11876,7 +11888,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.304",
+    app_version:"87.304.1",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

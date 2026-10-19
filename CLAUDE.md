@@ -386,6 +386,16 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   poden tocar); si el promotor és un altre, el seu nom en **negreta** (`promotorDiferent878304`), també a la barra de l’obra.
 - **«Accions» del pressupost en 4 grups** (V87.304): Editar · Crear o importar · Compartir i imprimir · Aquest pressupost.
   «Com ha de ser l’Excel» ja no és al menú: «Importar Excel…» ensenya l’ajuda amb «Triar l’Excel».
+- **V87.304.1** (19/10/2026, avisos de l’Héctor amb la V87.304 publicada):
+  - **Espais als camps nous:** els camps de les fitxes mostraven el valor retallat (`netV878304`) i l’espai entre paraules
+    desapareixia en escriure’l. Ara es mostra sense retallar (`rawV878304`); es retalla en desar.
+  - **Agents:** l’avís «Agents posats a les obres» només surt si no s’ha fet mai la neteja i hi ha agents d’abans posats sols (els
+    tres de cada obra nova d’abans, o una obra amb 10 o més); abans sortia sempre que una obra tenia algun agent. Fora la nota
+    «Biblioteca general d’agents». **L’Héctor no vol a l’app textos que expliquin l’app o la feina feta.**
+  - **«Expedients» per al perfil tècnic** (`PERFIL878304`, `etObres878304`, `etNovaObra878304`; l’Héctor: «hi ha molts treballs
+    tècnics que no són obres»): menú, barra de baix, capçalera, títol de la llista («Nou expedient») i tornar de l’obra. Els
+    constructors continuen amb «Obres» / «Nova obra». L’Héctor (sense perfil d’empresa) és tècnic. Les proves naveguen per
+    `^(Obres|Expedients)$`.
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
