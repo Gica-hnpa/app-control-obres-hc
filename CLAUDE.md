@@ -396,6 +396,33 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     tècnics que no són obres»): menú, barra de baix, capçalera, títol de la llista («Nou expedient») i tornar de l’obra. Els
     constructors continuen amb «Obres» / «Nova obra». L’Héctor (sense perfil d’empresa) és tècnic. Les proves naveguen per
     `^(Obres|Expedients)$`.
+- **Llegir un pressupost en PDF** (V87.305, `src/pressupostPdf.js`, `PdfPressupost878305`, `importPdfBudget878305`; encàrrec de
+  l’Héctor del 19/10/2026). Sense IA. «Accions» › «Llegir un pressupost en PDF…»:
+  - `liniesPdf` llegeix el text del PDF per línies (pdf.js, com els albarans); `llegirPressupostPdf` hi reconeix capítols («01
+    ENDERROCS», «CAPÍTOL 2 …», «C02 …»), partides (codi de punts 01.02 o del BEDEC «1 E2225223 m3 …», unitat, text de diverses
+    línies, quantitat, preu, import), totals (no compten) i el total del PDF. Cada partida es comprova (quantitat × preu =
+    import) i es busca la combinació que quadra; als pressupostos amb amidaments (Presto), les línies de mides valen fins que
+    n’arriba una de només números o «TOTAL PARTIDA». Les que no quadren o no tenen números queden per revisar.
+  - La finestra ensenya les partides per capítols (es poden desmarcar i corregir: unitat, concepte, quantitat, preu) i el total
+    triat comparat amb el del PDF. Un PDF escanejat (sense text) no es pot llegir: ho diu.
+  - En desar: si el pressupost actiu ja té partides, se’n crea un de nou («PDF · <nom del fitxer>») i no es toca res; si és buit,
+    s’hi posen. Partides `tipus:"Import PDF"`. El PDF original va a Documents (com l’Excel, `persistImportedExcelDocument878245`).
+    La finestra arriba a la funció de l’App per `window.__acoImportPdf878305` (el pressupost surt a molts llocs).
+  - Proves: `pdfpressupostunit.mjs` (29, sense navegador: formats de números, l’app, Presto, descripcions llargues, TCQ, avisos) i
+    `pdfpressuposttest.mjs` (16: el navegador fa dos PDF i es llegeixen des d’una obra; mòbil).
+- **Mòdul tècnic, versió 1** (V87.305, `src/encarrecsTecnics.js`; `docs/proposta-perfil-tecnic.md`):
+  - **Passos de l’encàrrec** (`PassosEncarrec878305`, al Resum de l’obra) per a la cèdula d’habitabilitat, el certificat
+    energètic i la inspecció d’edifici (`encarrecDe` pel tipus de feina): Encàrrec · Documentació · Visita · Oficina · Tràmit ·
+    Lliurament, cada un amb la llista de comprovació; el pas actual és el primer que no té tots els punts fets. A cada pas es
+    poden afegir punts propis. Es desa a l’obra (`data.passos878305 = {fets, propis}`). Les dades de normativa (anys de validesa)
+    no hi són: pendents de confirmar amb l’Héctor.
+  - **Inici:** «Encàrrecs tècnics» oberts agrupats pel pas en què són (`EncarrecsInici878305`).
+  - **Enllaços de l’obra** (`EnllacosObra878305`, al Resum): el **Cadastre** amb la referència cadastral (adreça comprovada:
+    `OVCListaBienes.aspx?rc1=<7>&rc2=<7>`); cèdula → tràmit de segona ocupació (tramits.gencat.cat, comprovat); certificat
+    energètic → ICAEN i el cercador de certificats (comprovats). A **Ajustos › Enllaços de les obres** l’usuari hi afegeix els
+    seus (`aco_enllacos_v878305`; `{rc}`, `{rc1}`, `{rc2}`, `{poblacio}`, `{adreca}`), amb un botó per a l’oficina virtual del
+    CATGI (l’adreça no s’ha trobat: l’ha de posar l’Héctor; no s’hi pot entrar per ell).
+  - Prova: `tecnictest.mjs` (14).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -535,7 +562,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Comptador automàtic de temps**: compta com a feina el temps que només es consulta una obra (l’Héctor, 19/10/2026: «no pot
     ser que entri a consultar i em compti com a feina executada»). Replantejar-lo a la versió següent (p. ex. que comenci quan
     s’escriu o es fa alguna cosa, o preguntar en sortir).
-  - **Llegir un pressupost en PDF** d’un client i passar-lo a un pressupost de l’app (com la lectura d’albarans; el text dels PDF
+  - ~~Llegir un pressupost en PDF~~: fet a la V87.305. (Abans: d’un client i passar-lo a un pressupost de l’app; el text dels PDF
     ja es llegeix per files a `albaraFromPdf878259`).
   - **Google Drive dins de l’app** (botó «Des de Google Drive», Google Picker): cal que l’Héctor creï una clau d’API al seu
     projecte de Google. Mentrestant, a l’iPad: app Google Drive + app Fitxers › Navega › ⋯ › Edita › activar Drive.
@@ -656,6 +683,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `sessiotest.mjs`: sessió del núvol amb l’app en dues pestanyes (`MOCK_ROTA=1`). `fretest.mjs`: fre de seguretat del núvol.
     `agents303test.mjs`: buidar els agents de les obres, afegir i treure a l’obra, eliminar i tornar a crear a la llista.
     `dadestest.mjs`: Dades de l’obra (promotor triat que no torna enrere, el que s’escriu no es perd).
+    `pdfpressupostunit.mjs` i `pdfpressuposttest.mjs`: llegir pressupostos en PDF. `tecnictest.mjs`: passos dels encàrrecs
+    tècnics, Inici i enllaços de l’obra (Cadastre, tràmits, CATGI des d’Ajustos).
     `fitxestest.mjs`: obra nova amb el client i el promotor, Resum amb el contacte, Dades en pestanyes (client, promotor,
     constructora, direcció d’obra, industrials), adreça separada i automàtica, desplegable que no es tanca amb el comptador.
     Les proves que comparen amb una versió d’abans fan servir `WEBROOT=<carpeta>`: una còpia de la versió amb

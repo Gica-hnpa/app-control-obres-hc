@@ -1,0 +1,57 @@
+/* V87.305 · Llegir un pressupost en PDF: finestra de revisió (capítols, partides, total) */
+.pdf-press-v878305{display:flex;flex-direction:column;gap:12px;min-width:0}
+.pdf-press-v878305 .err-v878305{color:#b42318;background:#fef3f2;border:1px solid #fecdca;border-radius:10px;padding:8px 12px;margin:0}
+.pdf-tria-v878305.off{opacity:.6;pointer-events:none}
+.pdf-resum-v878305{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px}
+.pdf-resum-v878305 b{font-size:16px}
+.pdf-resum-v878305 em{color:#b45309;font-style:normal;font-weight:600}
+.pdf-taula-v878305{max-height:58vh;overflow:auto;border:1px solid #e2e8f0;border-radius:12px;padding:6px 10px}
+.pdf-taula-v878305 h4{margin:12px 0 6px;font-size:14px;color:#0f172a}
+.pdf-taula-v878305 table{width:100%;border-collapse:collapse;font-size:13px}
+.pdf-taula-v878305 th{text-align:left;color:#64748b;font-weight:600;font-size:12px;padding:4px;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+.pdf-taula-v878305 td{padding:3px 4px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+.pdf-taula-v878305 td input:not([type=checkbox]){width:100%;min-width:0;padding:4px 6px;font-size:13px}
+.pdf-taula-v878305 td input.ut{width:52px}
+.pdf-taula-v878305 td input.num{width:84px;text-align:right}
+.pdf-taula-v878305 td.num{text-align:right;white-space:nowrap;padding-top:8px}
+.pdf-taula-v878305 td.codi{white-space:nowrap;padding-top:8px;font-variant-numeric:tabular-nums}
+.pdf-taula-v878305 td small{display:block;color:#b45309;font-size:12px;margin-top:2px}
+.pdf-taula-v878305 tr.revisar td{background:#fffbeb}
+.pdf-taula-v878305 tr.off td{opacity:.45}
+
+/* V87.305 · Enllaços de cada obra (Resum) i a Ajustos */
+.enllacos-obra-v878305{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:2px 0 10px}
+.enllacos-obra-v878305 .lbl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#64748b;min-width:150px}
+.enllacos-obra-v878305>div{display:flex;flex-wrap:wrap;gap:6px}
+.enllac-v878305{display:inline-flex;align-items:center;gap:6px;border:1px solid #dbe3ee;border-radius:999px;padding:5px 12px;font-size:13px;color:#1d4ed8;text-decoration:none;background:#fff}
+.enllac-v878305:hover{background:#eff6ff}
+.enllac-v878305 small{color:#64748b;font-size:12px}
+.enllac-fila-v878305{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) auto;gap:8px;margin:0 0 8px}
+@media (max-width:600px){.enllac-fila-v878305{grid-template-columns:1fr auto}.enllac-fila-v878305 input:nth-child(2){grid-column:1}.enllacos-obra-v878305 .lbl{min-width:0;width:100%}}
+
+/* V87.305 · Passos dels encàrrecs tècnics (Resum de l'obra) i encàrrecs per pas a l'Inici */
+.passos-fila-v878305{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0 0 12px}
+.passos-fila-v878305 button{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid #e2e8f0;background:#fff;border-radius:12px;padding:8px 4px;cursor:pointer;min-width:0}
+.passos-fila-v878305 button b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#e2e8f0;color:#334155;font-size:13px}
+.passos-fila-v878305 button span{font-size:12px;font-weight:600;color:#334155;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.passos-fila-v878305 button small{font-size:11px;color:#64748b}
+.passos-fila-v878305 button.fet b{background:#16a34a;color:#fff}
+.passos-fila-v878305 button.actual{border-color:#2563eb}
+.passos-fila-v878305 button.actual b{background:#2563eb;color:#fff}
+.passos-fila-v878305 button.on{background:#eff6ff;box-shadow:0 0 0 2px #bfdbfe inset}
+.passos-llista-v878305{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+.passos-llista-v878305 label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:14px}
+.passos-llista-v878305 input{width:20px;height:20px;margin:0;flex:0 0 auto}
+.passos-afegir-v878305{display:flex;gap:8px}
+.passos-afegir-v878305 input{flex:1;min-width:0}
+@media (max-width:600px){.passos-fila-v878305{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.encarrecs-grups-v878305{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.encarrecs-grups-v878305 section{border:1px solid #e2e8f0;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.encarrecs-grups-v878305 header{display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+.encarrecs-grups-v878305 header span{background:#2563eb;color:#fff;border-radius:999px;font-size:12px;padding:1px 8px;font-weight:700}
+.encarrecs-grups-v878305 button{text-align:left;border:0;background:#f8fafc;border-radius:8px;padding:6px 8px;display:flex;flex-direction:column;cursor:pointer}
+.encarrecs-grups-v878305 button small{color:#64748b;font-size:12px}
+.passos-v878305{padding-bottom:14px}
+.passos-v878305>.passos-fila-v878305,.passos-v878305>.passos-llista-v878305,.passos-v878305>.passos-afegir-v878305{margin-left:16px;margin-right:16px}
+.passos-v878305>.passos-fila-v878305{margin-top:12px}
+.encarrecs-inici-v878305>.encarrecs-grups-v878305{padding:12px 16px 16px}

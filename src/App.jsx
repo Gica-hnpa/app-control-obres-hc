@@ -5,10 +5,12 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText} from "lucide-react";
+import {Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
+import {llegirPressupostPdf,liniesPdf,numero as numeroPdf878305} from "./pressupostPdf.js";
+import {encarrecDe,estatPassos} from "./encarrecsTecnics.js";
 import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary} from "./googleCal.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
@@ -19,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.304.1";
+const APP_VERSION878264="87.305";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2896,6 +2898,36 @@ function EspaiNuvol878263(){
   </Card>;
 }
 
+// V87.305 · Enllaços de cada obra (mòdul tècnic, encàrrec de l'Héctor del 19/10/2026). El Cadastre s'obre amb la referència
+// cadastral de l'obra (adreça comprovada); segons el tipus de feina, el tràmit de la cèdula de segona ocupació o la certificació
+// energètica (ICAEN). L'usuari hi afegeix els seus a Ajustos (p. ex. l'oficina virtual del CATGI: no s'hi pot entrar per ell);
+// {rc}, {rc1}, {rc2}, {poblacio} i {adreca} es canvien per les dades de l'obra.
+const ENLLACOS_KEY878305="aco_enllacos_v878305";
+function rcNet878305(rc){return String(rc||"").toUpperCase().replace(/[^0-9A-Z]/g,"")}
+function enllacosBase878305(obra={}){
+  const rc=rcNet878305(obra.rc);const tipus=canonicalWorkType8740(obra.tipusTreball||obra.tipologia||"");
+  const out=[{nom:"Cadastre",url:rc.length>=14?`https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${rc.slice(0,7)}&rc2=${rc.slice(7,14)}`:"https://www1.sedecatastro.gob.es/",det:rc.length>=14?rc.slice(0,14):""}];
+  if(/cèdula/i.test(tipus))out.push({nom:"Cèdula de segona ocupació (tràmit)",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Cedula-dhabitabilitat-de-segona-ocupacio"});
+  if(/certificat energètic/i.test(tipus))out.push({nom:"Certificació energètica (ICAEN)",url:"https://icaen.gencat.cat/ca/energia/usos_energia/edificis/certificacio/index.html"},{nom:"Cercador de certificats energètics",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"});
+  return out;
+}
+function enllacosPropis878305(){try{const l=JSON.parse(localStorage.getItem(lsKey8779(ENLLACOS_KEY878305))||"[]");return Array.isArray(l)?l.filter(x=>x&&String(x.url||"").trim()):[]}catch{return []}}
+function omplenaUrl878305(url,obra={}){const rc=rcNet878305(obra.rc);return String(url||"").trim().replace(/\{rc\}/g,rc).replace(/\{rc1\}/g,rc.slice(0,7)).replace(/\{rc2\}/g,rc.slice(7,14)).replace(/\{poblacio\}/g,encodeURIComponent(obra.poblacio||"")).replace(/\{adreca\}/g,encodeURIComponent(obra.adreca||""))}
+function urlSegura878305(u){return /^https?:\/\//i.test(String(u||"").trim())}
+function EnllacosObra878305({obra={}}){
+  const l=[...enllacosBase878305(obra),...enllacosPropis878305().map(x=>({nom:x.nom||x.url,url:omplenaUrl878305(x.url,obra),propi:true}))].filter(x=>urlSegura878305(x.url));
+  return <div className="enllacos-obra-v878305"><span className="lbl">{t("Enllaços")}</span><div>{l.map((x,i)=><a key={i} href={x.url} target="_blank" rel="noopener noreferrer" className="enllac-v878305">{x.propi?x.nom:t(x.nom)}{x.det?<small>{x.det}</small>:null}<ExternalLink size={13}/></a>)}</div></div>;
+}
+function EnllacosAjustos878305(){
+  const[l,setL]=useState(()=>enllacosPropis878305().length?enllacosPropis878305():[]);
+  const desa=nl=>{setL(nl);try{localStorage.setItem(lsKey8779(ENLLACOS_KEY878305),JSON.stringify(nl.filter(x=>String(x.nom||x.url||"").trim())))}catch{}};
+  const ch=(i,k,v)=>desa(l.map((x,j)=>j===i?{...x,[k]:v}:x));
+  return <Card title={t("Enllaços de les obres")} className="enllacos-ajustos-v878305">
+    <p className="hint">{t("Surten al Resum de cada obra, amb el Cadastre. A l’adreça pots posar {rc} i es canvia per la referència cadastral de l’obra.")}</p>
+    {l.map((x,i)=><div key={i} className="enllac-fila-v878305"><input value={x.nom||""} onChange={e=>ch(i,"nom",e.target.value)} placeholder={t("Nom")}/><input value={x.url||""} onChange={e=>ch(i,"url",e.target.value)} placeholder="https://…" inputMode="url"/><button type="button" className="agent-treure-v878303" onClick={()=>desa(l.filter((_,j)=>j!==i))} aria-label={t("Treure")}><Trash2 size={16}/></button></div>)}
+    <div className="actions-inline"><button type="button" className="secondary" onClick={()=>desa([...l,{nom:"",url:""}])}><Plus/> {t("Afegir enllaç")}</button>{!l.some(x=>/catgi/i.test(String(x.nom||"")+String(x.url||"")))&&<button type="button" className="secondary" onClick={()=>desa([...l,{nom:t("Oficina virtual del CATGI"),url:""}])}><Plus/> {t("Oficina virtual del CATGI")}</button>}</div>
+  </Card>;
+}
 // V87.268 · Idioma de cada usuari: canvia tota l'app per a aquesta persona (no les dades ni el que veuen els altres).
 function IdiomaUsuari878268({user}){
   const[v,setV]=useState(getLang());
@@ -4784,6 +4816,31 @@ function parseRows(rows,sheetName){
   if(e?.target)e.target.value="";
 }
 
+// V87.305 · Pressupost llegit d'un PDF (finestra PdfPressupost878305). Si el pressupost actiu ja té partides, es crea un
+// pressupost nou (no es toca res del que hi ha); si és buit, s'hi posen. El PDF original es guarda a Documents.
+async function importPdfBudget878305(rows,meta={},budgetId="principal"){
+  if(!rows?.length||!obraId)return null;
+  const currentData=normalizeBudgetedData8791(odata?.[obraId]||data||empty());
+  const bid0=String(budgetId||"principal");
+  const existents=(currentData.partides||[]).filter(r=>(r.budgetId||"principal")===bid0);
+  let bid=bid0,nouGrup=null;
+  if(existents.length){bid="bg-pdf-"+Date.now();nouGrup={id:bid,nom:`PDF · ${meta.fileName||"pressupost"}`.replace(/\.pdf$/i,"").slice(0,90),tipus:"Importació PDF",createdAt:new Date().toISOString(),sourceBudgetId:bid0}}
+  createLocalRecoverySnapshot878122({clients,obres,odata},`Abans de llegir el PDF "${meta.fileName||""}" a ${obra?.nom||obraId}`,authUser8779);
+  let doc=null;
+  if(meta.file){try{doc=await persistImportedExcelDocument878245(meta.file,{obraId,budgetId:bid,budgetName:nouGrup?.nom||budgetLabel8786(currentData,bid0)||"Pressupost principal",rows:rows.length,total:meta.total||0});doc={...doc,nom:meta.file.name,tipus:"PDF",linkedType:"pressupostPdf",sourceImport:"Pressupost llegit d’un PDF"}}catch{doc=null}}
+  setD(obraId,d=>{
+    const now=new Date().toISOString();
+    const seed=nouGrup?[...(d.budgetGroups||[]),nouGrup]:(d.budgetGroups||[]);
+    const nous=rows.map((r,i)=>({id:`part-pdf-${Date.now()}-${i}`,codi:String(r.codi||""),cap:r.cap||"01 Partides",ut:r.ut||"ut",concepte:r.concepte||"Partida importada del PDF",desc:r.desc||"",q:Number(r.q)||0,pu:Number(r.pu)||0,certAnterior:0,certActual:0,certsByNum:{},tipus:"Import PDF",budgetId:bid,createdAt:now,updatedAt:now}));
+    const groups=ensureBudgetGroups8786({...d,budgetGroups:seed,partides:[...(d.partides||[]),...nous]}).groups;
+    const nomGrup=(groups.find(g=>g.id===bid)?.nom)||"Pressupost principal";
+    return {...d,budgetGroups:groups.filter(g=>g.id!=="principal"),activeBudgetIdObra:bid,partides:[...(d.partides||[]),...nous],
+      documents:doc?[doc,...(d.documents||[])]:(d.documents||[]),
+      pressupostos:[...(d.pressupostos||[]),{id:"px-"+Date.now(),budgetId:bid,budgetNom:nomGrup,versio:"v01",data:new Date().toLocaleDateString("ca-ES"),createdAt:now,nom:meta.fileName||"PDF",estat:`${nomGrup} · Llegit d’un PDF · ${nous.length} partides`,import:meta.total||0,updatedAt:now}],updatedAt:now};
+  });
+  return {nou:!!nouGrup,nom:nouGrup?.nom||"",partides:rows.length};
+}
+window.__acoImportPdf878305=importPdfBudget878305;
 function deletePressupostVersion(id){
   setD(obraId,d=>{
     const norm=normalizeBudgetedData8791(d||empty());
@@ -6521,6 +6578,7 @@ function doTaskAction878140(obra,task,action){
 }
 return <>
 <HomeHeader878251 obres={obres} tasks={tasks} properes={properes} todayLabel={todayLabel878141} setScreen={setScreen}/>
+<EncarrecsInici878305 obres={obres} odata={odata} openObra={openObra}/>
 <section className="home-pro-layout-v878140">
   <div className="home-pro-main-v878140">
     <OverdueReview878255 tasks={tasks} update={updateTaskField878140} clients={clients}/>
@@ -8344,6 +8402,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
   let activeTab=navigationTabs.includes(tab)?tab:(navigationTabs[0]||"Resum");
   const renderTab=()=> <>
     {activeTab==="Resum"&&<ObraHero878252 obra={obra} client={client} data={data} scope={directBudgetData878214} tabs={navigationTabs} setTab={setTab} uploadImage={uploadImage}/>}
+    {activeTab==="Resum"&&<PassosEncarrec878305 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
     {activeTab==="Gantt"&&<GanttObraVisual878253 data={directBudgetData878214} setData={strictClientReadOnly878242?undefined:setDirectBudgetData878214}/>}
     {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} clients={clients} setClients={setClients} data={data} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent} keepAgent878303={keepAgent878303} agentsLib878301={agentsLib878301}/>} 
     {activeTab==="Agents"&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145"><PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/><AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303}/></div>} 
@@ -8604,6 +8663,35 @@ function economicSummary878252(scope={}){
   return {rows,certs:certList,lastN,budget,certified,pending:Math.max(0,budget-certified),executed:budget?certified/budget*100:0,caps:capList,last:certList[certList.length-1]||null};
 }
 const CHART_COLORS878252=["var(--co-s1)","var(--co-s2)","var(--co-s3)","var(--co-s4)","var(--co-s5)","var(--co-s7)"];
+// V87.305 · Passos de l'encàrrec (cèdula, certificat energètic, inspecció d'edifici) al Resum de l'obra: en quin pas és i la
+// llista de comprovació de cada pas (src/encarrecsTecnics.js). Es poden afegir punts propis a cada pas. Es desa a l'obra.
+function PassosEncarrec878305({obra={},data={},setData,readOnly=false}){
+  const k=encarrecDe(obra);const ps=data.passos878305||{};const e=k?estatPassos(k,ps):null;
+  const[obert,setObert]=useState(null);const[nou,setNou]=useState("");
+  if(!e)return null;
+  const vist=obert??Math.min(e.actual,e.passos.length-1);
+  const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({fets:{...(cur.fets||{})},propis:{...(cur.propis||{})}});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
+  const toggle=id=>desa(p=>{if(p.fets[id])delete p.fets[id];else p.fets[id]=true;return p});
+  const afegeix=pk=>{const tx=nou.trim();if(!tx)return;desa(p=>{p.propis[pk]=[...(p.propis[pk]||[]),tx];return p});setNou("")};
+  const pas=e.passos[vist];
+  return <Card title={e.acabat?`${t(e.nom)} · ${t("Acabat")}`:t("{tipus} · pas {n} de {m}: {pas}",{tipus:t(e.nom),n:e.actual+1,m:e.passos.length,pas:t(e.passos[e.actual].nom)})} className="passos-v878305">
+    <div className="passos-fila-v878305">{e.passos.map(p=><button type="button" key={p.k} className={`${p.complet?"fet":""} ${p.i===e.actual?"actual":""} ${p.i===vist?"on":""}`} aria-pressed={p.i===vist} onClick={()=>setObert(p.i)}><b>{p.complet?"✓":p.i+1}</b><span>{t(p.nom)}</span><small>{p.fet}/{p.total}</small></button>)}</div>
+    <ul className="passos-llista-v878305">{pas.items.map(it=><li key={it.id}><label><input type="checkbox" checked={!!(ps.fets||{})[it.id]} disabled={readOnly} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label></li>)}</ul>
+    {!readOnly&&<div className="passos-afegir-v878305"><input value={nou} onChange={e=>setNou(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")afegeix(pas.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(pas.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(pas.k)}><Plus/> {t("Afegir")}</button></div>}
+  </Card>;
+}
+// V87.305 · Inici: els encàrrecs tècnics oberts, agrupats pel pas en què són («Visita 3 · Tràmit 2»)
+function EncarrecsInici878305({obres=[],odata={},openObra}){
+  const perPas={};
+  for(const o of obres||[]){
+    const k=encarrecDe(o);if(!k||/tancat|anul|no acceptat/i.test(String(o.estat||"")))continue;
+    const e=estatPassos(k,(odata?.[o.id]||{}).passos878305||{});if(!e||e.acabat)continue;
+    const nom=e.passos[e.actual].nom;(perPas[nom]=perPas[nom]||[]).push({o,e});
+  }
+  const grups=["Encàrrec","Documentació","Visita","Oficina","Tràmit","Lliurament"].filter(x=>perPas[x]);
+  if(!grups.length)return null;
+  return <Card title={t("Encàrrecs tècnics")} className="encarrecs-inici-v878305"><div className="encarrecs-grups-v878305">{grups.map(x=><section key={x}><header><b>{t(x)}</b><span>{perPas[x].length}</span></header>{perPas[x].map(({o,e})=><button type="button" key={o.id} onClick={()=>openObra?.(o.id)}><b>{o.nom}</b><small>{t(e.nom)} · {e.fet}/{e.total}</small></button>)}</section>)}</div></Card>;
+}
 function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploadImage}){
   const s=useMemo(()=>economicSummary878252(scope),[scope]);
   const fileRef=useRef(null);
@@ -8627,6 +8715,7 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
         <div className="meta"><span className="code">{expedientCode8739(obra)}</span><span className={`st ${statusKeyPress8776(estat)}`}>{t(estat)}</span><span>{t(moduleLabel8737(obra))}</span></div>
         <h2>{obra.nom}</h2><ShareObra878259 obra={obra}/>
         <ContacteObra878304 obra={obra} client={client}/>
+        <EnllacosObra878305 obra={obra}/>
         {hasBudget?<div className="obra-hero-progress-v878252">
           <div className="lbl"><span>{s.lastN?t("Certificat a origen · C-{n}",{n:s.lastN}):t("Pressupost preparat, sense certificacions")}</span><b>{pct878252(s.executed)}</b></div>
           <div className="track"><i style={{width:`${Math.min(100,s.executed)}%`}}/></div>
@@ -9091,9 +9180,64 @@ function PartidaReadingModal87208({row={},title="Fitxa de la partida",editable=f
   const hasBreakdown=!!(table?.rows?.length||libText87196(row.descompost));
   return <Modal title={title} close={close}><div className="partida-reading-modal-v87208"><div className="partida-reading-meta-v87208"><div><small>{t("Codi")}</small><b>{row.codi||row.codiIntern||"—"}</b></div><div><small>{t("Unitat")}</small><b>{row.ut||t("ut")}</b></div><div><small>{t("Preu unitari")}</small><b>{money(parseNum8770(row.pu)||0)}</b></div><div><small>{t("Total descompost")}</small><b>{hasBreakdown?money(detected):t("Sense descompost")}</b></div></div><div className={`partida-reading-split-v87208 ${hasBreakdown?"has-breakdown":""}`}><section><h3>{t("Descripció completa")}</h3>{editable?<textarea value={row.desc||""} onChange={e=>onChange?.("desc",e.target.value)} placeholder={t("Escriu la descripció llarga de la partida...")}/>:<div className="partida-reading-description-v87208">{libText87196(row.desc)?row.desc:<em>{t("Aquesta partida encara no té descripció llarga.")}</em>}</div>}</section>{hasBreakdown&&<section><div className="partida-reading-section-head-v87208"><h3>{t("Descompost")}</h3>{editable&&openBreakdown&&<button type="button" className="secondary small" onClick={openBreakdown}>{t("Editar descompost")}</button>}</div>{table?.rows?.length?<div className="partida-reading-table-wrap-v87208"><table><thead><tr><th>{t("Concepte")}</th><th>{t("Ut.")}</th><th>{t("Rend.")}</th><th>{t("Preu/ut")}</th><th>{t("Total")}</th></tr></thead><tbody>{table.rows.map((item,index)=>item.isSection?<tr className="breakdown-section-v87207" key={item.id||index}><td colSpan="5"><b>{item.concepte}</b></td></tr>:<tr key={item.id||index}><td>{item.concepte||"—"}</td><td>{item.ut||"—"}</td><td>{item.q||"—"}</td><td>{item.pu||"—"}</td><td>{item.total||"—"}</td></tr>)}</tbody></table></div>:<pre className="partida-reading-breakdown-text-v87208">{row.descompost}</pre>}</section>}</div><div className="modal-actions">{editable&&openBreakdown&&<button type="button" className="secondary" onClick={openBreakdown}>{t("Editar descompost")}</button>}<button type="button" className="primary" onClick={close}>{t("Tancar i tornar al pressupost")}</button></div></div></Modal>;
 }
+// V87.305 · Llegir un pressupost en PDF (encàrrec de l'Héctor del 19/10/2026): es tria el PDF, es llegeix (src/pressupostPdf.js) i
+// es revisa abans de desar: capítols, partides (es poden desmarcar i corregir) i el total comparat amb el del PDF.
+function PdfPressupost878305({onImport,close}){
+  const[estat,setEstat]=useState("tria");
+  const[err,setErr]=useState("");
+  const[res,setRes]=useState(null);
+  const[files,setFiles]=useState([]);
+  const[fitxer,setFitxer]=useState(null);
+  const nm=v=>typeof v==="number"?v:(numeroPdf878305(v)??0);
+  async function tria(f){
+    if(!f)return;
+    if(f.size>25*1024*1024){setErr(t("El PDF fa més de 25 MB."));return}
+    setErr("");setEstat("llegint");setFitxer(f);
+    try{
+      const {linies}=await liniesPdf(pdfjsLib,await f.arrayBuffer());
+      const r=llegirPressupostPdf(linies);
+      if(!r.partides.length){setErr(t("No s’hi ha trobat cap partida. Si el PDF és una foto o un escaneig no té text per llegir: demana’l en Excel o en un PDF fet des del programa."));setEstat("tria");return}
+      setRes(r);const coma=v=>String(Number(v)||0).replace(".",",");setFiles(r.partides.map((p,i)=>({...p,q:coma(p.q),pu:coma(p.pu),_i:i,sel:!(p.revisar&&!p.imp)})));setEstat("revisa");
+    }catch(e){setErr(t("No s’ha pogut llegir el PDF: {e}",{e:String(e?.message||e)}));setEstat("tria")}
+  }
+  const sel=files.filter(p=>p.sel);
+  const total=Math.round(sel.reduce((s,p)=>s+nm(p.q)*nm(p.pu),0)*100)/100;
+  const ch=(i,k,v)=>setFiles(p=>p.map(x=>x._i===i?{...x,[k]:v}:x));
+  const caps=[...new Set(files.map(p=>p.cap))];
+  const nRevisar=files.filter(p=>p.revisar).length;
+  async function desa(){
+    setEstat("desant");
+    const rows=sel.map(p=>({codi:p.codi,cap:p.cap,ut:p.ut,concepte:p.concepte,desc:p.desc,q:nm(p.q),pu:nm(p.pu)}));
+    const r=await onImport?.(rows,{fileName:fitxer?.name||"",total,file:fitxer});
+    if(r){alert(r.nou?t("Fet: s’ha creat el pressupost «{nom}» amb {n} partides. El que ja hi havia no s’ha tocat.",{nom:r.nom,n:r.partides}):t("Fet: s’han posat {n} partides al pressupost.",{n:r.partides}));close?.()}
+    else{setErr(t("No s’ha pogut desar."));setEstat("revisa")}
+  }
+  return <Modal title={t("Llegir un pressupost en PDF")} close={close}><div className="pdf-press-v878305">
+    {(estat==="tria"||estat==="llegint")?<>
+      <p>{t("Tria el PDF del pressupost. L’app en llegeix els capítols i les partides i te les ensenya abans de desar-les.")}</p>
+      <p className="hint">{t("Ha de ser un PDF amb text (fet des d’un programa), no una foto ni un escaneig.")}</p>
+      {err&&<p className="err-v878305">{err}</p>}
+      <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><label className={`primary action-upload-v87213 pdf-tria-v878305 ${estat==="llegint"?"off":""}`}>{estat==="llegint"?t("Llegint…"):t("Triar el PDF")}<input type="file" accept="application/pdf,.pdf" disabled={estat==="llegint"} onChange={e=>{tria(e.target.files?.[0]);e.target.value=""}}/></label></div>
+    </>:<>
+      <div className="pdf-resum-v878305"><b>{t("{n} partides en {c} capítols",{n:files.length,c:caps.length})}</b><span>{t("Total del que has triat: {t}",{t:money(total)})}{res?.totalPdf!=null?<> · {t("Total del PDF: {t}",{t:money(res.totalPdf)})}</>:null}</span>{nRevisar>0&&<em>⚠ {t("{n} partides per revisar (marcades en groc)",{n:nRevisar})}</em>}</div>
+      {err&&<p className="err-v878305">{err}</p>}
+      <div className="pdf-taula-v878305">{caps.map(c=><section key={c}><h4>{c}</h4><table><thead><tr><th></th><th>{t("Codi")}</th><th>{t("Ut")}</th><th>{t("Concepte")}</th><th>{t("Quantitat")}</th><th>{t("Preu")}</th><th>{t("Import")}</th></tr></thead><tbody>{files.filter(p=>p.cap===c).map(p=><tr key={p._i} className={`${p.sel?"":"off"} ${p.revisar?"revisar":""}`}>
+        <td><input type="checkbox" checked={!!p.sel} onChange={e=>ch(p._i,"sel",e.target.checked)} aria-label={t("Incloure")}/></td>
+        <td className="codi">{p.codi}</td>
+        <td><input className="ut" value={p.ut} onChange={e=>ch(p._i,"ut",e.target.value)}/></td>
+        <td><input value={p.concepte} onChange={e=>ch(p._i,"concepte",e.target.value)}/>{p.revisar&&<small>⚠ {t(p.revisar)}</small>}</td>
+        <td><input className="num" inputMode="decimal" value={p.q} onChange={e=>ch(p._i,"q",e.target.value)}/></td>
+        <td><input className="num" inputMode="decimal" value={p.pu} onChange={e=>ch(p._i,"pu",e.target.value)}/></td>
+        <td className="num">{money(nm(p.q)*nm(p.pu))}</td>
+      </tr>)}</tbody></table></section>)}</div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>{setEstat("tria");setRes(null);setFiles([]);setErr("")}}>{t("Un altre PDF")}</button><button type="button" className="primary" disabled={!sel.length||estat==="desant"} onClick={desa}>{estat==="desant"?t("Desant…"):t("Crear el pressupost ({n} partides)",{n:sel.length})}</button></div>
+    </>}
+  </div></Modal>;
+}
 function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,client,obra,clientHistoricalPartides=[],budgetGroups=[],activeBudgetId="principal",selectBudget,addBudget,renameBudget,deleteBudget,totalGlobal=0,totalActive=0,partidaLibrary=[],setPartidaLibrary,quickMode=false,clientMode=false,clientLibraryEnabled=true,clientLibraryMaxPerChapter=3}){
   const [caps,setCapsState]=useState(()=>group(data.partides||[],"cap"));
   const[excelHelp878273,setExcelHelp878273]=useState(false);
+  const[pdf878305,setPdf878305]=useState(false);
   const capsRef878247=useRef(caps);
   function setCaps(updater){
     const previous=capsRef878247.current||{};
@@ -9978,6 +10122,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   return <div className={`stack ${clientMode?"client-budget-editor-v878242":""}`}>
     {budgetMeasureTarget878194&&<MedicioModal8780 row={(caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}} contextLabel="PRESSUPOST" initial={((caps?.[budgetMeasureTarget878194.cap]||[])[budgetMeasureTarget878194.i]||{}).pressupostMesures||[]} close={()=>setBudgetMeasureTarget878194(null)} save={saveBudgetMeasures878194}/>} 
     {budgetPartidaView87208&&(()=>{const cap=budgetPartidaView87208.cap;const index=budgetPartidaView87208.index;const row=(caps?.[cap]||[])[index];return row?<PartidaReadingModal87208 row={row} title={`${row.codi||i18nT("Partida")} · ${row.concepte||i18nT("Sense concepte")}`} editable={editBudget8760b} onChange={(key,value)=>upd(cap,index,key,value)} openBreakdown={()=>{setBudgetPartidaView87208(null);openDescompostModal87173(cap,index)}} close={()=>setBudgetPartidaView87208(null)}/>:null})()}
+    {pdf878305&&<PdfPressupost878305 close={()=>setPdf878305(false)} onImport={(rows,meta)=>window.__acoImportPdf878305?.(rows,meta,activeBudgetId)}/>}
     {excelHelp878273&&<Modal title={i18nT("Com ha de ser l’Excel")} close={()=>setExcelHelp878273(false)}><div className="excel-help-v878273"><p>{i18nT("Adjunta un únic fitxer: CONFIGURACIÓ i AMIDAMENTS són auxiliars; PRESSUPOST conté la jerarquia i les partides; i cada partida pot tenir un full propi amb el mateix codi al nom del full o a les primeres files. Al descompost es recomanen les columnes Concepte, Unitat, Rendiment, Preu/ut i Preu total. L’app vincula els descompostos pel codi i deixa els preus pendents de validar, sense alterar automàticament el pressupost ni la llibreria.")}</p><p>{i18nT("Jerarquia del full PRESSUPOST: àmbit → capítol → subcapítol → partida. Si falten encapçalaments, s’utilitza la numeració del codi.")}</p><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setExcelHelp878273(false)}>{i18nT("Cancel·lar")}</button><label className="primary action-upload-v87213 excel-tria-v878304">{i18nT("Triar l’Excel")}<input type="file" accept=".xlsx,.xls" onChange={e=>{setExcelHelp878273(false);importExcel(e)}}/></label></div></div></Modal>}
 
     <Card className="budget-card-v878248" title={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} action={<div className="actions-inline budget-direct-edit-v87211"><span className="budget-grand-total budget-total-right-v87196"><small>{i18nT("Total")}</small><b>{money(total)}</b></span><ActionMenu87213 label={i18nT("Accions")}>
@@ -9992,7 +10137,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!clientMode&&editBudget8760b&&<label className="action-upload-v87213">{i18nT("Adjuntar / actualitzar descompostos")}<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label>}
       {(clientMode||!quickMode||(!clientMode&&addBudget&&budgetGroups?.length>0))&&<small className="amh-v878273">{i18nT("Crear o importar")}</small>}
       {(clientMode||!Object.values(caps||{}).some(a=>(a||[]).length))&&<button type="button" onClick={startManualBudget87115}>{i18nT("Començar pressupost buit")}</button>}
-      {!clientMode&&!quickMode&&<><button type="button" onClick={()=>setExcelHelp878273(true)}>{i18nT("Importar Excel…")}</button><button type="button" onClick={()=>openAiBudget878256({obra,client,data,importExcel})}>{i18nT("Pressupost amb IA")}</button></>}
+      {!clientMode&&!quickMode&&<><button type="button" onClick={()=>setExcelHelp878273(true)}>{i18nT("Importar Excel…")}</button><button type="button" onClick={()=>setPdf878305(true)}>{i18nT("Llegir un pressupost en PDF…")}</button><button type="button" onClick={()=>openAiBudget878256({obra,client,data,importExcel})}>{i18nT("Pressupost amb IA")}</button></>}
       {!clientMode&&addBudget&&budgetGroups?.length>0&&<><button type="button" onClick={()=>addBudget("Pressupost manual des de 0")}>{i18nT("Pressupost nou des de zero")}</button><button type="button" onClick={()=>addBudget("Imprevist / sobrecost")}>{i18nT("Imprevist / sobrecost")}</button><button type="button" onClick={()=>addBudget("Modificat aprovat")}>{i18nT("Modificat / annex")}</button></>}
       {!quickMode&&<><small className="amh-v878273">{i18nT("Compartir i imprimir")}</small>
       <button type="button" onClick={()=>openDoc?.(budgetPrintDoc878179())}>{i18nT("Previsualitzar / PDF")}</button>
@@ -11888,7 +12033,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.304.1",
+    app_version:"87.305",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -12084,7 +12229,7 @@ function save(){
 }
 return <div className="stack">
 <div className="config-version-v878264">{t("APP Control d’Obres ·")} {t("versió")} <b>V{APP_VERSION878264}</b></div>
-<IdiomaUsuari878268 user={authUser}/>
+<IdiomaUsuari878268 user={authUser}/><EnllacosAjustos878305/>
 <AccountAccessPanel878233 clients={clients} authUser={authUser}/>
 <VerifactuCompte878286 admin={admin}/>
 {admin&&!window.__acoEmpresa&&<EspaiNuvol878263/>}
