@@ -2852,4 +2852,8 @@ export default {
   "Despeses": "Gastos",
   "Entrega": "Entrega",
   "No tens tasques pendents. Afegeix-ne una amb el botó superior.": "No tienes tareas pendientes. Añade una con el botón superior.",
+  "Preus": "Precios",
+  "Ajustos": "Ajustes",
+  "Nova obra": "Nueva obra",
+  "Despeses d’aquesta obra": "Gastos de esta obra",
 };

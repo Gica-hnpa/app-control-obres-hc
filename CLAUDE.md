@@ -231,6 +231,17 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Negre:** Tancat.
   - **La resta:** blau (Pressupostat), taronja (Pendent de resposta), verd blavós (Acceptat), lila (En revisió), vermell
     (No acceptat) i gris (Anul·lat).
+- **Noms nous del menú principal** (V87.300, decisió de l’Héctor del 17-18/10/2026):
+  - **Menú i capçalera:** Obres (abans Treballs / Expedients), Preus (Llibreria), Facturació (Factures), Hores (Gestió
+    temps), Despeses (Albarans), Agenda (Agenda / Calendari) i Ajustos (Configuració). També el títol de la capçalera del
+    mòbil (`SCREEN_TITLE878268`).
+  - **Barra de baix:** Hores i Despeses.
+  - **Llista d’obres:** «Obres» i «Nova obra»; «← Obres» a la barra de l’obra.
+  - **Despeses:** «Despeses d’aquesta obra».
+  - **Només canvia el que es veu:** les claus de pantalla (`nav("Treballs / Expedients")`, `"Traça"`, `"Configuració"`…)
+    no canvien.
+  - **Proves:** naveguen pels noms nous. Compte: «Configuración» → «Ajustes» (no «Ajustosn»).
+  - **Pendent:** les guies de benvinguda (`tools/proves/guies.js`) encara diuen «Treballs / Expedients».
   - L’etiqueta de l’estat ara surt traduïda.
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
@@ -411,6 +422,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Carpetes temporals i perfils del navegador de les proves a `D:\aco-tmp`** (des del 18/10/2026; `ACO_PROVES_TMP` per
     canviar-ho). El C: es va omplir (0,02 GB lliures) amb 86 carpetes que havien deixat proves aturades a mitges (2,96 GB).
     Si una prova s'atura, la carpeta pot quedar a `D:\aco-tmp`: es pot esborrar.
+  - **Les dades reals de l’Héctor canvien** (el 18/10/2026: ha tret les fotos perdudes de la piscina, ha connectat Google
+    Calendar, ha posat contrasenya al portal de Socoterm, ha omplert la llibreria, ha esborrat les obres de prova i ha desat
+    l’idioma «ca»). Les proves no han de dependre d’aquest estat:
+    - `fitxerstest`/`esborrarfotostest` tornen a posar 11 fotos perdudes a la CÒPIA;
+    - `gcaltest` en treu la connexió de Google;
+    - les proves en castellà canvien l’idioma amb el botó d’Ajustos (com l’Héctor), no amb `saveLang`.
   - `node mocksupabase.mjs 5490 dump.json` → Supabase de proves (auth, `aco_kv`, `aco_shared`, funció d’albarans).
   - Servidor A (ordinador): `set ACO_DADES_DIR=<còpia>&& set VITE_CLOUD_URL=http://localhost:5490&& npx vite --port 5196`
   - Servidor B (com Render, sense disc): `set ACO_SENSE_DISC=1&& set VITE_CLOUD_URL=http://localhost:5490&& npx vite --port 5198`

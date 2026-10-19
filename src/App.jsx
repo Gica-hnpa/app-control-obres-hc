@@ -18,7 +18,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.299";
+const APP_VERSION878264="87.300";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5037,7 +5037,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={t("Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l={t("Agents")} on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t("Treballs / Expedients")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria")} on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Factures")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={t("Gestió temps")} on={()=>nav("Traça")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Albarans")} on={()=>nav("Albarans")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda / Calendari")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda / Calendari")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Configuració")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t(SCREEN_TITLE878268[screen]||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Clients"||screen==="Fitxa client"} i={<Users/>} l={t("Clients")} on={()=>nav("Clients")}/><MB a={screen==="Agents"} i={<Users/>} l={t("Agents")} on={()=>nav("Agents")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t("Obres")} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<><MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Traça"} i={<ReceiptText/>} l={t("Hores")} on={()=>nav("Traça")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t(SCREEN_TITLE878268[screen]||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
 
 {screen==="Inici"&&<Inici clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {screen==="Clients"&&<SafeRenderBoundary878108><Clients clients={clients} obres={obres} odata={odata} cs={cs} setCs={setCs} ct={ct} setCt={setCt} openClient={openClient} newClient={()=>setModal("client")} setClients={setClients} setObres={setObres}/></SafeRenderBoundary878108>}
@@ -5204,7 +5204,8 @@ function AgentsGeneral878188({odata={},setOdata,clients=[]}){
 
 // V87.268 · Navegació del mòbil i l'iPad: capçalera fixa d'una línia amb «Tornar» (sempre visible) i barra fixa a
 // baix amb el més habitual. «Més» obre el menú de sempre. A l'ordinador no surten (hi ha el menú lateral).
-const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Treballs / Expedients","Traça":"Gestió temps","Agenda":"Agenda / Calendari","Fitxa client":"Client","Pressupostos honoraris":"Pressupostos","Factures":"Factures","Clients":"Clients","Agents":"Agents","Llibreria":"Llibreria","Albarans":"Albarans","Configuració":"Configuració","Pressupostos":"Pressupostos","Rendiments":"Rendiments"};
+// V87.300 · noms nous (Obres, Hores, Agenda, Facturació, Preus, Despeses, Ajustos); les claus de pantalla no canvien
+const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Obres","Traça":"Hores","Agenda":"Agenda","Fitxa client":"Client","Pressupostos honoraris":"Pressupostos","Factures":"Facturació","Clients":"Clients","Agents":"Agents","Llibreria":"Preus","Albarans":"Despeses","Configuració":"Ajustos","Pressupostos":"Pressupostos","Rendiments":"Rendiments"};
 function AppHead878268({title,onBack,onMenu}){
   return <div className="mobile-top app-head-v878268">
     {onBack?<button type="button" className="back-v878268" onClick={onBack} aria-label={t("Tornar")}><ChevronLeft/><span>{t("Tornar")}</span></button>:<button type="button" className="brand-v878268" onClick={onMenu} aria-label={t("Menú")}>{t("CO")}</button>}
@@ -5213,9 +5214,9 @@ function AppHead878268({title,onBack,onMenu}){
 }
 function BottomNav878268({screen,role,perfil,nav,onMore}){
   const items=[["Inici",<House/>,"Inici"],["Treballs / Expedients",<FolderOpen/>,"Obres"]];
-  if(role==="admin"&&perfil==="constructor")items.push(["Albarans",<Camera/>,"Albarans"]);
+  if(role==="admin"&&perfil==="constructor")items.push(["Albarans",<Camera/>,"Despeses"]);
   items.push(["Agenda",<CalendarDays/>,"Agenda"]);
-  if(role==="admin"&&perfil!=="constructor")items.push(["Traça",<Clock/>,"Temps"]);
+  if(role==="admin"&&perfil!=="constructor")items.push(["Traça",<Clock/>,"Hores"]);
   const on=k=>k===screen||(k==="Treballs / Expedients"&&screen==="Obra");
   return <nav className="bottom-nav-v878268" aria-label={t("Navegació")}>
     {items.map(([k,ic,l])=><button type="button" key={k} className={on(k)?"on":""} aria-current={on(k)?"page":undefined} onClick={()=>nav(k)}>{ic}<span>{t(l)}</span></button>)}
@@ -6743,7 +6744,7 @@ const chooseSort878192=key=>setSort878192(s=>s.key===key?{key,dir:s.dir==="asc"?
 const sortHead878192=(key,label)=><button type="button" className={`exp-sort-head-v878192 ${sort878192.key===key?"active":""}`} onClick={()=>chooseSort878192(key)} title={t("Ordenar per")+" "+t(label).toLowerCase()}><span>{t(label)}</span><b>{sort878192.key===key?(sort878192.dir==="asc"?"▲":"▼"):"↕"}</b></button>;
 const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)return;updateStatus(obra.id,value)};
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
-  <Card title={t("Expedients")} action={<button className="primary" onClick={newObra}><Plus/> {t("Nou expedient")}</button>}>
+  <Card title={t("Obres")} action={<button className="primary" onClick={newObra}><Plus/> {t("Nova obra")}</button>}>
     <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar expedient, client, obra o població…")} aria-label={t("Buscar")}/></div>
     <div className="filters filters-v8741 filters-v8742 desktop-filters-v87119">
       <div className="search-field"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar per número, codi, client, treball, adreça o municipi…")}/></div>
@@ -8045,7 +8046,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   const st=normalizeExpedientStatus878136(estat);
   return <>
     <div className="obra-bar-info-v878269">
-      <button type="button" className="obra-back-v878269" onClick={onBack}><ChevronLeft/><span>{t("Expedients")}</span></button>
+      <button type="button" className="obra-back-v878269" onClick={onBack}><ChevronLeft/><span>{t("Obres")}</span></button>
       <div className="obra-bar-txt-v878269"><h2>{obra.nom}</h2><small>{info}</small></div>
       <div className="obra-bar-right-v878269">
         {readOnly?<span className={`obra-estat-ro-v878269 ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}>{t(st)}</span>:<label className={`obra-estat-v878269 ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}><span className="sr-only-v878269">{t("Estat")}</span><select value={st} onChange={e=>onEstat?.(e.target.value)} aria-label={t("Estat")}>{EXPEDIENT_STATUS878136.map(x=><option key={x} value={x}>{t(x)}</option>)}</select></label>}
@@ -11401,7 +11402,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.299",
+    app_version:"87.300",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -13592,7 +13593,7 @@ function Albarans878259({obres=[],clients=[],openObra,obraId:fixedObra=""}){
   const proveidors=[...new Set(list.map(a=>a.proveidor).filter(Boolean))];
   return <div className={`albarans-v878259 ${fixedObra?"alb-obra-v878279":""}`}>
     <div className="alb-head">
-      {fixedObra?<div><h2 className="alb-obra-title-v878279">{i18nT("Albarans d’aquesta obra")}</h2><p>{i18nT("Fes una foto de l’albarà i el cost dels materials queda imputat a aquesta obra.")}</p></div>:<div><span className="eyebrow">{i18nT("Control d’obra")}</span><h1>{i18nT("Albarans")}</h1><p>{i18nT("Fes una foto de l’albarà, tria l’obra i el cost dels materials hi queda imputat.")}</p></div>}
+      {fixedObra?<div><h2 className="alb-obra-title-v878279">{i18nT("Despeses d’aquesta obra")}</h2><p>{i18nT("Fes una foto de l’albarà i el cost dels materials queda imputat a aquesta obra.")}</p></div>:<div><span className="eyebrow">{i18nT("Control d’obra")}</span><h1>{i18nT("Despeses")}</h1><p>{i18nT("Fes una foto de l’albarà, tria l’obra i el cost dels materials hi queda imputat.")}</p></div>}
       <div className="actions">
         <label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Fer foto d’un albarà")}</label>
         <label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Adjuntar PDF o imatge")}</label>
