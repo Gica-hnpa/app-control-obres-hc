@@ -7,9 +7,9 @@
 // - Sense cobertura l'app continua funcionant; els canvis es pugen en tornar-n'hi.
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
-import { merge3, conflictLabels } from "./merge3.js";
+import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.302";
+const VERSION = "V87.303";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -36,6 +36,13 @@ const SESSION_KEY = "nuvol-aco-sessio", META_KEY = "nuvol-aco-estat", SKIP_KEY =
 let session = null, meta = { userId: "", cursor: "", known: {} }, device = "", active = false;
 let timer = null, busy = false, again = false, badge = null, lastOk = "", lastErr = "", remoteWaiting = null, lastInput = Date.now();
 let applying = false; // canvis que venen del núvol: no s'han de tornar a pujar
+// V87.303 · obres que l'usuari ha esborrat expressament en aquesta sessió («Eliminar» de l'obra): el fre no les compta
+// Es desen a l'aparell fins que l'esborrat arriba al núvol: si s'esborren sense connexió i es tanca l'app, en tornar-la a obrir
+// el fre tampoc les compta.
+const deliberate = new Set(), DELIB_KEY = "nuvol-aco-esborrades";
+const deliberateStore = () => window.__acoStore?.real || localStorage;
+function loadDeliberate() { try { (JSON.parse(deliberateStore().getItem(DELIB_KEY) || "[]") || []).forEach(x => deliberate.add(String(x))); } catch {} }
+function saveDeliberate() { try { if (deliberate.size) deliberateStore().setItem(DELIB_KEY, JSON.stringify([...deliberate].slice(-200))); else deliberateStore().removeItem(DELIB_KEY); } catch {} }
 
 // ---------- utilitats ----------
 function hash(str) {
@@ -81,6 +88,18 @@ const baseChecked = new Set();
 // (no es pot: no hi ha versió comuna o s'ha esborrat). «prefer»: en el que s'ha tocat als dos llocs, quina guanya.
 // Detall dels conflictes en l'idioma de l'usuari («Pressupost › 01.02 › preu»)
 function detall(conflicts) { return conflictLabels(conflicts).map(l => l.split(" › ").map(s => t(s)).join(" › ")); }
+// V87.303 · què és diferent entre la d'aquí i la del núvol (quan no hi ha versió comuna per saber qui ha canviat què)
+function diferencies(mine, theirs) {
+  try { return diffLabels(mine == null ? null : JSON.parse(mine), theirs == null ? null : JSON.parse(theirs)).map(l => l.split(" › ").map(s => t(s)).join(" › ")); } catch { return []; }
+}
+function diferenciesShared(loc, remote) {
+  try {
+    const f = diffLabels(JSON.parse(loc?.obra || "{}"), JSON.parse(remote?.obra || "{}")).map(l => "Fitxa › " + l);
+    const d = diffLabels(JSON.parse(loc?.dades || "null"), JSON.parse(remote?.dades || "null"));
+    const out = [...f, ...d]; if ((loc?.foto || "") !== (remote?.foto || "")) out.push("Foto de l’obra");
+    return out.slice(0, 5).map(l => l.split(" › ").map(s => t(s)).join(" › "));
+  } catch { return []; }
+}
 function tryMerge(r, local, prefer) {
   if (r.deleted || !(r.key in local)) return null;
   const b = getBase(r.key);
@@ -114,15 +133,54 @@ async function api(path, { method = "GET", body, headers = {}, auth = true } = {
   if (!r.ok) { const e = new Error(j?.msg || j?.message || j?.error_description || j?.error || txt || `Error ${r.status}`); e.status = r.status; e.body = j; throw e; }
   return j;
 }
+// V87.303 · La sessió es desa al localStorage de debò del navegador, que totes les pestanyes veuen al moment. Abans era al
+// de bigStore (IndexedDB), que cada pestanya llegeix només en obrir-se: amb l'app oberta en dues pestanyes, una renovava
+// el permís (cada hora) i l'altra ho tornava a provar amb el permís vell; el núvol el rebutjava, la pestanya esborrava la
+// sessió i en tornar a obrir l'app calia tornar a entrar (va passar el 19/10/2026).
+// Es llegeixen tots dos llocs (el de bigStore, per a les sessions d'abans) i es queda la més nova (la renovada més tard).
+const sessStore = () => window.__acoStore?.real || null;
+function readSession() {
+  const get = st => { try { const v = st && JSON.parse(st.getItem(SESSION_KEY) || "null"); return v && v.refresh_token ? v : null; } catch { return null; } };
+  const a = get(sessStore()), b = get(localStorage);
+  if (!a || !b) return a || b;
+  return (b.expires_at || 0) > (a.expires_at || 0) ? b : a;
+}
+function writeSession(s) {
+  const v = s ? JSON.stringify(s) : null;
+  for (const st of [sessStore(), localStorage]) { if (!st) continue; try { if (v) st.setItem(SESSION_KEY, v); else st.removeItem(SESSION_KEY); } catch {} }
+}
+// Si una altra pestanya ja ha renovat el permís, es fa servir el seu (no es torna a renovar amb el vell).
+function adoptNewer() {
+  const s = readSession();
+  if (s && session && s.user_id === session.user_id && s.refresh_token !== session.refresh_token && (s.expires_at || 0) >= (session.expires_at || 0)) session = s;
+}
 function setSession(j) {
   session = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Date.now() + (j.expires_in || 3600) * 1000, email: j.user?.email || session?.email || "", user_id: j.user?.id || session?.user_id || "" };
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch {}
+  writeSession(session);
+}
+async function refreshToken() {
+  adoptNewer();
+  if (Date.now() < session.expires_at - 60000) return;
+  const used = session.refresh_token;
+  try { setSession(await api("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: used }, auth: false })); }
+  catch (e) {
+    if (!e.offline && e.status >= 400 && e.status < 500) {
+      // potser una altra pestanya l'ha renovat just ara: si hi ha un permís més nou, es fa servir aquest
+      const s = readSession();
+      if (s && s.refresh_token !== used && (!session || s.user_id === session.user_id)) { session = s; return; }
+      session = null; writeSession(null); e.relogin = true;
+    }
+    throw e;
+  }
 }
 async function ensureToken() {
   if (!session) throw new Error(t("Cal entrar al núvol."));
+  adoptNewer();
   if (Date.now() < session.expires_at - 60000) return;
-  try { setSession(await api("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: session.refresh_token }, auth: false })); }
-  catch (e) { if (!e.offline && e.status >= 400 && e.status < 500) { session = null; localStorage.removeItem(SESSION_KEY); e.relogin = true; } throw e; }
+  // Una sola pestanya renova alhora (les altres esperen i agafen el permís nou)
+  if (navigator.locks?.request) await navigator.locks.request("aco-nuvol-sessio", () => refreshToken());
+  else await refreshToken();
+  if (!session) throw new Error(t("Cal entrar al núvol."));
 }
 async function login(email, password) {
   setSession(await api("/auth/v1/token?grant_type=password", { method: "POST", body: { email, password }, auth: false }));
@@ -230,6 +288,8 @@ function pieceLabel(key) {
 const KIND = { Windows: "ordinador Windows", Macintosh: "Mac o iPad", Linux: "ordinador Linux", iPhone: "iPhone", iPad: "iPad", Android: "Android" }; // es tradueix en mostrar-ho
 function devLabel(dev) {
   if (!dev) return t("Un altre aparell");
+  // V87.303 · si és el mateix compte, es diu (l'Héctor no entenia qui havia canviat Verbania: era ell, des d'un altre lloc)
+  if (String(dev).includes("@") && session?.email && String(dev).toLowerCase() === String(session.email).toLowerCase()) return t("Tu mateix, des d’un altre aparell o pestanya");
   if (String(dev).includes("@")) return t("Usuari {nom}", { nom: companyOf(dev)?.username || dev });
   const k = KIND[String(dev).split("-")[0]];
   return k ? t("Aparell ({nom})", { nom: t(k) }) : t("Un altre aparell");
@@ -240,8 +300,8 @@ function askConflict(items) {
   return new Promise(resolve => {
     const el = overlay(`
       <h1>${t("Canvis alhora")}</h1>
-      <p>${t("Mentre treballaves aquí, s’ha canviat el mateix des d’un altre lloc:")}</p>
-      <ul class="conflict-list-v878266">${items.map(i => `<li><b>${esc(i.label)}</b><span>${esc(i.who)}${i.when ? " · " + esc(fmtTime(i.when)) : ""}</span>${i.det ? `<small>${esc(t("Tots dos heu canviat:"))} ${esc(i.det.join(" · "))}</small>` : ""}</li>`).join("")}</ul>
+      <p>${items.some(i => i.det) ? t("Mentre treballaves aquí, s’ha canviat el mateix des d’un altre lloc:") : t("Aquest aparell i el núvol tenen dues versions diferents de:")}</p>
+      <ul class="conflict-list-v878266">${items.map(i => `<li><b>${esc(i.label)}</b><span>${esc(t("Al núvol: {qui}", { qui: i.who }))}${i.when ? " · " + esc(fmtTime(i.when)) : ""}</span>${i.det ? `<small>${esc(t("Tots dos heu canviat:"))} ${esc(i.det.join(" · "))}</small>` : i.dif?.length ? `<small>${esc(t("Què és diferent:"))} ${esc(i.dif.join(" · "))}</small>` : ""}</li>`).join("")}</ul>
       <p>${items.some(i => i.det) ? t("La resta de canvis ja s’han ajuntat. Per al que heu canviat tots dos, tria quina versió es queda. <b>L’altra no es perd</b>: es guarda a Configuració → «Versions guardades».") : t("Tria quina versió es queda. <b>L’altra no es perd</b>: es guarda a Configuració → «Versions guardades» i la pots recuperar quan vulguis.")}</p>
       <div class="choices">
         <button type="button" data-v="meva"><b>${t("Quedar-me la meva")}</b><span>${items.some(i => i.det) ? t("Per al que heu canviat tots dos, el d’aquest aparell.") : t("La que tens en aquest aparell.")}</span></button>
@@ -290,7 +350,7 @@ function keepMine(r) { meta.at[r.key] = r.updated_at; know(r.key, r.deleted ? un
 // això i la resta de canvis de tots dos es queda («merged»: clau → valor ajuntat, que s'aplica i després es puja).
 async function resolveConflicts(items, local) {
   items = items.map(x => (x && x.r ? x : { r: x, conflicts: null }));
-  const choice = await askConflict(items.map(({ r, conflicts }) => ({ label: pieceLabel(r.key), who: whoLabel(r.device), when: r.updated_at, det: conflicts ? detall(conflicts) : null })));
+  const choice = await askConflict(items.map(({ r, conflicts }) => ({ label: pieceLabel(r.key), who: whoLabel(r.device), when: r.updated_at, det: conflicts ? detall(conflicts) : null, dif: conflicts ? null : diferencies(local[r.key], r.deleted ? null : (r.value ?? null)) })));
   const mine = [], theirs = [], merged = new Map();
   for (const { r, conflicts } of items) {
     if (conflicts) {
@@ -664,7 +724,7 @@ async function sharedCycle(canApply) {
         await pujaAjuntada(r, owned, editor, remote, rh, mg.value); applied++;
         continue;
       }
-      const choice = await askConflict([{ label: `Obra compartida «${nom}»`, who, when: r.updated_at, det: mg?.conflicts ? detall(mg.conflicts) : null }]);
+      const choice = await askConflict([{ label: `Obra compartida «${nom}»`, who, when: r.updated_at, det: mg?.conflicts ? detall(mg.conflicts) : null, dif: mg?.conflicts ? null : diferenciesShared(loc, remote) }]);
       if (mg?.conflicts) {
         const mp = tryMergeShared(r.obra_id, loc, remote, known, choice === "meva" ? "mine" : "theirs");
         if (mp?.value) {
@@ -790,11 +850,14 @@ async function cycle({ startup = false, returning = false } = {}) {
     const waitingKeys = new Set((remoteWaiting?.rows || []).map(r => r.key));
     const toPush = pendingKeys(local).filter(k => !remoteKeys.has(k) && !waitingKeys.has(k) && !held.has(k));
     if (toPush.length) {
-      const risk = massChange(toPush, local);
+      const risk = await massChange(toPush, local);
       if (risk) { await stopForSafety(risk); return; }
       const clash = await pushRows(toPush.map(k => (k in local ? { key: k, value: local[k] } : { key: k, deleted: true })));
       const clashKeys = new Set(clash.map(c => c.key));
       toPush.forEach(k => { if (!clashKeys.has(k)) know(k, local[k]); });
+      // les obres esborrades que ja han arribat al núvol ja no cal recordar-les
+      toPush.forEach(k => { const id = splitKey(k)[1]; if (id !== null && !(k in local) && !clashKeys.has(k)) deliberate.delete(String(id)); });
+      saveDeliberate();
       // Algú ha desat la mateixa peça just ara: no s'ha trepitjat. Es pregunta (o, si ara no es pot, després).
       if (clash.length) {
         const tri = triage(clash.map(c => c.theirs), local);
@@ -850,16 +913,30 @@ async function cycle({ startup = false, returning = false } = {}) {
 }
 
 // Fre de seguretat: si d'una tirada es buiden o s'esborren diverses obres, no es puja res.
-function massChange(keys, local) {
+// V87.303 · Sense avisos falsos (19/10/2026, un navegador que feia dies que no es connectava):
+// - les obres que l'usuari esborra expressament («Eliminar» de l'obra) no compten;
+// - «deixar el núvol amb N expedients» només es mira si l'aparell puja de debò la llista d'obres, i abans d'aturar-se es
+//   pregunta al núvol quantes n'hi ha ara (el número que l'aparell recordava podia ser de fa dies).
+async function massChange(keys, local) {
   let dels = 0, shrinks = 0;
   for (const k of keys) {
-    if (splitKey(k)[1] === null) continue;
-    if (!(k in local) || local[k] === "null") { dels++; continue; }
+    const id = splitKey(k)[1];
+    if (id === null) continue;
+    if (!(k in local) || local[k] === "null") { if (!deliberate.has(String(id))) dels++; continue; }
     const oldLen = +String(meta.known[k] || "").split(":")[1] || 0;
     if (oldLen > 20000 && local[k].length < oldLen * 0.4) shrinks++;
   }
-  const obresNow = countObres(local), obresBefore = meta.obres || 0;
-  const lost = obresBefore && obresNow < obresBefore - 2;
+  const obresKey = keys.find(k => /__hector__aco_obres$/.test(k)) || keys.find(k => /(^|__)aco_obres$/.test(k));
+  const obresNow = countObres(local);
+  let obresBefore = meta.obres || 0, lost = false;
+  if (obresKey && obresBefore && obresNow + deliberate.size < obresBefore - 2) {
+    try {
+      const rows = await api(`/rest/v1/aco_kv?select=value,deleted&key=eq.${encodeURIComponent(obresKey)}`);
+      const r = rows?.[0]; let nc = 0; try { nc = r && !r.deleted ? (JSON.parse(r.value || "[]") || []).length : 0; } catch {}
+      obresBefore = nc;
+    } catch {}
+    lost = obresBefore > 0 && obresNow + deliberate.size < obresBefore - 2;
+  }
   if (dels + shrinks >= 3 || lost) return { dels, shrinks, obresNow, obresBefore, lost };
   return null;
 }
@@ -935,7 +1012,8 @@ async function connect() { try { localStorage.removeItem(SKIP_KEY); sessionStora
 // tornar a entrar continuen sincronitzant. En recarregar surt «Entra al núvol».
 async function logout() {
   active = false;
-  try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
+  writeSession(null);
+  try { sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
   try { await window.__acoLocalDisk?.flush?.(); } catch {}
   try { await window.__acoStore?.flush?.(); } catch {}
   location.reload();
@@ -960,8 +1038,9 @@ function hook() {
 export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
-  session = readJson(SESSION_KEY, null);
+  loadDeliberate();
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
+  session = readSession();
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
     if (skipped) { applyCompanyContext(); return; }

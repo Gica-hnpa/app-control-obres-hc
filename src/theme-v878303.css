@@ -1,0 +1,35 @@
+/* V87.303 · Menús desplegables visibles i capçalera fixa del pressupost sota la barra de l'obra (revisió del 19/10/2026) */
+
+/* La capçalera del pressupost (total i «Accions») es queda just sota la barra de l'obra, que des de la V87.299 té els blocs
+   i la fila d'apartats: la seva alçada la posa l'app a --obra-bar-h */
+html body .obra-page-v87105 .budget-card-v878248>.card-head{top:calc(var(--obra-bar-h,46px) + 6px)}
+html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap-head{top:calc(var(--obra-bar-h,46px) + 84px)}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .obra-page-v87105 .budget-card-v878248>.card-head{top:calc(53px + var(--obra-bar-h,46px) + 6px)}
+  html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap-head{top:calc(53px + var(--obra-bar-h,46px) + 84px)}
+}
+@media (max-width:760px){
+  /* al mòbil la capçalera del pressupost no es queda fixa, però ha de tenir capa pròpia: abans era «static» i, amb el
+     desenfocament del fons, el menú «Accions» quedava sota les línies del pressupost */
+  html body .obra-page-v87105 .budget-card-v878248>.card-head{position:relative!important;top:auto;z-index:62}
+  html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap-head{top:calc(53px + var(--obra-bar-h,46px) + 4px)}
+}
+/* Mentre el menú és obert, la capçalera del pressupost passa per sobre de tot (barra de l'obra inclosa) */
+html body .budget-card-v878248>.card-head:has(details[open]){z-index:95!important}
+
+/* A l'ordinador, «overflow-x:hidden» a html, body, #root i .main impedia que res es quedés fix en baixar (la barra de l'obra i
+   la capçalera del pressupost se n'anaven amunt). Al mòbil i l'iPad ja es feia amb «clip» des de la V87.268. */
+html,body,#root{overflow-x:clip!important}
+html body .main{overflow-x:clip!important}
+
+/* V87.303 · Agents: «Eliminar» a cada agent de la llista principal i «Treure» a cada agent de l'obra, sempre a la vista
+   (abans calia obrir la fitxa o entrar a «Editar»); avís per treure els agents de totes les obres */
+.agent-lib-actions-v878303{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.danger-lite-v878303,.agent-treure-v878303{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px solid #f1c4c4;color:#b42318;border-radius:10px;padding:6px 10px;font-weight:600;cursor:pointer;font-size:13px}
+.danger-lite-v878303:hover,.agent-treure-v878303:hover{background:#fef3f2}
+.agent-row-v878303{display:flex;align-items:stretch;gap:6px}
+.agent-row-v878303>.agent-summary-v878133{flex:1;min-width:0}
+.agent-treure-v878303{flex:0 0 auto}
+@media (max-width:600px){.agent-treure-v878303 span{display:none}.agent-treure-v878303{padding:6px 12px}}
+.agents-buidar-v878303{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.agents-buidar-v878303>span{display:flex;flex-direction:column;gap:2px;font-size:14px;flex:1;min-width:220px}

@@ -273,7 +273,77 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     una sola cosa: en desenvolupament React executa dues vegades els efectes, i es feien dues actes.
   - **Pendent (decidit, encara no fet):** ajuntar Actes + Notes en «Visites», Dades + Agents, Agenda + Tasques i
     Rendiment + Seguiment econòmic.
+- **Menús desplegables visibles i barres fixes a l’ordinador** (V87.303, `src/theme-v878303.css`; avís de l’Héctor del
+  19/10/2026: «Accions» del pressupost quedava sota el pressupost):
+  - **Causes:**
+    - al mòbil, la capçalera del pressupost era `position:static`, amb `backdrop-filter`, i el menú quedava sota les línies;
+    - el menú (520 px) sortia de la pantalla i quedava sota la barra de baix, el comptador de temps (capa 6000) o el ＋.
+  - **Arreglament:**
+    - la capçalera té capa pròpia, i mentre el menú és obert passa per sobre (`:has(details[open])`, capa 95);
+    - un sol codi a l’`App` (event `toggle`, en captura) ajusta qualsevol menú `details` amb panell absolut. Primer
+      l’escurça amb `max-height !important` fins a sobre de l’obstacle i, només si hi queden menys de 240 px, puja una
+      mica la pàgina. Si es puja la pàgina abans d’escurçar-lo, la pàgina torna enrere sola: el menú obert la feia més llarga.
+  - **Barres fixes a l’ordinador:** `overflow-x:hidden` a html, body, #root i .main impedia que res es quedés fix en baixar.
+    Ara és `clip`, com al mòbil des de la V87.268. La barra de l’obra i la capçalera del pressupost es queden a la vista.
+  - **Posició:** la capçalera fixa del pressupost es col·loca just sota la barra de l’obra (`--obra-bar-h`, la posa
+    `ObraBar878269` amb un `ResizeObserver`).
+- **Revisió de tota l’app** (`tools/proves/auditoria.mjs`, «clients virtuals»):
+  - **Qui:** l’Héctor (còpia del DADES) a l’ordinador, l’iPad i el mòbil; constructora (brava) i tècnic (oriol) a
+    l’ordinador i el mòbil, amb una obra de prova.
+  - **On:** totes les pantalles del menú i tots els apartats de 4 obres.
+  - **Què mira:** errors de JavaScript, «Mode segur», coses que surten per la dreta, pantalla buida, menús tapats.
+  - **Resultat:** informe i captures a `D:\aco-tmp\auditoria`. `menustest.mjs` prova «Accions» i «Imprimir».
+  - Els menús es miren com una persona: es porta el botó a la vista i s’espera que l’app ajusti el menú. Abans marcava el
+    «⋯» de l’obra tapat «per res» perquè el clicava quan ja havia marxat amunt (la primera línia de la barra no es queda fixa).
   - L’etiqueta de l’estat ara surt traduïda.
+- **Sessió del núvol amb l’app en dues pestanyes** (V87.303, `cloudSync.js`; el 19/10/2026 l’Héctor va haver de tornar a
+  entrar i no recordava la contrasenya):
+  - **Causa:** la sessió es desava al localStorage de bigStore (IndexedDB), que cada pestanya llegeix només en obrir-se. Cada
+    hora una pestanya renovava el permís; l’altra ho provava amb el vell, el núvol el rebutjava (i anul·lava la sessió) i la
+    pestanya esborrava l’entrada de totes dues.
+  - **Ara:** la sessió va al localStorage de debò (`window.__acoStore.real`, el veuen totes les pestanyes al moment); abans de
+    fer servir el permís es mira si una altra pestanya ja l’ha renovat (`adoptNewer`); només en renova una alhora
+    (`navigator.locks`, «aco-nuvol-sessio»); si el núvol el rebutja però n’hi ha un de més nou desat, es fa servir aquest.
+    Es llegeixen tots dos llocs i es queda la sessió renovada més tard (les sessions d’abans eren a bigStore).
+  - **Prova:** `sessiotest.mjs`. El Supabase de proves renova el permís com el de debò amb `MOCK_ROTA=1` (`MOCK_EXPIRES`,
+    `MOCK_REUSE_MS`; `GET /__auth` dona els comptadors). Amb la V87.302 reprodueix l’error (4 de 11); amb la V87.303, 11 de 11.
+  - **Si torna a passar:** a Ajustos › «Usuaris, clients i permisos» › «Canviar la meva contrasenya del núvol» (des d’un
+    aparell encara connectat; no demana la vella).
+- **Fre de seguretat del núvol sense avisos falsos** (V87.303, `massChange` de `cloudSync.js`; el 19/10/2026 a l’Héctor li va
+  sortir «Aturat per seguretat… 16 expedients (n’hi havia 19)» en un navegador que feia dies que no es connectava):
+  - Les obres esborrades expressament («Eliminar expedient» crida `__acoCloud.esborrada(id)`) no compten. Abans, esborrar 3
+    obres d’una tirada (p. ex. les de prova) quedava aturat i no arribava al núvol. Es recorden al localStorage de debò
+    (`nuvol-aco-esborrades`) fins que l’esborrat arriba al núvol: també si s’esborren sense connexió i es tanca l’app.
+  - «Deixar el núvol amb N expedients» només es mira si l’aparell puja de debò la llista d’obres, i abans d’aturar-se es
+    pregunta al núvol quantes n’hi ha ara (el número que l’aparell recordava, `meta.obres`, podia ser de dies abans).
+  - Un aparell amb dades velles que deixaria el núvol amb 3 obres menys continua aturat.
+  - **Prova:** `fretest.mjs` (V87.302: 5 de 8; V87.303: 10 de 10, amb el cas d’esborrar sense connexió i tornar a obrir).
+- **«Canvis alhora» diu què és diferent** (V87.303, `diffLabels` de `merge3.js`): sense versió comuna (un aparell que feia dies
+  que no es connectava) abans només deia el nom de la peça. Ara diu «Aquest aparell i el núvol tenen dues versions diferents
+  de:» i «Què és diferent: Actes › núm. 3 › només en aquest aparell · Pressupost › 01.02 › preu». Si l’ha desat el mateix
+  compte, «Al núvol: Tu mateix, des d’un altre aparell o pestanya». Prova: el cas 1b de `fusiotest.mjs`.
+- **Agents: buidar les obres i afegir o eliminar sempre** (V87.303, encàrrec de l’Héctor del 19/10/2026; les obres tenien agents
+  posats per error o per provar, i els vol tornar a posar ell a cada obra des de la llista):
+  - **Pantalla Agents:** avís «Agents posats a les obres» amb «Treure els agents de totes les obres»
+    (`buidarAgentsObres878303`). Abans de buidar-les:
+    - cada acta es guarda dins seu (`acta.agents`) les dades dels seus assistents (les actes els busquen pel número a l’obra;
+      si no, en desar-les es perdrien);
+    - tothom passa a la llista principal (`__global_agents_878188`);
+    - còpia de seguretat a `aco_agents_obres_copia_v878303`.
+    Les obres compartides per altres comptes no es toquen. Amb les dades de l’Héctor: 87 agents de 12 obres, i la llista
+    continua amb les 23 persones.
+  - **Llista principal:** «Eliminar» a la vista de cada agent (el treu de la biblioteca i de la llista; les obres i les actes on
+    ja hi és el conserven). Si es torna a crear o a afegir, torna a sortir (`unhideAgent878303`; abans quedava amagat per sempre).
+  - **Obra:** «Treure» a cada agent sense obrir-lo (`agent-treure-v878303`); qui es treu d’una obra continua a la llista
+    principal (`guardarALaLlista878303`, si no és que s’havia eliminat de la llista expressament).
+  - **Actes:** en desar una acta, a l’obra només s’hi afegeixen els assistents nous d’aquella edició (`orig878303`), no tots
+    els d’una acta antiga.
+  - **Prova:** `agents303test.mjs`.
+- **Dades de l’obra: el que s’està escrivint no es perd** (V87.303, `FitxaDadesTab8769`; 19/10/2026: «el promotor no es desa,
+  em torna a posar Socoterm»): cada desat de l’obra en canvia la data (`setD` posa `updatedAt` a la llista d’obres) i el
+  formulari es tornava a omplir amb el que hi havia desat. Triar el promotor l’afegeix als agents de l’obra (un desat), i
+  tornava enrere abans de «Guardar dades». Ara, si s’ha començat a canviar el formulari (`editant878303`), no es torna a omplir
+  fins a «Guardar dades» o fins que s’obre una altra obra. Prova: `dadestest.mjs` (V87.302: 4 de 8; V87.303: 8 de 8).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -405,6 +475,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
+- **Encàrrecs de l’Héctor del 19/10/2026 (després de la V87.303):**
+  - **Dades de l’obra en pestanyes**, com els blocs de dins de l’obra: Client, Promotor, Tècnics i Contractistes / industrials,
+    i a cadascuna totes les dades. Posar-hi les dades ha de ser més fàcil (també en crear l’obra: ara el promotor és un camp
+    de text plegat a «Més dades ara»).
+  - **Població automàtica** (codi postal ↔ població, com a la fitxa dels tècnics) amb tots els pobles de Girona, o com a mínim
+    del Baix Empordà, i després de Barcelona. La llista d’ara (`CP_MUNICIPIS8773`) en té pocs. Cal una font fiable (no
+    inventar codis postals): demanar a l’Héctor abans de baixar cap fitxer de dades.
+  - **Ordenar «Accions» del pressupost**: n’hi ha moltes; algunes (p. ex. l’ajuda per exportar a Excel) potser no serveixen.
+  - **Llegir un pressupost en PDF** d’un client i passar-lo a un pressupost de l’app (com la lectura d’albarans).
 - **Ajuntar els canvis per apartats: fet a la V87.293** (vegeu «Edició alhora»). Falta provar-ho de debò amb dues persones.
 - **Pantalles (nota de l’Héctor, 15/10/2026)**: a Expedients, «accions» i «apartats de l’obra» van per separat →
   ajuntar-les en una sola pestanya més simple. Simplificar les pestanyes de tota l’app i de tots els aparells: n’hi ha
@@ -512,6 +591,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     agents (avís, ajuntar repetits, triar quins treure), obra sense agents i selector, una acta nova no copia agents,
     botó «A dalt» (ordinador i mòbil). `plustest.mjs`: botó ＋ de l’obra (mòbil i iPad; Foto, Nota, Acta, Hores; no a l’ordinador).
     `idiomapctest.mjs`: canviar l’idioma a l’ordinador des d’Ajustos (com l’Héctor).
+    `menustest.mjs`: menús «Accions», «Imprimir» i «⋯» de l’obra visibles (ordinador, iPad, mòbil).
+    `sessiotest.mjs`: sessió del núvol amb l’app en dues pestanyes (`MOCK_ROTA=1`). `fretest.mjs`: fre de seguretat del núvol.
+    `agents303test.mjs`: buidar els agents de les obres, afegir i treure a l’obra, eliminar i tornar a crear a la llista.
+    `dadestest.mjs`: Dades de l’obra (promotor triat que no torna enrere, el que s’escriu no es perd).
+    Les proves que comparen amb una versió d’abans fan servir `WEBROOT=<carpeta>`: una còpia de la versió amb
+    `git worktree add --detach D:/aco-tmp/wtXXX <commit>` i `node_modules` enllaçat (`New-Item -ItemType Junction`).
     `albaranstest.mjs`: Albarans dins de l’obra (obra ja triada), a la pantalla general, icones i castellà al mòbil.
     `residualtest.mjs`: amb l’app en castellà, busca frases del diccionari que encara surten en català (pantalles del
     menú i totes les pestanyes d’una obra). `i18n-on.mjs`: on surt un text sense `t(…)`. `i18n-docs.mjs` i

@@ -123,6 +123,33 @@ function byId(b, m, t, path, labels, conflicts, prefer) {
   return out;
 }
 
+// V87.303 · Sense versió comuna no se sap qui ha canviat què, però sí QUÈ és diferent entre les dues: «Actes › núm. 3 ›
+// només en aquest aparell», «Pressupost › 01.02 › preu»… (les dates que l'app posa sola no compten)
+export function diffLabels(a, b, n = 4) {
+  const out = [];
+  d2(a, b, [], out, 0);
+  return conflictLabels(out.map(label => ({ label })), n);
+}
+function d2(a, b, labels, out, depth) {
+  if (same(a, b)) return;
+  if (idArray(a) && idArray(b) && depth < 4) {
+    const am = new Map(a.map(x => [String(x.id), x])), bm = new Map(b.map(x => [String(x.id), x]));
+    for (const [id, x] of am) {
+      if (!bm.has(id)) out.push([...labels, etiqueta(x, id), "només en aquest aparell"].join(" › "));
+      else if (!same(x, bm.get(id))) d2(x, bm.get(id), [...labels, etiqueta(x, id)], out, depth + 1);
+    }
+    for (const [id, y] of bm) if (!am.has(id)) out.push([...labels, etiqueta(y, id), "només a l’altre lloc"].join(" › "));
+    return;
+  }
+  if (isObj(a) && isObj(b) && depth < 4) {
+    for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+      if (TOUCH.has(k) || SOFT.has(k) || same(a[k], b[k])) continue;
+      d2(a[k], b[k], [...labels, depth === 0 ? (APARTATS[k] || CAMPS[k] || k) : (CAMPS[k] || k)], out, depth + 1);
+    }
+    return;
+  }
+  out.push(labels.join(" › ") || "dades");
+}
 // Text curt per a la pregunta: «Pressupost › 01.02 › q», sense repetir i com a molt n
 export function conflictLabels(conflicts, n = 4) {
   const seen = []; for (const c of conflicts) { const l = c.label || c.path.join(" › "); if (!seen.includes(l)) seen.push(l); }
