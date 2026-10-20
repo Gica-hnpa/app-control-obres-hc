@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.319";
+const APP_VERSION878264="87.320";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8782,7 +8782,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly&&!clientEditCertifications} clientMode={readOnly}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Facturació obra"&&<Fact data={data} setData={setData} obra={obra} client={client} setClients={setClients} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
-    {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Pressupost per al client")}</b><span>{i18nT("Número, condicions, forma de pagament i PDF")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
+    {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Ajustos del pressupost")}</b><span>{i18nT("Número, observacions, forma de pagament i PDF per al client")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} key={activeTab} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>}
@@ -9271,6 +9271,39 @@ function budgetIssues878253(rows=[]){
   const dups=Object.entries(byCode).filter(([,v])=>v.length>1).map(([codi,v])=>({codi,n:v.length,caps:[...new Set(v.map(r=>r.cap||"Sense capítol"))]}));
   return {over,dups,excess:over.reduce((s,x)=>s+x.excess,0)};
 }
+// V87.320 · Avisos del pressupost, a baix de tot (l'Héctor: «al final d'aquesta pantalla») i amb més avisos automàtics
+function nomCap878320(x){return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"")}
+function avisosPressupost878320(rows=[],obraId=""){
+  const list=(rows||[]).filter(Boolean);
+  const imp=r=>(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);
+  const fila=r=>({codi:r.codi,text:r.concepte,cap:r.cap});
+  const total=list.reduce((s,r)=>s+imp(r),0);
+  const {over,dups,excess}=budgetIssues878253(list);
+  const out=[];
+  const cert=list.reduce((s,r)=>s+certNumsOfRow878253(r).reduce((a,n)=>a+(certAmount878223(r,n)||0),0),0);
+  if(total>0.01&&cert>total*1.0005+0.01)out.push({k:"certtot",tone:"bad",titol:t("El certificat a origen ({c}) passa del pressupost ({p})",{c:money(cert),p:money(total)})});
+  if(obraId){try{const tots=readAlbarans878259();const cob=cobertsPer878311(tots);const cost=tots.filter(a=>a.obraId===obraId&&!a.meva&&!cob[a.id]).reduce((s,a)=>s+albaraBase878259(a),0);
+    if(total>0.01&&cost>=total*0.9)out.push({k:"cost",tone:cost>total?"bad":"warn",titol:cost>total?t("Les despeses de l’obra ({c}) ja passen del pressupost ({p})",{c:money(cost),p:money(total)}):t("Les despeses de l’obra ja són el {pct} % del pressupost",{pct:Math.round(cost/total*100)})})}catch{}}
+  if(over.length)out.push({k:"cert",tone:"warn",titol:over.length===1?t("1 partida certificada per sobre del pressupost"):t("{n} partides certificades per sobre del pressupost",{n:over.length}),det:t("Excés total {x}",{x:money(excess)}),files:over.map(x=>({codi:x.r.codi,text:x.r.concepte,valor:`${x.pct.toFixed(1).replace(".",",")} % · +${money(x.excess)}`}))});
+  const sensePreu=list.filter(r=>(parseNum8770(r.q)||0)>0&&!(parseNum8770(r.pu)||0)&&String(r.concepte||"").trim());
+  if(sensePreu.length)out.push({k:"preu",tone:"warn",titol:sensePreu.length===1?t("1 partida sense preu"):t("{n} partides sense preu",{n:sensePreu.length}),files:sensePreu.map(fila)});
+  const senseQ=list.filter(r=>(parseNum8770(r.pu)||0)>0&&!(parseNum8770(r.q)||0));
+  if(senseQ.length)out.push({k:"q",tone:"warn",titol:senseQ.length===1?t("1 partida sense amidament"):t("{n} partides sense amidament",{n:senseQ.length}),files:senseQ.map(fila)});
+  const senseNom=list.filter(r=>!String(r.concepte||"").trim()&&(imp(r)||String(r.codi||"").trim()));
+  if(senseNom.length)out.push({k:"nom",tone:"info",titol:senseNom.length===1?t("1 partida sense concepte"):t("{n} partides sense concepte",{n:senseNom.length}),files:senseNom.map(fila)});
+  if(dups.length)out.push({k:"dup",tone:"info",titol:dups.length===1?t("1 codi repetit"):t("{n} codis repetits",{n:dups.length}),det:dups.slice(0,4).map(d=>`${d.codi} ×${d.n}`).join(" · ")+(dups.length>4?" …":""),files:dups.map(d=>({codi:d.codi,text:d.caps.join(" · "),valor:t("{n} partides",{n:d.n})}))});
+  const perCap={};list.forEach(r=>{const c=r.cap||"";(perCap[c]??=[]).push(r)});
+  const capsZero=Object.entries(perCap).filter(([c,v])=>c&&v.length&&v.reduce((s,r)=>s+imp(r),0)<0.005);
+  if(capsZero.length)out.push({k:"cap0",tone:"info",titol:capsZero.length===1?t("1 capítol a 0 €"):t("{n} capítols a 0 €",{n:capsZero.length}),files:capsZero.map(([c,v])=>({codi:"",text:c,valor:t("{n} partides",{n:v.length})}))});
+  return out;
+}
+function AvisosPressupost878320({avisos=[]}){
+  if(!avisos.length)return null;
+  return <section id="avisos-pressupost-v878320" className="avisos-pres-v878320"><h3>{t("Avisos del pressupost")}<span>{avisos.length}</span></h3>
+    {avisos.map(a=>a.files?.length?<details key={a.k} className={a.tone}><summary><b>{a.titol}</b>{a.det&&<span>{a.det}</span>}</summary><div className="list">{a.files.slice(0,60).map((x,i)=><div key={i}><code>{x.codi||"—"}</code><span>{x.text||""}</span>{x.valor&&<em>{x.valor}</em>}</div>)}</div></details>
+      :<div key={a.k} className={`sol ${a.tone}`}><b>{a.titol}</b>{a.det&&<span>{a.det}</span>}</div>)}
+  </section>;
+}
 function BudgetWarnings878253({rows=[]}){
   const {over,dups,excess}=useMemo(()=>budgetIssues878253(rows),[rows]);
   if(!over.length&&!dups.length)return null;
@@ -9722,7 +9755,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     capsRef878247.current=next||{};
     setCapsState(next||{});
   }
-  const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map((k,i)=>[k,i===0])));
+  const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map(k=>[k,false])));
+  const[seleccio878320,setSeleccio878320]=useState(false);
   const [descOpen875,setDescOpen875]=useState({});
   const [budgetPartidaView87208,setBudgetPartidaView87208]=useState(null);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
@@ -9913,7 +9947,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const syncCaps=normalizeBudgetCaps878176(group(data.partides||[],"cap"));
     setCaps(syncCaps);
     setEditSnapshot878176(cloneJson878176(syncCaps));
-    setOpen(Object.fromEntries(Object.keys(syncCaps).map((k,i)=>[k,quickMode||i===0])));
+    setOpen(Object.fromEntries(Object.keys(syncCaps).map(k=>[k,quickMode||!!open[k]])));
     setOpenBudgetRow87173(null);
     setDescompostModal87173(null);
     setEditBudget8760b(true);
@@ -9924,14 +9958,16 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     persistBudgetCaps878179(normalized);
     setEditSnapshot878176(null);
     setBudgetSelectedRows878229({});
+    setSeleccio878320(false);
     setEditBudget8760b(false);
   }
   function cancelBudget8760b(){
     const syncCaps=editSnapshot878176?cloneJson878176(editSnapshot878176):normalizeBudgetCaps878176(group(data.partides||[],"cap"));
     setCaps(syncCaps);
-    setOpen(Object.fromEntries(Object.keys(syncCaps).map((k,i)=>[k,i===0])));
+    setOpen(Object.fromEntries(Object.keys(syncCaps).map(k=>[k,!!open[k]])));
     setOpenBudgetRow87173(null);
     setDescompostModal87173(null);
+    setSeleccio878320(false);
     setEditSnapshot878176(null);
     setBudgetSelectedRows878229({});
     setEditBudget8760b(false);
@@ -10087,7 +10123,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
 
   // V87.258 · el comptador de temps refresca la pantalla cada segon: es conserva quins capítols tens oberts.
-  useEffect(()=>{if(editBudget8760b)return;const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(prev=>{const keys=Object.keys(syncCapsV874);const had=keys.some(k=>k in (prev||{}));return Object.fromEntries(keys.map((k,i)=>[k,had?!!prev[k]:i===0]))});},[data.partides,editBudget8760b]);
+  useEffect(()=>{if(editBudget8760b)return;const syncCapsV874=group(data.partides||[],"cap");setCaps(syncCapsV874);setOpen(prev=>{const keys=Object.keys(syncCapsV874);const had=keys.some(k=>k in (prev||{}));return Object.fromEntries(keys.map(k=>[k,had?!!prev[k]:false]))});},[data.partides,editBudget8760b]);
 
 
   function upd(cap,i,k,v){
@@ -10570,6 +10606,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const realPressupostos=(data.pressupostos||[]).filter(p=>!String(p.id||"").startsWith("budget-marker-")&&p.versio!=="Annex");
   const visiblePressupostos=realPressupostos.length?realPressupostos:(data.pressupostos||[]).filter(p=>String(p.id||"").startsWith("budget-marker-")||p.versio==="Annex");
   const budgetRows878211=Object.values(caps||{}).flat();
+  const avisos878320=editBudget8760b?[]:avisosPressupost878320(budgetRows878211,(budgetGroups||[]).length<=1?obra?.id:"");
   const duplicateBudgetCodes878211=Object.entries(group(budgetRows878211.map(r=>({...r,_integrityKey878211:`${r.cap||""}__${r.codi||""}`})),"_integrityKey878211")).filter(([,items])=>items.length>1);
   const savedSelectedTotal878211=Number(totalActive)||0;
   const integrityDifference878211=total-savedSelectedTotal878211;
@@ -10594,6 +10631,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     return totals;
   },{});
   let lastBudgetScope87227="__none__";
+  // V87.320 · quants capítols té cada capítol principal: si només en té un, no es repeteix a sobre
+  const nCapsMain878320={};budgetChapterEntries87226.forEach(([c,its])=>{const sc=String((its||[]).find(x=>x.scopePrincipal)?.scopePrincipal||""),mc=String((its||[]).find(x=>x.capPrincipal)?.capPrincipal||"");if(mc){const k=sc+"__"+mc;nCapsMain878320[k]=(nCapsMain878320[k]||0)+1}});
   let lastBudgetMain87226="__none__";
 
   return <div className={`stack ${clientMode?"client-budget-editor-v878242":""}`}>
@@ -10602,36 +10641,41 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     {pdf878305&&<PdfPressupost878305 close={()=>setPdf878305(false)} onImport={(rows,meta)=>window.__acoImportPdf878305?.(rows,meta,activeBudgetId)}/>}
     {excelHelp878273&&<Modal title={i18nT("Com ha de ser l’Excel")} close={()=>setExcelHelp878273(false)}><div className="excel-help-v878273"><p>{i18nT("Adjunta un únic fitxer: CONFIGURACIÓ i AMIDAMENTS són auxiliars; PRESSUPOST conté la jerarquia i les partides; i cada partida pot tenir un full propi amb el mateix codi al nom del full o a les primeres files. Al descompost es recomanen les columnes Concepte, Unitat, Rendiment, Preu/ut i Preu total. L’app vincula els descompostos pel codi i deixa els preus pendents de validar, sense alterar automàticament el pressupost ni la llibreria.")}</p><p>{i18nT("Jerarquia del full PRESSUPOST: àmbit → capítol → subcapítol → partida. Si falten encapçalaments, s’utilitza la numeració del codi.")}</p><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setExcelHelp878273(false)}>{i18nT("Cancel·lar")}</button><label className="primary action-upload-v87213 excel-tria-v878304">{i18nT("Triar l’Excel")}<input type="file" accept=".xlsx,.xls" onChange={e=>{setExcelHelp878273(false);importExcel(e)}}/></label></div></div></Modal>}
 
-    <Card className="budget-card-v878248" title={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} action={<div className="actions-inline budget-direct-edit-v87211"><span className="budget-grand-total budget-total-right-v87196"><small>{i18nT("Total")}</small><b>{money(total)}</b></span><ActionMenu87213 label={i18nT("Accions")}>
-      {/* V87.304 · 4 grups: Editar · Crear o importar · Compartir i imprimir · Aquest pressupost. L'ajuda de l'Excel ja no és
-          una opció del menú: «Importar Excel…» l'ensenya abans de triar el fitxer. */}
-      <small className="amh-v878273">{i18nT("Editar")}</small>
-      {!editBudget8760b&&<button type="button" onClick={beginBudgetEdit878176}>{i18nT("Editar pressupost")}</button>}
-      {editBudget8760b&&<><button type="button" onClick={saveBudget8760b}>{i18nT("Guardar canvis")}</button><button type="button" onClick={cancelBudget8760b}>{i18nT("Cancel·lar edició")}</button></>}
-      {(!clientMode||clientLibraryEnabled)&&<button type="button" onClick={()=>openBudgetLibrary87218("","client")}>{i18nT("Afegir partides de la llibreria")}</button>}
-      {!clientMode&&<button type="button" onClick={openBulkRenumber878231}>{i18nT("Renumerar totes les partides")}</button>}
-      {!clientMode&&<button type="button" onClick={()=>setBudgetWorkTab878180(v=>v==="Validar descompostos"?"Pressupost":"Validar descompostos")}>{budgetWorkTab878180==="Validar descompostos"?i18nT("Tornar al pressupost"):i18nT("Validar descompostos")}</button>}
-      {!clientMode&&editBudget8760b&&<label className="action-upload-v87213">{i18nT("Adjuntar / actualitzar descompostos")}<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label>}
-      {(clientMode||!quickMode||(!clientMode&&addBudget&&budgetGroups?.length>0))&&<small className="amh-v878273">{i18nT("Crear o importar")}</small>}
-      {(clientMode||!Object.values(caps||{}).some(a=>(a||[]).length))&&<button type="button" onClick={startManualBudget87115}>{i18nT("Començar pressupost buit")}</button>}
-      {!clientMode&&!quickMode&&<><button type="button" onClick={()=>setExcelHelp878273(true)}>{i18nT("Importar Excel…")}</button><button type="button" onClick={()=>setPdf878305(true)}>{i18nT("Llegir un pressupost en PDF…")}</button><button type="button" onClick={()=>openAiBudget878256({obra,client,data,importExcel})}>{i18nT("Pressupost amb IA")}</button></>}
-      {!clientMode&&addBudget&&budgetGroups?.length>0&&<><button type="button" onClick={()=>addBudget("Pressupost manual des de 0")}>{i18nT("Pressupost nou des de zero")}</button><button type="button" onClick={()=>addBudget("Imprevist / sobrecost")}>{i18nT("Imprevist / sobrecost")}</button><button type="button" onClick={()=>addBudget("Modificat aprovat")}>{i18nT("Modificat / annex")}</button></>}
-      {!quickMode&&<><small className="amh-v878273">{i18nT("Compartir i imprimir")}</small>
-      <button type="button" onClick={()=>openDoc?.(budgetPrintDoc878179())}>{i18nT("Previsualitzar / PDF")}</button>
-      {!clientMode&&<button type="button" onClick={()=>openEmail("Pressupost obra")}><Mail/> {i18nT("Enviar per email")}</button>}
-      {!clientMode&&<button type="button" onClick={exportBudgetExcel878180}>{i18nT("Exportar Excel")}</button>}
-      <button type="button" onClick={saveBudgetDocument878179}>{i18nT("Guardar a Documents")}</button></>}
-      {quickMode&&!clientMode&&<button type="button" onClick={()=>openEmail("Pressupost obra")}><Mail/> {i18nT("Enviar per email")}</button>}
-      {!clientMode&&<><small className="amh-v878273">{i18nT("Aquest pressupost")}</small>{renameBudget&&<button type="button" onClick={()=>renameBudget(activeBudgetId)}>{i18nT("Canviar el nom")}</button>}<button type="button" className="danger-text-v87229" onClick={clearCurrentBudget878229}>{i18nT("Buidar tot el pressupost actual")}</button>{deleteBudget&&budgetGroups?.length>1&&<button type="button" className="danger-text-v87229" onClick={()=>deleteBudget(activeBudgetId)}>{i18nT("Eliminar aquest pressupost")}</button>}</>}
-    </ActionMenu87213></div>}>
+    <Card className="budget-card-v878248" title={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className="budget-grand-total budget-total-right-v87196"><small>{i18nT("Total")}</small><b>{money(total)}</b></span>
+      {avisos878320.length>0&&!editBudget8760b&&budgetWorkTab878180!=="Validar descompostos"&&<button type="button" className="avisos-badge-v878320" onClick={()=>document.getElementById("avisos-pressupost-v878320")?.scrollIntoView({behavior:"smooth",block:"start"})} title={i18nT("Avisos del pressupost")}>⚠ {avisos878320.length}</button>}
+      <div className="budget-botons-v878320">
+      {/* V87.320 · l'Héctor: «Accions» tenia massa opcions a dins. Ara, a la vista: Editar (o Guardar / Cancel·lar) i PDF;
+          «Afegir» (partides i pressupostos nous) i «⋯» (compartir, eines i aquest pressupost). */}
+      {!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}>{i18nT("Editar")}</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>{i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={cancelBudget8760b}>{i18nT("Cancel·lar")}</button></>}
+      {!quickMode&&!editBudget8760b&&<button type="button" className="secondary" onClick={()=>openDoc?.(budgetPrintDoc878179())}>{i18nT("PDF")}</button>}
+      <ActionMenu87213 label={i18nT("Afegir")}>
+        <small className="amh-v878273">{i18nT("A aquest pressupost")}</small>
+        {(!clientMode||clientLibraryEnabled)&&<button type="button" onClick={()=>openBudgetLibrary87218("","client")}>{i18nT("Afegir partides de la llibreria")}</button>}
+        {(clientMode||!Object.values(caps||{}).some(a=>(a||[]).length))&&<button type="button" onClick={startManualBudget87115}>{i18nT("Començar pressupost buit")}</button>}
+        {!clientMode&&!quickMode&&<><button type="button" onClick={()=>setExcelHelp878273(true)}>{i18nT("Importar Excel…")}</button><button type="button" onClick={()=>setPdf878305(true)}>{i18nT("Llegir un pressupost en PDF…")}</button><button type="button" onClick={()=>openAiBudget878256({obra,client,data,importExcel})}>{i18nT("Pressupost amb IA")}</button></>}
+        {!clientMode&&addBudget&&budgetGroups?.length>0&&<><small className="amh-v878273">{i18nT("Un pressupost nou al costat")}</small><button type="button" onClick={()=>addBudget("Pressupost manual des de 0")}>{i18nT("Pressupost nou des de zero")}</button><button type="button" onClick={()=>addBudget("Imprevist / sobrecost")}>{i18nT("Imprevist / sobrecost")}</button><button type="button" onClick={()=>addBudget("Modificat aprovat")}>{i18nT("Modificat / annex")}</button></>}
+      </ActionMenu87213>
+      {(!quickMode||!clientMode)&&<ActionMenu87213 label="⋯">
+        {!quickMode&&<><small className="amh-v878273">{i18nT("Compartir")}</small>
+        {!clientMode&&<button type="button" onClick={()=>openEmail("Pressupost obra")}><Mail/> {i18nT("Enviar per email")}</button>}
+        {!clientMode&&<button type="button" onClick={exportBudgetExcel878180}>{i18nT("Exportar Excel")}</button>}
+        <button type="button" onClick={saveBudgetDocument878179}>{i18nT("Guardar a Documents")}</button></>}
+        {quickMode&&!clientMode&&<button type="button" onClick={()=>openEmail("Pressupost obra")}><Mail/> {i18nT("Enviar per email")}</button>}
+        {!clientMode&&<><small className="amh-v878273">{i18nT("Eines")}</small>
+        <button type="button" onClick={openBulkRenumber878231}>{i18nT("Renumerar totes les partides")}</button>
+        <button type="button" onClick={()=>setBudgetWorkTab878180(v=>v==="Validar descompostos"?"Pressupost":"Validar descompostos")}>{budgetWorkTab878180==="Validar descompostos"?i18nT("Tornar al pressupost"):i18nT("Validar descompostos")}</button>
+        {editBudget8760b&&<label className="action-upload-v87213">{i18nT("Adjuntar / actualitzar descompostos")}<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostosMassius878176(e.target.files?.[0])}/></label>}
+        <small className="amh-v878273">{i18nT("Aquest pressupost")}</small>{renameBudget&&<button type="button" onClick={()=>renameBudget(activeBudgetId)}>{i18nT("Canviar el nom")}</button>}<button type="button" className="danger-text-v87229" onClick={clearCurrentBudget878229}>{i18nT("Buidar tot el pressupost actual")}</button>{deleteBudget&&budgetGroups?.length>1&&<button type="button" className="danger-text-v87229" onClick={()=>deleteBudget(activeBudgetId)}>{i18nT("Eliminar aquest pressupost")}</button>}</>}
+      </ActionMenu87213>}
+      </div>
+    </div>}>
       {quickMode&&<div className={`rapid-budget-edit-toolbar-v87204 ${editBudget8760b?"editing":""}`}><div><b>{editBudget8760b?i18nT("Edició del pressupost ràpid activada"):i18nT("Pressupost ràpid")}</b><span>{editBudget8760b?i18nT("Els capítols i les files editables estan oberts. Guarda o cancel·la des del menú Accions."):i18nT("Per modificar quantitats, preus o conceptes, obre el menú Accions.")}</span></div></div>}
       {(clientMode||budgetWorkTab878180==="Validar descompostos")&&<div className="budget-simple-toolbar-v87213">
         {budgetWorkTab878180==="Validar descompostos"&&<button type="button" className="secondary" onClick={()=>setBudgetWorkTab878180("Pressupost")}>{i18nT("← Tornar al pressupost")}</button>}
         {clientMode&&<small className="budget-toolbar-note-v878238">{i18nT("Pressupost del client · les partides de la llibreria són les validades pel despatx.")}</small>}
       </div>}
-      {editBudget8760b&&!clientMode&&<div className="budget-bulk-toolbar-v87229"><div><b>{selectedBudgetRefs878229().length} {i18nT("partides seleccionades")}</b><span>{i18nT("Marca partides per eliminar-les, moure-les o convertir-les en una única partida resum.")}</span></div><div><button type="button" className="secondary small" onClick={selectAllBudgetRows878229}>{i18nT("Marcar totes")}</button><button type="button" className="secondary small" onClick={()=>setBudgetSelectedRows878229({})}>{i18nT("Netejar")}</button><select value={budgetBulkTarget878229} onChange={e=>setBudgetBulkTarget878229(e.target.value)}><option value="">{i18nT("Moure al capítol...")}</option>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{i18nT(cap)}</option>)}</select><button type="button" className="secondary small" disabled={!selectedBudgetRefs878229().length||!budgetBulkTarget878229} onClick={moveSelectedBudgetRows878229}>{i18nT("Moure")}</button><button type="button" className="secondary small" disabled={!selectedBudgetRefs878229().length} onClick={openBudgetSummary878229}>{i18nT("Agrupar com a partida resum")}</button><button type="button" className="danger small" disabled={!selectedBudgetRefs878229().length} onClick={deleteSelectedBudgetRows878229}>{i18nT("Eliminar seleccionades")}</button></div></div>}
-      {!editBudget8760b&&<BudgetWarnings878253 rows={budgetRows878211}/>}
-      {editBudget8760b&&<div className="budget-edit-help-v87213"><b>{i18nT("Editant pressupost")}</b><span>{i18nT("Modifica les files. El botó ∑ de cada partida obre els amidaments detallats.")}</span></div>}
+      {editBudget8760b&&!clientMode&&seleccio878320&&<div className="budget-bulk-toolbar-v87229"><div><b>{selectedBudgetRefs878229().length} {i18nT("partides seleccionades")}</b></div><div><button type="button" className="secondary small" onClick={selectAllBudgetRows878229}>{i18nT("Marcar totes")}</button><button type="button" className="secondary small" onClick={()=>setBudgetSelectedRows878229({})}>{i18nT("Netejar")}</button><select value={budgetBulkTarget878229} onChange={e=>setBudgetBulkTarget878229(e.target.value)}><option value="">{i18nT("Moure al capítol...")}</option>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{i18nT(cap)}</option>)}</select><button type="button" className="secondary small" disabled={!selectedBudgetRefs878229().length||!budgetBulkTarget878229} onClick={moveSelectedBudgetRows878229}>{i18nT("Moure")}</button><button type="button" className="secondary small" disabled={!selectedBudgetRefs878229().length} onClick={openBudgetSummary878229}>{i18nT("Agrupar com a partida resum")}</button><button type="button" className="danger small" disabled={!selectedBudgetRefs878229().length} onClick={deleteSelectedBudgetRows878229}>{i18nT("Eliminar seleccionades")}</button></div></div>}
+      {editBudget8760b&&<div className="budget-edit-help-v87213 edita-v878320"><b>{i18nT("Editant el pressupost")}</b>{!clientMode&&<button type="button" className="secondary small" aria-pressed={seleccio878320} onClick={()=>{setSeleccio878320(v=>!v);setBudgetSelectedRows878229({})}}>{seleccio878320?i18nT("Acabar la selecció"):i18nT("Seleccionar diverses partides")}</button>}</div>}
     {budgetSummaryModal878229&&<Modal title={i18nT("Crear una partida resum")} close={()=>setBudgetSummaryModal878229(false)}><div className="budget-summary-modal-v87229"><div className="module-note-v8738"><b>{selectedBudgetRefs878229().length} {i18nT("partides seleccionades ·")} {money(selectedBudgetRefs878229().reduce((sum,ref)=>sum+(parseNum8770(ref.row.q)||0)*(parseNum8770(ref.row.pu)||0),0))}</b><span>{i18nT("Les partides originals quedaran guardades dins la nova partida com a detall d'origen, però desapareixeran del llistat principal.")}</span></div><div className="form-grid"><label><span>{i18nT("Codi nou")}</span><input value={budgetSummaryForm878229.codi} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,codi:e.target.value}))}/></label><label className="span-2"><span>{i18nT("Concepte")}</span><input value={budgetSummaryForm878229.concepte} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,concepte:e.target.value}))} placeholder={i18nT("Ex.: Instal·lació elèctrica · preu global")}/></label><label><span>{i18nT("Unitat")}</span><select value={budgetSummaryForm878229.ut} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,ut:e.target.value}))}><option>p.a.</option><option value="ut">{i18nT("ut")}</option><option value="lot">{i18nT("lot")}</option></select></label><label className="span-2"><span>{i18nT("Capítol de destí")}</span><select value={budgetSummaryForm878229.cap} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,cap:e.target.value}))}>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{i18nT(cap)}</option>)}</select></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setBudgetSummaryModal878229(false)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={createBudgetSummary878229}>{i18nT("Crear partida resum")}</button></div></div></Modal>}
     {bulkRenumberModal878231&&<Modal title={i18nT("Renumerar totes les partides")} close={()=>setBulkRenumberModal878231(null)}><div className="budget-renumber-modal-v87231"><div className="module-note-v8738"><b>{i18nT("Numeració curta i correlativa per capítol")}</b><span>{i18nT("Només canvia el codi imprès. Manté intactes quantitats, preus, descomposats, amidaments i totes les certificacions ja guardades.")}</span></div><div className="form-grid"><label><span>{i18nT("Primer número")}</span><input type="number" min="0" value={bulkRenumberModal878231.start} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,start:e.target.value}))}/></label><label><span>{i18nT("Nombre de dígits")}</span><select value={bulkRenumberModal878231.digits} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,digits:e.target.value}))}><option value="2">{i18nT("2 dígits · 01, 02...")}</option><option value="3">{i18nT("3 dígits · 001, 002...")}</option></select></label><label><span>{i18nT("Separador")}</span><select value={bulkRenumberModal878231.separator} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,separator:e.target.value}))}><option value=".">{i18nT("Punt · 01.01")}</option><option value="-">{i18nT("Guió · 01-01")}</option></select></label><label className="span-all budget-renumber-check-v87230"><input type="checkbox" checked={!!bulkRenumberModal878231.restartByChapter} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,restartByChapter:e.target.checked}))}/><span>{i18nT("Recomençar la seqüència a cada capítol")}</span></label></div><div className="budget-renumber-preview-v87231"><div><b>{i18nT("Vista prèvia")}</b><span>{bulkRenumberPlan878231().length} {i18nT("partides")}</span></div>{bulkRenumberPlan878231().slice(0,24).map((entry,index)=><p key={`${entry.cap}-${index}`}><small>{entry.cap}</small><span>{entry.oldCode||i18nT("Sense codi")}</span><b>→ {entry.newCode}</b></p>)}{bulkRenumberPlan878231().length>24&&<em>… i {bulkRenumberPlan878231().length-24} {i18nT("partides més")}</em>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setBulkRenumberModal878231(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={applyBulkRenumber878231}>{i18nT("Aplicar la renumeració")}</button></div></div></Modal>}
     {chapterEditModal878230&&<Modal title={chapterEditModal878230.kind==="main"?i18nT("Editar número i nom · capítol principal"):i18nT("Editar número i nom · capítol")} close={()=>setChapterEditModal878230(null)}><div className="budget-chapter-modal-v87230"><div className="module-note-v8738"><b>{chapterEditModal878230.original}</b><span>{i18nT("El canvi ordenarà el capítol per la numeració nova. Pots decidir si també vols canviar automàticament el prefix dels codis de les partides.")}</span></div><div className="form-grid"><label><span>{i18nT("Número del capítol")}</span><input autoFocus value={chapterEditModal878230.numero} onChange={e=>setChapterEditModal878230(prev=>({...prev,numero:e.target.value}))} placeholder={i18nT("Ex.: 03")}/></label><label className="span-2"><span>{i18nT("Nom del capítol")}</span><input value={chapterEditModal878230.nom} onChange={e=>setChapterEditModal878230(prev=>({...prev,nom:e.target.value}))} placeholder={i18nT("Ex.: REVESTIMENTS")}/></label><label className="span-2 budget-renumber-check-v87230"><input type="checkbox" checked={!!chapterEditModal878230.renumberItems} onChange={e=>setChapterEditModal878230(prev=>({...prev,renumberItems:e.target.checked}))}/><span>{i18nT("Canviar també el prefix de les partides del capítol (per exemple, 02.01 → 03.01)")}</span></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setChapterEditModal878230(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={saveChapterEditor878230}>{i18nT("Guardar capítol")}</button></div></div></Modal>}
@@ -10656,7 +10700,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           const mainChapter87226=String((items||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
           const mainChapterKey87227=`${scopeChapter87227}__${mainChapter87226}`;
           const showScopeChapter87227=!!scopeChapter87227&&scopeChapter87227!==lastBudgetScope87227;
-          const showMainChapter87226=!!mainChapter87226&&mainChapterKey87227!==lastBudgetMain87226;
+          const showMainChapter87226=!!mainChapter87226&&mainChapterKey87227!==lastBudgetMain87226&&(nCapsMain878320[mainChapterKey87227]||0)>1;
+          const mainAmagat878320=!!mainChapter87226&&(nCapsMain878320[mainChapterKey87227]||0)<=1&&nomCap878320(mainChapter87226)!==nomCap878320(cap);
           if(scopeChapter87227)lastBudgetScope87227=scopeChapter87227;
           if(mainChapter87226)lastBudgetMain87226=mainChapterKey87227;
           return <React.Fragment key={`${scopeChapter87227}-${mainChapter87226}-${cap}`}>
@@ -10665,9 +10710,9 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           <div className="budget-v25-cap">
             <div className="budget-v25-cap-head">
               <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
-              <div className="budget-chapter-title-v87230"><b>{cap}</b><small>{editBudget8760b?i18nT("Número i nom editables des d’Accions"):i18nT("Capítol")}</small></div>
+              <div className="budget-chapter-title-v87230"><b>{cap}</b>{mainAmagat878320&&<small>{mainChapter87226}</small>}</div>
               <span>{items.length} {i18nT("partides")}</span>
-              <strong className="budget-chapter-total-v87230"><small>{i18nT("Total capítol")}</small>{money(capTotal)}</strong>{editBudget8760b&&<select className="budget-chapter-actions-v87230" defaultValue="" onChange={e=>{const value=e.target.value;e.currentTarget.value="";if(value==="edit")openChapterEditor878230(cap);if(value==="select")toggleBudgetChapterSelection878229(cap);if(value==="add")addPartida(cap);if(value==="delete")deleteCapitol(cap)}}><option value="" disabled>{i18nT("Accions del capítol ▾")}</option><option value="edit">{i18nT("Editar número i nom")}</option><option value="select">{i18nT("Marcar / desmarcar totes les partides")}</option><option value="add">{i18nT("Afegir partida")}</option><option value="delete">{i18nT("Eliminar capítol")}</option></select>}
+              <strong className="budget-chapter-total-v87230"><small>{i18nT("Total capítol")}</small>{money(capTotal)}</strong>{editBudget8760b&&<select className="budget-chapter-actions-v87230 cap-mes-v878320" aria-label={i18nT("Capítol")} defaultValue="" onChange={e=>{const value=e.target.value;e.currentTarget.value="";if(value==="edit")openChapterEditor878230(cap);if(value==="select")toggleBudgetChapterSelection878229(cap);if(value==="add"){addPartida(cap);setOpen(o=>({...o,[cap]:true}))}if(value==="delete")deleteCapitol(cap)}}><option value="" disabled>⋯</option><option value="add">{i18nT("Afegir partida")}</option><option value="edit">{i18nT("Canviar el número i el nom")}</option>{seleccio878320&&<option value="select">{i18nT("Marcar / desmarcar totes les partides")}</option>}<option value="delete">{i18nT("Eliminar capítol")}</option></select>}
             </div>
 
             {open[cap]&&<div className="budget-v25-lines">
@@ -10692,7 +10737,15 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                   {rowEditableV87204?<input className="budget-num-input-v878241" type="text" inputMode="decimal" value={r.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>upd(cap,i,"pu",e.target.value)} onBlur={e=>upd(cap,i,"pu",qty2(parseNum8770(e.target.value)||0))}/>:<span className="budget-static-cell-v87173 num budget-num-cell-v878241">{qty2(parseNum8770(r.pu)||0)}</span>}
                   <small className="budget-mobile-field-label-v87196">{i18nT("Total de la partida")}</small>
                   <b className="budget-total-cell-v878241">{money(t)}</b>
-                  {editBudget8760b&&<div className="budget-select-action-v87229"><label><input type="checkbox" checked={!!budgetSelectedRows878229[budgetSelectKey878229(cap,i)]} onChange={()=>toggleBudgetSelection878229(cap,i)}/><span>{i18nT("Marcar")}</span></label><select className="budget-partida-action-select-v87196" defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="toggle")toggleBudgetRow87173(cap,i);if(v==="measure")setBudgetMeasureTarget878194({cap,i});if(v==="desc")setDescOpen875(o=>({...o,[`${cap}-${i}`]:!o[`${cap}-${i}`]}));if(v==="decomp")openDescompostModal87173(cap,i);if(v==="save-library")savePartidaToLibrary87115(r,cap);if(v==="library")openBudgetLibrary87218(cap,"client");if(v.startsWith("move::"))movePartidaCap878128(cap,i,v.slice(6));if(v==="delete")deletePartida878125(cap,i)}}><option value="" disabled>{i18nT("Accions ▾")}</option><option value="toggle">{rowOpenV87173?i18nT("Tancar edició"):i18nT("Editar partida")}</option><option value="measure">{i18nT("Introduir amidaments")}</option><option value="desc">{i18nT("Veure / editar descripció")}</option>{!clientMode&&<option value="decomp">{i18nT("Editar cost / descompost")}</option>}{!clientMode&&<option value="save-library">{i18nT("Desar com a partida validada + vincular client")}</option>}{clientLibraryEnabled&&<option value="library">{i18nT("Afegir des de la llibreria validada")}</option>}<optgroup label={i18nT("Moure a un altre capítol")}>{sortedCapEntries8779(caps).filter(([target])=>target!==cap).map(([target])=><option key={target} value={`move::${target}`}>{target}</option>)}</optgroup><option value="delete">{i18nT("Eliminar del pressupost")}</option></select></div>}
+                  {editBudget8760b&&<div className="budget-select-action-v87229 accions-partida-v878320">{seleccio878320&&<label><input type="checkbox" checked={!!budgetSelectedRows878229[budgetSelectKey878229(cap,i)]} onChange={()=>toggleBudgetSelection878229(cap,i)}/><span>{i18nT("Marcar")}</span></label>}{!seleccio878320&&<button type="button" className={`secondary small ${rowOpenV87173?"on":""}`} onClick={()=>toggleBudgetRow87173(cap,i)}>{rowOpenV87173?i18nT("Fet"):quickMode?"⋯":i18nT("Editar")}</button>}</div>}
+                  {editBudget8760b&&!seleccio878320&&rowOpenV87173&&<div className="partida-eines-v878320">
+                    <button type="button" className="secondary small" onClick={()=>setBudgetMeasureTarget878194({cap,i})}>∑ {i18nT("Amidaments")}</button>
+                    {!clientMode&&<button type="button" className="secondary small" onClick={()=>openDescompostModal87173(cap,i)}>{i18nT("Cost / descompost")}</button>}
+                    {!clientMode&&<button type="button" className="secondary small" onClick={()=>savePartidaToLibrary87115(r,cap)}>{i18nT("Desar a la llibreria")}</button>}
+                    {Object.keys(caps||{}).length>1&&<select className="moure-v878320" aria-label={i18nT("Moure a un altre capítol")} defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v)movePartidaCap878128(cap,i,v)}}><option value="" disabled>{i18nT("Moure a…")}</option>{sortedCapEntries8779(caps).filter(([target])=>target!==cap).map(([target])=><option key={target} value={target}>{target}</option>)}</select>}
+                    <button type="button" className="danger small" onClick={()=>deletePartida878125(cap,i)}>{i18nT("Eliminar")}</button>
+                  </div>}
+                  
                 </div>
               })}
               {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>{i18nT("+ Afegir partida")}</button>}
@@ -10700,6 +10753,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           </div></React.Fragment>
         })}
         {editBudget8760b&&<button type="button" className="primary add-chapter-bottom-v8779" onClick={addCapitol}><Plus/> {i18nT("Nou capítol")}</button>}
+        {!editBudget8760b&&<AvisosPressupost878320 avisos={avisos878320}/>}
       </div>}
       {descompostModal87173&&(()=>{
         const cap=descompostModal87173.cap;
@@ -12528,7 +12582,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.319",
+    app_version:"87.320",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

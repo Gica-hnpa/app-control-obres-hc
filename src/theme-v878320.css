@@ -1,0 +1,68 @@
+/* V87.320 · Pressupost: Editar · PDF · Afegir · ⋯ a la capçalera, avisos a baix, partides amb menys botons */
+
+/* Capçalera */
+html body .budget-card-v878248>.card-head .budget-eines-v878320{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 12px}
+html body .budget-card-v878248>.card-head .budget-botons-v878320{display:flex;flex-wrap:nowrap;gap:6px;align-items:center}
+html body .budget-card-v878248>.card-head .budget-botons-v878320>button{min-height:38px;padding:8px 14px;border-radius:8px;font:600 13.5px var(--app-font);white-space:nowrap}
+html body .budget-card-v878248>.card-head .budget-botons-v878320 .action-menu-v87213>summary{background:var(--co-surface)!important;color:var(--co-ink)!important;border:1px solid var(--co-line-strong)!important;min-height:38px!important;min-width:0!important;padding:8px 12px!important;border-radius:8px!important;font:600 13.5px var(--app-font)!important;gap:6px!important}
+html body .budget-card-v878248>.card-head .budget-botons-v878320 .action-menu-v87213>summary span{color:var(--co-ink-3)!important}
+html body .budget-card-v878248>.card-head .budget-botons-v878320 .action-menu-v87213:last-child>summary>span{display:none}
+html body .avisos-badge-v878320{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;background:rgba(217,119,6,.13);color:#9A5B00;font:700 12.5px var(--app-font);white-space:nowrap}
+html body .avisos-badge-v878320:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+
+/* Edició */
+html body .budget-edit-help-v87213.edita-v878320{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+html body .budget-edit-help-v87213.edita-v878320 button[aria-pressed="true"]{background:var(--co-accent);border-color:var(--co-accent);color:#fff}
+html body .budget-v25 .accions-partida-v878320{display:flex;justify-content:flex-end;align-items:center;gap:6px}
+html body .budget-v25 .accions-partida-v878320 button.on{background:var(--co-accent);border-color:var(--co-accent);color:#fff}
+html body .budget-v25 .budget-v25-line>.partida-eines-v878320{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 2px 2px;margin-top:2px;border-top:1px dashed var(--co-line)}
+html body .budget-v25 .partida-eines-v878320 select.moure-v878320{width:auto!important;max-width:240px;height:32px;font-size:13px!important;padding:0 8px}
+html body .budget-v25 .partida-eines-v878320 .danger{margin-left:auto}
+html body .budget-v25-cap-head select.cap-mes-v878320{width:58px!important;min-width:0!important;text-align:center;font-weight:700}
+
+/* Avisos del pressupost, a baix de tot */
+html body .avisos-pres-v878320{margin-top:18px;display:flex;flex-direction:column;gap:8px;scroll-margin-top:calc(var(--obra-bar-h,46px) + 90px)}
+html body .avisos-pres-v878320>h3{margin:0 0 2px;display:flex;align-items:center;gap:8px;font:700 14px var(--app-font);color:var(--co-ink)}
+html body .avisos-pres-v878320>h3 span{min-width:22px;height:22px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;background:rgba(217,119,6,.13);color:#9A5B00;font-size:12px}
+html body .avisos-pres-v878320>details,html body .avisos-pres-v878320>.sol{border:1px solid var(--co-line);border-left-width:4px;border-radius:10px;background:var(--co-surface)}
+html body .avisos-pres-v878320>.warn{border-left-color:#D97706}
+html body .avisos-pres-v878320>.bad{border-left-color:#B42318}
+html body .avisos-pres-v878320>.info{border-left-color:#94A3B8}
+html body .avisos-pres-v878320>details>summary,html body .avisos-pres-v878320>.sol{list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;padding:10px 14px}
+html body .avisos-pres-v878320>details>summary{cursor:pointer}
+html body .avisos-pres-v878320>details>summary::-webkit-details-marker{display:none}
+html body .avisos-pres-v878320>details>summary::before{content:"▸";color:var(--co-ink-3);font-size:12px}
+html body .avisos-pres-v878320>details[open]>summary::before{content:"▾"}
+html body .avisos-pres-v878320 b{font:600 13.5px var(--app-font);color:var(--co-ink)}
+html body .avisos-pres-v878320 summary span,html body .avisos-pres-v878320 .sol span{font-size:12.5px;color:var(--co-ink-3)}
+html body .avisos-pres-v878320 .list>div{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:8px;padding:6px 14px;border-top:1px solid var(--co-line);font-size:13px;align-items:baseline}
+html body .avisos-pres-v878320 .list code{font:600 12px var(--app-font);color:var(--co-ink-2)}
+html body .avisos-pres-v878320 .list em{font-style:normal;font-size:12.5px;color:var(--co-ink-2);white-space:nowrap}
+
+@media (max-width:760px){
+  html body .budget-card-v878248>.card-head>.budget-eines-v878320{flex-wrap:wrap!important;justify-content:space-between!important}
+  html body .budget-card-v878248>.card-head .budget-botons-v878320{flex:1 1 100%;width:100%}
+  html body .budget-card-v878248>.card-head .budget-botons-v878320>*{flex:1 1 0;min-width:0}
+  html body .budget-card-v878248>.card-head .budget-botons-v878320 .action-menu-v87213{flex:1 1 0!important;width:auto!important}
+  html body .budget-card-v878248>.card-head .budget-botons-v878320 .action-menu-v87213>summary{width:100%!important;min-width:0!important;justify-content:center!important;padding:8px 6px!important}
+  html body .budget-card-v878248>.card-head .budget-botons-v878320>button{padding:8px 6px}
+  html body .avisos-pres-v878320 .list>div{grid-template-columns:70px minmax(0,1fr);}
+  html body .avisos-pres-v878320 .list em{grid-column:2}
+  html body .budget-v25 .partida-eines-v878320 .danger{margin-left:0}
+}
+
+/* Mòbil: total (i avisos) a dalt i els quatre botons a sota, en una línia */
+@media (max-width:760px){
+  html body .budget-card-v878248>.card-head>.budget-eines-v878320.budget-direct-edit-v87211{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;width:100%!important}
+  html body .budget-card-v878248>.card-head>.budget-eines-v878320.budget-direct-edit-v87211>.budget-botons-v878320{grid-column:1/-1;display:flex!important;width:100%}
+}
+
+/* Capítol principal (només quan agrupa més d'un capítol): un títol de grup, no un requadre gran */
+html body .budget-v25 .budget-main-chapter-v87226{margin:20px 2px 6px!important;padding:4px 2px 6px!important;border:0!important;border-bottom:2px solid var(--co-ink-2)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:var(--co-ink)!important}
+html body .budget-v25 .budget-main-chapter-v87226>span{font:600 10.5px var(--app-font)!important;letter-spacing:.06em;text-transform:uppercase;color:var(--co-ink-3)!important}
+html body .budget-v25 .budget-main-chapter-v87226>b{font:700 14px var(--app-font)!important;color:var(--co-ink)!important}
+html body .budget-v25 .budget-main-chapter-v87226>strong{font:700 14px var(--app-font)!important;color:var(--co-ink)!important}
+@media (max-width:760px){
+  html body .budget-card-v878248>.card-head>.budget-eines-v878320.budget-direct-edit-v87211>.budget-grand-total{grid-column:1!important}
+  html body .budget-card-v878248>.card-head>.budget-eines-v878320.budget-direct-edit-v87211>.avisos-badge-v878320{grid-column:2;justify-self:end;width:auto}
+}
