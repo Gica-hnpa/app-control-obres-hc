@@ -1,0 +1,36 @@
+/* V87.312 · Rendiment de l'obra: cost real (despeses) davant del pressupost, per capítol i partida */
+html body .cost-kpis-v878312{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+html body .cost-kpis-v878312>div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+html body .cost-kpis-v878312 span{font-size:12px;color:var(--co-ink-3)}
+html body .cost-kpis-v878312 b{font:700 19px var(--co-display,var(--app-font));color:var(--co-ink)}
+html body .cost-kpis-v878312 small{font-size:12px;color:var(--co-ink-2)}
+html body .cost-kpis-v878312 .good b{color:#1F6A3F}
+html body .cost-kpis-v878312 .bad b{color:#B42318}
+html body .cost-taula-wrap-v878312{overflow-x:auto;border:1px solid var(--co-line);border-radius:12px}
+html body table.cost-taula-v878312{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+html body table.cost-taula-v878312 th{text-align:right;font:700 11px var(--app-font);text-transform:uppercase;letter-spacing:.05em;color:var(--co-ink-3);padding:9px 12px;border-bottom:1px solid var(--co-line);background:var(--co-surface-2);white-space:nowrap}
+html body table.cost-taula-v878312 td{text-align:right;padding:8px 12px;border-bottom:1px solid var(--co-line);white-space:nowrap;color:var(--co-ink)}
+html body table.cost-taula-v878312 th:first-child,html body table.cost-taula-v878312 td:first-child{text-align:left;white-space:normal;min-width:180px}
+html body table.cost-taula-v878312 tr.buit td{color:var(--co-ink-3)}
+html body table.cost-taula-v878312 tr.partida td{font-size:12.5px;color:var(--co-ink-2);background:var(--co-surface-2)}
+html body table.cost-taula-v878312 tr.partida td:first-child{padding-left:28px}
+html body table.cost-taula-v878312 tfoot td{font-weight:700;border-bottom:0;background:var(--co-surface-2)}
+html body table.cost-taula-v878312 b.good{color:#1F6A3F}
+html body table.cost-taula-v878312 b.bad{color:#B42318}
+@media (max-width:767px){
+  html body .cost-kpis-v878312{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .cost-kpis-v878312 b{font-size:16px}
+}
+/* mòbil: cada capítol en una targeta (nom a dalt, xifres a sota amb la seva etiqueta) */
+@media (max-width:767px){
+  html body .cost-taula-wrap-v878312{overflow:visible;border:0}
+  html body table.cost-taula-v878312{min-width:0}
+  html body table.cost-taula-v878312 thead{display:none}
+  html body table.cost-taula-v878312,html body table.cost-taula-v878312 tbody,html body table.cost-taula-v878312 tfoot{display:block}
+  html body table.cost-taula-v878312 tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px;padding:10px 12px;border:1px solid var(--co-line);border-radius:10px;margin-bottom:8px;background:var(--co-surface)}
+  html body table.cost-taula-v878312 tr.partida{margin:-6px 0 8px 14px}
+  html body table.cost-taula-v878312 td{display:block;padding:0;border:0;text-align:left;white-space:normal;font-size:12.5px;background:transparent!important}
+  html body table.cost-taula-v878312 td:first-child{grid-column:1/-1;min-width:0;font-weight:600;font-size:13.5px;padding-left:0!important}
+  html body table.cost-taula-v878312 td[data-l]::before{content:attr(data-l);display:block;font:600 10px var(--app-font);text-transform:uppercase;letter-spacing:.04em;color:var(--co-ink-3)}
+  html body table.cost-taula-v878312 tfoot tr{background:var(--co-surface-2)}
+}

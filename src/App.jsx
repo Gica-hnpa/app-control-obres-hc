@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.310";
+const APP_VERSION878264="87.312";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5255,7 +5255,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
 {screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={viewPartidaLibrary878233} setItems={currentAccount878233.role==="admin"?setPartidaLibrary:undefined} clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}{screen==="Rendiments"&&<SafeRenderBoundary878108><RendimentsClient878247 obres={viewObres878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}
-{screen==="Albarans"&&<SafeRenderBoundary878108><Albarans878259 obres={viewObres878233} clients={viewClients878233} openObra={openObra}/></SafeRenderBoundary878108>}{screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
+{screen==="Albarans"&&<SafeRenderBoundary878108><Albarans878259 obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}{screen==="Factures"&&<SafeRenderBoundary878108><FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/></SafeRenderBoundary878108>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<SafeRenderBoundary878108><GestioTemps878255 obres={obres} clients={clients} odata={odata} openObra={openObra}/></SafeRenderBoundary878108>}
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><QuickExpedientForm878254 clients={viewClients878233} allAgents={allAgents8749(viewOdata878233,viewClients878233)} onSubmit={addObra} fixedClientId={currentAccount878233.role!=="admin"?(scopedClientId878233||""):""}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{authUser8779&&currentAccount878233.role==="admin"&&(screen==="Obra"||timer.running)&&<div className={`work-timer-v878254 ${timer.running?"on":""} ${timerObert878264?"obert":""}`} role="status" onClick={e=>{if(e.target.closest("button,label,input"))return;setTimerObert878264(v=>!v)}} title={i18nT("Comptador de temps (toca per obrir o plegar)")}>
   <span className="dot"/>
@@ -7865,7 +7865,61 @@ function budgetMetric8789(data,g){
   const impact=budgetImpact8789(g);
   return {...g,rows,pressupost,certificat,certificatPartides,certificatRegistres,capitols:Object.values(capMap),impact};
 }
-function GlobalRendibilitat8789({data,setData,activeBudgetId,setActiveBudgetId}){
+
+// V87.312 · Rendiment de l'obra amb el cost real (proposta 10.1.5): les despeses de l'obra (sense IVA; els albarans inclosos en una
+// factura no compten) davant del pressupost vigent, per capítol i per partida; les que només són de l'obra van a «Sense capítol».
+function useDespesesObra878312(obraId){
+  const[tick,setTick]=useState(0);
+  useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
+  return useMemo(()=>{const tots=readAlbarans878259();const cob=cobertsPer878311(tots);return tots.filter(a=>!a.meva&&a.obraId&&a.obraId===obraId&&!cob[a.id])},[obraId,tick]);
+}
+function costPerCapitol878312(rows,despeses){
+  const SENSE=i18nT("Sense capítol");
+  const caps=new Map();
+  const cap=k=>{if(!caps.has(k))caps.set(k,{cap:k,pressupost:0,cost:0,n:0,partides:new Map()});return caps.get(k)};
+  (rows||[]).forEach(r=>{cap(String(r.cap||"").trim()||"—").pressupost+=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0)});
+  const byId=new Map((rows||[]).filter(r=>r.id!=null&&r.id!=="").map(r=>[String(r.id),r]));
+  const byCodi=new Map();(rows||[]).forEach(r=>{const k=String(r.codi||"");if(k&&!byCodi.has(k))byCodi.set(k,r)});
+  (despeses||[]).forEach(a=>{
+    const base=albaraBase878259(a);
+    const pid=String(a.partidaId||"");
+    const r=pid?(byId.get(pid)||byCodi.get(pid.startsWith("codi:")?pid.slice(5):String(a.partidaCodi||""))):null;
+    const k=r?(String(r.cap||"").trim()||"—"):(String(a.capitol||"").trim()||SENSE);
+    const c=cap(k);c.cost+=base;c.n++;
+    if(pid){const pk=r?String(r.codi||r.id||pid):pid;const p=c.partides.get(pk)||{codi:r?.codi||a.partidaCodi||"",nom:r?.concepte||a.partidaNom||"",pressupost:r?(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0):0,cost:0};p.cost+=base;c.partides.set(pk,p)}
+  });
+  return [...caps.values()].sort((a,b)=>a.cap===SENSE?1:b.cap===SENSE?-1:String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
+}
+function CostRealObra878312({obraId,rows=[],pressupost=0,certificat=0}){
+  const despeses=useDespesesObra878312(obraId);
+  if(!obraId||!despeses.length)return null;
+  const caps=costPerCapitol878312(rows,despeses);
+  const cost=caps.reduce((s,c)=>s+c.cost,0);
+  const difP=pressupost-cost,difC=certificat-cost;
+  const pctTxt=(c,p)=>p?pct(c/p*100):"—";
+  // els capítols sense cap despesa s'ajunten en una sola fila
+  const ambCost=caps.filter(c=>c.cost>0),sense=caps.filter(c=>!c.cost&&c.pressupost>0);
+  const senseP=sense.reduce((s,c)=>s+c.pressupost,0);
+  const L={p:t("Pressupost"),c:t("Cost real"),d:t("Diferència")};
+  return <Card title={t("Cost real · despeses de l’obra")}>
+    <div className="cost-kpis-v878312">
+      <div><span>{t("Pressupost vigent")}</span><b>{money(pressupost)}</b></div>
+      <div><span>{t("Certificat a origen")}</span><b>{money(certificat)}</b></div>
+      <div><span>{t("Cost real (sense IVA)")}</span><b>{money(cost)}</b><small>{despeses.length===1?t("1 despesa"):t("{n} despeses",{n:despeses.length})}</small></div>
+      <div className={difC>=0?"good":"bad"}><span>{t("Certificat − cost")}</span><b>{difC>=0?"+":""}{money(difC)}</b><small>{t("Pressupost − cost:")} {difP>=0?"+":""}{money(difP)}</small></div>
+    </div>
+    <div className="cost-taula-wrap-v878312"><table className="cost-taula-v878312"><thead><tr><th>{t("Capítol")}</th><th>{t("Pressupost")}</th><th>{t("Cost real")}</th><th>{t("Diferència")}</th><th>%</th></tr></thead>
+      <tbody>{ambCost.map(c=>{const d=c.pressupost-c.cost;const ps=[...c.partides.values()];return <React.Fragment key={c.cap}>
+        <tr className={c.cost>c.pressupost&&c.pressupost>0?"bad":""}><td>{c.cap}</td><td data-l={L.p}>{c.pressupost?money(c.pressupost):"—"}</td><td data-l={L.c}>{money(c.cost)}</td><td data-l={L.d}><b className={d>=0?"good":"bad"}>{d>=0?"+":""}{money(d)}</b></td><td data-l="%">{pctTxt(c.cost,c.pressupost)}</td></tr>
+        {ps.map(p=>{const dp=p.pressupost-p.cost;return <tr key={c.cap+"|"+p.codi+p.nom} className="partida"><td>{[p.codi,p.nom].filter(Boolean).join(" · ")}</td><td data-l={L.p}>{p.pressupost?money(p.pressupost):"—"}</td><td data-l={L.c}>{money(p.cost)}</td><td data-l={L.d}><b className={dp>=0?"good":"bad"}>{dp>=0?"+":""}{money(dp)}</b></td><td data-l="%">{pctTxt(p.cost,p.pressupost)}</td></tr>})}
+      </React.Fragment>})}
+      {sense.length>0&&<tr className="buit"><td>{sense.length===1?sense[0].cap:t("{n} capítols sense despeses",{n:sense.length})}</td><td data-l={L.p}>{money(senseP)}</td><td data-l={L.c}>—</td><td data-l={L.d}>—</td><td data-l="%">—</td></tr>}</tbody>
+      <tfoot><tr><td>{t("Total obra")}</td><td data-l={L.p}>{money(pressupost)}</td><td data-l={L.c}>{money(cost)}</td><td data-l={L.d}><b className={difP>=0?"good":"bad"}>{difP>=0?"+":""}{money(difP)}</b></td><td data-l="%">{pctTxt(cost,pressupost)}</td></tr></tfoot>
+    </table></div>
+  </Card>;
+}
+
+function GlobalRendibilitat8789({data,setData,activeBudgetId,setActiveBudgetId,obraId=""}){
   const groups=ensureBudgetGroups8786(data).groups;
   const metrics=groups.map(g=>budgetMetric8789(data,g));
   const label=m=>normalizeSearch878191(`${m?.nom||""} ${m?.tipus||""}`);
@@ -7909,8 +7963,8 @@ function GlobalRendibilitat8789({data,setData,activeBudgetId,setActiveBudgetId})
   const caps=[...capMap.values()].sort((a,b)=>String(a.cap).localeCompare(String(b.cap),"ca",{numeric:true}));
   const otherVersions=metrics.filter(m=>m.id!==initial.id&&m.id!==current.id);
   return <div className="stack rend-global-v8789">
+    <CostRealObra878312 obraId={obraId} rows={current.rows||[]} pressupost={currentTotal} certificat={totalCert}/>
     <Card title={t("Seguiment econòmic · pressupost inicial i pressupost actual")}>
-      <div className="economic-definition-v87217"><b>{t("Aquesta pantalla no calcula rendibilitat empresarial.")}</b><span>{t("Compara el pressupost inicial amb el pressupost principal actual, que ja incorpora les modificacions. Les dues versions no se sumen mai.")}</span></div>
       <div className="economic-summary-v87217">
         <div className="economic-card-v87217 initial"><small>{t("1 · Pressupost inicial de referència")}</small><b>{money(initialTotal)}</b><span>{i18nT(initial.nom||"Pressupost inicial")} · {(initial.rows||[]).length} {t("partides")}</span></div>
         <div className="economic-arrow-v87217">→</div>
@@ -8259,7 +8313,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
     {sub==="Certificacions obra"&&<Cert data={activeData} setData={setScopedData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Facturació obra"&&<Fact data={activeData} setData={setData} obra={obra} client={client} setClients={setClients} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Gantt"&&<><GanttObraVisual878253 data={activeData} setData={setScopedData}/><details className="gt-legacy-v878253"><summary>{t("Planificació avançada per industrials i colles (eina anterior)")}</summary><GanttObra878149 data={activeData} setData={setScopedData}/></details></>}
-    {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} setActiveBudgetId={selectBudget8788}/>}
+    {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} setActiveBudgetId={selectBudget8788} obraId={obra?.id||""}/>}
   </div>
 }
 
@@ -8533,7 +8587,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>}
     {activeTab==="Agenda / Avisos"&&ALIAS878308["Tasques"]&&<TasquesTab8769 data={data} setData={setData}/>}
-    {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} obraId={obra.id}/>}
+    {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id}/>}
     {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>}
     {activeTab==="Actes"&&(ALIAS878308["Notes"]
       ?<Visites878309 obra={obra} client={client} data={data} setData={setData} readOnly={readOnly} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={["Actes","Notes"].includes(start878302?.tab)?start878302:null}/>
@@ -12256,7 +12310,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.310",
+    app_version:"87.312",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -14431,15 +14485,35 @@ function fillAlbara878259(x,p){
 }
 function albaraBase878259(a){const b=parseNum8770(a.base);if(b)return b;const t=parseNum8770(a.total);const iva=a.iva===""||a.iva==null?21:parseNum8770(a.iva);return t?t/(1+iva/100):(a.linies||[]).reduce((s,x)=>s+(parseNum8770(x.import)||0),0)}
 
-function Albarans878259({obres=[],clients=[],openObra,obraId:fixedObra=""}){
+// V87.311 · Despeses (proposta 10.1; decisions de l'Héctor del 18/10/2026): tipus (Albarà · Material · Subcontracta), capítol o
+// partida del pressupost de l'obra, base / IVA / total (ISP a les subcontractes: IVA 0) i la factura del proveïdor marca els
+// albarans que inclou: aquests deixen de comptar (compta la factura). Les dades continuen a la mateixa clau (`aco_albarans_v878259`);
+// les d'abans sense tipus són «Albarà». Les despeses pròpies del tècnic (`meva`) no tenen tipus.
+const TIPUS_DESPESA878311=["Albarà","Material","Subcontracta"];
+function tipusDespesa878311(a){return a?.meva?"":TIPUS_DESPESA878311.includes(a?.tipus)?a.tipus:"Albarà"}
+function esFactura878311(a){const t=tipusDespesa878311(a);return t==="Material"||t==="Subcontracta"}
+function despesaIva878311(a){if(a?.isp)return 0;const b=albaraBase878259(a);const t=parseNum8770(a?.total);if(t&&b)return Math.round((t-b)*100)/100;const iva=a?.iva===""||a?.iva==null?21:parseNum8770(a.iva);return Math.round(b*iva)/100}
+function despesaTotal878311(a){const t=parseNum8770(a?.total);if(t)return t;return albaraBase878259(a)+despesaIva878311(a)}
+// albarà → factura que l'inclou
+function cobertsPer878311(list){const m={};(list||[]).forEach(f=>{if(esFactura878311(f))(f.cobreix||[]).forEach(id=>{if(id!==f.id)m[id]=f})});return m}
+// partides del pressupost actiu de l'obra, per capítols
+function partidesObra878311(d){const bid=d?.activeBudgetIdObra||"principal";const by={},caps=[];const ps=(d?.partides||[]).filter(p=>(p.budgetId||"principal")===bid);const n={};ps.forEach(p=>{const k=String(p.codi||"");n[k]=(n[k]||0)+1});ps.forEach((p,i)=>{const c=String(p.cap||"").trim()||"—";if(!by[c]){by[c]=[];caps.push(c)}const k=String(p.codi||"");by[c].push({...p,pid:p.id!=null&&p.id!==""?String(p.id):k&&n[k]===1?"codi:"+k:"pos:"+i+":"+k})});return caps.map(c=>({cap:c,partides:by[c]}))}
+function imputacio878311(a){return a?.partidaId?[a.partidaCodi,a.partidaNom].filter(Boolean).join(" · "):(a?.capitol||"")}
+const fmt2878311=v=>(Math.round((+v||0)*100)/100).toFixed(2).replace(".",",");
+
+function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=""}){
   const[tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
   // V87.307 · Tècnic (l'Héctor, 20/10/2026, proposta 10.9): al menú principal, només les seves despeses (`meva`), amb l'expedient
   // opcional; les d'una obra (costos del client per capítol) van dins de l'obra. El constructor ho veu tot com fins ara.
   const meves=!fixedObra&&PERFIL878304!=="constructor";
-  const list=useMemo(()=>readAlbarans878259().filter(a=>meves?!!a.meva:fixedObra?!a.meva:true),[tick,meves,fixedObra]);
+  const tots=useMemo(()=>readAlbarans878259(),[tick]);
+  const coberts=useMemo(()=>cobertsPer878311(tots),[tots]);
+  const list=useMemo(()=>tots.filter(a=>meves?!!a.meva:fixedObra?!a.meva:true),[tots,meves,fixedObra]);
   const[obraF,setObraF]=useState(fixedObra||"");
   const[clientF,setClientF]=useState("");
+  const[provF,setProvF]=useState("");
+  const[tipusF,setTipusF]=useState("");
   const[nomesPendents,setNomesPendents]=useState(false);
   const[month,setMonth]=useState("");
   const[edit,setEdit]=useState(null);
@@ -14448,57 +14522,79 @@ function Albarans878259({obres=[],clients=[],openObra,obraId:fixedObra=""}){
   const clientOf=a=>{const o=obres.find(x=>x.id===a.obraId);return o?String(o.client||""):""};
   const cName=id=>(clients||[]).find(c=>String(c.id)===String(id))?.nom||obres.find(o=>String(o.client)===String(id))?.clientNomCompartit||"Sense client";
   const clientIds=[...new Set(list.map(clientOf).filter(Boolean))];
-  const rows=list.filter(a=>(!obraF||a.obraId===obraF)&&(!clientF||clientOf(a)===clientF)&&(!nomesPendents||!a.facturatClient)&&(!month||String(a.data||"").startsWith(month))).sort((a,b)=>String(b.data||"").localeCompare(String(a.data||"")));
-  const total=rows.reduce((s,a)=>s+albaraBase878259(a),0);
-  const pendent=rows.filter(a=>!a.facturatClient).reduce((s,a)=>s+albaraBase878259(a),0);
+  const proveidors=[...new Set(list.map(a=>a.proveidor).filter(Boolean))].sort((x,y)=>x.localeCompare(y,"ca"));
+  const tipusHi=TIPUS_DESPESA878311.filter(k=>list.some(a=>tipusDespesa878311(a)===k));
+  const rows=list.filter(a=>(!obraF||a.obraId===obraF)&&(!clientF||clientOf(a)===clientF)&&(!provF||a.proveidor===provF)&&(!tipusF||tipusDespesa878311(a)===tipusF)&&(!nomesPendents||!a.facturatClient)&&(!month||String(a.data||"").startsWith(month))).sort((a,b)=>String(b.data||"").localeCompare(String(a.data||"")));
+  // els albarans inclosos en una factura no compten: compta la factura
+  const compten=rows.filter(a=>!coberts[a.id]);
+  const nCob=rows.length-compten.length;
+  const total=compten.reduce((s,a)=>s+albaraBase878259(a),0);
+  const totalIva=compten.reduce((s,a)=>s+despesaTotal878311(a),0);
+  const pendents=compten.filter(a=>!a.facturatClient);
+  const pendent=pendents.reduce((s,a)=>s+albaraBase878259(a),0);
+  const nD=n=>`${n} ${n===1?i18nT("despesa"):i18nT("despeses")}`;
   function toggleFacturat(a){writeAlbarans878259(readAlbarans878259().map(x=>x.id===a.id?{...x,facturatClient:!x.facturatClient,facturatAt:!x.facturatClient?new Date().toISOString():""}:x))}
-  const byObra={};rows.forEach(a=>{const k=a.obraId||"";(byObra[k]??={obra:obres.find(o=>o.id===k),n:0,base:0});byObra[k].n++;byObra[k].base+=albaraBase878259(a)});
+  const byObra={};compten.forEach(a=>{const k=a.obraId||"";(byObra[k]??={obra:obres.find(o=>o.id===k),n:0,base:0});byObra[k].n++;byObra[k].base+=albaraBase878259(a)});
   const groups=Object.values(byObra).sort((a,b)=>b.base-a.base);
+  const partidesDe=id=>partidesObra878311(odata?.[id]);
   async function newFromPhoto(file){
     let extra={foto:""};
     if(file){try{extra=/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)?await albaraFromPdf878259(file):{foto:await compressImage878259(file)}}catch(e){alert(e.message);return}}
-    setEdit({id:"alb-"+Date.now(),isNew:true,data:todayISO8743(),obraId:meves?(obraF||""):(obraF||obresSorted[0]?.id||""),proveidor:"",numero:"",base:"",iva:"21",total:"",linies:[],notes:"",facturatClient:false,...(meves?{meva:true}:{}),...extra});
+    setEdit({id:"alb-"+Date.now(),isNew:true,data:todayISO8743(),obraId:meves?(obraF||""):(obraF||obresSorted[0]?.id||""),proveidor:"",numero:"",base:"",iva:"21",total:"",linies:[],notes:"",facturatClient:false,...(meves?{meva:true}:{tipus:"Albarà"}),...extra});
   }
   function save(a){
-    if(!a.obraId&&!a.meva){alert(i18nT("Tria l’obra on s’imputa l’albarà."));return}
+    if(!a.obraId&&!a.meva){alert(i18nT("Tria l’obra on s’imputa la despesa."));return}
     const {foto,pdf,pdfText,isNew,__llegit,...rest}=a;
     if(foto)lsSet8779(albaraFotoKey878259(a.id),foto);
     if(pdf)lsSet8779(albaraPdfKey878259(a.id),pdf);
     const clean={...rest,teFoto:!!foto||!!rest.teFoto,tePdf:!!pdf||!!rest.tePdf,base:String(rest.base??""),total:String(rest.total??""),updatedAt:new Date().toISOString(),createdAt:rest.createdAt||new Date().toISOString()};
+    if(!clean.meva)clean.tipus=tipusDespesa878311(clean);
+    if(!esFactura878311(clean))delete clean.cobreix;
+    if(clean.tipus!=="Subcontracta")delete clean.isp;
     const cur=readAlbarans878259();
     writeAlbarans878259(cur.some(x=>x.id===a.id)?cur.map(x=>x.id===a.id?clean:x):[clean,...cur]);
     setEdit(null);
   }
-  function remove(a){if(!confirm(i18nT("Eliminar aquest albarà?")))return;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)));localStorage.removeItem(lsKey8779(albaraPdfKey878259(a.id)))}catch{};setEdit(null)}
+  function remove(a){if(!confirm(i18nT("Eliminar aquesta despesa?")))return;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)));localStorage.removeItem(lsKey8779(albaraPdfKey878259(a.id)))}catch{};setEdit(null)}
   function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),""),pdf:a.tePdf?lsGet8779(albaraPdfKey878259(a.id),""):""})}
-  const proveidors=[...new Set(list.map(a=>a.proveidor).filter(Boolean))];
-  return <div className={`albarans-v878259 ${fixedObra?"alb-obra-v878279":""}`}>
+  return <div className={`albarans-v878259 despeses-v878311 ${fixedObra?"alb-obra-v878279":""}`}>
     <div className="alb-head">
-      {fixedObra?<div><h2 className="alb-obra-title-v878279">{i18nT("Despeses d’aquesta obra")}</h2><p>{i18nT("Fes una foto de l’albarà i el cost dels materials queda imputat a aquesta obra.")}</p></div>:meves?<div><h1>{i18nT("Les meves despeses")}</h1></div>:<div><span className="eyebrow">{i18nT("Control d’obra")}</span><h1>{i18nT("Despeses")}</h1><p>{i18nT("Fes una foto de l’albarà, tria l’obra i el cost dels materials hi queda imputat.")}</p></div>}
+      {fixedObra?<div><h2 className="alb-obra-title-v878279">{i18nT("Despeses d’aquesta obra")}</h2></div>:meves?<div><h1>{i18nT("Les meves despeses")}</h1></div>:<div><h1>{i18nT("Despeses")}</h1></div>}
       <div className="actions">
-        <label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Fer foto d’un albarà")}</label>
+        <label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Fer foto")}</label>
         <label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Adjuntar PDF o imatge")}</label>
-        <button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>{i18nT("Entrar sense fitxer")}</button>
+        <button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>{i18nT("Entrar a mà")}</button>
       </div>
     </div>
     <div className="alb-filters">
       {!fixedObra&&clientIds.length>0&&<select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{clientIds.map(id=><option key={id} value={id}>{cName(id)}</option>)}</select>}
       {!fixedObra&&<select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Obra")}><option value="">{i18nT("Totes les obres")}</option>{obresSorted.filter(o=>!clientF||String(o.client)===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>}
-      <label className="chk"><input type="checkbox" checked={nomesPendents} onChange={e=>setNomesPendents(e.target.checked)}/>{i18nT("Només pendents de facturar al client")}</label>
+      {!meves&&tipusHi.length>1&&<select value={tipusF} onChange={e=>setTipusF(e.target.value)} aria-label={i18nT("Tipus")}><option value="">{i18nT("Tots els tipus")}</option>{tipusHi.map(k=><option key={k} value={k}>{i18nT(k)}</option>)}</select>}
+      {proveidors.length>1&&<select value={provF} onChange={e=>setProvF(e.target.value)} aria-label={i18nT("Proveïdor")}><option value="">{i18nT("Tots els proveïdors")}</option>{proveidors.map(p=><option key={p} value={p}>{p}</option>)}</select>}
+      <label className="chk"><input type="checkbox" checked={nomesPendents} onChange={e=>setNomesPendents(e.target.checked)}/>{i18nT("Només pendents de repercutir")}</label>
       <input type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label={i18nT("Mes")}/>
       {month&&<button type="button" className="link" onClick={()=>setMonth("")}>{i18nT("Tots els mesos")}</button>}
     </div>
-    <div className="alb-kpis"><div><small>{meves?i18nT("Total sense IVA"):i18nT("Material imputat (sense IVA)")}</small><b>{money(total)}</b><span>{rows.length} {rows.length===1?i18nT("albarà"):i18nT("albarans")}</span></div><div className={pendent>0.005?"warn":""}><small>{i18nT("Pendent de facturar al client")}</small><b>{money(pendent)}</b><span>{rows.filter(a=>!a.facturatClient).length} {rows.filter(a=>!a.facturatClient).length===1?i18nT("albarà"):i18nT("albarans")}</span></div>{groups.slice(0,3).map((g,i)=><div key={i}><small>{g.obra?.nom||i18nT("Sense obra")}</small><b>{money(g.base)}</b><span>{g.n} {g.n===1?i18nT("albarà"):i18nT("albarans")}</span></div>)}</div>
-    {rows.length===0?<div className="alb-empty"><b>{i18nT("Encara no hi ha albarans.")}</b><span>{i18nT("Prem «Fer foto d’un albarà»: al mòbil s’obre la càmera.")}</span></div>
-    :<div className="alb-list">{rows.map(a=>{const o=obres.find(x=>x.id===a.obraId);return <div key={a.id} className="alb-row" role="button" tabIndex={0} onClick={()=>open(a)} onKeyDown={e=>{if(e.key==="Enter")open(a)}}>
-      <span className="ic" aria-hidden="true">{a.tePdf?<FileText size={20}/>:a.teFoto?<Camera size={20}/>:<ReceiptText size={20}/>}</span>
-      <span className="nm"><b>{a.proveidor||i18nT("Proveïdor pendent")}{a.numero?` · ${a.numero}`:""}</b><small>{fmtAppDate8748(a.data)} · {o?.nom||i18nT("Sense obra")}{o?` · ${cName(o.client)}`:""}{(a.linies||[]).length?` · ${i18nT("{n} línies",{n:(a.linies||[]).length})}`:""}</small></span>
-      <span className="num"><b>{money(albaraBase878259(a))}</b><button type="button" className={`fact ${a.facturatClient?"on":""}`} onClick={e=>{e.stopPropagation();toggleFacturat(a)}} title={i18nT("Marcar si ja l’has facturat o repercutit al client")}>{a.facturatClient?i18nT("Facturat al client"):i18nT("Pendent de facturar")}</button></span>
-    </div>})}</div>}
-    {edit&&<AlbaraEditor878259 a={edit} setA={setEdit} obres={obresSorted} proveidors={proveidors} save={save} remove={remove} close={()=>setEdit(null)} openObra={openObra}/>}
+    <div className="alb-kpis"><div><small>{i18nT("Total sense IVA")}</small><b>{money(total)}</b><span>{nD(compten.length)}</span></div><div className={pendent>0.005?"warn":""}><small>{i18nT("Pendent de repercutir al client")}</small><b>{money(pendent)}</b><span>{nD(pendents.length)}</span></div>{!fixedObra&&groups.slice(0,3).map((g,i)=><div key={i}><small>{g.obra?.nom||(meves?i18nT("Sense expedient"):i18nT("Sense obra"))}</small><b>{money(g.base)}</b><span>{nD(g.n)}</span></div>)}</div>
+    {rows.length===0?<div className="alb-empty"><b>{i18nT("Encara no hi ha despeses.")}</b></div>
+    :<><div className="alb-list">
+      <div className="alb-cap-v878311" aria-hidden="true"><span/><span/><span>{i18nT("Base")}</span><span>{i18nT("IVA")}</span><span>{i18nT("Total")}</span><span/></div>
+      {rows.map(a=>{const o=obres.find(x=>x.id===a.obraId);const tip=tipusDespesa878311(a);const cob=coberts[a.id];const imp=imputacio878311(a);const nInc=esFactura878311(a)?(a.cobreix||[]).filter(id=>tots.some(x=>x.id===id)).length:0;
+        return <div key={a.id} className={`alb-row ${cob?"cob-v878311":""}`} role="button" tabIndex={0} onClick={()=>open(a)} onKeyDown={e=>{if(e.key==="Enter")open(a)}}>
+        <span className="ic" aria-hidden="true">{a.tePdf?<FileText size={20}/>:a.teFoto?<Camera size={20}/>:<ReceiptText size={20}/>}</span>
+        <span className="nm"><b>{tip&&<em className={`tip-v878311 t-${tip==="Albarà"?"alb":tip==="Material"?"mat":"sub"}`}>{i18nT(tip)}</em>}{a.proveidor||i18nT("Proveïdor pendent")}{a.numero?` · ${a.numero}`:""}</b><small>{fmtAppDate8748(a.data)} · {o?.nom||(a.meva?i18nT("Sense expedient"):i18nT("Sense obra"))}{!fixedObra&&o?` · ${cName(o.client)}`:""}{imp?` · ${imp}`:""}</small>
+          {cob&&<small className="cob">{i18nT("Inclòs a la factura {n}",{n:[cob.proveidor,cob.numero].filter(Boolean).join(" · ")||"—"})}</small>}
+          {nInc>0&&<small className="cob">{nInc===1?i18nT("Inclou 1 albarà"):i18nT("Inclou {n} albarans",{n:nInc})}</small>}</span>
+        <span className="c-base"><b>{money(albaraBase878259(a))}</b></span>
+        <span className="c-iva">{a.isp?"ISP":money(despesaIva878311(a))}</span>
+        <span className="c-tot"><small className="m-only">{i18nT("Total")} </small>{money(despesaTotal878311(a))}</span>
+        <span className="c-fact">{!cob&&<button type="button" className={`fact ${a.facturatClient?"on":""}`} onClick={e=>{e.stopPropagation();toggleFacturat(a)}}>{a.facturatClient?i18nT("Repercutida al client"):i18nT("Per repercutir")}</button>}</span>
+      </div>})}</div>
+      <div className="alb-peu-v878311"><span>{nD(compten.length)}{nCob?` · ${nCob===1?i18nT("1 inclòs en una factura"):i18nT("{n} inclosos en factures",{n:nCob})}`:""}</span><span>{i18nT("Total base")} <b>{money(total)}</b></span><span>{i18nT("Total amb IVA")} <b>{money(totalIva)}</b></span></div></>}
+    {edit&&<AlbaraEditor878259 a={edit} setA={setEdit} obres={obresSorted} proveidors={proveidors} save={save} remove={remove} close={()=>setEdit(null)} openObra={openObra} partidesDe={partidesDe} tots={tots}/>}
   </div>;
 }
-function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}){
+function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,partidesDe=()=>[],tots=[]}){
   const[ai,setAi]=useState(false);
   const[answer,setAnswer]=useState("");
   const[msg,setMsg]=useState("");
@@ -14506,10 +14602,34 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}
   const linies=a.linies||[];
   const setLine=(i,k,v)=>setA(x=>{const l=[...(x.linies||[])];l[i]={...l[i],[k]:v};if(k==="quantitat"||k==="preu"){const q=parseNum8770(k==="quantitat"?v:l[i].quantitat),p=parseNum8770(k==="preu"?v:l[i].preu);l[i].import=Math.round(q*p*100)/100}return {...x,linies:l}});
   const sumLines=linies.reduce((s,x)=>s+(parseNum8770(x.import)||0),0);
+  const tipus=tipusDespesa878311(a);
+  const factura=esFactura878311(a);
+  // capítol o partida del pressupost de l'obra (opcional)
+  const caps=a.obraId?partidesDe(a.obraId):[];
+  const impVal=a.partidaId?"p:"+a.partidaId:a.capitol?"c:"+a.capitol:"";
+  const impConeguda=!impVal||caps.some(g=>impVal==="c:"+g.cap||g.partides.some(p=>impVal==="p:"+p.pid));
+  const NO_IMP={partidaId:"",partidaCodi:"",partidaNom:"",capitol:""};
+  function setImp(v){
+    if(!v)return setA(x=>({...x,...NO_IMP}));
+    if(v.startsWith("c:"))return setA(x=>({...x,...NO_IMP,capitol:v.slice(2)}));
+    for(const g of caps){const p=g.partides.find(p=>"p:"+p.pid===v);if(p)return setA(x=>({...x,partidaId:p.pid,partidaCodi:String(p.codi||""),partidaNom:String(p.concepte||"").slice(0,120),capitol:g.cap}))}
+  }
+  // albarans de la mateixa obra que aquesta factura pot incloure (no els que ja són en una altra factura)
+  const altres=cobertsPer878311(tots.filter(x=>x.id!==a.id));
+  const perFactura=cobertsPer878311(tots)[a.id];
+  const cobreix=a.cobreix||[];
+  const candidats=factura&&a.obraId?tots.filter(x=>x.id!==a.id&&!x.meva&&tipusDespesa878311(x)==="Albarà"&&x.obraId===a.obraId&&!altres[x.id]).sort((x,y)=>((y.proveidor&&y.proveidor===a.proveidor)?1:0)-((x.proveidor&&x.proveidor===a.proveidor)?1:0)||String(y.data||"").localeCompare(String(x.data||""))):[];
+  const sumCob=candidats.filter(x=>cobreix.includes(x.id)).reduce((s,x)=>s+albaraBase878259(x),0);
+  const toggleCob=id=>setA(x=>{const c=new Set(x.cobreix||[]);c.has(id)?c.delete(id):c.add(id);return {...x,cobreix:[...c]}});
+  const baseNum=parseNum8770(a.base)||sumLines;
+  const ivaNum=a.isp?0:(a.iva===""||a.iva==null?21:parseNum8770(a.iva));
+  const totalAuto=baseNum?baseNum*(1+ivaNum/100):0;
   const[llegint,setLlegint]=useState(false);
   // Llegeix l'albarà sol: primer amb la IA directa (si està configurada) i, si no, amb el text del PDF.
   async function autoRead(cur){
     setLlegint(true);setMsg(i18nT("Llegint l’albarà…"));
+    // una factura (i no un albarà) es marca sola com a «Factura de material»; es pot canviar
+    if(cur.isNew&&!cur.meva&&tipusDespesa878311(cur)==="Albarà"&&/\bfactura\b/i.test(cur.pdfText||"")&&!/\balbar[àaá]n?\b/i.test(cur.pdfText||""))setA(x=>({...x,tipus:"Material"}));
     try{
       const ai=await readAlbaraAI878259(cur);
       if(ai){setA(x=>fillAlbara878259(x,ai));setMsg(i18nT("Llegit amb IA: {n} línies{total}. Revisa-ho abans de desar.",{n:(ai.linies||[]).length,total:ai.total?` · ${i18nT("total")} ${money(+ai.total||0)}`:""}));return}
@@ -14525,26 +14645,39 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}
   function applyAnswer(){const p=parseAlbara878259(answer);if(!p.total&&!p.linies.length&&!p.proveidor){setMsg(i18nT("No hi he trobat les dades. Comprova que la resposta tingui «Proveïdor:», «Total:» i la taula."));return}
     setA(x=>fillAlbara878259(x,p));
     setAi(false);setAnswer("");setMsg(i18nT("Dades omplertes: {n} línies{total}. Revisa-les abans de desar.",{n:p.linies.length,total:p.total?` · ${i18nT("total")} ${money(p.total)}`:""}))}
-  return <Modal title={a.isNew?i18nT("Nou albarà"):i18nT("Albarà")} close={close}><div className="alb-editor-v878259">
+  function desar(){
+    const out={...a,base:a.base||(sumLines?fmt2878311(sumLines):"")};
+    if(out.isp){out.iva="0";out.total=out.base||out.total}
+    else if(!String(out.total||"").trim()&&parseNum8770(out.base))out.total=fmt2878311(parseNum8770(out.base)*(1+ivaNum/100));
+    save(out);
+  }
+  return <Modal title={a.isNew?t("Nova despesa"):t("Despesa")} close={close}><div className="alb-editor-v878259 despesa-ed-v878311">
+    {!a.meva&&<div className="tipus-v878311" role="group" aria-label={t("Tipus")}>{TIPUS_DESPESA878311.map(k=><button type="button" key={k} className={tipus===k?"on":""} aria-pressed={tipus===k} onClick={()=>setA(x=>({...x,tipus:k,...(k!=="Subcontracta"?{isp:false}:{})}))}>{k==="Material"?t("Factura de material"):t(k)}</button>)}</div>}
     <div className="alb-photo">{a.foto?<img src={a.foto} alt={t("Albarà")}/>:<span>{t("Sense foto ni PDF")}</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?t("Canviar la foto"):t("Fer foto")}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{t("Adjuntar PDF")}</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf)}>{t("Obrir el PDF")}{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>
     <div className="alb-ai">
-      {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?t("Llegint…"):t("Llegir l’albarà automàticament")}</button>}<button type="button" className="secondary" onClick={()=>setAi(true)}>{t("Llegir amb ChatGPT (copiar i enganxar)")}</button></div>
+      {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?t("Llegint…"):t("Llegir automàticament")}</button>}<button type="button" className="secondary" onClick={()=>setAi(true)}>{t("Llegir amb ChatGPT (copiar i enganxar)")}</button></div>
       :<div className="box"><b>{t("Llegir amb IA")}</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>{t("Copiar les instruccions")}{teText?t(" amb el text del PDF"):""} {t("i obrir ChatGPT")}</button></li><li>{teText?t("A ChatGPT, enganxa-ho i envia (el text del PDF ja hi va inclòs)."):t("A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa les instruccions.")}</li><li>{t("Copia la resposta i enganxa-la aquí:")}</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder={t("Proveïdor: …  Total: …  | Concepte | Quantitat | …")}/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>{t("Tancar")}</button><button type="button" className="primary" onClick={applyAnswer}>{t("Omplir les dades")}</button></div></div>}
       {msg&&<p className="msg">{msg}</p>}
     </div>
+    {perFactura&&<p className="cob-info-v878311">{t("Inclòs a la factura {n}",{n:[perFactura.proveidor,perFactura.numero].filter(Boolean).join(" · ")||"—"})}</p>}
     <div className="grid">
-      <label className="wide"><span>{a.meva?t("Expedient (opcional)"):t("Obra")}</span><select value={a.obraId||""} onChange={e=>set("obraId",e.target.value)}><option value="">{a.meva?t("Sense expedient"):t("Tria l’obra…")}</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>
+      <label className="wide"><span>{a.meva?t("Expedient (opcional)"):t("Obra")}</span><select value={a.obraId||""} onChange={e=>{const v=e.target.value;setA(x=>({...x,obraId:v,...NO_IMP,cobreix:[]}))}}><option value="">{a.meva?t("Sense expedient"):t("Tria l’obra…")}</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>
+      {!a.meva&&caps.length>0&&<label className="wide"><span>{t("Capítol o partida (opcional)")}</span><select className="imp-v878311" value={impVal} onChange={e=>setImp(e.target.value)}><option value="">{t("Tota l’obra")}</option>{!impConeguda&&<option value={impVal}>{imputacio878311(a)}</option>}{caps.map(g=><optgroup key={g.cap} label={g.cap}><option value={"c:"+g.cap}>{t("{cap} · tot el capítol",{cap:g.cap})}</option>{g.partides.map(p=><option key={p.pid} value={"p:"+p.pid}>{[p.codi,String(p.concepte||"").slice(0,70)].filter(Boolean).join(" · ")}</option>)}</optgroup>)}</select></label>}
       <label><span>{t("Proveïdor")}</span><input list="alb-proveidors" value={a.proveidor||""} onChange={e=>set("proveidor",e.target.value)}/><datalist id="alb-proveidors">{proveidors.map(p=><option key={p} value={p}/>)}</datalist></label>
-      <label><span>{t("Número d’albarà")}</span><input value={a.numero||""} onChange={e=>set("numero",e.target.value)}/></label>
+      <label><span>{t("Número")}</span><input value={a.numero||""} onChange={e=>set("numero",e.target.value)}/></label>
       <label><span>{t("Data")}</span><input type="date" value={a.data||""} onChange={e=>set("data",e.target.value)}/></label>
-      <label><span>{t("Base sense IVA (€)")}</span><input inputMode="decimal" value={a.base||""} onChange={e=>set("base",e.target.value)} placeholder={sumLines?String(sumLines.toFixed(2)).replace(".",","):""}/></label>
-      <label><span>{t("IVA %")}</span><input inputMode="decimal" value={a.iva??"21"} onChange={e=>set("iva",e.target.value)}/></label>
-      <label><span>{t("Total amb IVA (€)")}</span><input inputMode="decimal" value={a.total||""} onChange={e=>set("total",e.target.value)}/></label>
+      <label><span>{t("Base sense IVA (€)")}</span><input inputMode="decimal" value={a.base||""} onChange={e=>set("base",e.target.value)} placeholder={sumLines?fmt2878311(sumLines):""}/></label>
+      <label><span>{t("IVA %")}</span><input inputMode="decimal" value={a.isp?"0":(a.iva??"21")} disabled={!!a.isp} onChange={e=>set("iva",e.target.value)}/></label>
+      <label><span>{t("Total amb IVA (€)")}</span><input inputMode="decimal" value={a.isp?(a.base||a.total||""):(a.total||"")} disabled={!!a.isp} onChange={e=>set("total",e.target.value)} placeholder={totalAuto?fmt2878311(totalAuto):""}/></label>
+      {tipus==="Subcontracta"&&<label className="wide chk-v878311"><input type="checkbox" checked={!!a.isp} onChange={e=>set("isp",e.target.checked)}/><span>{t("Inversió del subjecte passiu (ISP)")}</span></label>}
     </div>
+    {factura&&candidats.length>0&&<div className="cob-v878311"><b>{t("Albarans que inclou aquesta factura")}</b>
+      {candidats.map(x=><label key={x.id} className="chk-v878311"><input type="checkbox" checked={cobreix.includes(x.id)} onChange={()=>toggleCob(x.id)}/><span>{x.proveidor||t("Proveïdor pendent")}{x.numero?` · ${x.numero}`:""} · {fmtAppDate8748(x.data)}</span><b>{money(albaraBase878259(x))}</b></label>)}
+      {sumCob>0&&<p className="sum">{t("Albarans marcats:")} <b>{money(sumCob)}</b></p>}</div>}
     <div className="alb-lines">
-      <div className="lh"><b>{t("Materials")}</b><button type="button" className="link" onClick={()=>setA(x=>({...x,linies:[...(x.linies||[]),{concepte:"",quantitat:"1",unitat:"ut",preu:"",import:0}]}))}>{t("+ Afegir línia")}</button></div>
-      {linies.length===0?<p className="hint">{t("Opcional. Si només vols el cost total, n’hi ha prou amb la base o el total.")}</p>:linies.map((l,i)=><div className="ln" key={i}>
-        <input className="c" value={l.concepte} onChange={e=>setLine(i,"concepte",e.target.value)} placeholder={t("Material")}/>
+      <div className="lh"><b>{t("Línies")}</b><button type="button" className="link" onClick={()=>setA(x=>({...x,linies:[...(x.linies||[]),{concepte:"",quantitat:"1",unitat:"ut",preu:"",import:0}]}))}>{t("+ Afegir línia")}</button></div>
+      {linies.map((l,i)=><div className="ln" key={i}>
+        <input className="c" value={l.concepte} onChange={e=>setLine(i,"concepte",e.target.value)} placeholder={t("Concepte")}/>
         <input inputMode="decimal" value={l.quantitat} onChange={e=>setLine(i,"quantitat",e.target.value)} aria-label={t("Quantitat")}/>
         <input value={l.unitat} onChange={e=>setLine(i,"unitat",e.target.value)} aria-label={t("Unitat")}/>
         <input inputMode="decimal" value={l.preu} onChange={e=>setLine(i,"preu",e.target.value)} aria-label={t("Preu")} placeholder={t("Preu")}/>
@@ -14553,13 +14686,11 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra}
       </div>)}
       {linies.length>0&&<p className="sum">{t("Suma de les línies:")} <b>{money(sumLines)}</b></p>}
     </div>
-    <label className="notes"><span>{t("Notes")}</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)} placeholder={t("Ex. material per a la coberta")}/></label>
-    <label className="alb-fact"><input type="checkbox" checked={!!a.facturatClient} onChange={e=>set("facturatClient",e.target.checked)}/><span><b>{t("Ja facturat o repercutit al client")}</b><small>{t("Deixa-ho sense marcar mentre estigui pendent de facturar.")}</small></span></label>
-    <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>{t("Eliminar")}</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>{t("Obrir l’obra")}</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={()=>save({...a,base:a.base||(sumLines?String(sumLines.toFixed(2)).replace(".",","):"")})}>{t("Desar l’albarà")}</button></div>
+    <label className="notes"><span>{t("Notes")}</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)}/></label>
+    <label className="alb-fact"><input type="checkbox" checked={!!a.facturatClient} onChange={e=>set("facturatClient",e.target.checked)}/><span><b>{t("Repercutida al client")}</b></span></label>
+    <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>{t("Eliminar")}</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>{t("Obrir l’obra")}</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar")}</button></div>
   </div></Modal>;
 }
-
-
 // =====================================================================
 // V87.259 · Obres compartides entre comptes (la feina la fa cloudSync.js)
 // =====================================================================

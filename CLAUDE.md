@@ -510,6 +510,28 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   fa `setTab("Factures")`, i molts expedients no tenen aquest apartat: s’acabava al Resum. Ara, si l’expedient no té «Factures»
   o «Pressupostos», porten a «Honoraris» (`ALIAS878308`). `clientsvirtuals.mjs` també apunta hores a mà i factura els honoraris
   (25 proves).
+- **Despeses** (V87.311, proposta 10.1 del `docs/proposta-global.md`, decisions de l’Héctor del 18/10/2026; `src/theme-v878311.css`):
+  - **Tipus** (`tipus`): Albarà · Material («Factura de material») · Subcontracta. Les d’abans sense tipus són «Albarà»
+    (`tipusDespesa878311`); les despeses pròpies del tècnic (`meva`) no en tenen. Les dades són a la mateixa clau de sempre
+    (`aco_albarans_v878259`).
+  - **Capítol o partida** (opcional) del pressupost actiu de l’obra (`partidesObra878311`): `capitol`, `partidaId`,
+    `partidaCodi`, `partidaNom`. Les partides d’abans no tenen `id`: l’identificador és `codi:<codi>` (o `pos:<n>:<codi>`
+    si el codi es repeteix).
+  - **Base / IVA / Total**: si no s’escriu el total, es calcula en desar. Subcontracta amb **ISP** (`isp`): IVA 0 i total = base;
+    a la llista l’IVA diu «ISP». A l’ordinador, columnes Base · IVA · Total; a sota, «Total base» i «Total amb IVA».
+  - **Albarà ↔ factura**: una factura (Material o Subcontracta) marca els albarans de la mateixa obra que inclou (`cobreix`);
+    aquests surten ratllats amb «Inclòs a la factura…» i **no compten** (`cobertsPer878311`); si es treuen de la factura,
+    tornen a comptar.
+  - «Ja facturat o repercutit al client» → **«Repercutida al client»** / «Per repercutir». Filtres per tipus i proveïdor. Fora
+    els textos que explicaven la pantalla. Botons: «Fer foto», «Adjuntar PDF o imatge», «Entrar a mà»; l’editor: «Nova despesa»,
+    «Desar». Un PDF que diu «factura» (i no «albarà») es marca sol com a «Factura de material».
+  - Prova: `despesestest.mjs`. Adaptades: `albaranstest`, `emptest`, `pdftest`, `menutecnictest`, `clientsvirtuals`.
+- **Rendiment de l’obra amb el cost real** (V87.312, proposta 10.1.5; `CostRealObra878312`, `src/theme-v878312.css`): a dalt de
+  «Rendiment» (el Seguiment econòmic, `GlobalRendibilitat8789`), quan l’obra té despeses: pressupost vigent, certificat a
+  origen, cost real sense IVA (els albarans inclosos en una factura no compten) i «Certificat − cost» / «Pressupost − cost».
+  Taula per capítol (Pressupost · Cost real · Diferència · %) amb les partides que tenen cost a sota i «Sense capítol» per a
+  les despeses només de l’obra. Fora el text «Aquesta pantalla no calcula rendibilitat empresarial». Falta: les hores × cost
+  per hora (mòdul 3). Prova: a `despesestest.mjs`.
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -646,7 +668,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Revisió amb clients inventats: primera versió feta el 20/10/2026** (`tools/proves/clientsvirtuals.mjs`, 25 proves):
     constructora (Brava: obra nova, pressupost d’un PDF, certificació, proforma, despesa, cita, nota, recarregar; mòbil) i tècnic
     (Oriol: cèdula, documents del tràmit, honoraris acceptats, pendent de facturar, despesa pròpia, acta, recarregar). Falta:
-    factures de certificació fins al final, el client particular i l’iPad (les hores i les factures d’honoraris ja hi són).
+    el client particular i l’iPad (les hores, les factures d’honoraris i, des del 20/10, les de certificació —proforma de
+    743 €, «Fer factura» amb la sèrie del client i el PDF, i VeriFactu simulat— ja hi són: 33 proves).
     **Troballa:** un compte d’empresa nou té **el Mòdul 2 bloquejat** (Pressupost, Certificacions i Facturació surten com
     «Aquesta funcionalitat forma part del Mòdul 2», `hasModule2Access8747`: `aco_config_v60.modul2Actiu` o `aco_modul2_actiu`)
     i a Ajustos no hi ha cap botó per activar-lo. Preguntar a l’Héctor si s’activa sol per als constructors (prova pilot).
@@ -700,8 +723,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Numeració de factures per client** (V87.297): l’Héctor ha d’activar-la a la fitxa de Brava (prefix i número
   següent). Preguntes a la gestoria: qui és l’emissor (a les proformes surt la constructora), números PF repetits entre
   obres, sèrie per client.
-- **Proposta de Despeses, Facturació, menús per perfil i noms**: `docs/proposta-global.md` apartat 10, esperant la seva
-  revisió (no canviar res fins que digui sí).
+- **Proposta de Despeses, Facturació, menús per perfil i noms** (`docs/proposta-global.md` apartat 10): noms (V87.300), menú del
+  tècnic (V87.307), Despeses (V87.311) i cost real al Rendiment (V87.312) fets. Falta: menús segons el perfil i el mòdul (10.4) i
+  els perfils Treballador i Autònom.
 - **Lectura d’albarans amb IA directa**: falta clau d’Anthropic + desplegar la funció
   (`INSTRUCCIONS_LECTURA_ALBARANS_IA.txt`).
 - **Hores per treballador** (constructors) i mòduls per a **autònoms / operaris / promotors**.

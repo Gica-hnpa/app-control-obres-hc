@@ -1,0 +1,59 @@
+/* V87.311 · Despeses: tipus, base / IVA / total, albarans inclosos en una factura, capítol o partida de l'obra */
+
+/* Llista: al mòbil, imports a la dreta (base i total) i el botó de repercutir a sota */
+html body .albarans-v878259.despeses-v878311 .alb-cap-v878311{display:none}
+html body .albarans-v878259.despeses-v878311 .alb-row .c-base{text-align:right}
+html body .albarans-v878259.despeses-v878311 .alb-row .c-base b{font:700 15px var(--app-font);color:var(--co-ink)}
+html body .albarans-v878259.despeses-v878311 .alb-row .c-tot{text-align:right;white-space:nowrap}
+html body .albarans-v878259.despeses-v878311 .alb-row .c-fact{text-align:right}
+html body .albarans-v878259.despeses-v878311 .alb-row .nm small.cob{color:#0F6E68;font-weight:600}
+html body .albarans-v878259.despeses-v878311 .alb-row.cob-v878311 .c-base b,
+html body .albarans-v878259.despeses-v878311 .alb-row.cob-v878311 .c-tot{text-decoration:line-through;color:var(--co-ink-3)}
+html body .albarans-v878259.despeses-v878311 .alb-row.cob-v878311 .nm b{color:var(--co-ink-2)}
+@media (max-width:899px){
+  html body .albarans-v878259.despeses-v878311 .alb-row{grid-template-columns:32px minmax(0,1fr) auto;grid-template-areas:"ic nm base" "ic nm tot" "ic nm fact";row-gap:2px}
+  html body .albarans-v878259.despeses-v878311 .alb-row .ic{grid-area:ic}
+  html body .albarans-v878259.despeses-v878311 .alb-row .nm{grid-area:nm}
+  html body .albarans-v878259.despeses-v878311 .alb-row .c-base{grid-area:base}
+  html body .albarans-v878259.despeses-v878311 .alb-row .c-iva{display:none}
+  html body .albarans-v878259.despeses-v878311 .alb-row .c-tot{grid-area:tot;font-size:12px;color:var(--co-ink-3)}
+  html body .albarans-v878259.despeses-v878311 .alb-row .c-fact{grid-area:fact}
+  /* filtres en dues columnes */
+  html body .albarans-v878259.despeses-v878311 .alb-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  html body .albarans-v878259.despeses-v878311 .alb-filters select,html body .albarans-v878259.despeses-v878311 .alb-filters input[type=month]{width:100%!important;min-width:0}
+  html body .albarans-v878259.despeses-v878311 .alb-filters .chk{grid-column:1/-1}
+}
+
+/* Tipus de despesa */
+html body .despeses-v878311 .tip-v878311{font-style:normal;display:inline-block;font:700 10.5px var(--app-font);letter-spacing:.02em;padding:1px 7px;border-radius:99px;margin-right:6px;vertical-align:1px;background:rgba(100,116,139,.14);color:var(--co-ink-2)}
+html body .despeses-v878311 .tip-v878311.t-mat{background:rgba(37,99,235,.13);color:#1D4ED8}
+html body .despeses-v878311 .tip-v878311.t-sub{background:rgba(124,58,237,.13);color:#6D28D9}
+
+/* Totals a sota de la llista */
+html body .despeses-v878311 .alb-peu-v878311{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;justify-content:flex-end;padding:10px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);font-size:13px;color:var(--co-ink-2)}
+html body .despeses-v878311 .alb-peu-v878311>span:first-child{flex:1 1 auto;color:var(--co-ink-3)}
+html body .despeses-v878311 .alb-peu-v878311 b{font:700 15px var(--app-font);color:var(--co-ink);margin-left:4px}
+
+/* Ordinador: columnes Base · IVA · Total */
+@media (min-width:900px){
+  html body .albarans-v878259.despeses-v878311 .alb-cap-v878311{display:grid;grid-template-columns:32px minmax(0,1fr) 112px 92px 112px 158px;gap:10px;padding:8px 14px;border-bottom:1px solid var(--co-line);font:700 11px var(--app-font);text-transform:uppercase;letter-spacing:.05em;color:var(--co-ink-3);text-align:right}
+  html body .albarans-v878259.despeses-v878311 .alb-row{grid-template-columns:32px minmax(0,1fr) 112px 92px 112px 158px}
+  html body .albarans-v878259.despeses-v878311 .alb-row .c-base b{font-size:14.5px}
+  html body .albarans-v878259.despeses-v878311 .alb-row .c-iva{display:block;text-align:right;font-size:13px;color:var(--co-ink-2);white-space:nowrap}
+  html body .albarans-v878259.despeses-v878311 .alb-row .c-tot{font-size:13.5px;color:var(--co-ink-2)}
+  html body .albarans-v878259.despeses-v878311 .alb-row .m-only{display:none}
+}
+
+/* Editor */
+html body .despesa-ed-v878311 .tipus-v878311{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+html body .despesa-ed-v878311 .tipus-v878311 button{all:unset;box-sizing:border-box;text-align:center;cursor:pointer;padding:9px 8px;border-radius:10px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 13px var(--app-font);color:var(--co-ink-2);line-height:1.2}
+html body .despesa-ed-v878311 .tipus-v878311 button.on{background:var(--co-accent);border-color:var(--co-accent);color:#fff}
+html body .despesa-ed-v878311 .tipus-v878311 button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .alb-editor-v878259.despesa-ed-v878311 label.chk-v878311{flex-direction:row!important;align-items:center!important;gap:8px!important;font-weight:500;font-size:13.5px;color:var(--co-ink);cursor:pointer}
+html body .alb-editor-v878259.despesa-ed-v878311 label.chk-v878311 input{width:18px!important;height:18px!important;margin:0!important;flex:0 0 auto}
+html body .despesa-ed-v878311 .cob-v878311{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface-2)}
+html body .despesa-ed-v878311 .cob-v878311>b{font-size:13.5px;color:var(--co-ink)}
+html body .alb-editor-v878259.despesa-ed-v878311 .cob-v878311 label.chk-v878311 span{flex:1 1 auto;min-width:0}
+html body .despesa-ed-v878311 .cob-v878311 .sum{margin:2px 0 0;font-size:12.5px;color:var(--co-ink-3);text-align:right}
+html body .despesa-ed-v878311 .cob-info-v878311{margin:0;padding:8px 12px;border-radius:10px;background:rgba(15,110,104,.1);color:#0F6E68;font-size:13px;font-weight:600}
+html body .despesa-ed-v878311 select.imp-v878311{max-width:100%}
