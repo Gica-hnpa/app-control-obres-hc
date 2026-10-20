@@ -811,6 +811,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     mòbil mirant pantalles sense canviar res → cap pregunta. El Supabase de proves té `/__amaga` per simular dos desats alhora.
   - `copiatest.mjs`: 26 proves de `tools/copies` (còpia i restauració) amb el Supabase de proves i carpetes temporals.
   - `compare.js` + `extractor.js`: comparar pressupostos i certificacions entre dues còpies.
+- **Totes les proves de cop** (20/10/2026, després de la V87.310): `D:\aco-tmp\totes-proves.sh` (resultat a
+  `D:\aco-tmp\totes-20-10.txt`). 53 proves en verd. **No compten:** `bigtest`, `cloudtest*`, `emptest`, `fototest`, `migtest`,
+  `pdftest`, `sharetest` (proves antigues que s’han de cridar a mà, amb adreces i carpetes; sense, s’aturen al moment) i
+  `comptadortest.mjs` (escrita el 20/10 a la 1:00 per a un **comptador de temps nou que encara no existeix**: no compta en
+  entrar, pregunta en començar a escriure, pausa si no es toca res, desa en sortir amb «Canviar» / «No era feina»; cal el sí de
+  l’Héctor). `contrasenyestest` pot fallar la primera vegada si la memòria cau de Vite es refà (dos servidors alhora): tornar-la a
+  passar. Les proves no s’han de passar mentre es toca `src/` (el servidor de Vite recarrega l’app a mitja prova).
 - **Abans de tocar `src/`, tancar `OBRIR_APP.bat`**: el servidor de Vite aplica els canvis a l’app oberta amb les
   dades reals (va passar el 13/10/2026 amb la V87.260: es van posar al dia els comptes de l’Héctor abans d’hora).
 - Abans de llançar dos servidors de la mateixa carpeta, deixar arrencar el primer (memòria cau de Vite).
