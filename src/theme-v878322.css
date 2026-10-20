@@ -1,0 +1,19 @@
+/* V87.322 · Pressupostos de l'obra al mòbil: la tira en dues columnes (abans el segon quedava tallat); ajustos més compactes */
+@media (max-width:767px){
+  html body .bbar-list-v878273{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible!important}
+  html body .bbar-list-v878273 button{max-width:none!important;min-width:0;padding:8px 10px!important}
+  html body .bbar-list-v878273 button span{overflow:hidden;text-overflow:ellipsis}
+}
+html body .rapid-in-budget-v878277>summary{position:relative;padding-right:38px!important}
+html body .rapid-in-budget-v878277>summary::after{position:absolute;right:16px;top:50%;transform:translateY(-50%);margin:0!important}
+@media (max-width:767px){
+  html body .rapid-in-budget-v878277>summary{flex-direction:column;align-items:flex-start!important;gap:2px!important;padding:12px 38px 12px 14px!important}
+  html body .rapid-in-budget-v878277>summary span{font-size:12.5px!important}
+}
+@media (max-width:767px){
+  html body .bbar-list-v878273 button span{white-space:normal!important}
+  /* cada capítol en una línia: nom a l'esquerra i total a la dreta (abans el total baixava a una segona línia) */
+  html body .budget-v25 .budget-v25-cap-head>.budget-chapter-total-v87230{grid-column:3!important;grid-row:1!important;justify-self:end!important}
+  html body .budget-v25 .budget-v25-cap-head>select.cap-mes-v878320{grid-column:3!important;justify-self:end!important}
+}
+html body .bbar-list-v878273 button span i.imp-v878322{font-style:normal;white-space:nowrap}

@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.321";
+const APP_VERSION878264="87.322";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8364,9 +8364,9 @@ function BudgetBar878273({data={},groups=[],active,select}){
   const info=g=>{const rows=(data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id);return {n:rows.length,total:rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0)}};
   return <div className="bbar-v878273">
     <div className="bbar-list-v878273" role="tablist" aria-label={t("Pressupostos de l’obra")}>
-      {groups.map(g=>{const x=info(g);return <button type="button" role="tab" key={g.id} aria-selected={active===g.id} className={active===g.id?"on":""} onClick={()=>select?.(g.id)}><b>{budgetName878273(g)}</b><span>{t("{n} partides",{n:x.n})} · {money(x.total)}</span></button>})}
+      {groups.map(g=>{const x=info(g);return <button type="button" role="tab" key={g.id} aria-selected={active===g.id} className={active===g.id?"on":""} onClick={()=>select?.(g.id)}><b>{budgetName878273(g)}</b><span>{t("{n} partides",{n:x.n})} · <i className="imp-v878322">{money(x.total)}</i></span></button>})}
     </div>
-    <small className="bbar-note-v878273">{t("Cada pressupost va a part: els totals no se sumen.")}</small>
+
   </div>
 }
 function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,updateCert,deleteCertificacio8721,updateCertDate8721,addCertificacio,certInfo,setCertInfo,saveCert,client,obra,clientHistoricalPartides=[],partidaLibrary=[],setPartidaLibrary,fixedSub="",setClients}){
@@ -12591,7 +12591,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.321",
+    app_version:"87.322",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
