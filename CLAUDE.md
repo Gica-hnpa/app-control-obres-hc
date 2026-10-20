@@ -639,10 +639,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 ## Pendent o a mitges
 
 - **Encàrrecs de l’Héctor del 19/10/2026 pendents (Dades en pestanyes, pobles i «Accions»: fets a la V87.304):**
-  - **Revisió amb clients inventats** («com si diversos clients inventats tastessin totes les parts de l’app, per veure errors
-    abans de sortir al mercat»): un tècnic, una constructora i un client particular fent servir de debò cada part (crear obres,
-    dades, actes, notes, pressupostos, certificacions, factures, hores, agenda, documents, despeses) al mòbil, l’iPad i
-    l’ordinador. Ampliar `auditoria.mjs` (ara només mira pantalles).
+  - **Revisió amb clients inventats: primera versió feta el 20/10/2026** (`tools/proves/clientsvirtuals.mjs`, 21 proves):
+    constructora (Brava: obra nova, pressupost d’un PDF, certificació, proforma, despesa, cita, nota, recarregar; mòbil) i tècnic
+    (Oriol: cèdula, documents del tràmit, honoraris acceptats, pendent de facturar, despesa pròpia, acta, recarregar). Falta:
+    hores, factures d’honoraris i de certificació fins al final, documents, client particular, iPad.
+    **Troballa:** un compte d’empresa nou té **el Mòdul 2 bloquejat** (Pressupost, Certificacions i Facturació surten com
+    «Aquesta funcionalitat forma part del Mòdul 2», `hasModule2Access8747`: `aco_config_v60.modulActiu` o `aco_modul2_actiu`)
+    i a Ajustos no hi ha cap botó per activar-lo. Preguntar a l’Héctor si s’activa sol per als constructors (prova pilot).
+    `auditoria.mjs` (20/10/2026): ja fa lliscar els menús llargs abans de mirar si una opció és tapada (amb 16-17 opcions,
+    «Accions» del pressupost sortia com a tapat); 0 problemes a les 180 pantalles de l’Héctor ni a les de Brava i Oriol.
   - **Comptador automàtic de temps**: compta com a feina el temps que només es consulta una obra (l’Héctor, 19/10/2026: «no pot
     ser que entri a consultar i em compti com a feina executada»). Replantejar-lo a la versió següent (p. ex. que comenci quan
     s’escriu o es fa alguna cosa, o preguntar en sortir).
