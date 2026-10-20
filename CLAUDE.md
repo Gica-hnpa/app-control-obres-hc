@@ -644,7 +644,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     (Oriol: cèdula, documents del tràmit, honoraris acceptats, pendent de facturar, despesa pròpia, acta, recarregar). Falta:
     hores, factures d’honoraris i de certificació fins al final, documents, client particular, iPad.
     **Troballa:** un compte d’empresa nou té **el Mòdul 2 bloquejat** (Pressupost, Certificacions i Facturació surten com
-    «Aquesta funcionalitat forma part del Mòdul 2», `hasModule2Access8747`: `aco_config_v60.modulActiu` o `aco_modul2_actiu`)
+    «Aquesta funcionalitat forma part del Mòdul 2», `hasModule2Access8747`: `aco_config_v60.modul2Actiu` o `aco_modul2_actiu`)
     i a Ajustos no hi ha cap botó per activar-lo. Preguntar a l’Héctor si s’activa sol per als constructors (prova pilot).
     `auditoria.mjs` (20/10/2026): ja fa lliscar els menús llargs abans de mirar si una opció és tapada (amb 16-17 opcions,
     «Accions» del pressupost sortia com a tapat); 0 problemes a les 180 pantalles de l’Héctor ni a les de Brava i Oriol.
