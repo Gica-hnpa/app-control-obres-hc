@@ -3260,4 +3260,7 @@ export default {
   "De les obres": "De las obras",
   "Per data": "Por fecha",
   "Per obra": "Por obra",
+  "Agents de l’obra": "Agentes de la obra",
+  "Cap agent": "Ningún agente",
+  "08 · Final d’obra": "08 · Final de obra",
 };

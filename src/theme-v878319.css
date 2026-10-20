@@ -1,0 +1,20 @@
+/* V87.319 · Fitxa de l'expedient: agents de l'obra plegats a «Dades i agents» */
+html body details.agents-plegat-v878319{padding:0!important;overflow:hidden}
+html body details.agents-plegat-v878319>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer}
+html body details.agents-plegat-v878319>summary::-webkit-details-marker{display:none}
+html body details.agents-plegat-v878319>summary::before{content:"▸";font-size:13px;color:var(--co-ink-3);width:12px;flex:0 0 auto}
+html body details.agents-plegat-v878319[open]>summary::before{content:"▾"}
+html body details.agents-plegat-v878319>summary .tit{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body details.agents-plegat-v878319>summary .tit b{font:700 15px var(--app-font);color:var(--co-ink)}
+html body details.agents-plegat-v878319>summary .tit small{font-size:12.5px;color:var(--co-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body details.agents-plegat-v878319>summary .n{flex:0 0 auto;min-width:26px;height:26px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;background:var(--co-surface-2);font:700 12.5px var(--app-font);color:var(--co-ink-2)}
+html body details.agents-plegat-v878319>summary button{flex:0 0 auto}
+html body details.agents-plegat-v878319[open]>summary{border-bottom:1px solid var(--co-line)}
+html body details.agents-plegat-v878319>:not(summary){margin-left:18px;margin-right:18px}
+html body details.agents-plegat-v878319>.agents-accordion-v878133{margin-bottom:16px}
+html body details.agents-plegat-v878319>.pro-search-line{margin-top:12px}
+@media (max-width:767px){
+  html body details.agents-plegat-v878319>summary{padding:12px 14px;gap:10px}
+  html body details.agents-plegat-v878319>summary button{padding:8px 10px}
+  html body details.agents-plegat-v878319>:not(summary){margin-left:12px;margin-right:12px}
+}

@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.318";
+const APP_VERSION878264="87.319";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2260,7 +2260,7 @@ function CodiCarpeta878270({obra}){
   const[ok,setOk]=useState(false);
   const code=expedientCode8739(obra);
   async function copiar(){try{await navigator.clipboard.writeText(code);setOk(true);setTimeout(()=>setOk(false),1800)}catch{window.prompt(t("Copia el codi:"),code)}}
-  return <div className="codi-carpeta-v878270"><div><small>{t("Codi de carpeta (arxiu)")}</small><b>{code}</b><span>{t("És el codi de les carpetes de l’ordinador. A l’app es fa servir el curt: {curt}.",{curt:codiCurt878270(obra)})}</span></div><button type="button" className="secondary" onClick={copiar}>{ok?t("Copiat ✓"):t("Copiar")}</button></div>;
+  return <div className="codi-carpeta-v878270"><div><small>{t("Codi de carpeta (arxiu)")}</small><b>{code}</b></div><button type="button" className="secondary" onClick={copiar}>{ok?t("Copiat ✓"):t("Copiar")}</button></div>;
 }
 
 // V87.234 · numeració visible pròpia de cada client i dates de creació sense hora.
@@ -7715,17 +7715,16 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     <div className="dades-tabs-v878304" role="tablist">{tabsVisibles878304.map(([k,l])=><button type="button" role="tab" key={k} aria-selected={sub878304===k} className={`${sub878304===k?"on":""} ${ple878304(k)?"ple":""}`} onClick={()=>triaSub878304(k)}>{l}</button>)}{simple878304&&!totes878304&&tabsVisibles878304.length<TABS878304.length&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>
     <div className="form-grid fitxa-form-v8773 fitxa-form-v87159"><DatalistCP8773/>
       {sub878304==="obra"&&<>
-      <details className="span-all code-editor-v87162" open><summary>{i18nT("Codificació de l'expedient")}</summary><div className="form-grid compact-v87151 no-pad"><label><span>{i18nT("Any")}</span><input value={form.any||new Date().getFullYear()} onChange={e=>upd("any",e.target.value)}/></label><label><span>{i18nT("Número")}</span><input type="number" value={form.numExpedient||String(form.codiExpedient||"").match(/^\d{4}-(\d{3})/)?.[1]||""} onChange={e=>upd("numExpedient",e.target.value)}/></label><label><span>{i18nT("Inicials treball")}</span><input value={form.codiTipus||workCode8739(form.tipusTreball||form.tipologia)} onChange={e=>upd("codiTipus",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>{i18nT("Inicials client")}</span><input value={form.codiClient||clientCode8739(selectedClient||client,selectedClient?.nom||client?.nom)} onChange={e=>upd("codiClient",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>{i18nT("Paraula clau")}</span><input value={form.paraulaClau||""} onChange={e=>upd("paraulaClau",e.target.value)} placeholder={i18nT("VERBANIA, SATE, BANY...")}/></label><label className="span-all"><span>{i18nT("Codi complet editable")}</span><input value={form.codiExpedient||expedientCode8739(form)||expedientCode8739(obra)} onChange={e=>upd("codiExpedient",e.target.value)}/></label><div className="span-all actions-inline"><button type="button" className="secondary" onClick={()=>setForm(p=>recomputeExpedientCode878162(p,selectedClient||client))}>{i18nT("Recalcular codi")}</button><small>{i18nT("Format recomanat: any-número-inicials treball-inicials client-paraula clau. També pots escriure el codi complet manualment.")}</small></div></div></details>
+      <details className="span-all code-editor-v87162"><summary>{i18nT("Codificació de l'expedient")}</summary><div className="form-grid compact-v87151 no-pad"><label><span>{i18nT("Any")}</span><input value={form.any||new Date().getFullYear()} onChange={e=>upd("any",e.target.value)}/></label><label><span>{i18nT("Número")}</span><input type="number" value={form.numExpedient||String(form.codiExpedient||"").match(/^\d{4}-(\d{3})/)?.[1]||""} onChange={e=>upd("numExpedient",e.target.value)}/></label><label><span>{i18nT("Inicials treball")}</span><input value={form.codiTipus||workCode8739(form.tipusTreball||form.tipologia)} onChange={e=>upd("codiTipus",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>{i18nT("Inicials client")}</span><input value={form.codiClient||clientCode8739(selectedClient||client,selectedClient?.nom||client?.nom)} onChange={e=>upd("codiClient",codeClean8739(e.target.value).replace(/\s+/g,"-"))}/></label><label><span>{i18nT("Paraula clau")}</span><input value={form.paraulaClau||""} onChange={e=>upd("paraulaClau",e.target.value)} placeholder={i18nT("VERBANIA, SATE, BANY...")}/></label><label className="span-all"><span>{i18nT("Codi complet editable")}</span><input value={form.codiExpedient||expedientCode8739(form)||expedientCode8739(obra)} onChange={e=>upd("codiExpedient",e.target.value)}/></label><div className="span-all actions-inline"><button type="button" className="secondary" onClick={()=>setForm(p=>recomputeExpedientCode878162(p,selectedClient||client))}>{i18nT("Recalcular codi")}</button></div></div></details>
       <label><span>{i18nT("Nom de l’obra / treball")}</span><input value={form.nom||""} onChange={e=>upd("nom",e.target.value)}/></label>
       <label><span>{i18nT("Tipus de feina / encàrrec")}</span><select value={canonicalWorkType8740(form.tipusTreball||form.tipologia||"Altres")} onChange={e=>{const t=canonicalWorkType8740(e.target.value);setForm(p=>({...applyWorkTemplate878121({...p,tipusTreball:t,tipologia:t},t,false),tipusTreball:t,tipologia:t,codiTipus:workCode8739(t)}))}}>{WORK_TYPES8737.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</select></label>
       <label><span>{i18nT("Estat de l’expedient")}</span><select value={form.estat||"Pendent"} onChange={e=>upd("estat",e.target.value)}>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{i18nT(st)}</option>)}</select></label>
       <CampsAdreca878304 v={obraAdr878304} onChange={setObraAdr878304} etiqueta={i18nT("Adreça de l’obra (carrer i número)")}/>
       <label><span>{i18nT("Núm. del client (expedient, obra o pressupost)")}</span><input value={form.refClient||""} onChange={e=>upd("refClient",e.target.value)}/></label>
       <label><span>{i18nT("Referència cadastral")}</span><input value={form.rc||""} onChange={e=>upd("rc",e.target.value)}/></label>
-      <label className="doc-lang-v878283"><span>{i18nT("Idioma dels documents")}</span><select value={LANGS.some(l=>l.code===form.idiomaDocs)?form.idiomaDocs:""} onChange={e=>upd("idiomaDocs",e.target.value)}><option value="">{i18nT("El de cada usuari")}</option>{LANGS.map(l=><option key={l.code} value={l.code}>{l.nom}</option>)}</select><small>{i18nT("Les actes, els pressupostos, les certificacions i les factures d’aquesta obra surten en aquest idioma, encara que treballis amb l’app en un altre.")}</small></label>
+      <label className="doc-lang-v878283"><span>{i18nT("Idioma dels documents")}</span><select value={LANGS.some(l=>l.code===form.idiomaDocs)?form.idiomaDocs:""} onChange={e=>upd("idiomaDocs",e.target.value)}><option value="">{i18nT("El de cada usuari")}</option>{LANGS.map(l=><option key={l.code} value={l.code}>{l.nom}</option>)}</select></label>
       <label className="span-all"><span>{i18nT("Definició tipus de feina")}</span><textarea value={form.definicioFeina||""} onChange={e=>upd("definicioFeina",e.target.value)} placeholder={i18nT("Definició base de l'encàrrec, editable per cada expedient...")}/></label>
-      <label className="span-all"><span>{i18nT("Direcció / criteri de l’obra")}</span><textarea value={form.direccioObraText||""} onChange={e=>upd("direccioObraText",e.target.value)} placeholder={i18nT("Direcció d’obra, seguiment, criteris i condicions particulars...")}/></label>
-      <label className="span-all"><span>{i18nT("Observacions internes")}</span><textarea value={form.observacions||""} onChange={e=>upd("observacions",e.target.value)} placeholder={i18nT("Condicionants, criteris, notes de l’encàrrec...")}/></label>
+      {String(obra?.observacions||"").trim()&&<label className="span-all"><span>{i18nT("Observacions internes")}</span><textarea value={form.observacions||""} onChange={e=>upd("observacions",e.target.value)} placeholder={i18nT("Condicionants, criteris, notes de l’encàrrec...")}/></label>}
       <div className="span-all"><CodiCarpeta878270 obra={obra}/></div>
       </>}
       {sub878304==="client"&&<>
@@ -8672,6 +8671,9 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     if(hi("Tasques")&&hi("Agenda / Avisos"))ALIAS878308["Tasques"]="Agenda / Avisos";
     // V87.309 · Actes + Notes = «Visites» (la clau és «Actes»)
     if(hi("Notes")&&hi("Actes"))ALIAS878308["Notes"]="Actes";
+    // V87.319 · «Entrega» sobra (l'Héctor, 20/10/2026): és el paquet «08 · Final d'obra» de Documents
+    const entregaUsada878319=((data?.sectionDocs||{}).tancament||[]).length>0||!!String((data?.sectionNotes||{}).tancament||"").trim();
+    if(hi("Tancament / Entrega")&&hi("Documents")&&!entregaUsada878319)ALIAS878308["Tancament / Entrega"]="Documents";
     // V87.310 · «Fer factura» d'un pressupost d'honoraris anava a «Factures», que molts expedients no tenen, i acabava al Resum
     // (trobat per la revisió amb clients inventats): sense aquests apartats, porten a Honoraris
     if(hi("Honoraris")){if(!hi("Factures"))ALIAS878308["Factures"]="Honoraris";if(!hi("Pressupostos"))ALIAS878308["Pressupostos"]="Honoraris"}
@@ -8761,7 +8763,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Resum"&&<EncarrecTecnic878306 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
     {activeTab==="Gantt"&&<GanttObraVisual878253 data={directBudgetData878214} setData={strictClientReadOnly878242?undefined:setDirectBudgetData878214}/>}
     {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} clients={clients} setClients={setClients} data={data} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent} keepAgent878303={keepAgent878303} agentsLib878301={agentsLib878301}/>} 
-    {(activeTab==="Agents"||(activeTab==="Dades"&&ALIAS878308["Agents"]))&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145">{activeTab==="Agents"&&<PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/>}<AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303}/></div>} 
+    {(activeTab==="Agents"||(activeTab==="Dades"&&ALIAS878308["Agents"]))&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145">{activeTab==="Agents"&&<PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/>}<AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303} plegat={activeTab==="Dades"}/></div>} 
     {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} 
     {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} 
     {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} 
@@ -12047,7 +12049,8 @@ function BackTop878301(){
   if(!on)return null;
   return <button type="button" className="backtop-v878301" onClick={()=>{try{window.scrollTo({top:0,behavior:"smooth"})}catch{window.scrollTo(0,0)}}} aria-label={t("Tornar a dalt")}><ArrowUp/><span>{t("A dalt")}</span></button>;
 }
-function AgentsObraCard({data,openAgent,setData,libraryAgents=[],onKeep878303=null}){
+function AgentsObraCard({data,openAgent,setData,libraryAgents=[],onKeep878303=null,plegat=false}){
+const[obert878319,setObert878319]=useState(false);
 const[q,setQ]=useState("");
 const[openId,setOpenId]=useState(null);
 const[libPick,setLibPick]=useState("");
@@ -12073,7 +12076,7 @@ function ajuntar878301(){if(!repetits878301)return;if(!confirm(t("Ajuntar els {n
 function treure878301(){if(!marked.length)return;if(!confirm(t("Treure {n} agents d’aquesta obra? Les actes que ja els tenen no canvien.",{n:marked.length})))return;local.filter(x=>marked.includes(x.id)).forEach(x=>onKeep878303?.(x));commit(local.filter(x=>!marked.includes(x.id)));setMarked([]);setReview(false)}
 const toggleMark878301=id=>setMarked(m=>m.includes(id)?m.filter(x=>x!==id):[...m,id]);
 function addFromLibrary(){const ag=libAvailable.find(a=>a.id===libPick);if(!ag)return;const copy={...ag,id:"agent-obra-"+Date.now(),sourceAgentId:ag.id,updatedAt:new Date().toISOString()};commit([copy,...local]);setLibPick("");setOpenId(copy.id)}
-return <Card title={t("Relació d’agents de l’obra")} action={<div className="actions-inline"><button className="primary" onClick={()=>setPicker(true)}><Plus/> {t("Afegir agent")}</button></div>}>
+const cos878319=<>
 {picker&&<AgentPicker878301 library={libraryAgents} existing={local} onAdd={addMany878301} onNew={addLocal} close={()=>setPicker(false)}/>}
 {(local.length>=10||repetits878301>0)&&<div className="agents-review-v878301"><span>{repetits878301>0?t("Aquesta obra té {n} agents, {d} repetits.",{n:local.length,d:repetits878301}):t("Aquesta obra té {n} agents.",{n:local.length})} {t("Deixa-hi només els que hi intervenen.")}</span><div className="actions-inline">{repetits878301>0&&<button type="button" className="secondary" onClick={ajuntar878301}>{t("Ajuntar els repetits")}</button>}<button type="button" className="secondary" onClick={()=>{setReview(v=>!v);setMarked([])}}>{review?t("Acabar"):t("Triar quins treure")}</button>{review&&<button type="button" className="danger" disabled={!marked.length} onClick={treure878301}>{t("Treure’n {n}",{n:marked.length})}</button>}</div></div>}
 {local.length>0&&<div className="pro-search-line"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Filtrar agents d’aquesta obra...")}/></div>}
@@ -12084,14 +12087,19 @@ return <div className={`agent-drawer-v878133 ${review&&marked.includes(a.id)?"ma
 {review?<label className="agent-summary-v878133 agent-mark-v878301"><input type="checkbox" checked={marked.includes(a.id)} onChange={()=>toggleMark878301(a.id)}/><b>{a.nom||t("Agent sense nom")}</b><span>{a.rol?i18nT(a.rol):i18nT("Rol pendent")} · {a.empresa||t("Empresa pendent")}</span>{isDup878301(a)&&<em className="dup-v878301">{t("repetit")}</em>}</label>
 :<div className="agent-row-v878303"><button type="button" className="agent-summary-v878133" onClick={()=>setOpenId(opened?null:a.id)}><b>{a.nom||t("Agent sense nom")}</b><span>{a.rol?i18nT(a.rol):i18nT("Rol pendent")} · {a.empresa||t("Empresa pendent")}</span><em>{a.nif?`NIF ${a.nif}`:t("NIF pendent")} · {a.telefon||t("Sense telèfon")}</em>{isDup878301(a)&&<em className="dup-v878301">{t("repetit")}</em>}</button>{setData&&<button type="button" className="agent-treure-v878303" onClick={()=>remove(a.id)} title={t("Treure d’aquesta obra")} aria-label={t("Treure d’aquesta obra")}><Trash2 size={16}/><span>{t("Treure")}</span></button>}</div>}
 {opened&&!review&&<div className="agent-detail-v878133">
-{/* V87.304 · la mateixa fitxa que a Dades: tots els camps, persona de contacte amb mòbil i adreça separada */}
 <label><span>{t("Figura / rol a l’obra")}</span><select value={a.rol||"Altres"} onChange={e=>upd(a.id,"rol",e.target.value)}>{roles.map(r=><option key={r} value={r}>{i18nT(r)}</option>)}</select></label>
 <div className="wide"><FitxaPersona878304 v={personaAgent878304(a)} onChange={patch=>updMany878304(a.id,patch)} tipus={tipusFitxaAgent878304(a)}/></div>
 <div className="line-actions"><button type="button" className="secondary" onClick={()=>setOpenId(null)}>{t("Tancar")}</button><button type="button" className="danger" onClick={()=>remove(a.id)}>{t("Treure d’aquesta obra")}</button></div>
 </div>}
 </div>})}
 </div>
-</Card>}
+</>;
+const afegir878319=<button type="button" className="primary" onClick={e=>{e.preventDefault();e.stopPropagation();setObert878319(true);setPicker(true)}}><Plus/> {t("Afegir agent")}</button>;
+// V87.319 · a Dades, la llista d'agents plegada (l'Héctor: «si no necessito emplenar res, que no ocupi tant d'espai»)
+if(plegat){const noms=local.map(a=>a.nom).filter(Boolean);return <details className="card agents-plegat-v878319" open={obert878319} onToggle={e=>setObert878319(e.currentTarget.open)}>
+  <summary><span className="tit"><b>{t("Agents de l’obra")}</b><small>{local.length?(noms.slice(0,3).join(" · ")+(noms.length>3?" · +"+(noms.length-3):"")):t("Cap agent")}</small></span><span className="n">{local.length}</span>{afegir878319}</summary>
+  {obert878319&&cos878319}</details>}
+return <Card title={t("Relació d’agents de l’obra")} action={<div className="actions-inline">{afegir878319}</div>}>{cos878319}</Card>}
 
 function SeguimentFotos(){const[photos,setPhotos]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_photos"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_photos"),JSON.stringify(photos))},[photos]);function add(e){let files=[...(e.target.files||[])];files.forEach(f=>{let r=new FileReader();r.onload=()=>setPhotos(p=>[...p,{id:"ph-"+Date.now()+Math.random(),name:f.name,url:r.result}]);r.readAsDataURL(f)})}return <Card title="Fotografies" action={<label className="primary upload-label"><Plus/> Afegir fotografies<input type="file" multiple accept="image/*" onChange={add}/></label>}><div className="real-photo-grid">{photos.length===0?<Empty text="Encara no hi ha fotografies. També les podràs incorporar directament dins les actes."/>:photos.map(p=><div><img src={p.url}/><span>{p.name}</span></div>)}</div></Card>}
 
@@ -12187,7 +12195,7 @@ function documentFolders8775(obra,data={}){
   if(["Direcció / seguiment d’obra","Gestió integral d’obra","Seguretat i salut","Control econòmic d’obra"].includes(tipus)) folders=add(folders,"06B_FOTOS_OBRA",i18nT("06B · Fotos d’obra"),i18nT("Fotografies d’obra, visites, abans/després i justificació gràfica separada de les actes."));
   if(["Projecte / llicència d’obres","Direcció / seguiment d’obra","Gestió integral d’obra","Control econòmic d’obra","Postobra / documentació final"].includes(tipus)) folders=add(folders,"06C_CONTROL_QUALITAT",i18nT("06C · Control de qualitat"),i18nT("Pla de control, assajos, certificats de materials, fitxes tècniques, garanties i comprovacions de qualitat."));
   if(hasCertData878193||["Direcció / seguiment d’obra","Gestió integral d’obra","Control econòmic d’obra"].includes(tipus)) folders=add(folders,"07_CERTIFICACIONS_FACTURACIO_OBRA",i18nT("07 · Certificacions / facturació obra"),i18nT("Certificacions, albarans, factures d’obra i documentació econòmica de l’obra."));
-  folders=add(folders,"08_DOCUMENTACIO_FINAL",i18nT("08 · Documentació final / entrega"),i18nT("CFO, llibre de l’edifici, manuals, garanties, as-built final i lliurament al client."));
+  folders=add(folders,"08_DOCUMENTACIO_FINAL",i18nT("08 · Final d’obra"),i18nT("CFO, llibre de l’edifici, manuals, garanties, as-built final i lliurament al client."));
   folders=add(folders,"99_ALTRES",i18nT("99 · Altres"),i18nT("Documents puntuals pendents d’ordenar o que no encaixen en cap carpeta."));
   return folders;
 }
@@ -12520,7 +12528,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.318",
+    app_version:"87.319",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

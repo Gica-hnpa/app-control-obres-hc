@@ -95,6 +95,32 @@ tanda està decidida). Després es farà el mateix amb els altres mòduls.
   - Sense cap despesa, no surten els requadres a 0.
   - A **Hores i despeses**, «+ Despesa» a dalt i a cada expedient.
 
+## Tanda 4 (20/10/2026, tarda) — dins de l’expedient, començant per la gestió integral (després cèdules i CEE)
+
+### Fitxa (Resum · Dades · Documents · Entrega)
+1. **Entrega sobra**: a Documents, un paquet més de **«Final d’obra»** (sempre, encara que només calgui quan fa direcció d’obra).
+2. **Dades › Obra: massa coses a emplenar.** «Definició tipus de feina» encara; **«Direcció / criteri de l’obra» i «Observacions
+   internes» no les emplena mai**: fora (sense perdre el que hi hagi escrit).
+3. **Agents**: poden estar aquí. Però en grups plegats: si en toca un l’emplena; si no, no ocupa pantalla ni cal fer tant scroll.
+
+### Seguiment
+4. **Agenda**, bé. Les **tasques de l’expedient** (a sota) haurien de recordar-se com les «Feines pendents» de l’Inici.
+5. **Planning**, molt bé; vigilar l’iPad i el mòbil (veure’l en horitzontal?).
+
+### Econòmic › Pressupost
+6. «Pressupost per al client» no s’entén si no ho saps: dir-ne **«Ajustos del pressupost»** (observacions, formes de pagament…).
+7. Diversos pressupostos (1a fase, posteriors…): bé, però mirar-ho als aparells petits.
+8. **Avisos** («3 partides certificades per sobre…», «1 codi repetit»): no a dalt; **al final** de la pantalla o en una pestanya
+   lateral. I que l’app avisi sola de més coses (pressupost passat, partides sense preu…).
+9. En obrir el pressupost, **tots els capítols plegats** (ara s’obre el primer).
+10. **Estructura**: el capítol surt dues vegades (requadre blau «Capítol principal» i a sota la fila gris amb les partides):
+    ocupa molta pantalla sense sentit. Una sola fila per capítol.
+11. **«Accions»**: massa opcions dins d’un sol menú. 3 o 4 grups a la vista (editar, crear i importar…) o un desplegable
+    resumit; mirar si tot serveix o si hi ha coses repetides.
+12. **Capítol i partides**: «Accions del capítol», «Marcar», «Accions» a cada partida (editar, amidaments, descripció,
+    descompost, desar a la llibreria, moure de capítol, eliminar…): massa coses, lia. Ha de ser fàcil per a un autònom que
+    s’ho porta tot ell.
+
 ## Següent
 
 Expedients (dins de l’expedient) · Preus · Facturació · Agenda · Ajustos i, dins de l’expedient, Fitxa (Resum, Dades i agents, Documents,
