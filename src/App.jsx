@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.323";
+const APP_VERSION878264="87.324";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1632,6 +1632,7 @@ const WORK_TYPES8737=[
   "Certificat energètic",
   "Cèdula d’habitabilitat",
   "ITE / IEE / inspecció d’edifici",
+  "Amiant (localització i diagnosi)",
   "Informe tècnic / patologies / peritatge",
   "Plànols / aixecament",
   "Render / 3D / visualització",
@@ -1686,6 +1687,11 @@ const WORK_TYPE_TEMPLATES878121={
     subtitol:"Inspecció tècnica de l’edifici",
     definicioFeina:"Inspecció de l’edifici, presa de dades, identificació de deficiències, reportatge fotogràfic i redacció de l’informe tècnic.",
     direccioObraText:"No implica direcció d’obra inicial. Si es deriven reparacions, es podrà activar seguiment o gestió d’obra."
+  },
+  "Amiant (localització i diagnosi)":{
+    subtitol:"Localització i diagnosi d’amiant",
+    definicioFeina:"Inspecció de l’edifici per localitzar els materials amb amiant, presa de mostres per al laboratori, valoració de l’estat i del risc i informe amb les recomanacions (UNE 171370-2).",
+    direccioObraText:"No implica direcció d’obra. La retirada, si cal, la fa una empresa inscrita al RERA amb el pla de treball aprovat."
   },
   "Informe tècnic / patologies / peritatge":{
     subtitol:"Informe tècnic i anàlisi de patologies",
@@ -1742,6 +1748,7 @@ const SIMPLE_WORK_TYPES878151=new Set([
   "Certificat energètic",
   "Cèdula d’habitabilitat",
   "ITE / IEE / inspecció d’edifici",
+  "Amiant (localització i diagnosi)",
   "Informe tècnic / patologies / peritatge",
   "Plànols / aixecament",
   "Render / 3D / visualització",
@@ -1807,6 +1814,7 @@ function canonicalWorkType8740(v){
   if(n.includes("DIRECCIO")||n.includes("EXECUCIO D OBRA")||n.includes("SEGUIMENT D OBRA"))return "Direcció / seguiment d’obra";
   if(n.includes("CERTIFICAT ENERGETIC")||n==="CEE")return "Certificat energètic";
   if(n.includes("CEDULA")||n==="CED")return "Cèdula d’habitabilitat";
+  if(n.includes("AMIANT")||n.includes("FIBROCIMENT"))return "Amiant (localització i diagnosi)";
   if(n.includes("ITE")||n.includes("IEE")||n.includes("INSPECCIO"))return "ITE / IEE / inspecció d’edifici";
   if(n.includes("RENDER")||n.includes("VISUAL")||n.includes("3D")||n==="REND")return "Render / 3D / visualització";
   if(n.includes("SEGURETAT")||n.includes("SALUT")||n==="CSS"||n.includes("EBSS")||n.includes("ESS"))return "Seguretat i salut";
@@ -1836,6 +1844,7 @@ const TAB_TEMPLATES8769={
   "Certificat energètic":["Resum","Dades","Documents","Agenda / Avisos","Tasques","Gestió temps","Tancament / Entrega"],
   "Cèdula d’habitabilitat":["Resum","Dades","Documents","Agenda / Avisos","Tasques","Gestió temps","Tancament / Entrega"],
   "ITE / IEE / inspecció d’edifici":["Resum","Dades","Documents","Agenda / Avisos","Tasques","Gestió temps","Tancament / Entrega"],
+  "Amiant (localització i diagnosi)":["Resum","Dades","Documents","Agenda / Avisos","Tasques","Gestió temps","Tancament / Entrega"],
   "Informe tècnic / patologies / peritatge":["Resum","Dades","Documents","Agenda / Avisos","Tasques","Gestió temps","Tancament / Entrega"],
   "Plànols / aixecament":["Resum","Dades","Documents","Agenda / Avisos","Tasques","Gestió temps","Tancament / Entrega"],
   "Render / 3D / visualització":["Resum","Dades","Documents","Agenda / Avisos","Tasques","Gestió temps","Tancament / Entrega"],
@@ -2132,6 +2141,7 @@ function workCode8739(t){
   if(n.includes("PROJECTE"))return "PROJ";
   if(n.includes("ENERGETIC"))return "CEE";
   if(n.includes("CEDULA"))return "CED";
+  if(n.includes("AMIANT"))return "AMI";
   if(n.includes("ITE"))return "ITE";
   if(n.includes("INFORME"))return "INF";
   if(n.includes("EXECUCIO")||n==="DO"||n.includes("DIRECCIO"))return "DO";
@@ -2484,7 +2494,7 @@ const AGENT_ROLE_OPTIONS878188=["Promotor / propietat","Constructora / contracti
 const WORK_TYPE_GROUPS878254=[
   {label:"Obra",types:["Gestió integral d’obra","Direcció / seguiment d’obra","Control econòmic d’obra","Projecte / llicència d’obres","Activitat / adequació de local","Seguretat i salut"]},
   {label:"Pressupostos",types:["Pressupost d’obra / amidaments","Elaboració de pressupost per client"]},
-  {label:"Feina tècnica",types:["Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Informe tècnic / patologies / peritatge","Plànols / aixecament","Render / 3D / visualització","Tràmit municipal / llicència / comunicació","Postobra / documentació final","Altres"]}
+  {label:"Feina tècnica",types:["Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Amiant (localització i diagnosi)","Informe tècnic / patologies / peritatge","Plànols / aixecament","Render / 3D / visualització","Tràmit municipal / llicència / comunicació","Postobra / documentació final","Altres"]}
 ];
 // V87.304 · Dades del promotor d'una obra nova: el client mateix (si no se n'ha escrit cap altre) o el que s'ha escrit
 function promotorObra878304(nom,nif,client={}){
@@ -2914,6 +2924,8 @@ function enllacosBase878305(obra={}){
   // V87.306 · el tràmit (Habitatge, ICAEN) ja és el botó de «Documents per presentar» de l'encàrrec; aquí, MagicPlan per a la cèdula
   if(/cèdula/i.test(tipus))out.push({nom:"MagicPlan",url:"https://cloud.magicplan.app/"});
   if(/certificat energètic/i.test(tipus))out.push({nom:"Cercador de certificats energètics",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"});
+  // V87.324 · amiant: pàgines oficials comprovades el 21/10/2026 (Agència de Residus i tràmit del RERA)
+  if(/amiant/i.test(tipus)){out.push({nom:"Amiant: preguntes freqüents (Agència de Residus)",url:"https://residus.gencat.cat/ca/ambits_dactuacio/tipus_de_residu/amiant/ciutadania/preguntes-frequents/"});out.push({nom:"Registre d’empreses amb risc d’amiant (RERA)",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Registre-dEmpreses-amb-Risc-per-Amiant-RERA"})}
   return out;
 }
 function enllacosPropis878305(){try{const l=JSON.parse(localStorage.getItem(lsKey8779(ENLLACOS_KEY878305))||"[]");return Array.isArray(l)?l.filter(x=>x&&String(x.url||"").trim()):[]}catch{return []}}
@@ -12249,7 +12261,7 @@ function documentFolders8775(obra,data={}){
   let folders=[];
   folders=add(folders,"00_DESPATX_TECNIC",i18nT("00 · Despatx tècnic / honoraris"),i18nT("Pressupostos d’honoraris, factures del tècnic i documents interns del despatx vinculats a aquest expedient. No és documentació econòmica de l’obra."));
   folders=add(folders,"01_DOCUMENTACIO_PREVIA",i18nT("01 · Documentació prèvia"),i18nT("Encàrrec, informació rebuda, fitxa inicial, documentació del client i antecedents."));
-  if(["Projecte / llicència d’obres","Tràmit municipal / llicència / comunicació","Activitat / adequació de local","Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Postobra / documentació final"].includes(tipus)) folders=add(folders,"01_TRAMITS_AJUNTAMENT",i18nT("01 · Ajuntament / tràmits"),i18nT("Llicències, comunicacions, taxes, requeriments, registre i justificants."));
+  if(["Projecte / llicència d’obres","Tràmit municipal / llicència / comunicació","Activitat / adequació de local","Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Amiant (localització i diagnosi)","Postobra / documentació final"].includes(tipus)) folders=add(folders,"01_TRAMITS_AJUNTAMENT",i18nT("01 · Ajuntament / tràmits"),i18nT("Llicències, comunicacions, taxes, requeriments, registre i justificants."));
   if(["Projecte / llicència d’obres","Pressupost d’obra / amidaments","Direcció / seguiment d’obra","Gestió integral d’obra","Plànols / aixecament","Render / 3D / visualització","Activitat / adequació de local","Postobra / documentació final"].includes(tipus)) folders=add(folders,"02_PLANOLS",i18nT("02 · Plànols"),i18nT("DWG, PDF, aixecaments, as-built, bases gràfiques i plànols marcats."));
   if(hasBudgetData878193||["Projecte / llicència d’obres","Pressupost d’obra / amidaments","Control econòmic d’obra","Gestió integral d’obra"].includes(tipus)) folders=add(folders,"03_AMIDAMENTS_PRESSUPOST_OBRA",i18nT("03 · Amidaments / pressupost d’obra"),i18nT("Amidaments, pressupost base, descompostos i versions del pressupost d’obra."));
   if(["Pressupost d’obra / amidaments","Control econòmic d’obra","Gestió integral d’obra","Direcció / seguiment d’obra"].includes(tipus)) folders=add(folders,"04_PRESSUPOSTS_INDUSTRIALS",i18nT("04 · Pressupostos industrials"),i18nT("Ofertes de paleteria, pintura, fusteria, serralleria, instal·lacions, bastida, treballs verticals i comparatius."));
@@ -12591,7 +12603,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.323",
+    app_version:"87.324",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

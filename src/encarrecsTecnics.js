@@ -41,6 +41,20 @@ export const ENCARRECS = {
       { k: "lliurament", nom: "Lliurament", items: ["Informe a la comunitat", "Factura", "Data de la propera inspecció apuntada"] },
     ],
   },
+  // V87.324 · Amiant: localització i diagnosi (UNE 171370-2:2021). L'Héctor, 21/10/2026: «millor un checklist o redireccionar-me
+  // a les pàgines on ho he de preparar». Llista proposada perquè la corregeixi.
+  amiant: {
+    nom: "Amiant",
+    tipus: /amiant/i,
+    passos: [
+      { k: "encarrec", nom: "Encàrrec", items: ["Propietari o comunitat (i administrador)", "Any de construcció o de les reformes (abans del 2002, possible amiant)", "Abast: tot l’edifici o només unes zones", "Motiu: venda, obres, ajuts, requeriment de l’Ajuntament", "Pressupost acceptat"] },
+      { k: "documentacio", nom: "Documentació", items: ["Plànols de l’edifici", "Inspecció tècnica (ITE) anterior", "Obres i reformes fetes", "Fotos o dades de materials sospitosos"] },
+      { k: "visita", nom: "Visita", items: ["Cobertes i plaques de fibrociment", "Baixants, canals i xemeneies", "Dipòsits d’aigua", "Aïllaments de canonades, calderes i conductes", "Paviments vinílics, coles i morters", "Falsos sostres i revestiments projectats", "Estat de cada material (bo, deteriorat, friable)", "Mostres amb protecció, etiquetades i fotografiades", "Lloc de cada material al plànol"] },
+      { k: "oficina", nom: "Oficina", items: ["Mostres al laboratori acreditat", "Inventari: material, lloc, quantitat, estat i risc", "Prioritat d’actuació", "Plànols amb la localització", "Recomanacions: mantenir, encapsular o retirar"] },
+      { k: "tramit", nom: "Retirada i ajuts", items: ["Pressupost d’una empresa inscrita al RERA", "Pla de treball aprovat per Treball (el presenta l’empresa)", "Ajuts de l’Agència de Residus (si hi ha convocatòria oberta)", "Comunicació a l’Ajuntament, si ho demana"] },
+      { k: "lliurament", nom: "Lliurament", items: ["Informe al client", "Factura", "Data de la propera revisió apuntada"] },
+    ],
+  },
 };
 
 // V87.306 · Documents del tràmit (l'Héctor, 19/10/2026: els passos que s'han de marcar per avançar no l'ajuden a la visita;
@@ -66,6 +80,13 @@ export const TRAMITS = {
 };
 
 // Com van els documents d'un encàrrec: quins hi són (documents de l'obra amb `tramit878306`), quins no calen i quants en falten
+// V87.324 · amiant: el botó porta als ajuts de l'Agència de Residus (pàgina comprovada el 21/10/2026)
+TRAMITS.amiant = {
+  nom: "Ajuts per retirar l’amiant (Agència de Residus)",
+  url: "https://residus.gencat.cat/ca/consultes_i_tramits_-_nou/subvencions/amiant/",
+  docs: [["informe", "Informe de localització i diagnosi signat"], ["laboratori", "Resultats del laboratori (mostres)"], ["inventari", "Inventari de materials amb l’estat i el risc"], ["planols", "Plànols amb la localització"], ["fotos", "Fotos de cada material"], ["propietat", "Document de la propietat (nota simple, escriptura o IBI)"], ["pressupost", "Pressupost de retirada d’una empresa RERA"], ["acord", "Acord de la junta (comunitats)"]],
+};
+
 export function estatDocs(k, passos = {}, documents = []) {
   const tr = TRAMITS[k]; if (!tr) return null;
   const noCal = passos.docsNoCal || {};
