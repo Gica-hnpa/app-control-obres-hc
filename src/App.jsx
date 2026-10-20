@@ -6106,7 +6106,8 @@ function ActionMenu87213({label="Més accions",children}){
   return <details className="action-menu-v87213"><summary>{label}<span aria-hidden="true">⌄</span></summary><div className="action-menu-panel-v87213" onClick={e=>{if(e.target.closest("button,a,label"))e.currentTarget.parentElement?.removeAttribute("open")}}>{children}</div></details>
 }
 function Input(p){return <label><span>{p.label}</span><input name={p.name} defaultValue={p.defaultValue} readOnly={p.readOnly} onChange={p.onChange}/></label>}
-function Kpi({t,v}){return <div className="kpi"><small>{t}</small><strong>{v}</strong></div>}
+// V87.317 · el títol es tradueix (abans sortia sempre en català: «BASE SENSE IVA»…)
+function Kpi({t:titol,v}){return <div className="kpi"><small>{i18nT(titol)}</small><strong>{v}</strong></div>}
 // V87.273 · el text dels buits es tradueix (si és al diccionari; si no, surt en català)
 function Empty({text}){return <div className="empty">{typeof text==="string"?t(text):text}</div>}
 function Badge({estat}){let e=normalizeExpedientStatus878136(estat);let cls=e==="Acceptat"||e==="En curs / Actiu"?"ok":e==="Pressupostat"||e==="Pendent de resposta"||e==="En revisió"?"warn":e==="Anul·lat"||e==="No acceptat"?"danger":e==="Tancat"?"dark":"info";return <span className={`badge ${cls} est-v878299 est-${estatTone878299(e)}`}>{i18nT(e)}</span>}
