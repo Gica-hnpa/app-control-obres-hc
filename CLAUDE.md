@@ -585,6 +585,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     dietes, aparcament, peatges, material, taxes de visat, taxes i llicències, fotocòpies, missatgeria, altres.
   - `Kpi` tradueix el títol (abans sortia sempre en català).
   - Prova: `revisio2test.mjs` (26). Adaptades `revisio1test`, `tempstest` i `pantallestest`.
+  **Tanda 3 (V87.318) · Despeses del tècnic en una sola pantalla** (l’Héctor: «on les entro? … no podria entrar-les aquí i
+  assignar-li una obra o expedient?»):
+  - Al menú, **totes** les seves despeses: les meves (`meva`) i les de les obres (albarans, material, subcontractes); la V87.307
+    només hi posava les meves i el seu albarà de KMAG només es veia dins de l’obra. Dins de l’obra, com abans (només les de l’obra).
+  - «+ Nova despesa» (principal), «Fer foto», «Adjuntar PDF o imatge» (fora «Entrar a mà» per al tècnic; el constructor el manté).
+  - Editor (`AlbaraEditor878259`, `triaQui`): a dalt **«Meva / De l’obra»** i just a sota **l’expedient** (`label.exp-v878318`; abans
+    era dins de la graella, després de la foto). Per a les meves: primer les dades i després el tiquet, sense «ChatGPT» ni línies si
+    no hi ha foto. «De l’obra» demana l’expedient («Tria l’expedient on s’imputa la despesa.»). Es pot passar d’un a l’altre.
+  - «Totes · Les meves · De les obres» (només si n’hi ha de tots dos) i **«Per data / Per expedient»** (al constructor «Per obra»):
+    un grup per expedient amb el total, «Per repercutir» i «Obrir l’expedient». Fora els 3 requadres per obra; sense despeses,
+    sense requadres a 0 ni filtres.
+  - Desar i eliminar en funcions comunes (`desaDespesa878318`, `eliminaDespesa878318`, `novaDespesa878318`): **Hores i despeses**
+    té «+ Despesa» a dalt i a cada expedient (amb l’expedient ja triat).
+  - Estils: `src/theme-v878318.css`. Prova: `despeses318test.mjs` (29). Adaptades `menutecnictest`, `albaranstest`,
+    `clientsvirtuals`, `revisio2test`, `emptest` i `pdftest` (el selector de l’obra ja no és dins de `.grid`).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un

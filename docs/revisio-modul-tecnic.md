@@ -84,8 +84,19 @@ tanda està decidida). Després es farà el mateix amb els altres mòduls.
 ### Agenda
 - De moment, bé.
 
+## Tanda 3 (20/10/2026) — fet a la V87.318
+
+### Despeses (menú principal)
+- «Em surten les que tinc… però on les entro? A cada expedient hauria de fer-ho. En comptes d’un llistat que ara està a 0, no
+  podria entrar-les aquí i assignar-li una obra o expedient?»
+  - Al menú hi surten **totes** les seves despeses: les meves (desplaçaments, taxes…) i les de les obres (albarans, material).
+  - «+ Nova despesa» a dalt; a l’editor, primer **«Meva / De l’obra»** i just a sota **l’expedient**.
+  - «Totes · Les meves · De les obres» i **«Per data / Per expedient»**.
+  - Sense cap despesa, no surten els requadres a 0.
+  - A **Hores i despeses**, «+ Despesa» a dalt i a cada expedient.
+
 ## Següent
 
-Preus · Facturació · Hores · Despeses · Agenda · Ajustos i, dins de l’expedient, Fitxa (Resum, Dades i agents, Documents,
+Expedients (dins de l’expedient) · Preus · Facturació · Agenda · Ajustos i, dins de l’expedient, Fitxa (Resum, Dades i agents, Documents,
 Entrega), Seguiment (Visites, Agenda, Planning) i Econòmic (Pressupost, Certificacions, Facturació, Despeses, Rendiment,
 Honoraris).
