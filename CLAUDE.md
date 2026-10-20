@@ -220,11 +220,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Noms nous dins de l’obra** (`tabLabel878269`): Gantt → Planning, Albarans → Despeses, Tancament / Entrega →
     Entrega, Gestió temps → Hores. Només canvia el que es veu: les claus de les pestanyes no canvien.
   - **Per a les proves:** `data-apartats` a `.obra-blocs-v878299` dona la llista per blocs.
-  - **Pendent:**
-    - ajuntar Actes + Notes («Visites»), Dades + Agents, Agenda + Tasques, Rendiment + Seguiment econòmic, i les hores
-      dins d’Honoraris o de Rendiment;
-    - el botó ＋ dins de l’obra;
-    - els noms nous del menú principal.
+  - **Fet després:** el botó ＋ (V87.302), els noms nous del menú (V87.300), els apartats ajuntats (V87.308: Dades i agents,
+    Agenda amb tasques, Honoraris amb les hores, Rendiment) i Visites (V87.309).
 - **Colors de l’estat dels expedients** (V87.299, `estatTone878299`): a la llista (etiqueta, desplegable de la taula i
   targetes del mòbil) i a la barra de l’obra.
   - **Verd:** En procés i En curs / Actiu.
@@ -241,7 +238,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Només canvia el que es veu:** les claus de pantalla (`nav("Treballs / Expedients")`, `"Traça"`, `"Configuració"`…)
     no canvien.
   - **Proves:** naveguen pels noms nous. Compte: «Configuración» → «Ajustes» (no «Ajustosn»).
-  - **Pendent:** les guies de benvinguda (`tools/proves/guies.js`) encara diuen «Treballs / Expedients».
+  - **Guies de benvinguda** (`tools/proves/guies.js`): textos posats al dia el 20/10/2026 (Obres/Expedients, Despeses, Hores,
+    Facturació, Ajustos, l’edició alhora). Els PDF de `GUIES_USUARIS` no s’han tornat a fer (porten les contrasenyes: quan ho
+    digui l’Héctor).
 - **Agents** (V87.301, encàrrec de l’Héctor del 18/10/2026; `src/theme-v878301.css`):
   - **La mateixa persona surt una sola vegada.** Cada obra en desa una còpia amb un id propi, i abans la llista general en
     comptava cada còpia (88 entrades per a 26 persones). `agentPersona878301` reconeix la persona pel nom (i, a la
@@ -271,8 +270,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Hores:** porta a Econòmic › Hores de l’obra.
   - **Com funciona:** l’Obra passa `start={tab,token,files}` a `Notes878278` i `Actes8761`. Un `useRef` fa que cada toc faci
     una sola cosa: en desenvolupament React executa dues vegades els efectes, i es feien dues actes.
-  - **Pendent (decidit, encara no fet):** ajuntar Actes + Notes en «Visites», Dades + Agents, Agenda + Tasques i
-    Rendiment + Seguiment econòmic.
+  - **Apartats ajuntats:** fet a les V87.308 i V87.309 (vegeu més avall).
 - **Menús desplegables visibles i barres fixes a l’ordinador** (V87.303, `src/theme-v878303.css`; avís de l’Héctor del
   19/10/2026: «Accions» del pressupost quedava sota el pressupost):
   - **Causes:**
@@ -499,6 +497,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     (`agentRoleOrder878134`).
   - Proves: les ajudes `tab()` de 27 proves accepten «Dades i agents» quan demanen «Dades» o «Agents»; `obratest`, `plustest`,
     `tempstest`, `graficatest` i `menutecnictest` adaptades.
+- **Visites** (V87.309, decisió de l’Héctor del 18/10/2026: «Actes + Notes → Visites»): àlies «Notes» → «Actes» (la clau es
+  queda; el nom és «Visites»). `Visites878309`: una sola llista per data (la més nova a dalt) amb les actes («Acta N», títol,
+  assistents, fotos, documents) i les notes («Nota N», primera línia), i «+ Nota» / «+ Acta»; cada una manté la seva numeració.
+  En tocar-ne una s’obre la seva fitxa de sempre (`Actes8761` / `Notes878278` amb `nomesFitxa` i `start.obrir`) i, en
+  desar-la, cancel·lar-la, tancar-la o eliminar-la, es torna a la llista (`onTancar`). L’acta oberta ocupa tota l’amplada (sense
+  la llista d’actes al costat). El ＋ de l’obra (Foto, Nota, Acta) hi arriba amb `start`. Portal de client: com abans (només
+  Actes). Estils: `src/theme-v878309.css`. Prova: `visitestest.mjs`; adaptades `notestest`, `plustest`, `obratest`,
+  `agents303test`, les de fotos i documents (busquen «Visites» i fan servir «+ Acta»), i `nuvoltest` (l’Oriol és constructor:
+  el seu menú diu «Obres»).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -648,7 +655,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     dels certificats (CE3X, HULC, CYPETHERM); un plànol exportat de **MagicPlan** (PDF i, si en surt, la taula de superfícies)
     per omplir sola la fitxa de la cèdula; **«Enllaços»** a cada obra (oficina virtual del CATGI —no s’hi pot entrar per ell—,
     Cadastre amb la referència cadastral de l’obra, ICAEN, Agència de l’Habitatge) i quins més vol.
-  - **Agents principals** (`PrincipalAgentsPanel878134`, pestanya Agents): no hi surt la direcció d’obra triada a Dades (mirar-ho).
+  - ~~Agents principals sense la direcció d’obra triada a Dades~~: arreglat a la V87.308 (`agentRoleOrder878134`).
   - **Mòdul tècnic, respostes de l’Héctor (19/10/2026):** programa dels certificats energètics: **CE3X**. Provant la cèdula de
     Jaume I: els passos com a llista que s’ha de marcar per passar al següent **no l’ajuden gaire a la visita**. Prefereix una
     **llista de consulta** (per no oblidar res) i un **apartat per entrar els documents del tràmit** abans de l’enllaç amb

@@ -3115,4 +3115,8 @@ export default {
   "L’obra": "La obra",
   "El meu encàrrec": "Mi encargo",
   "Dades i agents": "Datos y agentes",
+  "Visites": "Visitas",
+  "Acta {n}": "Acta {n}",
+  "Encara no hi ha cap visita en aquesta obra.": "Todavía no hay ninguna visita en esta obra.",
+  "{n} assistents": "{n} asistentes",
 };

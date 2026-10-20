@@ -1,0 +1,24 @@
+/* V87.309 · Visites (actes i notes en una sola llista per data) */
+.visites-nou-v878309{display:flex;gap:8px;flex-wrap:wrap}
+.visites-v878309 .visites-llista-v878309{display:flex;flex-direction:column;padding:4px 16px 12px}
+.visita-v878309{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;padding:12px 4px;border:0;border-top:1px solid #eef2f7;background:none;cursor:pointer;font:inherit;color:inherit;border-radius:0}
+.visita-v878309:first-child{border-top:0}
+.visita-v878309:hover{background:#f8fafc}
+.visita-v878309 .tipus{font-size:12.5px;font-weight:700;white-space:nowrap;padding:3px 9px;border-radius:999px}
+.visita-v878309.acta .tipus{background:#eff6ff;color:#1d4ed8}
+.visita-v878309.nota .tipus{background:#f0fdfa;color:#0f766e}
+.visita-v878309 .dia{font-size:13px;color:#64748b;white-space:nowrap;font-variant-numeric:tabular-nums}
+.visita-v878309 .txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.visita-v878309 .meta{display:flex;gap:10px;color:#64748b;font-size:12.5px}
+.visita-v878309 .meta span{display:inline-flex;align-items:center;gap:4px}
+@media (max-width:600px){
+  .visites-v878309 .visites-llista-v878309{padding:4px 12px 12px}
+  .visita-v878309{grid-template-columns:auto minmax(0,1fr) auto;row-gap:4px}
+  .visita-v878309 .txt{grid-column:1/-1;white-space:normal}
+}
+/* la fitxa d'una acta oberta des de Visites ocupa tota l'amplada (sense la llista d'actes al costat) */
+.actes-layout-v8761.nomes-fitxa-v878309{grid-template-columns:1fr!important}
+/* el ＋ de l'obra (mòbil i iPad) no ha de tapar els últims botons de la pàgina (p. ex. «Cancel·lar» de l'acta): més marge a baix */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .main:has(.obra-plus-v878302){padding-bottom:calc(var(--nav-h-v878268) + 146px + env(safe-area-inset-bottom,0px))!important}
+}

@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.308";
+const APP_VERSION878264="87.309";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2980,12 +2980,18 @@ async function addNotePhotos878278(files,setDraft){
     }catch{alert(t("No s’ha pogut afegir la foto. Prova amb una imatge més petita."))}
   }
 }
-function Notes878278({obra={},data={},setData,readOnly=false,start=null}){
+function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFitxa=false,onTancar}){
   const notes=[...(data.notes||[])].sort((a,b)=>(+b.numero||0)-(+a.numero||0));
   const[draft,setDraft]=useState(null);
   // V87.302 · el botó ＋ de l'obra obre una nota nova (i, si ve d'una foto, ja la hi posa)
+  // V87.309 · des de «Visites» també obre una nota que ja hi és (`start.obrir`); `nomesFitxa`: només la fitxa, i en tancar-la
+  // es torna a la llista de Visites (`onTancar`)
   const fet878302=useRef(0);
-  useEffect(()=>{if(!start?.token||readOnly||fet878302.current===start.token)return;fet878302.current=start.token;const now=new Date().toISOString();setDraft({id:"nota-"+Date.now(),numero:nextNum(),data:todayISO8743(),text:"",fotos:[],docs:[],createdAt:now,isNew:true});if(start.files?.length)addNotePhotos878278(start.files,setDraft)},[start?.token]);
+  useEffect(()=>{if(!start?.token||fet878302.current===start.token)return;fet878302.current=start.token;
+    if(start.obrir){const n=(data.notes||[]).find(x=>x.id===start.obrir);if(n)obrir(n);else onTancar?.();return}
+    if(readOnly)return;
+    const now=new Date().toISOString();setDraft({id:"nota-"+Date.now(),numero:nextNum(),data:todayISO8743(),text:"",fotos:[],docs:[],createdAt:now,isNew:true});if(start.files?.length)addNotePhotos878278(start.files,setDraft)},[start?.token]);
+  function tanca(){setDraft(null);onTancar?.()}
   useHoldSync878266(!!draft);
   const acc=getAppAccount878233(currentAppUser8779());
   const canDelete=!readOnly&&!obra?.compartida&&!(acc?.role&&acc.role!=="admin");
@@ -3000,11 +3006,11 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null}){
       // si s'ha fet una altra nota amb el mateix número en un altre aparell, aquesta passa a la següent
       if(isNew&&list.some(x=>+x.numero===+n.numero))n.numero=list.reduce((m,x)=>Math.max(m,+x.numero||0),0)+1;
       return {...d,notes:list.some(x=>x.id===n.id)?list.map(x=>x.id===n.id?n:x):[...list,n],updatedAt:now}});
-    setDraft(null);
+    tanca();
   }
-  function esborrar(){if(!confirm(t("Eliminar la nota {n}? Les fotos i els documents de la nota també es treuen.",{n:draft.numero})))return;setData(d=>({...d,notes:(d.notes||[]).filter(x=>x.id!==draft.id),updatedAt:new Date().toISOString()}));setDraft(null)}
+  function esborrar(){if(!confirm(t("Eliminar la nota {n}? Les fotos i els documents de la nota també es treuen.",{n:draft.numero})))return;setData(d=>({...d,notes:(d.notes||[]).filter(x=>x.id!==draft.id),updatedAt:new Date().toISOString()}));tanca()}
   const resum=n=>{const txt=String(n.text||"").trim().split(/\n/)[0];return txt.length>140?txt.slice(0,140)+"…":txt};
-  if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={<button type="button" className="secondary" onClick={()=>setDraft(null)}>{t("Tancar")}</button>}>
+  if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={<button type="button" className="secondary" onClick={tanca}>{t("Tancar")}</button>}>
     <fieldset disabled={readOnly} className="notes-form-v878278">
       <label className="notes-date-v878278"><span>{t("Dia")}</span><input type="date" value={draft.data||""} onChange={e=>set("data",e.target.value)}/></label>
       <label className="notes-text-v878278"><span>{t("Què has vist o què s’ha de fer")}</span><textarea rows={6} value={draft.text||""} onChange={e=>set("text",e.target.value)} placeholder={t("Escriu o dicta la nota…")}/></label>
@@ -3018,8 +3024,9 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null}){
         {(draft.docs||[]).length>0?<ul className="notes-docs-v878278">{draft.docs.map(x=><li key={x.id}><Paperclip size={14}/><span>{x.nom}</span>{!readOnly&&<button type="button" aria-label={t("Treure el document")} onClick={()=>set("docs",draft.docs.filter(y=>y.id!==x.id))}><X size={14}/></button>}</li>)}</ul>:<small>{t("Encara no hi ha documents.")}</small>}
       </div>
     </fieldset>
-    {!readOnly&&<div className="modal-actions notes-actions-v878278">{!draft.isNew&&canDelete&&<button type="button" className="danger" onClick={esborrar}>{t("Eliminar la nota")}</button>}<button type="button" className="secondary" onClick={()=>setDraft(null)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar la nota")}</button></div>}
+    {!readOnly&&<div className="modal-actions notes-actions-v878278">{!draft.isNew&&canDelete&&<button type="button" className="danger" onClick={esborrar}>{t("Eliminar la nota")}</button>}<button type="button" className="secondary" onClick={tanca}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar la nota")}</button></div>}
   </Card>;
+  if(nomesFitxa)return null;
   return <Card className="notes-v878278" title={t("Notes")} action={!readOnly&&<button type="button" className="primary" onClick={nova}><Plus size={16}/> {t("Nova nota")}</button>}>
     <p className="notes-help-v878278">{t("Per a visites prèvies o per anar a mirar una feina: escriu o dicta, fes fotos i adjunta documents. Cada nota es numera sola i porta la data del dia.")}</p>
     {notes.length===0?<Empty text="Encara no hi ha notes en aquesta obra."/>:<div className="notes-list-v878278">{notes.map(n=><button type="button" key={n.id} className="notes-row-v878278" onClick={()=>obrir(n)}>
@@ -3027,6 +3034,30 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null}){
       <span className="notes-day-v878278">{fmtDate8761(n.data)}</span>
       <span className="notes-txt-v878278">{resum(n)||<em>{t("Sense text")}</em>}</span>
       <span className="notes-meta-v878278">{(n.fotos||[]).length>0&&<span><Camera size={14}/> {(n.fotos||[]).length}</span>}{(n.docs||[]).length>0&&<span><Paperclip size={14}/> {(n.docs||[]).length}</span>}</span>
+    </button>)}</div>}
+  </Card>;
+}
+// V87.309 · Visites (decisió de l'Héctor del 18/10/2026: «Actes + Notes → Visites», una llista per data, «+ Nota» i «+ Acta»,
+// cada una amb la seva numeració). La llista ajunta les actes i les notes de l'obra; en tocar-ne una s'obre la seva fitxa de
+// sempre (Actes8761 / Notes878278 amb `nomesFitxa`) i en tancar-la es torna aquí. El ＋ de l'obra hi arriba amb `start`.
+function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDoc,allAgents=[],start=null}){
+  const[obert,setObert]=useState(null);// {tipus:"acta"|"nota", token, obrir, files}
+  const fet=useRef(0);
+  useEffect(()=>{if(!start?.token||fet.current===start.token)return;fet.current=start.token;setObert({tipus:start.tab==="Notes"?"nota":"acta",token:start.token,files:start.files||null})},[start?.token]);
+  const tanca=()=>setObert(null);
+  if(obert?.tipus==="nota")return <Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} nomesFitxa onTancar={tanca} start={{tab:"Notes",token:obert.token,obrir:obert.obrir,files:obert.files}}/>;
+  if(obert?.tipus==="acta")return <Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} nomesFitxa onTancar={tanca} start={{tab:"Actes",token:obert.token,obrir:obert.obrir}}/>;
+  const items=[
+    ...(data.actes||[]).map(a=>({tipus:"acta",id:a.id,num:a.numero,data:a.data,text:a.titol||"",fotos:(a.fotoIds||[]).length,docs:(a.docs||[]).length,agents:(a.agentIds||a.agents||[]).length})),
+    ...(data.notes||[]).map(n=>({tipus:"nota",id:n.id,num:n.numero,data:n.data,text:String(n.text||"").trim().split(/\n/)[0],fotos:(n.fotos||[]).length,docs:(n.docs||[]).length}))
+  ].sort((a,b)=>String(b.data||"").localeCompare(String(a.data||""))||(+b.num||0)-(+a.num||0));
+  const nou=tipus=>setObert({tipus,token:Date.now()});
+  return <Card className="visites-v878309" title={t("Visites")} action={!readOnly&&<div className="visites-nou-v878309"><button type="button" className="secondary" onClick={()=>nou("nota")}><Plus size={16}/> {t("Nota")}</button><button type="button" className="primary" onClick={()=>nou("acta")}><Plus size={16}/> {t("Acta")}</button></div>}>
+    {items.length===0?<Empty text="Encara no hi ha cap visita en aquesta obra."/>:<div className="visites-llista-v878309">{items.map(x=><button type="button" key={x.tipus+x.id} className={`visita-v878309 ${x.tipus}`} onClick={()=>setObert({tipus:x.tipus,token:Date.now(),obrir:x.id})}>
+      <b className="tipus">{x.tipus==="acta"?t("Acta {n}",{n:x.num||"—"}):t("Nota {n}",{n:x.num||"—"})}</b>
+      <span className="dia">{fmtDate8761(x.data)}</span>
+      <span className="txt">{x.text?(x.text.length>140?x.text.slice(0,140)+"…":x.text):<em>{t("Sense text")}</em>}</span>
+      <span className="meta">{x.agents>0&&<span>{t("{n} assistents",{n:x.agents})}</span>}{x.fotos>0&&<span><Camera size={14}/> {x.fotos}</span>}{x.docs>0&&<span><Paperclip size={14}/> {x.docs}</span>}</span>
     </button>)}</div>}
   </Card>;
 }
@@ -3045,7 +3076,7 @@ function addActaDocFiles8764(files,setDraft){
   });
 }
 
-function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],start=null}){
+function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],start=null,nomesFitxa=false,onTancar}){
   const actesRaw=data.actes||[];
   const fotos=data.fotos||[];
   const defaultAgents8768=baseAgentsForObra8768(obra,client);
@@ -3068,7 +3099,11 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
   useEffect(()=>{try{localStorage.setItem(lsKey8779("aco_deleted_agents_v87102"),JSON.stringify(deletedAgentIds87102))}catch{}},[deletedAgentIds87102]);
   // V87.302 · el botó ＋ de l'obra obre una acta nova
   const fet878302=useRef(0);
-  useEffect(()=>{if(!start?.token||fet878302.current===start.token)return;fet878302.current=start.token;addActa()},[start?.token]);
+  // V87.309 · des de «Visites» també obre una acta que ja hi és (`start.obrir`); `nomesFitxa`: només la fitxa, i en desar-la,
+  // cancel·lar-la o eliminar-la es torna a la llista de Visites (`onTancar`)
+  useEffect(()=>{if(!start?.token||fet878302.current===start.token)return;fet878302.current=start.token;
+    if(start.obrir){const a=actes.find(x=>x.id===start.obrir);if(a)startEdit(a);else onTancar?.();return}
+    addActa()},[start?.token]);
 
   // V87.301 · Abans, si l'obra no tenia agents, s'hi copiaven tots els de la llista general (i en desar o fer una acta, també):
   // per això algunes obres en tenien 22-24. Ara l'obra només guarda els que surten a les actes (en desar-les) o els que s'hi afegeixen.
@@ -3158,12 +3193,13 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
     setEditId(null);
     setDraft(null);
     setShowActaPreview8763(false);
+    onTancar?.();
   }
 
   function del(id){
     if(!confirm(t("Eliminar aquesta acta?")))return;
     setData(d=>({...d,actes:(d.actes||[]).filter(a=>a.id!==id)}));
-    if(editId===id){setEditId(null);setDraft(null);setShowActaPreview8763(false)}
+    if(editId===id){setEditId(null);setDraft(null);setShowActaPreview8763(false);onTancar?.()}
   }
 
   function upd(k,v){setDraft(d=>({...d,[k]:v}))}
@@ -3219,15 +3255,16 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
   const selectedFotos=(draft?.fotoIds||[]).map(id=>fotos.find(f=>f.id===id)).filter(Boolean);
   const printableDoc=draft?{type:"acta",title:`Acta ${draft.numero||""} · ${obra?.nom||"Expedient"}`,subtitle:draft.data,acta:normalizeActa8768(draft,agents),agents,actaPhotos:selectedFotos,actaDocs:draft.docs||[],actaCroquis:draft.croquis||[]}:null;
 
-  return <Card title={t("Actes")} action={<button className="primary" type="button" onClick={addActa}>{t("+ Nova acta")}</button>}>
-    <div className="actes-layout-v8761">
-      <div className="actes-list-v8761">
+  if(nomesFitxa&&!draft)return null;
+  return <Card title={nomesFitxa?t("Acta {n}",{n:draft?.numero||"—"}):t("Actes")} action={nomesFitxa?<button className="secondary" type="button" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false);onTancar?.()}}>{t("Tancar")}</button>:<button className="primary" type="button" onClick={addActa}>{t("+ Nova acta")}</button>}>
+    <div className={`actes-layout-v8761 ${nomesFitxa?"nomes-fitxa-v878309":""}`}>
+      {!nomesFitxa&&<div className="actes-list-v8761">
         {actes.length===0&&<div className="empty-v8761">{t("Encara no hi ha actes.")}</div>}
         {actes.map(a=><div className={editId===a.id?"acta-list-row-v8761 active":"acta-list-row-v8761"} key={a.id}>
           <button type="button" onClick={()=>startEdit(a)}><b>{t("Acta")} {a.numero||"—"}</b><span>{a.titol||t("Acta")}</span><small>{fmtDate8761(a.data)} {t("· Creat:")} {fmtCreationDate878233(a.createdAt)} · {(a.agentIds||[]).length} {t("agents ·")} {(a.fotoIds||[]).length} {t("fotos ·")} {(a.docs||[]).length} {t("docs ·")} {(a.croquis||[]).length} {t("croquis")}</small></button>
           <button type="button" className="danger small" onClick={()=>del(a.id)}>{t("Eliminar")}</button>
         </div>)}
-      </div>
+      </div>}
 
       <div className="acta-editor-v8761">
         {!draft&&<div className="empty-v8761">{t("Selecciona una acta per editar-la o crea’n una de nova.")}</div>}
@@ -3288,7 +3325,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
             <button type="button" className="secondary" onClick={()=>setShowActaPreview8763(v=>!v)}>{showActaPreview8763?t("Amagar previsualització"):t("Previsualitzar acta")}</button>
             <button type="button" className="secondary" onClick={()=>printableDoc&&openDoc?.(printableDoc)}>{t("Obrir acta formal / imprimir")}</button>
             <button type="button" className="secondary" onClick={()=>openEmail?.(draft.titol||"Acta")}>{t("Enviar")}</button>
-            <button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false)}}>{t("Cancel·lar")}</button>
+            <button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false);onTancar?.()}}>{t("Cancel·lar")}</button>
           </div>
 
           {showActaPreview8763&&<ActaFormalPreview8768 obra={obra} client={client} acta={draft} agents={selectedAgents} fotos={selectedFotos} docs={draft.docs||[]}/>}
@@ -8381,6 +8418,8 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     const hi=x=>tabs.includes(x),tecnic=PERFIL878304!=="constructor";
     if(hi("Agents")&&hi("Dades"))ALIAS878308["Agents"]="Dades";
     if(hi("Tasques")&&hi("Agenda / Avisos"))ALIAS878308["Tasques"]="Agenda / Avisos";
+    // V87.309 · Actes + Notes = «Visites» (la clau és «Actes»)
+    if(hi("Notes")&&hi("Actes"))ALIAS878308["Notes"]="Actes";
     if(tecnic&&hi("Honoraris")){if(hi("Gestió temps"))ALIAS878308["Gestió temps"]="Honoraris";if(hi("Rendiment"))ALIAS878308["Rendiment"]="Honoraris"}
     else if(!tecnic&&hi("Rendiment")&&hi("Seguiment econòmic"))ALIAS878308["Rendiment"]="Seguiment econòmic";
   }
@@ -8493,7 +8532,9 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Agenda / Avisos"&&ALIAS878308["Tasques"]&&<TasquesTab8769 data={data} setData={setData}/>}
     {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} obraId={obra.id}/>}
     {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>}
-    {activeTab==="Actes"&&<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Actes"?start878302:null}/>} 
+    {activeTab==="Actes"&&(ALIAS878308["Notes"]
+      ?<Visites878309 obra={obra} client={client} data={data} setData={setData} readOnly={readOnly} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={["Actes","Notes"].includes(start878302?.tab)?start878302:null}/>
+      :<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Actes"?start878302:null}/>)} 
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
     {(activeTab==="Gestió temps"||activeTab===ALIAS878308["Gestió temps"])&&<HonorarisTemps obraId={obra.id} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>} 
@@ -8542,6 +8583,7 @@ function tabLabel878269(tab,all=[]){
   if(tab==="Agenda / Avisos")return t("Agenda");
   // V87.308 · apartats ajuntats: Dades amb els agents; el seguiment econòmic amb el rendiment
   if(tab==="Dades"&&all.length&&!all.includes("Agents"))return t("Dades i agents");
+  if(tab==="Actes"&&all.length&&!all.includes("Notes"))return t("Visites");
   if(tab==="Seguiment econòmic"&&all.length&&!all.includes("Rendiment"))return t("Rendiment");
   // V87.299 · noms nous (decisió de l'Héctor del 18/10/2026). Només canvia el que es veu: les dades i les claus no.
   if(tab==="Gantt")return t("Planning");
@@ -12211,7 +12253,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.308",
+    app_version:"87.309",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
