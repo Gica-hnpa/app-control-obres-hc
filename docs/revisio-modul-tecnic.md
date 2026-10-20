@@ -121,6 +121,17 @@ tanda està decidida). Després es farà el mateix amb els altres mòduls.
     descompost, desar a la llibreria, moure de capítol, eliminar…): massa coses, lia. Ha de ser fàcil per a un autònom que
     s’ho porta tot ell.
 
+## Tanda 5 (21/10/2026) — fet a les V87.323–324
+
+### Despeses (les meves)
+- «Em surt una que és d’un client meu i no és meva com a tècnic, i no veig el quilometratge, les dietes, les taxes i el
+  material.» Al menú, només les seves; a dalt, Quilometratge · Dietes · Taxes · Material · Altres.
+
+### Altres feines tècniques
+- Cèdules, CEE, ITE i ara el **document d’amiant**: millor una llista de comprovació o portar-lo a les pàgines on es prepara.
+  Fet: encàrrec «Amiant (localització i diagnosi)».
+- **MagicPlan**, sobretot: falta un plànol exportat per estudiar-lo.
+
 ## Següent
 
 Expedients (dins de l’expedient) · Preus · Facturació · Agenda · Ajustos i, dins de l’expedient, Fitxa (Resum, Dades i agents, Documents,

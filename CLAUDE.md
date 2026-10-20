@@ -624,6 +624,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `screen.orientation.lock("landscape")` si l’aparell ho deixa; si no, una capa fixa). Prova: `seguiment321test.mjs` (15).
   - **V87.322:** al mòbil, la tira dels pressupostos en dues columnes (fora «Cada pressupost va a part…»), cada capítol en una línia
     (nom i total) i «Ajustos del pressupost» compacte.
+  **Tanda 5 (V87.323–324)** (l’Héctor, 21/10/2026):
+  - **Les meves despeses (V87.323)**: la V87.318 (despeses del tècnic «totes», amb «Meva / De l’obra») **es va desfer**: «em surt una
+    que és d’un client meu i no és meva com a tècnic». Al menú, el tècnic només veu les seves (`meva`); les de l’obra, dins de
+    l’obra. A dalt, **Quilometratge · Dietes · Taxes · Material · Altres** (`GRUPS_MEVA878323`, `grupMeva878323`): en tocar-ne un,
+    una despesa nova d’aquell tipus (IVA de sèrie `ivaMeva878323`: 0 % quilometratge i taxes, 10 % dietes); cada requadre diu els
+    km i l’import. Editor: tipus com a botons (`tipus-meva-v878323`); quilometratge amb «Trajecte (d’on a on)», km, €/km i
+    «Import (€)», sense IVA, total ni número; dietes amb «Lloc». La clau desada continua sent «Desplaçament (km)» (es veu
+    «Quilometratge», `etiquetaMeva878323`). Prova: `despeses323test.mjs` (22; substitueix `despeses318test`). `menutecnictest`
+    espera el núvol abans d’obrir Despeses (després de recarregar, l’app pot tornar sola a l’Inici en posar-se al dia).
+  - **Amiant (V87.324)**: tipus de feina «Amiant (localització i diagnosi)» (codi AMI) i encàrrec `amiant` a
+    `src/encarrecsTecnics.js`: 8 documents per entregar, llista en 6 apartats (encàrrec, documentació, visita, oficina, retirada i
+    ajuts, lliurament; UNE 171370-2:2021) i el botó dels ajuts de l’Agència de Residus. Enllaços (comprovats el 21/10/2026):
+    `residus.gencat.cat/…/subvencions/amiant/`, preguntes freqüents de l’ARC i el tràmit del RERA. **amiant.cat ja no és de la
+    Generalitat** (redirigeix a una empresa): no posar-lo. Prova: `amiant324test.mjs` (10).
+  - **MagicPlan**: la bústia era buida el 21/10/2026 i a l’ordinador només hi ha la factura de la subscripció; per llegir-ne els
+    plànols cal un plànol exportat (PDF i, si en surt, l’Excel o CSV de les estances).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
