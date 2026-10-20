@@ -1,0 +1,50 @@
+/* V87.316 · Pressupostos: la llista primer (taula a l'ordinador, targetes al mòbil), filtres plegats, resum en pestanyes */
+html body .pressupostos-v878316 .filtres-v878316{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);margin-bottom:10px}
+html body .pressupostos-v878316 .filtres-v878316>summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;list-style:none}
+html body .pressupostos-v878316 .filtres-v878316>summary::-webkit-details-marker{display:none}
+html body .pressupostos-v878316 .filtres-v878316>summary span{flex:1;font:700 14px var(--app-font);color:var(--co-ink)}
+html body .pressupostos-v878316 .filtres-v878316>summary em{font-style:normal;font-size:12.5px;color:var(--co-ink-3)}
+html body .pressupostos-v878316 .filtres-v878316>summary b{font-size:12.5px;color:var(--co-accent-ink,var(--co-accent))}
+html body .pressupostos-v878316 .filtres-v878316[open]>summary{border-bottom:1px solid var(--co-line)}
+html body .pressupostos-v878316 .filtres-v878316 .filter-panel-v8776{padding:10px 14px}
+html body .pressupostos-v878316 .filtres-v878316>button{margin:0 14px 12px}
+html body .pressupostos-v878316 .pres-cap-v878316{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:4px 2px 10px;font-size:13.5px;color:var(--co-ink-2)}
+html body .pressupostos-v878316 .pres-cap-v878316 b{font:700 15px var(--app-font);color:var(--co-ink)}
+html body .pressupostos-v878316 .pres-cards-v878316{display:none}
+html body .pressupostos-v878316 .pres-tabs-v878316{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+html body .pressupostos-v878316 .pres-tabs-v878316 button{all:unset;cursor:pointer;padding:7px 14px;border-radius:99px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 13px var(--app-font);color:var(--co-ink-2)}
+html body .pressupostos-v878316 .pres-tabs-v878316 button.on{background:var(--co-accent);border-color:var(--co-accent);color:#fff}
+html body .pressupostos-v878316 .pres-tabs-v878316 button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+@media (max-width:767px){
+  html body .pressupostos-v878316 .pres-taula-v878316{display:none}
+  html body .pressupostos-v878316 .pres-cards-v878316{display:flex;flex-direction:column;gap:14px}
+  html body .pressupostos-v878316 .pres-cards-v878316 section{display:flex;flex-direction:column;gap:8px}
+  html body .pressupostos-v878316 .pres-cards-v878316 h3{margin:0;font:700 15px var(--app-font);color:var(--co-ink)}
+  html body .pressupostos-v878316 .pres-card-v878316{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+  html body .pressupostos-v878316 .pres-card-v878316 .l1{display:flex;gap:8px;align-items:baseline;font-size:13px;color:var(--co-ink-2);min-width:0}
+  html body .pressupostos-v878316 .pres-card-v878316 .l1 b{color:var(--co-accent-ink,var(--co-accent));white-space:nowrap}
+  html body .pressupostos-v878316 .pres-card-v878316 .l1 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .pressupostos-v878316 .pres-card-v878316 strong{font:700 15px var(--app-font);color:var(--co-ink)}
+  html body .pressupostos-v878316 .pres-card-v878316 .l3{font-size:12.5px;color:var(--co-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4 em{font-style:normal;font:600 11.5px var(--app-font);padding:2px 8px;border-radius:99px;background:var(--co-surface-2);color:var(--co-ink-2)}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4 em.st.acceptats{background:rgba(34,197,94,.14);color:#1F6A3F}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4 em.st.pendents{background:rgba(245,158,11,.16);color:#8A5A00}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4 em.st.no.acceptats{background:rgba(239,68,68,.14);color:#9B2C26}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4 em.fact{background:rgba(37,99,235,.12);color:#1D4ED8}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4 .dt{font-size:12px;color:var(--co-ink-3)}
+  html body .pressupostos-v878316 .pres-card-v878316 .l4 b{margin-left:auto;font:700 15px var(--app-font);color:var(--co-ink)}
+}
+/* taula de l'ordinador: el número curt de l'expedient; en tocar una fila s'obre «Gestionar» */
+html body .pressupostos-v878316 table.pres-table-v878316{width:100%;border-collapse:collapse;font-size:13.5px}
+html body .pressupostos-v878316 table.pres-table-v878316 th{text-align:left;font:700 11px var(--app-font);text-transform:uppercase;letter-spacing:.05em;color:var(--co-ink-3);padding:9px 10px;border-bottom:1px solid var(--co-line);background:var(--co-surface-2);white-space:nowrap}
+html body .pressupostos-v878316 table.pres-table-v878316 td{padding:9px 10px;border-bottom:1px solid var(--co-line);vertical-align:middle;color:var(--co-ink)}
+html body .pressupostos-v878316 table.pres-table-v878316 tbody tr:not(.any-v878316){cursor:pointer}
+html body .pressupostos-v878316 table.pres-table-v878316 tbody tr:not(.any-v878316):hover{background:var(--co-surface-2)}
+html body .pressupostos-v878316 table.pres-table-v878316 .n{text-align:right;white-space:nowrap}
+html body .pressupostos-v878316 table.pres-table-v878316 tr.any-v878316 td{font:700 13px var(--app-font);background:var(--co-surface-2);color:var(--co-ink-2)}
+html body .pressupostos-v878316 table.pres-table-v878316 td small{display:block;font-size:12px;color:var(--co-ink-3)}
+html body .pressupostos-v878316 table.pres-table-v878316 .exp-v878316{white-space:nowrap}
+html body .pressupostos-v878316 table.pres-table-v878316 select{width:auto;min-width:0;height:34px;font-size:13px}
+html body .pressupostos-v878316 .acts-v878316{display:flex;gap:6px;justify-content:flex-end}
+html body .pressupostos-v878316 .acts-v878316 button{padding:6px 10px}

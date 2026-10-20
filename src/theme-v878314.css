@@ -1,0 +1,32 @@
+/* V87.314 · Revisió del mòdul tècnic (tanda 1): Inici i paquets d'Expedients */
+
+/* Inici: quatre requadres que porten a la llista */
+html body .home-kpis-v878314>button{cursor:pointer}
+html body .home-kpis-v878314>button:hover{background:var(--co-surface-2)}
+html body .home-kpis-v878314>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+
+/* Feines pendents: quant falta, amb el color de la data */
+html body .dies-v878314{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:99px;font:700 11px var(--app-font);font-style:normal;vertical-align:1px;white-space:nowrap;background:rgba(44,122,75,.12);color:#1F6A3F}
+html body .dies-v878314:empty{display:none}
+html body .dies-v878314.critical{background:rgba(224,106,27,.14);color:#A84A0C}
+html body .dies-v878314.overdue{background:rgba(185,58,51,.14);color:#9B2C26}
+html body .task-card-pro-v878140.critical{border-left-color:#E06A1B!important}
+html body .task-card-pro-v878140.overdue{border-left-color:#B93A33!important;background:rgba(185,58,51,.04)}
+
+/* Expedients: paquets per estat */
+html body .exp-paquets-v878314{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:4px 0 10px}
+html body .exp-paquets-v878314>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--co-line);background:var(--co-surface);min-width:0}
+html body .exp-paquets-v878314>button small{font:600 11.5px var(--app-font);color:var(--co-ink-3);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .exp-paquets-v878314>button b{font:700 22px var(--co-display,var(--app-font));color:var(--co-ink)}
+html body .exp-paquets-v878314>button:hover{background:var(--co-surface-2)}
+html body .exp-paquets-v878314>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .exp-paquets-v878314>button.on{border-color:var(--co-accent);background:var(--co-accent-soft,rgba(37,99,235,.08));box-shadow:inset 0 0 0 1px var(--co-accent)}
+html body .exp-paquets-v878314>button.on small{color:var(--co-accent-ink,var(--co-accent))}
+html body .exp-paquets-v878314.cercant>button{opacity:.6}
+html body .ref-client-v878314{font-weight:600}
+@media (max-width:767px){
+  html body .exp-paquets-v878314{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  html body .exp-paquets-v878314>button{padding:8px 10px}
+  html body .exp-paquets-v878314>button small{font-size:10.5px;white-space:normal;line-height:1.2}
+  html body .exp-paquets-v878314>button b{font-size:19px}
+}

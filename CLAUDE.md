@@ -544,6 +544,33 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     miren totes les obres del client, no només la d’ara (si la fitxa s’havia quedat enrere, es repetia). Prova: `factclienttest`.
   - Proves: l’ajuda per anar al menú espera fins a 12 s (després de recarregar, l’app pot trigar més de 4 s a ensenyar-lo i
     `menutecnictest` fallava).
+- **Revisió del mòdul tècnic pestanya per pestanya** (l’Héctor, 20/10/2026: «anem per pams… pestanya per pestanya en el mòdul tècnic,
+  després la resta de mòduls»). Ell diu què canviar amb l’app oberta; s’apunta a `docs/revisio-modul-tecnic.md` i es fa per
+  tandes. **Tanda 1 (V87.314–316):**
+  - **Inici** (V87.314): quatre requadres que porten a la llista d’Expedients filtrada (`obrirPaquet` de l’App: Total · Oberts ·
+    En execució · Esperant resposta; el gràfic, per estat). A l’esquerra «Pròximes cites» i a sota «Feines pendents» amb quant
+    falta i color (`diesTasca878314`, `diesFins878314`: vermell si ha passat, taronja si en falten 3 o menys, verd la resta;
+    els dies es compten per dia de calendari: abans en sortia un de més). Fora «Treballs oberts del mes» i els textos d’explicació.
+  - **Expedients** (V87.314): paquets a dalt (`PAQUETS878314`, `paquetOk878314`, estat `opk` de l’App; per defecte «Oberts»;
+    en buscar o triar un estat als filtres es mira a tots). Fora «Filtres avançats i resum» (repetia). **Núm. del client**
+    (`obra.refClient`, Dades › Obra): a la barra de l’obra i a la columna «Núm. client» (si no n’hi ha, el P-xxx d’abans).
+  - **Contactes** (V87.315, `Contactes878315`, decisió de l’Héctor: un sol directori): menú «Contactes» en lloc de Clients i
+    Agents (la pantalla Agents ja no surt; les claus de pantalla `Clients`/`Agents` porten aquí). Llista = `agentsLibrary878301`
+    + clients; grups plegats (Promotors · Constructores / contractistes · Tècnics · Industrials · Immobiliàries / agències ·
+    Altres; `grupContacte878315`), un d’obert alhora. Cercador pel nom (paraules que comencen així), persones de contacte, NIF i
+    telèfons (`coincideix878315`; abans «br» trobava «obra» a les observacions). Fora els noms de farciment («Pendent»,
+    «Particular»). Un client s’obre a la seva fitxa (`FitxaClient`, ara amb «Eliminar», persones de contacte i telèfons per
+    tocar); un agent, a `EditorContacte878315` (es desa a totes les seves còpies, `updateAgentLibrary878191`). «Nou contacte»
+    es desa com a client (tipologia nova «Immobiliària / agència»). **Persones de contacte** (`contactes:[{nom,mobil,email}]`, la
+    primera també a `contacte`/`contacteMobil`). **Telèfons** amb `tel:`. **Logos a part** (`aco_logos_contactes_v878315`:
+    `client:<id>` o la persona): dins de la llista de clients **no es desaven mai** (`stripHeavy878185` els treia); els documents
+    els agafen d’aquí (`logoClient878315`, `issuerLogoHtml87100`). L’eina «Treure els agents de totes les obres» és a Contactes.
+  - **Pressupostos** (V87.316, `HonorarisGeneral`): primer la llista (per any i número; a l’ordinador una taula amb el número
+    curt, que en tocar-la obre «Gestionar»; al mòbil targetes), filtres plegats, i a sota «Resum» en pestanyes (Totals ·
+    Estats · Comparativa; nous: facturat i acceptat sense facturar). El client és el de l’expedient (abans, el promotor). Fora el
+    quadre d’explicació de la calculadora.
+  - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
+    (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -735,6 +762,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 - **Numeració de factures per client** (V87.297): l’Héctor ha d’activar-la a la fitxa de Brava (prefix i número
   següent). Preguntes a la gestoria: qui és l’emissor (a les proformes surt la constructora), números PF repetits entre
   obres, sèrie per client.
+- **Revisió del mòdul tècnic, tandes següents** (`docs/revisio-modul-tecnic.md`): seguir pestanya per pestanya amb l’Héctor (Preus,
+  Facturació, Hores, Despeses, Agenda, Ajustos i, dins de l’expedient, cada apartat); després, els altres mòduls.
 - **Proposta de Despeses, Facturació, menús per perfil i noms** (`docs/proposta-global.md` apartat 10): noms (V87.300), menú del
   tècnic (V87.307), Despeses (V87.311) i cost real al Rendiment (V87.312) fets. Falta: menús segons el perfil i el mòdul (10.4) i
   els perfils Treballador i Autònom.
