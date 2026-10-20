@@ -506,6 +506,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   Actes). Estils: `src/theme-v878309.css`. Prova: `visitestest.mjs`; adaptades `notestest`, `plustest`, `obratest`,
   `agents303test`, les de fotos i documents (busquen «Visites» i fan servir «+ Acta»), i `nuvoltest` (l’Oriol és constructor:
   el seu menú diu «Obres»).
+- **V87.310 · «Fer factura» d’honoraris es queda a Honoraris** (trobat per `clientsvirtuals.mjs`): `facturarPressupostTecnic8742`
+  fa `setTab("Factures")`, i molts expedients no tenen aquest apartat: s’acabava al Resum. Ara, si l’expedient no té «Factures»
+  o «Pressupostos», porten a «Honoraris» (`ALIAS878308`). `clientsvirtuals.mjs` també apunta hores a mà i factura els honoraris
+  (25 proves).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -639,10 +643,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 ## Pendent o a mitges
 
 - **Encàrrecs de l’Héctor del 19/10/2026 pendents (Dades en pestanyes, pobles i «Accions»: fets a la V87.304):**
-  - **Revisió amb clients inventats: primera versió feta el 20/10/2026** (`tools/proves/clientsvirtuals.mjs`, 21 proves):
+  - **Revisió amb clients inventats: primera versió feta el 20/10/2026** (`tools/proves/clientsvirtuals.mjs`, 25 proves):
     constructora (Brava: obra nova, pressupost d’un PDF, certificació, proforma, despesa, cita, nota, recarregar; mòbil) i tècnic
     (Oriol: cèdula, documents del tràmit, honoraris acceptats, pendent de facturar, despesa pròpia, acta, recarregar). Falta:
-    hores, factures d’honoraris i de certificació fins al final, documents, client particular, iPad.
+    factures de certificació fins al final, el client particular i l’iPad (les hores i les factures d’honoraris ja hi són).
     **Troballa:** un compte d’empresa nou té **el Mòdul 2 bloquejat** (Pressupost, Certificacions i Facturació surten com
     «Aquesta funcionalitat forma part del Mòdul 2», `hasModule2Access8747`: `aco_config_v60.modul2Actiu` o `aco_modul2_actiu`)
     i a Ajustos no hi ha cap botó per activar-lo. Preguntar a l’Héctor si s’activa sol per als constructors (prova pilot).

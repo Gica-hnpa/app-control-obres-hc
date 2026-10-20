@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.309";
+const APP_VERSION878264="87.310";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8420,6 +8420,9 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     if(hi("Tasques")&&hi("Agenda / Avisos"))ALIAS878308["Tasques"]="Agenda / Avisos";
     // V87.309 · Actes + Notes = «Visites» (la clau és «Actes»)
     if(hi("Notes")&&hi("Actes"))ALIAS878308["Notes"]="Actes";
+    // V87.310 · «Fer factura» d'un pressupost d'honoraris anava a «Factures», que molts expedients no tenen, i acabava al Resum
+    // (trobat per la revisió amb clients inventats): sense aquests apartats, porten a Honoraris
+    if(hi("Honoraris")){if(!hi("Factures"))ALIAS878308["Factures"]="Honoraris";if(!hi("Pressupostos"))ALIAS878308["Pressupostos"]="Honoraris"}
     if(tecnic&&hi("Honoraris")){if(hi("Gestió temps"))ALIAS878308["Gestió temps"]="Honoraris";if(hi("Rendiment"))ALIAS878308["Rendiment"]="Honoraris"}
     else if(!tecnic&&hi("Rendiment")&&hi("Seguiment econòmic"))ALIAS878308["Rendiment"]="Seguiment econòmic";
   }
@@ -12253,7 +12256,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.309",
+    app_version:"87.310",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
