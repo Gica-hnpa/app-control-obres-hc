@@ -1,0 +1,32 @@
+/* V87.323 · Les meves despeses (tècnic): els tipus a la vista i, a l'editor, com a botons */
+html body .albarans-v878259 .meves-grups-v878323{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+html body .albarans-v878259 .meves-grups-v878323>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid var(--co-line);border-left-width:4px;border-radius:12px;background:var(--co-surface);min-width:0}
+html body .albarans-v878259 .meves-grups-v878323>button:hover{background:var(--co-surface-2)}
+html body .albarans-v878259 .meves-grups-v878323>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .albarans-v878259 .meves-grups-v878323 .t{display:flex;align-items:center;justify-content:space-between;gap:6px}
+html body .albarans-v878259 .meves-grups-v878323 b{font:700 14px var(--app-font);color:var(--co-ink)}
+html body .albarans-v878259 .meves-grups-v878323 em{font-style:normal;width:22px;height:22px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;background:var(--co-accent);color:#fff;font:700 15px/1 var(--app-font);flex:0 0 auto}
+html body .albarans-v878259 .meves-grups-v878323 small{font-size:12.5px;color:var(--co-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .albarans-v878259 .meves-grups-v878323 .g-km{border-left-color:#2563EB}
+html body .albarans-v878259 .meves-grups-v878323 .g-dietes{border-left-color:#D97706}
+html body .albarans-v878259 .meves-grups-v878323 .g-taxes{border-left-color:#7C3AED}
+html body .albarans-v878259 .meves-grups-v878323 .g-material{border-left-color:#0F766E}
+html body .albarans-v878259 .meves-grups-v878323 .g-altres{border-left-color:#64748B}
+html body .despeses-v878311 .tip-v878311.tm-km{background:rgba(37,99,235,.13);color:#1D4ED8}
+html body .despeses-v878311 .tip-v878311.tm-dietes{background:rgba(217,119,6,.14);color:#B45309}
+html body .despeses-v878311 .tip-v878311.tm-taxes{background:rgba(124,58,237,.13);color:#6D28D9}
+html body .despeses-v878311 .tip-v878311.tm-material{background:rgba(15,118,110,.13);color:#0F766E}
+/* editor: tipus com a botons */
+html body .alb-editor-v878259 .tipus-meva-v878323{display:flex;flex-direction:column;gap:6px}
+html body .alb-editor-v878259 .tipus-meva-v878323>span{font:600 12px var(--app-font);color:var(--co-ink-2)}
+html body .alb-editor-v878259 .tipus-meva-v878323>div{display:flex;flex-wrap:wrap;gap:6px}
+html body .alb-editor-v878259 .tipus-meva-v878323 button{all:unset;box-sizing:border-box;cursor:pointer;padding:7px 12px;border-radius:99px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 13px var(--app-font);color:var(--co-ink-2)}
+html body .alb-editor-v878259 .tipus-meva-v878323 button.on{background:var(--co-accent);border-color:var(--co-accent);color:#fff}
+html body .alb-editor-v878259 .tipus-meva-v878323 button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+@media (max-width:900px){
+  html body .albarans-v878259 .meves-grups-v878323{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:520px){
+  html body .albarans-v878259 .meves-grups-v878323{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .albarans-v878259 .meves-grups-v878323>button{padding:10px 12px}
+}

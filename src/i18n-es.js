@@ -3295,4 +3295,8 @@ export default {
   "Feta": "Hecha",
   "Planning de l’obra": "Planning de la obra",
   "Pantalla completa": "Pantalla completa",
+  "Quilometratge": "Kilometraje",
+  "Trajecte (d’on a on)": "Trayecto (de dónde a dónde)",
+  "Import (€)": "Importe (€)",
+  "Taxes": "Tasas",
 };
