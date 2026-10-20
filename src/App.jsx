@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.320";
+const APP_VERSION878264="87.321";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7786,7 +7786,9 @@ function TasquesTab8769({data,setData}){
   function add(){const next=[...rows,{id:"tsk-"+Date.now(),text:"Nova tasca",estat:"Pendent",data:todayISO8743(),hora:"09:00",prioritat:"Normal"}];commit(next)}
   function upd(id,k,v){const next=rows.map(t=>t.id===id?{...t,[k]:v}:t);commit(next)}
   function del(id){const next=rows.filter(t=>t.id!==id);commit(next)}
-  return <Card title={i18nT("Tasques de l’expedient")} action={<button className="primary" onClick={add}>{i18nT("+ Nova tasca")}</button>}><div className="task-list-v8769">{rows.length===0&&<Empty text="Encara no hi ha tasques."/>}{rows.map(t=><div className="task-row-v8769" key={t.id}><input value={t.text||""} onChange={e=>upd(t.id,"text",e.target.value)}/><select value={t.prioritat||"Normal"} onChange={e=>upd(t.id,"prioritat",e.target.value)}><option value="Baixa">{i18nT("Baixa")}</option><option value="Normal">{i18nT("Normal")}</option><option value="Alta">{i18nT("Alta")}</option><option value="Urgent">{i18nT("Urgent")}</option></select><input type="date" value={toInputDate8743(t.data)||""} onChange={e=>upd(t.id,"data",e.target.value)}/><input type="time" value={t.hora||"09:00"} onChange={e=>upd(t.id,"hora",e.target.value)}/><select value={t.estat||"Pendent"} onChange={e=>upd(t.id,"estat",e.target.value)}><option value="Pendent">{i18nT("Pendent")}</option><option value="En curs">{i18nT("En curs")}</option><option value="Fet">{i18nT("Fet")}</option></select><button className="danger" onClick={()=>del(t.id)}>{i18nT("Eliminar")}</button></div>)}</div><div className="module-note-v8738"><b>{i18nT("Agenda sincronitzada")}</b><span>{i18nT("Les tasques amb data i estat pendent/en curs apareixen automàticament a l’Agenda general i a l’Agenda de l’expedient.")}</span></div></Card>
+  // V87.321 · l'Héctor: les tasques de l'expedient són les «Feines pendents» de l'Inici; que avisin igual (quant falta i el color)
+  const ordre878321=[...rows].sort((a,b)=>(a.estat==="Fet"?1:0)-(b.estat==="Fet"?1:0)||String(toInputDate8743(a.data)||"9999").localeCompare(String(toInputDate8743(b.data)||"9999")));
+  return <Card title={i18nT("Feines pendents")} action={<button className="primary" onClick={add}>{i18nT("+ Nova tasca")}</button>}><div className="task-list-v8769">{rows.length===0&&<Empty text="Encara no hi ha tasques."/>}{ordre878321.map(t=>{const fet=t.estat==="Fet";const to=fet?"fet":taskDeadlineTone878140(t);const dies=fet?i18nT("Feta"):diesTasca878314(t);return <div className={`task-row-v8769 tasca-v878321 ${to}`} key={t.id}>{dies&&<em className={`dies-v878321 ${to}`}>{dies}</em>}<input value={t.text||""} onChange={e=>upd(t.id,"text",e.target.value)}/><select value={t.prioritat||"Normal"} onChange={e=>upd(t.id,"prioritat",e.target.value)}><option value="Baixa">{i18nT("Baixa")}</option><option value="Normal">{i18nT("Normal")}</option><option value="Alta">{i18nT("Alta")}</option><option value="Urgent">{i18nT("Urgent")}</option></select><input type="date" value={toInputDate8743(t.data)||""} onChange={e=>upd(t.id,"data",e.target.value)}/><input type="time" value={t.hora||"09:00"} onChange={e=>upd(t.id,"hora",e.target.value)}/><select value={t.estat||"Pendent"} onChange={e=>upd(t.id,"estat",e.target.value)}><option value="Pendent">{i18nT("Pendent")}</option><option value="En curs">{i18nT("En curs")}</option><option value="Fet">{i18nT("Fet")}</option></select><button className="danger" onClick={()=>del(t.id)}>{i18nT("Eliminar")}</button></div>})}</div></Card>
 }
 
 function certQtyTotal8773(r){
@@ -9329,6 +9331,12 @@ function GanttObraVisual878253({data={},setData}){
   const[open,setOpen]=useState({});
   const[scale,setScale]=useState(()=>{try{return localStorage.getItem("aco_gantt_scale_v878253")||"setmanes"}catch{return "setmanes"}});
   const[editing,setEditing]=useState(false);
+  // V87.321 · al mòbil i l'iPad, el planning a pantalla completa (i, si l'aparell ho deixa, en horitzontal)
+  const[gran878321,setGran878321]=useState(false);
+  const granRef878321=useRef(null);
+  async function obreGran878321(){setGran878321(true);try{await granRef878321.current?.requestFullscreen?.()}catch{}try{await screen.orientation?.lock?.("landscape")}catch{}}
+  function tancaGran878321(){setGran878321(false);try{screen.orientation?.unlock?.()}catch{}try{if(document.fullscreenElement)document.exitFullscreen?.()}catch{}}
+  useEffect(()=>{const h=()=>{if(!document.fullscreenElement)setGran878321(false)};document.addEventListener("fullscreenchange",h);return()=>document.removeEventListener("fullscreenchange",h)},[]);
   const firstCertIso878253=(()=>{const cs=(data?.certificacions||[]).map(c=>parseDate8776(c.data)).filter(Boolean).sort((x,y)=>x-y);return cs[0]?isoDate8776(new Date(cs[0].getFullYear(),cs[0].getMonth(),1)):""})();
   const[auto,setAuto]=useState({start:cfg.plannedStart||cfg.actualStart||firstCertIso878253||todayISO8743(),weeks:"12",mode:"sequencial"});
   const canEdit=typeof setData==="function";
@@ -9356,7 +9364,7 @@ function GanttObraVisual878253({data={},setData}){
   const realOf=(byCert,budget)=>{const hits=s.certs.filter(c=>(byCert[c.n]||0)>0.005&&c.date);if(!hits.length)return null;const done=hits.reduce((a,c)=>a+(byCert[c.n]||0),0);return {from:prevDateOf(hits[0].n)||toD(hits[0].date),to:toD(hits[hits.length-1].date),done,pct:budget?done/budget*100:0,hits}};
   const planOf=cap=>{const p=plans[cap]||{};const st=toD(p.start);const dur=parseNum8770(p.durationDays);if(!st||!dur)return null;return {from:st,to:toD(addWorkDays87217(p.start,Math.max(0,dur-1))),dur}};
   const rows=s.caps.map(c=>({...c,real:realOf(c.byCert,c.budget),plan:planOf(c.cap)}));
-  if(!s.rows.length)return <Card title={i18nT("Gantt de l’obra")}><Empty text="Aquest expedient encara no té pressupost. Quan n’hi hagi, el Gantt mostrarà cada capítol amb les certificacions fetes."/></Card>;
+  if(!s.rows.length)return <Card title={i18nT("Planning de l’obra")}><Empty text="Aquest expedient encara no té pressupost. Quan n’hi hagi, el Gantt mostrarà cada capítol amb les certificacions fetes."/></Card>;
   const pts=[today,startCfg,...certDates,...rows.flatMap(r=>[r.plan?.from,r.plan?.to,r.real?.from,r.real?.to])].filter(Boolean).map(d=>d.getTime());
   const minD=new Date(Math.min(...pts)),maxD=new Date(Math.max(...pts));
   const t0=scale==="mesos"?new Date(minD.getFullYear(),minD.getMonth(),1):new Date(minD.getFullYear(),minD.getMonth(),minD.getDate()-((minD.getDay()+6)%7)-7);
@@ -9398,8 +9406,9 @@ function GanttObraVisual878253({data={},setData}){
     {!real&&!plan&&budget>0&&<small className="none">{i18nT("Sense planificar ni certificar")}</small>}
     <i className="today" style={{left:X(today)}}/>
   </div>;
-  return <div className="gantt-v878253">
-    <Card title={i18nT("Gantt de l’obra")} action={<div className="gt-tools-v878253">
+  return <div ref={granRef878321} className={`gantt-v878253 ${gran878321?"gantt-gran-v878321":""}`}>
+    <Card title={i18nT("Planning de l’obra")} action={<div className="gt-tools-v878253">
+      {gran878321?<button type="button" className="primary gt-tanca-v878321" onClick={tancaGran878321}>{i18nT("Tancar")}</button>:<button type="button" className="secondary gt-gran-v878321" onClick={obreGran878321}>{i18nT("Pantalla completa")}</button>}
       <div className="seg" role="group" aria-label={i18nT("Escala")}>{Object.entries(GANTT_SCALES878253).map(([k,v])=><button type="button" key={k} aria-pressed={scale===k} onClick={()=>{setScale(k);try{localStorage.setItem("aco_gantt_scale_v878253",k)}catch{}}}>{v.label}</button>)}</div>
       {canEdit&&<button type="button" className={editing?"primary":"secondary"} onClick={()=>setEditing(v=>!v)}>{editing?i18nT("Tancar planificació"):i18nT("Planificar")}</button>}
     </div>}>
@@ -12582,7 +12591,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.320",
+    app_version:"87.321",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

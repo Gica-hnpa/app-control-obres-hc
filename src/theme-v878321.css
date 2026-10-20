@@ -1,0 +1,40 @@
+/* V87.321 · Feines pendents de l'expedient amb colors (com a l'Inici) i Planning al mòbil i l'iPad */
+
+/* Feines pendents */
+html body .task-row-v8769.tasca-v878321{grid-template-columns:120px minmax(0,1.6fr) minmax(0,.7fr) minmax(0,.9fr) minmax(0,.6fr) minmax(0,.8fr) auto;border-left:5px solid #94A3B8}
+html body .task-row-v8769.tasca-v878321.overdue{border-left-color:#B42318;background:#FEF3F2}
+html body .task-row-v8769.tasca-v878321.critical{border-left-color:#D97706;background:#FFFAEB}
+html body .task-row-v8769.tasca-v878321.ok{border-left-color:#16A34A;background:#F0FDF4}
+html body .task-row-v8769.tasca-v878321.fet{opacity:.65}
+html body .dies-v878321{font-style:normal;font:700 12px var(--app-font);padding:4px 9px;border-radius:99px;text-align:center;white-space:nowrap;background:#F1F5F9;color:#475569}
+html body .dies-v878321.overdue{background:#FEE4E2;color:#B42318}
+html body .dies-v878321.critical{background:#FEF0C7;color:#B54708}
+html body .dies-v878321.ok{background:#DCFCE7;color:#166534}
+@media (max-width:900px){
+  html body .task-row-v8769.tasca-v878321{grid-template-columns:1fr}
+  html body .dies-v878321{justify-self:start}
+}
+
+/* Planning: la columna dels capítols més estreta a l'iPad i al mòbil */
+@media (max-width:1100px){
+  html body .gt-left-v878253{flex:0 0 300px!important}
+}
+@media (max-width:767px){
+  html body .gt-left-v878253{flex:0 0 150px!important;grid-template-columns:minmax(0,1fr)!important;padding:6px 8px!important}
+  html body .gt-left-v878253 .num{display:none!important}
+  html body .gt-scroll-v878253.editing .gt-left-v878253{flex:0 0 236px!important;grid-template-columns:minmax(0,1fr) 92px 50px!important}
+  html body .gantt-v878253 .gt-tools-v878253{width:100%}
+}
+/* «Pantalla completa»: només al mòbil i l'iPad */
+@media (min-width:1281px) and (hover:hover){
+  html body .gt-tools-v878253 .gt-gran-v878321{display:none}
+}
+html body .gantt-v878253.gantt-gran-v878321{position:fixed!important;inset:0;z-index:7000;background:var(--co-bg,#F4F6F8);overflow:auto;padding:8px;margin:0!important}
+html body .gantt-gran-v878321>.card{margin:0!important;min-height:100%}
+html body .gantt-gran-v878321 .gantt-sum-v878252{display:none}
+html body .gantt-gran-v878321 .gt-scroll-v878253{max-height:calc(100vh - 150px)!important}
+@media (orientation:landscape) and (max-height:600px){
+  html body .gantt-gran-v878321 .gantt-legend-v878252{display:none}
+  html body .gantt-gran-v878321 .gt-scroll-v878253{max-height:calc(100vh - 90px)!important}
+  html body .gantt-gran-v878321 .gt-left-v878253{flex:0 0 190px!important}
+}

@@ -3291,4 +3291,8 @@ export default {
   "{n} codis repetits": "{n} códigos repetidos",
   "1 capítol a 0 €": "1 capítulo a 0 €",
   "{n} capítols a 0 €": "{n} capítulos a 0 €",
+  "Feines pendents": "Tareas pendientes",
+  "Feta": "Hecha",
+  "Planning de l’obra": "Planning de la obra",
+  "Pantalla completa": "Pantalla completa",
 };
