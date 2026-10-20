@@ -9,6 +9,9 @@
 --    sèrie i any). Dos aparells no poden fer mai el mateix número. Només la funció «verifactu» la pot fer servir.
 --  · aco_verifactu_registres: còpia al servidor de cada factura emesa. L'app la pot llegir però no la pot canviar
 --    ni esborrar (només la funció «verifactu», amb la clau del servidor).
+--  · aco_reservar_factura() (V87.313): reserva el número i desa la factura en un sol pas. Dos aparells alhora amb la
+--    mateixa certificació reben la mateixa factura (no se'n fan dues ni es perd cap número), i les línies queden desades
+--    (`entrada`) per poder-la tornar a enviar encara que l'enviament s'aturi a mig camí.
 
 -- 1) Comptes que poden facturar amb VeriFactu
 create table if not exists public.aco_verifactu_comptes (
@@ -92,6 +95,44 @@ drop policy if exists "aco_verifactu_registres llegir els meus" on public.aco_ve
 create policy "aco_verifactu_registres llegir els meus" on public.aco_verifactu_registres
   for select to authenticated
   using ((select auth.uid()) = user_id or (select auth.jwt() ->> 'email') = 'copies@usuaris.controlobres.app');
+
+-- 4) (V87.313) Línies i descripció de cada factura, i una sola factura vigent per certificació
+alter table public.aco_verifactu_registres add column if not exists entrada jsonb;
+create unique index if not exists aco_verifactu_registres_una_per_cert on public.aco_verifactu_registres (user_id, obra_id, cert_id)
+  where estat <> 'Anulada' and tipus = 'F1' and cert_id <> '';
+
+-- 5) (V87.313) Reservar el número i desar la factura en un sol pas (només el servidor)
+create or replace function public.aco_reservar_factura(
+  p_user uuid, p_obra text, p_cert text, p_serie text, p_exercici int, p_data date,
+  p_nif text, p_nom text, p_base numeric, p_quota numeric, p_total numeric, p_entrada jsonb)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  r public.aco_verifactu_registres;
+  n int;
+begin
+  -- dos peticions alhora per a la mateixa certificació: la segona espera que acabi la primera
+  perform pg_advisory_xact_lock(hashtextextended(p_user::text || '|' || p_obra || '|' || p_cert, 0));
+  select * into r from public.aco_verifactu_registres
+   where user_id = p_user and obra_id = p_obra and cert_id = p_cert and tipus = 'F1' and estat <> 'Anulada'
+   order by created_at limit 1;
+  if found then
+    return to_jsonb(r) || jsonb_build_object('ja_existia', true);
+  end if;
+  n := public.aco_seguent_numero(p_user, p_serie, p_exercici);
+  insert into public.aco_verifactu_registres (user_id, obra_id, cert_id, tipus, serie, numero, exercici, data_expedicio,
+    nif_destinatari, nom_destinatari, base, quota, total, estat, entrada)
+  values (p_user, p_obra, p_cert, 'F1', p_serie, case when n < 10000 then lpad(n::text, 4, '0') else n::text end, p_exercici, p_data,
+    p_nif, p_nom, p_base, p_quota, p_total, 'reservada', p_entrada)
+  returning * into r;
+  return to_jsonb(r) || jsonb_build_object('ja_existia', false);
+end;
+$$;
+revoke all on function public.aco_reservar_factura(uuid, text, text, text, int, date, text, text, numeric, numeric, numeric, jsonb) from public, anon, authenticated;
+grant execute on function public.aco_reservar_factura(uuid, text, text, text, int, date, text, text, numeric, numeric, numeric, jsonb) to service_role;
 
 -- Per activar un compte (ho fa l'Héctor, al Table Editor o aquí):
 --   insert into public.aco_verifactu_comptes (user_id, actiu, entorn, nif, nom, adreca, cp, poblacio)

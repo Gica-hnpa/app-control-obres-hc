@@ -1,8 +1,10 @@
-// APP CONTROL D'OBRES · V87.285 · Funció «verifactu» (Supabase Edge Function)
+// APP CONTROL D'OBRES · V87.285 (reforçada a la V87.313) · Funció «verifactu» (Supabase Edge Function)
 // Emet les factures de les obres amb VERI*FACTU a través de l'intermediari (Verifacti).
 //  · Només per als comptes activats a la taula aco_verifactu_comptes (els activa l'Héctor, al panell de Supabase).
-//  · El número el dona el servidor (aco_seguent_numero): correlatiu per compte, sèrie i any. Primer es reserva i es
-//    desa al registre; si l'enviament falla, la factura es torna a enviar amb el MATEIX número (sense forats).
+//  · El número el dona el servidor (aco_reservar_factura → aco_seguent_numero): correlatiu per compte, sèrie i any. Es
+//    reserva i es desa al registre en un sol pas, amb les línies (`entrada`); si l'enviament falla o s'atura a mig camí,
+//    la factura es torna a enviar amb el MATEIX número (sense forats). Dues peticions alhora per a la mateixa
+//    certificació reben la mateixa factura.
 //  · La clau del compte de Verifacti és un secret de Supabase (Edge Functions → Secrets → VERIFACTI_API_KEY) i no surt
 //    mai d'aquí. Amb aquesta clau es demana a Verifacti la clau de cada empresa (NIF). Alternativa: VERIFACTI_KEYS amb
 //    {"B12345678":"clau de l'empresa", …}.
@@ -119,10 +121,15 @@ function peticio(reg: Registre, linies: Linia[], descripcio: string) {
   };
 }
 async function envia(c: Compte, reg: Registre) {
-  // La data d'expedició ha de ser la d'avui: si es torna a enviar un altre dia, es posa al dia
+  // La data d'expedició ha de ser la d'avui: si es torna a enviar un altre dia, es posa al dia. La petició es refà a partir
+  // de les línies desades (`entrada`), així una factura reservada que no s'ha arribat a enviar es pot tornar a enviar.
   const avui = avuiMadrid();
-  const pet = { ...(reg.peticio as Record<string, unknown>), fecha_expedicion: ddmmaaaa(avui) };
-  if (String(reg.data_expedicio) !== avui) reg = await desa(reg.id, { data_expedicio: avui, peticio: pet });
+  const ent = (reg.entrada ?? {}) as { linies?: Linia[]; descripcio?: string };
+  const pet = ent.linies?.length
+    ? peticio({ ...reg, data_expedicio: avui }, ent.linies, String(ent.descripcio ?? ""))
+    : { ...((reg.peticio ?? {}) as Record<string, unknown>), fecha_expedicion: ddmmaaaa(avui) };
+  if (!pet.lineas) throw new Err("Aquesta factura no té les línies desades: no es pot enviar.", 500);
+  if (String(reg.data_expedicio) !== avui || !reg.peticio) reg = await desa(reg.id, { data_expedicio: avui, peticio: pet });
   const r = await vf(c, "/verifactu/create", pet, `${reg.id}`);
   if (!r.ok) {
     const reg2 = await desa(reg.id, { estat: "error", resposta: { status: r.status, ...r.j } });
@@ -154,19 +161,17 @@ async function emetre(uid: string, c: Compte, b: Record<string, unknown>) {
   if (!nom) throw new Err("Falta el nom del client.");
   if (!descripcio) throw new Err("Falta la descripció de la factura.");
   if (!linies.length || linies.some(l => !(l.base > 0) || !IVES.includes(l.iva) || (l.iva === 0 && l.qualificacio !== "S2"))) throw new Err("Les bases o l'IVA de la factura no són correctes.");
-  // Una certificació, una factura: si ja n'hi ha una (no anul·lada), es torna aquella (p. ex. dos aparells alhora)
-  const ja = await db(`aco_verifactu_registres?user_id=eq.${uid}&obra_id=eq.${encodeURIComponent(obraId)}&cert_id=eq.${encodeURIComponent(certId)}&estat=neq.Anulada&select=*`, { method: "GET" });
-  if (ja?.[0]) return { ...publica(c, ja[0]), jaExistia: true };
   const quota = r2(linies.reduce((s, l) => s + (l.qualificacio === "S2" ? 0 : r2(l.base * l.iva / 100)), 0));
   const base = r2(linies.reduce((s, l) => s + l.base, 0));
   const avui = avuiMadrid(), exercici = Number(avui.slice(0, 4)), serie = `${c.serie || "F"}${exercici}-`;
-  const n = await db("rpc/aco_seguent_numero", { method: "POST", body: JSON.stringify({ p_user: uid, p_serie: serie, p_exercici: exercici }) });
-  const numero = String(n).padStart(4, "0");
-  let reg: Registre = (await db("aco_verifactu_registres", {
+  // Una certificació, una factura: el servidor reserva el número i desa la factura en un sol pas; si ja n'hi ha una de
+  // vigent (p. ex. dos aparells alhora), torna aquella i no gasta cap número.
+  const reg = await db("rpc/aco_reservar_factura", {
     method: "POST",
-    body: JSON.stringify({ user_id: uid, obra_id: obraId, cert_id: certId, tipus: "F1", serie, numero, exercici, data_expedicio: avui, nif_destinatari: nif, nom_destinatari: nom, base, quota, total: r2(base + quota), estat: "reservada" }),
-  }))[0];
-  reg = await desa(reg.id, { peticio: peticio(reg, linies, descripcio) });
+    body: JSON.stringify({ p_user: uid, p_obra: obraId, p_cert: certId, p_serie: serie, p_exercici: exercici, p_data: avui, p_nif: nif, p_nom: nom, p_base: base, p_quota: quota, p_total: r2(base + quota), p_entrada: { linies, descripcio } }),
+  }) as Registre & { ja_existia?: boolean };
+  if (!reg?.id) throw new Err("No s'ha pogut reservar el número de la factura.", 500);
+  if (reg.ja_existia) return { ...publica(c, reg), jaExistia: true };
   return await envia(c, reg);
 }
 
@@ -191,6 +196,8 @@ Deno.serve(async (req) => {
       return json(publica(c, await desa(reg.id, { estat: estatDe(r.j, reg.estat), resposta: { ...(reg.resposta as object ?? {}), estat: r.j } })));
     }
     if (b.accio === "anular") {
+      if (reg.estat === "Anulada") return json(publica(c, reg));
+      if (reg.estat === "error" || reg.estat === "reservada") throw new Err("Aquesta factura encara no consta a Hisenda: torna-la a enviar.", 409);
       const r = await vf(c, "/verifactu/cancel", { serie: reg.serie, numero: reg.numero, fecha_expedicion: ddmmaaaa(String(reg.data_expedicio)) }, `anular-${reg.id}`);
       if (!r.ok) throw new Err(`Verifacti no ha pogut anul·lar la factura (${r.status}).`, 502);
       return json(publica(c, await desa(reg.id, { estat: "Anulada", resposta: { ...(reg.resposta as object ?? {}), anulacio: r.j } })));

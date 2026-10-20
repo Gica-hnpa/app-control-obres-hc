@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.312";
+const APP_VERSION878264="87.313";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11691,17 +11691,29 @@ function updateClient878297(client,patch,setClients){
   Object.assign(client,patch);
   setClients?.(p=>(p||[]).map(c=>c.id===client.id?{...c,...patch}:c));
 }
+// V87.313 · factures ja fetes amb la sèrie d'un client a totes les seves obres (la sèrie és del client, no de l'obra): si el
+// «número següent» de la fitxa s'ha quedat enrere (p. ex. una factura feta en un altre aparell), no es repeteix cap número.
+function facturesSerieClient878313(clientId,obraId,data){
+  if(!clientId)return [];
+  const od=lsJson8779("aco_odata",{})||{};
+  const out=[];
+  Object.entries(od).forEach(([id,d])=>{if(id!==obraId)(d?.facturesObra878297||[]).forEach(x=>{if(x.serieClient===clientId)out.push(x)})});
+  (data?.facturesObra878297||[]).forEach(x=>{if(x.serieClient===clientId)out.push(x)});
+  return out;
+}
 function FerFactura878297({f,c,obra,client,setClients,data,setData,close}){
   const s=client?.facturacio878297||{};
   const prom=primaryPromotorAgent878134(data.agents||[],obra||{},client||{})||{};
-  const [num,setNum]=useState(String(+s.proper||1));
+  const usades=useMemo(()=>facturesSerieClient878313(client?.id||"",obra?.id||"",data),[]);
+  const maxUsat=usades.filter(x=>String(x.numero||"").startsWith(s.prefix||"")).reduce((m,x)=>Math.max(m,+x.num||0),0);
+  const [num,setNum]=useState(String(Math.max(+s.proper||1,maxUsat+1)));
   const [dataF,setDataF]=useState(todayISO8743());
   const [dest,setDest]=useState({nom:prom.nom||obra?.propietat||"",nif:String(prom.nif||obra?.nifPropietat||"").replace(/^pendent$/i,""),adreca:prom.adreca||obra?.adrecaPropietat||""});
   const numero=fmtNumFactura878297(s,+num||1);
-  const jaHiEs=(data.facturesObra878297||[]).some(x=>x.numero===numero);
+  const jaHiEs=usades.some(x=>x.numero===numero);
   function crear(){
     if(!(+num>0)){alert(t("Posa un número de factura."));return}
-    if(jaHiEs){alert(t("La factura {n} ja existeix en aquesta obra.",{n:numero}));return}
+    if(jaHiEs){alert(t("La factura {n} ja existeix.",{n:numero}));return}
     const fa={id:"fo-"+Date.now(),certId:f.certId||f.pfId,pfNumero:f.numero,certNum:f.numeroCert,numero,num:+num,serieClient:client?.id||"",data:dataF,base:c.base,ded:c.ded,iva:c.iva,ivaImp:c.ivaImp,ret:c.ret,retImp:c.retImp,total:c.total,destinatari:dest,createdAt:new Date().toISOString()};
     setData(d=>({...d,facturesObra878297:[...(d.facturesObra878297||[]),fa],updatedAt:new Date().toISOString()}));
     if(+num>=(+s.proper||1))updateClient878297(client,{facturacio878297:{...s,proper:+num+1}},setClients);
@@ -12310,7 +12322,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.312",
+    app_version:"87.313",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

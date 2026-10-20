@@ -39,6 +39,21 @@ Decisions de l'Héctor (16/10/2026):
   - `supabase/functions/verifactu/index.ts`: accions `compte`, `emetre`, `reenviar`, `estat`, `anular`.
 - **Proves:** `tools/proves/vfemetretest.mjs` (21 proves) amb el Supabase de proves, que simula la funció i l'intermediari.
 
+### Reforçat a la V87.313 (20/10/2026, encara sense instal·lar res)
+
+- **Número i factura en un sol pas** (`aco_reservar_factura` a l'SQL): abans, la funció mirava si la certificació ja tenia
+  factura i després reservava el número; dues peticions alhora (dos aparells) podien fer **dues factures** de la mateixa
+  certificació. Ara el servidor ho fa tot de cop i la segona rep la mateixa factura, sense gastar cap número. A més, una
+  regla de la base de dades impedeix dues factures vigents (F1) per a la mateixa certificació.
+- **Les línies es desen amb la factura** (columna `entrada`): si l'enviament s'atura a mig camí (sense xarxa o la funció
+  s'atura), «Tornar a enviar» refà la petició amb el mateix número i la data d'avui. Abans, en aquest cas la factura
+  quedava reservada sense poder-se enviar mai.
+- **No es pot anul·lar una factura que no ha arribat a Hisenda** (estat «No enviada»): el servidor ho refusa (l'app ja no
+  ensenyava el botó); s'ha de tornar a enviar.
+- **Prova nova** `tools/proves/verifactufunciotest.mjs` (17 proves): executa el `index.ts` de debò amb Node i un Supabase i
+  un Verifacti simulats (sessió, compte actiu, dades incorrectes, numeració, dues peticions alhora, error i «Tornar a
+  enviar», enviament aturat, un altre dia, anul·lar, estat, ISP). L'SQL només es pot provar a Supabase.
+
 ### Què falta (per ordre)
 
 1. **Comprovar amb el compte de proves de Verifacti** el que la documentació pública no diu (està marcat a dalt de

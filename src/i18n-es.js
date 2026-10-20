@@ -3158,4 +3158,5 @@ export default {
   "Diferència": "Diferencia",
   "Total obra": "Total obra",
   "{n} capítols sense despeses": "{n} capítulos sin gastos",
+  "La factura {n} ja existeix.": "La factura {n} ya existe.",
 };

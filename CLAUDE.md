@@ -532,6 +532,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   Taula per capítol (Pressupost · Cost real · Diferència · %) amb les partides que tenen cost a sota i «Sense capítol» per a
   les despeses només de l’obra. Fora el text «Aquesta pantalla no calcula rendibilitat empresarial». Falta: les hores × cost
   per hora (mòdul 3). Prova: a `despesestest.mjs`.
+- **V87.313 · VeriFactu i «Fer factura» reforçats** (20/10/2026, encàrrec de l’Héctor «reforçar verifactu, albarans i factures»;
+  **res instal·lat al servidor**, VeriFactu continua aturat):
+  - **Funció `verifactu` i SQL**: el número i la factura es fan en un sol pas (`aco_reservar_factura`, amb bloqueig per
+    certificació i una regla d’una sola F1 vigent per certificació): dues peticions alhora ja no poden fer dues factures. Les
+    línies es desen amb la factura (`entrada`) i «Tornar a enviar» refà la petició (abans, si s’aturava entre reservar i desar,
+    quedava sense poder-se enviar). El servidor no deixa anul·lar una factura «No enviada». Detall a `docs/verifactu-pla.md`.
+  - **Prova de la funció de debò**: `tools/proves/verifactufunciotest.mjs` (17) executa `supabase/functions/verifactu/index.ts`
+    amb Node (`--experimental-transform-types`, la prova s’hi torna a llançar sola) i un Supabase i un Verifacti simulats.
+  - **«Fer factura» amb la sèrie del client** (`facturesSerieClient878313`): el número proposat i la comprovació de repetits
+    miren totes les obres del client, no només la d’ara (si la fitxa s’havia quedat enrere, es repetia). Prova: `factclienttest`.
+  - Proves: l’ajuda per anar al menú espera fins a 12 s (després de recarregar, l’app pot trigar més de 4 s a ensenyar-lo i
+    `menutecnictest` fallava).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
   «service worker» (`sw.js`, el genera `vite.config.js` en compilar a partir de `src/sw-template.js`, amb la llista
   d’arxius de la versió) i s’obre encara que no hi hagi cobertura ni servidor. Pàgina: primer la xarxa (3 s com a
@@ -669,7 +681,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     constructora (Brava: obra nova, pressupost d’un PDF, certificació, proforma, despesa, cita, nota, recarregar; mòbil) i tècnic
     (Oriol: cèdula, documents del tràmit, honoraris acceptats, pendent de facturar, despesa pròpia, acta, recarregar). Falta:
     el client particular i l’iPad (les hores, les factures d’honoraris i, des del 20/10, les de certificació —proforma de
-    743 €, «Fer factura» amb la sèrie del client i el PDF, i VeriFactu simulat— ja hi són: 33 proves).
+    743 €, «Fer factura» amb la sèrie del client i el PDF, i VeriFactu simulat— ja hi són: 32 proves).
     **Troballa:** un compte d’empresa nou té **el Mòdul 2 bloquejat** (Pressupost, Certificacions i Facturació surten com
     «Aquesta funcionalitat forma part del Mòdul 2», `hasModule2Access8747`: `aco_config_v60.modul2Actiu` o `aco_modul2_actiu`)
     i a Ajustos no hi ha cap botó per activar-lo. Preguntar a l’Héctor si s’activa sol per als constructors (prova pilot).
