@@ -569,6 +569,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     curt, que en tocar-la obre «Gestionar»; al mòbil targetes), filtres plegats, i a sota «Resum» en pestanyes (Totals ·
     Estats · Comparativa; nous: facturat i acceptat sense facturar). El client és el de l’expedient (abans, el promotor). Fora el
     quadre d’explicació de la calculadora.
+  **Tanda 2 (V87.317)**, després de veure la 316 publicada:
+  - **Menú del tècnic:** sense «Preus» (només dins d’un pressupost d’obra; el constructor el manté) i «Hores» abans de «Facturació».
+  - **Pressupostos (segona volta):** requadres de colors que filtren (Tots · Pendents · Acceptats · No acceptats · Facturats,
+    `estatPres878317`), l’any en curs per defecte amb «Altres anys» i «Tots els anys», la llista com a principal (taula
+    només a partir de 1180 px; a l’iPad i al mòbil, targetes amb «PDF» i «Obrir l’expedient»; a la taula, «PDF» i «⋯»), «Més
+    filtres» plegat a sota i **«Informes i gràfics» plegat** (Totals · Estats · Per anys i mesos · Gràfica lineal
+    `IngressosChart878292`), que no es dibuixa fins que s’obre. Fora «Lectura ràpida» (de `FinanceReports87110`).
+  - **Hores** (`GestioTemps878255`): per defecte **expedients oberts i tot el temps**; cada apunt té estat **Pendent ·
+    Facturat · No es factura** (`EstatFact878317`, camp `noFactura`; no compta com a pendent enlloc, també a Facturació ›
+    Pendent i a la pestanya d’hores de l’expedient); a cada expedient «Facturat en part» o «Tot resolt» i, si tot és resolt,
+    **«Tancar l’expedient»** (`updateStatus`). Les **despeses pròpies** (`meva`) de l’expedient hi surten com un apunt més
+    (`despesesComApunts878317`). La gràfica i l’anàlisi d’honoraris, plegades a sota.
+  - **Despeses pròpies amb tipus** (`tipusMeva`, `TIPUS_MEVA878317`): desplaçament (km × 0,26 €/km per defecte, sense IVA),
+    dietes, aparcament, peatges, material, taxes de visat, taxes i llicències, fotocòpies, missatgeria, altres.
+  - `Kpi` tradueix el títol (abans sortia sempre en català).
+  - Prova: `revisio2test.mjs` (26). Adaptades `revisio1test`, `tempstest` i `pantallestest`.
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un

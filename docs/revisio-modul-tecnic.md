@@ -53,6 +53,37 @@ tanda està decidida). Després es farà el mateix amb els altres mòduls.
 
 (ajuntat a Contactes, apartat 2)
 
+## Tanda 2 (20/10/2026, després de veure la tanda 1 publicada) — fet a la V87.317
+
+### Pressupostos (segona volta)
+1. **La llista és el principal**, a dalt i ben visible: per blocs d’any. Primer l’**any en curs**; els altres anys amb un
+   desplegable (o «Tots»).
+2. Abans de la llista, **requadres de colors** que filtren en tocar-los (com a l’Inici): pendents, acceptats, no acceptats,
+   facturats, tots.
+3. **A sota i plegat**: gràfics i resums (informes escrits, comparatius, gràfica lineal) en pestanyes que s’obren només si es
+   toquen. No carregar l’app amb coses obertes que no calen. Fora «Lectura ràpida».
+4. **Mòbil i iPad sense lliscar cap a la dreta**; les accions de cada pressupost en un sol desplegable, amb les més fetes servir a
+   la vista.
+5. «Obrir calculadora» i «Calcular amb barem d’honoraris» són el mateix: un sol botó.
+
+### Preus
+- Al tècnic, **fora del menú**: només dins d’un pressupost d’un expedient (project manager, control integral).
+
+### Hores (abans de Facturació al menú)
+1. El resum de dalt es pot quedar; la gràfica a sota o en una pestanya / desplegable (tipus de gràfica o informe).
+2. Només els expedients **actius, oberts i en procés**: què hi estic dedicant.
+3. Cada apunt amb el seu estat i color: **facturat / pendent / no es factura**, i accions (facturar, eliminar, no comptabilitzar…).
+   Dins d’un expedient: totes les hores per dies amb l’estat al costat (pot estar facturat en part). Quan tots els apunts estan
+   facturats o «no es factura», l’expedient ja és per tancar.
+
+### Despeses (les meves)
+- Les seves, també per expedients actius o oberts. Tipus de despesa d’un tècnic: desplaçaments (km), dietes, aparcament,
+  peatges, material, taxes de visat, taxes i llicències, fotocòpies i impressions, missatgeria, altres.
+- **Ajuntar hores i despeses**: en obrir un expedient es veu tot de cop.
+
+### Agenda
+- De moment, bé.
+
 ## Següent
 
 Preus · Facturació · Hores · Despeses · Agenda · Ajustos i, dins de l’expedient, Fitxa (Resum, Dades i agents, Documents,
