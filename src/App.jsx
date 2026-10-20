@@ -21,7 +21,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.324";
+const APP_VERSION878264="87.325";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2922,6 +2922,8 @@ function enllacosBase878305(obra={}){
   const rc=rcNet878305(obra.rc);const tipus=canonicalWorkType8740(obra.tipusTreball||obra.tipologia||"");
   const out=[{nom:"Cadastre",url:rc.length>=14?`https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${rc.slice(0,7)}&rc2=${rc.slice(7,14)}`:"https://www1.sedecatastro.gob.es/",det:rc.length>=14?rc.slice(0,14):""}];
   // V87.306 · el tràmit (Habitatge, ICAEN) ja és el botó de «Documents per presentar» de l'encàrrec; aquí, MagicPlan per a la cèdula
+  // V87.325 · i el cercador de cèdules de l’Agència de l’Habitatge (si n’hi ha una de vigent, quan caduca i els m² útils)
+  if(/cèdula/i.test(tipus))out.push({nom:"Cercador de cèdules (Agència de l’Habitatge)",url:"https://agenciahabitatge.gencat.cat/ca/temes/rehabilitacio-i-qualitat-de-ledificacio/control-de-qualitat-dhabitatges/cercador-de-cedules",det:rc.slice(0,20),copia:rc.slice(0,20)});
   if(/cèdula/i.test(tipus))out.push({nom:"MagicPlan",url:"https://cloud.magicplan.app/"});
   if(/certificat energètic/i.test(tipus))out.push({nom:"Cercador de certificats energètics",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"});
   // V87.324 · amiant: pàgines oficials comprovades el 21/10/2026 (Agència de Residus i tràmit del RERA)
@@ -2933,7 +2935,7 @@ function omplenaUrl878305(url,obra={}){const rc=rcNet878305(obra.rc);return Stri
 function urlSegura878305(u){return /^https?:\/\//i.test(String(u||"").trim())}
 function EnllacosObra878305({obra={}}){
   const l=[...enllacosBase878305(obra),...enllacosPropis878305().map(x=>({nom:x.nom||x.url,url:omplenaUrl878305(x.url,obra),propi:true}))].filter(x=>urlSegura878305(x.url));
-  return <div className="enllacos-obra-v878305"><span className="lbl">{t("Enllaços")}</span><div>{l.map((x,i)=><a key={i} href={x.url} target="_blank" rel="noopener noreferrer" className="enllac-v878305">{x.propi?x.nom:t(x.nom)}{x.det?<small>{x.det}</small>:null}<ExternalLink size={13}/></a>)}</div></div>;
+  return <div className="enllacos-obra-v878305"><span className="lbl">{t("Enllaços")}</span><div>{l.map((x,i)=><a key={i} href={x.url} target="_blank" rel="noopener noreferrer" className="enllac-v878305" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}>{x.propi?x.nom:t(x.nom)}{x.det?<small>{x.det}</small>:null}<ExternalLink size={13}/></a>)}</div></div>;
 }
 function EnllacosAjustos878305(){
   const[l,setL]=useState(()=>enllacosPropis878305().length?enllacosPropis878305():[]);
@@ -12603,7 +12605,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.324",
+    app_version:"87.325",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

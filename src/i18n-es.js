@@ -3342,4 +3342,6 @@ export default {
   "Amiant: preguntes freqüents (Agència de Residus)": "Amianto: preguntas frecuentes (Agència de Residus)",
   "Registre d’empreses amb risc d’amiant (RERA)": "Registro de empresas con riesgo de amianto (RERA)",
   "Inspecció de l’edifici per localitzar els materials amb amiant, presa de mostres per al laboratori, valoració de l’estat i del risc i informe amb les recomanacions (UNE 171370-2).": "Inspección del edificio para localizar los materiales con amianto, toma de muestras para el laboratorio, valoración del estado y del riesgo e informe con las recomendaciones (UNE 171370-2).",
+  "Cercador de cèdules (Agència de l’Habitatge)": "Buscador de cédulas (Agència de l’Habitatge)",
+  "En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador.": "Al abrirlo, la referencia catastral queda copiada: pégala en el buscador.",
 };
