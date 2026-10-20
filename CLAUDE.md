@@ -600,6 +600,30 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     té «+ Despesa» a dalt i a cada expedient (amb l’expedient ja triat).
   - Estils: `src/theme-v878318.css`. Prova: `despeses318test.mjs` (29). Adaptades `menutecnictest`, `albaranstest`,
     `clientsvirtuals`, `revisio2test`, `emptest` i `pdftest` (el selector de l’obra ja no és dins de `.grid`).
+  **Tanda 4 (V87.319–322) · dins de l’expedient, començant per la gestió integral** (l’Héctor, 20/10/2026 a la tarda):
+  - **Fitxa (V87.319):** «Entrega» ja no surt (àlies `ALIAS878308["Tancament / Entrega"]="Documents"`, llevat que hi hagi notes o
+    arxius a `sectionDocs.tancament`): és el paquet **«08 · Final d’obra»** de Documents (id `08_DOCUMENTACIO_FINAL`). Dades › Obra
+    sense «Direcció / criteri de l’obra» (`direccioObraText`, text de plantilla) ni «Observacions internes» (només si n’hi ha),
+    codificació plegada i fora els textos que expliquen. **Agents de l’obra plegats** (`AgentsObraCard plegat`,
+    `details.agents-plegat-v878319`): títol, quants i els primers noms, «Afegir agent». Prova: `fitxa319test.mjs` (10).
+  - **Pressupost (V87.320):** capítols **plegats** en obrir-lo; el «Capítol principal» només si agrupa més d’un capítol
+    (`nCapsMain878320`; si n’amaga un amb un altre nom, surt petit sota el capítol) i com a títol de grup; **avisos a baix**
+    (`avisosPressupost878320`, `AvisosPressupost878320`) amb el comptador «⚠ N» a dalt que hi porta: certificat a origen per
+    sobre del pressupost, despeses de l’obra ≥90 % o per sobre (només amb un sol pressupost), certificades per sobre, sense preu,
+    sense amidament, sense concepte, codis repetits, capítols a 0 €. **Capçalera** (`budget-eines-v878320`): «Editar» (o
+    «Guardar canvis» / «Cancel·lar») i «PDF» a la vista; menús «Afegir» (a aquest pressupost / un pressupost nou al costat) i «⋯»
+    (compartir, eines, aquest pressupost). **En editar:** cada partida només «Editar»; oberta, `partida-eines-v878320` (∑
+    Amidaments, Cost / descompost, Desar a la llibreria, Moure a…, Eliminar); caselles només amb «Seleccionar diverses partides»
+    (`seleccio878320`); el capítol, un «⋯» curt. «Pressupost per al client» → **«Ajustos del pressupost»**. Prova:
+    `pressupost320test.mjs` (23, amb Verbania). Adaptades `pressuposttest`, `pdfpressuposttest`, `clientsvirtuals`,
+    `habitualstest`, `menustest` (prova «Afegir» i «⋯» i obre els capítols abans de baixar), `documentstest` i `docmobiltest`
+    (botó «PDF»).
+  - **Seguiment (V87.321):** les tasques de l’expedient es diuen **«Feines pendents»** (són les de l’Inici) amb quant falta i el
+    color (`taskDeadlineTone878140`, `diesTasca878314`), ordenades i les fetes al final. **Planning de l’obra**: columna dels
+    capítols de 300 px a l’iPad i 150 px al mòbil, i **«Pantalla completa»** (mòbil i iPad; `requestFullscreen` i
+    `screen.orientation.lock("landscape")` si l’aparell ho deixa; si no, una capa fixa). Prova: `seguiment321test.mjs` (15).
+  - **V87.322:** al mòbil, la tira dels pressupostos en dues columnes (fora «Cada pressupost va a part…»), cada capítol en una línia
+    (nom i total) i «Ajustos del pressupost» compacte.
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un

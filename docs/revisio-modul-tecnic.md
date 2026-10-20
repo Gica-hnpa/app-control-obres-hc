@@ -95,7 +95,7 @@ tanda està decidida). Després es farà el mateix amb els altres mòduls.
   - Sense cap despesa, no surten els requadres a 0.
   - A **Hores i despeses**, «+ Despesa» a dalt i a cada expedient.
 
-## Tanda 4 (20/10/2026, tarda) — dins de l’expedient, començant per la gestió integral (després cèdules i CEE)
+## Tanda 4 (20/10/2026, tarda) — dins de l’expedient, començant per la gestió integral — fet a les V87.319–322
 
 ### Fitxa (Resum · Dades · Documents · Entrega)
 1. **Entrega sobra**: a Documents, un paquet més de **«Final d’obra»** (sempre, encara que només calgui quan fa direcció d’obra).
