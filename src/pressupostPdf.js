@@ -253,6 +253,105 @@ function llegirSenseCodis(linies) {
   return { caps: caps.filter(c => partides.some(p => p.cap === c)), partides, total, totalPdf, avisos, senseCodis: true };
 }
 
+// V87.328 · PDF d'amidaments (sense preus o amb preus): Presto («Cocina 1 4,50 3,20 14,40» i a sota la quantitat sola),
+// TCQ («1 Fonaments 4,000 0,600 0,800 1,920 C#*D#*E#*F#» i «TOTAL AMIDAMENT 3,120»)… Cada partida es queda amb les seves línies
+// de mides; la quantitat és la del total (o la suma de les mides si no n'hi ha). Si el PDF després porta el pressupost, el quadre de
+// preus o el resum, es deixa de llegir (eren les mateixes partides).
+const SECCIO_AMID = /^(amidaments|medicions|mediciones|estat d.amidaments|estado de mediciones)\b/i;
+const SECCIO_ALTRA = /^(pressupost|presupuesto|quadre de preus|cuadro de precios|resum|resumen|descompos[a-z]*|descompuestos?|justificaci[oó]n?)\b/i;
+const titol = (re, l) => { const m = l.match(re); return !!m && (m[1] === m[1].toUpperCase() || /p[àa]gina\s+\d/i.test(l)); };
+const CAPCALERA_AMID = l => (String(l).toLowerCase().match(/(^|\s)(uds?\.?|n[uú]m\.?|text|tipus|longitud|anchura|altura|llargada|amplada|al[çc]ada|parciales|parcials|parcial|cantidad|quantitat|comentari|comentario|total|\[c\d\]|f[oó]rmula)(?=\s|$)/g) || []).length >= 3 && !/\d[.,]\d/.test(l);
+const r3 = n => Math.round((Number(n) || 0) * 1000) / 1000;
+export function llegirAmidamentsPdf(files) {
+  const linies = (files || []).map(f => net(f.text ?? (f.items || []).map(i => i.s).join("  "))).filter(Boolean);
+  const caps = [], partides = [], avisos = [];
+  let cap = "", act = null, fora = false;
+  const tanca = () => {
+    if (!act) return;
+    act.concepte = net(act.concepte).slice(0, 240) || "Partida";
+    act.desc = net(act.desc).slice(0, 1500);
+    if (act.q == null) act.q = r3(act.mides.reduce((s, m) => s + (Number(m.parcial) || 0), 0));
+    if (!act.q) act.revisar = "Sense quantitat";
+    const ja = partides.find(p => p.codi === act.codi && clauNom(p.concepte) === clauNom(act.concepte));
+    if (!ja) partides.push(act);
+    act = null;
+  };
+  for (const linia of linies) {
+    if (titol(SECCIO_AMID, linia)) { tanca(); fora = false; continue; }
+    if (partides.length + (act ? 1 : 0) > 0 && titol(SECCIO_ALTRA, linia) && !/(amidament|medici)/i.test(linia)) { tanca(); fora = true; continue; }
+    if (fora || IGNORA.test(linia) || CAPCALERA_AMID(linia)) continue;
+    const tokens = linia.split(" ").filter(t => t && !/#/.test(t)); // «C#*D#*E#*F#»: la fórmula del TCQ
+    const nums = numsFinals(tokens);
+    const txt = net(senseNumsFinals(tokens).join(" "));
+    if (/^(total|suma)\b/i.test(linia)) {
+      if (act && nums.length && !/cap[ií]t|presupuesto|pressupost|p\.?e\.?m|general|obra\b/i.test(linia)) {
+        const qd = nums.length >= 3 ? quadra(nums) : null;
+        if (qd?.ok) { act.q = qd.q; act.pu = qd.pu; } else act.q = nums[0];
+      }
+      tanca(); continue;
+    }
+    let m = linia.match(CAP_PARAULA);
+    if (m && !PARTIDA.test(linia.replace(CAP_PARAULA, "$2 $3"))) {
+      tanca(); const codi = m[2].replace(/\D+$/, "").padStart(2, "0"); const nom = net(senseNumsFinals(m[3].split(" ")).join(" ")) || `Capítol ${codi}`;
+      cap = `${codi} ${nom}`.trim(); if (!caps.includes(cap)) caps.push(cap); continue;
+    }
+    m = linia.match(PARTIDA);
+    if (m && !/[a-zà-úñç]/i.test(m[2])) m = null;
+    if (m && act && !nums.length) { const nx = m[2].split(" ")[0].replace(/[,.;:]$/, ""); if (/^[a-zà-úñç]/.test(nx) && !UNITATS.test(nx)) m = null; }
+    const tcq = !m && linia.match(PARTIDA_TCQ);
+    if (tcq && /\d/.test(tcq[2])) m = [linia, tcq[2], tcq[3]];
+    if (!m) { const mu = linia.match(PARTIDA_UT); if (mu && UNITATS.test(mu[2]) && /[a-zà-úñç]{3}/i.test(mu[3]) && /[A-Z]|\d[.\-]/i.test(mu[1]) && mu[1].length >= 3) m = [linia, mu[1], mu[2] + " " + mu[3]]; }
+    if (m) {
+      tanca();
+      const codi = m[1].replace(/\s+/g, "");
+      let resta = senseNumsFinals(m[2].split(" ").filter(t => !/#/.test(t)));
+      let ut = "";
+      if (resta.length && UNITATS.test(resta[0])) ut = resta.shift();
+      else if (resta.length > 1 && UNITATS.test(resta[resta.length - 1])) ut = resta.pop();
+      if (!cap) { const pre = /^(?:[A-Z]{1,4})?\d{1,3}[.\-]/.test(codi) ? (codi.match(/^(?:[A-Z]{1,4})?(\d{1,3})/)?.[1]?.padStart(2, "0") || "") : ""; cap = pre ? `${pre} Capítol ${pre}` : "01 Partides"; caps.push(cap); }
+      act = { codi, cap, ut: normUt(ut), concepte: resta.join(" "), desc: "", q: null, pu: null, mides: [] };
+      if (nums.length === 1) act.q = nums[0];
+      else if (nums.length >= 2) { const qd = nums.length >= 3 ? quadra(nums) : null; if (qd?.ok) { act.q = qd.q; act.pu = qd.pu; } else { act.q = nums[0]; act.pu = nums[1]; } }
+      continue;
+    }
+    m = linia.match(CAP_CODI);
+    if (m && !nums.length) { tanca(); const codi = m[1].replace(/\D/g, "").padStart(2, "0"); cap = `${codi} ${net(m[2])}`; if (!caps.includes(cap)) caps.push(cap); continue; }
+    if (!act) continue;
+    // línies de sota la partida: mides, la quantitat sola (Presto) o més descripció
+    const concepteMida = txt.replace(/^\d{1,3}\s+(?=\D)/, "");
+    // «16,00 42,80 684,80» sota les mides: el primer número és la suma de les mides → és el total de la partida (amb el preu)
+    const suma = r3(act.mides.reduce((s, x) => s + (Number(x.parcial) || 0), 0));
+    if (!txt && nums.length >= 2 && act.mides.length && Math.abs(nums[0] - suma) <= 0.011) {
+      const qd = nums.length >= 3 ? quadra(nums) : null;
+      act.q = nums[0]; if (qd?.ok) act.pu = qd.pu;
+      tanca(); continue;
+    }
+    if (nums.length >= 2) {
+      const dims = nums.slice(0, -1), parcial = nums[nums.length - 1];
+      const prod = dims.reduce((x, y) => x * y, 1);
+      const quadraMida = Math.abs(prod - parcial) <= Math.max(0.011, Math.abs(parcial) * 0.005);
+      if (!quadraMida && !txt) {
+        const qd = nums.length >= 3 ? quadra(nums) : null;
+        if (qd?.ok) { act.q = qd.q; act.pu = qd.pu; tanca(); continue; }
+      }
+      const [u, ll, a, h] = quadraMida ? dims : [parcial];
+      act.mides.push({ concepte: concepteMida, unitats: u ?? "", llargada: ll ?? "", amplada: a ?? "", alcada: h ?? "", parcial: r3(parcial) });
+      continue;
+    }
+    if (nums.length === 1 && !txt) { act.q = nums[0]; tanca(); continue; }
+    if (nums.length === 1 && txt.length <= 50) { act.mides.push({ concepte: concepteMida, unitats: nums[0], llargada: "", amplada: "", alcada: "", parcial: r3(nums[0]) }); continue; }
+    if (act.mides.length) continue;
+    const text = nums.length ? txt : linia;
+    // el nom de la partida només continua si la línia segueix la frase (comença en minúscula); si no, és la descripció
+    if (!act.desc && act.concepte.length < 60 && /^[a-zà-úñç(]/.test(text)) act.concepte += " " + text; else act.desc += " " + text;
+  }
+  tanca();
+  const usats = new Set(partides.map(p => p.cap));
+  const nq = partides.filter(p => !p.q).length;
+  if (nq) avisos.push(`${nq} partides sense quantitat`);
+  return { font: "PDF", nom: "", caps: caps.filter(c => usats.has(c)), partides, avisos };
+}
+
 // Text del PDF per línies (pdf.js): els trossos d'una mateixa altura fan una línia, d'esquerra a dreta
 export async function liniesPdf(pdfjsLib, data, maxPagines = 60) {
   const pdf = await pdfjsLib.getDocument({ data }).promise;

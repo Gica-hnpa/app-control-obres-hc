@@ -672,6 +672,29 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     «Total expedients», «Tots els expedients» i «N expedients» per «Obres obertes», «Total d’obres», «Totes les obres» i «N obres»
     (llista d’obres, Inici, Hores i filtres). «Pressupostos» (d’honoraris) només amb el mòdul Tècnic: la constructora no el té.
   - Prova: `perfils326test.mjs` (36).
+- **Amidaments abans del pressupost** (V87.328, encàrrec de l’Héctor del 21/10/2026: «una pestanya prèvia dins el paquet que digui
+  amidaments, que l’app pugui llegir en tots els formats (PDF, Excel i BC3), amb una opció que digui passar-ho a pressupost»):
+  - **Pestanya «Amidaments»** (clau `Amidaments obra`, per no topar amb la secció vella `Amidaments` d’`ExpedientSection8769`): al
+    bloc Econòmic, just abans de «Pressupost», a totes les obres que tenen Pressupost (`tabsForWork8737`); amb el mòdul Obra
+    (`tabsPerfil878326`). `Amidaments878328`; es desa a l’obra: `data.amidaments878328 = {font, linies, passat, avisos}`.
+  - **Lectors** (funcions pures): `src/amidaments.js` — **BC3** (`textBc3`: ~V diu el joc de caràcters, ANSI = Windows-1252, 850 i
+    437 de l’MS-DOS amb taules pròpies; `llegirBc3`: ~C, ~D, ~T, ~M; capítols amb «#», l’arrel «##», subcapítols amb
+    `capPrincipal`; la quantitat és el total del ~M o el rendiment del ~D; els descompostos no són partides) i **Excel/CSV**
+    (`llegirExcelAmidaments`: capçalera amb descripció i quantitat; capítols per la columna «Nat», un codi curt en majúscules o
+    «CAPÍTOL…»; línies de mides a sota o una fila per línia amb el mateix codi, com l’Excel que fa l’app). **PDF**:
+    `llegirAmidamentsPdf` a `src/pressupostPdf.js` (Presto: mides «Cocina 1 4,50 3,20 14,40» i la quantitat sola a sota; TCQ: «1
+    Fonaments 4,000 … C#*D#*E#*F#» i «TOTAL AMIDAMENT»; deixa de llegir al PRESSUPOST / RESUM de després; si no hi troba res, prova
+    `llegirPressupostPdf`). Mides: `{concepte, unitats, llargada, amplada, alcada, parcial}`.
+  - **Pantalla:** «Llegir PDF, Excel o BC3» (l’original va a Documents); si ja n’hi ha, «Substituir les d’ara» o «Afegir-les a les
+    d’ara». Per capítols (plegables), quantitat editable, ∑ amb les línies de mides i la suma, avís si la quantitat no és la suma
+    («Posar-hi la suma»), treure una partida, «Buidar els amidaments».
+  - **«Passar-ho a pressupost»** (`PassarPressupost878328`): si el pressupost actiu ja té partides, «Un pressupost nou: «Amidaments ·
+    arxiu»» o «Afegir-les a «…»»; si és buit, s’hi posen. Preus: els de l’arxiu; si no, els de Preus pel codi o per la mateixa
+    partida (es pot desmarcar); la resta a 0 (surten als avisos del pressupost). Fa servir `importPdfBudget878305` (ara amb
+    `meta.prefix`, `afegir`, `tipusPartida`, `estat`; passa `capPrincipal` i `pressupostMesures` si les mides sumen la quantitat).
+    Després obre el Pressupost; als Amidaments queda «Passat al pressupost «…» el …».
+  - Tocar el bloc «Econòmic» obre el Pressupost si l’obra encara no té amidaments (`teAmid` d’`ObraBar878269`); si en té, els Amidaments.
+  - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
