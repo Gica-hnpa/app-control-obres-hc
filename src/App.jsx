@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.332";
+const APP_VERSION878264="87.333";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2947,11 +2947,8 @@ function enllacosBase878305(obra={}){
   const out=[{nom:"Cadastre",url:rc.length>=14?`https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCListaBienes.aspx?rc1=${rc.slice(0,7)}&rc2=${rc.slice(7,14)}`:"https://www1.sedecatastro.gob.es/",det:rc.length>=14?rc.slice(0,14):""}];
   // V87.306 · el tràmit (Habitatge, ICAEN) ja és el botó de «Documents per presentar» de l'encàrrec; aquí, MagicPlan per a la cèdula
   // V87.325 · i el cercador de cèdules de l’Agència de l’Habitatge (si n’hi ha una de vigent, quan caduca i els m² útils)
-  if(/cèdula/i.test(tipus))out.push({nom:"Cercador de cèdules (Agència de l’Habitatge)",url:"https://agenciahabitatge.gencat.cat/ca/temes/rehabilitacio-i-qualitat-de-ledificacio/control-de-qualitat-dhabitatges/cercador-de-cedules",det:rc.slice(0,20),copia:rc.slice(0,20)});
-  if(/cèdula/i.test(tipus))out.push({nom:"MagicPlan",url:"https://cloud.magicplan.app/"});
-  if(/certificat energètic/i.test(tipus))out.push({nom:"Cercador de certificats energètics",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"});
-  // V87.324 · amiant: pàgines oficials comprovades el 21/10/2026 (Agència de Residus i tràmit del RERA)
-  if(/amiant/i.test(tipus)){out.push({nom:"Amiant: preguntes freqüents (Agència de Residus)",url:"https://residus.gencat.cat/ca/ambits_dactuacio/tipus_de_residu/amiant/ciutadania/preguntes-frequents/"});out.push({nom:"Registre d’empreses amb risc d’amiant (RERA)",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Registre-dEmpreses-amb-Risc-per-Amiant-RERA"})}
+  // V87.333 · els enllaços de cada tràmit (cèdula, CEE, amiant) són a l'encàrrec («Enllaços del tràmit», ENLLACOS_TRAMIT878333)
+  void tipus;
   return out;
 }
 function enllacosPropis878305(){try{const l=JSON.parse(localStorage.getItem(lsKey8779(ENLLACOS_KEY878305))||"[]");return Array.isArray(l)?l.filter(x=>x&&String(x.url||"").trim()):[]}catch{return []}}
@@ -2968,7 +2965,7 @@ function EnllacosAjustos878305(){
   return <Card title={t("Enllaços de les obres")} className="enllacos-ajustos-v878305">
     <p className="hint">{t("Surten al Resum de cada obra, amb el Cadastre. A l’adreça pots posar {rc} i es canvia per la referència cadastral de l’obra.")}</p>
     {l.map((x,i)=><div key={i} className="enllac-fila-v878305"><input value={x.nom||""} onChange={e=>ch(i,"nom",e.target.value)} placeholder={t("Nom")}/><input value={x.url||""} onChange={e=>ch(i,"url",e.target.value)} placeholder="https://…" inputMode="url"/><button type="button" className="agent-treure-v878303" onClick={()=>desa(l.filter((_,j)=>j!==i))} aria-label={t("Treure")}><Trash2 size={16}/></button></div>)}
-    <div className="actions-inline"><button type="button" className="secondary" onClick={()=>desa([...l,{nom:"",url:""}])}><Plus/> {t("Afegir enllaç")}</button>{!l.some(x=>/catgi/i.test(String(x.nom||"")+String(x.url||"")))&&<button type="button" className="secondary" onClick={()=>desa([...l,{nom:t("Oficina virtual del CATGI"),url:""}])}><Plus/> {t("Oficina virtual del CATGI")}</button>}</div>
+    <div className="actions-inline"><button type="button" className="secondary" onClick={()=>desa([...l,{nom:"",url:""}])}><Plus/> {t("Afegir enllaç")}</button></div>
   </Card>;
 }
 // V87.268 · Idioma de cada usuari: canvia tota l'app per a aquesta persona (no les dades ni el que veuen els altres).
@@ -9252,15 +9249,47 @@ const CHART_COLORS878252=["var(--co-s1)","var(--co-s2)","var(--co-s3)","var(--co
 //    Documents de l'obra, carpeta de tràmits, amb `tramit878306`) o es marca «No cal»; quan hi són tots, «Tot a punt» i el botó
 //    del tràmit. «Marcar com a presentat» ho apunta (passos878305.presentat).
 // 2) «Llista per no oblidar res»: la de sempre, per consultar; marcar és opcional i no fa avançar res.
+// V87.333 · Encàrrec tècnic (l'Héctor, 21/10/2026: «hauria d'estar millor estructurat i més clarificador, amb títols en negreta i, en
+// apretar, que surti la resta d'informació»; «pujar o no cal no sé si em serveix: millor un checklist i després els enllaços»).
+// Un sol bloc: el progrés, els passos plegables (obert, el primer que falta), els documents del tràmit dins del pas «Tràmit» (es marquen
+// i, si es vol, s'hi adjunta l'arxiu), el botó del tràmit i «Marcar com a presentat», i a sota els enllaços del tràmit i l'ajuda amb IA.
+const ENLLACOS_TRAMIT878333={
+  cedula:[
+    {nom:"Presentar la cèdula (Agència de l’Habitatge)",desc:"Tràmit de la cèdula de segona ocupació",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Cedula-dhabitabilitat-de-segona-ocupacio"},
+    {nom:"Oficina virtual del CATGI",desc:"Visar i registrar; base de dades de cèdules",url:"https://www.catgi.cat/index.php/oficina-virtual"},
+    {nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"},
+    {nom:"Cercador de cèdules",desc:"Si ja en té una i quan caduca",url:"https://agenciahabitatge.gencat.cat/ca/temes/rehabilitacio-i-qualitat-de-ledificacio/control-de-qualitat-dhabitatges/cercador-de-cedules",rc:true}],
+  cee:[
+    {nom:"CE3X",desc:"Programa del certificat (Ministeri, per a Windows)",url:"https://www.miteco.gob.es/es/energia/eficiencia/certificacion-energetica/documentos-reconocidos/procedimientos-certificacion-proyecto-terminados.html"},
+    {nom:"Registrar el certificat (ICAEN)",desc:"Tràmit de registre",url:"https://icaen.gencat.cat/ca/energia/usos_energia/edificis/certificacio/index.html"},
+    {nom:"Cercador de certificats energètics",desc:"Si ja en té un",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"}],
+  amiant:[
+    {nom:"Ajuts per retirar l’amiant",desc:"Agència de Residus",url:"https://residus.gencat.cat/ca/consultes_i_tramits_-_nou/subvencions/amiant/"},
+    {nom:"Amiant: preguntes freqüents",desc:"Agència de Residus",url:"https://residus.gencat.cat/ca/ambits_dactuacio/tipus_de_residu/amiant/ciutadania/preguntes-frequents/"},
+    {nom:"Registre d’empreses amb risc d’amiant (RERA)",desc:"Per a l’empresa que el retiri",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Registre-dEmpreses-amb-Risc-per-Amiant-RERA"}],
+  ite:[]
+};
+// Ajuda amb IA (sense pagar: es copia i s'enganxa a ChatGPT o Claude) per preparar el certificat energètic
+function iaCeePrompt878333(obra={}){
+  const rc=rcNet878305(obra.rc);
+  return [`Soc arquitecte tècnic i he de fer un certificat d’eficiència energètica (CEE) amb el programa CE3X d’un immoble existent a Catalunya.`,
+    `Dades: ${[obra.nom,obra.adreca,obra.poblacio,rc?`referència cadastral ${rc}`:""].filter(Boolean).join(" · ")}.`,
+    `Ajuda’m a preparar-lo, en català i de manera pràctica:`,
+    `1. Amb la referència cadastral (si la pots consultar) o el que t’indiqui, l’any de construcció probable i la zona climàtica de la població segons el CTE.`,
+    `2. Una llista del que he de mirar i fotografiar a la visita per entrar-ho al CE3X (envolupant, finestres, ponts tèrmics, instal·lacions).`,
+    `3. Els valors per defecte o estimats que acostuma a posar el CE3X per a les façanes, la coberta, el terra i les finestres segons l’any de construcció, i quan convé fer servir valors coneguts.`,
+    `4. Les mesures de millora més habituals per a aquest tipus d’immoble, amb el text per posar-les al certificat.`,
+    `Si et falta alguna dada, pregunta-me-la abans.`].join("\n");
+}
 function EncarrecTecnic878306({obra={},data={},setData,readOnly=false}){
   const k=encarrecDe(obra);const ps=data.passos878305||{};
   const e=k?estatPassos(k,ps):null;const dd=k?estatDocs(k,ps,data.documents||[]):null;
-  const[nou,setNou]=useState({});const[nouDoc,setNouDoc]=useState("");const[pujant,setPujant]=useState("");
+  const[nou,setNou]=useState({});const[nouDoc,setNouDoc]=useState("");const[pujant,setPujant]=useState("");const[iaMsg,setIaMsg]=useState("");
   if(!e||!dd)return null;
-  const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({...cur,fets:{...(cur.fets||{})},propis:{...(cur.propis||{})},docsNoCal:{...(cur.docsNoCal||{})},docsPropis:[...(cur.docsPropis||[])]});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
+  const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({...cur,fets:{...(cur.fets||{})},propis:{...(cur.propis||{})},docsNoCal:{...(cur.docsNoCal||{})},docsFets:{...(cur.docsFets||{})},docsPropis:[...(cur.docsPropis||[])]});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
   const toggle=id=>desa(p=>{if(p.fets[id])delete p.fets[id];else p.fets[id]=true;return p});
+  const toggleDoc=doc=>desa(p=>{if(doc.fet){delete p.docsFets[doc.key];delete p.docsNoCal[doc.key]}else p.docsFets[doc.key]=true;return p});
   const afegeix=pk=>{const tx=String(nou[pk]||"").trim();if(!tx)return;desa(p=>{p.propis[pk]=[...(p.propis[pk]||[]),tx];return p});setNou(x=>({...x,[pk]:""}))};
-  const noCal=(key,v)=>desa(p=>{if(v)p.docsNoCal[key]=true;else delete p.docsNoCal[key];return p});
   const afegeixDoc=()=>{const tx=nouDoc.trim();if(!tx)return;desa(p=>{if(!p.docsPropis.includes(tx))p.docsPropis.push(tx);return p});setNouDoc("")};
   const presentat=v=>desa(p=>{if(v)p.presentat=new Date().toISOString();else delete p.presentat;return p});
   async function puja(doc,f){
@@ -9274,30 +9303,36 @@ function EncarrecTecnic878306({obra={},data={},setData,readOnly=false}){
     finally{setPujant("")}
   }
   async function obre(x){const f=await getDocFile(x.id,x.obraId||obra?.id).catch(()=>null);if(f)window.open(URL.createObjectURL(f),"_blank");else alert(t("Aquest document no és en aquest aparell i no s’ha pogut baixar del núvol."))}
-  return <Card title={t(e.nom)} className="encarrec-v878306">
-    <section className="enc-docs-v878306">
-      <header><h4>{t("Documents per presentar")}</h4><span className={`enc-xip-v878306 ${dd.presentat?"presentat":dd.aPunt?"ok":""}`}>{dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("Tot a punt"):t("Falten {n} de {m}",{n:dd.falten,m:dd.total})}</span></header>
-      <ul>{dd.docs.map(doc=><li key={doc.key} className={doc.noCal?"nocal":doc.fet?"fet":""}>
-        <span className="enc-marca-v878306" aria-hidden="true">{doc.fet?"✓":doc.noCal?"–":""}</span>
-        <div className="enc-doc-v878306"><span>{doc.propi?doc.nom:t(doc.nom)}</span>{doc.fitxers.map(x=><button type="button" className="enc-fitxer-v878306" key={x.id} onClick={()=>obre(x)}><Paperclip size={12}/> {x.nom}</button>)}</div>
-        {!readOnly&&<div className="enc-acc-v878306">{doc.noCal?<button type="button" className="enc-link-v878306" onClick={()=>noCal(doc.key,false)}>{t("Cal")}</button>:<>
-          <label className={`secondary enc-puja-v878306 ${pujant===doc.key?"off":""}`}>{pujant===doc.key?t("Desant…"):doc.fet?t("Un altre"):t("Pujar")}<input type="file" disabled={!!pujant} onChange={ev=>{const f=ev.target.files?.[0];ev.target.value="";puja(doc,f)}}/></label>
-          {!doc.fet&&<button type="button" className="enc-link-v878306" onClick={()=>noCal(doc.key,true)}>{t("No cal")}</button>}</>}</div>}
-      </li>)}</ul>
-      {!readOnly&&<div className="passos-afegir-v878305"><input value={nouDoc} onChange={ev=>setNouDoc(ev.target.value)} onKeyDown={ev=>{if(ev.key==="Enter")afegeixDoc()}} placeholder={t("Afegir un document que demanin")}/><button type="button" className="secondary" onClick={afegeixDoc}><Plus/> {t("Afegir")}</button></div>}
-      <div className="enc-tramit-v878306">
-        {dd.url&&<a className={`${dd.aPunt&&!dd.presentat?"primary":"secondary"} enc-tramit-btn-v878306`} href={dd.url} target="_blank" rel="noopener noreferrer">{t(dd.nom)} <ExternalLink size={14}/></a>}
-        {!readOnly&&(dd.presentat?<button type="button" className="enc-link-v878306" onClick={()=>presentat(false)}>{t("Desfer")}</button>:<button type="button" className="secondary" onClick={()=>presentat(true)}>{t("Marcar com a presentat")}</button>)}
-      </div>
-    </section>
-    <section className="enc-llista-v878306">
-      <h4>{t("Llista per no oblidar res")}</h4>
-      {e.passos.map(p=><details key={p.k} open={p.k==="visita"}>
-        <summary><b>{t(p.nom)}</b><small>{p.fet}/{p.total}</small></summary>
-        <ul className="passos-llista-v878305">{p.items.map(it=><li key={it.id}><label><input type="checkbox" checked={!!(ps.fets||{})[it.id]} disabled={readOnly} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label></li>)}</ul>
-        {!readOnly&&<div className="passos-afegir-v878305"><input value={nou[p.k]||""} onChange={ev=>{const v=ev.target.value;setNou(x=>({...x,[p.k]:v}))}} onKeyDown={ev=>{if(ev.key==="Enter")afegeix(p.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(p.k)}><Plus/> {t("Afegir")}</button></div>}
-      </details>)}
-    </section>
+  // els documents del tràmit compten com un pas més (dins de «Tràmit»)
+  const passos=e.passos.map(p=>p.k==="tramit"?{...p,fet:p.fet+dd.total-dd.falten,total:p.total+dd.total,docs:true}:p).map(p=>({...p,complet:p.total>0&&p.fet===p.total}));
+  const fet=passos.reduce((x,p)=>x+p.fet,0),total=passos.reduce((x,p)=>x+p.total,0),pct=total?Math.round(fet/total*100):0;
+  const actual=passos.find(p=>!p.complet)?.k||"";
+  const rc=rcNet878305(obra.rc);
+  const enllacos=(ENLLACOS_TRAMIT878333[k]||[]).map(x=>({...x,url:x.url,copia:x.rc&&rc?rc.slice(0,20):""}));
+  function ia(url,nom){const ok=copyText878256(iaCeePrompt878333(obra));setIaMsg(ok?t("Copiat. A {nom}, enganxa-ho (Ctrl+V) i envia.",{nom}):t("No s’ha pogut copiar."));window.open(url,"_blank","noopener,noreferrer")}
+  const estat=dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("A punt per presentar"):t("{n} de {m} fets",{n:fet,m:total});
+  return <Card title={t(e.nom)} className="encarrec-v878306 encarrec-v878333" action={<span className={`enc-xip-v878306 ${dd.presentat?"presentat":dd.aPunt?"ok":""}`}>{estat}</span>}>
+    <div className="enc-progres-v878333" aria-label={t("{n} de {m} fets",{n:fet,m:total})}><i style={{width:`${pct}%`}}/></div>
+    <div className="enc-passos-v878333">{passos.map((p,i)=><details key={p.k} className={`enc-pas-v878333 ${p.complet?"fet":""} ${p.k===actual?"actual":""}`} open={p.k===actual}>
+      <summary><span className="num" aria-hidden="true">{p.complet?"✓":i+1}</span><b>{t(p.nom)}</b><small>{p.fet}/{p.total}</small></summary>
+      <ul className="enc-items-v878333">{p.items.map(it=><li key={it.id}><label><input type="checkbox" checked={!!(ps.fets||{})[it.id]} disabled={readOnly} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label></li>)}</ul>
+      {p.docs&&<div className="enc-docs-v878333">
+        <h5>{t("Documents per presentar")}</h5>
+        <ul className="enc-items-v878333">{dd.docs.map(doc=><li key={doc.key} className={doc.fet?"fet":""}>
+          <label><input type="checkbox" checked={doc.fet} disabled={readOnly||doc.fitxers.length>0} onChange={()=>toggleDoc(doc)}/><span>{doc.propi?doc.nom:t(doc.nom)}</span></label>
+          {doc.fitxers.map(x=><button type="button" className="enc-fitxer-v878306" key={x.id} onClick={()=>obre(x)}><Paperclip size={12}/> {x.nom}</button>)}
+          {!readOnly&&<label className={`enc-adjunta-v878333 ${pujant===doc.key?"off":""}`} title={t("Adjuntar l’arxiu")}><Paperclip size={14}/><span>{pujant===doc.key?t("Desant…"):t("Adjuntar")}</span><input type="file" disabled={!!pujant} onChange={ev=>{const f=ev.target.files?.[0];ev.target.value="";puja(doc,f)}}/></label>}
+        </li>)}</ul>
+        {!readOnly&&<div className="passos-afegir-v878305"><input value={nouDoc} onChange={ev=>setNouDoc(ev.target.value)} onKeyDown={ev=>{if(ev.key==="Enter")afegeixDoc()}} placeholder={t("Afegir un document que demanin")}/><button type="button" className="secondary" onClick={afegeixDoc}><Plus/> {t("Afegir")}</button></div>}
+        <div className="enc-tramit-v878306">
+          {dd.url&&<a className={`${dd.aPunt&&!dd.presentat?"primary":"secondary"} enc-tramit-btn-v878306`} href={dd.url} target="_blank" rel="noopener noreferrer">{t(dd.nom)} <ExternalLink size={14}/></a>}
+          {!readOnly&&(dd.presentat?<button type="button" className="enc-link-v878306" onClick={()=>presentat(false)}>{t("Desfer")}</button>:<button type="button" className="secondary" onClick={()=>presentat(true)}>{t("Marcar com a presentat")}</button>)}
+        </div>
+      </div>}
+      {!readOnly&&<div className="passos-afegir-v878305"><input value={nou[p.k]||""} onChange={ev=>{const v=ev.target.value;setNou(x=>({...x,[p.k]:v}))}} onKeyDown={ev=>{if(ev.key==="Enter")afegeix(p.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(p.k)}><Plus/> {t("Afegir")}</button></div>}
+    </details>)}</div>
+    {enllacos.length>0&&<div className="enc-enllacos-v878333"><h4>{t("Enllaços del tràmit")}</h4><div className="tiles">{enllacos.map(x=><a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}><b>{t(x.nom)}</b><small>{t(x.desc)}{x.copia?` · ${x.copia}`:""}</small><ExternalLink size={14} aria-hidden="true"/></a>)}</div></div>}
+    {k==="cee"&&!readOnly&&<div className="enc-ia-v878333"><h4>{t("Preparar-lo amb IA")}</h4><div className="botons"><button type="button" className="secondary" onClick={()=>ia("https://chatgpt.com/","ChatGPT")}>{t("Copiar i obrir ChatGPT")}</button><button type="button" className="secondary" onClick={()=>ia("https://claude.ai/new","Claude")}>{t("Copiar i obrir Claude")}</button></div>{iaMsg&&<p className="msg">{iaMsg}</p>}</div>}
   </Card>;
 }
 // V87.306 · Inici: els encàrrecs tècnics oberts segons els documents del tràmit: «Falten documents», «A punt per presentar» i
@@ -9341,7 +9376,7 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
           <div className="lbl"><span>{s.lastN?t("Certificat a origen · C-{n}",{n:s.lastN}):t("Pressupost preparat, sense certificacions")}</span><b>{pct878252(s.executed)}</b></div>
           <div className="track"><i style={{width:`${Math.min(100,s.executed)}%`}}/></div>
           <div className="sub">{t("{a} de {b}",{a:eur0878252(s.certified),b:eur0878252(s.budget)})}</div>
-        </div>:<p className="hint">{t("Aquest expedient encara no té pressupost d’obra.")}</p>}
+        </div>:esTecnicPur878332(obra)?null:<p className="hint">{t("Aquest expedient encara no té pressupost d’obra.")}</p>}
 
       </div>
     </div>
@@ -12942,7 +12977,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.332",
+    app_version:"87.333",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -745,6 +745,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     viatges × €/km (`aco_preu_km_v878332`), taxes (incloses o a part → `taxesIncloses`) i altres; total sense IVA i amb IVA. El pressupost
     es crea amb la base total i un text per al client (abans hi anava la fórmula).
   - Estils: `src/theme-v878332.css`. Prova: `honoraris332test.mjs` (18). `clientsvirtuals` adaptada (Honoraris s’obre a la calculadora).
+- **V87.333 · Encàrrec tècnic més ordenat, enllaços de cada tràmit i ajuda amb IA** (l’Héctor, 21/10/2026: «millor estructurat, amb
+  títols en negreta i que en apretar surti la resta»; «pujar o no cal no em serveix: un checklist i enllaços»; «el CE3X i l’ICAEN»;
+  «MagicPlan, CATGI i gencat per entrar-ho a Habitatge»; «fer algun tràmit amb ajuda de la IA, com un CEE»):
+  - `EncarrecTecnic878306` reescrit (classe `encarrec-v878333`): xip «N de M fets» / «A punt per presentar» / «Presentat el…», barra de
+    progrés i **els 6 passos plegables** (número o ✓, títol en negreta, «fet/total»; obert, el primer que falta). **Els documents per
+    presentar van dins del pas «Tràmit»**: es marquen (`passos878305.docsFets`) i, si es vol, s’hi adjunta l’arxiu (va a Documents, com
+    abans); fora «Pujar» i «No cal» (els «No cal» d’abans compten com a fets: `estatDocs`). El botó del tràmit i «Marcar com a presentat»
+    són al mateix pas.
+  - **Enllaços del tràmit** (`ENLLACOS_TRAMIT878333`, comprovats el 21/10/2026): cèdula → tràmit de segona ocupació, **oficina virtual
+    del CATGI** (`catgi.cat/index.php/oficina-virtual`), MagicPlan i el cercador de cèdules (copia la RC); CEE → **CE3X** (pàgina del
+    Ministeri, `miteco.gob.es/…/procedimientos-certificacion-proyecto-terminados.html`; és per a Windows), registre de l’ICAEN i el cercador
+    de certificats; amiant → ajuts, preguntes freqüents i RERA. Al Resum (a dalt) ja només hi ha el Cadastre i els enllaços propis; a
+    Ajustos ja no hi ha el botó «Oficina virtual del CATGI». La frase «encara no té pressupost d’obra» no surt als encàrrecs tècnics.
+  - **«Preparar-lo amb IA»** (CEE): copia unes instruccions amb les dades de l’immoble (adreça, població, RC) i obre ChatGPT o Claude
+    (`iaCeePrompt878333`; gratuït, com els albarans). La IA directa dins de l’app necessitaria la clau d’Anthropic (de pagament).
+  - **No fet:** avisar si un plànol compleix els mínims de la cèdula (cal que l’Héctor confirmi els mínims del Decret 141/2012 que vol
+    fer servir i passi un plànol exportat de MagicPlan).
+  - Estils: `src/theme-v878333.css`. Prova: `encarrec333test.mjs` (19; substitueix `tecnictest.mjs`). Adaptades `amiant324test` i
+    `clientsvirtuals`.
+  - **Compte en editar proves amb `String.replace`:** si el text nou porta `$'` (p. ex. `'^Desar$'`), JavaScript hi copia la resta del
+    fitxer (va passar el 21/10/2026 amb `clientsvirtuals.mjs`). Fer servir `split/join` o una funció com a substitució.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

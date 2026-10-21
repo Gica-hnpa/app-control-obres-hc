@@ -89,10 +89,11 @@ TRAMITS.amiant = {
 
 export function estatDocs(k, passos = {}, documents = []) {
   const tr = TRAMITS[k]; if (!tr) return null;
-  const noCal = passos.docsNoCal || {};
+  const noCal = passos.docsNoCal || {}, fets = passos.docsFets || {};
   const llista = [...tr.docs.map(([key, nom]) => ({ key, nom })), ...(passos.docsPropis || []).map(nom => ({ key: "p:" + nom, nom, propi: true }))]
-    .map(d => { const fitxers = (documents || []).filter(x => x && x.tramit878306 === d.key); return { ...d, fitxers, fet: fitxers.length > 0, noCal: !!noCal[d.key] }; });
-  const cal = llista.filter(d => !d.noCal), falten = cal.filter(d => !d.fet).length;
+    // V87.333 · un document és fet si s'ha marcat (docsFets), s'hi ha adjuntat l'arxiu o (abans) s'havia marcat «No cal»
+    .map(d => { const fitxers = (documents || []).filter(x => x && x.tramit878306 === d.key); return { ...d, fitxers, fet: fitxers.length > 0 || !!fets[d.key] || !!noCal[d.key], noCal: !!noCal[d.key] }; });
+  const cal = llista, falten = cal.filter(d => !d.fet).length;
   return { nom: tr.nom, url: tr.url, docs: llista, falten, total: cal.length, aPunt: cal.length > 0 && falten === 0, presentat: passos.presentat || null };
 }
 

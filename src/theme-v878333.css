@@ -1,0 +1,48 @@
+/* V87.333 · Encàrrec tècnic: progrés, passos plegables amb títol, documents per marcar, enllaços del tràmit i ajuda amb IA */
+html body .encarrec-v878333 .enc-progres-v878333{height:8px;border-radius:99px;background:var(--co-surface-2);overflow:hidden;margin:0 0 14px}
+html body .encarrec-v878333 .enc-progres-v878333>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#10B981,#059669);transition:width .3s}
+html body .encarrec-v878333 .enc-passos-v878333{display:flex;flex-direction:column;gap:8px}
+html body .encarrec-v878333 .enc-pas-v878333{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);overflow:hidden}
+html body .encarrec-v878333 .enc-pas-v878333[open]{box-shadow:0 2px 10px rgba(15,23,42,.06)}
+html body .encarrec-v878333 .enc-pas-v878333.actual{border-color:var(--co-accent)}
+html body .encarrec-v878333 .enc-pas-v878333>summary{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;list-style:none}
+html body .encarrec-v878333 .enc-pas-v878333>summary::-webkit-details-marker{display:none}
+html body .encarrec-v878333 .enc-pas-v878333>summary::after{content:"⌄";margin-left:4px;color:var(--co-ink-3);font-size:16px;transition:transform .2s}
+html body .encarrec-v878333 .enc-pas-v878333[open]>summary::after{transform:rotate(180deg)}
+html body .encarrec-v878333 .enc-pas-v878333 .num{flex:0 0 auto;width:28px;height:28px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;background:var(--co-surface-2);color:var(--co-ink-2);font:700 13px var(--app-font)}
+html body .encarrec-v878333 .enc-pas-v878333.actual .num{background:var(--co-accent);color:#fff}
+html body .encarrec-v878333 .enc-pas-v878333.fet .num{background:#10B981;color:#fff}
+html body .encarrec-v878333 .enc-pas-v878333>summary b{flex:1 1 auto;font:700 15px var(--app-font);color:var(--co-ink)}
+html body .encarrec-v878333 .enc-pas-v878333.fet>summary b{color:var(--co-ink-2)}
+html body .encarrec-v878333 .enc-pas-v878333>summary small{font-size:12.5px;color:var(--co-ink-3);white-space:nowrap}
+html body .encarrec-v878333 .enc-pas-v878333>:not(summary){margin-left:54px;margin-right:14px}
+html body .encarrec-v878333 .enc-items-v878333{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:2px}
+html body .encarrec-v878333 .enc-items-v878333>li{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;padding:6px 0;border-bottom:1px solid var(--co-line)}
+html body .encarrec-v878333 .enc-items-v878333>li:last-child{border-bottom:0}
+html body .encarrec-v878333 .enc-items-v878333 label{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px;margin:0;cursor:pointer;flex:1 1 220px;min-width:0}
+html body .encarrec-v878333 .enc-items-v878333 input[type=checkbox]{width:18px!important;height:18px;flex:0 0 auto;margin:2px 0 0;accent-color:#10B981}
+html body .encarrec-v878333 .enc-items-v878333 label span{font-size:14px;line-height:1.4;color:var(--co-ink)}
+html body .encarrec-v878333 .enc-items-v878333 input:checked+span{color:var(--co-ink-3);text-decoration:line-through;text-decoration-color:rgba(100,116,139,.5)}
+html body .encarrec-v878333 .enc-docs-v878333{margin-top:4px;padding:10px 12px;border-radius:10px;background:var(--co-surface-2)}
+html body .encarrec-v878333 .enc-docs-v878333 h5{margin:0 0 6px;font:700 13.5px var(--app-font);color:var(--co-ink)}
+html body .encarrec-v878333 .enc-docs-v878333 .enc-items-v878333>li{border-bottom-color:rgba(148,163,184,.3)}
+html body .encarrec-v878333 .enc-adjunta-v878333{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:4px;margin:0;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--co-accent);flex:0 0 auto}
+html body .encarrec-v878333 .enc-adjunta-v878333 input{display:none}
+html body .encarrec-v878333 .enc-adjunta-v878333.off{opacity:.5;pointer-events:none}
+html body .encarrec-v878333 .enc-enllacos-v878333,html body .encarrec-v878333 .enc-ia-v878333{margin-top:16px}
+html body .encarrec-v878333 .enc-enllacos-v878333 h4,html body .encarrec-v878333 .enc-ia-v878333 h4{margin:0 0 8px;font:700 14px var(--app-font);color:var(--co-ink)}
+html body .encarrec-v878333 .enc-enllacos-v878333 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+html body .encarrec-v878333 .enc-enllacos-v878333 .tiles>a{position:relative;display:flex;flex-direction:column;gap:3px;padding:12px 34px 12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);text-decoration:none;color:var(--co-ink)}
+html body .encarrec-v878333 .enc-enllacos-v878333 .tiles>a:hover{background:var(--co-surface-2);border-color:var(--co-accent)}
+html body .encarrec-v878333 .enc-enllacos-v878333 .tiles>a b{font:700 14px var(--app-font)}
+html body .encarrec-v878333 .enc-enllacos-v878333 .tiles>a small{font-size:12.5px;color:var(--co-ink-3);overflow-wrap:anywhere}
+html body .encarrec-v878333 .enc-enllacos-v878333 .tiles>a svg{position:absolute;top:12px;right:12px;color:var(--co-ink-3)}
+html body .encarrec-v878333 .enc-ia-v878333 .botons{display:flex;flex-wrap:wrap;gap:8px}
+html body .encarrec-v878333 .enc-ia-v878333 .msg{margin:8px 0 0;font-size:13px;color:#047857}
+html body .encarrec-v878333{padding-bottom:16px}
+html body .encarrec-v878333>.enc-progres-v878333,html body .encarrec-v878333>.enc-passos-v878333,html body .encarrec-v878333>.enc-enllacos-v878333,html body .encarrec-v878333>.enc-ia-v878333{margin-left:16px;margin-right:16px}
+@media (max-width:767px){
+  html body .encarrec-v878333>.enc-progres-v878333,html body .encarrec-v878333>.enc-passos-v878333,html body .encarrec-v878333>.enc-enllacos-v878333,html body .encarrec-v878333>.enc-ia-v878333{margin-left:10px;margin-right:10px}
+  html body .encarrec-v878333 .enc-pas-v878333>:not(summary){margin-left:14px}
+  html body .encarrec-v878333 .enc-enllacos-v878333 .tiles{grid-template-columns:minmax(0,1fr)}
+}
