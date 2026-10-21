@@ -56,7 +56,33 @@ capítol) · Hores.
 - Arreglat de pas: en omplir un compte de prova amb dades d’exemple, les obres que ja li havien compartit s’esborraven.
 - Prova: `tools/proves/constructor336test.mjs` (24).
 
-### Tanda 2 · el paquet «Empresa» (pendent)
+### Tanda 2 · Facturació, despeses i rendiment (V87.337–338; l’Héctor, 21/10/2026 a la nit)
+
+- **V87.337 · Facturació:**
+  - **Sèrie de factures de l’empresa** (`F2026-001`…; la sèrie es pot canviar a «Fer factura»; el número següent mira totes les
+    factures, també les de les obres compartides) i **l’empresa com a emissora** dels documents (Ajustos › **Dades de l’empresa**: nom
+    fiscal, CIF, adreça, telèfon, correu, IBAN i logo). Si falten el CIF o l’adreça, «Fer factura» els demana.
+  - **«Fer factura» a la certificació** (al costat de «PDF» i «Enviar»); amb la factura feta, la certificació diu «Factura F…».
+    L’IVA i la retenció es trien a «Fer factura».
+  - **Facturació (menú):** «Factures» en ordre numèric amb filtre per any, obra i cobrament («Pendent de cobrar» / «Cobrada» amb la
+    data), totals i **Exportar Excel** per a la gestoria; «Per facturar»: les certificacions sense factura, amb «Fer factura» i «Ja
+    facturada fora de l’app».
+  - **Enviar per correu** (certificació, factura, pressupost): el client, les seves persones de contacte, el promotor i els agents de
+    l’obra amb correu, o una adreça escrita; s’obre el correu de l’aparell (o Gmail). El PDF s’ha d’adjuntar a mà: per enviar-lo sol
+    caldria un servei de correu al servidor (pendent de decidir).
+  - **Arreglat:** a les obres amb dos pressupostos (Verbania, Maricel), cada proforma sumava les partides de tots dos (la Cert. 1 de
+    Verbania sortia amb 60.209 € en lloc de 34.852 € i 25.356 €).
+  - Quan hi hagi VeriFactu: la proforma (la certificació) i després «Emetre» amb VeriFactu; la factura surt al mateix llistat.
+- **V87.338 · Despeses i rendiment:**
+  - **Despeses:** requadres Factures de material · Factures d’industrials · Albarans · Despeses de l’empresa (filtren); tipus nou
+    **«Despesa de l’empresa»** (sense obra, amb categoria: personal, lloguers, vehicles, maquinària, assegurances, gestoria,
+    subministraments, oficina, altres DGE); **Exportar Excel**.
+  - **Rendiment de l’obra:** certificat a origen − despeses = benefici, en € i en % de benefici industrial (i sobre el cost); el
+    facturat i el pressupost, com a referència (si només s’ha facturat una part, el rendiment no surt en negatiu). A sota, el cost
+    per capítol.
+  - **Facturació › Rendiment:** totes les obres per any (ingressos, despeses, benefici, %), les despeses de l’empresa i el resultat.
+
+### Tanda 3 · el paquet «Empresa» (pendent)
 
 - **Dades de l’empresa:** nom, CIF, adreça, logo… (ara són a Ajustos).
 - **Documentació general:** REA, documentació dels treballadors (formació, aptituds mèdiques, EPI), assegurances, amb dates de
@@ -64,15 +90,13 @@ capítol) · Hores.
 - **Treballadors:** nom, ofici, **cost per hora** (es pot canviar per obra).
 - **Industrials:** els de Contactes, amb la seva documentació.
 
-### Tanda 3 · despeses, hores i rendiment (pendent)
+### Tanda 4 · personal propi (pendent)
 
-- **Despeses:** factures de material, factures d’industrials i **cost del personal propi**.
-- **Hores de la constructora:** per dies, les hores de cada treballador a cada obra × el cost per hora (de l’empresa o de l’obra).
-  Potser dins de Despeses (com a personal).
-- **Rendiment:** el principal és **facturat / certificat − total de despeses**; el pressupost, com a referència.
+- **Cost del personal propi a les obres:** per dies, les hores de cada treballador a cada obra × el cost per hora (de l’empresa o de
+  l’obra). Potser dins de Despeses (com a personal); entraria al Rendiment de l’obra.
 - **Fitxatge del personal:** estudiar si és viable lligar-lo (argument de venda).
 
-### Tanda 4 · Planning (pendent)
+### Tanda 5 · Planning (pendent)
 
 - Un Gantt de debò: data d’inici, durada, **vinculacions** (en acabar una, començar l’altra; començar-ne una 2 dies abans que acabi
   l’altra), **colles** i industrials assignats. Necessita primer els treballadors de l’empresa (tanda 2).

@@ -803,6 +803,35 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - `omplenaDemo878328` ja no esborra les obres compartides que el compte ja tenia.
     - Estils: `src/theme-v878336.css`. Prova: `constructor336test.mjs` (24; l’obra compartida es posa amb un POST a `aco_shared`
       del Supabase de proves amb `Bearer tok-<id de l’Héctor>`).
+  - **V87.337 (facturació):**
+    - **Comptes d’empresa amb el mòdul Obra** (`esEmpresaFactura878337`): sèrie de factures de l’empresa
+      (`aco_empresa_v878259.facturacio878337 = {prefix, auto, digits, propers:{[prefix]:n}}`; de sèrie `F<any>-`, que canvia sol
+      d’any si no s’ha tocat) i l’empresa com a **emissora** de tots els documents (`emissorDoc878337` dins
+      d’`issuerFiscalBlockHtml87100` i `issuerFiscalName87100`; sense logo no surt el requadre «LOGO»). Dades a Ajustos ›
+      `DadesEmpresa878337` (`fiscal`, `nif`, `carrer`, `codiPostal`, `poblacio`, `provincia`, `telefon`, `email`, `iban`; logo a
+      `aco_logos_contactes_v878315` amb la clau `client:empresa`). Amb IBAN, la factura diu la forma de pagament (`pagament878337`).
+      El compte de l’Héctor continua amb la sèrie de cada client (V87.297).
+    - `FerFactura878297` reescrit: sèrie de l’empresa (editable) o del client, IVA i retenció (es desen a `factParams` de la
+      certificació), dades de l’empresa si falten; la factura porta `serieEmpresa`, `prefix`, `budgetId`. `facturesEmpresa878337`
+      (totes les factures, també de les obres compartides) evita repetir números.
+    - **Proformes per pressupost** (`proformesObra878337`, ara també a `Fact`): abans `Fact` calculava cada proforma amb les partides
+      de tots els pressupostos de l’obra. `calcPf878337`, `paramsPf878337` (IVA/retenció de cada certificació, amb els d’abans del
+      17/10), `docFactura878337` (el PDF de la factura).
+    - `Cert` rep `obra`, `client`, `setClients`, `obraData`, `setObraData` (les factures són de l’obra sencera: el `setData` del
+      pressupost triat, `mergeBudgetData8786`, **no desa** les claus que no són partides, certificacions…). Barra: «Editar
+      certificació»; «PDF» (abans «Imprimir») · «Enviar» · «Fer factura» / «Factura F…» · «⋯» («+ Afegir feina» quan no s’edita).
+    - **Facturació (menú) de l’empresa** (`FacturacioEmpresa878337`): «Factures» (ordre numèric; any, obra, cobrament; `cobrada`,
+      `dataCobrament` a cada factura; Excel), «Per facturar» (`factParams[certId].fora` = facturada fora de l’app) i «Honoraris»
+      (només amb el mòdul Tècnic: la pantalla d’abans). El compte de l’Héctor continua amb `FacturesGeneral8738`.
+    - **Correu** (`EmailModal`, `draftCorreu878337`): client (i persones de contacte), promotor i agents de l’obra amb correu, o una
+      adreça escrita; `mailto:` (correu de l’aparell) o Gmail. Pressupost: «Enviar» a la vista (fora de «⋯»).
+    - Estils: `src/theme-v878337.css`. Prova: `facturacio337test.mjs` (30). `menustest` busca «PDF» a les certificacions.
+  - **V87.338 (despeses i rendiment):** tipus de despesa `Empresa` (sense obra, `categoria` de `CATEGORIES_EMPRESA878338`;
+    `ambEmpresa878338`), requadres `GRUPS_DESPESA878338` que filtren, noms `etTipusDespesa878338` («Factura d’industrial» és
+    `Subcontracta`), Excel. **Rendiment:** `rendimentObra878339` / `RendimentObra878339` (a dalt del Rendiment de l’obra; certificat a
+    origen − despeses = benefici; el facturat, a sota; % sobre ingressos i sobre cost) i `RendimentEmpresa878339`
+    (Facturació › Rendiment, per any, amb les despeses de l’empresa i el resultat). `CostRealObra878312` es queda amb el cost per
+    capítol. Prova: `despesesrend338test.mjs`.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
