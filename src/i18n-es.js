@@ -3439,4 +3439,9 @@ export default {
   "Visats, llicències i taxes": "Visados, licencias y tasas",
   "Material, fotocòpies i impressions": "Material, fotocopias e impresiones",
   "Aparcament, peatges, missatgeria…": "Aparcamiento, peajes, mensajería…",
+  "Nota de veu a l’agenda": "Nota de voz a la agenda",
+  "Motiu": "Motivo",
+  "Posar-ho a l’agenda": "Ponerlo en la agenda",
+  "Nota de veu": "Nota de voz",
+  "A l’agenda:": "En la agenda:",
 };

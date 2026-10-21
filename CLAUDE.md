@@ -707,6 +707,16 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     a dins, per expedient. També «Per data» i «Per expedient».
   - Estils: `src/theme-v878329.css`. Prova: `despeses329test.mjs` (30; substitueix `despeses323test`). Adaptades `menutecnictest`,
     `revisio2test`, `clientsvirtuals` i `albaranstest`.
+- **Nota de veu a l’agenda** (V87.330, l’Héctor 21/10/2026: «una nota de veu que el dia, l’hora i el motiu de la nota o la visita es
+  posi directament a l’agenda sincronitzada… i un accés ràpid a l’Inici»):
+  - `VeuCita878294` es diu «Nota de veu a l’agenda», ensenya també el **motiu** (`titol` de `parseCita`) i té **«Posar-ho a
+    l’agenda»** (`onDirecte`): l’Agenda la desa sense passar per la fitxa (`saveFromVoice` → `save`), s’hi posa el dia i surt l’avís
+    `veu-fet-v878330` («A l’agenda: … · Obrir»). «Revisar i desar» continua obrint la fitxa. El botó de l’Agenda es diu «Nota de veu».
+  - **Inici** (i Inici del treballador): botó «Nota de veu a l’agenda» a la capçalera; posa `window.__acoVeuAgenda878330` i obre
+    l’Agenda, que obre sola la finestra.
+  - **Google Calendar al moment:** `gcSoon` cridava el `gcSync` d’abans de desar (amb l’`odata` vell): una cita nova d’una obra no
+    arribava al Google fins a la sincronització següent. Ara el temporitzador crida el `gcSync` de l’últim dibuix (`gcSyncRef`).
+  - Estils: `src/theme-v878330.css`. Prova: `veuagenda330test.mjs` (17, amb el Google simulat). `veutest` adaptada al nom nou.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

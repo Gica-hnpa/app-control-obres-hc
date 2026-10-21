@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.329";
+const APP_VERSION878264="87.330";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6624,7 +6624,7 @@ function IniciTreballador878327({obres=[],odata={},events=[],setScreen,openObra,
   const fh=h=>`${(Math.round(h*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} h`;
   const cita=e=><button type="button" key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||t("Cita")}</b><span>{fmtEventDate878136(e)} · {e.hora||t("Hora pendent")}</span>{e.obra&&<em>{e.obra}</em>}</button>;
   return <div className="inici-treb-v878327">
-    <header><span>{now.toLocaleDateString(loc878272(),{weekday:'long',day:'numeric',month:'long'})}</span><h1>{t("La feina d’avui")}</h1></header>
+    <header><span>{now.toLocaleDateString(loc878272(),{weekday:'long',day:'numeric',month:'long'})}</span><h1>{t("La feina d’avui")}</h1><button type="button" className="veu-inici-v878330" onClick={()=>{window.__acoVeuAgenda878330=true;setScreen("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button></header>
     <div className="kpis"><button type="button" onClick={()=>setScreen("Traça")}><small>{t("Hores d’avui")}</small><b>{fh(hAvui)}</b></button><button type="button" onClick={()=>setScreen("Traça")}><small>{t("Aquesta setmana")}</small><b>{fh(hSetm)}</b></button><button type="button" onClick={()=>setScreen("Treballs / Expedients")}><small>{t("Obres en curs")}</small><b>{meves.length}</b></button></div>
     <Card title={t("Avui")}><div className="upcoming-list-v878138 upcoming-list-v878140">{avuiEv.length?avuiEv.map(cita):<p>{t("Avui no hi ha cap cita.")}</p>}</div>{properes.length>0&&<><h4 className="proximes">{t("Pròximes cites")}</h4><div className="upcoming-list-v878138 upcoming-list-v878140">{properes.map(cita)}</div></>}</Card>
     <Card title={t("Feines pendents")}><div className="task-list-v878327">{tasks.length?tasks.map(({obra,task})=>{const to=taskDeadlineTone878140(task);const dies=diesTasca878314(task);return <button type="button" key={obra.id+task.id} className={`tasca-v878321 ${to}`} onClick={()=>openObraTab?.(obra.id,'Agenda / Avisos')}>{dies&&<em className={`dies-v878321 ${to}`}>{dies}</em>}<b>{task.text||t("Tasca pendent")}</b><span>{obra.nom}</span></button>}):<p>{t("No hi ha feines pendents.")}</p>}</div></Card>
@@ -6856,6 +6856,7 @@ function HomeHeader878251({obres=[],tasks=[],properes=[],todayLabel="",setScreen
     <div className="home-head-title-v878251">
       <span>{todayLabel}</span>
       <h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1>
+      <button type="button" className="veu-inici-v878330" onClick={()=>{window.__acoVeuAgenda878330=true;setScreen?.("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button>
       {(vencudes||properes.length)?<p>{vencudes?<b className="late">{vencudes===1?t("1 tasca vençuda"):t("{n} tasques vençudes",{n:vencudes})}</b>:null}{vencudes&&properes.length?" · ":""}{properes.length?(properes.length===1?t("1 cita propera"):t("{n} cites properes",{n:properes.length})):""}</p>:null}
     </div>
     <div className="home-kpis-v878251 home-kpis-v878314">
@@ -12873,7 +12874,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.329",
+    app_version:"87.330",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -14357,12 +14358,12 @@ function layoutDay878256(list){
 
 // V87.294 · Cita per veu: es diu (o s'escriu) la cita com es diria i s'obre la fitxa de la cita ja omplerta per revisar-la.
 // Entén el dia, l'hora (també «dos quarts de deu»), el tipus i l'obra (src/citaVeu.js). No desa res sense revisar.
-function VeuCita878294({obres=[],clients=[],close,onDone}){
+function VeuCita878294({obres=[],clients=[],close,onDone,onDirecte}){
   const[text,setText]=useState("");
   const llista=useMemo(()=>(obres||[]).map(o=>({id:o.id,nom:o.nom,clientNom:(clients||[]).find(c=>c.id===o.client)?.nom||o.clientNomCompartit||""})),[obres,clients]);
   const p=text.trim()?parseCita(text,{obres:llista}):null;
   const dia=p?.data?new Date(p.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"}):t("Avui (no l’has dit)");
-  return <Modal title={t("Cita per veu")} close={close}><div className="veu-cita-v878294">
+  return <Modal title={t("Nota de veu a l’agenda")} close={close}><div className="veu-cita-v878294">
     <p className="veu-ajuda-v878294">{t("Digues la cita com la diries, per exemple: «Dimarts a dos quarts de deu visita a Verbania». També la pots escriure.")}</p>
     <textarea value={text} onChange={e=>setText(e.target.value)} rows={3} placeholder={t("Dimarts a les 10 visita a …")} aria-label={t("Cita")}/>
     <DictatActa878263 value={text} onChange={setText}/>
@@ -14371,8 +14372,9 @@ function VeuCita878294({obres=[],clients=[],close,onDone}){
       <span><small>{t("Hora")}</small>{p.hora?`${p.hora} – ${p.horaFi}`:t("Tot el dia")}</span>
       <span><small>{t("Tipus")}</small>{t(p.tipus)}</span>
       <span><small>{t("Obra")}</small>{p.obraNom||t("Cap (la pots triar a la cita)")}</span>
+      <span><small>{t("Motiu")}</small>{p.titol||t(p.tipus)}</span>
     </div>}
-    <div className="actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!p} onClick={()=>onDone(p)}>{t("Revisar i desar")}</button></div>
+    <div className="actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className={onDirecte?"secondary":"primary"} disabled={!p} onClick={()=>onDone(p)}>{t("Revisar i desar")}</button>{onDirecte&&<button type="button" className="primary" disabled={!p} onClick={()=>onDirecte(p)}>{t("Posar-ho a l’agenda")}</button>}</div>
   </div></Modal>;
 }
 function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,readOnly=false}){
@@ -14417,11 +14419,24 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     setForm({id:"",isNew:true,data:iso||todayIso,hora,horaFi:minToHm878256(s+60),allDay:false,title:"",tipus:"Visita d’obra",obraId:obraF||"",adreca:"",detail:"",avis:"",compta:true});
   }
   const[veu,setVeu]=useState(false);
+  // V87.330 · des de l'Inici («Nota de veu a l'agenda») l'Agenda s'obre amb la finestra de la veu
+  useEffect(()=>{if(window.__acoVeuAgenda878330){window.__acoVeuAgenda878330=false;if(!readOnly)setVeu(true)}},[]);
+  const[fetVeu,setFetVeu]=useState(null);
   // V87.294 · la cita dita per veu: la fitxa ja omplerta (sense hora → tot el dia); es revisa i es desa com sempre
   function openFromVoice(p){
     if(readOnly||!p)return;
     const hora=p.hora||"09:00",s=hmToMin878256(hora)??540;
     setForm({id:"",isNew:true,data:p.data||(view==="dia"?isoDay878255(cursor):todayIso),hora,horaFi:p.horaFi||minToHm878256(s+60),allDay:!p.hora,title:p.titol||p.tipus,tipus:p.tipus,obraId:p.obraId||obraF||"",adreca:"",detail:p.text,avis:"",compta:!!p.hora&&(AGENDA_TYPES878256.find(x=>x.k===p.tipus)?.hours??true)});
+  }
+  // V87.330 · Nota de veu a l'agenda (l'Héctor, 21/10/2026: «que el dia, l'hora i el motiu es posin directament a l'agenda
+  // sincronitzada»): es desa sense passar per la fitxa (la del Google Calendar es posa al dia com en desar qualsevol cita)
+  function saveFromVoice(p){
+    if(readOnly||!p)return;
+    const hora=p.hora||"09:00",s=hmToMin878256(hora)??540,id="ag-"+Date.now();
+    const f={id,isNew:true,data:p.data||todayIso,hora,horaFi:p.horaFi||minToHm878256(s+60),allDay:!p.hora,title:p.titol||i18nT(p.tipus),tipus:p.tipus,obraId:p.obraId||obraF||"",adreca:"",detail:p.text,avis:"",compta:!!p.hora&&(AGENDA_TYPES878256.find(x=>x.k===p.tipus)?.hours??true)};
+    save(f);
+    const d=new Date(f.data+"T00:00:00");if(!isNaN(d))setCursor(d);
+    setFetVeu({id,title:f.title,data:f.data,hora:f.allDay?"":f.hora,obra:p.obraNom||""});
   }
   // V87.295 · Google Calendar: totes les cites pròpies (no les tasques, ni les automàtiques, ni les de les obres que ens han
   // compartit altres comptes) van al calendari «Control d'Obres» i el que es canvia allà torna aquí (src/googleCal.js).
@@ -14443,7 +14458,10 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
       setGc({on:true,busy:false,last:new Date().toISOString(),err:"",primary,out:res.out});
     }catch(e){setGc(s=>({...s,busy:false,on:gcalConnected(),err:e?.relogin?"":(e?.message||String(e))}))}
   }
-  function gcSoon(){if(!gcalConnected())return;clearTimeout(gcTimer.current);gcTimer.current=setTimeout(gcSync,1500)}
+  // V87.330 · al cap d'1,5 s s'envia amb les dades d'aquell moment (abans, amb les d'abans de desar: una cita nova d'una obra no
+  // arribava al Google fins a la sincronització següent)
+  const gcSyncRef=useRef(null);gcSyncRef.current=gcSync;
+  function gcSoon(){if(!gcalConnected())return;clearTimeout(gcTimer.current);gcTimer.current=setTimeout(()=>gcSyncRef.current?.(),1500)}
   useEffect(()=>{if(gcalConnected())gcSync();return()=>clearTimeout(gcTimer.current)},[]);
   async function gcConnect(){try{await gcalConnect();setGc(s=>({...s,on:true,err:""}));await gcSync()}catch(e){setGc(s=>({...s,on:false,err:e?.message||String(e)}))}}
   function openEvent(e){
@@ -14561,11 +14579,12 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
       </div>
       <div className="ag-tools">
         <div className="seg">{[["dia","Dia"],["setmana","Setmana"],["mes","Mes"],["llista","Llista"]].map(([k,l])=><button type="button" key={k} aria-pressed={view===k} onClick={()=>setView(k)}>{i18nT(l)}</button>)}</div>
-        {!readOnly&&<button type="button" className="secondary ag-veu-v878294" onClick={()=>setVeu(true)} title={i18nT("Cita per veu")}><Mic size={16} aria-hidden="true"/> {i18nT("Per veu")}</button>}
+        {!readOnly&&<button type="button" className="secondary ag-veu-v878294" onClick={()=>setVeu(true)} title={i18nT("Nota de veu a l’agenda")}><Mic size={16} aria-hidden="true"/> {i18nT("Nota de veu")}</button>}
         {!readOnly&&<button type="button" className="primary" onClick={()=>openNew(view==="dia"?isoDay878255(cursor):todayIso)}>{i18nT("+ Nova cita")}</button>}
       </div>
     </div>
-    {veu&&<VeuCita878294 obres={safeObres} clients={clients} close={()=>setVeu(false)} onDone={p=>{setVeu(false);openFromVoice(p)}}/>}
+    {veu&&<VeuCita878294 obres={safeObres} clients={clients} close={()=>setVeu(false)} onDone={p=>{setVeu(false);openFromVoice(p)}} onDirecte={p=>{setVeu(false);saveFromVoice(p)}}/>}
+    {fetVeu&&<div className="veu-fet-v878330" role="status"><span>✓ <b>{t("A l’agenda:")}</b> {new Date(fetVeu.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"})}{fetVeu.hora?` · ${fetVeu.hora}`:""} · {fetVeu.title}{fetVeu.obra?` · ${fetVeu.obra}`:""}</span><button type="button" className="link" onClick={()=>{const e=all.find(x=>String(x.id)===fetVeu.id);setFetVeu(null);if(e)openEvent(e)}}>{t("Obrir")}</button><button type="button" className="tanca" aria-label={t("Tancar")} onClick={()=>setFetVeu(null)}>×</button></div>}
     <div className="ag-sub">
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Filtrar per expedient")}><option value="">{i18nT(etPaquet878327("Tots els expedients"))}</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les tasques")}</label>

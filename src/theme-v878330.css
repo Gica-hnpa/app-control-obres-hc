@@ -1,0 +1,12 @@
+/* V87.330 · Nota de veu a l'agenda: accés ràpid a l'Inici i avís quan ja s'ha posat a l'agenda */
+html body .veu-inici-v878330{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:9px 16px;border:0;border-radius:99px;background:var(--co-accent);color:#fff;font:600 14px var(--app-font);cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,.25);white-space:nowrap}
+html body .veu-inici-v878330:hover{filter:brightness(1.06)}
+html body .veu-inici-v878330:focus-visible{outline:2px solid var(--co-accent);outline-offset:3px}
+html body .veu-inici-v878330 svg{width:16px;height:16px;flex:0 0 auto}
+html body .inici-treb-v878327>header .veu-inici-v878330{margin-top:8px}
+html body .veu-fet-v878330{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 14px;border-radius:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.35);color:#065F46;font-size:14px}
+html body .veu-fet-v878330>span{flex:1 1 240px;min-width:0;overflow-wrap:anywhere}
+html body .veu-fet-v878330 .link{font-weight:600}
+html body .veu-fet-v878330 .tanca{all:unset;cursor:pointer;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;font-size:20px;line-height:1;color:#065F46}
+html body .veu-fet-v878330 .tanca:hover{background:rgba(16,185,129,.15)}
+html body .veu-cita-v878294 .actions{flex-wrap:wrap}
