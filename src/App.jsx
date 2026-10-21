@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.334";
+const APP_VERSION878264="87.335";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6692,7 +6692,7 @@ function IniciTreballador878327({obres=[],odata={},events=[],setScreen,openObra,
   const fh=h=>`${(Math.round(h*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} h`;
   const cita=e=><button type="button" key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||t("Cita")}</b><span>{fmtEventDate878136(e)} · {e.hora||t("Hora pendent")}</span>{e.obra&&<em>{e.obra}</em>}</button>;
   return <div className="inici-treb-v878327">
-    <header><span>{now.toLocaleDateString(loc878272(),{weekday:'long',day:'numeric',month:'long'})}</span><h1>{t("La feina d’avui")}</h1><button type="button" className="veu-inici-v878330" onClick={()=>{if(gcalPotReconnectar())gcalConnect().catch(()=>{});window.__acoVeuAgenda878330=true;setScreen("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button></header>
+    <header><span>{now.toLocaleDateString(loc878272(),{weekday:'long',day:'numeric',month:'long'})}</span><h1>{t("La feina d’avui")}</h1><button type="button" className="veu-inici-v878330" onClick={()=>{window.__acoVeuAgenda878330=true;setScreen("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button></header>
     <div className="kpis"><button type="button" onClick={()=>setScreen("Traça")}><small>{t("Hores d’avui")}</small><b>{fh(hAvui)}</b></button><button type="button" onClick={()=>setScreen("Traça")}><small>{t("Aquesta setmana")}</small><b>{fh(hSetm)}</b></button><button type="button" onClick={()=>setScreen("Treballs / Expedients")}><small>{t("Obres en curs")}</small><b>{meves.length}</b></button></div>
     <Card title={t("Avui")}><div className="upcoming-list-v878138 upcoming-list-v878140">{avuiEv.length?avuiEv.map(cita):<p>{t("Avui no hi ha cap cita.")}</p>}</div>{properes.length>0&&<><h4 className="proximes">{t("Pròximes cites")}</h4><div className="upcoming-list-v878138 upcoming-list-v878140">{properes.map(cita)}</div></>}</Card>
     <Card title={t("Feines pendents")}><div className="task-list-v878327">{tasks.length?tasks.map(({obra,task})=>{const to=taskDeadlineTone878140(task);const dies=diesTasca878314(task);return <button type="button" key={obra.id+task.id} className={`tasca-v878321 ${to}`} onClick={()=>openObraTab?.(obra.id,'Agenda / Avisos')}>{dies&&<em className={`dies-v878321 ${to}`}>{dies}</em>}<b>{task.text||t("Tasca pendent")}</b><span>{obra.nom}</span></button>}):<p>{t("No hi ha feines pendents.")}</p>}</div></Card>
@@ -6924,7 +6924,7 @@ function HomeHeader878251({obres=[],tasks=[],properes=[],todayLabel="",setScreen
     <div className="home-head-title-v878251">
       <span>{todayLabel}</span>
       <h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1>
-      <button type="button" className="veu-inici-v878330" onPointerEnter={()=>{if(gcalPotReconnectar())gcalPrepara()}} onClick={()=>{if(gcalPotReconnectar())gcalConnect().catch(()=>{});window.__acoVeuAgenda878330=true;setScreen?.("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button>
+      <button type="button" className="veu-inici-v878330" onClick={()=>{window.__acoVeuAgenda878330=true;setScreen?.("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button>
       {(vencudes||properes.length)?<p>{vencudes?<b className="late">{vencudes===1?t("1 tasca vençuda"):t("{n} tasques vençudes",{n:vencudes})}</b>:null}{vencudes&&properes.length?" · ":""}{properes.length?(properes.length===1?t("1 cita propera"):t("{n} cites properes",{n:properes.length})):""}</p>:null}
     </div>
     <div className="home-kpis-v878251 home-kpis-v878314">
@@ -12980,7 +12980,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.334",
+    app_version:"87.335",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -14585,7 +14585,15 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     if(readOnly||!gcalConfigured())return;
     try{const st=JSON.parse(localStorage.getItem(lsKey8779("aco_google_cal_v878295"))||"{}");if(st?.calendarId)gcalRecorda()}catch{}
     if(gcalPotReconnectar())gcalPrepara();
-    const toc=()=>{if(gcalPotReconnectar())gcalConnect().catch(()=>{})};
+    // V87.335 · només a l'ordinador (amb ratolí), un sol cop per vegada, i mai dins d'una finestra ni en tocar «Nota de veu»: la finestra de
+    // Google gasta el toc i, al mòbil, el navegador ja no deixava engegar el micròfon. Al mòbil i a l'iPad, el botó «Connectar» (un toc).
+    let provat=false;
+    const toc=e=>{
+      if(provat||!gcalPotReconnectar())return;
+      if(!window.matchMedia?.("(hover:hover) and (pointer:fine)")?.matches)return;
+      if(e.target?.closest?.(".modal,.modal-backdrop,.ag-veu-v878294,.veu-cita-v878294"))return;
+      provat=true;gcalConnect().catch(()=>{});
+    };
     const ja=()=>{setGc(s=>({...s,on:true,err:""}));gcSyncRef.current?.()};
     document.addEventListener("click",toc,true);window.addEventListener("aco-google-connectat",ja);
     return()=>{document.removeEventListener("click",toc,true);window.removeEventListener("aco-google-connectat",ja)};

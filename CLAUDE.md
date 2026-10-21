@@ -773,6 +773,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - Els encàrrecs tècnics (`TECNIC_PUR878332`) **ja no tenen mai** el pressupost d’obra (Pressupost, Amidaments, Certificacions,
     Facturació d’obra, Rendiment d’obra, Planning), encara que tinguin partides (la V87.332 els el deixava si en tenien); les dades es
     queden. `honoraris332test` (20).
+- **V87.335 · El micròfon torna a funcionar al mòbil** (l’Héctor, 21/10/2026: «em demana permís pel micròfon i no em deixa dictar»):
+  la reconnexió automàtica del Google (V87.331) obria la finestra de Google en el mateix toc de «Nota de veu» / «Dictar», i el navegador
+  ja no deixava engegar el micròfon. Ara només es fa **a l’ordinador** (`(hover:hover) and (pointer:fine)`), un sol cop per vegada i mai
+  dins d’una finestra ni en tocar «Nota de veu»; el botó «Nota de veu a l’agenda» de l’Inici ja no la fa. Al mòbil i a l’iPad, el botó
+  «Connectar amb Google Calendar» (un toc). `v331test` (17, amb el mòbil tàctil i el dictat simulat).
+  - Una «nota» que surt al calendari de l’iPhone amb un **cercle blau** i només l’hora d’inici (que en tocar-la obre Recordatoris) és un
+    **recordatori d’Apple** (Siri o el teclat), no una cita de l’app: les de l’app van al calendari «Control d’Obres» amb inici i final.
   - **Compte en editar proves amb `String.replace`:** si el text nou porta `$'` (p. ex. `'^Desar$'`), JavaScript hi copia la resta del
     fitxer (va passar el 21/10/2026 amb `clientsvirtuals.mjs`). Fer servir `split/join` o una funció com a substitució.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
