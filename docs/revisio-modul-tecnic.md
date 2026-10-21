@@ -132,6 +132,13 @@ tanda està decidida). Després es farà el mateix amb els altres mòduls.
   Fet: encàrrec «Amiant (localització i diagnosi)».
 - **MagicPlan**, sobretot: falta un plànol exportat per estudiar-lo.
 
+## Perfils i comptes de prova (21/10/2026, nit) — fet a la V87.326
+
+- «Prepara’m una versió amb un usuari i contrasenya inventat per cadascun dels perfils segons els mòduls: tècnic normal,
+  constructor, gestió total i treballador d’empresa.» Fet: quatre perfils (menús i pestanyes segons la taula 10.4), el perfil
+  treballador (decisions del 18/10) i quatre comptes de prova amb dades d’exemple. Usuaris i contrasenyes:
+  `GUIES_USUARIS\COMPTES_DE_PROVA.txt` (s’han de crear a Supabase).
+
 ## Següent
 
 Expedients (dins de l’expedient) · Preus · Facturació · Agenda · Ajustos i, dins de l’expedient, Fitxa (Resum, Dades i agents, Documents,

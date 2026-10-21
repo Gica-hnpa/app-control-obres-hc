@@ -640,6 +640,35 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     Generalitat** (redirigeix a una empresa): no posar-lo. Prova: `amiant324test.mjs` (10).
   - **MagicPlan**: la bústia era buida el 21/10/2026 i a l’ordinador només hi ha la factura de la subscripció; per llegir-ne els
     plànols cal un plànol exportat (PDF i, si en surt, l’Excel o CSV de les estances).
+  - **V87.325:** a les cèdules, enllaç al **cercador de cèdules de l’Agència de l’Habitatge** amb la referència cadastral (en obrir-lo
+    queda copiada per enganxar-la; la pàgina no es pot omplir des de fora). El 21/10/2026 el servei de la Generalitat responia
+    amb error (400) i la pàgina deia «0 resultats»: no vol dir que no hi hagi cèdula.
+- **Perfils, treballador i comptes de prova (V87.326, l’Héctor 21/10/2026: «una versió amb un usuari i contrasenya inventat per
+  cadascun dels perfils segons els mòduls: tècnic normal, constructor, gestió total i treballador d’empresa»):**
+  - **Perfils** (`PERFILS878326`, `moduls878326`, `teModul878326`, `esTreballador878326`, `diuObra878326`), al camp `perfil` de
+    `aco_empresa_v878259`: `tecnic` (mòdul Tècnic) · `constructor` (Obra + Empresa) · `complet` («Gestió total», els tres) ·
+    `treballador` (operari). **El compte de l’Héctor (sense perfil d’empresa) ho té tot, com fins ara.** `hasModule2Access8747`: als
+    comptes d’empresa, el mòdul Obra el dona el perfil (abans, els comptes nous el tenien bloquejat sense poder-lo activar).
+  - **Menú** (taula 10.4): tècnic sense Preus; constructora i gestió total amb Preus; Despeses de totes les obres per a constructora
+    i gestió total, «Les meves despeses» per al tècnic; **treballador: Inici · Obres · Hores · Agenda · Ajustos**. Barra de baix:
+    constructora Inici · Obres · Despeses · Agenda; treballador Inici · Obres · Hores · Agenda; la resta Inici · Obres · Agenda · Hores.
+  - **Pestanyes de l’obra** (`tabsPerfil878326`, aplicat després de `tabsForWork8737`): sense mòdul Obra, fora Pressupost,
+    Certificacions, Facturació, Seguiment econòmic i Planning; Despeses amb Obra o Empresa; Honoraris/Factures/Pressupostos/Rendiment
+    (encàrrec) només amb Tècnic. Treballador: Resum, Documents (consulta), Notes, Agenda (tasques), Planning (consulta, sense imports:
+    `gantt-treb-v878328`), Despeses (foto) i Hores.
+  - **Treballador** (decisions del 18/10/2026, 10.8): `IniciTreballador878327` («La feina d’avui»: hores d’avui i de la setmana, cites
+    d’avui, feines pendents amb color, les seves obres); `HoresTreballador878327` (per obra i dia, sense imports; files amb
+    `treballador:true`, les pot treure); `DespesaTreballador878327` (foto o PDF + nota; `deTreballador`, `perRevisar` fins que
+    l’oficina la desa); notes sense esborrar; tasques: només l’estat; no crea obres ni en canvia l’estat ni les elimina; Ajustos sense
+    mòduls, enllaços ni configuració general; sense comptador automàtic.
+  - **Ajustos › «Perfil i mòduls»** (`PerfilModuls878326`, substitueix el «Pla i mòduls» de mostra): perfil, mòduls inclosos i
+    «Canviar el perfil» (comptes d’empresa; recarrega l’app; les dades no canvien).
+  - **Comptes de prova** `demo-tecnic`, `demo-constructor`, `demo-gestio`, `demo-treballador` (`<usuari>@usuaris.controlobres.app`;
+    contrasenyes a `GUIES_USUARIS\COMPTES_DE_PROVA.txt`, fora del repositori; **els ha de crear l’Héctor al panell de Supabase**).
+    La benvinguda ve amb el perfil triat (`perfilDemo878326`) i «Omplir-lo amb dades d’exemple»: la marca `exemplePendent` fa que
+    `omplenaDemoSiCal878328` (primera línia de l’App, abans de llegir res) ompli el compte amb `src/dadesDemo.js` (tot inventat; si
+    s’omplia abans de recarregar, l’app ho podia trepitjar). Al Supabase de proves hi ha els quatre (contrasenya `prova2026`).
+  - Prova: `perfils326test.mjs` (35).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un
