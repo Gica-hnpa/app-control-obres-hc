@@ -764,6 +764,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     fer servir i passi un plànol exportat de MagicPlan).
   - Estils: `src/theme-v878333.css`. Prova: `encarrec333test.mjs` (19; substitueix `tecnictest.mjs`). Adaptades `amiant324test` i
     `clientsvirtuals`.
+- **V87.334 · L’hora de la nota de veu i l’Econòmic dels encàrrecs** (l’Héctor, 21/10/2026: «li dic les 8'30 del matí i em posa les
+  00'30»; «al CEE surt pressupost, certificacions i rendiment, i amidaments: aquí no cal»):
+  - `normHores` (`src/citaVeu.js`, abans de llegir la frase): «8'30», «8’30», «8.30», «8,30», «8:30h», «8 h 30», «8 i 30», «les 8 30»,
+    «les 830» → «8:30», i «2/4 de 9» → «2 quarts de 9»; només després de «les», «a», «de», «sobre», «cap a» (no toca «el 22.10»). I una
+    hora amb dos punts sense «a les» («dimarts 8:30») també compta. Abans, aquests formats perdien els minuts (o l’hora). No s’ha pogut
+    reproduir exactament el «00:30»: amb el que escriu el dictat del mòbil, ara surt bé. `citaveutest` (32).
+  - Els encàrrecs tècnics (`TECNIC_PUR878332`) **ja no tenen mai** el pressupost d’obra (Pressupost, Amidaments, Certificacions,
+    Facturació d’obra, Rendiment d’obra, Planning), encara que tinguin partides (la V87.332 els el deixava si en tenien); les dades es
+    queden. `honoraris332test` (20).
   - **Compte en editar proves amb `String.replace`:** si el text nou porta `$'` (p. ex. `'^Desar$'`), JavaScript hi copia la resta del
     fitxer (va passar el 21/10/2026 amb `clientsvirtuals.mjs`). Fer servir `split/join` o una funció com a substitució.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).

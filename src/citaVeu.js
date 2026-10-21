@@ -39,8 +39,20 @@ function horaAMin(h, min, franja) {
   return H * 60 + (min || 0);
 }
 
+// V87.334 · Com escriu l'hora el dictat del mòbil: «8'30», «8.30», «8,30», «8:30h», «8 h 30», «8 i 30» → «8:30»; «2/4 de 9» → «2 quarts
+// de 9» (l'Héctor: «li dic les 8'30 del matí i em posa les 00'30»). Només després de «les», «a», «de», «sobre», «cap a» (no toca «el 22.10»).
+const DAVANT = "(\\b(?:a les|a las|les|las|a|de|sobre les|sobre las|cap a les|fins a les|hasta las)\\s)";
+export function normHores(t) {
+  return String(t || "")
+    .replace(/\b([123])\s?\/\s?4\s+(i mig\s+)?(de\s|d['’]\s?)/gi, (m, q, mig, de) => `${q} quarts ${mig || ""}${/^d['’]/i.test(de) ? "d'" : "de "}`)
+    .replace(new RegExp(DAVANT + "(\\d{1,2})\\s?(?:[.,'’′´:]|h)\\s?([0-5]\\d)(?:\\s?h\\b)?(?!\\d)", "gi"), (m, d, h, mm) => `${d}${h}:${mm}`)
+    .replace(new RegExp(DAVANT + "(\\d{1,2})\\s(?:i|y)\\s([0-5]\\d)(?:\\s(?:minuts|minutos|min)\\b)?(?!\\d)", "gi"), (m, d, h, mm) => `${d}${h}:${mm}`)
+    // «les 8 30» (amb un espai) i «les 830» (tot junt): només després de «les» / «a les» (no «de 1200 €»)
+    .replace(/(\b(?:a les|a las|les|las)\s)(\d{1,2})\s([0-5]\d)(?!\d|\s*(?:€|euros|persones|personas|m2|m²|metres|minuts))/gi, (m, d, h, mm) => `${d}${h}:${mm}`)
+    .replace(/(\b(?:a les|a las|les|las)\s)([01]?\d|2[0-3])([0-5]\d)(?![\d:])/gi, (m, d, h, mm) => `${d}${h}:${mm}`);
+}
 export function parseCita(text, { now = new Date(), obres = [] } = {}) {
-  const orig = String(text || "").trim();
+  const orig = normHores(String(text || "").trim());
   let s = " " + norm(orig).replace(/[,.;!?¿¡]+/g, " ").replace(/\s+/g, " ") + " ";
   const treure = [];
   const usa = (re, fn) => { const m = s.match(re); if (!m) return null; treure.push(m[0]); s = s.replace(m[0], " "); return fn ? fn(m) : m; };
@@ -91,6 +103,8 @@ export function parseCita(text, { now = new Date(), obres = [] } = {}) {
   if (inici == null) usa(new RegExp(`\\b(?:a les|a la|a las|les|las|cap a les|sobre les|sobre las)\\s(${HORA})(?:\\s(i mitja|y media|i quart|y cuarto|menys quart|menos cuarto))?(?:\\s(?:h|hores|horas))?\\b`), m => {
     const t = llegeixHora(m[2] ?? m[1], m[3], m[4]); if (t) inici = horaAMin(t.base, t.min, franja);
   });
+  // V87.334 · una hora amb dos punts sense «a les» davant («dimarts 8:30 visita»)
+  if (inici == null) usa(/\b(\d{1,2}):([0-5]\d)\b/, m => { if (+m[1] <= 23) inici = horaAMin(+m[1], +m[2], franja); });
   // «de 10 a 12», «fins a les 12», «hasta las 12»
   usa(new RegExp(`\\b(?:fins a les|fins les|hasta las|a les|a las|a)\\s(${HORA})(?:\\s(i mitja|y media|i quart|y cuarto))?\\b`), m => {
     if (inici == null) return; const t = llegeixHora(m[2] ?? m[1], m[3], m[4]); if (!t) return;

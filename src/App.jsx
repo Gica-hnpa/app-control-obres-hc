@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.333";
+const APP_VERSION878264="87.334";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1927,7 +1927,10 @@ function tabsForWork8737(obra,data={}){
   const hasBudgetTrail878193=(data?.partides||[]).length||(data?.pressupostos||[]).length||(data?.documents||[]).some(d=>d?.docData?.type==="pressupostobra"||/pressupost ràpid|pressupost obra/i.test(String(d?.origen||"")));
   // Si l'encàrrec creix de pressupost a direcció/gestió integral, el pressupost original
   // continua accessible i no es perd cap dada ni cap eina de l'etapa inicial.
-  if(hasBudgetTrail878193&&!tabs.includes("Pressupost ràpid")){
+  // V87.334 · als encàrrecs tècnics (CEE, cèdula…) mai el pressupost d'obra, encara que s'hi hagin posat partides (les dades es
+  // queden): el seu econòmic són els honoraris i les despeses (l'Héctor: «al CEE surt pressupost, certificacions i rendiment: aquí no cal»)
+  const pur878334=TECNIC_PUR878332.has(tipus);
+  if(hasBudgetTrail878193&&!pur878334&&!tabs.includes("Pressupost ràpid")){
     const idx=Math.max(1,tabs.indexOf("Documents")+1);
     tabs.splice(idx,0,"Pressupost ràpid");
   }
@@ -1940,13 +1943,13 @@ function tabsForWork8737(obra,data={}){
   // V87.120: la gestió econòmica d'obra ha de ser disponible en qualsevol expedient,
   // encara que la feina principal no sigui una gestió integral. Això permet crear/importar
   // un pressupost d'obra quan calgui, en lloc de deixar-lo només com a PDF a Documents.
-  if(!tabs.includes("Gestió obra")&&!(TECNIC_PUR878332.has(tipus)&&!hasBudgetTrail878193)) tabs.splice(Math.max(tabs.length-3,1),0,"Gestió obra");
+  if(!tabs.includes("Gestió obra")&&!pur878334) tabs.splice(Math.max(tabs.length-3,1),0,"Gestió obra");
   if(!tabs.includes("Agents")){const idx=Math.max(1,tabs.indexOf("Dades")+1);tabs.splice(idx,0,"Agents");}
   if(!tabs.includes("Agenda / Avisos")){const idx=Math.max(1,(tabs.includes("Agents")?tabs.indexOf("Agents"):tabs.indexOf("Dades"))+1);tabs.splice(idx,0,"Agenda / Avisos");}
   if(!tabs.includes("Honoraris")){const idx=Math.max(1,tabs.indexOf("Agenda / Avisos")+1);tabs.splice(idx,0,"Honoraris");}
   if(!tabs.includes("Rendiment")){const idx=Math.max(1,tabs.indexOf("Honoraris")+1);tabs.splice(idx,0,"Rendiment");}
   // V87.252 · Gantt de pressupost i certificacions quan l'expedient té pressupost d'obra.
-  if(hasBudgetTrail878193&&!tabs.includes("Gantt"))tabs.push("Gantt");
+  if(hasBudgetTrail878193&&!pur878334&&!tabs.includes("Gantt"))tabs.push("Gantt");
   // V87.254 · el que hi havia dins «Gestió obra» passa a pestanyes pròpies, sense subpestanyes.
   if(tabs.includes("Gestió obra")){
     tabs=tabs.filter(t=>t!=="Gestió obra");
@@ -12977,7 +12980,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.333",
+    app_version:"87.334",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
