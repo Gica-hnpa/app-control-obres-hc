@@ -668,7 +668,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     La benvinguda ve amb el perfil triat (`perfilDemo878326`) i «Omplir-lo amb dades d’exemple»: la marca `exemplePendent` fa que
     `omplenaDemoSiCal878328` (primera línia de l’App, abans de llegir res) ompli el compte amb `src/dadesDemo.js` (tot inventat; si
     s’omplia abans de recarregar, l’app ho podia trepitjar). Al Supabase de proves hi ha els quatre (contrasenya `prova2026`).
-  - Prova: `perfils326test.mjs` (35).
+  - **V87.327:** per als perfils que diuen «obra» (`diuObra878326`), `etPaquet878327` i `etNExp878327` canvien «Expedients oberts»,
+    «Total expedients», «Tots els expedients» i «N expedients» per «Obres obertes», «Total d’obres», «Totes les obres» i «N obres»
+    (llista d’obres, Inici, Hores i filtres). «Pressupostos» (d’honoraris) només amb el mòdul Tècnic: la constructora no el té.
+  - Prova: `perfils326test.mjs` (36).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
 - **App sense cobertura** (V87.271): a la versió compilada (Render) l’app es guarda dins de l’aparell amb un

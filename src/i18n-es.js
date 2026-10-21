@@ -3384,4 +3384,7 @@ export default {
   "Revisada": "Revisada",
   "Omplir-lo amb dades d’exemple (obres, clients, hores i despeses inventats)": "Llenarla con datos de ejemplo (obras, clientes, horas y gastos inventados)",
   "Preparant…": "Preparando…",
+  "Obres obertes": "Obras abiertas",
+  "Total d’obres": "Total de obras",
+  "Abans de començar, digueu-nos qui sou. Ho podreu canviar després a Ajustos.": "Antes de empezar, decidnos quiénes sois. Lo podréis cambiar después en Ajustes.",
 };
