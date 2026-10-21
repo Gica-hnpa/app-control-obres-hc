@@ -694,6 +694,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `meta.prefix`, `afegir`, `tipusPartida`, `estat`; passa `capPrincipal` i `pressupostMesures` si les mides sumen la quantitat).
     Després obre el Pressupost; als Amidaments queda «Passat al pressupost «…» el …».
   - Tocar el bloc «Econòmic» obre el Pressupost si l’obra encara no té amidaments (`teAmid` d’`ObraBar878269`); si en té, els Amidaments.
+- **Les meves despeses, segona volta** (V87.329, l’Héctor 21/10/2026: «vull que pugui posar nova despesa; quan entro selecciono l’obra
+  o l’expedient i a partir d’aquí entro segons la tipologia; a fora, els apartats, que es poden llistar per obra i en grup per any»):
+  - **«+ Nova despesa»** (l’únic botó de dalt per al tècnic; la foto del tiquet és a dins): l’editor (`AlbaraEditor878259`, estat `pas`)
+    demana **1 · Expedient** (cercador, els oberts primer, «Sense expedient (despesa general)»), **2 · Tipus** (Quilometratge · Dietes ·
+    Taxes · Material · Altres, `GRUPS_MEVA878323` amb `desc`) i llavors **els camps d’aquell tipus** (quilometratge: trajecte, km, €/km i
+    import; taxes: visat o llicències, organisme, número i import, sense IVA, `SENSE_IVA878329`; dietes: lloc; material i altres: el
+    subtipus, proveïdor, base, IVA i total, i el tiquet). A dalt, l’expedient i el tipus triats amb «Canviar». Una despesa desada s’obre
+    directament als camps. Marca temporal `__exp` (no es desa). «Hores i despeses › + Despesa» fa el mateix.
+  - **A fora:** els cinc apartats ja no creen res: **filtren la llista** (tornar-hi a tocar, totes) i diuen quantes n’hi ha, els km i
+    l’import; amb un apartat triat, la nova despesa ja ve d’aquell tipus. Vista nova **«Per any»** (de sèrie): cada any amb el total i,
+    a dins, per expedient. També «Per data» i «Per expedient».
+  - Estils: `src/theme-v878329.css`. Prova: `despeses329test.mjs` (30; substitueix `despeses323test`). Adaptades `menutecnictest`,
+    `revisio2test`, `clientsvirtuals` i `albaranstest`.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
