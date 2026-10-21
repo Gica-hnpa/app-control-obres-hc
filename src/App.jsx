@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.331";
+const APP_VERSION878264="87.332";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1775,6 +1775,10 @@ const SIMPLE_WORK_TYPES878151=new Set([
   "Postobra / documentació final"
 ]);
 function isSimpleWorkType878151(t){return SIMPLE_WORK_TYPES878151.has(canonicalWorkType8740(t));}
+// V87.332 · Encàrrecs del tècnic (l'Héctor, 21/10/2026, fent un CEE: «és un treball eminentment meu: a l'econòmic hi ha d'haver el meu
+// pressupost d'honoraris i el control de les despeses de l'expedient»). No hi surt el pressupost d'obra (llevat que ja en tingui).
+const TECNIC_PUR878332=new Set(["Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Amiant (localització i diagnosi)","Informe tècnic / patologies / peritatge","Plànols / aixecament","Render / 3D / visualització","Tràmit municipal / llicència / comunicació","Postobra / documentació final"]);
+function esTecnicPur878332(o){return TECNIC_PUR878332.has(canonicalWorkType8740(o?.tipusTreball||o?.tipologia||""))}
 function workNeedsAgentsByDefault878151(t){
   const c=canonicalWorkType8740(t);
   return ["Projecte / llicència d’obres","Direcció / seguiment d’obra","Gestió integral d’obra","Seguretat i salut","Activitat / adequació de local"].includes(c);
@@ -1932,11 +1936,11 @@ function tabsForWork8737(obra,data={}){
   // V87.278 · notes de visita (més lleugeres que l’acta) a tots els treballs
   if(!tabs.includes("Notes"))tabs.splice(tabs.indexOf("Actes")+1,0,"Notes");
   // V87.279 · albarans de material dins de l’obra: a les obres en execució, o a qualsevol que ja en tingui d’imputats
-  if(!tabs.includes("Albarans")&&(["Gestió integral d’obra","Direcció / seguiment d’obra","Control econòmic d’obra"].includes(tipus)||(obra?.id&&readAlbarans878259().some(a=>a.obraId===obra.id&&!a.meva))))tabs.push("Albarans");
+  if(!tabs.includes("Albarans")&&(["Gestió integral d’obra","Direcció / seguiment d’obra","Control econòmic d’obra"].includes(tipus)||TECNIC_PUR878332.has(tipus)||(obra?.id&&readAlbarans878259().some(a=>a.obraId===obra.id&&!a.meva))))tabs.push("Albarans");
   // V87.120: la gestió econòmica d'obra ha de ser disponible en qualsevol expedient,
   // encara que la feina principal no sigui una gestió integral. Això permet crear/importar
   // un pressupost d'obra quan calgui, en lloc de deixar-lo només com a PDF a Documents.
-  if(!tabs.includes("Gestió obra")) tabs.splice(Math.max(tabs.length-3,1),0,"Gestió obra");
+  if(!tabs.includes("Gestió obra")&&!(TECNIC_PUR878332.has(tipus)&&!hasBudgetTrail878193)) tabs.splice(Math.max(tabs.length-3,1),0,"Gestió obra");
   if(!tabs.includes("Agents")){const idx=Math.max(1,tabs.indexOf("Dades")+1);tabs.splice(idx,0,"Agents");}
   if(!tabs.includes("Agenda / Avisos")){const idx=Math.max(1,(tabs.includes("Agents")?tabs.indexOf("Agents"):tabs.indexOf("Dades"))+1);tabs.splice(idx,0,"Agenda / Avisos");}
   if(!tabs.includes("Honoraris")){const idx=Math.max(1,tabs.indexOf("Agenda / Avisos")+1);tabs.splice(idx,0,"Honoraris");}
@@ -3874,10 +3878,11 @@ const STORAGE_LIMIT_CHARS878250=(typeof window!=="undefined"&&window.__acoStore)
 }
 
 function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc}){
-  const[sub,setSub]=useState("Pressupostos");
-  return <div className="stack honoraris-exp-v8778"><div className="subtabs-v8746"><button className={sub==="Pressupostos"?"active":""} onClick={()=>setSub("Pressupostos")}>{t("Pressupostos honoraris")}</button><button className={sub==="Calculadora"?"active":""} onClick={()=>setSub("Calculadora")}>{t("Calculadora honoraris")}</button><button className={sub==="Factures"?"active":""} onClick={()=>setSub("Factures")}>{t("Factures honoraris")}</button></div>
-    {sub==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupost} updatePressupost={updatePressupost} facturarPressupost={facturarPressupost} deletePressupost={deletePressupost} openEmail={openEmail} openDoc={openDoc}/>}
-    {sub==="Calculadora"&&<HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} onCreatePressupost={addPressupost}/>}
+  // V87.332 · sense cap pressupost d'honoraris, s'obre directament la calculadora
+  const[sub,setSub]=useState(()=>(data?.pressupostosTecnic||[]).length?"Pressupostos":"Calculadora");
+  return <div className="stack honoraris-exp-v8778"><div className="subtabs-v8746"><button className={sub==="Pressupostos"?"active":""} onClick={()=>setSub("Pressupostos")}>{t("Pressupostos d’honoraris")}</button><button className={sub==="Calculadora"?"active":""} onClick={()=>setSub("Calculadora")}>{t("Calcular honoraris")}</button><button className={sub==="Factures"?"active":""} onClick={()=>setSub("Factures")}>{t("Factures honoraris")}</button></div>
+    {sub==="Pressupostos"&&<PressupostTecnic8738 onCalcular={()=>setSub("Calculadora")} data={data} obra={obra} addPressupost={addPressupost} updatePressupost={updatePressupost} facturarPressupost={facturarPressupost} deletePressupost={deletePressupost} openEmail={openEmail} openDoc={openDoc}/>}
+    {sub==="Calculadora"&&<HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} onCreatePressupost={p=>{addPressupost?.(p);setSub("Pressupostos")}}/>}
     {sub==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>}
   </div>
 }
@@ -3931,6 +3936,8 @@ const HONOR_TREBALLS8790=[
  {id:"control_costos",grup:"Gestió",nom:"Control de costos",formula:"pemDirect",coef:0.01,req:"PEM"},
  {id:"cedula",grup:"Altres treballs",nom:"Certificat d'habitabilitat d'habitatges usats",formula:"cedula",req:"habitatges, superfície i Ca"},
  {id:"informe",grup:"Altres treballs",nom:"Informes, dictàmens i certificats",formula:"informe",req:"Ca"},
+ // V87.332 · el barem del Col·legi no té el CEE: preus propis (es recorden)
+ {id:"cee",grup:"Altres treballs",nom:"Certificat d’eficiència energètica (CEE)",formula:"cee",req:"tipus i superfície"},
  {id:"aixecament",grup:"Altres treballs",nom:"Aixecaments planimètrics",formula:"aixecament",req:"m² i Ca"},
  {id:"amidaments",grup:"Altres treballs",nom:"Amidaments i memòria valorada",formula:"amidaments",req:"m² o PEM i Ca"},
  {id:"minutats",grup:"Treballs minutats per hores",nom:"Treballs minutats per hores",formula:"hores",req:"hores i €/h"},
@@ -3988,6 +3995,9 @@ function calcHonoraris8790(f){
     if(f.planoCedula==="Cal elaborar plànol")base=(65*(h+1)*ca)+((sup<70?150:200));
     else base=65*(h+1)*ca;
     formula=`certificat habitabilitat segons habitatges${f.planoCedula==="Cal elaborar plànol"?" + plànol":""}`;
+  }else if(t.formula==="cee"){
+    const pb=numCa8790(f.ceeBase),pm=numCa8790(f.ceeM2);
+    base=pb+Math.max(0,sup-100)*pm;minim=0;formula=`preu propi del CEE (${f.tipusCee||"Habitatge"}): ${money(pb)}${pm?` + ${String(pm).replace(".",",")} €/m² per sobre de 100 m²`:""}`;
   }else if(t.formula==="informe"){
     const mins={"Informe sense certificat":180,"Certificat sense informe":180,"Dictamen amb informe":240,"Certificat amb informe":331};
     base=(mins[f.tipusInforme]||180)*ca;formula=`mínim segons tipus d'informe × Ca`;
@@ -4007,34 +4017,57 @@ function calcHonoraris8790(f){
   const final=recomanat*(1+ajust/100);
   return {treball:t,base,minim,recomanat,final,formula};
 }
+// V87.332 · tipus de feina de la calculadora segons l'expedient; preus propis del CEE i de l'€/km (es recorden)
+function treballDe878332(o){const tp=canonicalWorkType8740(o?.tipusTreball||o?.tipologia||"");if(/Certificat energètic/.test(tp))return ["Altres treballs","cee"];if(/Cèdula/.test(tp))return ["Altres treballs","cedula"];if(/ITE|Informe|Amiant/.test(tp))return ["Altres treballs","informe"];if(/Plànols/.test(tp))return ["Altres treballs","aixecament"];return null}
+const TIPUS_CEE878332={"Habitatge":{base:"150",m2:"0"},"Local o oficina":{base:"200",m2:"0"},"Edifici sencer":{base:"450",m2:"0"}};
+function preusCee878332(){try{return {...TIPUS_CEE878332,...(JSON.parse(lsGet8779("aco_preus_cee_v878332","{}"))||{})}}catch{return {...TIPUS_CEE878332}}}
 function HonorarisCalculator8790({obres=[],defaultObraId="",onCreatePressupost}){
-  const firstObra=defaultObraId||obres[0]?.id||"";
-  const [f,setF]=useState({obraId:firstObra,grup:"Treballs d'edificació i urbanització",treball:"edificacio",pem:"30000",superficie:"100",ca:"2,30",iva:"21",estat:"Pendent",ajustPercent:"0",actuacioEdif:"Projecte + DO + DEO",tipusObra:"Obres de nova planta",actuacioUrb:"Projecte i direcció",actuacioSafety:"Redacció EBSS",planoCedula:"No cal elaborar plànol",tipusInforme:"Certificat sense informe",habitatges:"1",hores:"1",preuHora:"50",manual:"0"});
+  const firstObra=defaultObraId||"";
+  const obresOrd=useMemo(()=>[...obres].sort((a,b)=>(isExpedientOpen878136(b.estat)?1:0)-(isExpedientOpen878136(a.estat)?1:0)||String(expedientCode8739(b)).localeCompare(String(expedientCode8739(a)))),[obres]);
+  const tr0=treballDe878332(obres.find(o=>o.id===firstObra));const pc0=preusCee878332()["Habitatge"];
+  const [f,setF]=useState({obraId:firstObra,grup:tr0?.[0]||"Treballs d'edificació i urbanització",treball:tr0?.[1]||"edificacio",tipusCee:"Habitatge",ceeBase:pc0.base,ceeM2:pc0.m2,kmViatge:"0",viatges:"1",preuKm:lsGet8779("aco_preu_km_v878332","0,26")||"0,26",taxes:"0",taxesIncl:"no",altres:"0",pem:"30000",superficie:"100",ca:"2,30",iva:"21",estat:"Pendent",ajustPercent:"0",actuacioEdif:"Projecte + DO + DEO",tipusObra:"Obres de nova planta",actuacioUrb:"Projecte i direcció",actuacioSafety:"Redacció EBSS",planoCedula:"No cal elaborar plànol",tipusInforme:"Certificat sense informe",habitatges:"1",hores:"1",preuHora:"50",manual:"0"});
   const groups=[...new Set(HONOR_TREBALLS8790.map(x=>x.grup))];
   const treballs=HONOR_TREBALLS8790.filter(x=>x.grup===f.grup);
   useEffect(()=>{if(!treballs.some(t=>t.id===f.treball))setF(x=>({...x,treball:treballs[0]?.id||"manual"}))},[f.grup]);
   const r=calcHonoraris8790(f);const finalEditable=numCa8790(f.finalManual)>0?numCa8790(f.finalManual):r.final;
-  function set(k,v){setF(x=>({...x,[k]:v}))}
+  function set(k,v){setF(x=>({...x,[k]:v,...(k==="grup"||k==="treball"?{tocat:true}:{})}))}
+  // V87.332 · triar l'expedient porta el tipus de feina (si no s'ha triat a mà)
+  function triaObra(v){setF(x=>{const tr=treballDe878332(obres.find(o=>o.id===v));return {...x,obraId:v,...(tr&&!x.tocat?{grup:tr[0],treball:tr[1]}:{})}})}
+  function triaCee(v){const p=preusCee878332()[v]||{base:"0",m2:"0"};setF(x=>({...x,tipusCee:v,ceeBase:p.base,ceeM2:p.m2}))}
+  // despeses de l'encàrrec (l'Héctor: «la distància, taxes, etc.: hauria de poder incloure-ho en el moment de preparar-ho»)
+  const nViatges=Math.max(1,Math.round(numCa8790(f.viatges))||1);
+  const kmTot=numCa8790(f.kmViatge)*nViatges;
+  const despl=Math.round(kmTot*numCa8790(f.preuKm)*100)/100;
+  const taxes=numCa8790(f.taxes),altres=numCa8790(f.altres),taxesIncl=f.taxesIncl==="si";
+  const baseTotal=Math.round((finalEditable+despl+altres+(taxesIncl?taxes:0))*100)/100;
+  const ivaP=numCa8790(f.iva)||21;
   function create(){
-    if(!f.obraId){alert(i18nT("Selecciona un expedient vinculat."));return}
-    const concepte=`Honoraris · ${r.treball.nom}`;
-    const text=`Càlcul orientatiu segons matriu d'honoraris aportada. ${r.formula}. PEM: ${money(numCa8790(f.pem))}; superfície: ${numCa8790(f.superficie).toFixed(2)} m²; Ca: ${numCa8790(f.ca).toFixed(2)}. Import recomanat: ${money(r.recomanat)}. Import final editable aplicat: ${money(finalEditable)}.`;
-    onCreatePressupost?.({obraId:f.obraId,concepte,text,base:finalEditable,iva:numCa8790(f.iva)||21,estat:f.estat||"Pendent",data:todayISO8743(),honorarisCalc:{...f,resultat:r,final:finalEditable}});
+    if(!f.obraId){alert(i18nT("Tria l’expedient d’aquest pressupost."));return}
+    const nom=r.treball.id==="cee"?`${r.treball.nom} · ${f.tipusCee||"Habitatge"}`:r.treball.nom;
+    const concepte=`Honoraris · ${nom}`;
+    const linies=[`Honoraris tècnics: ${nom}.`];
+    if(despl>0)linies.push(`Desplaçaments: ${kmTot.toLocaleString("ca-ES",{maximumFractionDigits:1})} km${nViatges>1?` (${nViatges} viatges)`:""}.`);
+    if(altres>0)linies.push(`Altres despeses${f.altresNom?` (${f.altresNom})`:""}: ${money(altres)}.`);
+    if(taxes>0)linies.push(taxesIncl?`Taxes, visats i drets incloses en el preu (${money(taxes)}).`:`Taxes, visats i drets no incloses (estimació: ${money(taxes)}).`);
+    if(r.treball.id==="cee")try{lsSet8779("aco_preus_cee_v878332",JSON.stringify({...preusCee878332(),[f.tipusCee||"Habitatge"]:{base:String(f.ceeBase||"0"),m2:String(f.ceeM2||"0")}}))}catch{}
+    if(despl>0)try{lsSet8779("aco_preu_km_v878332",String(f.preuKm||"0,26"))}catch{}
+    onCreatePressupost?.({obraId:f.obraId,concepte,text:linies.join("\n"),base:baseTotal,iva:ivaP,estat:f.estat||"Pendent",data:todayISO8743(),taxesIncloses:taxesIncl?"incloses":"no_incloses",honorarisCalc:{...f,resultat:r,final:finalEditable,desplacament:despl,km:kmTot,altres,taxes,taxesIncl,baseTotal}});
   }
   return <div className="honor-calc-v8790">
-    <div className="module-note-v8738"><b>{i18nT("Calculadora d’honoraris tècnics")}</b><span>{i18nT("Integració millorada de la matriu Excel: grups del full Honoraris, Ca i fórmules principals. El preu final continua sent editable; si algun cas concret no coincideix encara, es pot deixar com a import manual i afinar la fórmula.")}</span></div>
     <div className="form-grid honor-calc-grid-v8790">
-      <label className="span-all"><span>{i18nT("Expedient vinculat")}</span><select value={f.obraId} onChange={e=>set("obraId",e.target.value)}>{obres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label>
+      {!defaultObraId&&<label className="span-all"><span>{i18nT("Expedient")}</span><select value={f.obraId} onChange={e=>triaObra(e.target.value)}><option value="">{i18nT("Tria l’expedient…")}</option>{obresOrd.map(o=><option key={o.id} value={o.id}>{codiCurt878270(o)} · {o.nom}</option>)}</select></label>}
       <label><span>{i18nT("Grup")}</span><select value={f.grup} onChange={e=>set("grup",e.target.value)}>{groups.map(g=><option key={g} value={g}>{i18nT(g)}</option>)}</select></label>
       <label><span>{i18nT("Tipus de feina")}</span><select value={f.treball} onChange={e=>set("treball",e.target.value)}>{treballs.map(t=><option key={t.id} value={t.id}>{i18nT(t.nom)}</option>)}</select></label>
-      <label><span>{i18nT("PEM / pressupost base")}</span><input value={f.pem} onChange={e=>set("pem",e.target.value)} /></label>
+      {/* V87.332 · només els camps que fa servir el tipus de feina (el CEE no té PEM ni Ca) */}
+      {["edificacio","urbanitzacio","estructures","seguretat","pemPercentCa","pemDirect","amidaments"].includes(r.treball.formula)&&<label><span>{i18nT("PEM / pressupost base")}</span><input value={f.pem} onChange={e=>set("pem",e.target.value)} /></label>}
       <label><span>{i18nT("Superfície m²")}</span><input value={f.superficie} onChange={e=>set("superficie",e.target.value)} /></label>
-      <label><span>{i18nT("Coeficient actualització Ca")}</span><input value={f.ca} onChange={e=>set("ca",e.target.value)} /></label>
+      {!["cee","hores","manual","pemDirect"].includes(r.treball.formula)&&<label><span>{i18nT("Coeficient actualització Ca")}</span><input value={f.ca} onChange={e=>set("ca",e.target.value)} /></label>}
       <label><span>{i18nT("IVA %")}</span><input value={f.iva} onChange={e=>set("iva",e.target.value)} /></label>
       {f.treball==="edificacio"&&<><label><span>{i18nT("Actuació edificació")}</span><select value={f.actuacioEdif} onChange={e=>set("actuacioEdif",e.target.value)}>{Object.keys(HON_ACT_EDIF8790).map(x=><option key={x} value={x}>{i18nT(x)}</option>)}</select></label><label><span>{i18nT("Tipus d’obra")}</span><select value={f.tipusObra} onChange={e=>set("tipusObra",e.target.value)}><option value="Obres d'ampliació, reforma i reparació">{i18nT("Obres d'ampliació, reforma i reparació")}</option><option value="Obres de nova planta">{i18nT("Obres de nova planta")}</option></select></label></>}
       {f.treball==="urbanitzacio"&&<label><span>{i18nT("Actuació urbanització")}</span><select value={f.actuacioUrb} onChange={e=>set("actuacioUrb",e.target.value)}>{Object.keys(HON_ACT_URB8790).map(x=><option key={x} value={x}>{i18nT(x)}</option>)}</select></label>}
       {f.treball==="seguretat"&&<><label><span>{i18nT("Actuació seguretat")}</span><select value={f.actuacioSafety} onChange={e=>set("actuacioSafety",e.target.value)}>{Object.keys(HON_SAFETY8790).map(x=><option key={x} value={x}>{i18nT(x)}</option>)}</select></label><label><span>{i18nT("Tipus d’obra")}</span><select value={f.tipusObra} onChange={e=>set("tipusObra",e.target.value)}><option value="Obres d'ampliació, reforma i reparació">{i18nT("Obres d'ampliació, reforma i reparació")}</option><option value="Obres de nova planta">{i18nT("Obres de nova planta")}</option></select></label></>}
       {f.treball==="cedula"&&<><label><span>{i18nT("Núm. habitatges")}</span><input value={f.habitatges} onChange={e=>set("habitatges",e.target.value)} /></label><label><span>{i18nT("Plànol")}</span><select value={f.planoCedula} onChange={e=>set("planoCedula",e.target.value)}><option value="No cal elaborar plànol">{i18nT("No cal elaborar plànol")}</option><option value="Cal elaborar plànol">{i18nT("Cal elaborar plànol")}</option></select></label></>}
+      {f.treball==="cee"&&<><label><span>{i18nT("Tipus d’immoble")}</span><select value={f.tipusCee} onChange={e=>triaCee(e.target.value)}>{Object.keys(TIPUS_CEE878332).map(x=><option key={x} value={x}>{i18nT(x)}</option>)}</select></label><label><span>{i18nT("El teu preu del CEE (€)")}</span><input value={f.ceeBase} onChange={e=>set("ceeBase",e.target.value)}/></label><label><span>{i18nT("€/m² per sobre de 100 m²")}</span><input value={f.ceeM2} onChange={e=>set("ceeM2",e.target.value)}/></label></>}
       {f.treball==="informe"&&<label><span>{i18nT("Tipus informe/certificat")}</span><select value={f.tipusInforme} onChange={e=>set("tipusInforme",e.target.value)}><option value="Informe sense certificat">{i18nT("Informe sense certificat")}</option><option value="Certificat sense informe">{i18nT("Certificat sense informe")}</option><option value="Dictamen amb informe">{i18nT("Dictamen amb informe")}</option><option value="Certificat amb informe">{i18nT("Certificat amb informe")}</option></select></label>}
       {f.treball==="minutats"&&<><label><span>{i18nT("Hores")}</span><input value={f.hores} onChange={e=>set("hores",e.target.value)} /></label><label><span>€/h</span><input value={f.preuHora} onChange={e=>set("preuHora",e.target.value)} /></label></>}
       {f.treball==="manual"&&<label><span>{i18nT("Import manual")}</span><input value={f.manual} onChange={e=>set("manual",e.target.value)} /></label>}
@@ -4042,8 +4075,24 @@ function HonorarisCalculator8790({obres=[],defaultObraId="",onCreatePressupost})
       <label><span>{i18nT("Preu final manual opcional")}</span><input value={f.finalManual||""} placeholder={money(r.final)} onChange={e=>set("finalManual",e.target.value)} /></label>
       <label><span>{i18nT("Estat pressupost")}</span><select value={f.estat} onChange={e=>set("estat",e.target.value)}><option value="Pendent">{i18nT("Pendent")}</option><option value="Esborrany">{i18nT("Esborrany")}</option><option value="Enviat">{i18nT("Enviat")}</option><option value="Acceptat">{i18nT("Acceptat")}</option><option value="No acceptat">{i18nT("No acceptat")}</option></select></label>
     </div>
+    <fieldset className="honor-extres-v878332"><legend>{i18nT("Despeses de l’encàrrec")}</legend>
+      <label><span>{i18nT("Km per viatge (anada i tornada)")}</span><input inputMode="decimal" value={f.kmViatge} onChange={e=>set("kmViatge",e.target.value)}/></label>
+      <label><span>{i18nT("Viatges")}</span><input inputMode="numeric" value={f.viatges} onChange={e=>set("viatges",e.target.value)}/></label>
+      <label><span>{i18nT("€ per km")}</span><input inputMode="decimal" value={f.preuKm} onChange={e=>set("preuKm",e.target.value)}/></label>
+      <label><span>{i18nT("Taxes, visats i drets (€)")}</span><input inputMode="decimal" value={f.taxes} onChange={e=>set("taxes",e.target.value)}/></label>
+      <label><span>{i18nT("Les taxes")}</span><select value={f.taxesIncl} onChange={e=>set("taxesIncl",e.target.value)}><option value="no">{i18nT("A part (les paga el client)")}</option><option value="si">{i18nT("Incloses al preu")}</option></select></label>
+      <label><span>{i18nT("Altres despeses (€)")}</span><input inputMode="decimal" value={f.altres} onChange={e=>set("altres",e.target.value)}/></label>
+    </fieldset>
     <div className="honor-result-v8790">
       <div><small>{i18nT("Mínim de referència")}</small><b>{money(r.minim)}</b></div><div><small>{i18nT("Càlcul base")}</small><b>{money(r.base)}</b></div><div><small>{i18nT("Honorari recomanat")}</small><b>{money(r.recomanat)}</b></div><div className="final"><small>{i18nT("Preu final editable")}</small><b>{money(finalEditable)}</b></div>
+    </div>
+    <div className="honor-total-v878332">
+      <span><small>{i18nT("Honoraris")}</small><b>{money(finalEditable)}</b></span>
+      {despl>0&&<span><small>{i18nT("Desplaçaments")} · {kmTot.toLocaleString(loc878272(),{maximumFractionDigits:1})} km</small><b>{money(despl)}</b></span>}
+      {altres>0&&<span><small>{i18nT("Altres despeses")}</small><b>{money(altres)}</b></span>}
+      {taxes>0&&<span><small>{taxesIncl?i18nT("Taxes (incloses)"):i18nT("Taxes (a part)")}</small><b>{money(taxes)}</b></span>}
+      <span className="tot"><small>{i18nT("Total sense IVA")}</small><b>{money(baseTotal)}</b></span>
+      <span className="tot"><small>{i18nT("Total amb IVA")}</small><b>{money(baseTotal*(1+ivaP/100))}</b></span>
     </div>
     <div className="honor-formula-v8790"><b>{i18nT("Fórmula aplicada:")}</b> {r.formula}</div>
     <div className="card-actions"><button className="primary" onClick={create}>{i18nT("Crear pressupost d’honoraris")}</button></div>
@@ -8946,7 +8995,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Agenda / Avisos"&&<AgendaExpedient8774 data={data} setData={setData} obra={obra} client={client} readOnly={readOnly}/>}
     {activeTab==="Agenda / Avisos"&&ALIAS878308["Tasques"]&&<TasquesTab8769 data={data} setData={setData}/>}
     {activeTab==="Amidaments obra"&&<Amidaments878328 obra={obra} data={data} setData={setData} partidaLibrary={partidaLibrary} readOnly={readOnly} goPressupost={()=>setTab?.("Pressupost")}/>}
-    {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id}/>}
+    {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves={esTecnicPur878332(obra)&&teModul878326("tecnic")}/>}
     {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>}
     {activeTab==="Actes"&&(ALIAS878308["Notes"]
       ?<Visites878309 obra={obra} client={client} data={data} setData={setData} readOnly={readOnly} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={["Actes","Notes"].includes(start878302?.tab)?start878302:null}/>
@@ -8971,7 +9020,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Dades econòmiques recuperades")}</b><span>{i18nT("S’han restaurat")} {data.economicRecoveryV87214.restored||0} {i18nT("preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.")}</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Certificacions recuperades")}</b><span>{i18nT("S’han reconstruït les certificacions")} {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} {i18nT("sense substituir les línies de medició actuals de la certificació 8.")}</span></div>}
     {!readOnly&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={tabsAmbAlies878308} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
-    <ObraBar878269 teAmid={!!(data?.amidaments878328?.linies||[]).length} obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly||esTreballador878326()} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&!esTreballador878326()&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
+    <ObraBar878269 pur={esTecnicPur878332(obra)&&teModul878326("tecnic")} teAmid={!!(data?.amidaments878328?.linies||[]).length} obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly||esTreballador878326()} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&!esTreballador878326()&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
         <div className="obra-tabs-title-v87105"><b>{i18nT("Apartats de l’obra")}</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
@@ -9025,10 +9074,11 @@ const BLOC_ICON878299={"Fitxa":<FolderOpen/>,"Seguiment":<ClipboardList/>,"Econ�
 // V87.307 · Tècnic (proposta 10.9 del 20/10/2026): dins de l'Econòmic, primer el de l'obra (del client: pressupost, certificacions,
 // despeses, rendiment…) i després «El meu encàrrec» (els seus honoraris i les seves hores). Al constructor, tot junt com abans.
 const ENCARREC_TABS878307=["Pressupostos","Factures","Honoraris","Gestió temps"];
-const esEncarrec878307=x=>teModul878326("tecnic")&&teModul878326("obra")&&ENCARREC_TABS878307.includes(x);
-function obraBlocs878299(all=[]){
+const ENCARREC_PUR878332=["Honoraris","Pressupostos","Factures","Gestió temps","Albarans"];
+const esEncarrec878307=(x,pur=false)=>pur?ENCARREC_PUR878332.includes(x):teModul878326("tecnic")&&teModul878326("obra")&&ENCARREC_TABS878307.includes(x);
+function obraBlocs878299(all=[],pur=false){
   const used=new Set();
-  const blocs=OBRA_BLOCS878299.map(b=>{const tabs=b.tabs.filter(x=>all.includes(x)&&!used.has(x)&&used.add(x));return {k:b.k,tabs:b.k==="Econòmic"?[...tabs.filter(x=>!esEncarrec878307(x)),...tabs.filter(esEncarrec878307)]:tabs}});
+  const blocs=OBRA_BLOCS878299.map(b=>{const tabs=b.tabs.filter(x=>all.includes(x)&&!used.has(x)&&used.add(x));return {k:b.k,tabs:b.k==="Econòmic"?(pur?[...tabs.filter(x=>!esEncarrec878307(x,true)),...ENCARREC_PUR878332.filter(x=>tabs.includes(x))]:[...tabs.filter(x=>!esEncarrec878307(x)),...tabs.filter(x=>esEncarrec878307(x))]):tabs}});
   const rest=all.filter(x=>!used.has(x));
   if(rest.length)blocs[0].tabs.push(...rest);
   return blocs.filter(b=>b.tabs.length);
@@ -9059,13 +9109,13 @@ function ObraPlus878302({open,setOpen,go,tabs=[]}){
     <button type="button" className={`obra-plus-btn-v878302 ${open?"on":""}`} aria-label={open?t("Tancar"):t("Afegir a aquesta obra")} aria-expanded={open} onClick={()=>setOpen(!open)}><Plus/></button>
   </div>;
 }
-function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,readOnly,canBudget,budgetTab,onEdit,onDelete,onBack,teAmid=false}){
+function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,readOnly,canBudget,budgetTab,onEdit,onDelete,onBack,teAmid=false,pur=false}){
   const[menu,setMenu]=useState("");
   // (la barra d'apartats va sola, sense bloc al voltant: així es pot quedar fixa en baixar per tota la pàgina)
   useEffect(()=>{if(!menu)return;const off=e=>{if(!e.target.closest?.(".obra-acc-v878269,.obra-tabs-bar-v878269"))setMenu("")};document.addEventListener("pointerdown",off);return()=>document.removeEventListener("pointerdown",off)},[menu]);
   const all=uniqueTabs8769(["Resum",...tabs]);
   const pick=x=>{setMenu("");setTab(x);try{window.scrollTo({top:0})}catch{}};
-  const blocs=obraBlocs878299(all);
+  const blocs=obraBlocs878299(all,pur);
   const blocActiu=blocs.find(b=>b.tabs.includes(active))||blocs[0]||{k:"",tabs:[]};
   const narrow=useNarrow878299();
   // l'últim apartat de cada bloc: en tornar a un bloc s'hi torna (a l'ordinador, el bloc obre directament un apartat)
@@ -9103,8 +9153,8 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
     </div>
     <div className={`obra-tabs-bar-v878269 obra-blocs-bar-v878299 ${narrow?"narrow":""}`}>
       <div className="obra-blocs-v878299" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all))])))}>{blocs.map(b=>{const on=b.k===blocActiu.k,open=obert?.k===b.k;return <button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={narrow&&b.tabs.length>1?open:undefined} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>clickBloc(b)}>{BLOC_ICON878299[b.k]}<span className="nom">{t(b.k)}</span>{narrow&&on&&<small>{tabLabel878269(active,all)}</small>}</button>})}</div>
-      {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(blocActiu.k)}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x)&&i>0&&!esEncarrec878307(arr[i-1])&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{tabLabel878269(x,all)}</button></React.Fragment>)}</div>}
-      {obert&&<div className="obra-bloc-panel-v878299" role="menu" aria-label={t(obert.k)}>{obert.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x)&&i>0&&!esEncarrec878307(arr[i-1])&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="menuitem" className={x===active?"on":""} onClick={()=>pick(x)}>{tabLabel878269(x,all)}</button></React.Fragment>)}</div>}
+      {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(blocActiu.k)}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{tabLabel878269(x,all)}</button></React.Fragment>)}</div>}
+      {obert&&<div className="obra-bloc-panel-v878299" role="menu" aria-label={t(obert.k)}>{obert.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="menuitem" className={x===active?"on":""} onClick={()=>pick(x)}>{tabLabel878269(x,all)}</button></React.Fragment>)}</div>}
     </div>
   </>;
 }
@@ -9747,7 +9797,7 @@ function InlineQuotePreview8744({type="pressupost",doc,obra}){
   const D=(s,v)=>tl(docLang878283(obra),s,v);
   return <div className="inline-preview-v8744"><div className="inline-a4-v8744"><div><b>{isFactura?D("Factura / proforma"):D("Pressupost")}</b><span>{D(doc.concepte||"Honoraris tècnics")}</span></div><p>{doc.text||D("Text pendent")}</p><strong>{isFactura?D("Total factura"):D("Import sense IVA")}: {money(total)}</strong><small>{expedientCode8739(obra)} · {obra?.propietat||D("Client")}</small></div></div>
 }
-function PressupostTecnic8738({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,openEmail,openDoc}){
+function PressupostTecnic8738({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,openEmail,openDoc,onCalcular}){
   const rows=data.pressupostosTecnic||[];
   const[open,setOpen]=useState(false);
   const[editing,setEditing]=useState(null);
@@ -9757,8 +9807,7 @@ function PressupostTecnic8738({data,obra,addPressupost,updatePressupost,facturar
   function reset(p=null){if(p){setEditing(p.id);setForm({concepte:p.concepte||"Honoraris tècnics",base:String(p.base||0),iva:String(p.iva||21),data:toInputDate8743(p.data),estat:p.estat||"Esborrany",validesa:p.validesa||"2 mesos",taxesIncloses:p.taxesIncloses||"no_incloses",observacions:p.observacions||""});setText(p.text||"");setOpen(true)}else{setEditing(null);setForm({concepte:"Honoraris tècnics",base:"0",iva:"21",data:todayISO8743(),estat:"Esborrany",validesa:"2 mesos",taxesIncloses:"no_incloses",observacions:""});setText("Honoraris tècnics per als treballs professionals indicats, incloent gestió, documentació i seguiment de l’expedient segons l’abast acordat amb el client.");setOpen(false)}}
   function submit(e){e.preventDefault();const payload={...form,text,base:+form.base||0,iva:+form.iva||21,estat:form.estat||"Esborrany"};saveTemplate8743(text);if(editing)updatePressupost?.(editing,payload);else addPressupost?.(payload);reset(null)}
   const liveDoc={...form,text,base:+form.base||0,iva:+form.iva||21};
-  return <div className="stack quote-module-v8742 quote-module-v8743 quote-module-v8744">{preview&&<QuotePreview8743 type="pressupost" doc={preview} obra={obra} close={()=>setPreview(null)}/>}<Card title={t("Pressupostos")} action={<button className="primary" onClick={()=>{setOpen(true);setEditing(null)}}><Plus/> {t("Nou pressupost")}</button>}>
-    <div className="module-note-v8738"><b>{t("Pressupost professional del tècnic.")}</b><span>{t("Per honoraris, informes, cèdules, CEE, direccions, project management o altres treballs tècnics. No és el pressupost econòmic d’obra.")}</span></div>
+  return <div className="stack quote-module-v8742 quote-module-v8743 quote-module-v8744">{preview&&<QuotePreview8743 type="pressupost" doc={preview} obra={obra} close={()=>setPreview(null)}/>}<Card title={t("Pressupostos")} action={<div className="actions-inline">{onCalcular&&<button className="secondary" onClick={onCalcular}>{t("Calcular honoraris")}</button>}<button className="primary" onClick={()=>{setOpen(true);setEditing(null)}}><Plus/> {t("Nou pressupost")}</button></div>}>
     {open&&<form className="quote-form-v8742 quote-form-v8744" onSubmit={submit}>
       <div className="quote-form-main-v8744"><div><div className="form-grid"><label><span>{t("Concepte")}</span><input value={form.concepte} onChange={e=>setForm({...form,concepte:e.target.value})}/></label><label><span>{t("Base imposable")}</span><input type="number" step="0.01" value={form.base} onChange={e=>setForm({...form,base:e.target.value})}/></label><label><span>{t("IVA %")}</span><input type="number" step="1" value={form.iva} onChange={e=>setForm({...form,iva:e.target.value})}/></label><label><span>{t("Data")}</span><input type="date" value={form.data||todayISO8743()} onChange={e=>setForm({...form,data:e.target.value})}/></label><label><span>{t("Estat")}</span><select value={form.estat||"Esborrany"} onChange={e=>setForm({...form,estat:e.target.value})}><option value="Esborrany">{t("Esborrany")}</option><option value="Enviat">{t("Enviat")}</option><option value="Acceptat">{t("Acceptat")}</option><option value="Facturat">{t("Facturat")}</option><option value="Descartat">{t("Descartat")}</option></select></label></div>
       <TextAssistitPress8742 setText={setText} existing={rows}/>
@@ -12893,7 +12942,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.331",
+    app_version:"87.332",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -15272,17 +15321,18 @@ function desaDespesa878318(a){
 }
 function eliminaDespesa878318(a){if(!confirm(i18nT("Eliminar aquesta despesa?")))return false;writeAlbarans878259(readAlbarans878259().filter(x=>x.id!==a.id));try{localStorage.removeItem(lsKey8779(albaraFotoKey878259(a.id)));localStorage.removeItem(lsKey8779(albaraPdfKey878259(a.id)))}catch{};return true}
 function novaDespesa878318(extra={}){return {id:"alb-"+Date.now(),isNew:true,data:todayISO8743(),obraId:"",proveidor:"",numero:"",base:"",iva:"21",total:"",linies:[],notes:"",facturatClient:false,...extra}}
-function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=""}){
+function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra="",meves:mevesObra=false}){
   const[tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
   // V87.323 · Tècnic (l'Héctor, 20/10/2026): al menú principal, només les seves despeses (quilometratge, dietes, taxes, material…),
   // cada una amb l'expedient si en té; les d'una obra (albarans, material del client) només dins de l'obra.
-  const meves=!fixedObra&&!(PERFIL878304&&teModul878326("empresa"));
+  // V87.332 · dins d'un encàrrec tècnic (CEE, cèdula…), les meves despeses d'aquest expedient
+  const meves=(!!fixedObra&&mevesObra)||(!fixedObra&&!(PERFIL878304&&teModul878326("empresa")));
   const treb=esTreballador878326();
   const tots=useMemo(()=>readAlbarans878259(),[tick]);
   const coberts=useMemo(()=>cobertsPer878311(tots),[tots]);
-  const[vista,setVista]=useState(meves?"any":"data");
-  const base0=useMemo(()=>tots.filter(a=>fixedObra?!a.meva:meves?!!a.meva:true),[tots,fixedObra,meves]);
+  const[vista,setVista]=useState(meves&&!fixedObra?"any":"data");
+  const base0=useMemo(()=>tots.filter(a=>fixedObra&&!mevesObra?!a.meva:meves?!!a.meva:true),[tots,fixedObra,meves,mevesObra]);
   const list=base0;
   const[obraF,setObraF]=useState(fixedObra||"");
   const[clientF,setClientF]=useState("");
@@ -15333,7 +15383,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),""),pdf:a.tePdf?lsGet8779(albaraPdfKey878259(a.id),""):""})}
   return <div className={`albarans-v878259 despeses-v878311 ${fixedObra?"alb-obra-v878279":""}`}>
     <div className="alb-head">
-      {fixedObra?<div><h2 className="alb-obra-title-v878279">{i18nT("Despeses d’aquesta obra")}</h2></div>:<div><h1>{meves?i18nT("Les meves despeses"):i18nT("Despeses")}</h1></div>}
+      {fixedObra?<div><h2 className="alb-obra-title-v878279">{mevesObra?i18nT("Despeses de l’expedient"):i18nT("Despeses d’aquesta obra")}</h2></div>:<div><h1>{meves?i18nT("Les meves despeses"):i18nT("Despeses")}</h1></div>}
       <div className="actions">
         {meves&&<button type="button" className="primary" onClick={novaMeva878329}>{i18nT("+ Nova despesa")}</button>}
         {!meves&&<label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Fer foto")}</label>}

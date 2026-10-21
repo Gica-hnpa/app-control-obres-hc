@@ -729,6 +729,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     Esc (Esc ja no porta també al Resum de l’obra si hi ha un menú obert); amb ratolí (`(hover:hover) and (pointer:fine)`), s’obren en
     passar-hi per sobre (220 ms) i es pleguen en marxar-ne (380 ms); el clic just després no el torna a tancar (`__hover878331`).
   - Prova: `v331test.mjs` (14). `gcaltest` i `veuagenda330test` adaptades.
+- **V87.332 · Encàrrecs tècnics: honoraris i despeses a l’Econòmic; calculadora amb el CEE i les despeses de l’encàrrec** (l’Héctor,
+  21/10/2026, fent un CEE: «és un treball eminentment meu: a l’econòmic, el meu pressupost d’honoraris i el control de les despeses»):
+  - `TECNIC_PUR878332` (cèdula, CEE, ITE, amiant, informes, plànols, render, tràmits, postobra; `esTecnicPur878332`): sense «Gestió obra»
+    (Pressupost, Amidaments…) llevat que ja tinguin pressupost; sempre «Despeses» (`Albarans`). Bloc Econòmic: **Honoraris · Despeses**,
+    sense el títol «El meu encàrrec» (`obraBlocs878299(all,pur)`, `esEncarrec878307(x,pur)`, `ObraBar878269 pur`). Les despeses
+    d’aquests expedients són **les meves** (`Albarans878259 meves`, «Despeses de l’expedient»; «+ Nova despesa» comença pel tipus).
+  - **Honoraris de l’expedient** (`HonorarisExpedient8778`): «Pressupostos d’honoraris · Calcular honoraris · Factures honoraris»; sense
+    cap pressupost, s’obre la calculadora; en crear-lo, torna a la llista. `PressupostTecnic8738` té «Calcular honoraris». Fora les notes
+    que expliquen.
+  - **Calculadora** (`HonorarisCalculator8790`): a Pressupostos, l’expedient comença buit («Tria l’expedient…», obligatori; abans quedava
+    el primer de la llista i el pressupost anava a un altre expedient) i triar-lo posa el tipus de feina (`treballDe878332`). Treball nou
+    **CEE** (`cee`: tipus d’immoble i **preu propi** + €/m² per sobre de 100 m²; es recorden a `aco_preus_cee_v878332`; de sèrie 150/200/450 €,
+    per posar els seus). Només els camps que fa servir cada feina (sense PEM ni Ca al CEE). **Despeses de l’encàrrec**: km per viatge ×
+    viatges × €/km (`aco_preu_km_v878332`), taxes (incloses o a part → `taxesIncloses`) i altres; total sense IVA i amb IVA. El pressupost
+    es crea amb la base total i un text per al client (abans hi anava la fórmula).
+  - Estils: `src/theme-v878332.css`. Prova: `honoraris332test.mjs` (18). `clientsvirtuals` adaptada (Honoraris s’obre a la calculadora).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

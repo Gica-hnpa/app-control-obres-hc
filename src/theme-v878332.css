@@ -1,0 +1,16 @@
+/* V87.332 · Calculadora d'honoraris: despeses de l'encàrrec i total */
+html body .honor-calc-v8790 .honor-extres-v878332{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;margin:14px 0;padding:12px 14px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+html body .honor-calc-v8790 .honor-extres-v878332 legend{padding:0 6px;font:700 14px var(--app-font);color:var(--co-ink)}
+html body .honor-calc-v8790 .honor-extres-v878332 label{display:flex;flex-direction:column;gap:4px;margin:0;min-width:0}
+html body .honor-calc-v8790 .honor-extres-v878332 label>span{font-size:12.5px;color:var(--co-ink-2)}
+html body .honor-calc-v8790 .honor-extres-v878332 input,html body .honor-calc-v8790 .honor-extres-v878332 select{width:100%;min-width:0;box-sizing:border-box;padding:10px 12px;border:1px solid var(--co-line);border-radius:10px;font:500 15px var(--app-font);background:var(--co-surface);color:var(--co-ink)}
+html body .honor-calc-v8790 .honor-total-v878332{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+html body .honor-calc-v8790 .honor-total-v878332>span{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface);min-width:120px}
+html body .honor-calc-v8790 .honor-total-v878332 small{font-size:12px;color:var(--co-ink-3)}
+html body .honor-calc-v8790 .honor-total-v878332 b{font:700 15px var(--app-font);color:var(--co-ink)}
+html body .honor-calc-v8790 .honor-total-v878332 .tot{background:var(--co-surface-2);border-color:var(--co-accent)}
+html body .honor-calc-v8790 .honor-total-v878332 .tot b{font-size:17px}
+@media (max-width:767px){
+  html body .honor-calc-v8790 .honor-extres-v878332{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .honor-calc-v8790 .honor-total-v878332>span{flex:1 1 40%}
+}
