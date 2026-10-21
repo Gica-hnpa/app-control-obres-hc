@@ -1,0 +1,61 @@
+/* V87.327 · Perfil Treballador d'empresa: la feina d'avui, les seves hores i la foto de les despeses */
+
+/* Inici */
+html body .inici-treb-v878327{display:flex;flex-direction:column;gap:14px}
+html body .inici-treb-v878327>header{display:flex;flex-direction:column;gap:2px}
+html body .inici-treb-v878327>header span{font:600 12px var(--app-font);text-transform:uppercase;letter-spacing:.06em;color:var(--co-ink-3)}
+html body .inici-treb-v878327>header h1{margin:0;font:700 26px var(--app-font);color:var(--co-ink)}
+html body .inici-treb-v878327 .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html body .inici-treb-v878327 .kpis button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+html body .inici-treb-v878327 .kpis small{font:600 11px var(--app-font);text-transform:uppercase;letter-spacing:.05em;color:var(--co-ink-3)}
+html body .inici-treb-v878327 .kpis b{font:700 22px var(--app-font);color:var(--co-ink)}
+html body .inici-treb-v878327 h4.proximes{margin:14px 0 6px;font:600 12px var(--app-font);text-transform:uppercase;letter-spacing:.05em;color:var(--co-ink-3)}
+html body .inici-treb-v878327 .card p{margin:0;color:var(--co-ink-3);font-size:14px}
+html body .task-list-v878327,html body .obres-treb-v878327{display:flex;flex-direction:column;gap:8px}
+html body .task-list-v878327>button,html body .obres-treb-v878327>button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"d b" "d s";align-items:center;gap:2px 10px;padding:10px 12px;border:1px solid var(--co-line);border-left-width:5px;border-radius:10px;background:var(--co-surface)}
+html body .task-list-v878327>button .dies-v878321{grid-area:d}
+html body .task-list-v878327>button b{grid-area:b;font:600 14px var(--app-font);color:var(--co-ink)}
+html body .task-list-v878327>button span{grid-area:s;font-size:12.5px;color:var(--co-ink-3)}
+html body .task-list-v878327>button.overdue{border-left-color:#B42318;background:#FEF3F2}
+html body .task-list-v878327>button.critical{border-left-color:#D97706;background:#FFFAEB}
+html body .task-list-v878327>button.ok{border-left-color:#16A34A;background:#F0FDF4}
+html body .obres-treb-v878327>button{grid-template-columns:1fr;grid-template-areas:"b" "s";border-left-color:var(--co-accent)}
+html body .obres-treb-v878327>button b{grid-area:b;font:600 15px var(--app-font);color:var(--co-ink)}
+html body .obres-treb-v878327>button span{grid-area:s;font-size:12.5px;color:var(--co-ink-3)}
+
+/* Hores */
+html body .hores-treb-v878327{display:flex;flex-direction:column;gap:12px}
+html body .hores-treb-v878327 .cap{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px}
+html body .hores-treb-v878327 .cap h1{margin:0 0 2px}
+html body .hores-treb-v878327 .cap span{font-size:14px;color:var(--co-ink-2)}
+html body .hores-treb-v878327 .nou{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:14px}
+html body .hores-treb-v878327 .nou label{display:flex;flex-direction:column;gap:4px;font:600 12px var(--app-font);color:var(--co-ink-2)}
+html body .hores-treb-v878327 .nou .wide,html body .hores-treb-v878327 .nou .acc{grid-column:1/-1}
+html body .hores-treb-v878327 .nou .acc{display:flex;justify-content:flex-end;gap:8px}
+html body .hores-treb-v878327 .dia{padding:0;overflow:hidden}
+html body .hores-treb-v878327 .dia>header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 14px;background:var(--co-surface-2);border-bottom:1px solid var(--co-line)}
+html body .hores-treb-v878327 .dia>header b{font:600 14px var(--app-font);color:var(--co-ink);text-transform:capitalize}
+html body .hores-treb-v878327 .dia>header em{font-style:normal;font:700 14px var(--app-font);color:var(--co-ink)}
+html body .hores-treb-v878327 .fila{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--co-line)}
+html body .hores-treb-v878327 .dia>header+.fila{border-top:0}
+html body .hores-treb-v878327 .fila>span{display:flex;flex-direction:column;min-width:0}
+html body .hores-treb-v878327 .fila>span b{font:600 14px var(--app-font);color:var(--co-ink)}
+html body .hores-treb-v878327 .fila>span small{font-size:12.5px;color:var(--co-ink-3)}
+html body .hores-treb-v878327 .fila>em{font-style:normal;font:700 14px var(--app-font);color:var(--co-ink)}
+@media (max-width:767px){
+  html body .inici-treb-v878327 .kpis b{font-size:18px}
+  html body .hores-treb-v878327 .nou{grid-template-columns:1fr 1fr}
+  html body .hores-treb-v878327 .nou label:first-child{grid-column:1/-1}
+}
+
+/* Despeses del treballador */
+html body .despeses-v878311 .treb-v878327 .alb-row{grid-template-columns:32px minmax(0,1fr) auto}
+html body .estat-treb-v878327{font-style:normal;font:600 12px var(--app-font);padding:3px 9px;border-radius:99px;white-space:nowrap}
+html body .estat-treb-v878327.pend{background:#FEF0C7;color:#B54708}
+html body .estat-treb-v878327.ok{background:#DCFCE7;color:#166534}
+
+/* V87.328 · benvinguda dels comptes de prova i planning del treballador sense imports */
+html body .empresa-setup-v878259 label.exemple-v878328{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--co-ink-2);cursor:pointer}
+html body .empresa-setup-v878259 label.exemple-v878328 input{width:18px;height:18px;margin:0}
+html body .gantt-treb-v878328 .gantt-sum-v878252{display:none!important}
+html body .gantt-treb-v878328 .gt-left-v878253 .num{visibility:hidden}

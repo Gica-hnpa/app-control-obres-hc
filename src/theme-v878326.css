@@ -1,0 +1,18 @@
+/* V87.326 · Perfils i mòduls: benvinguda amb quatre perfils i Ajustos › «Perfil i mòduls» */
+html body .empresa-setup-v878259 .perfils.perfils-v878326{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:520px){html body .empresa-setup-v878259 .perfils.perfils-v878326{grid-template-columns:1fr}}
+html body .perfil-moduls-v878326 .actual{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:0 0 12px}
+html body .perfil-moduls-v878326 .actual span{font-size:12.5px;color:var(--co-ink-3)}
+html body .perfil-moduls-v878326 .actual b{font:700 16px var(--app-font);color:var(--co-ink)}
+html body .perfil-moduls-v878326 .mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html body .perfil-moduls-v878326 .mods>div{display:flex;flex-direction:column;gap:3px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+html body .perfil-moduls-v878326 .mods>div.on{border-color:#16A34A;background:#F0FDF4}
+html body .perfil-moduls-v878326 .mods>div.off{opacity:.6}
+html body .perfil-moduls-v878326 .mods b{font:700 14px var(--app-font);color:var(--co-ink)}
+html body .perfil-moduls-v878326 .mods span{font-size:12.5px;color:var(--co-ink-2);line-height:1.35}
+html body .perfil-moduls-v878326 .mods em{font-style:normal;font:600 12px var(--app-font);color:var(--co-ink-3)}
+html body .perfil-moduls-v878326 .mods>div.on em{color:#166534}
+html body .perfil-moduls-v878326 .tria{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+html body .perfil-moduls-v878326 .tria>span{font:600 12px var(--app-font);color:var(--co-ink-2)}
+html body .perfil-moduls-v878326 .tria>div{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:767px){html body .perfil-moduls-v878326 .mods{grid-template-columns:1fr}}
