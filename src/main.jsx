@@ -50,6 +50,7 @@ import "./theme-v878329.css";
 import "./theme-v878330.css";
 import "./theme-v878332.css";
 import "./theme-v878333.css";
+import "./theme-v878336.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";

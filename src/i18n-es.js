@@ -3492,4 +3492,7 @@ export default {
   "Agència de Residus": "Agència de Residus",
   "Amiant: preguntes freqüents": "Amianto: preguntas frecuentes",
   "Per a l’empresa que el retiri": "Para la empresa que lo retire",
+  "No hi ha obres en execució.": "No hay obras en ejecución.",
+  "Última certificació: {d}": "Última certificación: {d}",
+  "Sense certificacions": "Sin certificaciones",
 };

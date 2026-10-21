@@ -1,0 +1,34 @@
+/* V87.336 · Revisió de la constructora, tanda 1 */
+
+/* Inici: al tècnic, sense columna al costat; a la constructora, «Obres en curs» */
+html body .home-pro-layout-v878140.sense-costat-v878336{grid-template-columns:minmax(0,1fr)!important}
+html body .obres-curs-v878336 .llista-v878336{display:flex;flex-direction:column;gap:8px}
+html body .obres-curs-v878336 .llista-v878336>button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 12px;border:1px solid var(--co-line,#e5e7eb);border-radius:12px;background:var(--co-surface,#fff)}
+html body .obres-curs-v878336 .llista-v878336>button:hover{border-color:var(--co-ink-3,#94a3b8)}
+html body .obres-curs-v878336 .llista-v878336>button:focus-visible{outline:2px solid var(--co-accent,#2563eb);outline-offset:2px}
+html body .obres-curs-v878336 .nm{display:flex;flex-direction:column;min-width:0}
+html body .obres-curs-v878336 .nm b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .obres-curs-v878336 .nm small{color:var(--co-ink-3,#64748b);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .obres-curs-v878336 .pc{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+html body .obres-curs-v878336 .pc b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+html body .obres-curs-v878336 .pc small{font-size:11px;color:var(--co-ink-3,#64748b)}
+html body .obres-curs-v878336 .bar{grid-column:1/-1;height:6px;border-radius:99px;background:var(--co-line,#e5e7eb);overflow:hidden}
+html body .obres-curs-v878336 .bar i{display:block;height:100%;border-radius:99px;background:var(--co-s1,#16a34a)}
+html body .obres-curs-v878336 .ul{grid-column:1/-1;font-size:12px;color:var(--co-ink-3,#64748b)}
+
+/* Pressupost: el capítol principal que agrupa capítols, plegat com els altres; els seus capítols, una mica endins */
+html body .budget-v25 .grup-cap-v878336>.budget-v25-cap-head{cursor:pointer}
+html body .budget-v25 .grup-cap-v878336>.budget-v25-cap-head .budget-chapter-title-v87230 small{display:block!important;margin-top:2px;font-size:12px!important;font-weight:500;color:var(--co-ink-3,#64748b)}
+html body .budget-v25 .grup-cap-v878336>.budget-v25-cap-head .budget-chapter-title-v87230 small .link{all:unset;cursor:pointer;color:var(--co-accent,#2563eb);font-weight:600}
+html body .budget-v25 .grup-cap-v878336.obert{border-bottom-left-radius:0}
+html body .budget-v25 .budget-v25-cap.dins-grup-v878336{margin-left:22px!important;border-left:3px solid var(--co-ink-2,#cbd5e1)!important}
+@media (max-width:767px){
+  html body .budget-v25 .budget-v25-cap.dins-grup-v878336{margin-left:10px!important}
+}
+
+/* Resum de l'obra: només el pes per capítol */
+html body .obra-hero-charts-v878252.un-v878336{grid-template-columns:minmax(0,1fr)!important}
+html body .obra-hero-charts-v878252.un-v878336>.chart-card{max-width:680px}
+
+/* Agenda de l'obra: botó «Nota de veu» */
+html body .veu-obra-v878336{display:inline-flex;align-items:center;gap:6px}

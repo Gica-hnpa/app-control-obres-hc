@@ -38,4 +38,45 @@ capítol) · Hores.
 
 ## Tandes
 
-(per omplir amb el que digui l’Héctor)
+### Tanda 1 · V87.336 (21/10/2026 al vespre, l’Héctor amb el compte de Brava al mòbil)
+
+- **Inici:** fora el gràfic «Resum d’expedients» (ja hi ha els requadres de dalt). A la constructora (i gestió total), **«Obres en
+  curs»**: cada obra en execució amb el **% certificat** sobre el pressupost (sense imports) i la data de l’última certificació;
+  en tocar-la s’obre. Compten els pressupostos que tenen alguna certificació. Al tècnic, res al costat.
+- **Contactes:** els **promotors de les obres** (també de les que ens han compartit, com Verbania) hi surten encara que no siguin
+  agents. Si se’n canvia un, passa a la llista pròpia.
+- **Obra compartida:**
+  - a Dades › Client hi surt el client de qui la comparteix i no es pot canviar (abans el desplegable deia «David Fuster»: el
+    primer client propi, perquè el de l’obra no és a la llista de Brava);
+  - Documents sense la carpeta «Despatx tècnic / honoraris» (són els honoraris de qui la comparteix).
+- **Resum de l’obra:** el Cadastre només amb el mòdul tècnic; fora el gràfic «Import per certificació».
+- **Pressupost:** un capítol principal que agrupa capítols (Verbania: «05 P1.FUSTERIA INTERIOR» amb «05.05 LACAT PORTES») és una
+  sola línia plegada amb un sol total, com els altres; en tocar-la, s’obren els seus capítols una mica endins.
+- **Agenda de l’obra:** «Nota de veu» (la cita queda a l’obra; «Posar-ho a l’agenda» o «Revisar i desar»).
+- Arreglat de pas: en omplir un compte de prova amb dades d’exemple, les obres que ja li havien compartit s’esborraven.
+- Prova: `tools/proves/constructor336test.mjs` (24).
+
+### Tanda 2 · el paquet «Empresa» (pendent)
+
+- **Dades de l’empresa:** nom, CIF, adreça, logo… (ara són a Ajustos).
+- **Documentació general:** REA, documentació dels treballadors (formació, aptituds mèdiques, EPI), assegurances, amb dates de
+  caducitat.
+- **Treballadors:** nom, ofici, **cost per hora** (es pot canviar per obra).
+- **Industrials:** els de Contactes, amb la seva documentació.
+
+### Tanda 3 · despeses, hores i rendiment (pendent)
+
+- **Despeses:** factures de material, factures d’industrials i **cost del personal propi**.
+- **Hores de la constructora:** per dies, les hores de cada treballador a cada obra × el cost per hora (de l’empresa o de l’obra).
+  Potser dins de Despeses (com a personal).
+- **Rendiment:** el principal és **facturat / certificat − total de despeses**; el pressupost, com a referència.
+- **Fitxatge del personal:** estudiar si és viable lligar-lo (argument de venda).
+
+### Tanda 4 · Planning (pendent)
+
+- Un Gantt de debò: data d’inici, durada, **vinculacions** (en acabar una, començar l’altra; començar-ne una 2 dies abans que acabi
+  l’altra), **colles** i industrials assignats. Necessita primer els treballadors de l’empresa (tanda 2).
+
+### Recordatori
+
+- **Facturació:** proforma → factura amb VeriFactu (aturat fins que l’Héctor parli amb la gestoria).

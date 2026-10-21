@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.335";
+const APP_VERSION878264="87.336";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2958,7 +2958,9 @@ function enllacosPropis878305(){try{const l=JSON.parse(localStorage.getItem(lsKe
 function omplenaUrl878305(url,obra={}){const rc=rcNet878305(obra.rc);return String(url||"").trim().replace(/\{rc\}/g,rc).replace(/\{rc1\}/g,rc.slice(0,7)).replace(/\{rc2\}/g,rc.slice(7,14)).replace(/\{poblacio\}/g,encodeURIComponent(obra.poblacio||"")).replace(/\{adreca\}/g,encodeURIComponent(obra.adreca||""))}
 function urlSegura878305(u){return /^https?:\/\//i.test(String(u||"").trim())}
 function EnllacosObra878305({obra={}}){
-  const l=[...enllacosBase878305(obra),...enllacosPropis878305().map(x=>({nom:x.nom||x.url,url:omplenaUrl878305(x.url,obra),propi:true}))].filter(x=>urlSegura878305(x.url));
+  // V87.336 · el Cadastre és per al tècnic (l'Héctor, revisant la constructora: «no fa falta»); els enllaços propis, sempre
+  const l=[...(teModul878326("tecnic")?enllacosBase878305(obra):[]),...enllacosPropis878305().map(x=>({nom:x.nom||x.url,url:omplenaUrl878305(x.url,obra),propi:true}))].filter(x=>urlSegura878305(x.url));
+  if(!l.length)return null;
   return <div className="enllacos-obra-v878305"><span className="lbl">{t("Enllaços")}</span><div>{l.map((x,i)=><a key={i} href={x.url} target="_blank" rel="noopener noreferrer" className="enllac-v878305" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}>{x.propi?x.nom:t(x.nom)}{x.det?<small>{x.det}</small>:null}<ExternalLink size={13}/></a>)}</div></div>;
 }
 function EnllacosAjustos878305(){
@@ -6834,7 +6836,7 @@ function doTaskAction878140(obra,task,action){
 return <>
 <HomeHeader878251 obres={obres} tasks={tasks} properes={properes} todayLabel={todayLabel878141} setScreen={setScreen} obrirPaquet={obrirPaquet}/>
 <EncarrecsInici878305 obres={obres} odata={odata} openObra={openObra}/>
-<section className="home-pro-layout-v878140">
+<section className={`home-pro-layout-v878140${diuObra878326()?"":" sense-costat-v878336"}`}>
   <div className="home-pro-main-v878140">
     <OverdueReview878255 tasks={tasks} update={updateTaskField878140} clients={clients}/>
     <Card title={i18nT("Pròximes cites")} className="home-cites-v878314"><div className="upcoming-list-v878138 upcoming-list-v878140">{properes.length===0?<p>{i18nT("No hi ha cites futures.")}</p>:properes.map(e=><button key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||i18nT("Cita")}</b><span>{fmtEventDate878136(e)} · {e.hora||i18nT("Hora pendent")}</span>{e.obra&&<em>{e.obra}</em>}</button>)}</div></Card>
@@ -6860,9 +6862,9 @@ return <>
       </div>
     </Card>
   </div>
-  <aside className="home-pro-side-v878140">
-    <HomeCharts878251 obres={obres} clients={clients} setScreen={setScreen} obrirPaquet={obrirPaquet}/>
-  </aside>
+  {diuObra878326()&&<aside className="home-pro-side-v878140">
+    <ObresEnCurs878336 obres={obres} odata={odata} clients={clients} openObra={openObra}/>
+  </aside>}
 </section>
 {viewTask&&<div className="modal-backdrop"><div className="modal task-modal-v878140"><div className="modal-head"><div><h2>{i18nT("Veure / editar tasca")}</h2><p>{viewTask.obra.nom} · {clientName878138(clients,viewTask.obra)}</p></div><button onClick={()=>setViewTask(null)}><X/></button></div><div className="form-grid"><label className="span-all"><span>{i18nT("Tasca")}</span><input value={viewTask.task.text||''} onChange={e=>setViewTask(v=>({...v,task:{...v.task,text:e.target.value}}))}/></label><label><span>{i18nT("Estat")}</span><select value={viewTask.task.estat||'Pendent'} onChange={e=>setViewTask(v=>({...v,task:{...v.task,estat:e.target.value}}))}><option value="Pendent">{i18nT("Pendent")}</option><option value="En procés">{i18nT("En procés")}</option><option value="Fet">{i18nT("Fet")}</option><option value="Anul·lat">{i18nT("Anul·lat")}</option></select></label><label><span>{i18nT("Prioritat")}</span><select value={viewTask.task.prioritat||'Normal'} onChange={e=>setViewTask(v=>({...v,task:{...v.task,prioritat:e.target.value}}))}><option value="Baixa">{i18nT("Baixa")}</option><option value="Normal">{i18nT("Normal")}</option><option value="Alta">{i18nT("Alta")}</option><option value="Urgent">{i18nT("Urgent")}</option></select></label><label><span>{i18nT("Data màxima entrega")}</span><input type="date" value={toInputDate8743(viewTask.task.dataMaxima||viewTask.task.data)||''} onChange={e=>setViewTask(v=>({...v,task:{...v.task,dataMaxima:e.target.value,data:e.target.value}}))}/></label><label><span>{i18nT("Hora")}</span><input type="time" value={viewTask.task.hora||'09:00'} onChange={e=>setViewTask(v=>({...v,task:{...v.task,hora:e.target.value}}))}/></label><label className="span-all"><span>{i18nT("Notes")}</span><textarea value={viewTask.task.notes||''} onChange={e=>setViewTask(v=>({...v,task:{...v.task,notes:e.target.value}}))}/></label><div className="span-all task-visit-box-v87186"><b>{i18nT("Cita addicional vinculada")}</b><span>{i18nT("La data màxima queda com entrega. Aquí pots crear una visita/reunió prèvia sense convertir la tasca en una cita.")}</span><div><label><span>{i18nT("Data cita")}</span><input type="date" value={viewTask.task.citaData||toInputDate8743(viewTask.task.dataMaxima||viewTask.task.data)||''} onChange={e=>setViewTask(v=>({...v,task:{...v.task,citaData:e.target.value}}))}/></label><label><span>{i18nT("Hora cita")}</span><input type="time" value={viewTask.task.citaHora||'09:00'} onChange={e=>setViewTask(v=>({...v,task:{...v.task,citaHora:e.target.value}}))}/></label></div></div></div><div className="modal-actions"><button className="secondary" onClick={()=>{openObraTab?openObraTab(viewTask.obra.id,'Tasques'):openObra(viewTask.obra.id);setViewTask(null)}}>{i18nT("Entrar a l’expedient")}</button><button className="secondary" onClick={()=>{openObraTab?openObraTab(viewTask.obra.id,'Gestió temps'):openObra(viewTask.obra.id);setViewTask(null)}}>{i18nT("Iniciar temps")}</button><button className="secondary" onClick={()=>createLinkedVisit878186(viewTask.obra,viewTask.task)}>{i18nT("Crear cita vinculada")}</button><button className="primary" onClick={()=>{updateTaskField878140(viewTask.obra,viewTask.task,viewTask.task);setViewTask(null)}}>{i18nT("Guardar canvis")}</button></div></div></div>}
 </>}
@@ -6973,6 +6975,35 @@ function HomeCharts878251({obres=[],clients=[],setScreen,obrirPaquet}){
       </div>)}
       <div className="home-bars-legend-v878251"><span><i className="open"/>{t("Oberts")}</span><span><i className="closed"/>{t("Tancats o no acceptats")}</span></div>
     </div>
+  </Card>;
+}
+// V87.336 · Inici de la constructora (l'Héctor, 21/10/2026: «el resum d'expedients no sé si serveix de gaire, el resum ja el tenim
+// a dalt»): les obres en execució amb el % certificat sobre el pressupost (sense imports) i la data de l'última certificació.
+// Compten els pressupostos que tenen alguna certificació (un pressupost inicial copiat i sense certificar no fa baixar el %).
+function certObra878336(d={}){
+  const ms=ensureBudgetGroups8786(d).groups.map(g=>budgetMetric8789(d,g));
+  const amb=ms.filter(m=>m.certificat>0.005);
+  const press=(amb.length?amb:ms.filter(m=>m.id===(d.activeBudgetIdObra||"principal"))).reduce((s,m)=>s+(m.pressupost||0),0);
+  const cert=amb.reduce((s,m)=>s+(m.certificat||0),0);
+  const certs=(d.certificacions||[]).filter(c=>c&&c.data).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+  return {pct:press>0.005?cert/press*100:null,ult:certs[0]||null};
+}
+// el promotor (si en té un de debò) o el client: a les obres compartides, el client és sovint la mateixa constructora
+function quiObra878336(o={},clients=[]){
+  const p=String(o.propietat||"").trim();
+  if(p&&!/^(pendent|pendiente|particular|client pendent|-)$/i.test(p))return p;
+  return (clients||[]).find(c=>c.id===o.client&&!o.compartida)?.nom||o.clientNomCompartit||"";
+}
+function ObresEnCurs878336({obres=[],odata={},clients=[],openObra}){
+  const files=(obres||[]).filter(o=>paquetOk878314("execucio",o.estat)).map(o=>({o,...certObra878336((odata||{})[o.id]||{})}))
+    .sort((a,b)=>String(b.ult?.data||"").localeCompare(String(a.ult?.data||""))||String(a.o.nom||"").localeCompare(String(b.o.nom||""),"ca",{numeric:true,sensitivity:"base"}));
+  return <Card title={t("Obres en curs")} className="obres-curs-v878336">
+    {!files.length?<p className="hint">{t("No hi ha obres en execució.")}</p>:<div className="llista-v878336">{files.map(({o,pct,ult})=><button type="button" key={o.id} onClick={()=>openObra?.(o.id)}>
+      <span className="nm"><b>{o.nom}</b>{quiObra878336(o,clients)&&<small>{quiObra878336(o,clients)}</small>}</span>
+      <span className="pc"><b>{pct==null?"—":`${Math.round(pct)} %`}</b><small>{t("certificat")}</small></span>
+      <span className="bar" aria-hidden="true"><i style={{width:`${Math.max(0,Math.min(100,pct||0))}%`}}/></span>
+      <span className="ul">{ult?t("Última certificació: {d}",{d:fmtDate8761(ult.data)}):t("Sense certificacions")}</span>
+    </button>)}</div>}
   </Card>;
 }
 function clientName878138(clients=[],obra={}){return (clients||[]).find(c=>c.id===obra.client)?.nom||obra.clientNom||obra.propietat||t('Sense client')}
@@ -7096,6 +7127,20 @@ function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openC
       return {ag,c,g:grupContacte878315(ag,c),n:ids.size}}).filter(Boolean);
     // els clients que s'havien tret de la llista d'agents continuen sent contactes
     (clients||[]).filter(c=>!vistos.has(c.id)).forEach(c=>{const ag={...clientAsAgent878192(c),_persona878301:agentPersona878301(clientAsAgent878192(c)),_obres878301:[]};out.push({ag,c,g:grupContacte878315(ag,c),n:(obresClient[c.id]||new Set()).size})});
+    // V87.336 · els promotors de les obres (també de les que ens han compartit) són contactes encara que no siguin agents (l'Héctor:
+    // els de Verbania i les altres obres compartides no sortien als Contactes de Brava)
+    const nv=x=>/^pendent/i.test(String(x||"").trim())?"":netV878304(x);
+    const amagats=hiddenAgents878301(odata),jaHi=new Set(out.map(x=>x.ag._persona878301).filter(Boolean));
+    const meva=agentPersona878301({nom:empresaInfo878259()?.nom||""});
+    const promos=new Map();
+    (obres||[]).forEach(o=>{
+      const ag={nom:String(o.propietat||"").trim(),rol:"Promotor",empresa:nv(o.empresaPropietat),nif:nv(o.nifPropietat),telefon:nv(o.telefonPropietat),mobil:nv(o.mobilPropietat),email:nv(o.emailPropietat),adreca:nv(o.adrecaPropietat),contacte:nv(o.contactePropietat),contacteMobil:nv(o.contacteMobilPropietat),_dePromotor878336:true};
+      if(farciment(ag))return;
+      const k=agentPersona878301(ag);if(!k||(meva&&k===meva)||jaHi.has(k)||agentHidden878301(amagats,ag))return;
+      const e=promos.get(k);if(e){for(const f of [...AGENT_FIELDS878301,"mobil","contacteMobil"])if(!e.ag[f]&&ag[f])e.ag[f]=ag[f];e.ids.add(String(o.id));return}
+      promos.set(k,{ag:{...ag,_persona878301:k,_obres878301:[]},ids:new Set([String(o.id)])});
+    });
+    promos.forEach(p=>out.push({ag:p.ag,c:null,g:"promotor",n:p.ids.size}));
     return out.sort((a,b)=>String(a.ag.nom||"").localeCompare(String(b.ag.nom||""),"ca",{numeric:true,sensitivity:"base"}));
   },[odata,clients,obres]);
   const logos=useMemo(()=>logosContactes878315(),[tick]);
@@ -7122,6 +7167,8 @@ function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openC
       const ag=edit.ag;
       const patch={nom:v.nom,empresa:netV878304(v.rao)||v.nom,rao:netV878304(v.rao),rol:v.rol||ag.rol||"Altres",nif:netV878304(v.nif),email:netV878304(v.email),telefon:netV878304(v.telefon),carrer:netV878304(v.carrer),codiPostal:netV878304(v.codiPostal),poblacio:netV878304(v.poblacio),provincia:netV878304(v.provincia),adreca,contactes:cont,contacte:cont[0]?.nom||"",contacteMobil:cont[0]?.mobil||"",observacions:netV878304(v.observacions)};
       setOdata?.(prev=>updateAgentLibrary878191(prev,{...ag,_identity878191:ag._persona878301},patch));
+      // V87.336 · un promotor que només era a la fitxa d'una obra passa a la llista de contactes
+      if(ag._dePromotor878336){const {_dePromotor878336,...net}=cleanAgentCopy878301(ag);setOdata?.(prev=>addToLibrary878303(prev,{...net,...patch}))}
       const kNou=agentPersona878301({nom:v.nom});
       if(v.logo!==(edit.inicial.__logo||"")||kNou!==ag._persona878301){if(ag._persona878301&&kNou!==ag._persona878301)desaLogo878315(ag._persona878301,"");desaLogo878315(kNou,v.logo||"")}
     }
@@ -7931,7 +7978,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
       <div className="span-all"><CodiCarpeta878270 obra={obra}/></div>
       </>}
       {sub878304==="client"&&<>
-      <label><span>{i18nT("Client / carpeta")}</span><select value={clientChoice||""} onChange={e=>setClientChoice(e.target.value)}><option value="" disabled>{i18nT("Selecciona client...")}</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}<option value="__new__">{i18nT("+ Crear client nou")}</option></select></label>
+      <label><span>{i18nT("Client / carpeta")}</span><select value={clientChoice||""} disabled={!!obra.compartida} onChange={e=>setClientChoice(e.target.value)}><option value="" disabled>{i18nT("Selecciona client...")}</option>{clientChoice&&clientChoice!=="__new__"&&!(clients||[]).some(c=>c.id===clientChoice)&&<option value={clientChoice}>{obra.clientNomCompartit||obra.propietat||clientChoice}</option>}{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}<option value="__new__">{i18nT("+ Crear client nou")}</option></select></label>
       {clientChoice==="__new__"&&<div className="span-all new-client-inline-v87159"><h4>{i18nT("Crear client nou")}</h4><div className="form-grid compact-v87151 no-pad"><label><span>{i18nT("Nom client *")}</span><input value={newClient878159.nom} onChange={e=>setNewClient878159(p=>({...p,nom:e.target.value}))}/></label><label><span>{i18nT("Raó social")}</span><input value={newClient878159.rao} onChange={e=>setNewClient878159(p=>({...p,rao:e.target.value}))} placeholder={i18nT("Opcional")}/></label><label><span>{i18nT("Rol / tipologia")}</span><select value={newClient878159.tipus||"Promotor"} onChange={e=>setNewClient878159(p=>({...p,tipus:e.target.value}))}><option value="Promotor">{i18nT("Promotor")}</option><option value="Arquitecte">{i18nT("Arquitecte")}</option><option value="Arquitecte tècnic">{i18nT("Arquitecte tècnic")}</option><option value="Immobiliària">{i18nT("Immobiliària")}</option><option value="Constructora">{i18nT("Constructora")}</option><option value="Industrial">{i18nT("Industrial")}</option><option value="Administració">{i18nT("Administració")}</option><option value="Particular">{i18nT("Particular")}</option><option value="Altres">{i18nT("Altres")}</option></select></label><label><span>{i18nT("NIF/CIF")}</span><input value={newClient878159.nif} onChange={e=>setNewClient878159(p=>({...p,nif:e.target.value}))}/></label><label><span>{i18nT("Email")}</span><input value={newClient878159.email} onChange={e=>setNewClient878159(p=>({...p,email:e.target.value}))}/></label><label><span>{i18nT("Telèfon")}</span><input value={newClient878159.telefon} onChange={e=>setNewClient878159(p=>({...p,telefon:e.target.value}))}/></label><label><span>{i18nT("Adreça client")}</span><input value={newClient878159.adreca} onChange={e=>setNewClient878159(p=>({...p,adreca:e.target.value}))}/></label></div></div>}
       {clientChoice!=="__new__"&&clientEd878304&&<div className="span-all"><FitxaPersona878304 v={clientEd878304} onChange={patch=>setClientEd878304(p=>({...(p||{}),...patch}))} tipus="persona"/><small className="hint">{i18nT("Són les dades de la fitxa del client: es canvien també a Clients i a les seves altres obres.")}</small></div>}
       </>}
@@ -9362,7 +9409,6 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
   const slices=top.slice(0,5).map((c,i)=>({label:c.cap,value:c.budget,color:CHART_COLORS878252[i]}));
   if(top.length>5)slices.push({label:t("Resta ({n} capítols)",{n:top.length-5}),value:top.slice(5).reduce((a,c)=>a+c.budget,0),color:"var(--co-s0)"});
   const arcs=donutArcs878251(slices);
-  const maxCert=Math.max(1,...s.certs.map(c=>c.amount));
   const initials=String(obra.nom||"?").replace(/^obra\s+/i,"").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
   return <section className="obra-hero-v878252">
     <div className="obra-hero-top-v878252">
@@ -9390,23 +9436,13 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
       <div><small>{t("Última certificació")}</small><b>{s.last?`C-${s.last.n}`:"—"}</b><span>{s.last?`${fmtAppDate8748(s.last.data)} · ${eur0878252(s.last.amount)}`:"—"}</span></div>
     </div>}
     <ObraFollowUp878253 data={data} tabs={tabs} go={go}/>
-    {hasBudget&&<div className="obra-hero-charts-v878252">
+    {hasBudget&&<div className="obra-hero-charts-v878252 un-v878336">
       <div className="chart-card">
         <div className="chart-head"><b>{t("Pes per capítol")}</b><span>{t("sobre el pressupost")}</span></div>
         <div className="donut-row">
           <svg viewBox="0 0 150 150" role="img" aria-label={i18nT("Pes de cada capítol al pressupost")}>{arcs.map(p=><path key={p.label} d={p.d} fill={p.color} stroke="var(--co-surface)" strokeWidth="2"><title>{`${p.label}: ${eur0878252(p.value)} (${p.pct.toFixed(1)} %)`}</title></path>)}<text x="75" y="80" textAnchor="middle" className="n">{s.caps.length}</text><text x="75" y="95" textAnchor="middle" className="l">{t("capítols")}</text></svg>
           <div className="legend">{arcs.map(p=><div key={p.label}><i style={{background:p.color}}/><span>{p.label}</span><b>{p.pct.toFixed(0)} %</b></div>)}</div>
         </div>
-      </div>
-      <div className="chart-card">
-        <div className="chart-head"><b>{t("Import per certificació")}</b><span>{s.certs.length?t("clica per obrir les certificacions"):t("encara no n’hi ha")}</span></div>
-        {s.certs.length?<div className="cert-cols-v878252" role="img" aria-label={i18nT("Import de cada certificació")}>
-          {s.certs.map(c=><button type="button" key={c.n} onClick={()=>go(tabs.includes("Certificacions")?"Certificacions":tabs.includes("Certificacions obra")?"Certificacions obra":"Gestió obra")} title={`C-${c.n} · ${fmtAppDate8748(c.data)} · ${money(c.amount)}`}>
-            <span className="val">{c.n===s.lastN?eur0878252(c.amount):""}</span>
-            <span className="bar"><i style={{height:`${Math.max(2,c.amount/maxCert*100)}%`}} className={c.n===s.lastN?"last":""}/></span>
-            <span className="lab">C-{c.n}</span>
-          </button>)}
-        </div>:<p className="hint">{t("Quan hi hagi certificacions, aquí veuràs el ritme mensual.")}</p>}
       </div>
     </div>}
   </section>;
@@ -10155,6 +10191,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   }
   const [open,setOpen]=useState(()=>Object.fromEntries(Object.keys(group(data.partides||[],"cap")).map(k=>[k,false])));
   const[seleccio878320,setSeleccio878320]=useState(false);
+  // V87.336 · capítols principals oberts (l'Héctor: a Verbania, «Fusteria» sortia amb dos preus i no plegat com els altres)
+  const[grupObert878336,setGrupObert878336]=useState({});
   const [descOpen875,setDescOpen875]=useState({});
   const [budgetPartidaView87208,setBudgetPartidaView87208]=useState(null);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
@@ -11031,6 +11069,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   let lastBudgetScope87227="__none__";
   // V87.320 · quants capítols té cada capítol principal: si només en té un, no es repeteix a sobre
   const nCapsMain878320={};budgetChapterEntries87226.forEach(([c,its])=>{const sc=String((its||[]).find(x=>x.scopePrincipal)?.scopePrincipal||""),mc=String((its||[]).find(x=>x.capPrincipal)?.capPrincipal||"");if(mc){const k=sc+"__"+mc;nCapsMain878320[k]=(nCapsMain878320[k]||0)+1}});
+  const nPartMain878336={};budgetChapterEntries87226.forEach(([c,its])=>{const sc=String((its||[]).find(x=>x.scopePrincipal)?.scopePrincipal||""),mc=String((its||[]).find(x=>x.capPrincipal)?.capPrincipal||"");if(mc){const k=sc+"__"+mc;nPartMain878336[k]=(nPartMain878336[k]||0)+(its||[]).length}});
   let lastBudgetMain87226="__none__";
 
   return <div className={`stack ${clientMode?"client-budget-editor-v878242":""}`}>
@@ -11100,12 +11139,22 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           const showScopeChapter87227=!!scopeChapter87227&&scopeChapter87227!==lastBudgetScope87227;
           const showMainChapter87226=!!mainChapter87226&&mainChapterKey87227!==lastBudgetMain87226&&(nCapsMain878320[mainChapterKey87227]||0)>1;
           const mainAmagat878320=!!mainChapter87226&&(nCapsMain878320[mainChapterKey87227]||0)<=1&&nomCap878320(mainChapter87226)!==nomCap878320(cap);
+          const grup878336=!!mainChapter87226&&(nCapsMain878320[mainChapterKey87227]||0)>1;
+          const grupTancat878336=grup878336&&!grupObert878336[mainChapterKey87227];
+          const giraGrup878336=()=>setGrupObert878336(o=>({...o,[mainChapterKey87227]:!o[mainChapterKey87227]}));
           if(scopeChapter87227)lastBudgetScope87227=scopeChapter87227;
           if(mainChapter87226)lastBudgetMain87226=mainChapterKey87227;
           return <React.Fragment key={`${scopeChapter87227}-${mainChapter87226}-${cap}`}>
           {showScopeChapter87227&&<div className="budget-scope-v87227"><span>{i18nT("Àmbit de l’Excel")}</span><b>{scopeChapter87227}</b><strong>{money(budgetScopeTotals87227[scopeChapter87227]||0)}</strong></div>}
-          {showMainChapter87226&&<div className="budget-main-chapter-v87226 budget-main-chapter-v87230"><span>{i18nT("Capítol principal")}</span><b>{mainChapter87226}</b><strong>{money(budgetMainTotals87226[mainChapterKey87227]||0)}</strong>{editBudget8760b&&<button type="button" className="secondary small" onClick={()=>openMainChapterEditor878230(mainChapter87226,scopeChapter87227)}>{i18nT("Editar número i nom")}</button>}</div>}
-          <div className="budget-v25-cap">
+          {showMainChapter87226&&<div className={`budget-v25-cap grup-cap-v878336${grupTancat878336?"":" obert"}`}>
+            <div className="budget-v25-cap-head" role="button" tabIndex={0} aria-expanded={!grupTancat878336} onClick={giraGrup878336} onKeyDown={e=>{if(e.key==="Enter")giraGrup878336()}}>
+              <button type="button" tabIndex={-1} aria-hidden="true">{grupTancat878336?"▸":"▾"}</button>
+              <div className="budget-chapter-title-v87230"><b>{mainChapter87226}</b><small>{i18nT("{n} capítols",{n:nCapsMain878320[mainChapterKey87227]||0})}{editBudget8760b&&<> · <button type="button" className="link" onClick={e=>{e.stopPropagation();openMainChapterEditor878230(mainChapter87226,scopeChapter87227)}}>{i18nT("Editar número i nom")}</button></>}</small></div>
+              <span>{nPartMain878336[mainChapterKey87227]||0} {i18nT("partides")}</span>
+              <strong className="budget-chapter-total-v87230"><small>{i18nT("Total capítol")}</small>{money(budgetMainTotals87226[mainChapterKey87227]||0)}</strong>
+            </div>
+          </div>}
+          {!grupTancat878336&&<div className={`budget-v25-cap${grup878336?" dins-grup-v878336":""}`}>
             <div className="budget-v25-cap-head">
               <button onClick={()=>setOpen(o=>({...o,[cap]:!o[cap]}))}>{open[cap]?"▾":"▸"}</button>
               <div className="budget-chapter-title-v87230"><b>{cap}</b>{mainAmagat878320&&<small>{mainChapter87226}</small>}</div>
@@ -11148,7 +11197,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
               })}
               {editBudget8760b&&<button className="secondary add-line-btn" onClick={()=>addPartida(cap)}>{i18nT("+ Afegir partida")}</button>}
             </div>}
-          </div></React.Fragment>
+          </div>}</React.Fragment>
         })}
         {editBudget8760b&&<button type="button" className="primary add-chapter-bottom-v8779" onClick={addCapitol}><Plus/> {i18nT("Nou capítol")}</button>}
         {!editBudget8760b&&<AvisosPressupost878320 avisos={avisos878320}/>}
@@ -12636,7 +12685,7 @@ function documentFolders8775(obra,data={}){
   const hasCertData878193=(data.certificacions||[]).length>0||(data.factures||[]).length>0||(data.documents||[]).some(d=>["certificacio","proforma"].includes(d?.docData?.type)||/certificaci[oó]|proforma|facturaci[oó] obra/i.test(d?.nom||""));
   const add=(arr,id,label,desc)=>arr.some(x=>x.id===id)?arr:[...arr,{id,label,desc}];
   let folders=[];
-  folders=add(folders,"00_DESPATX_TECNIC",i18nT("00 · Despatx tècnic / honoraris"),i18nT("Pressupostos d’honoraris, factures del tècnic i documents interns del despatx vinculats a aquest expedient. No és documentació econòmica de l’obra."));
+  if((teModul878326("tecnic")||(data.documents||[]).some(d=>d?.folder==="00_DESPATX_TECNIC"))&&!obra?.compartida)folders=add(folders,"00_DESPATX_TECNIC",i18nT("00 · Despatx tècnic / honoraris"),i18nT("Pressupostos d’honoraris, factures del tècnic i documents interns del despatx vinculats a aquest expedient. No és documentació econòmica de l’obra."));
   folders=add(folders,"01_DOCUMENTACIO_PREVIA",i18nT("01 · Documentació prèvia"),i18nT("Encàrrec, informació rebuda, fitxa inicial, documentació del client i antecedents."));
   if(["Projecte / llicència d’obres","Tràmit municipal / llicència / comunicació","Activitat / adequació de local","Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Amiant (localització i diagnosi)","Postobra / documentació final"].includes(tipus)) folders=add(folders,"01_TRAMITS_AJUNTAMENT",i18nT("01 · Ajuntament / tràmits"),i18nT("Llicències, comunicacions, taxes, requeriments, registre i justificants."));
   if(["Projecte / llicència d’obres","Pressupost d’obra / amidaments","Direcció / seguiment d’obra","Gestió integral d’obra","Plànols / aixecament","Render / 3D / visualització","Activitat / adequació de local","Postobra / documentació final"].includes(tipus)) folders=add(folders,"02_PLANOLS",i18nT("02 · Plànols"),i18nT("DWG, PDF, aixecaments, as-built, bases gràfiques i plànols marcats."));
@@ -12945,11 +12994,17 @@ function AgendaExpedient8774({data,setData,obra,client,readOnly=false}){
   const today=new Date();
   const events=(Array.isArray(data?.events)?data.events:[]).map(cleanAgendaEvent87109).filter(Boolean);
   const [form,setForm]=useState({id:"",data:today.toISOString().slice(0,10),hora:"09:00",title:"",tipus:"Visita d’obra",adreca:obra?.adreca||"",detail:""});
+  // V87.336 · nota de veu des de l'Agenda de l'obra (l'Héctor, 21/10/2026): la cita queda a aquesta obra
+  const[veu,setVeu]=useState(false);
+  const[fetVeu,setFetVeu]=useState(null);
+  function citaDeVeu(p){const hora=p.hora||"09:00",s=hmToMin878256(hora)??540;return {data:p.data||isoDay878255(new Date()),hora,horaFi:p.horaFi||minToHm878256(s+60),allDay:!p.hora,title:p.titol||i18nT(p.tipus),tipus:p.tipus,detail:p.text||""}}
+  function desaVeu(p){if(readOnly||!p)return;const c=citaDeVeu(p);const ev=cleanAgendaEvent87109({...c,id:`ev-${Date.now()}`,obraId:obra?.id,obra:obra?.nom,client:client?.nom||obra?.propietat||"",adreca:obra?.adreca||"",editAt:new Date().toISOString()});if(!ev)return;setData(d=>({...d,events:[...(Array.isArray(d.events)?d.events:[]),ev],updatedAt:new Date().toISOString()}));setFetVeu({data:c.data,hora:c.allDay?"":c.hora,title:c.title})}
+  function revisaVeu(p){if(readOnly||!p)return;const c=citaDeVeu(p);setForm(f=>({...f,id:"",data:c.data,hora:c.hora,title:c.title,tipus:["Visita d’obra","Reunió","Pressupost","Certificació","Entrega documentació","Avís","Altres"].includes(c.tipus)?c.tipus:"Altres",detail:c.detail}))}
   function save(){if(readOnly)return;const ev=cleanAgendaEvent87109({...form,id:form.id||`ev-${Date.now()}`,obraId:obra?.id,obra:obra?.nom,client:form.client||client?.nom||obra?.propietat||"",data:form.data});if(!ev)return;setData(d=>({...d,events:(Array.isArray(d.events)?d.events:[]).some(x=>String(x.id)===String(ev.id))?d.events.map(x=>String(x.id)===String(ev.id)?ev:x):[...(Array.isArray(d.events)?d.events:[]),ev],updatedAt:new Date().toISOString()}));setForm({id:"",data:today.toISOString().slice(0,10),hora:"09:00",title:"",tipus:"Visita d’obra",adreca:obra?.adreca||"",detail:""})}
   function edit(e){if(readOnly)return;setForm({id:e.id,data:e.iso,hora:e.hora,title:e.title,tipus:e.tipus,adreca:e.adreca||obra?.adreca||"",detail:e.detail||""})}
   function del(id){if(readOnly)return;if(!confirm(t("Eliminar cita / avís?")))return;setData(d=>({...d,events:(Array.isArray(d.events)?d.events:[]).filter(e=>String(e.id)!==String(id)),updatedAt:new Date().toISOString()}));}
   const sameDay=events.filter(e=>e.iso===form.data);
-  return <div className="stack agenda-exp-safe-v87109"><Card title={t("Agenda / avisos de l’expedient")}><div className="agenda-sameday-v87110"><b>{t("Agenda del dia seleccionat")}</b>{sameDay.length===0?<span>{t("No hi ha cap altra nota/cita aquest dia.")}</span>:sameDay.map(e=><button key={e.id} onClick={()=>edit(e)}>{e.hora} · {e.client?`${e.client} · `:""}{e.title}</button>)}</div><div className="agenda-exp-grid-v87109"><div className="agenda-form-safe-v87109"><label>{t("Data")}<input type="date" value={form.data} onChange={e=>setForm({...form,data:e.target.value})}/></label><label>{t("Hora")}<input type="time" value={form.hora} onChange={e=>setForm({...form,hora:e.target.value})}/></label><label>{t("Tipus")}<select value={form.tipus} onChange={e=>setForm({...form,tipus:e.target.value})}><option value="Visita d’obra">{t("Visita d’obra")}</option><option value="Reunió">{t("Reunió")}</option><option value="Pressupost">{t("Pressupost")}</option><option value="Certificació">{t("Certificació")}</option><option value="Entrega documentació">{t("Entrega documentació")}</option><option value="Avís">{t("Avís")}</option><option value="Altres">{t("Altres")}</option></select></label><label>{t("Client")}<input value={form.client||client?.nom||obra?.propietat||""} onChange={e=>setForm({...form,client:e.target.value})} placeholder={t("Client")}/></label><label>{t("Títol")}<input value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label><label className="span-all">{t("Adreça")}<input value={form.adreca} onChange={e=>setForm({...form,adreca:e.target.value})}/></label><label className="span-all">{t("Observacions")}<textarea value={form.detail} onChange={e=>setForm({...form,detail:e.target.value})}/></label><button className="primary" onClick={save}>{t("Guardar cita / canvis")}</button></div><div className="agenda-list-safe-v87109">{events.length===0?<Empty text="No hi ha cites o avisos."/>:events.sort((a,b)=>a.iso.localeCompare(b.iso)).map(e=><button key={e.id} onClick={()=>edit(e)}><b>{e.title}</b><span>{fmtAppDate8748(e.iso)} · {e.hora} · {e.client||client?.nom||t("Sense client")}</span><small>{e.tipus} · {e.adreca||""}</small><em onClick={(x)=>{x.stopPropagation();del(e.id)}}>{t("Eliminar")}</em></button>)}</div></div></Card></div>
+  return <div className="stack agenda-exp-safe-v87109"><Card title={t("Agenda / avisos de l’expedient")} action={!readOnly&&<button type="button" className="secondary veu-obra-v878336" onClick={()=>setVeu(true)}><Mic size={16} aria-hidden="true"/> {t("Nota de veu")}</button>}>{veu&&<VeuCita878294 obres={obra?[obra]:[]} obraFixa={obra} close={()=>setVeu(false)} onDone={p=>{setVeu(false);revisaVeu(p)}} onDirecte={p=>{setVeu(false);desaVeu(p)}}/>}{fetVeu&&<div className="veu-fet-v878330" role="status"><span>✓ <b>{t("A l’agenda:")}</b> {new Date(fetVeu.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"})}{fetVeu.hora?` · ${fetVeu.hora}`:""} · {fetVeu.title}</span><button type="button" className="tanca" aria-label={t("Tancar")} onClick={()=>setFetVeu(null)}>×</button></div>}<div className="agenda-sameday-v87110"><b>{t("Agenda del dia seleccionat")}</b>{sameDay.length===0?<span>{t("No hi ha cap altra nota/cita aquest dia.")}</span>:sameDay.map(e=><button key={e.id} onClick={()=>edit(e)}>{e.hora} · {e.client?`${e.client} · `:""}{e.title}</button>)}</div><div className="agenda-exp-grid-v87109"><div className="agenda-form-safe-v87109"><label>{t("Data")}<input type="date" value={form.data} onChange={e=>setForm({...form,data:e.target.value})}/></label><label>{t("Hora")}<input type="time" value={form.hora} onChange={e=>setForm({...form,hora:e.target.value})}/></label><label>{t("Tipus")}<select value={form.tipus} onChange={e=>setForm({...form,tipus:e.target.value})}><option value="Visita d’obra">{t("Visita d’obra")}</option><option value="Reunió">{t("Reunió")}</option><option value="Pressupost">{t("Pressupost")}</option><option value="Certificació">{t("Certificació")}</option><option value="Entrega documentació">{t("Entrega documentació")}</option><option value="Avís">{t("Avís")}</option><option value="Altres">{t("Altres")}</option></select></label><label>{t("Client")}<input value={form.client||client?.nom||obra?.propietat||""} onChange={e=>setForm({...form,client:e.target.value})} placeholder={t("Client")}/></label><label>{t("Títol")}<input value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label><label className="span-all">{t("Adreça")}<input value={form.adreca} onChange={e=>setForm({...form,adreca:e.target.value})}/></label><label className="span-all">{t("Observacions")}<textarea value={form.detail} onChange={e=>setForm({...form,detail:e.target.value})}/></label><button className="primary" onClick={save}>{t("Guardar cita / canvis")}</button></div><div className="agenda-list-safe-v87109">{events.length===0?<Empty text="No hi ha cites o avisos."/>:events.sort((a,b)=>a.iso.localeCompare(b.iso)).map(e=><button key={e.id} onClick={()=>edit(e)}><b>{e.title}</b><span>{fmtAppDate8748(e.iso)} · {e.hora} · {e.client||client?.nom||t("Sense client")}</span><small>{e.tipus} · {e.adreca||""}</small><em onClick={(x)=>{x.stopPropagation();del(e.id)}}>{t("Eliminar")}</em></button>)}</div></div></Card></div>
 }
 
 function ObraMiniCalendar({events=[]}){const[m,setM]=useState(5),[y,setY]=useState(2026),[d,setD]=useState(null),[note,setNote]=useState(null);const[local,setLocal]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_obra_notes"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_obra_notes"),JSON.stringify(local));localStorage.setItem(lsKey8779("aco_home_notes"),JSON.stringify(local))},[local]);let all=[...events,...local],blanks=first(y,m),total=days(y,m),sel=d?all.filter(e=>e.day===d&&e.month===m&&e.year===y):[];function save(n){if(n.id==="new")setLocal(p=>[...p,{...n,id:"local-"+Date.now(),month:m,year:y}]);else setLocal(p=>p.map(x=>x.id===n.id?n:x));setNote(null)}function newNote(){setNote({id:"new",day:d||1,title:"Nova nota",type:"Nota",hora:"09:00",note:"",color:"blue"})}return <div className="home-calendar obra-calendar"><div className="calendar-head compact"><button className="secondary" onClick={()=>m===0?(setM(11),setY(y-1)):setM(m-1)}>‹</button><button className="secondary" onClick={()=>{setM(5);setY(2026)}}>Avui</button><button className="secondary" onClick={()=>m===11?(setM(0),setY(y+1)):setM(m+1)}>›</button><select value={m} onChange={e=>setM(+e.target.value)}>{months.map((x,i)=><option value={i}>{x}</option>)}</select><select value={y} onChange={e=>setY(+e.target.value)}>{Array.from({length:11},(_,i)=>2023+i).map(x=><option>{x}</option>)}</select><button className="primary" onClick={newNote}>+ Nota nova</button></div><div className="home-calendar-layout"><div className="calendar-grid small">{["Dl","Dt","Dc","Dj","Dv","Ds","Dg"].map(x=><div className="week">{x}</div>)}{Array.from({length:blanks}).map((_,i)=><div className="day blank" key={"b"+i}/>) }{Array.from({length:total}).map((_,i)=>{let day=i+1,ev=all.filter(e=>e.day===day&&e.month===m&&e.year===y);return <button className={`day ${d===day?"selected":""}`} onClick={()=>setD(day)}><b>{day}</b>{ev.slice(0,2).map(e=><span className={`cal-event ${e.color==="red"?"red":""}`} onClick={(evn)=>{evn.stopPropagation();setNote(e)}}>{e.hora} · {e.title}</span>)}</button>})}</div><div className="day-detail side"><h3>{d?`Dia ${d}`:"Selecciona un dia"}</h3>{d&&sel.length===0&&<p>Sense notes.</p>}{sel.map(e=><button className="note-card" onClick={()=>setNote(e)}><strong>{e.title}</strong><span>{e.hora} · {e.type}</span><p>{e.note||"Sense observacions."}</p></button>)}</div></div>{note&&<div className="note-pop"><div><h3>{note.id==="new"?"Nova nota":"Editar nota"}</h3><label><span>Dia</span><input value={note.day} onChange={e=>setNote({...note,day:+e.target.value})}/></label><label><span>Títol</span><input value={note.title} onChange={e=>setNote({...note,title:e.target.value})}/></label><label><span>Hora</span><input value={note.hora} onChange={e=>setNote({...note,hora:e.target.value})}/></label><label><span>Observacions</span><textarea value={note.note} onChange={e=>setNote({...note,note:e.target.value})}/></label><button className="primary" onClick={()=>save(note)}>Guardar / Tancar</button></div></div>}</div>}
@@ -12980,7 +13035,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.335",
+    app_version:"87.336",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -14464,7 +14519,7 @@ function layoutDay878256(list){
 
 // V87.294 · Cita per veu: es diu (o s'escriu) la cita com es diria i s'obre la fitxa de la cita ja omplerta per revisar-la.
 // Entén el dia, l'hora (també «dos quarts de deu»), el tipus i l'obra (src/citaVeu.js). No desa res sense revisar.
-function VeuCita878294({obres=[],clients=[],close,onDone,onDirecte}){
+function VeuCita878294({obres=[],clients=[],close,onDone,onDirecte,obraFixa=null}){
   const[text,setText]=useState("");
   const llista=useMemo(()=>(obres||[]).map(o=>({id:o.id,nom:o.nom,clientNom:(clients||[]).find(c=>c.id===o.client)?.nom||o.clientNomCompartit||""})),[obres,clients]);
   const p=text.trim()?parseCita(text,{obres:llista}):null;
@@ -14477,7 +14532,7 @@ function VeuCita878294({obres=[],clients=[],close,onDone,onDirecte}){
       <span><small>{t("Dia")}</small>{dia}</span>
       <span><small>{t("Hora")}</small>{p.hora?`${p.hora} – ${p.horaFi}`:t("Tot el dia")}</span>
       <span><small>{t("Tipus")}</small>{t(p.tipus)}</span>
-      <span><small>{t("Obra")}</small>{p.obraNom||t("Cap (la pots triar a la cita)")}</span>
+      <span><small>{t("Obra")}</small>{obraFixa?obraFixa.nom:(p.obraNom||t("Cap (la pots triar a la cita)"))}</span>
       <span><small>{t("Motiu")}</small>{p.titol||t(p.tipus)}</span>
     </div>}
     <div className="actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className={onDirecte?"secondary":"primary"} disabled={!p} onClick={()=>onDone(p)}>{t("Revisar i desar")}</button>{onDirecte&&<button type="button" className="primary" disabled={!p} onClick={()=>onDirecte(p)}>{t("Posar-ho a l’agenda")}</button>}</div>
@@ -15136,8 +15191,11 @@ function omplenaDemo878328(perfil){
     if(horesK.length)writeTimeRows878255(o.id,horesK.map(([k,dd,h,feina,extra])=>ajudes.hora(k,dd,h,feina,{obraId:o.id,...(extra||{})})));
   });
   lsSet8779("aco_clients",JSON.stringify(clients));
-  lsSet8779("aco_obres",JSON.stringify(llista));
-  lsSet8779("aco_odata",JSON.stringify(odata));
+  // V87.336 · les obres que ja li han compartit altres comptes es queden (abans s'esborraven i el núvol creia que ja les tenia)
+  const abans=lsJson8779("aco_obres",[]),odAbans=lsJson8779("aco_odata",{})||{};
+  const alienes=(Array.isArray(abans)?abans:[]).filter(o=>o?.compartida&&!llista.some(x=>x.id===o.id));
+  lsSet8779("aco_obres",JSON.stringify([...llista,...alienes]));
+  lsSet8779("aco_odata",JSON.stringify({...Object.fromEntries(alienes.map(o=>[o.id,odAbans[o.id]]).filter(([,d])=>d)),...odata}));
   writeAlbarans878259(despeses);
   lsSet8779("aco_demo_v878328",JSON.stringify({perfil,at:createdAt}));
 }

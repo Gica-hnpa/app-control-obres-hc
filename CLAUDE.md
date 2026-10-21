@@ -782,6 +782,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     **recordatori d’Apple** (Siri o el teclat), no una cita de l’app: les de l’app van al calendari «Control d’Obres» amb inici i final.
   - **Compte en editar proves amb `String.replace`:** si el text nou porta `$'` (p. ex. `'^Desar$'`), JavaScript hi copia la resta del
     fitxer (va passar el 21/10/2026 amb `clientsvirtuals.mjs`). Fer servir `split/join` o una funció com a substitució.
+- **Revisió del mòdul de constructora** (l’Héctor, 21/10/2026 al vespre: «és el que m’interessa tancar abans per ensenyar-lo a
+  clients»; ho prova amb el compte de debò de **Brava** al mòbil, i el que hi canviï ho veu Brava). Es fa per tandes a
+  `docs/revisio-modul-constructor.md` (tanda 2: paquet «Empresa» amb treballadors i cost/hora; tanda 3: despeses del personal i
+  rendiment = certificat − despeses; tanda 4: Planning amb vinculacions i colles).
+  - **V87.336 (tanda 1):**
+    - **Inici:** `ObresEnCurs878336` (constructora i gestió total, `diuObra878326`) en lloc de `HomeCharts878251`: % certificat
+      (`certObra878336`: els pressupostos amb alguna certificació) i l’última certificació; al tècnic, sense columna
+      (`sense-costat-v878336`).
+    - **Contactes:** els promotors de les obres (`obra.propietat`…) hi surten encara que no siguin agents (`_dePromotor878336`; si
+      se’n desa un, `addToLibrary878303`).
+    - **Obres compartides:** les dades de l’obra són les de l’Héctor; el client (`obra.client`) és un id de la llista de **l’Héctor**
+      (a les de Brava, `brava`), que no és a la llista de clients de l’altre compte. Un `<select>` amb un valor que no és a les
+      opcions ensenya la primera (per això sortia «David Fuster»): a Dades › Client hi ha l’opció amb `clientNomCompartit` i, si
+      `obra.compartida`, no es pot canviar. El promotor de debò és `propietat` (`quiObra878336`).
+    - Documents: «00 · Despatx tècnic / honoraris» només amb el mòdul tècnic i mai en una obra compartida. Cadastre només amb el
+      mòdul tècnic. Fora «Import per certificació» del Resum.
+    - Pressupost: el capítol principal que agrupa capítols és una línia plegada (`grup-cap-v878336`, `grupObert878336`).
+    - Agenda de l’obra (`AgendaExpedient8774`): «Nota de veu» (`VeuCita878294` amb `obraFixa`).
+    - `omplenaDemo878328` ja no esborra les obres compartides que el compte ja tenia.
+    - Estils: `src/theme-v878336.css`. Prova: `constructor336test.mjs` (24; l’obra compartida es posa amb un POST a `aco_shared`
+      del Supabase de proves amb `Bearer tok-<id de l’Héctor>`).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
