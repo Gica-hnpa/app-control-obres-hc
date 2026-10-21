@@ -13,7 +13,7 @@ import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878
 import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {encarrecDe,estatPassos,estatDocs} from "./encarrecsTecnics.js";
 import {dadesDemo} from "./dadesDemo.js";
-import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary} from "./googleCal.js";
+import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary,potReconnectar as gcalPotReconnectar,prepara as gcalPrepara,recorda as gcalRecorda} from "./googleCal.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.330";
+const APP_VERSION878264="87.331";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4179,6 +4179,25 @@ useEffect(()=>{if(!obraId||!authUser8779||dataLoadedUser8781!==authUser8779)retu
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),dataOwnerUser878233)},[clients,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),dataOwnerUser878233)},[obres,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,dataOwnerUser878233)},[odata,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
+// V87.331 · Menús desplegables (Accions, ⋯, Afegir, Imprimir…). L'Héctor: «el desplegable queda fix i no se'n va si no apreto de
+// nou el botó; un desplegable, quan hi estic a sobre es desplega i si amb el ratolí vaig a un altre lloc es plega sol». Es tanquen en
+// tocar fora o amb Esc; amb el ratolí (no al mòbil ni a l'iPad), s'obren en passar-hi per sobre i es pleguen en marxar-ne.
+useEffect(()=>{
+  const esMenu=d=>{if(!(d instanceof HTMLDetailsElement))return false;const p=[...d.children].find(c=>c.tagName!=="SUMMARY");if(!p)return false;const pos=getComputedStyle(p).position;return pos==="absolute"||pos==="fixed"};
+  const oberts=()=>[...document.querySelectorAll("details[open]")].filter(esMenu);
+  const fora=e=>{for(const d of oberts())if(!d.contains(e.target))d.open=false};
+  // (si hi ha un menú obert, Esc només el tanca: no fa res més, com tornar al Resum de l'obra)
+  const esc=e=>{if(e.key!=="Escape")return;const o=oberts();if(!o.length)return;for(const d of o)d.open=false;e.stopImmediatePropagation();e.stopPropagation()};
+  const mq=window.matchMedia?.("(hover:hover) and (pointer:fine)");
+  const tm=new WeakMap();
+  const over=e=>{if(!mq?.matches)return;const d=e.target?.closest?.("details");if(!d||!esMenu(d))return;clearTimeout(tm.get(d));
+    if(!d.open&&e.target.closest("summary")&&d.contains(e.target.closest("summary")))tm.set(d,setTimeout(()=>{if(!d.matches(":hover")||d.open)return;for(const o of oberts())if(!o.contains(d))o.open=false;d.open=true;d.__hover878331=Date.now()},220))};
+  const out=e=>{if(!mq?.matches)return;const d=e.target?.closest?.("details");if(!d||!esMenu(d))return;if(e.relatedTarget&&d.contains(e.relatedTarget))return;clearTimeout(tm.get(d));tm.set(d,setTimeout(()=>{if(d.open&&!d.matches(":hover"))d.open=false},380))};
+  // si s'ha obert en passar-hi per sobre, el clic que ve just després no el torna a tancar
+  const clic=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!esMenu(d)||!d.open)return;if(d.__hover878331&&Date.now()-d.__hover878331<1200){e.preventDefault();d.__hover878331=0}};
+  document.addEventListener("pointerdown",fora,true);window.addEventListener("keydown",esc,true);document.addEventListener("mouseover",over);document.addEventListener("mouseout",out);document.addEventListener("click",clic,true);
+  return()=>{document.removeEventListener("pointerdown",fora,true);window.removeEventListener("keydown",esc,true);document.removeEventListener("mouseover",over);document.removeEventListener("mouseout",out);document.removeEventListener("click",clic,true)};
+},[]);
 // V87.303 · En obrir un menú desplegable (Accions, Imprimir…), que càpiga a la pantalla: si surt per baix o queda sota la barra
 // de baix, el botó ＋ o el comptador de temps, es baixa una mica la pàgina i, si encara no hi cap, el menú s'escurça i es llisca.
 useEffect(()=>{
@@ -6624,7 +6643,7 @@ function IniciTreballador878327({obres=[],odata={},events=[],setScreen,openObra,
   const fh=h=>`${(Math.round(h*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} h`;
   const cita=e=><button type="button" key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||t("Cita")}</b><span>{fmtEventDate878136(e)} · {e.hora||t("Hora pendent")}</span>{e.obra&&<em>{e.obra}</em>}</button>;
   return <div className="inici-treb-v878327">
-    <header><span>{now.toLocaleDateString(loc878272(),{weekday:'long',day:'numeric',month:'long'})}</span><h1>{t("La feina d’avui")}</h1><button type="button" className="veu-inici-v878330" onClick={()=>{window.__acoVeuAgenda878330=true;setScreen("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button></header>
+    <header><span>{now.toLocaleDateString(loc878272(),{weekday:'long',day:'numeric',month:'long'})}</span><h1>{t("La feina d’avui")}</h1><button type="button" className="veu-inici-v878330" onClick={()=>{if(gcalPotReconnectar())gcalConnect().catch(()=>{});window.__acoVeuAgenda878330=true;setScreen("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button></header>
     <div className="kpis"><button type="button" onClick={()=>setScreen("Traça")}><small>{t("Hores d’avui")}</small><b>{fh(hAvui)}</b></button><button type="button" onClick={()=>setScreen("Traça")}><small>{t("Aquesta setmana")}</small><b>{fh(hSetm)}</b></button><button type="button" onClick={()=>setScreen("Treballs / Expedients")}><small>{t("Obres en curs")}</small><b>{meves.length}</b></button></div>
     <Card title={t("Avui")}><div className="upcoming-list-v878138 upcoming-list-v878140">{avuiEv.length?avuiEv.map(cita):<p>{t("Avui no hi ha cap cita.")}</p>}</div>{properes.length>0&&<><h4 className="proximes">{t("Pròximes cites")}</h4><div className="upcoming-list-v878138 upcoming-list-v878140">{properes.map(cita)}</div></>}</Card>
     <Card title={t("Feines pendents")}><div className="task-list-v878327">{tasks.length?tasks.map(({obra,task})=>{const to=taskDeadlineTone878140(task);const dies=diesTasca878314(task);return <button type="button" key={obra.id+task.id} className={`tasca-v878321 ${to}`} onClick={()=>openObraTab?.(obra.id,'Agenda / Avisos')}>{dies&&<em className={`dies-v878321 ${to}`}>{dies}</em>}<b>{task.text||t("Tasca pendent")}</b><span>{obra.nom}</span></button>}):<p>{t("No hi ha feines pendents.")}</p>}</div></Card>
@@ -6856,7 +6875,7 @@ function HomeHeader878251({obres=[],tasks=[],properes=[],todayLabel="",setScreen
     <div className="home-head-title-v878251">
       <span>{todayLabel}</span>
       <h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1>
-      <button type="button" className="veu-inici-v878330" onClick={()=>{window.__acoVeuAgenda878330=true;setScreen?.("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button>
+      <button type="button" className="veu-inici-v878330" onPointerEnter={()=>{if(gcalPotReconnectar())gcalPrepara()}} onClick={()=>{if(gcalPotReconnectar())gcalConnect().catch(()=>{});window.__acoVeuAgenda878330=true;setScreen?.("Agenda")}}><Mic size={16} aria-hidden="true"/>{t("Nota de veu a l’agenda")}</button>
       {(vencudes||properes.length)?<p>{vencudes?<b className="late">{vencudes===1?t("1 tasca vençuda"):t("{n} tasques vençudes",{n:vencudes})}</b>:null}{vencudes&&properes.length?" · ":""}{properes.length?(properes.length===1?t("1 cita propera"):t("{n} cites properes",{n:properes.length})):""}</p>:null}
     </div>
     <div className="home-kpis-v878251 home-kpis-v878314">
@@ -12874,7 +12893,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.330",
+    app_version:"87.331",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -14446,8 +14465,18 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
     const seen=new Set();
     return [...deObres,...readAgendaLocal878256()].filter(e=>e&&!e.auto&&!String(e.id).startsWith("task-")&&!seen.has(e.id)&&seen.add(e.id));
   }
+  // V87.331 · una sola sincronització alhora (en connectar-se sol, l'avís de connexió i el botó en demanaven dues: es feien dos
+  // calendaris «Control d'Obres»); si se'n demana una mentre una altra corre, es fa en acabar
+  const gcBusyRef=useRef(false),gcPendRef=useRef(false);
   async function gcSync(){
     if(readOnly||!gcalConfigured()||!gcalConnected())return;
+    if(gcBusyRef.current){gcPendRef.current=true;return}
+    gcBusyRef.current=true;
+    // la que s'ha demanat mentre una altra corria es fa just després, amb les dades d'aquell moment (gcSync0Ref)
+    try{do{gcPendRef.current=false;await gcSync0Ref.current()}while(gcPendRef.current&&gcalConnected())}finally{gcBusyRef.current=false}
+  }
+  const gcSync0Ref=useRef(null);gcSync0Ref.current=gcSync0;
+  async function gcSync0(){
     setGc(s=>({...s,busy:true,err:""}));
     try{
       const key=lsKey8779("aco_google_cal_v878295");let st={};try{st=JSON.parse(localStorage.getItem(key)||"{}")||{}}catch{}
@@ -14463,7 +14492,19 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   const gcSyncRef=useRef(null);gcSyncRef.current=gcSync;
   function gcSoon(){if(!gcalConnected())return;clearTimeout(gcTimer.current);gcTimer.current=setTimeout(()=>gcSyncRef.current?.(),1500)}
   useEffect(()=>{if(gcalConnected())gcSync();return()=>clearTimeout(gcTimer.current)},[]);
-  async function gcConnect(){try{await gcalConnect();setGc(s=>({...s,on:true,err:""}));await gcSync()}catch(e){setGc(s=>({...s,on:false,err:e?.message||String(e)}))}}
+  // V87.331 · l'Héctor: «m'agradaria que fos automàtica». Si ja s'havia connectat en aquest aparell, al primer toc a l'Agenda es torna
+  // a demanar el permís (Google obre i tanca la seva finestra); quan arriba, se sincronitza sol.
+  useEffect(()=>{
+    if(readOnly||!gcalConfigured())return;
+    try{const st=JSON.parse(localStorage.getItem(lsKey8779("aco_google_cal_v878295"))||"{}");if(st?.calendarId)gcalRecorda()}catch{}
+    if(gcalPotReconnectar())gcalPrepara();
+    const toc=()=>{if(gcalPotReconnectar())gcalConnect().catch(()=>{})};
+    const ja=()=>{setGc(s=>({...s,on:true,err:""}));gcSyncRef.current?.()};
+    document.addEventListener("click",toc,true);window.addEventListener("aco-google-connectat",ja);
+    return()=>{document.removeEventListener("click",toc,true);window.removeEventListener("aco-google-connectat",ja)};
+  },[]);
+  // (en arribar el permís, l'avís «aco-google-connectat» ja sincronitza)
+  async function gcConnect(){try{await gcalConnect();setGc(s=>({...s,on:true,err:""}))}catch(e){setGc(s=>({...s,on:false,err:e?.message||String(e)}))}}
   function openEvent(e){
     if(e.kind==="google"){setForm({...e,data:e.iso,isNew:false,readOnly:true});return}
     if(e.kind==="task"||e.auto){if(e.obraId&&openObra)openObra(e.obraId);return}

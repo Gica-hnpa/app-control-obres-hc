@@ -13,16 +13,35 @@ const API = String(ENV.VITE_GOOGLE_API || "https://www.googleapis.com/calendar/v
 const SCOPE = "https://www.googleapis.com/auth/calendar";
 export const CAL_NAME = "Control d'Obres";
 const TZ = "Europe/Madrid";
-const TK = "google-cal-token"; // sessionStorage: d'aquest aparell i d'aquesta sessió
+// V87.331 · El permís (una hora) es desa per a cada usuari de l'app en aquest aparell (abans, només en aquesta pestanya: en tancar
+// l'app s'havia de tornar a connectar). I es recorda que ja s'ha connectat: l'Agenda torna a demanar el permís sola al primer toc
+// (Google obre i tanca la seva finestra; si el navegador la bloqueja, surt el botó com sempre).
+const usr = () => { try { return sessionStorage.getItem("aco_current_user8779") || ""; } catch { return ""; } };
+const TK = () => `google-cal-token__${usr()}`;
+const FLAG = () => `google-cal-connectat__${usr()}`;
 
 export function clientId() { return ENV.VITE_GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID || ""; }
 export function configured() { return !!clientId(); }
 
 let token = null;
-try { const t = JSON.parse(sessionStorage.getItem(TK) || "null"); if (t?.exp > Date.now()) token = t; } catch {}
-export function connected() { return !!token && token.exp - 60000 > Date.now(); }
-function setToken(at, expiresIn) { token = { at, exp: Date.now() + (Number(expiresIn) || 3600) * 1000 }; try { sessionStorage.setItem(TK, JSON.stringify(token)); } catch {} }
-export function disconnect() { token = null; try { sessionStorage.removeItem(TK); } catch {} }
+function tok() {
+  if (token && token.u === usr()) return token;
+  token = null;
+  try { const t = JSON.parse(localStorage.getItem(TK()) || "null"); if (t?.exp > Date.now()) token = { ...t, u: usr() }; } catch {}
+  return token;
+}
+export function connected() { const t = tok(); return !!t && t.exp - 60000 > Date.now(); }
+function setToken(at, expiresIn) {
+  token = { at, exp: Date.now() + (Number(expiresIn) || 3600) * 1000, u: usr() };
+  try { localStorage.setItem(TK(), JSON.stringify({ at: token.at, exp: token.exp })); localStorage.setItem(FLAG(), "1"); } catch {}
+  try { window.dispatchEvent(new Event("aco-google-connectat")); } catch {}
+}
+// «oblida»: l'usuari ja no vol el Google (no es tornarà a connectar sol)
+export function disconnect(oblida = false) { token = null; try { localStorage.removeItem(TK()); if (oblida) localStorage.removeItem(FLAG()); } catch {} }
+export function recorda() { try { localStorage.setItem(FLAG(), "1"); } catch {} }
+export function potReconnectar() { try { return configured() && !connected() && localStorage.getItem(FLAG()) === "1"; } catch { return false; } }
+// es carrega Google abans del toc: així la seva finestra s'obre dins del mateix toc i el navegador no la bloqueja
+export function prepara() { if (!window.__acoGoogleMock && configured()) loadGis().catch(() => {}); }
 
 function loadGis() {
   if (window.google?.accounts?.oauth2) return Promise.resolve();
@@ -32,8 +51,13 @@ function loadGis() {
     document.head.appendChild(s);
   });
 }
-// S'ha de cridar des d'un toc (Google obre la seva finestra)
-export async function connect() {
+// S'ha de cridar des d'un toc (Google obre la seva finestra). Si ja n'hi ha una d'oberta, s'espera aquella.
+let enCurs = null;
+export function connect() {
+  if (!enCurs) enCurs = connect0().finally(() => { enCurs = null; });
+  return enCurs;
+}
+async function connect0() {
   if (window.__acoGoogleMock) { const r = await window.__acoGoogleMock.requestToken(); setToken(r.access_token, r.expires_in); return true; }
   if (!configured()) throw new Error("Google Calendar encara no està configurat.");
   await loadGis();
@@ -50,7 +74,7 @@ async function g(path, { method = "GET", body, query } = {}) {
   if (!connected()) { const e = new Error("Cal tornar a connectar amb Google."); e.relogin = true; throw e; }
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).filter(([, v]) => v != null && v !== "")).toString() : "";
   let r;
-  try { r = await fetch(API + path + qs, { method, headers: { Authorization: `Bearer ${token.at}`, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined }); }
+  try { r = await fetch(API + path + qs, { method, headers: { Authorization: `Bearer ${tok().at}`, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined }); }
   catch { const e = new Error("Sense connexió amb Google."); e.offline = true; throw e; }
   if (r.status === 401) { disconnect(); const e = new Error("Cal tornar a connectar amb Google."); e.relogin = true; throw e; }
   if (r.status === 204) return null;

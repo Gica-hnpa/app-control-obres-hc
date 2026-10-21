@@ -717,6 +717,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **Google Calendar al moment:** `gcSoon` cridava el `gcSync` d’abans de desar (amb l’`odata` vell): una cita nova d’una obra no
     arribava al Google fins a la sincronització següent. Ara el temporitzador crida el `gcSync` de l’últim dibuix (`gcSyncRef`).
   - Estils: `src/theme-v878330.css`. Prova: `veuagenda330test.mjs` (17, amb el Google simulat). `veutest` adaptada al nom nou.
+- **V87.331 · Google Calendar es torna a connectar sol i menús que es pleguen sols** (l’Héctor, 21/10/2026):
+  - **Google** (`src/googleCal.js`): el permís (1 h) es desa per usuari de l’app a l’aparell (`google-cal-token__<usuari>`, localStorage;
+    abans sessionStorage: en tancar l’app s’havia de tornar a connectar) i es recorda que ja s’ha connectat (`google-cal-connectat__<usuari>`;
+    també si el compte té `aco_google_cal_v878295.calendarId`). Aquestes claus no comencen per `aco_`: no van al núvol ni al DADES.
+    Quan el permís caduca, el **primer toc a l’Agenda** (o «Nota de veu a l’agenda» de l’Inici) el torna a demanar (`potReconnectar`,
+    `prepara` carrega Google abans perquè la finestra no quedi bloquejada); en arribar (`aco-google-connectat`) se sincronitza.
+    `connect()` no en fa dues alhora; `gcSync` tampoc (si se’n demana una mentre corre, es fa just després amb les dades noves:
+    `gcSync0Ref`; abans, dues alhora feien dos calendaris «Control d’Obres»). Si el navegador bloqueja la finestra, surt el botó.
+  - **Menús** (`details` amb panell absolut: Accions, ⋯, Afegir, Imprimir…; un `useEffect` de l’App): es tanquen en tocar fora o amb
+    Esc (Esc ja no porta també al Resum de l’obra si hi ha un menú obert); amb ratolí (`(hover:hover) and (pointer:fine)`), s’obren en
+    passar-hi per sobre (220 ms) i es pleguen en marxar-ne (380 ms); el clic just després no el torna a tancar (`__hover878331`).
+  - Prova: `v331test.mjs` (14). `gcaltest` i `veuagenda330test` adaptades.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
