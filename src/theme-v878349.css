@@ -1,0 +1,114 @@
+/* V87.349 · Partes d'obra (botons grans, pensat per al mòbil) i filtres plegats de Despeses al mòbil */
+html body .partes-v878349{display:flex;flex-direction:column;gap:12px}
+html body .partes-cap-v878349{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+html body .partes-cap-v878349 h2{margin:0;font:800 20px var(--app-font);color:var(--co-ink)}
+html body .partes-cap-v878349 .nou{display:inline-flex;align-items:center;gap:6px;min-height:46px;padding:0 18px;font-size:15.5px;border-radius:12px}
+html body .partes-avis-v878349{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:10px;background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;font-size:14px}
+html body .partes-avis-v878349 .link{font-weight:700}
+html body .partes-total-v878349{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+html body .partes-total-v878349>div:first-child{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+html body .partes-total-v878349 small{color:var(--co-ink-3)}
+html body .partes-total-v878349 b{font:800 18px var(--app-font);font-variant-numeric:tabular-nums}
+html body .partes-total-v878349 span{color:var(--co-ink-3);font-size:13px}
+html body .partes-v878349 .barra,html body .parte-ed-v878349 .barra{height:6px;border-radius:99px;background:var(--co-surface-2);overflow:hidden}
+html body .partes-v878349 .barra i,html body .parte-ed-v878349 .barra i{display:block;height:100%;background:#16A34A;border-radius:99px}
+html body .partes-buit-v878349{padding:22px;text-align:center;border:1px dashed var(--co-line-strong);border-radius:12px;color:var(--co-ink-2)}
+html body .partes-llista-v878349{display:flex;flex-direction:column;border:1px solid var(--co-line);border-radius:12px;overflow:hidden;background:var(--co-surface)}
+html body .parte-v878349{all:unset;box-sizing:border-box;display:grid;grid-template-columns:120px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--co-line);cursor:pointer}
+html body .parte-v878349:last-child{border-bottom:0}
+html body .parte-v878349:hover{background:var(--co-surface-2)}
+html body .parte-v878349:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .parte-v878349 .dia,html body .parte-v878349 .que{display:flex;flex-direction:column;min-width:0}
+html body .parte-v878349 .dia b{text-transform:capitalize}
+html body .parte-v878349 small{color:var(--co-ink-3);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .parte-v878349 .imp{font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .partes-v878349 .estat,html body .parte-ed-v878349 .estat{font-style:normal;font:700 12px var(--app-font);padding:3px 9px;border-radius:99px;white-space:nowrap}
+html body .partes-v878349 .estat.pend{background:#FFF7ED;color:#9A3412}
+html body .partes-v878349 .estat.ok,html body .parte-ed-v878349 .estat.ok{background:#ECFDF5;color:#065F46}
+
+/* editor del parte */
+html body .parte-ed-v878349{display:flex;flex-direction:column;gap:12px;padding-bottom:84px}
+html body .parte-ed-v878349 .pe-cap{display:flex;justify-content:space-between;align-items:center;gap:10px}
+html body .parte-ed-v878349 .pe-cap .tornar{display:inline-flex;align-items:center;gap:4px;font-weight:700;min-height:40px}
+html body .parte-ed-v878349 .pe-dades{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html body .parte-ed-v878349 .pe-dades .wide{grid-column:1/-1}
+html body .parte-ed-v878349 .pe-dades label{display:flex;flex-direction:column;gap:4px}
+html body .parte-ed-v878349 .pe-dades span{font:600 12.5px var(--app-font);color:var(--co-ink-2)}
+html body .parte-ed-v878349 .pe-dades input,html body .parte-ed-v878349 .pe-dades textarea{min-height:44px;font-size:16px}
+html body .parte-ed-v878349 .pe-cerca{display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--co-line-strong);border-radius:12px;background:var(--co-surface)}
+html body .parte-ed-v878349 .pe-cerca input{border:0;outline:0;min-height:44px;flex:1;font-size:16px;background:transparent}
+html body .parte-ed-v878349 .pe-fase h3{margin:6px 0 8px;font:800 15px var(--app-font)}
+html body .parte-ed-v878349 .pe-capitol{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);margin-bottom:8px;overflow:hidden}
+html body .parte-ed-v878349 .pe-capbtn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 14px;cursor:pointer}
+html body .parte-ed-v878349 .pe-capbtn:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .parte-ed-v878349 .pe-capbtn .chev{transition:transform .15s;color:var(--co-ink-3);flex:0 0 auto}
+html body .parte-ed-v878349 .pe-capitol.obert .pe-capbtn .chev{transform:rotate(90deg)}
+html body .parte-ed-v878349 .pe-capbtn b{flex:1 1 auto;min-width:0;font-size:15px}
+html body .parte-ed-v878349 .pe-capbtn span{display:flex;gap:6px;align-items:center;color:var(--co-ink-3);font-size:12.5px;white-space:nowrap}
+html body .parte-ed-v878349 .pe-capbtn em{font-style:normal;font-weight:700;color:#065F46;background:#ECFDF5;padding:1px 7px;border-radius:99px}
+html body .parte-ed-v878349 .pe-partides{display:flex;flex-direction:column;border-top:1px solid var(--co-line)}
+html body .parte-ed-v878349 .pe-p{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--co-line)}
+html body .parte-ed-v878349 .pe-p.avui{background:#F0FDF4}
+html body .parte-ed-v878349 .pe-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+html body .parte-ed-v878349 .pe-txt b{font-weight:600;font-size:14.5px;line-height:1.3}
+html body .parte-ed-v878349 .pe-txt .codi{font-weight:700;color:var(--co-ink-3);margin-right:6px}
+html body .parte-ed-v878349 .fp{font-style:normal;font:700 11px var(--app-font);background:#FEF3C7;color:#92400E;padding:1px 7px;border-radius:99px;margin-right:6px}
+html body .parte-ed-v878349 .pe-txt small{color:var(--co-ink-3);font-size:12.5px}
+html body .parte-ed-v878349 .pe-txt .estat-p{color:var(--co-ink-2);font-weight:600}
+html body .parte-ed-v878349 .pe-p.feta .estat-p{color:#15803D}
+html body .parte-ed-v878349 .pe-bts{display:flex;gap:8px}
+html body .parte-ed-v878349 .pe-bts button{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:68px;min-height:56px;padding:4px 8px;border-radius:12px;border:2px solid var(--co-line-strong);background:var(--co-surface);color:var(--co-ink-2);font:700 12px var(--app-font);cursor:pointer}
+html body .parte-ed-v878349 .pe-bts .fet.on{background:#16A34A;border-color:#16A34A;color:#fff}
+html body .parte-ed-v878349 .pe-bts .part.on{background:#FEF3C7;border-color:#F59E0B;color:#92400E}
+html body .parte-ed-v878349 .pe-bts .mitja{display:block;width:18px;height:18px;border-radius:50%;border:2px solid currentColor;background:linear-gradient(90deg,currentColor 50%,transparent 50%)}
+html body .parte-ed-v878349 .pe-part{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:10px;background:var(--co-surface-2)}
+html body .parte-ed-v878349 .pe-part .modes{display:flex;flex-wrap:wrap;gap:6px}
+html body .parte-ed-v878349 .pe-part .modes button,html body .parte-ed-v878349 .pe-part .pcts button{min-height:40px;padding:0 12px;border-radius:99px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 13.5px var(--app-font);cursor:pointer}
+html body .parte-ed-v878349 .pe-part .modes button[aria-pressed="true"]{background:var(--co-accent);border-color:var(--co-accent);color:#fff}
+html body .parte-ed-v878349 .pe-part .pcts{display:flex;gap:8px}
+html body .parte-ed-v878349 .pe-part .pcts button{flex:1;font-size:16px}
+html body .parte-ed-v878349 .pe-part .val{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html body .parte-ed-v878349 .pe-part .val input{width:110px;min-height:44px;font-size:18px;text-align:right}
+html body .parte-ed-v878349 .pe-part .val .primary,html body .parte-ed-v878349 .pe-part .val .secondary{min-height:44px}
+html body .parte-ed-v878349 .pe-part .ajuda{color:var(--co-ink-3)}
+html body .parte-ed-v878349 .pe-nova{align-self:flex-start;margin:10px 14px;display:inline-flex;align-items:center;gap:6px;min-height:42px}
+html body .parte-ed-v878349 .pe-fp-fet{padding:8px 14px;border-bottom:1px solid var(--co-line);font-size:13.5px}
+html body .parte-ed-v878349 .pe-fp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px 14px;border-bottom:1px solid var(--co-line);background:#FFFBEB}
+html body .parte-ed-v878349 .pe-fp .fila{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}
+html body .parte-ed-v878349 .pe-fp .wide,html body .parte-ed-v878349 .pe-fp .chk,html body .parte-ed-v878349 .pe-fp .hm{grid-column:1/-1}
+html body .parte-ed-v878349 .pe-fp label{display:flex;flex-direction:column;gap:4px}
+html body .parte-ed-v878349 .pe-fp label span{font:600 12.5px var(--app-font);color:var(--co-ink-2)}
+html body .parte-ed-v878349 .pe-fp label.chk{flex-direction:row;align-items:center;gap:8px}
+html body .parte-ed-v878349 .pe-fp input,html body .parte-ed-v878349 .pe-fp select{min-height:42px;font-size:16px}
+html body .parte-ed-v878349 .pe-fp .qu{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+html body .parte-ed-v878349 .pe-fp .hm{display:flex;flex-direction:column;gap:6px}
+html body .parte-ed-v878349 .pe-fp .hm .lh{display:grid;grid-template-columns:minmax(0,1fr) 90px 32px;gap:6px;align-items:center}
+html body .parte-ed-v878349 .pe-fp .hm .cost{margin:0;font-weight:700}
+html body .parte-ed-v878349 .pe-peu{position:sticky;bottom:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);box-shadow:0 -4px 16px rgba(15,23,42,.08)}
+html body .parte-ed-v878349 .pe-peu .bts{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+html body .parte-ed-v878349 .pe-peu button{min-height:44px}
+html body .parte-ed-v878349 .pe-peu .primary.ok{background:#16A34A;border-color:#16A34A}
+
+/* Despeses: el botó «Filtres» només al mòbil */
+html body .albarans-v878259 .filtres-btn-v878349{display:none}
+@media (max-width:760px){
+  html body .albarans-v878259 .filtres-btn-v878349{display:inline-flex;align-self:flex-start;min-height:38px}
+  html body .albarans-v878259 .filtres-btn-v878349.on{background:var(--co-surface-2)}
+  html body .albarans-v878259 .alb-filters.plegat-v878349{display:none}
+  html body .parte-v878349{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"dia imp" "que estat"}
+  html body .parte-v878349 .dia{grid-area:dia}
+  html body .parte-v878349 .que{grid-area:que}
+  html body .parte-v878349 .imp{grid-area:imp;justify-self:end}
+  html body .parte-v878349 .estat{grid-area:estat;justify-self:end}
+  html body .parte-ed-v878349 .pe-p{grid-template-columns:1fr}
+  html body .parte-ed-v878349 .pe-bts button{flex:1}
+  html body .parte-ed-v878349 .pe-peu{bottom:calc(var(--bottom-nav-h,64px) + 6px)}
+  html body .parte-ed-v878349 .pe-peu{padding:8px 10px;gap:6px}
+  html body .parte-ed-v878349 .pe-peu .resum{font-size:13px}
+  html body .parte-ed-v878349 .pe-peu .bts{width:100%;flex-wrap:nowrap}
+  html body .parte-ed-v878349 .pe-peu .bts button{flex:1 1 0;min-width:0;min-height:46px;padding:0 10px;line-height:1.15}
+  html body .parte-ed-v878349 .pe-peu .bts .cancel{display:none}
+  html body .parte-ed-v878349 .pe-peu .bts .primary.ok{flex:2 1 0}
+}
+/* mentre s’omple un parte, el ＋ de l’obra no tapa els botons */
+html body:has(.parte-ed-v878349) .obra-plus-v878302{display:none!important}

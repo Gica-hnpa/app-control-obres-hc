@@ -1,5 +1,9 @@
 # Proposta · Parts d’obra (marcar cada dia la feina feta sobre el pressupost)
 
+> **Fet a la V87.349** amb les respostes de l’Héctor (22/10/2026): nom «Partes d’obra», a Seguiment; el fa l’encarregat (o el cap a
+> l’empresa petita); es pot marcar «com està» i «què s’ha fet avui»; es revisa i, amb «Està bé», va directe a la propera certificació;
+> la feina nova, com a «Fora de pressupost».
+
 Encàrrec de l’Héctor (22/10/2026), a petició d’un client constructor: «marcar sobre el pressupost el que ja està fet… un check a cada
 partida feta, i la que s’ha fet en part posar-hi un %, la quantitat o les línies de mesura; crear una partida nova en un capítol (o com
 una partida fora de pressupost, amb el temps dels operaris i el material, o només la descripció i la quantitat perquè el tècnic l’acabi

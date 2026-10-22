@@ -164,7 +164,9 @@ capítol) · Hores.
 - **V87.348**: llista de despeses per grups i en columnes (número, data, entrada, proveïdor, base, IVA, total), factures de diverses
   línies amb el desglossament a dins, mà d’obra per dies i treballadors per categoria (amb hores i €/hora), l’ull per veure la factura o la
   foto, filtres de proveïdor (sense treballadors), treballador i cerca, i vistes Tot · En execució · Per obra · Per any.
-- **Proposta: Parts d’obra** (`docs/proposta-parts-obra.md`): marcar cada dia la feina feta sobre el pressupost i passar-la a la certificació.
+- **V87.349 · Partes d’obra** (a Seguiment; decisions de l’Héctor sobre `docs/proposta-parts-obra.md`): el parte del dia sobre el
+  pressupost (Feta / Una part: %, quantitat feta, fet avui o mesures), feina fora de pressupost (amb hores i material si es vol), «Desar»
+  (per revisar) i «Està bé · a la propera certificació». Al mòbil, a Despeses, els requadres baixen fins a la llista i els filtres són plegats.
 
 ### Recordatori
 

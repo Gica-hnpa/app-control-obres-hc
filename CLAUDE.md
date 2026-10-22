@@ -936,8 +936,26 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Filtres**: «Tots els proveïdors» ja no porta els treballadors (`provsF878348`); «Tots els treballadors» (`trebs878348`); cerca de
       material, concepte, número, proveïdor o obra (`cerca878348`). L'editor ja no ensenya «Repercutida al client» a les constructores.
     - Excel: data d'entrada, categoria i hores. Estils: `src/theme-v878348.css`. Prova: `despeses348test.mjs` (22).
-    - **Proposta (sense fer): Parts d'obra** — marcar cada dia la feina feta sobre el pressupost i passar-la a la certificació
-      (`docs/proposta-parts-obra.md`, amb 6 preguntes per a l'Héctor).
+  - **V87.349 · Partes d'obra** (decisions de l'Héctor del 22/10/2026 sobre `docs/proposta-parts-obra.md`: nom «Partes d'obra», a
+    Seguiment, el fa l'encarregat o el cap; marcar «com està» i «què s'ha fet avui»; revisar, i amb «Està bé» directe a la propera
+    certificació; la feina nova, «Fora de pressupost»). Pestanya `Partes obra` (obres amb Pressupost; mòdul Obra; també el perfil
+    Treballador, sense preus) i «Parte d'avui» al ＋ del mòbil.
+    - Dades a l'obra: `data.partes878349` (`{id, data, qui, nota, estat:"revisar"|"certificat", linies:[{pid, mode, val, mesures, feta}],
+      noves:[…], cert:{[pressupost]:número}}`); `feta` = quantitat feta a origen després del parte. `pidsObra878349` (id de la partida o
+      `codi:<pressupost>|<codi>` o la posició). Punt de partida (`previ878349`): el més gran entre els partes anteriors i el que ja estava
+      certificat en certificacions que no ha fet cap parte (`baseCert878349`).
+    - Editor (`ParteEditor878349`): dia, qui (els treballadors de l'empresa), nota, cercador; fases → capítols plegats («N de M fetes») →
+      partides amb **Feta** i **Una part** (% fet amb 25/50/75 · Quantitat feta · Fet avui · Mesures amb `MedicioModal8780`), «Fet: 60 % (…) ·
+      avui +…» i la barra. **Feina fora de pressupost** per capítol (`NovaFP878349`): què s'ha fet, quantitat i unitat; «Amb hores i
+      material» (treballadors × hores × cost per hora i material: el cost); el preu per al client el posa l'oficina.
+    - **«Està bé · a la propera certificació»** (`certificaParte878349`): les fora de pressupost passen al pressupost al seu capítol
+      (`<cap>.FP<n>`, `tipus:"Fora de pressupost"`, `foraPressupost878349`, pu = preu / quantitat) i, per a cada pressupost (fase), la
+      feina feta va a la certificació següent (`certsByNum[n]` = fet a origen − certificat abans); si l'última certificació la va fer un
+      parte (`dePartes878349`) i no té factura, s'hi afegeix. «Desar» el deixa «Per revisar». Un parte certificat només es mira.
+    - Llista: dia, qui, partides, import del dia (`importParte878349`), estat; a dalt, «Feina feta: X de Y» amb la barra.
+    - **Despeses al mòbil** (l'Héctor: «apreto Altres i surten a baix»): en tocar un requadre o una vista, la pantalla baixa fins a la
+      llista (`baixa878349`); els filtres, plegats darrere del botó «Filtres (n)».
+    - Estils: `src/theme-v878349.css`. Prova: `partes349test.mjs` (25).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
