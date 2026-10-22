@@ -82,7 +82,16 @@ capítol) · Hores.
     per capítol.
   - **Facturació › Rendiment:** totes les obres per any (ingressos, despeses, benefici, %), les despeses de l’empresa i el resultat.
 
-### Tanda 3 · el paquet «Empresa» (pendent)
+### Tanda 3 · el paquet «Empresa» · V87.339 (22/10/2026)
+
+- **Menú «Empresa»** (constructora i gestió total), abans d’Ajustos: **Dades** (les de la V87.337; ja no són a Ajustos) · **Treballadors**
+  (nom, ofici, **cost per hora**, DNI, mòbil, alta, de baixa; documentació: PRL, revisió mèdica, EPI, alta a la SS) ·
+  **Documentació** de l’empresa (REA, RC, Hisenda, Seguretat Social, pla de prevenció, servei de prevenció, mútua, i els que s’hi
+  afegeixin) · **Industrials** (els de Contactes i «Nou industrial», amb la seva documentació: REA, RC, SS, Hisenda, TC2/RNT, PRL).
+- Cada document: data de caducitat, arxiu adjunt (PDF o foto) o «El tinc»; estat **Vigent / Caduca d’aquí a N dies (30 o menys) /
+  Caducat / Falta**, i a dalt l’avís dels caducats i dels que caduquen aviat.
+
+### (pla inicial del paquet «Empresa»)
 
 - **Dades de l’empresa:** nom, CIF, adreça, logo… (ara són a Ajustos).
 - **Documentació general:** REA, documentació dels treballadors (formació, aptituds mèdiques, EPI), assegurances, amb dates de

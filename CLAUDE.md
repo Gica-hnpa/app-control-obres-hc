@@ -832,6 +832,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     origen − despeses = benefici; el facturat, a sota; % sobre ingressos i sobre cost) i `RendimentEmpresa878339`
     (Facturació › Rendiment, per any, amb les despeses de l’empresa i el resultat). `CostRealObra878312` es queda amb el cost per
     capítol. Prova: `despesesrend338test.mjs`.
+  - **V87.339 (paquet «Empresa»):** pantalla `Empresa878339` (menú «Empresa» si `PERFIL878304` i el mòdul Empresa; `Briefcase`):
+    Dades (`DadesEmpresa878337`, que surt d’Ajustos per a aquests comptes) · Treballadors (`aco_treballadors_v878339`: `{id, nom, ofici,
+    costHora, dni, mobil, alta, actiu, docs}`; `costHora878339`) · Documentació (`aco_docs_empresa_v878339`) · Industrials (de
+    `agentsLibrary878301` + clients del grup «industrial»; docs a `aco_docs_industrials_v878339` per persona; «Nou industrial» →
+    `addToLibrary878303`). Documents `{id, tipus, venciment, fet, teArxiu, nomArxiu}` amb `DocsLlista878339`; l’arxiu, a
+    `aco_empresa_arxiu_v878339_<id>` (imatges reduïdes; PDF fins a 8 MB). `estatDoc878339`: vigent / caduca aviat (≤30 dies) /
+    caducat / falta. Estils: `src/theme-v878339.css`. Prova: `empresa339test.mjs` (21). `facturacio337test` adaptada.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

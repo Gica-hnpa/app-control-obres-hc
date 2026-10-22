@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink} from "lucide-react";
+import {Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.338";
+const APP_VERSION878264="87.339";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5357,7 +5357,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
 PERFIL878304=empresa878259?.perfil||"";
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!!PERFIL878304&&teModul878326("obra")&&<MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/>}<MB a={screen==="Traça"} i={<Clock/>} l={t("Hores")} on={()=>nav("Traça")}/>{!esTreballador878326()&&<><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/></>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!!PERFIL878304&&teModul878326("obra")&&<MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/>}<MB a={screen==="Traça"} i={<Clock/>} l={t("Hores")} on={()=>nav("Traça")}/>{!esTreballador878326()&&<><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/></>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{!!PERFIL878304&&teModul878326("empresa")&&!esTreballador878326()&&<MB a={screen==="Empresa"} i={<Briefcase/>} l={t("Empresa")} on={()=>nav("Empresa")}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
 
 {screen==="Inici"&&<Inici obrirPaquet={(pk,st="")=>{setOs("");setOc("");setOy("");setOt("");setOst(st);setOpk(pk);nav("Treballs / Expedients")}} clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {(screen==="Clients"||screen==="Agents")&&<SafeRenderBoundary878108><Contactes878315 clients={clients} setClients={setClients} obres={obres} odata={odata} setOdata={setOdata} openClient={openClient}/></SafeRenderBoundary878108>}
@@ -5369,7 +5369,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab} clientsList={clients}/></SafeRenderBoundary878108>}
 {screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={viewPartidaLibrary878233} setItems={currentAccount878233.role==="admin"?setPartidaLibrary:undefined} clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}{screen==="Rendiments"&&<SafeRenderBoundary878108><RendimentsClient878247 obres={viewObres878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}
-{screen==="Albarans"&&<SafeRenderBoundary878108><Albarans878259 obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}{screen==="Factures"&&<SafeRenderBoundary878108>{esEmpresaFactura878337()?<FacturacioEmpresa878337 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObraTab={openObraTab} honoraris={teModul878326("tecnic")?<FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/>:null}/>:<FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/>}</SafeRenderBoundary878108>}
+{screen==="Empresa"&&<SafeRenderBoundary878108><Empresa878339 odata={odata} clients={viewClients878233} setOdata={setOdata}/></SafeRenderBoundary878108>}{screen==="Albarans"&&<SafeRenderBoundary878108><Albarans878259 obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}{screen==="Factures"&&<SafeRenderBoundary878108>{esEmpresaFactura878337()?<FacturacioEmpresa878337 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObraTab={openObraTab} honoraris={teModul878326("tecnic")?<FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/>:null}/>:<FacturesGeneral8738 clientList={viewClients878233} obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab}/>}</SafeRenderBoundary878108>}
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<SafeRenderBoundary878108>{esTreballador878326()?<HoresTreballador878327 obres={obres}/>:<GestioTemps878255 updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} obres={obres} clients={clients} odata={odata} openObra={openObra}/>}</SafeRenderBoundary878108>}
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{modal==="obra"&&<Modal title="Nou expedient" close={()=>setModal(null)}><QuickExpedientForm878254 clients={viewClients878233} allAgents={allAgents8749(viewOdata878233,viewClients878233)} onSubmit={addObra} fixedClientId={currentAccount878233.role!=="admin"?(scopedClientId878233||""):""}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&(screen==="Obra"||timer.running)&&<div className={`work-timer-v878254 ${timer.running?"on":""} ${timerObert878264?"obert":""}`} role="status" onClick={e=>{if(e.target.closest("button,label,input"))return;setTimerObert878264(v=>!v)}} title={i18nT("Comptador de temps (toca per obrir o plegar)")}>
   <span className="dot"/>
@@ -5646,7 +5646,7 @@ function tabsPerfil878326(tabs){
 }
 function etObres878304(){return diuObra878326()?"Obres":"Expedients"}
 function etNovaObra878304(){return diuObra878326()?"Nova obra":"Nou expedient"}
-const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Obres","Traça":"Hores","Agenda":"Agenda","Fitxa client":"Client","Pressupostos honoraris":"Pressupostos","Factures":"Facturació","Clients":"Contactes","Agents":"Contactes","Llibreria":"Preus","Albarans":"Despeses","Configuració":"Ajustos","Pressupostos":"Pressupostos","Rendiments":"Rendiments"};
+const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Obres","Traça":"Hores","Agenda":"Agenda","Fitxa client":"Client","Pressupostos honoraris":"Pressupostos","Factures":"Facturació","Clients":"Contactes","Agents":"Contactes","Llibreria":"Preus","Albarans":"Despeses","Configuració":"Ajustos","Pressupostos":"Pressupostos","Rendiments":"Rendiments","Empresa":"Empresa"};
 function AppHead878268({title,onBack,onMenu}){
   return <div className="mobile-top app-head-v878268">
     {onBack?<button type="button" className="back-v878268" onClick={onBack} aria-label={t("Tornar")}><ChevronLeft/><span>{t("Tornar")}</span></button>:<button type="button" className="brand-v878268" onClick={onMenu} aria-label={t("Menú")}>{t("CO")}</button>}
@@ -12700,6 +12700,157 @@ function RendimentEmpresa878339({obres=[],odata={},openObraTab}){
     {dge.length>0&&<div className="rend-dge-v878339"><b>{t("Despeses de l’empresa")}</b>{Object.entries(perCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=><div key={k}><span>{i18nT(k)}</span><b>{money(v)}</b></div>)}</div>}
   </div>;
 }
+// ── V87.339 · Paquet «Empresa» ───────────────────────────────────────────────────────────────────────────────────
+// L'Héctor (21/10/2026, revisant la constructora): «dades de l'empresa, documentació en general (REA, documentació dels
+// treballadors), CIF…, treballadors amb el cost per hora, industrials; tot en un paquet». Per als comptes amb el mòdul Empresa
+// (constructora i gestió total). Tot es desa al compte (claus `aco_…`, viatgen amb el núvol); els arxius, cadascun a la seva clau.
+const TREB_KEY878339="aco_treballadors_v878339";
+const DOCEMP_KEY878339="aco_docs_empresa_v878339";
+const DOCIND_KEY878339="aco_docs_industrials_v878339";
+const OFICIS878339=["Encarregat","Oficial 1a","Oficial 2a","Peó","Especialista","Administració","Altres"];
+const DOCS_EMPRESA878339=["REA (Registre d’Empreses Acreditades)","Assegurança de responsabilitat civil","Certificat d’estar al corrent amb Hisenda","Certificat d’estar al corrent amb la Seguretat Social","Pla de prevenció i avaluació de riscos","Contracte amb el servei de prevenció","Mútua d’accidents de treball"];
+const DOCS_TREBALLADOR878339=["Formació en prevenció (PRL)","Revisió mèdica (apte)","Lliurament dels EPI","Alta a la Seguretat Social"];
+const DOCS_INDUSTRIAL878339=["REA (Registre d’Empreses Acreditades)","Assegurança de responsabilitat civil","Certificat d’estar al corrent amb la Seguretat Social","Certificat d’estar al corrent amb Hisenda","Treballadors (TC2 / RNT)","Formació en prevenció dels treballadors"];
+function llegeixTreballadors878339(){const l=lsJson8779(TREB_KEY878339,[]);return Array.isArray(l)?l.filter(x=>x&&x.id):[]}
+function desaTreballadors878339(l){lsSet8779(TREB_KEY878339,JSON.stringify(l))}
+// cost per hora d'un treballador (de l'empresa); a l'obra es podrà canviar (V87.340)
+function costHora878339(t){return parseNum8770(t?.costHora)||0}
+const arxiuKey878339=id=>"aco_empresa_arxiu_v878339_"+id;
+// estat d'un document: sense vèncer / vigent, caduca aviat (30 dies o menys), caducat, falta
+function estatDoc878339(d){
+  if(!d||(!d.fet&&!d.teArxiu&&!d.venciment))return {k:"falta",t:"Falta"};
+  if(!d.venciment)return {k:"ok",t:"Vigent"};
+  const dies=Math.floor((new Date(d.venciment+"T23:59:59")-new Date())/86400000);
+  if(dies<0)return {k:"bad",t:"Caducat"};
+  if(dies<=30)return {k:"warn",t:"Caduca d’aquí a {n} dies",n:dies};
+  return {k:"ok",t:"Vigent fins al {d}",d:fmtAppDate8748(d.venciment)};
+}
+function etEstat878339(e){return e.n!=null?t(e.t,{n:e.n}):e.d?t(e.t,{d:e.d}):t(e.t)}
+// el pitjor estat d'una llista de documents obligatoris
+function resumDocs878339(docs=[],obligats=[]){
+  const per=new Map((docs||[]).map(d=>[d.tipus,d]));
+  const est=[...obligats.map(k=>estatDoc878339(per.get(k))),...(docs||[]).filter(d=>!obligats.includes(d.tipus)).map(estatDoc878339)];
+  return {falten:est.filter(e=>e.k==="falta").length,caducats:est.filter(e=>e.k==="bad").length,aviat:est.filter(e=>e.k==="warn").length,total:est.length};
+}
+function XipResum878339({r}){
+  if(r.caducats)return <span className="xip-v878339 bad">{r.caducats===1?t("1 caducat"):t("{n} caducats",{n:r.caducats})}</span>;
+  if(r.aviat)return <span className="xip-v878339 warn">{r.aviat===1?t("1 caduca aviat"):t("{n} caduquen aviat",{n:r.aviat})}</span>;
+  if(r.falten)return <span className="xip-v878339 falta">{r.falten===1?t("Falta 1 document"):t("Falten {n} documents",{n:r.falten})}</span>;
+  return r.total?<span className="xip-v878339 ok">{t("Tot vigent")}</span>:null;
+}
+async function obreArxiu878339(id){
+  const u=lsGet8779(arxiuKey878339(id),"");if(!u){alert(t("Aquest arxiu no és en aquest aparell."));return}
+  try{const b=await (await fetch(u)).blob();window.open(URL.createObjectURL(b),"_blank","noopener")}catch{window.open(u,"_blank","noopener")}
+}
+async function llegeixArxiu878339(file){
+  if(!file)return null;
+  if(/^image\//.test(file.type))return {url:await compressImage878259(file,1600,0.82),nom:file.name};
+  if(file.size>8*1024*1024){alert(t("L’arxiu passa de 8 MB. Redueix-lo o desa’l a Documents d’una obra."));return null}
+  return await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok({url:String(r.result||""),nom:file.name});r.onerror=()=>ko(r.error);r.readAsDataURL(file)});
+}
+// Llista de documents (de l'empresa, d'un treballador o d'un industrial): els obligatoris sempre hi són; se n'hi poden afegir
+function DocsLlista878339({docs=[],obligats=[],onChange}){
+  const per=new Map((docs||[]).map(d=>[d.tipus,d]));
+  const files=[...obligats.map(k=>per.get(k)||{tipus:k,nou:true}),...(docs||[]).filter(d=>!obligats.includes(d.tipus))];
+  const [nouTipus,setNouTipus]=useState("");
+  const put=(tipus,patch)=>{const cur=(docs||[]).find(d=>d.tipus===tipus);const n={id:cur?.id||("doc-"+Date.now()+Math.random().toString(36).slice(2,6)),tipus,...(cur||{}),...patch,updatedAt:new Date().toISOString()};onChange([...(docs||[]).filter(d=>d.tipus!==tipus),n])};
+  async function puja(tipus,file){const a=await llegeixArxiu878339(file).catch(e=>{alert(e?.message||String(e));return null});if(!a)return;const cur=(docs||[]).find(d=>d.tipus===tipus);const id=cur?.id||("doc-"+Date.now()+Math.random().toString(36).slice(2,6));lsSet8779(arxiuKey878339(id),a.url);put(tipus,{id,teArxiu:true,nomArxiu:a.nom,fet:true})}
+  function treu(tipus){if(!confirm(t("Treure «{d}»?",{d:tipus})))return;const cur=(docs||[]).find(d=>d.tipus===tipus);if(cur?.id)try{localStorage.removeItem(lsKey8779(arxiuKey878339(cur.id)))}catch{};onChange((docs||[]).filter(d=>d.tipus!==tipus))}
+  return <div className="docs-v878339">
+    {files.map(d=>{const e=estatDoc878339(d.nou?null:d);return <div key={d.tipus} className={`doc-v878339 e-${e.k}`}>
+      <div className="cap"><b>{i18nT(d.tipus)}</b><span className={`xip-v878339 ${e.k}`}>{etEstat878339(e)}</span></div>
+      <div className="camps">
+        <label><span>{t("Caduca el")}</span><input type="date" value={d.venciment||""} onChange={x=>put(d.tipus,{venciment:x.target.value,fet:true})}/></label>
+        {d.teArxiu?<button type="button" className="secondary small" onClick={()=>obreArxiu878339(d.id)}><FileText size={15} aria-hidden="true"/> {d.nomArxiu||t("Veure")}</button>:null}
+        <label className="secondary small puja-v878339"><Paperclip size={15} aria-hidden="true"/> {d.teArxiu?t("Canviar"):t("Adjuntar")}<input type="file" accept="application/pdf,.pdf,image/*" hidden onChange={x=>{const f=x.target.files?.[0];x.target.value="";puja(d.tipus,f)}}/></label>
+        {!d.teArxiu&&!d.venciment&&!d.fet&&<button type="button" className="link" onClick={()=>put(d.tipus,{fet:true})}>{t("El tinc")}</button>}
+        {!obligats.includes(d.tipus)&&<button type="button" className="link danger-text-v87229" onClick={()=>treu(d.tipus)}>{t("Treure")}</button>}
+      </div>
+    </div>})}
+    <div className="nou-v878339"><input value={nouTipus} onChange={e=>setNouTipus(e.target.value)} placeholder={t("Un altre document…")} aria-label={t("Un altre document")}/><button type="button" className="secondary small" disabled={!nouTipus.trim()||files.some(d=>d.tipus===nouTipus.trim())} onClick={()=>{put(nouTipus.trim(),{});setNouTipus("")}}><Plus size={15}/> {t("Afegir")}</button></div>
+  </div>;
+}
+function EditorTreballador878339({inicial,nou,onSave,onDelete,close}){
+  const [w,setW]=useState(()=>({ofici:"Oficial 1a",actiu:true,docs:[],...inicial}));
+  const set=(k,v)=>setW(x=>({...x,[k]:v}));
+  function desa(){if(!String(w.nom||"").trim()){alert(t("Posa el nom del treballador."));return}onSave({...w,nom:String(w.nom).trim(),costHora:String(w.costHora||"").replace(/[^\d,.]/g,""),updatedAt:new Date().toISOString()})}
+  return <Modal title={nou?t("Nou treballador"):String(w.nom||t("Treballador"))} close={close}><div className="treb-ed-v878339">
+    <div className="form-grid compact-v87151 no-pad">
+      <label className="span-2"><span>{t("Nom i cognoms")}</span><input value={rawV878304(w.nom)} onChange={e=>set("nom",e.target.value)}/></label>
+      <label><span>{t("Ofici o categoria")}</span><select value={w.ofici||""} onChange={e=>set("ofici",e.target.value)}>{OFICIS878339.map(o=><option key={o} value={o}>{i18nT(o)}</option>)}</select></label>
+      <label><span>{t("Cost per hora (€)")}</span><input inputMode="decimal" value={rawV878304(w.costHora)} onChange={e=>set("costHora",e.target.value)} placeholder="25,00"/></label>
+      <label><span>{t("DNI / NIE")}</span><input value={rawV878304(w.dni)} onChange={e=>set("dni",e.target.value)}/></label>
+      <label><span>{t("Mòbil")}</span><input inputMode="tel" value={rawV878304(w.mobil)} onChange={e=>set("mobil",e.target.value)}/></label>
+      <label><span>{t("Data d’alta")}</span><input type="date" value={w.alta||""} onChange={e=>set("alta",e.target.value)}/></label>
+      <label className="chk-v878339"><input type="checkbox" checked={w.actiu!==false} onChange={e=>set("actiu",e.target.checked)}/><span>{t("Treballa a l’empresa")}</span></label>
+    </div>
+    <h4 className="sub-v878339">{t("Documentació del treballador")}</h4>
+    <DocsLlista878339 docs={w.docs||[]} obligats={DOCS_TREBALLADOR878339} onChange={docs=>set("docs",docs)}/>
+    <div className="modal-actions">{onDelete&&<button type="button" className="danger-text-v87229 link" onClick={onDelete}>{t("Eliminar")}</button>}<button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desa}>{t("Desar")}</button></div>
+  </div></Modal>;
+}
+function Empresa878339({odata={},clients=[],setOdata}){
+  const [vista,setVista]=useState("dades");
+  const [tick,setTick]=useState(0);
+  const rec=()=>setTick(x=>x+1);
+  const treballadors=useMemo(()=>llegeixTreballadors878339(),[tick]);
+  const docsEmp=useMemo(()=>{const l=lsJson8779(DOCEMP_KEY878339,[]);return Array.isArray(l)?l:[]},[tick]);
+  const docsInd=useMemo(()=>lsJson8779(DOCIND_KEY878339,{})||{},[tick]);
+  const industrials=useMemo(()=>{
+    const lib=agentsLibrary878301(odata,clients).filter(ag=>grupContacte878315(ag,(clients||[]).find(c=>c.id===ag.sourceClientId878192)||null)==="industrial");
+    const vist=new Set(lib.map(a=>a._persona878301));
+    (clients||[]).forEach(c=>{const ag=clientAsAgent878192(c);const k=agentPersona878301(ag);if(k&&!vist.has(k)&&grupContacte878315(ag,c)==="industrial"){vist.add(k);lib.push({...ag,_persona878301:k})}});
+    return lib.sort((a,b)=>String(a.nom||"").localeCompare(String(b.nom||""),"ca",{sensitivity:"base"}));
+  },[odata,clients]);
+  const [editT,setEditT]=useState(null);
+  const [editI,setEditI]=useState(null);
+  const [nouInd,setNouInd]=useState(null);
+  function desaT(w){const l=llegeixTreballadors878339();desaTreballadors878339(l.some(x=>x.id===w.id)?l.map(x=>x.id===w.id?w:x):[...l,{...w,id:w.id||("treb-"+Date.now()),createdAt:new Date().toISOString()}]);setEditT(null);rec()}
+  function eliminaT(w){if(!confirm(t("Eliminar {nom}? Les hores que ja té apuntades es queden.",{nom:w.nom||""})))return;(w.docs||[]).forEach(d=>{try{localStorage.removeItem(lsKey8779(arxiuKey878339(d.id)))}catch{}});desaTreballadors878339(llegeixTreballadors878339().filter(x=>x.id!==w.id));setEditT(null);rec()}
+  function desaDocsEmp(l){lsSet8779(DOCEMP_KEY878339,JSON.stringify(l));rec()}
+  function desaDocsInd(k,docs){const m={...(lsJson8779(DOCIND_KEY878339,{})||{})};m[k]={docs,updatedAt:new Date().toISOString()};lsSet8779(DOCIND_KEY878339,JSON.stringify(m));rec()}
+  function creaIndustrial(){const nom=String(nouInd?.nom||"").trim();if(!nom)return;setOdata?.(prev=>addToLibrary878303(prev,{nom,rol:"Industrial",ofici:String(nouInd.ofici||"").trim(),telefon:String(nouInd.telefon||"").trim(),empresa:nom}));setNouInd(null)}
+  const actius=treballadors.filter(w=>w.actiu!==false),baixes=treballadors.filter(w=>w.actiu===false);
+  const rEmp=resumDocs878339(docsEmp,DOCS_EMPRESA878339);
+  const rTreb=actius.map(w=>resumDocs878339(w.docs,DOCS_TREBALLADOR878339));
+  const rInd=industrials.map(ag=>resumDocs878339(docsInd[ag._persona878301]?.docs||[],DOCS_INDUSTRIAL878339));
+  const alertes=[rEmp,...rTreb,...rInd].reduce((s,r)=>({caducats:s.caducats+r.caducats,aviat:s.aviat+r.aviat}),{caducats:0,aviat:0});
+  const VISTES=[["dades","Dades"],["treb","Treballadors"],["docs","Documentació"],["ind","Industrials"]];
+  const n={treb:actius.length,ind:industrials.length};
+  const avis={docs:rEmp.caducats+rEmp.aviat,treb:rTreb.reduce((s,r)=>s+r.caducats+r.aviat,0),ind:rInd.reduce((s,r)=>s+r.caducats+r.aviat,0)};
+  const fila=(w,r)=><div key={w.id} className={`treb-v878339 ${w.actiu===false?"baixa":""}`} role="button" tabIndex={0} onClick={()=>setEditT(w)} onKeyDown={e=>{if(e.key==="Enter")setEditT(w)}}>
+    <span className="nm"><b>{w.nom}</b><small>{[i18nT(w.ofici||""),w.mobil].filter(Boolean).join(" · ")}</small></span>
+    <span className="ch">{costHora878339(w)?<><b>{money(costHora878339(w))}</b><small>{t("per hora")}</small></>:<small className="falta">{t("Sense cost per hora")}</small>}</span>
+    <XipResum878339 r={r}/>
+  </div>;
+  return <div className="empresa-v878339">
+    <div className="fe-head"><h1>{t("Empresa")}</h1></div>
+    {(alertes.caducats>0||alertes.aviat>0)&&<div className={`emp-alerta-v878339 ${alertes.caducats?"bad":"warn"}`}><b>{alertes.caducats?(alertes.caducats===1?t("1 document caducat"):t("{n} documents caducats",{n:alertes.caducats})):""}{alertes.caducats&&alertes.aviat?" · ":""}{alertes.aviat?(alertes.aviat===1?t("1 caduca aviat"):t("{n} caduquen aviat",{n:alertes.aviat})):""}</b></div>}
+    <div className="fe-vistes" role="group" aria-label={t("Empresa")}>{VISTES.map(([k,l])=><button type="button" key={k} aria-pressed={vista===k} onClick={()=>setVista(k)}>{t(l)}{n[k]!=null&&<em>{n[k]}</em>}{avis[k]>0&&<em className="warn">!</em>}</button>)}</div>
+    {vista==="dades"&&<DadesEmpresa878337/>}
+    {vista==="treb"&&<div className="treb-llista-v878339">
+      <div className="actions-inline"><button type="button" className="primary" onClick={()=>setEditT({nou:true})}><Plus size={16}/> {t("Nou treballador")}</button></div>
+      {!actius.length&&!baixes.length?<div className="fe-buit"><b>{t("Encara no hi ha treballadors.")}</b></div>:actius.map((w,i)=>fila(w,rTreb[i]))}
+      {baixes.length>0&&<details className="baixes-v878339"><summary>{baixes.length===1?t("1 de baixa"):t("{n} de baixa",{n:baixes.length})}</summary>{baixes.map(w=>fila(w,resumDocs878339(w.docs,DOCS_TREBALLADOR878339)))}</details>}
+    </div>}
+    {vista==="docs"&&<Card title={t("Documentació de l’empresa")} className="docs-emp-v878339"><DocsLlista878339 docs={docsEmp} obligats={DOCS_EMPRESA878339} onChange={desaDocsEmp}/></Card>}
+    {vista==="ind"&&<div className="ind-llista-v878339">
+      <div className="actions-inline">{nouInd?<div className="nou-ind-v878339"><input autoFocus value={nouInd.nom||""} onChange={e=>setNouInd(x=>({...x,nom:e.target.value}))} placeholder={t("Nom de l’industrial o l’empresa")}/><input value={nouInd.ofici||""} onChange={e=>setNouInd(x=>({...x,ofici:e.target.value}))} placeholder={t("Ofici (electricista, lampista…)")}/><input inputMode="tel" value={nouInd.telefon||""} onChange={e=>setNouInd(x=>({...x,telefon:e.target.value}))} placeholder={t("Telèfon")}/><button type="button" className="primary" disabled={!String(nouInd.nom||"").trim()} onClick={creaIndustrial}>{t("Desar")}</button><button type="button" className="secondary" onClick={()=>setNouInd(null)}>{t("Cancel·lar")}</button></div>:<button type="button" className="primary" onClick={()=>setNouInd({})}><Plus size={16}/> {t("Nou industrial")}</button>}</div>
+      {!industrials.length?<div className="fe-buit"><b>{t("Encara no hi ha industrials.")}</b></div>:industrials.map((ag,i)=><div key={ag._persona878301} className="treb-v878339" role="button" tabIndex={0} onClick={()=>setEditI(ag)} onKeyDown={e=>{if(e.key==="Enter")setEditI(ag)}}>
+        <span className="nm"><b>{ag.nom}</b><small>{[ag.ofici||(ag.rol&&!/industrial/i.test(ag.rol)?ag.rol:""),ag.telefon||ag.mobil].filter(Boolean).join(" · ")}</small></span>
+        <span className="ch">{(ag._obres878301||[]).length?<small>{(ag._obres878301||[]).length===1?t("1 obra"):t("{n} obres",{n:(ag._obres878301||[]).length})}</small>:null}</span>
+        <XipResum878339 r={rInd[i]}/>
+      </div>)}
+    </div>}
+    {editT&&<EditorTreballador878339 inicial={editT.nou?{}:editT} nou={!!editT.nou} onSave={desaT} onDelete={editT.nou?null:()=>eliminaT(editT)} close={()=>setEditT(null)}/>}
+    {editI&&<Modal title={editI.nom||t("Industrial")} close={()=>setEditI(null)}><div className="ind-ed-v878339">
+      <p className="ind-dades-v878339">{[editI.ofici,editI.telefon||editI.mobil,editI.email].filter(Boolean).join(" · ")}</p>
+      <h4 className="sub-v878339">{t("Documentació de l’industrial")}</h4>
+      <DocsLlista878339 docs={docsInd[editI._persona878301]?.docs||[]} obligats={DOCS_INDUSTRIAL878339} onChange={docs=>desaDocsInd(editI._persona878301,docs)}/>
+      <div className="modal-actions"><button type="button" className="primary" onClick={()=>setEditI(null)}>{t("Fet")}</button></div>
+    </div></Modal>}
+  </div>;
+}
 // V87.337 · Ajustos › Dades de l'empresa (comptes d'empresa): surten com a emissor a les factures, certificacions, proformes i
 // pressupostos. El logo es desa a part (com els dels contactes).
 function DadesEmpresa878337(){
@@ -13321,7 +13472,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.338",
+    app_version:"87.339",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -13522,7 +13673,7 @@ return <div className="stack">
 <VerifactuCompte878286 admin={admin}/>
 {admin&&!window.__acoEmpresa&&<EspaiNuvol878263/>}
 {admin&&<VersionsGuardades878266/>}
-{window.__acoEmpresa&&!esTreballador878326()&&<DadesEmpresa878337/>}<PerfilModuls878326/>
+{window.__acoEmpresa&&!esTreballador878326()&&!teModul878326("empresa")&&<DadesEmpresa878337/>}<PerfilModuls878326/>
 {admin&&!esTreballador878326()&&<>
 <DataJsonTools8778 clients={clients} obres={obres} odata={odata}/>
 <RecoverySnapshotsPanel878122 setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>

@@ -1,0 +1,59 @@
+/* V87.339 · Paquet «Empresa»: dades, treballadors, documentació i industrials */
+html body .empresa-v878339{display:flex;flex-direction:column;gap:14px}
+html body .empresa-v878339 .fe-head h1{margin:0}
+html body .empresa-v878339 .fe-vistes{display:flex;gap:6px;flex-wrap:wrap}
+html body .empresa-v878339 .fe-vistes>button{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 14px var(--app-font);color:var(--co-ink-2)}
+html body .empresa-v878339 .fe-vistes>button[aria-pressed="true"]{background:var(--co-ink);border-color:var(--co-ink);color:var(--co-surface)}
+html body .empresa-v878339 .fe-vistes>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .empresa-v878339 .fe-vistes em{font-style:normal;font-size:12px;font-weight:700;min-width:20px;padding:1px 6px;border-radius:99px;background:var(--co-surface-2);color:var(--co-ink-2);text-align:center}
+html body .empresa-v878339 .fe-vistes em.warn{background:#FEF3C7;color:#92400E}
+html body .empresa-v878339 .fe-vistes>button[aria-pressed="true"] em{background:rgba(255,255,255,.2);color:inherit}
+html body .empresa-v878339 .fe-buit{padding:18px;border:1px dashed var(--co-line-strong);border-radius:12px;color:var(--co-ink-2)}
+html body .empresa-v878339 .emp-alerta-v878339{padding:10px 14px;border-radius:12px;font-size:14px}
+html body .empresa-v878339 .emp-alerta-v878339.bad{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+html body .empresa-v878339 .emp-alerta-v878339.warn{background:#FFFBEB;border:1px solid #FCD34D;color:#92400E}
+html body .empresa-v878339 .treb-llista-v878339,html body .empresa-v878339 .ind-llista-v878339{display:flex;flex-direction:column;gap:8px}
+html body .empresa-v878339 .treb-v878339{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);cursor:pointer}
+html body .empresa-v878339 .treb-v878339:hover{background:var(--co-surface-2)}
+html body .empresa-v878339 .treb-v878339:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .empresa-v878339 .treb-v878339.baixa{opacity:.6}
+html body .empresa-v878339 .treb-v878339 .nm{display:flex;flex-direction:column;min-width:0}
+html body .empresa-v878339 .treb-v878339 .nm b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .empresa-v878339 .treb-v878339 .nm small,html body .empresa-v878339 .treb-v878339 .ch small{font-size:12.5px;color:var(--co-ink-3)}
+html body .empresa-v878339 .treb-v878339 .ch{display:flex;flex-direction:column;align-items:flex-end;font-variant-numeric:tabular-nums}
+html body .empresa-v878339 .treb-v878339 .ch .falta{color:#B45309}
+html body .empresa-v878339 .baixes-v878339>summary{cursor:pointer;padding:6px 2px;color:var(--co-ink-3);font-weight:600}
+html body .empresa-v878339 .baixes-v878339[open]{display:flex;flex-direction:column;gap:8px}
+html body .empresa-v878339 .nou-ind-v878339{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+html body .empresa-v878339 .nou-ind-v878339 input{flex:1 1 180px;min-width:0}
+@media (max-width:640px){
+  html body .empresa-v878339 .treb-v878339{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"nm ch" "xip xip"}
+  html body .empresa-v878339 .treb-v878339 .nm{grid-area:nm}
+  html body .empresa-v878339 .treb-v878339 .ch{grid-area:ch}
+  html body .empresa-v878339 .treb-v878339 .xip-v878339{grid-area:xip;justify-self:start}
+}
+/* estat dels documents */
+html body .xip-v878339{display:inline-block;padding:3px 10px;border-radius:99px;font:600 12px var(--app-font);white-space:nowrap}
+html body .xip-v878339.ok{background:#DCFCE7;color:#166534}
+html body .xip-v878339.warn{background:#FEF3C7;color:#92400E}
+html body .xip-v878339.bad{background:#FEE2E2;color:#991B1B}
+html body .xip-v878339.falta{background:var(--co-surface-2);color:var(--co-ink-3)}
+/* llista de documents */
+html body .docs-v878339{display:flex;flex-direction:column;gap:8px}
+html body .docs-v878339 .doc-v878339{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--co-line);border-left-width:4px;border-radius:12px;background:var(--co-surface)}
+html body .docs-v878339 .doc-v878339.e-ok{border-left-color:#16A34A}
+html body .docs-v878339 .doc-v878339.e-warn{border-left-color:#D97706}
+html body .docs-v878339 .doc-v878339.e-bad{border-left-color:#DC2626}
+html body .docs-v878339 .doc-v878339.e-falta{border-left-color:var(--co-line-strong)}
+html body .docs-v878339 .doc-v878339 .cap{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+html body .docs-v878339 .doc-v878339 .cap b{font-weight:600;color:var(--co-ink)}
+html body .docs-v878339 .doc-v878339 .camps{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+html body .docs-v878339 .doc-v878339 .camps label{display:flex;flex-direction:column;gap:3px}
+html body .docs-v878339 .doc-v878339 .camps label>span{font-size:12px;color:var(--co-ink-3)}
+html body .docs-v878339 .doc-v878339 .camps button,html body .docs-v878339 .doc-v878339 .puja-v878339{display:inline-flex;align-items:center;gap:6px;min-height:36px}
+html body .docs-v878339 .puja-v878339{cursor:pointer;padding:6px 12px;border-radius:8px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 13px var(--app-font)}
+html body .docs-v878339 .nou-v878339{display:flex;gap:8px}
+html body .docs-v878339 .nou-v878339 input{flex:1 1 auto;min-width:0}
+html body .treb-ed-v878339 .sub-v878339,html body .ind-ed-v878339 .sub-v878339{margin:14px 0 8px;font:700 14px var(--app-font)}
+html body .treb-ed-v878339 .chk-v878339{display:flex;flex-direction:row!important;align-items:center;gap:8px}
+html body .ind-ed-v878339 .ind-dades-v878339{margin:0;color:var(--co-ink-2)}
