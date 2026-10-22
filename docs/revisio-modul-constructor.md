@@ -17,7 +17,7 @@ treure un rendiment». Es fa com amb el tècnic: ell diu què canviar pantalla p
 | Contactes | Clients, industrials, tècnics… en grups |
 | Obres | Llista amb paquets i filtres; dins de cada obra: Fitxa · Seguiment · Econòmic |
 | Preus | Llibreria de partides (i les habituals de cada client) |
-| Hores | Hores per obra (encara no per treballador) |
+| Hores | Personal (part del dia de cada treballador, amb el cost) · Les meves hores |
 | Facturació | Proformes, «Fer factura» amb la sèrie del client, VeriFactu (aturat fins parlar amb la gestoria) |
 | Despeses | Albarans, factures de material i subcontractes de totes les obres; albarà ↔ factura |
 | Agenda | Cites, Google Calendar, nota de veu |
@@ -99,11 +99,19 @@ capítol) · Hores.
 - **Treballadors:** nom, ofici, **cost per hora** (es pot canviar per obra).
 - **Industrials:** els de Contactes, amb la seva documentació.
 
-### Tanda 4 · personal propi (pendent)
+### Tanda 4 · personal propi · V87.340 (22/10/2026)
 
-- **Cost del personal propi a les obres:** per dies, les hores de cada treballador a cada obra × el cost per hora (de l’empresa o de
-  l’obra). Potser dins de Despeses (com a personal); entraria al Rendiment de l’obra.
-- **Fitxatge del personal:** estudiar si és viable lligar-lo (argument de venda).
+- **Hores (menú)** de la constructora i la gestió total: «Personal» (de sèrie) · «Les meves hores» (la pantalla d’abans).
+  **«Hores del personal»** és un part del dia: el dia (‹ › i el calendari), cada treballador d’alta amb l’obra (les obertes) i les
+  hores, «+ Una altra obra» si n’ha fet més d’una, el total del dia (hores i €) i «Desar el dia». Tornar a desar un dia el canvia
+  (no es duplica). Un dia buit ja porta l’última obra de cadascú; «Com el …» copia el dia d’abans. A sota, la setmana per treballador.
+- **Dins de l’obra › Econòmic › Hores:** «Hores del personal» (hores i cost), per treballador amb **el cost per hora en aquesta obra**
+  (si es deixa buit, el de l’empresa), «Per dies» i «+ Afegir hores».
+- **Rendiment:** el cost del personal entra a les despeses de l’obra («Personal») i al Rendiment de totes les obres.
+- No va a Despeses ni a l’Excel de la gestoria (les nòmines ja hi van per una altra banda).
+- El cost per hora de cada treballador és de l’empresa: en una obra compartida, l’altre compte no el veu.
+- **Pendent:** que cada treballador apunti les seves hores des del seu mòbil (usuaris d’una mateixa empresa) i el **fitxatge**
+  (estudiar si és viable lligar-lo: argument de venda).
 
 ### Tanda 5 · Planning (pendent)
 

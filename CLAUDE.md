@@ -839,6 +839,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `addToLibrary878303`). Documents `{id, tipus, venciment, fet, teArxiu, nomArxiu}` amb `DocsLlista878339`; l’arxiu, a
     `aco_empresa_arxiu_v878339_<id>` (imatges reduïdes; PDF fins a 8 MB). `estatDoc878339`: vigent / caduca aviat (≤30 dies) /
     caducat / falta. Estils: `src/theme-v878339.css`. Prova: `empresa339test.mjs` (21). `facturacio337test` adaptada.
+  - **V87.340 (hores del personal):** files a part de les del tècnic (que són per facturar): `aco_personal_v878340_<obra>` =
+    `[{id, data, treballadorId, treballadorNom, hores, costHora (el d’aquell dia), nota}]`; el cost per hora d’un treballador en una
+    obra, `aco_costhora_obres_v878340` (`{[obraId]:{[treballadorId]:"20"}}`; és del compte, no de l’obra: en una obra compartida
+    l’altre no el veu). `costHoraA878340` (obra → fila → empresa), `costPersonalObra878340(obraId, dins)`, event
+    `aco-personal-changed`. **Menú Hores** dels comptes amb el mòdul Empresa (`ambEmpresa878338`): `HoresEmpresa878340` («Personal» =
+    `PartHores878340`, part del dia; «Les meves hores» = `GestioTemps878255`). **Obra › Hores** («Gestió temps»):
+    `PersonalObra878340` a sobre de `HonorarisTemps`; a la gestió total «Gestió temps» ja no s’ajunta amb Honoraris ni va a «El meu
+    encàrrec». **Rendiment:** `rendimentObra878339(data, despeses, personal)` (`perTipus.Personal`) i `RendimentEmpresa878339`
+    (per any, «Personal: …» a dalt). No va a Despeses ni a l’Excel. Estils: `src/theme-v878340.css`. Prova: `personal340test.mjs` (29).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
