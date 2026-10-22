@@ -161,9 +161,10 @@ capítol) · Hores.
   propi de l’empresa amb el de l’Héctor al costat, i el client és el promotor (o el que triï l’empresa, sense tocar l’obra de l’Héctor).
   Al desplegable del client hi ha també els altres contactes. El Rendiment ja no suma dues vegades la factura de l’app i la de l’Excel.
   Fora «repercutir al client» a les constructores; la selecció avisa on van les despeses.
-- **Pendent (V87.348):** llista de despeses amb columnes (número, data d’emissió i d’entrada, proveïdor o treballador, base, IVA,
-  total), per grups; factures amb el desglossament a dins; mà d’obra per dies i treballadors (per categoria); veure el document a la
-  mateixa pantalla; filtres per client, treballador i material.
+- **V87.348**: llista de despeses per grups i en columnes (número, data, entrada, proveïdor, base, IVA, total), factures de diverses
+  línies amb el desglossament a dins, mà d’obra per dies i treballadors per categoria (amb hores i €/hora), l’ull per veure la factura o la
+  foto, filtres de proveïdor (sense treballadors), treballador i cerca, i vistes Tot · En execució · Per obra · Per any.
+- **Proposta: Parts d’obra** (`docs/proposta-parts-obra.md`): marcar cada dia la feina feta sobre el pressupost i passar-la a la certificació.
 
 ### Recordatori
 

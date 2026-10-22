@@ -919,9 +919,25 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Prova: `compartides347test.mjs` (28: obra pròpia esborrada que no torna en dos aparells, treure i tornar a mostrar la compartida,
       client propi sense tocar l'obra de l'Héctor, numeració pròpia, contacte que es fa client). Adaptades `constructor336test` i
       `despesesrend338test`.
-    - **Pendent (V87.348)**: la llista de despeses amb columnes (número, data d'emissió i d'entrada, proveïdor o treballador, base, IVA,
-      total), per grups, factures amb el desglossament a dins, la mà d'obra per dies i treballadors (per categoria), veure el document a
-      la mateixa pantalla i filtres per client, treballador i material.
+  - **V87.348 · Despeses en columnes i per grups** (l'Héctor, 22/10/2026; als comptes d'empresa amb el mòdul Empresa —constructora i gestió total, `nova878348`—; el
+    compte de l'Héctor i els tècnics, com abans):
+    - **Per grups** (Materials · Mà d'obra · Industrials · Altres · Empresa), cada un amb el seu total (`llista878348` dins
+      d'`Albarans878259`). Vistes **Tot · En execució · Per obra · Per any** (`vistaD878348`; per any: l'any i, a dins, les obres;
+      paquets plegats llevat del primer any o si només n'hi ha un).
+    - **Columnes**: Número · Data (de la factura) · Entrada (`dataEntrada`, nova: en importar, avui; en desar, si no en té, la de quan es
+      va crear; `dataEntrada878348`) · Proveïdor · Base · IVA · Total, i l'ull per veure el document. **Factures de diverses línies**: les
+      files amb el mateix número i proveïdor (d'un Excel) surten en una sola fila «N línies» i, en tocar-la, les línies; una despesa amb
+      `linies` (llegida d'una foto) té la fletxa del desglossament.
+    - **Mà d'obra per dies** (`dies`): el dia («N treballadors · X h», total) i a dins Treballador · Categoria · Hores · €/hora · Total,
+      ordenats per categoria (`ordreCat878348`: encarregat, oficial 1a, oficial 2a, peó, aprenent). Camps nous a les despeses de mà d'obra:
+      `treballador`, `categoria`, `hores`, `preuHora` (en importar; les d'abans es llegeixen de la nota, `maDe878348`). Editor de la mà
+      d'obra: Treballador, Dia de feina, Categoria (`CATS_MA878348`), Hores i € per hora (la base es calcula, IVA 0), sense número.
+    - **Document a la mateixa pantalla** (`VisorDespesa878348`): la foto o el PDF (amb «Obrir en una pestanya»).
+    - **Filtres**: «Tots els proveïdors» ja no porta els treballadors (`provsF878348`); «Tots els treballadors» (`trebs878348`); cerca de
+      material, concepte, número, proveïdor o obra (`cerca878348`). L'editor ja no ensenya «Repercutida al client» a les constructores.
+    - Excel: data d'entrada, categoria i hores. Estils: `src/theme-v878348.css`. Prova: `despeses348test.mjs` (22).
+    - **Proposta (sense fer): Parts d'obra** — marcar cada dia la feina feta sobre el pressupost i passar-la a la certificació
+      (`docs/proposta-parts-obra.md`, amb 6 preguntes per a l'Héctor).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
