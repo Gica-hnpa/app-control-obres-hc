@@ -1,0 +1,25 @@
+/* V87.344 · Despeses: Materials · Mà d'obra · Industrials, i importar-les d'un Excel */
+html body .albarans-v878259 .desp-grups-v878338 .g-ma{border-left-color:#0F766E}
+html body .alb-obra-v878279 .desp-grups-v878338{margin-bottom:10px}
+html body .imp-desp-v878344{display:flex;flex-direction:column;gap:12px}
+html body .imp-desp-v878344>.tria{align-self:flex-start;cursor:pointer;display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:10px}
+html body .imp-desp-v878344 .arxiu{margin:0;font-weight:600;color:var(--co-ink-2)}
+html body .imp-desp-v878344 .err{margin:0;padding:9px 12px;border-radius:10px;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;font-size:13.5px}
+html body .imp-desp-v878344 .full{border:1px solid var(--co-line);border-radius:12px;overflow:hidden}
+html body .imp-desp-v878344 .full.off{opacity:.7}
+html body .imp-desp-v878344 .full>header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;background:var(--co-surface-2)}
+html body .imp-desp-v878344 .full>header .chk{display:flex;align-items:center;gap:8px;flex-direction:row!important}
+html body .imp-desp-v878344 .full>header .chk small{color:var(--co-ink-3)}
+html body .imp-desp-v878344 .full>header .opts{display:flex;gap:8px;flex-wrap:wrap}
+html body .imp-desp-v878344 .full>header .opts select{min-height:36px;max-width:260px}
+html body .imp-desp-v878344 .taula{overflow:auto;max-height:320px}
+html body .imp-desp-v878344 table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+html body .imp-desp-v878344 th{position:sticky;top:0;background:var(--co-surface);text-align:left;font:600 11.5px var(--app-font);color:var(--co-ink-3);padding:7px 8px;border-bottom:1px solid var(--co-line-strong);white-space:nowrap}
+html body .imp-desp-v878344 td{padding:6px 8px;border-bottom:1px solid var(--co-line);white-space:nowrap}
+html body .imp-desp-v878344 td.conc{white-space:normal;min-width:180px}
+html body .imp-desp-v878344 td.conc em{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:99px;background:#FEF3C7;color:#92400E;font-style:normal;font-size:11.5px;font-weight:600}
+html body .imp-desp-v878344 tr.rep td,html body .imp-desp-v878344 tr.fora td{color:var(--co-ink-3)}
+html body .imp-desp-v878344 tr.fora td{text-decoration:line-through}
+html body .imp-desp-v878344 .peu{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--co-surface);padding-top:8px;border-top:1px solid var(--co-line)}
+html body .imp-desp-v878344 .peu small{color:var(--co-ink-3)}
+html body .imp-desp-v878344 .peu .modal-actions{margin:0}

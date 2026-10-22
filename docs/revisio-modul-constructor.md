@@ -129,6 +129,27 @@ capítol) · Hores.
 - **Pendent:** veure totes les obres alhora per treballador o colla (on és cadascú cada dia) i que els treballadors vegin al
   mòbil el seu planning.
 
+### Tanda 6 · fases, rendiment i despeses · V87.342–344 (22/10/2026, l’Héctor mirant Verbania i entrant les despeses de Socoterm)
+
+- **Fases** (V87.342): cada pressupost de l’obra és una fase. A dalt de l’Econòmic (Amidaments, Pressupost, Certificacions,
+  Facturació, Despeses i Rendiment), la barra «Fases» (número, nom, import i % certificat); a Despeses i Rendiment també «Tota
+  l’obra». Al «⋯»: nova fase, canviar el nom, eliminar. Els amidaments, les despeses i les hores del personal van per fase.
+- **Rendiment de l’obra per fase**: pressupost, certificat a origen i facturat; el compte: ingressos − materials − mà d’obra −
+  industrials = marge; − DGE (% dels ingressos) = benefici, amb el BI previst («N punts per sobre/sota»). DGE i BI previst es posen
+  a l’obra (al Rendiment) o a Empresa › Dades per a totes. A sota, «Per capítols» (pressupost, certificat, % executat, cost real).
+  Fora el «Seguiment econòmic · inicial i actual» que no s’entenia.
+- **Hores de la constructora** (V87.342): només el personal; fora «Les meves hores» i el comptador automàtic (el cap, si compta,
+  és un treballador més; si no, va dins del DGE).
+- **Rendiment de l’empresa** (V87.343, menú sota Despeses): l’any, filtre per obres, xifres (ingressos, costos directes, marge,
+  benefici després de DGE i resultat de l’empresa amb les despeses reals de l’empresa), gràfiques de línies (mes a mes, entre anys,
+  entre obres) i la taula per obres. Avisa si el DGE previst no cobreix les despeses reals de l’empresa.
+- **V87.344**: a la constructora, totes les obres amb les pestanyes d’una gestió integral (també les de «només pressupost»: hi ha
+  Despeses) i només tres tipus de treball (Gestió integral, Pressupost, Altres). Despeses en **Materials** (factures i albarans) ·
+  **Mà d’obra** (tipus nou, i al Rendiment també les hores del personal) · **Industrials**, també dins de l’obra. **Importar
+  despeses d’un Excel**: llegeix totes les pestanyes (busca la fila de títols: data, proveïdor, número, concepte, base, IVA, total,
+  obra), el tipus de cada pestanya surt del seu nom, es tria l’obra, es poden desmarcar files i les que ja hi són no es tornen a
+  importar.
+
 ### Recordatori
 
 - **Facturació:** proforma → factura amb VeriFactu (aturat fins que l’Héctor parli amb la gestoria).

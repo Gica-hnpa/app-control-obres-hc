@@ -857,6 +857,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     mesurant les files (`data-cap`) amb `useLayoutEffect` i `geo878341` (X i amplada de l’escala). «Un capítol darrere l’altre» crea
     les vinculacions. Camp nou `colla` als treballadors. Dades d’exemple vinculades (el 3r capítol, 2 dies abans). Fora els textos que
     explicaven el Planning. Estils: `src/theme-v878341.css`. Prova: `planning341test.mjs` (17).
+  - **V87.342–344 (fases, rendiment, despeses):** barra `FasesObra878342` a dalt de l’Econòmic (`ECON_FASES878342`; selecciona
+    `activeBudgetIdObra`; «Tota l’obra» = estat `totaObra878342` de l’Obra; `GestioObra8746 senseBarra878342`). `faseDe878342` (la
+    fase d’una despesa o d’unes hores: `budgetId`, la de la partida o capítol, o "" sense fase). Amidaments per fase
+    (`amidDe878342`/`posaAmid878342`: la principal a `amidaments878328`, les altres a `amidamentsFases878342`). Rendiment
+    (`GlobalRendibilitat8789` → `RendimentFases878342`, `rendimentFase878342`, `ResumFases878342`, `CapitolsFase878342`); DGE i BI
+    previst a `data.rendiment878342` o `aco_empresa_v878259.dge878342`/`bi878342` (`cfgRend878342`). `senseHoresPropies878342`:
+    constructora/treballador sense «Les meves hores» ni comptador. Menú «Rendiment» (`RendimentEmpresa878343`, pantalla «Rendiment
+    empresa», `LiniesChart878343` amb la paleta validada de l’skill dataviz); Facturació ja no té la pestanya Rendiment.
+    V87.344: `esConstructora878344` (totes les obres amb la plantilla de gestió integral; `TIPUS_CONSTR878344`), tipus de despesa
+    `MaObra`, grups `GRUPS_DESP878344` (Materials = Material + Albarà; Mà d’obra; Industrials; Empresa) i `ImportarDespeses878344`
+    (`llegirExcelDespeses878344`, totes les pestanyes; `importat` = nom de l’arxiu). Estils: `theme-v878342/343/344.css`. Proves:
+    `fases342test` (27), `rendiment343test` (18), `despeses344test` (15); `personal340test` adaptada.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
