@@ -869,6 +869,29 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `MaObra`, grups `GRUPS_DESP878344` (Materials = Material + Albarà; Mà d’obra; Industrials; Empresa) i `ImportarDespeses878344`
     (`llegirExcelDespeses878344`, totes les pestanyes; `importat` = nom de l’arxiu). Estils: `theme-v878342/343/344.css`. Proves:
     `fases342test` (27), `rendiment343test` (18), `despeses344test` (15); `personal340test` adaptada.
+  - **V87.345 (Excel de control d'obra de Socoterm, «Les Moreres»):** la V87.344 ho posava tot a Materials (no entenia les pestanyes en
+    castellà). `tipusDeNom878344`: Materiales → Material; Trabajadores/personal/horas → MaObra; Combustible/lloguer/maquinària/transport →
+    **`Altres`** (tipus nou, «Altres despeses»); Comisión → **`Comissio`** (tipus nou); Facturado/emitidas/ingresos → «+» (**factures
+    emeses**: van a `data.facturesObra878297` amb `importada:true`, sense certificació ni PDF —a Facturació, «Importada»— i compten com a
+    facturat al Rendiment); Beneficio/Rendimiento/Resumen/Obra → «-» (desmarcades, «No són despeses»). Columnes noves: quantitat, unitat i
+    preu (el concepte diu «Oficial 1º · 8 h × 25,48 €»); «Valor» és un import; files «Total…» i «Porcentaje…» no compten; sense data, l'última
+    de l'Excel; sense IVA ni total, la mà d'obra 0 % i la resta 21 %. Cada despesa porta `importFull` (la pestanya). Grup **Altres**
+    (`GRUPS_DESP878344`, Altres + Comissió) i files «Altres despeses» i «Comissions» al Rendiment. **L'Excel va a Documents › 99 · Altres**
+    de cada obra on ha anat alguna fila (`persistImportedExcelDocument878245`, `folder:"99_ALTRES"`; prop `setObraData` d'`Albarans878259`,
+    només obres pròpies). **Seleccionar** a la llista de despeses (`selMode878345`, `sel-barra-v878345`): totes, cap, tocar files, «Les d'un
+    Excel…» (l'arxiu o cada pestanya), canviar el tipus, l'obra o la fase, repercutida, eliminar. Sense proveïdor, la fila diu el concepte.
+    Amb l'Excel de l'Héctor, l'app dona el mateix benefici que el seu full (928,36 €). Estils: `src/theme-v878345.css`. Prova:
+    `despeses345test.mjs` (28, amb un Excel inventat); adaptades `despeses344test`, `despesesrend338test` i `despesestest`.
+  - **V87.346 · comissió amagada al pressupost** (l'Héctor, 22/10/2026: «un clic amb un espia per posar el %… és un tracte amb un tercer
+    que no ha de saber mai el client final»): botó % amb un llum (`com-espia-v878346`, sense la paraula «comissió») a la capçalera del
+    pressupost (no al portal de client ni en una obra compartida per un altre). Finestra: %, total sense comissió, amb comissió i la
+    comissió. «Aplicar» puja totes les partides d'aquell pressupost (preu × (1 + %), arrodonit a cèntims) i en guarda l'original a la partida
+    (`puOrig878346`, `com878346`); «Treure la comissió» torna exactament a l'original. Les partides noves d'un pressupost amb comissió també
+    la porten. **Editar**: es treu mentre s'edita i es torna a aplicar en guardar o cancel·lar. A la **llibreria** (`savePartidaToLibrary87115`),
+    a les partides habituals del client (`clientHabituals878280`) i a l'històric del client hi va el preu original. Els documents (PDF, Excel,
+    certificacions) només veuen el preu amb la comissió. El % es recorda (`aco_comissio_pct_v878346`). Si l'agència cobra un % del total
+    que paga el client, per quedar-se el mateix net cal posar-hi més (10 % → 11,11 %). Estils: `src/theme-v878346.css`. Prova:
+    `comissio346test.mjs` (13).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

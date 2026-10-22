@@ -1,0 +1,35 @@
+/* V87.345 · Despeses: Altres i Comissions, seleccionar diverses i factures importades */
+
+/* cinc requadres: Materials · Mà d'obra · Industrials · Altres · Empresa */
+html body .albarans-v878259 .desp-grups-v878338{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+html body .albarans-v878259 .desp-grups-v878338 .g-alt{border-left-color:#64748B}
+@media (max-width:760px){
+  html body .albarans-v878259 .desp-grups-v878338{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+html body .despeses-v878311 .tip-v878311.t-ma{background:rgba(15,118,110,.13);color:#0F766E}
+html body .despeses-v878311 .tip-v878311.t-alt{background:rgba(100,116,139,.16);color:#475569}
+html body .despeses-v878311 .tip-v878311.t-com{background:rgba(190,24,93,.12);color:#9D174D}
+
+/* seleccionar */
+html body .albarans-v878259 .alb-vista-v878318{align-items:center}
+html body .albarans-v878259 .alb-vista-v878318 .sel-btn-v878345{margin-left:auto;min-height:34px;padding:0 14px}
+html body .albarans-v878259 .alb-vista-v878318 .sel-btn-v878345.on{background:var(--co-accent);color:#fff;border-color:var(--co-accent)}
+html body .albarans-v878259 .sel-barra-v878345{position:sticky;top:calc(var(--obra-bar-h,0px) + 6px);z-index:30;display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--co-accent);border-radius:12px;background:var(--co-surface);box-shadow:0 6px 18px rgba(15,23,42,.10)}
+html body .albarans-v878259 .sel-barra-v878345 .fila{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+html body .albarans-v878259 .sel-barra-v878345 .fila>b{font:700 14px var(--app-font);color:var(--co-ink)}
+html body .albarans-v878259 .sel-barra-v878345 select{min-height:36px;max-width:100%}
+html body .albarans-v878259 .sel-barra-v878345 .elim{min-height:36px;padding:0 12px}
+html body .albarans-v878259 .alb-row.sel-v878345{cursor:pointer}
+html body .albarans-v878259 .alb-row.sel-v878345 .ic{background:transparent}
+html body .albarans-v878259 .alb-row.sel-v878345 .ic input{width:20px;height:20px;margin:0;pointer-events:none;accent-color:var(--co-accent)}
+html body .albarans-v878259 .alb-row.sel-v878345.on{background:color-mix(in srgb,var(--co-accent) 9%,var(--co-surface));box-shadow:0 0 0 1px var(--co-accent) inset}
+@media (max-width:760px){
+  html body .albarans-v878259 .sel-barra-v878345{top:calc(var(--app-head-h,56px) + 4px)}
+  html body .albarans-v878259 .sel-barra-v878345 .fila.accions>*{flex:1 1 calc(50% - 8px);min-width:0}
+}
+
+/* importar: les factures emeses, en verd */
+html body .imp-desp-v878344 .full.ing>header{background:#ECFDF5}
+
+/* Facturació: factura importada d'un Excel (sense PDF) */
+html body .facturacio-v878337 .importada-v878345{font-style:normal;font:600 12px var(--app-font);color:var(--co-ink-3);padding:2px 8px;border-radius:99px;background:var(--co-surface-2)}

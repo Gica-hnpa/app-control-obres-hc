@@ -1,0 +1,23 @@
+/* V87.346 · Comissió del pressupost: botó amb l'espia i finestra del % */
+html body .budget-eines-v878320 .com-espia-v878346{position:relative;display:inline-grid;place-items:center;width:38px;height:38px;min-height:38px;padding:0;border-radius:10px;border:1px solid var(--co-line-strong);background:var(--co-surface);color:var(--co-ink-2);cursor:pointer;flex:0 0 auto}
+html body .budget-eines-v878320 .com-espia-v878346>i{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#CBD5E1;box-shadow:0 0 0 2px var(--co-surface)}
+html body .budget-eines-v878320 .com-espia-v878346.on{border-color:#16A34A;color:#15803D}
+html body .budget-eines-v878320 .com-espia-v878346.on>i{background:#22C55E;box-shadow:0 0 0 2px var(--co-surface),0 0 6px 1px rgba(34,197,94,.75)}
+html body .budget-eines-v878320 .com-espia-v878346:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .com-v878346{display:flex;flex-direction:column;gap:14px}
+html body .com-v878346 .pct{display:flex;align-items:center;gap:12px;flex-direction:row!important}
+html body .com-v878346 .pct>span:first-child{font-weight:600;color:var(--co-ink-2)}
+html body .com-v878346 .pct .inp{display:inline-flex;align-items:center;gap:6px}
+html body .com-v878346 .pct input{width:96px;min-height:42px;font:700 20px var(--app-font);text-align:right;font-variant-numeric:tabular-nums}
+html body .com-v878346 .pct b{font:700 18px var(--app-font);color:var(--co-ink-2)}
+html body .com-v878346 .calc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html body .com-v878346 .calc>div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface-2);min-width:0}
+html body .com-v878346 .calc small{font-size:12px;color:var(--co-ink-3)}
+html body .com-v878346 .calc b{font:700 16px var(--app-font);color:var(--co-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html body .com-v878346 .calc .dif b{color:#15803D}
+html body .com-v878346 .avis{margin:0;padding:8px 12px;border-radius:10px;background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;font-size:13px}
+html body .com-v878346 .modal-actions{margin:0}
+html body .com-v878346 .modal-actions .treu{color:#B91C1C}
+@media (max-width:560px){
+  html body .com-v878346 .calc{grid-template-columns:1fr}
+}

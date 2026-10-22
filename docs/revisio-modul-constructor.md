@@ -149,6 +149,14 @@ capítol) · Hores.
   despeses d’un Excel**: llegeix totes les pestanyes (busca la fila de títols: data, proveïdor, número, concepte, base, IVA, total,
   obra), el tipus de cada pestanya surt del seu nom, es tria l’obra, es poden desmarcar files i les que ja hi són no es tornen a
   importar.
+- **V87.345** (l’Héctor amb l’Excel «CONTROL BENEFICIO» de Les Moreres: «m’ho ha posat tot com a materials»): entén les pestanyes en
+  castellà (Materiales, Trabajadores, Combustible, Comisión), grups nous **Altres** (combustible, lloguers…) i **Comissió**; la pestanya
+  «Facturado» entra com a factures de l’obra (compten com a facturat al Rendiment); Beneficio, Rendimiento i Resumen no s’importen.
+  L’Excel queda a **Documents › 99 · Altres** de l’obra. A la llista de despeses, **Seleccionar**: totes, unes quantes o les d’un Excel
+  (o d’una pestanya), i canviar-ne el tipus, l’obra o la fase, marcar-les com a repercutides o eliminar-les.
+- **V87.346 · Comissió al pressupost**: botó % amb un llum a la capçalera del pressupost. Es posa el % i totes les partides
+  d’aquell pressupost pugen aquest %; treure-la torna a l’original. Per editar, es treu i es torna a posar en guardar. A la llibreria hi
+  va sempre el preu sense comissió. Els documents no en diuen res (el client final no l’ha de saber).
 
 ### Recordatori
 
