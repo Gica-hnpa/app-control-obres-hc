@@ -3916,4 +3916,6 @@ export default {
   "A facturar": "A facturar",
   "A facturar · {c}": "A facturar · {c}",
   "% sobre el material": "% sobre el material",
+  "Afegir treballadors": "Añadir trabajadores",
+  "La llibreria és buida.": "La biblioteca está vacía.",
 };

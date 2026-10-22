@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.352";
+const APP_VERSION878264="87.353";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3023,7 +3023,6 @@ function IdiomaUsuari878268({user}){
   }
   return <Card title={t("Idioma")} className="idioma-card-v878268">
     <div className="idioma-row-v878268">{LANGS.map(l=><button type="button" key={l.code} className={l.code===v?"primary":"secondary"} aria-pressed={l.code===v} onClick={()=>change(l.code)}>{l.nom}</button>)}</div>
-    <small className="muted">{t("Cada persona tria el seu idioma. No canvia les dades ni el que veuen els altres.")}</small>
   </Card>;
 }
 // V87.266 · versions que no es van triar quan es va canviar el mateix des de dos llocs alhora (cloudSync.js).
@@ -4352,6 +4351,8 @@ function userCanSeeScreen878233(s){
   return ["Inici","Treballs / Expedients","Obra","Configuració","Llibreria","Agenda","Rendiments"].includes(s);
 }
 function nav(s){if(!userCanSeeScreen878233(s))return;setScreen(s);setMenuOpen(false)}
+const navRef878353=useRef(nav);navRef878353.current=nav;
+useEffect(()=>{const h=e=>{const sc=e?.detail?.screen;if(sc){navRef878353.current(sc);try{window.scrollTo(0,0)}catch{}}};window.addEventListener("aco-nav",h);return()=>window.removeEventListener("aco-nav",h)},[]);
 function openObra(id){
   const now=new Date().toISOString();
   setObraId(id);setTab("Resum");setSelActa(null);
@@ -6190,12 +6191,11 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     {chapterActionModal87208&&(()=>{const ch=managedChapterStats.find(entry=>entry.cap===chapterActionModal87208)||{cap:chapterActionModal87208,total:rows.filter(item=>libText87196(item.cap||"General")===chapterActionModal87208).length};return <Modal title={`${i18nT("Accions del capítol")} · ${ch.cap}`} close={()=>setChapterActionModal87208("")}><div className="library-chapter-modal-v87208"><section><div><b>{t("Renombrar el capítol")}</b><span>{t("Les partides continuaran vinculades a aquest capítol.")}</span></div><label><span>{t("Nom nou")}</span><input value={capDrafts[ch.cap]??ch.cap} onChange={e=>setCapDrafts(prev=>({...prev,[ch.cap]:e.target.value}))}/></label><button type="button" className="primary" onClick={()=>renameChapter87197(ch.cap,capDrafts[ch.cap]??ch.cap)}>{t("Guardar nom")}</button></section><section><div><b>{t("Fusionar amb un altre")}</b><span>{t("Mou totes les partides al capítol que conserves.")}</span></div><label><span>{t("Capítol que vols conservar")}</span><select value={capMergeTargets[ch.cap]||""} onChange={e=>setCapMergeTargets(prev=>({...prev,[ch.cap]:e.target.value}))}><option value="">{t("Selecciona el destí...")}</option>{caps.filter(cap=>cap!==ch.cap).map(cap=><option key={cap} value={cap}>{i18nT(cap)}</option>)}</select></label><button type="button" className="secondary" disabled={!capMergeTargets[ch.cap]} onClick={()=>renameChapter87197(ch.cap,capMergeTargets[ch.cap])}>{t("Fusionar")}</button></section><section className="library-chapter-danger-v87206"><div><b>{t("Eliminar")}</b><span>{ch.total?i18nT("Envia el capítol i {n} partida/es a la paperera.",{n:ch.total}):t("El capítol és buit.")}</span></div><span></span><button type="button" className="danger" onClick={()=>ch.total?deleteChapterAndItems87203(ch.cap):deleteEmptyChapter87201(ch.cap)}>{ch.total?i18nT("Eliminar capítol i {n} partides",{n:ch.total}):t("Eliminar capítol buit")}</button></section></div><div className="modal-actions"><button type="button" className="primary" onClick={()=>setChapterActionModal87208("")}>{t("Tancar i tornar")}</button></div></Modal>})()}
     {libraryItemModal87208&&(()=>{const item=rows.find(entry=>String(entry.id)===String(libraryItemModal87208));return item?renderLibraryItemModal87208(item):null})()}
     {draft&&<Modal title={`Nova partida${draft.cap?` · ${draft.cap}`:""}`} close={()=>setDraft(null)}><div className="library-new-modal-v87208"><div className="library-new-code-note-v87199">{t("Codi curt editable: prefix del capítol + paraula clau + número correlatiu. Exemple:")} <b>{t("MA_BAST_001")}</b>.</div><div className="library-editor-grid-v87196"><label><span>{t("Concepte *")}</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>{t("Unitat")}</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>{t("Capítol de la llibreria")}</span><select value={draft.cap} onChange={e=>changeDraftChapter87201(e.target.value)}><option value="">{t("Selecciona un capítol...")}</option>{caps.map(cap=><option key={cap} value={cap}>{i18nT(cap)}</option>)}<option value="__new__">{t("+ Crear capítol nou")}</option></select></label><label><span>{t("Prefix del codi")}</span><input maxLength="4" value={draft.codiPrefix} onChange={e=>setDraft({...draft,codiPrefix:e.target.value})} placeholder={libChapterInitials87199(draft.cap)}/></label><label><span>{t("Paraula clau del codi")}</span><input maxLength="6" value={draft.codiParaula} onChange={e=>setDraft({...draft,codiParaula:e.target.value})} placeholder={libConceptKeyword87199(draft.concepte)}/></label><label><span>{t("Preu unitari")}</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label><span>{t("Tipologia de feina")}</span><select value={draft.tipologia||""} onChange={e=>setDraft({...draft,tipologia:e.target.value})}><option value="">{t("Sense tipologia")}</option>{LIBRARY_WORK_CATEGORIES878240.map(type=><option key={type} value={type}>{i18nT(type)}</option>)}</select></label><label className="span-all"><span>{t("Paraules clau / sinònims")}</span><input value={draft.paraulesClau||""} onChange={e=>setDraft({...draft,paraulesClau:e.target.value})} placeholder={t("Ex.: antifissures, reparació esquerdes")}/></label><label className="span-all"><span>{t("Descripció llarga")}</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label>{clients.length>0&&<label><span>{t("Client relacionat (opcional)")}</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">{t("Sense client concret")}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={saveNew}>{t("Guardar a la llibreria")}</button></div></div></Modal>}
-    <section className="library-hero-v87196"><div><small>{t("LLIBRERIA VALIDADA")}</small><h2>{t("Només les partides que tu decideixes guardar")}</h2><p>{t("Els pressupostos nous no alimenten automàticament aquesta llibreria. Crea una partida aquí o desa-la expressament des del pressupost quan ja l’hagis revisat.")}</p></div><div className="actions-inline"><button type="button" className="primary" onClick={()=>startNew()}><Plus/> {t("Nova partida validada")}</button><button type="button" className="secondary" onClick={createStandaloneChapter87201}><Plus/> {t("Nou capítol")}</button></div></section>
-    <div className="library-policy-note-v87199"><b>{t("Una sola llibreria, amb filtre de client")}</b><span>{t("Les partides són comunes. La vinculació amb un client serveix per veure primer les que utilitzes habitualment amb aquell client, sense duplicar-les.")}</span></div>
+    <section className="library-hero-v87196"><div><small>{t("LLIBRERIA VALIDADA")}</small><h2>{t("Només les partides que tu decideixes guardar")}</h2></div><div className="actions-inline"><button type="button" className="primary" onClick={()=>startNew()}><Plus/> {t("Nova partida validada")}</button><button type="button" className="secondary" onClick={createStandaloneChapter87201}><Plus/> {t("Nou capítol")}</button></div></section>
     <div className="library-primary-filters-v87230 library-primary-filters-v878240"><label><span>{t("Quines partides vols veure?")}</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([]);setOpenLibraryChapter("")}}><option value="">{t("Tota la llibreria validada (")}{rows.length})</option><option value="__none__">{t("Ús general / sense client (")}{unlinkedCount})</option>{clients.map(client=><option key={client.id} value={client.id}>{t("Habituals de")} {client.nom||client.rao}</option>)}</select></label><label><span>{t("Cercar")}</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder={t("Concepte, descripció, codi o unitat...")}/></label><label><span>{t("Tipologia de feina")}</span><select value={tipologiaFilter878240} onChange={e=>{setTipologiaFilter878240(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les tipologies")}</option>{libraryTypologies878240.map(type=><option key={type} value={type}>{i18nT(type)}</option>)}</select></label><label><span>{t("Paraula clau")}</span><select value={keywordFilter878246} onChange={e=>{setKeywordFilter878246(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les paraules clau")}</option>{libraryKeywordOptions878246.map(keyword=><option key={keyword} value={keyword}>{i18nT(keyword)}</option>)}</select></label><label><span>{t("Agrupar la llibreria per")}</span><select value={groupBy878240} onChange={e=>{setGroupBy878240(e.target.value);setOpenLibraryChapter("")}}><option value="capitol">{t("Capítol")}</option><option value="tipologia">{t("Tipologia de feina")}</option></select></label><div><small>{t("Resultats")}</small><b>{visibleCuratedRows878230.length} {t("partides")}</b></div></div>
     <div className="library-stats-v87196 library-stats-v87201"><div><small>{t("Partides validades")}</small><b>{rows.length}</b></div><div><small>{t("Capítols")}</small><b>{caps.length}</b></div><div><small>{t("Relacionades amb clients")}</small><b>{linkedCount}</b></div><div><small>{t("Ús general")}</small><b>{unlinkedCount}</b></div><button type="button" className="secondary" onClick={()=>setShowLibraryTools878230(value=>!value)}>{showLibraryTools878230?t("Tancar eines"):t("Eines opcionals")}</button></div>
     {(rows.length>0||chapterCatalog.length>0)&&<div className="library-clean-start-v87231"><div><b>{t("Vols començar la teva llibreria des de zero?")}</b><span>{t("Aquesta acció només neteja la llibreria. No elimina ni modifica cap partida dels expedients, pressupostos o certificacions.")}</span></div><button type="button" className="danger" onClick={clearCuratedLibrary878230}>{t("Començar amb una llibreria neta")}</button></div>}
-    {rows.length===0&&caps.length===0&&<div className="library-empty-start-v87231"><div><small>{t("LLIBRERIA BUIDA")}</small><h3>{t("Ara només hi entrarà allò que tu validis")}</h3><p>{t("Crea un capítol i una partida, o desa expressament una partida revisada des d’un pressupost. Cap Excel ni cap expedient l’omplirà automàticament.")}</p></div><div><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> {t("Crear primer capítol")}</button><button type="button" className="secondary" onClick={()=>startNew()}><Plus/> {t("Crear primera partida")}</button></div></div>}
+    {rows.length===0&&caps.length===0&&<div className="library-empty-start-v87231"><div><small>{t("LLIBRERIA BUIDA")}</small><h3>{t("La llibreria és buida.")}</h3></div><div><button type="button" className="primary" onClick={createStandaloneChapter87201}><Plus/> {t("Crear primer capítol")}</button><button type="button" className="secondary" onClick={()=>startNew()}><Plus/> {t("Crear primera partida")}</button></div></div>}
     {showLibraryTools878230&&<div className="library-optional-tools-v87230"><div><b>{t("Manteniment de la llibreria")}</b><span>{t("Aquestes accions no modifiquen mai els pressupostos ni les certificacions existents.")}</span></div><button type="button" className="secondary" onClick={rebuildCodes87199}>{t("Regenerar codis interns")}</button></div>}
     <details open className="library-chapters-v87197 library-chapters-step-v87202">
       <summary><div><b>{t("Capítols i partides")}</b><span>{caps.length} {t("capítol/s ·")} {rows.length} {t("partida/es · obre un capítol per veure-les")}</span></div><em>{t("Obrir ▾")}</em></summary>
@@ -6938,7 +6938,7 @@ function OverdueReview878255({tasks=[],update,clients=[]}){
   function apply(patch,stillOverdue=false){update?.(cur.obra,cur.task,patch);setCustom("");if(stillOverdue){next();return}if(overdue.length<=1){setOpen(false);setI(0)}}
   const client=(clients||[]).find(c=>c.id===cur?.obra?.client)?.nom||"";
   return <>
-    <div className="overdue-banner-v878255"><span className="dot"/><b>{overdue.length} {overdue.length===1?i18nT("tasca vençuda"):i18nT("tasques vençudes")}</b><span>{i18nT("Decideix què en fas: acabar-les, posar-los un nou termini o canviar-ne l’estat.")}</span><button type="button" className="primary" onClick={()=>{setI(0);setOpen(true)}}>{i18nT("Revisar-les")}</button></div>
+    <div className="overdue-banner-v878255"><span className="dot"/><b>{overdue.length} {overdue.length===1?i18nT("tasca vençuda"):i18nT("tasques vençudes")}</b><button type="button" className="primary" onClick={()=>{setI(0);setOpen(true)}}>{i18nT("Revisar-les")}</button></div>
     {open&&cur&&<Modal title={`Tasca vençuda · ${Math.min(i,overdue.length-1)+1} de ${overdue.length}`} close={()=>setOpen(false)}>
       <div className="overdue-review-v878255">
         <div className="task"><b>{cur.task.text||cur.task.titol||i18nT("Tasca")}</b><span>{cur.obra.nom}{client?` · ${client}`:""}</span><em>{i18nT("Vençuda fa")} {days} {days===1?i18nT("dia"):i18nT("dies")} {i18nT("· termini")} {taskDueLabel878140(cur.task)}{cur.task.prioritat?` · ${i18nT("prioritat")} ${i18nT(cur.task.prioritat)}`:""}</em>{cur.task.notes?<small>{cur.task.notes}</small>:null}</div>
@@ -13791,7 +13791,7 @@ function EditorTreballador878339({inicial,nou,onSave,onDelete,close}){
   </div></Modal>;
 }
 function Empresa878339({odata={},clients=[],setOdata}){
-  const [vista,setVista]=useState("dades");
+  const [vista,setVista]=useState(()=>{const v=window.__acoEmpresaVista878353;window.__acoEmpresaVista878353="";return v||"dades"});
   const [tick,setTick]=useState(0);
   const rec=()=>setTick(x=>x+1);
   const treballadors=useMemo(()=>llegeixTreballadors878339(),[tick]);
@@ -13869,6 +13869,8 @@ function costPersonalObra878340(obraId,dins){const treb=llegeixTreballadors87833
 function useTickPersonal878340(){const[tick,setTick]=useState(0);useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-personal-changed",h);return()=>window.removeEventListener("aco-personal-changed",h)},[]);return tick}
 const fh878340=h=>`${(Math.round((+h||0)*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} h`;
 // Part d'hores (menú Hores de la constructora): un dia, cada treballador amb l'obra o les obres i les hores
+// V87.353 · per anar a Empresa › Treballadors des d'un altre lloc (l'App escolta «aco-nav»)
+function anarTreballadors878353(){window.__acoEmpresaVista878353="treb";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Empresa"}}))}catch{}}
 function PartHores878340({obres=[],odata={}}){
   const tick=useTickPersonal878340();
   const[dia,setDia]=useState(()=>isoDay878255(new Date()));
@@ -13910,7 +13912,7 @@ function PartHores878340({obres=[],odata={}}){
   return <div className="part-v878340">
     <div className="cap-v878340"><h1>{t("Hores del personal")}</h1>
       <div className="dia-v878340"><button type="button" className="secondary" onClick={()=>mou(-1)} aria-label={t("Dia anterior")}>‹</button><label><span className="nd">{nomDia}</span><input type="date" value={dia} onChange={e=>{if(e.target.value){setCanvi(false);setDia(e.target.value)}}}/></label><button type="button" className="secondary" onClick={()=>mou(1)} aria-label={t("Dia següent")}>›</button>{dia!==isoDay878255(new Date())&&<button type="button" className="link" onClick={()=>{setCanvi(false);setDia(isoDay878255(new Date()))}}>{t("Avui")}</button>}</div></div>
-    {!treb.length?<div className="fe-buit"><b>{t("Primer posa els treballadors a Empresa › Treballadors.")}</b></div>:<>
+    {!treb.length?<div className="fe-buit"><b>{t("Primer posa els treballadors a Empresa › Treballadors.")}</b>{ambEmpresa878338()&&<button type="button" className="primary" onClick={anarTreballadors878353}><Plus size={16} aria-hidden="true"/> {t("Afegir treballadors")}</button>}</div>:<>
       {anterior&&<div className="actions-inline"><button type="button" className="secondary small" onClick={comAnterior}>{t("Com el {d}",{d:fmtAppDate8748(anterior)})}</button></div>}
       <div className="treb-dia-v878340">{treb.map(w=><div key={w.id} className="fila-v878340">
         <div className="nm"><b>{w.nom}</b><small>{[i18nT(w.ofici||""),costHora878339(w)?`${money(costHora878339(w))}/h`:t("Sense cost per hora")].filter(Boolean).join(" · ")}</small></div>
@@ -13956,7 +13958,7 @@ function PersonalObra878340({obra,data={}}){
       <label className="wide"><span>{t("Nota (opcional)")}</span><input value={nou.nota} onChange={e=>setNou(x=>({...x,nota:e.target.value}))}/></label>
       <div className="acc"><button type="button" className="secondary" onClick={()=>setNou(null)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desaNou}>{t("Desar")}</button></div>
     </div>}
-    {!rows.length?<p className="buit-v878340">{treb.length?t("Encara no hi ha hores del personal en aquesta obra."):t("Primer posa els treballadors a Empresa › Treballadors.")}</p>:<>
+    {!rows.length?<p className="buit-v878340">{treb.length?t("Encara no hi ha hores del personal en aquesta obra."):<>{t("Primer posa els treballadors a Empresa › Treballadors.")}{ambEmpresa878338()&&<button type="button" className="primary" onClick={anarTreballadors878353}><Plus size={16} aria-hidden="true"/> {t("Afegir treballadors")}</button>}</>}</p>:<>
       <div className="kpis-v878340"><div><small>{t("Hores")}</small><b>{fh878340(totH)}</b></div><div><small>{t("Cost del personal")}</small><b>{money(totC)}</b></div></div>
       <div className="perw-v878340">{perW.map(g=><div key={g.id} className="w">
         <span className="nm"><b>{g.nom}</b><small>{fh878340(g.h)}</small></span>
@@ -13992,7 +13994,7 @@ function DadesEmpresa878337(){
       <label><span>{t("IBAN")}</span><input value={rawV878304(e.iban)} onChange={x=>put({iban:x.target.value})}/></label>
       {teModul878326("obra")&&<><label><span>{t("Despeses generals (DGE) de les obres (%)")}</span><input inputMode="decimal" value={rawV878304(e.dge878342)} onChange={x=>put({dge878342:x.target.value})} placeholder="10"/></label>
       <label><span>{t("Benefici industrial previst (%)")}</span><input inputMode="decimal" value={rawV878304(e.bi878342)} onChange={x=>put({bi878342:x.target.value})} placeholder="6"/></label></>}
-      <div className="span-all"><CampsAdreca878304 v={e} onChange={p=>put(p)}/></div>
+      <CampsAdreca878304 v={e} onChange={p=>put(p)}/>
 
     </div>
     <div className="actions-inline"><button type="button" className="primary" onClick={desa}>{t("Desar")}</button>{desat&&<span className="ok-v878337">{t("Desat")}</span>}</div>
@@ -14595,7 +14597,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.352",
+    app_version:"87.353",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -15361,7 +15363,7 @@ function RendimentHonorarisExpedient878120({data={},obra={}}){
           <RendimentBar878120 label={t("Valor temps invertit")} value={m.tempsCost} max={max} tone={health}/>
           <RendimentBar878120 label={t("Cobertura facturat / pressupostat")} value={m.cobertura} max={100} kind="pct" tone={m.cobertura>=90?"good":"warn"}/>
         </div>
-        {hasTime?<div className={`rend-result-v878120 ${health}`}><span>{t("Resultat intern estimat")}</span><b>{m.marge>=0?"+":""}{money(m.marge)}</b><small>{i18nT("Preu real aproximat: {preu}/h",{preu:money(m.rendimentHora)})}</small></div>:<div className="rend-result-v878120 neutral"><span>{t("Sense temps registrat")}</span><b>0,00 h</b><small>{t("Quan entris hores a Gestió temps es calcularà el cost intern i el rendiment real.")}</small></div>}
+        {hasTime?<div className={`rend-result-v878120 ${health}`}><span>{t("Resultat intern estimat")}</span><b>{m.marge>=0?"+":""}{money(m.marge)}</b><small>{i18nT("Preu real aproximat: {preu}/h",{preu:money(m.rendimentHora)})}</small></div>:<div className="rend-result-v878120 neutral"><span>{t("Sense temps registrat")}</span><b>0,00 h</b></div>}
       </div>
     </Card>
     <div className="finance-charts-v8776 rend-charts-v878120"><Donut8776 title={t("Factures per estat")} parts={byInvoice} total={m.factures.length?m.facturatTotal:0}/><Donut8776 title={t("Temps per tipus de feina")} parts={byType} total={m.tempsCost}/><Donut8776 title={t("Relació honoraris")} parts={[{k:"Facturat base",v:m.facturatBase},{k:"Temps intern",v:m.tempsCost},{k:"Pendent pressupost",v:Math.max(m.pressupostat-m.facturatBase,0)}]} total={Math.max(m.pressupostat,m.facturatBase+m.tempsCost,1)}/></div>
@@ -16365,7 +16367,6 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
       {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}
     </div>}
     {view==="mes"?renderMonth():view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}
-    {!readOnly&&view!=="llista"&&<p className="ag-hint">{i18nT("Clica un espai buit per crear una cita i arrossega-la per canviar-la de dia o d’hora.")}</p>}
     {form&&<AgendaEditor878256 form={form} setForm={setForm} obres={safeObres} save={save} remove={remove} close={()=>setForm(null)} openObra={openObra} readOnly={readOnly||!!form.readOnly}/>}
   </div>;
 }

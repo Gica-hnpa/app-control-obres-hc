@@ -1,0 +1,16 @@
+/* V87.353 · Neteja de l'auditoria de facilitat: marges, títols llegibles i botons on abans hi havia un avís */
+
+/* Ajustos: les targetes «Imatge de l'empresa» i «Enllaços de les obres» amb marge (abans tocaven la vora) */
+html body .marca-v878351>:not(.card-head),html body .enllacos-ajustos-v878305>:not(.card-head){margin-left:18px;margin-right:18px}
+html body .marca-v878351>.card-head+*,html body .enllacos-ajustos-v878305>.card-head+*{margin-top:14px}
+html body .marca-v878351>:last-child,html body .enllacos-ajustos-v878305>:last-child{margin-bottom:18px}
+
+/* Preus: el títol de la franja fosca es veu (era fosc sobre fosc) */
+html body .library-hero-v87196 h2,html body .library-hero-v87196 h2 *{color:#fff!important}
+
+/* Dades de l'obra: fora el « · fitxa» del títol */
+html body .fitxa-dades-stack-v878133>.card:first-child .card-head h2:after{content:none!important}
+
+/* Sense treballadors: l'avís amb el botó per posar-los */
+html body .part-v878340 .fe-buit,html body .buit-v878340{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+html body .part-v878340 .fe-buit .primary,html body .buit-v878340 .primary{display:inline-flex;align-items:center;gap:6px;min-height:42px}
