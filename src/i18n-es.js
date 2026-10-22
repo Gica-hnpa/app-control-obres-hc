@@ -3918,4 +3918,12 @@ export default {
   "% sobre el material": "% sobre el material",
   "Afegir treballadors": "Añadir trabajadores",
   "La llibreria és buida.": "La biblioteca está vacía.",
+  "Rendiment de l’encàrrec": "Rendimiento del encargo",
+  "Carpetes": "Carpetas",
+  "Altres carpetes ({n})": "Otras carpetas ({n})",
+  "La meva empresa": "Mi empresa",
+  "Idioma i enllaços": "Idioma y enlaces",
+  "Usuaris i contrasenyes": "Usuarios y contraseñas",
+  "Còpies i núvol": "Copias y nube",
+  "Encara no actiu: l’activa l’administrador de l’app.": "Aún no activo: lo activa el administrador de la app.",
 };

@@ -1,0 +1,41 @@
+/* V87.354 · Simplificacions de l'auditoria de facilitat */
+
+/* Resum de l'obra sense foto: només el botó «Afegir foto», sense el quadre buit (abans, mitja pantalla al mòbil) */
+html body .obra-hero-top-v878252:has(.sense-foto-v878354){grid-template-columns:minmax(0,1fr)}
+html body .obra-hero-photo-v878252.sense-foto-v878354{aspect-ratio:auto;background:none;overflow:visible;order:2;border-radius:0}
+html body .obra-hero-photo-v878252.sense-foto-v878354 button{position:static}
+
+/* Certificacions sense cap: fora la «Certificació 1» buida */
+html body .cert-buida-v878354{display:none!important}
+
+/* Documents: el selector de carpetes plegat diu la carpeta; obert, no la repeteix; les carpetes buides a part */
+html body .doc-folder-picker-v87152[open]>summary>span{display:none}
+html body details.altres-carpetes-v878354{margin-top:10px}
+html body details.altres-carpetes-v878354>summary{cursor:pointer;font-weight:700;color:var(--co-ink-2);padding:8px 2px;list-style:none}
+html body details.altres-carpetes-v878354>summary::-webkit-details-marker{display:none}
+html body details.altres-carpetes-v878354>summary::before{content:"▸ ";color:var(--co-ink-3)}
+html body details.altres-carpetes-v878354[open]>summary::before{content:"▾ "}
+html body .doc-folder-grid-v87152 button em{display:none}
+
+/* Honoraris: el rendiment de l'encàrrec, plegat */
+html body details.rend-plegat-v878354{border:1px solid var(--co-line);border-radius:var(--co-radius,14px);background:var(--co-surface);margin-top:12px}
+html body details.rend-plegat-v878354>summary{cursor:pointer;padding:14px 18px;font:700 15px var(--app-font);color:var(--co-ink);list-style:none}
+html body details.rend-plegat-v878354>summary::-webkit-details-marker{display:none}
+html body details.rend-plegat-v878354>summary::before{content:"▸ ";color:var(--co-ink-3)}
+html body details.rend-plegat-v878354[open]>summary::before{content:"▾ "}
+html body details.rend-plegat-v878354[open]>summary{border-bottom:1px solid var(--co-line)}
+html body details.rend-plegat-v878354>:not(summary){padding:12px}
+
+/* Ajustos en grups */
+html body details.ajustos-grup-v878354{margin:0}
+html body details.ajustos-grup-v878354>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:10px 2px 6px;font:800 13px var(--app-font);letter-spacing:.06em;text-transform:uppercase;color:var(--co-ink-3)}
+html body details.ajustos-grup-v878354>summary::-webkit-details-marker{display:none}
+html body details.ajustos-grup-v878354>summary::before{content:"▸";font-size:12px}
+html body details.ajustos-grup-v878354[open]>summary::before{content:"▾"}
+html body details.ajustos-grup-v878354>.cos{display:flex;flex-direction:column;gap:16px}
+html body details.copies-v878354:not([open])>summary{border:1px dashed var(--co-line-strong,#cbd5e1);border-radius:12px;padding:14px 16px}
+
+/* Ajustos: marges de «Perfil i mòduls» i de «Factures amb VERI*FACTU» */
+html body .perfil-moduls-v878326>:not(.card-head),html body .vf-compte-v878286>:not(.card-head){margin-left:18px;margin-right:18px}
+html body .perfil-moduls-v878326>.card-head+*,html body .vf-compte-v878286>.card-head+*{margin-top:14px}
+html body .perfil-moduls-v878326>:last-child,html body .vf-compte-v878286>:last-child{margin-bottom:18px}
