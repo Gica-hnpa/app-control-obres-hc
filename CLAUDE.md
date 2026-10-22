@@ -970,8 +970,16 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       buscar). Els dies de la mà d'obra i els anys, plegats.
     - Estils: `src/theme-v878350.css`. Prova: `partes350test.mjs` (30; substitueix `partes349test`). Adaptades `despeses348test` i
       `despeses345test` (obren els grups abans de mirar-los).
-    - **Pendent (demanat per l'Héctor):** la imatge de cada empresa a Ajustos (logo a la capçalera, color de l'app d'una paleta, i el logo
-      i el color als pressupostos i factures) i, després, **una auditoria de tota l'app** (facilitat, coses repetides, què ens diferencia).
+  - **V87.351 · La imatge de cada empresa** (l'Héctor, 22/10/2026): Ajustos › **«Imatge de l'empresa»** (`MarcaEmpresa878351`, no per al
+    treballador): el logo (el de sempre, `client:empresa` d'`aco_logos_contactes_v878315`; ja no és a «Dades de l'empresa») i el **color**
+    (paleta de 12 o «Un altre»; `aco_marca_v878351` = {color}, del compte). Amb logo, el menú diu el logo i el nom de l'empresa
+    (`MarcaApp878351`) i la capçalera del mòbil, el logo en lloc de «CO» (`MarcaMobil878351`). El color: variables --co-accent i un
+    `<style id="marca-v878351">` que `aplicaMarca878351` fa repassant tots els estils: **cada blau** (to 195-240°, amb prou color, i els
+    blaus molt clars de `CLARS878351`) passa al to triat amb la mateixa claredat relativa (`blauAMarca878351`; #2563EB = el color exacte);
+    els grisos blavosos i els colors dels estats (`NO_MARCA878351`) no es toquen. Documents: `marcaDoc878351` fa el mateix amb els colors
+    de l'HTML (a `exactHtml878193` del `DocViewer`: pressupost, certificacions, proformes, factures). «Blau» torna a l'app de sempre.
+    Estils: `src/theme-v878351.css`. Prova: `marca351test.mjs` (20).
+    - **Pendent:** **una auditoria de tota l'app** (facilitat, coses repetides, què ens diferencia).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

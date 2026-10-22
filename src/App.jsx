@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.350";
+const APP_VERSION878264="87.351";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4319,6 +4319,7 @@ useEffect(()=>{
   const t=setTimeout(()=>pushStateToSupabase878121({clients,obres,odata,partidaLibrary},dataOwnerUser878233).catch(e=>console.warn("Supabase sync pendent",e)),1400);
   return()=>clearTimeout(t);
 },[clients,obres,odata,partidaLibrary,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
+useEffect(()=>{const ap=()=>{try{aplicaMarca878351()}catch{}};ap();window.addEventListener("aco-marca-changed",ap);return()=>window.removeEventListener("aco-marca-changed",ap)},[authUser8779,dataLoadedUser8781]);
 useEffect(()=>{
   if(authUser8779&&dataLoadedUser8781===authUser8779&&needsExpedientCodeRepair878191(obres)){
     setObres(p=>assignMissingCodes8739(p,clients));
@@ -5404,7 +5405,7 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
 PERFIL878304=empresa878259?.perfil||"";
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><div className="brand">APP CONTROL D'OBRES</div><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!!PERFIL878304&&teModul878326("obra")&&<MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/>}<MB a={screen==="Traça"} i={<Clock/>} l={t("Hores")} on={()=>nav("Traça")}/>{!esTreballador878326()&&<><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/>{ambEmpresa878338()&&<MB a={screen==="Rendiment empresa"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment empresa")}/>}</>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{!!PERFIL878304&&teModul878326("empresa")&&!esTreballador878326()&&<MB a={screen==="Empresa"} i={<Briefcase/>} l={t("Empresa")} on={()=>nav("Empresa")}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><MarcaApp878351 nom={empresa878259?.nom||""}/><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!!PERFIL878304&&teModul878326("obra")&&<MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/>}<MB a={screen==="Traça"} i={<Clock/>} l={t("Hores")} on={()=>nav("Traça")}/>{!esTreballador878326()&&<><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/>{ambEmpresa878338()&&<MB a={screen==="Rendiment empresa"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment empresa")}/>}</>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{!!PERFIL878304&&teModul878326("empresa")&&!esTreballador878326()&&<MB a={screen==="Empresa"} i={<Briefcase/>} l={t("Empresa")} on={()=>nav("Empresa")}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main"><AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav("Inici")}} onMenu={()=>setMenuOpen(true)}/>
 
 {screen==="Inici"&&<Inici obrirPaquet={(pk,st="")=>{setOs("");setOc("");setOy("");setOt("");setOst(st);setOpk(pk);nav("Treballs / Expedients")}} clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {(screen==="Clients"||screen==="Agents")&&<SafeRenderBoundary878108><Contactes878315 clients={clients} setClients={setClients} obres={obres} odata={odata} setOdata={setOdata} openClient={openClient}/></SafeRenderBoundary878108>}
@@ -5696,7 +5697,7 @@ function etNovaObra878304(){return diuObra878326()?"Nova obra":"Nou expedient"}
 const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Obres","Traça":"Hores","Agenda":"Agenda","Fitxa client":"Client","Pressupostos honoraris":"Pressupostos","Factures":"Facturació","Clients":"Contactes","Agents":"Contactes","Llibreria":"Preus","Albarans":"Despeses","Configuració":"Ajustos","Pressupostos":"Pressupostos","Rendiments":"Rendiments","Empresa":"Empresa","Rendiment empresa":"Rendiment"};
 function AppHead878268({title,onBack,onMenu}){
   return <div className="mobile-top app-head-v878268">
-    {onBack?<button type="button" className="back-v878268" onClick={onBack} aria-label={t("Tornar")}><ChevronLeft/><span>{t("Tornar")}</span></button>:<button type="button" className="brand-v878268" onClick={onMenu} aria-label={t("Menú")}>{t("CO")}</button>}
+    {onBack?<button type="button" className="back-v878268" onClick={onBack} aria-label={t("Tornar")}><ChevronLeft/><span>{t("Tornar")}</span></button>:<MarcaMobil878351 onMenu={onMenu}/>}
     <b className="title-v878268">{title}</b>
   </div>;
 }
@@ -7107,6 +7108,87 @@ function contactesDe878315(x={}){
 function netejaContactes878315(l=[]){return (l||[]).map(p=>({nom:netV878304(p.nom),mobil:netV878304(p.mobil),email:netV878304(p.email)})).filter(p=>p.nom||p.mobil||p.email)}
 function tel878315(v){const d=String(v||"").replace(/[^\d+]/g,"");return d.replace(/\D/g,"").length>=6?"tel:"+d:""}
 // Logos, a part: dins de la llista de clients es perdien (en desar-la, `stripHeavy878185` treu les imatges)
+// V87.351 · La imatge de cada empresa (l'Héctor, 22/10/2026: «el seu logo a l'encapçalament de l'app al costat del seu nom i el color
+// de l'app… una paleta de colors… i que els pressupostos i factures surtin amb el seu logo i el color triat»). Ajustos › «Imatge de
+// l'empresa»: el logo (el de sempre, `client:empresa`) i el color (`aco_marca_v878351` = {color}, del compte). El color canvia les
+// variables --co-accent i també els blaus escrits directament als estils (`aplicaMarca878351` els torna a escriure), i als documents,
+// el blau marí dels títols i els blaus (`marcaDoc878351`).
+const MARCA_KEY878351="aco_marca_v878351";
+const PALETA878351=[["Blau","#2563EB"],["Blau marí","#1E3A8A"],["Turquesa","#0E7490"],["Verd","#15803D"],["Oliva","#4D7C0F"],["Taronja","#C2410C"],["Vermell","#B91C1C"],["Granat","#9F1239"],["Lila","#7C3AED"],["Antracita","#334155"],["Marró","#92400E"],["Negre","#111827"]];
+function llegeixMarca878351(){try{return JSON.parse(lsGet8779(MARCA_KEY878351,"{}"))||{}}catch{return {}}}
+function desaMarca878351(m){lsSet8779(MARCA_KEY878351,JSON.stringify(m||{}));try{window.dispatchEvent(new Event("aco-marca-changed"))}catch{}}
+function hexRgb878351(h){const m=String(h||"").replace("#","").match(/^([0-9a-f]{6})$/i);if(!m)return null;const n=parseInt(m[1],16);return [n>>16&255,n>>8&255,n&255]}
+function mescla878351(h,amb,f){const a=hexRgb878351(h),b=hexRgb878351(amb);if(!a||!b)return h;return "#"+a.map((v,i)=>Math.round(v*(1-f)+b[i]*f).toString(16).padStart(2,"0")).join("").toUpperCase()}
+function colorMarca878351(){const c=String(llegeixMarca878351().color||"").toUpperCase();return hexRgb878351(c)&&c!=="#2563EB"?c:""}
+// Cada blau de l'app (del blau marí dels títols al blau molt clar dels fons) passa al to del color triat, amb la mateixa claredat
+// relativa: el blau principal (#2563EB) = el color triat; els més foscos, més foscos; els clars, més clars. Els grisos blavosos (vores,
+// textos) no es toquen (poc color), i tampoc els colors dels estats dels expedients.
+function hsl878351(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,c=mx-mn;let h=0;if(c){h=mx===r?((g-b)/c)%6:mx===g?(b-r)/c+2:(r-g)/c+4;h*=60;if(h<0)h+=360}const s=c?c/(1-Math.abs(2*l-1)):0;return [h,s,l,c]}
+function deHsl878351(h,s,l){const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;const [r,g,b]=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];return [r,g,b].map(v=>Math.max(0,Math.min(255,Math.round((v+m)*255))))}
+const CLARS878351=new Set(["EFF6FF","DBEAFE","EAF1FD","F3F8FF","E8F0FE","EEF4FF","EEF2FF","E0ECFF","DCEBFF","E6F0FF"]);
+function blauAMarca878351(r,g,b,marca){
+  const [h,s,l,c]=hsl878351(r,g,b);
+  const hex=[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("").toUpperCase();
+  if(!(h>=195&&h<=240&&(c>=40/255||CLARS878351.has(hex))))return null;
+  if(hex==="2563EB"&&marca[4])return marca[4];
+  const LA=.53,SA=.83,[hb,sb,lb]=marca;
+  const tl=l<LA?lb*(.45+.55*l/LA):lb+(1-lb)*((l-LA)/(1-LA));
+  return deHsl878351(hb,Math.min(1,sb*Math.min(1,s/SA)),Math.max(0,Math.min(1,tl)));
+}
+const NO_MARCA878351=/est-v878299|obra-estat-v878269|\.est-|marca-v878351/;
+function reglesMarca878351(rules,marca){
+  const out=[];
+  for(const r of Array.from(rules||[])){
+    if(r.cssRules&&r.media&&!r.selectorText){const inner=reglesMarca878351(r.cssRules,marca);if(inner.length)out.push(`@media ${r.media.mediaText}{${inner.join("")}}`);continue}
+    if(r.cssRules&&r.conditionText&&!r.selectorText){const inner=reglesMarca878351(r.cssRules,marca);if(inner.length)out.push(`@supports ${r.conditionText}{${inner.join("")}}`);continue}
+    if(!r.selectorText||!r.style||NO_MARCA878351.test(r.selectorText))continue;
+    const props=[];
+    for(let i=0;i<r.style.length;i++){const k=r.style[i];if(k.startsWith("--"))continue;const v=r.style.getPropertyValue(k);if(!v||v.indexOf("rgb")<0)continue;
+      const nv=v.replace(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/g,(m,R,G,B,A)=>{const x=blauAMarca878351(+R,+G,+B,marca);return x?(A!=null?`rgba(${x.join(", ")}, ${A})`:`rgb(${x.join(", ")})`):m});
+      if(nv!==v)props.push(`${k}:${nv} !important`)}
+    if(props.length)out.push(`${r.selectorText}{${props.join(";")}}`);
+  }
+  return out;
+}
+function aplicaMarca878351(){
+  const root=document.documentElement,c=colorMarca878351();
+  document.getElementById("marca-v878351")?.remove();
+  if(!c){["--co-accent","--co-accent-ink","--co-accent-soft"].forEach(k=>root.style.removeProperty(k));return}
+  root.style.setProperty("--co-accent",c);root.style.setProperty("--co-accent-ink",mescla878351(c,"#000000",.18));root.style.setProperty("--co-accent-soft",mescla878351(c,"#FFFFFF",.9));
+  const marca=[...hsl878351(...hexRgb878351(c)),hexRgb878351(c)];
+  const out=[];
+  for(const sh of Array.from(document.styleSheets)){let rs;try{rs=sh.cssRules}catch{continue}out.push(...reglesMarca878351(rs,marca))}
+  const st=document.createElement("style");st.id="marca-v878351";st.textContent=out.join("\n");document.head.appendChild(st);
+}
+// els documents (pressupostos, certificacions, factures…): els blaus (títols, capçaleres de taula, capítols), amb el color triat
+function marcaDoc878351(html){
+  const c=colorMarca878351();if(!html||!c)return html;
+  const marca=[...hsl878351(...hexRgb878351(c)),hexRgb878351(c)];
+  return String(html).replace(/#([0-9a-f]{6})\b/gi,(m,h)=>{const n=parseInt(h,16);const x=blauAMarca878351(n>>16&255,n>>8&255,n&255,marca);return x?"#"+x.map(v=>v.toString(16).padStart(2,"0")).join("").toUpperCase():m});
+}
+function useMarca878351(){
+  const[,setTick]=useState(0);
+  useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-marca-changed",h);window.addEventListener("aco-logos-changed",h);return()=>{window.removeEventListener("aco-marca-changed",h);window.removeEventListener("aco-logos-changed",h)}},[]);
+  return {logo:logosContactes878315()["client:empresa"]||"",color:colorMarca878351()};
+}
+function MarcaApp878351({nom=""}){const {logo}=useMarca878351();return <div className={`brand ${logo?"amb-logo-v878351":""}`}>{logo?<img className="marca-logo-v878351" src={logo} alt=""/>:null}<span>{logo&&nom?nom:"APP CONTROL D'OBRES"}</span></div>}
+function MarcaMobil878351({onMenu}){const {logo}=useMarca878351();return <button type="button" className={`brand-v878268 ${logo?"amb-logo-v878351":""}`} onClick={onMenu} aria-label={t("Menú")}>{logo?<img src={logo} alt=""/>:t("CO")}</button>}
+function MarcaEmpresa878351(){
+  const[m,setM]=useState(()=>llegeixMarca878351());
+  const{logo}=useMarca878351();
+  const color=String(m.color||"#2563EB").toUpperCase();
+  const posa=c=>{const n={...m,color:c};setM(n);desaMarca878351(n)};
+  async function triaLogo(f){if(!f)return;try{const u=await compressImage878259(f,600,0.85);desaLogo878315("client:empresa",u)}catch(err){alert(err?.message||String(err))}}
+  return <Card title={t("Imatge de l’empresa")} className="marca-v878351">
+    <div className="logo-fila">{logo?<img src={logo} alt=""/>:<i>{t("Sense logo")}</i>}<label className="secondary">{logo?t("Canviar el logo"):t("Posar el logo")}<input type="file" accept="image/*" hidden onChange={x=>{const f=x.target.files?.[0];x.target.value="";triaLogo(f)}}/></label>{logo&&<button type="button" className="treure" onClick={()=>desaLogo878315("client:empresa","")}>{t("Treure")}</button>}</div>
+    <h4>{t("Color")}</h4>
+    <div className="paleta" role="radiogroup" aria-label={t("Color")}>
+      {PALETA878351.map(([nom,c])=><button key={c} type="button" role="radio" aria-checked={color===c} aria-label={t(nom)} title={t(nom)} style={{background:c}} onClick={()=>posa(c)}>{color===c?<Check size={18} aria-hidden="true"/>:null}</button>)}
+      <label className={`altre ${PALETA878351.some(([,c])=>c===color)?"":"on"}`} title={t("Un altre color")}><input type="color" value={color.toLowerCase()} onChange={e=>posa(e.target.value.toUpperCase())} aria-label={t("Un altre color")}/><span>{t("Un altre")}</span></label>
+    </div>
+    <div className="mostra"><button type="button" className="primary" tabIndex={-1}>{t("Botó")}</button><b style={{color:mescla878351(color,"#000000",.35)}}>{t("PRESSUPOST")}</b>{logo?<img src={logo} alt=""/>:null}</div>
+  </Card>;
+}
 const LOGOS_KEY878315="aco_logos_contactes_v878315";
 function logosContactes878315(){return lsJson8779(LOGOS_KEY878315,{})||{}}
 function logoClient878315(c={}){const l=String(c?.logo||"");if(/^(data:|https?:)/.test(l))return l;return c?.id?(logosContactes878315()["client:"+c.id]||""):""}
@@ -13756,11 +13838,8 @@ function HoresEmpresa878340({obres,clients,odata,openObra,updateStatus}){
 function DadesEmpresa878337(){
   const [e,setE]=useState(()=>empresaInfo878259()||{});
   const [desat,setDesat]=useState(false);
-  const [tick,setTick]=useState(0);void tick;
-  const logo=logosContactes878315()["client:empresa"]||"";
   const put=patch=>{setE(x=>({...x,...patch}));setDesat(false)};
   function desa(){const cur=empresaInfo878259()||{};lsSet8779("aco_empresa_v878259",JSON.stringify({...cur,nom:netV878304(e.nom)||cur.nom||"",fiscal:netV878304(e.fiscal),nif:netV878304(e.nif).toUpperCase(),carrer:netV878304(e.carrer),codiPostal:netV878304(e.codiPostal),poblacio:netV878304(e.poblacio),provincia:netV878304(e.provincia),telefon:netV878304(e.telefon),email:netV878304(e.email),iban:netV878304(e.iban).toUpperCase(),dge878342:netV878304(e.dge878342).replace(/[^\d,.]/g,""),bi878342:netV878304(e.bi878342).replace(/[^\d,.]/g,"")}));setDesat(true)}
-  async function triaLogo(f){if(!f)return;try{const u=await compressImage878259(f,600,0.85);desaLogo878315("client:empresa",u);setTick(x=>x+1)}catch(err){alert(err?.message||String(err))}}
   return <Card title={t("Dades de l’empresa")} className="dades-empresa-v878337">
     <div className="form-grid compact-v87151 no-pad">
       <label><span>{t("Nom comercial")}</span><input value={rawV878304(e.nom)} onChange={x=>put({nom:x.target.value})}/></label>
@@ -13772,7 +13851,7 @@ function DadesEmpresa878337(){
       {teModul878326("obra")&&<><label><span>{t("Despeses generals (DGE) de les obres (%)")}</span><input inputMode="decimal" value={rawV878304(e.dge878342)} onChange={x=>put({dge878342:x.target.value})} placeholder="10"/></label>
       <label><span>{t("Benefici industrial previst (%)")}</span><input inputMode="decimal" value={rawV878304(e.bi878342)} onChange={x=>put({bi878342:x.target.value})} placeholder="6"/></label></>}
       <div className="span-all"><CampsAdreca878304 v={e} onChange={p=>put(p)}/></div>
-      <div className="span-all logo-v878337">{logo?<img src={logo} alt=""/>:<i>{t("Sense logo")}</i>}<label className="secondary">{logo?t("Canviar el logo"):t("Posar el logo")}<input type="file" accept="image/*" hidden onChange={x=>{const f=x.target.files?.[0];x.target.value="";triaLogo(f)}}/></label>{logo&&<button type="button" className="link" onClick={()=>{desaLogo878315("client:empresa","");setTick(x=>x+1)}}>{t("Treure")}</button>}</div>
+
     </div>
     <div className="actions-inline"><button type="button" className="primary" onClick={desa}>{t("Desar")}</button>{desat&&<span className="ok-v878337">{t("Desat")}</span>}</div>
   </Card>;
@@ -14374,7 +14453,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.350",
+    app_version:"87.351",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -14570,6 +14649,7 @@ function save(){
 }
 return <div className="stack">
 <div className="config-version-v878264">{t("APP Control d’Obres ·")} {t("versió")} <b>V{APP_VERSION878264}</b></div>
+{!esTreballador878326()&&<MarcaEmpresa878351/>}
 <IdiomaUsuari878268 user={authUser}/>{!esTreballador878326()&&<EnllacosAjustos878305/>}
 <AccountAccessPanel878233 clients={clients} authUser={authUser}/>
 <VerifactuCompte878286 admin={admin}/>
@@ -15704,7 +15784,7 @@ function DocViewer({doc,obra,client,close,email}){
   const actaDocs=doc.actaDocs||[];
   const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
   const printRef=useRef(null);
-  const exactHtml878193=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):doc.type==="facturavf"&&doc.factura?facturaVFPrintHtml878285(doc,obra):null;
+  const exactHtml878193=marcaDoc878351(doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):doc.type==="facturavf"&&doc.factura?facturaVFPrintHtml878285(doc,obra):null);
   function htmlForCurrentDoc(){
     if(exactHtml878193)return exactHtml878193;
     const node=printRef.current;
