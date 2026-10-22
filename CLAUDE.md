@@ -848,6 +848,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `PersonalObra878340` a sobre de `HonorarisTemps`; a la gestió total «Gestió temps» ja no s’ajunta amb Honoraris ni va a «El meu
     encàrrec». **Rendiment:** `rendimentObra878339(data, despeses, personal)` (`perTipus.Personal`) i `RendimentEmpresa878339`
     (per any, «Personal: …» a dalt). No va a Despeses ni a l’Excel. Estils: `src/theme-v878340.css`. Prova: `personal340test.mjs` (29).
+  - **V87.341 (Planning amb vinculacions i qui hi treballa):** a cada capítol de `ganttConfig87217.capPlans`: `dep` (capítol
+    d’abans), `lag` (dies laborables: 0 = l’endemà que acabi; −2 = 2 dies abans que acabi; +3 = 3 dies després) i `qui`
+    (`[{k:"c:<colla>"|"t:<treballador>"|"i:<industrial>", nom}]`). `resolPlans878341` (dates de cada capítol seguint les vinculacions;
+    els cicles s’ignoren; un inici en cap de setmana passa al dilluns), `moureDiesLab878341`, `quiPot878341`, `industrialsObra878341`,
+    `coincidencies878341` (un treballador, o la seva colla, a dos capítols alhora). Finestra `EditaCapitol878341` (el «⋯» de cada fila a
+    «Planificar»; al mòbil, les dates només són a la finestra). Fletxes: SVG dins de `.gt-scroll-v878253` (ara `position:relative`),
+    mesurant les files (`data-cap`) amb `useLayoutEffect` i `geo878341` (X i amplada de l’escala). «Un capítol darrere l’altre» crea
+    les vinculacions. Camp nou `colla` als treballadors. Dades d’exemple vinculades (el 3r capítol, 2 dies abans). Fora els textos que
+    explicaven el Planning. Estils: `src/theme-v878341.css`. Prova: `planning341test.mjs` (17).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

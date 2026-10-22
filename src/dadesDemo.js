@@ -53,10 +53,11 @@ function certificacions(llista, dates) {
   const rows = partides(llista);
   return dates.map((d, i) => ({ id: `cert-demo-${i + 1}-${Math.random().toString(36).slice(2, 7)}`, numero: String(i + 1), data: iso(d), estat: i < dates.length - 1 ? "Cobrada" : "Pendent", budgetId: "principal", import: Math.round(rows.reduce((s, r) => s + (r.certsByNum[String(i + 1)] || 0) * r.pu, 0) * 100) / 100, createdAt: ara(), updatedAt: ara() }));
 }
-// planning: cada capítol rere l'anterior, a partir d'un dia (dies laborables)
+// planning: cada capítol rere l'anterior, a partir d'un dia (dies laborables); des de la V87.341, vinculats (si se n'allarga un, els
+// de després es mouen) i el 3r comença 2 dies abans que acabi el 2n
 function planning(llista, inici, dies) {
   const caps = [...new Set(llista.map(x => x[0]))]; const capPlans = {}; let d = inici;
-  caps.forEach((c, i) => { capPlans[c] = { start: iso(d), durationDays: dies[i] || 5 }; d += Math.round((dies[i] || 5) * 7 / 5); });
+  caps.forEach((c, i) => { capPlans[c] = { start: iso(d), durationDays: dies[i] || 5, ...(i ? { dep: caps[i - 1], lag: i === 2 ? "-2" : "0" } : {}) }; d += Math.round((dies[i] || 5) * 7 / 5); });
   return { plannedStart: iso(inici), capPlans, updatedAt: ara() };
 }
 const nota = (n, d, text) => ({ id: `nota-demo-${n}-${Math.random().toString(36).slice(2, 7)}`, numero: n, data: iso(d), text, fotos: [], docs: [], createdAt: ara(), updatedAt: ara() });

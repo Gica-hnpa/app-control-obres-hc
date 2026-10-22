@@ -113,10 +113,21 @@ capítol) · Hores.
 - **Pendent:** que cada treballador apunti les seves hores des del seu mòbil (usuaris d’una mateixa empresa) i el **fitxatge**
   (estudiar si és viable lligar-lo: argument de venda).
 
-### Tanda 5 · Planning (pendent)
+### Tanda 5 · Planning · V87.341 (22/10/2026)
 
-- Un Gantt de debò: data d’inici, durada, **vinculacions** (en acabar una, començar l’altra; començar-ne una 2 dies abans que acabi
-  l’altra), **colles** i industrials assignats. Necessita primer els treballadors de l’empresa (tanda 2).
+- **Vinculacions:** a «Planificar», el «⋯» de cada capítol obre la seva finestra: comença **en una data** o **després d’un altre
+  capítol** — en acabar, uns dies **abans que acabi** (s’encavalquen) o uns dies **després que acabi** — i la durada en dies
+  laborables. Si se n’allarga un, els que en depenen es mouen sols. Al Gantt, una fletxa de cada capítol al que en depèn; a la
+  columna, «↳ 02 −2 d». No es pot vincular un capítol a un que ja en depèn.
+- «Generar planning» amb «Un capítol darrere l’altre» ja els deixa vinculats.
+- **Qui hi treballa** (a la mateixa finestra): colles, treballadors (Empresa › Treballadors, amb el camp nou **«Colla»**) i
+  industrials (els de Contactes). Surt al costat de la barra. Si una persona és a dos capítols els mateixos dies (també per la
+  colla), avís a dalt del Gantt.
+- «Treure del planning»: els que en depenien es queden a la data on eren.
+- Una data d’inici en dissabte o diumenge comença el dilluns.
+- Fora els textos que explicaven el Planning.
+- **Pendent:** veure totes les obres alhora per treballador o colla (on és cadascú cada dia) i que els treballadors vegin al
+  mòbil el seu planning.
 
 ### Recordatori
 

@@ -1,5 +1,5 @@
 
-import React,{useEffect,useMemo,useRef,useState} from "react";
+import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from "react";
 import * as XLSX from "xlsx";
 import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.340";
+const APP_VERSION878264="87.341";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9011,7 +9011,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
   const renderTab=()=> <>
     {activeTab==="Resum"&&<ObraHero878252 obra={obra} client={client} data={data} scope={directBudgetData878214} tabs={navigationTabs} setTab={setTab} uploadImage={uploadImage}/>}
     {activeTab==="Resum"&&<EncarrecTecnic878306 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
-    {activeTab==="Gantt"&&<GanttObraVisual878253 data={directBudgetData878214} setData={strictClientReadOnly878242||esTreballador878326()?undefined:setDirectBudgetData878214}/>}
+    {activeTab==="Gantt"&&<GanttObraVisual878253 data={directBudgetData878214} setData={strictClientReadOnly878242||esTreballador878326()?undefined:setDirectBudgetData878214} industrials={industrialsObra878341(agentsLib878301||[],clients||[])}/>}
     {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} clients={clients} setClients={setClients} data={data} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent} keepAgent878303={keepAgent878303} agentsLib878301={agentsLib878301}/>} 
     {(activeTab==="Agents"||(activeTab==="Dades"&&ALIAS878308["Agents"]))&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145">{activeTab==="Agents"&&<PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/>}<AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303} plegat={activeTab==="Dades"}/></div>} 
     {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} 
@@ -9605,8 +9605,95 @@ function BudgetWarnings878253({rows=[]}){
   </div>;
 }
 function monthLabel878253(d){const m=d.toLocaleDateString("ca-ES",{month:"long"});return `${m.charAt(0).toUpperCase()}${m.slice(1)} ${d.getFullYear()}`}
+// ── V87.341 · Planning amb vinculacions i qui hi treballa ───────────────────────────────────────────────────────
+// L'Héctor (21/10/2026): «un Gantt de debò: data d'inici, durada, vinculacions (en acabar una, començar l'altra; començar-ne una
+// 2 dies abans que acabi l'altra), colles i industrials assignats». A cada capítol de `ganttConfig87217.capPlans`: `dep` (el
+// capítol d'abans), `lag` (dies laborables: 0 = l'endemà que acabi; −2 = 2 dies abans que acabi; +3 = 3 dies després) i `qui`
+// (`[{k:"c:<colla>"|"t:<treballador>"|"i:<industrial>", nom}]`). Un capítol vinculat no fa servir la seva data: la treu del d'abans.
+function moureDiesLab878341(iso,n){const d=parseDate8776(iso);if(!d)return "";const out=new Date(d.getFullYear(),d.getMonth(),d.getDate());let r=Math.round(n||0);const st=r>=0?1:-1;while(r!==0){out.setDate(out.getDate()+st);if(out.getDay()!==0&&out.getDay()!==6)r-=st}return isoDate8776(out)}
+function resolPlans878341(plans={}){
+  const out={},cicle=new Set();
+  const toD=v=>{const d=parseDate8776(v);return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null};
+  const vis=(cap,stack)=>{
+    if(cap in out)return out[cap];
+    const p=plans[cap]||{};let start=p.start||"",via=null;
+    if(p.dep&&p.dep!==cap&&plans[p.dep]){
+      if(stack.has(p.dep))cicle.add(cap);
+      else{const ns=new Set(stack);ns.add(cap);const pr=vis(p.dep,ns);if(pr){start=moureDiesLab878341(isoDate8776(pr.to),1+Math.round(parseNum8770(p.lag)||0));via=p.dep}}
+    }
+    // una data en dissabte o diumenge comença el dilluns
+    if(start){const d0=parseDate8776(start);if(d0&&(d0.getDay()===0||d0.getDay()===6))start=moureDiesLab878341(start,1)}
+    const st=toD(start),dur=parseNum8770(p.durationDays);
+    out[cap]=st&&dur?{from:st,to:toD(addWorkDays87217(start,Math.max(0,dur-1))),dur,via,lag:Math.round(parseNum8770(p.lag)||0),startIso:start}:null;
+    return out[cap];
+  };
+  Object.keys(plans).forEach(c=>vis(c,new Set()));
+  return {plans:out,cicle};
+}
+// qui pot treballar a un capítol: colles i treballadors de l'empresa (si en té) i els industrials dels contactes
+function quiPot878341(industrials=[]){
+  const treb=ambEmpresa878338()?llegeixTreballadors878339().filter(w=>w.actiu!==false):[];
+  const colles=[...new Set(treb.map(w=>String(w.colla||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ca"));
+  return {colles:colles.map(c=>({k:"c:"+c,nom:c,membres:treb.filter(w=>String(w.colla||"").trim()===c).map(w=>w.id)})),treb:treb.map(w=>({k:"t:"+w.id,nom:w.nom,colla:String(w.colla||"").trim()})),ind:(industrials||[]).map(a=>({k:"i:"+(a._persona878301||agentPersona878301(a)),nom:a.nom||a.empresa||""})).filter(x=>x.nom)};
+}
+function industrialsObra878341(lib=[],clients=[]){
+  const out=(lib||[]).filter(ag=>grupContacte878315(ag,(clients||[]).find(c=>c.id===ag.sourceClientId878192)||null)==="industrial");
+  const vist=new Set(out.map(a=>a._persona878301));
+  (clients||[]).forEach(c=>{const ag=clientAsAgent878192(c);const k=agentPersona878301(ag);if(k&&!vist.has(k)&&grupContacte878315(ag,c)==="industrial"){vist.add(k);out.push({...ag,_persona878301:k})}});
+  return out.sort((a,b)=>String(a.nom||"").localeCompare(String(b.nom||""),"ca",{sensitivity:"base"}));
+}
+// una persona (treballador) que és a dos capítols alhora; una colla compta pels seus treballadors
+function coincidencies878341(plans={},resolt={},pot){
+  const persones={};
+  Object.entries(plans).forEach(([cap,p])=>{const r=resolt[cap];if(!r)return;(p.qui||[]).forEach(q=>{
+    const ks=q.k.startsWith("c:")?(pot.colles.find(c=>c.k===q.k)?.membres||[]).map(id=>"t:"+id):[q.k];
+    ks.filter(k=>k.startsWith("t:")).forEach(k=>{(persones[k]=persones[k]||[]).push({cap,from:r.from,to:r.to})})})});
+  const out=[];
+  Object.entries(persones).forEach(([k,ls])=>{const nom=(pot.treb.find(x=>x.k===k)||pot.ind.find(x=>x.k===k))?.nom||"";if(!nom)return;
+    for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){const a=ls[i],b=ls[j];if(a.cap===b.cap)continue;const from=a.from>b.from?a.from:b.from,to=a.to<b.to?a.to:b.to;if(from<=to)out.push({nom,a:a.cap,b:b.cap,from,to})}});
+  return out;
+}
+function EditaCapitol878341({cap,ordre=[],plans,setPlan,treu,resolt,pot,close}){
+  const p=plans[cap]||{};const r=resolt.plans[cap];
+  const caps=(ordre.length?ordre:Object.keys(plans)).filter(c=>plans[c]);
+  // els que ja depenen d'aquest (directament o no) no poden ser el seu capítol d'abans
+  const depenDe=c=>{let x=plans[c]?.dep;const vist=new Set();while(x&&!vist.has(x)){if(x===cap)return true;vist.add(x);x=plans[x]?.dep}return false};
+  const[mode,setMode]=useState(p.dep?"dep":"data");
+  const lag=Math.round(parseNum8770(p.lag)||0);
+  const quan=lag<0?"abans":lag>0?"despres":"acabar";
+  const quiK=new Set((p.qui||[]).map(q=>q.k));
+  const togQui=x=>setPlan(cap,{qui:quiK.has(x.k)?(p.qui||[]).filter(q=>q.k!==x.k):[...(p.qui||[]),{k:x.k,nom:x.nom}]});
+  const xip=x=><button key={x.k} type="button" className="xq" aria-pressed={quiK.has(x.k)} onClick={()=>togQui(x)}>{x.nom}</button>;
+  return <Modal title={i18nT("Planificar «{cap}»",{cap})} close={close}><div className="gt-ed-v878341">
+    <div className="form-grid compact-v87151 no-pad">
+      <label className="span-2"><span>{i18nT("Comença")}</span><div className="seg-v878341" role="group">
+        <button type="button" aria-pressed={mode==="data"} onClick={()=>{setMode("data");setPlan(cap,{dep:"",lag:"",start:p.start||r?.startIso||todayISO8743()})}}>{i18nT("En una data")}</button>
+        <button type="button" aria-pressed={mode==="dep"} onClick={()=>setMode("dep")}>{i18nT("Després d’un altre capítol")}</button>
+      </div></label>
+      {mode==="data"?<label><span>{i18nT("Inici previst")}</span><input type="date" value={p.start||""} onChange={e=>setPlan(cap,{start:e.target.value,dep:""})}/></label>
+      :<><label className="span-2"><span>{i18nT("Capítol d’abans")}</span><select value={p.dep||""} onChange={e=>setPlan(cap,{dep:e.target.value,start:p.start||r?.startIso||""})}><option value="">{i18nT("Tria…")}</option>{caps.filter(c=>c!==cap&&!depenDe(c)).map(c=><option key={c} value={c}>{c}</option>)}</select></label>
+        <label className="span-2"><span>{i18nT("Quan")}</span><div className="seg-v878341" role="group">
+          <button type="button" aria-pressed={quan==="acabar"} onClick={()=>setPlan(cap,{lag:"0"})}>{i18nT("En acabar")}</button>
+          <button type="button" aria-pressed={quan==="abans"} onClick={()=>setPlan(cap,{lag:String(-Math.max(1,Math.abs(lag)||2))})}>{i18nT("Abans que acabi")}</button>
+          <button type="button" aria-pressed={quan==="despres"} onClick={()=>setPlan(cap,{lag:String(Math.max(1,Math.abs(lag)||2))})}>{i18nT("Després que acabi")}</button>
+        </div></label>
+        {quan!=="acabar"&&<label><span>{i18nT("Dies laborables")}</span><input type="number" min="1" value={Math.abs(lag)} onChange={e=>{const n=Math.max(0,Math.round(parseNum8770(e.target.value)||0));setPlan(cap,{lag:String(quan==="abans"?-n:n)})}}/></label>}
+      </>}
+      <label><span>{i18nT("Durada (dies laborables)")}</span><input type="number" min="1" value={p.durationDays||""} onChange={e=>setPlan(cap,{durationDays:e.target.value})}/></label>
+    </div>
+    {r&&<p className="gt-ed-res-v878341">{i18nT("Del {a} al {b}",{a:fmtAppDate8748(isoDate8776(r.from)),b:fmtAppDate8748(isoDate8776(r.to))})}</p>}
+    {resolt.cicle.has(cap)&&<p className="gt-ed-avis-v878341">{i18nT("Aquest capítol depèn d’un altre que en depèn d’ell: no es pot vincular.")}</p>}
+    <h4 className="sub-v878341">{i18nT("Qui hi treballa")}</h4>
+    {!pot.colles.length&&!pot.treb.length&&!pot.ind.length?<p className="gt-ed-buit-v878341">{ambEmpresa878338()?i18nT("Primer posa els treballadors a Empresa › Treballadors."):i18nT("Encara no hi ha industrials a Contactes.")}</p>:<div className="gt-qui-v878341">
+      {pot.colles.length>0&&<div><small>{i18nT("Colles")}</small><div className="xs">{pot.colles.map(x=>xip(x))}</div></div>}
+      {pot.treb.length>0&&<div><small>{i18nT("Treballadors")}</small><div className="xs">{pot.treb.map(x=>xip(x))}</div></div>}
+      {pot.ind.length>0&&<div><small>{i18nT("Industrials")}</small><div className="xs">{pot.ind.map(x=>xip(x))}</div></div>}
+    </div>}
+    <div className="modal-actions">{(p.start||p.durationDays||p.dep)&&<button type="button" className="danger-text-v87229 link" onClick={()=>{treu(cap);close()}}>{i18nT("Treure del planning")}</button>}<button type="button" className="primary" onClick={close}>{i18nT("Fet")}</button></div>
+  </div></Modal>;
+}
 const GANTT_SCALES878253={dies:{label:"Dies",px:30},setmanes:{label:"Setmanes",px:9},mesos:{label:"Mesos",px:2.6}};
-function GanttObraVisual878253({data={},setData}){
+function GanttObraVisual878253({data={},setData,industrials=[]}){
   const s=useMemo(()=>economicSummary878252(data),[data]);
   const cfg=data?.ganttConfig87217||{};
   const plans=cfg.capPlans||{};
@@ -9628,6 +9715,11 @@ function GanttObraVisual878253({data={},setData}){
   function savePlans(nextPlans,extra={}){if(!canEdit)return;setData(d=>({...d,ganttConfig87217:{...(d.ganttConfig87217||{}),...extra,capPlans:nextPlans,updatedAt:new Date().toISOString()},updatedAt:new Date().toISOString()}))}
   function setPlan(cap,patch){const cur=plans[cap]||{};savePlans({...plans,[cap]:{...cur,...patch}})}
   function clearPlans(){savePlans({})}
+  function treuPlan878341(cap){const next={...plans};delete next[cap];Object.keys(next).forEach(k=>{if(next[k]?.dep===cap){const r=resolt878341.plans[k];next[k]={...next[k],dep:"",lag:"",start:r?.startIso||next[k].start||""}}});savePlans(next)}
+  const[edCap878341,setEdCap878341]=useState("");
+  const scrollRef878341=useRef(null);
+  const geo878341=useRef({X:()=>0,Wd:()=>0});
+  const[fletxes878341,setFletxes878341]=useState({w:0,h:0,l:[]});
   function autoPlan(){
     const start=auto.start||todayISO8743();
     const totalWork=Math.max(1,Math.round((parseNum8770(auto.weeks)||12)*5));
@@ -9636,7 +9728,7 @@ function GanttObraVisual878253({data={},setData}){
     s.caps.forEach((c,i)=>{
       const dur=Math.max(1,Math.round(c.budget/total*totalWork));
       if(auto.mode==="paralel"){next[c.cap]={...(plans[c.cap]||{}),start,durationDays:String(dur)}}
-      else{next[c.cap]={...(plans[c.cap]||{}),start:cursor,durationDays:String(dur)};cursor=addWorkDays87217(cursor,dur)}
+      else{next[c.cap]={...(plans[c.cap]||{}),start:cursor,durationDays:String(dur),dep:i>0?s.caps[i-1].cap:"",lag:i>0?"0":""};cursor=addWorkDays87217(cursor,dur)}
     });
     savePlans(next,{plannedStart:start});
   }
@@ -9644,7 +9736,14 @@ function GanttObraVisual878253({data={},setData}){
   const startCfg=toD(cfg.actualStart)||(certDates[0]?new Date(certDates[0].getTime()-30*day):null);
   const prevDateOf=n=>{const i=s.certs.findIndex(c=>c.n===n);if(i>0)return toD(s.certs[i-1].date);return startCfg};
   const realOf=(byCert,budget)=>{const hits=s.certs.filter(c=>(byCert[c.n]||0)>0.005&&c.date);if(!hits.length)return null;const done=hits.reduce((a,c)=>a+(byCert[c.n]||0),0);return {from:prevDateOf(hits[0].n)||toD(hits[0].date),to:toD(hits[hits.length-1].date),done,pct:budget?done/budget*100:0,hits}};
-  const planOf=cap=>{const p=plans[cap]||{};const st=toD(p.start);const dur=parseNum8770(p.durationDays);if(!st||!dur)return null;return {from:st,to:toD(addWorkDays87217(p.start,Math.max(0,dur-1))),dur}};
+  const resolt878341=useMemo(()=>resolPlans878341(plans),[plans]);
+  const planOf=cap=>resolt878341.plans[cap]||null;
+  const pot878341=useMemo(()=>quiPot878341(industrials),[industrials,edCap878341]);
+  const coinc878341=useMemo(()=>coincidencies878341(plans,resolt878341.plans,pot878341),[plans,resolt878341,pot878341]);
+  // fletxes de les vinculacions: es mesuren les files un cop dibuixades
+  useLayoutEffect(()=>{const el=scrollRef878341.current;if(!el)return;const y={};el.querySelectorAll(".gt-row-v878253[data-cap]").forEach(r=>{y[r.dataset.cap]=r.offsetTop+r.offsetHeight/2});const lw=el.querySelector(".gt-row-v878253[data-cap] .gt-left-v878253")?.offsetWidth||0;
+    const l=[];Object.entries(resolt878341.plans).forEach(([cap,r])=>{if(!r?.via)return;const p=resolt878341.plans[r.via];if(!p||y[cap]==null||y[r.via]==null)return;l.push({k:cap,x1:lw+geo878341.current.X(p.from)+geo878341.current.Wd(p.from,p.to),y1:Math.round(y[r.via]),x2:lw+geo878341.current.X(r.from),y2:Math.round(y[cap])})});
+    const nou={w:el.scrollWidth,h:el.scrollHeight,l};if(JSON.stringify(nou)!==JSON.stringify(fletxes878341))setFletxes878341(nou)});
   const rows=s.caps.map(c=>({...c,real:realOf(c.byCert,c.budget),plan:planOf(c.cap)}));
   if(!s.rows.length)return <Card title={i18nT("Planning de l’obra")}><Empty text="Aquest expedient encara no té pressupost. Quan n’hi hagi, el Gantt mostrarà cada capítol amb les certificacions fetes."/></Card>;
   const pts=[today,startCfg,...certDates,...rows.flatMap(r=>[r.plan?.from,r.plan?.to,r.real?.from,r.real?.to])].filter(Boolean).map(d=>d.getTime());
@@ -9656,6 +9755,7 @@ function GanttObraVisual878253({data={},setData}){
   const W=Math.round(days*px);
   const X=d=>Math.round((d-t0)/day*px);
   const Wd=(a,b)=>Math.max(4,Math.round(((b-a)/day+1)*px));
+  geo878341.current={X,Wd};
   // Capçalera de dues files, com Project: a dalt l'interval gran, a baix l'unitat.
   const top=[],bottom=[];
   if(scale==="dies"){
@@ -9680,12 +9780,13 @@ function GanttObraVisual878253({data={},setData}){
   for(let i=top.length-1;i>0;i--){if(top[i].x-top[i-1].x<110)top.splice(i-1,1)}
   const lastN=s.lastN;
   const partRow=r=>{const byCert={};s.certs.forEach(c=>{byCert[c.n]=certAmount878223(r,c.n)||0});const budget=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);return {budget,real:realOf(byCert,budget)}};
-  const Track=({real,plan,budget,small})=><div className={`gt-track-v878253 ${small?"small":""}`} style={{width:W}}>
+  const Track=({real,plan,budget,small,qui})=><div className={`gt-track-v878253 ${small?"small":""}`} style={{width:W}}>
     {bottom.map((b,i)=><i key={i} className={`gl ${b.we?"we":""}`} style={{left:b.x,width:b.w}}/>)}
     {plan&&<span className="plan" style={{left:X(plan.from),width:Wd(plan.from,plan.to)}} title={`Previst: ${plan.from.toLocaleDateString("ca-ES")} – ${plan.to.toLocaleDateString("ca-ES")} (${plan.dur} dies laborables)`}/>}
     {real&&<span className="real" style={{left:X(real.from),width:Wd(real.from,real.to)}} title={`Certificat: ${real.from.toLocaleDateString("ca-ES")} – ${real.to.toLocaleDateString("ca-ES")} · ${money(real.done)} (${pct878252(real.pct)})`}><em style={{width:`${Math.min(100,real.pct)}%`}}/></span>}
     {real&&real.hits.map(c=><b key={c.n} className="mark" style={{left:X(toD(c.date))}} title={`C-${c.n} · ${fmtAppDate8748(c.data)}`}/>)}
     {!real&&!plan&&budget>0&&<small className="none">{i18nT("Sense planificar ni certificar")}</small>}
+    {plan&&qui?.length>0&&<small className="qui-v878341" style={{left:X(plan.from)+Wd(plan.from,plan.to)+6}}>{qui.map(q=>q.nom).join(" · ")}</small>}
     <i className="today" style={{left:X(today)}}/>
   </div>;
   return <div ref={granRef878321} className={`gantt-v878253 ${gran878321?"gantt-gran-v878321":""} ${esTreballador878326()?"gantt-treb-v878328":""}`}>
@@ -9701,7 +9802,7 @@ function GanttObraVisual878253({data={},setData}){
         <div><small>{i18nT("Planificat")}</small><b>{Object.keys(plans).filter(k=>planOf(k)).length} {i18nT("de")} {s.caps.length} {i18nT("capítols")}</b></div>
       </div>
       {editing&&<div className="gt-auto-v878253">
-        <div><b>{i18nT("Planificació ràpida")}</b><span>{i18nT("Reparteix el temps entre capítols segons el pes de cada un al pressupost. Després pots ajustar cada capítol a la seva fila.")}</span></div>
+        <div><b>{i18nT("Planificació ràpida")}</b></div>
         <label><span>{i18nT("Inici d’obra")}</span><input type="date" value={auto.start} onChange={e=>setAuto(a=>({...a,start:e.target.value}))}/></label>
         <label><span>{i18nT("Durada total (setmanes)")}</span><input type="number" min="1" value={auto.weeks} onChange={e=>setAuto(a=>({...a,weeks:e.target.value}))}/></label>
         <label><span>{i18nT("Ordre")}</span><select value={auto.mode} onChange={e=>setAuto(a=>({...a,mode:e.target.value}))}><option value="sequencial">{i18nT("Un capítol darrere l’altre")}</option><option value="paralel">{i18nT("Tots comencen alhora")}</option></select></label>
@@ -9709,7 +9810,8 @@ function GanttObraVisual878253({data={},setData}){
         {Object.keys(plans).length>0&&<button type="button" className="secondary" onClick={clearPlans}>{i18nT("Esborrar planning")}</button>}
       </div>}
       <div className="gantt-legend-v878252"><span><i className="plan"/>{i18nT("Previst")}</span><span><i className="real"/>{i18nT("Període amb certificacions")}</span><span><i className="done"/>{i18nT("Part executada")}</span><span><i className="mark"/>{i18nT("Certificació")}</span><span><i className="today"/>{i18nT("Avui")}</span></div>
-      <div className={`gt-scroll-v878253 ${editing?"editing":""}`}>
+      {coinc878341.length>0&&<div className="gt-coinc-v878341">{coinc878341.map((c,i)=><div key={i}>{i18nT("{nom} és a «{a}» i a «{b}» alhora ({d})",{nom:c.nom,a:c.a,b:c.b,d:+c.from===+c.to?fmtAppDate8748(isoDate8776(c.from)):`${fmtAppDate8748(isoDate8776(c.from))} – ${fmtAppDate8748(isoDate8776(c.to))}`})}</div>)}</div>}
+      <div ref={scrollRef878341} className={`gt-scroll-v878253 ${editing?"editing":""}`}>
         <div className="gt-row-v878253 head">
           <div className="gt-left-v878253"><span className="cap">{i18nT("Capítol")}</span>{editing?<><span className="pl">{i18nT("Inici previst")}</span><span className="pl">{i18nT("Dies lab.")}</span></>:<><span className="num">{i18nT("Pressupost")}</span><span className="num">{i18nT("Executat")}</span></>}</div>
           <div className="gt-head-v878253" style={{width:W}}>
@@ -9720,21 +9822,22 @@ function GanttObraVisual878253({data={},setData}){
           </div>
         </div>
         {rows.map(c=><React.Fragment key={c.cap}>
-          <div className={`gt-row-v878253 ${open[c.cap]?"open":""}`}>
+          <div className={`gt-row-v878253 ${open[c.cap]?"open":""}`} data-cap={c.cap}>
             <div className="gt-left-v878253">
               <button type="button" className="cap" onClick={()=>setOpen(o=>({...o,[c.cap]:!o[c.cap]}))} aria-expanded={!!open[c.cap]}><b>{open[c.cap]?"▾":"▸"}</b>{c.cap}</button>
-              {editing?<><input className="pl" type="date" value={plans[c.cap]?.start||""} onChange={e=>setPlan(c.cap,{start:e.target.value})} aria-label={`Inici previst ${c.cap}`}/><input className="pl" type="number" min="1" value={plans[c.cap]?.durationDays||""} placeholder="—" onChange={e=>setPlan(c.cap,{durationDays:e.target.value})} aria-label={`Dies laborables ${c.cap}`}/></>
+              {editing?<>{c.plan?.via?<span className="pl via-v878341" title={i18nT("Després de «{cap}»",{cap:c.plan.via})}>↳ {String(c.plan.via).split(" ")[0]}{c.plan.lag?" "+(c.plan.lag>0?"+":"−")+Math.abs(c.plan.lag)+" d":""}</span>:<input className="pl" type="date" value={plans[c.cap]?.start||""} onChange={e=>setPlan(c.cap,{start:e.target.value})} aria-label={`Inici previst ${c.cap}`}/>}<input className="pl" type="number" min="1" value={plans[c.cap]?.durationDays||""} placeholder="—" onChange={e=>setPlan(c.cap,{durationDays:e.target.value})} aria-label={`Dies laborables ${c.cap}`}/><button type="button" className="ed-v878341" onClick={()=>setEdCap878341(c.cap)} aria-label={i18nT("Planificar «{cap}»",{cap:c.cap})}>⋯</button></>
                 :<><span className="num">{eur0878252(c.budget)}</span><span className="num pct">{pct878252(c.budget?c.certified/c.budget*100:0)}</span></>}
             </div>
-            <Track real={c.real} plan={c.plan} budget={c.budget}/>
+            <Track real={c.real} plan={c.plan} budget={c.budget} qui={plans[c.cap]?.qui}/>
           </div>
           {open[c.cap]&&c.rows.map((r,i)=>{const p=partRow(r);const over=(p.real?.pct||0)>100.05;return <div key={`${c.cap}-${i}`} className="gt-row-v878253 part">
             <div className="gt-left-v878253"><span className="cap"><code>{r.codi}</code> {r.concepte}</span><span className="num">{eur0878252(p.budget)}</span><span className={`num pct ${over?"over":""}`} title={over?"Certificat per sobre del pressupost de la partida":undefined}>{pct878252(p.real?.pct||0)}</span></div>
             <Track real={p.real} budget={p.budget} small/>
           </div>})}
         </React.Fragment>)}
+        {fletxes878341.l.length>0&&<svg className="gt-fletxes-v878341" width={fletxes878341.w} height={fletxes878341.h} aria-hidden="true"><defs><marker id="gt-fl-v878341" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>{fletxes878341.l.map(f=><path key={f.k} d={`M${f.x1},${f.y1} h6 V${f.y2} H${f.x2}`} markerEnd="url(#gt-fl-v878341)"/>)}</svg>}
       </div>
-      <p className="gantt-note-v878252">{editing?i18nT("Escriu la data d’inici i els dies laborables de cada capítol, o genera un planning automàtic. Les certificacions es dibuixen soles a sobre."):i18nT("Prem «Planificar» per posar dates previstes. Les certificacions es dibuixen soles: la barra clara és el període certificat i la part fosca, el % executat.")}</p>
+      {edCap878341&&<EditaCapitol878341 cap={edCap878341} ordre={s.caps.map(c=>c.cap)} plans={plans} setPlan={setPlan} treu={treuPlan878341} resolt={resolt878341} pot={pot878341} close={()=>setEdCap878341("")}/>}
     </Card>
   </div>;
 }
@@ -12778,12 +12881,13 @@ function DocsLlista878339({docs=[],obligats=[],onChange}){
 function EditorTreballador878339({inicial,nou,onSave,onDelete,close}){
   const [w,setW]=useState(()=>({ofici:"Oficial 1a",actiu:true,docs:[],...inicial}));
   const set=(k,v)=>setW(x=>({...x,[k]:v}));
-  function desa(){if(!String(w.nom||"").trim()){alert(t("Posa el nom del treballador."));return}onSave({...w,nom:String(w.nom).trim(),costHora:String(w.costHora||"").replace(/[^\d,.]/g,""),updatedAt:new Date().toISOString()})}
+  function desa(){if(!String(w.nom||"").trim()){alert(t("Posa el nom del treballador."));return}onSave({...w,nom:String(w.nom).trim(),colla:String(w.colla||"").trim(),costHora:String(w.costHora||"").replace(/[^\d,.]/g,""),updatedAt:new Date().toISOString()})}
   return <Modal title={nou?t("Nou treballador"):String(w.nom||t("Treballador"))} close={close}><div className="treb-ed-v878339">
     <div className="form-grid compact-v87151 no-pad">
       <label className="span-2"><span>{t("Nom i cognoms")}</span><input value={rawV878304(w.nom)} onChange={e=>set("nom",e.target.value)}/></label>
       <label><span>{t("Ofici o categoria")}</span><select value={w.ofici||""} onChange={e=>set("ofici",e.target.value)}>{OFICIS878339.map(o=><option key={o} value={o}>{i18nT(o)}</option>)}</select></label>
       <label><span>{t("Cost per hora (€)")}</span><input inputMode="decimal" value={rawV878304(w.costHora)} onChange={e=>set("costHora",e.target.value)} placeholder="25,00"/></label>
+      <label><span>{t("Colla")}</span><input list="colles-v878341" value={rawV878304(w.colla)} onChange={e=>set("colla",e.target.value)} placeholder={t("Colla 1")}/><datalist id="colles-v878341">{[...new Set(llegeixTreballadors878339().map(x=>String(x.colla||"").trim()).filter(Boolean))].map(c=><option key={c} value={c}/>)}</datalist></label>
       <label><span>{t("DNI / NIE")}</span><input value={rawV878304(w.dni)} onChange={e=>set("dni",e.target.value)}/></label>
       <label><span>{t("Mòbil")}</span><input inputMode="tel" value={rawV878304(w.mobil)} onChange={e=>set("mobil",e.target.value)}/></label>
       <label><span>{t("Data d’alta")}</span><input type="date" value={w.alta||""} onChange={e=>set("alta",e.target.value)}/></label>
@@ -13596,7 +13700,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.340",
+    app_version:"87.341",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
