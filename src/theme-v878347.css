@@ -1,0 +1,9 @@
+/* V87.347 · obres compartides tretes de la llista */
+html body .expedients-page-v8741 .amagades-v878347{display:block;margin:10px auto 0;padding:6px 10px;font:600 13px var(--app-font);color:var(--co-ink-3);background:none;border:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+html body .expedients-page-v8741 .amagades-v878347:hover{color:var(--co-accent)}
+/* el número de l'obra de qui la comparteix, al costat del propi */
+html body .exp-prop-v878347{font-weight:500;color:var(--co-ink-3);font-size:.86em}
+html body .expedients-page-v8741 td small.exp-prop-v878347,html body .expedients-page-v8741 .l1 small.exp-prop-v878347{display:block;font-size:11.5px;line-height:1.25}
+/* avís després d'una acció de la selecció de despeses */
+html body .albarans-v878259 .avis-sel-v878347{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 12px;border-radius:10px;background:#EFF6FF;border:1px solid #BFDBFE;color:#1E3A8A;font-size:13.5px}
+html body .albarans-v878259 .avis-sel-v878347 .link{font-weight:700}

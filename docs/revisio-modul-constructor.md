@@ -157,6 +157,13 @@ capítol) · Hores.
 - **V87.346 · Comissió al pressupost**: botó % amb un llum a la capçalera del pressupost. Es posa el % i totes les partides
   d’aquell pressupost pugen aquest %; treure-la torna a l’original. Per editar, es treu i es torna a posar en guardar. A la llibreria hi
   va sempre el preu sense comissió. Els documents no en diuen res (el client final no l’ha de saber).
+- **V87.347** (l’Héctor amb Socoterm): les obres que li comparteix l’Héctor no s’eliminen («Treure de la meva llista»), tenen un número
+  propi de l’empresa amb el de l’Héctor al costat, i el client és el promotor (o el que triï l’empresa, sense tocar l’obra de l’Héctor).
+  Al desplegable del client hi ha també els altres contactes. El Rendiment ja no suma dues vegades la factura de l’app i la de l’Excel.
+  Fora «repercutir al client» a les constructores; la selecció avisa on van les despeses.
+- **Pendent (V87.348):** llista de despeses amb columnes (número, data d’emissió i d’entrada, proveïdor o treballador, base, IVA,
+  total), per grups; factures amb el desglossament a dins; mà d’obra per dies i treballadors (per categoria); veure el document a la
+  mateixa pantalla; filtres per client, treballador i material.
 
 ### Recordatori
 

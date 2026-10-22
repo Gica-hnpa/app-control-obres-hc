@@ -892,6 +892,36 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     certificacions) només veuen el preu amb la comissió. El % es recorda (`aco_comissio_pct_v878346`). Si l'agència cobra un % del total
     que paga el client, per quedar-se el mateix net cal posar-hi més (10 % → 11,11 %). Estils: `src/theme-v878346.css`. Prova:
     `comissio346test.mjs` (13).
+  - **V87.347 · obres compartides, numeració pròpia i despeses més clares** (l'Héctor, 22/10/2026, amb Socoterm):
+    - **Obra compartida que tornava** (2026-022 «ediifci CATALUNYA» és de l'Héctor, compartida amb Socoterm: «Eliminar» l'esborrava al
+      navegador però tornava d'`aco_shared`). Ara una obra d'un altre compte no s'elimina: el ⋯ diu **«Treure de la meva llista»**
+      (`deleteObra878112` → `aco_obres_amagades_v878347`, a l'espai del compte) i a sota de la llista «N obres compartides tretes de la
+      llista · Tornar-les a mostrar». Només el propietari la pot eliminar.
+    - **Client d'una obra compartida** (2026-017: la llista deia el promotor, Alberto; Dades deia «Socoterm», el client de l'Héctor, i el
+      desplegable estava bloquejat): ara el client és el promotor fins que el compte en tria un de propi, que es desa a
+      `aco_client_compartides_v878347` (no a l'obra de l'Héctor). `clientIdObra878347`, `nomClientObra878347` (llista, barra, Facturació,
+      documents). En una obra compartida, triar client no toca el promotor (ni hi ha la casella «el mateix client»).
+    - **Desplegable del client amb «Altres contactes»** (promotors i altres de Contactes que no són clients; clau estable `clauAg878347`): en
+      desar, el contacte es fa client amb les seves dades.
+    - **Numeració pròpia**: les obres compartides ja no compten per numerar ni es «reparen» (`assignMissingCodes8739` i
+      `needsExpedientCodeRepair878191` se les salten: abans es podien renumerar i canviar el número de l'Héctor). Cada una rep un número
+      propi del compte quan arriba (`aco_num_compartides_v878347`, `assignaNumComp878347`: quan el núvol ja s'ha posat al dia; si topa
+      amb una obra pròpia es torna a donar) i el de qui la comparteix surt al costat: «2026-004 (Héctor Cubero 2026-017)»
+      (`expPropietari878347`; llista i barra de l'obra).
+    - **Facturat repetit al Rendiment** (Les Moreres: «sortia facturat prop de 6.400»: la factura feta a l'app + la de l'Excel): una
+      factura importada amb la mateixa base que una de l'app no compta (`facturesObraValides878347`: rendiment de l'obra i de l'empresa,
+      Facturació); en importar, una factura emesa amb la mateixa base (o número) que una de l'obra ja hi és; a Facturació, ⋯ › «Eliminar»
+      d'una factura importada.
+    - **Despeses**: a les constructores (perfil amb el mòdul Obra) ja no hi ha «Repercutida al client / Per repercutir» (`ambRep878347`);
+      després d'una acció de la selecció, un avís diu on han anat (a una altra fase, a «Despeses de l'empresa», a una altra obra); dins de
+      l'obra, la selecció no pot passar-les a «Despesa de l'empresa»; passar a una obra una despesa de l'empresa li torna el tipus de la
+      seva pestanya; en importar, «Ja hi és · obra · tipus» diu on és.
+    - Prova: `compartides347test.mjs` (28: obra pròpia esborrada que no torna en dos aparells, treure i tornar a mostrar la compartida,
+      client propi sense tocar l'obra de l'Héctor, numeració pròpia, contacte que es fa client). Adaptades `constructor336test` i
+      `despesesrend338test`.
+    - **Pendent (V87.348)**: la llista de despeses amb columnes (número, data d'emissió i d'entrada, proveïdor o treballador, base, IVA,
+      total), per grups, factures amb el desglossament a dins, la mà d'obra per dies i treballadors (per categoria), veure el document a
+      la mateixa pantalla i filtres per client, treballador i material.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
