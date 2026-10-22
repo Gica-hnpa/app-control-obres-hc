@@ -1,0 +1,80 @@
+/* V87.352 · Partes amb hores i material, preus per hora de l'obra i partes que es poden tornar a editar */
+
+/* capçalera: «Preus per hora» al costat de «Parte d'avui» */
+html body .partes-cap-v878349 .bts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+html body .partes-cap-v878349 .preus-btn{display:inline-flex;align-items:center;gap:6px;min-height:46px;padding:0 14px;border-radius:12px}
+
+/* Feina · Hores · Material */
+html body .pe-secs-v878352{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:4px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface-2,#f1f5f9)}
+html body .pe-secs-v878352 button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:48px;border:0;border-radius:9px;background:transparent;color:var(--co-ink-2);cursor:pointer;padding:4px}
+html body .pe-secs-v878352 button b{font:700 15px var(--app-font)}
+html body .pe-secs-v878352 button small{font-size:12px;color:var(--co-ink-3);font-variant-numeric:tabular-nums}
+html body .pe-secs-v878352 button.on{background:#fff;color:var(--co-ink);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+html body .pe-secs-v878352 button.on small{color:var(--co-accent)}
+
+/* Hores: una fila per treballador */
+html body .pe-hores-v878352,html body .pe-mat-v878352{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+html body .pe-hores-v878352 .pe-h{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--co-line);border-radius:12px;background:#fff;cursor:text}
+html body .pe-hores-v878352 .pe-h.on{border-color:var(--co-accent);background:var(--co-accent-soft,#EAF1FD)}
+html body .pe-hores-v878352 .pe-h .qui{flex:1;min-width:0;display:flex;flex-direction:column}
+html body .pe-hores-v878352 .pe-h .qui b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .pe-hores-v878352 .pe-h .qui small{color:var(--co-ink-3);font-size:12.5px}
+html body .pe-hores-v878352 .pe-h input{width:76px;min-height:44px;font-size:17px;text-align:right;font-variant-numeric:tabular-nums}
+html body .pe-hores-v878352 .pe-h .u{color:var(--co-ink-3);font-weight:600}
+html body .pe-hores-v878352 .pe-h.altre{flex-wrap:wrap}
+html body .pe-hores-v878352 .pe-h.altre .nom{flex:1 1 140px;width:auto;text-align:left;font-size:16px}
+html body .pe-hores-v878352 .pe-h.altre select{flex:1 1 120px;min-height:44px;font-size:15px}
+html body .pe-hores-v878352 .x,html body .pe-mat-v878352 .x{font-size:22px;line-height:1;padding:4px 8px;text-decoration:none;color:var(--co-ink-3)}
+html body .pe-hores-v878352 .afegir,html body .pe-mat-v878352 .afegir{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;min-height:44px;font-weight:700}
+html body .pe-hores-v878352 .tot{display:flex;justify-content:space-between;margin:4px 2px 0;font-size:15px}
+
+/* Material */
+html body .pe-mat-v878352 .pe-m{display:grid;grid-template-columns:minmax(0,1fr) 80px 64px minmax(0,.8fr) 110px auto;gap:6px;align-items:center;padding:8px;border:1px solid var(--co-line);border-radius:12px;background:#fff}
+html body .pe-mat-v878352 .pe-m input{min-height:44px;font-size:16px;min-width:0}
+html body .pe-mat-v878352 .pe-m .q,html body .pe-mat-v878352 .pe-m .imp{text-align:right;font-variant-numeric:tabular-nums}
+
+/* feina fora de pressupost: hores amb el preu a facturar */
+html body .parte-ed-v878349 .pe-fp .hm .lh{display:flex;gap:6px;align-items:center}
+html body .parte-ed-v878349 .pe-fp .hm .lh select,html body .parte-ed-v878349 .pe-fp .hm .lh input:first-child{flex:1;min-width:0}
+html body .parte-ed-v878349 .pe-fp .hm .lh input[inputmode=decimal]{width:80px;flex:none;text-align:right}
+html body .parte-ed-v878349 .pe-fp .hm .lh .vh{color:var(--co-ink-3);white-space:nowrap;font-size:12.5px}
+html body .falta-preu-v878352{margin:2px 0 0;padding:8px 10px;border-radius:10px;background:#FEF3C7;color:#92400E;font-size:13.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+html body .falta-preu-v878352 .link{font-weight:700}
+html body .parte-ed-v878349 .pe-fp .auto-v878352{color:var(--co-ink-3);font-size:12px}
+html body .parte-ed-v878349 .pe-cap .estat.ok{font-style:normal;font-size:12.5px;font-weight:700;color:#166534;background:#DCFCE7;padding:4px 10px;border-radius:999px}
+
+/* resum del dia: hores, material i el cost */
+html body .parte-resum-v878349 .pr-total.cost{background:#FFF7ED;border-color:#FED7AA}
+html body .parte-resum-v878349 .pr-bloq{margin:0;padding:8px 12px;border-radius:10px;background:var(--co-surface-2,#f1f5f9);color:var(--co-ink-2);font-size:13.5px}
+
+/* Preus per hora d'aquesta obra */
+html body .preus-obra-v878352{display:flex;flex-direction:column;gap:6px;min-width:min(440px,86vw)}
+html body .preus-obra-v878352 .fila{display:grid;grid-template-columns:minmax(0,1fr) 84px 120px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--co-line)}
+html body .preus-obra-v878352 .fila.cap{font-size:12px;font-weight:700;color:var(--co-ink-3);text-transform:uppercase;letter-spacing:.04em;border-bottom-width:2px}
+html body .preus-obra-v878352 .fila.cap span:not(:first-child){text-align:right}
+html body .preus-obra-v878352 .cat{font-weight:700}
+html body .preus-obra-v878352 .cost{text-align:right;color:var(--co-ink-3);font-variant-numeric:tabular-nums}
+html body .preus-obra-v878352 .venda{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+html body .preus-obra-v878352 .venda input{width:80px;min-height:42px;font-size:16px;text-align:right}
+html body .preus-obra-v878352 .venda small{color:var(--co-ink-3);width:26px}
+html body .preus-obra-v878352 .bts{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+
+@media (max-width:767px){
+  html body .partes-cap-v878349 .bts{width:100%}
+  html body .partes-cap-v878349 .bts button{flex:1}
+  html body .pe-mat-v878352 .pe-m{grid-template-columns:minmax(0,1fr) 70px 56px auto}
+  html body .pe-mat-v878352 .pe-m .conc{grid-column:1/4}
+  html body .pe-mat-v878352 .pe-m .x{grid-column:4;grid-row:1}
+  html body .pe-mat-v878352 .pe-m .prov{grid-column:3/5}
+  html body .pe-mat-v878352 .pe-m .q{grid-column:1}
+  html body .pe-mat-v878352 .pe-m .ut{grid-column:2}
+  html body .pe-mat-v878352 .pe-m .imp{grid-column:1/3}
+  html body .preus-obra-v878352 .fila{grid-template-columns:minmax(0,1fr) 70px 110px;gap:6px}
+}
+
+/* botons de text dels partes: sense la vora del navegador */
+html body :is(.partes-v878349,.parte-ed-v878349,.parte-resum-v878349,.part-sheet-v878349) button.link{border:0;background:transparent;color:var(--co-accent-ink,#1D4ED8);font:600 14px var(--app-font);padding:6px 4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;min-height:36px;text-decoration:none;box-shadow:none}
+html body :is(.parte-ed-v878349,.parte-resum-v878349) .pe-cap button.link.tornar{font-size:15px;padding-left:0}
+html body .parte-resum-v878349 button.link.elimina{color:#B91C1C}
+html body :is(.pe-hores-v878352,.pe-mat-v878352) button.link.x{color:var(--co-ink-3);font-size:22px;font-weight:400}
+html body .parte-ed-v878349 .pe-dades button.link.nota-btn{justify-self:start}

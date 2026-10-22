@@ -979,6 +979,28 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     els grisos blavosos i els colors dels estats (`NO_MARCA878351`) no es toquen. Documents: `marcaDoc878351` fa el mateix amb els colors
     de l'HTML (a `exactHtml878193` del `DocViewer`: pressupost, certificacions, proformes, factures). «Blau» torna a l'app de sempre.
     Estils: `src/theme-v878351.css`. Prova: `marca351test.mjs` (20).
+  - **V87.352 · Partes amb hores i material, preus per hora de l'obra i partes que es tornen a editar** (l'Héctor, 22/10/2026: «he de
+    poder modificar un parte… quan ho vulgui emplenar per hores de treballador i el material… hauria d'anar directe a despesa de mà d'obra
+    d'aquella obra pel cost/h de l'empresa… i si s'emplena una fora de pressupost el cost hora és un altre, facturat, als ajustos de l'obra:
+    un oficial ens pot costar 22 €/h però a facturar a 30»):
+    - L'editor del parte té **Feina · Hores · Material** (`pe-secs-v878352`). Hores: una fila per treballador actiu (la categoria és el seu
+      `ofici`) i «Una altra persona» (nom i categoria); a l'obra `parte.hores = [{id, treballadorId, nom, categoria, hores}]`. Material:
+      `parte.material = [{id, concepte, q, ut, proveidor, import}]`.
+    - En desar (i en certificar), les hores i el material, també els de la feina fora de pressupost, van a **Despeses de l'obra**
+      (`sincronitzaDespesesParte878352`, `despesesParte878352`): mà d'obra (`MaObra`, hores × `costHoraA878340`: el de l'obra, si no
+      el del treballador) i material (21 % d'IVA; sense import, `perRevisar`). Porten `parteId878352` i es refan a cada desat; eliminar
+      el parte les treu. Sense cost/hora, `perRevisar`. No a les obres compartides per un altre compte.
+    - **Preus per hora de l'obra** (botó a Partes d'obra, `PreusObra878352`): per categoria, «Ens costa» (mitjana del cost/hora dels
+      treballadors) i «A facturar» (`data.preusVenda878352 = {cats, pctMat}`), i el % sobre el material. La feina fora de pressupost amb hores
+      calcula sola el preu per al client (`preuFP878352`: hores × preu a facturar + material × (1 + %); `preuEf878352` = el preu escrit o
+      aquest); si falta el preu d'una categoria, ho diu amb «Posar-lo».
+    - **Editar un parte certificat** mentre la certificació no té factura (`parteBloquejat878352`): «Guardar canvis · I posar al dia la
+      certificació». `certificaParte878349` reutilitza la certificació del parte (`part.cert`) i calcula cada certificació amb l'estat
+      de l'obra a l'últim parte que hi va (així, editar-ne un d'abans no treu els d'després); les feines fora de pressupost ja creades es
+      posen al dia (preu, quantitat) i les que es treuen surten del pressupost.
+    - Resum del dia: «Feina feta del dia» (va a la certificació) i, a part, Hores, Material i «Cost del dia (a Despeses)».
+    - Estils: `src/theme-v878352.css` (també els botons de text dels partes sense la vora del navegador). Prova: `partes352test.mjs` (24);
+      adaptada `partes350test`.
     - **Pendent:** **una auditoria de tota l'app** (facilitat, coses repetides, què ens diferencia).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
