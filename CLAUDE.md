@@ -955,7 +955,23 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Llista: dia, qui, partides, import del dia (`importParte878349`), estat; a dalt, «Feina feta: X de Y» amb la barra.
     - **Despeses al mòbil** (l'Héctor: «apreto Altres i surten a baix»): en tocar un requadre o una vista, la pantalla baixa fins a la
       llista (`baixa878349`); els filtres, plegats darrere del botó «Filtres (n)».
-    - Estils: `src/theme-v878349.css`. Prova: `partes349test.mjs` (25).
+    - Estils: `src/theme-v878349.css`.
+  - **V87.350 · Partes més fàcils i tot plegat d'entrada** (l'Héctor, 22/10/2026: «ha de ser més pràctic i fàcil, sobretot al mòbil… les
+    opcions han de ser clares… per defecte tot plegat… en tocar el dia, només el que hàgim fet»):
+    - Llista **per mesos** (l'últim obert, «N per revisar»). Tocar un parte obre **el resum del dia** (`ParteResum878349`): només les
+      partides marcades (per capítol, «+26 m2», l'import) i les fora de pressupost, «Total del dia», i els botons **Editar** i **Passar a la
+      certificació · Ja està revisat** (Eliminar, petit). Un parte certificat: només «Tancar».
+    - Editor: «+ Nota del dia» (plegada), filtre **Per fer** (de sèrie: sense les partides acabades) · **Marcades avui** · **Totes**;
+      tocar la partida o «Una part» obre **una finestra amb dues preguntes** (`PartSheet878349`): «Com està ara?» (25 · 50 · 75 · 100 % o
+      un altre %) i «O quant s'ha fet avui?» (amb «Amb línies de mesures…» i «Treure el que s'ha marcat avui»). «Feina fora de
+      pressupost» a baix, demanant el capítol. Peu: «Avui: 3 partides · … €» i **Guardar · Per revisar** / **Passar a la certificació · Ja
+      està revisat**; després de guardar o certificar, el resum del dia.
+    - **Despeses: tot plegat d'entrada** (`grupsOberts878350`): cada grup és un botó; s'obre en tocar-lo o el seu requadre de dalt (o en
+      buscar). Els dies de la mà d'obra i els anys, plegats.
+    - Estils: `src/theme-v878350.css`. Prova: `partes350test.mjs` (30; substitueix `partes349test`). Adaptades `despeses348test` i
+      `despeses345test` (obren els grups abans de mirar-los).
+    - **Pendent (demanat per l'Héctor):** la imatge de cada empresa a Ajustos (logo a la capçalera, color de l'app d'una paleta, i el logo
+      i el color als pressupostos i factures) i, després, **una auditoria de tota l'app** (facilitat, coses repetides, què ens diferencia).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

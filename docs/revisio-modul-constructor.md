@@ -167,6 +167,9 @@ capítol) · Hores.
 - **V87.349 · Partes d’obra** (a Seguiment; decisions de l’Héctor sobre `docs/proposta-parts-obra.md`): el parte del dia sobre el
   pressupost (Feta / Una part: %, quantitat feta, fet avui o mesures), feina fora de pressupost (amb hores i material si es vol), «Desar»
   (per revisar) i «Està bé · a la propera certificació». Al mòbil, a Despeses, els requadres baixen fins a la llista i els filtres són plegats.
+- **V87.350**: partes més fàcils (llista per mesos; en tocar un dia, el resum amb només el que s’hi ha fet; «Una part» amb dues
+  preguntes; filtre «Per fer»; botons «Guardar · Per revisar» i «Passar a la certificació · Ja està revisat») i Despeses plegades d’entrada.
+- **Demanat:** imatge de l’empresa a Ajustos (logo, color de l’app, documents amb el logo i el color) i auditoria de tota l’app.
 
 ### Recordatori
 

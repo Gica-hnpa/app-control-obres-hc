@@ -1,0 +1,99 @@
+/* V87.350 · Partes més fàcils (resum del dia, «Una part» en una finestra, mesos plegats) i Despeses plegades d'entrada */
+
+/* Despeses: cada grup és un botó que s'obre i es plega */
+html body .grup-v878348>.grup-cap-v878350{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;background:var(--co-surface-2);cursor:pointer}
+html body .grup-v878348.obert>.grup-cap-v878350{border-bottom:1px solid var(--co-line)}
+html body .grup-v878348>.grup-cap-v878350:hover{background:color-mix(in srgb,var(--co-surface-2) 70%,var(--co-line))}
+html body .grup-v878348>.grup-cap-v878350:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .grup-v878348>.grup-cap-v878350 .chev{transition:transform .15s;color:var(--co-ink-3);flex:0 0 auto}
+html body .grup-v878348.obert>.grup-cap-v878350 .chev{transform:rotate(90deg)}
+html body .grup-v878348>.grup-cap-v878350>b:first-of-type{font:700 15px var(--app-font);color:var(--co-ink)}
+html body .grup-v878348>.grup-cap-v878350 .n{color:var(--co-ink-3);font-size:13px}
+html body .grup-v878348>.grup-cap-v878350 .imp{margin-left:auto;font:800 15px var(--app-font);font-variant-numeric:tabular-nums}
+
+/* Partes: mesos */
+html body .partes-mes-v878349{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);overflow:hidden}
+html body .partes-mes-v878349>.mes-cap{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 14px;cursor:pointer}
+html body .partes-mes-v878349>.mes-cap:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .partes-mes-v878349>.mes-cap .chev{transition:transform .15s;color:var(--co-ink-3)}
+html body .partes-mes-v878349.obert>.mes-cap .chev{transform:rotate(90deg)}
+html body .partes-mes-v878349>.mes-cap b{text-transform:capitalize;font-size:15px}
+html body .partes-mes-v878349>.mes-cap span{margin-left:auto;display:flex;gap:6px;align-items:center;color:var(--co-ink-3);font-size:13px}
+html body .partes-mes-v878349>.mes-cap em{font-style:normal;font-weight:700;color:#9A3412;background:#FFF7ED;padding:1px 8px;border-radius:99px}
+html body .partes-mes-v878349 .partes-llista-v878349{border:0;border-top:1px solid var(--co-line);border-radius:0}
+
+/* Partes: el resum del dia */
+html body .parte-resum-v878349{display:flex;flex-direction:column;gap:12px;padding-bottom:84px}
+html body .parte-resum-v878349 .pe-cap{display:flex;justify-content:space-between;align-items:center;gap:10px}
+html body .parte-resum-v878349 .pe-cap .tornar{display:inline-flex;align-items:center;gap:4px;font-weight:700;min-height:40px}
+html body .parte-resum-v878349 .estat{font-style:normal;font:700 12px var(--app-font);padding:3px 9px;border-radius:99px;white-space:nowrap}
+html body .parte-resum-v878349 .estat.pend{background:#FFF7ED;color:#9A3412}
+html body .parte-resum-v878349 .estat.ok{background:#ECFDF5;color:#065F46}
+html body .parte-resum-v878349 .pr-dia{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+html body .parte-resum-v878349 .pr-dia b{font:800 18px var(--app-font);text-transform:capitalize}
+html body .parte-resum-v878349 .pr-dia span{color:var(--co-ink-2)}
+html body .parte-resum-v878349 .pr-dia p{margin:6px 0 0;white-space:pre-wrap}
+html body .parte-resum-v878349 .pr-cap{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);overflow:hidden}
+html body .parte-resum-v878349 .pr-cap h4{margin:0;padding:9px 14px;background:var(--co-surface-2);font:700 14px var(--app-font)}
+html body .parte-resum-v878349 .pr-p{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--co-line)}
+html body .parte-resum-v878349 .pr-p .txt{display:flex;flex-direction:column;min-width:0}
+html body .parte-resum-v878349 .pr-p .txt b{font-weight:600;line-height:1.3}
+html body .parte-resum-v878349 .pr-p .codi{font-weight:700;color:var(--co-ink-3);margin-right:6px}
+html body .parte-resum-v878349 .pr-p .txt small{color:var(--co-ink-3)}
+html body .parte-resum-v878349 .pr-p.feta .txt small{color:#15803D;font-weight:600}
+html body .parte-resum-v878349 .pr-p .avui{display:flex;flex-direction:column;align-items:flex-end;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body .parte-resum-v878349 .pr-p .avui b{color:#15803D}
+html body .parte-resum-v878349 .pr-p .avui small{color:var(--co-ink-3)}
+html body .parte-resum-v878349 .pr-total{display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface)}
+html body .parte-resum-v878349 .pr-total b{font:800 18px var(--app-font);font-variant-numeric:tabular-nums}
+
+/* peu del resum i de l'editor: botons amb el nom i una paraula d'ajuda */
+html body .parte-resum-v878349 .pe-peu,html body .parte-ed-v878349 .pe-peu{position:sticky;bottom:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);box-shadow:0 -4px 16px rgba(15,23,42,.08)}
+html body .parte-resum-v878349 .pe-peu .bts,html body .parte-ed-v878349 .pe-peu .bts{display:flex;gap:8px;margin-left:auto}
+html body .parte-resum-v878349 .pe-peu .bts button,html body .parte-ed-v878349 .pe-peu .bts button{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:50px;padding:4px 16px;line-height:1.15}
+html body .parte-resum-v878349 .pe-peu .bts button small,html body .parte-ed-v878349 .pe-peu .bts button small{font-size:11.5px;font-weight:500;opacity:.85}
+html body .parte-resum-v878349 .pe-peu .primary.ok,html body .parte-ed-v878349 .pe-peu .primary.ok{background:#16A34A;border-color:#16A34A;color:#fff}
+html body .parte-resum-v878349 .pe-peu .elimina{color:#B91C1C}
+html body .parte-ed-v878349 .pe-peu button:disabled{opacity:.45}
+
+/* editor: filtre, nota, partida que s'obre en tocar-la */
+html body .parte-ed-v878349 .pe-filtre{display:flex;gap:4px;padding:3px;border-radius:10px;background:var(--co-surface-2)}
+html body .parte-ed-v878349 .pe-filtre button{all:unset;box-sizing:border-box;flex:1;text-align:center;min-height:40px;padding:0 8px;border-radius:8px;font:600 13.5px var(--app-font);color:var(--co-ink-2);cursor:pointer}
+html body .parte-ed-v878349 .pe-filtre button[aria-pressed="true"]{background:var(--co-surface);color:var(--co-ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+html body .parte-ed-v878349 .pe-filtre button:focus-visible{outline:2px solid var(--co-accent)}
+html body .parte-ed-v878349 .nota-btn{justify-self:start;font-weight:600}
+html body .parte-ed-v878349 button.pe-txt{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;min-width:0;cursor:pointer}
+html body .parte-ed-v878349 button.pe-txt:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px;border-radius:6px}
+html body .parte-ed-v878349 .pe-fp-afegir{display:flex;flex-direction:column;gap:8px}
+html body .parte-ed-v878349 .pe-fp-afegir label{display:flex;flex-direction:column;gap:4px;max-width:420px}
+html body .parte-ed-v878349 .pe-fp-afegir label span{font:600 12.5px var(--app-font);color:var(--co-ink-2)}
+html body .parte-ed-v878349 .pe-fp-afegir select{min-height:44px;font-size:16px}
+html body .parte-ed-v878349 .pe-fp-afegir .pe-nova{margin:0}
+html body .parte-ed-v878349 .pe-fp-afegir .pe-fp{border:1px solid #FDE68A;border-radius:12px}
+
+/* «Una part»: dues preguntes */
+html body .part-sheet-v878349{display:flex;flex-direction:column;gap:10px}
+html body .part-sheet-v878349 .info{margin:0;color:var(--co-ink-2);font-size:14px}
+html body .part-sheet-v878349 h4{margin:6px 0 0;font:700 16px var(--app-font)}
+html body .part-sheet-v878349 .pcts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+html body .part-sheet-v878349 .pcts button{min-height:52px;border-radius:12px;border:2px solid var(--co-line-strong);background:var(--co-surface);font:800 17px var(--app-font);cursor:pointer}
+html body .part-sheet-v878349 .pcts button:last-child{border-color:#16A34A;color:#15803D}
+html body .part-sheet-v878349 .val{display:flex;align-items:center;gap:8px}
+html body .part-sheet-v878349 .val input{flex:1;min-width:0;min-height:48px;font-size:18px;text-align:right}
+html body .part-sheet-v878349 .val span{min-width:28px;color:var(--co-ink-2);font-weight:600}
+html body .part-sheet-v878349 .val .primary{min-height:48px;padding:0 18px}
+html body .part-sheet-v878349 .mesures{align-self:flex-start;font-weight:600}
+html body .part-sheet-v878349 .treu{align-self:flex-start;color:#B91C1C}
+
+@media (max-width:760px){
+  html body .parte-resum-v878349 .pe-peu,html body .parte-ed-v878349 .pe-peu{bottom:calc(var(--bottom-nav-h,64px) + 6px);padding:8px 10px;gap:6px}
+  html body .parte-resum-v878349 .pe-peu .bts,html body .parte-ed-v878349 .pe-peu .bts{width:100%;flex-wrap:nowrap}
+  html body .parte-resum-v878349 .pe-peu .bts button,html body .parte-ed-v878349 .pe-peu .bts button{flex:1 1 0;min-width:0;padding:4px 8px}
+  html body .parte-ed-v878349 .pe-peu .bts .cancel{display:none}
+  html body .parte-ed-v878349 .pe-peu .bts .primary.ok{flex:1.4 1 0}
+  html body .part-sheet-v878349 .pcts button{min-height:56px}
+}
+html body:has(.parte-resum-v878349) .obra-plus-v878302{display:none!important}
+/* les dates: només la primera lletra en majúscula («Dijous, 22 d’octubre», no «D’octubre») */
+html body .parte-resum-v878349 .pr-dia b,html body .partes-mes-v878349>.mes-cap b,html body .parte-v878349 .dia b{text-transform:none}
+html body .parte-resum-v878349 .pr-dia b::first-letter,html body .partes-mes-v878349>.mes-cap b::first-letter,html body .parte-v878349 .dia b::first-letter{text-transform:uppercase}
