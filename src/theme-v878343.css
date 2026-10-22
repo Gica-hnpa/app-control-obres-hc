@@ -1,0 +1,63 @@
+/* V87.343 · Rendiment de l'empresa (menú): filtres, xifres, gràfica de línies i taula per obres */
+html body .rend-emp-v878343{display:flex;flex-direction:column;gap:14px;
+  --rc-ink:#0f172a;--rc-ink-2:#475569;--rc-ink-3:#64748b;--rc-grid:#e8edf2;--rc-axis:#cbd5e1}
+html body .rend-emp-v878343 .fe-head h1{margin:0}
+html body .rc-filtres-v878343{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+html body .rc-filtres-v878343 .anys{display:flex;gap:6px;flex-wrap:wrap}
+html body .rc-filtres-v878343 .anys>button,html body .rc-vistes-v878343 .seg>button{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 14px;border-radius:999px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 13.5px var(--app-font);color:var(--co-ink-2)}
+html body .rc-filtres-v878343 .anys>button[aria-pressed="true"],html body .rc-vistes-v878343 .seg>button[aria-pressed="true"]{background:var(--co-ink);border-color:var(--co-ink);color:var(--co-surface)}
+html body .rc-filtres-v878343 button:focus-visible,html body .rc-vistes-v878343 button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .rc-obres-v878343{position:relative}
+html body .rc-obres-v878343>summary{list-style:none;cursor:pointer;padding:8px 14px;border-radius:999px;border:1px solid var(--co-line-strong);font:600 13.5px var(--app-font);color:var(--co-ink);background:var(--co-surface)}
+html body .rc-obres-v878343>summary::after{content:" ▾";color:var(--co-ink-3)}
+html body .rc-obres-v878343>summary::-webkit-details-marker{display:none}
+html body .rc-obres-v878343>.menu{position:absolute;z-index:60;top:calc(100% + 6px);left:0;min-width:280px;max-width:min(420px,90vw);max-height:360px;overflow:auto;padding:8px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);box-shadow:0 12px 30px rgba(15,23,42,.14);display:flex;flex-direction:column;gap:2px}
+html body .rc-obres-v878343>.menu label{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:14px}
+html body .rc-obres-v878343>.menu label:hover{background:var(--co-surface-2)}
+html body .rc-obres-v878343>.menu .link{all:unset;cursor:pointer;padding:7px 8px;color:var(--co-accent);font-weight:600;font-size:13.5px}
+html body .rc-kpis-v878343{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+html body .rc-kpis-v878343>div{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border:1px solid var(--co-line);border-radius:14px;background:var(--co-surface)}
+html body .rc-kpis-v878343 small{font-size:12.5px;color:var(--rc-ink-3)}
+html body .rc-kpis-v878343 b{font:800 22px var(--app-font);color:var(--rc-ink);font-variant-numeric:tabular-nums}
+html body .rc-kpis-v878343 span{font-size:12.5px;color:var(--rc-ink-2)}
+html body .rc-kpis-v878343>div.good{border-color:#a7f3d0;background:#f0fdf8}
+html body .rc-kpis-v878343>div.good b{color:#047857}
+html body .rc-kpis-v878343>div.bad{border-color:#fecaca;background:#fef6f6}
+html body .rc-kpis-v878343>div.bad b{color:#b91c1c}
+html body .rc-dge-v878343{margin:0;padding:9px 14px;border-radius:12px;font-size:13.5px}
+html body .rc-dge-v878343.good{background:#f0fdf8;color:#065f46;border:1px solid #a7f3d0}
+html body .rc-dge-v878343.bad{background:#fffbeb;color:#92400e;border:1px solid #fcd34d}
+html body .rc-vistes-v878343{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+html body .rc-vistes-v878343 .seg{display:flex;gap:4px;flex-wrap:wrap}
+html body .rc-vistes-v878343 .seg>button{padding:6px 12px;font-size:13px}
+html body .rc-vistes-v878343 .acum{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--rc-ink-2)}
+html body .rc-chart-v878343{padding:4px 16px 16px}
+html body .rc-llegenda-v878343{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 6px;font-size:13px;color:var(--rc-ink-2)}
+html body .rc-llegenda-v878343 span{display:inline-flex;align-items:center;gap:6px}
+html body .rc-llegenda-v878343 i{width:14px;height:3px;border-radius:2px;display:inline-block}
+html body .rc-svgwrap-v878343{position:relative}
+html body .rc-svgwrap-v878343 svg{display:block;width:100%;height:auto;outline:none}
+html body .rc-svgwrap-v878343 svg:focus-visible{outline:2px solid var(--co-accent);outline-offset:4px;border-radius:8px}
+html body .rc-svgwrap-v878343 .grid{stroke:var(--rc-grid);stroke-width:1}
+html body .rc-svgwrap-v878343 .zero{stroke:var(--rc-axis);stroke-width:1.2}
+html body .rc-svgwrap-v878343 .ax{font:11px var(--app-font);fill:var(--rc-ink-3)}
+html body .rc-svgwrap-v878343 .end{font:600 11.5px var(--app-font);fill:var(--rc-ink-2)}
+html body .rc-svgwrap-v878343 .cross{stroke:var(--rc-axis);stroke-width:1;stroke-dasharray:3 3}
+html body .rc-tip-v878343{position:absolute;top:8px;transform:translateX(12px);min-width:180px;padding:9px 12px;border-radius:10px;background:#fff;border:1px solid var(--co-line);box-shadow:0 8px 24px rgba(15,23,42,.14);font-size:12.5px;pointer-events:none;display:flex;flex-direction:column;gap:3px;z-index:3}
+html body .rc-tip-v878343.esq{transform:translateX(calc(-100% - 12px))}
+html body .rc-tip-v878343 b{font-size:13px;color:var(--rc-ink)}
+html body .rc-tip-v878343 b::first-letter{text-transform:uppercase}
+html body .rc-tip-v878343 span{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:6px;align-items:center;color:var(--rc-ink-2)}
+html body .rc-tip-v878343 span i{width:10px;height:10px;border-radius:50%}
+html body .rc-tip-v878343 span em{font-style:normal;font-variant-numeric:tabular-nums;color:var(--rc-ink);font-weight:600}
+html body .rc-buit-v878343{margin:6px 16px 16px;color:var(--rc-ink-2)}
+html body .rc-taula-v878343 td small{display:block}
+html body .rc-cats-v878343{display:flex;flex-direction:column;margin:0 16px 14px}
+html body .rc-cats-v878343>div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--co-line);font-variant-numeric:tabular-nums}
+html body .rc-cats-v878343>div:last-child{border-bottom:0}
+@media (max-width:640px){
+  html body .rc-kpis-v878343{grid-template-columns:1fr 1fr}
+  html body .rc-kpis-v878343 b{font-size:18px}
+  html body .rc-kpis-v878343>div.res{grid-column:1/-1}
+  html body .rc-chart-v878343{padding:4px 8px 12px}
+}

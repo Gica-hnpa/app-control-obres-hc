@@ -1,0 +1,114 @@
+/* V87.342 · Fases de l'obra (a dalt de l'Econòmic) i rendiment per fase */
+html body .fases-v878342{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:8px 10px;border:1px solid var(--co-line);border-radius:14px;background:var(--co-surface)}
+html body .fases-v878342>.tit{font:700 12px var(--app-font);letter-spacing:.06em;text-transform:uppercase;color:var(--co-ink-3);padding:0 4px;flex:0 0 auto}
+html body .fases-v878342>.llista{display:flex;gap:8px;flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:thin;padding:2px}
+html body .fases-v878342>.llista>button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"n b" "n s";column-gap:10px;align-items:center;padding:8px 14px 8px 8px;border-radius:12px;border:1px solid var(--co-line-strong);background:var(--co-surface);min-width:170px;max-width:280px;flex:0 0 auto}
+html body .fases-v878342>.llista>button em{grid-area:n;font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--co-surface-2);font:700 14px var(--app-font);color:var(--co-ink-2)}
+html body .fases-v878342>.llista>button b{grid-area:b;font:600 14px var(--app-font);color:var(--co-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .fases-v878342>.llista>button span{grid-area:s;font-size:12.5px;color:var(--co-ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .fases-v878342>.llista>button:hover{background:var(--co-surface-2)}
+html body .fases-v878342>.llista>button.on{border-color:var(--co-accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--co-accent) 22%,transparent);background:color-mix(in srgb,var(--co-accent) 6%,var(--co-surface))}
+html body .fases-v878342>.llista>button.on em{background:var(--co-accent);color:#fff}
+html body .fases-v878342>.llista>button.tota em{font-size:15px}
+html body .fases-v878342>.llista>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .fases-v878342 .mes-v878342{position:relative;flex:0 0 auto}
+html body .fases-v878342 .mes-v878342>summary{list-style:none;cursor:pointer;display:grid;place-items:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--co-line-strong);font-size:18px;color:var(--co-ink-2)}
+html body .fases-v878342 .mes-v878342>summary::-webkit-details-marker{display:none}
+html body .fases-v878342 .mes-v878342>.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:60;display:flex;flex-direction:column;min-width:240px;padding:6px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);box-shadow:0 12px 30px rgba(15,23,42,.14)}
+html body .fases-v878342 .mes-v878342>.menu>button{all:unset;cursor:pointer;padding:9px 12px;border-radius:8px;font:500 14px var(--app-font);color:var(--co-ink)}
+html body .fases-v878342 .mes-v878342>.menu>button:hover{background:var(--co-surface-2)}
+html body .fases-v878342 .mes-v878342>.menu>button.danger-text-v87229{color:#B91C1C}
+@media (max-width:640px){
+  html body .fases-v878342{flex-wrap:wrap;padding:8px}
+  html body .fases-v878342>.tit{display:none}
+  html body .fases-v878342>.llista{order:2;flex-basis:100%}
+  html body .fases-v878342 .mes-v878342{position:absolute;right:12px}
+  html body .fases-v878342{position:relative;padding-right:56px}
+  html body .fases-v878342>.llista>button{min-width:150px}
+}
+/* rendiment */
+html body .rf-v878342 .rf-kpis-v878342{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 16px 14px}
+html body .rf-v878342 .rf-kpis-v878342>div{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px}
+html body .rf-v878342 .rf-kpis-v878342 small{font-size:12.5px;color:var(--co-ink-3)}
+html body .rf-v878342 .rf-kpis-v878342 b{font:800 20px var(--app-font);color:var(--co-ink);font-variant-numeric:tabular-nums}
+html body .rf-v878342 .rf-kpis-v878342 span{font-size:12.5px;color:var(--co-ink-2)}
+html body .rf-v878342 .rf-buit-v878342{margin:0 16px 14px;color:var(--co-ink-2)}
+html body .rf-compte-v878342{margin:0 16px;border:1px solid var(--co-line);border-radius:12px;overflow:hidden}
+html body .rf-compte-v878342 .l{display:grid;grid-template-columns:minmax(0,1fr) auto 70px;gap:10px;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--co-line);font-variant-numeric:tabular-nums}
+html body .rf-compte-v878342 .l:last-child{border-bottom:0}
+html body .rf-compte-v878342 .l>b{text-align:right;font-weight:600}
+html body .rf-compte-v878342 .l>em{text-align:right;font-style:normal;color:var(--co-ink-3);font-size:13px}
+html body .rf-compte-v878342 .l small{color:var(--co-ink-3)}
+html body .rf-compte-v878342 .l.ing{background:var(--co-surface-2)}
+html body .rf-compte-v878342 .l.ing>b{font-weight:700}
+html body .rf-compte-v878342 .l.cost>span{padding-left:12px;color:var(--co-ink-2)}
+html body .rf-compte-v878342 .l.cost.buit{color:var(--co-ink-3)}
+html body .rf-compte-v878342 .l.sub{background:var(--co-surface-2);font-weight:600}
+html body .rf-compte-v878342 .l.res{font-size:17px}
+html body .rf-compte-v878342 .l.res>b{font-weight:800}
+html body .rf-compte-v878342 .l.res.good{background:#ECFDF5}
+html body .rf-compte-v878342 .l.res.good>b,html body .rf-compte-v878342 .l.res.good>em{color:#047857}
+html body .rf-compte-v878342 .l.res.bad{background:#FEF2F2}
+html body .rf-compte-v878342 .l.res.bad>b,html body .rf-compte-v878342 .l.res.bad>em{color:#B91C1C}
+html body .rf-barra-v878342{display:flex;height:10px;margin:12px 16px 0;border-radius:99px;overflow:hidden;background:var(--co-surface-2)}
+html body .rf-barra-v878342 i{display:block;height:100%}
+html body .rf-barra-v878342 i.dir{background:#94A3B8}
+html body .rf-barra-v878342 i.dge{background:#F59E0B}
+html body .rf-barra-v878342 i.ben{background:#10B981}
+html body .rf-bi-v878342{margin:10px 16px 0;font-size:13.5px;font-weight:600}
+html body .rf-bi-v878342.good{color:#047857}
+html body .rf-bi-v878342.bad{color:#B91C1C}
+html body .rf-avis-v878342{margin:10px 16px 0;padding:8px 12px;border-radius:10px;background:#FFFBEB;border:1px solid #FCD34D;color:#92400E;font-size:13.5px}
+html body .rf-avis-v878342 .link{all:unset;cursor:pointer;color:var(--co-accent);font-weight:600;text-decoration:underline;margin-left:4px}
+html body .rf-cfg-v878342{display:flex;gap:12px;flex-wrap:wrap;margin:14px 16px 16px}
+html body .rf-cfg-v878342 label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--co-ink-2)}
+html body .rf-cfg-v878342 input{width:76px;min-height:34px;text-align:right}
+/* taules: per fases i per capítols */
+html body .rf-taula-wrap-v878342{margin:0 16px 16px;overflow-x:auto}
+html body .rf-taula-v878342{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+html body .rf-taula-v878342 th{text-align:right;font:600 11.5px var(--app-font);letter-spacing:.04em;text-transform:uppercase;color:var(--co-ink-3);padding:8px 10px;border-bottom:1px solid var(--co-line-strong);white-space:nowrap}
+html body .rf-taula-v878342 th:first-child,html body .rf-taula-v878342 td:first-child{text-align:left}
+html body .rf-taula-v878342 td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--co-line);white-space:nowrap}
+html body .rf-taula-v878342 td:first-child{white-space:normal;min-width:200px}
+html body .rf-taula-v878342 td small{display:block;color:var(--co-ink-3);font-size:12px}
+html body .rf-taula-v878342 .good{color:#047857}
+html body .rf-taula-v878342 .bad{color:#B91C1C}
+html body .rf-taula-v878342 tr.sense td{color:var(--co-ink-3);font-style:italic}
+html body .rf-taula-v878342 tr.cap{cursor:pointer}
+html body .rf-taula-v878342 tr.cap:hover td{background:var(--co-surface-2)}
+html body .rf-taula-v878342 tr.cap .tg{all:unset;width:18px;display:inline-block;color:var(--co-ink-3)}
+html body .rf-taula-v878342 tr.cap td:first-child b{font-weight:600}
+html body .rf-taula-v878342 tr.cap td:first-child small{padding-left:18px}
+html body .rf-taula-v878342 tr.partida td{font-size:12.5px;color:var(--co-ink-2);background:#FAFCFC}
+html body .rf-taula-v878342 tr.partida td:first-child{padding-left:30px}
+html body .rf-taula-v878342 tfoot td{font-weight:700;border-top:1px solid var(--co-line-strong);border-bottom:0}
+html body .prog-v878342{display:inline-flex;align-items:center;gap:8px}
+html body .prog-v878342>span{display:inline-block;width:70px;height:6px;border-radius:99px;background:var(--co-surface-2);overflow:hidden}
+html body .prog-v878342>span>i{display:block;height:100%;background:var(--co-accent)}
+html body .prog-v878342>span>i.over{background:#DC2626}
+html body .prog-v878342>b{font-weight:500;min-width:52px;text-align:right}
+/* despeses i hores: la fase */
+html body .alb-modal .fase-v878342 select,html body .fase-v878342 select{min-width:0}
+html body .fila-v878340 .linia select.fase{flex:0 0 150px;min-width:0}
+@media (max-width:640px){
+  html body .rf-v878342 .rf-kpis-v878342{grid-template-columns:1fr 1fr}
+  html body .rf-v878342 .rf-kpis-v878342>div:first-child{grid-column:1/-1}
+  html body .rf-compte-v878342 .l{grid-template-columns:minmax(0,1fr) auto 50px;gap:6px;padding:9px 10px}
+  html body .rf-compte-v878342 .l>em{font-size:12px}
+  html body .fila-v878340 .linia{flex-wrap:wrap}
+  html body .fila-v878340 .linia select:first-child{flex:1 1 100%}
+  html body .fila-v878340 .linia select.fase{flex:1 1 auto}
+}
+/* al mòbil, les taules de rendiment com a fitxes (cada xifra amb el seu nom) */
+@media (max-width:640px){
+  html body .rf-taula-wrap-v878342{overflow:visible}
+  html body .rf-taula-v878342,html body .rf-taula-v878342 tbody,html body .rf-taula-v878342 tfoot{display:block}
+  html body .rf-taula-v878342 thead{display:none}
+  html body .rf-taula-v878342 tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;padding:10px 2px;border-bottom:1px solid var(--co-line)}
+  html body .rf-taula-v878342 td{display:flex;flex-direction:column;align-items:flex-start;text-align:left!important;border:0!important;padding:2px 0!important;white-space:normal;background:transparent!important}
+  html body .rf-taula-v878342 td:first-child{grid-column:1/-1;min-width:0}
+  html body .rf-taula-v878342 td[data-l]::before{content:attr(data-l);font:600 10.5px var(--app-font);color:var(--co-ink-3);text-transform:uppercase;letter-spacing:.04em}
+  html body .rf-taula-v878342 td:empty{display:none}
+  html body .rf-taula-v878342 tr.partida td:first-child{padding-left:12px!important}
+  html body .rf-taula-v878342 tfoot tr{border-bottom:0;border-top:1px solid var(--co-line-strong)}
+}
