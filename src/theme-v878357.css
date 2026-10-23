@@ -1,0 +1,65 @@
+/* V87.357 · Fitxatge dels treballadors */
+html body .fitx-v878357{display:flex;flex-direction:column;gap:14px}
+html body .fitx-fet-v878357{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:12px;background:#DCFCE7;color:#166534;font-weight:700}
+html body .fitx-graella-v878357{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+html body .fitx-w-v878357{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:84px;padding:14px 16px;border-radius:14px;border:2px solid var(--co-line);background:#fff;cursor:pointer;text-align:left}
+html body .fitx-w-v878357 b{font:700 17px var(--app-font);color:var(--co-ink)}
+html body .fitx-w-v878357 small{font-size:13.5px;color:var(--co-ink-3)}
+html body .fitx-w-v878357.treballant{border-color:#16A34A;background:#F0FDF4}
+html body .fitx-w-v878357.treballant small{color:#166534;font-weight:700}
+html body .fitx-w-v878357.pausa{border-color:#D97706;background:#FFFBEB}
+html body .fitx-w-v878357.pausa small{color:#92400E;font-weight:700}
+html body .fitx-modal-v878357{display:flex;flex-direction:column;gap:14px;min-width:min(380px,86vw)}
+html body .fitx-pin-v878357{display:flex;flex-direction:column;gap:10px}
+html body .fitx-pin-v878357 label{display:flex;flex-direction:column;gap:6px;font-weight:700}
+html body .fitx-pin-v878357 input{font-size:28px;letter-spacing:.4em;text-align:center;min-height:56px}
+html body .fitx-pin-v878357 .err{margin:0;color:#B91C1C;font-weight:700}
+html body .fitx-pin-v878357 .primary{min-height:50px;font-size:17px}
+html body .fitx-estat-v878357{margin:0;font-size:16px;font-weight:700;color:var(--co-ink-2)}
+html body .fitx-accions-v878357{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+html body .fitx-accions-v878357 button{min-height:64px;font-size:19px;font-weight:800;border-radius:14px}
+html body .fitx-accions-v878357 .sortida{background:#B91C1C;border-color:#B91C1C}
+html body .fitx-accions-v878357 .entrada{background:#16A34A;border-color:#16A34A}
+html body .fitx-meus-v878357>summary{cursor:pointer;font-weight:700;color:var(--co-ink-2)}
+html body .fitx-meus-v878357 ul,html body .fitx-corr-v878357 ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:40vh;overflow:auto}
+html body .fitx-meus-v878357 li,html body .fitx-corr-v878357 li{display:flex;gap:10px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--co-line);font-size:14px}
+html body .fitx-meus-v878357 li small,html body .fitx-corr-v878357 li small{color:var(--co-ink-3);font-size:12px}
+html body .fitx-corr-v878357 li .link{margin-left:auto}
+html body li.anulat span,html body li.anulat b{text-decoration:line-through;color:var(--co-ink-3)}
+html body .fitx-reg-v878357{display:flex;flex-direction:column;gap:14px}
+html body .fitx-dia-v878357{display:flex;gap:8px;align-items:center}
+html body .fitx-dia-v878357 input{min-height:42px}
+html body .fitx-taula-v878357{display:flex;flex-direction:column;gap:6px}
+html body .fitx-fila-v878357{display:grid;grid-template-columns:minmax(120px,200px) minmax(0,1fr) 70px auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--co-line);border-radius:12px;background:#fff}
+html body .fitx-fila-v878357 .ms{display:flex;flex-wrap:wrap;gap:6px}
+html body .fitx-fila-v878357 .m{font-style:normal;font-size:12.5px;padding:3px 8px;border-radius:999px;background:var(--co-surface-2,#f1f5f9);font-variant-numeric:tabular-nums}
+html body .fitx-fila-v878357 .m.entrada,html body .fitx-fila-v878357 .m.represa{background:#DCFCE7;color:#166534}
+html body .fitx-fila-v878357 .m.sortida{background:#FEE2E2;color:#991B1B}
+html body .fitx-fila-v878357 .m.pausa{background:#FEF3C7;color:#92400E}
+html body .fitx-fila-v878357 .m.anulat{text-decoration:line-through;opacity:.6}
+html body .fitx-fila-v878357 .m.corregit{outline:1px dashed currentColor}
+html body .fitx-fila-v878357 .h{text-align:right;font-variant-numeric:tabular-nums}
+html body .fitx-mes-filtre-v878357{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+html body .fitx-mes-filtre-v878357 input,html body .fitx-mes-filtre-v878357 select{min-height:42px}
+html body .fitx-mes-v878357>:not(.card-head){margin-left:16px;margin-right:16px}
+html body .fitx-mes-v878357>.card-head+*{margin-top:12px}
+html body .fitx-mes-v878357>:last-child{margin-bottom:16px}
+html body .fitx-mes-w-v878357 h4{margin:12px 0 6px}
+html body .fitx-mes-w-v878357 h4 span{color:var(--co-ink-3)}
+html body .fitx-mes-w-v878357 table{width:100%;border-collapse:collapse;font-size:13.5px}
+html body .fitx-mes-w-v878357 th,html body .fitx-mes-w-v878357 td{padding:6px 8px;border-bottom:1px solid var(--co-line);text-align:left;font-variant-numeric:tabular-nums}
+html body .part-v878340 .fitxat-v878357{color:#166534;font-weight:700}
+@media (max-width:767px){
+  html body .fitx-graella-v878357{grid-template-columns:1fr 1fr}
+  html body .fitx-fila-v878357{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"nm h" "ms ms" "bt bt"}
+  html body .fitx-fila-v878357 .nm{grid-area:nm}
+  html body .fitx-fila-v878357 .h{grid-area:h}
+  html body .fitx-fila-v878357 .ms{grid-area:ms}
+  html body .fitx-fila-v878357 button{grid-area:bt;justify-self:start}
+}
+
+/* «Fitxar · Registre»: un segment més petit que les vistes de dalt */
+html body .fitx-v878357>.fe-vistes{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface-2,#f1f5f9);align-self:flex-start}
+html body .fitx-v878357>.fe-vistes>button{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 18px;border-radius:9px;font:700 14px var(--app-font);color:var(--co-ink-2)}
+html body .fitx-v878357>.fe-vistes>button[aria-pressed="true"]{background:#fff;color:var(--co-ink);box-shadow:0 1px 3px rgba(15,23,42,.12)}
+html body .fitx-v878357>.fe-vistes>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
