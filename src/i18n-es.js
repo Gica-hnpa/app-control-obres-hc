@@ -3926,4 +3926,9 @@ export default {
   "Usuaris i contrasenyes": "Usuarios y contraseñas",
   "Còpies i núvol": "Copias y nube",
   "Encara no actiu: l’activa l’administrador de l’app.": "Aún no activo: lo activa el administrador de la app.",
+  "Cal la referència cadastral (14 caràcters o més) a Dades de l’obra.": "Hace falta la referencia catastral (14 caracteres o más) en Datos de la obra.",
+  "No s’ha pogut connectar amb el Cadastre.": "No se ha podido conectar con el Catastro.",
+  "El Cadastre no té foto de la façana d’aquesta referència.": "El Catastro no tiene foto de la fachada de esta referencia.",
+  "Buscant la foto…": "Buscando la foto…",
+  "Foto del Cadastre": "Foto del Catastro",
 };

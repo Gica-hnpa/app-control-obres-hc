@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.355";
+const APP_VERSION878264="87.356";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10249,7 +10249,18 @@ function EncarrecsInici878305({obres=[],odata={},openObra}){
   if(!grups.length)return null;
   return <Card title={t("Encàrrecs tècnics")} className="encarrecs-inici-v878305"><div className="encarrecs-grups-v878305">{grups.map(([x,nom])=><section key={x}><header><b>{t(nom)}</b><span>{g[x].length}</span></header>{g[x].map(({o,dd})=><button type="button" key={o.id} onClick={()=>openObra?.(o.id)}><b>{o.nom}</b><small>{x==="falten"?t("Falten {n} de {m}",{n:dd.falten,m:dd.total}):x==="presentats"?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):t("Tot a punt")}</small></button>)}</section>)}</div></Card>;
 }
+// V87.356 · La foto de la façana del Cadastre (servei públic de la Direcció General del Cadastre, sense clau): amb la referència
+// cadastral de l'obra (Dades › Obra), un botó la posa com a foto de l'obra. Si el Cadastre no en té, ho diu.
+const FOTO_CADASTRE878356="https://ovc.catastro.meh.es/OVCServWeb/OVCWcfLibres/OVCFotoFachada.svc/RecuperarFotoFachadaGet?ReferenciaCatastral=";
+async function fotoCadastre878356(rc){
+  const r=rcNet878305(rc);if(r.length<14)throw new Error(i18nT("Cal la referència cadastral (14 caràcters o més) a Dades de l’obra."));
+  let res;try{res=await fetch(FOTO_CADASTRE878356+r.slice(0,14),{mode:"cors"})}catch{throw new Error(i18nT("No s’ha pogut connectar amb el Cadastre."))}
+  const b=res.ok?await res.blob():null;
+  if(!b||b.size<500||!/^image\//.test(b.type||"image/jpeg"))throw new Error(i18nT("El Cadastre no té foto de la façana d’aquesta referència."));
+  return b;
+}
 function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploadImage}){
+  const[cadastre878356,setCadastre878356]=useState("");
   const s=useMemo(()=>economicSummary878252(scope),[scope]);
   const fileRef=useRef(null);
   const hasBudget=s.rows.length>0;
@@ -10265,6 +10276,8 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
     <div className="obra-hero-top-v878252">
       <div className={`obra-hero-photo-v878252 ${obraFoto878259(obra)?"":"sense-foto-v878354"}`}>
         {obraFoto878259(obra)?<img src={obraFoto878259(obra)} alt={`Foto de ${obra.nom||"l’obra"}`}/>:null}
+        {uploadImage&&!obraFoto878259(obra)&&rcNet878305(obra.rc).length>=14&&<button type="button" className="cadastre-v878356" disabled={cadastre878356==="..."} onClick={async()=>{setCadastre878356("...");try{const b=await fotoCadastre878356(obra.rc);await uploadImage(b);setCadastre878356("")}catch(e){setCadastre878356(e?.message||String(e))}}}>{cadastre878356==="..."?t("Buscant la foto…"):t("Foto del Cadastre")}</button>}
+        {cadastre878356&&cadastre878356!=="..."&&<small className="cadastre-err-v878356" role="status">{cadastre878356}</small>}
         {uploadImage&&<><button type="button" onClick={()=>fileRef.current?.click()}>{obraFoto878259(obra)?t("Canviar foto"):t("Afegir foto de l’obra")}</button><input ref={fileRef} type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)uploadImage(f);e.target.value=""}}/></>}
       </div>
       <div className="obra-hero-info-v878252">
@@ -14626,7 +14639,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.355",
+    app_version:"87.356",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
