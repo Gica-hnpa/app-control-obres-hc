@@ -1128,6 +1128,31 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Obra nova** (`QuickExpedientForm878254`): el títol diu «Nova obra» o «Nou expedient» segons el perfil, «Crear i obrir l'obra», fora el
       text «La resta (tècnics, constructors…)…» i, a la constructora, sense el camp «Constructora».
     - Estils: `src/theme-v878363.css`. Prova: `dades363test.mjs` (13).
+  - **Tanda 7** (l'Héctor, 23/10/2026 al vespre, amb el compte de Socoterm i l'obra «CP EDEN PLAYA»; llista a
+    `docs/revisio-modul-constructor.md`; termini: tot tancat i provat el 30/10/2026).
+  - **V87.364 · Certificacions:**
+    - **Error d'Eden Playa:** el parte va posar 0,25 de la 01.01 a la certificació 1 (4.487,50 €) i es va fer la factura F2026-056; després,
+      el Σ de la casella en mode consulta obria l'edició (sense mirar la factura) i, en desar les línies buides, la partida va quedar a 0.
+      La llista, el resum i la factura continuaven amb 4.487,50 € perquè feien servir l'import desat (`c.import`) quan les partides
+      sumaven 0. Ara l'import surt sempre de les partides (`importCert878364`, `teQuantCert878364`): l'import desat només val si cap
+      partida té quantitat d'aquella certificació (les importades d'un Excel només amb l'import). També a la barra de fases
+      (`certRecordTotal8791`), les proformes (`proformesObra878337`), el document generat i la normalització de l'obra.
+    - **Certificació amb factura = tancada** (`bloq878364`): sense «Editar», ni Σ, ni «Afegir feina», ni mesures o administració des de la
+      fitxa de la partida, i la data no es pot canviar; la barra diu «Facturada». Si la factura no coincideix amb la certificació, el
+      número surt en vermell (`mal`).
+    - **Llista** (`cert-taula-v878364`): Certificació · Data · Import · **Factura** (número o «Pendent», si el compte fa factures) · «⋯»
+      per fila (Fer factura, Veure la factura, Eliminar). Fora el «Més» (només hi havia «Importar Excel»).
+    - **Barra** (`cert-barra-v878364`): Resum · Partides (abans un desplegable «Vista»), «Editar» i un sol desplegable **«Accions»** amb
+      icona i paraula (PDF de la certificació, PDF a origen, administració, Enviar, Fer factura / Veure la factura, Afegir feina, partides
+      retirades, Importar Excel). Fora el text «Editant la Certificació… Introdueix les quantitats…».
+    - **Quantitat**: en consulta, cada quantitat és una casella (`cert-q-v878364`); tocar-la obre l'edició amb el cursor a la mateixa
+      partida (`focus878364`, `data-codi`); el Σ només surt editant.
+    - **Resum** (`CertResumV69`): les columnes de xifres de mida fixa (abans s'eixamplaven fins a tota la pantalla).
+    - `ActionMenu87213` admet `fletxa={false}`, `className` i `titol`. `cloudSync.js`: els mòbils Android ja no es diuen «Linux».
+    - **Menús desplegables a baix de la pantalla** (l'efecte de l'App de la V87.303): si a sota no hi caben sencers i a sobre hi ha més
+      lloc, s'obren cap amunt (abans s'escurçaven fins a 160 px; `menustest` fallava des de la V87.360 amb «PDF» de les certificacions).
+    - Estils: `src/theme-v878364.css`. Prova: `cert364test.mjs` (22, amb el cas d'Eden Playa). Adaptades `facturacio337test`,
+      `partes352test`, `clientsvirtuals`, `pressuposttest` i `menustest`.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

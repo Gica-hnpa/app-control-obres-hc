@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.363";
+const VERSION = "V87.364";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -117,7 +117,7 @@ function fmtTime(iso) { try { return new Date(iso).toLocaleString("ca-ES", { day
 function isLocalServer() { return !!window.__acoLocalDisk; }
 function makeDevice() {
   let d = "";
-  try { d = localStorage.getItem(DEVICE_KEY) || ""; if (!d) { const kind = (navigator.userAgent.match(/iPhone|iPad|Android|Windows|Macintosh|Linux/) || ["Aparell"])[0]; d = `${kind}-${Math.random().toString(36).slice(2, 8)}`; localStorage.setItem(DEVICE_KEY, d); } } catch { d = "Aparell-" + Math.random().toString(36).slice(2, 8); }
+  try { d = localStorage.getItem(DEVICE_KEY) || ""; if (!d) { const kind = ["iPhone", "iPad", "Android", "Windows", "Macintosh", "Linux"].find(k => navigator.userAgent.includes(k)) || "Aparell"; d = `${kind}-${Math.random().toString(36).slice(2, 8)}`; localStorage.setItem(DEVICE_KEY, d); } } catch { d = "Aparell-" + Math.random().toString(36).slice(2, 8); }
   return d;
 }
 function hasObres(entriesObj) { return Object.keys(entriesObj).some(k => /(^|__)aco_obres$/.test(k) && String(entriesObj[k] || "").length > 10); }

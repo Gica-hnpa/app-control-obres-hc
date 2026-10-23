@@ -4034,4 +4034,13 @@ export default {
   "Altres diferències de preu": "Otras diferencias de precio",
   "Crear i obrir l’obra": "Crear y abrir la obra",
   "Més dades": "Más datos",
+"La factura ({f}) no coincideix amb la certificació ({c})": "La factura ({f}) no coincide con la certificación ({c})",
+"Veure la factura": "Ver la factura",
+"Accions de la certificació {n}": "Acciones de la certificación {n}",
+"Té factura: per canviar-la, cal eliminar la factura": "Tiene factura: para cambiarla, hay que eliminar la factura",
+"Facturada": "Facturada",
+"Afegir feina": "Añadir trabajo",
+"PDF · Certificació {n}": "PDF · Certificación {n}",
+"PDF · General a origen": "PDF · General a origen",
+"Quantitat de la partida {c}": "Cantidad de la partida {c}",
 };

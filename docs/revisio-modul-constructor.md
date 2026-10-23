@@ -195,3 +195,18 @@ capítol) · Hores.
 ### Recordatori
 
 - **Facturació:** proforma → factura amb VeriFactu (aturat fins que l’Héctor parli amb la gestoria).
+
+### Tanda 7 · demanat el 23/10/2026 al vespre (l’Héctor amb el compte de Socoterm, obra «CP EDEN PLAYA»)
+
+1. **Certificacions:** una certificació amb factura s’ha pogut tocar (el Σ en mode consulta obria l’edició i va deixar la partida a 0,
+   mentre l’import i la factura es quedaven a 4.487,50 €). Bloquejar-la del tot; la quantitat s’ha de poder escriure directament (no només
+   amb Σ); botons ordenats: fora «Més» (només hi havia «Importar»), una línia amb Editar i un desplegable amb la resta (icona + paraula,
+   opció B); el número de factura fora de les accions, en una **columna pròpia de la llista** (número correlatiu o «Pendent»); la llista
+   i el resum, més estrets (columnes massa amples); adaptat a cada pantalla.
+2. **Documents de l’obra:** tots els grups a la vista; en tocar-ne un, els seus documents al costat (o a dalt al mòbil), sense baixar.
+3. **Partes d’obra:** el mateix (els capítols a la vista i, en tocar-ne un, les seves partides sense baixar).
+4. **Rendiment de l’obra:** també la gràfica.
+5. **Hores dins de l’obra:** a la constructora sobra (les hores ja són a Despeses › Mà d’obra).
+6. **Icones:** opció B (icona i paraula) als botons.
+7. Les revisions automàtiques han de mirar també que les dades quadrin (certificació = partides, factura = certificació).
+8. Termini: tot tancat i provat a final de la setmana que ve (30/10/2026).
