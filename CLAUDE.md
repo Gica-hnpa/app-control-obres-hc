@@ -1001,7 +1001,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Resum del dia: «Feina feta del dia» (va a la certificació) i, a part, Hores, Material i «Cost del dia (a Despeses)».
     - Estils: `src/theme-v878352.css` (també els botons de text dels partes sense la vora del navegador). Prova: `partes352test.mjs` (24);
       adaptada `partes350test`.
-    - **Pendent:** **una auditoria de tota l'app** (facilitat, coses repetides, què ens diferencia).
+  - **Auditoria de facilitat** (23/10/2026, `docs/auditoria-facilitat.md`; eina `tools/proves/auditoriaux.mjs`: 134 pantalles dels tres
+    comptes de prova, ordinador i mòbil; botons, camps, lletra, textos repetits i explicacions; captures a `D:\aco-tmp\auditoriaux`).
+    L'Héctor: «fes informe i fes versions del que ens falta durant la nit».
+  - **V87.353 · primera neteja:** fora les frases que expliquen (Inici, Agenda, Preus, Ajustos › Idioma, Honoraris); el títol de Preus es
+    llegeix (blanc sobre la franja fosca); marges a «Imatge de l'empresa» i «Enllaços de les obres»; «Afegir treballadors» a Hores ›
+    Personal i Obra › Hores quan no n'hi ha (`anarTreballadors878353`: event `aco-nav` que escolta l'App, i Empresa s'obre a
+    Treballadors amb `window.__acoEmpresaVista878353`); l'adreça de l'empresa en una línia; sense « · fitxa» a Dades. Estils
+    `src/theme-v878353.css`. Prova: `neteja353test.mjs` (14).
+  - **V87.354 · simplificacions:** Inici: la tasca vençuda només al requadre (a dalt, les cites). Resum de l'obra: sense foto, només el botó
+    (`sense-foto-v878354`), fora «El mateix client» i el «0 € de …». Dades sense «Estat de l'expedient» (és a la barra). Certificacions sense
+    cap: fora la «Certificació 1» buida (`cert-buida-v878354`). Documents: títol «Documents», la carpeta triada i les que tenen documents a la
+    vista i la resta a «Altres carpetes (N)» (sense descripcions; la descripció és el `title`). Preus: un sol lloc per crear (a dalt), sense
+    requadres a 0 ni «Com funciona?». Honoraris: «Calcular honoraris» només a la pestanya; el rendiment de l'encàrrec plegat
+    (`rend-plegat-v878354`). **Ajustos en 4 grups** (`ajustos-grup-v878354`): La meva empresa · Idioma i enllaços · Usuaris i contrasenyes
+    (oberts) · Còpies i núvol (plegat; «Supabase Storage» només al compte de l'Héctor). La demostració de VeriFactu passa de Facturació a
+    Ajustos › Factures amb VERI*FACTU. Estils `src/theme-v878354.css`. Prova: `simple354test.mjs` (14). Adaptades `fitxestest`,
+    `fitxa319test`, `graficatest`, `verifactudemotest` i `alhoratest`. **No fet:** amagar la barra de Fases amb una sola fase (és on es crea
+    una fase nova) i deixar un sol número de versió (el de la cantonada serveix per saber si s'ha actualitzat).
+  - **V87.355 · les hores del personal en un sol lloc:** les noves (Hores › Personal i Obra › Hores) es desen com a despeses de mà d'obra
+    (`MaObra`, `deHores878355`, `treballadorId`; `despesaHores878355`), on ja van les del parte (que ara porten `treballadorId`). Les
+    pantalles d'hores ensenyen totes (`horesDespeses878355`): les del parte, de consulta («Parte»). Les d'abans
+    (`aco_personal_v878340_<obra>`) es continuen veient i comptant i, en tornar a desar aquell dia a Hores › Personal, passen a Despeses.
+    Canviar el €/h d'un treballador a l'obra torna a calcular les seves hores (`recalculaCostHores878355`). Rendiment: «personal: N h»
+    compta també les hores de la mà d'obra de Despeses. Prova: `horesunic355test.mjs`; adaptada `personal340test`.
+  - **V87.356 · foto de la façana del Cadastre** (`fotoCadastre878356`): al Resum, sense foto i amb la referència cadastral (Dades ›
+    Obra, `obra.rc`), «Foto del Cadastre» la baixa del servei públic `OVCFotoFachada` i la posa com a foto de l'obra; si no n'hi ha, ho diu.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
