@@ -1,0 +1,18 @@
+/* V87.363 · Dades de l'obra: apartats que es despleguen al mòbil i «Més dades» a la constructora */
+html body .dades-acc-v878363{display:flex;flex-direction:column;gap:8px;padding:4px 0 8px}
+html body .dades-acc-v878363 .acc-cap{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:0 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff);box-shadow:none;text-align:left;font:inherit;font-weight:700;font-size:15.5px;color:var(--co-ink);cursor:pointer}
+html body .dades-acc-v878363 .acc-cap>span{flex:1;min-width:0;position:relative}
+html body .dades-acc-v878363 .acc-cap.ple>span::after{content:"";display:inline-block;width:8px;height:8px;margin-left:8px;border-radius:50%;background:#16A34A;vertical-align:2px}
+html body .dades-acc-v878363 .acc-cap .chev{flex:0 0 auto;color:var(--co-ink-3);transition:transform .15s}
+html body .dades-acc-v878363 .acc-cap.on{border-color:var(--co-accent,#2563EB);background:#EFF6FF}
+html body .dades-acc-v878363 .acc-cap.on .chev{transform:rotate(90deg)}
+html body .dades-acc-v878363>.form-grid{margin:0 0 6px;padding:4px 2px 8px}
+html body .dades-acc-v878363 .mes-v878304{align-self:flex-start}
+html body details.mes-dades-v878363{border:1px solid var(--co-line);border-radius:12px;padding:0 12px}
+html body details.mes-dades-v878363>summary{cursor:pointer;min-height:46px;display:flex;align-items:center;font-weight:700;color:var(--co-ink-2)}
+html body details.mes-dades-v878363>.form-grid{padding:0 0 12px}
+html body .dades-acc-v878363 .acc-cap{scroll-margin-top:calc(var(--obra-bar-h,0px) + 64px)}
+html body details.mes-dades-v878363>summary{list-style:none}
+html body details.mes-dades-v878363>summary::-webkit-details-marker{display:none}
+html body details.mes-dades-v878363>summary::before{content:"▸";margin-right:10px;color:var(--co-ink-3)}
+html body details.mes-dades-v878363[open]>summary::before{content:"▾"}

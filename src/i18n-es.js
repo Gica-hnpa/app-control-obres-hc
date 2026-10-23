@@ -4032,4 +4032,6 @@ export default {
   "Taula": "Tabla",
   "Gràfic": "Gráfico",
   "Altres diferències de preu": "Otras diferencias de precio",
+  "Crear i obrir l’obra": "Crear y abrir la obra",
+  "Més dades": "Más datos",
 };

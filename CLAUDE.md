@@ -1117,6 +1117,17 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils: `src/theme-v878362.css`. Prova: `resum362test.mjs` (12). Adaptades `planning341test` i `seguiment321test` (al mòbil, la taula
       i després «Gràfic») i `fases342test` (Hores té pestanyes des del fitxatge). `seguiment321test` pot fallar a l'ordinador si l'app torna
       a l'Inici en posar-se al dia: tornar-la a passar.
+  - **V87.363 · Dades de l'obra a la constructora** (l'Héctor, 23/10/2026: «en contractista no sé si calen entrar tantes dades; el que
+    s'ha d'emplenar són pestanyes principals i la que apreto es desplega allò, i no haver de fer scroll interminable»):
+    - **Al mòbil** (≤700 px, `useMobil878363`), Dades de l'obra (`FitxaDadesTab8769`) ja no té pestanyes: cada apartat (Obra, Client,
+      Promotor…) és un botó que es desplega a sota (`dades-acc-v878363`, `acc878363`), un alhora, i en obrir-lo la pàgina hi va. El
+      contingut és el mateix de les pestanyes (`cos878363`); a l'ordinador i l'iPad, les pestanyes com sempre.
+    - **Constructora** (`constructoraPropia878363`: compte d'empresa sense el mòdul tècnic): sense l'apartat «Constructora» (és ella
+      mateixa); a «Obra», el núm. del client, la referència cadastral, l'idioma dels documents, la definició, les observacions i el codi de
+      carpeta van a «Més dades» (plegat). La gestió total i l'Héctor, com abans.
+    - **Obra nova** (`QuickExpedientForm878254`): el títol diu «Nova obra» o «Nou expedient» segons el perfil, «Crear i obrir l'obra», fora el
+      text «La resta (tècnics, constructors…)…» i, a la constructora, sense el camp «Constructora».
+    - Estils: `src/theme-v878363.css`. Prova: `dades363test.mjs` (13).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
