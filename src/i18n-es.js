@@ -3992,4 +3992,12 @@ export default {
   "Treure aquest parte de la certificació {n}? Tornarà a «Per revisar».": "¿Quitar este parte de la certificación {n}? Volverá a «Por revisar».",
   "Tret de la certificació: torna a estar per revisar.": "Quitado de la certificación: vuelve a estar por revisar.",
   "Treure de la certificació": "Quitar de la certificación",
+  "1 parte per revisar": "1 parte por revisar",
+  "{n} partes per revisar": "{n} partes por revisar",
+  "1 despesa per revisar": "1 gasto por revisar",
+  "{n} despeses per revisar": "{n} gastos por revisar",
+  "Toca la certificació de {mes}": "Toca la certificación de {mes}",
+  "Avisos": "Avisos",
+  "Veure’n menys": "Ver menos",
+  "Veure’ls tots ({n})": "Verlos todos ({n})",
 };

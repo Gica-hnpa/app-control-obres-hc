@@ -1072,6 +1072,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       sempre en calcula l'alçada amb `height:auto`). A l'Edge del mòbil ja sortia: si a l'iPhone continua sense sortir, cal una captura.
     - Estils: `src/theme-v878359.css`. Prova: `partes359test.mjs` (20, amb una obra compartida «de l'Héctor» al núvol de proves). Adaptada
       `partes352test`.
+  - **Tanda 6** (l'Héctor, 23/10/2026 al migdia; llista a `docs/revisio-modul-constructor.md`).
+  - **V87.360 · avisos, ordre dels llistats i número de versió:**
+    - **Número de versió** només a la cantonada (fora del menú, `nav-version-v878264`, i d'Ajustos, `config-version-v878264`).
+    - **Ordre d'entrada:** Facturació de l'empresa, l'última factura a dalt (per data i número; l'Excel continua en ordre numèric);
+      Despeses per data d'entrada (`dataEntrada878348`), l'última a dalt. Les obres ja anaven per número (el propi a les compartides).
+    - **Obres compartides:** a la columna «Núm. client», el número de qui la comparteix i el seu nom (`ref-prop-v878360`); ja no es
+      repeteix sota el número propi (a les targetes del mòbil, sí). `codiCurtBase878347` tenia l'expressió sense barres (`/^d{4}-…/`).
+    - **Avisos** (`AvisosInici878360` a l'Inici, a dalt de la columna principal; `AvisosObra878360` al Resum de l'obra): per obra,
+      partes per revisar, despeses per revisar (`perRevisar`) i, a partir del dia 25, «Toca la certificació de {mes}» (obres en curs
+      amb pressupost que ja tenen certificacions o partes i cap certificació aquest mes; mòdul Obra); als comptes amb el mòdul Empresa,
+      els documents de l'empresa, dels treballadors i dels industrials caducats (vermell) o que caduquen d'aquí a 30 dies (taronja). En
+      tocar-ne un, l'obra a l'apartat o Empresa a la vista dels documents. `window.__acoAra878360` fixa el dia a les proves.
+    - Estils: `src/theme-v878360.css`. Prova: `avisos360test.mjs` (16). Adaptades `facturacio337test` (ordre i la factura que es marca
+      com a cobrada), `compartides347test`, `mobiltest` (versió) i `constructor336test` (la «Foto del Cadastre» de la V87.356 no és
+      l'enllaç del Cadastre).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

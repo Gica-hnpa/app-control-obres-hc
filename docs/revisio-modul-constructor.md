@@ -170,6 +170,27 @@ capítol) · Hores.
 - **V87.350**: partes més fàcils (llista per mesos; en tocar un dia, el resum amb només el que s’hi ha fet; «Una part» amb dues
   preguntes; filtre «Per fer»; botons «Guardar · Per revisar» i «Passar a la certificació · Ja està revisat») i Despeses plegades d’entrada.
 - **Demanat:** imatge de l’empresa a Ajustos (logo, color de l’app, documents amb el logo i el color) i auditoria de tota l’app.
+- **V87.351–359:** imatge de l’empresa, partes amb hores i material, auditoria i simplificacions, hores en un sol lloc, foto del
+  Cadastre, fitxatge (fase 1), importar obres d’anys anteriors; V87.359: despeses del parte a les obres compartides, esborrar la
+  certificació i treure un parte de la certificació.
+
+### Tanda 6 · demanat el 23/10/2026 al migdia
+
+1. **Número de versió** només a la cantonada (fora del menú i d’Ajustos).
+2. **Tots els llistats en ordre d’entrada** (obres, factures, despeses…), també les obres compartides; a les compartides, **una columna
+   amb el codi de l’Héctor** (qui la comparteix) per saber de què es parla.
+3. **Avisos** a l’Inici i a l’obra: toca fer la certificació, partes per revisar, documentació de l’empresa que caduca (REA, Seguretat
+   Social…).
+4. **Pressupost:** veure una partida completa tocant-la (número, descripció, mà d’obra, material, altres, i després CI, DGE i BI); preu
+   manual amb un descompost senzill (com el preu d’un industrial); **resum del pressupost** (material —desglossable—, mà d’obra i altres,
+   amb quantitats i %).
+5. **Afegir una partida de la llibreria** al pressupost: no funcionava i és difícil de seguir; fer-ho més fàcil.
+6. **Planning al mòbil** en taula (inici, final, vinculacions i colles), sense el gràfic.
+7. **Dades del contractista:** menys camps, pestanyes principals que es despleguen en tocar-les (sense haver de baixar i baixar).
+8. **Icones en lloc de paraules** (impressora per imprimir, llapis per editar…): valorar què s’entén més.
+9. **Pendent de decidir:** posar preus a tot el pressupost amb IA (BEDEC o CYPE); productes d’una marca (Kerakoll) als descompostos
+   (l’Héctor n’enviarà l’enllaç); fitxatge des del mòbil de cada treballador; comptador de temps; barra de fases amb una sola fase;
+   importar anys anteriors des d’un PDF (quan hi hagi el fitxer d’un client).
 
 ### Recordatori
 

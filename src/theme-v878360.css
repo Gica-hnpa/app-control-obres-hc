@@ -1,0 +1,17 @@
+/* V87.360 · Avisos a l'Inici i a l'obra; codi de qui comparteix l'obra */
+html body .avisos-v878360 .n-avisos{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 8px;border-radius:999px;background:#FEF3C7;color:#92400E;font-weight:800;font-size:13px}
+html body .avisos-v878360 .llista{display:flex;flex-direction:column}
+html body .avisos-v878360 .avis{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:8px 14px;border:0;border-top:1px solid var(--co-line);background:transparent;text-align:left;cursor:pointer;border-radius:0;box-shadow:none;color:var(--co-ink)}
+html body .avisos-v878360 .avis:first-child{border-top:0}
+html body .avisos-v878360 .avis:hover{background:var(--co-surface-2,#f8fafc)}
+html body .avisos-v878360 .avis>i{flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:#2563EB}
+html body .avisos-v878360 .avis.warn>i{background:#D97706}
+html body .avisos-v878360 .avis.bad>i{background:#DC2626}
+html body .avisos-v878360 .avis>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .avisos-v878360 .avis b{font-weight:700;font-size:14.5px}
+html body .avisos-v878360 .avis small{color:var(--co-ink-3);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .avisos-v878360 .avis>svg{flex:0 0 auto;color:var(--co-ink-3)}
+html body .avisos-v878360 .mes{margin:4px 14px 12px;min-height:40px}
+html body .avisos-v878360.obra{margin-bottom:14px}
+html body .exp-table-v878289 td .ref-prop-v878360{display:block;color:var(--co-ink)}
+html body .exp-table-v878289 td .ref-prop-v878360+small{display:block;color:var(--co-ink-3);font-size:11.5px}
