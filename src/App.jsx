@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.354";
+const APP_VERSION878264="87.355";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8730,9 +8730,10 @@ function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId=""){
   const fo=facturesObraValides878347(d).filter(fDins),ve=(d.facturesVF878285||[]).filter(x=>x.estat!=="Anulada"&&fDins(x));
   const facturat=fo.reduce((s,x)=>s+(+x.base||0),0)+ve.reduce((s,x)=>s+(+x.base||0),0);
   const pressupost=fase?totalFase878342(d,fase):(d.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
-  const perTipus={};despeses.filter(dins).forEach(a=>{const k=tipusDespesa878311(a);perTipus[k]=(perTipus[k]||0)+albaraBase878259(a)});
+  let horesMa=0;
+  const perTipus={};despeses.filter(dins).forEach(a=>{const k=tipusDespesa878311(a);perTipus[k]=(perTipus[k]||0)+albaraBase878259(a);if(k==="MaObra")horesMa+=parseNum8770(a.hores)||0});
   const treb=llegeixTreballadors878339();
-  let hores=0,costP=0;personal.filter(dins).forEach(r=>{const n=parseNum8770(r.hores)||0;hores+=n;costP+=n*costHoraA878340(obraId,treb.find(w=>w.id===r.treballadorId),r)});
+  let hores=horesMa,costP=0;personal.filter(dins).forEach(r=>{const n=parseNum8770(r.hores)||0;hores+=n;costP+=n*costHoraA878340(obraId,treb.find(w=>w.id===r.treballadorId),r)});
   if(costP>0.005)perTipus.Personal=costP;
   const directe=Object.values(perTipus).reduce((s,x)=>s+x,0);
   const ingressos=Math.max(certificat,facturat);
@@ -9626,7 +9627,7 @@ function despesesParte878352(obraId,d={},part={}){
   const fase=gs.length>1&&bids.length===1?{budgetId:bids[0]}:{};
   const base={data:dia,obraId,linies:[],facturatClient:false,dataEntrada:ara.slice(0,10),parteId878352:part.id,createdAt:part.createdAt||ara,updatedAt:ara,...fase};
   const ma=(h,k,concepte)=>{const hh=parseNum8770(h.hores)||0;if(!(hh>0))return;const w=h.treballadorId?treb.find(x=>x.id===h.treballadorId):null;const c=Math.round(costHoraA878340(obraId,w,h)*100)/100;const imp=Math.round(hh*c*100)/100;
-    out.push({...base,id:"dp-"+part.id+"-"+k,tipus:"MaObra",proveidor:w?.nom||h.nom||"",treballador:w?.nom||h.nom||"",categoria:catDe878352(h,treb),hores:String(hh).replace(".",","),preuHora:String(c).replace(".",","),base:String(imp),iva:"0",total:String(imp),notes:concepte?`${concepte} · Parte del ${nomDia}`:`Parte del ${nomDia}`,...(c>0?{}:{perRevisar:true})})};
+    out.push({...base,id:"dp-"+part.id+"-"+k,tipus:"MaObra",proveidor:w?.nom||h.nom||"",treballador:w?.nom||h.nom||"",...(w?{treballadorId:w.id}:{}),categoria:catDe878352(h,treb),hores:String(hh).replace(".",","),preuHora:String(c).replace(".",","),base:String(imp),iva:"0",total:String(imp),notes:concepte?`${concepte} · Parte del ${nomDia}`:`Parte del ${nomDia}`,...(c>0?{}:{perRevisar:true})})};
   const mat=(m,k,concepte)=>{if(!String(m.concepte||"").trim()&&!(parseNum8770(m.import)>0))return;const b=Math.round((parseNum8770(m.import)||0)*100)/100;const q=parseNum8770(m.q)||0;
     out.push({...base,id:"dp-"+part.id+"-"+k,tipus:"Material",proveidor:String(m.proveidor||"").trim(),base:String(b),iva:"21",total:String(Math.round(b*121)/100),notes:[m.concepte,q?`${fq878349(q)} ${m.ut||""}`.trim():"",concepte,`Parte del ${nomDia}`].filter(Boolean).join(" · "),...(b>0?{}:{perRevisar:true})})};
   (part.hores||[]).forEach(h=>ma(h,h.id));
@@ -13865,7 +13866,31 @@ function costosObra878340(){return lsJson8779(COSTOBRA_KEY878340,{})||{}}
 function costHoraA878340(obraId,w,r){const ov=parseNum8770((costosObra878340()[obraId]||{})[w?.id||r?.treballadorId]);if(ov>0)return ov;const fr=parseNum8770(r?.costHora);if(fr>0)return fr;return costHora878339(w)}
 // cost del personal d'una obra (si es passa `dins`, només les files d'aquelles dates)
 function costPersonalObra878340(obraId,dins){const treb=llegeixTreballadors878339();let h=0,c=0;llegeixPersonal878340(obraId).forEach(r=>{if(dins&&!dins(r.data))return;const w=treb.find(x=>x.id===r.treballadorId);const n=parseNum8770(r.hores)||0;h+=n;c+=n*costHoraA878340(obraId,w,r)});return {hores:h,cost:c}}
-function useTickPersonal878340(){const[tick,setTick]=useState(0);useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-personal-changed",h);return()=>window.removeEventListener("aco-personal-changed",h)},[]);return tick}
+function useTickPersonal878340(){const[tick,setTick]=useState(0);useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-personal-changed",h);window.addEventListener("aco-albarans-changed",h);return()=>{window.removeEventListener("aco-personal-changed",h);window.removeEventListener("aco-albarans-changed",h)}},[]);return tick}
+// V87.355 · Les hores del personal en un sol lloc (auditoria de facilitat, 23/10/2026: s'entraven a 4 llocs i es desaven a 2, i el
+// Rendiment les podia comptar dues vegades). Les noves (Hores › Personal i Obra › Hores) es desen com a despeses de mà d'obra (`MaObra`,
+// `deHores878355`, amb `treballadorId`), on ja van les del parte (`parteId878352`). Les pantalles d'hores ensenyen totes aquestes hores
+// (les del parte, de consulta) i també les d'abans (`aco_personal_v878340_<obra>`), que es compten a part fins que es torna a desar aquell
+// dia (llavors passen a Despeses).
+function horesDespeses878355(obraId){
+  const treb=llegeixTreballadors878339();
+  return readAlbarans878259().filter(a=>tipusDespesa878311(a)==="MaObra"&&(a.deHores878355||a.parteId878352)&&(!obraId||a.obraId===obraId)).map(a=>{
+    const w=a.treballadorId?treb.find(x=>x.id===a.treballadorId):treb.find(x=>x.nom===a.treballador);
+    return {id:a.id,data:a.data,obraId:a.obraId,treballadorId:a.treballadorId||w?.id||"",treballadorNom:a.treballador||w?.nom||"",hores:parseNum8770(a.hores)||0,costHora:parseNum8770(a.preuHora)||0,budgetId:a.budgetId||"",nota:a.nota||"",despesa:true,parte:!!a.parteId878352};
+  });
+}
+function despesaHores878355({obraId,data,w,hores,budgetId,nota}){
+  const c=Math.round(costHoraA878340(obraId,w,null)*100)/100;const h=Math.round((+hores||0)*100)/100;const b=Math.round(h*c*100)/100;const ara=new Date().toISOString();
+  return {id:"dh-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),tipus:"MaObra",deHores878355:true,obraId,data,treballador:w.nom,treballadorId:w.id,categoria:w.ofici||"",hores:String(h).replace(".",","),preuHora:String(c).replace(".",","),proveidor:w.nom,base:String(b),iva:"0",total:String(b),linies:[],facturatClient:false,notes:nota?`${nota} · Hores del personal`:"Hores del personal",...(nota?{nota}:{}),...(budgetId?{budgetId}:{}),...(c>0?{}:{perRevisar:true}),dataEntrada:ara.slice(0,10),createdAt:ara,updatedAt:ara};
+}
+// en canviar el cost per hora d'un treballador en una obra, les seves hores d'aquella obra es tornen a calcular
+function recalculaCostHores878355(obraId,wid){
+  const w=llegeixTreballadors878339().find(x=>x.id===wid);if(!w)return;let canvi=false;
+  const l=readAlbarans878259().map(a=>{if(a.obraId!==obraId||tipusDespesa878311(a)!=="MaObra"||!(a.deHores878355||a.parteId878352)||(a.treballadorId||"")!==wid)return a;
+    const c=Math.round(costHoraA878340(obraId,w,null)*100)/100;const b=Math.round((parseNum8770(a.hores)||0)*c*100)/100;canvi=true;const {perRevisar:_pr,...r}=a;
+    return {...r,preuHora:String(c).replace(".",","),base:String(b),total:String(b),...(c>0?{}:{perRevisar:true}),updatedAt:new Date().toISOString()}});
+  if(canvi)writeAlbarans878259(l);
+}
 const fh878340=h=>`${(Math.round((+h||0)*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} h`;
 // Part d'hores (menú Hores de la constructora): un dia, cada treballador amb l'obra o les obres i les hores
 // V87.353 · per anar a Empresa › Treballadors des d'un altre lloc (l'App escolta «aco-nav»)
@@ -13875,11 +13900,13 @@ function PartHores878340({obres=[],odata={}}){
   const[dia,setDia]=useState(()=>isoDay878255(new Date()));
   const treb=useMemo(()=>llegeixTreballadors878339().filter(w=>w.actiu!==false),[tick]);
   const obertes=useMemo(()=>(obres||[]).filter(o=>isExpedientOpen878136(o.estat)).sort((a,b)=>String(a.nom||"").localeCompare(String(b.nom||""),"ca",{sensitivity:"base"})),[obres]);
-  const totes=useMemo(()=>(obres||[]).flatMap(o=>llegeixPersonal878340(o.id).map(r=>({...r,obraId:o.id}))),[obres,tick]);
+  const totes=useMemo(()=>[...(obres||[]).flatMap(o=>llegeixPersonal878340(o.id).map(r=>({...r,obraId:o.id}))),...horesDespeses878355().filter(r=>(obres||[]).some(o=>o.id===r.obraId))],[obres,tick]);
+  const fixes=w=>totes.filter(r=>r.parte&&r.treballadorId===w.id&&r.data===dia);
+  const nomObra=id=>(obres||[]).find(o=>o.id===id)?.nom||"";
   const ultima=useMemo(()=>{const m={};[...totes].sort((a,b)=>String(b.data).localeCompare(String(a.data))).forEach(r=>{if(!m[r.treballadorId])m[r.treballadorId]=r.obraId});return m},[totes]);
   const[esb,setEsb]=useState({});
   const[canvi,setCanvi]=useState(false);
-  const carrega=(d,fonts)=>{const m={};treb.forEach(w=>{const ls=fonts.filter(r=>r.treballadorId===w.id&&r.data===d).map(r=>({obraId:r.obraId,budgetId:r.budgetId||"",hores:String(r.hores).replace(".",",")}));m[w.id]=ls.length?ls:[{obraId:ultima[w.id]||"",hores:""}]});return m};
+  const carrega=(d,fonts)=>{const m={};treb.forEach(w=>{const ls=fonts.filter(r=>!r.parte&&r.treballadorId===w.id&&r.data===d).map(r=>({obraId:r.obraId,budgetId:r.budgetId||"",hores:String(r.hores).replace(".",",")}));m[w.id]=ls.length?ls:[{obraId:ultima[w.id]||"",hores:""}]});return m};
   useEffect(()=>{if(!canvi)setEsb(carrega(dia,totes))},[dia,totes,treb.length]);
   const mou=n=>{const d=new Date(dia+"T12:00:00");d.setDate(d.getDate()+n);setCanvi(false);setDia(isoDay878255(d))};
   const setL=(wid,i,patch)=>{setCanvi(true);setEsb(m=>({...m,[wid]:(m[wid]||[]).map((l,j)=>j===i?{...l,...patch}:l)}))};
@@ -13889,19 +13916,20 @@ function PartHores878340({obres=[],odata={}}){
   const anterior=useMemo(()=>[...new Set(totes.map(r=>r.data).filter(d=>d<dia))].sort().pop()||"",[totes,dia]);
   function comAnterior(){if(!anterior)return;const m=carrega(anterior,totes);setEsb(m);setCanvi(true)}
   const hores=l=>parseNum8770(l.hores)||0;
-  const totW=w=>(esb[w.id]||[]).reduce((s,l)=>s+hores(l),0);
-  const costW=w=>(esb[w.id]||[]).reduce((s,l)=>s+hores(l)*costHoraA878340(l.obraId,w,null),0);
+  const totW=w=>(esb[w.id]||[]).reduce((s,l)=>s+hores(l),0)+fixes(w).reduce((s,r)=>s+(+r.hores||0),0);
+  const costW=w=>(esb[w.id]||[]).reduce((s,l)=>s+hores(l)*costHoraA878340(l.obraId,w,null),0)+fixes(w).reduce((s,r)=>s+(+r.hores||0)*costHoraA878340(r.obraId,w,r),0);
   const totH=treb.reduce((s,w)=>s+totW(w),0),totC=treb.reduce((s,w)=>s+costW(w),0);
   function desa(){
     for(const w of treb)for(const l of (esb[w.id]||[]))if(hores(l)>0&&!l.obraId){alert(t("Tria l’obra de {nom}.",{nom:w.nom}));return}
     if(treb.some(w=>totW(w)>24)){alert(t("Un treballador no pot passar de 24 hores en un dia."));return}
-    const afectades=new Set([...totes.filter(r=>r.data===dia).map(r=>r.obraId),...treb.flatMap(w=>(esb[w.id]||[]).filter(l=>hores(l)>0).map(l=>l.obraId))]);
-    const ids=new Set(treb.map(w=>w.id));const ara=new Date().toISOString();let n=0;
-    afectades.forEach(oid=>{
-      const resta=llegeixPersonal878340(oid).filter(r=>!(r.data===dia&&ids.has(r.treballadorId)));
-      const noves=treb.flatMap(w=>(esb[w.id]||[]).filter(l=>l.obraId===oid&&hores(l)>0).map(l=>({id:"ph-"+Date.now()+"-"+(n++),data:dia,treballadorId:w.id,treballadorNom:w.nom,hores:Math.round(hores(l)*100)/100,costHora:costHora878339(w),...(l.budgetId?{budgetId:l.budgetId}:{}),createdAt:ara})));
-      desaPersonal878340(oid,[...resta,...noves]);
-    });
+    const afectades=new Set([...totes.filter(r=>r.data===dia&&!r.parte).map(r=>r.obraId),...treb.flatMap(w=>(esb[w.id]||[]).filter(l=>hores(l)>0).map(l=>l.obraId))]);
+    const ids=new Set(treb.map(w=>w.id));
+    // les d'abans d'aquell dia passen a Despeses (es tornen a desar com a mà d'obra)
+    afectades.forEach(oid=>{const leg=llegeixPersonal878340(oid);const resta=leg.filter(r=>!(r.data===dia&&ids.has(r.treballadorId)));if(resta.length!==leg.length)desaPersonal878340(oid,resta)});
+    const altres=readAlbarans878259().filter(a=>!(a.deHores878355&&a.data===dia&&ids.has(a.treballadorId)&&afectades.has(a.obraId)));
+    const noves=treb.flatMap(w=>(esb[w.id]||[]).filter(l=>l.obraId&&hores(l)>0).map(l=>despesaHores878355({obraId:l.obraId,data:dia,w,hores:hores(l),budgetId:l.budgetId||""})));
+    writeAlbarans878259([...noves,...altres]);
+    try{window.dispatchEvent(new CustomEvent("aco-personal-changed",{detail:{}}))}catch{}
     setCanvi(false);
   }
   // la setmana del dia triat (de dilluns a diumenge)
@@ -13915,7 +13943,7 @@ function PartHores878340({obres=[],odata={}}){
       {anterior&&<div className="actions-inline"><button type="button" className="secondary small" onClick={comAnterior}>{t("Com el {d}",{d:fmtAppDate8748(anterior)})}</button></div>}
       <div className="treb-dia-v878340">{treb.map(w=><div key={w.id} className="fila-v878340">
         <div className="nm"><b>{w.nom}</b><small>{[i18nT(w.ofici||""),costHora878339(w)?`${money(costHora878339(w))}/h`:t("Sense cost per hora")].filter(Boolean).join(" · ")}</small></div>
-        <div className="linies">{(esb[w.id]||[]).map((l,i)=><div key={i} className="linia">
+        <div className="linies">{fixes(w).map(r=><div key={r.id} className="linia-parte-v878355"><span>{nomObra(r.obraId)}</span><b>{fh878340(r.hores)}</b><em>{t("Parte")}</em></div>)}{(esb[w.id]||[]).map((l,i)=><div key={i} className="linia">
           <select value={l.obraId} onChange={e=>{const v=e.target.value,dO=odata?.[v];setL(w.id,i,{obraId:v,budgetId:fasesObra878342(dO).length>1?ensureBudgetGroups8786(dO).active:""})}} aria-label={t("Obra")}><option value="">{t("Tria l’obra…")}</option>{(l.obraId&&!obertes.some(o=>o.id===l.obraId)?[(obres||[]).find(o=>o.id===l.obraId)].filter(Boolean):[]).concat(obertes).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
           {(()=>{const fsO=l.obraId?fasesObra878342(odata?.[l.obraId]):[];return fsO.length>1?<select className="fase" value={l.budgetId||""} onChange={e=>setL(w.id,i,{budgetId:e.target.value})} aria-label={t("Fase")}><option value="">{t("Sense fase")}</option>{fsO.map(g=><option key={g.id} value={g.id}>{budgetName878273(g)}</option>)}</select>:null})()}
           <input inputMode="decimal" value={l.hores} onFocus={e=>e.currentTarget.select()} onChange={e=>setL(w.id,i,{hores:e.target.value})} placeholder="0" aria-label={t("Hores")}/>
@@ -13937,16 +13965,17 @@ function PersonalObra878340({obra,data={}}){
   const nomF=id=>id?budgetName878273(fsO.find(g=>g.id===id)||{id}):t("Sense fase");
   const tick=useTickPersonal878340();
   const[tickC,setTickC]=useState(0);
-  const rows=useMemo(()=>llegeixPersonal878340(obra?.id).sort((a,b)=>String(b.data).localeCompare(String(a.data))),[obra?.id,tick]);
+  const rows=useMemo(()=>[...llegeixPersonal878340(obra?.id),...horesDespeses878355(obra?.id)].sort((a,b)=>String(b.data).localeCompare(String(a.data))),[obra?.id,tick]);
   const treb=useMemo(()=>llegeixTreballadors878339(),[tick]);
   const cos=useMemo(()=>costosObra878340()[obra?.id]||{},[obra?.id,tickC]);
   const[nou,setNou]=useState(null);
   const perW=[];rows.forEach(r=>{let g=perW.find(x=>x.id===r.treballadorId);if(!g){const w=treb.find(x=>x.id===r.treballadorId);g={id:r.treballadorId,w,nom:w?.nom||r.treballadorNom||t("Treballador"),h:0,c:0};perW.push(g)}const n=parseNum8770(r.hores)||0;g.h+=n;g.c+=n*costHoraA878340(obra.id,g.w,r)});
   const totH=perW.reduce((s,g)=>s+g.h,0),totC=perW.reduce((s,g)=>s+g.c,0);
-  function canviaCost(wid,v){const m={...costosObra878340()};m[obra.id]={...(m[obra.id]||{}),[wid]:v};if(!String(v).trim())delete m[obra.id][wid];lsSet8779(COSTOBRA_KEY878340,JSON.stringify(m));setTickC(x=>x+1);try{window.dispatchEvent(new CustomEvent("aco-personal-changed",{detail:{obraId:obra.id}}))}catch{}}
+  function canviaCost(wid,v){const m={...costosObra878340()};m[obra.id]={...(m[obra.id]||{}),[wid]:v};if(!String(v).trim())delete m[obra.id][wid];lsSet8779(COSTOBRA_KEY878340,JSON.stringify(m));recalculaCostHores878355(obra.id,wid);setTickC(x=>x+1);try{window.dispatchEvent(new CustomEvent("aco-personal-changed",{detail:{obraId:obra.id}}))}catch{}}
   function desaNou(){const w=treb.find(x=>x.id===nou.wid);const n=parseNum8770(nou.hores);if(!w){alert(t("Tria el treballador."));return}if(!(n>0)||n>24){alert(t("Posa les hores (entre 0 i 24)."));return}
-    desaPersonal878340(obra.id,[...llegeixPersonal878340(obra.id),{id:"ph-"+Date.now(),data:nou.data,treballadorId:w.id,treballadorNom:w.nom,hores:Math.round(n*100)/100,costHora:costHora878339(w),...(multiF&&nou.budgetId?{budgetId:nou.budgetId}:{}),nota:String(nou.nota||"").trim(),createdAt:new Date().toISOString()}]);setNou(null)}
-  function treu(r){if(!confirm(t("Treure aquestes hores?")))return;desaPersonal878340(obra.id,llegeixPersonal878340(obra.id).filter(x=>x.id!==r.id))}
+    writeAlbarans878259([despesaHores878355({obraId:obra.id,data:nou.data,w,hores:n,budgetId:multiF?nou.budgetId:"",nota:String(nou.nota||"").trim()}),...readAlbarans878259()]);try{window.dispatchEvent(new CustomEvent("aco-personal-changed",{detail:{obraId:obra.id}}))}catch{}setNou(null)}
+  function treu(r){if(r.parte)return;if(!confirm(t("Treure aquestes hores?")))return;
+    if(r.despesa)writeAlbarans878259(readAlbarans878259().filter(a=>a.id!==r.id));else desaPersonal878340(obra.id,llegeixPersonal878340(obra.id).filter(x=>x.id!==r.id))}
   const dies=[];rows.forEach(r=>{let d=dies.find(x=>x.k===r.data);if(!d){d={k:r.data,rows:[],h:0};dies.push(d)}d.rows.push(r);d.h+=parseNum8770(r.hores)||0});
   return <Card title={t("Hores del personal")} className="pers-obra-v878340" action={!nou&&treb.some(w=>w.actiu!==false)?<button type="button" className="primary" onClick={()=>setNou({data:isoDay878255(new Date()),wid:"",hores:"8",nota:"",budgetId:multiF?ensureBudgetGroups8786(data).active:""})}>{t("+ Afegir hores")}</button>:null}>
     {nou&&<div className="nou-v878340">
@@ -13964,7 +13993,7 @@ function PersonalObra878340({obra,data={}}){
         <label><span>{t("€/h en aquesta obra")}</span><input inputMode="decimal" defaultValue={rawV878304(cos[g.id])} placeholder={String(costHora878339(g.w)||"").replace(".",",")} onBlur={e=>canviaCost(g.id,e.target.value.replace(/[^\d,.]/g,""))}/></label>
         <b className="c">{money(g.c)}</b>
       </div>)}</div>
-      <details className="dies-v878340"><summary>{t("Per dies")}</summary>{dies.map(d=><div key={d.k} className="dia"><header><b>{fmtAppDate8748(d.k)}</b><em>{fh878340(d.h)}</em></header>{d.rows.map(r=><div key={r.id} className="r"><span>{r.treballadorNom||treb.find(x=>x.id===r.treballadorId)?.nom||""}{multiF?<small> · {nomF(faseDe878342(r,data))}</small>:null}{r.nota?<small> · {r.nota}</small>:null}</span><em>{fh878340(r.hores)}</em><button type="button" className="link" onClick={()=>treu(r)} aria-label={t("Treure")}>×</button></div>)}</div>)}</details>
+      <details className="dies-v878340"><summary>{t("Per dies")}</summary>{dies.map(d=><div key={d.k} className="dia"><header><b>{fmtAppDate8748(d.k)}</b><em>{fh878340(d.h)}</em></header>{d.rows.map(r=><div key={r.id} className="r"><span>{r.treballadorNom||treb.find(x=>x.id===r.treballadorId)?.nom||""}{multiF?<small> · {nomF(faseDe878342(r,data))}</small>:null}{r.nota?<small> · {r.nota}</small>:null}{r.parte?<small className="parte-v878355"> · {t("Parte")}</small>:null}</span><em>{fh878340(r.hores)}</em>{r.parte?<span className="x-buit-v878355"/>:<button type="button" className="link" onClick={()=>treu(r)} aria-label={t("Treure")}>×</button>}</div>)}</div>)}</details>
     </>}
   </Card>;
 }
@@ -14597,7 +14626,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.354",
+    app_version:"87.355",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
