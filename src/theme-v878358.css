@@ -1,0 +1,35 @@
+/* V87.358 · Importar obres i factures d'anys anteriors */
+html body .imp-obres-v878358{display:flex;flex-direction:column;gap:12px;min-width:min(640px,88vw)}
+html body .imp-obres-v878358 .tria{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:8px 0}
+html body .imp-obres-v878358 .file-v878358{display:inline-flex;align-items:center;gap:8px;cursor:pointer;min-height:44px;padding:0 16px}
+html body .imp-obres-v878358 .err{margin:0;color:#B91C1C}
+html body .imp-obres-v878358 .arxiu{margin:0;font-weight:700;color:var(--co-ink-2)}
+html body .imp-obres-v878358 h4{margin:4px 0 6px}
+html body .imp-obres-v878358 .est{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:13.5px}
+html body .imp-obres-v878358 .llista{display:flex;flex-direction:column;max-height:34vh;overflow:auto;border:1px solid var(--co-line);border-radius:10px}
+html body .imp-obres-v878358 .fila{display:flex;align-items:center;gap:10px;padding:7px 10px;border-bottom:1px solid var(--co-line);font-size:13.5px;cursor:pointer}
+html body .imp-obres-v878358 .fila:last-child{border-bottom:0}
+html body .imp-obres-v878358 .fila b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .imp-obres-v878358 .fila .n{color:var(--co-ink-3);font-variant-numeric:tabular-nums;min-width:62px}
+html body .imp-obres-v878358 .fila em{font-style:normal;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--co-surface-2,#f1f5f9)}
+html body .imp-obres-v878358 .fila .imp{font-variant-numeric:tabular-nums}
+html body .imp-obres-v878358 .fila small{color:#92400E;font-weight:700}
+html body .imp-obres-v878358 .fila.fora{opacity:.5}
+html body .imp-obres-v878358 .fet p{margin:6px 0 12px}
+html body .imp-obres-v878358{padding:6px 20px 0}
+html body .imp-obres-v878358>.modal-actions,html body .imp-obres-v878358 .fet>.modal-actions{margin-inline:-20px}
+html body .imp-obres-v878358 .fila>input[type=checkbox]{width:18px;height:18px;min-height:0;flex:0 0 18px;margin:0;padding:0}
+html body .imp-obres-v878358 .fila>span,html body .imp-obres-v878358 .fila>b,html body .imp-obres-v878358 .fila>em,html body .imp-obres-v878358 .fila>small{display:inline;margin:0;font-size:13.5px;font-weight:inherit;white-space:nowrap}
+html body .imp-obres-v878358 .fila>b{font-weight:700;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+html body .imp-obres-v878358 .fila>.cli{flex:0 1 30%;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--co-ink-2)}
+html body .imp-obres-v878358 .fila>em{font-size:12px}
+html body .imp-obres-v878358 .fila>small{font-size:12px;font-weight:700}
+html body .imp-obres-v878358 .est>span{display:inline;margin:0;font-weight:600}
+html body .imp-obres-v878358 .est>select{width:auto;min-width:160px}
+@media (max-width:640px){
+  html body .imp-obres-v878358{min-width:0;padding-inline:14px}
+  html body .imp-obres-v878358>.modal-actions{margin-inline:-14px}
+  html body .imp-obres-v878358 .fila{flex-wrap:wrap;row-gap:4px}
+  html body .imp-obres-v878358 .fila>b{flex-basis:calc(100% - 100px)}
+  html body .imp-obres-v878358 .fila>.cli{flex-basis:auto;margin-left:28px}
+}

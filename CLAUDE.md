@@ -1027,6 +1027,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     compta també les hores de la mà d'obra de Despeses. Prova: `horesunic355test.mjs`; adaptada `personal340test`.
   - **V87.356 · foto de la façana del Cadastre** (`fotoCadastre878356`): al Resum, sense foto i amb la referència cadastral (Dades ›
     Obra, `obra.rc`), «Foto del Cadastre» la baixa del servei públic `OVCFotoFachada` i la posa com a foto de l'obra; si no n'hi ha, ho diu.
+  - **V87.357 · Fitxatge dels treballadors** (registre de jornada, **fase 1**: tot al compte de l'empresa, sense res nou al servidor):
+    - **PIN** a la fitxa del treballador (Empresa › Treballadors, `EditorTreballador878339`): es desa xifrat (`pinHash878357`, `hashPin878357`:
+      `sha:` amb SHA-256 o `sum:` si el navegador no en té; `verificaPin878357`). Mai es desa el PIN tal qual.
+    - **Hores › Fitxatge** (`HoresEmpresa878340`: Personal · Fitxatge · Les meves hores; constructora sense «Les meves hores»,
+      `senseMeves`). «Fitxar» (`FitxarKiosk878357`): el treballador es tria, posa el PIN i marca Entrada · Pausa · Tornar de la pausa ·
+      Sortida; veu els seus fitxatges del mes.
+    - Dades per mes: `aco_fitxatge_v878357_<AAAA-MM>` = `[{id, wid, nom, tipus, dia, hora, at, via, creat, anulat?, correccio?}]`.
+    - **Registre** (`RegistreFitx878357`): per dies i per mesos; corregir (`CorregirFitx878357`) **no esborra mai**: anul·la (`anulat`
+      amb el motiu) o afegeix un fitxatge (`correccio` amb el motiu). Excel i «per imprimir i signar» (`printHtmlInPlace878112`).
+    - El part d'hores (`PartHores878340`) diu «Fitxat: X h» de cada treballador.
+    - **Fase 2 pendent (cal el sí de l'Héctor i el servidor):** que cada treballador fitxi des del seu mòbil amb el seu compte.
+    - Estils: `src/theme-v878357.css`. Prova: `fitxatge357test.mjs` (19). Adaptada `personal340test`.
+  - **V87.358 · Importar obres i factures d'anys anteriors** (perquè l'empresa nova no comenci buida): a la llista d'obres, botó
+    **«Importar»** al costat de «Nova obra» (`imp-obres-btn-v878358`, només qui administra; event `aco-importar-obres`).
+    - Lector (`llegirExcelObres878358`, `COLS_OBRA878358`, `COLS_FACT878358`, `colsDe878358`): totes les pestanyes; una pestanya és
+      d'obres si té la columna del nom de l'obra, i de factures si té la base o el total. Títols en català o castellà (any, núm., obra,
+      client, adreça, població, tipus, estat, import, data · nº factura, fecha, cliente, obra, concepte, base, IVA, total). Les files
+      «Total…» no compten. L'estat es tradueix (`estatDe878358`: «Acabada» → Tancat…).
+    - Finestra (`ImportarObres878358`): l'arxiu, «Obres · N» amb «Estat de les que no en diuen» (de sèrie **Tancat**) i «Factures · N»,
+      amb caselles. Les obres que ja hi són (mateix nom i any) i les factures amb un número que ja hi és surten «Ja hi és» i desmarcades.
+    - En importar (`importaObresAnteriors878358` de l'App): clients nous pel nom (es reaprofiten els que ja hi són); cada obra amb el
+      número del full si és lliure (si no, el següent de l'any), el tipus de la constructora (`TIPUS_CONSTR878344`) o el de sèrie,
+      `importat878358` = l'arxiu. Les factures van a `facturesObra878297` de la seva obra (pel nom o el codi) amb `importada:true` i
+      `cobrada:true`; sense obra, a una obra «Factures <any> · <client>» (Tancat). Una factura amb el mateix número a la mateixa obra
+      no es torna a posar.
+    - Estils: `src/theme-v878358.css`. Prova: `importobres358test.mjs` (18, amb un Excel inventat; ordinador i mòbil).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
