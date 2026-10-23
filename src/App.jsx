@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.358";
+const APP_VERSION878264="87.359";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5143,8 +5143,8 @@ function updateCertDate8721(id,value){
 }
 function deleteCertificacio8721(id){
   if(vfTeFactura878285(odata?.[obraId],id))return;
-  if(!confirm("Eliminar aquesta certificació?"))return;
-  setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).filter(c=>c.id!==id)}))
+  if(!confirm(avisTreuCert878359(odata?.[obraId],id)))return;
+  setD(obraId,d=>treuCert878359(d,id))
 }
 function updateObraFitxa8721(patch){
   const now=new Date().toISOString();
@@ -8621,7 +8621,7 @@ function LiniesChart878343({labels=[],series=[],titol="",tipLabel}){
   return <div className="rc-chart-v878343">
     {series.length>1&&<div className="rc-llegenda-v878343">{series.map(s=><span key={s.k}><i style={{background:s.color}}/>{s.nom}</span>)}</div>}
     <div className="rc-svgwrap-v878343" ref={wrap}>
-      <svg ref={ref} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={titol} tabIndex={0} onMouseMove={onMove} onMouseLeave={()=>setHi(null)} onKeyDown={e=>{if(e.key==="ArrowRight")setHi(h=>Math.min(n-1,(h??-1)+1));else if(e.key==="ArrowLeft")setHi(h=>Math.max(0,(h??n)-1))}} onBlur={()=>setHi(null)}>
+      <svg ref={ref} viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{aspectRatio:`${W} / ${H}`}} preserveAspectRatio="xMidYMid meet" role="img" aria-label={titol} tabIndex={0} onMouseMove={onMove} onMouseLeave={()=>setHi(null)} onKeyDown={e=>{if(e.key==="ArrowRight")setHi(h=>Math.min(n-1,(h??-1)+1));else if(e.key==="ArrowLeft")setHi(h=>Math.max(0,(h??n)-1))}} onBlur={()=>setHi(null)}>
         {ticks.map(v=><g key={v}><line x1={L} x2={W-R} y1={Y(v)} y2={Y(v)} className={v===0?"zero":"grid"}/><text x={L-8} y={Y(v)+4} textAnchor="end" className="ax">{curt878343(v)}</text></g>)}
         {labels.map((l,i)=>compact&&i%2?null:<text key={i} x={X(i)} y={H-10} textAnchor="middle" className="ax">{l}</text>)}
         {hi!=null&&<line x1={X(hi)} x2={X(hi)} y1={T} y2={T+ih} className="cross"/>}
@@ -9207,7 +9207,7 @@ function GestioObra8746({data,setData,importExcel,deletePressupostVersion,duplic
       return {...d,certificacions:[...(d.certificacions||[]),nova],activeBudgetIdObra:activeBudgetId};
     });
   }
-  function scopedDeleteCert(id){if(vfTeFactura878285(data,id))return;if(!confirm(t("Eliminar aquesta certificació?")))return;setData(d=>({...d,certificacions:(d.certificacions||[]).filter(c=>!((c.budgetId||"principal")===activeBudgetId&&c.id===id))}))}
+  function scopedDeleteCert(id){if(vfTeFactura878285(data,id))return;if(!confirm(avisTreuCert878359(data,id)))return;setData(d=>treuCert878359(d,id))}
   function scopedUpdateCertDate(id,value){setData(d=>({...d,certificacions:(d.certificacions||[]).map(c=>(c.budgetId||"principal")===activeBudgetId&&c.id===id?stampCertificationDate87218(c,value):c)}))}
   const totalGlobal=(data.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   const totalActive=(activeData.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -9465,7 +9465,8 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
   }
   function deleteDirectCert878214(id){
     if(vfTeFactura878285(data,id))return;
-    if(!confirm(i18nT("Eliminar aquesta certificació?")))return;
+    if(!confirm(avisTreuCert878359(data,id)))return;
+    if(setEconomicData878242){setEconomicData878242(g=>treuCert878359(g,id));return}
     setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).filter(c=>c.id!==id)}));
   }
   function updateDirectCertDate878214(id,value){setDirectBudgetData878214(scope=>({...scope,certificacions:(scope.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))}
@@ -9686,6 +9687,49 @@ function costParte878352(part={}){return readAlbarans878259().filter(a=>a.parteI
 // la certificació d'un parte té factura? (llavors ja no es pot canviar)
 function certFacturada878352(d={},bid,num){const c=(d.certificacions||[]).find(x=>(x.budgetId||"principal")===bid&&+x.numero===+num);if(!c)return false;return (d.facturesObra878297||[]).some(f=>f.certId===c.id)||(d.facturesVF878285||[]).some(f=>f.certId===c.id&&f.estat!=="Anulada")}
 function parteBloquejat878352(d,part){return part?.estat==="certificat"&&Object.entries(part.cert||{}).some(([bid,n])=>certFacturada878352(d,bid,n))}
+// V87.359 · Esborrar una certificació i treure un parte de la certificació (l'Héctor, 23/10/2026: «quan l'he volgut esborrar la
+// certificació ho he de fer manual posant a 0 i després el parte aquell dia encara queda i no es pot esborrar l'apunt o modificar»).
+// Esborrar una certificació en treu també les quantitats de les partides d'aquell pressupost (abans es quedaven i tornaven a sortir a la
+// certificació nova amb el mateix número) i els partes que hi anaven tornen a «Per revisar». Un parte certificat (si la certificació no
+// té factura) es pot treure de la certificació o eliminar: la certificació es torna a calcular amb els altres partes, o s'esborra si
+// només era d'aquell. Les partides fora de pressupost que havia posat el parte surten del pressupost (es tornen a posar en certificar-lo).
+const CERT_CLAUS878359=["certsByNum","certAmountsByNum","certAdminMonthlyByNum","certMesuresByNum","certAdminLinesByNum","certHiddenByNum"];
+function buidaNumCert878359(r,n){const k=String(n);let canvi=false;const o={...r};CERT_CLAUS878359.forEach(c=>{if(o[c]&&Object.prototype.hasOwnProperty.call(o[c],k)){const m={...o[c]};delete m[k];o[c]=m;canvi=true}});if(o["cert_"+k]!==undefined){delete o["cert_"+k];canvi=true}return canvi?o:r}
+function buidaCertPres878359(d,bid,num){if((d.certificacions||[]).some(c=>(c.budgetId||"principal")===bid&&+c.numero===+num))return d;return {...d,partides:(d.partides||[]).map(r=>(r.budgetId||"principal")===bid?buidaNumCert878359(r,num):r)}}
+function creatsParte878359(p){return (p?.noves||[]).map(n=>n.pidCreat).filter(Boolean)}
+function parteARevisar878359(p){const creats=creatsParte878359(p);const {certificatAt:_c,...r}=p;return {...r,estat:"revisar",cert:{},noves:(p.noves||[]).map(n=>{const {pidCreat:_p,...m}=n;return m}),linies:(p.linies||[]).filter(l=>!creats.includes(l.pid)),updatedAt:new Date().toISOString()}}
+// les partides fora de pressupost que havia posat un parte (si ja no són a cap certificació)
+function treuFP878359(d,creats){if(!creats.length)return d;const ids=new Set(creats.map(x=>String(x).replace(/^id:/,"")));return {...d,partides:(d.partides||[]).filter(r=>!(ids.has(String(r.id))&&r.foraPressupost878349&&!Object.values(r.certsByNum||{}).some(v=>Math.abs(parseNum8770(v))>0.000001)))}}
+function partesDeCert878359(d,bid,num){return partesOrdenats878349(d).filter(p=>p.estat==="certificat"&&+p.cert?.[bid]===+num)}
+function treuCert878359(d={},certId){
+  const c=(d.certificacions||[]).find(x=>x.id===certId);if(!c)return d;
+  const bid=c.budgetId||"principal",num=+c.numero;
+  let dd=buidaCertPres878359({...d,certificacions:(d.certificacions||[]).filter(x=>x.id!==certId)},bid,num);
+  const lligats=new Set(partesDeCert878359(dd,bid,num).map(p=>p.id));const creats=[];
+  dd={...dd,partes878349:(dd.partes878349||[]).map(p=>{if(!lligats.has(p.id))return p;const resta={...(p.cert||{})};delete resta[bid];if(Object.keys(resta).length)return {...p,cert:resta,updatedAt:new Date().toISOString()};creats.push(...creatsParte878359(p));return parteARevisar878359(p)})};
+  return {...treuFP878359(dd,creats),updatedAt:new Date().toISOString()};
+}
+function desfesParte878359(d={},partId,elimina=false){
+  const part=(d.partes878349||[]).find(p=>p.id===partId);if(!part)return d;
+  const creats=creatsParte878359(part);
+  let dd={...d,partes878349:elimina?(d.partes878349||[]).filter(p=>p.id!==partId):(d.partes878349||[]).map(p=>p.id===partId?parteARevisar878359(p):p)};
+  if(part.estat==="certificat")Object.entries(part.cert||{}).forEach(([bid,n])=>{
+    const num=+n;const altres=partesDeCert878359(dd,bid,num);
+    const c=(dd.certificacions||[]).find(x=>(x.budgetId||"principal")===bid&&+x.numero===num);
+    if(!altres.length){dd=c?treuCert878359(dd,c.id):buidaCertPres878359(dd,bid,num);return}
+    dd={...dd,partides:(dd.partides||[]).map(r=>(r.budgetId||"principal")===bid?buidaNumCert878359(r,num):r)};
+    dd=certificaParte878349(dd,altres[altres.length-1].id).d;
+  });
+  return {...treuFP878359(dd,creats),updatedAt:new Date().toISOString()};
+}
+function avisTreuCert878359(d,certId){const c=(d?.certificacions||[]).find(x=>x.id===certId);if(!c)return t("Eliminar aquesta certificació?");const n=partesDeCert878359(d,c.budgetId||"principal",c.numero).length;return n?t("Eliminar la certificació {n}? Els partes que hi anaven ({p}) tornaran a «Per revisar».",{n:c.numero,p:n}):t("Eliminar aquesta certificació?")}
+// V87.359 · les hores i el material del parte van a Despeses també a les obres compartides, al compte de qui porta l'obra (constructora o
+// gestió total); abans no s'hi feien (les obres de Brava i de Socoterm són compartides per l'Héctor). Una sola vegada per parte i compte
+// (aco_partes_despeses_v878359): si després se n'esborren les despeses, no es tornen a fer soles.
+function fanDespeses878359(obra){return !!obra?.id&&(!obra.compartida||teModul878326("obra")||teModul878326("empresa"))}
+function partesFets878359(){return new Set(lsJson8779("aco_partes_despeses_v878359",[]))}
+function marcaParteFet878359(id){const s=partesFets878359();if(s.has(id))return;lsSet8779("aco_partes_despeses_v878359",JSON.stringify([...s,id].slice(-3000)))}
+function teDespesesParte878359(p){return (p.hores||[]).some(h=>parseNum8770(h.hores)>0)||(p.material||[]).length>0||(p.noves||[]).some(n=>n.ambHores&&((n.hores||[]).length||(n.material||[]).length))}
 // l'import de la feina d'un parte (el que s'ha fet aquell dia, a preu del pressupost, i les partides fora de pressupost)
 function importParte878349(d={},part={}){
   const prev=previ878349(d,part),ps=pidsObra878349(d);
@@ -9764,7 +9808,10 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const ambParte=(d,p)=>{const l=d.partes878349||[];const q={...p,updatedAt:new Date().toISOString()};return {...d,partes878349:l.some(x=>x.id===p.id)?l.map(x=>x.id===p.id?q:x):[...l,q],updatedAt:new Date().toISOString()}};
   const nomCerts=m=>Object.entries(m||{}).map(([bid,n])=>gs.length>1?`${n} (${budgetName878273(gs.find(g=>g.id===bid)||{id:bid})})`:String(n)).join(", ");
   // les hores i el material del parte van a Despeses de l'obra (V87.352)
-  const despeses=(p,treu)=>{if(obra?.id&&!obra.compartida)try{sincronitzaDespesesParte878352(obra.id,data,p,treu)}catch(e){console.warn(e)}};
+  const despeses=(p,treu)=>{if(fanDespeses878359(obra))try{sincronitzaDespesesParte878352(obra.id,data,p,treu);if(!treu)marcaParteFet878359(p.id)}catch(e){console.warn(e)}};
+  // els partes d'abans de la V87.359 en una obra compartida no havien fet les despeses: es fan en obrir els partes (un sol cop)
+  useEffect(()=>{if(readOnly||treb||!obra?.compartida||!fanDespeses878359(obra))return;const fets=partesFets878359();const tenen=new Set(readAlbarans878259().map(a=>a.parteId878352).filter(Boolean));
+    (data.partes878349||[]).forEach(p=>{if(fets.has(p.id)||tenen.has(p.id)||!teDespesesParte878359(p))return;despeses(p)})},[obra?.id]);
   function desa(p){if(p.qui)lsSet8779("aco_parte_qui_v878349",p.qui);setData?.(d=>ambParte(d,p));despeses(p);setEsb(null);setVistaId(p.id);setAvis(t("Parte guardat."))}
   function certifica(p){
     const sensePreu=(p.noves||[]).filter(n=>!n.pidCreat&&!(preuEf878352(data,n)>0));
@@ -9782,14 +9829,16 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
     setEsb(null);setVistaId(p.id);
     setTimeout(()=>{const ks=Object.keys(res||{});setAvis(ks.length?(editat?t("Certificació {n} posada al dia.",{n:nomCerts(res)}):t("A la certificació {n}.",{n:nomCerts(res)})):t("No hi havia feina nova per certificar."))},0);
   }
-  function elimina(p){if(!confirm(t("Eliminar aquest parte?")))return;setData?.(d=>({...d,partes878349:(d.partes878349||[]).filter(x=>x.id!==p.id),updatedAt:new Date().toISOString()}));despeses(p,true);setEsb(null);setVistaId("");setAvis("")}
+  function elimina(p){const cert=p.estat==="certificat";if(!confirm(cert?t("Eliminar aquest parte? També se’n treu la feina de la certificació {n}.",{n:nomCerts(p.cert)}):t("Eliminar aquest parte?")))return;
+    setData?.(d=>cert?desfesParte878359(d,p.id,true):({...d,partes878349:(d.partes878349||[]).filter(x=>x.id!==p.id),updatedAt:new Date().toISOString()}));despeses(p,true);setEsb(null);setVistaId("");setAvis("")}
+  function desfes(p){if(!confirm(t("Treure aquest parte de la certificació {n}? Tornarà a «Per revisar».",{n:nomCerts(p.cert)})))return;setData?.(d=>desfesParte878359(d,p.id,false));setAvis(t("Tret de la certificació: torna a estar per revisar."))}
   const modalPreus=preus?<PreusObra878352 data={data} setData={setData} close={()=>setPreus(false)}/>:null;
   const potPreus=!treb&&!readOnly&&!obra?.compartida;
   if(esb)return <><ParteEditor878349 data={data} obraId={obra?.id} part={esb} setPart={setEsb} treb={treb} readOnly={readOnly} onDesar={()=>desa(esb)} onCertifica={()=>certifica(esb)} onTanca={()=>{setEsb(null)}} onPreus={potPreus?()=>setPreus(true):null}/>{modalPreus}</>;
   if(vista){const bloq=parteBloquejat878352(data,vista);const cert=vista.estat==="certificat";
     return <ParteResum878349 data={data} obraId={obra?.id} part={vista} treb={treb} readOnly={readOnly} avis={avis} treuAvis={()=>setAvis("")} nomCerts={nomCerts} bloquejat={bloq}
       onEdita={!readOnly&&(!cert||(!treb&&!bloq))?()=>{setAvis("");setEsb({...vista,hores:vista.hores||[],material:vista.material||[]})}:null} onCertifica={!cert&&!readOnly&&!treb?()=>certifica(vista):null}
-      onElimina={!cert&&!readOnly&&!treb?()=>elimina(vista):null} onTanca={()=>{setVistaId("");setAvis("")}}/>}
+      onElimina={!readOnly&&!treb&&!bloq?()=>elimina(vista):null} onDesfes={cert&&!readOnly&&!treb&&!bloq?()=>desfes(vista):null} onTanca={()=>{setVistaId("");setAvis("")}}/>}
   // per mesos: l'últim obert, la resta plegats
   const mesos=[];partes.forEach(p=>{const k=String(p.data||"").slice(0,7)||"—";let m=mesos.find(x=>x.k===k);if(!m){m={k,partes:[]};mesos.push(m)}m.partes.push(p)});
   const nomMes=k=>k==="—"?"—":new Date(k+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
@@ -9816,7 +9865,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
 }
 function horesParte878352(p={}){return (p.hores||[]).reduce((s,h)=>s+(parseNum8770(h.hores)||0),0)+(p.noves||[]).reduce((s,n)=>s+(n.ambHores?(n.hores||[]).reduce((a,h)=>a+(parseNum8770(h.hores)||0),0):0),0)}
 // el resum d'un dia: només el que s'hi ha fet (feina, i les hores i el material que van a Despeses)
-function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCerts,bloquejat,onEdita,onCertifica,onElimina,onTanca}){
+function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCerts,bloquejat,onEdita,onCertifica,onElimina,onDesfes,onTanca}){
   const prev=previ878349(data,part),ps=pidsObra878349(data);
   const perPid=new Map(ps.map(x=>[x.pid,x]));
   const creades=new Set((part.noves||[]).map(n=>n.pidCreat).filter(Boolean));
@@ -9846,7 +9895,8 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
     {!treb&&cost>0.004&&<div className="pr-total cost"><span>{t("Cost del dia (a Despeses)")}</span><b>{money(cost)}</b></div>}
     {bloquejat&&<p className="pr-bloq">{t("La certificació ja té factura: aquest parte ja no es pot canviar.")}</p>}
     <div className="pe-peu">
-      {onElimina&&<button type="button" className="link elimina" onClick={onElimina}>{t("Eliminar")}</button>}
+      <div className="esq">{onElimina&&<button type="button" className="link elimina" onClick={onElimina}>{t("Eliminar")}</button>}
+        {onDesfes&&<button type="button" className="link desfes-v878359" onClick={onDesfes}>{t("Treure de la certificació")}</button>}</div>
       <div className="bts">
         {onEdita&&<button type="button" className="secondary" onClick={onEdita}><b>{t("Editar")}</b></button>}
         {onCertifica&&<button type="button" className="primary ok" onClick={onCertifica}><b>{t("Passar a la certificació")}</b><small>{t("Ja està revisat")}</small></button>}
@@ -14807,7 +14857,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.358",
+    app_version:"87.359",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -15361,7 +15411,7 @@ function IngressosChart878292({items=[],title}){
   const ara=ytd(anyAct),abans=ytd(anyAct-1),dif=abans?((ara-abans)/abans*100):null;
   return <Card title={title} className="ing-v878292">{head}
     <p className="ing-resum-v878292">{t("Aquest any (fins a {mes}): {ara}",{mes:new Date(anyAct,mesAct,1).toLocaleDateString(loc878272(),{month:"long"}),ara:money(ara)})}{abans?<> · {t("el mateix període de {any}: {abans}",{any:anyAct-1,abans:money(abans)})} <b className={dif>=0?"up":"down"}>{dif>=0?"+":""}{dif.toLocaleString(loc878272(),{maximumFractionDigits:0})} %</b></>:null}</p>
-    <svg className="ing-svg-v878292" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={title}>
+    <svg className="ing-svg-v878292" viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{aspectRatio:`${W} / ${H}`}} role="img" aria-label={title}>
       {[0,1,2,3,4].map(k=><g key={k}><line x1={L} x2={W-Rm} y1={Y(pas*k)} y2={Y(pas*k)} className="grid"/><text x={L-8} y={Y(pas*k)+4} textAnchor="end" className="ax">{curt(pas*k)}</text></g>)}
       {labels.map((l,i)=><text key={i} x={X(i)} y={H-8} textAnchor="middle" className="ax">{l}</text>)}
       {series.map((s,k)=>{const d=s.vals.map((v,i)=>v==null?null:`${X(i)},${Y(v)}`).filter(Boolean);return <g key={k}>

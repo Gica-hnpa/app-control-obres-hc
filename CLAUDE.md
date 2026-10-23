@@ -1053,6 +1053,25 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       `cobrada:true`; sense obra, a una obra «Factures <any> · <client>» (Tancat). Una factura amb el mateix número a la mateixa obra
       no es torna a posar.
     - Estils: `src/theme-v878358.css`. Prova: `importobres358test.mjs` (18, amb un Excel inventat; ordinador i mòbil).
+  - **V87.359 · Partes: despeses a les obres compartides, esborrar la certificació i treure un parte** (l'Héctor, 23/10/2026, provant-ho
+    amb un client: «al emplenar el parte… hauria de sortir a despeses dins de mà d'obra i no ho fa»; «quan l'he volgut esborrar la
+    certificació ho he de fer manual posant a 0 i després el parte… no es pot esborrar o modificar»; «al mòbil no surt el gràfic»):
+    - **Despeses:** la V87.352 no feia les despeses del parte a les obres compartides (`!obra.compartida`), i les obres de Brava i de
+      Socoterm són compartides per l'Héctor. Ara sí (`fanDespeses878359`: obra pròpia, o compartida amb el compte que porta l'obra —mòdul
+      Obra o Empresa—), al compte de qui desa el parte. Els partes d'abans d'una obra compartida fan les seves despeses en obrir Partes
+      d'obra, un sol cop per parte i compte (`aco_partes_despeses_v878359`; si després se n'esborren, no es tornen a fer).
+    - **Esborrar una certificació** (`treuCert878359`, a les tres maneres: `deleteCertificacio8721`, `scopedDeleteCert`,
+      `deleteDirectCert878214`): també en treu les quantitats de les partides d'aquell pressupost (`buidaNumCert878359`: `certsByNum`,
+      `certAmountsByNum`, `certMesuresByNum`, `certAdmin…ByNum`, `certHiddenByNum`, `cert_<n>`; abans es quedaven i sortien a la
+      certificació nova amb el mateix número), i els partes que hi anaven tornen a «Per revisar» (`parteARevisar878359`; les partides fora
+      de pressupost que havien posat surten del pressupost, `treuFP878359`). La pregunta diu quants partes tornaran a revisar.
+    - **Parte certificat** (si la certificació no té factura): «Editar», **«Treure de la certificació»** i **«Eliminar»**
+      (`desfesParte878359`): la certificació es torna a calcular amb els altres partes que hi van (`certificaParte878349` de l'últim) o
+      s'esborra si només era d'aquell. Eliminar-lo també en treu les despeses.
+    - **Gràfiques** (`LiniesChart878343`, `IngressosChart878292`): el SVG porta `width`/`height` i `aspect-ratio` (a l'iPhone, Safari no
+      sempre en calcula l'alçada amb `height:auto`). A l'Edge del mòbil ja sortia: si a l'iPhone continua sense sortir, cal una captura.
+    - Estils: `src/theme-v878359.css`. Prova: `partes359test.mjs` (20, amb una obra compartida «de l'Héctor» al núvol de proves). Adaptada
+      `partes352test`.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

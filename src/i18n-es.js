@@ -3987,4 +3987,9 @@ export default {
   "Estat de les que no en diuen": "Estado de las que no lo dicen",
   "Un altre Excel": "Otro Excel",
   "Importar {o} obres i {f} factures": "Importar {o} obras y {f} facturas",
+  "Eliminar la certificació {n}? Els partes que hi anaven ({p}) tornaran a «Per revisar».": "¿Eliminar la certificación {n}? Los partes que iban en ella ({p}) volverán a «Por revisar».",
+  "Eliminar aquest parte? També se’n treu la feina de la certificació {n}.": "¿Eliminar este parte? También se quita su trabajo de la certificación {n}.",
+  "Treure aquest parte de la certificació {n}? Tornarà a «Per revisar».": "¿Quitar este parte de la certificación {n}? Volverá a «Por revisar».",
+  "Tret de la certificació: torna a estar per revisar.": "Quitado de la certificación: vuelve a estar por revisar.",
+  "Treure de la certificació": "Quitar de la certificación",
 };
