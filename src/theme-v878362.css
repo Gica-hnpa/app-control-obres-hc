@@ -1,0 +1,58 @@
+/* V87.362 · Resum del pressupost */
+html body .resum-pres-v878362{margin:14px 0 0;border:1px solid var(--co-line);border-radius:14px;background:var(--co-surface,#fff)}
+html body .resum-pres-v878362>summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:12px 16px}
+html body .resum-pres-v878362>summary::-webkit-details-marker{display:none}
+html body .resum-pres-v878362 .tit{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+html body .resum-pres-v878362 .tit b{font-size:15.5px}
+html body .resum-pres-v878362 .tit small{color:var(--co-ink-3);font-size:13px}
+html body .resum-pres-v878362 .chev{flex:0 0 auto;align-self:center;transition:transform .15s;color:var(--co-ink-3)}
+html body .resum-pres-v878362[open]>summary .chev{transform:rotate(90deg)}
+html body .resum-pres-v878362 .barra{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#F1F5F9}
+html body .resum-pres-v878362 .barra i{display:block;height:100%}
+html body .resum-pres-v878362 .cos{padding:0 16px 14px;display:flex;flex-direction:column;gap:10px}
+html body .resum-pres-v878362 .taula{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+html body .resum-pres-v878362 .taula th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--co-ink-3);text-align:right;padding:6px 8px;border-bottom:1px solid var(--co-line)}
+html body .resum-pres-v878362 .taula th:first-child{text-align:left}
+html body .resum-pres-v878362 .taula td{padding:8px;border-bottom:1px solid var(--co-line);text-align:right}
+html body .resum-pres-v878362 .taula td:first-child{text-align:left}
+html body .resum-pres-v878362 .taula td i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+html body .resum-pres-v878362 .taula td small{margin-left:8px;color:var(--co-ink-3);font-size:12px}
+html body .resum-pres-v878362 .taula tfoot td{font-weight:800;border-bottom:0}
+html body .resum-pres-v878362 details.sub{border:1px solid var(--co-line);border-radius:10px}
+html body .resum-pres-v878362 details.sub>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 12px;font-weight:700}
+html body .resum-pres-v878362 details.sub>summary::-webkit-details-marker{display:none}
+html body .resum-pres-v878362 details.sub>summary b{margin-left:auto;font-variant-numeric:tabular-nums}
+html body .resum-pres-v878362 details.sub[open]>summary .chev{transform:rotate(90deg)}
+html body .resum-pres-v878362 .llista{display:flex;flex-direction:column;padding:0 12px 8px}
+html body .resum-pres-v878362 .llista>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 14px;padding:6px 0;border-top:1px solid var(--co-line);font-size:13.5px}
+html body .resum-pres-v878362 .llista small{color:var(--co-ink-3);font-variant-numeric:tabular-nums}
+html body .resum-pres-v878362 .llista b{font-weight:600;font-variant-numeric:tabular-nums}
+@media (max-width:640px){
+  html body .resum-pres-v878362 .llista>div{grid-template-columns:minmax(0,1fr) auto;}
+  html body .resum-pres-v878362 .llista>div small{grid-column:1}
+  html body .resum-pres-v878362 .llista>div b{grid-row:1;grid-column:2}
+}
+/* V87.362 · Planning en taula */
+html body .gt-taula-v878362{display:flex;flex-direction:column;border:1px solid var(--co-line);border-radius:12px;overflow:hidden;margin-top:8px}
+html body .gt-taula-v878362 .cap-t{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 52px;gap:8px;padding:8px 12px;background:var(--co-surface-2,#f8fafc);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--co-ink-3)}
+html body .gt-taula-v878362 .fila{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 52px;gap:4px 8px;align-items:center;width:100%;padding:10px 12px;border:0;border-top:1px solid var(--co-line);border-radius:0;background:none;box-shadow:none;text-align:left;font:inherit;color:var(--co-ink);cursor:pointer;min-height:56px}
+html body .gt-taula-v878362 .fila:disabled{cursor:default;opacity:1}
+html body .gt-taula-v878362 .fila:hover:not(:disabled){background:var(--co-surface-2,#f8fafc)}
+html body .gt-taula-v878362 .fila.sense .d b{color:var(--co-ink-3)}
+html body .gt-taula-v878362 .cap{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .gt-taula-v878362 .cap b{font-weight:700;overflow:hidden;text-overflow:ellipsis}
+html body .gt-taula-v878362 .cap small{color:var(--co-ink-3);font-size:12px}
+html body .gt-taula-v878362 .d{display:flex;flex-direction:column;font-variant-numeric:tabular-nums}
+html body .gt-taula-v878362 .d small{display:none}
+html body .gt-taula-v878362 .d b{font-weight:600;font-size:14px}
+html body .gt-taula-v878362 .d.n{text-align:right}
+html body .gt-taula-v878362 .extra{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+html body .gt-taula-v878362 .extra em{font-style:normal;font-size:12.5px;padding:2px 8px;border-radius:999px;background:#EFF6FF;color:#1E40AF}
+html body .gt-taula-v878362 .extra em.qui{background:#ECFDF5;color:#065F46}
+html body .gt-taula-peu-v878362{margin:0;padding:10px 12px;border-top:1px solid var(--co-line);color:var(--co-ink-3);font-size:12.5px}
+@media (max-width:640px){
+  html body .gt-taula-v878362 .cap-t{display:none}
+  html body .gt-taula-v878362 .fila{grid-template-columns:1fr 1fr 56px}
+  html body .gt-taula-v878362 .cap{grid-column:1/-1}
+  html body .gt-taula-v878362 .d small{display:block;color:var(--co-ink-3);font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+}

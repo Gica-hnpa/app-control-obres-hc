@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.361";
+const APP_VERSION878264="87.362";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10707,6 +10707,9 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
   const[open,setOpen]=useState({});
   const[scale,setScale]=useState(()=>{try{return localStorage.getItem("aco_gantt_scale_v878253")||"setmanes"}catch{return "setmanes"}});
   const[editing,setEditing]=useState(false);
+  // V87.362 · taula o gràfic (al mòbil, de sèrie la taula)
+  const[vista878362,setVista878362]=useState(()=>{try{const v=localStorage.getItem("aco_gantt_vista_v878362");if(v==="taula"||v==="grafic")return v}catch{}try{return window.matchMedia("(max-width: 700px)").matches?"taula":"grafic"}catch{return "grafic"}});
+  const posaVista878362=v=>{setVista878362(v);try{localStorage.setItem("aco_gantt_vista_v878362",v)}catch{}};
   // V87.321 · al mòbil i l'iPad, el planning a pantalla completa (i, si l'aparell ho deixa, en horitzontal)
   const[gran878321,setGran878321]=useState(false);
   const granRef878321=useRef(null);
@@ -10798,8 +10801,9 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
   </div>;
   return <div ref={granRef878321} className={`gantt-v878253 ${gran878321?"gantt-gran-v878321":""} ${esTreballador878326()?"gantt-treb-v878328":""}`}>
     <Card title={i18nT("Planning de l’obra")} action={<div className="gt-tools-v878253">
-      {gran878321?<button type="button" className="primary gt-tanca-v878321" onClick={tancaGran878321}>{i18nT("Tancar")}</button>:<button type="button" className="secondary gt-gran-v878321" onClick={obreGran878321}>{i18nT("Pantalla completa")}</button>}
-      <div className="seg" role="group" aria-label={i18nT("Escala")}>{Object.entries(GANTT_SCALES878253).map(([k,v])=><button type="button" key={k} aria-pressed={scale===k} onClick={()=>{setScale(k);try{localStorage.setItem("aco_gantt_scale_v878253",k)}catch{}}}>{v.label}</button>)}</div>
+      <div className="seg gt-vista-v878362" role="group" aria-label={i18nT("Vista")}>{[["taula","Taula"],["grafic","Gràfic"]].map(([k,l])=><button type="button" key={k} aria-pressed={vista878362===k} onClick={()=>posaVista878362(k)}>{i18nT(l)}</button>)}</div>
+      {vista878362==="taula"?null:gran878321?<button type="button" className="primary gt-tanca-v878321" onClick={tancaGran878321}>{i18nT("Tancar")}</button>:<button type="button" className="secondary gt-gran-v878321" onClick={obreGran878321}>{i18nT("Pantalla completa")}</button>}
+      {vista878362!=="taula"&&<div className="seg" role="group" aria-label={i18nT("Escala")}>{Object.entries(GANTT_SCALES878253).map(([k,v])=><button type="button" key={k} aria-pressed={scale===k} onClick={()=>{setScale(k);try{localStorage.setItem("aco_gantt_scale_v878253",k)}catch{}}}>{v.label}</button>)}</div>}
       {canEdit&&<button type="button" className={editing?"primary":"secondary"} onClick={()=>setEditing(v=>!v)}>{editing?i18nT("Tancar planificació"):i18nT("Planificar")}</button>}
     </div>}>
       <div className="gantt-sum-v878252">
@@ -10816,9 +10820,19 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
         <button type="button" className="primary" onClick={autoPlan}>{i18nT("Generar planning")}</button>
         {Object.keys(plans).length>0&&<button type="button" className="secondary" onClick={clearPlans}>{i18nT("Esborrar planning")}</button>}
       </div>}
-      <div className="gantt-legend-v878252"><span><i className="plan"/>{i18nT("Previst")}</span><span><i className="real"/>{i18nT("Període amb certificacions")}</span><span><i className="done"/>{i18nT("Part executada")}</span><span><i className="mark"/>{i18nT("Certificació")}</span><span><i className="today"/>{i18nT("Avui")}</span></div>
+      {vista878362!=="taula"&&<div className="gantt-legend-v878252"><span><i className="plan"/>{i18nT("Previst")}</span><span><i className="real"/>{i18nT("Període amb certificacions")}</span><span><i className="done"/>{i18nT("Part executada")}</span><span><i className="mark"/>{i18nT("Certificació")}</span><span><i className="today"/>{i18nT("Avui")}</span></div>}
       {coinc878341.length>0&&<div className="gt-coinc-v878341">{coinc878341.map((c,i)=><div key={i}>{i18nT("{nom} és a «{a}» i a «{b}» alhora ({d})",{nom:c.nom,a:c.a,b:c.b,d:+c.from===+c.to?fmtAppDate8748(isoDate8776(c.from)):`${fmtAppDate8748(isoDate8776(c.from))} – ${fmtAppDate8748(isoDate8776(c.to))}`})}</div>)}</div>}
-      <div ref={scrollRef878341} className={`gt-scroll-v878253 ${editing?"editing":""}`}>
+      {vista878362==="taula"?<div className="gt-taula-v878362">
+        <div className="cap-t"><span>{i18nT("Capítol")}</span><span>{i18nT("Inici")}</span><span>{i18nT("Final")}</span><span>{i18nT("Dies")}</span></div>
+        {rows.map(c=>{const pl=plans[c.cap]||{};const qui=(pl.qui||[]).map(q=>q.nom).filter(Boolean);const lag=Math.round(parseNum8770(pl.lag)||0);const treb=esTreballador878326();
+          return <button type="button" key={c.cap} className={"fila"+(c.plan?"":" sense")} data-cap={c.cap} disabled={!canEdit} onClick={()=>canEdit&&setEdCap878341(c.cap)}>
+            <span className="cap"><b>{c.cap}</b>{!treb&&<small>{eur0878252(c.budget)} · {pct878252(c.budget?c.certified/c.budget*100:0)}</small>}</span>
+            <span className="d"><small>{i18nT("Inici")}</small><b>{c.plan?fmtAppDate8748(isoDate8776(c.plan.from)):"—"}</b></span>
+            <span className="d"><small>{i18nT("Final")}</small><b>{c.plan?fmtAppDate8748(isoDate8776(c.plan.to)):"—"}</b></span>
+            <span className="d n"><small>{i18nT("Dies")}</small><b>{c.plan?.dur||"—"}</b></span>
+            {(c.plan?.via||qui.length>0)&&<span className="extra">{c.plan?.via&&<em className="via">↳ {i18nT("Després de «{cap}»",{cap:c.plan.via})}{lag?" "+(lag>0?"+":"−")+Math.abs(lag)+" "+i18nT("dies"):""}</em>}{qui.length>0&&<em className="qui">{qui.join(" · ")}</em>}</span>}
+          </button>})}
+      </div>:<div ref={scrollRef878341} className={`gt-scroll-v878253 ${editing?"editing":""}`}>
         <div className="gt-row-v878253 head">
           <div className="gt-left-v878253"><span className="cap">{i18nT("Capítol")}</span>{editing?<><span className="pl">{i18nT("Inici previst")}</span><span className="pl">{i18nT("Dies lab.")}</span></>:<><span className="num">{i18nT("Pressupost")}</span><span className="num">{i18nT("Executat")}</span></>}</div>
           <div className="gt-head-v878253" style={{width:W}}>
@@ -10843,7 +10857,7 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
           </div>})}
         </React.Fragment>)}
         {fletxes878341.l.length>0&&<svg className="gt-fletxes-v878341" width={fletxes878341.w} height={fletxes878341.h} aria-hidden="true"><defs><marker id="gt-fl-v878341" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>{fletxes878341.l.map(f=><path key={f.k} d={`M${f.x1},${f.y1} h6 V${f.y2} H${f.x2}`} markerEnd="url(#gt-fl-v878341)"/>)}</svg>}
-      </div>
+      </div>}
       {edCap878341&&<EditaCapitol878341 cap={edCap878341} ordre={s.caps.map(c=>c.cap)} plans={plans} setPlan={setPlan} treu={treuPlan878341} resolt={resolt878341} pot={pot878341} close={()=>setEdCap878341("")}/>}
     </Card>
   </div>;
@@ -11152,6 +11166,46 @@ function AfegirLlibreria878361({items=[],caps={},clientId="",clientNom="",usage,
     <div className="peu"><span>{nSel?t("{n} triades · {total}",{n:nSel,total:money(total)}):nHab?t("{n} habituals de {client}",{n:nHab,client:clientNom||""}):""}</span>
       <button type="button" className="primary" disabled={!nSel} onClick={()=>onAfegir?.(items.filter(it=>sel[it.id]).map(it=>({item:it,q:sel[it.id].q,dest:sel[it.id].dest})))}>{nSel===1?t("Afegir 1 partida"):t("Afegir {n} partides",{n:nSel||""})}</button></div>
   </div></Modal>;
+}
+// V87.362 · Resum del pressupost (l'Héctor, 23/10/2026: «una pantalla resum del pressupost: tanta quantitat de material, que pot ser
+// desglossat o no, quina quantitat i % correspondrà a la mà d'obra i a altres»). Amb els descompostos de les partides (× la quantitat):
+// mà d'obra (i les hores), materials, maquinària i altres, industrials, els % (CI, DGE, BI) i el que no té descompost. A sota, els
+// materials sumats (concepte, quantitat i import) i la mà d'obra per categories.
+const COLORS_RESUM878362={ma:"#2563EB",mat:"#0D9488",alt:"#D97706",ind:"#7C3AED",pct:"#64748B",sense:"#CBD5E1",ajust:"#E2E8F0"};
+function resumPressupost878362(partides=[]){
+  const G={ma:0,mat:0,alt:0,ind:0},P={};let sense=0,ajust=0,hores=0,total=0,nSense=0,nAmb=0;const mats=new Map(),mas=new Map();
+  (partides||[]).forEach(r=>{
+    const q=parseNum8770(r.q)||0,pu=parseNum8770(r.pu)||0,imp=q*pu;total+=imp;if(!q)return;
+    const pp=partsPartida878361(r);
+    if(!pp){sense+=imp;if(Math.abs(imp)>0.004)nSense++;return}
+    nAmb++;
+    pp.grups.forEach(g=>{G[g.k]+=g.total*q;if(g.k==="ma")hores+=g.hores*q;
+      if(g.k==="mat"||g.k==="ma")g.linies.forEach(l=>{const m=g.k==="mat"?mats:mas;const key=normLab878361(l.concepte)+"|"+normLab878361(l.ut);const x=m.get(key)||{concepte:l.concepte||"—",ut:l.ut||"",q:0,imp:0};x.q+=(parseNum8770(l.q)||0)*q;x.imp+=(parseNum8770(l.total)||0)*q;m.set(key,x)})});
+    pp.pcts.forEach(x=>{P[x.nom]=(P[x.nom]||0)+x.imp*q});
+    ajust+=imp-pp.preu*q;
+  });
+  return {G,P,sense,ajust,hores,total,nSense,nAmb,mats:[...mats.values()].sort((a,b)=>b.imp-a.imp),mas:[...mas.values()].sort((a,b)=>b.imp-a.imp)};
+}
+function ResumPressupost878362({partides=[]}){
+  const r=useMemo(()=>resumPressupost878362(partides),[partides]);
+  if(!(r.total>0.004)||!r.nAmb)return null;
+  const pc=v=>r.total>0?v/r.total*100:0,fp=v=>(Math.round(pc(v)*10)/10).toLocaleString(loc878272(),{maximumFractionDigits:1})+" %";
+  const fq=v=>(Math.round(v*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2});
+  const files=[["ma","Mà d’obra",r.G.ma],["mat","Materials",r.G.mat],["alt","Maquinària i altres",r.G.alt],["ind","Industrials (preu tancat)",r.G.ind],
+    ...Object.entries(r.P).map(([k,v])=>["pct",k,v]),["sense","Sense descompost",r.sense],["ajust","Altres diferències de preu",r.ajust]].filter(f=>Math.abs(f[2])>0.5);
+  const curt=files.filter(f=>["ma","mat","alt","ind"].includes(f[0])).map(f=>t(f[1])+" "+fp(f[2])).join(" · ");
+  return <details className="resum-pres-v878362"><summary><span className="tit"><ChevronRight size={18} className="chev" aria-hidden="true"/><b>{t("Resum del pressupost")}</b><small>{curt}</small></span>
+    <span className="barra" aria-hidden="true">{files.filter(f=>f[2]>0).map((f,i)=><i key={i} style={{width:pc(f[2])+"%",background:COLORS_RESUM878362[f[0]]}}/>)}</span></summary>
+    <div className="cos">
+      <table className="taula"><thead><tr><th>{t("Concepte")}</th><th>{t("Import")}</th><th>%</th></tr></thead>
+        <tbody>{files.map((f,i)=><tr key={i} className={f[0]}><td><i style={{background:COLORS_RESUM878362[f[0]]}} aria-hidden="true"/>{f[0]==="pct"?(["CI","DGE","BI"].includes(f[1])?f[1]:f[1]):t(f[1])}{f[0]==="ma"&&r.hores>0?<small>{fhMa878348(r.hores)}</small>:null}{f[0]==="sense"?<small>{r.nSense===1?t("1 partida"):t("{n} partides",{n:r.nSense})}</small>:null}</td><td>{money(f[2])}</td><td>{fp(f[2])}</td></tr>)}</tbody>
+        <tfoot><tr><td>{t("Total")}</td><td>{money(r.total)}</td><td>100 %</td></tr></tfoot></table>
+      {r.mats.length>0&&<details className="sub"><summary><ChevronRight size={16} className="chev" aria-hidden="true"/>{t("Materials ({n})",{n:r.mats.length})}<b>{money(r.G.mat)}</b></summary>
+        <div className="llista">{r.mats.map((m,i)=><div key={i}><span>{m.concepte}</span><small>{fq(m.q)} {m.ut}</small><b>{money(m.imp)}</b></div>)}</div></details>}
+      {r.mas.length>0&&<details className="sub"><summary><ChevronRight size={16} className="chev" aria-hidden="true"/>{t("Mà d’obra")}{r.hores>0?" · "+fhMa878348(r.hores):""}<b>{money(r.G.ma)}</b></summary>
+        <div className="llista">{r.mas.map((m,i)=><div key={i}><span>{m.concepte}</span><small>{fq(m.q)} {m.ut}</small><b>{money(m.imp)}</b></div>)}</div></details>}
+    </div>
+  </details>;
 }
 function PartidaReadingModal87208({row={},title="Fitxa de la partida",editable=false,onChange,openBreakdown,close}){
   const table=row.descompostTable||null;
@@ -12506,6 +12560,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           </div>}</React.Fragment>
         })}
         {editBudget8760b&&<button type="button" className="primary add-chapter-bottom-v8779" onClick={addCapitol}><Plus/> {i18nT("Nou capítol")}</button>}
+        {!editBudget8760b&&!clientMode&&<ResumPressupost878362 partides={data.partides||[]}/>}
         {!editBudget8760b&&<AvisosPressupost878320 avisos={avisos878320}/>}
       </div>}
       {descompostModal87173&&(()=>{
@@ -15071,7 +15126,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.361",
+    app_version:"87.362",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

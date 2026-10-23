@@ -4026,4 +4026,10 @@ export default {
   "Afegir {n} partides": "Añadir {n} partidas",
   "Maquinària i altres": "Maquinaria y otros",
   "Industrials (preu tancat)": "Industriales (precio cerrado)",
+  "Dies": "Días",
+  "Resum del pressupost": "Resumen del presupuesto",
+  "Materials ({n})": "Materiales ({n})",
+  "Taula": "Tabla",
+  "Gràfic": "Gráfico",
+  "Altres diferències de preu": "Otras diferencias de precio",
 };

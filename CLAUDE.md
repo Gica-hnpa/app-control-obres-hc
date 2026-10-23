@@ -1105,6 +1105,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils: `src/theme-v878361.css`. Prova: `pressupost361test.mjs` (19). Adaptada `habitualstest`. **Proves antigues que fallen
       també amb la V87.360** (no les ha trencat aquesta versió): `menustest` (el menú «PDF» de Certificacions a ediifci CATALUNYA queda
       escurçat a 160 px) i `pdfpressuposttest` (busca la tira de pressupostos, que des de la V87.342 és la barra de fases).
+  - **V87.362 · Resum del pressupost i Planning en taula al mòbil:**
+    - **Resum del pressupost** (`ResumPressupost878362`, `resumPressupost878362`; plegat a sobre dels avisos, fora d'edició i no al
+      portal): amb els descompostos (× la quantitat), mà d'obra (i les hores), materials, maquinària i altres, industrials, els % (CI, DGE,
+      BI), «Sense descompost» i «Altres diferències de preu», cada un amb l'import i el %, i una barra de colors (`COLORS_RESUM878362`). A
+      dins, els materials sumats (concepte, quantitat, import) i la mà d'obra per categories. Només surt si alguna partida té descompost.
+    - **Planning al mòbil en taula** (`GanttObraVisual878253`, `vista878362`): «Taula · Gràfic» (es recorda a l'aparell,
+      `aco_gantt_vista_v878362`; de sèrie taula si la pantalla fa ≤700 px). Cada capítol: pressupost i %, inici, final, dies, «Després de
+      «…»» amb els dies de més o de menys i qui hi treballa; tocar-lo obre la finestra del capítol (`EditaCapitol878341`). A la taula no hi ha
+      l'escala ni «Pantalla completa».
+    - Estils: `src/theme-v878362.css`. Prova: `resum362test.mjs` (12). Adaptades `planning341test` i `seguiment321test` (al mòbil, la taula
+      i després «Gràfic») i `fases342test` (Hores té pestanyes des del fitxatge). `seguiment321test` pot fallar a l'ordinador si l'app torna
+      a l'Inici en posar-se al dia: tornar-la a passar.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
