@@ -1153,6 +1153,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       lloc, s'obren cap amunt (abans s'escurçaven fins a 160 px; `menustest` fallava des de la V87.360 amb «PDF» de les certificacions).
     - Estils: `src/theme-v878364.css`. Prova: `cert364test.mjs` (22, amb el cas d'Eden Playa). Adaptades `facturacio337test`,
       `partes352test`, `clientsvirtuals`, `pressuposttest` i `menustest`.
+  - **V87.365 · Documents i Partes amb els grups a la vista, la gràfica del Rendiment i fora «Hores» de l'obra (constructora):**
+    - **Documents** (`Documents`, `docs-md-v878365`): totes les carpetes en una columna (amb el número de documents; les buides més
+      clares) i la triada al costat; al mòbil, la llista i, en tocar-ne una, els documents al seu lloc amb «‹ Carpetes» (`obert878365`).
+      Fora «Altres carpetes» (V87.354) i els textos dels documents generats («generat automàticament…», «Obre el document amb el mateix
+      format…»). Botons «Adjuntar» i «Enviar».
+    - **Partes** (`ParteEditor878349`, `pe-md-v878365`): els capítols en una columna i les partides del triat al costat (a l'ordinador, el
+      primer de sèrie); al mòbil, els capítols i, en tocar-ne un, les seves partides al seu lloc amb «‹ Capítols» (`capSel878365`).
+      Buscant o amb «Marcades avui», com abans: tots els capítols oberts. «Feina fora de pressupost» obre el seu capítol.
+    - **Rendiment de l'obra** (`EvolucioObra878366`, sota el compte): «Evolució de l'obra», acumulat mes a mes (com a molt 24 mesos):
+      ingressos (certificat), costos (despeses, personal i DGE) i benefici, amb `LiniesChart878343` i `dadesRendEmpresa878343`.
+    - **Constructora** (sense el mòdul tècnic, amb Empresa; no el treballador): dins de l'obra ja no hi ha «Hores» (àlies «Gestió temps» →
+      «Albarans»: les hores són a Despeses › Mà d'obra) i el ＋ ja no té «Hores». La gestió total el conserva.
+      El que hi havia (el cost per hora de cada treballador en aquesta obra, per dies i «+ Afegir hores», `PersonalObra878340`) és a dalt de
+      Despeses de l'obra, plegat: «Hores del personal» (`pers-obra-plegat-v878365`).
+    - **Icona i paraula** (opció B, triada per l'Héctor el 23/10/2026) a la capçalera del pressupost: ✎ Editar, 🖨 PDF, ✉ Enviar, ＋ Afegir.
+    - **Revisió de les dades del núvol** (`tools/proves/revisionuvol.mjs`, només llegeix la còpia més nova de `DADES/COPIES_NUVOL`): import de cada
+      certificació vs partides, factura vs certificació, partes certificats sense certificació, partides per sobre del 100 % i despeses
+      d'obres que ja no hi són. L'informe (`tools/proves/revisionuvol-AAAA-MM-DD.txt`) porta noms de clients. El 23/10/2026: Eden Playa
+      (Socoterm, 2 avisos), i al compte de l'Héctor 47 partides per sobre del 100 % i la certificació 1 de Cala Rovira amb l'import desat vell.
+    - Estils: `src/theme-v878365.css`. Prova: `v365test.mjs` (20). Adaptades `personal340test`, `horesunic355test` i `fases342test` (Despeses › Hores del personal), `partes350test` (el primer capítol obert al costat),
+      `simple354test` (sense «Altres carpetes»), `docmobiltest` i `documentstest` (el PDF a origen és dins d'«Accions»).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

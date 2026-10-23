@@ -4043,4 +4043,6 @@ export default {
 "PDF · Certificació {n}": "PDF · Certificación {n}",
 "PDF · General a origen": "PDF · General a origen",
 "Quantitat de la partida {c}": "Cantidad de la partida {c}",
+"Evolució de l’obra": "Evolución de la obra",
+"Acumulat fins a {mes}": "Acumulado hasta {mes}",
 };

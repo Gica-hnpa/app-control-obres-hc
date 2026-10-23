@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.364";
+const APP_VERSION878264="87.365";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8922,9 +8922,30 @@ function RendimentFases878342({data={},setData,obraId="",fase="principal",tota=f
         <label><span>{t("BI previst (%)")}</span><input inputMode="decimal" disabled={readOnly} defaultValue={r.cfg.biObra!=null?String(r.cfg.biObra).replace(".",","):""} placeholder={r.cfg.biEmp!=null?String(r.cfg.biEmp).replace(".",","):"—"} onBlur={e=>desaCfg("bi",e.target.value)} key={"bi"+(r.cfg.biObra??"")}/></label>
       </div>}
     </Card>
+    <EvolucioObra878366 data={data} obraId={obraId} ambBenefici={ambBenefici}/>
     {multi&&!f&&<ResumFases878342 data={data} despeses={despeses} personal={personal} obraId={obraId} ambBenefici={ambBenefici}/>}
     <CapitolsFase878342 data={data} fase={f} despeses={despeses}/>
   </div>;
+}
+// V87.366 · Rendiment de l'obra amb la gràfica (l'Héctor, 23/10/2026: «a rendiment dins l'obra també vull la gràfica»). Mes a mes,
+// acumulat des del primer mes amb moviment fins ara (com a molt 24 mesos): ingressos (certificat), costos (despeses, personal i DGE) i benefici.
+function EvolucioObra878366({data,obraId,ambBenefici}){
+  const tickP=useTickPersonal878340();
+  const[tk,setTk]=useState(0);
+  useEffect(()=>{const h=()=>setTk(x=>x+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
+  const x=useMemo(()=>obraId?dadesRendEmpresa878343([{id:obraId}],{[obraId]:data}).per[0]:null,[data,obraId,tickP,tk]);
+  if(!x)return null;
+  let primer=null,ultim=null;
+  ["cert","dir","pers"].forEach(k=>Object.entries(x[k]).forEach(([y,arr])=>(arr||[]).forEach((v,m)=>{if(Math.abs(v)>0.004){const i=+y*12+m;if(primer==null||i<primer)primer=i;if(ultim==null||i>ultim)ultim=i}})));
+  if(primer==null)return null;
+  const ara=new Date();let fi=Math.max(ara.getFullYear()*12+ara.getMonth(),ultim);
+  if(fi-primer>23)primer=fi-23;
+  const labels=[],ing=[],cost=[],ben=[];let si=0,sc=0,sb=0;
+  for(let i=primer;i<=fi;i++){const y=Math.floor(i/12),m=i%12;const mm=mesos878343(x,y)[m];si+=mm.ing;sc+=mm.cost;sb+=mm.ben;labels.push(mesNom878343(m)+(m===0||i===primer?" "+String(y).slice(2):""));ing.push(si);cost.push(sc);ben.push(sb)}
+  const series=[{k:"ing",nom:t("Ingressos"),color:SERIES878343[0],vals:ing},{k:"cost",nom:t("Costos"),color:SERIES878343[1],vals:cost},...(ambBenefici?[{k:"ben",nom:t("Benefici"),color:SERIES878343[2],vals:ben}]:[])];
+  return <Card title={t("Evolució de l’obra")} className="rc-card-v878343 evol-obra-v878366">
+    <LiniesChart878343 labels={labels} series={series} titol={t("Evolució de l’obra")} tipLabel={i=>{const k=primer+i;return t("Acumulat fins a {mes}",{mes:new Date(Math.floor(k/12),k%12,1).toLocaleDateString(loc878272(),{month:"long",year:"numeric"})})}}/>
+  </Card>;
 }
 // Tota l'obra amb diverses fases: una fila per fase
 function ResumFases878342({data,despeses,personal,obraId,ambBenefici}){
@@ -9461,6 +9482,9 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     if(hi("Honoraris")){if(!hi("Factures"))ALIAS878308["Factures"]="Honoraris";if(!hi("Pressupostos"))ALIAS878308["Pressupostos"]="Honoraris"}
     if(tecnic&&hi("Honoraris")){if(hi("Gestió temps")&&!ambEmpresa878338())ALIAS878308["Gestió temps"]="Honoraris";if(hi("Rendiment"))ALIAS878308["Rendiment"]="Honoraris"}
     else if(!tecnic&&hi("Rendiment")&&hi("Seguiment econòmic"))ALIAS878308["Rendiment"]="Seguiment econòmic";
+    // V87.366 · l'Héctor (23/10/2026): «a hores, si ja ho tenim a despeses, no sobra?». A la constructora (sense el mòdul tècnic) les
+    // hores del personal són a Despeses › Mà d'obra (des de la V87.355), i s'apunten amb el parte o a Hores (menú)
+    if(!tecnic&&PERFIL878304&&ambEmpresa878338()&&!esTreballador878326()&&hi("Gestió temps")&&hi("Albarans"))ALIAS878308["Gestió temps"]="Albarans";
   }
   const tabsAmbAlies878308=tabs;
   tabs=tabs.filter(x=>!ALIAS878308[x]);
@@ -9576,6 +9600,9 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {activeTab==="Agenda / Avisos"&&ALIAS878308["Tasques"]&&<TasquesTab8769 data={data} setData={setData}/>}
     {activeTab==="Partes obra"&&<PartesObra878349 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Partes obra"?start878302:null}/>}
     {activeTab==="Amidaments obra"&&<Amidaments878328 fase878342={directBudgetId878214} obra={obra} data={data} setData={setData} partidaLibrary={partidaLibrary} readOnly={readOnly} goPressupost={()=>setTab?.("Pressupost")}/>}
+    {/* V87.365 · a la constructora, «Hores» de l'obra passa a Despeses: les hores del personal (amb el cost per hora de cada treballador
+        en aquesta obra, per dies i «+ Afegir hores»), plegades a dalt */}
+    {activeTab==="Albarans"&&ALIAS878308["Gestió temps"]==="Albarans"&&<details className="pers-obra-plegat-v878365"><summary><Clock size={16} aria-hidden="true"/> {t("Hores del personal")}<ChevronRight size={16} className="chev" aria-hidden="true"/></summary><PersonalObra878340 obra={obra} data={data}/></details>}
     {activeTab==="Albarans"&&<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves={esTecnicPur878332(obra)&&teModul878326("tecnic")} fase878342={navigationTabs.includes("Pressupost")&&!totaObra878342?directBudgetId878214:""} setObraData={readOnly?null:(id,up)=>setData(up)}/>}
     {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>}
     {activeTab==="Actes"&&(ALIAS878308["Notes"]
@@ -9601,7 +9628,7 @@ function Obra({agentsLib878301=null,keepAgent878303=null,obra,client,clients,set
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Dades econòmiques recuperades")}</b><span>{i18nT("S’han restaurat")} {data.economicRecoveryV87214.restored||0} {i18nT("preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.")}</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Certificacions recuperades")}</b><span>{i18nT("S’han reconstruït les certificacions")} {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} {i18nT("sense substituir les línies de medició actuals de la certificació 8.")}</span></div>}
-    {!readOnly&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={tabsAmbAlies878308} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
+    {!readOnly&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={tabsAmbAlies878308.filter(x=>!(x==="Gestió temps"&&ALIAS878308["Gestió temps"]==="Albarans"))} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
     <ObraBar878269 pur={esTecnicPur878332(obra)&&teModul878326("tecnic")} teAmid={teAmidaments878342(data)} obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly||esTreballador878326()} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&!esTreballador878326()&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
@@ -10025,7 +10052,10 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
     setSheet(null);
   }
   const[novaCap,setNovaCap]=useState("");
-  function novaFP(bid,cap){setPart(p=>({...p,noves:[...(p.noves||[]),{id:"nova-"+Date.now(),bid,cap,concepte:"",q:"1",ut:"u",ambHores:false,hores:[],material:[],preu:""}]}));setNovaCap("");setObertsCaps(x=>new Set([...x,bid+"|"+cap]))}
+  // V87.365 · el capítol triat (l'Héctor: «els partes d'obra, el mateix»: els capítols a la vista i les partides sense haver de baixar)
+  const[capSel878365,setCapSel878365]=useState(null);
+  const mobil878365=useMobil878363();
+  function novaFP(bid,cap){setPart(p=>({...p,noves:[...(p.noves||[]),{id:"nova-"+Date.now(),bid,cap,concepte:"",q:"1",ut:"u",ambHores:false,hores:[],material:[],preu:""}]}));setNovaCap("");setObertsCaps(x=>new Set([...x,bid+"|"+cap]));setCapSel878365(bid+"|"+cap)}
   const posaNova=(id,patch)=>setPart(p=>({...p,noves:(p.noves||[]).map(n=>n.id===id?{...n,...(typeof patch==="function"?patch(n):patch)}:n)}));
   const treuNova=id=>setPart(p=>({...p,noves:(p.noves||[]).filter(n=>n.id!==id)}));
   // hores: una fila per treballador (la categoria la dona el treballador); i les persones que no són a la llista
@@ -10055,12 +10085,9 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
     <div className="pe-filtre" role="group" aria-label={t("Partides")}>{[["perfer","Per fer"],["avui","Marcades avui"],["totes","Totes"]].map(([k,l])=><button type="button" key={k} aria-pressed={filtre===k} onClick={()=>setFiltre(k)}>{t(l)}{k==="avui"&&(nMarcades+nNoves)?` (${nMarcades+nNoves})`:""}</button>)}</div>
     <div className="pe-cerca"><Search size={16} aria-hidden="true"/><input type="search" value={cerca} onChange={e=>setCerca(e.target.value)} placeholder={t("Buscar partida")} aria-label={t("Buscar partida")}/></div>
     {!perFase.length&&<div className="partes-buit-v878349"><b>{filtre==="avui"?t("Encara no has marcat res."):t("No hi ha cap partida.")}</b></div>}
-    {perFase.map(f=><div key={f.bid} className="pe-fase">
-      {gs.length>1&&<h3>{budgetName878273(gs.find(g=>g.id===f.bid)||{id:f.bid})}</h3>}
-      {f.caps.map(c=>{const k=f.bid+"|"+c.cap,ob=!!cerca.trim()||filtre==="avui"||obertsCaps.has(k);const totes=ps.filter(x=>x.bid===f.bid&&String(x.r.cap||"—")===c.cap);const fetes=totes.filter(x=>q0De(x)>0&&fetaDe(x)>=q0De(x)-0.0001).length;const avui=totes.filter(x=>lin(x.pid)).length;const noves=(part.noves||[]).filter(n=>(n.bid||"principal")===f.bid&&n.cap===c.cap&&!n.pidCreat);
-        return <section key={k} className={`pe-capitol ${ob?"obert":""}`}>
-          <button type="button" className="pe-capbtn" aria-expanded={ob} onClick={()=>togCap(k)}><ChevronRight size={18} className="chev" aria-hidden="true"/><b>{c.cap}</b><span>{t("{a} de {b} fetes",{a:fetes,b:totes.length})}{avui||noves.length?<em>{t("avui {n}",{n:avui+noves.length})}</em>:null}</span></button>
-          {ob&&<div className="pe-partides">
+    {(()=>{const llista878365=!cerca.trim()&&filtre!=="avui";
+      const info=(f,c)=>{const totes=ps.filter(x=>x.bid===f.bid&&String(x.r.cap||"—")===c.cap);const fetes=totes.filter(x=>q0De(x)>0&&fetaDe(x)>=q0De(x)-0.0001).length;const avui=totes.filter(x=>lin(x.pid)).length;const noves=(part.noves||[]).filter(n=>(n.bid||"principal")===f.bid&&n.cap===c.cap&&!n.pidCreat);return {totes,fetes,avui,noves}};
+      const cos=(f,c,noves)=><div className="pe-partides">
             {c.rows.map(x=>{const l=lin(x.pid),q0=q0De(x),pv=prev[x.pid]||0,fe=l?+l.feta||0:pv,pc=q0>0?fe/q0*100:0,av=l?fe-pv:0,ut=x.r.ut||x.r.u||"";const est=fe>=q0-0.0001&&q0>0?"feta":fe>0?"part":"no";
               const nova=(part.noves||[]).find(n=>n.pidCreat===x.pid);
               if(nova)return <NovaFP878349 key={x.pid} n={nova} d={data} treb={treb} readOnly={false} treballadors={treballadors} posa={patch=>posaNova(nova.id,patch)} treu={()=>treuNova(nova.id)} onPreus={onPreus}/>;
@@ -10074,9 +10101,25 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
                 </div>
               </div>})}
             {noves.map(n=><NovaFP878349 key={n.id} n={n} d={data} treb={treb} readOnly={false} treballadors={treballadors} posa={patch=>posaNova(n.id,patch)} treu={()=>treuNova(n.id)} onPreus={onPreus}/>)}
-          </div>}
-        </section>})}
-    </div>)}
+          </div>;
+      const etiq=(c,i)=><><b>{c.cap}</b><span>{t("{a} de {b} fetes",{a:i.fetes,b:i.totes.length})}{i.avui||i.noves.length?<em>{t("avui {n}",{n:i.avui+i.noves.length})}</em>:null}</span></>;
+      // buscant o mirant «Marcades avui»: tots els capítols oberts, un sota l'altre
+      if(!llista878365)return perFase.map(f=><div key={f.bid} className="pe-fase">
+        {gs.length>1&&<h3>{budgetName878273(gs.find(g=>g.id===f.bid)||{id:f.bid})}</h3>}
+        {f.caps.map(c=>{const k=f.bid+"|"+c.cap;const i=info(f,c);return <section key={k} className="pe-capitol obert"><div className="pe-capbtn">{etiq(c,i)}</div>{cos(f,c,i.noves)}</section>})}
+      </div>);
+      const tots=perFase.flatMap(f=>f.caps.map(c=>({f,c,k:f.bid+"|"+c.cap})));
+      const selK=capSel878365&&tots.some(x=>x.k===capSel878365)?capSel878365:(mobil878365?null:tots[0]?.k||null);
+      const sel=tots.find(x=>x.k===selK);
+      return <div className={"pe-md-v878365"+(sel&&mobil878365?" amb-sel":"")}>
+        <nav className="pe-caps-v878365" aria-label={t("Capítols")}>{perFase.map(f=><React.Fragment key={f.bid}>{gs.length>1&&<h3>{budgetName878273(gs.find(g=>g.id===f.bid)||{id:f.bid})}</h3>}
+          {f.caps.map(c=>{const k=f.bid+"|"+c.cap;const i=info(f,c);return <button type="button" key={k} className={"pe-capbtn"+(k===selK?" on":"")} aria-expanded={k===selK} onClick={()=>setCapSel878365(k)}>{etiq(c,i)}<ChevronRight size={18} className="chev" aria-hidden="true"/></button>})}</React.Fragment>)}</nav>
+        {sel&&<section className="pe-det-v878365 pe-capitol obert">
+          {mobil878365&&<button type="button" className="link tornar-cap-v878365" onClick={()=>setCapSel878365(null)}><ChevronLeft size={18} aria-hidden="true"/> {t("Capítols")}</button>}
+          <h4>{sel.c.cap}</h4>
+          {cos(sel.f,sel.c,info(sel.f,sel.c).noves)}
+        </section>}
+      </div>})()}
     <div className="pe-fp-afegir">{novaCap==="tria"?<label><span>{t("A quin capítol?")}</span><select value="" onChange={e=>{const c=totsCaps.find(y=>y.k===e.target.value);if(c)novaFP(c.bid,c.cap)}}><option value="">{t("Tria el capítol…")}</option>{totsCaps.map(c=><option key={c.k} value={c.k}>{gs.length>1?`${budgetName878273(gs.find(g=>g.id===c.bid)||{id:c.bid})} · `:""}{c.cap}</option>)}</select></label>
       :<button type="button" className="secondary pe-nova" onClick={()=>setNovaCap("tria")}><Plus size={16} aria-hidden="true"/> {t("Feina fora de pressupost")}</button>}
       {(part.noves||[]).filter(n=>!n.pidCreat&&!ps.some(x=>x.bid===(n.bid||"principal")&&String(x.r.cap||"—")===n.cap&&passa(x))).map(n=><NovaFP878349 key={n.id} n={n} d={data} treb={treb} readOnly={false} treballadors={treballadors} posa={patch=>posaNova(n.id,patch)} treu={()=>treuNova(n.id)} onPreus={onPreus}/>)}
@@ -12464,10 +12507,10 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       <div className="budget-botons-v878320">
       {/* V87.320 · l'Héctor: «Accions» tenia massa opcions a dins. Ara, a la vista: Editar (o Guardar / Cancel·lar) i PDF;
           «Afegir» (partides i pressupostos nous) i «⋯» (compartir, eines i aquest pressupost). */}
-      {!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}>{i18nT("Editar")}</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>{i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={cancelBudget8760b}>{i18nT("Cancel·lar")}</button></>}
-      {!quickMode&&!editBudget8760b&&<button type="button" className="secondary" onClick={()=>openDoc?.(budgetPrintDoc878179())}>{i18nT("PDF")}</button>}
-      {!clientMode&&!editBudget8760b&&openEmail&&<button type="button" className="secondary budget-enviar-v878337" onClick={()=>openEmail("Pressupost obra")}>{i18nT("Enviar")}</button>}
-      <ActionMenu87213 label={i18nT("Afegir")}>
+      {!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>{i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={cancelBudget8760b}>{i18nT("Cancel·lar")}</button></>}
+      {!quickMode&&!editBudget8760b&&<button type="button" className="secondary" onClick={()=>openDoc?.(budgetPrintDoc878179())}><Printer size={16} aria-hidden="true"/> {i18nT("PDF")}</button>}
+      {!clientMode&&!editBudget8760b&&openEmail&&<button type="button" className="secondary budget-enviar-v878337" onClick={()=>openEmail("Pressupost obra")}><Mail size={16} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+      <ActionMenu87213 label={<><Plus size={16} aria-hidden="true"/> {i18nT("Afegir")}</>}>
         <small className="amh-v878273">{i18nT("A aquest pressupost")}</small>
         {(!clientMode||clientLibraryEnabled)&&<button type="button" onClick={()=>openBudgetLibrary87218("","client")}>{i18nT("Afegir partides de la llibreria")}</button>}
         {(clientMode||!Object.values(caps||{}).some(a=>(a||[]).length))&&<button type="button" onClick={startManualBudget87115}>{i18nT("Començar pressupost buit")}</button>}
@@ -14941,7 +14984,7 @@ function sizeTxt(n){return n?((n/1024/1024).toFixed(2)+" MB"):"—"}
 function storageLabel(d){if(d.storage==="generat")return "Document generat dins l’app"; if(d.storage==="supabase")return "Original a Supabase Storage"; if(d.storage==="indexeddb")return "Original local IndexedDB"; if(d.hasFile)return "Original local disponible"; return "Registre sense original";}
 const generatedDocs878148Raw=[
   ...((data.pressupostos||[]).filter(p=>/\.(xlsx?|xlsm|csv)$/i.test(String(p?.nom||""))||/importat.*excel|importaci[oó].*excel/i.test(String(p?.estat||""))).map(p=>({id:`auto-excel-pressupost-${p.id||p.budgetId||Date.now()}`,auto878148:true,createdAt:p.createdAt,sourceId878193:p.id,sourceBudgetId878245:p.budgetId||"principal",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",nom:`Excel d’origen · ${p.nom||"Pressupost importat"}`,tipus:"EXCEL PRESSUPOST",data:p.data||"—",size:0,import:+p.import||0,origen:"Importació de pressupost",storage:"registre",hasFile:false,originalAvailable:false,note:"L’Excel original es començarà a conservar automàticament en les importacions noves. Aquesta entrada permet exportar una còpia actual del pressupost."})) ),
-  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impPrev:certAmount878223(r,prev),impActual:certAmount878223(r,n),impOrigen:certOriginAmount878223(r,n),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.impActual||0),0)||(+c.import||0);const totalOrigen=rows.reduce((sum,r)=>sum+(+r.impOrigen||0),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,createdAt:c.createdAt,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
+  ...((data.certificacions||[]).map(c=>{const n=+c.numero||0,prev=Math.max(n-1,0);const rows=sortPartides878132(data.partides||[]).map(r=>{let qOrigen=0;for(let i=1;i<=n;i++)qOrigen+=certQty8783(r,i);return {...r,qPrev:prev?certQty8783(r,prev):0,qAct:certQty8783(r,n),qOrigen,impPrev:certAmount878223(r,prev),impActual:certAmount878223(r,n),impOrigen:certOriginAmount878223(r,n),mesures:(r.certMesuresByNum||{})[String(n)]||[]}});const imp=rows.reduce((sum,r)=>sum+(+r.impActual||0),0)||(teQuantCert878364(data.partides,n)?0:(+c.import||0));const totalOrigen=rows.reduce((sum,r)=>sum+(+r.impOrigen||0),0);return {id:`auto-cert-${c.id||c.numero||n}`,auto878148:true,createdAt:c.createdAt,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`Certificació ${c.numero||""}`,tipus:"CERTIFICACIÓ",data:c.data||c.date||c.fecha||"—",size:0,import:imp,origen:"Certificacions d’obra",docData:{type:"certificacio",title:`CERTIFICACIÓ ${n}`,subtitle:`Import: ${money(imp)}`,certNum:n,prevNum:prev,includeMesures:false,agents:data.agents||[],rows,totalActual:imp,totalOrigen,data:fmtDate8714(c.data||c.date||c.fecha)}}})),
   ...((data.factures||[]).map(f=>{const base=+f.base||+f.total||0,ded=+f.ded||+f.descompte||0,iva=+f.iva||21,ret=+f.ret||+f.retencio||0,baseImposable=base*(1-ded/100),ivaImp=baseImposable*iva/100,retImp=baseImposable*ret/100,total=+f.total||baseImposable+ivaImp-retImp;return {id:`auto-fac-obra-${f.id||f.numero||Date.now()}`,auto878148:true,createdAt:f.createdAt,folder:"07_CERTIFICACIONS_FACTURACIO_OBRA",nom:`${f.tipus||"Factura / proforma obra"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"FACTURA").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:total,origen:"Facturació d’obra",docData:{type:"proforma",title:`Proforma ${f.numero||""}`,subtitle:f.data||"",proforma:f,agents:data.agents||[],iva,ret,ded,total,base:baseImposable,ivaImp,retImp}}})),
   ...((data.pressupostosTecnic||[]).map(p=>({id:`auto-pres-tec-${p.id||p.numero||Date.now()}`,auto878148:true,createdAt:p.createdAt,sourceId878193:p.id,folder:"00_DESPATX_TECNIC",nom:`Pressupost honoraris ${p.numero||""}`.trim(),tipus:"PRESSUPOST HONORARIS",data:p.data||"—",size:0,import:baseIva8743(p),origen:"Honoraris tècnics",docData:{...p,type:"pressuposttecnic",title:`PRESSUPOST D’HONORARIS${p.numero?` · ${p.numero}`:""}`}}))),
   ...((data.facturesTecnic||[]).map(f=>({id:`auto-fac-tec-${f.id||f.numero||Date.now()}`,auto878148:true,createdAt:f.createdAt,sourceId878193:f.id,folder:"00_DESPATX_TECNIC",nom:`${f.tipus||"Factura / proforma honoraris"} ${f.numero||""}`.trim(),tipus:String(f.tipus||"HONORARIS").toUpperCase(),data:f.data||f.date||f.fecha||"—",size:0,import:totalFactura878120(f),origen:"Honoraris tècnics",docData:{...f,type:"facturatecnica",title:`FACTURA / PROFORMA${f.numero?` · ${f.numero}`:""}`}})))
@@ -14953,17 +14996,17 @@ const generatedDocs878148=generatedDocs878148Raw.filter((doc,index,all)=>{
 });
 const shown=docs.filter(d=>docFolder(d)===folder);
 const shownGenerated878148=generatedDocs878148.filter(d=>docFolder(d)===folder);
+// V87.365 · l'Héctor (23/10/2026): «tots els grups de documents i en apretar-ne un s'obre aquell, però no a sota per no haver de fer
+// scroll». Totes les carpetes en una columna (al mòbil, una llista) i els documents de la triada al costat (al mòbil, en lloc de la llista).
+const cnt878365=f=>docs.filter(d=>docFolder(d)===f.id).length+generatedDocs878148.filter(d=>docFolder(d)===f.id).length;
+const[obert878365,setObert878365]=useState(false);
 const totalDocs=docs.length+generatedDocs878148.length;
-return <Card title={t("Documents")} action={esTreballador878326()?null:<div className="actions-inline"><label className="primary upload-label"><Upload/> {t("Adjuntar a carpeta actual")}<input type="file" onChange={add}/></label><button className="secondary" onClick={()=>openEmail("Documents expedient")}>{t("Enviar email")}</button></div>}>
+return <Card title={t("Documents")} action={esTreballador878326()?null:<div className="actions-inline"><label className="primary upload-label"><Upload/> {t("Adjuntar")}<input type="file" onChange={add}/></label><button className="secondary" onClick={()=>openEmail("Documents expedient")}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button></div>}>
   {showCfg&&<div className="storage-config"><b>{t("Configuració opcional Supabase Storage")}</b><p>{t("Si no configures Storage, els originals es guarden en local IndexedDB d’aquest navegador. Cada document queda vinculat a l’expedient i a una carpeta documental.")}</p><div className="form-grid no-pad"><label><span>{t("URL Supabase")}</span><input value={cfg.url} onChange={e=>setCfg({...cfg,url:e.target.value})}/></label><label><span>{t("Anon key")}</span><input value={cfg.key} onChange={e=>setCfg({...cfg,key:e.target.value})}/></label><label><span>{t("Bucket")}</span><input value={cfg.bucket} onChange={e=>setCfg({...cfg,bucket:e.target.value})}/></label></div><button className="primary" onClick={saveCfg}>{t("Guardar configuració")}</button></div>}
   {status&&<div className="doc-status-v38">{status}</div>}
-  <div className="documents-pro-v87152">
-    <details className="doc-folder-picker-v87152" open>
-      <summary><b>{t("Carpetes")}</b><span>{activeFolder?.label} · {shown.length+shownGenerated878148.length} {t("docs")}</span></summary>
-      {(()=>{const cnt=f=>docs.filter(d=>docFolder(d)===f.id).length+generatedDocs878148.filter(d=>docFolder(d)===f.id).length;const bt=f=>{const count=cnt(f);return <button type="button" key={f.id} className={folder===f.id?"active":""} title={f.desc||""} onClick={()=>setFolder(f.id)}><b>{f.label}</b><span>{count} {t("document")}{count===1?"":"s"}</span></button>};const amb=folders.filter(f=>cnt(f)>0||folder===f.id);const buides=folders.filter(f=>!(cnt(f)>0||folder===f.id));
-        return <><div className="doc-folder-grid-v87152">{amb.map(bt)}</div>{buides.length>0&&<details className="altres-carpetes-v878354"><summary>{t("Altres carpetes ({n})",{n:buides.length})}</summary><div className="doc-folder-grid-v87152">{buides.map(bt)}</div></details>}</>})()}
-    </details>
-    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152"><div className="folder-head-v8775"><div><h3>{activeFolder?.label}</h3></div><span>{shown.length+shownGenerated878148.length} / {totalDocs} {t("docs")}</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data} · {d.import?money(d.import):t("import pendent")} {t("· generat automàticament des de")} {d.origen}</span><em>{t("Creat:")} {fmtCreationDate878233(d.createdAt)} {t("· Obre el document amb el mateix format que s’utilitzarà per imprimir-lo o guardar-lo en PDF.")}</em>{d.note&&<em>{d.note}</em>}</div><div className="actions-inline">{d.tipus==="EXCEL PRESSUPOST"&&<button className="secondary small" onClick={()=>exportImportedBudgetCopy878245(d)}>{t("Exportar còpia Excel")}</button>}<button className="secondary small" onClick={()=>d.docData?openDoc?.(d.docData):openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}.`})}>{d.docData?t("Obrir"):t("Info")}</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} {t("· Creat:")} {fmtCreationDate878233(d.createdAt)} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>{isExcelDocument878245(d)?t("Veure Excel"):t("Obrir")}</button>{!esTreballador878326()&&<button className="danger small" onClick={()=>remove(d)}>{t("Eliminar")}</button>}</div></details>)}</>}</div></section>
+  <div className={"documents-pro-v87152 docs-md-v878365"+(obert878365?" amb-sel":"")}>
+    <nav className="docs-carpetes-v878365" aria-label={t("Carpetes")}>{folders.map(f=>{const n=cnt878365(f);return <button type="button" key={f.id} className={(folder===f.id?"on":"")+(n?"":" buida")} aria-pressed={folder===f.id} title={f.desc||""} onClick={()=>{setFolder(f.id);setObert878365(true)}}><FolderOpen size={17} aria-hidden="true"/><b>{f.label}</b><span className="n">{n}</span></button>})}</nav>
+    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152 docs-det-v878365"><div className="folder-head-v8775"><button type="button" className="link tornar-v878365" onClick={()=>setObert878365(false)}><ChevronLeft size={18} aria-hidden="true"/> {t("Carpetes")}</button><div><h3>{activeFolder?.label}</h3></div><span>{shown.length+shownGenerated878148.length} {t("docs")}</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data}{d.import?" · "+money(d.import):""}</span></div><div className="actions-inline">{d.tipus==="EXCEL PRESSUPOST"&&<button className="secondary small" onClick={()=>exportImportedBudgetCopy878245(d)}>{t("Exportar còpia Excel")}</button>}<button className="secondary small" onClick={()=>d.docData?openDoc?.(d.docData):openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}.`})}>{d.docData?t("Obrir"):t("Info")}</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} {t("· Creat:")} {fmtCreationDate878233(d.createdAt)} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>{isExcelDocument878245(d)?t("Veure Excel"):t("Obrir")}</button>{!esTreballador878326()&&<button className="danger small" onClick={()=>remove(d)}>{t("Eliminar")}</button>}</div></details>)}</>}</div></section>
   </div>
 </Card>
 }
@@ -15175,7 +15218,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.364",
+    app_version:"87.365",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

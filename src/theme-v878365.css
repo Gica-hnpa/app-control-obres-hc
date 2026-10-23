@@ -1,0 +1,60 @@
+/* V87.365 · Documents i Partes: tots els grups a la vista en una columna i, en tocar-ne un, el seu contingut al costat
+   (al mòbil, la llista i, en tocar-ne un, el contingut al seu lloc amb «‹ Carpetes» / «‹ Capítols») */
+
+/* ── Documents */
+html body .documents-pro-v87152.docs-md-v878365{display:grid!important;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:start;padding:14px 16px}
+html body .docs-carpetes-v878365{display:flex;flex-direction:column;gap:2px;position:sticky;top:calc(var(--obra-bar-h,0px) + 10px);max-height:calc(100vh - var(--obra-bar-h,0px) - 30px);overflow:auto;padding:5px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .docs-carpetes-v878365 button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:40px;padding:7px 10px;border-radius:8px;font:500 14px/1.25 var(--app-font,inherit);color:var(--co-ink)}
+html body .docs-carpetes-v878365 button svg{color:var(--co-ink-3)}
+html body .docs-carpetes-v878365 button b{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .docs-carpetes-v878365 button .n{min-width:22px;text-align:center;padding:1px 7px;border-radius:999px;background:#EEF2F6;color:var(--co-ink-2);font-size:12px;font-weight:700}
+html body .docs-carpetes-v878365 button.buida b{font-weight:500;color:var(--co-ink-3)}
+html body .docs-carpetes-v878365 button.buida .n{background:transparent;color:var(--co-ink-3)}
+html body .docs-carpetes-v878365 button:hover{background:#F1F5F9}
+html body .docs-carpetes-v878365 button.on{background:#EFF6FF;color:var(--co-accent-ink,#1D4ED8)}
+html body .docs-carpetes-v878365 button.on svg{color:var(--co-accent,#2563EB)}
+html body .docs-carpetes-v878365 button.on b{font-weight:700;color:var(--co-accent-ink,#1D4ED8)}
+html body .docs-carpetes-v878365 button.on .n{background:var(--co-accent,#2563EB);color:#fff}
+html body .docs-carpetes-v878365 button:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:-2px}
+html body .docs-det-v878365{min-width:0;margin:0!important}
+html body .docs-det-v878365 .tornar-v878365{display:none}
+@media (max-width:700px){
+  html body .documents-pro-v87152.docs-md-v878365{grid-template-columns:minmax(0,1fr);padding:10px}
+  html body .docs-carpetes-v878365{position:static;max-height:none;overflow:visible}
+  html body .docs-carpetes-v878365 button{min-height:46px}
+  html body .docs-md-v878365:not(.amb-sel) .docs-det-v878365{display:none}
+  html body .docs-md-v878365.amb-sel .docs-carpetes-v878365{display:none}
+  html body .docs-det-v878365 .tornar-v878365{display:inline-flex;align-items:center;gap:4px;margin:0 0 6px;padding:6px 0;font-weight:700}
+  html body .docs-det-v878365 .folder-head-v8775{flex-wrap:wrap}
+}
+
+/* ── Partes: capítols i partides */
+html body .parte-ed-v878349 .pe-md-v878365{display:grid;grid-template-columns:300px minmax(0,1fr);gap:12px;align-items:start}
+html body .parte-ed-v878349 .pe-caps-v878365{display:flex;flex-direction:column;gap:4px;position:sticky;top:calc(var(--obra-bar-h,0px) + 10px);max-height:calc(100vh - var(--obra-bar-h,0px) - 30px);overflow:auto}
+html body .parte-ed-v878349 .pe-caps-v878365 h3{margin:8px 4px 2px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--co-ink-3)}
+html body .parte-ed-v878349 .pe-caps-v878365 .pe-capbtn{display:grid;grid-template-columns:minmax(0,1fr) 18px;grid-template-areas:"b c" "s c";align-items:center;column-gap:8px;row-gap:2px;min-height:54px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .parte-ed-v878349 .pe-caps-v878365 .pe-capbtn b{grid-area:b;font-size:14.5px}
+html body .parte-ed-v878349 .pe-caps-v878365 .pe-capbtn span{grid-area:s}
+html body .parte-ed-v878349 .pe-caps-v878365 .pe-capbtn .chev{grid-area:c}
+html body .parte-ed-v878349 .pe-caps-v878365 .pe-capbtn.on{border-color:var(--co-accent,#2563EB);background:#EFF6FF}
+html body .parte-ed-v878349 .pe-caps-v878365 .pe-capbtn.on b{color:var(--co-accent-ink,#1D4ED8)}
+html body .parte-ed-v878349 .pe-det-v878365{margin:0;padding:6px 12px 12px;min-width:0}
+html body .parte-ed-v878349 .pe-det-v878365>h4{margin:8px 2px 10px;font-size:16px}
+html body .parte-ed-v878349 .pe-det-v878365 .tornar-cap-v878365{display:inline-flex;align-items:center;gap:4px;padding:6px 0;font-weight:700}
+html body .parte-ed-v878349 .pe-capitol.obert>div.pe-capbtn{cursor:default}
+@media (max-width:700px){
+  html body .parte-ed-v878349 .pe-md-v878365{grid-template-columns:minmax(0,1fr)}
+  html body .parte-ed-v878349 .pe-caps-v878365{position:static;max-height:none;overflow:visible}
+  html body .parte-ed-v878349 .pe-md-v878365.amb-sel .pe-caps-v878365{display:none}
+}
+
+/* ── icona i paraula als botons de la capçalera del pressupost */
+html body .budget-botons-v878320>button,html body .budget-botons-v878320>.action-menu-v87213>summary{display:inline-flex;align-items:center;gap:6px}
+html body .budget-botons-v878320 svg{flex:0 0 auto}
+/* ── «Hores del personal» plegat a Despeses de l'obra (constructora) */
+html body details.pers-obra-plegat-v878365{margin:0 0 12px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body details.pers-obra-plegat-v878365>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:48px;padding:0 14px;font-weight:700;color:var(--co-ink)}
+html body details.pers-obra-plegat-v878365>summary::-webkit-details-marker{display:none}
+html body details.pers-obra-plegat-v878365>summary .chev{margin-left:auto;color:var(--co-ink-3);transition:transform .15s}
+html body details.pers-obra-plegat-v878365[open]>summary .chev{transform:rotate(90deg)}
+html body details.pers-obra-plegat-v878365>.pers-obra-v878340,html body details.pers-obra-plegat-v878365>*:not(summary){margin:0 10px 10px}
