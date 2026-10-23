@@ -1087,6 +1087,24 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils: `src/theme-v878360.css`. Prova: `avisos360test.mjs` (16). Adaptades `facturacio337test` (ordre i la factura que es marca
       com a cobrada), `compartides347test`, `mobiltest` (versió) i `constructor336test` (la «Foto del Cadastre» de la V87.356 no és
       l'enllaç del Cadastre).
+  - **V87.361 · Afegir de la llibreria i la partida sencera:**
+    - **«Afegir de la llibreria»** (`AfegirLlibreria878361`, `afegeixLlibreria878361`; el portal de client continua amb la finestra
+      d'abans): abans s'obria als «Habituals del client» (sovint 0, amb un text que deia d'anar a l'altra pestanya), les partides anaven al
+      primer capítol i el pressupost quedava en edició (si no es premia «Guardar canvis», es perdien). Ara una sola llista amb el cercador i
+      els capítols de Preus (els habituals del client primer, «Habitual»; «Ja hi és» si ja és al pressupost); cada partida triada amb la
+      quantitat i el capítol (el del mateix nom, `nomSenseNum878361`, o «Capítol nou: …», que es crea amb el número següent,
+      `nouCap878361`); «Afegir N partides» les desa al moment (`persistBudgetCaps878179`) si no s'està editant.
+    - **Fitxa de la partida** (`FitxaPartida878361`, en lloc de `PartidaReadingModal87208`): s'obre tocant la partida (el concepte a
+      l'ordinador, la fila al mòbil) fora d'edició. Codi, quantitat, preu, import, descripció i «Com es fa el preu» amb les parts del
+      descompost (`partsPartida878361`: mà d'obra —hores—, materials, maquinària i altres, industrials; CI, DGE, BI; preu unitari; avís si
+      el preu de la partida no és el del descompost). Cada part es desplega amb les seves línies.
+    - **Descompost senzill** (`DescompostSenzill878361`, `taulaSenzilla878361`): sense descompost, «Fer un descompost senzill» (posa el
+      pressupost en edició): mà d'obra, material i altres per unitat i CI, DGE i BI % (de sèrie els de l'obra o de l'empresa,
+      `defectesPreu878361`) → el preu, desat com un descompost de sempre (`descompostTable`). Els % s'apliquen en cadena
+      (`recalculateBreakdownTableV87232`).
+    - Estils: `src/theme-v878361.css`. Prova: `pressupost361test.mjs` (19). Adaptada `habitualstest`. **Proves antigues que fallen
+      també amb la V87.360** (no les ha trencat aquesta versió): `menustest` (el menú «PDF» de Certificacions a ediifci CATALUNYA queda
+      escurçat a 160 px) i `pdfpressuposttest` (busca la tira de pressupostos, que des de la V87.342 és la barra de fases).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

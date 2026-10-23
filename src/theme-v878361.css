@@ -1,0 +1,79 @@
+/* V87.361 · Fitxa de la partida, descompost senzill i afegir de la llibreria */
+html body .fitxa-partida-v878361{display:flex;flex-direction:column;gap:14px;padding:4px 20px 0}
+html body .fitxa-partida-v878361 .xifres{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+html body .fitxa-partida-v878361 .xifres>div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .fitxa-partida-v878361 .xifres small{color:var(--co-ink-3);font-size:12px}
+html body .fitxa-partida-v878361 .xifres b{font-size:16px;font-variant-numeric:tabular-nums}
+html body .fitxa-partida-v878361 .xifres .imp{background:#EFF6FF;border-color:#BFDBFE}
+html body .fitxa-partida-v878361 h4{margin:0 0 6px;font-size:14px;color:var(--co-ink-2)}
+html body .fitxa-partida-v878361 .desc p{margin:0;white-space:pre-wrap;line-height:1.45}
+html body .fitxa-partida-v878361 .desc textarea{width:100%;min-height:90px;font:inherit}
+html body .fitxa-partida-v878361 .preu{border:1px solid var(--co-line);border-radius:12px;padding:12px 14px}
+html body .fitxa-partida-v878361 .parts{display:flex;flex-direction:column}
+html body .fitxa-partida-v878361 .fila{display:flex;align-items:center;gap:8px;width:100%;min-height:42px;padding:6px 0;border:0;border-bottom:1px solid var(--co-line);background:none;box-shadow:none;border-radius:0;text-align:left;font:inherit;color:var(--co-ink)}
+html body .fitxa-partida-v878361 button.fila{cursor:pointer}
+html body .fitxa-partida-v878361 .fila>span{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}
+html body .fitxa-partida-v878361 .fila small{color:var(--co-ink-3);font-size:12.5px;font-weight:500}
+html body .fitxa-partida-v878361 .fila b{font-variant-numeric:tabular-nums}
+html body .fitxa-partida-v878361 .fila .chev{flex:0 0 auto;transition:transform .15s;color:var(--co-ink-3)}
+html body .fitxa-partida-v878361 .fila[aria-expanded="true"] .chev{transform:rotate(90deg)}
+html body .fitxa-partida-v878361 .fila.total{font-weight:700}
+html body .fitxa-partida-v878361 .fila.pct{padding-left:24px}
+html body .fitxa-partida-v878361 .fila.final{border-bottom:0;font-size:17px;font-weight:800}
+html body .fitxa-partida-v878361 .linies{display:flex;flex-direction:column;padding:4px 0 8px 24px;border-bottom:1px solid var(--co-line)}
+html body .fitxa-partida-v878361 .linies>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 12px;padding:3px 0;font-size:13px}
+html body .fitxa-partida-v878361 .linies small{color:var(--co-ink-3)}
+html body .fitxa-partida-v878361 .linies b{font-weight:600;font-variant-numeric:tabular-nums}
+html body .fitxa-partida-v878361 .difer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;padding:8px 10px;border-radius:10px;background:#FFFBEB;color:#92400E;font-size:13.5px}
+html body .fitxa-partida-v878361 .sense{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+html body .fitxa-partida-v878361 .sense b{color:var(--co-ink-2)}
+html body .fitxa-partida-v878361 .eines{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+html body .senzill-v878361{display:flex;flex-direction:column;gap:10px;margin-top:10px;padding:12px;border-radius:12px;background:var(--co-surface-2,#f8fafc)}
+html body .senzill-v878361 h4 small{font-weight:500;color:var(--co-ink-3)}
+html body .senzill-v878361 .camps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html body .senzill-v878361 .camps label{display:flex;flex-direction:column;gap:4px;font-size:13px}
+html body .senzill-v878361 .camps label span{display:block;margin:0;font-weight:700;font-size:12.5px}
+html body .senzill-v878361 .camps input{width:100%;text-align:right;font-variant-numeric:tabular-nums}
+html body .senzill-v878361 .res{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px}
+html body .senzill-v878361 .res b{font-size:16px;margin-left:6px}
+html body .senzill-v878361 .bts{display:flex;justify-content:flex-end;gap:8px}
+html body .lib-afegir-v878361{display:flex;flex-direction:column;gap:10px;padding:4px 20px 0;min-width:min(720px,90vw)}
+html body .lib-afegir-v878361 .cerca{display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--co-line);border-radius:12px;background:#fff}
+html body .lib-afegir-v878361 .cerca input{flex:1;border:0;outline:none;min-height:46px;font-size:16px;background:transparent;box-shadow:none}
+html body .lib-afegir-v878361 .caps{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+html body .lib-afegir-v878361 .caps button{flex:0 0 auto;padding:6px 12px;border-radius:999px;font-size:13px;white-space:nowrap}
+html body .lib-afegir-v878361 .caps button[aria-pressed="true"]{background:var(--co-accent,#2563EB);border-color:var(--co-accent,#2563EB);color:#fff}
+html body .lib-afegir-v878361 .llista{display:flex;flex-direction:column;max-height:52vh;overflow:auto;border:1px solid var(--co-line);border-radius:12px}
+html body .lib-afegir-v878361 .fila{border-bottom:1px solid var(--co-line)}
+html body .lib-afegir-v878361 .fila:last-child{border-bottom:0}
+html body .lib-afegir-v878361 .fila.on{background:#EFF6FF}
+html body .lib-afegir-v878361 .tria{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:8px 12px;border:0;background:none;box-shadow:none;border-radius:0;text-align:left;font:inherit;color:var(--co-ink);cursor:pointer}
+html body .lib-afegir-v878361 .chk{flex:0 0 22px;width:22px;height:22px;border:2px solid #94A3B8;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff}
+html body .lib-afegir-v878361 .fila.on .chk{background:var(--co-accent,#2563EB);border-color:var(--co-accent,#2563EB)}
+html body .lib-afegir-v878361 .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .lib-afegir-v878361 .txt b{font-weight:700}
+html body .lib-afegir-v878361 .txt small{color:var(--co-ink-3);font-size:12.5px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+html body .lib-afegir-v878361 .txt em{font-style:normal;font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;background:#DCFCE7;color:#166534}
+html body .lib-afegir-v878361 .txt em.ja{background:#FEF3C7;color:#92400E}
+html body .lib-afegir-v878361 .preu{display:flex;flex-direction:column;align-items:flex-end;font-variant-numeric:tabular-nums}
+html body .lib-afegir-v878361 .preu small{color:var(--co-ink-3)}
+html body .lib-afegir-v878361 .opc{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px;padding:0 12px 10px 44px}
+html body .lib-afegir-v878361 .opc label{display:flex;flex-direction:column;gap:3px;font-size:12.5px}
+html body .lib-afegir-v878361 .opc label span{display:block;margin:0;font-weight:700}
+html body .lib-afegir-v878361 .opc input{text-align:right}
+html body .lib-afegir-v878361 .opc select,html body .lib-afegir-v878361 .opc input{width:100%;min-height:42px}
+html body .lib-afegir-v878361 .buit{padding:22px;text-align:center;color:var(--co-ink-2)}
+html body .lib-afegir-v878361 .peu{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 -20px;padding:12px 20px;border-top:1px solid var(--co-line);background:var(--co-surface,#fff)}
+html body .lib-afegir-v878361 .peu span{color:var(--co-ink-2);font-size:14px}
+html body .lib-afegir-v878361 .peu .primary{min-height:46px;padding:0 20px}
+html body .budget-concept-summary-v87173.obre-fitxa-v878361{padding:0;border:0;background:none;box-shadow:none;font:inherit;font-weight:700;text-align:left;color:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px}
+html body .budget-concept-summary-v87173.obre-fitxa-v878361:hover{text-decoration-color:currentColor}
+@media (max-width:640px){
+  html body .fitxa-partida-v878361{padding-inline:14px}
+  html body .fitxa-partida-v878361 .xifres{grid-template-columns:1fr 1fr}
+  html body .lib-afegir-v878361{padding-inline:14px;min-width:0}
+  html body .lib-afegir-v878361 .peu{margin:0 -14px;padding:10px 14px}
+  html body .lib-afegir-v878361 .opc{grid-template-columns:96px minmax(0,1fr);padding-left:12px}
+  html body .lib-afegir-v878361 .llista{max-height:none}
+}
+html body .lib-afegir-v878361 .cerca input{border:0!important;box-shadow:none!important;padding-left:2px}
