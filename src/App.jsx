@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.383";
+const APP_VERSION878264="87.384";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1189,6 +1189,85 @@ function descompostTableToText878174(table){
   lines.push(`TOTAL DESCOMPOSAT: ${money(recalculated.total)}`);
   return lines.join("\n");
 }
+// V87.384 · descompostos d'un Excel amb un bloc per partida a cada full (l'Héctor, 24/10/2026, Brava · Llafranc: «mira com surt un
+// descomposat»): «14002 — Porta…», «↩ Tornar al PRESSUPOST · 14002», la taula i «PREU UNITARI FINAL». Abans el full sencer era el
+// descompost de la primera partida, les línies «BASE DESPRÉS DE CI» comptaven com un cost i els % (desats com a 0,02) eren 0,02 %.
+const RE_TITOL_BLOC878384=/^\s*([0-9A-Za-z][\w.\-]*)\s+[—–]\s+(.+)$/;
+const esTornar878384=v=>/^\s*↩?\s*tornar\s+al\s+pressupost/i.test(String(v??""));
+const normD878384=v=>String(v??"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+// treu el títol del bloc, «Tornar al pressupost», la capçalera repetida, les bases i subtotals de l'Excel (marca que el % següent comença
+// un grup) i el que hi ha després del preu final; fraccio: un % entre 0 i 1 és una fracció (0,02 = 2 %)
+function netejaFilesDescompost878384(rows=[],{fraccio=false}={}){
+  const out=[];let nouGrup=false;
+  for(const r of rows||[]){
+    const c=String(r?.concepte??"").trim(),n=normD878384(c);
+    const sense=String(r?.q??"").trim()===""&&String(r?.pu??"").trim()==="";
+    if(!r?.isSection){
+      if(esTornar878384(c))continue;
+      if(/^(concepte|concepto)$/.test(n)&&/^(unitat|unidad)$/.test(normD878384(r.ut)))continue;
+      if(sense&&RE_TITOL_BLOC878384.test(c))continue;
+      if(sense&&/^(base|subtotal)\b/.test(n)&&!/^subtotal\s+(descompost|descomposat|recursos?|materials?|ma d obra)\b/.test(n)){nouGrup=true;continue}
+    }
+    let x=r;
+    if(!r?.isSection&&/%/.test(String(r?.ut??""))){
+      x={...r};delete x.mateixaBase878384;
+      if(nouGrup){x.nouGrup878384=true;nouGrup=false}
+      if(fraccio){const q=parseNum8770(r.q);if(q>0&&q<1)x.q=String(Math.round(q*1e6)/1e4).replace(".",",")}
+    }
+    out.push(x);
+    if(!r?.isSection&&/\b(preu|precio)\s+(unitari|unitario)\s+final\b/.test(n))break;
+  }
+  return out;
+}
+// els % d'un mateix grup (després d'una base de l'Excel) sumats sobre la mateixa base, o en cadena: el que doni el preu de la partida
+function triaBasePct878384(table,pu){
+  const rows=table?.rows||[];
+  if(!rows.some(r=>/%/.test(String(r?.ut??""))))return recalculateBreakdownTableV87232(table).table;
+  let prev=false;
+  const sumats=rows.map(r=>{if(r?.isSection)return r;const p=/%/.test(String(r?.ut??""));const x={...r};delete x.mateixaBase878384;if(p&&prev&&!r.nouGrup878384)x.mateixaBase878384=true;prev=p;return x});
+  const enCadena=rows.map(r=>{if(!r||r.isSection)return r;const x={...r};delete x.mateixaBase878384;return x});
+  const a=recalculateBreakdownTableV87232({...table,rows:sumats}),b=recalculateBreakdownTableV87232({...table,rows:enCadena});
+  const p=parseNum8770(pu)||0;
+  if(p>0)return Math.abs(a.total-p)<Math.abs(b.total-p)-0.005?a.table:b.table;
+  return table?.sumats878384?a.table:b.table;
+}
+// una taula d'abans (importada amb l'error): els blocs de les altres partides, a part
+function blocsDescompost878384(table){
+  const rows=table?.rows||[];const blocs=[{codi:"",titol:table?.title||"",rows:[]}];
+  rows.forEach((r,i)=>{const c=String(r?.concepte??"").trim(),m=!r?.isSection&&c.match(RE_TITOL_BLOC878384);
+    if(m&&esTornar878384(rows[i+1]?.concepte)){blocs.push({codi:m[1],titol:c,rows:[]});return}
+    blocs[blocs.length-1].rows.push(r)});
+  return blocs;
+}
+function taulaTrencada878384(table){
+  const rows=table?.rows||[];if(!rows.length||table?.net878384)return false;
+  const excel=/\.xlsx?\b/i.test(String(table?.source||""));
+  return rows.some(r=>esTornar878384(r?.concepte))
+    ||(excel&&rows.some(r=>!r?.isSection&&String(r?.q??"").trim()===""&&String(r?.pu??"").trim()===""&&/^base\b/.test(normD878384(r?.concepte))))
+    ||(excel&&rows.some(r=>!r?.isSection&&/%/.test(String(r?.ut??""))&&parseNum8770(r.q)>0&&parseNum8770(r.q)<1));
+}
+// arregla les partides d'una obra: cada bloc a la seva partida (si no en té), sense les línies de l'Excel que no són recursos, amb els %
+// bé i sumats o en cadena segons el preu; torna null si no hi ha res a arreglar
+function reparaDescompostos878384(partides=[]){
+  if(!(partides||[]).some(p=>taulaTrencada878384(p?.descompostTable)))return null;
+  const ps=(partides||[]).map(p=>({...p}));let n=0;const abans={};
+  const posa=(p,rows,base)=>{
+    const t1=triaBasePct878384({...base,rows:netejaFilesDescompost878384(rows,{fraccio:true})},p.pu),t0=triaBasePct878384({...base,rows:netejaFilesDescompost878384(rows)},p.pu);
+    const pu=parseNum8770(p.pu)||0,tot=t=>recalculateBreakdownTableV87232(t).total;
+    const tb={...(pu>0&&Math.abs(tot(t0)-pu)<Math.abs(tot(t1)-pu)-0.005?t0:t1),net878384:true};
+    p.descompostTable=tb;p.descompost=descompostTableToText878174(tb);n++};
+  ps.forEach(p=>{
+    const tb=p.descompostTable;if(!taulaTrencada878384(tb))return;
+    abans[p.id||p.codi||""]=tb;
+    const blocs=blocsDescompost878384(tb);
+    posa(p,blocs[0].rows,{...tb,title:blocs[0].titol});
+    blocs.slice(1).forEach(b=>{
+      const q=ps.find(x=>x!==p&&!x.descompostTable?.rows?.length&&(String(x.codi||"")===b.codi||codeMatches878177(x.codi,b.codi)));
+      if(q)posa(q,b.rows,{...tb,title:b.titol});
+    });
+  });
+  return {partides:ps,n,abans};
+}
 function descompostRowsToTable878174(rows=[],source="Excel descomposat"){
   const clean=v=>String(v??"").trim();
   const norm=v=>clean(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
@@ -1359,10 +1438,26 @@ function workbookDescompostsFromWorkbook878228(wb,fileName="Excel"){
   (wb?.SheetNames||[]).forEach(sheetName=>{
     if(isReservedWorkbookSheet878228(sheetName))return;
     const ws=wb.Sheets[sheetName];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-    const table=descompostRowsToTable878174(rows,`${fileName} · ${sheetName}`);
-    const parsed=descompostRowsToText878161(rows,`${fileName} · ${sheetName}`);
-    const merged={...parsed,table,total:table.total||parsed.total||0,lines:table.lines||parsed.lines||0,text:(table.rows&&table.rows.length?descompostTableToText878174(table):parsed.text)};
+    // V87.384 · un % amb format de percentatge (2 %) es desa com a 0,02: es llegeix com a 2
+    const rows0=XLSX.utils.sheet_to_json(ws,{header:1,defval:""}),rowsW=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:false});
+    const rows=rows0.map((r,i)=>(r||[]).map((v,k)=>typeof v==="number"&&/%\s*$/.test(String(rowsW[i]?.[k]??""))?Math.round(v*1e6)/1e4:v));
+    const fesTaula=(rs,src)=>{const tb0=descompostRowsToTable878174(rs,src);const tb=recalculateBreakdownTableV87232({...tb0,rows:netejaFilesDescompost878384(tb0.rows||[])});const table={...tb.table,net878384:true,total:tb.total,lines:tb.lines};const parsed=descompostRowsToText878161(rs,src);return {...parsed,table,total:table.total||parsed.total||0,lines:table.lines||parsed.lines||0,text:(table.rows&&table.rows.length?descompostTableToText878174(table):parsed.text)}};
+    // un bloc per partida: «codi — títol» i «↩ Tornar al PRESSUPOST»
+    const mk=rows.map((r,i)=>(r||[]).some(c=>esTornar878384(c))?i:-1).filter(i=>i>=0);
+    if(mk.length){
+      const ini=mk.map(i=>i>0&&(rows[i-1]||[]).some(c=>RE_TITOL_BLOC878384.test(String(c??"")))?i-1:i);
+      ini.forEach((s,j)=>{
+        const bloc=rows.slice(s,ini[j+1]??rows.length);
+        const tit=String((bloc[0]||[]).find(c=>RE_TITOL_BLOC878384.test(String(c??"")))||"").trim(),m=tit.match(RE_TITOL_BLOC878384);
+        if(!m)return;
+        const merged=fesTaula(bloc,`${fileName} · ${sheetName} · ${m[1]}`);
+        if(!merged.lines&&!merged.total)return;
+        merged.table={...merged.table,title:tit};
+        items.push({sheet:sheetName,code:m[1],title:tit,identifiers:[m[1],m[2]],bloc878384:true,...merged});
+      });
+      return;
+    }
+    const merged=fesTaula(rows,`${fileName} · ${sheetName}`);
     if(!merged.lines && !merged.total)return;
     const identifiers=[sheetName,...(rows||[]).slice(0,18).flat().map(v=>String(v||"").trim()).filter(Boolean)];
     items.push({sheet:sheetName,code:findDescompostTargetCode878176(sheetName,rows),title:findDescompostTitle878176(sheetName,rows),identifiers,...merged});
@@ -1374,7 +1469,7 @@ function decompTargetScore878228(item,row){
   const rowCanon=canonCode878177(row?.codi);
   if(!rowCode)return 0;
   let best=0;
-  const identifiers=[item?.sheet,...(item?.identifiers||[]).slice(1,13)].filter(Boolean);
+  const identifiers=(item?.bloc878384?[item.code]:[item?.sheet,...(item?.identifiers||[]).slice(1,13)]).filter(Boolean);
   identifiers.forEach((raw,position)=>{
     const candidate=normCode878176(raw);
     const candidateCanon=canonCode878177(raw);
@@ -1406,11 +1501,13 @@ function attachWorkbookDescompostos878228(rows=[],items=[],fileName="Excel"){
       if(score&&(!winner||score>winner.score))winner={index,row,score};
     });
     if(!winner){unmatchedSheets.push(item.sheet);return;}
-    const total=item.total||descompostTableTotal878174(item.table)||descompostTotal878160(item.text);
+    // V87.384 · els % sumats o en cadena, el que doni el preu de la partida
+    const taula878384=item.table?triaBasePct878384(item.table,winner.row.pu):null;
+    const total=(taula878384?recalculateBreakdownTableV87232(taula878384).total:0)||item.total||descompostTableTotal878174(item.table)||descompostTotal878160(item.text);
     next[winner.index]={
       ...winner.row,
-      descompost:item.text,
-      descompostTable:item.table||null,
+      descompost:taula878384?descompostTableToText878174(taula878384):item.text,
+      descompostTable:taula878384||item.table||null,
       descompostSource:fileName,
       descompostSheet:item.sheet,
       descompostImportedAt:new Date().toISOString(),
@@ -8748,18 +8845,20 @@ function LiniesChart878343({labels=[],series=[],titol="",tipLabel}){
   const n=labels.length;
   function onMove(e){const r=ref.current?.getBoundingClientRect();if(!r)return;const x=(e.clientX-r.left)/r.width*W;let i=Math.round((x-L)/(iw/(Math.max(1,n-1))));i=Math.max(0,Math.min(n-1,i));setHi(i)}
   // etiquetes al final de les línies, sense que es trepitgin
-  const ends=!compact&&series.length<=4?series.map(s=>{let k=s.vals.length-1;while(k>=0&&s.vals[k]==null)k--;return k<0?null:{s,k,y:Y(s.vals[k])}}).filter(Boolean).sort((a,b)=>a.y-b.y):[];
+  const ends=!compact&&n>1&&series.length<=4?series.map(s=>{let k=s.vals.length-1;while(k>=0&&s.vals[k]==null)k--;return k<0?null:{s,k,y:Y(s.vals[k])}}).filter(Boolean).sort((a,b)=>a.y-b.y):[];
   for(let i=1;i<ends.length;i++)if(ends[i].y-ends[i-1].y<15)ends[i].y=ends[i-1].y+15;
   const tipX=hi!=null?X(hi)/W*100:0;
   return <div className="rc-chart-v878343">
-    {series.length>1&&<div className="rc-llegenda-v878343">{series.map(s=><span key={s.k}><i style={{background:s.color}}/>{s.nom}</span>)}</div>}
+    {series.length>1&&<div className="rc-llegenda-v878343">{series.map(s=><span key={s.k}><i style={{background:s.dash?`repeating-linear-gradient(90deg,${s.color} 0 6px,transparent 6px 10px)`:s.color}}/>{s.nom}</span>)}</div>}
     <div className="rc-svgwrap-v878343" ref={wrap}>
       <svg ref={ref} viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{aspectRatio:`${W} / ${H}`}} preserveAspectRatio="xMidYMid meet" role="img" aria-label={titol} tabIndex={0} onMouseMove={onMove} onMouseLeave={()=>setHi(null)} onKeyDown={e=>{if(e.key==="ArrowRight")setHi(h=>Math.min(n-1,(h??-1)+1));else if(e.key==="ArrowLeft")setHi(h=>Math.max(0,(h??n)-1))}} onBlur={()=>setHi(null)}>
         {ticks.map(v=><g key={v}><line x1={L} x2={W-R} y1={Y(v)} y2={Y(v)} className={v===0?"zero":"grid"}/><text x={L-8} y={Y(v)+4} textAnchor="end" className="ax">{curt878343(v)}</text></g>)}
         {labels.map((l,i)=>compact&&i%2?null:<text key={i} x={X(i)} y={H-10} textAnchor="middle" className="ax">{l}</text>)}
         {hi!=null&&<line x1={X(hi)} x2={X(hi)} y1={T} y2={T+ih} className="cross"/>}
-        {series.map(s=>{const segs=[];let cur=[];s.vals.forEach((v,i)=>{if(v==null){if(cur.length)segs.push(cur);cur=[]}else cur.push(`${X(i)},${Y(v)}`)});if(cur.length)segs.push(cur);
-          return <g key={s.k}>{segs.map((p,j)=><polyline key={j} points={p.join(" ")} fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>)}
+        {n===1&&(()=>{const ss=series.filter(s=>s.vals[0]!=null),bw=Math.min(56,iw/(ss.length*2.2)),gap=6,tot=ss.length*bw+(ss.length-1)*gap,x0=X(0)-tot/2;
+          return <g className="barres-v878384">{ss.map((s,j)=>{const v=s.vals[0],y0=Y(0),y1=Y(v);return <rect key={s.k} x={x0+j*(bw+gap)} y={Math.min(y0,y1)} width={bw} height={Math.max(1,Math.abs(y1-y0))} rx="4" fill={s.color}/>})}</g>})()}
+        {n>1&&series.map(s=>{const segs=[];let cur=[];s.vals.forEach((v,i)=>{if(v==null){if(cur.length)segs.push(cur);cur=[]}else cur.push(`${X(i)},${Y(v)}`)});if(cur.length)segs.push(cur);
+          return <g key={s.k}>{segs.map((p,j)=><polyline key={j} points={p.join(" ")} fill="none" stroke={s.color} strokeDasharray={s.dash?"7 5":undefined} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/>)}
             {s.vals.map((v,i)=>v==null?null:(i===hi||s.vals.filter(x=>x!=null).length===1)?<circle key={i} cx={X(i)} cy={Y(v)} r="4.5" fill={s.color} stroke="#fff" strokeWidth="2"/>:null)}</g>})}
         {ends.map(e=><text key={e.s.k} x={X(e.k)+8} y={e.y+4} className="end">{e.s.nom.length>16?e.s.nom.slice(0,15)+"…":e.s.nom}</text>)}
         <rect x={L} y={T} width={iw} height={ih} fill="transparent"/>
@@ -9046,8 +9145,9 @@ function RendimentFases878342({data={},setData,obraId="",fase="principal",tota=f
   const base=Math.max(r.ingressos,r.directe+r.dge,1);
   const seg=[["dir",r.directe,t("Costos directes")],["dge",r.dge,t("DGE")],["ben",Math.max(0,r.benefici),t("Benefici")]].filter(x=>x[1]>0.005);
   const difBi=r.pct!=null&&r.biPct!=null?r.pct-r.biPct:null;
+  const resum878384=r.ingressos<0.005&&r.directe<0.005?`${t("Pressupost")} ${money(r.pressupost)}`:ambBenefici?`${t("Certificat")} ${money(r.certificat)} · ${t("Benefici")} ${bo?"+":""}${money(r.benefici)}${r.pct!=null?" ("+pct(r.pct)+")":""}`:`${t("Certificat")} ${money(r.certificat)} · ${t("Marge de l’obra")} ${money(r.marge)}`;
   return <div className="stack rend-fases-v878342">
-    <Card title={t("Rendiment · {fase}",{fase:nomF})} className="rf-v878342">
+    <CardOPlega878369 title={t("Rendiment · {fase}",{fase:nomF})} resum={resum878384} className="rf-v878342">
       <div className="rf-kpis-v878342">
         <div><small>{t("Pressupost")}</small><b>{money(r.pressupost)}</b></div>
         <div><small>{t("Certificat a origen")}</small><b>{money(r.certificat)}</b><span>{r.pressupost>0.005?t("{p} del pressupost",{p:pct(r.certificat/r.pressupost*100)}):""}</span></div>
@@ -9070,7 +9170,7 @@ function RendimentFases878342({data={},setData,obraId="",fase="principal",tota=f
         <label><span>{t("DGE (%)")}</span><input inputMode="decimal" disabled={readOnly} defaultValue={r.cfg.dgeObra!=null?String(r.cfg.dgeObra).replace(".",","):""} placeholder={r.cfg.dgeEmp!=null?String(r.cfg.dgeEmp).replace(".",","):"0"} onBlur={e=>desaCfg("dge",e.target.value)} key={"dge"+(r.cfg.dgeObra??"")}/></label>
         <label><span>{t("BI previst (%)")}</span><input inputMode="decimal" disabled={readOnly} defaultValue={r.cfg.biObra!=null?String(r.cfg.biObra).replace(".",","):""} placeholder={r.cfg.biEmp!=null?String(r.cfg.biEmp).replace(".",","):"—"} onBlur={e=>desaCfg("bi",e.target.value)} key={"bi"+(r.cfg.biObra??"")}/></label>
       </div>}
-    </Card>
+    </CardOPlega878369>
     <EvolucioObra878366 data={data} obraId={obraId} ambBenefici={ambBenefici}/>
     {multi&&!f&&<ResumFases878342 data={data} despeses={despeses} personal={personal} obraId={obraId} ambBenefici={ambBenefici}/>}
     <CapitolsFase878342 data={data} fase={f} despeses={despeses}/>
@@ -9088,12 +9188,15 @@ function EvolucioObra878366({data,obraId,ambBenefici}){
   ["cert","dir","pers"].forEach(k=>Object.entries(x[k]).forEach(([y,arr])=>(arr||[]).forEach((v,m)=>{if(Math.abs(v)>0.004){const i=+y*12+m;if(primer==null||i<primer)primer=i;if(ultim==null||i>ultim)ultim=i}})));
   if(primer==null)return null;
   const ara=new Date();let fi=Math.max(ara.getFullYear()*12+ara.getMonth(),ultim);
-  if(fi-primer>23)primer=fi-23;
+  // V87.384 · l'Héctor (24/10/2026, Obra Llafranc al mòbil: «no surt el gràfic»): amb un sol mes, només hi havia un punt per línia.
+  // Si no s'ha retallat, la corba comença a zero el mes d'abans.
+  const des0=fi-primer<=23;if(!des0)primer=fi-23;
   const labels=[],ing=[],cost=[],ben=[];let si=0,sc=0,sb=0;
-  for(let i=primer;i<=fi;i++){const y=Math.floor(i/12),m=i%12;const mm=mesos878343(x,y)[m];si+=mm.ing;sc+=mm.cost;sb+=mm.ben;labels.push(mesNom878343(m)+(m===0||i===primer?" "+String(y).slice(2):""));ing.push(si);cost.push(sc);ben.push(sb)}
-  const series=[{k:"ing",nom:t("Ingressos"),color:SERIES878343[0],vals:ing},{k:"cost",nom:t("Costos"),color:SERIES878343[1],vals:cost},...(ambBenefici?[{k:"ben",nom:t("Benefici"),color:SERIES878343[2],vals:ben}]:[])];
+  if(des0){const i=primer-1,y=Math.floor(i/12),m=((i%12)+12)%12;labels.push(mesNom878343(m)+" "+String(y).slice(2));ing.push(0);cost.push(0);ben.push(0)}
+  for(let i=primer;i<=fi;i++){const y=Math.floor(i/12),m=i%12;const mm=mesos878343(x,y)[m];si+=mm.ing;sc+=mm.cost;sb+=mm.ben;labels.push(mesNom878343(m)+(m===0||(i===primer&&!des0)?" "+String(y).slice(2):""));ing.push(si);cost.push(sc);ben.push(sb)}
+  const series=[{k:"ing",nom:t("Ingressos"),color:SERIES878343[0],vals:ing},{k:"cost",nom:t("Costos"),color:SERIES878343[1],vals:cost},...(ambBenefici?[{k:"ben",nom:t("Benefici"),color:SERIES878343[2],vals:ben,dash:true}]:[])];
   return <CardOPlega878369 title={t("Evolució de l’obra")} resum={`${t("Ingressos")} ${money(si)} · ${t("Costos")} ${money(sc)}`} className="rc-card-v878343 evol-obra-v878366">
-    <LiniesChart878343 labels={labels} series={series} titol={t("Evolució de l’obra")} tipLabel={i=>{const k=primer+i;return t("Acumulat fins a {mes}",{mes:new Date(Math.floor(k/12),k%12,1).toLocaleDateString(loc878272(),{month:"long",year:"numeric"})})}}/>
+    <LiniesChart878343 labels={labels} series={series} titol={t("Evolució de l’obra")} tipLabel={i=>{const k=primer-(des0?1:0)+i;return t("Acumulat fins a {mes}",{mes:new Date(Math.floor(k/12),k%12,1).toLocaleDateString(loc878272(),{month:"long",year:"numeric"})})}}/>
   </CardOPlega878369>;
 }
 // Tota l'obra amb diverses fases: una fila per fase
@@ -9101,11 +9204,11 @@ function ResumFases878342({data,despeses,personal,obraId,ambBenefici}){
   const gs=fasesObra878342(data);
   const fs=gs.map(g=>({g,r:rendimentFase878342(data,g.id,despeses,personal,obraId)}));
   const sense=despeses.filter(a=>!faseDe878342(a,data)),senseP=personal.filter(r=>!faseDe878342(r,data));
-  return <Card title={t("Per fases")} className="rf-fases-v878342">
+  return <CardOPlega878369 title={t("Per fases")} resum={t("{n} fases",{n:fs.length})} className="rf-fases-v878342">
     <div className="rf-taula-wrap-v878342"><table className="rf-taula-v878342"><thead><tr><th>{t("Fase")}</th><th>{t("Pressupost")}</th><th>{t("Certificat")}</th><th>{t("Facturat")}</th><th>{t("Despeses")}</th>{ambBenefici&&<th>{t("Benefici")}</th>}{ambBenefici&&<th>%</th>}</tr></thead>
     <tbody>{fs.map(({g,r},i)=><tr key={g.id}><td><b>{i+1} · {budgetName878273(g)}</b></td><td data-l={t("Pressupost")}>{money(r.pressupost)}</td><td data-l={t("Certificat")}>{money(r.certificat)}</td><td data-l={t("Facturat")}>{money(r.facturat)}</td><td data-l={t("Despeses")}>{money(r.directe)}</td>{ambBenefici&&<td data-l={t("Benefici")}><b className={r.benefici>=0?"good":"bad"}>{money(r.benefici)}</b></td>}{ambBenefici&&<td data-l="%">{r.pct!=null?pct(r.pct):"—"}</td>}</tr>)}
     {(sense.length>0||senseP.length>0)&&<tr className="sense"><td>{t("Sense fase")}</td><td data-l={t("Pressupost")}>—</td><td data-l={t("Certificat")}>—</td><td data-l={t("Facturat")}>—</td><td data-l={t("Despeses")}>{money(sense.reduce((s,a)=>s+albaraBase878259(a),0))}{senseP.length?` · ${fh878340(senseP.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0))}`:""}</td>{ambBenefici&&<td/>}{ambBenefici&&<td/>}</tr>}</tbody></table></div>
-  </Card>;
+  </CardOPlega878369>;
 }
 // Per capítols de la fase: pressupost, certificat, cost real i diferència (en tocar un capítol, les seves partides)
 function CapitolsFase878342({data,fase="",despeses=[]}){
@@ -9124,14 +9227,14 @@ function CapitolsFase878342({data,fase="",despeses=[]}){
     <td data-l={L.p}>{money(c.pres)}</td><td data-l={L.c}>{money(c.cert)}</td>
     <td data-l={L.e}>{exec!=null?<div className="prog-v878342"><span><i style={{width:`${Math.min(100,Math.max(0,exec))}%`}} className={exec>100.05?"over":""}/></span><b>{pct(exec)}</b></div>:"—"}</td>
     <td data-l={L.k}>{c.cost?money(c.cost):"—"}</td><td data-l={L.d}>{c.cost?<b className={dif>=0?"good":"bad"}>{dif>=0?"+":""}{money(dif)}</b>:"—"}</td></>};
-  return <Card title={t("Per capítols")} className="rf-caps-v878342">
+  return <CardOPlega878369 title={t("Per capítols")} resum={t("{n} capítols · certificat {c} de {p}",{n:llista.length,c:money(tot.cert),p:money(tot.pres)})} className="rf-caps-v878342">
     <div className="rf-taula-wrap-v878342"><table className="rf-taula-v878342 caps"><thead><tr><th>{t("Capítol")}</th><th>{L.p}</th><th>{L.c}</th><th>{L.e}</th><th>{L.k}</th><th>{L.d}</th></tr></thead>
     <tbody>{llista.map(c=><React.Fragment key={c.cap}>
       <tr className={`cap ${obert[c.cap]?"obert":""}`} onClick={()=>setObert(o=>({...o,[c.cap]:!o[c.cap]}))}><td><button type="button" className="tg" aria-expanded={!!obert[c.cap]}>{obert[c.cap]?"▾":"▸"}</button><b>{c.cap}</b><small>{t("{n} partides",{n:c.rows.length})}</small><span className="m-res-v878366"><b>{money(c.cert)}</b><em>{c.pres>0.005?pct(c.cert/c.pres*100):"—"}</em></span></td>{fila(c)}</tr>
       {obert[c.cap]&&c.rows.map((r,i)=>{const v=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),cv=certQtyTotal8789(r)*parseNum8770(r.pu);const pc=[...(c.partidesCost?.values?.()||[])].find(p=>String(p.codi||"")===String(r.codi||"")&&String(r.codi||""));return <tr key={c.cap+i} className="partida"><td>{[r.codi,r.concepte].filter(Boolean).join(" · ")}</td>{fila({pres:v,cert:cv,cost:pc?.cost||0})}</tr>})}
     </React.Fragment>)}</tbody>
     <tfoot><tr><td>{t("Total")}</td>{fila(tot)}</tr></tfoot></table></div>
-  </Card>;
+  </CardOPlega878369>;
 }
 // V87.342 · El «Seguiment econòmic» (pressupost inicial i actual, versions, comparació per capítols) es feia servir per fases i no
 // s'entenia: ara és el rendiment de la fase triada a la barra de fases (o de tota l'obra).
@@ -9585,6 +9688,17 @@ function PressupostRapid878150(props){
 
 function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,client,clients,setClients,data,setData:rawSetData,tab,setTab,setScreen,uploadImage,importExcel,deletePressupostVersion,duplicatePressupostVersion,updateCert,addCertificacio,updateObraFitxa8721,deleteCertificacio8721,updateCertDate8721,updateCertDate,certInfo,setCertInfo,saveCert,openEmail,openDoc,openAgent,openActa,openPartida,openEvent,selectedActaId,setSelectedActaId,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,addPressupostTecnic,updatePressupostTecnic,facturarPressupostTecnic,addFacturaTecnica,updateFacturaTecnica,deletePressupostTecnic,deleteFacturaTecnica,deleteObra,allAgents=[],clientHistoricalPartides=[],clientBudgetNumbers878194=[],partidaLibrary=[],setPartidaLibrary,readOnly=false,allowedTabs=[],clientEditBudget=false,clientEditCertifications=false,clientLibraryEnabled=false,clientLibraryMaxPerChapter=3}){
   const setData=readOnly?()=>{}:rawSetData;
+  // V87.384 · descompostos d'un Excel importats amb l'error (tots els blocs del full a la primera partida): s'arreglen un sol cop en obrir
+  // l'obra, i el d'abans es guarda a part (`aco_descompostos_abans_v878384_<obra>`)
+  const repDesc878384=useRef("");
+  useEffect(()=>{
+    if(readOnly||!obra?.id||repDesc878384.current===obra.id)return;
+    const r=reparaDescompostos878384(data?.partides||[]);
+    if(!r)return;
+    repDesc878384.current=obra.id;
+    try{lsSet8779(`aco_descompostos_abans_v878384_${obra.id}`,JSON.stringify({at:new Date().toISOString(),taules:r.abans}))}catch{}
+    setData(d=>{const rr=reparaDescompostos878384(d?.partides||[]);return rr?{...d,partides:rr.partides,updatedAt:new Date().toISOString()}:d});
+  },[obra?.id,data?.partides]);// eslint-disable-line react-hooks/exhaustive-deps
   const setEconomicData878242=(!readOnly||clientEditBudget||clientEditCertifications)?(rawSetData||(()=>{})):()=>{};
   const strictClientReadOnly878242=readOnly&&!clientEditBudget&&!clientEditCertifications;
   const[estatObra,setEstatObra]=useState(obra.estat||"Pressupostada");
@@ -11324,6 +11438,8 @@ function partsPartida878361(row={}){
     const kind=l.calculatedKind878232;if(kind==="final"||kind==="subtotal")return;
     const imp=parseNum8770(l.total)||0;
     const c=normLab878361(l.concepte),u=normLab878361(l.ut);
+    // V87.384 · un % a zero («Administrador 0 %») no surt a la fitxa
+    if(kind==="percentage"&&!(l.percentFactor878232)&&Math.abs(imp)<0.005)return;
     if(kind==="percentage"){const nom=/indirect/.test(c)?"CI":/despeses? generals|gastos generales/.test(c)?"DGE":/benefici|beneficio/.test(c)?"BI":l.concepte||"%";pcts.push({nom,concepte:l.concepte,pct:(l.percentFactor878232||0)*100,imp});return}
     const txt=sec+" "+c;
     let g="mat";
@@ -15797,7 +15913,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.383",
+    app_version:"87.384",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -17662,7 +17778,7 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
       <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les tasques")}</label>
       <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Tasca")}</span>{gc.primary?.length?<span className="t-google"><i/>{i18nT("Google (calendari principal)")}</span>:null}</div>
     </div>}
-    {gcalConfigured()&&!readOnly&&<div className="ag-google-v878295">
+    {gcalConfigured()&&!readOnly&&view!=="equip"&&<div className="ag-google-v878295">
       {gc.on?<><span>{gc.busy?i18nT("Sincronitzant amb Google Calendar…"):gc.last?i18nT("Google Calendar · sincronitzat a les {h}",{h:new Date(gc.last).toLocaleTimeString(loc878272(),{hour:"2-digit",minute:"2-digit"})}):i18nT("Google Calendar · connectat")}</span><button type="button" className="secondary" disabled={gc.busy} onClick={gcSync}>{i18nT("Sincronitzar")}</button></>
       :<button type="button" className="secondary" onClick={gcConnect}>{i18nT("Connectar amb Google Calendar")}</button>}
       {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}

@@ -239,8 +239,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     no canvien.
   - **Proves:** naveguen pels noms nous. Compte: «Configuración» → «Ajustes» (no «Ajustosn»).
   - **Guies de benvinguda** (`tools/proves/guies.js`): textos posats al dia el 20/10/2026 (Obres/Expedients, Despeses, Hores,
-    Facturació, Ajustos, l’edició alhora). Els PDF de `GUIES_USUARIS` no s’han tornat a fer (porten les contrasenyes: quan ho
-    digui l’Héctor).
+    Facturació, Ajustos, l’edició alhora) i el 24/10/2026 (constructora: Importar, Empresa, Amidaments i Preus i marges, Partes, hores
+    del personal i fitxatge, Agenda › Equip, Rendiment; tècnic: Contactes, el comptador que ja no s’engega sol, Rendiment). Els PDF de
+    `GUIES_USUARIS` no s’han tornat a fer (porten les contrasenyes: quan ho digui l’Héctor).
 - **Agents** (V87.301, encàrrec de l’Héctor del 18/10/2026; `src/theme-v878301.css`):
   - **La mateixa persona surt una sola vegada.** Cada obra en desa una còpia amb un id propi, i abans la llista general en
     comptava cada còpia (88 entrades per a 26 persones). `agentPersona878301` reconeix la persona pel nom (i, a la
@@ -1399,6 +1400,33 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **V87.383 · Hores › Personal amb l'obra del Planning**: un dia sense hores apuntades porta, per a cada treballador, l'obra (o les
     obres) on el Planning el té aquell dia (`pla878383` de `PartHores878340`, amb `equipSetmana878381` d'un sol dia; només obres obertes);
     si no en té cap, l'última on ha treballat (com abans). Prova: a `equip381test.mjs` (14).
+  - **V87.384 · Gràfica d'un sol mes, Rendiment plegat al mòbil i descompostos d'un Excel amb un bloc per partida** (l'Héctor, 24/10/2026,
+    amb el compte de Brava i l'obra Llafranc: «no surt el gràfic»; «com moltes d'altres, al mòbil primer ha d'estar tancada i, si vols,
+    l'obres»; «mira com surt un descomposat»; «he vist 3 coses en menys d'un minut… revisa bé les pantalles»):
+    - **Gràfica:** amb un sol mes, `EvolucioObra878366` començava i acabava al mateix punt (tres punts solts). Ara la corba acumulada
+      comença a zero el mes d'abans (`des0`); `LiniesChart878343` amb un sol mes dibuixa barres (`barres-v878384`) i sense noms al final;
+      el benefici és discontinu (`dash`), perquè sense costos tapava els ingressos.
+    - **Rendiment de l'obra al mòbil:** el compte («Rendiment · fase», resum «Certificat … · Benefici … (%)»), «Per fases» i «Per
+      capítols» («N capítols · certificat … de …») amb `CardOPlega878369`, tancats; «Evolució de l'obra» ja ho era. A l'ordinador, com sempre.
+    - **Descompostos d'un Excel amb un bloc per partida** (l'Excel de Brava de Llafranc: un full per capítol amb «14002 — Porta…», «↩ Tornar
+      al PRESSUPOST · 14002», la taula i «PREU UNITARI FINAL»): abans tot el full era el descompost de la primera partida (235 línies), les
+      altres sense; «BASE DESPRÉS DE CI» comptava com un cost; els % amb format de percentatge (0,02) eren 0,02 %. Ara
+      `workbookDescompostsFromWorkbook878228` parteix el full en blocs (`bloc878384`, el codi del bloc tria la partida), llegeix els %
+      pel text de la cel·la (`raw:false`: «2%» → 2) i `netejaFilesDescompost878384` treu el títol, «Tornar…», la capçalera, les bases i el
+      que va després del preu final. **% sumats**: com a l'Excel, la DGE i el BI es poden aplicar sobre la mateixa base
+      (`mateixaBase878384` a `breakdownRecalculationV87232.js`; una fila de base de l'Excel marca `nouGrup878384`); `triaBasePct878384` tria
+      sumats o en cadena, el que doni el preu de la partida.
+    - **Obres ja importades amb l'error:** en obrir l'obra (`Obra`, un sol cop), `reparaDescompostos878384` reparteix els blocs a les seves
+      partides (si no en tenen), neteja i posa els % bé (fracció o no, el que s'acosti al preu) i marca la taula `net878384`; el d'abans va a
+      `aco_descompostos_abans_v878384_<obra>`. Amb la còpia del 24/10 de Llafranc: 100 de 105 partides, 88 quadren al cèntim amb el preu i 12
+      per pocs cèntims (rendiments arrodonits a l'Excel). A la fitxa, els % a zero («Administrador 0 %») ja no surten.
+    - **Proves des de la carpeta principal mentre corren les de la còpia** (`D:/aco-tmp/wt379`, amb `node_modules` enllaçat): `vite.config.js`
+      accepta `ACO_VITE_CACHE` (memòria cau pròpia); sense, les dues bandes refeien la mateixa i fallaven proves soltes.
+    - Proves: `grafica384test.mjs` (7) i `descomp384unit.mjs` (9).
+  - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
+    Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
+    (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
+    certificació 1 de Cala Rovira amb l'import desat vell (l'app ja fa servir el de les partides).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

@@ -148,4 +148,5 @@ function offlinePlugin() {
 }
 
 // ACO_SENSE_DISC=1 només per a proves: simula l'app publicada (sense desat a l'ordinador).
-export default defineConfig({ base: "./", plugins: [react(), offlinePlugin(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });
+// ACO_VITE_CACHE: memòria cau pròpia (proves des d'una còpia de treball amb node_modules enllaçat, perquè no es trepitgin)
+export default defineConfig({ base: "./", ...(process.env.ACO_VITE_CACHE ? { cacheDir: process.env.ACO_VITE_CACHE } : {}), plugins: [react(), offlinePlugin(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });

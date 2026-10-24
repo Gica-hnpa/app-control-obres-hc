@@ -66,6 +66,8 @@ export function recalculateBreakdownTableV87232(table={}){
   const sourceRows=Array.isArray(table?.rows)?table.rows:[];
   let runningTotal=0;
   let finalTotal=0;
+  // V87.384 · base del % d'abans: un % amb `mateixaBase878384` s'hi aplica també (sumats, no en cadena)
+  let pctBase=null;
 
   const rows=sourceRows.map((original,index)=>{
     const row={...(original||{})};
@@ -81,6 +83,7 @@ export function recalculateBreakdownTableV87232(table={}){
     let lineTotal=parseBreakdownNumberV87232(row.total);
 
     if(finalRow){
+      pctBase=null;
       lineTotal=runningTotal;
       row.q=row.q||"1,00";
       row.pu=formatBreakdownNumberV87232(lineTotal);
@@ -91,7 +94,8 @@ export function recalculateBreakdownTableV87232(table={}){
     }
 
     if(percentageRow){
-      const base=runningTotal;
+      const base=row.mateixaBase878384&&pctBase!=null?pctBase:runningTotal;
+      pctBase=base;
       const factor=percentageFactorV87232(row,base);
       lineTotal=base*factor;
       row.pu=formatBreakdownNumberV87232(base);
@@ -104,6 +108,7 @@ export function recalculateBreakdownTableV87232(table={}){
     }
 
     if(subtotalRow){
+      pctBase=null;
       lineTotal=runningTotal;
       row.total=formatBreakdownNumberV87232(lineTotal);
       row.calculatedKind878232="subtotal";
@@ -111,6 +116,7 @@ export function recalculateBreakdownTableV87232(table={}){
       return row;
     }
 
+    pctBase=null;
     if(!row.manualTotal878232&&hasQ&&hasPu)lineTotal=q*pu;
     row.total=formatBreakdownNumberV87232(lineTotal);
     row.calculatedKind878232="resource";
