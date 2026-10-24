@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.376";
+const APP_VERSION878264="87.377";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10837,7 +10837,14 @@ function monthLabel878253(d){const m=d.toLocaleDateString("ca-ES",{month:"long"}
 // capítol d'abans), `lag` (dies laborables: 0 = l'endemà que acabi; −2 = 2 dies abans que acabi; +3 = 3 dies després) i `qui`
 // (`[{k:"c:<colla>"|"t:<treballador>"|"i:<industrial>", nom}]`). Un capítol vinculat no fa servir la seva data: la treu del d'abans.
 function moureDiesLab878341(iso,n){const d=parseDate8776(iso);if(!d)return "";const out=new Date(d.getFullYear(),d.getMonth(),d.getDate());let r=Math.round(n||0);const st=r>=0?1:-1;while(r!==0){out.setDate(out.getDate()+st);if(out.getDay()!==0&&out.getDay()!==6)r-=st}return isoDate8776(out)}
-function resolPlans878341(plans={}){
+// V87.377 · Planning per partides (l'Héctor, 24/10/2026: «en tocar el capítol, que surtin les partides… el capítol agafa el primer dia
+// d'inici de la primera partida i acaba amb la finalització de l'última»). Cada partida: `ganttConfig87217.partPlans[pid] = {cap, off,
+// dur}` (dies laborables des de l'inici del capítol, i durada). Un capítol amb partides planificades va de la primera a l'última; si va
+// «després d'un altre», les seves partides es mouen amb ell.
+function pidPlan878377(r,i){return r?.id!=null&&r.id!==""?String(r.id):`codi:${r?.codi||""}:${i}`}
+// dies laborables que cal moure «a» per arribar a «b» (negatiu si «b» és abans)
+function diesLabEntre878377(a,b){const d0=parseDate8776(a),d1=parseDate8776(b);if(!d0||!d1)return 0;const x=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()),y=new Date(d1.getFullYear(),d1.getMonth(),d1.getDate());let n=0;const st=x<=y?1:-1;while(+x!==+y){x.setDate(x.getDate()+st);if(x.getDay()!==0&&x.getDay()!==6)n+=st}return n}
+function resolPlans878341(plans={},parts={}){
   const out={},cicle=new Set();
   const toD=v=>{const d=parseDate8776(v);return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null};
   const vis=(cap,stack)=>{
@@ -10850,6 +10857,8 @@ function resolPlans878341(plans={}){
     // una data en dissabte o diumenge comença el dilluns
     if(start){const d0=parseDate8776(start);if(d0&&(d0.getDay()===0||d0.getDay()===6))start=moureDiesLab878341(start,1)}
     const st=toD(start),dur=parseNum8770(p.durationDays);
+    const ps=parts[cap]||[];
+    if(st&&ps.length){const mn=Math.min(...ps.map(x=>x.off)),mx=Math.max(...ps.map(x=>x.off+x.dur-1));out[cap]={from:toD(moureDiesLab878341(start,mn)),to:toD(moureDiesLab878341(start,mx)),dur:mx-mn+1,via,lag:Math.round(parseNum8770(p.lag)||0),startIso:start,parts:true};return out[cap]}
     out[cap]=st&&dur?{from:st,to:toD(addWorkDays87217(start,Math.max(0,dur-1))),dur,via,lag:Math.round(parseNum8770(p.lag)||0),startIso:start}:null;
     return out[cap];
   };
@@ -10879,7 +10888,7 @@ function coincidencies878341(plans={},resolt={},pot){
     for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){const a=ls[i],b=ls[j];if(a.cap===b.cap)continue;const from=a.from>b.from?a.from:b.from,to=a.to<b.to?a.to:b.to;if(from<=to)out.push({nom,a:a.cap,b:b.cap,from,to})}});
   return out;
 }
-function EditaCapitol878341({cap,ordre=[],plans,setPlan,treu,resolt,pot,close}){
+function EditaCapitol878341({cap,ordre=[],plans,setPlan,treu,resolt,pot,close,ambParts=false}){
   const p=plans[cap]||{};const r=resolt.plans[cap];
   const caps=(ordre.length?ordre:Object.keys(plans)).filter(c=>plans[c]);
   // els que ja depenen d'aquest (directament o no) no poden ser el seu capítol d'abans
@@ -10905,7 +10914,7 @@ function EditaCapitol878341({cap,ordre=[],plans,setPlan,treu,resolt,pot,close}){
         </div></label>
         {quan!=="acabar"&&<label><span>{i18nT("Dies laborables")}</span><input type="number" min="1" value={Math.abs(lag)} onChange={e=>{const n=Math.max(0,Math.round(parseNum8770(e.target.value)||0));setPlan(cap,{lag:String(quan==="abans"?-n:n)})}}/></label>}
       </>}
-      <label><span>{i18nT("Durada (dies laborables)")}</span><input type="number" min="1" value={p.durationDays||""} onChange={e=>setPlan(cap,{durationDays:e.target.value})}/></label>
+      {ambParts?<p className="gt-ed-res-v878341 span-2">{i18nT("La durada surt de les partides: {n} dies laborables",{n:r?.dur||0})}</p>:<label><span>{i18nT("Durada (dies laborables)")}</span><input type="number" min="1" value={p.durationDays||""} onChange={e=>setPlan(cap,{durationDays:e.target.value})}/></label>}
     </div>
     {r&&<p className="gt-ed-res-v878341">{i18nT("Del {a} al {b}",{a:fmtAppDate8748(isoDate8776(r.from)),b:fmtAppDate8748(isoDate8776(r.to))})}</p>}
     {resolt.cicle.has(cap)&&<p className="gt-ed-avis-v878341">{i18nT("Aquest capítol depèn d’un altre que en depèn d’ell: no es pot vincular.")}</p>}
@@ -10918,12 +10927,29 @@ function EditaCapitol878341({cap,ordre=[],plans,setPlan,treu,resolt,pot,close}){
     <div className="modal-actions">{(p.start||p.durationDays||p.dep)&&<button type="button" className="danger-text-v87229 link" onClick={()=>{treu(cap);close()}}>{i18nT("Treure del planning")}</button>}<button type="button" className="primary" onClick={close}>{i18nT("Fet")}</button></div>
   </div></Modal>;
 }
+function EditaPartida878377({part,plan,anchor,posa,treu,close}){
+  const[dia,setDia]=useState(plan?isoDate8776(plan.from):(anchor||todayISO8743()));
+  const[dur,setDur]=useState(plan?String(plan.dur):"1");
+  const desa=(d,n)=>{if(d&&parseNum8770(n)>0)posa({data:d,dur:n})};
+  return <Modal title={i18nT("Planificar «{cap}»",{cap:[part.r.codi,part.r.concepte].filter(Boolean).join(" ").slice(0,70)})} close={close}><div className="gt-ed-v878341 gt-ed-part-v878377">
+    <div className="form-grid compact-v87151 no-pad">
+      <label><span>{i18nT("Comença")}</span><input type="date" value={dia} onChange={e=>{setDia(e.target.value);desa(e.target.value,dur)}}/></label>
+      <label><span>{i18nT("Durada (dies laborables)")}</span><input type="number" min="1" value={dur} onChange={e=>{setDur(e.target.value);desa(dia,e.target.value)}}/></label>
+    </div>
+    {plan&&<p className="gt-ed-res-v878341">{i18nT("Del {a} al {b}",{a:fmtAppDate8748(isoDate8776(plan.from)),b:fmtAppDate8748(isoDate8776(plan.to))})}</p>}
+    <div className="modal-actions">{plan&&<button type="button" className="danger-text-v87229 link" onClick={()=>{treu();close()}}>{i18nT("Treure del planning")}</button>}<button type="button" className="primary" onClick={()=>{desa(dia,dur);close()}}>{i18nT("Fet")}</button></div>
+  </div></Modal>;
+}
 const GANTT_SCALES878253={dies:{label:"Dies",px:30},setmanes:{label:"Setmanes",px:9},mesos:{label:"Mesos",px:2.6}};
 function GanttObraVisual878253({data={},setData,industrials=[]}){
   const s=useMemo(()=>economicSummary878252(data),[data]);
   const cfg=data?.ganttConfig87217||{};
   const plans=cfg.capPlans||{};
+  const partPlans878377=cfg.partPlans||{};
   const[open,setOpen]=useState({});
+  const[obertT878377,setObertT878377]=useState(()=>new Set());
+  const togT878377=k=>setObertT878377(x=>{const n=new Set(x);n.has(k)?n.delete(k):n.add(k);return n});
+  const[edPart878377,setEdPart878377]=useState(null);
   const[scale,setScale]=useState(()=>{try{return localStorage.getItem("aco_gantt_scale_v878253")||"setmanes"}catch{return "setmanes"}});
   const[editing,setEditing]=useState(false);
   // V87.362 · taula o gràfic (al mòbil, de sèrie la taula)
@@ -10943,8 +10969,25 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
   const today=toD(new Date());
   function savePlans(nextPlans,extra={}){if(!canEdit)return;setData(d=>({...d,ganttConfig87217:{...(d.ganttConfig87217||{}),...extra,capPlans:nextPlans,updatedAt:new Date().toISOString()},updatedAt:new Date().toISOString()}))}
   function setPlan(cap,patch){const cur=plans[cap]||{};savePlans({...plans,[cap]:{...cur,...patch}})}
-  function clearPlans(){savePlans({})}
-  function treuPlan878341(cap){const next={...plans};delete next[cap];Object.keys(next).forEach(k=>{if(next[k]?.dep===cap){const r=resolt878341.plans[k];next[k]={...next[k],dep:"",lag:"",start:r?.startIso||next[k].start||""}}});savePlans(next)}
+  function clearPlans(){savePlans({},{partPlans:{}})}
+  function treuPlan878341(cap){const next={...plans};delete next[cap];Object.keys(next).forEach(k=>{if(next[k]?.dep===cap){const r=resolt878341.plans[k];next[k]={...next[k],dep:"",lag:"",start:r?.startIso||next[k].start||""}}});const pp={...partPlans878377};Object.keys(pp).forEach(k=>{if(pp[k]?.cap===cap)delete pp[k]});savePlans(next,{partPlans:pp})}
+  // una partida: el dia que comença (si és abans que el capítol, el capítol comença aquell dia sense moure les altres) i els dies
+  function posaPartida878377(cap,pid,{data:iso,dur}){if(!canEdit||!iso)return;
+    const anchor0=resolt878341.plans[cap]?.startIso||"";
+    setData(d=>{const g={...(d.ganttConfig87217||{})};const cps={...(g.capPlans||{})};const pps={...(g.partPlans||{})};const cp={...(cps[cap]||{})};
+      let anchor=anchor0||cp.start||"";if(!anchor){anchor=iso;cp.start=iso}
+      let off=diesLabEntre878377(anchor,iso);
+      if(off<0){if(cp.dep)off=0;else{Object.keys(pps).forEach(k=>{if(pps[k]?.cap===cap)pps[k]={...pps[k],off:String((Math.round(parseNum8770(pps[k].off)||0))-off)}});cp.start=iso;off=0}}
+      cps[cap]=cp;pps[pid]={cap,off:String(off),dur:String(Math.max(1,Math.round(parseNum8770(dur)||1)))};
+      const ara=new Date().toISOString();return {...d,ganttConfig87217:{...g,capPlans:cps,partPlans:pps,updatedAt:ara},updatedAt:ara}})}
+  function treuPartida878377(pid){const pp={...partPlans878377};delete pp[pid];savePlans(plans,{partPlans:pp})}
+  // les partides del capítol una darrere l'altra, amb els dies del capítol repartits segons l'import
+  function repartir878377(c){if(!canEdit)return;const r=resolt878341.plans[c.cap];
+    const D=Math.max(c.rows.length,r?.dur||Math.round(parseNum8770(plans[c.cap]?.durationDays)||0)||c.rows.length);
+    const imp=x=>(parseNum8770(x.q)||0)*(parseNum8770(x.pu)||0);const tot=c.rows.reduce((a,x)=>a+imp(x),0);
+    let off=0;const pp={...partPlans878377};c.rows.forEach((x,i)=>{const dur=Math.max(1,Math.round(tot>0?imp(x)/tot*D:D/c.rows.length));pp[pidPlan878377(x,i)]={cap:c.cap,off:String(off),dur:String(dur)};off+=dur});
+    const cp={...(plans[c.cap]||{})};if(!cp.start&&!cp.dep)cp.start=r?.startIso||todayISO8743();
+    savePlans({...plans,[c.cap]:cp},{partPlans:pp})}
   const[edCap878341,setEdCap878341]=useState("");
   const scrollRef878341=useRef(null);
   const geo878341=useRef({X:()=>0,Wd:()=>0});
@@ -10965,7 +11008,9 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
   const startCfg=toD(cfg.actualStart)||(certDates[0]?new Date(certDates[0].getTime()-30*day):null);
   const prevDateOf=n=>{const i=s.certs.findIndex(c=>c.n===n);if(i>0)return toD(s.certs[i-1].date);return startCfg};
   const realOf=(byCert,budget)=>{const hits=s.certs.filter(c=>(byCert[c.n]||0)>0.005&&c.date);if(!hits.length)return null;const done=hits.reduce((a,c)=>a+(byCert[c.n]||0),0);return {from:prevDateOf(hits[0].n)||toD(hits[0].date),to:toD(hits[hits.length-1].date),done,pct:budget?done/budget*100:0,hits}};
-  const resolt878341=useMemo(()=>resolPlans878341(plans),[plans]);
+  const partsByCap878377=useMemo(()=>{const m={};s.caps.forEach(c=>c.rows.forEach((r,i)=>{const pp=partPlans878377[pidPlan878377(r,i)];if(pp&&parseNum8770(pp.dur)>0)(m[c.cap]??=[]).push({off:Math.max(0,Math.round(parseNum8770(pp.off)||0)),dur:Math.max(1,Math.round(parseNum8770(pp.dur)))})}));return m},[s,partPlans878377]);
+  const resolt878341=useMemo(()=>resolPlans878341(plans,partsByCap878377),[plans,partsByCap878377]);
+  const partPlanOf878377=(cap,pid)=>{const pp=partPlans878377[pid];const r=resolt878341.plans[cap];if(!pp||!r?.startIso||!(parseNum8770(pp.dur)>0))return null;const off=Math.max(0,Math.round(parseNum8770(pp.off)||0)),dur=Math.max(1,Math.round(parseNum8770(pp.dur)));return {from:toD(moureDiesLab878341(r.startIso,off)),to:toD(moureDiesLab878341(r.startIso,off+dur-1)),dur,off}};
   const planOf=cap=>resolt878341.plans[cap]||null;
   const pot878341=useMemo(()=>quiPot878341(industrials),[industrials,edCap878341]);
   const coinc878341=useMemo(()=>coincidencies878341(plans,resolt878341.plans,pot878341),[plans,resolt878341,pot878341]);
@@ -10976,6 +11021,8 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
   const rows=s.caps.map(c=>({...c,real:realOf(c.byCert,c.budget),plan:planOf(c.cap)}));
   if(!s.rows.length)return <Card title={i18nT("Planning de l’obra")}><Empty text="Aquest expedient encara no té pressupost. Quan n’hi hagi, el Gantt mostrarà cada capítol amb les certificacions fetes."/></Card>;
   const pts=[today,startCfg,...certDates,...rows.flatMap(r=>[r.plan?.from,r.plan?.to,r.real?.from,r.real?.to])].filter(Boolean).map(d=>d.getTime());
+  // V87.377 · el capítol (taula): en tocar-lo, les seves partides
+  const fmtD878377=d=>d?fmtAppDate8748(isoDate8776(d)):"—";
   const minD=new Date(Math.min(...pts)),maxD=new Date(Math.max(...pts));
   const t0=scale==="mesos"?new Date(minD.getFullYear(),minD.getMonth(),1):new Date(minD.getFullYear(),minD.getMonth(),minD.getDate()-((minD.getDay()+6)%7)-7);
   const t1=scale==="mesos"?new Date(maxD.getFullYear(),maxD.getMonth()+2,1):new Date(maxD.getFullYear(),maxD.getMonth(),maxD.getDate()+21);
@@ -11043,14 +11090,24 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
       {coinc878341.length>0&&<div className="gt-coinc-v878341">{coinc878341.map((c,i)=><div key={i}>{i18nT("{nom} és a «{a}» i a «{b}» alhora ({d})",{nom:c.nom,a:c.a,b:c.b,d:+c.from===+c.to?fmtAppDate8748(isoDate8776(c.from)):`${fmtAppDate8748(isoDate8776(c.from))} – ${fmtAppDate8748(isoDate8776(c.to))}`})}</div>)}</div>}
       {vista878362==="taula"?<div className="gt-taula-v878362">
         <div className="cap-t"><span>{i18nT("Capítol")}</span><span>{i18nT("Inici")}</span><span>{i18nT("Final")}</span><span>{i18nT("Dies")}</span></div>
-        {rows.map(c=>{const pl=plans[c.cap]||{};const qui=(pl.qui||[]).map(q=>q.nom).filter(Boolean);const lag=Math.round(parseNum8770(pl.lag)||0);const treb=esTreballador878326();
-          return <button type="button" key={c.cap} className={"fila"+(c.plan?"":" sense")} data-cap={c.cap} disabled={!canEdit} onClick={()=>canEdit&&setEdCap878341(c.cap)}>
+        {rows.map(c=>{const pl=plans[c.cap]||{};const qui=(pl.qui||[]).map(q=>q.nom).filter(Boolean);const lag=Math.round(parseNum8770(pl.lag)||0);const treb=esTreballador878326();const ob=obertT878377.has(c.cap);
+          return <section key={c.cap} className={`cap-bloc-v878377 ${ob?"obert":""}`}><button type="button" className={"fila"+(c.plan?"":" sense")} data-cap={c.cap} aria-expanded={ob} onClick={()=>togT878377(c.cap)}>
             <span className="cap"><b>{c.cap}</b>{!treb&&<small>{eur0878252(c.budget)} · {pct878252(c.budget?c.certified/c.budget*100:0)}</small>}</span>
             <span className="d"><small>{i18nT("Inici")}</small><b>{c.plan?fmtAppDate8748(isoDate8776(c.plan.from)):"—"}</b></span>
             <span className="d"><small>{i18nT("Final")}</small><b>{c.plan?fmtAppDate8748(isoDate8776(c.plan.to)):"—"}</b></span>
             <span className="d n"><small>{i18nT("Dies")}</small><b>{c.plan?.dur||"—"}</b></span>
             {(c.plan?.via||qui.length>0)&&<span className="extra">{c.plan?.via&&<em className="via">↳ {i18nT("Després de «{cap}»",{cap:c.plan.via})}{lag?" "+(lag>0?"+":"−")+Math.abs(lag)+" "+i18nT("dies"):""}</em>}{qui.length>0&&<em className="qui">{qui.join(" · ")}</em>}</span>}
-          </button>})}
+          </button>
+          {ob&&<div className="parts-v878377">
+            {c.rows.map((r,i)=>{const pid=pidPlan878377(r,i);const pp=partPlanOf878377(c.cap,pid);const b=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);
+              return <button type="button" key={pid} className={"part"+(pp?"":" sense")} disabled={!canEdit} onClick={()=>canEdit&&setEdPart878377({cap:c.cap,pid,r})}>
+                <span className="cap"><b>{r.codi?<code>{r.codi}</code>:null}{r.concepte||"—"}</b>{!treb&&<small>{eur0878252(b)}</small>}</span>
+                <span className="d"><small>{i18nT("Inici")}</small><b>{pp?fmtD878377(pp.from):"—"}</b></span>
+                <span className="d"><small>{i18nT("Final")}</small><b>{pp?fmtD878377(pp.to):"—"}</b></span>
+                <span className="d n"><small>{i18nT("Dies")}</small><b>{pp?.dur||"—"}</b></span>
+              </button>})}
+            {canEdit&&<div className="parts-acc-v878377"><button type="button" className="link" onClick={()=>setEdCap878341(c.cap)}>{i18nT("Planificar el capítol")}</button>{c.rows.length>0&&<button type="button" className="link" onClick={()=>repartir878377(c)}>{i18nT("Repartir les partides en ordre")}</button>}</div>}
+          </div>}</section>})}
       </div>:<div ref={scrollRef878341} className={`gt-scroll-v878253 ${editing?"editing":""}`}>
         <div className="gt-row-v878253 head">
           <div className="gt-left-v878253"><span className="cap">{i18nT("Capítol")}</span>{editing?<><span className="pl">{i18nT("Inici previst")}</span><span className="pl">{i18nT("Dies lab.")}</span></>:<><span className="num">{i18nT("Pressupost")}</span><span className="num">{i18nT("Executat")}</span></>}</div>
@@ -11065,19 +11122,20 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
           <div className={`gt-row-v878253 ${open[c.cap]?"open":""}`} data-cap={c.cap}>
             <div className="gt-left-v878253">
               <button type="button" className="cap" onClick={()=>setOpen(o=>({...o,[c.cap]:!o[c.cap]}))} aria-expanded={!!open[c.cap]}><b>{open[c.cap]?"▾":"▸"}</b>{c.cap}</button>
-              {editing?<>{c.plan?.via?<span className="pl via-v878341" title={i18nT("Després de «{cap}»",{cap:c.plan.via})}>↳ {String(c.plan.via).split(" ")[0]}{c.plan.lag?" "+(c.plan.lag>0?"+":"−")+Math.abs(c.plan.lag)+" d":""}</span>:<input className="pl" type="date" value={plans[c.cap]?.start||""} onChange={e=>setPlan(c.cap,{start:e.target.value})} aria-label={`Inici previst ${c.cap}`}/>}<input className="pl" type="number" min="1" value={plans[c.cap]?.durationDays||""} placeholder="—" onChange={e=>setPlan(c.cap,{durationDays:e.target.value})} aria-label={`Dies laborables ${c.cap}`}/><button type="button" className="ed-v878341" onClick={()=>setEdCap878341(c.cap)} aria-label={i18nT("Planificar «{cap}»",{cap:c.cap})}>⋯</button></>
+              {editing?<>{c.plan?.via?<span className="pl via-v878341" title={i18nT("Després de «{cap}»",{cap:c.plan.via})}>↳ {String(c.plan.via).split(" ")[0]}{c.plan.lag?" "+(c.plan.lag>0?"+":"−")+Math.abs(c.plan.lag)+" d":""}</span>:<input className="pl" type="date" value={plans[c.cap]?.start||""} onChange={e=>setPlan(c.cap,{start:e.target.value})} aria-label={`Inici previst ${c.cap}`}/>}{partsByCap878377[c.cap]?.length?<span className="pl dur-parts-v878377" title={i18nT("La durada surt de les partides: {n} dies laborables",{n:c.plan?.dur||0})}>{c.plan?.dur||"—"}</span>:<input className="pl" type="number" min="1" value={plans[c.cap]?.durationDays||""} placeholder="—" onChange={e=>setPlan(c.cap,{durationDays:e.target.value})} aria-label={`Dies laborables ${c.cap}`}/>}<button type="button" className="ed-v878341" onClick={()=>setEdCap878341(c.cap)} aria-label={i18nT("Planificar «{cap}»",{cap:c.cap})}>⋯</button></>
                 :<><span className="num">{eur0878252(c.budget)}</span><span className="num pct">{pct878252(c.budget?c.certified/c.budget*100:0)}</span></>}
             </div>
             <Track real={c.real} plan={c.plan} budget={c.budget} qui={plans[c.cap]?.qui}/>
           </div>
-          {open[c.cap]&&c.rows.map((r,i)=>{const p=partRow(r);const over=(p.real?.pct||0)>100.05;return <div key={`${c.cap}-${i}`} className="gt-row-v878253 part">
-            <div className="gt-left-v878253"><span className="cap"><code>{r.codi}</code> {r.concepte}</span><span className="num">{eur0878252(p.budget)}</span><span className={`num pct ${over?"over":""}`} title={over?"Certificat per sobre del pressupost de la partida":undefined}>{pct878252(p.real?.pct||0)}</span></div>
-            <Track real={p.real} budget={p.budget} small/>
+          {open[c.cap]&&c.rows.map((r,i)=>{const p=partRow(r);const over=(p.real?.pct||0)>100.05;const pid=pidPlan878377(r,i);const pp=partPlanOf878377(c.cap,pid);return <div key={`${c.cap}-${i}`} className="gt-row-v878253 part">
+            <div className="gt-left-v878253"><span className="cap"><code>{r.codi}</code> {r.concepte}</span>{editing&&canEdit?<><input className="pl" type="date" value={pp?isoDate8776(pp.from):""} onChange={e=>posaPartida878377(c.cap,pid,{data:e.target.value,dur:pp?.dur||1})} aria-label={`Inici previst ${r.codi||""}`}/><input className="pl" type="number" min="1" value={pp?.dur||""} placeholder="—" onChange={e=>posaPartida878377(c.cap,pid,{data:pp?isoDate8776(pp.from):(resolt878341.plans[c.cap]?.startIso||todayISO8743()),dur:e.target.value})} aria-label={`Dies laborables ${r.codi||""}`}/><span/></>:<><span className="num">{eur0878252(p.budget)}</span><span className={`num pct ${over?"over":""}`} title={over?"Certificat per sobre del pressupost de la partida":undefined}>{pct878252(p.real?.pct||0)}</span></>}</div>
+            <Track real={p.real} plan={pp} budget={p.budget} small/>
           </div>})}
         </React.Fragment>)}
         {fletxes878341.l.length>0&&<svg className="gt-fletxes-v878341" width={fletxes878341.w} height={fletxes878341.h} aria-hidden="true"><defs><marker id="gt-fl-v878341" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>{fletxes878341.l.map(f=><path key={f.k} d={`M${f.x1},${f.y1} h6 V${f.y2} H${f.x2}`} markerEnd="url(#gt-fl-v878341)"/>)}</svg>}
       </div>}
-      {edCap878341&&<EditaCapitol878341 cap={edCap878341} ordre={s.caps.map(c=>c.cap)} plans={plans} setPlan={setPlan} treu={treuPlan878341} resolt={resolt878341} pot={pot878341} close={()=>setEdCap878341("")}/>}
+      {edCap878341&&<EditaCapitol878341 cap={edCap878341} ordre={s.caps.map(c=>c.cap)} plans={plans} setPlan={setPlan} treu={treuPlan878341} resolt={resolt878341} pot={pot878341} close={()=>setEdCap878341("")} ambParts={!!partsByCap878377[edCap878341]?.length}/>}
+      {edPart878377&&<EditaPartida878377 part={edPart878377} plan={partPlanOf878377(edPart878377.cap,edPart878377.pid)} anchor={resolt878341.plans[edPart878377.cap]?.startIso||""} posa={x=>posaPartida878377(edPart878377.cap,edPart878377.pid,x)} treu={()=>treuPartida878377(edPart878377.pid)} close={()=>setEdPart878377(null)}/>}
     </Card>
   </div>;
 }
@@ -15589,7 +15647,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.376",
+    app_version:"87.377",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

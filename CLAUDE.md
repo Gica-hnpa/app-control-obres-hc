@@ -1330,7 +1330,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       la bombolla a la vista, la pàgina deixa 88 px a baix. Constructora i treballador, sense rellotge (com abans).
     - **Amidaments:** tots els capítols plegats d'entrada (abans, el primer obert o tots si n'hi havia 3 o menys).
     - Proves: `rendiment376test.mjs` (15). Adaptades `rendiment343test` (el tècnic té el seu Rendiment), `fitxestest`, `mobiltest` i
-      `fases342test` (el comptador a la barra).
+      `fases342test` (el comptador a la barra), `amidaments328test` i `pressupost368test` (obren els capítols plegats).
+  - **V87.377 · Planning per partides** (l'Héctor, 24/10/2026: «en tocar el capítol, que surtin les partides; el capítol agafa el primer
+    dia d'inici de la primera partida i acaba amb la finalització de l'última»):
+    - Cada partida pot tenir el seu previst: `ganttConfig87217.partPlans[pid] = {cap, off, dur}` (`pidPlan878377`: l'id de la partida o
+      `codi:<codi>:<posició>`), amb `off` = dies laborables des de l'inici del capítol i `dur` = dies laborables. Així, si el capítol va
+      «després d'un altre», les seves partides es mouen amb ell.
+    - `resolPlans878341(plans, parts)`: un capítol amb partides planificades va de la primera a l'última (`parts:true`); la seva durada
+      ja no s'escriu (a la finestra del capítol i al gràfic, «La durada surt de les partides»). Sense partides, com abans.
+    - **Taula (mòbil):** tocar el capítol el desplega (`cap-bloc-v878377`, `parts-v878377`) amb cada partida (inici, final, dies) i, a baix,
+      «Planificar el capítol» (la finestra d'abans) i «Repartir les partides en ordre» (`repartir878377`: una darrere l'altra, amb els dies
+      del capítol repartits segons l'import). Tocar una partida obre `EditaPartida878377` (comença, dies laborables, «Treure del planning»).
+    - Una partida que comença abans que el capítol (no vinculat) mou l'inici del capítol a aquell dia i les altres partides no es mouen
+      (`posaPartida878377`); si el capítol va després d'un altre, la partida no pot començar abans que ell.
+    - **Gràfic:** les partides d'un capítol obert tenen la seva barra prevista i, planificant, la data i els dies.
+    - Treure un capítol del planning o esborrar-lo tot també en treu les partides. Estils `src/theme-v878377.css`.
+    - Prova: `planning377test.mjs` (17). Adaptades `planning341test` i `resum362test` (el capítol de la taula es desplega).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

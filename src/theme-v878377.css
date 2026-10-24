@@ -1,0 +1,24 @@
+/* V87.377 · Planning per partides: a la taula, tocar el capítol desplega les seves partides (inici, final, dies) */
+html body .gt-taula-v878362 .cap-bloc-v878377{border-top:1px solid var(--co-line)}
+html body .gt-taula-v878362 .cap-bloc-v878377>.fila{border-top:0}
+html body .gt-taula-v878362 .cap-bloc-v878377>.fila .cap b::before{content:"▸ ";color:var(--co-ink-3);font-weight:400}
+html body .gt-taula-v878362 .cap-bloc-v878377.obert>.fila .cap b::before{content:"▾ "}
+html body .gt-taula-v878362 .cap-bloc-v878377.obert>.fila{background:var(--co-surface-2,#f8fafc)}
+html body .gt-taula-v878362 .parts-v878377{display:flex;flex-direction:column;border-top:1px solid var(--co-line);background:var(--co-surface,#fff)}
+html body .gt-taula-v878362 .parts-v878377 .part{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 52px;gap:4px 8px;align-items:center;width:100%;padding:8px 12px 8px 28px;border:0;border-top:1px dashed var(--co-line);border-radius:0;background:none;box-shadow:none;text-align:left;font:inherit;color:var(--co-ink);cursor:pointer;min-height:48px}
+html body .gt-taula-v878362 .parts-v878377 .part:first-child{border-top:0}
+html body .gt-taula-v878362 .parts-v878377 .part:disabled{cursor:default;opacity:1}
+html body .gt-taula-v878362 .parts-v878377 .part:hover:not(:disabled){background:var(--co-surface-2,#f8fafc)}
+html body .gt-taula-v878362 .parts-v878377 .part:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:-2px}
+html body .gt-taula-v878362 .parts-v878377 .part .cap b{font-weight:500;font-size:13.5px;white-space:normal;overflow:visible}
+html body .gt-taula-v878362 .parts-v878377 .part code{font:600 12px var(--app-font);color:var(--co-ink-3);margin-right:6px}
+html body .gt-taula-v878362 .parts-v878377 .part.sense .d b{color:var(--co-ink-3)}
+html body .gt-taula-v878362 .parts-v878377 .part .d b{font-size:13.5px}
+html body .gt-taula-v878362 .parts-acc-v878377{display:flex;flex-wrap:wrap;gap:6px 18px;padding:8px 12px 10px 28px;border-top:1px dashed var(--co-line)}
+html body .gt-taula-v878362 .parts-acc-v878377 .link{all:unset;cursor:pointer;color:var(--co-accent,#2563EB);font:600 13.5px var(--app-font);padding:4px 0}
+html body .gt-taula-v878362 .parts-acc-v878377 .link:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:2px}
+html body .gantt-v878253 .dur-parts-v878377{display:inline-flex;align-items:center;justify-content:center;color:var(--co-ink-2);font-variant-numeric:tabular-nums}
+@media (max-width:700px){
+  html body .gt-taula-v878362 .parts-v878377 .part{grid-template-columns:1fr 1fr 56px;padding-left:20px}
+  html body .gt-taula-v878362 .parts-acc-v878377{padding-left:20px}
+}

@@ -4162,4 +4162,7 @@ export default {
 "Mesos": "Meses",
 "Aturar el comptador i desar el temps": "Parar el contador y guardar el tiempo",
 "Engegar el comptador de temps": "Poner en marcha el contador de tiempo",
+"Planificar el capítol": "Planificar el capítulo",
+"Repartir les partides en ordre": "Repartir las partidas en orden",
+"La durada surt de les partides: {n} dies laborables": "La duración sale de las partidas: {n} días laborables",
 };
