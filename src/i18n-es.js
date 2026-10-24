@@ -4131,4 +4131,8 @@ export default {
 "{n} vençudes": "{n} vencidas",
 "1 factura": "1 factura",
 "Veure-ho ({n})": "Verlo ({n})",
+"Preus de l’any": "Precios del año",
+"Actualització (%)": "Actualización (%)",
+"Calcular l’IPC (INE)": "Calcular el IPC (INE)",
+"Els preus del {a} pugen un {p} %": "Los precios de {a} suben un {p} %",
 };

@@ -11,7 +11,7 @@ import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
 import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878305} from "./pressupostPdf.js";
 import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
-import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE} from "./preusAuto.js";
+import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {encarrecDe,estatPassos,estatDocs} from "./encarrecsTecnics.js";
 import {dadesDemo} from "./dadesDemo.js";
 import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary,potReconnectar as gcalPotReconnectar,prepara as gcalPrepara,recorda as gcalRecorda} from "./googleCal.js";
@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.371";
+const APP_VERSION878264="87.372";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11402,7 +11402,7 @@ function BancPreus878368({compacte=false,onCanvi}){
     try{
       const r=llegirBancBc3(textBc3(await file.arrayBuffer()));
       if(!r.partides.length){setErr(t("L’arxiu no té cap partida amb preu."));setLlegint(false);return}
-      const nou={nom:r.nom||file.name.replace(/\.bc3$/i,""),arxiu:file.name,data:new Date().toISOString(),partides:r.partides.map(x=>({...x,desc:String(x.desc||"").slice(0,300)}))};
+      const nou={nom:r.nom||file.name.replace(/\.bc3$/i,""),arxiu:file.name,data:new Date().toISOString(),any:r.any||null,pct:0,partides:r.partides.map(x=>({...x,desc:String(x.desc||"").slice(0,300)}))};
       const txt=JSON.stringify(nou);
       if(txt.length>12e6){setErr(t("El banc és massa gran ({mb} MB): exporta’n només els capítols que facis servir.",{mb:Math.round(txt.length/1e5)/10}));setLlegint(false);return}
       lsSet8779(BANC_KEY878368,txt);setB(nou);onCanvi?.(nou);
@@ -11410,23 +11410,47 @@ function BancPreus878368({compacte=false,onCanvi}){
     setLlegint(false);
   }
   function treu(){if(!b||!confirm(t("Treure el banc de preus «{n}»?",{n:b.nom})))return;lsSet8779(BANC_KEY878368,"");setB(null);onCanvi?.(null)}
+  // V87.372 · l'any dels preus i el % d'actualització (IPC de l'INE): s'aplica en posar el preu, no toca el banc
+  const posa878372=patch=>{const nou={...b,...patch};try{lsSet8779(BANC_KEY878368,JSON.stringify(nou))}catch{}setB(nou);onCanvi?.(nou)};
+  const anyAra878372=new Date().getFullYear();
   return <div className={`banc-v878368 ${compacte?"compacte":""}`}>
     <div className="txt"><b>{t("Banc de preus")}</b>{b?<span>{b.nom} · {t("{n} partides",{n:b.partides.length.toLocaleString(loc878272())})}</span>:<span className="cap">{t("Cap banc de preus")}</span>}</div>
     <div className="bt"><label className="button secondary"><Upload size={15} aria-hidden="true"/> {llegint?t("Llegint…"):b?t("Canviar"):t("Importar BC3")}<input type="file" hidden accept=".bc3" disabled={llegint} onChange={e=>{const f=e.target.files?.[0];e.target.value="";llegeix(f)}}/></label>{b&&<button type="button" className="secondary" onClick={treu}>{t("Treure")}</button>}</div>
+    {b&&<div className="act-v878372">
+      <label><span>{t("Preus de l’any")}</span><input type="number" inputMode="numeric" min="1990" max={anyAra878372} defaultValue={b.any||""} key={`any-${b.data}`} onBlur={e=>{const v=parseInt(e.target.value,10);posa878372({any:v>1990&&v<=anyAra878372?v:null})}}/></label>
+      <label><span>{t("Actualització (%)")}</span><input type="text" inputMode="decimal" defaultValue={b.pct?String(b.pct).replace(".",","):""} key={`pct-${b.data}`} placeholder="0" onBlur={e=>{const v=parseNum8770(e.target.value);posa878372({pct:Number.isFinite(v)?Math.round(v*100)/100:0})}}/></label>
+      <a className="button secondary" href="https://www.ine.es/varipc/" target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden="true"/> {t("Calcular l’IPC (INE)")}</a>
+      {Number(b.pct)>0&&<em>{t("Els preus del {a} pugen un {p} %",{a:b.any||"banc",p:String(b.pct).replace(".",",")})}</em>}
+    </div>}
     {err&&<p className="err">{err}</p>}
   </div>;
 }
+// V87.372 · un descompost de l'app a un altre preu (la mitjana de les obres): totes les línies que no són % × factor
+function escalaTaula878372(tb,f){if(!tb||!(f>0)||Math.abs(f-1)<0.0005)return tb;return {...tb,rows:(tb.rows||[]).map(r=>r.isSection||String(r.ut||"").includes("%")||/PREU UNITARI/i.test(String(r.concepte||""))?r:{...r,pu:String(Math.round((parseNum8770(r.pu)||0)*f*10000)/10000).replace(".",",")})}}
+// les partides amb preu de les altres obres del compte (les compartides per altres no són aquí)
+function partidesObres878372(obraId){
+  const od=lsJson8779("aco_odata",{})||{},obres=lsJson8779("aco_obres",[])||[];const nom=new Map(obres.map(o=>[String(o.id),o.nom||""]));const out=[];
+  for(const [id,d] of Object.entries(od)){if(String(id)===String(obraId)||!d||!Array.isArray(d.partides))continue;for(const x of d.partides){const pu=parseNum8770(x.pu);if(!(pu>0))continue;out.push({obraId:id,obraNom:nom.get(String(id))||"",codi:x.codi||"",ut:x.ut,concepte:x.concepte||"",desc:x.desc||"",pu,descompostTable:x.descompostTable||null})}}
+  return out;
+}
 // les fonts del preu de cada línia dels amidaments (font878368): arxiu · llibreria (Preus) · banc · ia · ma (escrit a mà)
-const FONTS878368={arxiu:"Arxiu",llibreria:"Preus",banc:"Banc",ia:"IA",ma:"A mà"};
-function preusAmidaments878368(linies=[],partidaLibrary=[],banc=null){
+const FONTS878368={arxiu:"Arxiu",llibreria:"Preus",banc:"Banc",obres:"Obres",ia:"IA",ma:"A mà"};
+function preusAmidaments878368(linies=[],partidaLibrary=[],banc=null,obraId=""){
   const lib=(partidaLibrary||[]).map(x=>({codi:x.codi||x.codiPressupost||x.codiIntern||"",ut:x.ut,concepte:x.concepte||x.resum||"",desc:x.descripcio||x.desc||"",pu:parseNum8770(x.pu),descompostTable:x.descompostTable||null,font:"llibreria"}));
-  const iL=fesIndex(lib),iB=fesIndex((banc?.partides||[]).map(x=>({...x,font:"banc"})));
+  // V87.372 · el banc, amb el % d'actualització; les obres anteriors (la mitjana de la mateixa partida)
+  const fB=1+(Number(banc?.pct)||0)/100,etB=`${banc?.any?`Banc ${banc.any}`:"Banc"}${Number(banc?.pct)>0?` +${String(banc.pct).replace(".",",")} %`:""}`;
+  const iL=fesIndex(lib),iB=fesIndex((banc?.partides||[]).map(x=>({...x,pu:Math.round(x.pu*fB*100)/100,descomp:fB!==1?escalaDescomp(x.descomp,fB):x.descomp,font:"banc"})));
+  const iO=fesIndex(partidesObres878372(obraId));
+  const obres=l=>{const r=preuObres(l,iO,{minim:.6});if(!r)return null;const f=r.millor.pu>0?r.pu/r.millor.pu:1;
+    return {...l,pu:r.pu,font878368:"obres",semblant878368:r.items[0].puntuacio<0.85,nota878368:(r.n>1?`Mitjana de ${r.n} obres: ${money(r.pu)} (${money(r.min)} – ${money(r.max)})`:`${r.millor.obraNom||"Una obra anterior"}: ${money(r.pu)}`).slice(0,160),descomp878368:null,taula878368:r.millor.descompostTable?escalaTaula878372(r.millor.descompostTable,f):null}};
   return linies.map(l=>{
     if(l.font878368==="ia"||l.font878368==="ma")return l;
     if(l.font878368==="arxiu"||(!l.font878368&&Number(l.pu)>0))return {...l,font878368:"arxiu"};
-    const r=buscaPreu(l,iL,{minim:9})||buscaPreu(l,iB,{minim:9})||buscaPreu(l,iL,{minim:.6})||buscaPreu(l,iB,{minim:.5});
-    if(!r)return {...l,pu:null,font878368:"",semblant878368:false,nota878368:"",descomp878368:null,taula878368:null};
-    return {...l,pu:r.item.pu,font878368:r.item.font,semblant878368:r.com==="semblant",nota878368:`${r.item.codi||""} · ${r.item.concepte||""}`.slice(0,160),descomp878368:r.item.descomp||null,taula878368:r.item.descompostTable||null};
+    const r=buscaPreu(l,iL,{minim:9})||buscaPreu(l,iB,{minim:9});
+    const o=r?null:obres(l);if(o)return o;
+    const r2=r||buscaPreu(l,iL,{minim:.6})||buscaPreu(l,iB,{minim:.5});
+    if(!r2)return {...l,pu:null,font878368:"",semblant878368:false,nota878368:"",descomp878368:null,taula878368:null};
+    return {...l,pu:r2.item.pu,font878368:r2.item.font,semblant878368:r2.com==="semblant",nota878368:`${r2.item.font==="banc"?etB+" · ":""}${r2.item.codi||""} · ${r2.item.concepte||""}`.slice(0,160),descomp878368:r2.item.descomp||null,taula878368:r2.item.descompostTable||null};
   });
 }
 // el descompost d'una línia en el format de l'app; amb accés difícil, la mà d'obra rendeix menys (+pct % de temps)
@@ -11545,8 +11569,8 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
   const nSemb878368=linies.filter(l=>Number(l.pu)>0&&l.semblant878368).length;
   const nSense878368=linies.filter(l=>!(Number(l.pu)>0)).length;
   const nLogis878368=linies.filter(l=>l.logistica878368).length;
-  const buscaPreus878368=()=>desa(a=>({linies:preusAmidaments878368(a.linies||[],partidaLibrary,bancPreus878368()),passat:null}));
-  const posaLogistica878368=()=>desa(a=>{const ls=(a.linies||[]).filter(l=>!l.logistica878368);const nous=partidesLogistica(cond878368,ls).map((p,i)=>({id:`am-lg-${Date.now().toString(36)}-${i}`,codi:p.codi,cap:p.cap,capPrincipal:"",capPath:[],ut:p.ut,concepte:p.concepte,desc:p.nota||"",q:p.q,pu:null,mides:[],logistica878368:true}));return {linies:preusAmidaments878368([...nous,...ls],partidaLibrary,bancPreus878368()),passat:null}});
+  const buscaPreus878368=()=>desa(a=>({linies:preusAmidaments878368(a.linies||[],partidaLibrary,bancPreus878368(),obra?.id),passat:null}));
+  const posaLogistica878368=()=>desa(a=>{const ls=(a.linies||[]).filter(l=>!l.logistica878368);const nous=partidesLogistica(cond878368,ls).map((p,i)=>({id:`am-lg-${Date.now().toString(36)}-${i}`,codi:p.codi,cap:p.cap,capPrincipal:"",capPath:[],ut:p.ut,concepte:p.concepte,desc:p.nota||"",q:p.q,pu:null,mides:[],logistica878368:true}));return {linies:preusAmidaments878368([...nous,...ls],partidaLibrary,bancPreus878368(),obra?.id),passat:null}});
   const aplicaIa878368=(preus,avisos)=>{desa(a=>({linies:(a.linies||[]).map(l=>{const x=preus[l.codi];return x?{...l,pu:x.pu>0?x.pu:null,font878368:"ia",semblant878368:false,confirmar878368:!!x.confirmar,nota878368:x.nota||"",descomp878368:x.descomp||null,taula878368:null}:l}),passat:null}));setAvisIa878368(avisos||[]);setIa878368(false)};
   const preuMa878368=(id,v)=>canvia(id,v>0?{pu:v,font878368:"ma",semblant878368:false,nota878368:"",descomp878368:null,taula878368:null}:{pu:null,font878368:"",descomp878368:null,taula878368:null});
   const ambPreu=linies.filter(l=>Number(l.pu)>0);
@@ -11581,7 +11605,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
     const now=new Date().toISOString(),ext=(file.name.split(".").pop()||"").toUpperCase();
     const tipus=["XLS","XLSX","XLSM","CSV","ODS"].includes(ext)?"Excel":ext;
     // V87.368 · i els preus de seguida: els de l'arxiu (amb el descompost del BC3), els dels Preus propis i els del banc de preus
-    const nous=preusAmidaments878368(r.partides.map((p,i)=>({id:`am-${Date.now().toString(36)}-${i}`,codi:p.codi||"",cap:p.cap||"01 Partides",capPrincipal:p.capPrincipal||"",capPath:p.capPath||[],ut:p.ut||"",concepte:p.concepte||"",desc:p.desc||"",q:Number(p.q)||0,pu:Number(p.pu)>0?Number(p.pu):null,mides:p.mides||[],arxiu:file.name,...(Number(p.pu)>0?{font878368:"arxiu",...(p.descomp?.length?{descomp878368:p.descomp}:{})}:{})})),partidaLibrary,bancPreus878368());
+    const nous=preusAmidaments878368(r.partides.map((p,i)=>({id:`am-${Date.now().toString(36)}-${i}`,codi:p.codi||"",cap:p.cap||"01 Partides",capPrincipal:p.capPrincipal||"",capPath:p.capPath||[],ut:p.ut||"",concepte:p.concepte||"",desc:p.desc||"",q:Number(p.q)||0,pu:Number(p.pu)>0?Number(p.pu):null,mides:p.mides||[],arxiu:file.name,...(Number(p.pu)>0?{font878368:"arxiu",...(p.descomp?.length?{descomp878368:p.descomp}:{})}:{})})),partidaLibrary,bancPreus878368(),obra?.id);
     desa(a=>({font:{nom:afegir&&a.font?`${a.font.nom} + ${file.name}`:file.name,tipus:afegir&&a.font&&a.font.tipus!==tipus?`${a.font.tipus} + ${tipus}`:tipus,data:now,obra:r.nom||""},linies:afegir?[...(a.linies||[]),...nous]:nous,passat:null,avisos:r.avisos||[]}));
     setObert(null);
     // l'arxiu original, a Documents (carpeta d'amidaments i pressupost)
@@ -11604,7 +11628,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
           {am.passat&&<span className="passat">✓ {t("Passat al pressupost «{nom}» el {d}",{nom:am.passat.nom,d:new Date(am.passat.data).toLocaleDateString(loc878272())})}</span>}
         </div>
         <details className="preus-v878368">
-          <summary><b>{t("Preus")}</b><span className="xips">{[["arxiu","Arxiu"],["llibreria","Preus"],["banc","Banc"],["ia","IA"],["ma","A mà"]].map(([f,l])=>{const n=nFont878368(f);return n?<em key={f} className={`x-${f}`}>{t(l)} {n}</em>:null})}{nSemb878368>0&&<em className="x-semb">{t("Semblants")} {nSemb878368}</em>}{nSense878368>0&&<em className="x-sense">{t("Sense preu")} {nSense878368}</em>}</span></summary>
+          <summary><b>{t("Preus")}</b><span className="xips">{[["arxiu","Arxiu"],["llibreria","Preus"],["obres","Obres"],["banc","Banc"],["ia","IA"],["ma","A mà"]].map(([f,l])=>{const n=nFont878368(f);return n?<em key={f} className={`x-${f}`}>{t(l)} {n}</em>:null})}{nSemb878368>0&&<em className="x-semb">{t("Semblants")} {nSemb878368}</em>}{nSense878368>0&&<em className="x-sense">{t("Sense preu")} {nSense878368}</em>}</span></summary>
           <div className="cos">
             {!readOnly&&<BancPreus878368 compacte/>}
             {!readOnly&&<div className="bt"><button type="button" className="secondary" onClick={buscaPreus878368}><Search size={15} aria-hidden="true"/> {t("Buscar preus")}</button>{(nSense878368>0||nSemb878368>0)&&<button type="button" className="primary" onClick={()=>setIa878368(true)}>{t("Preus amb IA")}{nSense878368?` (${nSense878368})`:""}</button>}</div>}
@@ -15474,7 +15498,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.371",
+    app_version:"87.372",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

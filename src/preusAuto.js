@@ -30,8 +30,9 @@ const fmt = (n, d = 2) => (Math.round((Number(n) || 0) * 10 ** d) / 10 ** d).toF
 const TIPUS = { "1": "MO", "2": "MAQ", "3": "MAT" };
 export function llegirBancBc3(text) {
   const regs = String(text || "").replace(/\r/g, "").split(/(?:^|\n)~(?=[A-Z]\|)/).filter(Boolean);
-  const C = new Map(), D = new Map(), T = new Map();
-  let nom = "";
+  const C = new Map(), D = new Map(), T = new Map(), anys = new Map();
+  let nom = "", anyV = null;
+  const anyDe = d => { const t = String(d || "").replace(/\D/g, ""); if (t.length === 8) return +t.slice(4); if (t.length === 6) return 2000 + +t.slice(4); return null; };
   for (const reg of regs) {
     const tipus = reg[0], f = reg.slice(2).replace(/\n$/, "").split("|");
     if (tipus === "C") {
@@ -40,6 +41,9 @@ export function llegirBancBc3(text) {
       const preus = String(f[3] || "").split("\\").map(numBc3).filter(x => x !== null);
       C.set(k, { raw, ut: normUt(f[1]), resum: net(f[2]), pu: preus.length ? preus[0] : null, tipus: net(f[5]), cap: /#$/.test(raw) });
       if (/##$/.test(raw) && !nom) nom = net(f[2]);
+      const a = anyDe(String(f[4] || "").split("\\")[0]); if (a && a > 1990 && a < 2100) anys.set(a, (anys.get(a) || 0) + 1);
+    } else if (tipus === "V") {
+      const m = String(f[1] || "").match(/\\(\d{6,8})/); if (m) { const a = anyDe(m[1]); if (a && a > 1990 && a < 2100) anyV = a; }
     } else if (tipus === "D") {
       const p = String(f[1] || "").split("\\"), out = [];
       for (let i = 0; i < p.length; i += 3) { if (!p[i] || !p[i].trim()) continue; out.push({ k: sense(p[i]), factor: numBc3(p[i + 1]) ?? 1, rend: numBc3(p[i + 2]) ?? 1 }); }
@@ -62,8 +66,11 @@ export function llegirBancBc3(text) {
     const pu = c.pu != null ? c.pu : r2(directe);
     partides.push({ codi: k, ut: c.ut, concepte: c.resum || k, desc: T.get(k) || "", pu: r2(pu), descomp });
   }
-  return { font: "BC3", nom, partides, avisos: partides.length ? [] : ["No s’hi ha trobat cap partida amb preu"] };
+  const any = [...anys.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || anyV || null;
+  return { font: "BC3", nom, any, partides, avisos: partides.length ? [] : ["No s’hi ha trobat cap partida amb preu"] };
 }
+// V87.372 · actualitzar els preus d'un banc vell (l'Héctor: «els tinc del 2023: caldria un ajust de l'IPC»): tot el descompost × factor
+export const escalaDescomp = (descomp = [], f = 1) => descomp.map(x => x.tipus === "%" ? x : { ...x, pu: Math.round((Number(x.pu) || 0) * f * 10000) / 10000 });
 
 // el descompost en el format de l'app (el mateix que fan servir la fitxa de la partida i el resum del pressupost): seccions,
 // recursos amb rendiment (q) i preu (pu), un percentatge (ut «%») per als mitjans auxiliars i la diferència fins al preu del banc,
@@ -132,6 +139,36 @@ export function buscaPreu(p = {}, index, { minim = 0.5 } = {}) {
   }
   if (!millor || nota < minim) return null;
   return { item: millor, com: "semblant", nota: `Semblant (${Math.round(nota * 100)} %)`, puntuacio: nota };
+}
+
+// V87.372 · Preus de les obres anteriors (l'Héctor: «que la app llegeixi els preus dels diferents pressupostos, desats o no a la
+// llibreria, i si una partida semblant en dues obres tenia un preu un pèl diferent, que en calculi la mitjana i posi un preu»).
+// index = fesIndex(partides de les altres obres, cada una amb obraId i obraNom). Torna {pu (mitjana), min, max, n (obres), millor, items}
+// o null. Per obra, només la partida que s'hi assembla més; s'agafen les que són a prop de la millor (fins a 0,15 menys).
+export function preuObres(p = {}, index, { minim = 0.6 } = {}) {
+  if (!index || !index.llista.length) return null;
+  const ut = normUt(p.ut);
+  const tp = new Set(tokens(`${p.concepte} ${String(p.desc || "").slice(0, 160)}`)), tc = new Set(tokens(p.concepte));
+  if (!tp.size) return null;
+  const vots = new Map();
+  for (const w of tp) for (const n of index.perMot.get(w) || []) vots.set(n, (vots.get(n) || 0) + 1);
+  const cands = [];
+  for (const [n, v] of vots) {
+    const it = index.llista[n];
+    if (!ut || !it._ut || it._ut !== ut) continue;
+    // compta més que hi siguin totes les paraules buscades que no pas que la partida en tingui de més: «pintura plàstica en
+    // parets i sostres» s'assembla més a «… en parets i sostres, dues mans» que a «… en sostres»
+    const sc = 0.65 * (v / tp.size) + 0.35 * (v / it._t.size);
+    if (sc >= minim) cands.push({ it, sc });
+  }
+  if (!cands.length) return null;
+  const top = Math.max(...cands.map(c => c.sc));
+  const perObra = new Map();
+  for (const c of cands.filter(c => c.sc >= top - 0.15)) { const k = c.it.obraId || c.it.obraNom || ""; const a = perObra.get(k); if (!a || c.sc > a.sc) perObra.set(k, c); }
+  const items = [...perObra.values()].sort((a, b) => b.sc - a.sc);
+  const pus = items.map(c => Number(c.it.pu));
+  const pu = r2(pus.reduce((a, b) => a + b, 0) / pus.length);
+  return { pu, min: r2(Math.min(...pus)), max: r2(Math.max(...pus)), n: items.length, millor: items[0].it, items: items.map(c => ({ obraNom: c.it.obraNom, codi: c.it.codi, pu: Number(c.it.pu), puntuacio: Math.round(c.sc * 100) / 100 })) };
 }
 
 // ───────────── Implantació, logística i permisos ─────────────

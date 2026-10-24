@@ -1255,6 +1255,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **V87.371 · Rendiment de l'empresa al mòbil:** la gràfica «Mes a mes» amb `CardOPlega878369` (resum: ingressos i benefici) i, a «Per
     obres», cada obra en una línia (nom, benefici i %, `nm-v878371`) que es desplega en tocar-la (`obertes878371`, `oberta-v878371`) amb
     la resta de xifres i «Obrir». Estils: `src/theme-v878371.css`. Prova: a `v369test.mjs` (21).
+  - **V87.372 · Banc de preus amb l'any i l'IPC, i preus de les obres anteriors** (l'Héctor, 24/10/2026: el banc, opcional per a cada
+    usuari —sobretot els tècnics—; «entraré el del 2023 i m'hauria de deixar actualitzar-lo a l'IPC vigent»; «que llegeixi els preus dels
+    diferents pressupostos, desats o no a la llibreria, i si una partida semblant en dues obres tenia un preu diferent, que en calculi la
+    mitjana»). Repartir un banc amb llicència (BEDEC, «Preus de la construcció») als altres usuaris no es pot: cadascú importa el seu.
+    - **Banc**: `llegirBancBc3` torna `any` (el més repetit a les dates dels ~C; si no, el del ~V); al banc es desen `any` i `pct`
+      (`BancPreus878368`: «Preus de l'any», «Actualització (%)» i «Calcular l'IPC (INE)» → https://www.ine.es/varipc/). En posar el preu,
+      el preu i el descompost × (1 + pct) (`escalaDescomp`) i la nota diu «Banc 2023 +9 % · codi · …».
+    - **Obres anteriors** (`partidesObres878372`: totes les partides amb preu de les altres obres del compte, de `aco_odata`; `preuObres`:
+      la mateixa partida o una de molt semblant amb la mateixa unitat, una per obra, compta més que hi siguin totes les paraules
+      buscades): la **mitjana** amb el mínim i el màxim («Mitjana de 3 obres: 32,10 € (28,00 € – 36,00 €)»), font `obres` (xip «Obres»),
+      `semblant878368` si la puntuació és < 0,85, i el descompost de la més semblant escalat a la mitjana (`escalaTaula878372`).
+    - Ordre: arxiu → Preus pel codi → banc pel codi → obres anteriors → Preus semblant → banc semblant → IA.
+    - Estils: `src/theme-v878372.css`. Proves: `preusautounit.mjs` (28) i `pressupost372test.mjs` (10).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
