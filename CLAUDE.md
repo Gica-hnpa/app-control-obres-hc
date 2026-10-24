@@ -1296,6 +1296,25 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Inici** de la constructora i de la gestió total: les dues columnes una sota l'altra, sense passar de la pantalla (sortien 9 px).
       «1 tasca vençuda» → «1 feina vençuda», com la resta de l'Inici.
     - Estils: `src/theme-v878374.css`.
+  - **V87.375 · Les meves despeses (tècnic i compte de l'Héctor) amb el format de les empreses** (l'Héctor, 24/10/2026), i **amidaments en
+    Excel sense fila de títols**:
+    - **Despeses** (`nouM878375 = meves && !treb`, `llistaMeva878375` dins d'`Albarans878259`): els cinc apartats de dalt filtren com
+      abans; de seguida la llista per apartats (Quilometratge · Dietes · Taxes · Material · Altres), **plegats** (`grup-v878348 gm-<k>`),
+      cada un amb quantes, els km i el total; a dins, columnes **Data · Concepte · Base · IVA · Total · Per repercutir · ull**
+      (`taula-meva-v878375`; el concepte diu el proveïdor o el trajecte, i a sota els km, el número i l'expedient). Vistes **Tot · Per
+      expedient · Per any** (`vistaD878348`; dins de cada apartat, paquets per expedient o per any i expedient). Cercador als filtres.
+      Sense la franja de totals de dalt: el total base, el total amb IVA i «Per repercutir» (despeses amb expedient no repercutides), a baix.
+      Dins d'un encàrrec tècnic (`meves` de l'expedient), igual però sense vistes.
+    - **Amidaments en Excel** (l'Héctor, amb els de Cami Fondo, que no es llegien: «L'app no hi ha trobat cap partida»): l'Excel no tenia
+      fila de títols. `capcaleraSenseTitols` (`src/amidaments.js`) reconeix les columnes pel contingut: el codi («1.4», `RE_CODI_P`), la
+      unitat (`RE_UT_P`), la descripció (la columna de text més llarg), la quantitat (la columna amb números a les files de partida) i les
+      de mides (números a les files sense codi; l'última és el parcial). Capítols a la columna del codi («1.- ENDERROCS» → «01 ENDERROCS»)
+      i subcapítols («15.1.-SANEJAMENT» → «15.1 SANEJAMENT», amb `capPrincipal` «15 INSTAL.LACIONS»). Una descripció de més de 140 lletres
+      fa un concepte curt i va sencera a la descripció. **Partides sense codi**: una fila amb descripció i unitat (i quantitat), o, si el full
+      no té columna de codi, amb quantitat, és una partida; el codi el posa l'app (`01.01`, `codiApp`). Títols de quantitat amb més paraules
+      («Quantitat (m2)»). Amb l'Excel de l'Héctor: 145 partides, 21 capítols; a la 2.6 i la 3.1 la quantitat de l'Excel no és la suma de les
+      mides (és de l'arxiu; l'app ho avisa).
+    - Estils: `src/theme-v878375.css`. Proves: `despeses329test.mjs` (35) i `amidamentsunit.mjs` (32, amb un Excel inventat de l'estil).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

@@ -4146,4 +4146,6 @@ export default {
 "Anul·lar la factura {n}?": "¿Anular la factura {n}?",
 "Tornar a pendent": "Volver a pendiente",
 "Gràfics i informes": "Gráficos e informes",
+"Buscar concepte, trajecte, número…": "Buscar concepto, trayecto, número…",
+"Repercutida": "Repercutida",
 };

@@ -112,9 +112,9 @@ const cel = v => net(v);
 const nrm = s => cel(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[.:º°]/g, "").trim();
 const COLS = {
   codi: /^(codi|codigo|code|cod|partida|n|num|numero|nº|ref|referencia|clau|clave)$/,
-  ut: /^(ut|ud|u|unitat|unidad|unit|unitats de mesura|ud de medida)$/,
+  ut: /^(ut|ud|u|uts|unitat|unidad|unit|unitats de mesura|unitat de mesura|ud de medida|unidad de medida|um|u m)$/,
   concepte: /^(descripcio|descripcion|concepte|concepto|resum|resumen|text|texto|designacio|designacion|partida d.obra|nom|nombre|description)/,
-  q: /^(quantitat|cantidad|amidament|amidaments|medicio|medicion|canpres|cant|q|total amidament|total medicion|quantitat total|cantidad total|medicio total|medicion total)$/,
+  q: /^(quantitat|quantitats|cantidad|cantidades|amidament|amidaments|medicio|medicions|medicion|mediciones|canpres|cant|q|total amidament|total medicion|quantitat total|cantidad total|medicio total|medicion total)(\s.*)?$/,
   pu: /^(preu|precio|pu|preu unitari|precio unitario|p unitari|pu sense iva|precio unit|pres|€\/u)$/,
   imp: /^(import|importe|total|imp|import total|importe total|imppres|parcial pressupost)$/,
   nat: /^(nat|naturalesa|naturaleza|tipus|tipo)$/,
@@ -144,11 +144,40 @@ function capcalera(files) {
   return millor;
 }
 
+// V87.375.1 · sense fila de títols (l'Héctor, 24/10/2026, amb els amidaments de Cami Fondo: codi · unitat · descripció · uds · llargada ·
+// amplada · alçada · parcial · quantitat, i els capítols «1.- ENDERROCS» a la columna del codi): les columnes es reconeixen pel que hi ha.
+const RE_CODI_P = /^[a-z]?\d{1,3}(?:\.\d{1,3}){1,3}\.?$/i;
+const RE_UT_P = /^(m|m2|m3|ml|m²|m³|u|ut|ud|uds|pa|kg|t|h|l|pza|pa\.|u\.|ut\.|ud\.)$/i;
+function capcaleraSenseTitols(files) {
+  const fs0 = files.slice(0, 600), nc = Math.min(40, Math.max(0, ...fs0.map(f => (f || []).length)));
+  let codi = -1, nCodi = 0;
+  for (let j = 0; j < Math.min(nc, 4); j++) { const c = fs0.filter(f => RE_CODI_P.test(cel(f?.[j]))).length; if (c > nCodi) { nCodi = c; codi = j; } }
+  if (nCodi < 3) return null;
+  const pf = fs0.filter(f => RE_CODI_P.test(cel(f?.[codi])));
+  const quants = (j, fn) => pf.filter(f => fn(f?.[j])).length;
+  let ut = -1;
+  for (let j = codi + 1; j < Math.min(nc, codi + 4); j++) if (quants(j, v => RE_UT_P.test(cel(v))) >= pf.length * 0.5) { ut = j; break; }
+  let concepte = -1, llarg = 8;
+  for (let j = codi + 1; j < nc; j++) { if (j === ut) continue; const l = pf.reduce((a, f) => a + cel(f?.[j]).length, 0) / pf.length; if (l > llarg) { llarg = l; concepte = j; } }
+  if (concepte < 0) return null;
+  let q = -1, nq = 0;
+  for (let j = concepte + 1; j < nc; j++) { const c = quants(j, v => cel(v) !== "" && esNumCel(v)); if (c > nq) { nq = c; q = j; } }
+  if (q < 0 || nq < pf.length * 0.5) return null;
+  const col = { codi, concepte, q };
+  if (ut >= 0) col.ut = ut;
+  // les línies de mides: files sense codi amb números entre la descripció i la quantitat; l'última d'aquestes columnes és el parcial
+  const mids = fs0.filter(f => !cel(f?.[codi]));
+  const nums = [];
+  for (let j = concepte + 1; j < q; j++) if (mids.filter(f => cel(f?.[j]) !== "" && esNumCel(f?.[j])).length >= 2) nums.push(j);
+  if (nums.length) { col.parc = nums[nums.length - 1]; ["uds", "ll", "am", "al"].forEach((k, i) => { if (nums[i] !== undefined && i < nums.length - 1) col[k] = nums[i]; }); }
+  return { fila: -1, col, punts: Object.keys(col).length, senseTitols: true };
+}
+
 function llegirFull(files) {
-  const h = capcalera(files);
+  const h = capcalera(files) || capcaleraSenseTitols(files);
   if (!h) return null;
   const { col } = h, caps = [], partides = [];
-  let cap = "", act = null;
+  let cap = "", act = null, capP = "";
   const v = (fila, k) => col[k] === undefined ? "" : fila[col[k]];
   const tanca = () => {
     if (!act) return;
@@ -164,6 +193,15 @@ function llegirFull(files) {
     const capCol = cel(v(fila, "cap"));
     if (capCol && capCol !== cap) { tanca(); cap = capCol; if (!caps.includes(cap)) caps.push(cap); }
     if (/^(total|suma|subtotal|pressupost d.execuci|presupuesto de ejecuci|p\.?e\.?m)\b/i.test(concepte || codi)) { tanca(); continue; }
+    if (!concepte && codi && /[a-zà-úç]{3}/i.test(codi) && !ut && q === null && imp === null && !RE_CODI_P.test(codi)) {
+      tanca();
+      // «15.-INSTAL·LACIONS» és un capítol; «15.1.-SANEJAMENT», un subcapítol dins seu
+      const m3 = codi.match(/^c?(\d{1,3}(?:\.\d{1,3})*)\s*[.\-:·)]*\s*(.+)$/i);
+      if (m3 && m3[1].includes(".")) { cap = net(`${m3[1]} ${m3[2]}`); if (!capP.startsWith(m3[1].split(".")[0].padStart(2, "0") + " ")) capP = ""; }
+      else { cap = m3 ? net(`${m3[1].padStart(2, "0")} ${m3[2]}`) : codi; capP = cap; }
+      if (!caps.includes(cap)) caps.push(cap);
+      continue;
+    }
     // títol de capítol: «CAPÍTOL 2 FAÇANES», o un codi curt sense unitat ni quantitat amb el nom en majúscules
     const capText = `${codi} ${concepte}`.trim();
     const mc = capText.match(CAP_FILA);
@@ -176,6 +214,7 @@ function llegirFull(files) {
       tanca();
       if (mc) cap = net(`${mc[1].padStart(2, "0")} ${mc[2]}`);
       else { const m2 = capText.match(CAP_CODI); cap = m2 ? net(`${m2[1].toUpperCase().padStart(2, "0")} ${m2[2]}`) : capText; }
+      capP = "";
       if (!caps.includes(cap)) caps.push(cap);
       continue;
     }
@@ -184,10 +223,22 @@ function llegirFull(files) {
       const mida = midaDeFila(fila, col); if (mida) act.mides.push(mida);
       continue;
     }
+    // V87.375.1 · sense codi (molts amidaments fets a mà): una fila amb la descripció i la unitat (i la quantitat), o, si el full no té
+    // columna de codi, amb la quantitat, és una partida; el codi el posa l'app (el número del capítol i el de la partida: «02.03»)
+    const senseCodi = !codi && !!concepte && ((!!ut && (q !== null || imp !== null || col.q === undefined)) || (col.codi === undefined && q !== null && !midaDeFila(fila, col)));
+    if (senseCodi) {
+      tanca();
+      if (!cap) { cap = "01 Partides"; caps.push(cap); }
+      const pre = ((cap.match(/^c?(\d{1,3})/i) || [])[1] || String(Math.max(1, caps.indexOf(cap) + 1))).padStart(2, "0");
+      const n = partides.filter(x => x.cap === cap).length + 1;
+      act = { codi: `${pre}.${String(n).padStart(2, "0")}`, codiApp: true, cap, capPrincipal: capP && capP !== cap ? capP : "", ut: normUt(ut), concepte, desc: "", q: q ?? 0, pu: pu ?? (q && imp ? r3(imp / q) : null), mides: [] };
+      continue;
+    }
     if (codi && concepte) {
       tanca();
       if (!cap) { cap = "01 Partides"; caps.push(cap); }
-      act = { codi, cap, ut: normUt(ut), concepte, desc: "", q: q ?? 0, pu: pu ?? (q && imp ? r3(imp / q) : null), mides: [] };
+      const curt = concepte.length > 140 ? concepte.slice(0, 120).replace(/[\s,;:.]+\S*$/, "") + "…" : concepte;
+      act = { codi, cap, capPrincipal: capP && capP !== cap ? capP : "", ut: normUt(ut), concepte: curt, desc: curt !== concepte ? concepte : "", q: q ?? 0, pu: pu ?? (q && imp ? r3(imp / q) : null), mides: [] };
       const mida = midaDeFila(fila, col); if (mida && (mida.concepte || col.parc !== undefined)) act.mides.push(mida);
       continue;
     }
