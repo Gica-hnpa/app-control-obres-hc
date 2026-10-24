@@ -1236,6 +1236,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       E2225223 · …»); amb +% d'accés (casella), la mà d'obra del descompost rendeix menys i el preu es torna a calcular.
     - Estils: `src/theme-v878368.css`. Prova: `pressupost368test.mjs` (28). El Supabase de proves té `/functions/v1/pressupost-ia` (10 € per
       partida) i `GET /__ia` (comptador i última petició).
+  - **V87.369 · Mòbil «tot recollit», segona volta** (`tools/proves/llargues366.mjs` després de la 368: Inici del tècnic 2,9 pantalles,
+    de la constructora 2,5, Rendiment de l'obra 2,4, Facturació del tècnic 2,4):
+    - **`CardOPlega878369`** (al costat de `Card`): al mòbil (≤700 px, `useMobil878363`) la targeta és un `details` plegat amb el títol,
+      un resum (quants i el primer) i, a dins, l'acció i el contingut; a l'ordinador, la `Card` de sempre. A l'Inici: Pròximes cites
+      («3 · Visita… · 25/10/2026»), Feines pendents («7 feines · 1 vençuda», `nVenc878369`; s'obre sola si s'està afegint una tasca),
+      Encàrrecs tècnics («Falten documents 4») i Obres en curs; al Rendiment de l'obra, «Evolució de l'obra» (ingressos i costos).
+    - «1 tasca/ques» → «1 feina» / «N feines». «Veure-les totes» com un enllaç (abans, el botó gris del navegador).
+    - **Facturació del tècnic** (`FacturesGeneral8738`, `HoursToInvoice878256`): «Pendent de facturar» al mòbil diu el total i «Veure-ho
+      (N)» (la llista es desplega); el resum de les factures (xifres, estats i les vençudes) va a `details.resum-fact-v878369` («Resum · 2
+      factures · total · ⚠ 2 vençudes»), plegat al mòbil i obert a l'ordinador; les factures emeses, en fitxes al mòbil (número · data ·
+      total / expedient / estat · accions), sense el codi llarg.
+    - Resultat: Inici 1,1 pantalles, Facturació 1,3. Estils: `src/theme-v878369.css`. Prova: `v369test.mjs` (17).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

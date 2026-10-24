@@ -4125,4 +4125,10 @@ export default {
 "+{p} % de mà d’obra per l’accés ({n} partides amb descompost)": "+{p} % de mano de obra por el acceso ({n} partidas con descompuesto)",
 "Preu: {o}": "Precio: {o}",
 "Més opcions": "Más opciones",
+"1 feina": "1 tarea",
+"{n} feines": "{n} tareas",
+"1 vençuda": "1 vencida",
+"{n} vençudes": "{n} vencidas",
+"1 factura": "1 factura",
+"Veure-ho ({n})": "Verlo ({n})",
 };
