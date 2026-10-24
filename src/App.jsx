@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.382";
+const APP_VERSION878264="87.383";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -14946,10 +14946,12 @@ function PartHores878340({obres=[],odata={}}){
   const fixes=w=>totes.filter(r=>r.parte&&r.treballadorId===w.id&&r.data===dia);
   const nomObra=id=>(obres||[]).find(o=>o.id===id)?.nom||"";
   const ultima=useMemo(()=>{const m={};[...totes].sort((a,b)=>String(b.data).localeCompare(String(a.data))).forEach(r=>{if(!m[r.treballadorId])m[r.treballadorId]=r.obraId});return m},[totes]);
+  // V87.383 · un dia buit porta l'obra (o les obres) on el Planning té cada treballador aquell dia (com Agenda › Equip); si no, l'última on ha treballat
+  const pla878383=useMemo(()=>{const m={};try{const {files}=equipSetmana878381(obres,odata,[new Date(dia+"T12:00:00")]);files.forEach(f=>{if(!f.k.startsWith("t:"))return;const ids=[...new Set((f.dies[dia]||[]).map(x=>x.obraId))].filter(id=>obertes.some(o=>o.id===id));if(ids.length)m[f.k.slice(2)]=ids})}catch{}return m},[obres,odata,dia,obertes,tick]);
   const[esb,setEsb]=useState({});
   const[canvi,setCanvi]=useState(false);
-  const carrega=(d,fonts)=>{const m={};treb.forEach(w=>{const ls=fonts.filter(r=>!r.parte&&r.treballadorId===w.id&&r.data===d).map(r=>({obraId:r.obraId,budgetId:r.budgetId||"",hores:String(r.hores).replace(".",",")}));m[w.id]=ls.length?ls:[{obraId:ultima[w.id]||"",hores:""}]});return m};
-  useEffect(()=>{if(!canvi)setEsb(carrega(dia,totes))},[dia,totes,treb.length]);
+  const carrega=(d,fonts)=>{const m={};treb.forEach(w=>{const ls=fonts.filter(r=>!r.parte&&r.treballadorId===w.id&&r.data===d).map(r=>({obraId:r.obraId,budgetId:r.budgetId||"",hores:String(r.hores).replace(".",",")}));m[w.id]=ls.length?ls:d===dia&&pla878383[w.id]?pla878383[w.id].map(id=>({obraId:id,hores:""})):[{obraId:ultima[w.id]||"",hores:""}]});return m};
+  useEffect(()=>{if(!canvi)setEsb(carrega(dia,totes))},[dia,totes,treb.length,pla878383]);
   const mou=n=>{const d=new Date(dia+"T12:00:00");d.setDate(d.getDate()+n);setCanvi(false);setDia(isoDay878255(d))};
   const setL=(wid,i,patch)=>{setCanvi(true);setEsb(m=>({...m,[wid]:(m[wid]||[]).map((l,j)=>j===i?{...l,...patch}:l)}))};
   const afegeix=wid=>{setCanvi(true);setEsb(m=>({...m,[wid]:[...(m[wid]||[]),{obraId:"",hores:""}]}))};
@@ -15795,7 +15797,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.382",
+    app_version:"87.383",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

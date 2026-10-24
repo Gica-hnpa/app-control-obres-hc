@@ -1396,6 +1396,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     rellotge de la barra (prop `crono`, que desa abans el d'una altra obra) o, sense, amb l'`obraId`. Si compta una altra obra
     (`altra878382`), el bloc diu «En marxa en una altra obra» i només té «Desar l'altra i començar aquí» (abans «Aturar i guardar
     registre» hauria desat aquell temps en aquesta obra, i «Reiniciar» l'hauria perdut). Prova: `comptador382test.mjs` (6).
+  - **V87.383 · Hores › Personal amb l'obra del Planning**: un dia sense hores apuntades porta, per a cada treballador, l'obra (o les
+    obres) on el Planning el té aquell dia (`pla878383` de `PartHores878340`, amb `equipSetmana878381` d'un sol dia; només obres obertes);
+    si no en té cap, l'última on ha treballat (com abans). Prova: a `equip381test.mjs` (14).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
