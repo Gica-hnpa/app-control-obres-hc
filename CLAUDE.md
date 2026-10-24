@@ -1367,6 +1367,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Al mòbil, els camps d'«Obra i logística» (`.logis-cos-v878368 .camps`) s'encongeixen (una columna a ≤420 px).
     - Estils `src/theme-v878378.css`. Prova: `preus378test.mjs` (17). Adaptades `pressupost368test`, `pressupost372test` i
       `amidaments328test` (treuen la casella dels marges: els seus preus esperats són sense marges).
+  - **V87.379 · «Treure el mínim» a la fitxa de la partida** (el pla de marges: «la fitxa diu per què i té un botó per treure-ho»): en
+    passar-ho a pressupost, la partida que puja al mínim recorda `minim878378 = {f, h, minimH}` (factor aplicat a la mà d'obra, hores que
+    en necessitava i el mínim). La fitxa (`FitxaPartida878361`) ho diu («Mínim de mà d'obra: 4 h (la partida en necessita 0,66 h)»,
+    `minim-v878379`) i «Treure el mínim» divideix la mà d'obra pel factor, refà el preu, treu el «mínim …» de l'origen i esborra
+    `minim878378` (fora d'edició, obre l'edició i ho fa; es desa amb «Guardar canvis»). Estils `src/theme-v878379.css`. Prova: a
+    `preus378test.mjs` (20; l'excavació de 29,37 € torna a 18,69 €).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

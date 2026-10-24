@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.378";
+const APP_VERSION878264="87.379";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5036,7 +5036,7 @@ async function importPdfBudget878305(rows,meta={},budgetId="principal"){
     const nous=rows.map((r,i)=>({id:`part-pdf-${Date.now()}-${i}`,codi:String(r.codi||""),cap:r.cap||"01 Partides",ut:r.ut||"ut",concepte:r.concepte||"Partida importada del PDF",desc:r.desc||"",q:Number(r.q)||0,pu:Number(r.pu)||0,certAnterior:0,certActual:0,certsByNum:{},tipus:meta.tipusPartida||"Import PDF",budgetId:bid,createdAt:now,updatedAt:now,
       ...(r.capPrincipal?{subcap:r.cap,capPrincipal:r.capPrincipal,capPath:r.capPath||[r.capPrincipal,r.cap]}:{}),
       ...(r.pressupostMesures?.length?{pressupostMesures:r.pressupostMesures,qFromPressupostMesures:true}:{}),
-      ...(r.descompostTable?{descompostTable:r.descompostTable}:{}),...(r.origenPreu878368?{origenPreu878368:r.origenPreu878368}:{})}));
+      ...(r.descompostTable?{descompostTable:r.descompostTable}:{}),...(r.origenPreu878368?{origenPreu878368:r.origenPreu878368}:{}),...(r.minim878378?{minim878378:r.minim878378}:{})}));
     const groups=ensureBudgetGroups8786({...d,budgetGroups:seed,partides:[...(d.partides||[]),...nous]}).groups;
     const nomGrup=(groups.find(g=>g.id===bid)?.nom)||"Pressupost principal";
     return {...d,budgetGroups:groups.filter(g=>g.id!=="principal"),activeBudgetIdObra:bid,partides:[...(d.partides||[]),...nous],
@@ -11383,12 +11383,19 @@ function FitxaPartida878361({row={},editable=false,onChange,onSet,openBreakdown,
   const difer=parts&&Math.abs((Math.round(parts.preu*100)/100)-pu)>0.009;
   const pct=x=>(Math.round(x*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})+" %";
   const aplica=(taula,preu)=>{onSet?.({descompostTable:taula,descompost:descompostTableToText878174(taula),pu:String(preu)});setSenzill(false)};
+  // V87.379 · el mínim de mà d'obra que es va posar en passar els amidaments al pressupost es pot treure
+  const mn=row.minim878378&&Number(row.minim878378.f)>1&&row.descompostTable?.rows?.length?row.minim878378:null;
+  const[treure,setTreure]=useState(false);
+  const treuMinim=()=>{const tb=recalculateBreakdownTableV87232(escalaMO878378(row.descompostTable,1/Number(mn.f))).table;const preu=Math.round((recalculateBreakdownTableV87232(tb).total||0)*100)/100;
+    onSet?.({descompostTable:tb,descompost:descompostTableToText878174(tb),pu:String(preu),minim878378:null,origenPreu878368:String(row.origenPreu878368||"").replace(/ · mínim [^·]*h \([^)]*\)/,"")})};
+  useEffect(()=>{if(treure&&editable&&mn){treuMinim();setTreure(false)}},[treure,editable]);// eslint-disable-line react-hooks/exhaustive-deps
   return <Modal title={[row.codi,row.concepte].filter(Boolean).join(" · ")||t("Partida")} close={close}><div className="fitxa-partida-v878361">
     <div className="xifres"><div><small>{t("Codi")}</small><b>{row.codi||"—"}</b></div><div><small>{t("Quantitat")}</small><b>{(Math.round(q*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} {row.ut||""}</b></div><div><small>{t("Preu unitari")}</small><b>{money(pu)}</b></div><div className="imp"><small>{t("Import")}</small><b>{money(q*pu)}</b></div></div>
     <section className="desc"><h4>{t("Descripció")}</h4>{editable?<textarea value={row.desc||""} onChange={e=>onChange?.("desc",e.target.value)} placeholder={t("Descripció de la partida")}/>:<p>{libText87196(row.desc)?row.desc:<em>{t("Sense descripció.")}</em>}</p>}</section>
     <section className="preu">
       <h4>{t("Com es fa el preu")}</h4>
       {row.origenPreu878368&&<p className="origen-v878368">{t("Preu: {o}",{o:row.origenPreu878368})}</p>}
+      {mn&&<div className="minim-v878379"><span>{t("Mínim de mà d’obra: {m} h (la partida en necessita {h} h)",{m:fmtP878378(mn.minimH),h:fmtP878378(mn.h)})}</span>{(editable||onEditar)&&<button type="button" className="secondary" onClick={()=>{if(editable)treuMinim();else{onEditar();setTreure(true)}}}>{t("Treure el mínim")}</button>}</div>}
       {parts?<>
         <div className="parts">{parts.grups.map(g=><div key={g.k} className={"part "+g.k}>
           <button type="button" className="fila" aria-expanded={obert===g.k} onClick={()=>setObert(o=>o===g.k?"":g.k)}><ChevronRight size={16} className="chev" aria-hidden="true"/><span>{t(g.nom)}{g.k==="ma"&&g.hores>0?<small>{fhMa878348(g.hores)}</small>:null}</span><b>{money(g.total)}</b></button>
@@ -11926,9 +11933,9 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet})
       // V87.378 · els marges (dificultat, mínim de mà d'obra, CI, DGE i BI) als preus del banc, de l'arxiu i de la IA
       const mg=mg878378,ambM=ambMg878378&&Number(l.pu)>0&&FONTS_MARGES878378.includes(l.font878368);
       const pctMO=(ambPct878368?pct878368:0)+(ambM?mg.pctDif:0);
-      let tb=Number(l.pu)>0?taulaLinia878368(l,pctMO):null,canvi=pctMO>0;const notes=[];
+      let tb=Number(l.pu)>0?taulaLinia878368(l,pctMO):null,canvi=pctMO>0,minim=null;const notes=[];
       if(ambM&&mg.pctDif)notes.push(`+${fmtP878378(mg.pctDif)} % MO (${t((DIF878378.find(x=>x[0]===mg.dificultat)||DIF878378[0])[1]).toLowerCase()})`);
-      if(tb&&ambM&&mg.minim&&mg.minimH>0){const h=horesMO878378(tb)*(Number(l.q)||0);if(h>0.001&&h<mg.minimH){tb=recalculateBreakdownTableV87232(escalaMO878378(tb,mg.minimH/h)).table;notes.push(`mínim ${fmtP878378(mg.minimH)} h (${fmtP878378(h)} h)`);canvi=true}}
+      if(tb&&ambM&&mg.minim&&mg.minimH>0){const h=horesMO878378(tb)*(Number(l.q)||0);if(h>0.001&&h<mg.minimH){tb=recalculateBreakdownTableV87232(escalaMO878378(tb,mg.minimH/h)).table;notes.push(`mínim ${fmtP878378(mg.minimH)} h (${fmtP878378(h)} h)`);canvi=true;minim={f:Math.round(mg.minimH/h*1e6)/1e6,h:Math.round(h*100)/100,minimH:mg.minimH}}}
       const ambPcts=ambM&&(mg.ci>0||(mg.mode==="dins"&&(mg.dge>0||mg.bi>0)));
       if(tb&&ambPcts){tb=ambMarges878378(tb,mg);canvi=true}
       if(ambPcts)notes.push([mg.ci?`CI ${fmtP878378(mg.ci)} %`:"",mg.mode==="dins"&&mg.dge?`DGE ${fmtP878378(mg.dge)} %`:"",mg.mode==="dins"&&mg.bi?`BI ${fmtP878378(mg.bi)} %`:""].filter(Boolean).join(" · "));
@@ -11938,7 +11945,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet})
       const mides=(l.mides||[]).map((m,i)=>{const alguna=[m.llargada,m.amplada,m.alcada].some(v=>v!==""&&v!=null);return {id:`m-${Date.now()}-${j}-${i}`,concepte:m.concepte||"",unitats:m.unitats===""||m.unitats==null?(alguna?"1":dim(m.parcial)):dim(m.unitats),llargada:dim(m.llargada),amplada:dim(m.amplada),alcada:dim(m.alcada)}});
       const q=Number(l.q)||0,suma=medicioTotal8780(mides,l.ut);
       const ambMides=mides.length>0&&Math.abs(suma-q)<=Math.max(0.011,Math.abs(q)*0.005);
-      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:ambMides?mides:[],...(tb?{descompostTable:tb}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
+      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:ambMides?mides:[],...(tb?{descompostTable:tb}:{}),...(minim?{minim878378:minim}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
     });
     const total=Math.round(rows.reduce((s,r)=>s+r.q*r.pu,0)*100)/100;
     try{
@@ -15735,7 +15742,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.378",
+    app_version:"87.379",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -4186,4 +4186,6 @@ export default {
 "Despeses generals": "Gastos generales",
 "Benefici industrial": "Beneficio industrial",
 "PRESSUPOST D’EXECUCIÓ PER CONTRACTE": "PRESUPUESTO DE EJECUCIÓN POR CONTRATA",
+"Mínim de mà d’obra: {m} h (la partida en necessita {h} h)": "Mínimo de mano de obra: {m} h (la partida necesita {h} h)",
+"Treure el mínim": "Quitar el mínimo",
 };
