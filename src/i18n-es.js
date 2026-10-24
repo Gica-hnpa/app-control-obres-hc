@@ -4198,4 +4198,6 @@ export default {
 "{n} partides per posar al dia": "{n} partidas por actualizar",
 "Equip": "Equipo",
 "A dues obres el mateix dia": "En dos obras el mismo día",
+"En marxa en una altra obra": "En marcha en otra obra",
+"Desar l’altra i començar aquí": "Guardar la otra y empezar aquí",
 };

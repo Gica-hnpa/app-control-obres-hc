@@ -1391,6 +1391,11 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     obres el mateix dia: requadre vermell (`doble`). Tocar una obra obre el seu Planning (`openObraTab(id,"Gantt")`; l'Agenda ara rep
     `openObraTab`). Al mòbil, els 5 dies a dalt i la llista del dia («Sense obra» si no té res). Colors per obra
     (`COLORS_EQUIP878381`). Estils `src/theme-v878381.css`. Prova: `equip381test.mjs` (13).
+  - **V87.382 · El comptador d'Honoraris sap de quina obra és** (trobat repassant la V87.376): «Iniciar comptador» (`HonorarisTemps`) no
+    hi posava l'`obraId`, i el rellotge de la barra no el veia ni el desava (`stopTimerFor878254` no desa sense obra). Ara engega amb el
+    rellotge de la barra (prop `crono`, que desa abans el d'una altra obra) o, sense, amb l'`obraId`. Si compta una altra obra
+    (`altra878382`), el bloc diu «En marxa en una altra obra» i només té «Desar l'altra i començar aquí» (abans «Aturar i guardar
+    registre» hauria desat aquell temps en aquesta obra, i «Reiniciar» l'hauria perdut). Prova: `comptador382test.mjs` (6).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
