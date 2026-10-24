@@ -1,0 +1,80 @@
+/* V87.368 · Pressupost automàtic dels amidaments: banc de preus, preus (arxiu, Preus, banc, IA, a mà), obra i logística */
+@media screen{
+/* banc de preus (Preus i Amidaments) */
+html body .banc-v878368{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .banc-v878368 .txt{flex:1;min-width:200px;display:flex;flex-direction:column;gap:2px}
+html body .banc-v878368 .txt b{font-size:14.5px}
+html body .banc-v878368 .txt span{font-size:13px;color:var(--co-ink-2,#334155)}
+html body .banc-v878368 .txt .cap{color:var(--co-ink-3,#64748b)}
+html body .banc-v878368 .bt{display:flex;gap:8px;flex-wrap:wrap}
+html body .banc-v878368 .bt .button{display:inline-flex;align-items:center;gap:6px}
+html body .banc-v878368 .err{flex-basis:100%;margin:0;color:#b91c1c;font-size:13px}
+html body .banc-v878368.compacte{padding:10px 12px;border-style:dashed}
+
+/* preus i logística dels amidaments: dues línies plegades */
+html body details.preus-v878368,html body details.logis-v878368{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff);margin:10px 0}
+html body details.preus-v878368>summary,html body details.logis-v878368>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-height:50px;padding:8px 14px}
+html body details.preus-v878368>summary::-webkit-details-marker,html body details.logis-v878368>summary::-webkit-details-marker{display:none}
+html body details.preus-v878368>summary b,html body details.logis-v878368>summary b{font-size:15px}
+html body details.logis-v878368>summary>span{color:var(--co-ink-3,#64748b);font-size:13px}
+html body details.preus-v878368[open]>summary,html body details.logis-v878368[open]>summary{border-bottom:1px solid var(--co-line)}
+html body details.preus-v878368>.cos,html body details.logis-v878368>.cos{padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+html body .preus-v878368 .bt,html body .logis-v878368 .bt{display:flex;flex-wrap:wrap;gap:8px}
+html body .preus-v878368 .bt button{display:inline-flex;align-items:center;gap:6px}
+html body .preus-v878368 .avis{margin:0;font-size:13px;color:#b45309}
+html body .preus-v878368 .xips{display:flex;flex-wrap:wrap;gap:6px}
+html body .preus-v878368 .xips em,html body .font-v878368{font-style:normal;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:#F1F5F9;color:#334155;white-space:nowrap}
+html body .x-arxiu{background:#F1F5F9!important;color:#334155!important}
+html body .x-llibreria{background:#ECFDF5!important;color:#047857!important}
+html body .x-banc{background:#EFF6FF!important;color:#1D4ED8!important}
+html body .x-ia{background:#F5F3FF!important;color:#6D28D9!important}
+html body .x-ma{background:#F1F5F9!important;color:#0F172A!important}
+html body .x-semb{background:#FFF7ED!important;color:#C2410C!important}
+html body .x-sense{background:#FEF2F2!important;color:#B91C1C!important}
+html body .amid-fila-v878328 .pu{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+html body .amid-fila-v878328 .pu .font-v878368{font-size:11px;padding:1px 6px}
+html body .nota-v878368{margin:4px 0;font-size:12.5px;color:var(--co-ink-3,#64748b)}
+html body details.desc-v878368{margin:6px 0}
+html body details.desc-v878368>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--co-accent,#2563EB)}
+html body details.desc-v878368 table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+html body details.desc-v878368 td{padding:3px 6px;border-bottom:1px solid var(--co-line);vertical-align:top}
+html body details.desc-v878368 td:not(:first-child){text-align:right;white-space:nowrap}
+html body details.desc-v878368 tr.sec td{font-weight:700;font-size:11.5px;color:var(--co-ink-3,#64748b);text-transform:uppercase;letter-spacing:.03em;background:#F8FAFC}
+html body .preu-ma-v878368{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px}
+html body .preu-ma-v878368 input{width:110px}
+
+/* obra i logística */
+html body .logis-cos-v878368{display:flex;flex-direction:column;gap:10px}
+html body .logis-cos-v878368 .adr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;font-size:14px}
+html body .logis-cos-v878368 .adr a{display:inline-flex;align-items:center;gap:5px}
+html body .logis-cos-v878368 .camps{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px}
+html body .logis-cos-v878368 .camps label{display:flex;flex-direction:column;gap:4px;font-size:13px}
+html body .logis-cos-v878368 .camps label>span{color:var(--co-ink-3,#64748b);font-weight:600}
+html body .logis-cos-v878368 .camps label.chk{flex-direction:row;align-items:center;gap:8px;min-height:40px}
+html body .logis-cos-v878368 .camps label.chk>span{color:var(--co-ink,#0f172a);font-weight:500}
+html body .logis-cos-v878368 .pct{margin:0;font-size:13.5px}
+html body .logis-cos-v878368 .pct b{color:#C2410C}
+
+/* preus amb IA */
+html body .preus-ia-v878368{display:flex;flex-direction:column;gap:12px}
+html body .preus-ia-v878368 .n{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:0}
+html body .preus-ia-v878368 .ctx{margin:0;padding:10px 12px 10px 28px;border-radius:10px;background:#F8FAFC;font-size:13px;color:var(--co-ink-2,#334155)}
+html body .preus-ia-v878368 .directe{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+html body .preus-ia-v878368 .directe .planols{display:inline-flex;align-items:center;gap:6px}
+html body .preus-ia-v878368 .xat{display:flex;flex-direction:column;gap:8px}
+html body .preus-ia-v878368 .xat h3{display:flex;align-items:center;gap:8px;margin:6px 0 0;font-size:15px}
+html body .preus-ia-v878368 .xat h3 em{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--co-accent,#2563EB);color:#fff;font-size:13px}
+html body .preus-ia-v878368 .ai-tools{display:flex;flex-wrap:wrap;gap:8px}
+html body .preus-ia-v878368 textarea{width:100%;font:13px/1.4 var(--app-font,system-ui)}
+html body .preus-ia-v878368 .ok{margin:0;color:#047857;font-weight:600}
+html body .preus-ia-v878368 .warn,html body .preus-ia-v878368 .err{margin:0;color:#b91c1c}
+html body .preus-ia-v878368 .msg{margin:0;color:var(--co-ink-2,#334155)}
+html body .preus-ia-v878368 .modal-actions{display:flex;gap:8px;align-items:center}
+html body .preus-ia-v878368 .modal-actions .sp{flex:1}
+html body .passar-v878328 .preus li.semb{color:#C2410C}
+}
+@media (max-width:700px){
+  html body .logis-cos-v878368 .camps{grid-template-columns:1fr 1fr}
+  html body .banc-v878368 .bt{width:100%}
+}
+html body .origen-v878368{margin:0 0 6px;font-size:12.5px;color:var(--co-ink-3,#64748b)}

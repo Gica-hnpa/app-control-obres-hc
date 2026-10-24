@@ -1210,6 +1210,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     (també el 20/10 amb la V87.310): les dues pestanyes renoven el permís, però cap fa servir un permís vell (`reuse: 0`) ni cal tornar a
     entrar; no és dels canvis d'aquests dies. Guió `D:\aco-tmp\repassa.sh` (torna a passar una llista de proves) i `D:\aco-tmp\versio.sh A B`
     (canvia el número de versió a tots els llocs).
+  - **V87.368 · Pressupost automàtic a partir dels amidaments** (l'Héctor, 24/10/2026 a la nit: «fer-ho automàticament amb IA un cop
+    entrats els amidaments en Excel o BC3 —el PDF si no hi ha més remei, revisant-lo bé—; els preus de la construcció de Girona; si una
+    partida no la sap interpretar, que la IA busqui el preu amb el descompost en el format del BC3; tenir en compte l'adreça, els accessos,
+    els permisos i la logística; i després els plànols»). Detall per a l'Héctor a `docs/pressupost-ia.md`.
+    - **Funcions pures** a `src/preusAuto.js` (prova sense navegador `preusautounit.mjs`, 22): `llegirBancBc3` (un banc de preus BC3 amb el
+      descompost: tipus 1 MO, 2 maquinària, 3 material, «%» percentatges; el preu del ~C mana), `taulaDescomp` (al format `descompostTable`
+      de l'app; la diferència fins al preu del banc, una línia en %), `fesIndex`/`buscaPreu` (pel codi o per una partida semblant amb la
+      mateixa unitat: mots sense accents, plurals i el final; nota «Semblant (NN %)»), `partidesLogistica` (capítol «00 Implantació,
+      logística i permisos»: contenidors segons la runa dels enderrocs i excavacions × 1,3, permís de via pública, tall de carrer,
+      llicència o comunicació prèvia, muntacàrregues o grua, pujada a planta sense ascensor, transport intern, habitatge ocupat, horari,
+      neteja), `pctAcces` (+% de mà d'obra per l'accés), `resumCondicions`, `promptPreusIa` (respondre NOMÉS en BC3) i `respostaIa`.
+    - **Banc de preus** (`BancPreus878368`, clau `aco_banc_preus_v878368`, fins a 12 MB): a Preus (a dalt) i als Amidaments.
+    - **Amidaments** (`Amidaments878328`): en llegir l'arxiu, els preus es posen sols (`preusAmidaments878368`): arxiu (un BC3 porta
+      també el descompost de cada partida) → Preus pel codi → banc pel codi → Preus semblant (0,6) → banc semblant (0,5). Cada línia:
+      `font878368` (arxiu, llibreria, banc, ia, ma), `semblant878368`, `nota878368`, `descomp878368` / `taula878368`, `confirmar878368`.
+      Dues línies plegades: **Preus** (xips Arxiu · Preus · Banc · IA · A mà · Semblants · Sense preu; banc, «Buscar preus», «Preus amb
+      IA») i **Obra i logística** (`Logistica878368`, `data.condicions878368`, amb «Veure el lloc» a Google Maps i «Afegir les partides
+      de logística»). Oberta, cada línia diu d'on surt el preu, el descompost i «Preu a mà» (0 el treu).
+    - **Preus amb IA** (`PreusIa878368`): les sense preu (i, si es vol, les semblants), l'adreça i les condicions. Amb la funció del servidor
+      `pressupost-ia` (`supabase/functions/pressupost-ia/index.ts`, **escrita però no instal·lada**: cal la clau d'Anthropic, de pagament,
+      i el sí de l'Héctor; Opus 5.5, cerca a internet, de 25 en 25 partides, fins a 4 plànols) o, si no existeix (404 →
+      `__acoIaPressupostOff878368`), «Copiar i obrir Claude / ChatGPT» i enganxar la resposta.
+    - **Passar-ho a pressupost**: cada partida porta `descompostTable` i `origenPreu878368` (es veu a la fitxa de la partida: «Preu: Banc ·
+      E2225223 · …»); amb +% d'accés (casella), la mà d'obra del descompost rendeix menys i el preu es torna a calcular.
+    - Estils: `src/theme-v878368.css`. Prova: `pressupost368test.mjs` (28). El Supabase de proves té `/functions/v1/pressupost-ia` (10 € per
+      partida) i `GET /__ia` (comptador i última petició).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
