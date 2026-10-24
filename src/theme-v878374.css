@@ -1,0 +1,19 @@
+/* V87.374 · Res tallat per la dreta al mòbil (l'Héctor, 24/10/2026, amb una captura de Preus: «en versió mòbil es continuen veient
+   pantalles tallades»). L'app retalla el que surt per la dreta (overflow-x:clip), i un camp amb una opció llarga eixamplava la columna de
+   la graella fins a fora de la pantalla. Amb max-width en %, els camps ja no eixamplen la columna (s'encongeixen). */
+@media (max-width:760px){
+  html body .main select,html body .main textarea,html body .main input:not([type=checkbox]):not([type=radio]):not([type=range]){max-width:100%}
+  html body .modal select,html body .modal textarea,html body .modal input:not([type=checkbox]):not([type=radio]):not([type=range]){max-width:100%}
+  /* Preus: els filtres en una columna; «Resultats» ja és a cada capítol */
+  html body .library-primary-filters-v87230.library-primary-filters-v878240{grid-template-columns:minmax(0,1fr)}
+  html body .library-primary-filters-v87230>*{min-width:0}
+  html body .library-primary-filters-v87230 select,html body .library-primary-filters-v87230 input{width:100%;min-width:0}
+  html body .library-primary-filters-v878240>div{display:none}
+  /* Inici de la constructora i de la gestió total: la columna de l'esquerra (cites, feines) i la de la dreta (obres en curs), una
+     sota l'altra i sense passar de la pantalla (sortien 9 px per la dreta) */
+  html body .home-pro-layout-v878140{grid-template-columns:minmax(0,1fr)!important}
+  html body .home-pro-layout-v878140>*{min-width:0;max-width:100%}
+  html body .library-page-v87196,html body .library-page-v87196>*{min-width:0;max-width:100%}
+  html body .library-hero-v87196{grid-template-columns:minmax(0,1fr)!important}
+  html body .library-hero-v87196 h2{overflow-wrap:anywhere}
+}

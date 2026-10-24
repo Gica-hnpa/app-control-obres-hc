@@ -1282,6 +1282,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Dins de la pestanya «Honoraris» de la Facturació de la gestió total (`dins`), sense el títol «Facturació» repetit.
     - Estils: `src/theme-v878373.css`. Prova: `fact373test.mjs` (19). Adaptades `clientsvirtuals`, `menutecnictest`, `tempstest`
       (obren «Veure-ho»), `graficatest`, `pantallestest`, `v366test` i `v369test`.
+  - **V87.374 · Res tallat per la dreta al mòbil** (l'Héctor, 24/10/2026, amb una captura de Preus a l'iPhone: «es continuen veient
+    pantalles tallades»).
+    - **Per què no ho vèiem:** l'app retalla el que surt per la dreta (`overflow-x:clip` a html, body, #root i .main), i les proves miraven
+      `scrollWidth > innerWidth`, que amb el retall no passa mai.
+    - **Eina nova** `tools/proves/tallades374.mjs`: mira cada element visible de cada pantalla del menú i de cada apartat d'unes obres,
+      amb els comptes de prova i el de l'Héctor (còpia de DADES), primer tal com s'obre i després amb els blocs plegables oberts. Diu
+      quins passen de la vora dreta, fora dels que són dins d'una zona que es pot lliscar. Opcions: `W=375`, `COMPTES=`, `WEBROOT=`, `OUT=`.
+    - **Causa:** un desplegable amb una opció llarga eixamplava la columna d'una graella `1fr` fins a fora de la pantalla. Al mòbil (≤760
+      px), els camps (`select`, `input`, `textarea`) porten `max-width:100%`: així s'encongeixen i no eixamplen la columna.
+    - **Preus:** els filtres en una columna (fora «Resultats»). Amb la llibreria buida, ni filtres, ni «Capítols i partides», ni paperera
+      buida. «Començar amb una llibreria neta» passa dins d'«Eines opcionals». La paperera només surt si hi ha alguna cosa.
+    - **Inici** de la constructora i de la gestió total: les dues columnes una sota l'altra, sense passar de la pantalla (sortien 9 px).
+      «1 tasca vençuda» → «1 feina vençuda», com la resta de l'Inici.
+    - Estils: `src/theme-v878374.css`.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
