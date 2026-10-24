@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.377";
+const APP_VERSION878264="87.378";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9537,7 +9537,7 @@ function PressupostRapid878150(props){
       return {...d,partides:[...current,{id:"pr-"+Date.now(),codi:String(current.length+1).padStart(2,"0")+".01",ut:"ut",concepte:"Nova partida",desc:"",cap,q:"1,00",pu:"0,00",pressupostMesures:[],certAnterior:0,certActual:0,certsByNum:{},tipus:"Pressupost ràpid manual",createdAt:now,updatedAt:now}],updatedAt:now};
     });
   }
-  function doc878153(){return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",numeroPressupost:numeroPressupost||suggestedNumero878194,referencia,dataPressupost,versioPressupost,obraAdreca:obraAdrecaPressupost,tercerNom,tercerNif,tercerAdreca,tercerEmail,realitzadorPressupost,clientFinalPressupost,subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES"),observacions,formaPagament}}
+  function doc878153(){return {type:"pressupostobra",marges878378:margesDoc878378(data),title:"PRESSUPOST D’OBRA",numeroPressupost:numeroPressupost||suggestedNumero878194,referencia,dataPressupost,versioPressupost,obraAdreca:obraAdrecaPressupost,tercerNom,tercerNif,tercerAdreca,tercerEmail,realitzadorPressupost,clientFinalPressupost,subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES"),observacions,formaPagament}}
   function saveAsDocument878153(){
     const doc=doc878153();
     const now=new Date().toISOString();
@@ -9742,6 +9742,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} obra={obra} client={client} setClients={setClients} obraData={data} setObraData={readOnly?undefined:setData} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly&&!clientEditCertifications} clientMode={readOnly}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Facturació obra"&&<Fact data={data} setData={setData} obra={obra} client={client} setClients={setClients} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
+    {activeTab==="Pressupost"&&!readOnly&&hasModule2Access8747()&&<details className="marges-pres-v878378"><summary><b>{i18nT("Preus i marges")}</b><span>{resumMarges878378(margesObra878378(data))}</span></summary><div className="cos"><MargesObra878378 data={data} setData={setData}/><h4>{i18nT("Obra i logística")}</h4><Logistica878368 obra={obra} cond={data.condicions878368||{}} setCond={c=>setData(d=>({...d,condicions878368:c}))}/></div></details>}
     {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Ajustos del pressupost")}</b><span>{i18nT("Número, observacions, forma de pagament i PDF per al client")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} key={activeTab} senseBarra878342={navigationTabs.includes("Pressupost")} tota878342={totaObra878342} readOnly878342={readOnly} goDespeses878342={navigationTabs.includes("Albarans")?()=>{setTotaObra878342(false);setTab?.("Albarans")}:null} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
@@ -11609,6 +11610,76 @@ function taulaLinia878368(l,pct=0){
   if(pct>0){let sec="";tb={...tb,rows:(tb.rows||[]).map(r=>{if(r.isSection){sec=String(r.concepte||"");return r}if(/M[ÀA] D.OBRA/i.test(sec)&&String(r.ut||"")!=="%"){const q=parseNum8770(r.q)||0;return {...r,q:String(Math.round(q*(1+pct/100)*10000)/10000).replace(".",",")}}return r})}}
   return recalculateBreakdownTableV87232(tb).table;
 }
+// V87.378 · Preus i marges (l'Héctor, 24/10/2026: «els preus del banc en BC3 no porten la DGE ni el BI… i segons la tipologia
+// d'obra el preu puja: reformes exigents, poques quantitats que gairebé es cobren com a fraccions de dia… net i ordenat»).
+// Els preus del banc, de l'arxiu i de la IA són PEM (sense DGE ni BI); els de les obres anteriors i de Preus ja són de venda i no es
+// toquen. De sèrie (Ajustos › «Preus i marges», `aco_marges_v878378`) i, per obra, `data.marges878378`: dificultat (Obra nova ·
+// Reforma · Reforma exigent: % de més a la mà d'obra), CI · DGE · BI, «dins del preu» (s'afegeixen al descompost de cada partida) o «al
+// resum» (el document diu PEM + DG + BI = PEC) i un mínim de mà d'obra per partida (2 m² de paret a 0,8 h/m² són 1,6 h: es compten 4 h).
+const MARGES_KEY878378="aco_marges_v878378";
+const DIF878378=[["nova","Obra nova"],["reforma","Reforma"],["exigent","Reforma exigent"]];
+const FONTS_MARGES878378=["banc","ia","arxiu"];
+const fmtP878378=x=>(Math.round((+x||0)*100)/100).toLocaleString(loc878272());
+function margesDefecte878378(){
+  const e=empresaInfo878259()||{},m=lsJson8779(MARGES_KEY878378,{})||{};
+  const v=(x,d)=>x===""||x==null?d:String(x);
+  return {ci:v(m.ci,"0"),dge:v(m.dge,v(e.dge878342,"13")),bi:v(m.bi,v(e.bi878342,"6")),mode:m.mode==="resum"?"resum":"dins",
+    dif:{nova:v(m.dif?.nova,"0"),reforma:v(m.dif?.reforma,"10"),exigent:v(m.dif?.exigent,"20")},minim:m.minim!==false,minimH:v(m.minimH,"4")};
+}
+function margesObra878378(d={}){
+  const def=margesDefecte878378(),o=d?.marges878378||{},n=x=>parseNum8770(x)||0;
+  const tria=k=>o[k]!==undefined&&o[k]!==""?o[k]:def[k];
+  const dificultat=DIF878378.some(x=>x[0]===o.dificultat)?o.dificultat:"nova";
+  return {ci:n(tria("ci")),dge:n(tria("dge")),bi:n(tria("bi")),mode:(o.mode||def.mode)==="resum"?"resum":"dins",dificultat,pctDif:n(def.dif[dificultat]),
+    minim:o.minim!==undefined?!!o.minim:def.minim,minimH:n(tria("minimH")),def};
+}
+function margesDoc878378(d){const m=margesObra878378(d||{});return m.mode==="resum"&&(m.dge>0||m.bi>0)?{mode:"resum",dge:m.dge,bi:m.bi}:null}
+function resumMarges878378(m){
+  const out=[],dl=(DIF878378.find(x=>x[0]===m.dificultat)||DIF878378[0])[1];
+  out.push(m.pctDif?t("{d} +{p} % de mà d’obra",{d:t(dl),p:fmtP878378(m.pctDif)}):t(dl));
+  if(m.dge||m.bi)out.push(m.mode==="dins"?t("DGE {g} % i BI {b} % dins del preu",{g:fmtP878378(m.dge),b:fmtP878378(m.bi)}):t("DGE {g} % i BI {b} % al resum",{g:fmtP878378(m.dge),b:fmtP878378(m.bi)}));
+  if(m.ci)out.push(`CI ${fmtP878378(m.ci)} %`);
+  if(m.minim&&m.minimH)out.push(t("mínim {h} h per partida",{h:fmtP878378(m.minimH)}));
+  return out.join(" · ");
+}
+const esMO878378=sec=>/M[ÀA] D.OBRA|MANO DE OBRA/i.test(sec);
+// les hores de mà d'obra per unitat d'un descompost (les línies en hores de la secció de mà d'obra)
+function horesMO878378(tb){let sec="",h=0;(tb?.rows||[]).forEach(r=>{if(r.isSection){sec=String(r.concepte||"");return}if(esMO878378(sec)&&/^h/i.test(String(r.ut||"").trim()))h+=parseNum8770(r.q)||0});return h}
+function escalaMO878378(tb,f){let sec="";return {...tb,rows:(tb.rows||[]).map(r=>{if(r.isSection){sec=String(r.concepte||"");return r}if(esMO878378(sec)&&String(r.ut||"")!=="%")return {...r,q:String(Math.round((parseNum8770(r.q)||0)*f*10000)/10000).replace(".",",")};return r})}}
+// el CI, la DGE i el BI al descompost, abans del preu final
+function ambMarges878378(tb,m){
+  const st=Date.now().toString(36),f=x=>String(x).replace(".",","),extra=[];
+  const dins=m.mode==="dins";
+  if(m.ci>0||(dins&&(m.dge>0||m.bi>0)))extra.push({id:"s-mg-"+st,isSection:true,concepte:"MARGES D’EMPRESA"});
+  if(m.ci>0)extra.push({id:"ci-"+st,concepte:"Costos indirectes (CI)",ut:"%",q:f(m.ci)});
+  if(dins&&m.dge>0)extra.push({id:"dge-"+st,concepte:"Despeses generals (DGE)",ut:"%",q:f(m.dge)});
+  if(dins&&m.bi>0)extra.push({id:"bi-"+st,concepte:"Benefici industrial (BI)",ut:"%",q:f(m.bi)});
+  if(!extra.length)return tb;
+  const rows=[...(tb.rows||[])],fi=rows.findIndex(r=>/PREU UNITARI FINAL/i.test(String(r.concepte||"")));
+  if(fi>=0)rows.splice(fi,0,...extra);else rows.push(...extra);
+  return recalculateBreakdownTableV87232({...tb,rows}).table;
+}
+function MargesCamps878378({v={},def,set,readOnly=false,perObra=false}){
+  const mode=v.mode||(perObra?def.mode:"dins");
+  const minim=v.minim!==undefined?!!v.minim:(perObra?def.minim:true);
+  const inp=(k,ph)=><input inputMode="decimal" value={v[k]??""} placeholder={ph} disabled={readOnly} onChange={e=>set({[k]:e.target.value})}/>;
+  return <div className="marges-v878378">
+    {perObra?<div className="fila"><span className="l">{t("Dificultat de l’obra")}</span><div className="seg" role="group" aria-label={t("Dificultat de l’obra")}>{DIF878378.map(([k,l])=><button type="button" key={k} disabled={readOnly} aria-pressed={(v.dificultat||"nova")===k} onClick={()=>set({dificultat:k})}>{t(l)}<small>+{fmtP878378(parseNum8770(def.dif[k])||0)} %</small></button>)}</div></div>
+    :<div className="fila"><span className="l">{t("Mà d’obra de més segons la dificultat (%)")}</span><div className="tres">{DIF878378.map(([k,l])=><label key={k}><span>{t(l)}</span><input inputMode="decimal" value={v.dif?.[k]??""} placeholder={{nova:"0",reforma:"10",exigent:"20"}[k]} onChange={e=>set({dif:{...(v.dif||{}),[k]:e.target.value}})}/></label>)}</div></div>}
+    <div className="fila"><span className="l">{t("Marges (%)")}</span><div className="tres"><label><span>CI</span>{inp("ci",perObra?def.ci:"0")}</label><label><span>DGE</span>{inp("dge",perObra?def.dge:"13")}</label><label><span>BI</span>{inp("bi",perObra?def.bi:"6")}</label></div></div>
+    <div className="fila"><span className="l">{t("On van la DGE i el BI")}</span><div className="seg" role="group" aria-label={t("On van la DGE i el BI")}><button type="button" disabled={readOnly} aria-pressed={mode==="dins"} onClick={()=>set({mode:"dins"})}>{t("Dins del preu de cada partida")}</button><button type="button" disabled={readOnly} aria-pressed={mode==="resum"} onClick={()=>set({mode:"resum"})}>{t("A part, al resum")}</button></div></div>
+    <label className="chk"><input type="checkbox" checked={minim} disabled={readOnly} onChange={e=>set({minim:e.target.checked})}/><span>{t("Mínim de mà d’obra per partida")}</span><input className="h" inputMode="decimal" value={v.minimH??""} placeholder={perObra?def.minimH:"4"} disabled={readOnly||!minim} onChange={e=>set({minimH:e.target.value})}/><span>h</span></label>
+  </div>;
+}
+function MargesObra878378({data={},setData,readOnly=false}){
+  const def=margesDefecte878378();
+  return <MargesCamps878378 v={data?.marges878378||{}} def={def} perObra readOnly={readOnly||!setData} set={x=>setData?.(d=>({...d,marges878378:{...(d.marges878378||{}),...x}}))}/>;
+}
+function MargesAjustos878378(){
+  const[v,setV]=useState(()=>lsJson8779(MARGES_KEY878378,{})||{});
+  const set=x=>setV(o=>{const n={...o,...x};lsSet8779(MARGES_KEY878378,JSON.stringify(n));return n});
+  return <MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/>;
+}
 function Logistica878368({obra={},cond={},setCond,readOnly}){
   const k={...COND_DEFECTE,...cond};
   const set=(c,v)=>setCond?.({...k,[c]:v});
@@ -11785,8 +11856,9 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
           </div>
         </details>
         <details className="logis-v878368">
-          <summary><b>{t("Obra i logística")}</b><span>{nLogis878368?t("{n} partides de logística",{n:nLogis878368}):t("Accés, runes, plantes i permisos")}</span></summary>
+          <summary><b>{t("Obra, logística i marges")}</b><span>{[resumMarges878378(margesObra878378(data)),nLogis878368?t("{n} partides de logística",{n:nLogis878368}):""].filter(Boolean).join(" · ")}</span></summary>
           <div className="cos">
+            <MargesObra878378 data={data} setData={readOnly?null:setData} readOnly={readOnly}/>
             <Logistica878368 obra={obra} cond={cond878368} readOnly={readOnly} setCond={c=>setData(d=>({...d,condicions878368:c}))}/>
             {!readOnly&&<div className="bt"><button type="button" className="primary" onClick={posaLogistica878368}><Plus size={15} aria-hidden="true"/> {nLogis878368?t("Tornar a fer les partides de logística"):t("Afegir les partides de logística")}</button></div>}
           </div>
@@ -11843,17 +11915,30 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet})
   const pct878368=pctAcces(data.condicions878368||{});
   const nDesc878368=linies.filter(l=>Number(l.pu)>0&&(l.taula878368||l.descomp878368?.length)).length;
   const[ambPct878368,setAmbPct878368]=useState(pct878368>0);
+  const mg878378=margesObra878378(data);
+  const[ambMg878378,setAmbMg878378]=useState(true);
+  const nMg878378=linies.filter(l=>Number(l.pu)>0&&FONTS_MARGES878378.includes(l.font878368)).length;
+  const fanMg878378=!!(mg878378.pctDif||mg878378.ci||(mg878378.mode==="dins"&&(mg878378.dge||mg878378.bi))||(mg878378.minim&&mg878378.minimH));
   const nSemb878368=linies.filter(l=>Number(l.pu)>0&&l.semblant878368).length;
   async function passa(){
     setFent(true);
     const rows=linies.map((l,j)=>{
-      const tb=Number(l.pu)>0?taulaLinia878368(l,ambPct878368?pct878368:0):null;
-      const pu=tb&&ambPct878368&&pct878368>0?Math.round((recalculateBreakdownTableV87232(tb).total||0)*100)/100:Number(l.pu)>0?Number(l.pu):(usaLib&&preuLib(l)>0?preuLib(l):0);
+      // V87.378 · els marges (dificultat, mínim de mà d'obra, CI, DGE i BI) als preus del banc, de l'arxiu i de la IA
+      const mg=mg878378,ambM=ambMg878378&&Number(l.pu)>0&&FONTS_MARGES878378.includes(l.font878368);
+      const pctMO=(ambPct878368?pct878368:0)+(ambM?mg.pctDif:0);
+      let tb=Number(l.pu)>0?taulaLinia878368(l,pctMO):null,canvi=pctMO>0;const notes=[];
+      if(ambM&&mg.pctDif)notes.push(`+${fmtP878378(mg.pctDif)} % MO (${t((DIF878378.find(x=>x[0]===mg.dificultat)||DIF878378[0])[1]).toLowerCase()})`);
+      if(tb&&ambM&&mg.minim&&mg.minimH>0){const h=horesMO878378(tb)*(Number(l.q)||0);if(h>0.001&&h<mg.minimH){tb=recalculateBreakdownTableV87232(escalaMO878378(tb,mg.minimH/h)).table;notes.push(`mínim ${fmtP878378(mg.minimH)} h (${fmtP878378(h)} h)`);canvi=true}}
+      const ambPcts=ambM&&(mg.ci>0||(mg.mode==="dins"&&(mg.dge>0||mg.bi>0)));
+      if(tb&&ambPcts){tb=ambMarges878378(tb,mg);canvi=true}
+      if(ambPcts)notes.push([mg.ci?`CI ${fmtP878378(mg.ci)} %`:"",mg.mode==="dins"&&mg.dge?`DGE ${fmtP878378(mg.dge)} %`:"",mg.mode==="dins"&&mg.bi?`BI ${fmtP878378(mg.bi)} %`:""].filter(Boolean).join(" · "));
+      const fM=ambPcts&&!tb?(1+mg.ci/100)*(mg.mode==="dins"?(1+mg.dge/100)*(1+mg.bi/100):1):1;
+      const pu=tb&&canvi?Math.round((recalculateBreakdownTableV87232(tb).total||0)*100)/100:Number(l.pu)>0?Math.round(Number(l.pu)*fM*100)/100:(usaLib&&preuLib(l)>0?preuLib(l):0);
       const dim=v=>v===""||v==null?"":coma878328(v);
       const mides=(l.mides||[]).map((m,i)=>{const alguna=[m.llargada,m.amplada,m.alcada].some(v=>v!==""&&v!=null);return {id:`m-${Date.now()}-${j}-${i}`,concepte:m.concepte||"",unitats:m.unitats===""||m.unitats==null?(alguna?"1":dim(m.parcial)):dim(m.unitats),llargada:dim(m.llargada),amplada:dim(m.amplada),alcada:dim(m.alcada)}});
       const q=Number(l.q)||0,suma=medicioTotal8780(mides,l.ut);
       const ambMides=mides.length>0&&Math.abs(suma-q)<=Math.max(0.011,Math.abs(q)*0.005);
-      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:ambMides?mides:[],...(tb?{descompostTable:tb}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}`.slice(0,200)}:{})};
+      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:ambMides?mides:[],...(tb?{descompostTable:tb}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
     });
     const total=Math.round(rows.reduce((s,r)=>s+r.q*r.pu,0)*100)/100;
     try{
@@ -11873,6 +11958,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet})
         {nLib>0&&<li><label><input type="checkbox" checked={usaLib} onChange={e=>setUsaLib(e.target.checked)}/> {t("{n} amb el preu de Preus (mateix codi o mateixa partida)",{n:nLib})}</label></li>}
         {nSemb878368>0&&<li className="semb">{t("{n} amb el preu d’una partida semblant: revisa-les",{n:nSemb878368})}</li>}
         {nSense>0&&<li className="sense">{t("{n} sense preu: l’hauràs de posar al pressupost",{n:nSense})}</li>}
+        {nMg878378>0&&fanMg878378&&<li className="mg-v878378"><label><input type="checkbox" checked={ambMg878378} onChange={e=>setAmbMg878378(e.target.checked)}/> {t("Marges: {r} ({n} partides del banc, de l’arxiu o de la IA)",{r:resumMarges878378(mg878378),n:nMg878378})}</label></li>}
         {pct878368>0&&nDesc878368>0&&<li><label><input type="checkbox" checked={ambPct878368} onChange={e=>setAmbPct878368(e.target.checked)}/> {t("+{p} % de mà d’obra per l’accés ({n} partides amb descompost)",{p:pct878368,n:nDesc878368})}</label></li>}
       </ul>
       <div className="actions"><button type="button" className="ghost" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={fent} onClick={passa}>{fent?t("Passant…"):t("Passar-ho a pressupost")}</button></div>
@@ -12809,6 +12895,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const docTotal=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
     return {
       type:"pressupostobra",
+      marges878378:margesDoc878378(data),
       title:"PRESSUPOST D’OBRA",
       numeroPressupost:data?.pressupostRapidNumero||budgetLabel8786(data,data.activeBudgetIdObra||activeBudgetId||"principal"),
       referencia:data?.pressupostRapidReferencia||"",
@@ -14070,6 +14157,7 @@ function ClientBudgetReadOnlyV87235({data={},obra={},client={},openDoc}){
   function openBudgetPdf878241(){
     openDoc?.({
       type:"pressupostobra",
+      marges878378:margesDoc878378(data),
       title:"PRESSUPOST D’OBRA",
       numeroPressupost:data?.pressupostRapidNumero||"",
       referencia:data?.pressupostRapidReferencia||obra?.nom||"",
@@ -15343,7 +15431,7 @@ async function add(e){let f=e.target.files?.[0];if(!f)return;if(!confirmBigDocum
 function budgetDocFromCurrent878189(d){
   const rows=Array.isArray(data?.partides)?data.partides:[];
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
-  return {type:"pressupostobra",title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||obra?.adrecaPropietat||"",tercerEmail:data?.pressupostRapidTercerEmail||obra?.emailPropietat||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
+  return {type:"pressupostobra",marges878378:margesDoc878378(data),title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||obra?.adrecaPropietat||"",tercerEmail:data?.pressupostRapidTercerEmail||obra?.emailPropietat||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
 }
 function linkedDocumentData878193(d){
   const linkedId=d?.linkedId||String(d?.id||"").replace(/^doc-/,"");
@@ -15647,7 +15735,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.377",
+    app_version:"87.378",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -15852,6 +15940,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {!esTreballador878326()&&window.__acoEmpresa&&!teModul878326("empresa")&&bloc878366("dades",t("Dades de l’empresa"),<DadesEmpresa878337/>)}
 {bloc878366("perfil",t("Perfil i mòduls"),<PerfilModuls878326/>)}
 {!esTreballador878326()&&bloc878366("verifactu",t("Factures amb VERI*FACTU"),<VerifactuCompte878286 admin={admin}/>)}
+{!esTreballador878326()&&teModul878326("obra")&&bloc878366("marges",t("Preus i marges"),<MargesAjustos878378/>)}
 {bloc878366("idioma",t("Idioma"),<IdiomaUsuari878268 user={authUser}/>)}
 {!esTreballador878326()&&bloc878366("enllacos",t("Enllaços de les obres"),<EnllacosAjustos878305/>)}
 {role878366==="admin"&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
@@ -16977,7 +17066,7 @@ function pressupostObraPrintHtml878153(doc,obra,client){
     const show=cap!==lastCap; lastCap=cap;
     return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap==="PRESSUPOST"?D(cap):cap)}</td><td class="num">${money(chapterTotals878230[cap]||0)}</td></tr>`:""}<tr><td class="code">${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b>${r.desc?`<p class="long-desc">${escHtmlV8772(r.desc)}</p>`:""}</td><td class="num">${qty2(q)}</td><td class="num">${money(pu)}</td><td class="num"><b>${money(q*pu)}</b></td></tr>`
   }).join("") || `<tr><td colspan="6" class="empty">${D("Sense partides.")}</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(docTitle878283(obra,doc.title)||D("Pressupost"))}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8.7px;line-height:1.12}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:100%;margin:6mm 0 0;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f172a;background:#9fbad4;border:1px solid #0f172a;border-bottom:0;padding:5px}.chapter-summary td:first-child{text-align:left;white-space:normal;font-weight:900}.chapter-summary th{background:#dbeafe}.chapter-summary td:nth-child(n+2){text-align:right}.chapter-summary tbody tr:last-child td{border-bottom:2px solid #0f172a}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div class="client-head"><h3>${D("Client / promotor")}</h3><p>${thirdBlock}</p></div></div><div class="title"><div><h1>${escHtmlV8772(docTitle878283(obra,doc.title)||D("PRESSUPOST D’OBRA"))}</h1><div class="title-meta">${metaLines}</div></div><div class="budget-id">${numPres?`<small>${D("Núm. pressupost")}</small><b>${escHtmlV8772(numPres)}</b>`:""}${versioPres?`<small>${D("Versió")}</small><b>${escHtmlV8772(versioPres)}</b>`:""}</div></div><table><colgroup><col style="width:18mm"><col style="width:7mm"><col style="width:auto"><col style="width:14mm"><col style="width:17mm"><col style="width:22mm"></colgroup><thead><tr><th>${D("Part.")}</th><th>Ut</th><th>${D("Concepte / descripció")}</th><th>${D("Quant.")}</th><th>€/ut</th><th>${D("Total")}</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>${D("RESUM ECONÒMIC PER CAPÍTOLS")}</caption><colgroup><col style="width:auto"><col style="width:32mm"><col style="width:24mm"></colgroup><thead><tr><th>${D("Capítol")}</th><th>${D("Import")}</th><th>${D("% pressupost")}</th></tr></thead><tbody>${chapterSummary878230}</tbody></table><div class="totals"><div><span>${D("TOTAL PRESSUPOST")}</span><b>${money(total)}</b></div></div><div class="notes-stack"><div><h3>${D("Observacions")}</h3><p>${escHtmlV8772(obs)}</p></div><div><h3>${D("Forma de pagament")}</h3><p>${escHtmlV8772(forma)}</p></div></div><div class="signatures"><div class="signature"><b>${escHtmlV8772(clientEmissor)}</b><span>${D("Signatura")}</span></div><div class="signature right"><small>${D("Client")}</small><b>${escHtmlV8772(clientPressupost)}</b><span>${D("Signatura / conformitat")}</span></div></div></section></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(docTitle878283(obra,doc.title)||D("Pressupost"))}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8.7px;line-height:1.12}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:100%;margin:6mm 0 0;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f172a;background:#9fbad4;border:1px solid #0f172a;border-bottom:0;padding:5px}.chapter-summary td:first-child{text-align:left;white-space:normal;font-weight:900}.chapter-summary th{background:#dbeafe}.chapter-summary td:nth-child(n+2){text-align:right}.chapter-summary tbody tr:last-child td{border-bottom:2px solid #0f172a}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page"><div class="head">${issuerFiscalBlockHtml87100(client)}<div class="client-head"><h3>${D("Client / promotor")}</h3><p>${thirdBlock}</p></div></div><div class="title"><div><h1>${escHtmlV8772(docTitle878283(obra,doc.title)||D("PRESSUPOST D’OBRA"))}</h1><div class="title-meta">${metaLines}</div></div><div class="budget-id">${numPres?`<small>${D("Núm. pressupost")}</small><b>${escHtmlV8772(numPres)}</b>`:""}${versioPres?`<small>${D("Versió")}</small><b>${escHtmlV8772(versioPres)}</b>`:""}</div></div><table><colgroup><col style="width:18mm"><col style="width:7mm"><col style="width:auto"><col style="width:14mm"><col style="width:17mm"><col style="width:22mm"></colgroup><thead><tr><th>${D("Part.")}</th><th>Ut</th><th>${D("Concepte / descripció")}</th><th>${D("Quant.")}</th><th>€/ut</th><th>${D("Total")}</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>${D("RESUM ECONÒMIC PER CAPÍTOLS")}</caption><colgroup><col style="width:auto"><col style="width:32mm"><col style="width:24mm"></colgroup><thead><tr><th>${D("Capítol")}</th><th>${D("Import")}</th><th>${D("% pressupost")}</th></tr></thead><tbody>${chapterSummary878230}</tbody></table>${(()=>{const mg=doc.marges878378;if(!(mg&&mg.mode==="resum"&&(mg.dge>0||mg.bi>0)))return `<div class="totals"><div><span>${D("TOTAL PRESSUPOST")}</span><b>${money(total)}</b></div></div>`;const dg=Math.round(total*mg.dge)/100,bi=Math.round(total*mg.bi)/100;return `<div class="totals totals-pec-v878378"><div><span>${D("Pressupost d’execució material (PEM)")}</span><b>${money(total)}</b></div>${mg.dge>0?`<div><span>${D("Despeses generals")} (${String(mg.dge).replace(".",",")} %)</span><b>${money(dg)}</b></div>`:""}${mg.bi>0?`<div><span>${D("Benefici industrial")} (${String(mg.bi).replace(".",",")} %)</span><b>${money(bi)}</b></div>`:""}<div class="pec"><span>${D("PRESSUPOST D’EXECUCIÓ PER CONTRACTE")}</span><b>${money(total+dg+bi)}</b></div></div>`})()}<div class="notes-stack"><div><h3>${D("Observacions")}</h3><p>${escHtmlV8772(obs)}</p></div><div><h3>${D("Forma de pagament")}</h3><p>${escHtmlV8772(forma)}</p></div></div><div class="signatures"><div class="signature"><b>${escHtmlV8772(clientEmissor)}</b><span>${D("Signatura")}</span></div><div class="signature right"><small>${D("Client")}</small><b>${escHtmlV8772(clientPressupost)}</b><span>${D("Signatura / conformitat")}</span></div></div></section></body></html>`;
 }
 function PressupostObraPreview878153({doc}){
   const rows=sortPartides878132(doc.rows||[]);

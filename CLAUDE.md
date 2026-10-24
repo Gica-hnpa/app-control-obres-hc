@@ -1346,6 +1346,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Gràfic:** les partides d'un capítol obert tenen la seva barra prevista i, planificant, la data i els dies.
     - Treure un capítol del planning o esborrar-lo tot també en treu les partides. Estils `src/theme-v878377.css`.
     - Prova: `planning377test.mjs` (17). Adaptades `planning341test` i `resum362test` (el capítol de la taula es desplega).
+  - **V87.378 · Preus i marges** (decisions de l'Héctor del 24/10/2026: els preus d'un banc BC3 són de cost —PEM— i no porten DGE ni
+    BI; la dificultat de l'obra i les partides petites, que es cobren gairebé com una fracció de jornada):
+    - **Ajustos › «Preus i marges»** (`MargesAjustos878378`, comptes amb el mòdul Obra; no el treballador): la mà d'obra per dificultat
+      (Obra nova 0 · Reforma +10 · Reforma exigent +20 %, `DIF878378`), CI · DGE · BI (de sèrie 0 · 13 · 6; la DGE i el BI, els de
+      l'empresa si n'hi ha, `dge878342`/`bi878342`), **«Dins del preu de cada partida»** (de sèrie) o **«A part, al resum»**, i el
+      **mínim de mà d'obra per partida** (de sèrie 4 h, mitja jornada). Es desa al compte (`aco_marges_v878378`).
+    - **A cada obra** (`MargesObra878378`, `data.marges878378`, només el que canvia; `margesObra878378(d)` ho ajunta amb els d'Ajustos):
+      als Amidaments dins d'«Obra, logística i marges» i al Pressupost a **«Preus i marges»** plegat (`details.marges-pres-v878378`, amb
+      «Obra i logística» a sota). El resum diu el que s'aplicarà («Reforma +10 % de mà d'obra · DGE 13 % i BI 6 % dins del preu · mínim 4 h
+      per partida», `resumMarges878378`).
+    - **«Passar-ho a pressupost»**: casella «Marges: …» (`li.mg-v878378`, marcada) per a les partides amb preu del **banc, l'arxiu o la IA**
+      (`FONTS_MARGES878378`); les d'obres anteriors i de Preus ja són preus de venda i no es toquen. Per partida: la mà d'obra × (1 + accés
+      + dificultat) (`escalaMO878378`); si les hores de tota la partida (`horesMO878378` × quantitat) no arriben al mínim, es compten les
+      del mínim; i, si és «dins del preu», el descompost porta la secció «MARGES D'EMPRESA» amb CI, DGE i BI en % abans del preu final
+      (`ambMarges878378`). Sense descompost, el preu × el factor. `origenPreu878368` ho diu («+10 % MO (reforma) · mínim 4 h (0,66 h) · DGE
+      13 % · BI 6 %»).
+    - **«A part, al resum»**: els documents del pressupost (`margesDoc878378`, a `pressupostObraPrintHtml878153`) acaben amb PEM, Despeses
+      generals (x %), Benefici industrial (x %) i **PRESSUPOST D'EXECUCIÓ PER CONTRACTE** (`totals-pec-v878378`).
+    - Al mòbil, els camps d'«Obra i logística» (`.logis-cos-v878368 .camps`) s'encongeixen (una columna a ≤420 px).
+    - Estils `src/theme-v878378.css`. Prova: `preus378test.mjs` (17). Adaptades `pressupost368test`, `pressupost372test` i
+      `amidaments328test` (treuen la casella dels marges: els seus preus esperats són sense marges).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
