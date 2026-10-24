@@ -1315,6 +1315,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       («Quantitat (m2)»). Amb l'Excel de l'Héctor: 145 partides, 21 capítols; a la 2.6 i la 3.1 la quantitat de l'Excel no és la suma de les
       mides (és de l'arxiu; l'app ho avisa).
     - Estils: `src/theme-v878375.css`. Proves: `despeses329test.mjs` (35) i `amidamentsunit.mjs` (32, amb un Excel inventat de l'estil).
+  - **V87.376 · Rendiment del tècnic al menú principal, el comptador de temps a mà i els amidaments plegats** (l'Héctor, 24/10/2026):
+    - **Rendiment** (`RendimentTecnic878376`, pantalla «Rendiment tecnic», menú «Rendiment» per a qui té el mòdul tècnic i no el mòdul
+      Empresa —el compte de l'Héctor i els tècnics—; no dins de l'expedient): `dadesRendTecnic878376` = base de les factures d'honoraris
+      (`facturesTecnic`, sense les anul·lades), les meves despeses (base) i les hores (registre d'hores); les obres compartides per un altre
+      compte no compten. A dalt, l'any (el d'ara de sèrie) i quatre xifres: Facturat (i l'any passat fins avui, amb el % de diferència),
+      Despeses, Rendiment (% del facturat) i Hores (rendiment per hora). Gràfica (`LiniesChart878343`, plegada al mòbil): Dies (els 31
+      últims) · Setmanes · Mesos (acumulat o no) · Entre anys (una línia per any, acumulat mes a mes, de facturat, despeses o rendiment).
+      «Per anys» (taula) i «Per expedient · any» (plegat; tocar-ne un obre Honoraris de l'expedient). Estils `src/theme-v878376.css`.
+    - **Comptador de temps** (l'Héctor: «vam quedar que no posàvem comptador automàtic»; la bombolla tapava «Passar-ho a pressupost»): ja
+      no s'engega sol en obrir una obra (la preferència és `aco_auto_timer_v878376`, de sèrie apagada; la de la V87.254 ja no es mira). A la
+      barra de l'obra, un rellotge (`crono-v878376`, prop `crono878376` d'`Obra` → `ObraBar878269 crono`) l'engega (`startTimer`, cronòmetre
+      a mà); mentre compta, hi diu el temps i, tocant-lo, «Pausa i desa». La bombolla només surt quan compta i no s'és a la mateixa obra; amb
+      la bombolla a la vista, la pàgina deixa 88 px a baix. Constructora i treballador, sense rellotge (com abans).
+    - **Amidaments:** tots els capítols plegats d'entrada (abans, el primer obert o tots si n'hi havia 3 o menys).
+    - Proves: `rendiment376test.mjs` (15). Adaptades `rendiment343test` (el tècnic té el seu Rendiment), `fitxestest`, `mobiltest` i
+      `fases342test` (el comptador a la barra).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
