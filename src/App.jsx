@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.379";
+const APP_VERSION878264="87.380";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5036,7 +5036,7 @@ async function importPdfBudget878305(rows,meta={},budgetId="principal"){
     const nous=rows.map((r,i)=>({id:`part-pdf-${Date.now()}-${i}`,codi:String(r.codi||""),cap:r.cap||"01 Partides",ut:r.ut||"ut",concepte:r.concepte||"Partida importada del PDF",desc:r.desc||"",q:Number(r.q)||0,pu:Number(r.pu)||0,certAnterior:0,certActual:0,certsByNum:{},tipus:meta.tipusPartida||"Import PDF",budgetId:bid,createdAt:now,updatedAt:now,
       ...(r.capPrincipal?{subcap:r.cap,capPrincipal:r.capPrincipal,capPath:r.capPath||[r.capPrincipal,r.cap]}:{}),
       ...(r.pressupostMesures?.length?{pressupostMesures:r.pressupostMesures,qFromPressupostMesures:true}:{}),
-      ...(r.descompostTable?{descompostTable:r.descompostTable}:{}),...(r.origenPreu878368?{origenPreu878368:r.origenPreu878368}:{}),...(r.minim878378?{minim878378:r.minim878378}:{})}));
+      ...(r.descompostTable?{descompostTable:r.descompostTable}:{}),...(r.origenPreu878368?{origenPreu878368:r.origenPreu878368}:{}),...(r.minim878378?{minim878378:r.minim878378}:{}),...(r.mg878378?{mg878378:r.mg878378}:{})}));
     const groups=ensureBudgetGroups8786({...d,budgetGroups:seed,partides:[...(d.partides||[]),...nous]}).groups;
     const nomGrup=(groups.find(g=>g.id===bid)?.nom)||"Pressupost principal";
     return {...d,budgetGroups:groups.filter(g=>g.id!=="principal"),activeBudgetIdObra:bid,partides:[...(d.partides||[]),...nous],
@@ -9742,7 +9742,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Certificacions obra"&&<Cert data={directBudgetData878214} setData={setDirectBudgetData878214} obra={obra} client={client} setClients={setClients} obraData={data} setObraData={readOnly?undefined:setData} updateCert={updateDirectCert878214} deleteCertificacio8721={deleteDirectCert878214} updateCertDate8721={updateDirectCertDate878214} addCertificacio={addDirectCert878214} ci={certInfo} setCi={setCertInfo} saveCert={saveCert} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly&&!clientEditCertifications} clientMode={readOnly}/>} 
     {activeTab==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc}/>} 
     {activeTab==="Facturació obra"&&<Fact data={data} setData={setData} obra={obra} client={client} setClients={setClients} openEmail={openEmail} openDoc={openDoc} readOnly={readOnly}/>} 
-    {activeTab==="Pressupost"&&!readOnly&&hasModule2Access8747()&&<details className="marges-pres-v878378"><summary><b>{i18nT("Preus i marges")}</b><span>{resumMarges878378(margesObra878378(data))}</span></summary><div className="cos"><MargesObra878378 data={data} setData={setData}/><h4>{i18nT("Obra i logística")}</h4><Logistica878368 obra={obra} cond={data.condicions878368||{}} setCond={c=>setData(d=>({...d,condicions878368:c}))}/></div></details>}
+    {activeTab==="Pressupost"&&!readOnly&&hasModule2Access8747()&&<details className="marges-pres-v878378"><summary><b>{i18nT("Preus i marges")}</b><span>{resumMarges878378(margesObra878378(data))}</span>{(()=>{const n=nForaMg878380(data);return n?<em className="mg-n-v878380">{n===1?i18nT("1 partida per posar al dia"):i18nT("{n} partides per posar al dia",{n})}</em>:null})()}</summary><div className="cos"><MargesObra878378 data={data} setData={setData}/><PosarMarges878380 data={data} setData={setData}/><h4>{i18nT("Obra i logística")}</h4><Logistica878368 obra={obra} cond={data.condicions878368||{}} setCond={c=>setData(d=>({...d,condicions878368:c}))}/></div></details>}
     {activeTab==="Pressupost"&&rapidMerged878277&&<details className="rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><b>{i18nT("Ajustos del pressupost")}</b><span>{i18nT("Número, observacions, forma de pagament i PDF per al client")}</span></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     {["Pressupost","Certificacions","Facturació","Seguiment econòmic"].includes(activeTab)&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} key={activeTab} senseBarra878342={navigationTabs.includes("Pressupost")} tota878342={totaObra878342} readOnly878342={readOnly} goDespeses878342={navigationTabs.includes("Albarans")?()=>{setTotaObra878342(false);setTab?.("Albarans")}:null} fixedSub={{"Pressupost":"Pressupost obra","Certificacions":"Certificacions obra","Facturació":"Facturació obra","Seguiment econòmic":"Rendibilitat"}[activeTab]} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)}
     {activeTab==="Gestió obra"&&(hasModule2Access8747()?<GestioObra8746 setClients={setClients} data={data} setData={setData} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} updateCert={updateCert} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={saveCert} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>:<ModulLocked8747/>)} 
@@ -11387,7 +11387,7 @@ function FitxaPartida878361({row={},editable=false,onChange,onSet,openBreakdown,
   const mn=row.minim878378&&Number(row.minim878378.f)>1&&row.descompostTable?.rows?.length?row.minim878378:null;
   const[treure,setTreure]=useState(false);
   const treuMinim=()=>{const tb=recalculateBreakdownTableV87232(escalaMO878378(row.descompostTable,1/Number(mn.f))).table;const preu=Math.round((recalculateBreakdownTableV87232(tb).total||0)*100)/100;
-    onSet?.({descompostTable:tb,descompost:descompostTableToText878174(tb),pu:String(preu),minim878378:null,origenPreu878368:String(row.origenPreu878368||"").replace(/ · mínim [^·]*h \([^)]*\)/,"")})};
+    onSet?.({descompostTable:tb,descompost:descompostTableToText878174(tb),pu:String(preu),minim878378:null,...(row.mg878378?{mg878378:{...row.mg878378,fmin:1,noMin:true}}:{}),origenPreu878368:String(row.origenPreu878368||"").replace(/ · mínim [^·]*h \([^)]*\)/,"")})};
   useEffect(()=>{if(treure&&editable&&mn){treuMinim();setTreure(false)}},[treure,editable]);// eslint-disable-line react-hooks/exhaustive-deps
   return <Modal title={[row.codi,row.concepte].filter(Boolean).join(" · ")||t("Partida")} close={close}><div className="fitxa-partida-v878361">
     <div className="xifres"><div><small>{t("Codi")}</small><b>{row.codi||"—"}</b></div><div><small>{t("Quantitat")}</small><b>{(Math.round(q*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} {row.ut||""}</b></div><div><small>{t("Preu unitari")}</small><b>{money(pu)}</b></div><div className="imp"><small>{t("Import")}</small><b>{money(q*pu)}</b></div></div>
@@ -11666,6 +11666,56 @@ function ambMarges878378(tb,m){
   if(fi>=0)rows.splice(fi,0,...extra);else rows.push(...extra);
   return recalculateBreakdownTableV87232({...tb,rows}).table;
 }
+// V87.380 · posar al dia els marges de les partides que ja són al pressupost (la dificultat, els marges o «al resum» es poden canviar
+// després de passar els amidaments). Cada partida recorda el que se li va aplicar (`mg878378`): es desfà i es torna a fer amb els d'ara.
+// Les partides ja certificades no es toquen (canviaria l'import de la certificació).
+function normMg878380(mg,acc){const dins=mg.mode==="dins",mn=!!(mg.minim&&mg.minimH>0);return {pd:+mg.pctDif||0,ci:+mg.ci||0,dge:dins?+mg.dge||0:0,bi:dins?+mg.bi||0:0,minim:mn,minimH:mn?+mg.minimH||0:0,acc:+acc||0}}
+function certificada878380(p){return Object.values(p?.certsByNum||{}).some(v=>(parseNum8770(v)||0)!==0)||(parseNum8770(p?.certAnterior)||0)!==0||(parseNum8770(p?.certActual)||0)!==0}
+function margesAPosar878380(p,mg,accNow){
+  const r=p?.mg878378;if(!r)return null;
+  const nou=normMg878380(mg,r.ambAcc?accNow:0);if(r.noMin){nou.minim=false;nou.minimH=0}
+  const mn=!!r.minim&&!r.noMin,vell={pd:+r.pd||0,ci:+r.ci||0,dge:+r.dge||0,bi:+r.bi||0,minim:mn,minimH:mn?+r.minimH||0:0,acc:+r.acc||0};
+  return ["pd","ci","dge","bi","minim","minimH","acc"].every(k=>nou[k]===vell[k])?null:nou;
+}
+function nForaMg878380(d){const mg=margesObra878378(d||{}),acc=pctAcces(d?.condicions878368||{});return (d?.partides||[]).filter(p=>p.mg878378&&!certificada878380(p)&&margesAPosar878380(p,mg,acc)).length}
+const treuNotesMg878380=o=>String(o||"").replace(/ · \+[\d.,]+ % MO \([^)]*\)/g,"").replace(/ · mínim [^·]*h \([^)]*\)/g,"").replace(/ · (CI|DGE|BI) [\d.,]+ %/g,"");
+function reaplicaMarges878380(p,mg,accNow){
+  const nou=margesAPosar878380(p,mg,accNow);if(!nou)return null;
+  const r=p.mg878378,q=parseNum8770(p.q)||0,notes=[],com=p.puOrig878346!=null?(+p.com878346||0):null,r2=x=>Math.round(x*100)/100;
+  const tb0=p.descompostTable?.rows?.length&&r.tb?p.descompostTable:null;
+  let tb=null,minim=null,fmin=1,fM=1,base;
+  if(nou.pd)notes.push(`+${fmtP878378(nou.pd)} % MO (${t((DIF878378.find(x=>x[0]===mg.dificultat)||DIF878378[0])[1]).toLowerCase()})`);
+  if(tb0){
+    let sec="";const rows=(tb0.rows||[]).filter(x=>{if(x.isSection){sec=String(x.concepte||"");return !/^MARGES D.EMPRESA$/i.test(sec)}return !(/^MARGES D.EMPRESA$/i.test(sec)&&String(x.ut||"")==="%")});
+    tb=recalculateBreakdownTableV87232(escalaMO878378({...tb0,rows},1/((+r.fmin||1)*(1+(+r.pmo||0)/100)))).table;
+    const pmo=nou.acc+nou.pd;if(pmo>0)tb=recalculateBreakdownTableV87232(escalaMO878378(tb,1+pmo/100)).table;
+    if(nou.minim){const h=horesMO878378(tb)*q;if(h>0.001&&h<nou.minimH){fmin=nou.minimH/h;tb=recalculateBreakdownTableV87232(escalaMO878378(tb,fmin)).table;notes.push(`mínim ${fmtP878378(nou.minimH)} h (${fmtP878378(h)} h)`);minim={f:Math.round(fmin*1e6)/1e6,h:r2(h),minimH:nou.minimH}}}
+    if(nou.ci||nou.dge||nou.bi)tb=ambMarges878378(tb,{ci:nou.ci,dge:nou.dge,bi:nou.bi,mode:"dins"});
+    base=r2(recalculateBreakdownTableV87232(tb).total||0);
+  }else{
+    fM=(1+nou.ci/100)*(1+nou.dge/100)*(1+nou.bi/100);
+    base=r2((parseNum8770(com!=null?p.puOrig878346:p.pu)||0)/(+r.fM||1)*fM);
+  }
+  if(nou.ci||nou.dge||nou.bi)notes.push([nou.ci?`CI ${fmtP878378(nou.ci)} %`:"",nou.dge?`DGE ${fmtP878378(nou.dge)} %`:"",nou.bi?`BI ${fmtP878378(nou.bi)} %`:""].filter(Boolean).join(" · "));
+  const origen=(treuNotesMg878380(p.origenPreu878368)+(notes.length?" · "+notes.join(" · "):"")).slice(0,260);
+  return {...p,pu:com!=null?r2(base*(1+com/100)):base,...(com!=null?{puOrig878346:base}:{}),
+    ...(tb?{descompostTable:tb,descompost:descompostTableToText878174(tb),minim878378:minim}:{}),
+    mg878378:{...r,pmo:tb?nou.acc+nou.pd:(+r.pmo||0),acc:nou.acc,pd:nou.pd,dif:mg.dificultat,mode:mg.mode,fmin,ci:nou.ci,dge:nou.dge,bi:nou.bi,minim:nou.minim||!!r.minim,minimH:nou.minim?nou.minimH:(+r.minimH||0),fM},
+    origenPreu878368:origen,updatedAt:new Date().toISOString()};
+}
+function PosarMarges878380({data={},setData}){
+  const[editant,setEditant]=useState(()=>!!window.__acoEditPres878380);
+  useEffect(()=>{const f=()=>setEditant(!!window.__acoEditPres878380);window.addEventListener("aco-edit-pres-878380",f);return ()=>window.removeEventListener("aco-edit-pres-878380",f)},[]);
+  const mg=margesObra878378(data),acc=pctAcces(data.condicions878368||{});
+  const fora=(data.partides||[]).filter(p=>p.mg878378&&margesAPosar878380(p,mg,acc));
+  const fer=fora.filter(p=>!certificada878380(p)).length,cert=fora.length-fer;
+  if(!fora.length)return null;
+  const posa=()=>setData?.(d=>{const m2=margesObra878378(d),a2=pctAcces(d.condicions878368||{});return {...d,partides:(d.partides||[]).map(p=>p.mg878378&&!certificada878380(p)?(reaplicaMarges878380(p,m2,a2)||p):p),updatedAt:new Date().toISOString()}});
+  return <div className="mg-posar-v878380">
+    <span>{fer?(fer===1?t("1 partida té els marges d’abans."):t("{n} partides tenen els marges d’abans.",{n:fer})):null}{cert?" "+(cert===1?t("1 ja certificada es queda com està."):t("{n} ja certificades es queden com estan.",{n:cert})):null}</span>
+    {fer>0&&<button type="button" className="primary" disabled={editant} title={editant?t("Guarda abans els canvis del pressupost"):undefined} onClick={posa}>{t("Posar-hi els d’ara")}</button>}
+  </div>;
+}
 function MargesCamps878378({v={},def,set,readOnly=false,perObra=false}){
   const mode=v.mode||(perObra?def.mode:"dins");
   const minim=v.minim!==undefined?!!v.minim:(perObra?def.minim:true);
@@ -11941,11 +11991,13 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet})
       if(ambPcts)notes.push([mg.ci?`CI ${fmtP878378(mg.ci)} %`:"",mg.mode==="dins"&&mg.dge?`DGE ${fmtP878378(mg.dge)} %`:"",mg.mode==="dins"&&mg.bi?`BI ${fmtP878378(mg.bi)} %`:""].filter(Boolean).join(" · "));
       const fM=ambPcts&&!tb?(1+mg.ci/100)*(mg.mode==="dins"?(1+mg.dge/100)*(1+mg.bi/100):1):1;
       const pu=tb&&canvi?Math.round((recalculateBreakdownTableV87232(tb).total||0)*100)/100:Number(l.pu)>0?Math.round(Number(l.pu)*fM*100)/100:(usaLib&&preuLib(l)>0?preuLib(l):0);
+      const dinsM=ambPcts&&mg.mode==="dins",mnM=!!(mg.minim&&mg.minimH>0);
+      const mgRec=ambM?{pmo:tb?pctMO:0,acc:ambPct878368?pct878368:0,ambAcc:!!ambPct878368,pd:mg.pctDif,dif:mg.dificultat,mode:mg.mode,fmin:minim?minim.f:1,ci:ambPcts?mg.ci:0,dge:dinsM?mg.dge:0,bi:dinsM?mg.bi:0,minim:mnM,minimH:mnM?mg.minimH:0,tb:!!tb,fM}:null;
       const dim=v=>v===""||v==null?"":coma878328(v);
       const mides=(l.mides||[]).map((m,i)=>{const alguna=[m.llargada,m.amplada,m.alcada].some(v=>v!==""&&v!=null);return {id:`m-${Date.now()}-${j}-${i}`,concepte:m.concepte||"",unitats:m.unitats===""||m.unitats==null?(alguna?"1":dim(m.parcial)):dim(m.unitats),llargada:dim(m.llargada),amplada:dim(m.amplada),alcada:dim(m.alcada)}});
       const q=Number(l.q)||0,suma=medicioTotal8780(mides,l.ut);
       const ambMides=mides.length>0&&Math.abs(suma-q)<=Math.max(0.011,Math.abs(q)*0.005);
-      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:ambMides?mides:[],...(tb?{descompostTable:tb}:{}),...(minim?{minim878378:minim}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
+      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:ambMides?mides:[],...(tb?{descompostTable:tb}:{}),...(minim?{minim878378:minim}:{}),...(mgRec?{mg878378:mgRec}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
     });
     const total=Math.round(rows.reduce((s,r)=>s+r.q*r.pu,0)*100)/100;
     try{
@@ -12074,6 +12126,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [descOpen875,setDescOpen875]=useState({});
   const [budgetPartidaView87208,setBudgetPartidaView87208]=useState(null);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
+  useEffect(()=>{const av=v=>{window.__acoEditPres878380=v;window.dispatchEvent(new Event("aco-edit-pres-878380"))};av(!!editBudget8760b);return ()=>{if(editBudget8760b)av(false)}},[editBudget8760b]);
   // V87.346 · comissió amagada (l'Héctor, 22/10/2026: «un clic amb un espia per posar el %… que em refaci el pressupost aplicant a
   // totes les partides el % de més… és un tracte amb un tercer que no ha de saber mai el client final»). S'aplica a totes les partides
   // d'aquest pressupost (preu × (1 + %), arrodonit a cèntims); el preu original es queda a cada partida (`puOrig878346`, i el % a
@@ -15742,7 +15795,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.379",
+    app_version:"87.380",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -1,0 +1,4 @@
+/* V87.380 · posar al dia els marges de les partides que ja són al pressupost */
+html body .mg-posar-v878380{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#FFF7ED;border:1px solid #FED7AA;font-size:13.5px;color:#9A3412}
+html body .mg-posar-v878380 span{min-width:0;flex:1 1 220px}
+html body details.marges-pres-v878378>summary em.mg-n-v878380{font-style:normal;font-size:12.5px;font-weight:600;color:#C2410C;background:#FFF7ED;border:1px solid #FED7AA;border-radius:999px;padding:1px 8px}

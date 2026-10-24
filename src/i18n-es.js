@@ -4188,4 +4188,12 @@ export default {
 "PRESSUPOST D’EXECUCIÓ PER CONTRACTE": "PRESUPUESTO DE EJECUCIÓN POR CONTRATA",
 "Mínim de mà d’obra: {m} h (la partida en necessita {h} h)": "Mínimo de mano de obra: {m} h (la partida necesita {h} h)",
 "Treure el mínim": "Quitar el mínimo",
+"1 partida té els marges d’abans.": "1 partida tiene los márgenes de antes.",
+"{n} partides tenen els marges d’abans.": "{n} partidas tienen los márgenes de antes.",
+"1 ja certificada es queda com està.": "1 ya certificada se queda como está.",
+"{n} ja certificades es queden com estan.": "{n} ya certificadas se quedan como están.",
+"Guarda abans els canvis del pressupost": "Guarda antes los cambios del presupuesto",
+"Posar-hi els d’ara": "Poner los de ahora",
+"1 partida per posar al dia": "1 partida por actualizar",
+"{n} partides per posar al dia": "{n} partidas por actualizar",
 };

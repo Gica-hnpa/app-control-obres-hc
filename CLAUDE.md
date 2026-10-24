@@ -1373,6 +1373,16 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     `minim-v878379`) i «Treure el mínim» divideix la mà d'obra pel factor, refà el preu, treu el «mínim …» de l'origen i esborra
     `minim878378` (fora d'edició, obre l'edició i ho fa; es desa amb «Guardar canvis»). Estils `src/theme-v878379.css`. Prova: a
     `preus378test.mjs` (20; l'excavació de 29,37 € torna a 18,69 €).
+  - **V87.380 · Posar al dia els marges de les partides que ja són al pressupost**: fins ara els marges només s'aplicaven en passar els
+    amidaments, i canviar a «A part, al resum» després hauria sumat la DGE i el BI dues vegades al PDF. Cada partida passada amb marges
+    recorda el que se li va aplicar: `mg878378 = {pmo, acc, ambAcc, pd, dif, mode, fmin, ci, dge, bi, minim, minimH, tb, fM, noMin?}`.
+    `margesAPosar878380` compara amb els marges d'ara (`normMg878380`; l'accés, si es va aplicar, amb el d'ara); `reaplicaMarges878380`
+    treu la secció «MARGES D'EMPRESA», desfà la mà d'obra (÷ mínim ÷ (1 + accés + dificultat)) i ho torna a fer, refà el preu i
+    l'origen (i la comissió, `puOrig878346`, si n'hi ha). Sense descompost, el preu ÷ el factor vell × el nou. «Treure el mínim» posa
+    `noMin` (no torna). **Les partides certificades no es toquen** (`certificada878380`). Al Pressupost › «Preus i marges»: el títol
+    plegat diu «N partides per posar al dia» (`mg-n-v878380`) i a dins «Posar-hi els d'ara» (`PosarMarges878380`), desactivat mentre
+    s'edita el pressupost (`window.__acoEditPres878380`, event `aco-edit-pres-878380`). Estils `src/theme-v878380.css`. Prova: a
+    `preus378test.mjs` (24: «al resum» → l'enderroc de 36,89 a 30,80 €; «Reforma exigent» → 33,60 €).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
