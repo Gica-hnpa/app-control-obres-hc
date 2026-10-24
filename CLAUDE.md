@@ -1268,6 +1268,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       `semblant878368` si la puntuació és < 0,85, i el descompost de la més semblant escalat a la mitjana (`escalaTaula878372`).
     - Ordre: arxiu → Preus pel codi → banc pel codi → obres anteriors → Preus semblant → banc semblant → IA.
     - Estils: `src/theme-v878372.css`. Proves: `preusautounit.mjs` (28) i `pressupost372test.mjs` (10).
+  - **V87.373 · Facturació del tècnic amb el format de les empreses** (l'Héctor, 24/10/2026, amb el seu compte —«tècnic total»—: «el
+    resum a dalt per filtres ben visible i de seguida les factures… les gràfiques i els avisos, plegats… pensa sempre en el mòbil»):
+    - `FacturesGeneral8738` reescrit amb les classes de `FacturacioEmpresa878337` (`fe-head`, `fe-filtres`, `fe-llista`, `fe-row`):
+      capçalera «Facturació» + «Nova factura»; el «Pendent de facturar» (`HoursToInvoice878256`) **plegat a tots els aparells** (el total
+      i «Veure-ho (N)»; abans, a l'ordinador, sempre obert); filtres d'any (l'actual de sèrie, «Tots»), client i expedient.
+    - **Estats a dalt com a filtres** (`fe-estats-v878373`): Totes · Pendents de cobrar · Cobrades · Vençudes (més de 7 dies sense
+      cobrar), cadascun amb l'import (total amb IVA) i quantes. Les anul·lades surten a «Totes» però no sumen.
+    - **Les factures de seguida**, la més nova a dalt: número i data, expedient i client, base, IVA, total, el cobrament d'un toc
+      (`cobra873`: «Cobrada dd/mm/aaaa» ↔ «Pendent de cobrar» / «Vençuda»; desa `estat` i `dataCobrament` a `facturesTecnic`), «PDF» i
+      «⋯» (obrir a l'expedient, imprimir, marcar com a emesa, anul·lar / tornar a pendent). Al mòbil, fitxes.
+    - A baix, plegat: **«Gràfics i informes»** (els tres donuts, `IngressosChart878292` i `FinanceReports87110`).
+    - Dins de la pestanya «Honoraris» de la Facturació de la gestió total (`dins`), sense el títol «Facturació» repetit.
+    - Estils: `src/theme-v878373.css`. Prova: `fact373test.mjs` (19). Adaptades `clientsvirtuals`, `menutecnictest`, `tempstest`
+      (obren «Veure-ho»), `graficatest`, `pantallestest`, `v366test` i `v369test`.
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

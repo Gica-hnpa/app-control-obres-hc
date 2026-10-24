@@ -1,0 +1,26 @@
+/* V87.373 · Facturació del tècnic amb el format de les empreses: els estats com a filtres a dalt i de seguida les factures */
+@media screen{
+html body .fact-tec-v878373{display:flex;flex-direction:column;gap:14px}
+html body .fact-tec-v878373 .fe-head .primary{display:inline-flex;align-items:center;gap:6px}
+html body .fe-estats-v878373{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+html body .fe-estats-v878373>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--co-line);background:var(--co-surface,#fff);min-width:0}
+html body .fe-estats-v878373>button small{font:600 12px var(--app-font);color:var(--co-ink-3,#64748b);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .fe-estats-v878373>button b{font:700 19px var(--app-font);color:var(--co-ink,#0f172a);font-variant-numeric:tabular-nums}
+html body .fe-estats-v878373>button em{font-style:normal;font-size:12.5px;color:var(--co-ink-3,#64748b)}
+html body .fe-estats-v878373>button.e-pend{background:#FFFBEB;border-color:#FDE68A}
+html body .fe-estats-v878373>button.e-cob{background:#F0FDF4;border-color:#BBF7D0}
+html body .fe-estats-v878373>button.e-venc{background:#FEF2F2;border-color:#FECACA}
+html body .fe-estats-v878373>button.e-venc b{color:#B91C1C}
+html body .fe-estats-v878373>button[aria-pressed="true"]{border-color:var(--co-ink,#0f172a);box-shadow:inset 0 0 0 1px var(--co-ink,#0f172a)}
+html body .fe-estats-v878373>button:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:2px}
+html body .fact-tec-v878373 .fe-row .cobra.venc{background:#FEE2E2;color:#B91C1C}
+html body .fact-tec-v878373 .fe-row.anul-v878373{opacity:.6}
+html body .fact-tec-v878373 .fe-row.anul-v878373 .num b{text-decoration:line-through}
+html body .fact-tec-v878373 .fe-row .anul{font-style:normal;font-size:12.5px;font-weight:600;color:var(--co-ink-3,#64748b);text-align:center}
+html body .fact-tec-v878373 .fe-informes-v878373 .finance-charts-v8776{margin-bottom:12px}
+}
+@media (max-width:700px){
+  html body .fe-estats-v878373{grid-template-columns:1fr 1fr;gap:8px}
+  html body .fe-estats-v878373>button{padding:10px 12px}
+  html body .fe-estats-v878373>button b{font-size:17px}
+}

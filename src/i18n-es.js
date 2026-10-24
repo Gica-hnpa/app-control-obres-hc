@@ -4135,4 +4135,12 @@ export default {
 "Actualització (%)": "Actualización (%)",
 "Calcular l’IPC (INE)": "Calcular el IPC (INE)",
 "Els preus del {a} pugen un {p} %": "Los precios de {a} suben un {p} %",
+"Vençudes": "Vencidas",
+"Vençuda": "Vencida",
+"Expedient i client": "Expediente y cliente",
+"Obrir a l’expedient": "Abrir en el expediente",
+"Marcar com a emesa": "Marcar como emitida",
+"Anul·lar la factura {n}?": "¿Anular la factura {n}?",
+"Tornar a pendent": "Volver a pendiente",
+"Gràfics i informes": "Gráficos e informes",
 };
