@@ -1478,6 +1478,16 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Pressupostos (ordinador): el número i la data en una sola línia.
     - Seleccionar despeses: si ja no en queda cap a l'obra (p. ex. després d'eliminar-les), la selecció es tanca sola.
     - Adaptada `despesestest` (des de la V87.384 els blocs del Rendiment surten tancats al mòbil: la prova els obre abans de llegir-los).
+  - **V87.389 · Tot recollit amb les dades de debò i el capítol obert del Planning** (revisió del mòbil amb la còpia de les dades de
+    l'Héctor; l'Héctor, 24/10/2026: «marca bé el capítol de les partides amb color, que no s'acaba de distingir bé un cop obert»):
+    - **Planning:** el capítol obert amb fons blau i una franja a l'esquerra, i les seves partides a sota amb un fons més clar i una franja
+      clara (taula del mòbil, `cap-bloc-v878377.obert`, i gràfic de l'ordinador, `gt-row-v878253.open` / `.part`). Els capítols i les
+      partides sense planificar, en una línia amb «Sense planificar» (`sp-v878389`; abans, «Inici — Final — Dies —»).
+    - **Facturació de l'obra al mòbil i l'iPad:** cada proforma és una línia (número, data i total; la factura, si n'hi ha, com una etiqueta)
+      que s'obre en tocar-la (`obertes878389`, `obert-v878389`). Amb les 9 proformes de Cala Rovira feia 3,5 pantalles.
+    - **Honoraris de l'expedient:** «Pressupostos d'honoraris · Calcular honoraris · Factures honoraris» en una fila (abans, tres botons
+      apilats de punta a punta al mòbil).
+    - Estils `src/theme-v878389.css`. Eina `mira387b.mjs` amb `SHOT=` (captura després de `DUMP`).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la

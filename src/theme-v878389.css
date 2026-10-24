@@ -1,0 +1,44 @@
+/* V87.389 · tot recollit amb les dades de debò (revisió amb la còpia de les dades de l'Héctor al mòbil) */
+/* Facturació de l'obra al mòbil i a l'iPad: cada proforma, una línia (número, data i total) que s'obre en tocar-la */
+html body .fa-mini-v878389{display:none}
+@media (max-width:1100px){
+  html body .fact-layout-v87101 table.fact-table-v87101 td.c-pf,html body .fact-layout-v87101 table.fact-table-v87101 td.c-tot{cursor:pointer}
+  html body .fact-layout-v87101 table.fact-table-v87101 td.c-pf{position:relative;padding-left:18px!important}
+  html body .fact-layout-v87101 table.fact-table-v87101 td.c-pf::before{content:"›";position:absolute;left:2px;top:50%;transform:translateY(-50%);font-size:20px;line-height:1;color:var(--co-ink-3);transition:transform .15s}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr.obert-v878389 td.c-pf::before{transform:translateY(-50%) rotate(90deg)}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr:not(.obert-v878389) td:is(.c-cert,.c-base,.c-iva,.c-ret,.c-ded,.c-acc){display:none!important}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr:not(.obert-v878389){padding:10px 12px!important;gap:2px 10px!important}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr:not(.obert-v878389) td.c-tot::before{display:none}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr:not(.obert-v878389) td.c-data{grid-column:1/3;font-size:13px;color:var(--co-ink-2)}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr:not(.obert-v878389) td.c-data::before{display:none}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr:not(.obert-v878389) .fa-mini-v878389{display:inline-block;margin-left:8px;font-size:11.5px;font-weight:700;color:#166534;background:#DCFCE7;border-radius:999px;padding:1px 8px;vertical-align:1px}
+}
+/* Honoraris de l'expedient: les tres opcions de dalt en una fila (abans, tres botons apilats de punta a punta) */
+html body .honoraris-exp-v8778>.subtabs-v8746{position:static!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0 0 12px!important;padding:4px!important;background:#F1F5F9!important;border:0!important;border-radius:12px;box-shadow:none!important;white-space:normal!important;overflow:visible!important}
+html body .honoraris-exp-v8778>.subtabs-v8746>button{border:0!important;background:transparent!important;box-shadow:none!important;border-radius:9px!important;min-height:40px!important;padding:6px 8px!important;font:600 13.5px/1.2 var(--app-font)!important;color:#475569!important;white-space:normal!important;width:auto!important}
+html body .honoraris-exp-v8778>.subtabs-v8746>button.active{background:#fff!important;color:var(--co-accent,#2563EB)!important;box-shadow:0 1px 3px rgba(15,23,42,.12)!important}
+/* Planning en taula: un capítol sense planificar, en una línia («Sense planificar» en lloc de tres guions) */
+html body .gt-taula-v878362 .sp-v878389{display:none}
+html body .gt-taula-v878362 .fila.sense{grid-template-columns:minmax(0,1fr) auto!important}
+html body .gt-taula-v878362 .fila.sense>.cap{grid-column:1!important}
+html body .gt-taula-v878362 .fila.sense>.d{display:none!important}
+html body .gt-taula-v878362 .fila.sense>.sp-v878389{display:block;grid-column:2;font-size:12.5px;color:var(--co-ink-3);white-space:nowrap}
+/* Planning: el capítol obert, ben marcat amb color, i les seves partides a sota amb una franja més clara (l'Héctor, 24/10/2026:
+   «marca bé el capítol de les partides amb color, que no s'acaba de distingir bé un cop obert») */
+/* taula (mòbil i iPad) */
+html body .gt-taula-v878362 .cap-bloc-v878377.obert{margin:6px 0;border:1px solid #BFDBFE;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.06)}
+html body .gt-taula-v878362 .cap-bloc-v878377.obert>.fila{background:#DBEAFE!important;box-shadow:inset 4px 0 0 var(--co-accent,#2563EB)}
+html body .gt-taula-v878362 .cap-bloc-v878377.obert>.fila .cap b{color:#1E3A8A}
+html body .gt-taula-v878362 .cap-bloc-v878377.obert>.fila .cap b::before{color:var(--co-accent,#2563EB)}
+html body .gt-taula-v878362 .cap-bloc-v878377.obert>.parts-v878377{background:#F8FBFF;box-shadow:inset 4px 0 0 #BFDBFE;border-top:1px solid #BFDBFE}
+html body .gt-taula-v878362 .cap-bloc-v878377.obert>.parts-v878377 .part{border-top-color:#DBEAFE}
+/* gràfic (ordinador) */
+html body .gantt-v878253 .gt-row-v878253.open,html body .gantt-v878253 .gt-row-v878253.open>.gt-left-v878253{background:#DBEAFE}
+html body .gantt-v878253 .gt-row-v878253.open>.gt-left-v878253{box-shadow:inset 4px 0 0 var(--co-accent,#2563EB)}
+html body .gantt-v878253 .gt-row-v878253.open>.gt-left-v878253 .cap{color:#1E3A8A;font-weight:700}
+html body .gantt-v878253 .gt-row-v878253.part,html body .gantt-v878253 .gt-row-v878253.part>.gt-left-v878253{background:#F8FBFF}
+html body .gantt-v878253 .gt-row-v878253.part>.gt-left-v878253{box-shadow:inset 4px 0 0 #BFDBFE}
+html body .gt-taula-v878362 .parts-v878377 .part.sense{grid-template-columns:minmax(0,1fr) auto!important}
+html body .gt-taula-v878362 .parts-v878377 .part.sense>.cap{grid-column:1!important}
+html body .gt-taula-v878362 .parts-v878377 .part.sense>.d{display:none!important}
+html body .gt-taula-v878362 .parts-v878377 .part.sense>.sp-v878389{display:block;grid-column:2;font-size:12.5px;color:var(--co-ink-3);white-space:nowrap}
