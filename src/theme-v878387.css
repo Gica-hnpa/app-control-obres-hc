@@ -25,3 +25,5 @@ html body .main>.library-page-v87196{width:100%}
   html body .honor-calc-grid-v8790>.span-all{grid-column:1/-1}
   html body .honor-extres-v878332{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
+/* Pressupostos (tècnic, ordinador): el número i la data en una sola línia */
+html body .pressupostos-v878316 table.pres-table-v878316 td:first-child,html body .pressupostos-v878316 table.pres-table-v878316 td:nth-child(5){white-space:nowrap}

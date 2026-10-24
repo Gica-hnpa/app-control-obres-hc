@@ -4216,4 +4216,6 @@ export default {
 "Marges de les obres": "Márgenes de las obras",
 "Sense IBAN": "Sin IBAN",
 "{n} obres · benefici {b}": "{n} obras · beneficio {b}",
+"{n} obres tenen agents posats ({m} en total).": "{n} obras tienen agentes puestos ({m} en total).",
+"No tens feines pendents.": "No tienes tareas pendientes.",
 };

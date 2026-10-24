@@ -1469,6 +1469,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Proformes: la cel·la dels botons tenia una amplada fixa de 118 px (regla antiga de `.fact-compact-v70`): els botons queien un sota
       l'altre; ara van en fila. `tools/proves/mira387b.mjs` (`TAB=`, `DUMP=`): obre un apartat d'una obra i dona el resultat d'una expressió.
     - Estils `src/theme-v878387.css`.
+  - **V87.388 · Revisió a l'ordinador** (els tres comptes de prova i, amb `tools/proves/llargueshector.mjs`, una còpia de les dades de
+    l'Héctor a `obra CALA ROVIRA 11`; el DADES real no es toca):
+    - Fora els textos que expliquen: l'avís d'agents de Contactes diu només «N obres tenen agents posats (M en total)» amb el botó; al Resum,
+      la pròxima cita buida ja no diu «Afegeix-ne una a l'agenda». Inici: «No tens feines pendents».
+    - Despeses d'una obra sense cap despesa (`hiHa878388`): només els botons i «Encara no hi ha despeses» (abans, requadres a zero, «Total
+      sense IVA 0,00 €» i filtres buits, perquè la llista de base tenia les despeses de totes les obres).
+    - Pressupostos (ordinador): el número i la data en una sola línia.
+    - Seleccionar despeses: si ja no en queda cap a l'obra (p. ex. després d'eliminar-les), la selecció es tanca sola.
+    - Adaptada `despesestest` (des de la V87.384 els blocs del Rendiment surten tancats al mòbil: la prova els obre abans de llegir-los).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
