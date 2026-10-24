@@ -49,7 +49,7 @@ html body .pres-accions-v878366 .accions-v878366 .action-menu-panel-v87213{right
 
 /* ── rendiment › per capítols al mòbil: una línia per capítol; en tocar-la, les xifres i les partides */
 html body .m-res-v878366{display:none}
-@media (max-width:640px){
+@media (max-width:1100px){
   html body .rf-taula-v878342.caps tr.cap{cursor:pointer}
   html body .rf-taula-v878342.caps tr.cap:not(.obert)>td[data-l]{display:none!important}
   html body .rf-taula-v878342.caps tr.cap>td:first-child{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"t b r" "t s r";align-items:center;column-gap:8px}
@@ -116,7 +116,7 @@ html body .agenda-form-safe-v87109 .botons-v878366{display:flex;gap:8px;flex-wra
 
 /* feines pendents de l'obra al mòbil: una línia (text i estat); «✎» obre la prioritat, el dia, l'hora i «Eliminar» */
 html body .tg-t-v878366{display:none}
-@media (max-width:760px){
+@media (max-width:1100px){
   html body .task-row-v8769.tasca-v878321{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto!important;gap:6px!important;align-items:center}
   html body .task-row-v8769.tasca-v878321>em{grid-column:1/-1;justify-self:start}
   html body .task-row-v8769.tasca-v878321>input:not([type]){grid-column:1}

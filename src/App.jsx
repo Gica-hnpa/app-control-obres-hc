@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.386";
+const APP_VERSION878264="87.387";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7086,7 +7086,7 @@ return <>
     <AvisosInici878360 obres={obres} odata={odata} clients={clients} openObraTab={openObraTab}/>
     <OverdueReview878255 tasks={tasks} update={updateTaskField878140} clients={clients}/>
     <CardOPlega878369 title={i18nT("Pròximes cites")} resum={properes.length?`${properes.length} · ${properes[0].title||properes[0].titol||properes[0].tipus||""} · ${fmtEventDate878136(properes[0])}`:i18nT("No hi ha cites futures.")} className="home-cites-v878314"><div className="upcoming-list-v878138 upcoming-list-v878140">{properes.length===0?<p>{i18nT("No hi ha cites futures.")}</p>:properes.map(e=><button key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||i18nT("Cita")}</b><span>{fmtEventDate878136(e)} · {e.hora||i18nT("Hora pendent")}</span>{e.obra&&<em>{e.obra}</em>}</button>)}</div></CardOPlega878369>
-    <CardOPlega878369 title={t("Feines pendents a fer")} resum={nF878366?[nF878366===1?t("1 feina"):t("{n} feines",{n:nF878366}),nVenc878369?(nVenc878369===1?t("1 vençuda"):t("{n} vençudes",{n:nVenc878369})):""].filter(Boolean).join(" · "):t("Cap")} obert={showNewTask} action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?t('Tancar'):' + '+t('Afegir tasca')}</button>}>
+    <CardOPlega878369 title={t("Feines pendents")} resum={nF878366?[nF878366===1?t("1 feina"):t("{n} feines",{n:nF878366}),nVenc878369?(nVenc878369===1?t("1 vençuda"):t("{n} vençudes",{n:nVenc878369})):""].filter(Boolean).join(" · "):t("Cap")} obert={showNewTask} action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?t('Tancar'):' + '+t('Afegir feina')}</button>}>
       {showNewTask&&<div className="home-task-create-v878139 home-task-create-v878140">
         <div className="home-task-create-head-v878139"><b>{i18nT("Nova tasca / feina pendent")}</b><span>{i18nT("La data és la data màxima d’entrega. Pots crear client i expedient des d’aquí sense anar a una altra pestanya.")}</span></div>
         <div className="home-task-form-v878139 home-task-form-v878140">
@@ -7927,7 +7927,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     <div className="exp-list-header-v8741"><span>{etNExp878327(total)}</span><div className="actions-inline exp-sort-controls-v878192"><label><span>{t("Ordenar per")}</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{t(o.label)}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?t("Ascendent ▲"):t("Descendent ▼")}</button><button className="secondary" onClick={clearAll}>{t("Netejar filtres")}</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>{t("Tornar a tots els tipus")}</button>}</div></div>
     <div className="exp-mobile-tree-v87119 exp-cards-v878270">
       {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));return <section key={any} className="exp-year-v878270">
-        <h3><span>{any}</span><small>{etNExp878327(items.length)}</small></h3>
+        <h3><span>{any}</span>{anys.length>1&&<small>{etNExp878327(items.length)}</small>}</h3>
         {items.map(o=>{const st=normalizeExpedientStatus878136(o.estat);const lloc=[o.poblacio,o.adreca].find(x=>x&&x!=="Pendent")||"";return <button type="button" key={o.id} className="exp-card-v878270 exp-card-foto-v878275" onClick={()=>openObra(o.id)}>
           <ObraThumb878275 o={o} nom={clientNom(o)}/><span className="exp-card-body-v878275"><span className="l1"><b>{codiCurt878270(o)}</b>{o.compartida?<small className="exp-prop-v878347">{expPropietari878347(o)}</small>:null}<span>{clientNom(o)}</span></span>
           <strong>{o.nom}</strong>
@@ -8144,6 +8144,9 @@ function desaAgentsDades878304(list=[],rols={},inds=[],trets=[]){
 // (Obra, Client, Promotor…) es despleguen en tocar-los, un alhora; a la constructora (sense el mòdul tècnic) no hi ha l'apartat
 // «Constructora» (és ella mateixa) i els camps poc usats de l'obra van a «Més dades».
 function useMobil878363(){const q="(max-width: 700px)";const[m,setM]=useState(()=>{try{return window.matchMedia(q).matches}catch{return false}});
+  useEffect(()=>{let mm;try{mm=window.matchMedia(q)}catch{return}const h=e=>setM(e.matches);mm.addEventListener?.("change",h);return()=>mm.removeEventListener?.("change",h)},[]);return m}
+// V87.387 · iPad i finestres estretes (fins a 1100 px): les llistes del mòbil on una taula no hi cap
+function useTauleta878387(){const q="(max-width: 1100px)";const[m,setM]=useState(()=>{try{return window.matchMedia(q).matches}catch{return false}});
   useEffect(()=>{let mm;try{mm=window.matchMedia(q)}catch{return}const h=e=>setM(e.matches);mm.addEventListener?.("change",h);return()=>mm.removeEventListener?.("change",h)},[]);return m}
 function constructoraPropia878363(){return !!PERFIL878304&&!teModul878326("tecnic")}
 function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAgents=[],setData,openAgent,keepAgent878303=null,agentsLib878301=null}){
@@ -10661,6 +10664,7 @@ function EncarrecTecnic878306({obra={},data={},setData,readOnly=false}){
   const k=encarrecDe(obra);const ps=data.passos878305||{};
   const e=k?estatPassos(k,ps):null;const dd=k?estatDocs(k,ps,data.documents||[]):null;
   const[nou,setNou]=useState({});const[nouDoc,setNouDoc]=useState("");const[pujant,setPujant]=useState("");const[iaMsg,setIaMsg]=useState("");
+  const mobil878387=useMobil878363();
   if(!e||!dd)return null;
   const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({...cur,fets:{...(cur.fets||{})},propis:{...(cur.propis||{})},docsNoCal:{...(cur.docsNoCal||{})},docsFets:{...(cur.docsFets||{})},docsPropis:[...(cur.docsPropis||[])]});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
   const toggle=id=>desa(p=>{if(p.fets[id])delete p.fets[id];else p.fets[id]=true;return p});
@@ -10689,7 +10693,7 @@ function EncarrecTecnic878306({obra={},data={},setData,readOnly=false}){
   const estat=dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("A punt per presentar"):t("{n} de {m} fets",{n:fet,m:total});
   return <Card title={t(e.nom)} className="encarrec-v878306 encarrec-v878333" action={<span className={`enc-xip-v878306 ${dd.presentat?"presentat":dd.aPunt?"ok":""}`}>{estat}</span>}>
     <div className="enc-progres-v878333" aria-label={t("{n} de {m} fets",{n:fet,m:total})}><i style={{width:`${pct}%`}}/></div>
-    <div className="enc-passos-v878333">{passos.map((p,i)=><details key={p.k} className={`enc-pas-v878333 ${p.complet?"fet":""} ${p.k===actual?"actual":""}`} open={p.k===actual}>
+    <div className="enc-passos-v878333">{passos.map((p,i)=><details key={p.k} className={`enc-pas-v878333 ${p.complet?"fet":""} ${p.k===actual?"actual":""}`} open={!mobil878387&&p.k===actual}>
       <summary><span className="num" aria-hidden="true">{p.complet?"✓":i+1}</span><b>{t(p.nom)}</b><small>{p.fet}/{p.total}</small></summary>
       <ul className="enc-items-v878333">{p.items.map(it=><li key={it.id}><label><input type="checkbox" checked={!!(ps.fets||{})[it.id]} disabled={readOnly} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label></li>)}</ul>
       {p.docs&&<div className="enc-docs-v878333">
@@ -14403,7 +14407,7 @@ function ClientCertSummaryV87235({data={}}){
 }
 
 function CertResumV69({data}){
-const mobil878386=useMobil878363();
+const mobil878386=useTauleta878387();
 let rows=data.partides||[], caps=group(rows,"cap"), certs=data.certificacions||[];
 function qFor(r,n){return certQty8783(r,n)}
 function impFor(r,n){return certAmount878223(r,n)}
@@ -15917,7 +15921,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.386",
+    app_version:"87.387",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -17939,7 +17943,7 @@ function HoursToInvoice878256({obres=[],clients=[],onCreate,odata,openObraTab}){
       <div><h2>{i18nT("Pendent de facturar")}</h2></div>
       <button type="button" className="secondary" onClick={()=>setManual({})}>{i18nT("+ Apuntar visita o feina")}</button>
     </header>
-    <div className="tobill-sum"><b>{money(total)}</b><span>{nExp} {i18nT("expedient")}{nExp===1?"":"s"}{hours>0.004?` · ${hours.toLocaleString(loc878272(),{maximumFractionDigits:2})} h`:""}</span>{clientNames.length>1&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{clientNames.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select>}{(honV.length+visible.length)>0&&<button type="button" className="secondary tobill-veure-v878369" aria-expanded={veure878369} onClick={()=>setVeure878369(v=>!v)}>{veure878369?i18nT("Amagar"):i18nT("Veure-ho ({n})",{n:honV.length+visible.length})}</button>}</div>
+    <div className="tobill-sum"><b>{money(total)}</b><span>{nExp} {i18nT("expedient")}{nExp===1?"":"s"}{hours>0.004?` · ${hours.toLocaleString(loc878272(),{maximumFractionDigits:2})} h`:""}</span>{clientNames.length>1&&veure878369&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{clientNames.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select>}{(honV.length+visible.length)>0&&<button type="button" className="secondary tobill-veure-v878369" aria-expanded={veure878369} onClick={()=>{if(veure878369)setClientF("");setVeure878369(v=>!v)}}>{veure878369?i18nT("Amagar"):i18nT("Veure-ho ({n})",{n:honV.length+visible.length})}</button>}</div>
     {(veure878369||(honV.length+visible.length)===0)&&<>
     {honV.length>0&&<div className="tobill-list tobill-hon-v878307">{honV.map(({o,p,pend,facturat})=><div key={p.id} className="tobill-row">
       <span className="nm"><b>{o.nom}</b><small>{cName(o)} · {i18nT("Honoraris acceptats")}{p.numero?` ${p.numero}`:""}{facturat>0.004?` · ${i18nT("ja facturat {x}",{x:money(facturat)})}`:""}</small></span>

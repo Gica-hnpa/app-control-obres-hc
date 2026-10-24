@@ -100,7 +100,7 @@ html body .fila-v878340 .linia select.fase{flex:0 0 150px;min-width:0}
   html body .fila-v878340 .linia select.fase{flex:1 1 auto}
 }
 /* al mòbil, les taules de rendiment com a fitxes (cada xifra amb el seu nom) */
-@media (max-width:640px){
+@media (max-width:1100px){
   html body .rf-taula-wrap-v878342{overflow:visible}
   html body .rf-taula-v878342,html body .rf-taula-v878342 tbody,html body .rf-taula-v878342 tfoot{display:block}
   html body .rf-taula-v878342 thead{display:none}

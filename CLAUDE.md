@@ -1454,6 +1454,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Plegat al mòbil:** «Per obres» del Rendiment de l'empresa i «Pes per capítol» del Resum de l'obra (`CardOPlega878369`).
     - Marges: «Nova cita» de l'obra i els apartats de Dades de l'empresa ja no toquen la vora.
     - Estils `src/theme-v878386.css`. Adaptada `pressuposttest` (el resum del mòbil és una llista).
+  - **V87.387 · L'iPad i la segona volta del mòbil** (revisió de les 67 pantalles a 820 px amb `llargues366.mjs`, que ara accepta `W=`/`H=`):
+    - **Entre 701 i 1100 px** (iPad i finestres estretes) moltes pantalles feien servir la disposició de l'ordinador: taules tallades i
+      feines o requadres estirats. Ara hi van les fitxes del mòbil: feines pendents de l'obra (`theme-v878366`, `theme-v878386`), proformes
+      i registres de temps, Rendiment › Per capítols (`m-res-v878366`) i Per obres (`theme-v878371`), les taules del rendiment
+      (`rf-taula-v878342`) i el resum de certificacions (`useTauleta878387`, ≤1100 px). A l'iPad, els quatre requadres de Facturació de
+      l'obra i els resultats de la calculadora d'honoraris en una fila; els camps de la calculadora en tres columnes.
+    - **Preus** a l'iPad era una columna estreta al mig: `.library-page-v87196` té `margin:auto` dins del `main` flex i s'encongia; ara
+      `width:100%`.
+    - Al mòbil, els passos de l'encàrrec tècnic (cèdula, CEE…) surten tots tancats (`mobil878387`; a l'ordinador i l'iPad, obert el primer
+      que falta).
+    - Llista d'obres al mòbil: el número de l'any només si n'hi ha més d'un. Facturació del tècnic: el filtre de client del pendent només
+      amb la llista oberta (n'hi havia dos de seguits) i els filtres de punta a punta al mòbil. Inici: «Feines pendents» i «+ Afegir feina».
+    - Proformes: la cel·la dels botons tenia una amplada fixa de 118 px (regla antiga de `.fact-compact-v70`): els botons queien un sota
+      l'altre; ara van en fila. `tools/proves/mira387b.mjs` (`TAB=`, `DUMP=`): obre un apartat d'una obra i dona el resultat d'una expressió.
+    - Estils `src/theme-v878387.css`.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
