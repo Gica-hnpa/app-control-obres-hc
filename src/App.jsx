@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.370";
+const APP_VERSION878264="87.371";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8769,6 +8769,8 @@ function LiniesChart878343({labels=[],series=[],titol="",tipLabel}){
 }
 function RendimentEmpresa878343({obres=[],odata={},openObraTab}){
   const[tick,setTick]=useState(0);
+  const[obertes878371,setObertes878371]=useState(()=>new Set());
+  const togObra878371=id=>setObertes878371(x=>{const n=new Set(x);n.has(id)?n.delete(id):n.add(id);return n});
   useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-albarans-changed",h);window.addEventListener("aco-personal-changed",h);return()=>{window.removeEventListener("aco-albarans-changed",h);window.removeEventListener("aco-personal-changed",h)}},[]);
   const D=useMemo(()=>dadesRendEmpresa878343(obres,odata),[obres,odata,tick]);
   const avui=new Date(),anyAra=avui.getFullYear(),mesAra=avui.getMonth();
@@ -8828,17 +8830,17 @@ function RendimentEmpresa878343({obres=[],odata={},openObraTab}){
       {totes&&<div className={`res ${resultat>=0?"good":"bad"}`}><small>{t("Resultat de l’empresa")}</small><b>{money(resultat)}</b><span>{t("Marge − despeses reals de l’empresa ({x})",{x:money(empAny)})}</span></div>}
     </div>
     {totes&&(empAny>0.005||tot.dge>0.005)&&<p className={`rc-dge-v878343 ${empAny>tot.dge+0.005?"bad":"good"}`}>{empAny>tot.dge+0.005?t("Les despeses reals de l’empresa ({r}) passen del DGE previst a les obres ({p}): el % de DGE és curt.",{r:money(empAny),p:money(tot.dge)}):t("El DGE previst a les obres ({p}) cobreix les despeses reals de l’empresa ({r}).",{r:money(empAny),p:money(tot.dge)})}</p>}
-    <Card title={vista==="mesos"?t("Mes a mes · {any}",{any}):vista==="anys"?t("{nom} · comparació entre anys",{nom:mesuraNom}):t("{nom} · comparació entre obres · {any}",{nom:mesuraNom,any})} className="rc-card-v878343" action={<div className="rc-vistes-v878343">
+    <CardOPlega878369 title={vista==="mesos"?t("Mes a mes · {any}",{any}):vista==="anys"?t("{nom} · comparació entre anys",{nom:mesuraNom}):t("{nom} · comparació entre obres · {any}",{nom:mesuraNom,any})} resum={`${t("Ingressos")} ${money(tot.ing)} · ${t("Benefici")} ${money(tot.ben)}`} className="rc-card-v878343" action={<div className="rc-vistes-v878343">
       <div className="seg" role="group" aria-label={t("Comparar")}>{[["mesos",t("Mes a mes")],["anys",t("Entre anys")],["obres",t("Entre obres")]].map(([k,l])=><button type="button" key={k} aria-pressed={vista===k} onClick={()=>setVista(k)}>{l}</button>)}</div>
       {vista!=="mesos"?<div className="seg" role="group" aria-label={t("Què")}>{MES.map(([k,l])=><button type="button" key={k} aria-pressed={mesura===k} onClick={()=>setMesura(k)}>{l}</button>)}</div>
       :<label className="acum"><input type="checkbox" checked={acum} onChange={e=>setAcum(e.target.checked)}/>{t("Acumulat")}</label>}
     </div>}>
       <LiniesChart878343 labels={labels} series={series} titol={vista==="mesos"?t("Mes a mes · {any}",{any}):mesuraNom} tipLabel={tip}/>
-    </Card>
+    </CardOPlega878369>
     <Card title={t("Per obres · {any}",{any})} className="rc-taula-card-v878343">
       {!files.length?<p className="rc-buit-v878343">{t("Encara no hi ha ingressos ni despeses de les obres aquest any.")}</p>:
       <div className="rf-taula-wrap-v878342"><table className="rf-taula-v878342 rc-taula-v878343"><thead><tr><th>{t("Obra")}</th><th>{t("Ingressos")}</th><th>{t("Costos directes")}</th><th>{t("Marge")}</th><th>{t("DGE")}</th><th>{t("Benefici")}</th><th>%</th><th>{t("BI previst")}</th><th/></tr></thead>
-      <tbody>{files.map(({x,r})=>{const p=r.ing>0.005?r.ben/r.ing*100:null;return <tr key={x.o.id}><td><b>{x.o.nom}</b><small>{r.fact>0.005?t("Facturat: {x}",{x:money(r.fact)}):t("Encara sense factures")}</small></td><td data-l={t("Ingressos")}>{money(r.ing)}</td><td data-l={t("Costos directes")}>{money(r.dir)}</td><td data-l={t("Marge")}>{money(r.marge)}</td><td data-l={t("DGE")}>{money(r.dge)}<small>{pct(x.dge)}</small></td><td data-l={t("Benefici")}><b className={r.ben>=0?"good":"bad"}>{money(r.ben)}</b></td><td data-l="%"><b className={p!=null&&x.bi!=null?(p>=x.bi?"good":"bad"):""}>{p!=null?pct(p):"—"}</b></td><td data-l={t("BI previst")}>{x.bi!=null?pct(x.bi):"—"}</td><td><button type="button" className="secondary small" onClick={()=>openObraTab?.(x.o.id,"Seguiment econòmic")}>{t("Obrir")}</button></td></tr>})}</tbody>
+      <tbody>{files.map(({x,r})=>{const p=r.ing>0.005?r.ben/r.ing*100:null;return <tr key={x.o.id} className={obertes878371.has(x.o.id)?"oberta-v878371":""}><td className="nm-v878371" onClick={()=>togObra878371(x.o.id)}><b>{x.o.nom}</b><small>{r.fact>0.005?t("Facturat: {x}",{x:money(r.fact)}):t("Encara sense factures")}</small></td><td data-l={t("Ingressos")}>{money(r.ing)}</td><td data-l={t("Costos directes")}>{money(r.dir)}</td><td data-l={t("Marge")}>{money(r.marge)}</td><td data-l={t("DGE")}>{money(r.dge)}<small>{pct(x.dge)}</small></td><td data-l={t("Benefici")}><b className={r.ben>=0?"good":"bad"}>{money(r.ben)}</b></td><td data-l="%"><b className={p!=null&&x.bi!=null?(p>=x.bi?"good":"bad"):""}>{p!=null?pct(p):"—"}</b></td><td data-l={t("BI previst")}>{x.bi!=null?pct(x.bi):"—"}</td><td><button type="button" className="secondary small" onClick={()=>openObraTab?.(x.o.id,"Seguiment econòmic")}>{t("Obrir")}</button></td></tr>})}</tbody>
       <tfoot><tr><td>{t("Total")}</td><td data-l={t("Ingressos")}>{money(tot.ing)}</td><td data-l={t("Costos directes")}>{money(tot.dir)}</td><td data-l={t("Marge")}>{money(tot.marge)}</td><td data-l={t("DGE")}>{money(tot.dge)}</td><td data-l={t("Benefici")}><b className={tot.ben>=0?"good":"bad"}>{money(tot.ben)}</b></td><td data-l="%">{pc(tot.ben,tot.ing)}</td><td/><td/></tr></tfoot></table></div>}
     </Card>
     {totes&&D.despEmp.some(a=>String(toInputDate8743(a.data)||a.data||"").startsWith(String(any)))&&<Card title={t("Despeses de l’empresa · {any}",{any})} className="rc-emp-v878343">
@@ -15472,7 +15474,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.370",
+    app_version:"87.371",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -1252,6 +1252,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     temps ja es veu a la bombolla de baix; abans s'obria sol i ocupava mitja pantalla); fora el text «Obrir només quan cal introduir
     hores/despeses a mà»; sense registres, «Encara no hi ha registres.» en lloc d'una taula buida amb totes les capçaleres.
     `clientsvirtuals` adaptada (el títol del bloc i el botó es diuen igual: «Afegir registre manual»).
+  - **V87.371 · Rendiment de l'empresa al mòbil:** la gràfica «Mes a mes» amb `CardOPlega878369` (resum: ingressos i benefici) i, a «Per
+    obres», cada obra en una línia (nom, benefici i %, `nm-v878371`) que es desplega en tocar-la (`obertes878371`, `oberta-v878371`) amb
+    la resta de xifres i «Obrir». Estils: `src/theme-v878371.css`. Prova: a `v369test.mjs` (21).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
