@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.380";
+const APP_VERSION878264="87.381";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5461,7 +5461,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 
 {screen==="Treballs / Expedients"&&<Projectes amagades878347={amagades878347.size} mostraAmagades878347={()=>{lsSet8779(AMAGADES_KEY878347,"[]");setAmagTick878347(x=>x+1)}} byClient={byClient} allObres={viewObres878233} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt,opk,setOpk}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"}/>} 
 {screen==="Obra"&&<Obra crono878376={authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&!senseHoresPropies878342()?{on:timer.running&&timer.obraId===obraId,since:timer.start,start:()=>{const t0=timerRef878254.current;if(t0.running)stopTimerFor878254(t0,"canvi d’obra");startTimer()},stop:()=>stopTimerFor878254(timerRef878254.current,"pausa")}:null} obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} agentsLib878301={agentsLibrary878301(viewOdata878233,viewClients878233)} keepAgent878303={ag=>setOdata(prev=>guardarALaLlista878303(prev,ag))} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>compressImage878259(file,1600,0.75).then(u=>{lsSet8779(obraFotoKey878259(obraId),u);setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u,teFoto:true,fotoAt:new Date().toISOString()}:o))}).catch(e=>alert("No s’ha pogut posar la foto: "+(e?.message||e)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,...(r.puOrig878346!=null?{pu:r.puOrig878346}:{}),sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
-<AgendaReminders878256 odata={viewOdata878233} openObra={openObra}/><AiBudgetHost878256/>{screen==="Agenda"&&<SafeRenderBoundary878108><Agenda878256 odata={viewOdata878233} events={[...Object.entries(viewOdata878233||{}).flatMap(([oid,d])=>Array.isArray(d?.events)?d.events.map(e=>({...e,obraId:e.obraId||oid,client:e.client||viewClients878233.find(c=>c.id===viewObres878233.find(o=>o.id===oid)?.client)?.nom,obra:e.obra||viewObres878233.find(o=>o.id===oid)?.nom,adreca:e.adreca||viewObres878233.find(o=>o.id===oid)?.adreca})):[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} clients={viewClients878233} obres={viewObres878233} openObra={openObra} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={calY} selDay={selDay} setSelDay={setSelDay} setOdata={currentAccount878233.role==="admin"?setOdata:undefined} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}
+<AgendaReminders878256 odata={viewOdata878233} openObra={openObra}/><AiBudgetHost878256/>{screen==="Agenda"&&<SafeRenderBoundary878108><Agenda878256 odata={viewOdata878233} events={[...Object.entries(viewOdata878233||{}).flatMap(([oid,d])=>Array.isArray(d?.events)?d.events.map(e=>({...e,obraId:e.obraId||oid,client:e.client||viewClients878233.find(c=>c.id===viewObres878233.find(o=>o.id===oid)?.client)?.nom,obra:e.obra||viewObres878233.find(o=>o.id===oid)?.nom,adreca:e.adreca||viewObres878233.find(o=>o.id===oid)?.adreca})):[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} clients={viewClients878233} obres={viewObres878233} openObra={openObra} openObraTab={openObraTab} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={calY} selDay={selDay} setSelDay={setSelDay} setOdata={currentAccount878233.role==="admin"?setOdata:undefined} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab} clientsList={clients}/></SafeRenderBoundary878108>}
 {screen==="Llibreria"&&<SafeRenderBoundary878108><PartidesLibraryGeneral87196 items={viewPartidaLibrary878233} setItems={currentAccount878233.role==="admin"?setPartidaLibrary:undefined} clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}{screen==="Rendiments"&&<SafeRenderBoundary878108><RendimentsClient878247 obres={viewObres878233} odata={viewOdata878233} openObra={openObra}/></SafeRenderBoundary878108>}
@@ -15795,7 +15795,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.380",
+    app_version:"87.381",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -17371,11 +17371,53 @@ function VeuCita878294({obres=[],clients=[],close,onDone,onDirecte,obraFixa=null
     <div className="actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className={onDirecte?"secondary":"primary"} disabled={!p} onClick={()=>onDone(p)}>{t("Revisar i desar")}</button>{onDirecte&&<button type="button" className="primary" disabled={!p} onClick={()=>onDirecte(p)}>{t("Posar-ho a l’agenda")}</button>}</div>
   </div></Modal>;
 }
-function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,readOnly=false}){
+// V87.381 · Equip (pendent de la revisió de la constructora: «veure totes les obres alhora per treballador o colla, on és cadascú cada
+// dia»): a l'Agenda, la setmana de cada treballador, colla o industrial segons el Planning de totes les obres (`capPlans[cap].qui` i
+// les dates de `resolPlans878341`; una colla compta pels seus treballadors). Algú a dues obres el mateix dia surt en vermell.
+const COLORS_EQUIP878381=["#2563EB","#059669","#D97706","#7C3AED","#DB2777","#0891B2","#65A30D","#B45309"];
+function equipOk878381(){return ambEmpresa878338()&&!esTreballador878326()&&llegeixTreballadors878339().some(w=>w.actiu!==false)}
+function equipSetmana878381(obres=[],odata={},dies=[]){
+  const treb=llegeixTreballadors878339().filter(w=>w.actiu!==false).sort((a,b)=>(a.colla?0:1)-(b.colla?0:1)||String(a.colla||"").localeCompare(String(b.colla||""),"ca")||String(a.nom||"").localeCompare(String(b.nom||""),"ca"));
+  const isos=dies.map(isoDay878255),ds=dies.map(d=>new Date(d.getFullYear(),d.getMonth(),d.getDate()));
+  const files=new Map(),usades=[];
+  treb.forEach(w=>files.set("t:"+w.id,{k:"t:"+w.id,nom:w.nom||"",sub:[w.ofici,w.colla].filter(Boolean).join(" · "),dies:{}}));
+  (obres||[]).forEach(o=>{
+    const cfg=odata?.[o.id]?.ganttConfig87217,plans=cfg?.capPlans||{};
+    if(!Object.values(plans).some(p=>(p?.qui||[]).length))return;
+    const parts={};Object.values(cfg.partPlans||{}).forEach(pp=>{if(pp&&pp.cap&&parseNum8770(pp.dur)>0)(parts[pp.cap]??=[]).push({off:Math.max(0,Math.round(parseNum8770(pp.off)||0)),dur:Math.max(1,Math.round(parseNum8770(pp.dur)))})});
+    const res=resolPlans878341(plans,parts).plans;
+    Object.entries(plans).forEach(([cap,p])=>{const r=res[cap];if(!r||!(p?.qui||[]).length)return;
+      ds.forEach((d,i)=>{if(d<r.from||d>r.to)return;
+        (p.qui||[]).forEach(q=>{const k=String(q?.k||""),colla=k.startsWith("c:")?k.slice(2):"";
+          const ks=colla?treb.filter(w=>String(w.colla||"").trim()===colla).map(w=>"t:"+w.id):[k];
+          ks.forEach(kk=>{
+            if(!files.has(kk)){if(!kk.startsWith("i:"))return;files.set(kk,{k:kk,nom:q.nom||"",sub:t("Industrial"),dies:{},ind:true})}
+            const l=(files.get(kk).dies[isos[i]]??=[]);if(!l.some(x=>x.obraId===o.id&&x.cap===cap))l.push({obraId:o.id,cap,colla});
+            if(!usades.includes(o.id))usades.push(o.id)})})})})});
+  return {files:[...files.values()].sort((a,b)=>(a.ind?1:0)-(b.ind?1:0)),usades};
+}
+function EquipSetmana878381({dies=[],obres=[],odata={},openObraTab,todayIso=""}){
+  const mobil=useMobil878363();
+  const isos=dies.map(isoDay878255);
+  const {files,usades}=useMemo(()=>equipSetmana878381(obres,odata,dies),[obres,odata,isos.join()]);// eslint-disable-line react-hooks/exhaustive-deps
+  const[dia,setDia]=useState(()=>Math.max(0,isos.indexOf(todayIso)));
+  const obraDe=id=>(obres||[]).find(o=>o.id===id);
+  const color=id=>COLORS_EQUIP878381[Math.max(0,usades.indexOf(id))%COLORS_EQUIP878381.length];
+  const doble=l=>new Set((l||[]).map(x=>x.obraId)).size>1;
+  const xip=(x,i)=>{const o=obraDe(x.obraId);return <button type="button" key={i} className="eq-xip-v878381" style={{"--c":color(x.obraId)}} onClick={()=>openObraTab?.(x.obraId,"Gantt")} title={[o?codiCurt878270(o):"",o?.nom,x.cap,x.colla].filter(Boolean).join(" · ")}><b>{o?.nom||""}</b><small>{[x.cap,x.colla].filter(Boolean).join(" · ")}</small></button>};
+  if(mobil){const iso=isos[Math.min(dia,isos.length-1)];return <div className="equip-v878381 mobil">
+    <div className="eq-dies" role="group" aria-label={t("Dia")}>{dies.map((d,i)=><button type="button" key={i} aria-pressed={i===dia} className={isos[i]===todayIso?"avui":""} onClick={()=>setDia(i)}><small>{d.toLocaleDateString(loc878272(),{weekday:"short"})}</small><b>{d.getDate()}</b></button>)}</div>
+    <div className="eq-llista">{files.map(f=>{const l=f.dies[iso]||[];return <div key={f.k} data-k={f.k} className={["eq-fila",doble(l)?"doble":"",l.length?"":"lliure"].filter(Boolean).join(" ")}><span className="qui"><b>{f.nom}</b>{f.sub?<small>{f.sub}</small>:null}</span><div className="on">{l.length?l.map(xip):<em>{t("Sense obra")}</em>}</div></div>})}</div>
+  </div>}
+  return <div className="equip-v878381"><table><thead><tr><th>{t("Equip")}</th>{dies.map((d,i)=><th key={i} className={isos[i]===todayIso?"avui":""}>{d.toLocaleDateString(loc878272(),{weekday:"short",day:"numeric"})}</th>)}</tr></thead>
+    <tbody>{files.map(f=><tr key={f.k} data-k={f.k}><th><b>{f.nom}</b>{f.sub?<small>{f.sub}</small>:null}</th>{isos.map(iso=>{const l=f.dies[iso]||[];return <td key={iso} className={[doble(l)?"doble":"",iso===todayIso?"avui":""].filter(Boolean).join(" ")} title={doble(l)?t("A dues obres el mateix dia"):undefined}>{l.map(xip)}</td>})}</tr>)}</tbody></table></div>;
+}
+function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraTab,setOdata,readOnly=false}){
+  const equip878381=equipOk878381();
   const safeObres=Array.isArray(obres)?obres:[];
   const[tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(t=>t+1);window.addEventListener("aco-agenda-changed",h);return()=>window.removeEventListener("aco-agenda-changed",h)},[]);
-  const[view,setViewState]=useState(()=>{const v=lsGet8779("aco_agenda_view_v878256","");return ["dia","setmana","mes","llista"].includes(v)?v:(typeof window!=="undefined"&&window.innerWidth<720?"llista":"setmana")});
+  const[view,setViewState]=useState(()=>{const v=lsGet8779("aco_agenda_view_v878256","");return ["dia","setmana","mes","llista"].includes(v)||(v==="equip"&&equip878381)?v:(typeof window!=="undefined"&&window.innerWidth<720?"llista":"setmana")});
   function setView(v){setViewState(v);try{lsSet8779("aco_agenda_view_v878256",v)}catch{}}
   const[cursor,setCursor]=useState(()=>{const d=new Date();d.setHours(0,0,0,0);return d});
   const[form,setForm]=useState(null);
@@ -17399,11 +17441,11 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
   const fmt=(d,o)=>d.toLocaleDateString(loc878272(),o);
   const weekStart=(()=>{const d=new Date(cursor);d.setDate(d.getDate()-((d.getDay()+6)%7));return d})();
   const weekDays=Array.from({length:7},(_,i)=>{const d=new Date(weekStart);d.setDate(d.getDate()+i);return d});
-  function shift(dir){const d=new Date(cursor);if(view==="mes")d.setMonth(d.getMonth()+dir,1);else if(view==="setmana")d.setDate(d.getDate()+7*dir);else if(view==="dia")d.setDate(d.getDate()+dir);else d.setDate(d.getDate()+30*dir);setCursor(d)}
+  function shift(dir){const d=new Date(cursor);if(view==="mes")d.setMonth(d.getMonth()+dir,1);else if(view==="setmana"||view==="equip")d.setDate(d.getDate()+7*dir);else if(view==="dia")d.setDate(d.getDate()+dir);else d.setDate(d.getDate()+30*dir);setCursor(d)}
   function goToday(){const d=new Date();d.setHours(0,0,0,0);setCursor(d)}
   function goDay(d){const x=new Date(d);x.setHours(0,0,0,0);setCursor(x);setView("dia")}
   const title=view==="mes"?fmt(cursor,{month:"long",year:"numeric"})
-    :view==="setmana"?(()=>{const e=weekDays[6];return `${weekStart.getDate()}${weekStart.getMonth()!==e.getMonth()?" "+fmt(weekStart,{month:"short"}):""} – ${e.getDate()} ${fmt(e,{month:"long",year:"numeric"})}`})()
+    :view==="setmana"||view==="equip"?(()=>{const e=weekDays[view==="equip"?4:6];return `${weekStart.getDate()}${weekStart.getMonth()!==e.getMonth()?" "+fmt(weekStart,{month:"short"}):""} – ${e.getDate()} ${fmt(e,{month:"long",year:"numeric"})}`})()
     :view==="dia"?fmt(cursor,{weekday:"long",day:"numeric",month:"long",year:"numeric"})
     :i18nT("Propers 30 dies des del {data}",{data:fmt(cursor,{day:"numeric",month:"long"})});
 
@@ -17602,24 +17644,24 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,setOdata,
         <h1>{title}</h1>
       </div>
       <div className="ag-tools">
-        <div className="seg">{[["dia","Dia"],["setmana","Setmana"],["mes","Mes"],["llista","Llista"]].map(([k,l])=><button type="button" key={k} aria-pressed={view===k} onClick={()=>setView(k)}>{i18nT(l)}</button>)}</div>
+        <div className="seg">{[["dia","Dia"],["setmana","Setmana"],["mes","Mes"],["llista","Llista"],...(equip878381?[["equip","Equip"]]:[])].map(([k,l])=><button type="button" key={k} aria-pressed={view===k} onClick={()=>setView(k)}>{i18nT(l)}</button>)}</div>
         {!readOnly&&<button type="button" className="secondary ag-veu-v878294" onClick={()=>setVeu(true)} title={i18nT("Nota de veu a l’agenda")}><Mic size={16} aria-hidden="true"/> {i18nT("Nota de veu")}</button>}
         {!readOnly&&<button type="button" className="primary" onClick={()=>openNew(view==="dia"?isoDay878255(cursor):todayIso)}>{i18nT("+ Nova cita")}</button>}
       </div>
     </div>
     {veu&&<VeuCita878294 obres={safeObres} clients={clients} close={()=>setVeu(false)} onDone={p=>{setVeu(false);openFromVoice(p)}} onDirecte={p=>{setVeu(false);saveFromVoice(p)}}/>}
     {fetVeu&&<div className="veu-fet-v878330" role="status"><span>✓ <b>{t("A l’agenda:")}</b> {new Date(fetVeu.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"})}{fetVeu.hora?` · ${fetVeu.hora}`:""} · {fetVeu.title}{fetVeu.obra?` · ${fetVeu.obra}`:""}</span><button type="button" className="link" onClick={()=>{const e=all.find(x=>String(x.id)===fetVeu.id);setFetVeu(null);if(e)openEvent(e)}}>{t("Obrir")}</button><button type="button" className="tanca" aria-label={t("Tancar")} onClick={()=>setFetVeu(null)}>×</button></div>}
-    <div className="ag-sub">
+    {view!=="equip"&&<div className="ag-sub">
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Filtrar per expedient")}><option value="">{i18nT(etPaquet878327("Tots els expedients"))}</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les tasques")}</label>
       <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Tasca")}</span>{gc.primary?.length?<span className="t-google"><i/>{i18nT("Google (calendari principal)")}</span>:null}</div>
-    </div>
+    </div>}
     {gcalConfigured()&&!readOnly&&<div className="ag-google-v878295">
       {gc.on?<><span>{gc.busy?i18nT("Sincronitzant amb Google Calendar…"):gc.last?i18nT("Google Calendar · sincronitzat a les {h}",{h:new Date(gc.last).toLocaleTimeString(loc878272(),{hour:"2-digit",minute:"2-digit"})}):i18nT("Google Calendar · connectat")}</span><button type="button" className="secondary" disabled={gc.busy} onClick={gcSync}>{i18nT("Sincronitzar")}</button></>
       :<button type="button" className="secondary" onClick={gcConnect}>{i18nT("Connectar amb Google Calendar")}</button>}
       {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}
     </div>}
-    {view==="mes"?renderMonth():view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}
+    {view==="equip"?<EquipSetmana878381 dies={weekDays.slice(0,5)} obres={safeObres} odata={odata} openObraTab={openObraTab} todayIso={todayIso}/>:view==="mes"?renderMonth():view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}
     {form&&<AgendaEditor878256 form={form} setForm={setForm} obres={safeObres} save={save} remove={remove} close={()=>setForm(null)} openObra={openObra} readOnly={readOnly||!!form.readOnly}/>}
   </div>;
 }

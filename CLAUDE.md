@@ -1383,6 +1383,14 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     plegat diu «N partides per posar al dia» (`mg-n-v878380`) i a dins «Posar-hi els d'ara» (`PosarMarges878380`), desactivat mentre
     s'edita el pressupost (`window.__acoEditPres878380`, event `aco-edit-pres-878380`). Estils `src/theme-v878380.css`. Prova: a
     `preus378test.mjs` (24: «al resum» → l'enderroc de 36,89 a 30,80 €; «Reforma exigent» → 33,60 €).
+  - **V87.381 · Agenda › Equip** (pendent de la revisió de la constructora: «veure totes les obres alhora per treballador o colla, on és
+    cadascú cada dia»): vista nova «Equip» a l'Agenda (`equipOk878381`: comptes amb el mòdul Empresa, no el treballador, amb algun
+    treballador actiu). De dilluns a divendres (‹ › mou la setmana), una fila per treballador (els de colla primer) i, a sota, els
+    industrials que surten al Planning; a cada dia, l'obra i el capítol (i la colla) segons `capPlans[cap].qui` de totes les obres i les
+    dates de `resolPlans878341` (amb les partides, `partPlans`); una colla compta pels seus treballadors (`equipSetmana878381`). Algú a dues
+    obres el mateix dia: requadre vermell (`doble`). Tocar una obra obre el seu Planning (`openObraTab(id,"Gantt")`; l'Agenda ara rep
+    `openObraTab`). Al mòbil, els 5 dies a dalt i la llista del dia («Sense obra» si no té res). Colors per obra
+    (`COLORS_EQUIP878381`). Estils `src/theme-v878381.css`. Prova: `equip381test.mjs` (13).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

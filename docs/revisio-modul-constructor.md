@@ -126,8 +126,8 @@ capítol) · Hores.
 - «Treure del planning»: els que en depenien es queden a la data on eren.
 - Una data d’inici en dissabte o diumenge comença el dilluns.
 - Fora els textos que explicaven el Planning.
-- **Pendent:** veure totes les obres alhora per treballador o colla (on és cadascú cada dia) i que els treballadors vegin al
-  mòbil el seu planning.
+- **Fet a la V87.381:** Agenda › «Equip», totes les obres alhora per treballador, colla o industrial (on és cadascú cada dia,
+  en vermell si és a dues obres). **Pendent:** que els treballadors vegin al mòbil el seu planning (cal lligar el compte del treballador).
 
 ### Tanda 6 · fases, rendiment i despeses · V87.342–344 (22/10/2026, l’Héctor mirant Verbania i entrant les despeses de Socoterm)
 

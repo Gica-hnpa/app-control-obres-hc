@@ -4196,4 +4196,6 @@ export default {
 "Posar-hi els d’ara": "Poner los de ahora",
 "1 partida per posar al dia": "1 partida por actualizar",
 "{n} partides per posar al dia": "{n} partidas por actualizar",
+"Equip": "Equipo",
+"A dues obres el mateix dia": "En dos obras el mismo día",
 };
