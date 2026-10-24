@@ -4208,4 +4208,12 @@ export default {
 "Tancades": "Cerradas",
 "{n} fases": "{n} fases",
 "{n} capítols · certificat {c} de {p}": "{n} capítulos · certificado {c} de {p}",
+"+ Nova feina": "+ Nueva tarea",
+"Encara no hi ha feines.": "Todavía no hay tareas.",
+"Veure / editar feina": "Ver / editar tarea",
+"Contacte i adreça": "Contacto y dirección",
+"Cobraments": "Cobros",
+"Marges de les obres": "Márgenes de las obras",
+"Sense IBAN": "Sin IBAN",
+"{n} obres · benefici {b}": "{n} obras · beneficio {b}",
 };

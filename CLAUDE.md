@@ -1438,6 +1438,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       als capítols del pressupost.
     - **Compte amb les captures de pàgina sencera** (`captureBeyondViewport`): el menú lateral hi surt aixafat; a la pantalla és bé.
     - Estils `src/theme-v878385.css`. Adaptada `simple354test` (sense cites a la capçalera de l'Inici).
+  - **V87.386 · Pantalles del mòbil de la revisió** (tot recollit i res tallat):
+    - **Feines pendents de l'obra:** al mòbil, el text sencer (`txt-v878386`; la casella només amb «✎»); «+ Nova feina». **Feina vençuda**
+      (Inici): sense el «Tancar» repetit (hi ha la creu); la fitxa de la feina, sense el text que explicava la cita vinculada i sense
+      «Iniciar temps» als comptes sense hores pròpies (`senseHoresPropies878342`).
+    - **Certificacions › Resum al mòbil** (`CertResumV69`, `cert-resum-m-v878386`): una línia per capítol (certificat i %) que es desplega
+      amb el pressupost, cada certificació, el total i el pendent; el total a sota. A l'ordinador, la taula de sempre.
+    - **Facturació de l'obra al mòbil** (`Fact`): els quatre requadres petits i iguals (fora el donut) i cada proforma en una fitxa
+      (`c-pf`, `c-tot`, `data-l`), amb els botons en fila (abans una taula de 9 columnes tallada).
+    - **Registres de temps** (`HonorarisTemps`): al mòbil, una fitxa per registre (data i import a dalt; editant, un camp per línia amb el
+      nom, `edit-v878386`).
+    - **Calculadora d'honoraris al mòbil:** els camps curts en dues columnes, els desplegables sencers; les xifres en dues columnes.
+    - **Dades de l'empresa** (`DadesEmpresa878337`) per apartats (`de-sec-v878386`): Empresa · Contacte i adreça · Cobraments · Marges de les
+      obres, plegats al mòbil amb un resum i oberts a l'ordinador (on el codi postal, la població i la província van en una línia).
+    - **Plegat al mòbil:** «Per obres» del Rendiment de l'empresa i «Pes per capítol» del Resum de l'obra (`CardOPlega878369`).
+    - Marges: «Nova cita» de l'obra i els apartats de Dades de l'empresa ja no toquen la vora.
+    - Estils `src/theme-v878386.css`. Adaptada `pressuposttest` (el resum del mòbil és una llista).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
