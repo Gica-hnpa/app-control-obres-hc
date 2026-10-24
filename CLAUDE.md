@@ -1198,6 +1198,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       si corre) i «Enllaços del tràmit».
     - **Proves:** l'ajuda `__click` (a `alhoratest.mjs`, la fan servir totes) obre els blocs plegats si el que busca hi és a dins.
       Prova nova: `v366test.mjs` (29).
+  - **V87.367 · Icona i paraula a la resta de pantalles** (opció B de l'Héctor):
+    - **Despeses** (`Albarans878259`): «Fer foto» i «Adjuntar» a la vista (amb icona) i un sol «Accions» (`accions-v878367`: Entrar a mà,
+      Importar Excel, Exportar Excel); el tècnic, «＋ Nova despesa». Facturació: «PDF» i «Exportar Excel» amb icona. Resum del parte:
+      «✎ Editar» i «✓✓ Passar a la certificació». A la barra de l'obra, la constructora diu «Eliminar l'obra».
+    - Proves adaptades: `perfils326test`, `despeses329test`, `clientsvirtuals` (obre «Accions» abans d'«Entrar a mà»).
+  - **V87.366 · proves**: adaptades als menús i blocs plegats `facturacio337test`, `graficatest`, `marca351test` (no mira els botons dels
+    blocs tancats: Chrome en dona l'estil vell), `menustest`, `navtest`, `pdfpressuposttest` (la tira és la barra de fases), `pressupost320test`,
+    `pressuposttest` (al mòbil, «Esta certificación» és l'etiqueta `data-l` de la fitxa), `simple354test`, `tempstest`, `traducciotest`,
+    `verifactudemotest`, `vfemetretest`, `mobiltest` i `avisos360test` (la versió torna al menú). **`sessiotest` (cas 2) falla de vegades**
+    (també el 20/10 amb la V87.310): les dues pestanyes renoven el permís, però cap fa servir un permís vell (`reuse: 0`) ni cal tornar a
+    entrar; no és dels canvis d'aquests dies. Guió `D:\aco-tmp\repassa.sh` (torna a passar una llista de proves) i `D:\aco-tmp\versio.sh A B`
+    (canvia el número de versió a tots els llocs).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).

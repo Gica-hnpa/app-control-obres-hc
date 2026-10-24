@@ -4057,4 +4057,5 @@ export default {
 "Gràfics": "Gráficos",
 "Ingressos i informes": "Ingresos e informes",
 "Veure només les primeres": "Ver solo las primeras",
+"Eliminar l’obra": "Eliminar la obra",
 };

@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Check,Eye,ChevronRight,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle} from "lucide-react";
+import {Check,Eye,ChevronRight,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -23,7 +23,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.366";
+const APP_VERSION878264="87.367";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10045,8 +10045,8 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
       <div className="esq">{onElimina&&<button type="button" className="link elimina" onClick={onElimina}>{t("Eliminar")}</button>}
         {onDesfes&&<button type="button" className="link desfes-v878359" onClick={onDesfes}>{t("Treure de la certificació")}</button>}</div>
       <div className="bts">
-        {onEdita&&<button type="button" className="secondary" onClick={onEdita}><b>{t("Editar")}</b></button>}
-        {onCertifica&&<button type="button" className="primary ok" onClick={onCertifica}><b>{t("Passar a la certificació")}</b><small>{t("Ja està revisat")}</small></button>}
+        {onEdita&&<button type="button" className="secondary" onClick={onEdita}><b><PenLine size={16} aria-hidden="true"/> {t("Editar")}</b></button>}
+        {onCertifica&&<button type="button" className="primary ok" onClick={onCertifica}><b><CheckCheck size={16} aria-hidden="true"/> {t("Passar a la certificació")}</b><small>{t("Ja està revisat")}</small></button>}
         {!onEdita&&!onCertifica&&<button type="button" className="secondary" onClick={onTanca}><b>{t("Tancar")}</b></button>}
       </div>
     </div>
@@ -10301,7 +10301,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
           {menu==="acc"&&<div className="obra-menu-v878269" role="menu">
             {canBudget&&budgetTab&&<button type="button" role="menuitem" onClick={()=>pick(budgetTab)}>{t("Crear / editar pressupost")}</button>}
             {!readOnly&&<button type="button" role="menuitem" onClick={()=>{setMenu("");onEdit?.()}}>{t("Modificar fitxa")}</button>}
-            {onDelete&&<button type="button" role="menuitem" className="danger" onClick={()=>{setMenu("");onDelete()}}>{obra?.compartida?t("Treure de la meva llista"):t("Eliminar expedient")}</button>}
+            {onDelete&&<button type="button" role="menuitem" className="danger" onClick={()=>{setMenu("");onDelete()}}>{obra?.compartida?t("Treure de la meva llista"):diuObra878326()?t("Eliminar l’obra"):t("Eliminar expedient")}</button>}
           </div>}
         </div>}
       </div>
@@ -14100,7 +14100,7 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
   }
   const etCert=f=>`${t("Cert.")} ${f.numeroCert}${f.budgetNom?` · ${f.budgetNom}`:""}`;
   return <div className="facturacio-v878337">
-    <div className="fe-head"><h1>{t("Facturació")}</h1>{vista==="factures"&&rows.length>0&&<button type="button" className="secondary" onClick={exporta}>{t("Exportar Excel")}</button>}</div>
+    <div className="fe-head"><h1>{t("Facturació")}</h1>{vista==="factures"&&rows.length>0&&<button type="button" className="secondary" onClick={exporta}><Download size={15} aria-hidden="true"/> {t("Exportar Excel")}</button>}</div>
     <div className="fe-vistes" role="group" aria-label={t("Facturació")}>
       <button type="button" aria-pressed={vista==="factures"} onClick={()=>setVista("factures")}>{t("Factures")}<em>{factures.length}</em></button>
       <button type="button" aria-pressed={vista==="per"} onClick={()=>setVista("per")}>{t("Per facturar")}{perFacturar.length>0&&<em className="warn">{perFacturar.length}</em>}</button>
@@ -14123,7 +14123,7 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
           <span className="imp iva"><small>{t("IVA")}</small>{money(r.ivaImp)}</span>
           <span className="imp tot"><small>{t("Total")}</small><b>{money(r.total)}</b></span>
           <button type="button" className={`cobra ${r.cobrada?"on":""}`} onClick={()=>cobra(r)}>{r.cobrada?t("Cobrada {d}",{d:r.dataCobrament?fmtAppDate8748(r.dataCobrament):""}).trim():t("Pendent de cobrar")}</button>
-          <span className="acc">{r.x?.importada?<em className="importada-v878345">{t("Importada")}</em>:<><button type="button" className="secondary small" onClick={()=>obreDoc(r)}>{t("PDF")}</button><button type="button" className="secondary small" onClick={()=>correuDe(`${t("Factura")} ${r.numero}`,r.obra)}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button></>}<ActionMenu87213 label="⋯"><button type="button" onClick={()=>openObraTab?.(r.obra.id,"Facturació obra")}>{t("Obrir a l’obra")}</button>{r.x?.importada&&<button type="button" className="danger-text-v87229" onClick={()=>{if(!confirm(t("Eliminar la factura importada {n}?",{n:r.numero||""}).replace("  "," ")))return;setObraData(r.obra.id)(d=>({...d,facturesObra878297:(d.facturesObra878297||[]).filter(y=>y.id!==r.x.id),updatedAt:new Date().toISOString()}))}}>{t("Eliminar")}</button>}</ActionMenu87213></span>
+          <span className="acc">{r.x?.importada?<em className="importada-v878345">{t("Importada")}</em>:<><button type="button" className="secondary small" onClick={()=>obreDoc(r)}><FileText size={15} aria-hidden="true"/> {t("PDF")}</button><button type="button" className="secondary small" onClick={()=>correuDe(`${t("Factura")} ${r.numero}`,r.obra)}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button></>}<ActionMenu87213 label="⋯"><button type="button" onClick={()=>openObraTab?.(r.obra.id,"Facturació obra")}>{t("Obrir a l’obra")}</button>{r.x?.importada&&<button type="button" className="danger-text-v87229" onClick={()=>{if(!confirm(t("Eliminar la factura importada {n}?",{n:r.numero||""}).replace("  "," ")))return;setObraData(r.obra.id)(d=>({...d,facturesObra878297:(d.facturesObra878297||[]).filter(y=>y.id!==r.x.id),updatedAt:new Date().toISOString()}))}}>{t("Eliminar")}</button>}</ActionMenu87213></span>
         </div>)}
       </div>}
     </>}
@@ -15280,7 +15280,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.366",
+    app_version:"87.367",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -18092,12 +18092,15 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
     <div className="alb-head">
       {fixedObra?<div><h2 className="alb-obra-title-v878279">{mevesObra?i18nT("Despeses de l’expedient"):i18nT("Despeses d’aquesta obra")}</h2></div>:<div><h1>{meves?i18nT("Les meves despeses"):i18nT("Despeses")}</h1></div>}
       <div className="actions">
-        {meves&&<button type="button" className="primary" onClick={novaMeva878329}>{i18nT("+ Nova despesa")}</button>}
-        {!meves&&<label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Fer foto")}</label>}
-        {!meves&&<label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/>{i18nT("Adjuntar PDF o imatge")}</label>}
-        {!meves&&!treb&&<button type="button" className="secondary" onClick={()=>newFromPhoto(null)}>{i18nT("Entrar a mà")}</button>}
-        {!meves&&!treb&&<button type="button" className="secondary" onClick={()=>setImpX878344(true)}>{i18nT("Importar Excel")}</button>}
-        {!meves&&!treb&&!fixedObra&&rows.length>0&&<button type="button" className="secondary" onClick={exporta878338}>{i18nT("Exportar Excel")}</button>}
+        {/* V87.367 · icona + paraula (opció B de l'Héctor, 23/10/2026) i una sola línia: «Fer foto» i «Adjuntar» a la vista, la resta a «Accions» */}
+        {meves&&<button type="button" className="primary" onClick={novaMeva878329}><Plus size={16} aria-hidden="true"/> {i18nT("Nova despesa")}</button>}
+        {!meves&&<label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/><Camera size={16} aria-hidden="true"/> {i18nT("Fer foto")}</label>}
+        {!meves&&<label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/><Paperclip size={16} aria-hidden="true"/> {i18nT("Adjuntar")}</label>}
+        {!meves&&!treb&&<ActionMenu87213 className="accions-v878367" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
+          <button type="button" className="entrar-ma-v878367" onClick={()=>newFromPhoto(null)}><PenLine size={15} aria-hidden="true"/> {i18nT("Entrar a mà")}</button>
+          <button type="button" className="importar-v878367" onClick={()=>setImpX878344(true)}><Upload size={15} aria-hidden="true"/> {i18nT("Importar Excel")}</button>
+          {!fixedObra&&rows.length>0&&<button type="button" className="exportar-v878367" onClick={exporta878338}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>}
+        </ActionMenu87213>}
       </div>
     </div>
     {treb&&<div className="alb-list treb-v878327">{rows.filter(a=>a.deTreballador).length===0?<div className="alb-empty"><b>{i18nT("Encara no hi ha despeses.")}</b></div>:rows.filter(a=>a.deTreballador).map(a=><div key={a.id} className="alb-row" role="button" tabIndex={0} onClick={()=>open(a)} onKeyDown={e=>{if(e.key==="Enter")open(a)}}><span className="ic" aria-hidden="true">{a.tePdf?<FileText size={20}/>:<Camera size={20}/>}</span><span className="nm"><b>{a.notes||a.proveidor||i18nT("Despesa")}</b><small>{fmtAppDate8748(a.data)}</small></span><span className="c-fact"><em className={`estat-treb-v878327 ${a.perRevisar?"pend":"ok"}`}>{a.perRevisar?i18nT("Pendent de l’oficina"):i18nT("Revisada")}</em></span></div>)}</div>}
