@@ -1,0 +1,9 @@
+/* V87.385 · detalls de la revisió de les pantalles del mòbil (24/10/2026) */
+/* La fletxa dels menús «Accions»: alineada amb el text (abans un «⌄» que quedava a baix) */
+html body .action-menu-v87213>summary .fl-v878385{display:inline-block;width:7px;height:7px;margin-left:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);opacity:.75;flex:0 0 auto}
+html body .action-menu-v87213[open]>summary .fl-v878385{transform:translateY(1px) rotate(225deg)}
+/* «+ Altres agents» a Dades de l'obra: un enllaç, no el botó gris del navegador */
+html body .dades-acc-v878363 .mes-v878304,html body .dades-tabs-v878304 .mes-v878304{border:0;background:transparent;box-shadow:none;color:var(--co-accent,#2563EB);font:inherit;font-weight:700;font-size:14.5px;padding:10px 4px;cursor:pointer;min-height:44px}
+/* Planning: les xifres de dalt amb el mateix marge que el títol */
+html body .gantt-v878253 .gantt-sum-v878252{padding:4px 16px 12px}
+html body .gantt-v878253 .gantt-legend-v878252{padding-left:16px;padding-right:16px}

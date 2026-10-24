@@ -1,0 +1,98 @@
+/* V87.386 · pantalles del mòbil (revisió del 24/10/2026: «primer ha d'estar tancada i si vols obres desplegable») */
+
+/* Feines pendents de l'obra: al mòbil el text sencer; la casella només quan es toca «✎» */
+html body .txt-v878386{display:none}
+@media (max-width:760px){
+  html body .task-row-v8769.tasca-v878321:not(.obert-v878366)>.txt-v878386{display:block;grid-column:1;min-width:0;font-weight:600;font-size:15px;line-height:1.35;color:var(--co-ink);overflow-wrap:anywhere}
+  html body .task-row-v8769.tasca-v878321:not(.obert-v878366)>input:not([type]){display:none!important}
+}
+
+/* Certificacions › Resum al mòbil: una línia per capítol */
+html body .cert-resum-m-v878386{display:flex;flex-direction:column;gap:8px}
+html body .cert-resum-m-v878386>details{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .cert-resum-m-v878386>details>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 12px;cursor:pointer}
+html body .cert-resum-m-v878386>details>summary::-webkit-details-marker{display:none}
+html body .cert-resum-m-v878386 summary .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .cert-resum-m-v878386 summary .t b{font-size:14.5px;line-height:1.3;color:var(--co-ink);overflow-wrap:anywhere}
+html body .cert-resum-m-v878386 summary .t small{font-size:13px;color:var(--co-ink-2);font-variant-numeric:tabular-nums}
+html body .cert-resum-m-v878386 summary .chev{flex:0 0 auto;color:var(--co-ink-3);transition:transform .15s}
+html body .cert-resum-m-v878386 details[open] summary .chev{transform:rotate(90deg)}
+html body .cert-resum-m-v878386 .cos{padding:0 12px 12px;display:flex;flex-direction:column;gap:6px}
+html body .cert-resum-m-v878386 .cos>div:not(.progress-v69),html body .cert-resum-m-v878386 .tot>div:not(.progress-v69){display:flex;justify-content:space-between;gap:10px;font-size:14px}
+html body .cert-resum-m-v878386 .cos span,html body .cert-resum-m-v878386 .tot span{color:var(--co-ink-2)}
+html body .cert-resum-m-v878386 .cos b,html body .cert-resum-m-v878386 .tot b{font-variant-numeric:tabular-nums;color:var(--co-ink)}
+html body .cert-resum-m-v878386 .tot{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:12px;background:#F1F5F9;font-weight:700}
+
+/* Facturació de l'obra al mòbil: xifres petites i una fitxa per proforma */
+@media (max-width:700px){
+  html body .fact-layout-v87101 .fact-summary-v87101{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important}
+  html body .fact-layout-v87101 .fact-summary-v87101>div{min-height:0!important;padding:10px 12px!important;border-radius:12px}
+  html body .fact-layout-v87101 .fact-summary-v87101>div>span{font-size:11.5px!important;letter-spacing:.04em}
+  html body .fact-layout-v87101 .fact-summary-v87101>div>b{font-size:17px!important;line-height:1.2}
+  html body .fact-layout-v87101 .fact-summary-v87101 .ring-mini-v87101{display:flex!important;flex-direction:column-reverse;align-items:flex-start!important;justify-content:flex-end}
+  html body .fact-layout-v87101 .fact-summary-v87101 .ring-mini-v87101>i{display:none!important}
+  html body .fact-layout-v87101 .fact-compact-wrap-v70{overflow:visible!important;border:0!important}
+  html body .fact-layout-v87101 table.fact-table-v87101,html body .fact-layout-v87101 table.fact-table-v87101 tbody{display:block;width:100%;min-width:0!important}
+  html body .fact-layout-v87101 table.fact-table-v87101 thead{display:none}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px;padding:12px;margin:0 0 8px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+  html body .fact-layout-v87101 table.fact-table-v87101 tr.selected-row{border-color:var(--co-accent,#2563EB)}
+  html body .fact-layout-v87101 table.fact-table-v87101 td{display:block;padding:0!important;border:0!important;min-width:0;text-align:left!important;background:transparent!important}
+  html body .fact-layout-v87101 table.fact-table-v87101 td[data-l]::before{content:attr(data-l);display:block;font-size:11.5px;font-weight:600;color:var(--co-ink-3);margin-bottom:2px}
+  html body .fact-layout-v87101 table.fact-table-v87101 td.c-pf{grid-column:1/3;grid-row:1;font-size:16px;align-self:center}
+  html body .fact-layout-v87101 table.fact-table-v87101 td.c-tot{grid-column:3;grid-row:1;text-align:right!important;font-size:15px}
+  html body .fact-layout-v87101 table.fact-table-v87101 td select{width:100%;max-width:100%;min-height:40px}
+  html body .fact-layout-v87101 table.fact-table-v87101 td.c-acc{grid-column:1/-1}
+  html body .fact-layout-v87101 table.fact-table-v87101 td.c-acc .vf-actions-v878285{display:flex;flex-wrap:wrap;gap:6px}
+  html body .fact-layout-v87101 table.fact-table-v87101 td[colspan]{grid-column:1/-1}
+}
+
+/* Registres de temps de l'obra (Honoraris / Hores) al mòbil: fitxes */
+@media (max-width:700px){
+  html body .temps-validat-v8754 .time-table-wrap{overflow:visible!important;border:0!important}
+  html body .temps-validat-v8754 table.time-table-v8754,html body .temps-validat-v8754 table.time-table-v8754 tbody{display:block;width:100%;min-width:0!important}
+  html body .temps-validat-v8754 table.time-table-v8754 thead{display:none}
+  html body .temps-validat-v8754 table.time-table-v8754 tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:12px;margin:0 0 8px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+  html body .temps-validat-v8754 table.time-table-v8754 td{display:block;padding:0!important;border:0!important;min-width:0;text-align:left!important;background:transparent!important}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-data{grid-column:1;grid-row:1;font-weight:700}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-imp{grid-column:2;grid-row:1;text-align:right!important}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-treg{display:none}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-tfeina,html body .temps-validat-v8754 table.time-table-v8754 td.c-tasca{font-size:13px;color:var(--co-ink-2)}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-tasca{text-align:right!important}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-dades,html body .temps-validat-v8754 table.time-table-v8754 td.c-obs{grid-column:1/-1;font-size:13px;color:var(--co-ink-2)}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-obs.buit{display:none}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-fact{grid-column:1;align-self:center}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-acc{grid-column:2;align-self:center}
+  html body .temps-validat-v8754 table.time-table-v8754 td.c-acc .row-actions{display:flex;gap:6px;justify-content:flex-end}
+  /* editant: un camp per línia, amb el seu nom */
+  html body .temps-validat-v8754 table.time-table-v8754 tr.edit-v878386 td{grid-column:1/-1!important;grid-row:auto!important;text-align:left!important}
+  html body .temps-validat-v8754 table.time-table-v8754 tr.edit-v878386 td.c-treg{display:block}
+  html body .temps-validat-v8754 table.time-table-v8754 tr.edit-v878386 td[data-l]::before{content:attr(data-l);display:block;font-size:11.5px;font-weight:600;color:var(--co-ink-3);margin-bottom:2px}
+  html body .temps-validat-v8754 table.time-table-v8754 tr.edit-v878386 td :is(input,select){width:100%;max-width:100%}
+}
+
+/* Calculadora d'honoraris al mòbil: les xifres en dues columnes i les despeses en una */
+@media (max-width:700px){
+  html body .honor-result-v8790{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important}
+  html body .honor-result-v8790>div{min-height:0!important;padding:10px 12px!important}
+  html body .honor-result-v8790>div small{font-size:11px!important}
+  html body .honor-result-v8790>div b{font-size:17px!important}
+  html body .honor-extres-v878332{grid-template-columns:minmax(0,1fr)!important}
+  html body .honor-formula-v8790{font-size:12.5px}
+}
+
+/* Dades de l'empresa per apartats */
+html body .dades-empresa-v878337 .de-sec-v878386{border:1px solid var(--co-line);border-radius:12px;margin:0 0 10px;background:var(--co-surface,#fff)}
+html body .dades-empresa-v878337 .de-sec-v878386>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:50px;padding:6px 14px;cursor:pointer}
+html body .dades-empresa-v878337 .de-sec-v878386>summary::-webkit-details-marker{display:none}
+html body .dades-empresa-v878337 .de-sec-v878386 summary .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .dades-empresa-v878337 .de-sec-v878386 summary .t b{font-size:15px;color:var(--co-ink)}
+html body .dades-empresa-v878337 .de-sec-v878386 summary .t small{font-size:12.5px;color:var(--co-ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .dades-empresa-v878337 .de-sec-v878386[open] summary .t small{display:none}
+html body .dades-empresa-v878337 .de-sec-v878386 summary .chev{flex:0 0 auto;color:var(--co-ink-3);transition:transform .15s}
+html body .dades-empresa-v878337 .de-sec-v878386[open] summary .chev{transform:rotate(90deg)}
+html body .dades-empresa-v878337 .de-sec-v878386>.form-grid{padding:0 14px 14px!important}
+html body .dades-empresa-v878337 .actions-inline{padding:4px 0 2px}
+
+/* Resum de l'obra: «Pes per capítol» plegat al mòbil (el títol ja és a la línia) */
+html body .pes-v878386 .chart-head{display:none}
+html body .pes-v878386 .obra-hero-charts-v878252{margin:0}

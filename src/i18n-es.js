@@ -4200,4 +4200,12 @@ export default {
 "A dues obres el mateix dia": "En dos obras el mismo día",
 "En marxa en una altra obra": "En marcha en otra obra",
 "Desar l’altra i començar aquí": "Guardar la otra y empezar aquí",
+"Agenda / avisos de l’obra": "Agenda / avisos de la obra",
+"Encara no hi ha cap visita en aquest expedient.": "Todavía no hay ninguna visita en este expediente.",
+"Dades de l’expedient": "Datos del expediente",
+"1 vençuda · {tasca}": "1 vencida · {tasca}",
+"Mostrar les feines": "Mostrar las tareas",
+"Tancades": "Cerradas",
+"{n} fases": "{n} fases",
+"{n} capítols · certificat {c} de {p}": "{n} capítulos · certificado {c} de {p}",
 };

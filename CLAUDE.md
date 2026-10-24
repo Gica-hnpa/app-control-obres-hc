@@ -1423,6 +1423,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Proves des de la carpeta principal mentre corren les de la còpia** (`D:/aco-tmp/wt379`, amb `node_modules` enllaçat): `vite.config.js`
       accepta `ACO_VITE_CACHE` (memòria cau pròpia); sense, les dues bandes refeien la mateixa i fallaven proves soltes.
     - Proves: `grafica384test.mjs` (7) i `descomp384unit.mjs` (9).
+  - **V87.385 · Textos i detalls de la revisió de les pantalles** (l'Héctor, 24/10/2026: «revisa bé les pantalles, que els clients seran
+    molt més exigents»; revisió amb `llargues366.mjs` `LIM=0` i fulls de captures, `D:/aco-tmp/fulls.mjs`):
+    - «Tancades» (no «Tancats») als perfils que diuen «obra» (`etPaquet878327`); «Agenda / avisos de l'obra», «Dades de l'expedient» i
+      «…cap visita en aquest expedient» segons el perfil (`diuObra878326`).
+    - Inici sense «N cites properes» a la capçalera (ja és a «Pròximes cites»); Preus sense «LLIBRERIA VALIDADA», «Només les partides que
+      tu decideixes guardar» ni «LLIBRERIA BUIDA» (el títol és «Preus»).
+    - Resum de l'obra: «Feines pendents», «1 vençuda», sense «Crea la primera des d'Actes». Agenda: «Feina» i «Mostrar les feines».
+    - Despeses de la gestió total: les meves (`meva`: quilometratge, taxes…) van al grup «Altres», no a Materials (`grupDespesa878344`).
+    - Hores amb coma decimal (`hh878385`: «0,00 h»); a Hores, el codi curt de l'expedient (`codiCurt878270`); sense «· Creat: Data de
+      creació no registrada» (pressupostos d'honoraris; fotos i actes només si hi ha data).
+    - La fletxa dels menús «Accions» (`ActionMenu87213`) és un xebró CSS alineat (`fl-v878385`), no el caràcter «⌄».
+    - «+ Altres agents» de Dades com un enllaç; les xifres i la llegenda del Planning (`.gantt-v878253`) amb el marge del títol; «1 partida»
+      als capítols del pressupost.
+    - **Compte amb les captures de pàgina sencera** (`captureBeyondViewport`): el menú lateral hi surt aixafat; a la pantalla és bé.
+    - Estils `src/theme-v878385.css`. Adaptada `simple354test` (sense cites a la capçalera de l'Inici).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
