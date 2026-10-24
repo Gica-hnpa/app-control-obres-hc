@@ -1,0 +1,137 @@
+/* V87.366 · Mòbil i iPad: tot plegat i adaptat a la pantalla (l'Héctor, 23/10/2026) */
+
+/* ── el Safari de l'iPhone engrandia sol la lletra dels blocs amples (els capítols 01-02 sortien més grossos que els 03-04) */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+/* ── el «⋯» de les fases, per sobre del pressupost (al Safari quedava sota la capçalera fixa) */
+html body .fases-v878342:has(details[open]){position:relative;z-index:300}
+
+/* ── pressupost: «Editar» i «Accions» */
+html body .budget-botons-v878320.pres-accions-v878366{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+html body .pres-accions-v878366>button,html body .pres-accions-v878366>.action-menu-v87213>summary{display:inline-flex;align-items:center;gap:6px}
+html body .pres-accions-v878366 .accions-v878366 .action-menu-panel-v87213{right:0;left:auto;min-width:270px}
+@media (max-width:520px){
+  html body .pres-accions-v878366>*{flex:1 1 0;min-width:0}
+  html body .pres-accions-v878366>button,html body .pres-accions-v878366>.action-menu-v87213>summary{justify-content:center;width:100%}
+}
+
+/* ── certificació › partides al mòbil: una fitxa per partida (pressupost, aquesta certificació i a origen) */
+@media (max-width:760px){
+  html body .cert-grid-wrap-v69{overflow:visible!important;max-width:100%!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.group,html body .cert-grid-wrap-v69 .cert-grid-v69.header{display:none!important}
+  html body .cert-grid-wrap-v69>div{min-width:0!important;width:auto!important}
+  html body .cert-grid-wrap-v69 .cert-cap-v69{display:flex!important;flex-wrap:wrap;gap:4px 10px;width:100%!important;min-width:0!important;font-size:14px!important;line-height:1.3;text-align:left;white-space:normal!important}
+  html body .cert-grid-wrap-v69 .cert-cap-v69>span:first-child{flex:1 1 100%;font-weight:700;overflow-wrap:anywhere}
+  html body .cert-grid-wrap-v69 .cert-cap-totals-v87223{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:12.5px}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-areas:"a b b" "c c c" "d e f" "j k l" "m n o"!important;gap:2px 8px!important;width:auto!important;min-width:0!important;padding:10px 12px!important;border-bottom:1px solid var(--co-line)!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row>div{min-width:0!important;width:auto!important;padding:2px 0!important;border:0!important;background:transparent!important;text-align:right;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;white-space:normal!important;overflow:visible!important}
+  html body .cert-grid-v69.row>div:nth-child(1){grid-area:a;text-align:left;align-items:flex-start;font-weight:700;font-size:12.5px;color:var(--co-ink-2)}
+  html body .cert-grid-v69.row>div:nth-child(2){grid-area:b;align-items:flex-start;text-align:left;font-size:12.5px;color:var(--co-ink-3)}
+  html body .cert-grid-v69.row>div:nth-child(3){grid-area:c;align-items:stretch;text-align:left}
+  html body .cert-grid-v69.row>div:nth-child(4){grid-area:d}html body .cert-grid-v69.row>div:nth-child(5){grid-area:e}html body .cert-grid-v69.row>div:nth-child(6){grid-area:f}
+  html body .cert-grid-v69.row>div:nth-child(7),html body .cert-grid-v69.row>div:nth-child(8),html body .cert-grid-v69.row>div:nth-child(9){display:none!important}
+  html body .cert-grid-v69.row>div:nth-child(10){grid-area:j}html body .cert-grid-v69.row>div:nth-child(11){grid-area:k}html body .cert-grid-v69.row>div:nth-child(12){grid-area:l;font-weight:700}
+  html body .cert-grid-v69.row>div:nth-child(13){grid-area:m}html body .cert-grid-v69.row>div:nth-child(14){grid-area:n}html body .cert-grid-v69.row>div:nth-child(15){grid-area:o}
+  html body .cert-grid-v69.row>div:nth-child(n+4){font-size:13px;font-variant-numeric:tabular-nums}
+  html body .cert-grid-v69.row>div:nth-child(n+13){color:var(--co-ink-3)}
+  html body .cert-grid-v69.row>div[data-l]{align-items:flex-start;text-align:left}
+  html body .cert-grid-v69.row>div[data-l]::before{content:attr(data-l);display:block;width:100%;text-align:left;font:700 10.5px var(--app-font,inherit);letter-spacing:.04em;text-transform:uppercase;color:var(--co-ink-3);margin-bottom:2px}
+  html body .cert-grid-v69.row>div:nth-child(10),html body .cert-grid-v69.row>div:nth-child(11),html body .cert-grid-v69.row>div:nth-child(12){margin-top:4px;padding-top:6px!important;border-top:1px dashed var(--co-line)!important}
+  html body .cert-grid-v69.row>div:nth-child(12){color:#166534}
+  html body .cert-grid-v69.row .cert-current-cell-v8780{width:100%;justify-content:flex-start!important}
+  html body .cert-grid-v69.row .concept-line-v877{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between}
+  html body .cert-grid-v69.row .concept-line-v877>span{flex:1 1 180px;font-size:14px;color:var(--co-ink);text-align:left}
+  html body .cert-grid-v69.row .cert-desc-hint-v87216{display:none}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.total{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:4px 10px!important;width:auto!important;min-width:0!important;padding:10px 12px!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.total>div{grid-column:auto!important;border:0!important;background:transparent!important;padding:2px 0!important;min-width:0!important;width:auto!important;font-size:13px!important;text-align:left;white-space:normal!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.total>div:nth-child(even){text-align:right;font-weight:700}
+}
+
+/* ── rendiment › per capítols al mòbil: una línia per capítol; en tocar-la, les xifres i les partides */
+html body .m-res-v878366{display:none}
+@media (max-width:640px){
+  html body .rf-taula-v878342.caps tr.cap{cursor:pointer}
+  html body .rf-taula-v878342.caps tr.cap:not(.obert)>td[data-l]{display:none!important}
+  html body .rf-taula-v878342.caps tr.cap>td:first-child{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"t b r" "t s r";align-items:center;column-gap:8px}
+  html body .rf-taula-v878342.caps tr.cap>td:first-child .tg{grid-area:t}
+  html body .rf-taula-v878342.caps tr.cap>td:first-child>b{grid-area:b;min-width:0}
+  html body .rf-taula-v878342.caps tr.cap>td:first-child>small{grid-area:s}
+  html body .rf-taula-v878342.caps tr.cap .m-res-v878366{grid-area:r;display:flex;flex-direction:column;align-items:flex-end;font-size:13px}
+  html body .rf-taula-v878342.caps tr.cap .m-res-v878366 em{font-style:normal;color:var(--co-ink-3);font-size:12px}
+  html body .rf-taula-v878342.caps tr.cap.obert .m-res-v878366{display:none}
+}
+
+/* ── ajustos: cada apartat, una línia plegada */
+html body .ajustos-v878366{gap:8px!important}
+html body details.ajustos-bloc-v878366{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff);overflow:visible}
+html body details.ajustos-bloc-v878366>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:54px;padding:0 16px;font-size:15.5px}
+html body details.ajustos-bloc-v878366>summary::-webkit-details-marker{display:none}
+html body details.ajustos-bloc-v878366>summary b{flex:1;font-weight:700;color:var(--co-ink)}
+html body details.ajustos-bloc-v878366>summary .chev{color:var(--co-ink-3);transition:transform .15s}
+html body details.ajustos-bloc-v878366[open]>summary{border-bottom:1px solid var(--co-line)}
+html body details.ajustos-bloc-v878366[open]>summary .chev{transform:rotate(90deg)}
+html body details.ajustos-bloc-v878366>.cos{padding:10px 12px 12px}
+html body details.ajustos-bloc-v878366>.cos>.card:only-child{border:0!important;box-shadow:none!important;margin:0!important}
+html body details.ajustos-bloc-v878366>.cos>.card:only-child>.card-head>h2{display:none}
+
+/* ── accessos ràpids */
+html body .accessos-v878366 h4{margin:4px 0 8px;font-size:14px;display:flex;gap:8px;align-items:baseline}
+html body .accessos-v878366 h4 small{font-weight:500;color:var(--co-ink-3)}
+html body .accessos-v878366 .opcions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+html body .accessos-v878366 .opcions button{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border:1px solid var(--co-line-strong,#CBD5E1);border-radius:10px;background:#fff;font:600 14px var(--app-font,inherit);color:var(--co-ink-2)}
+html body .accessos-v878366 .opcions button svg{width:18px;height:18px}
+html body .accessos-v878366 .opcions button[aria-pressed="true"]{border-color:var(--co-accent,#2563EB);background:#EFF6FF;color:var(--co-accent-ink,#1D4ED8)}
+html body .accessos-v878366 .opcions button:disabled{opacity:.45;cursor:not-allowed}
+html body .accessos-v878366 .opcions button:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:2px}
+html body details.ajustos-grup-v878354.ajustos-bloc-v878366{border:1px solid var(--co-line)!important;border-radius:12px!important;padding:0!important;background:var(--co-surface,#fff)!important}
+html body details.ajustos-grup-v878354.ajustos-bloc-v878366>summary{text-transform:none!important;letter-spacing:normal!important;font-size:15.5px!important;padding:0 16px!important;margin:0!important;color:var(--co-ink)!important}
+html body details.ajustos-grup-v878354.ajustos-bloc-v878366>summary::before,html body details.ajustos-grup-v878354.ajustos-bloc-v878366>summary::after{content:none!important;display:none!important}
+
+/* ── blocs plegats (Facturació, hores de l'encàrrec, enllaços del tràmit) */
+html body details.plegat-v878366{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff);margin:0 0 10px}
+html body details.plegat-v878366>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:50px;padding:0 14px}
+html body details.plegat-v878366>summary::-webkit-details-marker{display:none}
+html body details.plegat-v878366>summary::after{content:"›";margin-left:auto;font-size:20px;color:var(--co-ink-3);transition:transform .15s}
+html body details.plegat-v878366[open]>summary::after{transform:rotate(90deg)}
+html body details.plegat-v878366>summary b{font-weight:700;color:var(--co-ink)}
+html body details.plegat-v878366>summary span{color:var(--co-ink-3);font-size:13px}
+html body details.plegat-v878366[open]>summary{border-bottom:1px solid var(--co-line)}
+html body details.plegat-v878366>*:not(summary){margin:10px}
+html body details.plegat-v878366>.card{margin:10px!important}
+html body details.enc-enllacos-v878333.plegat-v878366>summary b{font-size:14px}
+
+/* filtres de la Facturació, plegats a la capçalera */
+html body details.filtres-fact-v878366{position:relative}
+html body details.filtres-fact-v878366>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border:1px solid var(--co-line-strong,#CBD5E1);border-radius:9px;font-weight:700;background:#fff}
+html body details.filtres-fact-v878366>summary::-webkit-details-marker{display:none}
+html body details.filtres-fact-v878366[open]>summary{border-color:var(--co-accent,#2563EB);color:var(--co-accent-ink,#1D4ED8)}
+html body details.filtres-fact-v878366[open]>*:not(summary){margin-top:8px}
+@media (min-width:761px){html body details.filtres-fact-v878366[open]>*:not(summary){position:absolute;right:0;z-index:40;background:#fff;border:1px solid var(--co-line);border-radius:12px;padding:10px;box-shadow:0 12px 32px -12px rgba(21,35,40,.25);min-width:520px}}
+
+/* agenda de l'obra: el formulari només quan cal */
+html body .nova-cita-v878366{margin:4px 0 10px}
+html body .nova-cita-v878366 button{display:inline-flex;align-items:center;gap:6px}
+html body .agenda-exp-grid-v87109.sense-form-v878366{grid-template-columns:minmax(0,1fr)!important}
+html body .agenda-form-safe-v87109 .botons-v878366{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}
+
+/* feines pendents de l'obra al mòbil: una línia (text i estat); «✎» obre la prioritat, el dia, l'hora i «Eliminar» */
+html body .tg-t-v878366{display:none}
+@media (max-width:760px){
+  html body .task-row-v8769.tasca-v878321{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto!important;gap:6px!important;align-items:center}
+  html body .task-row-v8769.tasca-v878321>em{grid-column:1/-1;justify-self:start}
+  html body .task-row-v8769.tasca-v878321>input:not([type]){grid-column:1}
+  html body .task-row-v8769.tasca-v878321>select:last-of-type{grid-column:2}
+  html body .tg-t-v878366{display:inline-flex;grid-column:3;grid-row:2;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--co-line-strong,#CBD5E1);border-radius:9px;background:#fff;color:var(--co-ink-2)}
+  html body .task-row-v8769.tasca-v878321:not(.obert-v878366)>select:first-of-type,
+  html body .task-row-v8769.tasca-v878321:not(.obert-v878366)>input[type=date],
+  html body .task-row-v8769.tasca-v878321:not(.obert-v878366)>input[type=time],
+  html body .task-row-v8769.tasca-v878321:not(.obert-v878366)>button.danger{display:none!important}
+  html body .task-row-v8769.tasca-v878321.obert-v878366>select:first-of-type,
+  html body .task-row-v8769.tasca-v878321.obert-v878366>input[type=date],
+  html body .task-row-v8769.tasca-v878321.obert-v878366>input[type=time],
+  html body .task-row-v8769.tasca-v878321.obert-v878366>button.danger{grid-column:1/-1}
+  html body .tg-t-v878366[aria-expanded="true"]{border-color:var(--co-accent,#2563EB);color:var(--co-accent,#2563EB)}
+  /* Inici: en tocar la feina ja surten les accions; fora el desplegable de cada targeta */
+  html body .task-card-pro-v878140 .task-action-select-v878140{display:none!important}
+}
+html body .totes-f-v878366{display:inline-block;margin:8px 4px 2px;font-weight:700}

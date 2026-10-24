@@ -2,6 +2,8 @@
 
 *Actualització 18/10: preus apujats i viabilitat nova a [guia-comercial.md](guia-comercial.md) (39 / 45 / 69 / 129 / 149 €).*
 
+*Actualització 23/10: estudi per franges de clients (ingressos nets a l’any de 5 a 200 clients, preu de llista i de fundador, el temps de suport i l’hora que et surt) a [estudi-viabilitat-2026-10-23.pdf](estudi-viabilitat-2026-10-23.pdf). Amb 60 € al mes més de despeses fixes (gestoria, assegurança) i el núvol que creix amb els clients.*
+
 *Per a l’Héctor. Continua [proposta-moduls-preus.md](proposta-moduls-preus.md). Números abans d’impostos i aproximats:
 s’han d’anar ajustant amb el que passi durant la prova.*
 

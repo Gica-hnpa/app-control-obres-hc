@@ -1174,6 +1174,30 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       (Socoterm, 2 avisos), i al compte de l'Héctor 47 partides per sobre del 100 % i la certificació 1 de Cala Rovira amb l'import desat vell.
     - Estils: `src/theme-v878365.css`. Prova: `v365test.mjs` (20). Adaptades `personal340test`, `horesunic355test` i `fases342test` (Despeses › Hores del personal), `partes350test` (el primer capítol obert al costat),
       `simple354test` (sense «Altres carpetes»), `docmobiltest` i `documentstest` (el PDF a origen és dins d'«Accions»).
+  - **V87.366 · Mòbil i iPad «tot recollit»** (l'Héctor, 23/10/2026 a la nit, amb captures de l'iPhone: «tot recollit i després es
+    despleguen… genèric a tota l'app, que estic fart de dir-t'ho, com a mínim al mòbil i l'iPad»). Eina nova `tools/proves/llargues366.mjs`:
+    mesura l'alçada de cada pantalla al mòbil (demo-constructor i demo-tecnic) i en fa captura de les de més de 2,2 pantalles.
+    - **iPhone:** `html{-webkit-text-size-adjust:100%}` (el Safari engrandia sol la lletra dels blocs amples: els capítols 01-02 sortien més
+      grossos que els 03-04); el «⋯» de les fases per sobre del pressupost (`.fases-v878342:has(details[open])`, capa 300).
+    - **Pressupost:** «Editar» i un sol desplegable **«Accions»** (PDF del pressupost, Enviar, afegir, compartir, eines, aquest pressupost);
+      editant, «Guardar canvis», «Cancel·lar» i «Afegir» (`pres-accions-v878366`).
+    - **Certificació › Partides al mòbil:** una fitxa per partida (pressupost, aquesta certificació amb la casella, a origen; `data-l` a les
+      cel·les i `grid-template-areas`), els capítols plegats d'entrada (`mobil878366`) i el total en tres línies.
+    - **Rendiment › Per capítols al mòbil:** una línia per capítol (certificat i %, `m-res-v878366`); en tocar-la, les xifres i les partides.
+    - **Ajustos:** cada apartat és una línia plegada (`ajustos-bloc-v878366`; Imatge de l'empresa, Dades de l'empresa, Perfil i mòduls,
+      Factures amb VERI*FACTU, Idioma, Enllaços de les obres, Accessos ràpids, Usuaris i contrasenyes, Còpies i núvol) i se n'obre un alhora. Els altres es tanquen només quan es toca un títol
+      (clic al `summary`), no quan s'obre un bloc per codi, i el títol tocat no es mou de la pantalla (`ajRef878366`).
+    - **Versió al menú** (l'Héctor, 24/10/2026: «en el mòbil ja ni surt; abans sortia en el menú principal a sota i ja estava bé»): torna
+      el `nav-version-v878264` a baix del menú (la V87.360 l'havia tret; la cantonada no es veu al mòbil).
+    - **Accessos ràpids** (Ajustos, `AccessosRapids878366`): la barra de baix (fins a 4 de les opcions del menú, `opcionsBarra878366`; «Més»
+      sempre) i el ＋ de l'obra (Foto, Nota, Acta, Parte d'avui, Hores i, noves, Despesa i Cita). Es desa al compte (`aco_barra_v878366`,
+      `aco_mes_v878366`, event `aco-accessos-changed`); sense triar-ne, les de sempre (`barraDefecte878366`, `MES_DEFECTE878366`).
+    - **Plegat:** Agenda de l'obra (el formulari només amb «+ Nova cita» o en tocar una cita), feines pendents de l'obra al mòbil (una línia
+      amb el text i l'estat, «✎» per a la resta), Inici (les 5 primeres feines i «Veure-les totes»; al mòbil, sense el desplegable de cada
+      targeta), Facturació del tècnic (filtres, «Gràfics» i «Ingressos i informes»), Honoraris (el resum i el comptador; el comptador obert
+      si corre) i «Enllaços del tràmit».
+    - **Proves:** l'ajuda `__click` (a `alhoratest.mjs`, la fan servir totes) obre els blocs plegats si el que busca hi és a dins.
+      Prova nova: `v366test.mjs` (29).
   - Estils: `src/theme-v878328.css`. Proves: `amidamentsunit.mjs` (26, sense navegador) i `amidaments328test.mjs` (27).
   - Proves: `revisio1test.mjs` (28). Adaptades a Contactes `agentstest` i `agents303test`. L’ajuda `__click` de les proves
     (15 fitxers) toca «Total expedients» si no troba una obra (per defecte només surten les obertes).
