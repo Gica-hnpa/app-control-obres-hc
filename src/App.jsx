@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.390";
+const APP_VERSION878264="87.390.1";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1251,22 +1251,25 @@ function taulaTrencada878384(table){
 function reparaDescompostos878384(partides=[]){
   if(!(partides||[]).some(p=>taulaTrencada878384(p?.descompostTable)))return null;
   const ps=(partides||[]).map(p=>({...p}));let n=0;const abans={};
-  const posa=(p,rows,base)=>{
+  // V87.390 · si el descompost d'abans ja quadrava amb el preu de la partida igual o millor que l'arreglat, no es toca (passava amb obres
+  // de l'Héctor importades d'un Excel amb un sol bloc per partida: es canviaven en obrir-les sense guanyar res)
+  const posa=(p,rows,base,orig)=>{
     const t1=triaBasePct878384({...base,rows:netejaFilesDescompost878384(rows,{fraccio:true})},p.pu),t0=triaBasePct878384({...base,rows:netejaFilesDescompost878384(rows)},p.pu);
     const pu=parseNum8770(p.pu)||0,tot=t=>recalculateBreakdownTableV87232(t).total;
     const tb={...(pu>0&&Math.abs(tot(t0)-pu)<Math.abs(tot(t1)-pu)-0.005?t0:t1),net878384:true};
+    if(orig&&pu>0){let o=null;try{o=tot(orig)}catch{}if(o!=null&&Math.abs(o-pu)<=Math.abs(tot(tb)-pu)+0.005)return}
+    if(p.descompostTable?.rows?.length)abans[p.id||p.codi||""]=p.descompostTable;
     p.descompostTable=tb;p.descompost=descompostTableToText878174(tb);n++};
   ps.forEach(p=>{
     const tb=p.descompostTable;if(!taulaTrencada878384(tb))return;
-    abans[p.id||p.codi||""]=tb;
     const blocs=blocsDescompost878384(tb);
-    posa(p,blocs[0].rows,{...tb,title:blocs[0].titol});
+    posa(p,blocs[0].rows,{...tb,title:blocs[0].titol},blocs.length===1?tb:null);
     blocs.slice(1).forEach(b=>{
       const q=ps.find(x=>x!==p&&!x.descompostTable?.rows?.length&&(String(x.codi||"")===b.codi||codeMatches878177(x.codi,b.codi)));
       if(q)posa(q,b.rows,{...tb,title:b.titol});
     });
   });
-  return {partides:ps,n,abans};
+  return n?{partides:ps,n,abans}:null;
 }
 function descompostRowsToTable878174(rows=[],source="Excel descomposat"){
   const clean=v=>String(v??"").trim();
@@ -15970,7 +15973,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.390",
+    app_version:"87.390.1",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

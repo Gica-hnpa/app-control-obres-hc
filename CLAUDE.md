@@ -1506,6 +1506,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       columna «Client i obra». La Facturació del tècnic (`FacturesGeneral8738`) té el mateix: mes, files plegables i el total a baix.
     - Estils `src/theme-v878390.css`. Eina `mira390.mjs` (`PANT=`, `PRE0=` abans d'anar a la pantalla, `PRE=`, `SCR=`, `DUMP=`, `SHOT=`).
       Proves: `fitxatge357test` (20) i `facturacio337test` adaptades.
+  - **V87.390.1 · La reparació dels descompostos no toca el que ja quadrava:** `reparaDescompostos878384` deixa el descompost d'abans si el
+    seu total ja s'acostava al preu de la partida igual o millor que l'arreglat, i torna `null` si no ha canviat res. Amb la còpia de les
+    dades de l'Héctor (COMODORO i dues obres més, importades d'un Excel de Socoterm amb el mateix error que Brava): de 123 descompostos,
+    122 queden més a prop del preu i cap pitjor (molts sumaven el doble). Eina `D:/aco-tmp/desc390mod.mjs` (la fa l'script del
+    `scratchpad`; només llegeix). `primerobrirtest` accepta els canvis de `descompost`/`descompostTable` de les obres reparades (hi ha la
+    còpia `aco_descompostos_abans_v878384_<obra>`); `traducciotest` espera «Tareas pendientes».
+    - **Proves des de la carpeta principal (25/10/2026):** `contrasenyestest` (16 de 34) i `honoraris332test` (4–19 de 20) hi fallaven i a
+      `D:/aco-tmp/wt379` passaven totes amb el mateix codi: la memòria cau `D:/aco-tmp/vitecache-main` s'havia fet malbé (es va esborrar).
+      I passar proves alhora (una tanda i una eina de captures) també en fa fallar per càrrega: una sola cosa alhora.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
