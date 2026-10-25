@@ -1618,6 +1618,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils `src/theme-v878397.css`. Prova: `fact397test.mjs` (29; factures inventades de 4 anys als comptes `demo-tecnic` i
       `demo-constructor`; s’ha de passar de l’1 de març al 31 de desembre i a partir del dia 3 del mes). Adaptades `graficatest` (la gràfica
       nova i les seves xifres) i `v366test` (el títol del bloc plegat porta la línia del resum).
+  - **V87.398 · Tornar a llegir els descompostos d’un Excel** (per a Comodoro, on 63 de 65 partides no en tenien perquè es va importar
+    abans de la V87.396): al Pressupost, **Accions › Eines › «Tornar a llegir els descompostos d’un Excel…»**, fora del mode d’edició.
+    - **Abans** hi havia «Adjuntar / actualitzar descompostos» (`importDescompostosMassius878176`), però només sortia editant, i des de la
+      V87.366 el menú «Accions» no surt mentre s’edita: no es veia enlloc. A més, aparellava amb la manera vella (el primer codi que
+      s’assemblés) i no triava els % sumats o en cadena.
+    - **Ara** (`llegeixDesc398`, `aplicaDesc398` a `Pressupost`): llegeix l’Excel amb la lectura de la V87.384/396
+      (`workbookDescompostsMassius878176`) i `planDescompostos878398` (funció pura, al costat d’`attachWorkbookDescompostos878228`) fa el
+      mateix aparellament que en importar (pel codi, % triats pel preu de la partida). `attachWorkbookDescompostos878228` torna també
+      `unmatchedCodes`.
+    - **Finestra** (`.desc-v878398`): l’arxiu i quants descompostos ha llegit, quantes partides sense descompost el rebran, la casella
+      «Substituir també els N que ja en tenen» (només si n’hi ha; de sèrie no), «X de N quadren amb el preu de la partida» amb les que no
+      (descompost i preu), «Sense partida al pressupost: codis» i «Els preus i les quantitats no canvien». «Posar-los (N)» ho desa al moment
+      (`persistBudgetCaps878179`). Els descompostos substituïts es guarden a `aco_descompostos_abans_v878398_<obra>`.
+    - Estils `src/theme-v878398.css`. Prova: `desc398test.mjs` (14, compte `demo-constructor` i un Excel inventat amb un bloc per partida).
+    - **Per a l’Héctor:** a Comodoro, Pressupost › Accions › «Tornar a llegir els descompostos d’un Excel…» i triar l’Excel v07.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1757,12 +1772,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.397)
+### Per començar una sessió nova (26/10/2026, després de la V87.398)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.397 a Render):**
+**Estat (publicada la V87.398 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -1783,9 +1798,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
    Presupuestos, Presufy i altres ja treballen amb la IA per fer pressupostos ràpids»). Només informació pública (webs, vídeos, preus,
    opinions); no entrar a cap app ni crear comptes. Per a cada una: què fa, què ja tenim, què ens falta i com ho faríem a la nostra manera;
    propostes per prioritat. Ell decideix què es fa.
-2. **Comodoro: els descompostos de les altres 63 partides** (vegeu la V87.396). Dir a l’Héctor que torni a importar l’Excel v07 (Accions ›
-   Importar Excel: si el pressupost ja té partides en fa un de nou; després eliminar el vell, si no té certificacions) o fer una acció
-   «Tornar a llegir els descompostos d’un Excel» que els posi a les partides que ja hi són pel codi (`attachWorkbookDescompostos878228`).
+2. **Comodoro:** fet a la V87.398 («Tornar a llegir els descompostos d’un Excel…»); falta que l’Héctor hi triï l’Excel v07.
 3. **Repàs complet de les proves a la V87.396** (`D:\aco-tmp\totes-wt.sh` a `D:\aco-tmp\wt379`, amb la màquina tranquil·la). El de la
    V87.394 es va aturar a 51 de 107 (`D:\aco-tmp\totes-394.txt`); les que hi fallaven (agents303, amidaments328, constructor336,
    contrasenyestest, grafica384, habitualstest) eren per la càrrega: grafica384 i habitualstest ja s’han tornat a passar soles en verd;
