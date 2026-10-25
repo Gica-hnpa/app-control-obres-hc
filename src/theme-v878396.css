@@ -1,0 +1,24 @@
+/* V87.396 · Ajustos › Documents: l'estil de l'encapçalament (amb la vista prèvia), les dades de l'emissor, els textos de sèrie i el peu */
+html body .docs-aj-v878396{display:flex;flex-direction:column;gap:10px}
+html body .docs-aj-v878396 h4{margin:6px 0 0;font-size:14px}
+html body .docs-aj-v878396 .estils-v878396{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+html body .docs-aj-v878396 .estils-v878396>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 10px;border:1px solid var(--co-line-strong);border-radius:10px;background:var(--co-surface,#fff);font:600 13.5px var(--app-font);color:var(--co-ink)}
+html body .docs-aj-v878396 .estils-v878396>button b{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:var(--co-surface-2);color:var(--co-ink-2);font-size:13px}
+html body .docs-aj-v878396 .estils-v878396>button.on{border-color:var(--co-accent);box-shadow:0 0 0 1px var(--co-accent) inset}
+html body .docs-aj-v878396 .estils-v878396>button.on b{background:var(--co-accent);color:#fff}
+html body .docs-aj-v878396 .prev-v878396{border:1px solid var(--co-line);border-radius:10px;background:#fff;overflow:hidden;padding:0}
+html body .docs-aj-v878396 .prev-v878396 .paper{box-sizing:border-box;width:794px;padding:34px;background:#fff;font-family:Arial,Helvetica,sans-serif;color:#0f172a;pointer-events:none}
+html body .docs-aj-v878396 .nota{margin:0;color:var(--co-ink-3);font-size:13px}
+html body .docs-aj-v878396 .camps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px}
+html body .docs-aj-v878396 label{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .docs-aj-v878396 label>span{font-size:13px;font-weight:600;color:var(--co-ink-2)}
+html body .docs-aj-v878396 label.ample{grid-column:1/-1}
+html body .docs-aj-v878396 label.chk{flex-direction:row;align-items:center;gap:8px}
+html body .docs-aj-v878396 label.chk input{width:20px;height:20px}
+html body .docs-aj-v878396 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+html body .docs-aj-v878396 details.em-v878396{border:1px solid var(--co-line);border-radius:10px;padding:0 10px}
+html body .docs-aj-v878396 details.em-v878396>summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:10px 0;list-style:none}
+html body .docs-aj-v878396 details.em-v878396>summary::-webkit-details-marker{display:none}
+html body .docs-aj-v878396 details.em-v878396>summary small{color:var(--co-ink-3);font-size:13px}
+html body .docs-aj-v878396 details.em-v878396 .camps{padding-bottom:10px}
+@media (max-width:700px){html body .docs-aj-v878396 .camps{grid-template-columns:1fr}}

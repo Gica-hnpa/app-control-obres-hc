@@ -23,6 +23,7 @@ function isFinalRowV87232(row={}){
   const label=normalizedLabelV87232(row.concepte);
   return /\b(preu|precio)\s+(unitari|unitario)\s+(final|total)\b/.test(label)
     || /\b(preu|precio)\s+final\b/.test(label)
+    || /^(preu|precio)\s+(unitari|unitario)$/.test(label)
     || /\btotal\s+(descompost|descomposat|final)\b/.test(label);
 }
 
@@ -40,7 +41,7 @@ function isPercentageRowV87232(row={}){
 
 function isSubtotalRowV87232(row={}){
   const label=normalizedLabelV87232(row.concepte);
-  return /^(subtotal|costos?\s+directes?|costes?\s+directos?|cost\s+directe|coste\s+directo)\b/.test(label)
+  return /^(subtotal|sumatori|sumatorio|costos?\s+directes?|costes?\s+directos?|cost\s+directe|coste\s+directo)\b/.test(label)
     || /\bsubtotal\s+(descompost|descomposat|recursos?|materials?|ma d obra)\b/.test(label);
 }
 
