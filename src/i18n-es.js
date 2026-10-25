@@ -4237,6 +4237,7 @@ export default {
 "Compartir l’Excel…": "Compartir el Excel…",
 "Client i obra": "Cliente y obra",
 "Detalls": "Detalles",
+"Compte": "Cuenta",
 "Tot el període": "Todo el período",
 "Tot el {a}": "Todo {a}",
 "Factures rebudes": "Facturas recibidas",

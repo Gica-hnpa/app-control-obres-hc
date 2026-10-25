@@ -1,0 +1,25 @@
+/* V87.392 · Accessibilitat (revisió amb tools/proves/accessibilitat391.mjs; l'Héctor, 25/10/2026: «millora i accessibilitat») */
+/* 1. El gris dels textos secundaris tenia poc contrast (3,7:1 sobre blanc, 3,4:1 sobre el fons): ara 5,2:1 i 4,8:1 (mínim 4,5:1) */
+:root{--co-ink-3:#5F7075}
+/* 2. El focus del teclat sempre visible (els botons amb «all:unset» el perdien) */
+html body button:focus-visible,html body a:focus-visible,html body summary:focus-visible,html body [role="button"]:focus-visible,html body [tabindex]:focus-visible,html body input:focus-visible,html body select:focus-visible,html body textarea:focus-visible{outline:2px solid var(--co-accent)!important;outline-offset:2px}
+/* 3. Lletra mínima de 12 px als rètols petits (n'hi havia de 10,5 i 11 px) */
+html body .obra-blocs-v878299>button>small,html body .home-kpis-v878314>button>small,html body .exp-paquets-v878314>button>small,html body .pres-estats-v878317>button>small,
+html body .expf-group-v878275>small,html body button.fila>span>small,html body em.dies-v878314,html body .fu-item-v878253>small,
+html body .honor-kpis .kpi>small,html body .rend-kpis-v878120 .kpi>small,html body .temps-kpis-v878255>div>small,html body .obra-hero-kpis-v878252>div>small,html body .gantt-sum-v878252>div>small,
+html body .action-menu-panel-v87213>small.amh-v878273,html body .filter-panel-v8776>label>span,html body .agenda-list-safe-v87109>button>small,html body .fact-summary-v87101>div>span,
+html body .accessos-v878366 h4>small,html body .storage-item-v878250 small,html body .contacte-obra-v878304 .lbl,html body .seg>button>small,html body .xip-v878317,
+html body .partes-total-v878349 small,html body .budget-grand-total>small,html body .cert-selected-total-v87213>small,html body button>span.pc>small,html body button>span.nm>small,html body .kpi>small{font-size:12px!important}
+/* 4. Botons prou grans per al dit (mínim 36 px d'alçada) al mòbil i l'iPad */
+@media (pointer:coarse),(max-width:1100px){
+  html body .main .seg>button,html body .main button.primary,html body .main button.secondary,html body .main .fe-filtres .anys>button,html body .main .pres-anys-v878317>button{min-height:36px}
+  html body .main .budget-v25-cap-head>button,html body .main tr.cap button.tg{min-width:32px;min-height:32px}
+  html body .main .accessos-v878366 button.link{min-height:32px}
+}
+/* els que quedaven (regles més específiques guanyaven) */
+html body .main .fact-layout-v87101 .fact-summary-v87101>div>span,html body .main .fact-summary-v87101 .ring-mini-v87101>span,html body .main .budget-grand-total.budget-total-right-v87196>small,
+html body .main .temps-head-v878255 span.eyebrow,html body .main .enllacos-obra-v878305>span.lbl,html body .main .quote-row-v8742 small{font-size:12px!important}
+@media (pointer:coarse),(max-width:1100px){
+  html body .main .alb-vista-v878318 .seg>button,html body .main .share-bar-v878259>button,html body .main .obra-hero-photo-v878252>button{min-height:36px!important}
+  html body .main .fila>span.dades>a{display:inline-block;padding:7px 0}
+}

@@ -1522,6 +1522,17 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     (`llistatPdf878391`: factures rebudes dels filtres sense la mà d'obra pròpia ni els albarans inclosos en una factura, per data, amb base,
     IVA —«ISP» si cal— i total) i «Compartir l'Excel…» (`navigator.share`). Proves: `despesesrend338test` (26) i `despeses329test` (35)
     adaptades. Eina nova `tools/proves/accessibilitat391.mjs` (botons sense nom, camps sense etiqueta, contrast, mida dels botons, lletra).
+  - **V87.392 · Accessibilitat** (l'Héctor, 25/10/2026: «noves versions de millora i accessibilitat»; `accessibilitat391.mjs` a 390 px amb
+    demo-constructor i demo-tecnic, totes les pantalles del menú i els apartats d'una obra, amb els blocs plegats oberts):
+    - **Contrast:** el gris dels textos secundaris `--co-ink-3` #76878D (3,7:1 sobre blanc, 3,4:1 sobre el fons) passa a **#5F7075** (5,2:1 i
+      4,8:1; el mínim és 4,5:1). Era el 99 % dels avisos (295 → 0).
+    - **Lletra mínima de 12 px** als rètols petits (requadres, blocs de l'obra, xips, kpis…; n'hi havia de 10,5 i 11 px): 141 → 0.
+    - **Botons per al dit:** al mòbil i l'iPad (`pointer:coarse` o ≤1100 px), botons i segments de 36 px d'alçada com a mínim; els
+      plegadors dels capítols, 32 px; els telèfons de Contactes, més alts per tocar-los (82 → 0 de reals).
+    - **Focus del teclat** sempre visible (`:focus-visible` amb `!important`: els botons amb `all:unset` el perdien).
+    - **Etiquetes** als camps que no en tenien (estat i prioritat de les feines, el compte d'Ajustos, afegir punts i documents a l'encàrrec,
+      accions del pressupost d'honoraris al mòbil). Botons sense nom i imatges sense text: 0.
+    - Estils `src/theme-v878392.css`. `tallades374.mjs` (`COMPTES=demo-constructor,demo-tecnic`, separats per comes): 0 pantalles tallades.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
