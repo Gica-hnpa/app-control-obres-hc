@@ -1515,6 +1515,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Proves des de la carpeta principal (25/10/2026):** `contrasenyestest` (16 de 34) i `honoraris332test` (4–19 de 20) hi fallaven i a
       `D:/aco-tmp/wt379` passaven totes amb el mateix codi: la memòria cau `D:/aco-tmp/vitecache-main` s'havia fet malbé (es va esborrar).
       I passar proves alhora (una tanda i una eina de captures) també en fa fallar per càrrega: una sola cosa alhora.
+  - **V87.391 · Despeses «Per a la gestoria» i el període** (l'IVA es declara per trimestres; la gestoria també necessita les factures
+    rebudes): a Filtres, el camp del mes passa a un desplegable **«Període»** (`PeriodeSelect878391`: «Tot el període» i, per a cada any amb
+    despeses, l'any sencer, els trimestres i els mesos que en tenen; `perOk878391` filtra `AAAA`, `AAAA-T3` o `AAAA-MM`). A «Accions» de
+    l'empresa (i, per al tècnic, el menú nou «Per a la gestoria» al costat de «Nova despesa»): «Exportar Excel», **«Llistat en PDF»**
+    (`llistatPdf878391`: factures rebudes dels filtres sense la mà d'obra pròpia ni els albarans inclosos en una factura, per data, amb base,
+    IVA —«ISP» si cal— i total) i «Compartir l'Excel…» (`navigator.share`). Proves: `despesesrend338test` (26) i `despeses329test` (35)
+    adaptades. Eina nova `tools/proves/accessibilitat391.mjs` (botons sense nom, camps sense etiqueta, contrast, mida dels botons, lletra).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la

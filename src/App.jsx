@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.390.1";
+const APP_VERSION878264="87.391";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -14698,6 +14698,19 @@ function draftCorreu878337({title,obra,data,clients}){
 }
 // V87.337 · Facturació (menú) dels comptes d'empresa: les factures en ordre numèric (amb el filtre per any, obra i cobrament, i l'Excel
 // per a la gestoria) i les certificacions que encara no s'han facturat, amb «Fer factura».
+// V87.391 · període dels filtres de Despeses: "AAAA" (l'any), "AAAA-T3" (un trimestre) o "AAAA-MM" (un mes)
+function perOk878391(data,p){if(!p)return true;const d=String(toInputDate8743(data)||data||"");const m=/^(\d{4})-T(\d)$/.exec(p);if(m)return d.slice(0,4)===m[1]&&trimDe878390(d.slice(5,7))==="T"+m[2];return d.startsWith(p)}
+function nomPer878391(p){const m=/^(\d{4})-(T\d|\d{2})$/.exec(p||"");return m?nomPeriode878390(m[2])+" "+m[1]:(p||"")}
+function PeriodeSelect878391({dates=[],value,onChange}){
+  const ds=[...new Set((dates||[]).map(d=>String(toInputDate8743(d)||d||"").slice(0,7)).filter(x=>/^\d{4}-\d{2}$/.test(x)))].sort().reverse();
+  const anys=[...new Set(ds.map(x=>x.slice(0,4)))];
+  if(!ds.length)return null;
+  return <select className="periode-v878391" value={value} onChange={e=>onChange(e.target.value)} aria-label={t("Període")}>
+    <option value="">{t("Tot el període")}</option>
+    {anys.map(y=>{const ms=ds.filter(x=>x.startsWith(y));const qs=[...new Set(ms.map(x=>trimDe878390(x.slice(5,7))))].sort();
+      return <optgroup key={y} label={y}><option value={y}>{t("Tot el {a}",{a:y})}</option>{qs.length>1&&qs.map(q=><option key={q} value={y+"-"+q}>{nomPeriode878390(q)+" "+y}</option>)}{[...ms].sort().map(x=><option key={x} value={x}>{nomPeriode878390(x.slice(5,7))+" "+y}</option>)}</optgroup>})}
+  </select>;
+}
 // V87.390 · mes ("01"…"12") o trimestre ("T1"…"T4") dels filtres de la facturació
 const trimDe878390=m=>m?"T"+Math.ceil(+m/3):"";
 function nomPeriode878390(m){const Q={T1:"1r trimestre",T2:"2n trimestre",T3:"3r trimestre",T4:"4t trimestre"};if(Q[m])return t(Q[m]);const x=new Date(2026,+m-1,15).toLocaleDateString(loc878272(),{month:"long"});return x.charAt(0).toUpperCase()+x.slice(1)}
@@ -15973,7 +15986,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.390.1",
+    app_version:"87.391",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -18837,7 +18850,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   const[avis878347,setAvis878347]=useState("");
   const[sel878345,setSel878345]=useState(()=>new Set());
   // V87.329 · els requadres dels apartats (tècnic) compten sense el filtre de tipus: en tocar-ne un, la llista només en mostra aquell
-  const rows0=list.filter(a=>(!obraF||a.obraId===obraF)&&(!clientF||clientOf(a)===clientF)&&(!provF||(!esMa878348(a)&&a.proveidor===provF))&&(meves||!trebF878348||(esMa878348(a)&&maDe878348(a).treb===trebF878348))&&((meves&&!nouM878375)||coincideix878348(a))&&(meves||fixedObra||vistaD878348!=="exec"||isExpedientInExecution878247(obraDe878348(a.obraId)?.estat))&&(!nomesPendents||!a.facturatClient)&&(!month||String(a.data||"").startsWith(month))).sort((a,b)=>String(dataEntrada878348(b)||b.data||"").localeCompare(String(dataEntrada878348(a)||a.data||""))||String(b.createdAt||"").localeCompare(String(a.createdAt||""))||String(b.data||"").localeCompare(String(a.data||"")));
+  const rows0=list.filter(a=>(!obraF||a.obraId===obraF)&&(!clientF||clientOf(a)===clientF)&&(!provF||(!esMa878348(a)&&a.proveidor===provF))&&(meves||!trebF878348||(esMa878348(a)&&maDe878348(a).treb===trebF878348))&&((meves&&!nouM878375)||coincideix878348(a))&&(meves||fixedObra||vistaD878348!=="exec"||isExpedientInExecution878247(obraDe878348(a.obraId)?.estat))&&(!nomesPendents||!a.facturatClient)&&perOk878391(a.data,month)).sort((a,b)=>String(dataEntrada878348(b)||b.data||"").localeCompare(String(dataEntrada878348(a)||a.data||""))||String(b.createdAt||"").localeCompare(String(a.createdAt||""))||String(b.data||"").localeCompare(String(a.data||"")));
   const rows=rows0.filter(a=>!tipusF||tipusDe(a)===tipusF);
   // els albarans inclosos en una factura no compten: compta la factura
   const compten=rows.filter(a=>!coberts[a.id]);
@@ -18869,14 +18882,28 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   // V87.329 · «+ Nova despesa» del tècnic: l'editor demana primer l'expedient i després el tipus (si hi ha un apartat triat, ja ve posat)
   function novaMeva878329(){const g=GRUPS_MEVA878323.find(x=>x.k===tipusF);setEdit(novaDespesa878318({meva:true,obraId:obraF||"",...(obraF?{__exp:true}:{}),...(g?{tipusMeva:g.nou,iva:ivaMeva878323(g.nou),...(g.k==="km"?{preuKm:"0,26"}:{})}:{})}))}
   function save(a){if(desaDespesa878318(a))setEdit(null)}
-  function exporta878338(){
+  function exporta878338(compartir=false){
     const r2=x=>Math.round((+x||0)*100)/100;
     const aoa=[[t("Data"),t("Data d’entrada"),t("Tipus"),t("Proveïdor o treballador"),t("Número"),t("Obra o categoria"),t("Capítol o partida"),t("Categoria"),t("Hores"),t("Base"),t("IVA"),t("Total"),t("Inclòs a la factura"),t("Repercutida al client")],
       ...[...rows].sort((x,y)=>String(x.data||"").localeCompare(String(y.data||""))).map(a=>{const o=obres.find(x=>x.id===a.obraId);const tp=tipusDespesa878311(a);const cob=coberts[a.id];const md=tp==="MaObra"?maDe878348(a):null;return [fmtAppDate8748(a.data),dataEntrada878348(a)?fmtAppDate8748(dataEntrada878348(a)):"",a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),a.proveidor||"",a.numero||"",tp==="Empresa"?i18nT(a.categoria||""):(o?.nom||""),imputacio878311(a),md?.cat||"",md?.hores??"",r2(albaraBase878259(a)),r2(a.isp?0:despesaIva878311(a)),r2(despesaTotal878311(a)),cob?[cob.proveidor,cob.numero].filter(Boolean).join(" · "):"",tp==="Empresa"?"":(a.facturatClient?t("Sí"):t("No"))]})];
     const ws=XLSX.utils.aoa_to_sheet(aoa);ws["!cols"]=[{wch:11},{wch:20},{wch:28},{wch:14},{wch:32},{wch:28},{wch:12},{wch:11},{wch:12},{wch:22},{wch:12}];
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Despeses"));
     const nom=String(empresaInfo878259()?.nom||"").replace(/[\\/:*?"<>|]+/g,"").trim();
-    XLSX.writeFile(wb,`${t("Despeses")} ${month||""} ${nom}`.replace(/\s+/g," ").trim()+".xlsx");
+    const fitxer=`${t("Despeses")} ${month||""} ${nom}`.replace(/\s+/g," ").trim()+".xlsx";
+    if(compartir&&potCompartir878391){const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});const f=new File([out],fitxer,{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+      navigator.share({files:[f],title:fitxer}).catch(e=>{if(e?.name!=="AbortError")XLSX.writeFile(wb,fitxer)});return}
+    XLSX.writeFile(wb,fitxer);
+  }
+  // V87.391 · llibre de factures rebudes per a la gestoria: les despeses dels filtres sense la mà d'obra pròpia ni els albarans que ja
+  // són dins d'una factura, ordenades per data, amb la base, l'IVA i el total
+  const potCompartir878391=(()=>{try{return !!navigator.canShare?.({files:[new File(["x"],"a.xlsx",{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})]})}catch{return false}})();
+  function llistatPdf878391(){const esc=escHtmlV8772;const emp=empresaInfo878259()||{};
+    const ls=[...rows].filter(a=>!coberts[a.id]&&tipusDespesa878311(a)!=="MaObra").sort((x,y)=>String(x.data||"").localeCompare(String(y.data||"")));
+    if(!ls.length){alert(t("Cap despesa amb aquests filtres."));return}
+    const per=[month?nomPer878391(month):t("Tot el període"),obraF?obres.find(o=>o.id===obraF)?.nom:"",provF].filter(Boolean).join(" · ");
+    const sb=ls.reduce((x,a)=>x+albaraBase878259(a),0),si=ls.reduce((x,a)=>x+(a.isp?0:despesaIva878311(a)),0),st=ls.reduce((x,a)=>x+despesaTotal878311(a),0);
+    const html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(t("Factures rebudes"))} · ${esc(per)}</title><style>body{font-family:Arial,sans-serif;font-size:10.5px;color:#111;margin:12mm}h1{font-size:15px;margin:0 0 4px}p{margin:0 0 8px;color:#444}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:3px 5px;text-align:left;vertical-align:top}th{background:#eee}td.n,th.n{text-align:right;white-space:nowrap}tfoot td{font-weight:bold}</style></head><body><h1>${esc(t("Factures rebudes"))}</h1><p><b>${esc(emp.fiscal||emp.nom||"")}</b>${emp.nif?` · ${esc(t("NIF"))} ${esc(emp.nif)}`:""} · ${esc(per)}</p><table><thead><tr><th>${esc(t("Data"))}</th><th>${esc(t("Número"))}</th><th>${esc(t("Proveïdor"))}</th><th>${esc(t("Tipus"))}</th><th>${esc(t(etExp==="obra"?"Obra":"Expedient"))}</th><th class="n">${esc(t("Base"))}</th><th class="n">${esc(t("IVA"))}</th><th class="n">${esc(t("Total"))}</th></tr></thead><tbody>${ls.map(a=>{const o=obres.find(x=>x.id===a.obraId);const tp=tipusDespesa878311(a);return `<tr><td>${esc(fmtAppDate8748(a.data))}</td><td>${esc(a.numero||"")}</td><td>${esc(a.proveidor||a.notes||"")}</td><td>${esc(a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp))}</td><td>${esc(tp==="Empresa"?i18nT(a.categoria||""):(o?.nom||""))}</td><td class="n">${esc(money(albaraBase878259(a)))}</td><td class="n">${a.isp?"ISP":esc(money(despesaIva878311(a)))}</td><td class="n">${esc(money(despesaTotal878311(a)))}</td></tr>`}).join("")}</tbody><tfoot><tr><td colspan="5">${esc(t("Total"))} · ${esc(ls.length===1?t("1 despesa"):t("{n} despeses",{n:ls.length}))}</td><td class="n">${esc(money(sb))}</td><td class="n">${esc(money(si))}</td><td class="n">${esc(money(st))}</td></tr></tfoot></table></body></html>`;
+    printHtmlInPlace878112(html,t("Factures rebudes"));
   }
   function remove(a){if(eliminaDespesa878318(a))setEdit(null)}
   const selRows878345=selMode878345?rows.filter(a=>sel878345.has(a.id)):[];
@@ -18907,7 +18934,14 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
         {!meves&&!treb&&<ActionMenu87213 className="accions-v878367" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
           <button type="button" className="entrar-ma-v878367" onClick={()=>newFromPhoto(null)}><PenLine size={15} aria-hidden="true"/> {i18nT("Entrar a mà")}</button>
           <button type="button" className="importar-v878367" onClick={()=>setImpX878344(true)}><Upload size={15} aria-hidden="true"/> {i18nT("Importar Excel")}</button>
-          {!fixedObra&&rows.length>0&&<button type="button" className="exportar-v878367" onClick={exporta878338}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>}
+          {!fixedObra&&rows.length>0&&<button type="button" className="exportar-v878367" onClick={()=>exporta878338()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>}
+          {!fixedObra&&rows.length>0&&<button type="button" className="llistat-v878391" onClick={llistatPdf878391}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>}
+          {!fixedObra&&rows.length>0&&potCompartir878391&&<button type="button" className="compartir-v878391" onClick={()=>exporta878338(true)}><Share2 size={15} aria-hidden="true"/> {i18nT("Compartir l’Excel…")}</button>}
+        </ActionMenu87213>}
+        {meves&&!fixedObra&&!treb&&rows.length>0&&<ActionMenu87213 className="gestoria-v878391" label={<><Download size={15} aria-hidden="true"/> {i18nT("Per a la gestoria")}</>}>
+          <button type="button" className="exportar-v878367" onClick={()=>exporta878338()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>
+          <button type="button" className="llistat-v878391" onClick={llistatPdf878391}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>
+          {potCompartir878391&&<button type="button" className="compartir-v878391" onClick={()=>exporta878338(true)}><Share2 size={15} aria-hidden="true"/> {i18nT("Compartir l’Excel…")}</button>}
         </ActionMenu87213>}
       </div>
     </div>
@@ -18951,8 +18985,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
       {trebs878348.length>1&&<select value={trebF878348} onChange={e=>setTrebF878348(e.target.value)} aria-label={i18nT("Treballador")}><option value="">{i18nT("Tots els treballadors")}</option>{trebs878348.map(p=><option key={p} value={p}>{p}</option>)}</select>}
       {(nova878348||nouM878375)&&<input type="search" className="cerca-v878348" value={cerca878348} onChange={e=>setCerca878348(e.target.value)} placeholder={nouM878375?i18nT("Buscar concepte, trajecte, número…"):i18nT("Buscar material, concepte, número…")} aria-label={i18nT("Buscar")}/>}
       {ambRep878347&&<label className="chk"><input type="checkbox" checked={nomesPendents} onChange={e=>setNomesPendents(e.target.checked)}/>{i18nT("Només pendents de repercutir")}</label>}
-      <input type="month" value={month} onChange={e=>setMonth(e.target.value)} aria-label={i18nT("Mes")}/>
-      {month&&<button type="button" className="link" onClick={()=>setMonth("")}>{i18nT("Tots els mesos")}</button>}
+      <PeriodeSelect878391 dates={list.map(a=>a.data)} value={month} onChange={setMonth}/>
     </div>}
     {!treb&&!nouM878375&&hiHa878388&&<div className="alb-kpis"><div><small>{i18nT("Total sense IVA")}</small><b>{money(total)}</b><span>{nD(compten.length)}</span></div>{ambRep878347&&<div className={pendent>0.005?"warn":""}><small>{i18nT("Pendent de repercutir al client")}</small><b>{money(pendent)}</b><span>{nD(pendents.length)}</span></div>}</div>}
     {treb?null:rows.length===0?<div className="alb-empty"><b>{hiHa878388?i18nT("Cap despesa amb aquests filtres."):i18nT("Encara no hi ha despeses.")}</b></div>
