@@ -1488,6 +1488,24 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Honoraris de l'expedient:** «Pressupostos d'honoraris · Calcular honoraris · Factures honoraris» en una fila (abans, tres botons
       apilats de punta a punta al mòbil).
     - Estils `src/theme-v878389.css`. Eina `mira387b.mjs` amb `SHOT=` (captura després de `DUMP`).
+  - **V87.390 · Hores, Fitxatge i Facturació en llista que es desplega** (l'Héctor, 25/10/2026: «ho vull en una llista i després
+    despleguem el treballador que ens interessi… utilitzem molts desplegables per simplificar pantalles principals»):
+    - **Hores › Personal** (mòbil i iPad, `useTauleta878387`): una línia per treballador (`details.fila-m-v878390`: nom, categoria, l'obra
+      i les hores del dia) que es desplega per apuntar-hi les hores; la setmana, plegada (`CardOPlega878369`). A l'ordinador, com abans.
+    - **Hores › Fitxatge** (`RegistreFitx878357`): a dalt el dia, el mes i «Tots» (PDF i Excel del mes de tothom); a sota, una línia per
+      treballador (`details.fitx-w-v878390`: com està ara, hores del dia i del mes) amb el dia (marques i «Corregir»), el mes dia per dia
+      (`.mes-w`, «PDF del mes») i l'any mes per mes (`.any-w`, «PDF de l'any»). **Documents per a la Inspecció** (`docHtml`): empresa i NIF,
+      domicili, treballador/a amb DNI i ofici, període, cada dia del mes (també els que no ha treballat; caps de setmana en gris) amb
+      entrada, sortida, pauses i hores, el total, les dues signatures i el peu de l'art. 34.9 ET (es conserva 4 anys).
+    - **Facturació de l'empresa** (`FacturacioEmpresa878337`): filtres d'any (l'actual de sèrie), **mes o trimestre** (`T1`…`T4`, `trimDe878390`,
+      `nomPeriode878390`: l'IVA es declara per trimestres), **client**, obra i cobrament (al mòbil, de dos en dos); al mòbil i l'iPad cada factura és una línia (número i data, client i obra, total i «Pendent»/«Cobrada»,
+      `plegable-v878390`, `est-v878390`) que es desplega amb la base, l'IVA, el cobrament i PDF · Enviar · ⋯; **el total a baix**
+      (`fe-total-v878390`: període i filtres, base, IVA, retenció si n'hi ha, total i pendent de cobrar). **«Per a la gestoria»** (menú a
+      dalt): «Exportar Excel» (les factures dels filtres), «Llistat en PDF» (llibre de factures emeses, per número) i «Compartir l'Excel…»
+      (`navigator.share` amb el fitxer, si l'aparell ho deixa). A l'ordinador, columnes fixes (el cobrament i els botons alineats) i la
+      columna «Client i obra». La Facturació del tècnic (`FacturesGeneral8738`) té el mateix: mes, files plegables i el total a baix.
+    - Estils `src/theme-v878390.css`. Eina `mira390.mjs` (`PANT=`, `PRE0=` abans d'anar a la pantalla, `PRE=`, `SCR=`, `DUMP=`, `SHOT=`).
+      Proves: `fitxatge357test` (20) i `facturacio337test` adaptades.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la

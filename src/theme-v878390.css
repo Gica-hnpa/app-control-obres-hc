@@ -1,0 +1,101 @@
+/* V87.390 · Hores › Personal al mòbil i l'iPad: una línia per treballador (nom, categoria, l'obra i les hores del dia) que es desplega en
+   tocar-la per apuntar-hi les hores (l'Héctor, 25/10/2026: «ho vull en una llista i després despleguem el treballador que ens interessi») */
+html body details.fila-m-v878390.fila-v878340{display:block;padding:0;gap:0}
+html body details.fila-m-v878390>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto 20px;grid-template-areas:"nm tot chev" "ob tot chev";align-items:center;gap:2px 10px;padding:10px 12px;min-height:56px}
+html body details.fila-m-v878390>summary::-webkit-details-marker{display:none}
+html body details.fila-m-v878390>summary>.nm{grid-area:nm;padding-top:0!important;min-width:0}
+html body details.fila-m-v878390>summary>.nm small{display:block}
+html body details.fila-m-v878390>summary>.ob-v878390{grid-area:ob;font-style:normal;font-size:13px;color:var(--co-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+html body details.fila-m-v878390.amb-h>summary>.ob-v878390{color:var(--co-ink-2);font-weight:600}
+html body details.fila-m-v878390>summary>.tot{grid-area:tot;padding-top:0!important;align-self:center}
+html body details.fila-m-v878390>summary>.chev{grid-area:chev;color:var(--co-ink-3);transition:transform .15s}
+html body details.fila-m-v878390[open]>summary{border-bottom:1px solid var(--co-line);background:var(--co-surface-2,#f8fafc);border-radius:12px 12px 0 0}
+html body details.fila-m-v878390[open]>summary>.chev{transform:rotate(90deg)}
+html body details.fila-m-v878390[open]>summary>.ob-v878390{display:none}
+html body details.fila-m-v878390>.linies{padding:10px 12px 12px}
+
+/* Hores › Fitxatge: una línia per treballador (com està el dia, hores del dia i del mes); a dins, el dia, el mes i l'any amb el seu PDF */
+html body .fitx-cap-v878390{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:0 0 10px}
+html body .fitx-cap-v878390 .fitx-dia-v878357,html body .fitx-cap-v878390 .fitx-mes-filtre-v878357{margin:0;display:flex;gap:6px;align-items:center}
+html body .fitx-llista-v878390{display:flex;flex-direction:column;gap:8px}
+html body details.fitx-w-v878390{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body details.fitx-w-v878390>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto 20px;align-items:center;gap:10px;padding:10px 12px;min-height:56px}
+html body details.fitx-w-v878390>summary::-webkit-details-marker{display:none}
+html body details.fitx-w-v878390>summary .nm{display:flex;flex-direction:column;min-width:0}
+html body details.fitx-w-v878390>summary .nm b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body details.fitx-w-v878390>summary .nm small{font-size:13px;color:#166534;font-weight:600}
+html body details.fitx-w-v878390>summary .nm small.sense{color:var(--co-ink-3);font-weight:400;font-style:italic}
+html body details.fitx-w-v878390>summary .h{display:flex;flex-direction:column;align-items:flex-end;font-variant-numeric:tabular-nums}
+html body details.fitx-w-v878390>summary .h small{font-size:12px;color:var(--co-ink-3)}
+html body details.fitx-w-v878390>summary .chev{color:var(--co-ink-3);transition:transform .15s}
+html body details.fitx-w-v878390[open]>summary{border-bottom:1px solid var(--co-line);background:var(--co-surface-2,#f8fafc);border-radius:12px 12px 0 0}
+html body details.fitx-w-v878390[open]>summary .chev{transform:rotate(90deg)}
+html body details.fitx-w-v878390 .cos{display:flex;flex-direction:column;gap:14px;padding:12px}
+html body details.fitx-w-v878390 .bloc{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+html body details.fitx-w-v878390 .bloc h5{margin:0;font-size:13.5px;color:var(--co-ink)}
+html body details.fitx-w-v878390 .bloc h5 span{color:var(--co-ink-2);font-weight:600}
+html body details.fitx-w-v878390 .bloc .ms{display:flex;flex-wrap:wrap;gap:6px}
+html body details.fitx-w-v878390 .bloc table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+html body details.fitx-w-v878390 .bloc th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--co-ink-3);padding:4px 6px;border-bottom:1px solid var(--co-line)}
+html body details.fitx-w-v878390 .bloc td{padding:5px 6px;border-bottom:1px solid var(--co-line)}
+html body details.fitx-w-v878390 .bloc .buit{margin:0;color:var(--co-ink-3);font-size:13px}
+html body details.fitx-w-v878390 .bloc>button{display:inline-flex;align-items:center;gap:6px}
+html body details.fitx-w-v878390 .m{font-style:normal;font-size:12.5px;padding:3px 8px;border-radius:999px;background:var(--co-surface-2,#f1f5f9);font-variant-numeric:tabular-nums}
+html body details.fitx-w-v878390 .m.entrada,html body details.fitx-w-v878390 .m.represa{background:#DCFCE7;color:#166534}
+html body details.fitx-w-v878390 .m.sortida{background:#FEE2E2;color:#991B1B}
+html body details.fitx-w-v878390 .m.pausa{background:#FEF3C7;color:#92400E}
+html body details.fitx-w-v878390 .m.anulat{text-decoration:line-through;opacity:.6}
+html body details.fitx-w-v878390 .m.corregit{outline:1px dashed currentColor}
+
+/* Facturació de l'empresa: el total a baix (segons els filtres) i, al mòbil i l'iPad, cada factura en una línia que es desplega */
+html body .facturacio-v878337 .fe-row>.est-v878390,html body .facturacio-v878337 .fe-row>.chev-v878390{display:none}
+html body .facturacio-v878337 .fe-total-v878390{display:flex;flex-direction:column;gap:8px;margin-top:4px;padding:12px;border:1px solid var(--co-line-strong);border-radius:14px;background:var(--co-surface-2,#f8fafc)}
+html body .facturacio-v878337 .fe-total-v878390 .tit{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+html body .facturacio-v878337 .fe-total-v878390 .tit b{font:700 15px var(--app-font);color:var(--co-ink)}
+html body .facturacio-v878337 .fe-total-v878390 .tit small{font-size:13px;color:var(--co-ink-3)}
+html body .facturacio-v878337 .fe-total-v878390 .fe-kpis{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+html body .facturacio-v878337 .fe-head .gestoria-v878390>summary{display:inline-flex;align-items:center;gap:6px}
+html body .facturacio-v878337 .fe-head .gestoria-v878390 .action-menu-panel-v87213{right:0;left:auto}
+@media (max-width:1100px){
+  html body .facturacio-v878337 .fe-row.cap{display:none}
+  html body .facturacio-v878337 .fe-row.plegable-v878390{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto 28px;grid-template-areas:"num num tot chev" "qui qui est chev";gap:4px 10px;cursor:pointer;padding:10px 8px 10px 12px}
+  html body .facturacio-v878337 .fe-row.plegable-v878390.obert{grid-template-areas:"num num tot chev" "qui qui cob chev" "base iva . ." "acc acc acc acc";background:var(--co-surface,#fff);border-color:var(--co-line-strong);box-shadow:0 1px 4px rgba(15,23,42,.06)}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .num{grid-area:num;flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .qui{grid-area:qui}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .imp{grid-area:base;align-items:flex-start}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .imp.iva{grid-area:iva}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .imp.tot{grid-area:tot;align-items:flex-end}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .imp small{display:block}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .imp.tot small{display:none}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .cobra{grid-area:cob;justify-self:end}
+  html body .facturacio-v878337 .fe-row.plegable-v878390 .acc{grid-area:acc;justify-content:flex-start;flex-wrap:wrap;padding-top:4px}
+  html body .facturacio-v878337 .fe-row.plegable-v878390>.est-v878390{display:inline-block;grid-area:est;justify-self:end;font-style:normal;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:#92400E;white-space:nowrap}
+  html body .facturacio-v878337 .fe-row.plegable-v878390>.est-v878390.on{background:#DCFCE7;color:#166534}
+  html body .facturacio-v878337 .fe-row.plegable-v878390>.chev-v878390{all:unset;box-sizing:border-box;grid-area:chev;display:flex;align-items:center;justify-content:center;width:28px;height:40px;cursor:pointer;color:var(--co-ink-3);align-self:center}
+  html body .facturacio-v878337 .fe-row.plegable-v878390>.chev-v878390 svg{transition:transform .15s}
+  html body .facturacio-v878337 .fe-row.plegable-v878390>.chev-v878390:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px;border-radius:6px}
+  html body .facturacio-v878337 .fe-row.plegable-v878390:not(.obert)>.imp:not(.tot),html body .facturacio-v878337 .fe-row.plegable-v878390:not(.obert)>.cobra,html body .facturacio-v878337 .fe-row.plegable-v878390:not(.obert)>.acc{display:none}
+  html body .facturacio-v878337 .fe-row.plegable-v878390.obert>.est-v878390{display:none}
+  html body .facturacio-v878337 .fe-row.plegable-v878390.obert>.chev-v878390 svg{transform:rotate(90deg)}
+}
+@media (max-width:1100px){
+  html body .fact-tec-v878373 .fe-row.plegable-v878390>.anul{grid-area:cob;justify-self:end}
+  html body .fact-tec-v878373 .fe-row.plegable-v878390:not(.obert)>.anul{display:none}
+  html body .facturacio-v878337 .fe-row.plegable-v878390>.est-v878390.venc{background:#FEE2E2;color:#B91C1C}
+  html body .facturacio-v878337 .fe-row.plegable-v878390>.est-v878390.anul{background:var(--co-surface-2,#f1f5f9);color:var(--co-ink-3)}
+}
+/* els filtres de la Facturació al mòbil, de dos en dos (abans un sota l'altre: quatre línies) */
+@media (max-width:700px){
+  html body .facturacio-v878337 .fe-filtres select{flex:1 1 calc(50% - 4px);width:auto;min-width:0}
+  html body .facturacio-v878337 .fe-filtres .anys{flex:1 1 100%}
+  html body .facturacio-v878337 .fe-total-v878390 .fe-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* a l'ordinador, les columnes iguals a totes les files (abans cada fila feia la seva: el cobrament i els botons no quedaven alineats) */
+@media (min-width:1101px){
+  html body .facturacio-v878337 .fe-row:not(.pf):not(.rend){grid-template-columns:minmax(110px,.9fr) minmax(0,2.2fr) minmax(90px,1fr) minmax(80px,.8fr) minmax(100px,1fr) 170px 210px}
+  html body .fact-tec-v878373 .fe-row:not(.pf):not(.rend){grid-template-columns:minmax(110px,.9fr) minmax(0,2.2fr) minmax(90px,1fr) minmax(80px,.8fr) minmax(100px,1fr) 170px 130px}
+  html body .facturacio-v878337 .fe-row .cobra{justify-self:stretch;overflow:hidden;text-overflow:ellipsis}
+}
+@media (min-width:1101px){
+  html body .facturacio-v878337 .fe-row.cap>span:nth-child(3),html body .facturacio-v878337 .fe-row.cap>span:nth-child(4),html body .facturacio-v878337 .fe-row.cap>span:nth-child(5){align-items:flex-end;text-align:right}
+}
