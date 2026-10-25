@@ -1596,6 +1596,28 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       - Proves: `descomp396unit.mjs` (17, sense navegador, Excels inventats dels dos formats i la reparació). Eines: `descomp397sim.mjs`
         (simula la reparació amb una còpia de `COPIES_NUVOL`, sense escriure res) i `descompexcel.mjs` (importa un Excel real amb el codi
         de l’app i diu quantes partides quadren; `APPJS`/`BRKJS` per comparar amb una versió d’abans). `descomp384unit` adaptada (9).
+  - **V87.397 · Gràfiques a Facturació** (l’Héctor, 25/10/2026: «gràfiques de barres o lineals per fer comparatius entre el mateix mes de
+    diferents anys, per exemple, o l’evolució de l’any vigent»):
+    - **On:** a la Facturació de l’empresa (`FacturacioEmpresa878337`, a sota del total) i a la del tècnic (`FacturesGeneral8738`, primer
+      dins de «Gràfics i informes»), en un bloc plegat (`details.fe-informes-v878373`) que a la línia plegada diu «2026 fins avui: X · +N %
+      respecte de 2025» (`resumFact878397`). La gràfica només es dibuixa quan s’obre (`inf397`).
+    - **Dades:** base sense IVA per la data de la factura (`isoData878292`; sense data no compta), sense les anul·lades, amb els filtres de
+      client i d’obra de la pantalla (no els del període); a l’empresa, també les factures importades d’anys anteriors. L’any el dona el
+      filtre d’any de la pantalla (amb «Tots», l’actual).
+    - **`GraficaFact878397`:** «Comparar anys» (`BarresAnys878397`: cada mes amb una barra per any —l’any triat i fins a 3 d’anteriors amb
+      factures; al mòbil, 3—, o un sol període amb una barra per any i l’import a sobre: un mes, un trimestre, «De l’1 de gener a avui» o
+      «L’any sencer») i «Evolució {any}» (`LiniesChart878343`: l’any i l’anterior discontinu, acumulat de sèrie). A dalt, l’any (o el
+      període) fins avui i l’any passat fins al mateix dia, amb ▲/▼ i el % (`sumaFact878397` amb `cut`). «Xifres» plegat: mes × any, la
+      diferència, «De l’1 de gener a avui» i «Total de l’any» (els mesos a 0, en gris).
+    - **Colors:** cada any el seu, a totes les vistes, per la distància a l’any triat (`SERIES878343[any-y]`: blau, taronja, aqua, groc;
+      validats amb el validador de l’skill `dataviz` sobre blanc; l’aqua i el groc tenen poc contrast i per això hi ha les xifres i l’import
+      sobre les barres). Barres de 24 px com a molt, 2 px entre elles i 4 px arrodonits a dalt; la franja del mes en passar-hi per sobre o
+      tocar-la (`onPointerMove`/`onPointerDown`), i amb el teclat (fletxes). **L’app no té mode fosc**: la gràfica tampoc.
+    - **Fora**, a la Facturació del tècnic: la gràfica vella «Ingressos» (`IngressosChart878292`, que es queda als pressupostos d’honoraris i
+      al Rendiment de l’obra) i «Resum / informes de factures» (`FinanceReports87110`); els tres gràfics rodons es queden.
+    - Estils `src/theme-v878397.css`. Prova: `fact397test.mjs` (29; factures inventades de 4 anys als comptes `demo-tecnic` i
+      `demo-constructor`; s’ha de passar de l’1 de març al 31 de desembre i a partir del dia 3 del mes). Adaptades `graficatest` (la gràfica
+      nova i les seves xifres) i `v366test` (el títol del bloc plegat porta la línia del resum).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1735,33 +1757,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (25/10/2026, després de la V87.396)
+### Per començar una sessió nova (26/10/2026, després de la V87.397)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.396 a Render):**
+**Estat (publicada la V87.397 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
-  cobraments, gestoria), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
+  cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
 - **Constructora i gestió total** (`brava`, `socoterm`, comptes `demo-*`): obres, importar obres i factures d’anys anteriors, Amidaments
   (PDF, Excel, BC3) i pressupost automàtic (banc de preus amb IPC, obres anteriors, IA per copiar i enganxar), Preus i marges,
   Pressupost (fases, comissió amagada, resum, fitxa de la partida), Certificacions, Partes d’obra, Despeses (grups, columnes, mà d’obra
   per dies, importar Excel, gestoria), Hores del personal i Fitxatge, Empresa (dades, treballadors, documentació, industrials,
   Calendari laboral), Planning (vinculacions, partides, qui hi treballa) i Agenda › Equip, Rendiment de l’obra i de l’empresa,
-  Facturació de l’empresa (sèrie pròpia, cobraments, gestoria).
+  Facturació de l’empresa (sèrie pròpia, cobraments, gestoria, gràfiques per comparar anys).
 - **Per a tothom:** mòbil i iPad «tot recollit», accessibilitat (contrast, 12 px, 36 px per al dit, focus), Ajustos per blocs
   (Imatge de l’empresa amb logo i color, Documents amb 7 estils d’encapçalament, accessos ràpids…), castellà, sense cobertura.
 - **No fet:** perfils autònom i promotor amb compte propi, IA al servidor (albarans, pressupost-ia: cal la clau d’Anthropic i el sí de
   l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 
 **Què fer, per ordre:**
-1. **V87.397 · Gràfiques a Facturació** (l’Héctor, 25/10/2026: «gràfiques de barres o lineals per fer comparatius entre el mateix mes de
-   diferents anys, per exemple, o l’evolució de l’any vigent»): a la Facturació de l’empresa (`FacturacioEmpresa878337`) i a la del tècnic
-   (`FacturesGeneral8738`), plegat a sota com «Gràfics i informes»: **barres** del mateix mes de cada any (any vigent i 2-3 anteriors) i
-   **línies** de l’any vigent mes a mes (normal i acumulat) amb l’any passat al costat. Base sense IVA per la data de la factura, sense les
-   anul·lades; al mòbil, plegat. Fer servir l’skill `dataviz` i `LiniesChart878343` (ja té barres per a un sol mes, V87.384); llegenda,
-   «table view» i dark mode com diu l’skill. Una prova nova (comptes `demo-*` amb factures de diversos anys).
+1. **Estudi del mercat** (l’Héctor, 25/10/2026 a la nit, amb captures d’anuncis de Pillar, Plancraft, Cuitó Digital i Presufy: «fes un
+   estudi de com funcionen aquestes i d’altres, perquè hi ha coses aprofitables sense entrar en la còpia, adaptat al nostre estil… Motor de
+   Presupuestos, Presufy i altres ja treballen amb la IA per fer pressupostos ràpids»). Només informació pública (webs, vídeos, preus,
+   opinions); no entrar a cap app ni crear comptes. Per a cada una: què fa, què ja tenim, què ens falta i com ho faríem a la nostra manera;
+   propostes per prioritat. Ell decideix què es fa.
 2. **Comodoro: els descompostos de les altres 63 partides** (vegeu la V87.396). Dir a l’Héctor que torni a importar l’Excel v07 (Accions ›
    Importar Excel: si el pressupost ja té partides en fa un de nou; després eliminar el vell, si no té certificacions) o fer una acció
    «Tornar a llegir els descompostos d’un Excel» que els posi a les partides que ja hi són pel codi (`attachWorkbookDescompostos878228`).

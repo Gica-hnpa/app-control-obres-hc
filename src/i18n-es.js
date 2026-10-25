@@ -4286,4 +4286,12 @@ export default {
 "2n trimestre": "2.º trimestre",
 "3r trimestre": "3.er trimestre",
 "4t trimestre": "4.º trimestre",
+  "respecte de {any}": "respecto a {any}",
+  "{x} fins avui": "{x} hasta hoy",
+  "Facturat sense IVA": "Facturado sin IVA",
+  "L’any sencer": "El año entero",
+  "De l’1 de gener a avui": "Del 1 de enero a hoy",
+  "Evolució {any}": "Evolución {any}",
+  "Comparar anys": "Comparar años",
+  "{x} fins al mateix dia": "{x} hasta el mismo día",
 };

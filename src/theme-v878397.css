@@ -1,0 +1,56 @@
+/* V87.397 · Gràfiques de la Facturació: comparar anys (barres) i evolució de l'any (línies), amb les xifres plegades a sota */
+@media screen{
+html body .gf-v878397{--rc-ink:#0f172a;--rc-ink-2:#475569;--rc-ink-3:#5F7075;--rc-grid:#e8edf2;--rc-axis:#cbd5e1;margin:12px;box-shadow:none}
+html body .gf-v878397 .card-head{padding-bottom:4px}
+html body .gf-ctrl-v878397{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:0 16px 4px}
+html body .gf-ctrl-v878397 .seg{display:flex;gap:4px;flex-wrap:wrap}
+html body .gf-ctrl-v878397 .seg>button{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;min-height:36px;padding:6px 14px;border-radius:999px;border:1px solid var(--co-line-strong);background:var(--co-surface);font:600 13px var(--app-font);color:var(--co-ink-2)}
+html body .gf-ctrl-v878397 .seg>button[aria-pressed="true"]{background:var(--co-ink);border-color:var(--co-ink);color:var(--co-surface)}
+html body .gf-ctrl-v878397 .seg>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .gf-ctrl-v878397 select{min-height:36px;max-width:100%;min-width:0}
+html body .gf-ctrl-v878397 .acum{display:flex;gap:6px;align-items:center;min-height:36px;font-size:13.5px;color:var(--rc-ink-2)}
+html body .gf-resum-v878397{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;margin:8px 16px 2px;font-size:13.5px;color:var(--rc-ink-2)}
+html body .gf-resum-v878397 b{color:var(--rc-ink);font-variant-numeric:tabular-nums}
+html body .gf-dif-v878397{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .gf-dif-v878397.up{color:#15803D}
+html body .gf-dif-v878397.down{color:#B91C1C}
+html body .gf-dif-v878397 small{font-weight:500;font-size:12px;color:var(--rc-ink-3)}
+html body .rc-tip-v878343 .gf-dif-v878397{margin-top:3px;font-size:12.5px}
+/* barres: la franja del mes triat, l'import a sobre de cada barra i el requadre de la llegenda */
+html body .gf-barres-v878397 .hi-band{fill:#F1F5F9}
+html body .gf-barres-v878397 .val{font:600 12px var(--app-font);fill:var(--rc-ink-2)}
+html body .gf-barres-v878397 svg{cursor:default}
+html body .gf-ll-v878397 i{width:11px!important;height:11px!important;border-radius:3px!important}
+/* les xifres, plegades */
+html body details.gf-xifres-v878397{margin:0 16px 14px;border-top:1px solid var(--co-line)}
+html body details.gf-xifres-v878397>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:44px;font:600 13.5px var(--app-font);color:var(--co-ink-2)}
+html body details.gf-xifres-v878397>summary::-webkit-details-marker{display:none}
+html body details.gf-xifres-v878397>summary::after{content:"›";margin-left:auto;font-size:19px;color:var(--co-ink-3);transition:transform .15s}
+html body details.gf-xifres-v878397[open]>summary::after{transform:rotate(90deg)}
+html body details.gf-xifres-v878397>summary:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px;border-radius:6px}
+html body .gf-taula-wrap-v878397{overflow-x:auto;-webkit-overflow-scrolling:touch}
+html body .gf-taula-v878397{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+html body .gf-taula-v878397 th{text-align:right;font:600 12px var(--app-font);color:var(--co-ink-3);padding:7px 10px;border-bottom:1px solid var(--co-line-strong);white-space:nowrap;vertical-align:bottom}
+html body .gf-taula-v878397 th i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+html body .gf-taula-v878397 th small{display:block;font-weight:500}
+html body .gf-taula-v878397 td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--co-line);white-space:nowrap;color:var(--co-ink)}
+html body .gf-taula-v878397 th:first-child,html body .gf-taula-v878397 td:first-child{text-align:left;position:sticky;left:0;background:var(--co-surface,#fff)}
+html body .gf-taula-v878397 td:first-child::first-letter{text-transform:uppercase}
+html body .gf-taula-v878397 td.dif{color:var(--co-ink-2)}
+html body .gf-taula-v878397 td.zero{color:var(--co-ink-3);font-weight:400}
+html body .gf-taula-v878397 tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--co-line-strong)}
+html body .gf-taula-v878397 tfoot tr.ytd td{font-weight:600;color:var(--co-ink-2)}
+/* a la Facturació del tècnic, la gràfica va abans dels gràfics rodons */
+html body .fact-tec-v878373 .fe-informes-v878373 .gf-v878397{margin-bottom:4px}
+html body .fe-informes-v878373>summary span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+}
+@media (max-width:700px){
+  html body .gf-v878397{margin:8px}
+  html body .gf-ctrl-v878397{padding:0 10px 4px}
+  html body .gf-ctrl-v878397 select{flex:1 1 160px}
+  html body .gf-resum-v878397{margin:8px 10px 2px;font-size:13px}
+  html body details.gf-xifres-v878397{margin:0 10px 12px}
+  html body .gf-taula-v878397 th,html body .gf-taula-v878397 td{padding:7px 8px}
+  html body .fe-informes-v878373>summary{flex-wrap:wrap;gap:2px 10px;padding:8px 14px}
+  html body .fe-informes-v878373>summary span{white-space:normal}
+}

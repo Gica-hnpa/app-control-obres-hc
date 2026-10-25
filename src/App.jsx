@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.396";
+const APP_VERSION878264="87.397";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -14832,6 +14832,9 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
     printHtmlInPlace878112(html,t("Factures emeses"));
   }
   const etCert=f=>`${t("Cert.")} ${f.numeroCert}${f.budgetNom?` · ${f.budgetNom}`:""}`;
+  // V87.397 · gràfiques: totes les factures (també les importades d'anys anteriors) amb els filtres de client i d'obra
+  const [inf397,setInf397]=useState(false);
+  const graf397=factures.filter(r=>(!clientF||r.client===clientF)&&(!obraF||r.obra.id===obraF)).map(r=>({data:r.data,base:r.base}));
   return <div className="facturacio-v878337">
     <div className="fe-head"><h1>{t("Facturació")}</h1>{vista==="factures"&&rows.length>0&&<ActionMenu87213 className="gestoria-v878390" label={<><Download size={15} aria-hidden="true"/> {t("Per a la gestoria")}</>}><button type="button" onClick={()=>exporta()}><Download size={15} aria-hidden="true"/> {t("Exportar Excel")}</button><button type="button" onClick={llistatPdf}><FileText size={15} aria-hidden="true"/> {t("Llistat en PDF")}</button>{potCompartir&&<button type="button" onClick={()=>exporta(true)}><Share2 size={15} aria-hidden="true"/> {t("Compartir l’Excel…")}</button>}</ActionMenu87213>}</div>
     <div className="fe-vistes" role="group" aria-label={t("Facturació")}>
@@ -14863,6 +14866,7 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
         </div>})}
       </div>}
       {rows.length>0&&<div className="fe-total-v878390"><div className="tit"><b>{t("Total")}</b><small>{periode} · {rows.length===1?t("1 factura"):t("{n} factures",{n:rows.length})}</small></div><div className="fe-kpis"><div><small>{t("Base")}</small><b>{money(sum("base"))}</b></div><div><small>{t("IVA")}</small><b>{money(sum("ivaImp"))}</b></div>{Math.abs(sum("retImp"))>0.005&&<div><small>{t("Retenció")}</small><b>{money(sum("retImp"))}</b></div>}<div><small>{t("Total")}</small><b>{money(sum("total"))}</b></div><div className={pendent>0.005?"warn":""}><small>{t("Pendent de cobrar")}</small><b>{money(pendent)}</b></div></div></div>}
+      {factures.length>0&&<details className="plegat-v878366 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><b>{t("Gràfics i informes")}</b><span>{resumFact878397(graf397,anyF==="tots"?null:+anyF)}</span></summary>{inf397&&<GraficaFact878397 items={graf397} any={anyF==="tots"?null:+anyF}/>}</details>}
     </>}
     {vista==="per"&&(!perFacturar.length?<div className="fe-buit"><b>{t("Totes les certificacions estan facturades.")}</b></div>
       :<div className="fe-llista per"><div className="fe-row pf cap" aria-hidden="true"><span>{t("Certificació")}</span><span>{t("Obra i client")}</span><span>{t("Base")}</span><span>{t("IVA")}</span><span>{t("Total")}</span><span/></div>{perFacturar.map(x=><div key={x.k} className="fe-row pf">
@@ -16190,7 +16194,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.396",
+    app_version:"87.397",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -16759,6 +16763,145 @@ function IngressosChart878292({items=[],title}){
     <small className="ing-nota-v878292">{t("Base sense IVA de les factures, per la data de la factura.")}</small>
   </Card>;
 }
+// V87.397 · Gràfiques de la Facturació (l'Héctor, 25/10/2026: «gràfiques de barres o lineals per fer comparatius entre el mateix mes de
+// diferents anys, per exemple, o l'evolució de l'any vigent»). Base sense IVA per la data de la factura, sense les anul·lades, amb els
+// filtres de client i d'obra de la pantalla (no els del període). «Comparar anys»: cada mes amb una barra per any (l'any triat i fins a 3
+// d'anteriors), o un mes, un trimestre, de l'1 de gener a avui o l'any sencer; «Evolució»: l'any mes a mes (o acumulat) amb l'any passat
+// al costat. Cada any té el seu color a totes les vistes (l'any triat, blau; l'anterior, taronja…) i les xifres són a la taula de sota.
+function ptsFact878397(items=[]){return (items||[]).map(x=>{const s=isoData878292(x.data),v=+x.base||0;return s&&Math.abs(v)>=0.005?{y:+s.slice(0,4),m:+s.slice(5,7)-1,d:+s.slice(8,10),v}:null}).filter(Boolean)}
+// suma d'uns mesos d'un any; amb `cut` ({m,d}), només fins a aquell dia de l'any (per comparar «fins avui» amb el mateix dia d'un altre any)
+function sumaFact878397(pts,y,ms,cut=null){return pts.reduce((s,p)=>p.y===y&&ms.includes(p.m)&&(!cut||p.m<cut.m||(p.m===cut.m&&p.d<=cut.d))?s+p.v:s,0)}
+function mesosPer878397(p,mesAra){if(p==="any"||p==="mesos")return [...Array(12).keys()];if(p==="ytd")return [...Array(mesAra+1).keys()];if(/^T[1-4]$/.test(p)){const q=+p[1];return [3*q-3,3*q-2,3*q-1]}return [+p-1]}
+function difFact878397(a,b){return a==null||b==null||Math.abs(b)<0.005?null:(a-b)/Math.abs(b)*100}
+function difTxt878397(d){return d==null?"":`${d>=0?"+":"−"}${Math.abs(d).toLocaleString(loc878272(),{maximumFractionDigits:0})} %`}
+function XipDif878397({d,vs}){if(d==null)return null;return <b className={`gf-dif-v878397 ${d>=0?"up":"down"}`}>{d>=0?"▲":"▼"} {difTxt878397(d)}{vs?<small> {t("respecte de {any}",{any:vs})}</small>:null}</b>}
+// la línia del bloc plegat: l'any (fins avui, si és l'actual) i la diferència amb el mateix període de l'any passat
+function resumFact878397(items,anyTriat){const a0=new Date(),ara={y:a0.getFullYear(),m:a0.getMonth(),d:a0.getDate()};const y=anyTriat&&anyTriat<=ara.y?anyTriat:ara.y;
+  const pts=ptsFact878397(items);if(!pts.length)return "";const ms=[...Array(12).keys()],cut=y===ara.y?ara:null;
+  const a=sumaFact878397(pts,y,ms,cut),b=pts.some(p=>p.y===y-1)?sumaFact878397(pts,y-1,ms,cut):null;const d=difFact878397(a,b);
+  return `${y===ara.y?t("{x} fins avui",{x:y}):y}: ${money(a)}${d!=null?` · ${difTxt878397(d)} ${t("respecte de {any}",{any:y-1})}`:""}`}
+// Barres (columnes) de diversos anys: un grup per mes (o una barra per any, `centrar`), 4 px arrodonits a dalt, 2 px entre barres,
+// la franja del mes en passar-hi per sobre o tocar-la, i el requadre amb l'import de cada any i la diferència amb l'anterior
+function BarresAnys878397({labels=[],series=[],titol="",tipLabel,centrar=false,valors=false}){
+  const ref=useRef(null),wrap=useRef(null);
+  const[hi,setHi]=useState(null);
+  const[cw,setCw]=useState(760);
+  const n=labels.length;
+  const vals=series.flatMap(s=>s.vals.filter(v=>v!=null));
+  const teDades=vals.length>0&&n>0;
+  useEffect(()=>{const el=wrap.current;if(!el||typeof ResizeObserver==="undefined")return;const ro=new ResizeObserver(e=>{const w=Math.round(e[0].contentRect.width);if(w>0)setCw(w)});ro.observe(el);return()=>ro.disconnect()},[teDades]);
+  if(!teDades)return <p className="rc-buit-v878343">{t("Encara no hi ha dades per a la gràfica.")}</p>;
+  const W=Math.max(300,Math.min(1100,cw)),compact=W<560;
+  const H=compact?230:280,L=compact?44:62,R=compact?8:14,T=valors?26:12,B=30,iw=W-L-R,ih=H-T-B;
+  let mn=Math.min(0,...vals),mx=Math.max(0,...vals);if(mx-mn<1)mx=mn+1;
+  const pas=(()=>{const r=(mx-mn)/4,p=Math.pow(10,Math.floor(Math.log10(r)));return [1,2,2.5,5,10].map(x=>x*p).find(x=>x>=r)})();
+  const lo=Math.floor(mn/pas)*pas,top=Math.ceil(mx/pas)*pas;
+  const ticks=[];for(let v=lo;v<=top+pas/2;v+=pas)ticks.push(Math.round(v*100)/100);
+  const Y=v=>T+ih-((v-lo)/(top-lo))*ih,y0=Y(0);
+  const band=iw/n,gap=2,ns=series.length;
+  const amp=k=>Math.max(3,Math.min(24,(band*0.72-gap*(k-1))/k));
+  const barres=[];
+  for(let i=0;i<n;i++){const act=centrar?series.filter(s=>s.vals[i]!=null):series;const k=Math.max(1,act.length),bw=amp(k),gw=k*bw+(k-1)*gap;let x=L+band*i+(band-gw)/2;
+    act.forEach(s=>{const v=s.vals[i];if(v!=null)barres.push({s,i,v,x,bw});x+=bw+gap})}
+  const cami=(x,bw,v)=>{const y1=Y(v),h=Math.abs(y0-y1);if(h<0.5)return "";const r=Math.min(4,bw/2,h),sg=v>=0?1:-1;return `M${x},${y0}V${y1+sg*r}Q${x},${y1} ${x+r},${y1}H${x+bw-r}Q${x+bw},${y1} ${x+bw},${y1+sg*r}V${y0}Z`};
+  const eur0=v=>`${Math.round(v).toLocaleString(loc878272())} €`;
+  const idx=e=>{const r=ref.current?.getBoundingClientRect();if(!r||!r.width)return null;const x=(e.clientX-r.left)/r.width*W;const i=Math.floor((x-L)/band);return i>=0&&i<n?i:null};
+  // el requadre: els anys del més nou al més vell i la diferència del primer amb el següent
+  const tip=hi==null?null:(()=>{
+    if(centrar){const s=series.find(z=>z.vals[hi]!=null);const ant=hi>0?series.find(z=>z.vals[hi-1]!=null):null;return {files:s?[{s,v:s.vals[hi]}]:[],d:ant?difFact878397(s?.vals[hi],ant.vals[hi-1]):null,vs:ant?.nom}}
+    const fs=[...series].reverse().filter(s=>s.vals[hi]!=null).map(s=>({s,v:s.vals[hi]}));return {files:fs,d:fs.length>1?difFact878397(fs[0].v,fs[1].v):null,vs:fs[1]?.s.nom}})();
+  const tipX=hi==null?0:(L+band*hi+band/2)/W*100;
+  return <div className="rc-chart-v878343 gf-barres-v878397">
+    {ns>1&&<div className="rc-llegenda-v878343 gf-ll-v878397">{series.map(s=><span key={s.k}><i style={{background:s.color}}/>{s.nom}</span>)}</div>}
+    <div className="rc-svgwrap-v878343" ref={wrap}>
+      <svg ref={ref} viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{aspectRatio:`${W} / ${H}`,touchAction:"pan-y"}} preserveAspectRatio="xMidYMid meet" role="img" aria-label={titol} tabIndex={0}
+        onPointerMove={e=>setHi(idx(e))} onPointerDown={e=>setHi(idx(e))} onPointerLeave={e=>{if(e.pointerType==="mouse")setHi(null)}} onBlur={()=>setHi(null)}
+        onKeyDown={e=>{if(e.key==="ArrowRight")setHi(h=>Math.min(n-1,(h??-1)+1));else if(e.key==="ArrowLeft")setHi(h=>Math.max(0,(h??n)-1))}}>
+        {hi!=null&&<rect x={L+band*hi} y={T} width={band} height={ih} className="hi-band"/>}
+        {ticks.map(v=><g key={v}><line x1={L} x2={W-R} y1={Y(v)} y2={Y(v)} className={v===0?"zero":"grid"}/><text x={L-8} y={Y(v)+4} textAnchor="end" className="ax">{curt878343(v)}</text></g>)}
+        {labels.map((l,i)=>compact&&n>8&&i%2?null:<text key={i} x={L+band*i+band/2} y={H-9} textAnchor="middle" className="ax">{l}</text>)}
+        {barres.map(b=>{const d=cami(b.x,b.bw,b.v);return d?<path key={b.s.k+":"+b.i} d={d} fill={b.s.color}/>:null})}
+        {valors&&barres.map(b=><text key={"v"+b.s.k+":"+b.i} x={b.x+b.bw/2} y={b.v>=0?Y(b.v)-7:Y(b.v)+15} textAnchor="middle" className="val">{band>=58?eur0(b.v):curt878343(b.v)}</text>)}
+      </svg>
+      {tip&&tip.files.length>0&&<div className={`rc-tip-v878343 ${tipX>60?"esq":""}`} style={{left:`${tipX}%`}} role="status">
+        <b>{tipLabel?tipLabel(hi):labels[hi]}</b>
+        {tip.files.map(({s,v})=><span key={s.k}><i style={{background:s.color}}/>{s.nom}<em>{money(v)}</em></span>)}
+        {tip.d!=null&&<XipDif878397 d={tip.d} vs={tip.vs}/>}
+      </div>}
+    </div>
+  </div>;
+}
+function GraficaFact878397({items=[],any:anyTriat=null}){
+  const mobil=useMobil878363();
+  const a0=new Date(),ara={y:a0.getFullYear(),m:a0.getMonth(),d:a0.getDate()};
+  const any=anyTriat&&anyTriat<=ara.y?anyTriat:ara.y,actual=any===ara.y;
+  const pts=useMemo(()=>ptsFact878397(items),[items]);
+  const[vista,setVista]=useState("comparar");
+  const[per,setPer]=useState("mesos");
+  const[acum,setAcum]=useState(true);
+  if(!pts.length)return <Card title={t("Facturat sense IVA")} className="gf-v878397"><Empty text="Encara no hi ha factures per fer la gràfica."/></Card>;
+  const teAny=y=>pts.some(p=>p.y===y);
+  const mesLl=m=>new Date(2026,m,1).toLocaleDateString(loc878272(),{month:"long"});
+  const perOk=per==="ytd"&&!actual?"any":per;
+  const anys=[0,1,2,3].map(k=>any-k).filter(y=>y===any||teAny(y)); // l'any triat i fins a 3 d'anteriors amb factures
+  const colorAny=y=>SERIES878343[any-y];
+  const comencat=(y,ms)=>y<ara.y||(y===ara.y&&ms.some(m=>m<=ara.m));
+  const valMes=(y,m)=>y>ara.y||(y===ara.y&&m>ara.m)?null:sumaFact878397(pts,y,[m]);
+  const nomPer=p=>p==="any"?t("L’any sencer"):p==="ytd"?t("De l’1 de gener a avui"):p==="mesos"?t("Tots els mesos"):nomPeriode878390(p);
+  const mesos12=Array.from({length:12},(_,i)=>mesNom878343(i));
+  let cos,titolG;
+  if(vista==="evol"){
+    const ser=[any,any-1].filter(y=>y===any||teAny(y)).map(y=>{const v=Array.from({length:12},(_,m)=>valMes(y,m));let s=0;return {k:String(y),nom:String(y),color:colorAny(y),dash:y!==any,vals:acum?v.map(x=>x==null?null:(s+=x)):v}});
+    titolG=t("Evolució {any}",{any});
+    cos=<LiniesChart878343 labels={mesos12} series={ser} titol={titolG} tipLabel={i=>acum?t("Acumulat fins a {mes}",{mes:mesLl(i)}):mesLl(i)}/>;
+  }else if(perOk==="mesos"){
+    // al mòbil, tres anys: amb quatre, les barres de cada mes no es veurien
+    const ys=(mobil?anys.slice(0,3):anys).slice().sort((a,b)=>a-b);
+    titolG=t("Comparar anys");
+    cos=<BarresAnys878397 labels={mesos12} series={ys.map(y=>({k:String(y),nom:String(y),color:colorAny(y),vals:Array.from({length:12},(_,m)=>valMes(y,m))}))} titol={titolG} tipLabel={i=>mesLl(i)}/>;
+  }else{
+    const ms=mesosPer878397(perOk,ara.m),cut=perOk==="ytd"?ara:null,ys=anys.slice().sort((a,b)=>a-b);
+    titolG=`${t("Comparar anys")} · ${nomPer(perOk)}`;
+    cos=<BarresAnys878397 labels={ys.map(String)} centrar valors titol={titolG}
+      series={ys.map((y,j)=>({k:String(y),nom:String(y),color:colorAny(y),vals:ys.map((_,i)=>i===j&&comencat(y,ms)?sumaFact878397(pts,y,ms,cut):null)}))}
+      tipLabel={i=>`${nomPer(perOk)} · ${ys[i]}${ys[i]===ara.y&&perOk!=="ytd"&&ms.some(m=>m>=ara.m)?` · ${t("fins avui")}`:""}`}/>;
+  }
+  // a dalt: l'any triat i el mateix període de l'any passat (si el període encara no s'ha acabat, tots dos fins al mateix dia)
+  const unPer=vista==="comparar"&&!["mesos","any","ytd"].includes(perOk);
+  const msH=vista==="comparar"&&perOk!=="mesos"?mesosPer878397(perOk,ara.m):[...Array(12).keys()];
+  const parcial=actual&&msH.some(m=>m>=ara.m);
+  const hA=comencat(any,msH)?sumaFact878397(pts,any,msH,parcial?ara:null):null;
+  const hB=teAny(any-1)?sumaFact878397(pts,any-1,msH,parcial?ara:null):null;
+  const pre=unPer?nomPer(perOk)+" ":"";
+  const ysT=anys.slice().sort((a,b)=>a-b),amb1=ysT.includes(any-1),tots=[...Array(12).keys()],ytd=[...Array(ara.m+1).keys()];
+  const fila=(nom,f,cls="",senseDif=false)=><tr className={cls}><td>{nom}</td>{ysT.map(y=>{const v=f(y);return <td key={y} className={v!=null&&Math.abs(v)<0.005?"zero":""}>{v==null?"—":money(v)}</td>})}{amb1&&<td className="dif">{senseDif?"—":difTxt878397(difFact878397(f(any),f(any-1)))||"—"}</td>}</tr>;
+  return <Card title={t("Facturat sense IVA")} className="gf-v878397">
+    <div className="gf-ctrl-v878397">
+      <div className="seg" role="group" aria-label={t("Gràfica")}><button type="button" aria-pressed={vista==="comparar"} onClick={()=>setVista("comparar")}>{t("Comparar anys")}</button><button type="button" aria-pressed={vista==="evol"} onClick={()=>setVista("evol")}>{t("Evolució {any}",{any})}</button></div>
+      {vista==="comparar"?<select value={perOk} onChange={e=>setPer(e.target.value)} aria-label={t("Període")}>
+        <option value="mesos">{t("Tots els mesos")}</option>
+        {actual&&<option value="ytd">{t("De l’1 de gener a avui")}</option>}
+        <option value="any">{t("L’any sencer")}</option>
+        <optgroup label={t("Trimestres")}>{["T1","T2","T3","T4"].map(q=><option key={q} value={q}>{nomPeriode878390(q)}</option>)}</optgroup>
+        <optgroup label={t("Mesos")}>{tots.map(m=>{const k=String(m+1).padStart(2,"0");return <option key={k} value={k}>{nomPeriode878390(k)}</option>})}</optgroup>
+      </select>
+      :<label className="acum"><input type="checkbox" checked={acum} onChange={e=>setAcum(e.target.checked)}/>{t("Acumulat")}</label>}
+    </div>
+    <p className="gf-resum-v878397">
+      {hA!=null&&<span>{pre}{parcial?t("{x} fins avui",{x:any}):any}: <b>{money(hA)}</b></span>}
+      {hB!=null&&<span>{pre}{parcial?t("{x} fins al mateix dia",{x:any-1}):any-1}: <b>{money(hB)}</b></span>}
+      <XipDif878397 d={difFact878397(hA,hB)}/>
+    </p>
+    {cos}
+    <details className="gf-xifres-v878397"><summary>{t("Xifres")}</summary>
+      <div className="gf-taula-wrap-v878397"><table className="gf-taula-v878397">
+        <thead><tr><th>{t("Mes")}</th>{ysT.map(y=><th key={y}><i style={{background:colorAny(y)}} aria-hidden="true"/>{y}</th>)}{amb1&&<th>{t("Diferència")}<small>{any} / {any-1}</small></th>}</tr></thead>
+        <tbody>{tots.map(m=><React.Fragment key={m}>{fila(mesLl(m),y=>valMes(y,m))}</React.Fragment>)}</tbody>
+        <tfoot>{actual&&fila(t("De l’1 de gener a avui"),y=>sumaFact878397(pts,y,ytd,ara),"ytd")}{fila(t("Total de l’any"),y=>sumaFact878397(pts,y,tots),"",actual)}</tfoot>
+      </table></div>
+    </details>
+  </Card>;
+}
 function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openObraTab,dins=false}){
   const mobil878369=useMobil878363();
   const[vfOpen878276,setVfOpen878276]=useState(false);
@@ -16788,6 +16931,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
   const[estatF873,setEstatF873]=useState("");
   const[mesF390,setMesF390]=useState("");
   const[oberts390,setOberts390]=useState(()=>new Set());
+  const[inf397,setInf397]=useState(false);
   const tauleta390=useTauleta878387();
   const tog390=k=>setOberts390(v=>{const n=new Set(v);n.has(k)?n.delete(k):n.add(k);return n});
   const mesDe390=f=>String(toInputDate8743(f.data)||"").slice(5,7);
@@ -16833,6 +16977,8 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
     printHtmlInPlace878112(html,i18nT("Factures emeses"));
   }
   rows=base873.filter(vigent873);total=suma873(rows);
+  // V87.397 · la gràfica: totes les factures vigents amb els filtres de client i d'expedient (l'any el tria la gràfica)
+  const graf397=all.filter(vigent873).filter(f=>(!client||f.clientNom===client)&&(!obra||f.obra.id===obra)).map(f=>({data:f.data,base:baseIva8743(f)}));
   return <div className="facturacio-v878337 fact-tec-v878373">{preview&&<QuotePreview8743 type="factura" doc={preview.doc} obra={preview.obra} close={()=>setPreview(null)}/>}{newOpen&&<NewGlobalFactura8778 obres={obres} onSave={createFacturaGlobal8778} close={()=>setNewOpen(false)}/>}
     <div className="fe-head">{dins?<span/>:<h1>{i18nT("Facturació")}</h1>}<div className="fe-head-acc-v878395">{base873.length>0&&<ActionMenu87213 className="gestoria-v878390" label={<><Download size={15} aria-hidden="true"/> {i18nT("Per a la gestoria")}</>}><button type="button" onClick={()=>exporta395()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button><button type="button" onClick={llistatPdf395}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>{potCompartir395&&<button type="button" onClick={()=>exporta395(true)}><Share2 size={15} aria-hidden="true"/> {i18nT("Compartir l’Excel…")}</button>}</ActionMenu87213>}<button type="button" className="primary" onClick={()=>setNewOpen(true)}><Plus size={16} aria-hidden="true"/> {i18nT("Nova factura")}</button></div></div>
     <HoursToInvoice878256 obres={obres} clients={clientList} onCreate={createFacturaGlobal8778} odata={odata} openObraTab={openObraTab}/>
@@ -16861,7 +17007,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
     {files873.some(vigent873)&&(()=>{const v=files873.filter(vigent873),bs=v.reduce((x,f)=>x+baseIva8743(f),0),iv=v.reduce((x,f)=>x+baseIva8743(f)*ivaRate878252(f)/100,0),tt=v.reduce((x,f)=>x+totalIva8743(f),0),pd=v.filter(f=>!cobrada873(f)).reduce((x,f)=>x+totalIva8743(f),0);
       const per=[anyF873==="tots"?i18nT("Tots els anys"):(mesOk390?nomMes390(mesOk390)+" "+anyF873:anyF873),client?i18nT(client):"",obra?obres873.find(o=>o.id===obra)?.nom:""].filter(Boolean).join(" · ");
       return <div className="fe-total-v878390"><div className="tit"><b>{i18nT("Total")}</b><small>{per} · {v.length===1?i18nT("1 factura"):i18nT("{n} factures",{n:v.length})}</small></div><div className="fe-kpis"><div><small>{i18nT("Base")}</small><b>{money(bs)}</b></div><div><small>{i18nT("IVA")}</small><b>{money(iv)}</b></div><div><small>{i18nT("Total")}</small><b>{money(tt)}</b></div><div className={pd>0.005?"warn":""}><small>{i18nT("Pendent de cobrar")}</small><b>{money(pd)}</b></div></div></div>})()}
-    <details className="plegat-v878366 fe-informes-v878373"><summary><b>{i18nT("Gràfics i informes")}</b></summary><div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={aggregate8776(rows,f=>statusKeyFactura8776(f.estat),()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div><IngressosChart878292 title={i18nT("Ingressos")} items={all.filter(vigent873).filter(f=>(!client||f.clientNom===client)&&(!obra||f.obra.id===obra)).map(f=>({data:f.data,import:baseIva8743(f)}))}/><FinanceReports87110 title={i18nT("Resum / informes de factures")} rows={rows} type="factures"/></details>
+    {all.length>0&&<details className="plegat-v878366 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><b>{i18nT("Gràfics i informes")}</b><span>{resumFact878397(graf397,anyF873==="tots"?null:+anyF873)}</span></summary>{inf397&&<><GraficaFact878397 items={graf397} any={anyF873==="tots"?null:+anyF873}/><div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={aggregate8776(rows,f=>statusKeyFactura8776(f.estat),()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div></>}</details>}
   </div>;
 }
 function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab,clientsList=[]}){
