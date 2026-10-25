@@ -1549,6 +1549,53 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     d'honoraris més foscos (#B45309, #15803D). Lletra de 12 px a les capçaleres de les taules i als rètols petits (fora de la taula
     d'Expedients, on la data de creació no hi cabria) i a la setmana de l'Agenda; l'escala del Planning es queda més petita. Estils
     `src/theme-v878394.css`. Queda un sol avís (fals: «Avui» del Planning).
+  - **V87.395 · «Per a la gestoria» a la Facturació del tècnic** (publicada dins de la V87.396): a `FacturesGeneral8738`, al costat de «Nova
+    factura», el menú «Per a la gestoria» (`fe-head-acc-v878395`): Excel de les factures emeses del període triat (per número; base, IVA,
+    retenció, total, estat i data de cobrament; `exporta395`, amb «Compartir l’Excel…» si l’aparell ho deixa) i «Llistat en PDF»
+    (`llistatPdf395`). **Compte:** dins d’aquesta funció `t` no és la traducció (es fa servir `i18nT`); en canviar `t(` per `i18nT(` es va
+    tornar `tot(` en `toi18nT(` i l’Excel petava («toi18nT is not defined»): ho va trobar `fact373test` (cas 6). Estils `src/theme-v878395.css`.
+  - **V87.396 · Ajustos › Documents i els descompostos de Comodoro** (l’Héctor, 25/10/2026):
+    - **Documents** (`DocsAjustos878396`, bloc «Documents» d’Ajustos, no per al treballador; es desa al compte a `aco_docs_v878396`): un sol
+      encapçalament per a tots els documents (`capDoc878396`: pressupost d’obra, certificacions a origen i «només aquesta», proformes i
+      factures de l’empresa, pressupostos i factures d’honoraris; no la factura VeriFactu) en **7 estils** (`ESTILS_DOC878396`: A Neta ·
+      B Banda de color · C Dues columnes · D Franja lateral · E Centrada · F Compacta · G Logo a la dreta; l’Héctor els va veure amb
+      captures del logo de Brava i va voler poder-los triar), amb el color de l’empresa (`colorDocs878396` = Imatge de l’empresa) i el
+      **logo sencer a la seva alçada** (24 mm, sense el requadre de 31 × 17 mm que deixava espai en blanc). Vista prèvia a Ajustos.
+      També: **peu** de tots els documents (`peuDoc878396`), **textos de sèrie dels pressupostos** (validesa, forma de pagament i
+      condicions; `textosPres878396`: si el pressupost no en porta), **requadre d’acceptació** del client (nom, DNI, data i signatura;
+      `signaturaDoc878396`, de sèrie sí) i, per als comptes sense «Dades de l’empresa» (el de l’Héctor), **les dades de l’emissor dels
+      honoraris** (nom, NIF, col·legiat, adreça, telèfon, correu, IBAN; `emissorTecnic878396`). Fora «Observacions/Forma de pagament
+      pendent d’indicar», «Signatura / conformitat» i «Document provisional pendent d’adaptar…». Les classes de dins de l’encapçalament
+      porten el prefix `k3` (`.k3h`, `.k3box`…): les plantilles tenen les seves `.top`, `.box`… i xocaven (**compte en canviar noms amb
+      una expressió: també tocava `o.meta` del codi**). Estils `src/theme-v878396.css`. Prova: `docs396test.mjs` (14, amb captures a
+      `D:/aco-tmp/docs396`). Adaptades `documentstest` i `marca351test` (el logo és `img.k3lg`).
+    - **Descompostos d’Excel** (l’Héctor amb una captura de la fitxa de la partida F-00.01.01 de Comodoro: «això què representa?»; Mà
+      d’obra 0, Materials 1.173,32, Industrials 586,66, CI 0,03 %… i «El preu de la partida és 793,09 €»). L’Excel de Comodoro (fet amb
+      l’eina de pressupostos de l’Héctor) té per a cada partida els recursos propis i l’oferta industrial amb fórmules «si és PROPI, q × p;
+      si no, 0» (i al revés) i «SUMATORI COSTOS DIRECTES (CD)». L’app tornava a fer q × p de totes les línies i comptava el sumatori: el
+      cost directe sortia triplicat i, en no quadrar, els % es llegien com a fraccions. A més, el títol de cada bloc porta «← PRESSUPOST» a
+      la mateixa fila i l’app no hi veia blocs: només la primera partida de cada full tenia descompost (2 de 65).
+      - En llegir: «← PRESSUPOST» marca un bloc (`esTornar878384`); el codi i el títol també en dues cel·les («02.01 | Enderroc…», l’altre
+        Excel de Llafranc); si un full no dona cap bloc, es llegeix sencer com abans. Una línia amb **import 0 escrit a l’Excel** i quantitat
+        és la manera no triada o un % que no s’aplica (`exclosa878396`, es treu). Els títols («MÀ D’OBRA», «OFERTA INDUSTRIAL /
+        SUBCONTRACTA»…) són títols (`capSec878396`). «SUMATORI…» és un subtotal i «PREU UNITARI» sol és la fila final (també a
+        `breakdownRecalculationV87232.js`). El rendiment i el preu de cada línia amb fins a 4 decimals (`qty4878396`; amb 2, uns cèntims de
+        diferència). La fila de títols de la taula ja no pot ser una descripció llarga (cel·les de més de 40 lletres no compten).
+      - Obres ja importades (`reparaDescompostos878384`, en obrir l’obra): si els propis i l’oferta industrial sumen cadascun el CD de
+        l’Excel, només en compta un (`alternativaInd878396`: el que hi quadra; si quadren tots dos, l’oferta industrial), els % bé.
+        Les descripcions de les partides ja no porten «SUBTOTAL — … CAPÍTOL →» ni el títol del capítol següent (`netejaDesc878396`, també
+        en importar; a Comodoro n’hi havia 11).
+      - La fitxa de la partida (`partsPartida878361`): el títol de l’apartat de l’Excel mana (la maquinària per hores ja no és mà d’obra) i
+        no surten les línies a 0 sense quantitat.
+      - Resultats: amb l’Excel de Comodoro, 65 de 65 partides amb descompost i 55 al cèntim (9 per cèntims o pocs euros: en algunes
+        partides l’Excel calcula el BI sobre el CD i no sobre la base després del CI, i el càlcul de l’app només sap «en cadena» o
+        «sumats»; la fitxa avisa de la diferència; la C-00.03.01 l’Excel mateix la té en PA a 2.784 € i a 13,80 €/m²). Amb l’Excel de
+        Llafranc de Baixades (16/10), de 0 a 50 de 55. A la còpia del núvol del 25/10: Comodoro 2 de 2, i Llafranc (Brava i còpia de
+        l’Héctor) 88 de 100 i la 2026-021 40 de 44, que s’arreglen soles en obrir-les (encara no s’havien obert des de la V87.384).
+      - **A Comodoro les altres 63 partides no tenen descompost** (es va importar amb la versió d’abans): cal tornar a importar l’Excel.
+      - Proves: `descomp396unit.mjs` (17, sense navegador, Excels inventats dels dos formats i la reparació). Eines: `descomp397sim.mjs`
+        (simula la reparació amb una còpia de `COPIES_NUVOL`, sense escriure res) i `descompexcel.mjs` (importa un Excel real amb el codi
+        de l’app i diu quantes partides quadren; `APPJS`/`BRKJS` per comparar amb una versió d’abans). `descomp384unit` adaptada (9).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1688,6 +1735,58 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
+### Per començar una sessió nova (25/10/2026, després de la V87.396)
+
+> **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
+> l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
+
+**Estat (publicada la V87.396 a Render):**
+- **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
+  i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
+  cobraments, gestoria), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
+- **Constructora i gestió total** (`brava`, `socoterm`, comptes `demo-*`): obres, importar obres i factures d’anys anteriors, Amidaments
+  (PDF, Excel, BC3) i pressupost automàtic (banc de preus amb IPC, obres anteriors, IA per copiar i enganxar), Preus i marges,
+  Pressupost (fases, comissió amagada, resum, fitxa de la partida), Certificacions, Partes d’obra, Despeses (grups, columnes, mà d’obra
+  per dies, importar Excel, gestoria), Hores del personal i Fitxatge, Empresa (dades, treballadors, documentació, industrials,
+  Calendari laboral), Planning (vinculacions, partides, qui hi treballa) i Agenda › Equip, Rendiment de l’obra i de l’empresa,
+  Facturació de l’empresa (sèrie pròpia, cobraments, gestoria).
+- **Per a tothom:** mòbil i iPad «tot recollit», accessibilitat (contrast, 12 px, 36 px per al dit, focus), Ajustos per blocs
+  (Imatge de l’empresa amb logo i color, Documents amb 7 estils d’encapçalament, accessos ràpids…), castellà, sense cobertura.
+- **No fet:** perfils autònom i promotor amb compte propi, IA al servidor (albarans, pressupost-ia: cal la clau d’Anthropic i el sí de
+  l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
+
+**Què fer, per ordre:**
+1. **V87.397 · Gràfiques a Facturació** (l’Héctor, 25/10/2026: «gràfiques de barres o lineals per fer comparatius entre el mateix mes de
+   diferents anys, per exemple, o l’evolució de l’any vigent»): a la Facturació de l’empresa (`FacturacioEmpresa878337`) i a la del tècnic
+   (`FacturesGeneral8738`), plegat a sota com «Gràfics i informes»: **barres** del mateix mes de cada any (any vigent i 2-3 anteriors) i
+   **línies** de l’any vigent mes a mes (normal i acumulat) amb l’any passat al costat. Base sense IVA per la data de la factura, sense les
+   anul·lades; al mòbil, plegat. Fer servir l’skill `dataviz` i `LiniesChart878343` (ja té barres per a un sol mes, V87.384); llegenda,
+   «table view» i dark mode com diu l’skill. Una prova nova (comptes `demo-*` amb factures de diversos anys).
+2. **Comodoro: els descompostos de les altres 63 partides** (vegeu la V87.396). Dir a l’Héctor que torni a importar l’Excel v07 (Accions ›
+   Importar Excel: si el pressupost ja té partides en fa un de nou; després eliminar el vell, si no té certificacions) o fer una acció
+   «Tornar a llegir els descompostos d’un Excel» que els posi a les partides que ja hi són pel codi (`attachWorkbookDescompostos878228`).
+3. **Repàs complet de les proves a la V87.396** (`D:\aco-tmp\totes-wt.sh` a `D:\aco-tmp\wt379`, amb la màquina tranquil·la). El de la
+   V87.394 es va aturar a 51 de 107 (`D:\aco-tmp\totes-394.txt`); les que hi fallaven (agents303, amidaments328, constructor336,
+   contrasenyestest, grafica384, habitualstest) eren per la càrrega: grafica384 i habitualstest ja s’han tornat a passar soles en verd;
+   falten agents303, amidaments328, constructor336 i contrasenyestest.
+4. Descompostos: % calculats sobre una base diferent a cada partida (el BI sobre el CD) i la importació d’un descompost d’una sola partida
+   (`workbookDescompostFromFile878161`, des de l’editor de la partida), que encara no passa per la neteja de la V87.384/396.
+5. Les guies PDF de benvinguda (`GUIES_USUARIS`, amb contrasenyes: **només quan ho digui l’Héctor**; els textos de `guies.js` ja són al dia
+   fins a la V87.394; falta posar-hi Ajustos › Documents).
+6. La resta de sota (VeriFactu ATURAT, IA al servidor, fitxatge fase 2, Google Drive, perfils autònom/promotor…), sempre amb el sí de l’Héctor.
+
+**Problemes coneguts:**
+- Les proves s’han de passar d’una en una o amb la màquina tranquil·la: amb dues alhora en fallen d’aleatòries (fitxatge, horesunic,
+  importobres, contrasenyestest…). En aturar un repàs, el guió (`bash totes-wt.sh`) i els seus servidors poden quedar vius: tancar-los amb
+  PowerShell (processos `node`/`bash`/`msedge` amb `aco-tmp` a la línia d’ordres). Les captures fetes a mà (`D:/aco-tmp/cap396`) també
+  deixaven navegadors oberts.
+- `sessiotest` (cas 2) i `contrasenyestest` fallen de vegades (memòria cau de Vite: esborrar `D:/aco-tmp/vitecache-main`).
+- Al terminal (Git Bash), les barres inverses dels heredocs i de `node -e` es perden: per a pedaços amb expressions regulars, escriure
+  el fitxer amb l’eina d’escriure fitxers.
+- Dades de l’Héctor a revisar: 47 partides per sobre del 100 % i la certificació 1 de Cala Rovira amb l’import desat vell (`revisionuvol.mjs`).
+
+### La resta
+
 - **Encàrrecs de l’Héctor del 19/10/2026 pendents (Dades en pestanyes, pobles i «Accions»: fets a la V87.304):**
   - **Revisió amb clients inventats: primera versió feta el 20/10/2026** (`tools/proves/clientsvirtuals.mjs`, 25 proves):
     constructora (Brava: obra nova, pressupost d’un PDF, certificació, proforma, despesa, cita, nota, recarregar; mòbil) i tècnic
@@ -1756,7 +1855,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   (`INSTRUCCIONS_LECTURA_ALBARANS_IA.txt`).
 - **Hores per treballador** (constructors) i mòduls per a **autònoms / operaris / promotors**.
 - **Portal de client amb compte de núvol propi** (avui els clients només tenen el portal intern).
-- Obres compartides: hores, agenda i albarans no es comparteixen; «només consulta» no es bloqueja a la pantalla.
+- Obres compartides: hores, agenda i albarans no es comparteixen; «només consulta» no es bloqueja a la pantalla (l'Héctor, 25/10/2026:
+  «de moment no»: no en comparteix cap així; si cal, un mode propi, no el `readOnly` del portal, que també limita les pestanyes).
 - Seguretat: considerar Supabase Pro en comercialitzar (les regles antigues d’arxius anònimes es van esborrar a la V87.262).
 - Dades a revisar amb l’Héctor: partides certificades per sobre del 100 %, codis repetits
   (CALA ROVIRA 01.16, Verbania 04.01), dates desordenades a JAVI PUADO i MARICEL.
