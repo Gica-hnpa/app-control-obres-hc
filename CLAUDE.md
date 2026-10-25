@@ -1542,6 +1542,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     la jornada, la llista de festius, els 12 mesos (caps de setmana en gris, festius en vermell) i la nota de l'art. 34.6. Els festius no
     s'omplen sols (cada empresa té els seus locals i els del conveni). Estils `src/theme-v878393.css`. Prova: `calendari393test.mjs` (12);
     `empresa339test` adaptada (la pestanya nova).
+  - **V87.394 · Accessibilitat a l'ordinador** (`accessibilitat391.mjs` a 1440 px): etiquetes (`aria-label`) als camps que no en tenien
+    (feines de l'obra —text, data, hora—, «Accions» de les feines de l'Inici, l'estat a la taula d'Expedients, IVA/retenció/deducció de les
+    proformes, el cercador d'Honoraris): 41 → 0. La capçalera del resum de certificacions tenia text gris sobre fons fosc (una regla vella de
+    `styles.css`, `.cert-resum-row-v8717.head .pres`…, guanyava la del tema): ara fons clar. Xips «Pendent» i «Acceptat» dels pressupostos
+    d'honoraris més foscos (#B45309, #15803D). Lletra de 12 px a les capçaleres de les taules i als rètols petits (fora de la taula
+    d'Expedients, on la data de creació no hi cabria) i a la setmana de l'Agenda; l'escala del Planning es queda més petita. Estils
+    `src/theme-v878394.css`. Queda un sol avís (fals: «Avui» del Planning).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la

@@ -1,0 +1,13 @@
+/* V87.394 · Accessibilitat a l'ordinador (accessibilitat391.mjs a 1440 px) */
+/* La capçalera del resum de certificacions: una regla antiga (styles.css) hi deixava els fons foscos de «Pressupost», «Cert.» i «Total»
+   amb el text gris del tema (contrast 1,5–2): fons clar per a tota la capçalera */
+html body .cert-resum-v8717 .cert-resum-row-v8717.head>span{background:transparent!important;color:var(--co-ink-2)!important;font-size:12px!important}
+/* xips dels pressupostos d'honoraris amb prou contrast (el taronja i el verd feien 3,2–3,3:1) */
+html body .pressupostos-v878316 .e-pendents{--c:#B45309}
+html body .pressupostos-v878316 .e-acceptats{--c:#15803D}
+/* lletra mínima de 12 px a les capçaleres de les taules i als rètols petits de l'ordinador */
+html body .main table thead th{font-size:12px!important}
+html body .main .exp-name-v878259 small,html body .main table:not(.exp-table-v878289) td>small,html body .main .exp-sort-controls-v878192 label>span,html body .main .codi-carpeta-v878270 small,
+html body .main .gt-row-v878253.head .gt-left-v878253>span{font-size:12px!important}
+/* la setmana de l'Agenda: les hores, els dies i «Tot el dia» a 12 px (l'escala del Planning es queda més petita: els dies es tocarien) */
+html body .main .ag-tg-hours>span,html body .main .ag-tg-day>small,html body .main .ag-tg-allday>span,html body .main .ag-ev>small{font-size:12px!important}
