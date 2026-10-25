@@ -1533,6 +1533,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Etiquetes** als camps que no en tenien (estat i prioritat de les feines, el compte d'Ajustos, afegir punts i documents a l'encàrrec,
       accions del pressupost d'honoraris al mòbil). Botons sense nom i imatges sense text: 0.
     - Estils `src/theme-v878392.css`. `tallades374.mjs` (`COMPTES=demo-constructor,demo-tecnic`, separats per comes): 0 pantalles tallades.
+  - **V87.393 · Empresa › Calendari** (l'Héctor, 25/10/2026: «ha de penjar-se també el calendari laboral de la construcció i el seu horari?»;
+    art. 34.6 ET: l'empresa fa el calendari cada any i l'exposa en un lloc visible de cada centre de treball, també a l'obra):
+    pestanya nova «Calendari» a Empresa (`CalendariEmpresa878393`; `Empresa878339` rep `obres`). Es desa a l'empresa
+    (`aco_empresa_v878259.calendari878393 = {horari:[{id,dies,hores}], anys:{[any]:{jornada, festius:[{id,data,motiu}]}}}`): l'horari (val per a
+    tots els anys), i per a cada any (‹ ›) la jornada anual i els festius i dies no laborables (ordenats per data). **«PDF per penjar»**
+    (`fullCalendari878393`): per a l'oficina o una obra oberta (centre de treball amb l'adreça de l'obra), A4 amb l'empresa i el NIF, l'horari,
+    la jornada, la llista de festius, els 12 mesos (caps de setmana en gris, festius en vermell) i la nota de l'art. 34.6. Els festius no
+    s'omplen sols (cada empresa té els seus locals i els del conveni). Estils `src/theme-v878393.css`. Prova: `calendari393test.mjs` (12);
+    `empresa339test` adaptada (la pestanya nova).
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la

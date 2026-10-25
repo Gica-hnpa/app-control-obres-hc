@@ -1,0 +1,31 @@
+/* V87.393 · Empresa › Calendari: l'horari, la jornada anual, els festius de cada any i el full per penjar a l'oficina o a l'obra */
+html body .calendari-v878393{display:flex;flex-direction:column;gap:12px;max-width:760px}
+html body .calendari-v878393 .any-v878393{display:flex;align-items:center;gap:10px}
+html body .calendari-v878393 .any-v878393 b{font:700 18px var(--app-font);min-width:56px;text-align:center}
+html body .calendari-v878393 .any-v878393 button{min-width:40px;min-height:36px;font-size:18px;line-height:1}
+html body .calendari-v878393 .bloc-v878393{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface);padding:12px;display:flex;flex-direction:column;gap:8px}
+html body .calendari-v878393 .bloc-v878393 h3{margin:0;font-size:15px}
+html body .calendari-v878393 .fila-v878393{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) 36px;gap:8px;align-items:center}
+html body .calendari-v878393 .fila-v878393 input{min-width:0;width:100%}
+html body .calendari-v878393 .fila-v878393 .treu{display:flex;align-items:center;justify-content:center;min-height:36px;color:var(--co-ink-3)}
+html body .calendari-v878393 .bloc-v878393>.link{align-self:flex-start;min-height:32px}
+html body .calendari-v878393 .jornada-v878393{display:flex;align-items:center;gap:8px}
+html body .calendari-v878393 .jornada-v878393 input{max-width:120px}
+html body .calendari-v878393 .buit{margin:0;color:var(--co-ink-3)}
+html body .calendari-v878393 .full-v878393{flex-direction:row;flex-wrap:wrap;align-items:center}
+html body .calendari-v878393 .full-v878393 h3{flex:1 1 100%}
+html body .calendari-v878393 .full-v878393 select{flex:1 1 220px;min-width:0}
+html body .calendari-v878393 .full-v878393 button{display:inline-flex;align-items:center;gap:6px}
+@media (max-width:560px){
+  html body .calendari-v878393 .fila-v878393{grid-template-columns:minmax(0,1fr) 36px;grid-template-areas:"a x" "b x"}
+  html body .calendari-v878393 .fila-v878393>input:first-child{grid-area:a}
+  html body .calendari-v878393 .fila-v878393>input:nth-child(2){grid-area:b}
+  html body .calendari-v878393 .fila-v878393>.treu{grid-area:x}
+}
+/* els camps i els botons de text amb l'aspecte de l'app (sortien amb el del navegador) */
+html body .calendari-v878393 input,html body .calendari-v878393 select{box-sizing:border-box;min-height:40px;padding:8px 10px;border:1px solid var(--co-line-strong);border-radius:8px;background:var(--co-surface,#fff);font:inherit;font-size:15px;color:var(--co-ink)}
+html body .calendari-v878393 input:focus,html body .calendari-v878393 select:focus{border-color:var(--co-accent);box-shadow:0 0 0 3px var(--co-accent-soft);outline:none}
+html body .calendari-v878393 button.link{all:unset;box-sizing:border-box;cursor:pointer;color:var(--co-accent);font:600 14px var(--app-font);padding:6px 2px;min-height:32px;display:inline-flex;align-items:center}
+html body .calendari-v878393 button.link.treu{justify-content:center;width:36px;min-height:40px;color:var(--co-ink-3);border-radius:8px}
+html body .calendari-v878393 button.link.treu:hover{background:var(--co-surface-2);color:#B91C1C}
+html body .calendari-v878393 .bloc-v878393 h3{color:var(--co-ink)}
