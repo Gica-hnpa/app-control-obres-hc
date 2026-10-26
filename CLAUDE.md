@@ -1648,6 +1648,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - L’Excel v07 és a `D:\00_CUBERO\00_FEINA\00_HÉCTOR\09_SOCOTERM\2026\2026_008 obra CP COMODORO\` (dades d’un client: no copiar-lo a les proves).
     - Prova: `descomp399unit.mjs` (11, sense navegador). Passen `descomp396unit`, `descomp384unit`, `preusautounit`, `amidamentsunit`,
       `pressupost361test` i `preus378test`.
+  - **V87.400 · «Visual nou» per validar** (l'Héctor, 26/10/2026: «com queden les visuals de les pantalles: accessos amb una icona i no tanta
+    lletra… un pas endavant en la visual final, sobretot la versió mòbil, que és la que faran servir a peu d'obra, i l'iPad; amb ordinador pot
+    anar diferent… fes-me propostes amb captures per validar si les fem o no»):
+    - **Opció de prova de cada aparell:** Ajustos › **Aspecte** › «Visual nou (en proves)» (`AspecteAjustos878400`; només al compte de l'Héctor
+      i als `demo-*`). Es desa al localStorage de debò del navegador (`visual-nou-878400`, `lsVisual878400`: si es desés a la memòria de l'app,
+      es perdia en recarregar) i posa `html[data-visual="nou"]`. **Sense l'opció, l'app es veu com sempre.**
+    - **Les propostes** (només al mòbil i l'iPad, `src/theme-v878400.css`): (1) Inici: salutació en una línia, sis accessos en icona
+      (`AccessosInici878400`: Nova obra/Nou expedient, Nota de veu, Despesa, Hores, Agenda, Facturació) i les xifres en una fila; (2) menú
+      «Més» com una graella d'icones que surt de baix (3 columnes al mòbil, 5 a l'iPad); (3) obra: els blocs més baixos al mòbil i cada
+      apartat amb la seva icona (`TAB_ICON878400`, `iconaTab878400`), «Compartir» en una línia petita; (4) llista d'obres: sense el títol
+      repetit i els paquets en una fila que es llisca; (5) Despeses: els grups en targetes petites amb icona (`ICONA_GRUP878400`).
+    - Captures d'abans i després: `tools/proves/visual400.mjs` (`VISUAL=1`, `MIDES=mobil,ipad`, `COMPTES=`) → `D:\aco-tmp\visual400`.
+      Document per validar a Claude Docs (vegeu «Per començar una sessió nova»). Les que validi, es posen per a tothom i es treu l'opció.
+    - Prova: `visual400test.mjs` (11). Passen `navtest`, `obratest` i `v366test`.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1787,12 +1801,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.399)
+### Per començar una sessió nova (26/10/2026, després de la V87.400)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.399 a Render):**
+**Estat (publicada la V87.400 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

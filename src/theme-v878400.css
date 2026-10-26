@@ -1,0 +1,101 @@
+/* V87.400 · «Visual nou» (opció de prova de cada aparell, Ajustos › Aspecte): accessos amb icona i menys lletra al mòbil i a l'iPad.
+   Tot va sota html[data-visual="nou"]: sense l'opció, l'app es veu com sempre. */
+html body .aspecte-v878400 label{display:flex;gap:12px;align-items:center;min-height:44px;cursor:pointer}
+html body .aspecte-v878400 input{width:22px;height:22px;flex:0 0 auto}
+html body .aspecte-v878400 span{display:flex;flex-direction:column;gap:2px}
+html body .aspecte-v878400 small{color:var(--co-ink-3);font-size:13px}
+html body .accessos-inici-v878400{display:none}
+
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  /* ── Inici: la salutació en una línia, els accessos en icona i les xifres en una fila ── */
+  html[data-visual="nou"] body .home-head-v878251{gap:12px}
+  html[data-visual="nou"] body .home-head-title-v878251>span{font-size:12px;letter-spacing:.06em}
+  html[data-visual="nou"] body .home-head-title-v878251 h1{font-size:24px;line-height:1.2;margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html[data-visual="nou"] body .veu-inici-v878330{display:none!important}
+  html[data-visual="nou"] body .accessos-inici-v878400{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:2px 0 4px}
+  html[data-visual="nou"] body .accessos-inici-v878400>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    min-height:92px;padding:12px 6px;border-radius:18px;background:var(--co-surface,#fff);border:1px solid var(--co-line);box-shadow:0 1px 2px rgba(15,23,42,.05);
+    font:600 13px/1.2 var(--app-font);color:var(--co-ink);text-align:center}
+  html[data-visual="nou"] body .accessos-inici-v878400>button:active{transform:scale(.97)}
+  html[data-visual="nou"] body .accessos-inici-v878400>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+  html[data-visual="nou"] body .accessos-inici-v878400 .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#EAF1FD;color:#1D4ED8}
+  html[data-visual="nou"] body .accessos-inici-v878400 .ic svg{width:24px;height:24px}
+  html[data-visual="nou"] body .accessos-inici-v878400 .a-veu .ic{background:#F0EDFF;color:#5B47D6}
+  html[data-visual="nou"] body .accessos-inici-v878400 .a-desp .ic{background:#FFF0E8;color:#C2410C}
+  html[data-visual="nou"] body .accessos-inici-v878400 .a-hores .ic{background:#E6F6F1;color:#0F766E}
+  html[data-visual="nou"] body .accessos-inici-v878400 .a-agenda .ic{background:#E7F3FB;color:#0369A1}
+  html[data-visual="nou"] body .accessos-inici-v878400 .a-fact .ic{background:#E9F6E9;color:#15803D}
+  html[data-visual="nou"] body .home-kpis-v878251{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:0!important}
+  html[data-visual="nou"] body .home-kpis-v878251>button{padding:10px 8px!important;min-height:0!important;align-items:center!important;text-align:center!important;flex-direction:column-reverse!important;display:flex!important;gap:2px!important;justify-content:flex-end!important}
+  html[data-visual="nou"] body .home-kpis-v878251>button b{font-size:22px!important;line-height:1.1!important}
+  html[data-visual="nou"] body .home-kpis-v878251>button small{font-size:12px!important;letter-spacing:0!important;text-transform:none!important;line-height:1.2!important;white-space:normal!important}
+
+  /* ── Menú «Més»: una graella d'icones que surt de baix ── */
+  html[data-visual="nou"] body .sidebar{top:auto!important;bottom:0!important;left:0!important;right:0!important;width:100vw!important;max-width:none!important;height:auto!important;max-height:86vh!important;
+    border-radius:22px 22px 0 0!important;transform:translateY(105%)!important;transition:transform .22s ease!important;overflow-y:auto!important;padding:10px 16px calc(16px + env(safe-area-inset-bottom))!important;
+    box-shadow:0 -12px 40px rgba(15,23,42,.18)!important}
+  html[data-visual="nou"] body .sidebar.open{transform:translateY(0)!important}
+  html[data-visual="nou"] body .sidebar::before{content:"";display:block;width:44px;height:5px;border-radius:99px;background:var(--co-line-strong,#cbd5e1);margin:0 auto 10px}
+  html[data-visual="nou"] body .sidebar-head{display:flex!important;align-items:center!important;gap:10px!important;padding:0 0 12px!important;margin:0 0 12px!important;border-bottom:1px solid var(--co-line)!important}
+  html[data-visual="nou"] body .sidebar-head .collapse-btn{display:none!important}
+  html[data-visual="nou"] body .sidebar-head .active-user-v8780{display:none!important}
+  html[data-visual="nou"] body .sidebar-head .logout-mini-v8778{margin-left:auto!important}
+  html[data-visual="nou"] body .sidebar-head .close-menu{width:40px!important;height:40px!important;border-radius:12px!important;padding:0!important;display:grid!important;place-items:center!important}
+  html[data-visual="nou"] body .side-nav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;padding:0!important}
+  html[data-visual="nou"] body .side-nav .menu-btn{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:8px!important;
+    min-height:88px!important;padding:12px 4px!important;margin:0!important;border-radius:18px!important;border:1px solid var(--co-line)!important;background:var(--co-surface,#fff)!important;
+    font:600 13px/1.2 var(--app-font)!important;color:var(--co-ink)!important;text-align:center!important;width:auto!important}
+  html[data-visual="nou"] body .side-nav .menu-btn svg{width:26px!important;height:26px!important;color:var(--co-accent,#2563EB)!important}
+  html[data-visual="nou"] body .side-nav .menu-btn span{display:block!important;white-space:normal!important}
+  html[data-visual="nou"] body .side-nav .menu-btn.active{background:#EAF1FD!important;border-color:#BFD4F6!important;color:#1D4ED8!important}
+  html[data-visual="nou"] body .side-nav .nav-version-v878264{grid-column:1/-1;text-align:center;margin:4px 0 0!important}
+
+  /* ── Obra: els tres blocs més baixos i els apartats amb icona ── */
+  html[data-visual="nou"] body .obra-tabs-bar-v878269.narrow .obra-blocs-v878299>button{min-height:52px!important;padding:8px 6px!important;flex-direction:row!important;gap:8px!important;flex-wrap:wrap!important;justify-content:center!important;align-content:center!important}
+  html[data-visual="nou"] body .obra-tabs-bar-v878269.narrow .obra-blocs-v878299>button>svg{width:20px!important;height:20px!important;margin:0!important}
+  html[data-visual="nou"] body .obra-tabs-bar-v878269.narrow .obra-blocs-v878299>button .nom{font-size:15px!important}
+  html[data-visual="nou"] body .obra-tabs-bar-v878269.narrow .obra-blocs-v878299>button>small{flex-basis:100%;text-align:center;font-size:12px!important;margin-top:-2px}
+  html[data-visual="nou"] body .obra-bloc-panel-v878299{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+  html[data-visual="nou"] body .obra-bloc-panel-v878299>button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:7px!important;
+    min-height:84px!important;padding:10px 4px!important;border-radius:16px!important;font:600 13px/1.2 var(--app-font)!important;text-align:center!important}
+  html[data-visual="nou"] body .obra-bloc-panel-v878299>button .ic-v878400{width:26px;height:26px;color:var(--co-accent,#2563EB)}
+  html[data-visual="nou"] body .obra-bloc-panel-v878299>button.on{background:#EAF1FD!important;color:#1D4ED8!important}
+  html[data-visual="nou"] body .obra-bloc-panel-v878299>.obra-bloc-sep-v878307{grid-column:1/-1}
+  html[data-visual="nou"] body .obra-bloc-fila-v878299>button{display:inline-flex!important;align-items:center!important;gap:7px!important}
+  html[data-visual="nou"] body .obra-bloc-fila-v878299>button .ic-v878400{width:18px;height:18px}
+  /* el Resum: «Només la veus tu · Compartir» en una línia petita, la foto amb un botó petit */
+  html[data-visual="nou"] body .share-bar-v878259{background:transparent!important;border:0!important;padding:0!important;margin:0 0 8px!important;display:flex!important;align-items:center!important;gap:10px!important;font-size:13px!important;color:var(--co-ink-3)!important}
+  html[data-visual="nou"] body .share-bar-v878259 button{min-height:36px!important;padding:4px 12px!important;font-size:13px!important;border-radius:999px!important}
+
+  /* ── Llista d'obres: sense el títol repetit (ja és a dalt) i els paquets en una fila que es llisca ── */
+  html[data-visual="nou"] body .expedients-page-v8741>.card>.card-head>h2{display:none!important}
+  html[data-visual="nou"] body .expedients-page-v8741>.card>.card-head{display:flex!important;justify-content:flex-end!important;padding-bottom:6px!important}
+  html[data-visual="nou"] body .exp-paquets-v878314{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;gap:8px!important;padding:2px 2px 6px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  html[data-visual="nou"] body .exp-paquets-v878314::-webkit-scrollbar{display:none}
+  html[data-visual="nou"] body .exp-paquets-v878314>button{flex:0 0 auto!important;display:inline-flex!important;flex-direction:row-reverse!important;align-items:center!important;gap:7px!important;
+    min-height:40px!important;padding:6px 14px!important;border-radius:999px!important}
+  html[data-visual="nou"] body .exp-paquets-v878314>button small{font-size:13px!important;text-transform:none!important;letter-spacing:0!important;white-space:nowrap!important}
+  html[data-visual="nou"] body .exp-paquets-v878314>button b{font-size:15px!important}
+
+  /* ── Despeses: els grups més petits, amb icona ── */
+  html[data-visual="nou"] body .desp-grups-v878338,html[data-visual="nou"] body .meves-grups-v878323{gap:8px!important}
+  html[data-visual="nou"] body .desp-grups-v878338>button,html[data-visual="nou"] body .meves-grups-v878323>button{min-height:0!important;padding:10px 12px!important;border-left-width:1px!important}
+  html[data-visual="nou"] body .gi-v878400{width:32px;height:32px;border-radius:10px;display:inline-grid;place-items:center;background:#F1F5F9;color:#334155;flex:0 0 auto;margin-right:2px}
+  html[data-visual="nou"] body .gi-v878400 svg{width:18px;height:18px}
+  html[data-visual="nou"] body .g-mat .gi-v878400{background:#EAF1FD;color:#1D4ED8}
+  html[data-visual="nou"] body .g-ma .gi-v878400{background:#E6F6F1;color:#0F766E}
+  html[data-visual="nou"] body .g-sub .gi-v878400{background:#F0EDFF;color:#5B47D6}
+  html[data-visual="nou"] body .g-emp .gi-v878400{background:#FFF0E8;color:#C2410C}
+  html[data-visual="nou"] body .desp-grups-v878338>button,html[data-visual="nou"] body .meves-grups-v878323>button{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;grid-template-areas:"ic b em" "ic sm em"!important;column-gap:10px!important;row-gap:1px!important;align-items:center!important;text-align:left!important}
+  html[data-visual="nou"] body .desp-grups-v878338>button .t,html[data-visual="nou"] body .meves-grups-v878323>button .t{display:contents!important}
+  html[data-visual="nou"] body .desp-grups-v878338>button .gi-v878400,html[data-visual="nou"] body .meves-grups-v878323>button .gi-v878400{grid-area:ic}
+  html[data-visual="nou"] body .desp-grups-v878338>button .t>b,html[data-visual="nou"] body .meves-grups-v878323>button .t>b{grid-area:b;font-size:14px!important;line-height:1.2!important}
+  html[data-visual="nou"] body .desp-grups-v878338>button .t>em,html[data-visual="nou"] body .meves-grups-v878323>button .t>em{grid-area:em;margin:0!important}
+  html[data-visual="nou"] body .desp-grups-v878338>button>small,html[data-visual="nou"] body .meves-grups-v878323>button>small{grid-area:sm;font-size:13px!important;margin:0!important}
+}
+/* a l'iPad, els accessos de l'Inici en una sola fila i el menú «Més» amb més columnes */
+@media (min-width:700px) and (max-width:1280px),(min-width:700px) and (hover:none) and (pointer:coarse){
+  html[data-visual="nou"] body .accessos-inici-v878400{grid-template-columns:repeat(6,minmax(0,1fr))}
+  html[data-visual="nou"] body .side-nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  html[data-visual="nou"] body .obra-bloc-panel-v878299{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}

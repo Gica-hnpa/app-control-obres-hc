@@ -4311,4 +4311,7 @@ export default {
   "Els preus i les quantitats no canvien.": "Los precios y las cantidades no cambian.",
   "Posar-los ({n})": "Añadirlos ({n})",
   "Tornar a llegir els descompostos d’un Excel…": "Volver a leer los descompuestos de un Excel…",
+  "Visual nou (en proves)": "Visual nuevo (en pruebas)",
+  "Només en aquest aparell.": "Solo en este dispositivo.",
+  "Aspecte": "Aspecto",
 };
