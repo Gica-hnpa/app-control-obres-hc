@@ -1679,6 +1679,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       «Dictat · …». Si el preu es canvia a mà, el descompost no s'hi posa.
     - Estils `src/theme-v878401.css`. Proves: `dictatunit.mjs` (14, sense navegador) i `dictat401test.mjs` (13). Passen `preus378test`,
       `pressupost368test` i `pressupost372test`.
+  - **V87.402 · Enviar per WhatsApp i el pressupost acceptat o no** (estudi del mercat; sense cost: obre el WhatsApp de l'aparell, no hi ha
+    cap bot):
+    - **Finestra «Enviar»** (`EmailModal`, `draftCorreu878337`): els destinataris porten també el mòbil (client i persones de contacte,
+      promotor —`mobilPropietat`—, agents); un contacte amb mòbil i sense correu també hi surt. Botons **WhatsApp** (`.wa-v878402`: obre
+      `https://wa.me/34<mòbil>?text=<assumpte i missatge>` del primer marcat amb mòbil; 9 xifres → «34» davant) · Gmail · **«Obrir el
+      correu»**. Al mòbil, en dues columnes (WhatsApp i el correu a dalt).
+    - **Pressupost enviat** (`emailDraft` posa `onEnviat` quan el títol comença per «Pressupost»; `enviatPressupost878402` de l'App): l'obra
+      desa `enviatPres878402 = {at, via: whatsapp|gmail|correu, a:[noms]}` (a la llista d'obres i a `odata[id].obra`; no a les obres
+      compartides per un altre) i, si era «Pressupostat» o «En revisió», passa a **«Pendent de resposta»**.
+    - Al Pressupost, mentre l'obra és «Pendent de resposta»: franja **«Enviat el … per WhatsApp»** (`.enviat-v878402`) amb **Acceptat** i **No
+      acceptat**, que canvien l'estat de l'obra (event `aco-estat-obra` → `updateObraStatus878247`).
+    - **Avís** (`avisosObra878360`, Inici i Resum de l'obra): «Pressupost enviat fa N dies, sense resposta» a partir de 7 dies; tocant-lo,
+      el Pressupost de l'obra.
+    - Estils `src/theme-v878402.css`. Prova: `whatsapp402test.mjs` (14). Passen `avisos360test`, `facturacio337test` i `pressuposttest`.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1818,12 +1832,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.401)
+### Per començar una sessió nova (26/10/2026, després de la V87.402)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.401 a Render):**
+**Estat (publicada la V87.402 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -1842,13 +1856,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 1. **Llista de l’Héctor (26/10/2026, «posa-ho en llista i continua»; publicar cada versió i dir-li-ho):**
    - ~~Propostes visuals~~ (V87.400): esperant que validi a https://claude.ai/artifact/1sPHEQWBTS529xEieexRDd (Sí / No / Canviar-la); les
      validades, per a tothom.
-   - ~~Pressupost dictat~~ (V87.401).
-   - Després: WhatsApp i pressupost acceptat/rebutjat · signatura del client a la pantalla · descompte al pressupost d’obra · obra nova en
+   - ~~Pressupost dictat~~ (V87.401). ~~WhatsApp i pressupost acceptat/rebutjat~~ (V87.402).
+   - Després: signatura del client a la pantalla · descompte al pressupost d’obra · obra nova en
      3 passos · revisor del pressupost · parte per veu · previsió de caixa. Estudi del mercat: https://claude.ai/artifact/67earcqHnbhfC3RQyj4nv6.
    - **Esperen (cost o servidor):** IA directa, VeriFactu, bot de WhatsApp, banc, cobrament en línia, signatura a distància, fitxatge fase 2.
 2. **Comodoro:** fet a les V87.398–399 («Tornar a llegir els descompostos d’un Excel…»: 63 partides, 62 al cèntim); falta que l’Héctor hi triï l’Excel v07.
-3. **Repàs complet de les proves: fet a la V87.399** (26/10/2026, `D:aco-tmp	otes-wt.sh` a `D:aco-tmpwt379`, resultat a
-   `D:aco-tmp	otes-399.txt`): **111 proves, totes en verd**. A la tanda en van fallar 5 (honoraris332, pdfpressupost, seguiment321,
+3. **Repàs complet de les proves: fet a la V87.399** (26/10/2026, `D:\aco-tmp\totes-wt.sh` a `D:\aco-tmp\wt379`, resultat a
+   `D:\aco-tmp\totes-399.txt`): **111 proves, totes en verd**. A la tanda en van fallar 5 (honoraris332, pdfpressupost, seguiment321,
    perfils326 —penjada 3 hores— i primerobrir) i, passades soles, totes bé; `primerobrirtest` adaptada (accepta les descripcions netes de la
    V87.396). `contrasenyestest` (18 de 34) es va arreglar esborrant `D:/aco-tmp/vitecache-main`. Per tornar-lo a fer: posar `wt379` al
    commit d’ara (`git -C D:/aco-tmp/wt379 checkout --detach <commit>`) i **copiar-hi `tools/proves`** (no és al Git).

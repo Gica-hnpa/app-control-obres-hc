@@ -4323,4 +4323,7 @@ export default {
   "Afegir-la": "Añadirla",
   "Tornar a dictar": "Volver a dictar",
   "Dictar partides…": "Dictar partidas…",
+  "Pressupost enviat fa {n} dies, sense resposta": "Presupuesto enviado hace {n} días, sin respuesta",
+  "Enviat el {d} per {via}": "Enviado el {d} por {via}",
+  "correu": "correo",
 };

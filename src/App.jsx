@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Check,Eye,ChevronRight,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark} from "lucide-react";
+import {Check,Eye,ChevronRight,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -25,7 +25,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.401";
+const APP_VERSION878264="87.402";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4544,6 +4544,9 @@ function userCanSeeScreen878233(s){
 function nav(s){if(!userCanSeeScreen878233(s))return;setScreen(s);setMenuOpen(false)}
 const navRef878353=useRef(nav);navRef878353.current=nav;
 useEffect(()=>{const h=e=>{const sc=e?.detail?.screen;if(sc){navRef878353.current(sc);try{window.scrollTo(0,0)}catch{}}};window.addEventListener("aco-nav",h);return()=>window.removeEventListener("aco-nav",h)},[]);
+// V87.402 · «Acceptat» / «No acceptat» del pressupost enviat (event «aco-estat-obra» {id, estat})
+const estatRef878402=useRef(null);
+useEffect(()=>{const h=e=>{const d=e?.detail;if(d?.id&&d?.estat)estatRef878402.current?.(d.id,d.estat)};window.addEventListener("aco-estat-obra",h);return()=>window.removeEventListener("aco-estat-obra",h)},[]);
 function openObra(id){
   const now=new Date().toISOString();
   setObraId(id);setTab("Resum");setSelActa(null);
@@ -5395,7 +5398,19 @@ function saveCert(){
     return {...d,certificacions:[...rest,cert].sort((a,b)=>String(a.budgetId||"principal").localeCompare(String(b.budgetId||"principal"))||(+a.numero)-(+b.numero))};
   });
 }
-function emailDraft(title){setEmail(draftCorreu878337({title:i18nT(title),obra,data,clients:viewClients878233}))}
+// V87.402 · enviar el pressupost (correu, Gmail o WhatsApp) queda apuntat a l’obra (`enviatPres878402`) i, si l’obra era «Pressupostat» o
+// «En revisió», passa a «Pendent de resposta»; als 7 dies sense resposta, avís (avisosObra878360). No a les obres compartides per un altre.
+estatRef878402.current=(id,st)=>updateObraStatus878247(id,st);
+function enviatPressupost878402(id,via,a=[]){
+  const ob=(obres||[]).find(o=>o.id===id);if(!ob||ob.compartida)return;
+  const now=new Date().toISOString(),st=normalizeExpedientStatus878136(ob.estat);
+  const env={at:now,via,a:(a||[]).slice(0,6)};
+  setObres(prev=>{const next=prev.map(o=>o.id===id?{...o,enviatPres878402:env,updatedAt:now}:o);try{lsSet8779("aco_obres",JSON.stringify(next),authUser8779)}catch(e){}return next});
+  // també a les dades de l’obra: el pressupost rep l’obra d’aquí quan s’hi torna
+  setOdata(prev=>{if(!prev[id])return prev;const next={...prev,[id]:{...prev[id],obra:{...(prev[id].obra||{}),enviatPres878402:env}}};try{saveOdata878104(next,authUser8779)}catch(e){}return next});
+  if(["Pressupostat","En revisió"].includes(st))updateObraStatus878247(id,"Pendent de resposta");
+}
+function emailDraft(title){const id=obra?.id;setEmail({...draftCorreu878337({title:i18nT(title),obra,data,clients:viewClients878233}),onEnviat:id&&/^Pressupost/i.test(String(title||""))?(via,a)=>enviatPressupost878402(id,via,a):null})}
 function addPressupostTecnic8742(p){
   const year=String(obra?.any||new Date().getFullYear());
   const numero=p.numero||nextGlobalDocNumber8745(odata,"pressupost",year);
@@ -7371,6 +7386,8 @@ const TONS878360={bad:0,warn:1,info:2};
 function mesLocal878360(dt=new Date()){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")}
 function avisosObra878360(o,d={},alb=null){
   const out=[];if(!o?.id)return out;
+  // V87.402 · pressupost enviat fa 7 dies o més i l’obra encara «Pendent de resposta» (o «Pressupostat»)
+  {const env=o.enviatPres878402,ara0=window.__acoAra878360?new Date(window.__acoAra878360):new Date();if(env?.at&&["Pendent de resposta","Pressupostat"].includes(normalizeExpedientStatus878136(o.estat))){const dies=Math.floor((ara0-new Date(env.at))/864e5);if(dies>=7)out.push({k:"pres",obraId:o.id,tab:"Pressupost",tone:"info",txt:t("Pressupost enviat fa {n} dies, sense resposta",{n:dies})})}}
   const per=(d.partes878349||[]).filter(p=>p.estat!=="certificat").length;
   if(per)out.push({k:"partes",obraId:o.id,tab:"Partes obra",tone:"warn",txt:per===1?t("1 parte per revisar"):t("{n} partes per revisar",{n:per})});
   const desp=(alb||readAlbarans878259()).filter(a=>a.obraId===o.id&&a.perRevisar&&!a.meva).length;
@@ -13412,6 +13429,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       </ActionMenu87213>}
       </div>
     </div>}>
+      {/* V87.402 · pressupost enviat i encara sense resposta: d’un toc, Acceptat o No acceptat (canvia l’estat de l’obra) */}
+      {!clientMode&&!quickMode&&obra?.enviatPres878402?.at&&normalizeExpedientStatus878136(obra?.estat)==="Pendent de resposta"&&<div className="enviat-v878402"><Send size={16} aria-hidden="true"/><span>{i18nT("Enviat el {d} per {via}",{d:fmtAppDate8748(String(obra.enviatPres878402.at).slice(0,10)),via:obra.enviatPres878402.via==="whatsapp"?"WhatsApp":obra.enviatPres878402.via==="gmail"?"Gmail":i18nT("correu")})}</span><span className="bt"><button type="button" className="ok" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"Acceptat"}}))}catch{}}}><Check size={15} aria-hidden="true"/> {i18nT("Acceptat")}</button><button type="button" className="no" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"No acceptat"}}))}catch{}}}>{i18nT("No acceptat")}</button></span></div>}
       {quickMode&&<div className={`rapid-budget-edit-toolbar-v87204 ${editBudget8760b?"editing":""}`}><div><b>{editBudget8760b?i18nT("Edició del pressupost ràpid activada"):i18nT("Pressupost ràpid")}</b><span>{editBudget8760b?i18nT("Els capítols i les files editables estan oberts. Guarda o cancel·la des del menú Accions."):i18nT("Per modificar quantitats, preus o conceptes, obre el menú Accions.")}</span></div></div>}
       {(clientMode||budgetWorkTab878180==="Validar descompostos")&&<div className="budget-simple-toolbar-v87213">
         {budgetWorkTab878180==="Validar descompostos"&&<button type="button" className="secondary" onClick={()=>setBudgetWorkTab878180("Pressupost")}>{i18nT("← Tornar al pressupost")}</button>}
@@ -14870,11 +14889,13 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
 // V87.337 · Destinataris del correu d'una obra: el client, les seves persones de contacte, el promotor i els agents de l'obra amb correu
 function draftCorreu878337({title,obra,data,clients}){
   const out=[];const vist=new Set();
-  const add=(nom,email,rol,sel)=>{const e=String(email||"").trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)||vist.has(e.toLowerCase()))return;vist.add(e.toLowerCase());out.push({id:"d"+out.length,nom:String(nom||"").trim()||e,email:e,rol:rol||"",sel:!!sel})};
+  // V87.402 · també el mòbil (per al WhatsApp): hi entra qui té un correu o un telèfon
+  const add=(nom,email,rol,sel,tel)=>{let e=String(email||"").trim();const tl=String(tel||"").trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))e="";const nTel=tl.replace(/\D/g,"");
+    const k=(e||nTel).toLowerCase();if(!e&&nTel.length<9||vist.has(k))return;vist.add(k);out.push({id:"d"+out.length,nom:String(nom||"").trim()||e||tl,email:e,tel:nTel.length>=9?tl:"",rol:rol||"",sel:!!sel})};
   const cl=(clients||[]).find(c=>c.id===obra?.client&&!obra?.compartida);
-  if(cl){add(cl.nom,cl.email,"Client",true);contactesDe878315(cl).forEach(p=>add(p.nom,p.email,"Client"))}
-  add(obra?.propietat,obra?.emailPropietat,"Promotor",!cl);
-  (data?.agents||[]).forEach(a=>add(a.nom,a.email,a.rol||a.tipus||""));
+  if(cl){add(cl.nom,cl.email,"Client",true,cl.mobil||cl.telefon);contactesDe878315(cl).forEach(p=>add(p.nom,p.email,"Client",false,p.mobil||p.telefon))}
+  add(obra?.propietat,obra?.emailPropietat,"Promotor",!cl,obra?.mobilPropietat||obra?.telefonPropietat);
+  (data?.agents||[]).forEach(a=>add(a.nom,a.email,a.rol||a.tipus||"",false,a.mobil||a.telefon));
   const e=empresaInfo878259();
   const signa=window.__acoEmpresa?(e?.nom||e?.fiscal||""):"Héctor";
   const titol=[String(title||"").trim(),obra?.nom].filter(Boolean).join(" · ");
@@ -16327,7 +16348,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.401",
+    app_version:"87.402",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -17782,15 +17803,19 @@ function EmailModal({draft,setDraft,close}){
   const altres=String(draft.altres||"").split(/[,;\s]+/).map(x=>x.trim()).filter(x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
   const tos=[...new Set([...sel.map(a=>a.email),...altres])];
   const toggle=id=>setDraft({...draft,selected:selIds.includes(id)?selIds.filter(x=>x!==id):[...selIds,id]});
-  const mailto=()=>{window.location.href=`mailto:${tos.map(encodeURIComponent).join(",")}?subject=${encodeURIComponent(draft.title||"")}&body=${encodeURIComponent(draft.message||"")}`};
-  return <Modal title={t("Enviar per correu")} close={close}><div className="correu-v878337">
+  const mailto=()=>{window.location.href=`mailto:${tos.map(encodeURIComponent).join(",")}?subject=${encodeURIComponent(draft.title||"")}&body=${encodeURIComponent(draft.message||"")}`;draft.onEnviat?.("correu",sel.map(a=>a.nom))};
+  // V87.402 · WhatsApp: amb un sol destinatari amb mòbil, el seu xat; si no, WhatsApp demana a qui
+  const telsWa=sel.map(a=>String(a.tel||"").replace(/\D/g,"")).filter(x=>x.length>=9);
+  const whatsapp=()=>{let n=telsWa.length===1?telsWa[0].replace(/^00/,""):"";if(n.length===9)n="34"+n;
+    window.open(`https://wa.me/${n}?text=${encodeURIComponent([draft.title,draft.message].filter(Boolean).join("\n\n"))}`,"_blank","noopener");draft.onEnviat?.("whatsapp",sel.map(a=>a.nom));close()};
+  return <Modal title={t("Enviar")} close={close}><div className="correu-v878337">
     <div className="dest"><b>{t("Per a")}</b>
-      {ag.length>0&&<div className="llista">{ag.map(a=><label key={a.id} className={`d ${selIds.includes(a.id)?"on":""}`}><input type="checkbox" checked={selIds.includes(a.id)} onChange={()=>toggle(a.id)}/><span><b>{a.nom}</b><small>{[a.rol?i18nT(a.rol):"",a.email].filter(Boolean).join(" · ")}</small></span></label>)}</div>}
+      {ag.length>0&&<div className="llista">{ag.map(a=><label key={a.id} className={`d ${selIds.includes(a.id)?"on":""}`}><input type="checkbox" checked={selIds.includes(a.id)} onChange={()=>toggle(a.id)}/><span><b>{a.nom}</b><small>{[a.rol?i18nT(a.rol):"",a.email,a.tel].filter(Boolean).join(" · ")}</small></span></label>)}</div>}
       <label className="altres"><span>{ag.length?t("Una altra adreça"):t("Adreça de correu")}</span><input type="email" inputMode="email" autoComplete="email" value={draft.altres||""} onChange={e=>setDraft({...draft,altres:e.target.value})} placeholder="nom@exemple.cat"/></label>
     </div>
     <label className="camp"><span>{t("Assumpte")}</span><input value={draft.title||""} onChange={e=>setDraft({...draft,title:e.target.value})}/></label>
     <label className="camp"><span>{t("Missatge")}</span><textarea rows={6} value={draft.message||""} onChange={e=>setDraft({...draft,message:e.target.value})}/></label>
-    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="secondary" disabled={!tos.length} onClick={()=>openGmailCompose(tos.join(","),draft.title,draft.message)}>Gmail</button><button type="button" className="primary" disabled={!tos.length} onClick={mailto}>{t("Obrir el correu")}</button></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="secondary wa-v878402" onClick={whatsapp}><MessageCircle size={16} aria-hidden="true"/> WhatsApp</button><button type="button" className="secondary" disabled={!tos.length} onClick={()=>{openGmailCompose(tos.join(","),draft.title,draft.message);draft.onEnviat?.("gmail",sel.map(a=>a.nom))}}>Gmail</button><button type="button" className="primary" disabled={!tos.length} onClick={mailto}><Mail size={16} aria-hidden="true"/> {t("Obrir el correu")}</button></div>
   </div></Modal>}
 function proformaPrintHtml8783(doc,obra,client){
   const D=(s,v)=>tl(docLang878283(obra),s,v);

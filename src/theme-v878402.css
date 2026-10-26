@@ -1,0 +1,23 @@
+/* V87.402 · WhatsApp a la finestra d'enviar i el pressupost enviat (Acceptat / No acceptat) */
+@media screen{
+html body .correu-v878337 .modal-actions button.wa-v878402{display:inline-flex;align-items:center;gap:6px;color:#15803D!important;border-color:#86EFAC!important;background:#F0FDF4!important}
+html body .correu-v878337 .modal-actions .primary{display:inline-flex;align-items:center;gap:6px}
+html body .enviat-v878402{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 16px 12px;padding:10px 14px;border-radius:12px;background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412;font-size:14px}
+html body .enviat-v878402>svg{flex:0 0 auto}
+html body .enviat-v878402>span:first-of-type{flex:1 1 auto;min-width:0}
+html body .enviat-v878402 .bt{display:flex;gap:8px;flex-wrap:wrap}
+html body .enviat-v878402 .bt button{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:6px 14px;border-radius:999px;font-weight:600;cursor:pointer}
+html body .enviat-v878402 .bt .ok{background:#15803D;border:1px solid #15803D;color:#fff}
+html body .enviat-v878402 .bt .no{background:#fff;border:1px solid #FCA5A5;color:#B91C1C}
+}
+@media (max-width:700px){html body .enviat-v878402{margin:0 8px 10px}}
+/* mòbil: marge als costats i els botons en dues columnes (WhatsApp i el correu a dalt, Gmail i Cancel·lar a baix) */
+@media (max-width:700px){
+html body .correu-v878337{padding:0 14px}
+html body .correu-v878337 .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+html body .correu-v878337 .modal-actions button{width:100%;margin:0;justify-content:center;min-height:44px}
+html body .correu-v878337 .modal-actions .wa-v878402{order:1}
+html body .correu-v878337 .modal-actions .primary{order:2}
+html body .correu-v878337 .modal-actions button:not(.wa-v878402):not(.primary){order:3}
+html body .correu-v878337 .modal-actions button:first-child:not(.primary):not(.wa-v878402){order:4}
+}
