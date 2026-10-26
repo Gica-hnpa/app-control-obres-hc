@@ -4314,4 +4314,13 @@ export default {
   "Visual nou (en proves)": "Visual nuevo (en pruebas)",
   "Només en aquest aparell.": "Solo en este dispositivo.",
   "Aspecte": "Aspecto",
+  "Dictat": "Dictado",
+  "semblant": "parecido",
+  "Dictar partides": "Dictar partidas",
+  "Ex.: enderroc de rajola de la cuina 12 m2; alicatat del bany 20 m2; 6 punts de llum": "Ej.: demolición de baldosa de la cocina 12 m2; alicatado del baño 20 m2; 6 puntos de luz",
+  "Llegir les partides": "Leer las partidas",
+  "No hi he trobat cap partida. Digues el nom, la quantitat i la unitat: «alicatat del bany 20 metres quadrats».": "No he encontrado ninguna partida. Di el nombre, la cantidad y la unidad: «alicatado del baño 20 metros cuadrados».",
+  "Afegir-la": "Añadirla",
+  "Tornar a dictar": "Volver a dictar",
+  "Dictar partides…": "Dictar partidas…",
 };

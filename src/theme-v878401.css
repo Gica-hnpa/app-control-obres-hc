@@ -1,0 +1,34 @@
+/* V87.401 · Dictar partides: el text (o el dictat) i la revisió de cada partida abans d'afegir-les al pressupost */
+@media screen{
+html body .dictat-v878401{display:flex;flex-direction:column;gap:12px;padding:14px 18px 4px}
+html body .dictat-v878401 textarea{width:100%;min-height:120px;font-size:15px;line-height:1.45;padding:10px 12px;border-radius:12px}
+html body .dictat-v878401 .buit{margin:0;padding:12px 14px;border-radius:12px;background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+html body .dictat-v878401 .llista{display:flex;flex-direction:column;border:1px solid var(--co-line);border-radius:12px;max-height:56vh;overflow:auto}
+html body .dictat-v878401 .fila{display:grid;grid-template-columns:28px minmax(0,1fr) 150px 150px 190px 96px;gap:8px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--co-line)}
+html body .dictat-v878401 .fila:last-child{border-bottom:0}
+html body .dictat-v878401 .fila.off{opacity:.5}
+html body .dictat-v878401 .fila .on{width:20px;height:20px}
+html body .dictat-v878401 .fila input,html body .dictat-v878401 .fila select{min-height:38px;min-width:0;width:100%}
+html body .dictat-v878401 .fila .qu{display:grid;grid-template-columns:1fr 56px;gap:6px}
+html body .dictat-v878401 .fila .qu input:first-child,html body .dictat-v878401 .fila .pu input{text-align:right}
+html body .dictat-v878401 .fila .pu{display:flex;flex-direction:column;gap:2px}
+html body .dictat-v878401 .fila .font{font-size:12px;font-weight:600;color:var(--co-ink-3)}
+html body .dictat-v878401 .fila .font.f-cap{color:#B45309}
+html body .dictat-v878401 .fila .font.f-banc,html body .dictat-v878401 .fila .font.f-llibreria,html body .dictat-v878401 .fila .font.f-obres{color:#15803D}
+html body .dictat-v878401 .fila .imp{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .dictat-v878401 .peu{margin:0;display:flex;justify-content:space-between;align-items:baseline;padding:2px 4px;font-size:15px}
+html body .dictat-v878401 .peu b{font-size:18px;font-variant-numeric:tabular-nums}
+html body .dictar-v878401{display:inline-flex;align-items:center;gap:6px}
+}
+/* al mòbil i l'iPad, cada partida en una fitxa: concepte a dalt; quantitat, preu i capítol a sota */
+@media (max-width:900px){
+  html body .dictat-v878401{padding:12px 12px 4px}
+  html body .dictat-v878401 .fila{grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"on conc conc" ". qu pu" ". cap cap" ". imp imp";row-gap:8px}
+  html body .dictat-v878401 .fila .on{grid-area:on}
+  html body .dictat-v878401 .fila .conc{grid-area:conc}
+  html body .dictat-v878401 .fila .qu{grid-area:qu}
+  html body .dictat-v878401 .fila .pu{grid-area:pu;width:120px}
+  html body .dictat-v878401 .fila .cap{grid-area:cap}
+  html body .dictat-v878401 .fila .imp{grid-area:imp}
+  html body .dictat-v878401 .llista{max-height:52vh}
+}

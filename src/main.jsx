@@ -107,6 +107,7 @@ import "./theme-v878396.css";
 import "./theme-v878397.css";
 import "./theme-v878398.css";
 import "./theme-v878400.css";
+import "./theme-v878401.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";

@@ -1662,6 +1662,23 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Captures d'abans i després: `tools/proves/visual400.mjs` (`VISUAL=1`, `MIDES=mobil,ipad`, `COMPTES=`) → `D:\aco-tmp\visual400`.
       Document per validar a Claude Docs (vegeu «Per començar una sessió nova»). Les que validi, es posen per a tothom i es treu l'opció.
     - Prova: `visual400test.mjs` (11). Passen `navtest`, `obratest` i `v366test`.
+  - **V87.401 · Pressupost dictat** (estudi del mercat, proposta 1; sense cost): Pressupost › Accions (i, editant, Afegir) › **«Dictar
+    partides…»** (`DictarPartides878401`, `.dictat-v878401`).
+    - Es dicta (`DictatActa878263` amb `separador="; "`: cada pausa del dictat separa una partida) o s'escriu: «enderroc de rajola de la
+      cuina 12 metres quadrats; alicatat del bany 20 m2; sis punts de llum».
+    - **`src/dictatPartides.js`** (`llegirDictat`, funció pura): quantitat i unitat (m2, m3, ml, m, u, pa, h, kg, t; dites o escrites),
+      números en lletres fins a cent («vint i dos», «i mig», «12 coma 5»), català i castellà; separa per «;», punt, «i després», «també»,
+      comes entre quantitats i, tot seguit, després de cada quantitat amb unitat. Un número en lletres sense unitat només compta al principi
+      o just després d'una altra quantitat («radiador nou» no és 9). Límit conegut: «…6 punts de llum enderroc 4 m2» sense pausa s'enganxa.
+    - **Preu** com als amidaments (`preusAmidaments878368`: Preus, banc amb l'IPC, obres anteriors) i, als preus del banc, els marges de
+      l'obra (`margesLinia878378`, funció comuna nova que també fa servir «Passar-ho a pressupost»). **Capítol** pels estàndard
+      (`capStd878280`, sense comptar el lloc —«del bany»—; alicatat = revestiments): el del pressupost que hi correspon o «Capítol nou: …»;
+      sense capítol clar, «ALTRES».
+    - Revisió: cada partida amb la casella, concepte, quantitat, unitat, preu (amb d'on surt: Preus, Banc, Obres, «A mà», «Sense preu»),
+      capítol i import; total. «Afegir N partides» → `afegeixLlibreria878361` (desat al moment), `tipus:"Dictat"`, `origenPreu878368`
+      «Dictat · …». Si el preu es canvia a mà, el descompost no s'hi posa.
+    - Estils `src/theme-v878401.css`. Proves: `dictatunit.mjs` (14, sense navegador) i `dictat401test.mjs` (13). Passen `preus378test`,
+      `pressupost368test` i `pressupost372test`.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1801,12 +1818,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.400)
+### Per començar una sessió nova (26/10/2026, després de la V87.401)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.400 a Render):**
+**Estat (publicada la V87.401 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -1822,11 +1839,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 
 **Què fer, per ordre:**
-1. **Estudi del mercat** (l’Héctor, 25/10/2026 a la nit, amb captures d’anuncis de Pillar, Plancraft, Cuitó Digital i Presufy: «fes un
-   estudi de com funcionen aquestes i d’altres, perquè hi ha coses aprofitables sense entrar en la còpia, adaptat al nostre estil… Motor de
-   Presupuestos, Presufy i altres ja treballen amb la IA per fer pressupostos ràpids»). Només informació pública (webs, vídeos, preus,
-   opinions); no entrar a cap app ni crear comptes. Per a cada una: què fa, què ja tenim, què ens falta i com ho faríem a la nostra manera;
-   propostes per prioritat. Ell decideix què es fa.
+1. **Llista de l’Héctor (26/10/2026, «posa-ho en llista i continua»; publicar cada versió i dir-li-ho):**
+   - ~~Propostes visuals~~ (V87.400): esperant que validi a https://claude.ai/artifact/1sPHEQWBTS529xEieexRDd (Sí / No / Canviar-la); les
+     validades, per a tothom.
+   - ~~Pressupost dictat~~ (V87.401).
+   - Després: WhatsApp i pressupost acceptat/rebutjat · signatura del client a la pantalla · descompte al pressupost d’obra · obra nova en
+     3 passos · revisor del pressupost · parte per veu · previsió de caixa. Estudi del mercat: https://claude.ai/artifact/67earcqHnbhfC3RQyj4nv6.
+   - **Esperen (cost o servidor):** IA directa, VeriFactu, bot de WhatsApp, banc, cobrament en línia, signatura a distància, fitxatge fase 2.
 2. **Comodoro:** fet a les V87.398–399 («Tornar a llegir els descompostos d’un Excel…»: 63 partides, 62 al cèntim); falta que l’Héctor hi triï l’Excel v07.
 3. **Repàs complet de les proves: fet a la V87.399** (26/10/2026, `D:aco-tmp	otes-wt.sh` a `D:aco-tmpwt379`, resultat a
    `D:aco-tmp	otes-399.txt`): **111 proves, totes en verd**. A la tanda en van fallar 5 (honoraris332, pdfpressupost, seguiment321,
