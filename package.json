@@ -1,7 +1,7 @@
 {
   "name": "app-control-obres-v87-259-compartits",
   "private": true,
-  "version": "87.404",
+  "version": "87.405",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "6.0.3",
+    "html2canvas": "1.4.1",
+    "jspdf": "4.2.1",
     "lucide-react": "1.25.0",
     "pdfjs-dist": "6.1.200",
     "qrcode": "1.5.4",

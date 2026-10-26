@@ -15,6 +15,8 @@ import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces
 import {llegirDictat} from "./dictatPartides.js";
 import {encarrecDe,estatPassos,estatDocs} from "./encarrecsTecnics.js";
 import {dadesDemo} from "./dadesDemo.js";
+import {htmlAPdf,nomPdf} from "./pdfDoc.js";
+import * as gmail878405 from "./googleMail.js";
 import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary,potReconnectar as gcalPotReconnectar,prepara as gcalPrepara,recorda as gcalRecorda} from "./googleCal.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
 import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
@@ -25,7 +27,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.404";
+const APP_VERSION878264="87.405";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3652,7 +3654,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
             <button type="button" className="primary" onClick={save}>{t("Guardar acta")}</button>
             <button type="button" className="secondary" onClick={()=>setShowActaPreview8763(v=>!v)}>{showActaPreview8763?t("Amagar previsualització"):t("Previsualitzar acta")}</button>
             <button type="button" className="secondary" onClick={()=>printableDoc&&openDoc?.(printableDoc)}>{t("Obrir acta formal / imprimir")}</button>
-            <button type="button" className="secondary" onClick={()=>openEmail?.(draft.titol||"Acta")}>{t("Enviar")}</button>
+            <button type="button" className="secondary" onClick={()=>openEmail?.(t("Acta {n}",{n:draft.numero||""}).trim(),{doc:printableDoc,assistents:selectedAgents})}>{t("Enviar")}</button>
             <button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false);onTancar?.()}}>{t("Cancel·lar")}</button>
           </div>
 
@@ -3705,6 +3707,48 @@ function ActaFormalPreview8768({obra,client,acta,agents=[],fotos=[],docs=[],croq
 }
 
 
+
+// V87.405 · L'acta com els altres documents (l'Héctor, 26/10/2026: «vull també models d'actes… per als tècnics tal i com hem fet amb les
+// constructores»): l'encapçalament i el color d'Ajustos › Documents (`capDoc878396`), l'emissor del compte (abans hi deia sempre
+// «Héctor Cubero · Arquitecte tècnic»), el peu, i un HTML sencer que serveix per a la vista, la impressió i el PDF que s'adjunta.
+function actaPrintHtml878405(doc,obra,client){
+  const D=(s,v)=>tl(docLang878283(obra),s,v);const esc=escHtmlV8772;
+  const agents=doc.agents||[];const acta=doc.acta?normalizeActa8768(doc.acta,agents):{};
+  const assist=(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean);
+  const em=emissorTecnic878396();const C=colorDocs878396();
+  const str=v=>{const x=typeof v==="string"?v.trim():"";return /^(pendent|pendiente)\b/i.test(x)?"":x};
+  const promotor=str(acta.promotor)||str(obra?.propietat)||str(client?.nom);
+  const clau=[[D("Promotor"),promotor],[D("Constructora"),str(acta.constructor)||str(obra?.constructor)],[D("Direcció d’obra"),str(acta.do)||str(obra?.do)],[D("Direcció execució"),str(acta.deo)||str(obra?.deo)],[D("Coordinació S+S"),str(acta.css)||str(obra?.css)],[D("Tècnic / despatx"),em.nom||""]].filter(([,v])=>v);
+  const codi=typeof codiCurt878270==="function"?codiCurt878270(obra):"";
+  const cap=capDoc878396({D,em,titol:D("ACTA DE VISITA / SEGUIMENT D’OBRA"),meta:[[D("Acta núm."),acta.numero],[D("Data"),fmtDate8761(acta.data)],[D("Estat"),D(acta.estat||"Esborrany")]],recLabel:D("Promotor / propietat"),recHtml:`<b>${esc(promotor||"—")}</b>`,obraLabel:D("Expedient / obra"),obraTitol:obra?.nom||"",obraLinia:[codi,[obra?.adreca,obra?.poblacio].filter(Boolean).join(", ")].filter(Boolean).join(" · ")});
+  const sec=(t,cos)=>`<section class="s"><h3>${esc(t)}</h3>${cos}</section>`;
+  const fig=(src,peu)=>src?`<figure><img src="${esc(src)}" alt=""><figcaption>${esc(peu||"")}</figcaption></figure>`:"";
+  const croquis=[...(doc.actaCroquis||[]),...(acta.croquis||[])].filter((x,i,a)=>x&&a.findIndex(y=>y.id===x.id)===i).filter(c=>c.src);
+  const fotos=(doc.actaPhotos||[]).filter(f=>f&&(f.src||f.url));
+  const docs=(doc.actaDocs||acta.docs||[]).filter(Boolean);
+  const loc=docLocale878403(D);
+  const sigs=ROLS_SIG878403.map(([k,lab])=>{const sg=(acta.signatures878403||[]).find(x=>x.rol===k);const ok=sg&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(sg.src||""));
+    return `<div class="sg"><small>${esc(D(lab))}</small><div class="sgi">${ok?`<img src="${sg.src}" alt="">`:""}</div><span>${esc(sg?[sg.nom,sg.dni,sg.at?new Date(sg.at).toLocaleString(loc,{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):""].filter(Boolean).join(" · "):"")}</span></div>`}).join("");
+  const titolActa=str(acta.titol);
+  const css=`@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:#fff}.page{width:182mm;margin:0 auto;padding:6mm 0}h2.tt{font-size:15px;margin:0 0 4mm;color:#0f172a}.clau{display:grid;grid-template-columns:repeat(3,1fr);gap:2mm 4mm;margin:0 0 5mm}.clau div{border:1px solid #e2e8f0;border-radius:6px;padding:2mm 3mm}.clau b{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;color:#64748b}.clau span{font-size:11px}.s{margin:0 0 5mm}.s h3{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:${C};margin:0 0 2mm;padding-bottom:1mm;border-bottom:1px solid #e2e8f0}.s p.tx{white-space:pre-wrap;line-height:1.5;margin:0;font-size:11.5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:1.6mm 2mm;border-bottom:1px solid #e2e8f0;font-size:10.5px}th{font-size:8.5px;text-transform:uppercase;color:#64748b}.fotos{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fotos.una{grid-template-columns:1fr}figure{margin:0;break-inside:avoid}figure img{display:block;width:100%;height:62mm;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}.fotos.una figure img{height:auto;max-height:120mm;object-fit:contain}figcaption{font-size:9px;color:#64748b;margin-top:1mm}ul{margin:0;padding-left:5mm}.sigs{display:grid;grid-template-columns:1fr 1fr;gap:5mm}.sg{border:1px solid #cbd5e1;border-radius:6px;padding:2mm 3mm;break-inside:avoid}.sg small{display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700}.sgi{height:22mm;display:flex;align-items:center}.sgi img{max-height:21mm;max-width:100%}.sg span{display:block;font-size:9px;color:#475569;border-top:1px solid #e2e8f0;padding-top:1mm;min-height:4mm}`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(doc.title||D("Acta núm.")+" "+(acta.numero||""))}</title><style>${css}</style></head><body><div class="page">${cap}
+    ${titolActa?`<h2 class="tt">${esc(titolActa)}</h2>`:""}
+    ${clau.length?`<div class="clau">${clau.map(([l,v])=>`<div><b>${esc(l)}</b><span>${esc(v)}</span></div>`).join("")}</div>`:""}
+    ${sec(D("Agents intervinents / assistents"),assist.length?`<table><thead><tr><th>${esc(D("Nom"))}</th><th>${esc(D("Rol"))}</th><th>${esc(D("Empresa"))}</th></tr></thead><tbody>${assist.map(a=>`<tr><td>${esc(a.nom||"—")}</td><td>${esc(a.rol?D(a.rol):"—")}</td><td>${esc(a.empresa&&a.empresa!==a.nom?a.empresa:"—")}</td></tr>`).join("")}</tbody></table>`:`<p>${esc(D("Sense agents seleccionats."))}</p>`)}
+    ${sec(D("Contingut de l’acta"),`<p class="tx">${esc(acta.text||D("Text pendent..."))}</p>`)}
+    ${croquis.length?sec(D("Plànols marcats i croquis d’obra"),`<div class="fotos una">${croquis.map(c=>fig(c.src,[c.nom,c.origen?D("Base:")+" "+c.origen:""].filter(Boolean).join(" · "))).join("")}</div>`):""}
+    ${fotos.length?sec(D("Reportatge fotogràfic"),`<div class="fotos">${fotos.map(f=>fig(f.src||f.url,f.nom)).join("")}</div>`):""}
+    ${docs.length?sec(D("Documents adjunts"),`<ul>${docs.map(d=>`<li>${esc(d.nom||"")}</li>`).join("")}</ul>`):""}
+    ${sec(D("Signatures electròniques"),`<div class="sigs">${sigs}</div>`)}
+    ${peuDoc878396()}
+  </div></body></html>`;
+}
+// V87.405 · l'HTML exacte de qualsevol document que en té (vista, impressió i PDF per adjuntar)
+function htmlDoc878405(doc,obra,client){
+  if(!doc)return null;
+  const h=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):doc.type==="facturavf"&&doc.factura?facturaVFPrintHtml878285(doc,obra):doc.type==="acta"&&doc.acta?actaPrintHtml878405(doc,obra,client):null;
+  return h?marcaDoc878351(h):null;
+}
 
 function LoginScreen8778({onLogin}){
   const saved=(()=>{try{return JSON.parse(localStorage.getItem("aco_login_remember_v8798")||"{}")}catch{return {}}})();
@@ -5476,7 +5520,7 @@ function enviatPressupost878402(id,via,a=[]){
   setOdata(prev=>{if(!prev[id])return prev;const next={...prev,[id]:{...prev[id],obra:{...(prev[id].obra||{}),enviatPres878402:env}}};try{saveOdata878104(next,authUser8779)}catch(e){}return next});
   if(["Pressupostat","En revisió"].includes(st))updateObraStatus878247(id,"Pendent de resposta");
 }
-function emailDraft(title){const id=obra?.id;setEmail({...draftCorreu878337({title:i18nT(title),obra,data,clients:viewClients878233}),onEnviat:id&&/^Pressupost/i.test(String(title||""))?(via,a)=>enviatPressupost878402(id,via,a):null})}
+function emailDraft(title,extra={}){const id=obra?.id;setEmail({...draftCorreu878337({title:i18nT(title),obra,data,clients:viewClients878233,primer:extra?.assistents}),pdf:extra?.doc?{doc:extra.doc,obra,client}:null,onEnviat:id&&/^Pressupost/i.test(String(title||""))?(via,a)=>enviatPressupost878402(id,via,a):null})}
 function addPressupostTecnic8742(p){
   const year=String(obra?.any||new Date().getFullYear());
   const numero=p.numero||nextGlobalDocNumber8745(odata,"pressupost",year);
@@ -14968,18 +15012,22 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
   </div></Modal>;
 }
 // V87.337 · Destinataris del correu d'una obra: el client, les seves persones de contacte, el promotor i els agents de l'obra amb correu
-function draftCorreu878337({title,obra,data,clients}){
+function draftCorreu878337({title,obra,data,clients,primer=null}){
   const out=[];const vist=new Set();
   // V87.402 · també el mòbil (per al WhatsApp): hi entra qui té un correu o un telèfon
   const add=(nom,email,rol,sel,tel)=>{let e=String(email||"").trim();const tl=String(tel||"").trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))e="";const nTel=tl.replace(/\D/g,"");
     const k=(e||nTel).toLowerCase();if(!e&&nTel.length<9||vist.has(k))return;vist.add(k);out.push({id:"d"+out.length,nom:String(nom||"").trim()||e||tl,email:e,tel:nTel.length>=9?tl:"",rol:rol||"",sel:!!sel})};
+  // V87.405 · una acta va, primer de tot, als seus assistents (ja marcats)
+  if(Array.isArray(primer))primer.forEach(a=>a&&add(a.nom,a.email,a.rol||a.tipus||"",true,a.mobil||a.telefon));
+  // si cap assistent no té correu, com abans: el client (o el promotor) ja marcat
+  const ambPrimer=out.some(x=>x.sel&&x.email);
   const cl=(clients||[]).find(c=>c.id===obra?.client&&!obra?.compartida);
-  if(cl){add(cl.nom,cl.email,"Client",true,cl.mobil||cl.telefon);contactesDe878315(cl).forEach(p=>add(p.nom,p.email,"Client",false,p.mobil||p.telefon))}
-  add(obra?.propietat,obra?.emailPropietat,"Promotor",!cl,obra?.mobilPropietat||obra?.telefonPropietat);
+  if(cl){add(cl.nom,cl.email,"Client",!ambPrimer,cl.mobil||cl.telefon);contactesDe878315(cl).forEach(p=>add(p.nom,p.email,"Client",false,p.mobil||p.telefon))}
+  add(obra?.propietat,obra?.emailPropietat,"Promotor",!cl&&!ambPrimer,obra?.mobilPropietat||obra?.telefonPropietat);
   (data?.agents||[]).forEach(a=>add(a.nom,a.email,a.rol||a.tipus||"",false,a.mobil||a.telefon));
   const e=empresaInfo878259();
   const signa=window.__acoEmpresa?(e?.nom||e?.fiscal||""):"Héctor";
-  const titol=[String(title||"").trim(),obra?.nom].filter(Boolean).join(" · ");
+  const tt=String(title||"").trim();const titol=obra?.nom&&tt.includes(obra.nom)?tt:[tt,obra?.nom].filter(Boolean).join(" · ");
   return {title:titol,agents:out,selected:out.filter(x=>x.sel).map(x=>x.id),altres:"",message:t("Bon dia,\n\nUs envio {doc}.\n\nSalutacions,\n{signa}",{doc:titol,signa})};
 }
 // V87.337 · Facturació (menú) dels comptes d'empresa: les factures en ordre numèric (amb el filtre per any, obra i cobrament, i l'Excel
@@ -16434,7 +16482,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.404",
+    app_version:"87.405",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -17883,25 +17931,115 @@ return <form onSubmit={onSubmit} className="form-event-v78">
 </form>
 }
 
+// V87.405 · «Enviar» (l'Héctor, 26/10/2026: «al enviar una acta no s'envia… vull que sigui per Gmail i no per l'Outlook… hauria de
+// sortir Enviar i el correu que sigui l'associat per l'usuari… i no surt adjuntat el PDF de l'acta»):
+// - Un sol botó «Enviar». Es recorda per a cada usuari com envia: «Gmail» (de sèrie) o «El correu de l'aparell» (Outlook, Mail…).
+// - Amb Gmail, el correu surt des del seu compte amb el PDF adjunt (`googleMail.js`; la primera vegada Google demana permís). Si Google
+//   no ho deixa fer (la Gmail API no està activada al projecte, sense connexió…), ho diu i ofereix obrir el Gmail amb el correu escrit
+//   i el PDF descarregat.
+// - El PDF del document es prepara en obrir la finestra (`htmlAPdf`): així, en tocar «Enviar» o «WhatsApp», ja hi és.
+// - Al correu de l'aparell les adreces van separades per «;» a l'ordinador (l'Outlook no accepta la coma).
+const VIA_KEY878405="aco_correu_v878405";
+const viaCorreu878405=()=>{const v=lsJson8779(VIA_KEY878405,{})?.via;return v==="aparell"?"aparell":"gmail"};
+const tactil878405=()=>{try{return window.matchMedia("(pointer:coarse)").matches}catch{return false}};
+function descarregaBlob878405(blob,nom){const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=nom;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)}
 function EmailModal({draft,setDraft,close}){
   const ag=draft.agents||[],selIds=draft.selected||[];
   const sel=ag.filter(a=>selIds.includes(a.id));
   const altres=String(draft.altres||"").split(/[,;\s]+/).map(x=>x.trim()).filter(x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
-  const tos=[...new Set([...sel.map(a=>a.email),...altres])];
+  const tos=[...new Set([...sel.map(a=>a.email).filter(Boolean),...altres])];
   const toggle=id=>setDraft({...draft,selected:selIds.includes(id)?selIds.filter(x=>x!==id):[...selIds,id]});
-  const mailto=()=>{window.location.href=`mailto:${tos.map(encodeURIComponent).join(",")}?subject=${encodeURIComponent(draft.title||"")}&body=${encodeURIComponent(draft.message||"")}`;draft.onEnviat?.("correu",sel.map(a=>a.nom))};
+  const [via,setVia0]=useState(viaCorreu878405);
+  const setVia=v=>{setVia0(v);lsSet8779(VIA_KEY878405,JSON.stringify({via:v}))};
+  const [canviar,setCanviar]=useState(false);
+  const [adjunta,setAdjunta]=useState(true);
+  const [pdf,setPdf]=useState(null);           // {blob, nom} quan és a punt
+  const [pdfErr,setPdfErr]=useState("");
+  const [estat,setEstat]=useState("");         // "" · "enviant" · "fet" · "error"
+  const [msg,setMsg]=useState("");
+  const [alt,setAlt]=useState(null);           // l'error d'enviar amb Gmail: es pot obrir el Gmail amb el correu escrit
+  const html=useMemo(()=>{try{return draft.pdf?htmlDoc878405(draft.pdf.doc,draft.pdf.obra,draft.pdf.client):null}catch(e){console.warn(e);return null}},[draft.pdf]);
+  const nom=nomPdf(draft.pdf?.doc?.title||draft.title);
+  useEffect(()=>{let viu=true;setPdf(null);setPdfErr("");
+    if(html)htmlAPdf(html).then(blob=>{if(viu)setPdf({blob,nom})}).catch(e=>{console.warn(e);if(viu)setPdfErr(t("No s’ha pogut preparar el PDF."))});
+    return()=>{viu=false}},[html]);
+  useEffect(()=>{if(via==="gmail")gmail878405.prepara()},[via]);
+  const ambPdf=!!html&&adjunta;
+  const pdfLlest=!ambPdf||!!pdf;
+  const fitxer=()=>pdf?new File([pdf.blob],pdf.nom,{type:"application/pdf"}):null;
+  const kb=b=>b.size>1048576?(b.size/1048576).toLocaleString("ca-ES",{maximumFractionDigits:1})+" MB":Math.max(1,Math.round(b.size/1024))+" KB";
+  function obrirGmail(){
+    if(ambPdf&&pdf)descarregaBlob878405(pdf.blob,pdf.nom);
+    openGmailCompose(tos.join(","),draft.title,draft.message);
+    draft.onEnviat?.("gmail",sel.map(a=>a.nom));
+    setAlt(null);setEstat("fet");setMsg(ambPdf&&pdf?t("S’ha obert el Gmail amb el correu escrit i s’ha descarregat el PDF: afegeix-lo al correu (el clip) i envia’l."):t("S’ha obert el Gmail amb el correu escrit."));
+  }
+  async function correuAparell(){
+    const f=ambPdf?fitxer():null;
+    // al mòbil i la tauleta, el PDF va per «Compartir» (el correu de l'aparell l'adjunta); a l'ordinador, es descarrega
+    if(f&&tactil878405()&&navigator.canShare?.({files:[f]})){
+      try{await navigator.share({files:[f],title:draft.title||"",text:draft.message||""});draft.onEnviat?.("correu",sel.map(a=>a.nom));setEstat("fet");setMsg(t("Tria l’app de correu i escriu-hi les adreces: {a}",{a:tos.join(", ")}));return}catch(e){if(e?.name==="AbortError")return}
+    }
+    if(f)descarregaBlob878405(pdf.blob,pdf.nom);
+    const sep=/Win/i.test(navigator.platform||navigator.userAgent||"")?";":",";
+    window.location.href=`mailto:${tos.map(encodeURIComponent).join(sep)}?subject=${encodeURIComponent(draft.title||"")}&body=${encodeURIComponent(draft.message||"")}`;
+    draft.onEnviat?.("correu",sel.map(a=>a.nom));
+    setEstat("fet");setMsg(f?t("S’ha obert el correu de l’aparell i s’ha descarregat el PDF: afegeix-lo al correu i envia’l."):t("S’ha obert el correu de l’aparell."));
+  }
+  async function enviar(){
+    if(!tos.length||estat==="enviant")return;
+    setAlt(null);setMsg("");
+    if(via==="aparell"){correuAparell();return}
+    if(!gmail878405.configurat()){obrirGmail();return}
+    setEstat("enviant");
+    try{
+      await gmail878405.connecta();                       // la finestra de Google (dins del mateix toc), si cal
+      let adj=[];
+      if(ambPdf){let p=pdf;if(!p){setMsg(t("Preparant el PDF…"));p={blob:await htmlAPdf(html),nom};setPdf(p)}adj=[{nom:p.nom,blob:p.blob}]}
+      setMsg(t("Enviant…"));
+      await gmail878405.envia({to:tos,subject:draft.title||"",text:draft.message||"",adjunts:adj});
+      draft.onEnviat?.("gmail",sel.map(a=>a.nom));
+      setEstat("fet");setMsg(t("Enviat des del teu Gmail a {a}.",{a:tos.join(", ")}));
+    }catch(e){
+      console.warn(e);setEstat("error");
+      setAlt(e?.noActiva?t("Encara no es pot enviar des de l’app: al projecte de Google de l’app hi falta activar la «Gmail API» (una sola vegada)."):(e?.message||t("No s’ha pogut enviar.")));
+      setMsg("");
+    }
+  }
   // V87.402 · WhatsApp: amb un sol destinatari amb mòbil, el seu xat; si no, WhatsApp demana a qui
+  // V87.405 · amb el PDF: al mòbil, per «Compartir» (es tria WhatsApp); a l'ordinador, es descarrega per adjuntar-lo al xat
   const telsWa=sel.map(a=>String(a.tel||"").replace(/\D/g,"")).filter(x=>x.length>=9);
-  const whatsapp=()=>{let n=telsWa.length===1?telsWa[0].replace(/^00/,""):"";if(n.length===9)n="34"+n;
-    window.open(`https://wa.me/${n}?text=${encodeURIComponent([draft.title,draft.message].filter(Boolean).join("\n\n"))}`,"_blank","noopener");draft.onEnviat?.("whatsapp",sel.map(a=>a.nom));close()};
-  return <Modal title={t("Enviar")} close={close}><div className="correu-v878337">
+  async function whatsapp(){
+    const text=[draft.title,draft.message].filter(Boolean).join("\n\n");
+    const f=ambPdf?fitxer():null;
+    if(f&&tactil878405()&&navigator.canShare?.({files:[f]})){
+      try{await navigator.share({files:[f],text});draft.onEnviat?.("whatsapp",sel.map(a=>a.nom));close();return}catch(e){if(e?.name==="AbortError")return}
+    }
+    if(f)descarregaBlob878405(pdf.blob,pdf.nom);
+    let n=telsWa.length===1?telsWa[0].replace(/^00/,""):"";if(n.length===9)n="34"+n;
+    window.open(`https://wa.me/${n}?text=${encodeURIComponent(text)}`,"_blank","noopener");draft.onEnviat?.("whatsapp",sel.map(a=>a.nom));
+    if(f){setEstat("fet");setMsg(t("S’ha obert el WhatsApp i s’ha descarregat el PDF: adjunta’l al xat."))}else close();
+  }
+  const fet=estat==="fet";
+  return <Modal title={t("Enviar")} close={close}><div className="correu-v878337 correu-v878405">
     <div className="dest"><b>{t("Per a")}</b>
       {ag.length>0&&<div className="llista">{ag.map(a=><label key={a.id} className={`d ${selIds.includes(a.id)?"on":""}`}><input type="checkbox" checked={selIds.includes(a.id)} onChange={()=>toggle(a.id)}/><span><b>{a.nom}</b><small>{[a.rol?i18nT(a.rol):"",a.email,a.tel].filter(Boolean).join(" · ")}</small></span></label>)}</div>}
       <label className="altres"><span>{ag.length?t("Una altra adreça"):t("Adreça de correu")}</span><input type="email" inputMode="email" autoComplete="email" value={draft.altres||""} onChange={e=>setDraft({...draft,altres:e.target.value})} placeholder="nom@exemple.cat"/></label>
     </div>
     <label className="camp"><span>{t("Assumpte")}</span><input value={draft.title||""} onChange={e=>setDraft({...draft,title:e.target.value})}/></label>
     <label className="camp"><span>{t("Missatge")}</span><textarea rows={6} value={draft.message||""} onChange={e=>setDraft({...draft,message:e.target.value})}/></label>
-    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="secondary wa-v878402" onClick={whatsapp}><MessageCircle size={16} aria-hidden="true"/> WhatsApp</button><button type="button" className="secondary" disabled={!tos.length} onClick={()=>{openGmailCompose(tos.join(","),draft.title,draft.message);draft.onEnviat?.("gmail",sel.map(a=>a.nom))}}>Gmail</button><button type="button" className="primary" disabled={!tos.length} onClick={mailto}><Mail size={16} aria-hidden="true"/> {t("Obrir el correu")}</button></div>
+    {html&&<label className={`adjunt-v878405 ${adjunta?"on":""}`}><input type="checkbox" checked={adjunta} onChange={e=>setAdjunta(e.target.checked)}/><FileText size={18} aria-hidden="true"/><span><b>{nom}</b><small>{pdfErr||(pdf?kb(pdf.blob):t("Preparant el PDF…"))}</small></span></label>}
+    <div className="via-v878405">{via==="gmail"?t("S’envia des del teu Gmail"):t("S’obre el correu de l’aparell (Outlook, Mail…)")}
+      {!canviar?<button type="button" className="link" onClick={()=>setCanviar(true)}>{t("Canviar")}</button>
+      :<span className="seg-v878405"><button type="button" className={via==="gmail"?"on":""} aria-pressed={via==="gmail"} onClick={()=>{setVia("gmail");setCanviar(false)}}>Gmail</button><button type="button" className={via==="aparell"?"on":""} aria-pressed={via==="aparell"} onClick={()=>{setVia("aparell");setCanviar(false)}}>{t("Correu de l’aparell")}</button></span>}
+    </div>
+    {msg&&<p className={`estat-v878405 ${fet?"ok":""}`} role="status">{fet&&<Check size={16} aria-hidden="true"/>}{msg}</p>}
+    {alt&&<div className="alt-v878405" role="alert"><p>{alt}</p><button type="button" className="secondary" onClick={obrirGmail}><Mail size={16} aria-hidden="true"/> {ambPdf?t("Obrir el Gmail amb el correu escrit i descarregar el PDF"):t("Obrir el Gmail amb el correu escrit")}</button></div>}
+    <div className="modal-actions">{fet?<button type="button" className="primary" onClick={close}>{t("Tancar")}</button>:<>
+      <button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button>
+      <button type="button" className="secondary wa-v878402" disabled={!pdfLlest&&ambPdf&&tactil878405()} onClick={whatsapp}><MessageCircle size={16} aria-hidden="true"/> WhatsApp</button>
+      <button type="button" className="primary envia-v878405" disabled={!tos.length||estat==="enviant"||(via==="aparell"&&!pdfLlest)} onClick={enviar}><Send size={16} aria-hidden="true"/> {estat==="enviant"?t("Enviant…"):t("Enviar")}</button></>}
+    </div>
   </div></Modal>}
 function proformaPrintHtml8783(doc,obra,client){
   const D=(s,v)=>tl(docLang878283(obra),s,v);
@@ -18009,7 +18147,7 @@ function DocViewer({doc,obra,client,close,email}){
   const actaDocs=doc.actaDocs||[];
   const assistents=acta?(acta.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean):[];
   const printRef=useRef(null);
-  const exactHtml878193=marcaDoc878351(doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):doc.type==="facturavf"&&doc.factura?facturaVFPrintHtml878285(doc,obra):null);
+  const exactHtml878193=htmlDoc878405(doc,obra,client);
   function htmlForCurrentDoc(){
     if(exactHtml878193)return exactHtml878193;
     const node=printRef.current;
@@ -18101,7 +18239,7 @@ function DocViewer({doc,obra,client,close,email}){
     </div>
     <div className="modal-actions doc-mobile-actions-v87107">
       <button className="secondary" onClick={close}>{i18nT("Tancar / tornar")}</button>
-      <button className="secondary" onClick={()=>email(doc.title)}>{i18nT("Enviar per correu")}</button>
+      <button className="secondary" onClick={()=>email(doc.title,{doc})}>{i18nT("Enviar per correu")}</button>
       {doc.type==="excel"&&doc.originalFile&&<button className="secondary" onClick={downloadOriginalExcel878245}>{i18nT("Descarregar Excel original")}</button>}
       <button className="secondary" onClick={downloadHtmlDoc}>{i18nT("Descarregar document")}</button>
       <button className="secondary" onClick={shareHtmlDoc}>{i18nT("Compartir")}</button>

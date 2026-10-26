@@ -1716,6 +1716,30 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     treballadors inventats a la constructora i a la gestió total (`treballadors(perfil)`: Pere Prova, oficial 1a, 25 €/h, Colla 1; Joan
     Prova, peó, 18 €/h, Colla 1; Marc Prova, encarregat, 28 €/h) i el planning d'exemple diu qui hi treballa (`planning(…, qui)`: la Colla 1
     a la reforma, el Marc a la façana); `omplenaDemo878328` els desa a `aco_treballadors_v878339` si el compte no en té cap.
+  - **V87.405 · Enviar des del Gmail amb el PDF adjunt i l'acta amb el model dels documents** (l'Héctor, 26/10/2026, enviant una acta a uns
+    clients: «s'obre l'Outlook… vull que sigui per Gmail… separa amb coma i no és vàlid… no surt adjuntat el PDF de l'acta»):
+    - **`src/pdfDoc.js`** (`htmlAPdf`, `paginesImatge`, `nomPdf`): l'HTML d'un document en un PDF de debò. Es dibuixa en un marc amagat de
+      794 px, es talla en pàgines A4 sense partir cap línia, fila, foto ni signatura (`talls`; també `break-before:page`) i cada pàgina va
+      al PDF com una imatge JPEG (html2canvas 1.4.1 i jsPDF 4.2.1, dependències noves amb la versió exacta, carregades només en fer el primer PDF).
+    - **`src/googleMail.js`** (`connecta`, `envia`, `mime`): el correu surt del Gmail de l'usuari amb l'API de Gmail (permís «gmail.send»
+      amb el mateix client de Google que el Calendar; només enviar, no llegir). Correu MIME amb el text i els adjunts. Si la «Gmail API»
+      no està activada al projecte de Google, Google respon 403 i `e.noActiva`. **Per a l'Héctor:** Google Cloud › projecte «Control
+      d'obres» › APIs › Biblioteca › «Gmail API» › Habilitar (una sola vegada).
+    - **Finestra «Enviar»** (`EmailModal`, `.correu-v878405`): un sol botó «Enviar» (fora «Gmail» i «Obrir el correu»); a sota, «S'envia
+      des del teu Gmail · Canviar» (Gmail o «Correu de l'aparell», es recorda per usuari a `aco_correu_v878405`). El PDF del document es
+      prepara en obrir la finestra (`draft.pdf = {doc, obra, client}`, `htmlDoc878405`) i surt com a adjunt (es pot desmarcar). Gmail:
+      permís (dins del toc) → PDF → enviat («Enviat des del teu Gmail a …»). Si falla, ho diu i ofereix «Obrir el Gmail amb el correu
+      escrit i descarregar el PDF». Correu de l'aparell: `mailto:` amb «;» a Windows (l'Outlook no accepta la coma) i el PDF descarregat
+      (al mòbil, «Compartir» amb el PDF). WhatsApp: al mòbil, «Compartir» amb el PDF; a l'ordinador, el xat i el PDF descarregat.
+    - `emailDraft(title, {doc, assistents})` i `draftCorreu878337({…, primer})`: una acta va als seus assistents (marcats); si cap no té
+      correu, el client com abans. L'assumpte ja no repeteix el nom de l'obra. «Enviar» de l'acta i «Enviar per correu» del visor de
+      documents passen el document.
+    - **L'acta com els altres documents** (`actaPrintHtml878405`): l'encapçalament i el color d'Ajustos › Documents (`capDoc878396`),
+      l'emissor del compte (`emissorTecnic878396`; abans hi deia sempre «Héctor Cubero · Arquitecte tècnic»), els agents clau (sense els
+      «Pendent»), assistents, text, croquis, fotos, documents, les quatre caselles de signatura i el peu. `htmlDoc878405` dona l'HTML exacte de
+      qualsevol document (vista, impressió i PDF).
+    - Supabase de proves: Gmail simulat (`POST /gmail/v1/users/me/messages/send`, `GET /__gmail` amb els correus descodificats, `POST
+      /__gmail {noActiva}`). Estils `src/theme-v878405.css`. Prova: `enviar405test.mjs` (19). Adaptades `whatsapp402test` i `facturacio337test`.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
