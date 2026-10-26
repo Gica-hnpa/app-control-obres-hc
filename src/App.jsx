@@ -25,7 +25,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.403";
+const APP_VERSION878264="87.404";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -16434,7 +16434,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.403",
+    app_version:"87.404",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -18881,7 +18881,7 @@ function empresaInfo878259(){return lsJson8779("aco_empresa_v878259",null)}
 // notes, pressupostos i certificacions, honoraris, hores i despeses)
 const NOMS_DEMO878328={tecnic:"Despatx Tècnic Prova",constructor:"Construccions Prova",complet:"Gestió Integral Prova",treballador:"Pere Prova · Construccions Prova"};
 function omplenaDemo878328(perfil){
-  const {clients,obres,despeses,ajudes}=dadesDemo(perfil);
+  const {clients,obres,despeses,treballadors,ajudes}=dadesDemo(perfil);
   const any=new Date().getFullYear(),createdAt=new Date().toISOString();
   const llista=[],odata={};
   obres.forEach(({obra,dades},i)=>{
@@ -18902,6 +18902,7 @@ function omplenaDemo878328(perfil){
   lsSet8779("aco_obres",JSON.stringify([...llista,...alienes]));
   lsSet8779("aco_odata",JSON.stringify({...Object.fromEntries(alienes.map(o=>[o.id,odAbans[o.id]]).filter(([,d])=>d)),...odata}));
   writeAlbarans878259(despeses);
+  if(treballadors?.length&&!lsJson8779("aco_treballadors_v878339",[]).length)lsSet8779("aco_treballadors_v878339",JSON.stringify(treballadors));
   lsSet8779("aco_demo_v878328",JSON.stringify({perfil,at:createdAt}));
 }
 let demoMirat878328=false;

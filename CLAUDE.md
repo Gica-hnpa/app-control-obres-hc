@@ -1712,6 +1712,31 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       (`part.signatures878403`, `rol:"client"`).
     - Estils `src/theme-v878403.css`. Prova: `signatura403test.mjs` (20, ordinador i mòbil, signa amb el ratolí simulat). Passen
       `visitestest`, `fitxerstest`, `partes350test` i `docs396test`.
+  - **V87.404 · Dades d'exemple amb treballadors i equip** (per als vídeos i perquè el Pol estudiï l'app): `src/dadesDemo.js` porta tres
+    treballadors inventats a la constructora i a la gestió total (`treballadors(perfil)`: Pere Prova, oficial 1a, 25 €/h, Colla 1; Joan
+    Prova, peó, 18 €/h, Colla 1; Marc Prova, encarregat, 28 €/h) i el planning d'exemple diu qui hi treballa (`planning(…, qui)`: la Colla 1
+    a la reforma, el Marc a la façana); `omplenaDemo878328` els desa a `aco_treballadors_v878339` si el compte no en té cap.
+  - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
+    i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
+    `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
+    `prova2026`. Prova: `pol403test.mjs` (6).
+  - **Manual d'ús i vídeos** (26/10/2026, encàrrec de l'Héctor: «petits vídeos de 1-2 min per pestanya… i un document de manual d'ús per
+    passar als clients»): manual a Claude Docs https://claude.ai/artifact/KUFR7yUTLeXtDsxJY1PqkU (doc `95927636-18fe-4ec4-aaa2-6ebaa1186029`,
+    node `2ffb3169-a91a`) i 18 vídeos MP4 a `GUIES_USUARIS\VIDEOS\<NN>-<lliçó>.mp4` (01–03 per a tothom, 11–16 tècnic, 21–29 constructora).
+    - **`tools/proves/guia404.mjs`** + **`guia404-llicons.mjs`** (les lliçons: per pas, títol, text, l'element on es toca i les accions):
+      entra amb els comptes del Pol al Supabase de proves (núvol nou a cada lliçó, dades d'exemple), fa cada pas al mòbil (390 × 844) i en
+      desa la captura i el text a `D:/aco-tmp/guia/<lliçó>/`; després fa el vídeo amb l'Edge (canvas 1280 × 720 + `MediaRecorder` MP4: el
+      mòbil a l'esquerra, el text del pas a la dreta i un cercle taronja on es toca). `FASE=captures | video | fulla` (un full amb totes les
+      captures per revisar-les) `| manual` (tres pantalles per lliçó en una imatge per al manual); `DUMP=1` llista els botons de cada pas.
+    - **`tools/proves/remuxmp4.mjs`**: l'MP4 que grava l'Edge és «a trossos» i sense durada (al Windows o l'iPhone pot sortir 0:00); el
+      converteix en un MP4 normal (moov al principi amb la durada). Sense dependències.
+    - Quan canviï una pantalla, tornar a gravar la seva lliçó (`node tools/proves/guia404.mjs <lliçó>`) i actualitzar el manual.
+    - **Pàgina dels vídeos** https://claude.ai/artifact/NVZiX9pdoePjWkwQotBgXQ (privada; els MP4 i les portades són «assets» de la
+      pàgina). Eines a `tools/proves/videos-pagina/`: `portades.mjs` (fotograma del segon 14 de cada vídeo, `T=`), `fes.mjs` (omple
+      `plantilla.html` amb `urls.json` i `posters.json`, les adreces `/_blob/…` que torna la pujada, i la durada de cada MP4). Per
+      canviar-ne un: copiar els MP4 a `videos-pagina/mp4/`, pujar el nou com a asset de la pàgina, posar-ne l'adreça als JSON,
+      `node fes.mjs` i tornar a publicar `videos-control-obres.html` amb la mateixa adreça (`url`).
+    - Al manual, cada lliçó té una imatge amb tres pantalles (`FASE=manual`) a sota de «Vídeo: …».
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1851,12 +1876,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.403)
+### Per començar una sessió nova (26/10/2026, després de la V87.404)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.403 a Render):**
+**Estat (publicada la V87.404 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -1876,8 +1901,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
    - ~~Propostes visuals~~ (V87.400): esperant que validi a https://claude.ai/artifact/1sPHEQWBTS529xEieexRDd (Sí / No / Canviar-la); les
      validades, per a tothom.
    - ~~Pressupost dictat~~ (V87.401). ~~WhatsApp i pressupost acceptat/rebutjat~~ (V87.402). ~~Signatura a la pantalla~~ (V87.403).
-   - Abans de la versió següent (l’Héctor, 26/10/2026): dos comptes per al **Pol** (el seu fill; tècnic i constructor) i el **manual d’ús** i
-     **vídeos curts** per pestanyes perquè el Pol aprengui l’app i l’ensenyi als clients.
+   - ~~Comptes del Pol, manual d’ús i vídeos~~ (26/10/2026; vegeu la V87.404): **l’Héctor ha de crear els dos comptes al panell de
+     Supabase** (`GUIES_USUARIS\COMPTES_POL.txt`) i compartir el manual i la pàgina dels vídeos amb el Pol.
    - Després: descompte al pressupost d’obra · obra nova en
      3 passos · revisor del pressupost · parte per veu · previsió de caixa. Estudi del mercat: https://claude.ai/artifact/67earcqHnbhfC3RQyj4nv6.
    - **Esperen (cost o servidor):** IA directa, VeriFactu, bot de WhatsApp, banc, cobrament en línia, signatura a distància, fitxatge fase 2.

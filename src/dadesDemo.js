@@ -55,9 +55,10 @@ function certificacions(llista, dates) {
 }
 // planning: cada capítol rere l'anterior, a partir d'un dia (dies laborables); des de la V87.341, vinculats (si se n'allarga un, els
 // de després es mouen) i el 3r comença 2 dies abans que acabi el 2n
-function planning(llista, inici, dies) {
+// qui: per a cada capítol, qui hi treballa (la colla o un treballador; Agenda › Equip)
+function planning(llista, inici, dies, qui = []) {
   const caps = [...new Set(llista.map(x => x[0]))]; const capPlans = {}; let d = inici;
-  caps.forEach((c, i) => { capPlans[c] = { start: iso(d), durationDays: dies[i] || 5, ...(i ? { dep: caps[i - 1], lag: i === 2 ? "-2" : "0" } : {}) }; d += Math.round((dies[i] || 5) * 7 / 5); });
+  caps.forEach((c, i) => { capPlans[c] = { start: iso(d), durationDays: dies[i] || 5, ...(i ? { dep: caps[i - 1], lag: i === 2 ? "-2" : "0" } : {}), ...(qui[i]?.length ? { qui: qui[i] } : {}) }; d += Math.round((dies[i] || 5) * 7 / 5); });
   return { plannedStart: iso(inici), capPlans, updatedAt: ara() };
 }
 const nota = (n, d, text) => ({ id: `nota-demo-${n}-${Math.random().toString(36).slice(2, 7)}`, numero: n, data: iso(d), text, fotos: [], docs: [], createdAt: ara(), updatedAt: ara() });
@@ -69,6 +70,7 @@ function cita(k, d, hora, title, tipus, obra, client) {
 const hora = (k, d, hores, feina, extra = {}) => ({ id: `h-demo-${k}`, data: iso(d), hores, tipusRegistre: "Honoraris", tipusFeina: feina, observacions: "", preuHora: 50, createdAt: ara(), ...extra });
 
 // Cada obra: dades bàsiques (l'App hi posa el codi i la plantilla) i el que porta dins
+const COLLA = { k: "c:Colla 1", nom: "Colla 1" }, MARC = { k: "t:treb-demo-marc", nom: "Marc Prova" };
 function obres(perfil) {
   const o = (k, nom, tipus, client, estat, adreca, poblacio, codiPostal, extra = {}) => ({ k, obra: { id: `obra-demo-${k}`, nom, tipus, client, estat, adreca, poblacio, codiPostal, rc: extra.rc || "", subtitol: extra.subtitol || "", constructor: extra.constructor || "Pendent", deo: extra.deo || "Pendent", do: extra.do || "Pendent" }, dades: extra.dades || {} });
   const tecnic = [
@@ -96,13 +98,13 @@ function obres(perfil) {
     horesK: [["do1", -14, 1.5, "Visita d’obra"], ["do2", -7, 2, "Visita d’obra"], ["do3", -4, 1, "Visita d’obra"], ["do4", -2, 0.75, "Oficina"]] } });
   const constructora = [
     o("reforma", "Reforma integral pis C/ Nou 5", "Gestió integral d’obra", CLIENTS.marta, "En curs / Actiu", "C/ Nou, 5, 3r 1a", "Palamós", "17230", { constructor: "Construccions Prova SL", dades: {
-      partides: partides(REFORMA), certificacions: certificacions(REFORMA, [-40, -10]), ganttConfig87217: planning(REFORMA, -45, [5, 15, 12, 10]),
+      partides: partides(REFORMA), certificacions: certificacions(REFORMA, [-40, -10]), ganttConfig87217: planning(REFORMA, -45, [5, 15, 12, 10], [[COLLA], [COLLA], [], [COLLA]]),
       notes: [nota(1, -3, "Arribat el gres porcellànic: 55 m² al pis. Falta la mampara (setmana que ve).")],
       tasques: [tasca("ref1", 0, "Col·locar el paviment del menjador", "Alta"), tasca("ref2", 2, "Rebre la mampara i el plat de dutxa"), tasca("ref3", -1, "Tancar el pas d’instal·lacions del bany", "Urgent")],
       citaK: [["ref", 0, "08:00", "Arribada del material (gres i morter)", "Material"], ["ref2", 3, "12:00", "Visita de la direcció d’obra", "Visita d’obra"]],
       horesK: [["r1", -5, 8, "Paleta", { treballador: true, observacions: "Arrebossats del bany" }], ["r2", -4, 8, "Paleta", { treballador: true, observacions: "Envà de la cuina" }], ["r3", -3, 7.5, "Paleta", { treballador: true, observacions: "Paviment de l’habitació" }], ["r4", -1, 8, "Paleta", { treballador: true, observacions: "Paviment del passadís" }]] } }),
     o("facana", "Façana Comunitat C/ Major 12", "Gestió integral d’obra", CLIENTS.comunitat, "Acceptat", "C/ Major, 12", "Sant Feliu de Guíxols", "17220", { constructor: "Construccions Prova SL", dades: {
-      partides: partides(FACANA), certificacions: certificacions(FACANA, [-6]), ganttConfig87217: planning(FACANA, -12, [5, 15, 10]),
+      partides: partides(FACANA), certificacions: certificacions(FACANA, [-6]), ganttConfig87217: planning(FACANA, -12, [5, 15, 10], [[MARC], [MARC], [MARC]]),
       tasques: [tasca("fac1", 1, "Revisar els ancoratges de la bastida", "Alta")],
       citaK: [["fac", 1, "07:30", "Inici de la reparació de façana", "Obra"]],
       horesK: [["f1", -2, 8, "Oficial", { treballador: true, observacions: "Sanejat de fissures" }]] } }),
@@ -133,6 +135,12 @@ function despeses(perfil) {
   return out;
 }
 
+// 26/10/2026 · treballadors inventats per a les constructores (partes, hores, fitxatge, Agenda › Equip)
+function treballadors(perfil) {
+  if (perfil !== "constructor" && perfil !== "complet") return [];
+  const w = (k, nom, ofici, costHora, colla) => ({ id: `treb-demo-${k}`, nom, ofici, costHora, dni: "", mobil: "", alta: iso(-400), actiu: true, docs: [], colla });
+  return [w("pere", "Pere Prova", "Oficial 1a", "25", "Colla 1"), w("joan", "Joan Prova", "Peó", "18", "Colla 1"), w("marc", "Marc Prova", "Encarregat", "28", "")];
+}
 export function dadesDemo(perfil) {
   const llista = obres(perfil);
   const usats = new Set(llista.map(x => x.obra.client.id));
@@ -140,6 +148,7 @@ export function dadesDemo(perfil) {
     clients: Object.values(CLIENTS).filter(c => usats.has(c.id)),
     obres: llista,
     despeses: despeses(perfil),
+    treballadors: treballadors(perfil),
     ajudes: { iso, cita, hora },
   };
 }
