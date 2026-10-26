@@ -9,7 +9,8 @@
 import { t } from "./i18n.js";
 const DB = "aco_fitxers", STORE = "fitxers", QUEUE = "cua", DONE = "pujats";
 // Llistes de l'obra que porten fitxers, i el camp on hi ha el contingut.
-const LISTS = { fotos: "src", croquis: "src", docs: "url" };
+// V87.403 · i les signatures (actes, partes i pressupostos acceptats): una imatge petita per signatura.
+const LISTS = { fotos: "src", croquis: "src", docs: "url", signatures878403: "src" };
 let dbPromise = null, persistAsked = false;
 const stored = new Map(); // clau → mida ja desada en aquesta sessió (per no tornar-la a escriure)
 

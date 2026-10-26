@@ -1693,6 +1693,25 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Avís** (`avisosObra878360`, Inici i Resum de l'obra): «Pressupost enviat fa N dies, sense resposta» a partir de 7 dies; tocant-lo,
       el Pressupost de l'obra.
     - Estils `src/theme-v878402.css`. Prova: `whatsapp402test.mjs` (14). Passen `avisos360test`, `facturacio337test` i `pressuposttest`.
+  - **V87.403 · Signatura a la pantalla** (estudi del mercat, proposta 3; sense cost: no és una signatura a distància ni certificada, és
+    la imatge del traç amb el nom, el DNI i l'hora):
+    - **`SignaturaPad878403`** (finestra: nom i cognoms, DNI, quadre per signar amb el dit o el ratolí —`canvas` amb «pointer events»,
+      `touch-action:none`—, «Esborrar», «Desar la signatura») i **`SignaturaVista878403`** (imatge, nom, DNI i data; «Tornar a signar»,
+      «Treure»). La imatge es retalla i es redueix (PNG, com a molt 600 × 220 px).
+    - **On es desa:** llistes `signatures878403 = [{id, nom, dni, at, src, rol|tipus…}]`. A **`src/fileStore.js`** la llista és a `LISTS`
+      (com `fotos`): la imatge es desa a l'aparell i es puja al núvol (`aco-fitxers`); el desat de les obres en treu `src`.
+    - **Acta:** pestanya **«Signatures»** (amb el número de signatures) amb les quatre caselles del document (`ROLS_SIG878403`: DO, DEO,
+      constructora, promotor; el nom proposat surt de les Dades de l'acta). Es desa al moment a l'esborrany i a l'acta desada, i l'acta
+      passa a «Signada». La vista i el PDF de l'acta (`ActaFormalPreview8768`) porten la signatura a la seva casella.
+    - **Pressupost:** Accions › **«Signatura del client…»** (o «Tornar a signar l'acceptació») i «Signar» a la franja d'enviat (V87.402):
+      event `aco-estat-obra` amb `sig` → `sigRef878403` de l'App la desa a `odata[id].signatures878403` (`tipus:"pressupost"`, `budgetId`;
+      una per pressupost) i, si l'obra encara no era acceptada, passa a «Acceptat». Franja verda **«Acceptat i signat»**
+      (`.sig-pres-v878403`). Els documents del pressupost porten `signatura878403` (`sigPres878403`) i el requadre «Acceptat pel client»
+      (`signaturaDoc878396`) s'omple amb el nom, el DNI, la data i la signatura (també si a Ajustos › Documents el requadre està tret).
+    - **Parte amb feina fora de pressupost:** al resum del dia, **«Conforme del client»** amb «Signatura del client»
+      (`part.signatures878403`, `rol:"client"`).
+    - Estils `src/theme-v878403.css`. Prova: `signatura403test.mjs` (20, ordinador i mòbil, signa amb el ratolí simulat). Passen
+      `visitestest`, `fitxerstest`, `partes350test` i `docs396test`.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1832,12 +1851,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.402)
+### Per començar una sessió nova (26/10/2026, després de la V87.403)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.402 a Render):**
+**Estat (publicada la V87.403 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -1856,8 +1875,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 1. **Llista de l’Héctor (26/10/2026, «posa-ho en llista i continua»; publicar cada versió i dir-li-ho):**
    - ~~Propostes visuals~~ (V87.400): esperant que validi a https://claude.ai/artifact/1sPHEQWBTS529xEieexRDd (Sí / No / Canviar-la); les
      validades, per a tothom.
-   - ~~Pressupost dictat~~ (V87.401). ~~WhatsApp i pressupost acceptat/rebutjat~~ (V87.402).
-   - Després: signatura del client a la pantalla · descompte al pressupost d’obra · obra nova en
+   - ~~Pressupost dictat~~ (V87.401). ~~WhatsApp i pressupost acceptat/rebutjat~~ (V87.402). ~~Signatura a la pantalla~~ (V87.403).
+   - Abans de la versió següent (l’Héctor, 26/10/2026): dos comptes per al **Pol** (el seu fill; tècnic i constructor) i el **manual d’ús** i
+     **vídeos curts** per pestanyes perquè el Pol aprengui l’app i l’ensenyi als clients.
+   - Després: descompte al pressupost d’obra · obra nova en
      3 passos · revisor del pressupost · parte per veu · previsió de caixa. Estudi del mercat: https://claude.ai/artifact/67earcqHnbhfC3RQyj4nv6.
    - **Esperen (cost o servidor):** IA directa, VeriFactu, bot de WhatsApp, banc, cobrament en línia, signatura a distància, fitxatge fase 2.
 2. **Comodoro:** fet a les V87.398–399 («Tornar a llegir els descompostos d’un Excel…»: 63 partides, 62 al cèntim); falta que l’Héctor hi triï l’Excel v07.

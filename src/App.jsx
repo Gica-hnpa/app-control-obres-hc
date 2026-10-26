@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Check,Eye,ChevronRight,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send} from "lucide-react";
+import {Signature,Eraser,Check,Eye,ChevronRight,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -25,7 +25,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.402";
+const APP_VERSION878264="87.403";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3068,6 +3068,57 @@ function Fotografies8761({data,setData}){
   </Card>
 }
 
+// V87.403 · Signatura a la pantalla (estudi del mercat, proposta 3; sense cost): qui signa ho fa amb el dit (o el ratolí) a l'aparell:
+// actes, feina fora de pressupost d'un parte i pressupost acceptat. Es desa com una imatge petita (PNG retallat, com a molt 600 × 220 px)
+// dins d'una llista `signatures878403` de l'obra; fileStore.js la desa a l'aparell i la puja al núvol com les fotos.
+function SignaturaPad878403({titol,sub="",nom:nom0="",dni:dni0="",onDesa,close}){
+  const cv=useRef(null),trac=useRef(null),fet=useRef(false);
+  const[nom,setNom]=useState(nom0),[dni,setDni]=useState(dni0),[hiHa,setHiHa]=useState(false);
+  useLayoutEffect(()=>{const c=cv.current;if(!c)return;
+    const fit=()=>{const r=c.getBoundingClientRect(),dpr=Math.max(1,window.devicePixelRatio||1);if(!r.width||!r.height)return;
+      const abans=fet.current?c.toDataURL():null;
+      c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);const x=c.getContext("2d");x.setTransform(dpr,0,0,dpr,0,0);
+      x.lineCap="round";x.lineJoin="round";x.strokeStyle="#0f172a";x.fillStyle="#0f172a";x.lineWidth=2.4;
+      if(abans){const im=new Image();im.onload=()=>x.drawImage(im,0,0,r.width,r.height);im.src=abans}};
+    fit();let ro=null;try{ro=new ResizeObserver(fit);ro.observe(c)}catch{}return()=>ro?.disconnect()},[]);
+  const pos=e=>{const r=cv.current.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}};
+  const ctx=()=>cv.current.getContext("2d");
+  function baixa(e){e.preventDefault();try{cv.current.setPointerCapture?.(e.pointerId)}catch{}const p=pos(e);trac.current=[p];const x=ctx();x.beginPath();x.arc(p.x,p.y,1.2,0,Math.PI*2);x.fill();fet.current=true;setHiHa(true)}
+  function mou(e){if(!trac.current)return;e.preventDefault();const p=pos(e),a=trac.current;a.push(p);const x=ctx();x.beginPath();
+    if(a.length<3){x.moveTo(a[0].x,a[0].y);x.lineTo(p.x,p.y)}else{const p1=a[a.length-2],p0=a[a.length-3];x.moveTo((p0.x+p1.x)/2,(p0.y+p1.y)/2);x.quadraticCurveTo(p1.x,p1.y,(p1.x+p.x)/2,(p1.y+p.y)/2)}x.stroke()}
+  const puja=()=>{trac.current=null};
+  function esborra(){const c=cv.current;ctx().clearRect(0,0,c.width,c.height);fet.current=false;setHiHa(false)}
+  // la signatura retallada (sense el blanc del voltant) i reduïda
+  function imatge(){const c=cv.current,{width:w,height:h}=c,d=ctx().getImageData(0,0,w,h).data;let x0=w,y0=h,x1=-1,y1=-1;
+    for(let y=0;y<h;y++)for(let i=0;i<w;i++)if(d[(y*w+i)*4+3]>16){if(i<x0)x0=i;if(i>x1)x1=i;if(y<y0)y0=y;if(y>y1)y1=y}
+    if(x1<0)return "";const pad=Math.round(8*w/(c.clientWidth||w));x0=Math.max(0,x0-pad);y0=Math.max(0,y0-pad);x1=Math.min(w-1,x1+pad);y1=Math.min(h-1,y1+pad);
+    const cw=x1-x0+1,ch=y1-y0+1,s=Math.min(1,600/cw,220/ch),o=document.createElement("canvas");o.width=Math.max(1,Math.round(cw*s));o.height=Math.max(1,Math.round(ch*s));
+    o.getContext("2d").drawImage(c,x0,y0,cw,ch,0,0,o.width,o.height);return o.toDataURL("image/png")}
+  function desa(){const src=imatge();if(!src)return;onDesa?.({id:"sig-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),nom:nom.trim(),dni:dni.trim(),at:new Date().toISOString(),src});close?.()}
+  return <Modal title={titol||t("Signatura")} close={close}><div className="signa-v878403">
+    {sub?<p className="sub">{sub}</p>:null}
+    <div className="camps"><label><span>{t("Nom i cognoms")}</span><input value={nom} onChange={e=>setNom(e.target.value)} autoComplete="off"/></label>
+      <label className="dni"><span>{t("DNI / NIF")}</span><input value={dni} onChange={e=>setDni(e.target.value)} autoComplete="off"/></label></div>
+    <div className={`pad ${hiHa?"ple":""}`}><canvas ref={cv} aria-label={t("Signa aquí")} onPointerDown={baixa} onPointerMove={mou} onPointerUp={puja} onPointerCancel={puja} onPointerLeave={puja}/>{!hiHa&&<span className="ph" aria-hidden="true">{t("Signa aquí")}</span>}<i className="linia" aria-hidden="true"/></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={esborra} disabled={!hiHa}><Eraser size={16} aria-hidden="true"/> {t("Esborrar")}</button><span className="esp"/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desa} disabled={!hiHa||!nom.trim()}><Check size={16} aria-hidden="true"/> {t("Desar la signatura")}</button></div>
+  </div></Modal>;
+}
+// una signatura desada: la imatge, el nom i quan
+function SignaturaVista878403({sig,onTreu,onTorna}){
+  if(!sig)return null;
+  const quan=sig.at?new Date(sig.at).toLocaleString(loc878272(),{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+  return <div className="sig-vista-v878403">{sig.src?<img src={sig.src} alt={t("Signatura de {nom}",{nom:sig.nom||""})}/>:<span className="sense">{t("Signatura desada")}</span>}
+    <span className="qui"><b>{sig.nom||"—"}</b><small>{[sig.dni,quan].filter(Boolean).join(" · ")}</small></span>
+    {(onTorna||onTreu)&&<span className="bt">{onTorna&&<button type="button" className="link" onClick={onTorna}>{t("Tornar a signar")}</button>}{onTreu&&<button type="button" className="link treu" onClick={onTreu}>{t("Treure")}</button>}</span>}</div>;
+}
+// les quatre caselles de signatura de l'acta (les del document)
+const ROLS_SIG878403=[["do","Direcció facultativa / DO"],["deo","DEO / Arquitecte tècnic"],["constructor","Constructora"],["promotor","Promotor / propietat"]];
+function nomSig878403(acta={},rol){const v=rol==="constructor"?(typeof acta.constructor==="string"?acta.constructor:""):acta[rol];const n=String(v||"").trim();return /^pendent$/i.test(n)?"":n}
+// el format de data dels documents (l'idioma del document: D("Data") en castellà és «Fecha»)
+function docLocale878403(D){return D&&D("Data")==="Fecha"?"es-ES":"ca-ES"}
+// la signatura d'acceptació d'un pressupost (la més nova d'aquell pressupost)
+function sigPres878403(data={},budgetId){const l=(data?.signatures878403||[]).filter(s=>s&&s.tipus==="pressupost"&&(!budgetId||!s.budgetId||s.budgetId===budgetId));return l.sort((a,b)=>String(b.at||"").localeCompare(String(a.at||"")))[0]||null}
+
 // V87.263 · Dictat per veu a les observacions de l'acta (català i castellà).
 // El dictat el fa el navegador (Chrome/Edge a Android i ordinador, Safari a iPhone/iPad): és gratuït i
 // necessita connexió. Sense connexió, el micròfon del teclat del mòbil sovint funciona igualment.
@@ -3470,6 +3521,12 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
   }
 
   function upd(k,v){setDraft(d=>({...d,[k]:v}))}
+  // V87.403 · signatures de l'acta: es desen al moment (a l'esborrany i a l'acta desada) i l'acta passa a «Signada»
+  const[signa878403,setSigna878403]=useState(null);
+  function posaSig878403(rol,sg){const f=a=>({...a,signatures878403:[...(a.signatures878403||[]).filter(x=>x.rol!==rol),{...sg,rol}],estat:["","Esborrany","Enviada"].includes(a.estat||"")?"Signada":a.estat});
+    const id=draft?.id;setDraft(d=>d?f(d):d);if(id)setData(d=>({...d,actes:(d.actes||[]).map(a=>a.id===id?f(a):a)}))}
+  function treuSig878403(rol){if(!confirm(t("Treure aquesta signatura?")))return;const f=a=>({...a,signatures878403:(a.signatures878403||[]).filter(x=>x.rol!==rol)});
+    const id=draft?.id;setDraft(d=>d?f(d):d);if(id)setData(d=>({...d,actes:(d.actes||[]).map(a=>a.id===id?f(a):a)}))}
 
   // V87.265 · esborrar fotos de l'obra (i de totes les actes on surten). Les «sense imatge» només es treuen si
   // es comprova al núvol que s'han perdut de debò (una foto d'un altre aparell encara no baixada no es toca).
@@ -3537,7 +3594,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
         {!draft&&<div className="empty-v8761">{t("Selecciona una acta per editar-la o crea’n una de nova.")}</div>}
 
         {draft&&<>
-          <div className="acta-panel-tabs-v8799">{["Dades","Agents","Observacions","Fotos","Documents","Plànols"].map(p=><button type="button" key={p} className={actaPanel8799===p?"active":""} onClick={()=>setActaPanel8799(p)}>{p}</button>)}</div>
+          <div className="acta-panel-tabs-v8799">{["Dades","Agents","Observacions","Fotos","Documents","Plànols","Signatures"].map(p=><button type="button" key={p} className={actaPanel8799===p?"active":""} onClick={()=>setActaPanel8799(p)}>{t(p)}{p==="Signatures"&&(draft.signatures878403||[]).length?<em className="n-sig-v878403">{(draft.signatures878403||[]).length}</em>:null}</button>)}</div>
           {actaPanel8799==="Dades"&&<div className="form-grid">
             <label><span>{t("Número acta *")}</span><input value={draft.numero||""} onChange={e=>upd("numero",e.target.value)}/></label>
             <label><span>{t("Títol acta *")}</span><input value={draft.titol||""} onChange={e=>upd("titol",e.target.value)}/></label>
@@ -3586,6 +3643,10 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
           </div>}
 
           {actaPanel8799==="Plànols"&&<PlanolsCroquisActa8769 draft={draft} setDraft={setDraft}/>}
+
+          {actaPanel8799==="Signatures"&&<div className="signatures-acta-v878403">{ROLS_SIG878403.map(([k,lab])=>{const sg=(draft.signatures878403||[]).find(x=>x.rol===k);
+            return <div key={k} className={`sig-rol ${sg?"signat":""}`}><b>{t(lab)}</b>{sg?<SignaturaVista878403 sig={sg} onTorna={()=>setSigna878403(k)} onTreu={()=>treuSig878403(k)}/>:<button type="button" className="secondary" onClick={()=>setSigna878403(k)}><Signature size={16} aria-hidden="true"/> {t("Signar")}</button>}</div>})}</div>}
+          {signa878403&&<SignaturaPad878403 titol={t("Signatura")} sub={[t((ROLS_SIG878403.find(r=>r[0]===signa878403)||[])[1]||""),draft.titol].filter(Boolean).join(" · ")} nom={nomSig878403(draft,signa878403)} onDesa={sg=>posaSig878403(signa878403,sg)} close={()=>setSigna878403(null)}/>}
 
           <div className="actions-inline">
             <button type="button" className="primary" onClick={save}>{t("Guardar acta")}</button>
@@ -3639,7 +3700,7 @@ function ActaFormalPreview8768({obra,client,acta,agents=[],fotos=[],docs=[],croq
     </div>
     {(croquis.length>0||(acta?.croquis||[]).length>0)&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>{D("Plànols marcats i croquis d’obra")}</h3><div className="acta-photo-preview-v8761">{[...croquis,...(acta?.croquis||[])].filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i).filter(c=>c.src).map(c=><figure key={c.id}><img src={c.src}/><figcaption>{c.nom}{c.origen?` · ${D("Base:")} ${c.origen}`:""}</figcaption></figure>)}</div></div>}
     {fotos.length>0&&<div className="preview-section-v8764 acta-a4-section-v8766"><h3>{D("Reportatge fotogràfic")}</h3><div className="acta-photo-preview-v8761">{fotos.filter(f=>f.src||f.url).map(f=><figure key={f.id}><img src={f.src||f.url}/><figcaption>{f.nom}</figcaption></figure>)}</div></div>}
-    <div className="preview-section-v8764 acta-a4-section-v8766"><h3>{D("Signatures electròniques")}</h3><div className="signature-grid-v8768"><span>{D("Direcció facultativa / DO")}<br/>{D("Nom i signatura")}</span><span>{D("DEO / Arquitecte tècnic")}<br/>{D("Nom i signatura")}</span><span>{D("Constructora")}<br/>{D("Nom i signatura")}</span><span>{D("Promotor / propietat")}<br/>{D("Nom i signatura")}</span></div></div>
+    <div className="preview-section-v8764 acta-a4-section-v8766"><h3>{D("Signatures electròniques")}</h3><div className="signature-grid-v8768">{ROLS_SIG878403.map(([k,lab])=>{const sg=(acta?.signatures878403||[]).find(x=>x.rol===k);return <span key={k} className={sg?"signat-v878403":""}>{D(lab)}<br/>{sg?<>{sg.src?<img className="sig-img-v878403" src={sg.src} alt=""/>:null}<small className="sig-qui-v878403">{[sg.nom,sg.dni,sg.at?new Date(sg.at).toLocaleString(docLocale878403(D),{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):""].filter(Boolean).join(" · ")}</small></>:D("Nom i signatura")}</span>})}</div></div>
   </div></FitBox878290>
 }
 
@@ -4546,7 +4607,9 @@ const navRef878353=useRef(nav);navRef878353.current=nav;
 useEffect(()=>{const h=e=>{const sc=e?.detail?.screen;if(sc){navRef878353.current(sc);try{window.scrollTo(0,0)}catch{}}};window.addEventListener("aco-nav",h);return()=>window.removeEventListener("aco-nav",h)},[]);
 // V87.402 · «Acceptat» / «No acceptat» del pressupost enviat (event «aco-estat-obra» {id, estat})
 const estatRef878402=useRef(null);
-useEffect(()=>{const h=e=>{const d=e?.detail;if(d?.id&&d?.estat)estatRef878402.current?.(d.id,d.estat)};window.addEventListener("aco-estat-obra",h);return()=>window.removeEventListener("aco-estat-obra",h)},[]);
+// V87.403 · i, amb `sig`, la signatura d'acceptació del client (a les dades de l'obra, `signatures878403`)
+const sigRef878403=useRef(null);
+useEffect(()=>{const h=e=>{const d=e?.detail;if(d?.id&&d?.sig)sigRef878403.current?.(d.id,d.sig);if(d?.id&&d?.estat)estatRef878402.current?.(d.id,d.estat)};window.addEventListener("aco-estat-obra",h);return()=>window.removeEventListener("aco-estat-obra",h)},[]);
 function openObra(id){
   const now=new Date().toISOString();
   setObraId(id);setTab("Resum");setSelActa(null);
@@ -5401,6 +5464,9 @@ function saveCert(){
 // V87.402 · enviar el pressupost (correu, Gmail o WhatsApp) queda apuntat a l’obra (`enviatPres878402`) i, si l’obra era «Pressupostat» o
 // «En revisió», passa a «Pendent de resposta»; als 7 dies sense resposta, avís (avisosObra878360). No a les obres compartides per un altre.
 estatRef878402.current=(id,st)=>updateObraStatus878247(id,st);
+sigRef878403.current=(id,sg)=>{const now=new Date().toISOString();setOdata(prev=>{if(!prev[id])return prev;const cur=prev[id];
+  const l=[...(cur.signatures878403||[]).filter(x=>!(x.tipus===sg.tipus&&(x.budgetId||"principal")===(sg.budgetId||"principal"))),sg];
+  const next={...prev,[id]:{...cur,signatures878403:l,updatedAt:now}};try{saveOdata878104(next,authUser8779)}catch(e){}return next})};
 function enviatPressupost878402(id,via,a=[]){
   const ob=(obres||[]).find(o=>o.id===id);if(!ob||ob.compartida)return;
   const now=new Date().toISOString(),st=normalizeExpedientStatus878136(ob.estat);
@@ -9770,7 +9836,7 @@ function PressupostRapid878150(props){
       return {...d,partides:[...current,{id:"pr-"+Date.now(),codi:String(current.length+1).padStart(2,"0")+".01",ut:"ut",concepte:"Nova partida",desc:"",cap,q:"1,00",pu:"0,00",pressupostMesures:[],certAnterior:0,certActual:0,certsByNum:{},tipus:"Pressupost ràpid manual",createdAt:now,updatedAt:now}],updatedAt:now};
     });
   }
-  function doc878153(){return {type:"pressupostobra",marges878378:margesDoc878378(data),title:"PRESSUPOST D’OBRA",numeroPressupost:numeroPressupost||suggestedNumero878194,referencia,dataPressupost,versioPressupost,obraAdreca:obraAdrecaPressupost,tercerNom,tercerNif,tercerAdreca,tercerEmail,realitzadorPressupost,clientFinalPressupost,subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES"),observacions,formaPagament}}
+  function doc878153(){return {type:"pressupostobra",marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),title:"PRESSUPOST D’OBRA",numeroPressupost:numeroPressupost||suggestedNumero878194,referencia,dataPressupost,versioPressupost,obraAdreca:obraAdrecaPressupost,tercerNom,tercerNif,tercerAdreca,tercerEmail,realitzadorPressupost,clientFinalPressupost,subtitle:`${parts} partides · ${money(total)}`,rows,total,data:new Date().toLocaleDateString("ca-ES"),observacions,formaPagament}}
   function saveAsDocument878153(){
     const doc=doc878153();
     const now=new Date().toISOString();
@@ -10346,7 +10412,8 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   if(vista){const bloq=parteBloquejat878352(data,vista);const cert=vista.estat==="certificat";
     return <ParteResum878349 data={data} obraId={obra?.id} part={vista} treb={treb} readOnly={readOnly} avis={avis} treuAvis={()=>setAvis("")} nomCerts={nomCerts} bloquejat={bloq}
       onEdita={!readOnly&&(!cert||(!treb&&!bloq))?()=>{setAvis("");setEsb({...vista,hores:vista.hores||[],material:vista.material||[]})}:null} onCertifica={!cert&&!readOnly&&!treb?()=>certifica(vista):null}
-      onElimina={!readOnly&&!treb&&!bloq?()=>elimina(vista):null} onDesfes={cert&&!readOnly&&!treb&&!bloq?()=>desfes(vista):null} onTanca={()=>{setVistaId("");setAvis("")}}/>}
+      onElimina={!readOnly&&!treb&&!bloq?()=>elimina(vista):null} onDesfes={cert&&!readOnly&&!treb&&!bloq?()=>desfes(vista):null} onTanca={()=>{setVistaId("");setAvis("")}}
+      onSigna={!readOnly?sg=>setData?.(d=>({...d,partes878349:(d.partes878349||[]).map(x=>x.id===vista.id?{...x,signatures878403:[{...sg,rol:"client"}]}:x),updatedAt:new Date().toISOString()})):null}/>}
   // per mesos: l'últim obert, la resta plegats
   const mesos=[];partes.forEach(p=>{const k=String(p.data||"").slice(0,7)||"—";let m=mesos.find(x=>x.k===k);if(!m){m={k,partes:[]};mesos.push(m)}m.partes.push(p)});
   const nomMes=k=>k==="—"?"—":new Date(k+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
@@ -10373,7 +10440,9 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
 }
 function horesParte878352(p={}){return (p.hores||[]).reduce((s,h)=>s+(parseNum8770(h.hores)||0),0)+(p.noves||[]).reduce((s,n)=>s+(n.ambHores?(n.hores||[]).reduce((a,h)=>a+(parseNum8770(h.hores)||0),0):0),0)}
 // el resum d'un dia: només el que s'hi ha fet (feina, i les hores i el material que van a Despeses)
-function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCerts,bloquejat,onEdita,onCertifica,onElimina,onDesfes,onTanca}){
+function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCerts,bloquejat,onEdita,onCertifica,onElimina,onDesfes,onTanca,onSigna}){
+  // V87.403 · la feina fora de pressupost, conforme del client (signatura a la pantalla)
+  const[signa,setSigna]=useState(false);const sigC=(part.signatures878403||[]).find(x=>x.rol==="client")||null;
   const prev=previ878349(data,part),ps=pidsObra878349(data);
   const perPid=new Map(ps.map(x=>[x.pid,x]));
   const creades=new Set((part.noves||[]).map(n=>n.pidCreat).filter(Boolean));
@@ -10397,6 +10466,8 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
       return <div key={l.pid} className={`pr-p ${fe>=q0-0.0001&&q0>0?"feta":""}`}><span className="txt"><b>{x.r.codi?<span className="codi">{x.r.codi}</span>:null}{x.r.concepte}</b><small>{fe>=q0-0.0001&&q0>0?t("Acabada"):t("Fet: {p}",{p:pct(q0>0?fe/q0*100:0)})}</small></span><span className="avui"><b>{(av>=0?"+":"")+fq878349(av)} {ut}</b>{!treb?<small>{money(av*(parseNum8770(x.r.pu)||0))}</small>:null}</span></div>})}</section>)}
     {(part.noves||[]).length>0&&<section className="pr-cap"><h4>{t("Fora de pressupost")}</h4>{(part.noves||[]).map(n=>{const pr=preuEf878352(data,n);const hh=n.ambHores?(n.hores||[]).reduce((s,h)=>s+(parseNum8770(h.hores)||0),0):0;
       return <div key={n.id} className="pr-p fp"><span className="txt"><b>{n.concepte||t("Sense concepte")}</b><small>{[n.cap,hh?fhMa878348(hh):""].filter(Boolean).join(" · ")}</small></span><span className="avui"><b>{fq878349(n.q)} {n.ut}</b>{!treb?<small>{pr>0?money(pr):t("Sense preu")}</small>:null}</span></div>})}</section>}
+    {(part.noves||[]).length>0&&(sigC||onSigna)&&<section className="pr-cap pr-sig-v878403"><h4>{t("Conforme del client")}</h4>{sigC?<SignaturaVista878403 sig={sigC} onTorna={onSigna?()=>setSigna(true):null}/>:<button type="button" className="secondary signa-parte-v878403" onClick={()=>setSigna(true)}><Signature size={16} aria-hidden="true"/> {t("Signatura del client")}</button>}</section>}
+    {signa&&onSigna&&<SignaturaPad878403 titol={t("Conforme del client")} sub={[t("Feina fora de pressupost"),part.data?new Date(part.data+"T12:00:00").toLocaleDateString(loc878272()):""].filter(Boolean).join(" · ")} nom={String(data?.obra?.propietat||"").replace(/^pendent$/i,"")} onDesa={onSigna} close={()=>setSigna(false)}/>}
     {!treb&&(fets.length>0||(part.noves||[]).length>0)&&<div className="pr-total"><span>{t("Feina feta del dia")}</span><b>{money(imp)}</b></div>}
     {hores.length>0&&<section className="pr-cap pr-hores"><h4>{t("Hores")} · {fhMa878348(hores.reduce((s,h)=>s+(parseNum8770(h.hores)||0),0))}</h4>{hores.map(h=><div key={h.id} className="pr-p"><span className="txt"><b>{h.nom||t("Sense nom")}</b><small>{catDe878352(h,treballadors)||"—"}</small></span><span className="avui"><b>{fhMa878348(parseNum8770(h.hores))}</b>{!treb?<small>{money(costH(h))}</small>:null}</span></div>)}</section>}
     {material.length>0&&<section className="pr-cap pr-mat"><h4>{t("Material")}</h4>{material.map(m=><div key={m.id} className="pr-p"><span className="txt"><b>{m.concepte||t("Material")}</b><small>{[parseNum8770(m.q)?`${fq878349(parseNum8770(m.q))} ${m.ut||""}`.trim():"",m.proveidor].filter(Boolean).join(" · ")}</small></span><span className="avui">{!treb?<b>{parseNum8770(m.import)>0?money(parseNum8770(m.import)):t("Sense import")}</b>:null}</span></div>)}</section>}
@@ -12722,6 +12793,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   // només sortia editant, quan «Accions» ja no surt). Primer la finestra amb què es posarà; en acceptar, es desa al moment.
   const[desc398,setDesc398]=useState(null);
   const[dictat401,setDictat401]=useState(false);
+  // V87.403 · el client signa l'acceptació a la pantalla: la signatura va a l'obra (event «aco-estat-obra» amb `sig`) i, si encara no
+  // estava acceptada, l'obra passa a «Acceptat»
+  const[signa403,setSigna403]=useState(false);
+  const bid403=data?.activeBudgetIdObra||activeBudgetId||"principal",sigP403=sigPres878403(data,bid403);
+  function desaSig403(sg){const st=normalizeExpedientStatus878136(obra?.estat);const passa=["","Pressupostat","Pendent de resposta","En revisió","No acceptat"].includes(st);
+    try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra?.id,estat:passa?"Acceptat":null,sig:{...sg,tipus:"pressupost",budgetId:bid403}}}))}catch{}}
   async function llegeixDesc398(file){
     if(!file)return;
     try{
@@ -13265,7 +13342,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const docTotal=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
     return {
       type:"pressupostobra",
-      marges878378:margesDoc878378(data),
+      marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),
       title:"PRESSUPOST D’OBRA",
       numeroPressupost:data?.pressupostRapidNumero||budgetLabel8786(data,data.activeBudgetIdObra||activeBudgetId||"principal"),
       referencia:data?.pressupostRapidReferencia||"",
@@ -13404,6 +13481,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!editBudget8760b&&<ActionMenu87213 className="accions-v878366" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
         {!quickMode&&!editBudget8760b&&<button type="button" onClick={()=>openDoc?.(budgetPrintDoc878179())}><Printer size={15} aria-hidden="true"/> {i18nT("PDF del pressupost")}</button>}
         {!clientMode&&!editBudget8760b&&openEmail&&<button type="button" className="budget-enviar-v878337" onClick={()=>openEmail("Pressupost obra")}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+        {!clientMode&&!quickMode&&obra?.id&&<button type="button" className="signa-pres-v878403" onClick={()=>setSigna403(true)}><Signature size={15} aria-hidden="true"/> {sigP403?i18nT("Tornar a signar l’acceptació"):i18nT("Signatura del client…")}</button>}
         <small className="amh-v878273">{i18nT("A aquest pressupost")}</small>
         {(!clientMode||clientLibraryEnabled)&&<button type="button" onClick={()=>openBudgetLibrary87218("","client")}>{i18nT("Afegir partides de la llibreria")}</button>}{!clientMode&&!quickMode&&<button type="button" className="dictar-v878401" onClick={()=>setDictat401(true)}><Mic size={15} aria-hidden="true"/> {i18nT("Dictar partides…")}</button>}
         {(clientMode||!Object.values(caps||{}).some(a=>(a||[]).length))&&<button type="button" onClick={startManualBudget87115}>{i18nT("Començar pressupost buit")}</button>}
@@ -13430,7 +13508,10 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       </div>
     </div>}>
       {/* V87.402 · pressupost enviat i encara sense resposta: d’un toc, Acceptat o No acceptat (canvia l’estat de l’obra) */}
-      {!clientMode&&!quickMode&&obra?.enviatPres878402?.at&&normalizeExpedientStatus878136(obra?.estat)==="Pendent de resposta"&&<div className="enviat-v878402"><Send size={16} aria-hidden="true"/><span>{i18nT("Enviat el {d} per {via}",{d:fmtAppDate8748(String(obra.enviatPres878402.at).slice(0,10)),via:obra.enviatPres878402.via==="whatsapp"?"WhatsApp":obra.enviatPres878402.via==="gmail"?"Gmail":i18nT("correu")})}</span><span className="bt"><button type="button" className="ok" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"Acceptat"}}))}catch{}}}><Check size={15} aria-hidden="true"/> {i18nT("Acceptat")}</button><button type="button" className="no" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"No acceptat"}}))}catch{}}}>{i18nT("No acceptat")}</button></span></div>}
+      {!clientMode&&!quickMode&&obra?.enviatPres878402?.at&&normalizeExpedientStatus878136(obra?.estat)==="Pendent de resposta"&&<div className="enviat-v878402"><Send size={16} aria-hidden="true"/><span>{i18nT("Enviat el {d} per {via}",{d:fmtAppDate8748(String(obra.enviatPres878402.at).slice(0,10)),via:obra.enviatPres878402.via==="whatsapp"?"WhatsApp":obra.enviatPres878402.via==="gmail"?"Gmail":i18nT("correu")})}</span><span className="bt"><button type="button" className="signa" onClick={()=>setSigna403(true)}><Signature size={15} aria-hidden="true"/> {i18nT("Signar")}</button><button type="button" className="ok" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"Acceptat"}}))}catch{}}}><Check size={15} aria-hidden="true"/> {i18nT("Acceptat")}</button><button type="button" className="no" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"No acceptat"}}))}catch{}}}>{i18nT("No acceptat")}</button></span></div>}
+      {/* V87.403 · pressupost acceptat i signat a la pantalla */}
+      {!quickMode&&sigP403&&<div className="sig-pres-v878403"><span className="tit"><Signature size={16} aria-hidden="true"/> {i18nT("Acceptat i signat")}</span><SignaturaVista878403 sig={sigP403}/></div>}
+      {signa403&&<SignaturaPad878403 titol={i18nT("Acceptació del pressupost")} sub={[budgetLabel8786(data,bid403),total>0?money(total):""].filter(Boolean).join(" · ")} nom={String(obra?.propietat||client?.nom||"").replace(/^pendent$/i,"")} dni={String(obra?.nifPropietat||client?.nif||"").replace(/^pendent$/i,"")} onDesa={desaSig403} close={()=>setSigna403(false)}/>}
       {quickMode&&<div className={`rapid-budget-edit-toolbar-v87204 ${editBudget8760b?"editing":""}`}><div><b>{editBudget8760b?i18nT("Edició del pressupost ràpid activada"):i18nT("Pressupost ràpid")}</b><span>{editBudget8760b?i18nT("Els capítols i les files editables estan oberts. Guarda o cancel·la des del menú Accions."):i18nT("Per modificar quantitats, preus o conceptes, obre el menú Accions.")}</span></div></div>}
       {(clientMode||budgetWorkTab878180==="Validar descompostos")&&<div className="budget-simple-toolbar-v87213">
         {budgetWorkTab878180==="Validar descompostos"&&<button type="button" className="secondary" onClick={()=>setBudgetWorkTab878180("Pressupost")}>{i18nT("← Tornar al pressupost")}</button>}
@@ -14546,7 +14627,7 @@ function ClientBudgetReadOnlyV87235({data={},obra={},client={},openDoc}){
   function openBudgetPdf878241(){
     openDoc?.({
       type:"pressupostobra",
-      marges878378:margesDoc878378(data),
+      marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),
       title:"PRESSUPOST D’OBRA",
       numeroPressupost:data?.pressupostRapidNumero||"",
       referencia:data?.pressupostRapidReferencia||obra?.nom||"",
@@ -15684,7 +15765,12 @@ function capDoc878396(o={}){
 // el peu de tots els documents (el text d'Ajustos › Documents)
 function peuDoc878396(){const p=docsCfg878396().peu.trim();return p?`<div class="cd396-peu" style="margin-top:8mm;padding-top:3mm;border-top:1px solid #e2e8f0;color:#64748b;font-size:9px;line-height:1.35;white-space:pre-wrap;break-inside:avoid">${escHtmlV8772(p)}</div>`:""}
 // la signatura d'acceptació del pressupost (el client el signa i el torna)
-function signaturaDoc878396(D,emissorNom,clientNom){if(!docsCfg878396().signatura)return "";const esc=escHtmlV8772;const ln=l=>`<div style="display:flex;gap:3mm;align-items:flex-end;margin-top:4mm"><span style="color:#64748b;font-size:9px;min-width:22mm">${esc(l)}</span><span style="flex:1;border-bottom:1px solid #94a3b8;height:5mm"></span></div>`;
+function signaturaDoc878396(D,emissorNom,clientNom,sig=null){
+  // V87.403 · si el client l'ha signat a la pantalla, el requadre porta el nom, el DNI, la data i la signatura
+  const sg=sig&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(sig.src||""))?sig:null;
+  if(!docsCfg878396().signatura&&!sg)return "";const esc=escHtmlV8772;const ln=(l,v="")=>`<div style="display:flex;gap:3mm;align-items:flex-end;margin-top:4mm"><span style="color:#64748b;font-size:9px;min-width:22mm">${esc(l)}</span><span style="flex:1;border-bottom:1px solid #94a3b8;min-height:5mm;font-size:10.5px;color:#0f172a;padding-bottom:1px">${v}</span></div>`;
+  if(sg){const quan=sg.at?new Date(sg.at).toLocaleString(docLocale878403(D),{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+    return `<div class="cd396-sign" style="display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid"><div><small style="display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700">${esc(D("Emissor"))}</small><b style="display:block;font-size:11px;margin-top:1mm">${esc(emissorNom||"")}</b><div style="height:18mm"></div><div style="border-top:1px solid #64748b;padding-top:2px;color:#64748b;font-size:9px">${esc(D("Signatura"))}</div></div><div style="border:1px solid #cbd5e1;border-radius:6px;padding:4mm"><small style="display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700">${esc(D("Acceptat pel client"))}</small><b style="display:block;font-size:11px;margin-top:1mm">${esc(clientNom||"")}</b>${ln(D("Nom i cognoms"),esc(sg.nom||""))}${ln(D("DNI / NIF"),esc(sg.dni||""))}${ln(D("Data"),esc(quan))}<div style="display:flex;gap:3mm;align-items:flex-end;margin-top:3mm"><span style="color:#64748b;font-size:9px;min-width:22mm">${esc(D("Signatura"))}</span><span style="flex:1;border-bottom:1px solid #94a3b8"><img class="sig-doc-v878403" src="${sg.src}" alt="" style="display:block;max-height:17mm;max-width:100%"></span></div></div></div>`}
   return `<div class="cd396-sign" style="display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid"><div><small style="display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700">${esc(D("Emissor"))}</small><b style="display:block;font-size:11px;margin-top:1mm">${esc(emissorNom||"")}</b><div style="height:18mm"></div><div style="border-top:1px solid #64748b;padding-top:2px;color:#64748b;font-size:9px">${esc(D("Signatura"))}</div></div><div style="border:1px solid #cbd5e1;border-radius:6px;padding:4mm"><small style="display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700">${esc(D("Acceptat pel client"))}</small><b style="display:block;font-size:11px;margin-top:1mm">${esc(clientNom||"")}</b>${ln(D("Nom i cognoms"))}${ln(D("DNI / NIF"))}${ln(D("Data"))}${ln(D("Signatura"))}</div></div>`}
 // les observacions, la forma de pagament i la validesa del pressupost (les del pressupost; si no n'hi ha, les de sèrie d'Ajustos)
 function textosPres878396(doc={}){const c=docsCfg878396();return {obs:String(doc.observacions||"").trim()||c.condicions.trim(),forma:String(doc.formaPagament||"").trim()||c.formaPagament.trim(),validesa:String(doc.validesa||"").trim()||c.validesa.trim()}}
@@ -16044,7 +16130,7 @@ async function add(e){let f=e.target.files?.[0];if(!f)return;if(!confirmBigDocum
 function budgetDocFromCurrent878189(d){
   const rows=Array.isArray(data?.partides)?data.partides:[];
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
-  return {type:"pressupostobra",marges878378:margesDoc878378(data),title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||obra?.adrecaPropietat||"",tercerEmail:data?.pressupostRapidTercerEmail||obra?.emailPropietat||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
+  return {type:"pressupostobra",marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||obra?.adrecaPropietat||"",tercerEmail:data?.pressupostRapidTercerEmail||obra?.emailPropietat||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
 }
 function linkedDocumentData878193(d){
   const linkedId=d?.linkedId||String(d?.id||"").replace(/^doc-/,"");
@@ -16348,7 +16434,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.402",
+    app_version:"87.403",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -17868,7 +17954,7 @@ function pressupostObraPrintHtml878153(doc,obra,client){
     const show=cap!==lastCap; lastCap=cap;
     return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap==="PRESSUPOST"?D(cap):cap)}</td><td class="num">${money(chapterTotals878230[cap]||0)}</td></tr>`:""}<tr><td class="code">${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b>${r.desc?`<p class="long-desc">${escHtmlV8772(r.desc)}</p>`:""}</td><td class="num">${qty2(q)}</td><td class="num">${money(pu)}</td><td class="num"><b>${money(q*pu)}</b></td></tr>`
   }).join("") || `<tr><td colspan="6" class="empty">${D("Sense partides.")}</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(docTitle878283(obra,doc.title)||D("Pressupost"))}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8.7px;line-height:1.12}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:100%;margin:6mm 0 0;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f172a;background:#9fbad4;border:1px solid #0f172a;border-bottom:0;padding:5px}.chapter-summary td:first-child{text-align:left;white-space:normal;font-weight:900}.chapter-summary th{background:#dbeafe}.chapter-summary td:nth-child(n+2){text-align:right}.chapter-summary tbody tr:last-child td{border-bottom:2px solid #0f172a}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page">${capDoc878396({D,em:emissorDocs878396(client),recHtml:thirdBlock,titol:docTitle878283(obra,doc.title)||D("PRESSUPOST D’OBRA"),meta:[[D("Núm. pressupost"),numPres],[D("Versió"),versioPres],[D("Data"),dataPres?(fmtAppDate8748(dataPres)||dataPres):""]],obraLabel:D("Obra"),obraTitol:ref,obraLinia:obraAdr})}<table><colgroup><col style="width:18mm"><col style="width:7mm"><col style="width:auto"><col style="width:14mm"><col style="width:17mm"><col style="width:22mm"></colgroup><thead><tr><th>${D("Part.")}</th><th>Ut</th><th>${D("Concepte / descripció")}</th><th>${D("Quant.")}</th><th>€/ut</th><th>${D("Total")}</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>${D("RESUM ECONÒMIC PER CAPÍTOLS")}</caption><colgroup><col style="width:auto"><col style="width:32mm"><col style="width:24mm"></colgroup><thead><tr><th>${D("Capítol")}</th><th>${D("Import")}</th><th>${D("% pressupost")}</th></tr></thead><tbody>${chapterSummary878230}</tbody></table>${(()=>{const mg=doc.marges878378;if(!(mg&&mg.mode==="resum"&&(mg.dge>0||mg.bi>0)))return `<div class="totals"><div><span>${D("TOTAL PRESSUPOST")}</span><b>${money(total)}</b></div></div>`;const dg=Math.round(total*mg.dge)/100,bi=Math.round(total*mg.bi)/100;return `<div class="totals totals-pec-v878378"><div><span>${D("Pressupost d’execució material (PEM)")}</span><b>${money(total)}</b></div>${mg.dge>0?`<div><span>${D("Despeses generals")} (${String(mg.dge).replace(".",",")} %)</span><b>${money(dg)}</b></div>`:""}${mg.bi>0?`<div><span>${D("Benefici industrial")} (${String(mg.bi).replace(".",",")} %)</span><b>${money(bi)}</b></div>`:""}<div class="pec"><span>${D("PRESSUPOST D’EXECUCIÓ PER CONTRACTE")}</span><b>${money(total+dg+bi)}</b></div></div>`})()}${(tx396.obs||tx396.forma||tx396.validesa)?`<div class="notes-stack">${tx396.obs?`<div><h3>${D("Observacions")}</h3><p>${escHtmlV8772(tx396.obs)}</p></div>`:""}${tx396.forma?`<div><h3>${D("Forma de pagament")}</h3><p>${escHtmlV8772(tx396.forma)}</p></div>`:""}${tx396.validesa?`<div><h3>${D("Validesa del pressupost")}</h3><p>${escHtmlV8772(tx396.validesa)}</p></div>`:""}</div>`:""}${signaturaDoc878396(D,clientEmissor,clientPressupost)}${peuDoc878396()}</section></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(docTitle878283(obra,doc.title)||D("Pressupost"))}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8.7px;line-height:1.12}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:100%;margin:6mm 0 0;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f172a;background:#9fbad4;border:1px solid #0f172a;border-bottom:0;padding:5px}.chapter-summary td:first-child{text-align:left;white-space:normal;font-weight:900}.chapter-summary th{background:#dbeafe}.chapter-summary td:nth-child(n+2){text-align:right}.chapter-summary tbody tr:last-child td{border-bottom:2px solid #0f172a}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page">${capDoc878396({D,em:emissorDocs878396(client),recHtml:thirdBlock,titol:docTitle878283(obra,doc.title)||D("PRESSUPOST D’OBRA"),meta:[[D("Núm. pressupost"),numPres],[D("Versió"),versioPres],[D("Data"),dataPres?(fmtAppDate8748(dataPres)||dataPres):""]],obraLabel:D("Obra"),obraTitol:ref,obraLinia:obraAdr})}<table><colgroup><col style="width:18mm"><col style="width:7mm"><col style="width:auto"><col style="width:14mm"><col style="width:17mm"><col style="width:22mm"></colgroup><thead><tr><th>${D("Part.")}</th><th>Ut</th><th>${D("Concepte / descripció")}</th><th>${D("Quant.")}</th><th>€/ut</th><th>${D("Total")}</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>${D("RESUM ECONÒMIC PER CAPÍTOLS")}</caption><colgroup><col style="width:auto"><col style="width:32mm"><col style="width:24mm"></colgroup><thead><tr><th>${D("Capítol")}</th><th>${D("Import")}</th><th>${D("% pressupost")}</th></tr></thead><tbody>${chapterSummary878230}</tbody></table>${(()=>{const mg=doc.marges878378;if(!(mg&&mg.mode==="resum"&&(mg.dge>0||mg.bi>0)))return `<div class="totals"><div><span>${D("TOTAL PRESSUPOST")}</span><b>${money(total)}</b></div></div>`;const dg=Math.round(total*mg.dge)/100,bi=Math.round(total*mg.bi)/100;return `<div class="totals totals-pec-v878378"><div><span>${D("Pressupost d’execució material (PEM)")}</span><b>${money(total)}</b></div>${mg.dge>0?`<div><span>${D("Despeses generals")} (${String(mg.dge).replace(".",",")} %)</span><b>${money(dg)}</b></div>`:""}${mg.bi>0?`<div><span>${D("Benefici industrial")} (${String(mg.bi).replace(".",",")} %)</span><b>${money(bi)}</b></div>`:""}<div class="pec"><span>${D("PRESSUPOST D’EXECUCIÓ PER CONTRACTE")}</span><b>${money(total+dg+bi)}</b></div></div>`})()}${(tx396.obs||tx396.forma||tx396.validesa)?`<div class="notes-stack">${tx396.obs?`<div><h3>${D("Observacions")}</h3><p>${escHtmlV8772(tx396.obs)}</p></div>`:""}${tx396.forma?`<div><h3>${D("Forma de pagament")}</h3><p>${escHtmlV8772(tx396.forma)}</p></div>`:""}${tx396.validesa?`<div><h3>${D("Validesa del pressupost")}</h3><p>${escHtmlV8772(tx396.validesa)}</p></div>`:""}</div>`:""}${signaturaDoc878396(D,clientEmissor,clientPressupost,doc.signatura878403)}${peuDoc878396()}</section></body></html>`;
 }
 function PressupostObraPreview878153({doc}){
   const rows=sortPartides878132(doc.rows||[]);

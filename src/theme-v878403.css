@@ -1,0 +1,62 @@
+/* V87.403 · Signatura a la pantalla: la finestra per signar, la signatura desada, les caselles de l'acta, el pressupost signat i el parte */
+@media screen{
+html body .signa-v878403{display:flex;flex-direction:column;gap:12px}
+html body .signa-v878403>.sub,html body .signa-v878403>.camps,html body .signa-v878403>.pad{margin-inline:20px}
+html body .signa-v878403 .sub{margin:0;color:var(--co-ink-2);font-size:14px}
+html body .signa-v878403 .camps{display:grid;grid-template-columns:1fr 10rem;gap:10px}
+html body .signa-v878403 .camps label{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .signa-v878403 .camps label>span{font-size:13px;font-weight:600;color:var(--co-ink-2)}
+html body .signa-v878403 .pad{position:relative;height:230px;border:1.5px dashed #94A3B8;border-radius:14px;background:#fff;overflow:hidden}
+html body .signa-v878403 .pad.ple{border-style:solid;border-color:var(--co-accent,#2563EB)}
+html body .signa-v878403 .pad canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;display:block}
+html body .signa-v878403 .pad .ph{position:absolute;left:0;right:0;top:38%;text-align:center;color:var(--co-ink-3);font-size:16px;pointer-events:none}
+html body .signa-v878403 .pad .linia{position:absolute;left:7%;right:7%;bottom:26%;border-bottom:1px solid #CBD5E1;pointer-events:none}
+html body .signa-v878403 .modal-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+html body .signa-v878403 .modal-actions .esp{flex:1 1 auto}
+html body .signa-v878403 .modal-actions button{display:inline-flex;align-items:center;gap:6px}
+
+html body .sig-vista-v878403{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0}
+html body .sig-vista-v878403 img{display:block;max-height:58px;max-width:200px;padding:4px 8px;background:#fff;border:1px solid var(--co-line);border-radius:8px}
+html body .sig-vista-v878403 .sense{font-size:13px;color:var(--co-ink-3)}
+html body .sig-vista-v878403 .qui{display:flex;flex-direction:column;min-width:0}
+html body .sig-vista-v878403 .qui b{font-size:14px}
+html body .sig-vista-v878403 .qui small{font-size:12.5px;color:var(--co-ink-3)}
+html body .sig-vista-v878403 .bt{display:flex;gap:12px;margin-left:auto}
+html body .sig-vista-v878403 .bt .treu{color:#B91C1C}
+
+/* acta › Signatures */
+html body .acta-panel-tabs-v8799 .n-sig-v878403{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:6px;padding:0 5px;border-radius:999px;background:#15803D;color:#fff;font:700 11.5px/1 var(--app-font);font-style:normal}
+html body .signatures-acta-v878403{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:4px 0 12px}
+html body .signatures-acta-v878403 .sig-rol{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .signatures-acta-v878403 .sig-rol>b{font-size:13.5px;color:var(--co-ink-2)}
+html body .signatures-acta-v878403 .sig-rol.signat{border-color:#86EFAC;background:#F7FEF9}
+html body .signatures-acta-v878403 .sig-rol>button{align-self:flex-start;display:inline-flex;align-items:center;gap:6px}
+html body .signature-grid-v8768 .signat-v878403{display:flex;flex-direction:column;justify-content:flex-end}
+html body .signature-grid-v8768 .sig-img-v878403{display:block;max-width:100%;max-height:62px;margin:6px auto 2px;object-fit:contain}
+html body .signature-grid-v8768 .sig-qui-v878403{display:block;font-size:10.5px;color:#475569;line-height:1.3}
+
+/* pressupost acceptat i signat; botó «Signar» a la franja d'enviat */
+html body .enviat-v878402 .bt .signa{background:#fff;border:1px solid var(--co-accent,#2563EB);color:var(--co-accent,#2563EB)}
+html body .sig-pres-v878403{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 16px 12px;padding:10px 14px;border-radius:12px;background:#F0FDF4;border:1px solid #BBF7D0;color:#166534}
+html body .sig-pres-v878403 .tit{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14px}
+html body .sig-pres-v878403 .sig-vista-v878403 .qui small{color:#3F6B4D}
+
+/* parte › Conforme del client */
+html body .pr-sig-v878403 .signa-parte-v878403{display:inline-flex;align-items:center;gap:6px;margin:10px 14px}
+html body .pr-sig-v878403 .sig-vista-v878403{margin:10px 14px}
+}
+@media (max-width:700px){
+html body .signa-v878403>.sub,html body .signa-v878403>.camps,html body .signa-v878403>.pad{margin-inline:14px}
+html body .signa-v878403 .camps{grid-template-columns:1fr 7.5rem}
+html body .signa-v878403 .pad{height:200px}
+html body .signa-v878403 .modal-actions{display:grid;grid-template-columns:1fr 1fr}
+html body .signa-v878403 .modal-actions .esp{display:none}
+html body .signa-v878403 .modal-actions button{width:100%;justify-content:center;min-height:44px;margin:0}
+html body .signa-v878403 .modal-actions .primary{grid-column:1 / -1;order:-1}
+html body .signatures-acta-v878403{grid-template-columns:1fr}
+html body .sig-pres-v878403{margin:0 8px 10px}
+html body .sig-vista-v878403 .bt{margin-left:0;width:100%}
+}
+@media print{
+html body .signature-grid-v8768 .sig-img-v878403{max-height:20mm}
+}
