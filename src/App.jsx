@@ -27,7 +27,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.405";
+const APP_VERSION878264="87.406";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3396,6 +3396,48 @@ function addActaDocFiles8764(files,setDraft){
   });
 }
 
+// V87.406 · Els assistents de l'acta surten de la llista de Contactes (l'Héctor, 26/10/2026: «quan faig acta surtien per defecte un
+// llistat immens de tots els contactes, molts d'ells repetits… ha de sortir el mateix que la pestanya Contactes i tu després marques
+// aquells que t'interessen de cada paquet… i si algun no està creat m'ha de deixar crear-lo i automàticament s'incorpora a la llista de
+// contactes»). Abans la llista ajuntava els agents de totes les obres, una llista vella d'agents de l'acta i tres agents fixos
+// (també «Héctor Cubero» amb un correu inventat): per això hi havia repetits i gent que no era als Contactes.
+// - Els paquets i les persones són els de Contactes (`filesContactes878406`, la mateixa funció que la pantalla); es marquen amb una casella.
+// - «+ Nou contacte» obre la mateixa fitxa que a Contactes; en desar-lo, va a Contactes i queda marcat a l'acta.
+// - Cada assistent es copia a l'acta (`assistents878406`) amb les dades del contacte; l'acta el troba encara que l'obra no el tingui.
+function agentDeContacte878406(x){
+  const ag=x?.ag||{},c=x?.c||null;const net=v=>{const s=String(v??"").trim();return /^pendent/i.test(s)?"":s};
+  const nom=net(ag.nom||c?.nom||c?.rao);
+  return {nom,rol:net(ag.rol)||net(c?.tipus)||"",empresa:net(ag.empresa)||net(c?.rao)||"",email:net(ag.email||c?.email),telefon:net(ag.telefon||c?.telefon),mobil:net(ag.mobil||c?.mobil||ag.contacteMobil),nif:net(ag.nif||c?.nif),collegiat:net(ag.collegiat||c?.collegiat),titulacio:net(ag.titulacio||c?.titulacio)};
+}
+function AssistentsActa878406({seleccionats=[],onTria,onTreu}){
+  const [q,setQ]=useState("");
+  const [n,setN]=useState(0);                 // es torna a llegir la llista després de crear un contacte
+  const [obert,setObert]=useState("");
+  const [nou,setNou]=useState(false);
+  const files=useMemo(()=>{try{return window.__acoContactes878406?.()||[]}catch(e){console.warn(e);return []}},[n]);
+  const sel=new Set(seleccionats.map(a=>agentPersona878301(a)).filter(Boolean));
+  const cercant=!!q.trim();
+  const vis=files.filter(x=>!cercant||coincideix878315(q,{noms:[x.ag.nom,x.ag.empresa,x.c?.nom,x.c?.rao,...contactesDe878315(x.c||x.ag).map(p=>p.nom)],nums:[x.ag.telefon,x.ag.mobil,x.ag.nif,x.c?.telefon,x.c?.mobil,x.c?.nif]}));
+  const tria=x=>{const k=x.ag._persona878301||agentPersona878301(x.ag);if(sel.has(k))onTreu?.(k);else onTria?.(agentDeContacte878406(x))};
+  function desaNou(v){const c=window.__acoNouContacte878406?.(v);setNou(false);setN(i=>i+1);if(c){const ag=clientAsAgent878192(c);if(ag)onTria?.(agentDeContacte878406({ag:{...ag,mobil:c.mobil||"",collegiat:c.collegiat||"",titulacio:c.titulacio||""},c}))}}
+  const fila=x=>{const k=x.ag._persona878301||agentPersona878301(x.ag);const on=sel.has(k);const a=agentDeContacte878406(x);
+    return <label key={k||x.ag.id} className={`ass-fila-v878406 ${on?"on":""}`}><input type="checkbox" checked={on} onChange={()=>tria(x)}/><span><b>{a.nom}</b><small>{[a.rol?i18nT(a.rol):"",a.empresa&&a.empresa!==a.nom?a.empresa:"",a.email,a.mobil||a.telefon].filter(Boolean).join(" · ")}</small></span></label>};
+  return <div className="ass-v878406">
+    <div className="ass-sel-v878406"><b>{t("Assistents d’aquesta acta")} ({seleccionats.length})</b>
+      {seleccionats.length===0?<span className="muted">{t("Marca a sota qui hi era.")}</span>:<div className="xips">{seleccionats.map(a=><span key={a.id} className="xip"><span>{a.nom}{a.rol?<small> · {i18nT(a.rol)}</small>:null}</span><button type="button" aria-label={t("Treure {n} de l’acta",{n:a.nom||""})} onClick={()=>onTreu?.(agentPersona878301(a),a.id)}><X size={14} aria-hidden="true"/></button></span>)}</div>}
+    </div>
+    <div className="ass-eines-v878406"><input type="search" value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar a Contactes: nom, empresa o telèfon")} aria-label={t("Buscar a Contactes")}/><button type="button" className="secondary" onClick={()=>setNou(true)}><Plus size={16} aria-hidden="true"/> {t("Nou contacte")}</button></div>
+    {files.length===0&&<p className="muted">{t("Encara no hi ha contactes. Crea’n un amb «Nou contacte».")}</p>}
+    <div className="ass-grups-v878406">{GRUPS_CONTACTE878315.map(([g,lab])=>{const l=vis.filter(x=>x.g===g);if(!l.length)return null;const nSel=l.filter(x=>sel.has(x.ag._persona878301||agentPersona878301(x.ag))).length;
+      return <details key={g} className="ass-grup-v878406" open={cercant||obert===g} onToggle={e=>{if(!cercant){const o=e.currentTarget.open;setObert(v=>o?g:(v===g?"":v))}}}>
+        <summary><span>{i18nT(lab)}</span><em>{nSel?t("{s} de {n}",{s:nSel,n:l.length}):l.length}</em></summary>
+        <div className="ass-llista-v878406">{l.map(fila)}</div>
+      </details>})}
+      {cercant&&!vis.length&&<p className="muted">{t("No hi ha cap contacte amb «{q}».",{q:q.trim()})} <button type="button" className="link" onClick={()=>setNou(true)}>{t("Crear-lo")}</button></p>}
+    </div>
+    {nou&&<EditorContacte878315 nou inicial={{nom:cercant?q.trim():"",tipus:"Promotor"}} onSave={desaNou} close={()=>setNou(false)}/>}
+  </div>;
+}
 function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],start=null,nomesFitxa=false,onTancar}){
   const actesRaw=data.actes||[];
   const fotos=data.fotos||[];
@@ -3403,12 +3445,29 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
   const legacyActaAgents=(actesRaw||[]).flatMap(a=>(a.agents||[]).filter(x=>typeof x==="object"));
   const [globalAgents87102,setGlobalAgents87102]=useState(()=>{try{return JSON.parse(localStorage.getItem(lsKey8779("aco_global_agents_v87102"))||"[]")}catch{return []}});
   const [deletedAgentIds87102,setDeletedAgentIds87102]=useState(()=>{try{return JSON.parse(localStorage.getItem(lsKey8779("aco_deleted_agents_v87102"))||"[]")}catch{return []}});
-  const agents=ensureAgents8748(uniqAgents8768([...defaultAgents8768,...(data.agents||[]),...legacyActaAgents,...globalAgents87102,...(allAgents||[])]).filter(a=>!deletedAgentIds87102.includes(a.id)));
+  const assistentsActes878406=(actesRaw||[]).flatMap(a=>Array.isArray(a.assistents878406)?a.assistents878406:[]);
+  const agents=ensureAgents8748(uniqAgents8768([...assistentsActes878406,...defaultAgents8768,...(data.agents||[]),...legacyActaAgents,...globalAgents87102,...(allAgents||[])]).filter(a=>!deletedAgentIds87102.includes(a.id)));
   const actes=actesRaw.map(a=>normalizeActa8768(a,agents));
 
   const [editId,setEditId]=useState(null);
   const [draft,setDraft]=useState(null);
   useHoldSync878266(!!draft);
+  const agentsD878406=uniqAgents8768([...(draft?.assistents878406||[]),...agents]);
+  // V87.406 · marcar o treure un assistent triat de Contactes: si ja era un agent (de l'obra, d'una acta…), es fa servir el mateix id
+  // amb les dades del contacte; si no, un de nou. La còpia va a l'acta (`assistents878406`).
+  function triaAss878406(ag){
+    const k=agentPersona878301(ag);if(!k)return;
+    setDraft(d=>{if(!d)return d;const llista=uniqAgents8768([...(d.assistents878406||[]),...agents]);const ja=llista.find(a=>agentPersona878301(a)===k);
+      const id=ja?.id||("ag-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+      const ple=Object.fromEntries(Object.entries(ag).filter(([,v])=>String(v??"").trim()));
+      const copia={...(ja?cleanAgentCopy878301(ja):{}),...ple,id};
+      return {...d,assistents878406:[copia,...(d.assistents878406||[]).filter(a=>a.id!==id)],agentIds:[...new Set([...(d.agentIds||[]),id])]}});
+  }
+  function treuAss878406(k,id){
+    setDraft(d=>{if(!d)return d;const llista=uniqAgents8768([...(d.assistents878406||[]),...agents]);
+      const fora=new Set(llista.filter(a=>a.id===id||(k&&agentPersona878301(a)===k)).map(a=>a.id));if(id)fora.add(id);
+      return {...d,agentIds:(d.agentIds||[]).filter(x=>!fora.has(x)),assistents878406:(d.assistents878406||[]).filter(a=>!fora.has(a.id))}});
+  }
   const [showActaPreview8763,setShowActaPreview8763]=useState(false);
   const [agentForm8764,setAgentForm8764]=useState({nom:"",rol:"",empresa:"",email:"",telefon:""});
   const [agentSearch87102,setAgentSearch87102]=useState("");
@@ -3507,8 +3566,10 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
 
   function save(){
     if(!draft?.titol||!draft?.data){alert(t("Cal indicar títol i data de l’acta."));return}
-    const normalized={...normalizeActa8768(draft,agents),updatedAt:new Date().toISOString()};
-    const sel878301=(normalized.agentIds||[]).filter(id=>!orig878303.current.has(id)).map(id=>agents.find(a=>a.id===id)).filter(Boolean);
+    const normalized={...normalizeActa8768(draft,agentsD878406),updatedAt:new Date().toISOString()};
+    // V87.406 · l'acta guarda la còpia només dels assistents que hi són
+    normalized.assistents878406=(draft.assistents878406||[]).filter(a=>(normalized.agentIds||[]).includes(a.id));
+    const sel878301=(normalized.agentIds||[]).filter(id=>!orig878303.current.has(id)).map(id=>agentsD878406.find(a=>a.id===id)).filter(Boolean);
     setData(d=>{const cur=d.agents||[];const have=new Set(cur.map(agentPersona878301).filter(Boolean));const add=sel878301.filter(a=>{const k=agentPersona878301(a);if(!k||have.has(k))return false;have.add(k);return true}).map(cleanAgentCopy878301);return {...d,agents:add.length?[...cur,...add]:cur,actes:(d.actes||[]).map(a=>a.id===draft.id?normalized:a)}});
     setEditId(null);
     setDraft(null);
@@ -3577,9 +3638,9 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
     setDraft(d=>({...d,docs:(d.docs||[]).filter(x=>x.id!==id)}));
   }
 
-  const selectedAgents=(draft?.agentIds||[]).map(id=>agents.find(a=>a.id===id)).filter(Boolean);
+  const selectedAgents=(draft?.agentIds||[]).map(id=>agentsD878406.find(a=>a.id===id)).filter(Boolean);
   const selectedFotos=(draft?.fotoIds||[]).map(id=>fotos.find(f=>f.id===id)).filter(Boolean);
-  const printableDoc=draft?{type:"acta",title:`Acta ${draft.numero||""} · ${obra?.nom||"Expedient"}`,subtitle:draft.data,acta:normalizeActa8768(draft,agents),agents,actaPhotos:selectedFotos,actaDocs:draft.docs||[],actaCroquis:draft.croquis||[]}:null;
+  const printableDoc=draft?{type:"acta",title:`Acta ${draft.numero||""} · ${obra?.nom||"Expedient"}`,subtitle:draft.data,acta:normalizeActa8768(draft,agentsD878406),agents:agentsD878406,actaPhotos:selectedFotos,actaDocs:draft.docs||[],actaCroquis:draft.croquis||[]}:null;
 
   if(nomesFitxa&&!draft)return null;
   return <Card title={nomesFitxa?t("Acta {n}",{n:draft?.numero||"—"}):t("Actes")} action={nomesFitxa?<button className="secondary" type="button" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false);onTancar?.()}}>{t("Tancar")}</button>:<button className="primary" type="button" onClick={addActa}>{t("+ Nova acta")}</button>}>
@@ -3609,20 +3670,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
             <label><span>{t("Coordinació S+S (CSS)")}</span><input value={draft.css||""} onChange={e=>upd("css",e.target.value)}/></label>
           </div>}
 
-          {actaPanel8799==="Agents"&&<div className="agents-box-v8764 agents-box-v87102 agents-box-v87103">
-            <div className="section-head-v8764 section-head-v87103"><div><b>{t("Agents de l’acta")}</b><span>{t("Selecciona assistents, treu-los només d’aquesta acta o edita les seves dades sense sortir de la pestanya.")}</span></div><div className="actions-inline"><button type="button" className="secondary" onClick={()=>setShowManageAgents87103(v=>!v)}>{showManageAgents87103?t("Amagar gestió"):t("Gestionar agents")}</button><button type="button" className="secondary" onClick={()=>setShowNewAgent87102(v=>!v)}>{showNewAgent87102?t("Tancar alta"):t("+ Crear agent nou")}</button></div></div>
-            <div className="agent-search-panel-v87103">
-              <input className="agent-main-search-v87103" value={agentSearch87102} onChange={e=>setAgentSearch87102(e.target.value)} placeholder={t("Escriu per cercar agent: nom, empresa, rol o email...")}/>
-              <div className="agent-smart-results-v87103">
-                {agents.filter(a=>`${a.nom||""} ${a.rol||""} ${a.empresa||""} ${a.email||""} ${a.telefon||""}`.toLowerCase().includes(agentSearch87102.toLowerCase())).slice(0,8).map(a=><button type="button" key={a.id} className={(draft.agentIds||[]).includes(a.id)?"selected":""} onClick={()=>toggleAgent(a.id)}><b>{a.nom}</b><span>{a.rol?i18nT(a.rol):i18nT("Rol pendent")} · {a.empresa||t("Empresa/autònom pendent")}</span>{a.email&&<small>{a.email}</small>}</button>)}
-                {agents.length===0&&<span className="muted">{t("Encara no hi ha agents a la biblioteca.")}</span>}
-              </div>
-            </div>
-            {showNewAgent87102&&<div className="new-agent-box-v87102 new-agent-box-v87103"><h4>{t("Crear agent nou")}</h4><div className="agent-form-v8764"><input list="agent-names-v87102" placeholder={t("Nom agent")} value={agentForm8764.nom} onChange={e=>{const val=e.target.value;const found=agents.find(a=>String(a.nom||"").toLowerCase()===val.toLowerCase());setAgentForm8764(p=>found?{...p,nom:val,rol:found.rol||p.rol,empresa:found.empresa||p.empresa,email:found.email||p.email,telefon:found.telefon||p.telefon}:{...p,nom:val})}}/><datalist id="agent-names-v87102">{agents.map(a=><option key={a.id} value={a.nom}/>)}</datalist><input list="agent-rols-v87102" placeholder={t("Rol / funció")} value={agentForm8764.rol} onChange={e=>setAgentForm8764(p=>({...p,rol:e.target.value}))}/><datalist id="agent-rols-v87102">{[...new Set(agents.map(a=>a.rol).filter(Boolean))].map(x=><option key={x} value={x}/>)}</datalist><input list="agent-companies-v87102" placeholder={t("Empresa / autònom")} value={agentForm8764.empresa} onChange={e=>{const val=e.target.value;const found=agents.find(a=>String(a.empresa||"").toLowerCase()===val.toLowerCase());setAgentForm8764(p=>found?{...p,empresa:val,email:p.email||found.email||"",telefon:p.telefon||found.telefon||""}:{...p,empresa:val})}}/><datalist id="agent-companies-v87102">{[...new Set(agents.map(a=>a.empresa).filter(Boolean))].map(x=><option key={x} value={x}/>)}</datalist><input placeholder={t("Email")} value={agentForm8764.email} onChange={e=>setAgentForm8764(p=>({...p,email:e.target.value}))}/><input placeholder={t("Telèfon")} value={agentForm8764.telefon||""} onChange={e=>setAgentForm8764(p=>({...p,telefon:e.target.value}))}/><button type="button" className="primary" onClick={addAgent8764}>{t("Guardar agent")}</button></div></div>}
-            <div className="selected-agent-chips-v8799 selected-agent-chips-v87102 selected-agent-edit-v87145"><b>{t("Assistents seleccionats a aquesta acta")}</b>{selectedAgents.length===0?<span className="muted">{t("Cap agent seleccionat per aquesta acta.")}</span>:selectedAgents.map(a=><details key={a.id} className="acta-agent-edit-drawer-v87145"><summary><span>{a.nom||t("Agent")}</span><em>{a.rol?i18nT(a.rol):i18nT("Rol pendent")} · {a.empresa||t("Empresa pendent")}</em></summary><div className="acta-agent-edit-grid-v87145"><label><small>{t("Nom")}</small><input value={a.nom||""} onChange={e=>updateAgent8764(a.id,"nom",e.target.value)}/></label><label><small>{t("Figura / rol")}</small><input value={a.rol||""} onChange={e=>updateAgent8764(a.id,"rol",e.target.value)} placeholder={t("DO, DEO, CSS, constructor...")}/></label><label><small>{t("Empresa")}</small><input value={a.empresa||""} onChange={e=>updateAgent8764(a.id,"empresa",e.target.value)}/></label><label><small>{t("Email")}</small><input value={a.email||""} onChange={e=>updateAgent8764(a.id,"email",e.target.value)}/></label><label><small>{t("Telèfon")}</small><input value={a.telefon||""} onChange={e=>updateAgent8764(a.id,"telefon",e.target.value)}/></label><label><small>{t("NIF / CIF")}</small><input value={a.nif||""} onChange={e=>updateAgent8764(a.id,"nif",e.target.value)}/></label><div className="acta-agent-actions-v87145"><button type="button" className="secondary small" onClick={()=>toggleAgent(a.id)}>{t("Treure només d’aquesta acta")}</button><button type="button" className="danger small" onClick={()=>deleteAgent8764(a.id)}>{t("Eliminar de l’obra/biblioteca")}</button></div></div></details>)}</div>
-            {(()=>{const ids=[...new Set(actes.filter(a=>a.id!==draft.id).flatMap(a=>(normalizeActa8768(a,agents).agentIds||[])))];return ids.length>0&&<div className="prev-agents-v87102 prev-agents-v87103"><h4>{t("Agents utilitzats en actes anteriors")}</h4><p className="muted">{t("Marca només els que vulguis repetir en aquesta acta.")}</p><div className="check-grid">{ids.map(id=>{const a=agents.find(x=>x.id===id);return a?<label className="check-row" key={id}><input type="checkbox" checked={(draft.agentIds||[]).includes(id)} onChange={()=>toggleAgent(id)}/><span>{a.nom} · {a.rol?i18nT(a.rol):""} · {a.empresa||""}</span></label>:null})}</div></div>})()}
-            {showManageAgents87103&&<div className="agent-library-edit-v87100 agent-library-edit-v87103"><h4>{t("Gestionar biblioteca / agents de l’obra")}</h4><p>{t("Edita dades bàsiques o elimina agents. Els canvis s’apliquen també a les actes on aquest agent està seleccionat.")}</p>{agents.filter(a=>`${a.nom||""} ${a.rol||""} ${a.empresa||""} ${a.email||""} ${a.telefon||""} ${a.nif||""}`.toLowerCase().includes(agentSearch87102.toLowerCase())).map(ag=><div className="agent-library-row-v87100 agent-library-row-v87145" key={ag.id}><input value={ag.nom||""} onChange={e=>updateAgent8764(ag.id,"nom",e.target.value)} placeholder={t("Nom")}/><input value={ag.rol||""} onChange={e=>updateAgent8764(ag.id,"rol",e.target.value)} placeholder={t("Rol")}/><input value={ag.empresa||""} onChange={e=>updateAgent8764(ag.id,"empresa",e.target.value)} placeholder={t("Empresa")}/><input value={ag.email||""} onChange={e=>updateAgent8764(ag.id,"email",e.target.value)} placeholder={t("Email")}/><input value={ag.telefon||""} onChange={e=>updateAgent8764(ag.id,"telefon",e.target.value)} placeholder={t("Telèfon")}/><input value={ag.nif||""} onChange={e=>updateAgent8764(ag.id,"nif",e.target.value)} placeholder={t("NIF/CIF")}/><button type="button" className="danger small" onClick={()=>deleteAgent8764(ag.id)}>{t("Eliminar")}</button></div>)}</div>}
-          </div>}
+          {actaPanel8799==="Agents"&&<AssistentsActa878406 seleccionats={selectedAgents} onTria={triaAss878406} onTreu={treuAss878406}/>}
 
                     {actaPanel8799==="Observacions"&&<DictatActa878263 value={draft.text||""} onChange={v=>upd("text",v)}/>}
                     {actaPanel8799==="Observacions"&&<label className="span-all acta-textarea-v8768"><span>{t("Text de l’acta")}</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder={t("Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents...")}/></label>}
@@ -5343,6 +5391,9 @@ async function importPdfBudget878305(rows,meta={},budgetId="principal"){
   return {nou:!!nouGrup,nom:nouGrup?.nom||budgetLabel8786(currentData,bid0)||"",budgetId:bid,partides:rows.length};
 }
 window.__acoImportPdf878305=importPdfBudget878305;
+// V87.406 · els assistents de l'acta es trien de la llista de Contactes, i un contacte nou creat des de l'acta va a Contactes
+window.__acoContactes878406=()=>filesContactes878406({clients,obres,odata});
+window.__acoNouContacte878406=v=>{const c=clientNou878406(v);setClients(p=>[...(p||[]),c]);if(v.logo)desaLogo878315("client:"+c.id,v.logo);return c};
 function deletePressupostVersion(id){
   setD(obraId,d=>{
     const norm=normalizeBudgetedData8791(d||empty());
@@ -5822,6 +5873,8 @@ function clientAsAgent878192(client={}){
     telefon:client.telefon||"",
     nif:client.nif||"",
     adreca:[client.adreca,client.codiPostal,client.poblacio].filter(Boolean).join(" · "),
+    // V87.406 · també el mòbil i, dels tècnics, la titulació i el col·legiat
+    ...(client.mobil?{mobil:client.mobil}:{}),...(client.collegiat?{collegiat:client.collegiat}:{}),...(client.titulacio?{titulacio:client.titulacio}:{}),
     sourceClientId878192:client.id,
     _fromClient878192:true
   };
@@ -7727,6 +7780,10 @@ function EditorContacte878315({inicial={},nou=false,esAgent=false,onSave,onDelet
       <label><span>{t("NIF / CIF")}</span><input value={rawV878304(f.nif)} onChange={e=>set("nif",e.target.value)}/></label>
       <label><span>{t("Email")}</span><input type="email" value={rawV878304(f.email)} onChange={e=>set("email",e.target.value)}/></label>
       <label><span>{t("Telèfon")}</span><input type="tel" inputMode="tel" value={rawV878304(f.telefon)} onChange={e=>set("telefon",e.target.value)}/></label>
+      {/* V87.406 · els tècnics, amb la titulació i el número de col·legiat (com a la fitxa de l'agent de l'obra) */}
+      {(esAgent?agentGroup878301({rol:f.rol})==="tecnic":TIPUS_CLIENT878315.find(x=>x[0]==="tecnic")[1].includes(f.tipus))&&<>
+        <label><span>{t("Titulació")}</span><input value={rawV878304(f.titulacio)} onChange={e=>set("titulacio",e.target.value)} placeholder={t("Arquitecte tècnic")}/></label>
+        <label><span>{t("Núm. de col·legiat")}</span><input value={rawV878304(f.collegiat)} onChange={e=>set("collegiat",e.target.value)}/></label></>}
       <CampsAdreca878304 v={f} onChange={patch=>setF(x=>({...x,...patch}))}/>
       <div className="span-all"><PersonesContacte878315 llista={f.contactes||[]} onChange={l=>set("contactes",l)}/></div>
       <label className="span-all"><span>{t("Observacions")}</span><textarea rows={2} value={rawV878304(f.observacions)} onChange={e=>set("observacions",e.target.value)}/></label>
@@ -7734,41 +7791,50 @@ function EditorContacte878315({inicial={},nou=false,esAgent=false,onSave,onDelet
     <div className="modal-actions">{!nou&&onDelete&&<button type="button" className="danger" onClick={onDelete}>{t("Eliminar")}</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar")}</button></div>
   </div></Modal>;
 }
+// V87.406 · La llista de Contactes (persones i empreses, una sola vegada, amb el seu paquet): la fan servir la pantalla Contactes i els
+// assistents de l'acta. {ag (com a agent), c (el client, si ho és), g (el paquet), n (a quantes obres surt)}
+function filesContactes878406({clients=[],obres=[],odata={}}){
+  const lib=agentsLibrary878301(odata,clients);
+  const perId=new Map((clients||[]).map(c=>[c.id,c]));
+  const perPersona=new Map((clients||[]).map(c=>[agentPersona878301(clientAsAgent878192(c)),c]).filter(([k])=>k));
+  const obresClient={};(obres||[]).forEach(o=>{if(o.client)(obresClient[o.client]??=new Set()).add(String(o.id))});
+  const vistos=new Set();
+  // fora els noms de farciment que posaven les obres d'abans («Pendent», «Particular»…)
+  const farciment=ag=>/^(pendent|pendiente|particular|client pendent|sense nom|-)?$/i.test(String(ag.nom||"").trim());
+  const out=lib.map(ag=>{const c=(ag.sourceClientId878192&&perId.get(ag.sourceClientId878192))||perPersona.get(ag._persona878301)||null;if(!c&&farciment(ag))return null;if(c)vistos.add(c.id);
+    const ids=new Set([...(ag._obres878301||[]).map(String),...(c?[...(obresClient[c.id]||[])]:[])]);
+    return {ag,c,g:grupContacte878315(ag,c),n:ids.size}}).filter(Boolean);
+  // els clients que s'havien tret de la llista d'agents continuen sent contactes
+  (clients||[]).filter(c=>!vistos.has(c.id)).forEach(c=>{const ag={...clientAsAgent878192(c),_persona878301:agentPersona878301(clientAsAgent878192(c)),_obres878301:[]};out.push({ag,c,g:grupContacte878315(ag,c),n:(obresClient[c.id]||new Set()).size})});
+  // V87.336 · els promotors de les obres (també de les que ens han compartit) són contactes encara que no siguin agents (l'Héctor:
+  // els de Verbania i les altres obres compartides no sortien als Contactes de Brava)
+  const nv=x=>/^pendent/i.test(String(x||"").trim())?"":netV878304(x);
+  const amagats=hiddenAgents878301(odata),jaHi=new Set(out.map(x=>x.ag._persona878301).filter(Boolean));
+  const meva=agentPersona878301({nom:empresaInfo878259()?.nom||""});
+  const promos=new Map();
+  (obres||[]).forEach(o=>{
+    const ag={nom:String(o.propietat||"").trim(),rol:"Promotor",empresa:nv(o.empresaPropietat),nif:nv(o.nifPropietat),telefon:nv(o.telefonPropietat),mobil:nv(o.mobilPropietat),email:nv(o.emailPropietat),adreca:nv(o.adrecaPropietat),contacte:nv(o.contactePropietat),contacteMobil:nv(o.contacteMobilPropietat),_dePromotor878336:true};
+    if(farciment(ag))return;
+    const k=agentPersona878301(ag);if(!k||(meva&&k===meva)||jaHi.has(k)||agentHidden878301(amagats,ag))return;
+    const e=promos.get(k);if(e){for(const f of [...AGENT_FIELDS878301,"mobil","contacteMobil"])if(!e.ag[f]&&ag[f])e.ag[f]=ag[f];e.ids.add(String(o.id));return}
+    promos.set(k,{ag:{...ag,_persona878301:k,_obres878301:[]},ids:new Set([String(o.id)])});
+  });
+  promos.forEach(p=>out.push({ag:p.ag,c:null,g:"promotor",n:p.ids.size}));
+  return out.sort((a,b)=>String(a.ag.nom||"").localeCompare(String(b.ag.nom||""),"ca",{numeric:true,sensitivity:"base"}));
+}
+// V87.406 · un contacte nou (es desa com a client, com a Contactes); també el fa servir l'acta («Nou contacte»)
+function clientNou878406(v={}){
+  const ara=new Date().toISOString();const cont=netejaContactes878315(v.contactes||[]);
+  const id="client-"+safeSlug8768(v.nom,"contacte")+"-"+Date.now().toString(36);
+  return {id,nom:v.nom,rao:netV878304(v.rao)||v.nom,tipus:v.tipus||"Altres",nif:netV878304(v.nif),email:netV878304(v.email),telefon:netV878304(v.telefon),adreca:netV878304(v.carrer),codiPostal:netV878304(v.codiPostal),poblacio:netV878304(v.poblacio),provincia:netV878304(v.provincia)||provinciaForCp8773(v.codiPostal)||"",contactes:cont,contacte:cont[0]?.nom||"",contacteMobil:cont[0]?.mobil||"",observacions:netV878304(v.observacions),color:"blue",createdAt:ara,updatedAt:ara,collegiat:netV878304(v.collegiat),titulacio:netV878304(v.titulacio)};
+}
 function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openClient}){
   const [q,setQ]=useState("");
   const [obert,setObert]=useState("");
   const [edit,setEdit]=useState(null);
   const [tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-logos-changed",h);return()=>window.removeEventListener("aco-logos-changed",h)},[]);
-  const files=useMemo(()=>{
-    const lib=agentsLibrary878301(odata,clients);
-    const perId=new Map((clients||[]).map(c=>[c.id,c]));
-    const perPersona=new Map((clients||[]).map(c=>[agentPersona878301(clientAsAgent878192(c)),c]).filter(([k])=>k));
-    const obresClient={};(obres||[]).forEach(o=>{if(o.client)(obresClient[o.client]??=new Set()).add(String(o.id))});
-    const vistos=new Set();
-    // fora els noms de farciment que posaven les obres d'abans («Pendent», «Particular»…)
-    const farciment=ag=>/^(pendent|pendiente|particular|client pendent|sense nom|-)?$/i.test(String(ag.nom||"").trim());
-    const out=lib.map(ag=>{const c=(ag.sourceClientId878192&&perId.get(ag.sourceClientId878192))||perPersona.get(ag._persona878301)||null;if(!c&&farciment(ag))return null;if(c)vistos.add(c.id);
-      const ids=new Set([...(ag._obres878301||[]).map(String),...(c?[...(obresClient[c.id]||[])]:[])]);
-      return {ag,c,g:grupContacte878315(ag,c),n:ids.size}}).filter(Boolean);
-    // els clients que s'havien tret de la llista d'agents continuen sent contactes
-    (clients||[]).filter(c=>!vistos.has(c.id)).forEach(c=>{const ag={...clientAsAgent878192(c),_persona878301:agentPersona878301(clientAsAgent878192(c)),_obres878301:[]};out.push({ag,c,g:grupContacte878315(ag,c),n:(obresClient[c.id]||new Set()).size})});
-    // V87.336 · els promotors de les obres (també de les que ens han compartit) són contactes encara que no siguin agents (l'Héctor:
-    // els de Verbania i les altres obres compartides no sortien als Contactes de Brava)
-    const nv=x=>/^pendent/i.test(String(x||"").trim())?"":netV878304(x);
-    const amagats=hiddenAgents878301(odata),jaHi=new Set(out.map(x=>x.ag._persona878301).filter(Boolean));
-    const meva=agentPersona878301({nom:empresaInfo878259()?.nom||""});
-    const promos=new Map();
-    (obres||[]).forEach(o=>{
-      const ag={nom:String(o.propietat||"").trim(),rol:"Promotor",empresa:nv(o.empresaPropietat),nif:nv(o.nifPropietat),telefon:nv(o.telefonPropietat),mobil:nv(o.mobilPropietat),email:nv(o.emailPropietat),adreca:nv(o.adrecaPropietat),contacte:nv(o.contactePropietat),contacteMobil:nv(o.contacteMobilPropietat),_dePromotor878336:true};
-      if(farciment(ag))return;
-      const k=agentPersona878301(ag);if(!k||(meva&&k===meva)||jaHi.has(k)||agentHidden878301(amagats,ag))return;
-      const e=promos.get(k);if(e){for(const f of [...AGENT_FIELDS878301,"mobil","contacteMobil"])if(!e.ag[f]&&ag[f])e.ag[f]=ag[f];e.ids.add(String(o.id));return}
-      promos.set(k,{ag:{...ag,_persona878301:k,_obres878301:[]},ids:new Set([String(o.id)])});
-    });
-    promos.forEach(p=>out.push({ag:p.ag,c:null,g:"promotor",n:p.ids.size}));
-    return out.sort((a,b)=>String(a.ag.nom||"").localeCompare(String(b.ag.nom||""),"ca",{numeric:true,sensitivity:"base"}));
-  },[odata,clients,obres]);
+  const files=useMemo(()=>filesContactes878406({clients,obres,odata}),[odata,clients,obres]);
   const logos=useMemo(()=>logosContactes878315(),[tick]);
   const logoDe=x=>x.c?(/^(data:|https?:)/.test(String(x.c.logo||""))?x.c.logo:(logos["client:"+x.c.id]||"")):(logos[x.ag._persona878301]||"");
   const vis=files.filter(x=>coincideix878315(q,{noms:[x.ag.nom,x.ag.empresa,x.c?.nom,x.c?.rao,...contactesDe878315(x.c||x.ag).map(p=>p.nom)],nums:[x.ag.telefon,x.ag.mobil,x.ag.nif,x.c?.telefon,x.c?.mobil,x.c?.nif,...contactesDe878315(x.c||x.ag).map(p=>p.mobil)]}));
@@ -7784,14 +7850,13 @@ function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openC
     const cont=v.contactes||[];
     const adreca=composaAdreca878304(partsAdreca878304(v));
     if(edit.nou){
-      const id="client-"+safeSlug8768(v.nom,"contacte")+"-"+Date.now().toString(36);
-      const c={id,nom:v.nom,rao:netV878304(v.rao)||v.nom,tipus:v.tipus||"Altres",nif:netV878304(v.nif),email:netV878304(v.email),telefon:netV878304(v.telefon),adreca:netV878304(v.carrer),codiPostal:netV878304(v.codiPostal),poblacio:netV878304(v.poblacio),provincia:netV878304(v.provincia)||provinciaForCp8773(v.codiPostal)||"",contactes:cont,contacte:cont[0]?.nom||"",contacteMobil:cont[0]?.mobil||"",observacions:netV878304(v.observacions),color:"blue",createdAt:ara,updatedAt:ara};
+      const c=clientNou878406(v);
       setClients?.(p=>[...(p||[]),c]);
-      if(v.logo)desaLogo878315("client:"+id,v.logo);
+      if(v.logo)desaLogo878315("client:"+c.id,v.logo);
       setObert(grupContacte878315(clientAsAgent878192(c),c));
     }else{
       const ag=edit.ag;
-      const patch={nom:v.nom,empresa:netV878304(v.rao)||v.nom,rao:netV878304(v.rao),rol:v.rol||ag.rol||"Altres",nif:netV878304(v.nif),email:netV878304(v.email),telefon:netV878304(v.telefon),carrer:netV878304(v.carrer),codiPostal:netV878304(v.codiPostal),poblacio:netV878304(v.poblacio),provincia:netV878304(v.provincia),adreca,contactes:cont,contacte:cont[0]?.nom||"",contacteMobil:cont[0]?.mobil||"",observacions:netV878304(v.observacions)};
+      const patch={collegiat:netV878304(v.collegiat),titulacio:netV878304(v.titulacio),nom:v.nom,empresa:netV878304(v.rao)||v.nom,rao:netV878304(v.rao),rol:v.rol||ag.rol||"Altres",nif:netV878304(v.nif),email:netV878304(v.email),telefon:netV878304(v.telefon),carrer:netV878304(v.carrer),codiPostal:netV878304(v.codiPostal),poblacio:netV878304(v.poblacio),provincia:netV878304(v.provincia),adreca,contactes:cont,contacte:cont[0]?.nom||"",contacteMobil:cont[0]?.mobil||"",observacions:netV878304(v.observacions)};
       setOdata?.(prev=>updateAgentLibrary878191(prev,{...ag,_identity878191:ag._persona878301},patch));
       // V87.336 · un promotor que només era a la fitxa d'una obra passa a la llista de contactes
       if(ag._dePromotor878336){const {_dePromotor878336,...net}=cleanAgentCopy878301(ag);setOdata?.(prev=>addToLibrary878303(prev,{...net,...patch}))}
@@ -7970,6 +8035,9 @@ function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,
       <label><span>{i18nT("NIF/CIF fiscal *")}</span><input value={form.nif||""} onChange={e=>set("nif",e.target.value)} disabled={!edit}/></label>
       <label><span>{i18nT("Email")}</span><input value={form.email||""} onChange={e=>set("email",e.target.value)} disabled={!edit}/></label>
       <label><span>{i18nT("Telèfon")}</span><input type="tel" inputMode="tel" value={form.telefon||""} onChange={e=>set("telefon",e.target.value)} disabled={!edit}/></label>
+      {["Arquitecte","Arquitecte tècnic","Direcció Facultativa"].includes(form.tipus)&&<>
+        <label><span>{i18nT("Titulació")}</span><input value={form.titulacio||""} onChange={e=>set("titulacio",e.target.value)} disabled={!edit}/></label>
+        <label><span>{i18nT("Núm. de col·legiat")}</span><input value={form.collegiat||""} onChange={e=>set("collegiat",e.target.value)} disabled={!edit}/></label></>}
       <div className="span-all">{!edit&&!contactesDe878315(form).length?null:<PersonesContacte878315 llista={contactesDe878315(form)} disabled={!edit} onChange={l=>setForm(f=>({...f,contactes:l,contacte:l[0]?.nom||"",contacteMobil:l[0]?.mobil||""}))}/>}</div>
       {/* V87.337 · als comptes d’empresa, les factures porten la sèrie de l’empresa: la sèrie del client és per al compte de l’Héctor */}
       {!esEmpresaFactura878337()&&<fieldset className="fact-client-v878297 span-all" disabled={!edit}><legend>{i18nT("Factures d’aquest client")}</legend>
@@ -16482,7 +16550,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.405",
+    app_version:"87.406",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

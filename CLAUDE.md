@@ -1740,6 +1740,23 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       qualsevol document (vista, impressió i PDF).
     - Supabase de proves: Gmail simulat (`POST /gmail/v1/users/me/messages/send`, `GET /__gmail` amb els correus descodificats, `POST
       /__gmail {noActiva}`). Estils `src/theme-v878405.css`. Prova: `enviar405test.mjs` (19). Adaptades `whatsapp402test` i `facturacio337test`.
+  - **V87.406 · Els assistents de l'acta, de Contactes** (l'Héctor, 26/10/2026: «surtien per defecte un llistat immens de tots els
+    contactes, molts repetits… ha de sortir el mateix que la pestanya Contactes i marques els que t'interessen de cada paquet… si algun no
+    està creat m'ha de deixar crear-lo i s'incorpora a Contactes… de Héctor n'hi havia fins a 4»):
+    - **Causa:** la llista de l'acta ajuntava els agents de totes les obres, la llista vella `aco_global_agents_v87102` (proves de versions
+      d'abans) i tres agents fixos de `baseAgentsForObra8768` (un «Héctor Cubero» amb el correu inventat `hector@despatx.cat`).
+    - **Ara** (`AssistentsActa878406`, pestanya «Agents» de l'acta): els paquets i les persones de Contactes (`filesContactes878406`, la
+      mateixa funció que la pantalla Contactes; abans era dins del seu `useMemo`), plegats, amb casella; a dalt «Assistents d'aquesta acta
+      (N)» amb una × per treure'n; cercador; «+ Nou contacte» (la fitxa de Contactes, `EditorContacte878315`): es desa a Contactes
+      (`clientNou878406`, ara comú) i queda marcat. L'App dona la llista i el contacte nou per `window.__acoContactes878406` i
+      `window.__acoNouContacte878406`.
+    - **A l'acta:** `triaAss878406` (si la persona ja era un agent, el mateix id amb les dades del contacte; si no, un id nou) i
+      `treuAss878406`; la còpia de cada assistent va a `acta.assistents878406` (així l'acta el troba encara que l'obra no el tingui;
+      `agentsD878406`). Fora «Gestionar agents», la llista vella i «Agents utilitzats en actes anteriors».
+    - **Tècnics:** titulació i número de col·legiat a la fitxa del contacte (`EditorContacte878315` i `FitxaClient`; camps `titulacio` i
+      `collegiat`, com a la fitxa de l'agent de l'obra). `clientAsAgent878192` també porta el mòbil, la titulació i el col·legiat.
+    - Estils `src/theme-v878406.css`. Prova: `assistents406test.mjs` (15). Adaptada `enviar405test`. Lliçó 12 (Visites) del manual i del vídeo
+      posada al dia.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -1900,12 +1917,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.404)
+### Per començar una sessió nova (26/10/2026, després de la V87.406)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.404 a Render):**
+**Estat (publicada la V87.406 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

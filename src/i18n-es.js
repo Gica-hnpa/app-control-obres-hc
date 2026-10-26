@@ -4358,4 +4358,13 @@ export default {
   "S’ha obert el WhatsApp i s’ha descarregat el PDF: adjunta’l al xat.": "Se ha abierto WhatsApp y se ha descargado el PDF: adjúntalo al chat.",
   "Obrir el Gmail amb el correu escrit i descarregar el PDF": "Abrir Gmail con el correo escrito y descargar el PDF",
   "Obrir el Gmail amb el correu escrit": "Abrir Gmail con el correo escrito",
+  "Assistents d’aquesta acta": "Asistentes de esta acta",
+  "Marca a sota qui hi era.": "Marca abajo quién estaba.",
+  "Treure {n} de l’acta": "Quitar a {n} del acta",
+  "Buscar a Contactes: nom, empresa o telèfon": "Buscar en Contactos: nombre, empresa o teléfono",
+  "Buscar a Contactes": "Buscar en Contactos",
+  "Encara no hi ha contactes. Crea’n un amb «Nou contacte».": "Todavía no hay contactos. Crea uno con «Nuevo contacto».",
+  "{s} de {n}": "{s} de {n}",
+  "No hi ha cap contacte amb «{q}».": "No hay ningún contacto con «{q}».",
+  "Crear-lo": "Crearlo",
 };
