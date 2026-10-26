@@ -1814,10 +1814,11 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
    opinions); no entrar a cap app ni crear comptes. Per a cada una: què fa, què ja tenim, què ens falta i com ho faríem a la nostra manera;
    propostes per prioritat. Ell decideix què es fa.
 2. **Comodoro:** fet a les V87.398–399 («Tornar a llegir els descompostos d’un Excel…»: 63 partides, 62 al cèntim); falta que l’Héctor hi triï l’Excel v07.
-3. **Repàs complet de les proves a la V87.396** (`D:\aco-tmp\totes-wt.sh` a `D:\aco-tmp\wt379`, amb la màquina tranquil·la). El de la
-   V87.394 es va aturar a 51 de 107 (`D:\aco-tmp\totes-394.txt`); les que hi fallaven (agents303, amidaments328, constructor336,
-   contrasenyestest, grafica384, habitualstest) eren per la càrrega: grafica384 i habitualstest ja s’han tornat a passar soles en verd;
-   falten agents303, amidaments328, constructor336 i contrasenyestest.
+3. **Repàs complet de les proves: fet a la V87.399** (26/10/2026, `D:aco-tmp	otes-wt.sh` a `D:aco-tmpwt379`, resultat a
+   `D:aco-tmp	otes-399.txt`): **111 proves, totes en verd**. A la tanda en van fallar 5 (honoraris332, pdfpressupost, seguiment321,
+   perfils326 —penjada 3 hores— i primerobrir) i, passades soles, totes bé; `primerobrirtest` adaptada (accepta les descripcions netes de la
+   V87.396). `contrasenyestest` (18 de 34) es va arreglar esborrant `D:/aco-tmp/vitecache-main`. Per tornar-lo a fer: posar `wt379` al
+   commit d’ara (`git -C D:/aco-tmp/wt379 checkout --detach <commit>`) i **copiar-hi `tools/proves`** (no és al Git).
 4. ~~Descompostos: el BI sobre el CD i la importació d’un sol descompost~~: fet a la V87.399.
 5. Les guies PDF de benvinguda (`GUIES_USUARIS`, amb contrasenyes: **només quan ho digui l’Héctor**; els textos de `guies.js` ja són al dia
    fins a la V87.394; falta posar-hi Ajustos › Documents).
