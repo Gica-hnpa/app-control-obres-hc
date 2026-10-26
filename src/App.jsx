@@ -24,7 +24,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.398";
+const APP_VERSION878264="87.399";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1260,8 +1260,26 @@ function triaBasePct878384(table,pu){
   const enCadena=rows.map(r=>{if(!r||r.isSection)return r;const x={...r};delete x.mateixaBase878384;return x});
   const a=recalculateBreakdownTableV87232({...table,rows:sumats}),b=recalculateBreakdownTableV87232({...table,rows:enCadena});
   const p=parseNum8770(pu)||0;
-  if(p>0)return Math.abs(a.total-p)<Math.abs(b.total-p)-0.005?a.table:b.table;
+  if(p>0){const da=Math.abs(a.total-p),db=Math.abs(b.total-p);
+    // V87.399 · si cap de les dues quadra, es prova on va cada % (sobre el que hi ha a sobre, sobre la base de l'anterior o sobre el cost directe)
+    if(Math.min(da,db)>0.01){const c=basesPct878399(table,p);if(c)return c}
+    return da<db-0.005?a.table:b.table}
   return table?.sumats878384?a.table:b.table;
+}
+// cada % sobre el que hi ha a sobre (en cadena), sobre la mateixa base que el % d'abans o sobre el cost directe: la combinació que dona el
+// preu de la partida al cèntim, amb els mínims canvis; si cap no hi arriba, null (com a molt 6 %, 729 combinacions)
+function basesPct878399(table,p){
+  const rows=table?.rows||[];const idx=[];let prev=false;const despresPct=[];
+  rows.forEach((r,i)=>{if(!r||r.isSection)return;const pc=/%/.test(String(r.ut??""));if(pc){idx.push(i);despresPct.push(prev&&!r.nouGrup878384)}prev=pc});
+  if(!idx.length||idx.length>6)return null;
+  const opts=idx.map((_,k)=>despresPct[k]?["cadena","cd","mateixa"]:["cadena","cd"]);
+  const n=opts.reduce((x,o)=>x*o.length,1);let best=null;
+  for(let c=0;c<n;c++){let x=c;const tria=opts.map(o=>{const v=o[x%o.length];x=Math.floor(x/o.length);return v});
+    const rs=rows.map(r=>{if(!r||r.isSection)return r;const y={...r};delete y.mateixaBase878384;delete y.sobreCD878399;return y});
+    idx.forEach((i,k)=>{if(tria[k]==="cd")rs[i].sobreCD878399=true;else if(tria[k]==="mateixa")rs[i].mateixaBase878384=true});
+    const t=recalculateBreakdownTableV87232({...table,rows:rs}),d=Math.abs(t.total-p),canvis=tria.filter(v=>v!=="cadena").length;
+    if(d<=0.01&&(!best||canvis<best.canvis||(canvis===best.canvis&&d<best.d)))best={d,canvis,table:t.table}}
+  return best?best.table:null;
 }
 // una taula d'abans (importada amb l'error): els blocs de les altres partides, a part
 function blocsDescompost878384(table){
@@ -1425,9 +1443,19 @@ function descompostRowsToText878161(rows=[],source="Excel descomposat") {
   const body=[`ORIGEN DESCOMPOSAT: ${source}`,...lines,`TOTAL DESCOMPOSAT: ${money(total)}`].join("\n");
   return {text:body,total,lines:lines.length};
 }
-function workbookDescompostFromFile878161(file){
+function workbookDescompostFromFile878161(file,{codi="",pu=0}={}){
   return file.arrayBuffer().then(ab=>{
     const wb=XLSX.read(ab,{type:"array",cellDates:false});
+    // V87.399 · la mateixa lectura que en importar tot el pressupost (blocs, títols, línies a 0 que no compten, % ben llegits i triats pel
+    // preu de la partida) i, si l'Excel en porta diversos, el de la partida pel codi; si no en surt cap, la lectura d'abans
+    const items=workbookDescompostsFromWorkbook878228(wb,file.name).filter(it=>it.table?.rows?.length);
+    if(items.length){
+      let it=null,millor=0;
+      if(codi)items.forEach(x=>{const s=decompTargetScore878228(x,{codi});if(s>millor){millor=s;it=x}});
+      if(!it)it=items.length===1?items[0]:[...items].sort((a,b)=>(b.lines||0)-(a.lines||0))[0];
+      const rc=recalculateBreakdownTableV87232(triaBasePct878384(it.table,pu));
+      return {text:descompostTableToText878174(rc.table),table:rc.table,total:rc.total,lines:rc.lines,sheet:it.sheet+(it.bloc878384&&it.code?` · ${it.code}`:"")};
+    }
     let best={text:"",total:0,lines:0,sheet:""};
     wb.SheetNames.forEach(sheetName=>{
       const ws=wb.Sheets[sheetName];
@@ -6347,7 +6375,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
   async function importLibraryItemDescompost87207(item,file){
     if(!file)return;
     try{
-      const parsed=await workbookDescompostFromFile878161(file);
+      const parsed=await workbookDescompostFromFile878161(file,{codi:item.codiPressupost||item.codi,pu:item.pu});
       const total=parsed.total||descompostTableTotal878174(parsed.table)||descompostTotal878160(parsed.text);
       updateItem(item.id,{descompost:parsed.text,descompostTable:parsed.table||null,descompostSource:file.name,descompostSheet:parsed.sheet,descompostImportedAt:new Date().toISOString(),descompostValidatedPu:total?qty2(total):item.descompostValidatedPu,pu:total||item.pu||0});
       alert(i18nT("Descompost incorporat: {n} línies · {total}.",{n:parsed.lines,total:money(total)}));
@@ -13073,7 +13101,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(!editBudget8760b)return;
     if(!file)return;
     try{
-      const parsed=await workbookDescompostFromFile878161(file);
+      const fila398=(capsRef878247.current||caps)?.[cap]?.[i]||{};
+      const parsed=await workbookDescompostFromFile878161(file,{codi:fila398.codi,pu:fila398.pu});
       setCaps(p=>{
         const arr=[...(p[cap]||[])];
         const current=arr[i]||{};
@@ -16200,7 +16229,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.398",
+    app_version:"87.399",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

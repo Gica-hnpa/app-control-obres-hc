@@ -69,6 +69,8 @@ export function recalculateBreakdownTableV87232(table={}){
   let finalTotal=0;
   // V87.384 · base del % d'abans: un % amb `mateixaBase878384` s'hi aplica també (sumats, no en cadena)
   let pctBase=null;
+  // V87.399 · el cost directe (la suma dels recursos): un % amb `sobreCD878399` s'hi aplica (l'Excel de Comodoro hi calcula el BI d'algunes partides)
+  let costDirecte=0;
 
   const rows=sourceRows.map((original,index)=>{
     const row={...(original||{})};
@@ -95,7 +97,7 @@ export function recalculateBreakdownTableV87232(table={}){
     }
 
     if(percentageRow){
-      const base=row.mateixaBase878384&&pctBase!=null?pctBase:runningTotal;
+      const base=row.sobreCD878399?costDirecte:(row.mateixaBase878384&&pctBase!=null?pctBase:runningTotal);
       pctBase=base;
       const factor=percentageFactorV87232(row,base);
       lineTotal=base*factor;
@@ -122,6 +124,7 @@ export function recalculateBreakdownTableV87232(table={}){
     row.total=formatBreakdownNumberV87232(lineTotal);
     row.calculatedKind878232="resource";
     runningTotal+=lineTotal;
+    costDirecte+=lineTotal;
     finalTotal=runningTotal;
     return row;
   });

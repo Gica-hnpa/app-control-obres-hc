@@ -1633,6 +1633,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       (`persistBudgetCaps878179`). Els descompostos substituïts es guarden a `aco_descompostos_abans_v878398_<obra>`.
     - Estils `src/theme-v878398.css`. Prova: `desc398test.mjs` (14, compte `demo-constructor` i un Excel inventat amb un bloc per partida).
     - **Per a l’Héctor:** a Comodoro, Pressupost › Accions › «Tornar a llegir els descompostos d’un Excel…» i triar l’Excel v07.
+  - **V87.399 · Descompostos més fins:**
+    - **Un % sobre el cost directe** (`sobreCD878399` a `breakdownRecalculationV87232.js`: la base és la suma dels recursos). L’Excel de
+      Comodoro calcula el BI d’algunes partides sobre el CD, i l’app només sabia «en cadena» o «sumats». Si cap de les dues no dona el preu
+      de la partida, `triaBasePct878384` prova on va cada % (`basesPct878399`: en cadena, sobre la mateixa base que l’anterior o sobre el
+      CD; com a molt 6 %) i es queda la combinació que hi arriba al cèntim amb menys canvis; si cap no hi arriba, no es força res.
+    - **Importar un sol descompost** (des de la partida, `importDescompostExcel878161`, i des de Preus, `importLibraryItemDescompost87207`):
+      `workbookDescompostFromFile878161(file,{codi,pu})` llegeix com la importació sencera (`workbookDescompostsFromWorkbook878228`: blocs,
+      títols, línies a 0, % ben llegits) i tria el bloc de la partida pel codi (`decompTargetScore878228`); si no en surt cap, la lectura d’abans.
+    - **Amb les dades de debò** (còpia del núvol del 25/10 i l’Excel v07, `sim398.mjs` del scratchpad, només llegeix): a Comodoro, «Tornar a
+      llegir» posaria 63 descompostos i **62 quadren al cèntim** (abans 55); la C-00.03.01 no, perquè l’Excel mateix la té en PA a 2.784 € i
+      a 13,80 €/m². 12 descompostos de l’Excel no tenen partida al pressupost de l’app. Llafranc i la 2026-021 no canvien (88 de 100 i 40 de 44:
+      els que falten són per cèntims d’arrodoniment de l’Excel).
+    - L’Excel v07 és a `D:\00_CUBERO\00_FEINA\00_HÉCTOR\09_SOCOTERM\2026\2026_008 obra CP COMODORO\` (dades d’un client: no copiar-lo a les proves).
+    - Prova: `descomp399unit.mjs` (11, sense navegador). Passen `descomp396unit`, `descomp384unit`, `preusautounit`, `amidamentsunit`,
+      `pressupost361test` i `preus378test`.
   - **`revisionuvol.mjs` (24/10/2026):** les despeses d'obres compartides ja no surten com a «d'obres que ja no hi són» (el 24/10, 4 de
     Socoterm a «SATE Platja d'Aro», compartida) i revisa també les dades de les obres compartides que no són a cap compte
     (`_obres-compartides.json.gz`). El 24/10: Eden Playa ja quadra; queden les 47 partides de l'Héctor per sobre del 100 % i la
@@ -1772,12 +1787,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.398)
+### Per començar una sessió nova (26/10/2026, després de la V87.399)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.398 a Render):**
+**Estat (publicada la V87.399 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -1798,13 +1813,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
    Presupuestos, Presufy i altres ja treballen amb la IA per fer pressupostos ràpids»). Només informació pública (webs, vídeos, preus,
    opinions); no entrar a cap app ni crear comptes. Per a cada una: què fa, què ja tenim, què ens falta i com ho faríem a la nostra manera;
    propostes per prioritat. Ell decideix què es fa.
-2. **Comodoro:** fet a la V87.398 («Tornar a llegir els descompostos d’un Excel…»); falta que l’Héctor hi triï l’Excel v07.
+2. **Comodoro:** fet a les V87.398–399 («Tornar a llegir els descompostos d’un Excel…»: 63 partides, 62 al cèntim); falta que l’Héctor hi triï l’Excel v07.
 3. **Repàs complet de les proves a la V87.396** (`D:\aco-tmp\totes-wt.sh` a `D:\aco-tmp\wt379`, amb la màquina tranquil·la). El de la
    V87.394 es va aturar a 51 de 107 (`D:\aco-tmp\totes-394.txt`); les que hi fallaven (agents303, amidaments328, constructor336,
    contrasenyestest, grafica384, habitualstest) eren per la càrrega: grafica384 i habitualstest ja s’han tornat a passar soles en verd;
    falten agents303, amidaments328, constructor336 i contrasenyestest.
-4. Descompostos: % calculats sobre una base diferent a cada partida (el BI sobre el CD) i la importació d’un descompost d’una sola partida
-   (`workbookDescompostFromFile878161`, des de l’editor de la partida), que encara no passa per la neteja de la V87.384/396.
+4. ~~Descompostos: el BI sobre el CD i la importació d’un sol descompost~~: fet a la V87.399.
 5. Les guies PDF de benvinguda (`GUIES_USUARIS`, amb contrasenyes: **només quan ho digui l’Héctor**; els textos de `guies.js` ja són al dia
    fins a la V87.394; falta posar-hi Ajustos › Documents).
 6. La resta de sota (VeriFactu ATURAT, IA al servidor, fitxatge fase 2, Google Drive, perfils autònom/promotor…), sempre amb el sí de l’Héctor.
