@@ -15,7 +15,9 @@ import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces
 import {llegirDictat} from "./dictatPartides.js";
 import {encarrecDe,estatPassos,estatDocs} from "./encarrecsTecnics.js";
 import {dadesDemo} from "./dadesDemo.js";
-import {htmlAPdf,nomPdf} from "./pdfDoc.js";
+import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
+import * as af878408 from "./autofirma.js";
+import {llegeixSignatures,marcaDe} from "./signaturesPdf.js";
 import * as gmail878405 from "./googleMail.js";
 import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary,potReconnectar as gcalPotReconnectar,prepara as gcalPrepara,recorda as gcalRecorda} from "./googleCal.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
@@ -27,7 +29,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.407";
+const APP_VERSION878264="87.408";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2295,7 +2297,7 @@ function quotePrintHtml8745(type,doc,obra){
   const emT396=emissorTecnic878396(),cfg396=docsCfg878396();
   const totals=isFactura?`<div class="totals"><div><span>${D("Base imposable")}</span><b>${esc(money(base))}</b></div>${desc?`<div><span>${D("Descompte")} (${esc(doc.descompte)}%)</span><b>-${esc(money(desc))}</b></div>`:""}<div><span>IVA (${esc(doc.iva||21)}%)</span><b>${esc(money(iva))}</b></div>${ret?`<div><span>${D("Retenció")} (${esc(doc.retencio)}%)</span><b>-${esc(money(ret))}</b></div>`:""}<div class="total"><span>${D("Total")}</span><b>${esc(money(total))}</b></div></div>`:`<div class="notes"><b>${D("Observacions")}</b><p>${esc(doc.observacions||[pressupostFooter8746({...doc,validesa:doc.validesa||cfg396.validesa||undefined},docLang878283(obra)),cfg396.condicions].filter(Boolean).join("\n\n"))}</p></div>`;
   const pag396=doc.compteBancari||cfg.compteBancari||(emT396.iban?D("Forma de pagament: transferència bancària · IBAN {iban}",{iban:emT396.iban}):"")||cfg396.formaPagament;
-  const foot=isFactura?(doc.observacions||pag396?`<div class="foot">${esc(doc.observacions||pag396)}</div>`:""):`${cfg396.formaPagament?`<div class="notes"><b>${D("Forma de pagament")}</b><p>${esc(cfg396.formaPagament)}</p></div>`:""}${signaturaDoc878396(D,emT396.nom,obra?.propietat||"")}`;
+  const foot=isFactura?(doc.observacions||pag396?`<div class="foot">${esc(doc.observacions||pag396)}</div>`:""):`${cfg396.formaPagament?`<div class="notes"><b>${D("Forma de pagament")}</b><p>${esc(cfg396.formaPagament)}</p></div>`:""}${signaturaDoc878396(D,emT396.nom,obra?.propietat||"",null,{perSignar:!!doc.perSignar878408,sigs:doc.certSig878408||[]})}`;
   const rightHead=isFactura?D("Import"):D("Import sense IVA");
   const html=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)} ${esc(doc.numero||"")}</title><style>@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:12px;margin:0;background:#fff}.top{display:flex;justify-content:space-between;border-bottom:2px solid #111827;padding-bottom:10px;margin-bottom:14px}h1{margin:0;font-size:24px}.parties{display:grid;grid-template-columns:1fr 1fr;gap:10mm;margin-bottom:12px}.box{border:1px solid #cbd5e1;border-radius:6px;padding:9px;min-height:30mm}.box h3{margin:0 0 6px;font-size:11px;color:#64748b;text-transform:uppercase}.box b,.box span{display:block;margin-top:3px}.exp{border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;padding:9px;margin-bottom:12px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top}th{background:#f1f5f9;text-align:left}.c1{width:78%}.c2{width:22%}.num{text-align:right;white-space:nowrap}p{white-space:pre-wrap;line-height:1.45;color:#334155}.totals{width:82mm;margin-left:auto;margin-top:16px}.totals div{display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:6px 0}.totals .total{border-top:2px solid #111827;border-bottom:0;font-size:18px;margin-top:5px;padding-top:10px}.notes{margin-top:18px;border-top:1px solid #e5e7eb;padding-top:10px}.foot{margin-top:24px;border-top:1px solid #e5e7eb;padding-top:8px;color:#64748b;font-size:11px}@media screen{html{background:#e5e7eb;padding:16px}body{width:210mm;min-height:297mm;margin:0 auto;padding:14mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media print{html{background:#fff!important;padding:0!important}body{width:auto!important;min-height:0!important;margin:0!important;padding:0!important;box-shadow:none!important}}</style></head><body>${capDoc878396({D,em:emT396,recLabel:D("Client"),recHtml:fiscalClientBlock878134(obra,undefined,[]),titol:title,meta:[[D("Núm."),doc.numero||""],[D("Data"),doc.data?(fmtAppDate8748(doc.data)||doc.data):""]],obraLabel:D("Expedient"),obraTitol:obra?.nom||"",obraLinia:expedientCode8739(obra)})}<table><colgroup><col class="c1"><col class="c2"></colgroup><thead><tr><th>${D("Concepte")}</th><th>${rightHead}</th></tr></thead><tbody><tr><td><b>${esc(D(doc.concepte||"Honoraris tècnics"))}</b><p>${esc(doc.text||"—")}</p></td><td class="num"><b>${esc(money(isFactura?base:total))}</b></td></tr></tbody></table>${totals}${foot}${peuDoc878396()}</body></html>`;
   return html;
@@ -3073,6 +3075,129 @@ function Fotografies8761({data,setData}){
 // V87.403 · Signatura a la pantalla (estudi del mercat, proposta 3; sense cost): qui signa ho fa amb el dit (o el ratolí) a l'aparell:
 // actes, feina fora de pressupost d'un parte i pressupost acceptat. Es desa com una imatge petita (PNG retallat, com a molt 600 × 220 px)
 // dins d'una llista `signatures878403` de l'obra; fileStore.js la desa a l'aparell i la puja al núvol com les fotos.
+// V87.408 · Signatura amb certificat digital amb l'AutoFirma (l'Héctor, 27/10/2026: «ha de ser signatures amb certificat digital sempre…
+// que es faci amb AutoFirma com fan els col·legis d'arquitectes»). Per a l'acta, el pressupost i la certificació:
+// - El document es fa en PDF amb un requadre per a cada qui ha de signar (`data-signa`); en signar, l'AutoFirma de l'ordinador demana el
+//   certificat i el PIN i hi posa la signatura visible (PAdES). Cada signatura nova va a sobre de les d'abans: és un sol PDF per a tothom.
+// - Qui no és davant de l'ordinador el rep per correu («Enviar per signar»), el signa amb la seva AutoFirma (o l'Adobe) i el torna:
+//   «Pujar el PDF signat» llegeix les signatures (qui, NIF, entitat, data) i comprova que són bones i que el document no s'ha tocat.
+// - El PDF signat és un document de l'obra (Documents), amb `linkedType:"signat878408"` i `signat878408 = {tipus, ref, titol, hash,
+//   signes, signatures:[{rol, nom, nif, org, emissor, quan, valida, via}]}`. Cada versió nova és un arxiu nou (es desa a l'aparell i al
+//   núvol com els altres documents). `hash` diu si el document ha canviat després de signar-lo.
+function carpetaDe878408(obra,data,pref){const ids=documentFolders8775(obra,data||{}).map(f=>f.id);return ids.includes(pref)?pref:ids.includes("01_DOCUMENTACIO_PREVIA")?"01_DOCUMENTACIO_PREVIA":(ids[0]||pref)}
+function signatDe878408(obraId,tipus,ref){try{return (window.__acoSignats878408?.(obraId)||[]).find(x=>x?.signat878408?.tipus===tipus&&String(x.signat878408.ref)===String(ref))||null}catch{return null}}
+async function hashText878408(s){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(s||""))));return [...h].slice(0,8).map(x=>x.toString(16).padStart(2,"0")).join("")}
+// el requadre (mm des de dalt a l'esquerra) en punts del PDF (des de baix a l'esquerra), una mica més petit perquè no toqui la vora
+function propsSig878408({motiu,obra,s}){
+  const p={signReason:motiu,signatureProductionCity:obra?.poblacio||"",layer2Text:"Signat digitalment per\n$$SUBJECTCN$$\n$$SIGNDATE=dd/MM/yyyy HH:mm$$",layer2FontSize:"7",layer2FontFamily:"1"};
+  if(s){const k=72/25.4,m=1.2;Object.assign(p,{signaturePage:String(s.pag),signaturePositionOnPageLowerLeftX:String(Math.round((s.x+m)*k)),signaturePositionOnPageLowerLeftY:String(Math.round((297-s.y-s.h+m)*k)),signaturePositionOnPageUpperRightX:String(Math.round((s.x+s.w-m)*k)),signaturePositionOnPageUpperRightY:String(Math.round((297-s.y-m)*k))})}
+  return p;
+}
+const paraules878408=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z0-9]+/g," ").split(" ").filter(w=>w.length>2);
+// a qui (rol) correspon una signatura: pel NIF o pel nom de qui ha de signar cada requadre
+function rolDe878408(sg,rols,usats){
+  const n=new Set(paraules878408(sg.nom+" "+sg.org));let best=null,bs=0;
+  for(const r of rols){if(usats.has(r.k))continue;if(r.nif&&sg.nif&&String(r.nif).toUpperCase()===sg.nif)return r.k;const w=paraules878408(r.nom);const sc=w.length?w.filter(x=>n.has(x)).length/w.length:0;if(sc>bs){bs=sc;best=r.k}}
+  return bs>=0.5?best:null;
+}
+// la llista de signatures d'un PDF signat: les d'abans conserven el seu rol; la nova, el triat (o el que li toqui pel nom)
+function ajuntaSig878408(llegides,abans,rols,nouRol){
+  const usats=new Set((abans||[]).map(x=>x.rol).filter(Boolean));
+  return llegides.map((p,i)=>{const o=(abans||[])[i]&&(abans[i].nif||"")===(p.nif||"")?abans[i]:null;let rol=o?.rol||"";
+    if(!rol&&nouRol&&i===llegides.length-1&&!usats.has(nouRol))rol=nouRol;if(!rol)rol=rolDe878408(p,rols,usats)||"";if(rol)usats.add(rol);
+    return {rol,nom:p.nom,nif:p.nif,org:p.org,emissor:p.emissor,quan:p.quan,valida:!!p.valida,integre:p.integre,via:o?.via||(nouRol&&i===llegides.length-1?"autofirma":"pujat")}});
+}
+function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",carpeta="01_DOCUMENTACIO_PREVIA",inline=false,close,onSignat,abans}){
+  const obraId=obra?.id;
+  const[rec,setRec]=useState(()=>signatDe878408(obraId,tipus,refId));
+  const[base,setBase0]=useState(null);              // {bytes, signes}: el PDF que se signa (el signat d'ara o un de nou)
+  const baseRef=useRef(null);const setBase=b=>{baseRef.current=b;setBase0(b)};
+  const[hash,setHash]=useState("");
+  const[estat,setEstat]=useState("");
+  const[err,setErr]=useState("");
+  const[ocupat,setOcupat]=useState(false);
+  const[nou,setNou]=useState(0);
+  const atura=useRef(false);
+  const pc=af878408.potSignar();
+  const sigs=rec?.signat878408?.signatures||[];
+  const canviat=!!rec&&!!hash&&!!rec.signat878408?.hash&&rec.signat878408.hash!==hash;
+  const marca=h=>`${tipus}-${String(refId).replace(/[^A-Za-z0-9_.-]/g,"")}:${h}`;
+  useEffect(()=>{let viu=true;setBase(null);setErr("");(async()=>{
+    const h=await hashText878408(typeof clau==="function"?clau():clau);if(!viu)return;setHash(h);
+    const r=nou?null:signatDe878408(obraId,tipus,refId);setRec(r);
+    try{
+      if(r){const f=await getDocFile(r.id,obraId);if(!viu)return;if(f){setBase({bytes:new Uint8Array(await f.arrayBuffer()),signes:r.signat878408?.signes||[]});return}setErr(t("No s’ha pogut obrir el PDF signat en aquest aparell."));return}
+      const x=await htmlAPdfPerSignar(fesHtml(),{marca:marca(h),titol});if(viu)setBase(x);
+    }catch(e){console.warn(e);if(viu)setErr(t("No s’ha pogut preparar el PDF."))}})();return()=>{viu=false}},[obraId,tipus,refId,nou]);
+  const nomArxiu=n=>nomPdf(titol+(n?` (${t("signat")})`:""));
+  async function desa(bytes,signes,signatures){
+    const nom=nomArxiu(true),now=new Date().toISOString();
+    const id=`doc-signat-${tipus}-${String(refId).replace(/[^A-Za-z0-9_-]/g,"")}-${Date.now()}`;
+    const f=new File([bytes],nom,{type:"application/pdf"});
+    abans?.();
+    await saveDocFile(id,f,obraId);
+    const r={id,obraId,nom,tipus:"PDF",folder:carpeta,data:new Date().toLocaleDateString("ca-ES"),createdAt:rec?.createdAt||now,updatedAt:now,size:f.size,storage:"indexeddb",hasFile:true,linkedType:"signat878408",signat878408:{tipus,ref:String(refId),titol,hash:rec?.signat878408?.hash||hash,signes:signes||[],signatures}};
+    window.__acoDesaSignat878408?.(obraId,r);setRec(r);setBase({bytes,signes:signes||[]});onSignat?.(r);return r;
+  }
+  async function signa(rol){
+    if(ocupat)return;setErr("");setEstat("");
+    const ses=af878408.obre();                 // dins del toc: el navegador pregunta «Obrir Autofirma?»
+    setOcupat(true);atura.current=false;
+    try{
+      let b=baseRef.current;for(let i=0;!b&&i<120;i++){await new Promise(r=>setTimeout(r,500));b=baseRef.current}
+      if(!b)throw new Error(t("No s’ha pogut preparar el PDF."));
+      const s=(b.signes||[]).find(x=>x.rol===rol.k);
+      const r=await af878408.signaPdf(b.bytes,{ses,props:propsSig878408({motiu:[titol,i18nT(rol.label)].filter(Boolean).join(" · "),obra,s}),atura:()=>atura.current,onEstat:setEstat});
+      setEstat("desant");
+      const ll=await llegeixSignatures(r.pdf);
+      if(ll.length<=sigs.length)throw new Error(t("El PDF que ha tornat l’AutoFirma no porta la signatura nova."));
+      await desa(r.pdf,b.signes,ajuntaSig878408(ll,sigs,rols,rol.k));setEstat("fet");
+    }catch(e){console.warn(e);setEstat("");if(e?.codi==="aturat")return;setErr(e?.codi==="noObre"?"noObre":e?.codi==="cancel"?t("S’ha cancel·lat a l’AutoFirma."):(e?.message||t("No s’ha pogut signar.")))}
+    finally{setOcupat(false)}
+  }
+  async function puja(e){
+    const f=e.target.files?.[0];e.target.value="";if(!f)return;setErr("");setEstat("");setOcupat(true);
+    try{
+      const bytes=new Uint8Array(await f.arrayBuffer());
+      if(String.fromCharCode(...bytes.subarray(0,5))!=="%PDF-")throw new Error(t("Aquest arxiu no és un PDF."));
+      const ll=await llegeixSignatures(bytes);
+      if(!ll.length)throw new Error(t("Aquest PDF no porta cap signatura amb certificat."));
+      const m=marcaDe(bytes);if(m&&!m.startsWith(marca("").replace(/:$/,"")+":"))throw new Error(t("Aquest PDF és d’un altre document."));
+      if(ll.length<sigs.length)throw new Error(t("Aquest PDF té menys signatures que el que ja hi ha desat."));
+      await desa(bytes,baseRef.current?.signes||rec?.signat878408?.signes||[],ajuntaSig878408(ll,sigs,rols,null));setEstat("pujat");
+    }catch(x){setErr(x?.message||String(x))}finally{setOcupat(false)}
+  }
+  function canviaRol(i,k){if(!rec)return;const ll=sigs.map((s,j)=>j===i?{...s,rol:k}:(k&&s.rol===k?{...s,rol:""}:s));const r={...rec,signat878408:{...rec.signat878408,signatures:ll}};window.__acoDesaSignat878408?.(obraId,r);setRec(r);onSignat?.(r)}
+  function descarrega(){const b=baseRef.current;if(b)descarregaBlob878405(new Blob([b.bytes],{type:"application/pdf"}),nomArxiu(sigs.length))}
+  function enviaPerSignar(){const b=baseRef.current;if(!b)return;
+    window.__acoEnviar878407?.({title:`${titol} · ${t("per signar")}`,obra,pdf:{blob:new Blob([b.bytes],{type:"application/pdf"}),nom:nomArxiu(sigs.length)},
+      message:t("Bon dia,\n\nUs envio {doc} perquè el signeu amb el vostre certificat digital (amb l’AutoFirma: «Firmar» i triar aquest PDF). Un cop signat, responeu aquest correu amb el PDF signat.\n\nSalutacions,\n{signa}")})}
+  function deNou(){if(!rec)return;if(!confirm(t("Fer un PDF nou amb el document d’ara? El signat d’abans es queda a Documents.")))return;window.__acoDesaSignat878408?.(obraId,{...rec,linkedType:"signat878408-anterior",nom:rec.nom.replace(/\.pdf$/i,"")+` (${t("anterior")}).pdf`});setRec(null);setNou(n=>n+1)}
+  const quan=v=>v?new Date(v).toLocaleString(loc878272(),{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+  const textEstat={obrint:t("Obrint l’AutoFirma…"),certificat:t("Tria el certificat i signa a l’AutoFirma…"),rebut:t("Desant el PDF signat…"),desant:t("Desant el PDF signat…"),fet:t("Signat i desat a Documents."),pujat:t("PDF signat desat a Documents.")}[estat]||"";
+  const sense=sigs.map((s,i)=>({...s,i})).filter(s=>!s.rol||!rols.some(r=>r.k===s.rol));
+  const cos=<div className="sigcert-v878408">
+    <div className="cap"><FileCheck size={18} aria-hidden="true"/><b>{titol}</b>{sigs.length>0&&<span className="xip">{sigs.length===1?t("1 signatura"):t("{n} signatures",{n:sigs.length})}</span>}</div>
+    {canviat&&<div className="avis" role="alert"><AlertTriangle size={16} aria-hidden="true"/><span>{t("El document ha canviat després de signar-lo.")}</span><button type="button" className="link" onClick={deNou}>{t("Fer un PDF nou per signar")}</button></div>}
+    <ul className="rols">{rols.map(r=>{const s=sigs.find(x=>x.rol===r.k);
+      return <li key={r.k} className={s?(s.valida?"ok":"mal"):""}><span className="r"><b>{i18nT(r.label)}</b>{r.nom&&<small>{r.nom}</small>}</span>
+        {s?<span className="qui">{s.valida?<Check size={16} aria-hidden="true"/>:<AlertTriangle size={16} aria-hidden="true"/>}<span><b>{s.nom||s.org}{s.nif?` · ${s.nif}`:""}</b><small>{[quan(s.quan),s.emissor,s.valida?"":t("la signatura no és vàlida")].filter(Boolean).join(" · ")}</small></span></span>
+        :pc?<button type="button" className="primary signa" disabled={ocupat||!base} onClick={()=>signa(r)}><Signature size={16} aria-hidden="true"/> {t("Signar amb AutoFirma")}</button>
+        :<span className="pend">{t("Pendent")}</span>}</li>})}</ul>
+    {sense.length>0&&<div className="altres"><b>{t("Altres signatures del PDF")}</b>{sense.map(s=><div key={s.i} className="alt"><span><b>{s.nom||s.org}{s.nif?` · ${s.nif}`:""}</b><small>{[quan(s.quan),s.emissor,s.valida?"":t("la signatura no és vàlida")].filter(Boolean).join(" · ")}</small></span>
+      <select aria-label={t("De qui és")} value="" onChange={e=>canviaRol(s.i,e.target.value)}><option value="">{t("De qui és?")}</option>{rols.map(r=><option key={r.k} value={r.k}>{i18nT(r.label)}</option>)}</select></div>)}</div>}
+    {(ocupat||estat)&&textEstat&&<p className={`estat ${["fet","pujat"].includes(estat)?"ok":""}`} role="status">{["fet","pujat"].includes(estat)&&<Check size={16} aria-hidden="true"/>}{textEstat}{ocupat&&["obrint","certificat"].includes(estat)&&<button type="button" className="link" onClick={()=>{atura.current=true}}>{t("Aturar")}</button>}</p>}
+    {err==="noObre"?<div className="err" role="alert">{t("No s’ha pogut obrir l’AutoFirma.")} <a href={af878408.DESCARREGA} target="_blank" rel="noopener noreferrer">{t("Descarregar l’AutoFirma")}</a></div>:err?<div className="err" role="alert">{err}</div>:null}
+    {!pc&&<p className="nota">{t("Per signar amb certificat cal l’ordinador amb l’AutoFirma.")}</p>}
+    {!base&&!err&&<p className="nota">{t("Preparant el PDF…")}</p>}
+    <div className="eines">
+      <button type="button" className="secondary" disabled={!base||ocupat} onClick={enviaPerSignar}><Send size={16} aria-hidden="true"/> {t("Enviar per signar")}</button>
+      <label className={`secondary pujar ${ocupat?"off":""}`}><Upload size={16} aria-hidden="true"/> {t("Pujar el PDF signat")}<input type="file" accept="application/pdf,.pdf" disabled={ocupat} onChange={puja}/></label>
+      <button type="button" className="secondary" disabled={!base} onClick={descarrega}><Download size={16} aria-hidden="true"/> {sigs.length?t("PDF signat"):t("Descarregar el PDF")}</button>
+    </div>
+  </div>;
+  return inline?cos:<Modal title={t("Signatura amb certificat")} close={close}>{cos}</Modal>;
+}
 function SignaturaPad878403({titol,sub="",nom:nom0="",dni:dni0="",onDesa,close}){
   const cv=useRef(null),trac=useRef(null),fet=useRef(false);
   const[nom,setNom]=useState(nom0),[dni,setDni]=useState(dni0),[hiHa,setHiHa]=useState(false);
@@ -3640,7 +3765,13 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
 
   const selectedAgents=(draft?.agentIds||[]).map(id=>agentsD878406.find(a=>a.id===id)).filter(Boolean);
   const selectedFotos=(draft?.fotoIds||[]).map(id=>fotos.find(f=>f.id===id)).filter(Boolean);
-  const printableDoc=draft?{type:"acta",title:`Acta ${draft.numero||""} · ${obra?.nom||"Expedient"}`,subtitle:draft.data,acta:normalizeActa8768(draft,agentsD878406),agents:agentsD878406,actaPhotos:selectedFotos,actaDocs:draft.docs||[],actaCroquis:draft.croquis||[]}:null;
+  // V87.408 · el PDF signat amb certificat d'aquesta acta (si n'hi ha)
+  const sigRec878408=draft?signatDe878408(obra?.id,"acta",draft.id):null;
+  const printableDoc=draft?{type:"acta",title:`Acta ${draft.numero||""} · ${obra?.nom||"Expedient"}`,subtitle:draft.data,acta:normalizeActa8768(draft,agentsD878406),agents:agentsD878406,actaPhotos:selectedFotos,actaDocs:draft.docs||[],actaCroquis:draft.croquis||[],certSig878408:sigRec878408?.signat878408?.signatures||[]}:null;
+  // el contingut que es signa (sense l'estat, les signatures ni les dates de desar; les imatges, per la mida)
+  const clauActa878408=()=>{if(!draft)return "";const {estat,signatures878403,updatedAt,createdAt,...resta}=normalizeActa8768(draft,agentsD878406);return JSON.stringify([resta,selectedFotos.map(f=>f.id)],(k,v)=>typeof v==="string"&&v.startsWith("data:")?v.length:v)};
+  function desaAra878408(){if(!draft?.id)return;const now=new Date().toISOString();const n={...normalizeActa8768(draft,agentsD878406),assistents878406:(draft.assistents878406||[]),updatedAt:now};setData(d=>({...d,actes:(d.actes||[]).some(a=>a.id===draft.id)?(d.actes||[]).map(a=>a.id===draft.id?{...a,...n}:a):[...(d.actes||[]),n]}))}
+  function signatActa878408(){const f=a=>({...a,estat:["","Esborrany","Enviada"].includes(a.estat||"")?"Signada":a.estat});const id=draft?.id;setDraft(d=>d?f(d):d);if(id)setData(d=>({...d,actes:(d.actes||[]).map(a=>a.id===id?f(a):a)}))}
 
   if(nomesFitxa&&!draft)return null;
   return <Card title={nomesFitxa?t("Acta {n}",{n:draft?.numero||"—"}):t("Actes")} action={nomesFitxa?<button className="secondary" type="button" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false);onTancar?.()}}>{t("Tancar")}</button>:<button className="primary" type="button" onClick={addActa}>{t("+ Nova acta")}</button>}>
@@ -3657,7 +3788,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
         {!draft&&<div className="empty-v8761">{t("Selecciona una acta per editar-la o crea’n una de nova.")}</div>}
 
         {draft&&<>
-          <div className="acta-panel-tabs-v8799">{["Dades","Agents","Observacions","Fotos","Documents","Plànols","Signatures"].map(p=><button type="button" key={p} className={actaPanel8799===p?"active":""} onClick={()=>setActaPanel8799(p)}>{t(p)}{p==="Signatures"&&(draft.signatures878403||[]).length?<em className="n-sig-v878403">{(draft.signatures878403||[]).length}</em>:null}</button>)}</div>
+          <div className="acta-panel-tabs-v8799">{["Dades","Agents","Observacions","Fotos","Documents","Plànols","Signatures"].map(p=><button type="button" key={p} className={actaPanel8799===p?"active":""} onClick={()=>setActaPanel8799(p)}>{t(p)}{p==="Signatures"&&(sigRec878408?.signat878408?.signatures||[]).length?<em className="n-sig-v878403">{sigRec878408.signat878408.signatures.length}</em>:null}</button>)}</div>
           {actaPanel8799==="Dades"&&<div className="form-grid">
             <label><span>{t("Número acta *")}</span><input value={draft.numero||""} onChange={e=>upd("numero",e.target.value)}/></label>
             <label><span>{t("Títol acta *")}</span><input value={draft.titol||""} onChange={e=>upd("titol",e.target.value)}/></label>
@@ -3694,15 +3825,18 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
 
           {actaPanel8799==="Plànols"&&<PlanolsCroquisActa8769 draft={draft} setDraft={setDraft}/>}
 
-          {actaPanel8799==="Signatures"&&<div className="signatures-acta-v878403">{ROLS_SIG878403.map(([k,lab])=>{const sg=(draft.signatures878403||[]).find(x=>x.rol===k);
-            return <div key={k} className={`sig-rol ${sg?"signat":""}`}><b>{t(lab)}</b>{sg?<SignaturaVista878403 sig={sg} onTorna={()=>setSigna878403(k)} onTreu={()=>treuSig878403(k)}/>:<button type="button" className="secondary" onClick={()=>setSigna878403(k)}><Signature size={16} aria-hidden="true"/> {t("Signar")}</button>}</div>})}</div>}
+          {actaPanel8799==="Signatures"&&<>
+            <SignaturaCert878408 inline obra={obra} tipus="acta" refId={draft.id} titol={`${t("Acta {n}",{n:draft.numero||""}).trim()} · ${obra?.nom||""}`} rols={ROLS_SIG878403.map(([k,label])=>({k,label,nom:nomSig878403(draft,k)}))} fesHtml={()=>htmlDoc878405({...printableDoc,perSignar878408:true},obra,client)} clau={clauActa878408} carpeta={carpetaDe878408(obra,data,"06_ACTES_SEGUIMENT")} abans={desaAra878408} onSignat={signatActa878408}/>
+            {(draft.signatures878403||[]).length>0&&<div className="signatures-acta-v878403 velles-v878408"><b className="tit">{t("Signatures a la pantalla (d’abans)")}</b>{ROLS_SIG878403.map(([k,lab])=>{const sg=(draft.signatures878403||[]).find(x=>x.rol===k);
+              return sg?<div key={k} className="sig-rol signat"><b>{t(lab)}</b><SignaturaVista878403 sig={sg} onTreu={()=>treuSig878403(k)}/></div>:null})}</div>}
+          </>}
           {signa878403&&<SignaturaPad878403 titol={t("Signatura")} sub={[t((ROLS_SIG878403.find(r=>r[0]===signa878403)||[])[1]||""),draft.titol].filter(Boolean).join(" · ")} nom={nomSig878403(draft,signa878403)} onDesa={sg=>posaSig878403(signa878403,sg)} close={()=>setSigna878403(null)}/>}
 
           <div className="actions-inline">
             <button type="button" className="primary" onClick={save}>{t("Guardar acta")}</button>
             <button type="button" className="secondary" onClick={()=>setShowActaPreview8763(v=>!v)}>{showActaPreview8763?t("Amagar previsualització"):t("Previsualitzar acta")}</button>
             <button type="button" className="secondary" onClick={()=>printableDoc&&openDoc?.(printableDoc)}>{t("Obrir acta formal / imprimir")}</button>
-            <button type="button" className="secondary" onClick={()=>openEmail?.(t("Acta {n}",{n:draft.numero||""}).trim(),{doc:printableDoc,assistents:selectedAgents})}>{t("Enviar")}</button>
+            <button type="button" className="secondary" onClick={()=>openEmail?.(t("Acta {n}",{n:draft.numero||""}).trim(),sigRec878408?{assistents:selectedAgents,pdf:{carrega:()=>getDocFile(sigRec878408.id,obra?.id),nom:sigRec878408.nom}}:{doc:printableDoc,assistents:selectedAgents})}>{t("Enviar")}</button>
             <button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null);setShowActaPreview8763(false);onTancar?.()}}>{t("Cancel·lar")}</button>
           </div>
 
@@ -3768,17 +3902,21 @@ function actaPrintHtml878405(doc,obra,client){
   const promotor=str(acta.promotor)||str(obra?.propietat)||str(client?.nom);
   const clau=[[D("Promotor"),promotor],[D("Constructora"),str(acta.constructor)||str(obra?.constructor)],[D("Direcció d’obra"),str(acta.do)||str(obra?.do)],[D("Direcció execució"),str(acta.deo)||str(obra?.deo)],[D("Coordinació S+S"),str(acta.css)||str(obra?.css)],[D("Tècnic / despatx"),em.nom||""]].filter(([,v])=>v);
   const codi=typeof codiCurt878270==="function"?codiCurt878270(obra):"";
-  const cap=capDoc878396({D,em,titol:D("ACTA DE VISITA / SEGUIMENT D’OBRA"),meta:[[D("Acta núm."),acta.numero],[D("Data"),fmtDate8761(acta.data)],[D("Estat"),D(acta.estat||"Esborrany")]],recLabel:D("Promotor / propietat"),recHtml:`<b>${esc(promotor||"—")}</b>`,obraLabel:D("Expedient / obra"),obraTitol:obra?.nom||"",obraLinia:[codi,[obra?.adreca,obra?.poblacio].filter(Boolean).join(", ")].filter(Boolean).join(" · ")});
+  const cap=capDoc878396({D,em,titol:D("ACTA DE VISITA / SEGUIMENT D’OBRA"),meta:[[D("Acta núm."),acta.numero],[D("Data"),fmtDate8761(acta.data)],...(doc.perSignar878408?[]:[[D("Estat"),D(acta.estat||"Esborrany")]])],recLabel:D("Promotor / propietat"),recHtml:`<b>${esc(promotor||"—")}</b>`,obraLabel:D("Expedient / obra"),obraTitol:obra?.nom||"",obraLinia:[codi,[obra?.adreca,obra?.poblacio].filter(Boolean).join(", ")].filter(Boolean).join(" · ")});
   const sec=(t,cos)=>`<section class="s"><h3>${esc(t)}</h3>${cos}</section>`;
   const fig=(src,peu)=>src?`<figure><img src="${esc(src)}" alt=""><figcaption>${esc(peu||"")}</figcaption></figure>`:"";
   const croquis=[...(doc.actaCroquis||[]),...(acta.croquis||[])].filter((x,i,a)=>x&&a.findIndex(y=>y.id===x.id)===i).filter(c=>c.src);
   const fotos=(doc.actaPhotos||[]).filter(f=>f&&(f.src||f.url));
   const docs=(doc.actaDocs||acta.docs||[]).filter(Boolean);
   const loc=docLocale878403(D);
-  const sigs=ROLS_SIG878403.map(([k,lab])=>{const sg=(acta.signatures878403||[]).find(x=>x.rol===k);const ok=sg&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(sg.src||""));
-    return `<div class="sg"><small>${esc(D(lab))}</small><div class="sgi">${ok?`<img src="${sg.src}" alt="">`:""}</div><span>${esc(sg?[sg.nom,sg.dni,sg.at?new Date(sg.at).toLocaleString(loc,{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):""].filter(Boolean).join(" · "):"")}</span></div>`}).join("");
+  // V87.408 · per signar amb certificat: el lloc de cada signatura (data-signa) i sense les signatures a la pantalla; ja signada, qui ha signat
+  const ps=!!doc.perSignar878408;
+  const qn=v=>v?new Date(v).toLocaleString(loc,{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+  const sigs=ROLS_SIG878403.map(([k,lab])=>{const sg=ps?null:(acta.signatures878403||[]).find(x=>x.rol===k);const ok=sg&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(sg.src||""));
+    const cs=ps?null:(doc.certSig878408||[]).find(x=>x.rol===k);
+    return `<div class="sg"><small>${esc(D(lab))}</small><div class="sgi"${ps?` data-signa="${k}"`:""}>${cs?`<b class="dig">${esc(D("Signat digitalment"))}</b>`:ok?`<img src="${sg.src}" alt="">`:""}</div><span>${esc(cs?[cs.nom,cs.nif,qn(cs.quan)].filter(Boolean).join(" · "):sg?[sg.nom,sg.dni,qn(sg.at)].filter(Boolean).join(" · "):ps?nomSig878403(acta,k):"")}</span></div>`}).join("");
   const titolActa=str(acta.titol);
-  const css=`@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:#fff}.page{width:182mm;margin:0 auto;padding:6mm 0}h2.tt{font-size:15px;margin:0 0 4mm;color:#0f172a}.clau{display:grid;grid-template-columns:repeat(3,1fr);gap:2mm 4mm;margin:0 0 5mm}.clau div{border:1px solid #e2e8f0;border-radius:6px;padding:2mm 3mm}.clau b{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;color:#64748b}.clau span{font-size:11px}.s{margin:0 0 5mm}.s h3{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:${C};margin:0 0 2mm;padding-bottom:1mm;border-bottom:1px solid #e2e8f0}.s p.tx{white-space:pre-wrap;line-height:1.5;margin:0;font-size:11.5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:1.6mm 2mm;border-bottom:1px solid #e2e8f0;font-size:10.5px}th{font-size:8.5px;text-transform:uppercase;color:#64748b}.fotos{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fotos.una{grid-template-columns:1fr}figure{margin:0;break-inside:avoid}figure img{display:block;width:100%;height:62mm;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}.fotos.una figure img{height:auto;max-height:120mm;object-fit:contain}figcaption{font-size:9px;color:#64748b;margin-top:1mm}ul{margin:0;padding-left:5mm}.sigs{display:grid;grid-template-columns:1fr 1fr;gap:5mm}.sg{border:1px solid #cbd5e1;border-radius:6px;padding:2mm 3mm;break-inside:avoid}.sg small{display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700}.sgi{height:22mm;display:flex;align-items:center}.sgi img{max-height:21mm;max-width:100%}.sg span{display:block;font-size:9px;color:#475569;border-top:1px solid #e2e8f0;padding-top:1mm;min-height:4mm}`;
+  const css=`@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:#fff}.page{width:182mm;margin:0 auto;padding:6mm 0}h2.tt{font-size:15px;margin:0 0 4mm;color:#0f172a}.clau{display:grid;grid-template-columns:repeat(3,1fr);gap:2mm 4mm;margin:0 0 5mm}.clau div{border:1px solid #e2e8f0;border-radius:6px;padding:2mm 3mm}.clau b{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;color:#64748b}.clau span{font-size:11px}.s{margin:0 0 5mm}.s h3{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:${C};margin:0 0 2mm;padding-bottom:1mm;border-bottom:1px solid #e2e8f0}.s p.tx{white-space:pre-wrap;line-height:1.5;margin:0;font-size:11.5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:1.6mm 2mm;border-bottom:1px solid #e2e8f0;font-size:10.5px}th{font-size:8.5px;text-transform:uppercase;color:#64748b}.fotos{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fotos.una{grid-template-columns:1fr}figure{margin:0;break-inside:avoid}figure img{display:block;width:100%;height:62mm;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}.fotos.una figure img{height:auto;max-height:120mm;object-fit:contain}figcaption{font-size:9px;color:#64748b;margin-top:1mm}ul{margin:0;padding-left:5mm}.sigs{display:grid;grid-template-columns:1fr 1fr;gap:5mm}.sg{border:1px solid #cbd5e1;border-radius:6px;padding:2mm 3mm;break-inside:avoid}.sg small{display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700}.sgi{height:22mm;display:flex;align-items:center}.sgi b.dig{font-size:10px;color:#166534}.sgi img{max-height:21mm;max-width:100%}.sg span{display:block;font-size:9px;color:#475569;border-top:1px solid #e2e8f0;padding-top:1mm;min-height:4mm}`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(doc.title||D("Acta núm.")+" "+(acta.numero||""))}</title><style>${css}</style></head><body><div class="page">${cap}
     ${titolActa?`<h2 class="tt">${esc(titolActa)}</h2>`:""}
     ${clau.length?`<div class="clau">${clau.map(([l,v])=>`<div><b>${esc(l)}</b><span>${esc(v)}</span></div>`).join("")}</div>`:""}
@@ -5573,8 +5711,12 @@ function enviatPressupost878402(id,via,a=[]){
 }
 function emailDraft(title,extra={}){const id=obra?.id;setEmail({...draftCorreu878337({title:i18nT(title),obra,data,clients:viewClients878233,primer:extra?.assistents}),pdf:extra?.pdf||(extra?.doc?{doc:extra.doc,obra,client}:null),onEnviat:id&&/^Pressupost/i.test(String(title||""))?(via,a)=>enviatPressupost878402(id,via,a):null})}
 // V87.407 · «Enviar» amb el PDF des de qualsevol pantalla (Facturació, Pressupostos, la vista d'un pressupost o d'una factura d'honoraris…)
-function enviaDoc878407({title,obra:o,doc,pdf}={}){const ob=o||obra;const d=ob?.id&&ob.id===obra?.id?data:(viewOdata878233?.[ob?.id]||{});const cl=(viewClients878233||[]).find(c=>c.id===ob?.client&&!ob?.compartida)||null;setEmail({...draftCorreu878337({title:i18nT(title||""),obra:ob,data:d,clients:viewClients878233}),pdf:pdf||(doc?{doc,obra:ob,client:cl}:null),onEnviat:ob?.id&&/^Pressupost/i.test(String(title||""))?(via,a)=>enviatPressupost878402(ob.id,via,a):null})}
+function enviaDoc878407({title,obra:o,doc,pdf,message}={}){const ob=o||obra;const d=ob?.id&&ob.id===obra?.id?data:(viewOdata878233?.[ob?.id]||{});const cl=(viewClients878233||[]).find(c=>c.id===ob?.client&&!ob?.compartida)||null;const dr=draftCorreu878337({title:i18nT(title||""),obra:ob,data:d,clients:viewClients878233});setEmail({...dr,...(message?{message:message.split("{doc}").join(dr.title).split("{signa}").join(signaCorreu878408())}:{}),pdf:pdf||(doc?{doc,obra:ob,client:cl}:null),onEnviat:ob?.id&&/^Pressupost/i.test(String(title||""))?(via,a)=>enviatPressupost878402(ob.id,via,a):null})}
 window.__acoEnviar878407=enviaDoc878407;
+// V87.408 · els PDF signats amb certificat són documents de l'obra (Documents), amb `linkedType:"signat878408"`
+window.__acoSignats878408=id=>((viewOdata878233?.[id]?.documents)||[]).filter(x=>x?.linkedType==="signat878408");
+window.__acoDesaSignat878408=(id,rec,{anterior=false}={})=>{if(!id||!rec)return;const igual=x=>x?.linkedType==="signat878408"&&x.signat878408?.tipus===rec.signat878408?.tipus&&String(x.signat878408?.ref)===String(rec.signat878408?.ref);
+  setD(id,d=>{const docs=(d.documents||[]).filter(x=>x?.id!==rec.id);return {...d,documents:rec.linkedType==="signat878408"?[rec,...docs.filter(x=>anterior||!igual(x)).map(x=>igual(x)?{...x,linkedType:"signat878408-anterior"}:x)]:[rec,...docs]}})};
 function addPressupostTecnic8742(p){
   const year=String(obra?.any||new Date().getFullYear());
   const numero=p.numero||nextGlobalDocNumber8745(odata,"pressupost",year);
@@ -12916,6 +13058,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const bid403=data?.activeBudgetIdObra||activeBudgetId||"principal",sigP403=sigPres878403(data,bid403);
   function desaSig403(sg){const st=normalizeExpedientStatus878136(obra?.estat);const passa=["","Pressupostat","Pendent de resposta","En revisió","No acceptat"].includes(st);
     try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra?.id,estat:passa?"Acceptat":null,sig:{...sg,tipus:"pressupost",budgetId:bid403}}}))}catch{}}
+  // V87.408 · signatura amb certificat (AutoFirma): l'emissor i el client signen el mateix PDF del pressupost
+  const[sigCert408,setSigCert408]=useState(false);
+  const rec408=obra?.id&&!quickMode?signatDe878408(obra.id,"pressupost",bid403):null;
+  const sigs408=rec408?.signat878408?.signatures||[];
+  function signatPres408(r){const ok=(r?.signat878408?.signatures||[]).some(x=>x.rol==="client"&&x.valida);if(!ok)return;const st=normalizeExpedientStatus878136(obra?.estat);
+    if(["","Pressupostat","Pendent de resposta","En revisió","No acceptat"].includes(st))try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra?.id,estat:"Acceptat"}}))}catch{}}
   async function llegeixDesc398(file){
     if(!file)return;
     try{
@@ -13460,6 +13608,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     return {
       type:"pressupostobra",
       marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),
+      certSig878408:(obra?.id?signatDe878408(obra.id,"pressupost",data?.activeBudgetIdObra||"principal")?.signat878408?.signatures:null)||[],
       title:"PRESSUPOST D’OBRA",
       numeroPressupost:data?.pressupostRapidNumero||budgetLabel8786(data,data.activeBudgetIdObra||activeBudgetId||"principal"),
       referencia:data?.pressupostRapidReferencia||"",
@@ -13597,8 +13746,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>{i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={cancelBudget8760b}>{i18nT("Cancel·lar")}</button></>}
       {!editBudget8760b&&<ActionMenu87213 className="accions-v878366" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
         {!quickMode&&!editBudget8760b&&<button type="button" onClick={()=>openDoc?.(budgetPrintDoc878179())}><Printer size={15} aria-hidden="true"/> {i18nT("PDF del pressupost")}</button>}
-        {!clientMode&&!editBudget8760b&&openEmail&&<button type="button" className="budget-enviar-v878337" onClick={()=>openEmail("Pressupost obra",quickMode?{}:{doc:budgetPrintDoc878179()})}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
-        {!clientMode&&!quickMode&&obra?.id&&<button type="button" className="signa-pres-v878403" onClick={()=>setSigna403(true)}><Signature size={15} aria-hidden="true"/> {sigP403?i18nT("Tornar a signar l’acceptació"):i18nT("Signatura del client…")}</button>}
+        {!clientMode&&!editBudget8760b&&openEmail&&<button type="button" className="budget-enviar-v878337" onClick={()=>openEmail("Pressupost obra",quickMode?{}:rec408?{pdf:{carrega:()=>getDocFile(rec408.id,obra?.id),nom:rec408.nom}}:{doc:budgetPrintDoc878179()})}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+        {!clientMode&&!quickMode&&obra?.id&&<button type="button" className="signa-pres-v878403 sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
         <small className="amh-v878273">{i18nT("A aquest pressupost")}</small>
         {(!clientMode||clientLibraryEnabled)&&<button type="button" onClick={()=>openBudgetLibrary87218("","client")}>{i18nT("Afegir partides de la llibreria")}</button>}{!clientMode&&!quickMode&&<button type="button" className="dictar-v878401" onClick={()=>setDictat401(true)}><Mic size={15} aria-hidden="true"/> {i18nT("Dictar partides…")}</button>}
         {(clientMode||!Object.values(caps||{}).some(a=>(a||[]).length))&&<button type="button" onClick={startManualBudget87115}>{i18nT("Començar pressupost buit")}</button>}
@@ -13625,9 +13774,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       </div>
     </div>}>
       {/* V87.402 · pressupost enviat i encara sense resposta: d’un toc, Acceptat o No acceptat (canvia l’estat de l’obra) */}
-      {!clientMode&&!quickMode&&obra?.enviatPres878402?.at&&normalizeExpedientStatus878136(obra?.estat)==="Pendent de resposta"&&<div className="enviat-v878402"><Send size={16} aria-hidden="true"/><span>{i18nT("Enviat el {d} per {via}",{d:fmtAppDate8748(String(obra.enviatPres878402.at).slice(0,10)),via:obra.enviatPres878402.via==="whatsapp"?"WhatsApp":obra.enviatPres878402.via==="gmail"?"Gmail":i18nT("correu")})}</span><span className="bt"><button type="button" className="signa" onClick={()=>setSigna403(true)}><Signature size={15} aria-hidden="true"/> {i18nT("Signar")}</button><button type="button" className="ok" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"Acceptat"}}))}catch{}}}><Check size={15} aria-hidden="true"/> {i18nT("Acceptat")}</button><button type="button" className="no" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"No acceptat"}}))}catch{}}}>{i18nT("No acceptat")}</button></span></div>}
+      {!clientMode&&!quickMode&&obra?.enviatPres878402?.at&&normalizeExpedientStatus878136(obra?.estat)==="Pendent de resposta"&&<div className="enviat-v878402"><Send size={16} aria-hidden="true"/><span>{i18nT("Enviat el {d} per {via}",{d:fmtAppDate8748(String(obra.enviatPres878402.at).slice(0,10)),via:obra.enviatPres878402.via==="whatsapp"?"WhatsApp":obra.enviatPres878402.via==="gmail"?"Gmail":i18nT("correu")})}</span><span className="bt"><button type="button" className="signa" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {i18nT("Signar")}</button><button type="button" className="ok" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"Acceptat"}}))}catch{}}}><Check size={15} aria-hidden="true"/> {i18nT("Acceptat")}</button><button type="button" className="no" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:obra.id,estat:"No acceptat"}}))}catch{}}}>{i18nT("No acceptat")}</button></span></div>}
       {/* V87.403 · pressupost acceptat i signat a la pantalla */}
       {!quickMode&&sigP403&&<div className="sig-pres-v878403"><span className="tit"><Signature size={16} aria-hidden="true"/> {i18nT("Acceptat i signat")}</span><SignaturaVista878403 sig={sigP403}/></div>}
+      {!quickMode&&sigs408.length>0&&<div className="sig-pres-v878403 sigcert-pres-v878408"><span className="tit"><Signature size={16} aria-hidden="true"/> {i18nT("Signat amb certificat")}</span><span className="qui">{sigs408.map(x=>x.nom||x.org).filter(Boolean).join(" · ")}</span><button type="button" className="link" onClick={()=>setSigCert408(true)}>{i18nT("Veure")}</button></div>}
+      {sigCert408&&<SignaturaCert878408 obra={obra} tipus="pressupost" refId={bid403} titol={`${i18nT("Pressupost")} · ${budgetLabel8786(data,bid403)} · ${obra?.nom||""}`} rols={[{k:"emissor",label:"Emissor",nom:issuerFiscalName87100(client)},{k:"client",label:"Acceptat pel client",nom:String(obra?.propietat||client?.nom||"").replace(/^pendent$/i,""),nif:String(obra?.nifPropietat||client?.nif||"").replace(/^pendent$/i,"")}]} fesHtml={()=>htmlDoc878405({...budgetPrintDoc878179(),perSignar878408:true},obra,client)} clau={()=>JSON.stringify((data.partides||[]).map(r=>[r.codi,r.concepte,r.q,r.pu,r.cap,r.descripcio]))} carpeta={carpetaDe878408(obra,data,"03_AMIDAMENTS_PRESSUPOST_OBRA")} close={()=>setSigCert408(false)} onSignat={signatPres408}/>}
       {signa403&&<SignaturaPad878403 titol={i18nT("Acceptació del pressupost")} sub={[budgetLabel8786(data,bid403),total>0?money(total):""].filter(Boolean).join(" · ")} nom={String(obra?.propietat||client?.nom||"").replace(/^pendent$/i,"")} dni={String(obra?.nifPropietat||client?.nif||"").replace(/^pendent$/i,"")} onDesa={desaSig403} close={()=>setSigna403(false)}/>}
       {quickMode&&<div className={`rapid-budget-edit-toolbar-v87204 ${editBudget8760b?"editing":""}`}><div><b>{editBudget8760b?i18nT("Edició del pressupost ràpid activada"):i18nT("Pressupost ràpid")}</b><span>{editBudget8760b?i18nT("Els capítols i les files editables estan oberts. Guarda o cancel·la des del menú Accions."):i18nT("Per modificar quantitats, preus o conceptes, obre el menú Accions.")}</span></div></div>}
       {(clientMode||budgetWorkTab878180==="Validar descompostos")&&<div className="budget-simple-toolbar-v87213">
@@ -14162,6 +14313,11 @@ const potFacturar878337=!clientMode&&!readOnly&&!!setObraData&&!!pfCert878337&&!
 const[ferFactura878337,setFerFactura878337]=useState(false);
 // V87.364 · una certificació amb factura no es pot tocar (abans el Σ en mode consulta obria l'edició i la deixava a 0)
 const bloq878364=!!(faCert878337||vfCert878337);
+// V87.408 · signatura amb certificat de la certificació (direcció facultativa, constructora i promotor, al mateix PDF)
+const[sigCert408,setSigCert408]=useState(false);
+const ref408=String(cert?.id||`n${certNum}`);
+const rec408=obra?.id&&cert?signatDe878408(obra.id,"certificacio",ref408):null;
+const sigs408=rec408?.signat878408?.signatures||[];
 const mobil878366=useMobil878363();
 const[focus878364,setFocus878364]=useState(null);
 useEffect(()=>{if(bloq878364&&editing){setEditing(false);setDraft({})}},[bloq878364]);
@@ -14292,7 +14448,7 @@ function certPdfDoc878407(mode="origen"){
   const printMode=mode==="actual"?"actual":"origen";
   const allPrintRows=sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impPrev:certAmount878223(r,prevNum),impActual:certAmount878223(r,certNum,qDraft(r)),impOrigen:certOriginAmount878223(r,certNum,qDraft(r)),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]}));
   const printRows=printMode==="actual"?allPrintRows.filter(r=>Math.abs(+r.impActual||0)>0.000001):allPrintRows;
-  return ({type:"certificacio",autoPrint:false,printMode,title:printMode==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum} · GENERAL A ORIGEN`,subtitle:printMode==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Acumulat fins a la Certificació ${certNum} · ${money(totalOrigin())}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
+  return ({type:"certificacio",autoPrint:false,printMode,certSig878408:printMode==="origen"?sigs408:[],title:printMode==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum} · GENERAL A ORIGEN`,subtitle:printMode==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Acumulat fins a la Certificació ${certNum} · ${money(totalOrigin())}`,certNum,prevNum,includeMesures:includeMesures8780,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
 }
 function commitOne(codi,v){let val=parseNum8770(v);if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
@@ -14672,6 +14828,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
   <div className="cert-simple-toolbar-v87213 cert-barra-v878364">
     <div className="seg vista-v878364" role="group" aria-label={i18nT("Vista")}><button type="button" aria-pressed={certMode8711==="resum"} onClick={()=>setCertMode8711("resum")}>{i18nT("Resum")}</button><button type="button" aria-pressed={certMode8711==="emplenar"} onClick={()=>setCertMode8711("emplenar")}>{i18nT("Partides")}</button></div>
     <div className="dreta-v878364">
+    {sigs408.length>0&&<button type="button" className="sigcert-xip-v878408" onClick={()=>setSigCert408(true)} title={sigs408.map(x=>x.nom||x.org).join(" · ")}><Signature size={15} aria-hidden="true"/> {sigs408.length===1?i18nT("1 signatura"):i18nT("{n} signatures",{n:sigs408.length})}</button>}
     {bloq878364?<span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>
       :!editing?<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>
       :<><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button>{!readOnly&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}</>}
@@ -14681,7 +14838,8 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       {adminPrintableRows87221.length>0&&<button type="button" onClick={printAdminCombined87222}><Printer size={15} aria-hidden="true"/> {i18nT("Administració · document únic (")}{adminPrintableRows87221.length} {i18nT("partides)")}</button>}
       {adminPrintableRows87221.length>0&&<button type="button" onClick={()=>setAdminPrintOpen87221(true)}><Printer size={15} aria-hidden="true"/> {i18nT("Administració · escollir una partida")}</button>}
       <label className="action-check-v87213"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> {i18nT("Incloure línies d’amidament a la certificació")}</label>
-      {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>openEmail(`${i18nT("Certificació")} ${certNum}`,{doc:certPdfDoc878407("origen")})}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+      {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>openEmail(`${i18nT("Certificació")} ${certNum}`,rec408?{pdf:{carrega:()=>getDocFile(rec408.id,obra?.id),nom:rec408.nom}}:{doc:certPdfDoc878407("origen")})}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+      {!clientMode&&obra?.id&&cert&&<button type="button" className="sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
       {faCert878337?<button type="button" onClick={()=>openDoc?.(docFactura878337(faCert878337,pfCert878337,obraData))}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>
         :potFacturar878337&&<button type="button" className="cert-fer-v878337" onClick={()=>setFerFactura878337(true)}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Fer factura")}</button>}
       {!readOnly&&!bloq878364&&<button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}
@@ -14690,6 +14848,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     </ActionMenu87213>}
     </div>
   </div>
+  {sigCert408&&<SignaturaCert878408 obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
   {certMode8711==="resum"&&(readOnly?<ClientCertSummaryV87235 data={data}/>:<CertResumV69 data={data}/>)} 
   {extraOpen878125&&<Modal title={i18nT("Afegir feina · Certificació {n}",{n:certNum})} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p className="cert-add-intro-v878255">{i18nT("Què vols afegir a la Certificació")} {certNum}?</p>
   <div className="cert-add-kinds-v878255" role="radiogroup" aria-label={i18nT("Tipus de feina")}>
@@ -14747,6 +14906,7 @@ function ClientBudgetReadOnlyV87235({data={},obra={},client={},openDoc}){
     openDoc?.({
       type:"pressupostobra",
       marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),
+      certSig878408:(obra?.id?signatDe878408(obra.id,"pressupost",data?.activeBudgetIdObra||"principal")?.signat878408?.signatures:null)||[],
       title:"PRESSUPOST D’OBRA",
       numeroPressupost:data?.pressupostRapidNumero||"",
       referencia:data?.pressupostRapidReferencia||obra?.nom||"",
@@ -15089,6 +15249,7 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
   </div></Modal>;
 }
 // V87.337 · Destinataris del correu d'una obra: el client, les seves persones de contacte, el promotor i els agents de l'obra amb correu
+function signaCorreu878408(){const e=empresaInfo878259();return window.__acoEmpresa?(e?.nom||e?.fiscal||""):"Héctor"}
 function draftCorreu878337({title,obra,data,clients,primer=null}){
   const out=[];const vist=new Set();
   // V87.402 · també el mòbil (per al WhatsApp): hi entra qui té un correu o un telèfon
@@ -15102,8 +15263,7 @@ function draftCorreu878337({title,obra,data,clients,primer=null}){
   if(cl){add(cl.nom,cl.email,"Client",!ambPrimer,cl.mobil||cl.telefon);contactesDe878315(cl).forEach(p=>add(p.nom,p.email,"Client",false,p.mobil||p.telefon))}
   add(obra?.propietat,obra?.emailPropietat,"Promotor",!cl&&!ambPrimer,obra?.mobilPropietat||obra?.telefonPropietat);
   (data?.agents||[]).forEach(a=>add(a.nom,a.email,a.rol||a.tipus||"",false,a.mobil||a.telefon));
-  const e=empresaInfo878259();
-  const signa=window.__acoEmpresa?(e?.nom||e?.fiscal||""):"Héctor";
+  const signa=signaCorreu878408();
   const tt=String(title||"").trim();const titol=obra?.nom&&tt.includes(obra.nom)?tt:[tt,obra?.nom].filter(Boolean).join(" · ");
   return {title:titol,agents:out,selected:out.filter(x=>x.sel).map(x=>x.id),altres:"",message:t("Bon dia,\n\nUs envio {doc}.\n\nSalutacions,\n{signa}",{doc:titol,signa})};
 }
@@ -15892,7 +16052,16 @@ function capDoc878396(o={}){
 // el peu de tots els documents (el text d'Ajustos › Documents)
 function peuDoc878396(){const p=docsCfg878396().peu.trim();return p?`<div class="cd396-peu" style="margin-top:8mm;padding-top:3mm;border-top:1px solid #e2e8f0;color:#64748b;font-size:9px;line-height:1.35;white-space:pre-wrap;break-inside:avoid">${escHtmlV8772(p)}</div>`:""}
 // la signatura d'acceptació del pressupost (el client el signa i el torna)
-function signaturaDoc878396(D,emissorNom,clientNom,sig=null){
+// V87.408 · requadres de signatura amb certificat: per signar (`data-signa`: l'AutoFirma hi posa la signatura visible) o, ja signats,
+// amb qui ha signat (`sigs`, del PDF signat). rols: [{k, label, nom}]
+const ROLS_CERT878408=[["df","Direcció facultativa"],["constructor","Constructora"],["promotor","Promotor / propietat"]];
+function caixesSig878408(D,rols,{perSignar=false,sigs=[]}={}){
+  const esc=escHtmlV8772,loc=docLocale878403(D);
+  return `<div class="cd396-sign sig-v878408" style="display:grid;grid-template-columns:repeat(${rols.length>2?3:2},1fr);gap:5mm;margin-top:8mm;break-inside:avoid;page-break-inside:avoid">${rols.map(r=>{const sg=(sigs||[]).find(x=>x.rol===r.k);
+    return `<div style="border:1px solid #cbd5e1;border-radius:6px;padding:2mm 3mm"><small style="display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700">${esc(D(r.label))}</small><b style="display:block;font-size:10.5px;margin-top:1mm;min-height:4mm">${esc(r.nom||"")}</b><div${perSignar?` data-signa="${esc(r.k)}"`:""} style="height:22mm;display:flex;flex-direction:column;justify-content:center;font-size:9px;color:#0f172a">${sg&&!perSignar?`<b style="font-size:9.5px;color:#166534">${esc(D("Signat digitalment"))}</b><span>${esc([sg.nom,sg.nif].filter(Boolean).join(" · "))}</span><span style="color:#475569">${esc(sg.quan?new Date(sg.quan).toLocaleString(loc,{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"")}</span>`:""}</div></div>`}).join("")}</div>`;
+}
+function signaturaDoc878396(D,emissorNom,clientNom,sig=null,cert=null){
+  if(cert&&(cert.perSignar||(cert.sigs||[]).length))return caixesSig878408(D,[{k:"emissor",label:"Emissor",nom:emissorNom},{k:"client",label:"Acceptat pel client",nom:clientNom}],cert);
   // V87.403 · si el client l'ha signat a la pantalla, el requadre porta el nom, el DNI, la data i la signatura
   const sg=sig&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(sig.src||""))?sig:null;
   if(!docsCfg878396().signatura&&!sg)return "";const esc=escHtmlV8772;const ln=(l,v="")=>`<div style="display:flex;gap:3mm;align-items:flex-end;margin-top:4mm"><span style="color:#64748b;font-size:9px;min-width:22mm">${esc(l)}</span><span style="flex:1;border-bottom:1px solid #94a3b8;min-height:5mm;font-size:10.5px;color:#0f172a;padding-bottom:1px">${v}</span></div>`;
@@ -16561,7 +16730,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.407",
+    app_version:"87.408",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -17916,6 +18085,7 @@ function certPrintHtmlV8772(doc,obra,client){
       <h3>${D("Partides certificades a origen")}</h3>
       <table class="summary"><colgroup><col class="part"><col class="ut"><col class="concept-col"><col class="num"><col class="num"><col class="imp"></colgroup><thead><tr><th>${D("Partida")}</th><th>Ut</th><th>${D("Concepte")}</th><th>${D("Q origen")}</th><th>PU</th><th>${D("Total origen")}</th></tr></thead><tbody>${originRowsHtml}</tbody><tfoot><tr><th colspan="5">${D("TOTAL A ORIGEN")}</th><th>${money(totalOrigen)}</th></tr></tfoot></table>
       <div class="certs-list"><h3>${D("Deducció de certificacions anteriors")}</h3><table><thead><tr><th>${D("Concepte")}</th><th>${D("Import")}</th></tr></thead><tbody><tr><td><b>${D("Total certificat a origen")}</b></td><td><b>${money(totalOrigen)}</b></td></tr>${deductionRows}<tr><td><b>${D("Import sense IVA certificació {n}",{n:certNum})}</b></td><td><b>${money(total)}</b></td></tr></tbody></table></div>
+      ${doc.perSignar878408||(doc.certSig878408||[]).length?caixesSig878408(D,ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")})),{perSignar:!!doc.perSignar878408,sigs:doc.certSig878408||[]}):""}
     </section>
     <section class="page landscape">
       <h2>${D("Quadre resum general de certificació")}</h2>
@@ -18038,14 +18208,16 @@ function EmailModal({draft,setDraft,close}){
   const [msg,setMsg]=useState("");
   const [alt,setAlt]=useState(null);           // l'error d'enviar amb Gmail: es pot obrir el Gmail amb el correu escrit
   // V87.408 · un PDF ja fet (p. ex. el signat amb certificat) s'adjunta tal com és: no es torna a fer
-  const fix=draft.pdf?.blob||null;
-  const html=useMemo(()=>{try{return draft.pdf&&!draft.pdf.blob?htmlDoc878405(draft.pdf.doc,draft.pdf.obra,draft.pdf.client):null}catch(e){console.warn(e);return null}},[draft.pdf]);
-  const nom=fix?(draft.pdf.nom||nomPdf(draft.title)):nomPdf(draft.pdf?.doc?.title||draft.title);
+  const fix=draft.pdf?.blob||null,carrega=draft.pdf?.carrega||null;
+  const html=useMemo(()=>{try{return draft.pdf&&!draft.pdf.blob&&!draft.pdf.carrega?htmlDoc878405(draft.pdf.doc,draft.pdf.obra,draft.pdf.client):null}catch(e){console.warn(e);return null}},[draft.pdf]);
+  const nom=fix||carrega?(draft.pdf.nom||nomPdf(draft.title)):nomPdf(draft.pdf?.doc?.title||draft.title);
   useEffect(()=>{let viu=true;setPdf(fix?{blob:fix,nom}:null);setPdfErr("");
     if(html)htmlAPdf(html).then(blob=>{if(viu)setPdf({blob,nom})}).catch(e=>{console.warn(e);if(viu)setPdfErr(t("No s’ha pogut preparar el PDF."))});
-    return()=>{viu=false}},[html,fix]);
+    // V87.408 · el PDF signat amb certificat: el desat (a l'aparell o al núvol), tal com és
+    else if(carrega)Promise.resolve(carrega()).then(blob=>{if(!viu)return;if(blob)setPdf({blob,nom});else setPdfErr(t("No s’ha pogut obrir el PDF signat en aquest aparell."))}).catch(e=>{console.warn(e);if(viu)setPdfErr(t("No s’ha pogut obrir el PDF signat en aquest aparell."))});
+    return()=>{viu=false}},[html,fix,carrega]);
   useEffect(()=>{if(via==="gmail")gmail878405.prepara()},[via]);
-  const ambPdf=(!!html||!!fix)&&adjunta;
+  const ambPdf=(!!html||!!fix||!!carrega)&&adjunta;
   const pdfLlest=!ambPdf||!!pdf;
   const fitxer=()=>pdf?new File([pdf.blob],pdf.nom,{type:"application/pdf"}):null;
   const kb=b=>b.size>1048576?(b.size/1048576).toLocaleString("ca-ES",{maximumFractionDigits:1})+" MB":Math.max(1,Math.round(b.size/1024))+" KB";
@@ -18109,7 +18281,7 @@ function EmailModal({draft,setDraft,close}){
     </div>
     <label className="camp"><span>{t("Assumpte")}</span><input value={draft.title||""} onChange={e=>setDraft({...draft,title:e.target.value})}/></label>
     <label className="camp"><span>{t("Missatge")}</span><textarea rows={6} value={draft.message||""} onChange={e=>setDraft({...draft,message:e.target.value})}/></label>
-    {(html||fix)&&<label className={`adjunt-v878405 ${adjunta?"on":""}`}><input type="checkbox" checked={adjunta} onChange={e=>setAdjunta(e.target.checked)}/><FileText size={18} aria-hidden="true"/><span><b>{nom}</b><small>{pdfErr||(pdf?kb(pdf.blob):t("Preparant el PDF…"))}</small></span></label>}
+    {(html||fix||carrega)&&<label className={`adjunt-v878405 ${adjunta?"on":""}`}><input type="checkbox" checked={adjunta} onChange={e=>setAdjunta(e.target.checked)}/><FileText size={18} aria-hidden="true"/><span><b>{nom}</b><small>{pdfErr||(pdf?kb(pdf.blob):t("Preparant el PDF…"))}</small></span></label>}
     <div className="via-v878405">{via==="gmail"?t("S’envia des del teu Gmail"):t("S’obre el correu de l’aparell (Outlook, Mail…)")}
       {!canviar?<button type="button" className="link" onClick={()=>setCanviar(true)}>{t("Canviar")}</button>
       :<span className="seg-v878405"><button type="button" className={via==="gmail"?"on":""} aria-pressed={via==="gmail"} onClick={()=>{setVia("gmail");setCanviar(false)}}>Gmail</button><button type="button" className={via==="aparell"?"on":""} aria-pressed={via==="aparell"} onClick={()=>{setVia("aparell");setCanviar(false)}}>{t("Correu de l’aparell")}</button></span>}
@@ -18173,7 +18345,7 @@ function pressupostObraPrintHtml878153(doc,obra,client){
     const show=cap!==lastCap; lastCap=cap;
     return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap==="PRESSUPOST"?D(cap):cap)}</td><td class="num">${money(chapterTotals878230[cap]||0)}</td></tr>`:""}<tr><td class="code">${escHtmlV8772(r.codi||"")}</td><td>${escHtmlV8772(r.ut||"")}</td><td class="concept"><b>${escHtmlV8772(r.concepte||"")}</b>${r.desc?`<p class="long-desc">${escHtmlV8772(r.desc)}</p>`:""}</td><td class="num">${qty2(q)}</td><td class="num">${money(pu)}</td><td class="num"><b>${money(q*pu)}</b></td></tr>`
   }).join("") || `<tr><td colspan="6" class="empty">${D("Sense partides.")}</td></tr>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(docTitle878283(obra,doc.title)||D("Pressupost"))}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8.7px;line-height:1.12}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:100%;margin:6mm 0 0;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f172a;background:#9fbad4;border:1px solid #0f172a;border-bottom:0;padding:5px}.chapter-summary td:first-child{text-align:left;white-space:normal;font-weight:900}.chapter-summary th{background:#dbeafe}.chapter-summary td:nth-child(n+2){text-align:right}.chapter-summary tbody tr:last-child td{border-bottom:2px solid #0f172a}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page">${capDoc878396({D,em:emissorDocs878396(client),recHtml:thirdBlock,titol:docTitle878283(obra,doc.title)||D("PRESSUPOST D’OBRA"),meta:[[D("Núm. pressupost"),numPres],[D("Versió"),versioPres],[D("Data"),dataPres?(fmtAppDate8748(dataPres)||dataPres):""]],obraLabel:D("Obra"),obraTitol:ref,obraLinia:obraAdr})}<table><colgroup><col style="width:18mm"><col style="width:7mm"><col style="width:auto"><col style="width:14mm"><col style="width:17mm"><col style="width:22mm"></colgroup><thead><tr><th>${D("Part.")}</th><th>Ut</th><th>${D("Concepte / descripció")}</th><th>${D("Quant.")}</th><th>€/ut</th><th>${D("Total")}</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>${D("RESUM ECONÒMIC PER CAPÍTOLS")}</caption><colgroup><col style="width:auto"><col style="width:32mm"><col style="width:24mm"></colgroup><thead><tr><th>${D("Capítol")}</th><th>${D("Import")}</th><th>${D("% pressupost")}</th></tr></thead><tbody>${chapterSummary878230}</tbody></table>${(()=>{const mg=doc.marges878378;if(!(mg&&mg.mode==="resum"&&(mg.dge>0||mg.bi>0)))return `<div class="totals"><div><span>${D("TOTAL PRESSUPOST")}</span><b>${money(total)}</b></div></div>`;const dg=Math.round(total*mg.dge)/100,bi=Math.round(total*mg.bi)/100;return `<div class="totals totals-pec-v878378"><div><span>${D("Pressupost d’execució material (PEM)")}</span><b>${money(total)}</b></div>${mg.dge>0?`<div><span>${D("Despeses generals")} (${String(mg.dge).replace(".",",")} %)</span><b>${money(dg)}</b></div>`:""}${mg.bi>0?`<div><span>${D("Benefici industrial")} (${String(mg.bi).replace(".",",")} %)</span><b>${money(bi)}</b></div>`:""}<div class="pec"><span>${D("PRESSUPOST D’EXECUCIÓ PER CONTRACTE")}</span><b>${money(total+dg+bi)}</b></div></div>`})()}${(tx396.obs||tx396.forma||tx396.validesa)?`<div class="notes-stack">${tx396.obs?`<div><h3>${D("Observacions")}</h3><p>${escHtmlV8772(tx396.obs)}</p></div>`:""}${tx396.forma?`<div><h3>${D("Forma de pagament")}</h3><p>${escHtmlV8772(tx396.forma)}</p></div>`:""}${tx396.validesa?`<div><h3>${D("Validesa del pressupost")}</h3><p>${escHtmlV8772(tx396.validesa)}</p></div>`:""}</div>`:""}${signaturaDoc878396(D,clientEmissor,clientPressupost,doc.signatura878403)}${peuDoc878396()}</section></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(docTitle878283(obra,doc.title)||D("Pressupost"))}</title><style>@page{size:A4 portrait;margin:9mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:10.5px;background:white}.page{width:192mm;min-height:279mm;margin:0 auto;background:white}.head{display:grid;grid-template-columns:1.2fr .8fr;gap:8mm;border-bottom:2px solid #0f172a;padding-bottom:7px;margin-bottom:10px}.head h3{margin:0 0 4px;font-size:11px}.head p{margin:0;line-height:1.35;color:#475569}.client-head{padding-left:2mm}.title{display:grid;grid-template-columns:1fr 45mm;gap:7mm;align-items:start;margin:0 0 10px}.title h1{margin:0 0 5px;font-size:21px;color:#0f2d5c}.title-meta p{margin:0 0 2px;line-height:1.3}.budget-id{border:1px solid #cbd5e1;border-radius:7px;background:#f8fafc;padding:7px 8px;text-align:right}.budget-id small{display:block;color:#64748b;font-weight:900;text-transform:uppercase;font-size:8.5px;margin-top:3px}.budget-id b{display:block;font-size:13px;color:#0f172a}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:3mm}th,td{border:1px solid #94a3b8;padding:4px 4px;text-align:center;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}th{background:#dbeafe;color:#0f172a;font-weight:900;font-size:9.5px}.code{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;font-size:8.7px;line-height:1.12}.concept{text-align:left!important;white-space:normal!important;overflow-wrap:anywhere;word-break:normal}.long-desc{margin:2px 0 0;color:#475569;font-size:8.8px;line-height:1.22;white-space:pre-wrap}.num{text-align:right!important}.cap td{background:#9fbad4!important;font-weight:900!important;border-top:2px solid #0f172a!important;border-bottom:1.5px solid #0f172a!important;white-space:normal!important;padding:4px 5px}.cap td:first-child{text-align:left!important}.cap td:last-child{text-align:right!important}.chapter-summary{width:100%;margin:6mm 0 0;break-inside:avoid;page-break-inside:avoid}.chapter-summary caption{text-align:left;font-weight:900;color:#0f172a;background:#9fbad4;border:1px solid #0f172a;border-bottom:0;padding:5px}.chapter-summary td:first-child{text-align:left;white-space:normal;font-weight:900}.chapter-summary th{background:#dbeafe}.chapter-summary td:nth-child(n+2){text-align:right}.chapter-summary tbody tr:last-child td{border-bottom:2px solid #0f172a}.totals{width:68mm;margin-left:auto;margin-top:4mm}.totals div{display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding:7px 0;font-size:15px}.notes-stack{display:grid;grid-template-columns:1fr;gap:4mm;margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.notes-stack div{border:1px solid #cbd5e1;border-radius:7px;padding:7px 8px;background:#f8fafc}.notes-stack h3{margin:0 0 4px;font-size:11px;color:#0f2d5c}.notes-stack p{margin:0;white-space:pre-wrap;line-height:1.3;color:#334155}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:18mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{min-height:27mm;padding-top:3px;border-top:1px solid #64748b}.signature.right{text-align:right}.signature small{display:block;color:#64748b;font-size:9px;font-weight:900;text-transform:uppercase}.signature b{display:block;margin-top:1px;font-size:11px}.signature span{display:block;margin-top:16mm;color:#64748b;font-size:9px}.empty{text-align:left!important;color:#64748b}.issuer-v87100{display:grid;grid-template-columns:31mm 1fr;gap:5mm;align-items:start}.issuer-v87100 b,.issuer-v87100 span{display:block;line-height:1.2}.issuer-logo-box-v87100{width:31mm;min-height:17mm;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;background:#fff}.brand-logo-v87100{max-width:29mm;max-height:18mm;object-fit:contain}.brand-logo-placeholder-v87100{font-weight:900;color:#94a3b8;font-size:9px}@media screen{html{background:#e5e7eb;padding:12px}body{width:210mm;min-height:297mm;margin:0 auto;padding:9mm;box-shadow:0 2px 18px rgba(15,23,42,.18)}}@media screen and (max-width:900px){html{padding:5px}body{transform:scale(.54);transform-origin:top left;margin:0;width:210mm;min-height:297mm}.head{grid-template-columns:1.2fr .8fr}table{font-size:9px}}@media print{html,body{background:white!important;padding:0!important}.page{width:192mm!important;min-height:279mm!important;margin:0!important;transform:none!important}}</style></head><body><section class="page">${capDoc878396({D,em:emissorDocs878396(client),recHtml:thirdBlock,titol:docTitle878283(obra,doc.title)||D("PRESSUPOST D’OBRA"),meta:[[D("Núm. pressupost"),numPres],[D("Versió"),versioPres],[D("Data"),dataPres?(fmtAppDate8748(dataPres)||dataPres):""]],obraLabel:D("Obra"),obraTitol:ref,obraLinia:obraAdr})}<table><colgroup><col style="width:18mm"><col style="width:7mm"><col style="width:auto"><col style="width:14mm"><col style="width:17mm"><col style="width:22mm"></colgroup><thead><tr><th>${D("Part.")}</th><th>Ut</th><th>${D("Concepte / descripció")}</th><th>${D("Quant.")}</th><th>€/ut</th><th>${D("Total")}</th></tr></thead><tbody>${body}</tbody></table><table class="chapter-summary"><caption>${D("RESUM ECONÒMIC PER CAPÍTOLS")}</caption><colgroup><col style="width:auto"><col style="width:32mm"><col style="width:24mm"></colgroup><thead><tr><th>${D("Capítol")}</th><th>${D("Import")}</th><th>${D("% pressupost")}</th></tr></thead><tbody>${chapterSummary878230}</tbody></table>${(()=>{const mg=doc.marges878378;if(!(mg&&mg.mode==="resum"&&(mg.dge>0||mg.bi>0)))return `<div class="totals"><div><span>${D("TOTAL PRESSUPOST")}</span><b>${money(total)}</b></div></div>`;const dg=Math.round(total*mg.dge)/100,bi=Math.round(total*mg.bi)/100;return `<div class="totals totals-pec-v878378"><div><span>${D("Pressupost d’execució material (PEM)")}</span><b>${money(total)}</b></div>${mg.dge>0?`<div><span>${D("Despeses generals")} (${String(mg.dge).replace(".",",")} %)</span><b>${money(dg)}</b></div>`:""}${mg.bi>0?`<div><span>${D("Benefici industrial")} (${String(mg.bi).replace(".",",")} %)</span><b>${money(bi)}</b></div>`:""}<div class="pec"><span>${D("PRESSUPOST D’EXECUCIÓ PER CONTRACTE")}</span><b>${money(total+dg+bi)}</b></div></div>`})()}${(tx396.obs||tx396.forma||tx396.validesa)?`<div class="notes-stack">${tx396.obs?`<div><h3>${D("Observacions")}</h3><p>${escHtmlV8772(tx396.obs)}</p></div>`:""}${tx396.forma?`<div><h3>${D("Forma de pagament")}</h3><p>${escHtmlV8772(tx396.forma)}</p></div>`:""}${tx396.validesa?`<div><h3>${D("Validesa del pressupost")}</h3><p>${escHtmlV8772(tx396.validesa)}</p></div>`:""}</div>`:""}${signaturaDoc878396(D,clientEmissor,clientPressupost,doc.signatura878403,{perSignar:!!doc.perSignar878408,sigs:doc.certSig878408||[]})}${peuDoc878396()}</section></body></html>`;
 }
 function PressupostObraPreview878153({doc}){
   const rows=sortPartides878132(doc.rows||[]);

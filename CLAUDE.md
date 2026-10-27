@@ -1770,6 +1770,47 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - La finestra «Enviar» accepta també un PDF ja fet (`draft.pdf.blob`): s'adjunta tal com és (per als PDF signats de la V87.408).
     - Prova: `enviar407test.mjs` (23, Gmail simulat, constructora i tècnic). Adaptada `whatsapp402test` (amb el PDF, a l'ordinador el
       WhatsApp el descarrega i la finestra ho diu).
+  - **V87.408 · Signatura amb certificat digital amb l'AutoFirma** (l'Héctor, 27/10/2026: «ha de ser signatures amb certificat digital
+    sempre… que es faci amb AutoFirma com fan els col·legis d'arquitectes»; abans, V87.403, el client signava amb el dit a la pantalla):
+    - **Com parla amb l'AutoFirma** (`src/autofirma.js`, protocol v4 del Cliente @firma, el mateix que `autoscript.js` del Ministeri):
+      `obre()` (dins del toc: `afirma://websocket?ports=P1,P2,P3&v=4&jvc=4&idsession=<20>`; el navegador pregunta «Obrir Autofirma?») i
+      `signaPdf(bytes,{ses,props})`: WebSocket segur `wss://127.0.0.1:<port>` (el certificat local el posa l'instal·lador), eco
+      `echo=-idsession=…@EOF` → «OK», `afirma://sign?op=sign&idsession&algorithm=SHA256&format=PAdES&properties=<b64>&sticky=false&dat=<b64>`
+      (base64 «url segura»), «#wait» → `getresult?idsession=…` cada 2 s, i `<certificat>|<PDF signat>`. «CANCEL»/«err-11» = cancel·lat;
+      `err-XX:= CODI - text`. Propietats en format Java (`propietats()`: els accents com a \uXXXX). Només a l'ordinador (`potSignar`).
+      **Comprovat amb l'AutoFirma 1.9 de l'ordinador de l'Héctor (D:\Autofirma)**: l'eco respon «OK» i, amb un algorisme fals, el registre
+      (`%USERPROFILE%\.afirma\AUTOFIRMA.afirma.log.xml*`) diu «operación de firma… contenido Base64… Algoritmo de firma no soportado»:
+      entén el missatge. **Compte:** l'AutoFirma ensenya els errors en una finestra («Error») i no respon fins que es tanca; i el procés
+      d'una prova que només fa l'eco es queda obert (tancar-lo, `javaw.exe` amb «afirma://websocket» a la línia d'ordres).
+    - **Llegir les signatures d'un PDF** (`src/signaturesPdf.js`, sense llibreries): cada `/ByteRange` + `/Contents` (CMS SignedData en
+      DER), el certificat de qui signa (nom: GN+SN o el CN sense el NIF ni «(R: …)»; NIF del `serialNumber` «IDCES-…»; entitat: FNMT-RCM,
+      Consorci AOC (idCAT), DNIe, Firmaprofesional…), la data (`signingTime` o `/M`), el resum del document contra `messageDigest` i la
+      signatura (WebCrypto: RSA PKCS#1 i ECDSA; RSA-PSS no es comprova). No es comprova la cadena ni la revocació. `marcaDe`: la marca de l'app.
+    - **El PDF per signar** (`htmlAPdfPerSignar` de `pdfDoc.js`): els requadres `[data-signa="rol"]` donen la pàgina i el lloc (mm) on
+      l'AutoFirma posa la signatura visible («Signat digitalment per $SUBJECTCN$ i la data», `propsSig878408`, en punts del PDF), i les
+      paraules clau porten `aco878408:<tipus>-<ref>:<resum>`. Plantilles amb `perSignar878408`: l'acta (`.sgi` de les 4 caselles, sense
+      «Estat»), el pressupost (`signaturaDoc878396(…, cert)` → `caixesSig878408`: Emissor · Acceptat pel client) i la certificació general a
+      origen (Direcció facultativa · Constructora · Promotor, `ROLS_CERT878408`). Amb `certSig878408`, la vista diu qui ha signat.
+    - **`SignaturaCert878408`** (a l'acta, pestanya «Signatures»; al pressupost i la certificació, Accions › «Signar amb certificat…»): cada
+      qui ha de signar amb «Signar amb AutoFirma» (o qui ha signat, nom, NIF, data i entitat), «Enviar per signar» (el PDF d'ara i un missatge
+      que demana signar-lo amb el certificat i tornar-lo), «Pujar el PDF signat» (llegeix les signatures; rebutja un PDF sense signatures,
+      d'un altre document o amb menys signatures; les noves s'assignen pel NIF o el nom, si no «De qui és?») i el PDF. Cada signatura va a
+      sobre de les d'abans: un sol PDF per a tothom. Si el document canvia després de signar-lo (`hash` del contingut), ho diu i «Fer un PDF
+      nou per signar» (el d'abans queda a Documents com a «anterior»).
+    - **On es desa:** un document de l'obra (`data.documents`, carpeta d'actes, pressupost o certificacions, `carpetaDe878408`) amb
+      `linkedType:"signat878408"` i `signat878408:{tipus, ref, titol, hash, signes, signatures:[{rol, nom, nif, org, emissor, quan, valida,
+      via}]}`; l'arxiu amb `saveDocFile` (aparell i núvol), un de nou per versió. L'App: `window.__acoSignats878408(obraId)` i
+      `window.__acoDesaSignat878408(obraId, rec, {anterior})`.
+    - **Enviar** (acta, pressupost, certificació): si n'hi ha de signat, s'adjunta aquest tal com és (`pdf.carrega` a la finestra «Enviar»).
+      L'acta signada passa a «Signada»; el pressupost signat pel client (signatura bona) passa l'obra a «Acceptat».
+    - **Fora la signatura a la pantalla** a l'acta i al pressupost (les d'abans es veuen i es poden treure). **Es queda** al parte (feina fora
+      de pressupost, «Conforme del client»): no hi ha cap document per signar i al mòbil no hi ha AutoFirma. Preguntar-ho a l'Héctor.
+    - Estils `src/theme-v878408.css`. Proves: `signatures408unit.mjs` (14, sense navegador, certificats inventats amb openssl:
+      `tools/proves/signapdf.mjs` fa certificats i signa PDF com l'AutoFirma) i `signatura408test.mjs` (28: un «AutoFirma» de prova, servidor
+      WebSocket segur que parla el protocol i signa; acta, segona signatura pujada, PDF d'un altre document, Enviar amb el signat, cancel·lar,
+      sense AutoFirma, pressupost, certificació, mòbil). L'Edge de la prova s'obre amb `--ignore-certificate-errors`; l'app agafa els ports i
+      el llançament de `window.__acoAfirmaPorts878408`, `__acoAfirmaObre878408` i `__acoAfirmaEspera878408`. Adaptada `signatura403test`
+      (7: ara només el parte i que el pressupost té «Signar amb certificat…»).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -1930,12 +1971,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (27/10/2026, després de la V87.407)
+### Per començar una sessió nova (27/10/2026, després de la V87.408)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.406 a Render):**
+**Estat (publicada la V87.408 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -1947,6 +1988,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   Facturació de l’empresa (sèrie pròpia, cobraments, gestoria, gràfiques per comparar anys).
 - **Per a tothom:** mòbil i iPad «tot recollit», accessibilitat (contrast, 12 px, 36 px per al dit, focus), Ajustos per blocs
   (Imatge de l’empresa amb logo i color, Documents amb 7 estils d’encapçalament, accessos ràpids…), castellà, sense cobertura.
+- **Enviar i signar:** tots els documents s’envien des del Gmail amb el seu PDF (V87.405–407; l’Héctor ja ha enviat una acta així);
+  l’acta, el pressupost i la certificació se signen amb certificat digital amb l’AutoFirma (V87.408; falta que l’Héctor ho provi amb el seu).
 - **No fet:** perfils autònom i promotor amb compte propi, IA al servidor (albarans, pressupost-ia: cal la clau d’Anthropic i el sí de
   l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 
@@ -1955,6 +1998,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
    - ~~Propostes visuals~~ (V87.400): esperant que validi a https://claude.ai/artifact/1sPHEQWBTS529xEieexRDd (Sí / No / Canviar-la); les
      validades, per a tothom.
    - ~~Pressupost dictat~~ (V87.401). ~~WhatsApp i pressupost acceptat/rebutjat~~ (V87.402). ~~Signatura a la pantalla~~ (V87.403).
+   - ~~Enviar amb el PDF (Gmail)~~ (V87.405–407). ~~Signatura amb certificat amb l’AutoFirma~~ (V87.408, l’Héctor 27/10/2026: «sempre amb
+     certificat»). **Preguntar-li:** el «Conforme del client» del parte (encara a la pantalla: no hi ha document ni AutoFirma al mòbil); si vol
+     l’enllaç per signar a distància (cada destinatari obre un enllaç i signa amb la seva AutoFirma sense haver de tornar el PDF per
+     correu: cal una part petita al servidor, Supabase, sense cost).
    - ~~Comptes del Pol, manual d’ús i vídeos~~ (26/10/2026; vegeu la V87.404): **l’Héctor ha de crear els dos comptes al panell de
      Supabase** (`GUIES_USUARIS\COMPTES_POL.txt`) i compartir el manual i la pàgina dels vídeos amb el Pol.
    - Després: descompte al pressupost d’obra · obra nova en

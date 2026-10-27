@@ -79,6 +79,14 @@ export async function paginesImatge(html, { escala = 2, qualitat = 0.82 } = {}) 
     f.style.height = total + "px";
     await espera(30);
     const out = [];
+    // V87.408 · on cau cada requadre de signatura ([data-signa]): pàgina i posició en mm des de dalt a l'esquerra del full A4
+    out.signes = [];
+    for (const el of doc.querySelectorAll("[data-signa]")) {
+      const r = el.getBoundingClientRect(), top = r.top + doc.defaultView.scrollY;
+      const i = pags.findIndex(([a, b]) => top >= a - 1 && top < b);
+      if (i < 0 || !r.width || !r.height) continue;
+      out.signes.push({ rol: el.getAttribute("data-signa"), pag: i + 1, x: r.left / MM, y: MARGE_MM + (top - pags[i][0]) / MM, w: r.width / MM, h: r.height / MM });
+    }
     for (let i = 0; i < pags.length; i++) {
       const [a, b] = pags[i];
       const alt = Math.max(1, b - a);
@@ -89,11 +97,22 @@ export async function paginesImatge(html, { escala = 2, qualitat = 0.82 } = {}) 
   } finally { f.remove(); }
 }
 
-export async function htmlAPdf(html, opts = {}) {
+async function fesPdf(html, opts = {}) {
   const [pags, { jsPDF }] = await Promise.all([paginesImatge(html, opts), import("jspdf")]);
   const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
   pags.forEach((p, i) => { if (i) pdf.addPage("a4", "portrait"); pdf.addImage(p.src, "JPEG", 0, MARGE_MM, 210, p.altMm, undefined, "FAST"); });
+  // V87.408 · la marca de l'app (a les paraules clau del PDF): diu de quin document és un PDF que torna signat
+  if (opts.titol || opts.marca) pdf.setDocumentProperties({ title: opts.titol || "", keywords: opts.marca ? "aco878408:" + opts.marca : "", creator: "Control d'Obres" });
+  return { pdf, signes: pags.signes || [] };
+}
+export async function htmlAPdf(html, opts = {}) {
+  const { pdf } = await fesPdf(html, opts);
   return pdf.output("blob");
+}
+// V87.408 · el PDF per signar amb certificat: els bytes i on va cada signatura
+export async function htmlAPdfPerSignar(html, opts = {}) {
+  const { pdf, signes } = await fesPdf(html, opts);
+  return { bytes: new Uint8Array(pdf.output("arraybuffer")), signes };
 }
 
 // un nom d'arxiu net: «Acta 03 · Reforma C/ Nou 5.pdf»
