@@ -1851,6 +1851,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils `src/theme-v878409.css`. Prova: `signaremot409test.mjs` (32, la mateixa AutoFirma de prova). El Supabase de proves té les funcions
       `aco_signa_*`, `GET /__signa` i `POST /__signa {off}` / `{id, caduca}`; `SENSE_SIGNA=1` = sense l'SQL. Adaptada `signatura408test`
       (amb `SENSE_SIGNA`: el PDF per correu).
+  - **V87.410 · Previst i imprevistos, i el resultat dels encàrrecs** (l'Héctor, 27/10/2026, mentre passava a Pro):
+    - **Pressupost original** (uns clients: «quan a la certificació afegeixo partides noves fora de pressupost… el pressupost original va
+      pujant… s'hauria de diferenciar… sinó no tenim la comparativa del previst amb els imprevistos i el realment executat»). Les partides que
+      no eren al pressupost continuen a `partides` (les certificacions les fan servir) però `esFora878410` les separa: `createdFromCert`
+      («Afegir feina»), `foraPressupost878349` (parte), `adminMonthlyAuto`/administració, `noPressupost` (a compte) i `extra-excel-…` (noves a
+      l'Excel de certificació). Les partides del pressupost certificades no es toquen (`keepBudgetFields878253`), així que «més amidament»
+      = certificat a origen (`certQtyTotal8789`) per sobre de la quantitat prevista. **Pressupost**: la capçalera diu «Pressupost original»
+      i a sota «+ … fora de pressupost» (`fora878410`); cada partida nova porta l'etiqueta `fora-v878410` (`etFora878410`: «Nova · cert. 2»,
+      «Nova · parte», «Per administració», «A compte»). La barra de fases, l'import original. **Certificacions › Resum** i **Rendiment**:
+      `PrevistImprevist878410` (`previst878410`: pressupost original · imprevistos = noves + més amidament · previst + imprevistos ·
+      executat a origen; «Veure les partides (n)»; plegada al mòbil). **Els documents (PDF) no han canviat**: les partides noves hi surten
+      com abans.
+    - **Encàrrecs tècnics (CEE…)** («els registres manuals o pel comptador s'han de comptar com a despesa de personal meu al meu preu/h… i les
+      pestanyes no són lògiques: calcular honoraris hauria d'anar dins dels pressupostos»): `HonorarisExpedient8778` té «Pressupostos
+      d'honoraris» (la calculadora a dins, `calc-dins-v878410`, amb «‹ Tornar als pressupostos»; sense pressupost, la calculadora directament)
+      · «Factures honoraris» · «Hores» (el comptador i els registres, `HonorarisTemps`, prop `temps`, quan «Gestió temps» va a Honoraris) ·
+      «Rendiment» (prop `rendiment`). A dalt, `ResultatEncarrec878410`: honoraris − despeses − les meves hores = resultat i €/h real
+      (`rendEncarrec878410`: honoraris = el facturat o, si no n'hi ha, els pressupostos acceptats o, si cap, els no rebutjats; despeses = les
+      de Despeses amb aquell expedient i les del registre —km, dietes—; hores × el preu de cada registre o el de sèrie,
+      `defaultRate878255`). `RendimentHonorarisExpedient878120` amb les mateixes xifres (fora la «Lectura ràpida» i el donut «Relació»). A
+      «Despeses» de l'expedient, `HoresDespesa878410` («Les meves hores · 2,00 h · 80,00 €», «Veure-les» va a Honoraris › Hores o a l'apartat
+      Hores). Al perfil `tecnic` (comptes `oriol`, `marti`, `demo-tecnic`) els encàrrecs no tenen «Despeses» (`tabsPerfil878326`).
+      Arribar a l'obra per «Gestió temps» o «Rendiment» (el ＋ del mòbil, l'Inici…) obre aquella pestanya (prop `inici`); tocar «Pressupostos
+      d'honoraris» sempre torna a la llista (des d'on es pot fer un pressupost a mà).
+    - Estils `src/theme-v878410.css`. Prova: `v410test.mjs` (25: constructora, tècnic, gestió total i mòbil). Adaptades (les hores són a
+      Honoraris › Hores i la calculadora dins dels pressupostos) `honoraris332test`, `comptador382test`, `tempstest`, `clientsvirtuals` i `v366test`.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2011,7 +2037,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (27/10/2026, després de la V87.409)
+### Per començar una sessió nova (27/10/2026, després de la V87.410)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
@@ -2022,7 +2048,7 @@ facturació següent. És decisió seva (pagament): Supabase › organització �
 La **V87.409** (signar a distància amb un enllaç) és publicada, però fins que l’Héctor executi `supabase/aco_signa_v878409.sql` a
 Supabase › SQL Editor, «Enviar per signar» continua enviant el PDF per correu.
 
-**Estat (publicada la V87.409 a Render):**
+**Estat (publicada la V87.410 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

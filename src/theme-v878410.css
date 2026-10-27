@@ -1,0 +1,51 @@
+/* V87.410 · Previst i imprevistos (pressupost, certificacions i rendiment) i el resultat de l'encàrrec (honoraris − despeses − hores) */
+@media screen{
+/* les partides que no eren al pressupost: una etiqueta */
+html body .fora-v878410{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#FFEDD5;color:#9A3412;font-size:12px;font-weight:700;font-style:normal;line-height:1.5;white-space:nowrap;vertical-align:middle}
+html body .budget-partida-mobile-summary-v87196 .fora-v878410{margin:2px 0 0;align-self:flex-start}
+/* capçalera del pressupost: l'original i, a sota, el que s'hi ha afegit */
+html body .budget-grand-total .fora-tot-v878410{display:block;flex-basis:100%;font-style:normal;font-size:12px;font-weight:700;color:#9A3412;white-space:nowrap}
+html body .budget-grand-total:has(.fora-tot-v878410){flex-wrap:wrap;justify-content:flex-end;row-gap:0}
+/* la targeta «Previst i imprevistos» */
+html body .previst-v878410 .pi-xifres{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+html body .previst-v878410 .pi-xifres>div{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 12px;border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC}
+html body .previst-v878410 .pi-xifres small{font-size:12px;font-weight:700;color:#5F7075;text-transform:uppercase;letter-spacing:.03em}
+html body .previst-v878410 .pi-xifres b{font-size:18px;color:#0F172A;font-variant-numeric:tabular-nums}
+html body .previst-v878410 .pi-xifres span{font-size:12px;color:#5F7075}
+html body .previst-v878410 .pi-xifres .imp.si{background:#FFF7ED;border-color:#FED7AA}
+html body .previst-v878410 .pi-xifres .imp.si b{color:#9A3412}
+html body .previst-v878410 .pi-xifres .exe{background:#F0FDF4;border-color:#BBF7D0}
+html body .previst-v878410 .pi-xifres .exe b{color:#166534}
+html body .previst-v878410 .pi-det{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+html body .previst-v878410 .pi-det>.link{align-self:flex-start;border:0;background:none;padding:4px 0;min-height:32px;color:var(--co-accent,#2563EB);font-weight:700;cursor:pointer}
+html body .previst-v878410 .pi-det h4{display:flex;justify-content:space-between;gap:10px;margin:4px 0;font-size:14px}
+html body .previst-v878410 .pi-det h4 span{font-variant-numeric:tabular-nums}
+html body .previst-v878410 .pi-det ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+html body .previst-v878410 .pi-det li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid #EEF2F6;font-size:14px}
+html body .previst-v878410 .pi-det li .c{color:#5F7075;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .previst-v878410 .pi-det li .n{min-width:0}
+html body .previst-v878410 .pi-det li .n small{margin-left:6px;color:#5F7075}
+html body .previst-v878410 .pi-det li b{font-variant-numeric:tabular-nums;white-space:nowrap}
+/* honoraris de l'encàrrec: el resultat a dalt */
+html body .resultat-enc-v878410{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%;margin:0;padding:10px 12px;border:1px solid #E2E8F0;border-radius:14px;background:#fff;text-align:left;font:inherit;color:inherit;cursor:pointer}
+html body .resultat-enc-v878410>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+html body .resultat-enc-v878410 small{font-size:12px;color:#5F7075;font-weight:700}
+html body .resultat-enc-v878410 b{font-size:16px;font-variant-numeric:tabular-nums;color:#0F172A;white-space:nowrap}
+html body .resultat-enc-v878410 .res{padding-left:10px;border-left:1px solid #E2E8F0}
+html body .resultat-enc-v878410 .res em{font-style:normal;font-size:12px;color:#5F7075}
+html body .resultat-enc-v878410.bo .res b{color:#166534}
+html body .resultat-enc-v878410.mal .res b{color:#B91C1C}
+html body .calc-dins-v878410{display:flex;flex-direction:column;gap:8px}
+html body .calc-dins-v878410 .tornar{align-self:flex-start;border:0;background:none;padding:4px 0;min-height:32px;color:var(--co-accent,#2563EB);font-weight:700;cursor:pointer}
+/* Despeses de l'expedient: les meves hores com a despesa */
+html body .hores-desp-v878410{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:10px;border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC;font-size:14px}
+html body .hores-desp-v878410>span{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+html body .hores-desp-v878410 .link{border:0;background:none;padding:4px 0;min-height:32px;color:var(--co-accent,#2563EB);font-weight:700;cursor:pointer}
+}
+@media (max-width:700px){
+html body .previst-v878410 .pi-xifres{grid-template-columns:repeat(2,minmax(0,1fr))}
+html body .previst-v878410 .pi-xifres b{font-size:16px}
+html body .resultat-enc-v878410{grid-template-columns:repeat(2,minmax(0,1fr))}
+html body .resultat-enc-v878410 .res{padding-left:0;border-left:0}
+html body .hores-desp-v878410>span{margin-left:0}
+}
