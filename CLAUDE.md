@@ -1827,6 +1827,30 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       amb la capçalera `x-no-compta`): en 100 s oberta, de 7,9 MB a 14 kB; un canvi de l'Héctor fa baixar només aquella obra; el que es desa
       aquí no es torna a baixar; els canvis d'un altre aparell continuen arribant.
     - Encara gasta: la còpia diària (`tools/copies`, uns 32 MB al dia sense comprimir) i les fotos i documents en obrir obres en un aparell nou.
+  - **V87.409 · Signar a distància amb un enllaç** (l'Héctor, 27/10/2026: «fes-ho… si cadascun me'l signa i me l'envia, allà surten totes les
+    firmes? Perquè si som 4 agents rebré quatre PDF»: per correu, sí, 4 PDF que no es poden ajuntar; amb l'enllaç, un de sol):
+    - **Núvol** (`supabase/aco_signa_v878409.sql`, **l'ha d'executar l'Héctor**; fins llavors l'app envia el PDF per correu com a la V87.408,
+      `senseServidor` = 404/PGRST202): taula `aco_signa` (una petició per document: `token` de 64, `pdf` bytea, `versio`, `signades`,
+      `estat`, `expira` 60 dies; RLS del propietari, `grant` a `authenticated`). Funcions del propietari (security invoker): `aco_signa_crea`,
+      `_llista` (sense PDF), `_baixa`, `_puja` (amb la versió), `_tanca` (l'esborra). Sense compte (security definer, només amb la clau):
+      `aco_signa_veure(token)` i `aco_signa_signa(token, versio, pdf, qui)`, que només accepta un PDF que **comenci exactament per l'anterior**
+      (la signatura s'afegeix al final), més gran (com a molt +5 MB) i amb la mateixa versió. Les caducades fa més de 30 dies s'esborren soles.
+    - **L'app** (`SignaturaCert878408`): «Enviar per signar» crea l'enllaç (`https://app-control-obres-hc.onrender.com/#signa=<token>`,
+      `enllacSigna`; `window.__acoSignaBase878409` a les proves) i obre el correu sense adjunt amb l'enllaç; línia «Enllaç per signar a
+      distància · fins al …» amb «Copiar l'enllaç» i «Tancar l'enllaç». A l'obra: `signaRemot878409[«tipus-ref»] = {id, token, versio, rols,
+      estat: obert|complet|tancat…}` (`window.__acoSignaRemot878409`). L'App (`syncSigna0878409`, una sola alhora: `__acoSyncSigna878409`) mira
+      cada 2 min, en tornar a l'app i en obrir la finestra si hi ha versió nova, baixa el PDF, en comprova les signatures, el desa a Documents
+      (id fix per versió), aplica «Signada»/«Acceptat» i, si ja hi són tots, tanca l'enllaç. Signar a l'app primer baixa el de l'enllaç i
+      després hi puja el nou (`pujaRemot`; si l'acaba, tanca l'enllaç). Un PDF pujat que no comença pel d'ara (signat en paral·lel) es desa a
+      part (`linkedType:"signat878408-apart"`, «còpia a part»). «Fer un PDF nou per signar» tanca l'enllaç.
+    - **La pàgina de l'enllaç** (`src/SignaRemot.jsx`; `main.jsx` la carrega amb `#signa=` sense arrencar l'app ni el núvol del compte): el
+      logo i el color de qui l'envia, el títol, els requadres amb «Signar aquí amb l'AutoFirma» (al mòbil «Pendent» i «obre aquest enllaç en un
+      ordinador»), el PDF dibuixat (pdf.js), «Descarregar el PDF», Català/Castellano (de sèrie, l'idioma dels documents de l'obra; si l'enllaç no
+      val, el del navegador). Si algú ha signat mentrestant: «Una altra persona ha signat mentrestant. Torna a signar.» Enllaç caducat o tancat:
+      «Aquest enllaç ja no és vàlid.» `alwaysCreateRevision` (`propsSig`, `src/signaComu.js`): la primera signatura també s'afegeix al final.
+    - Estils `src/theme-v878409.css`. Prova: `signaremot409test.mjs` (32, la mateixa AutoFirma de prova). El Supabase de proves té les funcions
+      `aco_signa_*`, `GET /__signa` i `POST /__signa {off}` / `{id, caduca}`; `SENSE_SIGNA=1` = sense l'SQL. Adaptada `signatura408test`
+      (amb `SENSE_SIGNA`: el PDF per correu).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -1987,7 +2011,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (27/10/2026, després de la V87.408.1)
+### Per començar una sessió nova (27/10/2026, després de la V87.409)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
@@ -1995,11 +2019,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 **Urgent (27/10/2026): Supabase.** La transferència del mes (11,56 GB de 5,5 GB) ja és gastada: si l’Héctor no passa a **Pro** (25 $ al mes,
 250 GB, límit de despesa activat de sèrie) abans del 28/10, el núvol de tots els comptes pot quedar aturat (errors 402) fins al cicle de
 facturació següent. És decisió seva (pagament): Supabase › organització «Héctor» › Billing. La V87.408.1 treu la causa (vegeu-la).
-La **V87.409** (signar a distància amb un enllaç) és escrita però **sense provar ni pujar** (`git stash` «V87.409 signar a distancia», o
-ja tornada a posar a la carpeta): falta `tools/proves/signaremot409test.mjs`, adaptar el pas 4 de `signatura408test`, i l’SQL
-`supabase/aco_signa_v878409.sql` (l’ha d’executar l’Héctor).
+La **V87.409** (signar a distància amb un enllaç) és publicada, però fins que l’Héctor executi `supabase/aco_signa_v878409.sql` a
+Supabase › SQL Editor, «Enviar per signar» continua enviant el PDF per correu.
 
-**Estat (publicada la V87.408.1 a Render):**
+**Estat (publicada la V87.409 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2012,7 +2035,8 @@ ja tornada a posar a la carpeta): falta `tools/proves/signaremot409test.mjs`, ad
 - **Per a tothom:** mòbil i iPad «tot recollit», accessibilitat (contrast, 12 px, 36 px per al dit, focus), Ajustos per blocs
   (Imatge de l’empresa amb logo i color, Documents amb 7 estils d’encapçalament, accessos ràpids…), castellà, sense cobertura.
 - **Enviar i signar:** tots els documents s’envien des del Gmail amb el seu PDF (V87.405–407; l’Héctor ja ha enviat una acta així);
-  l’acta, el pressupost i la certificació se signen amb certificat digital amb l’AutoFirma (V87.408; falta que l’Héctor ho provi amb el seu).
+  l’acta, el pressupost i la certificació se signen amb certificat digital amb l’AutoFirma (V87.408; falta que l’Héctor ho provi amb el seu),
+  també a distància amb un enllaç perquè tothom signi el mateix PDF (V87.409; falta que l’Héctor executi l’SQL).
 - **No fet:** perfils autònom i promotor amb compte propi, IA al servidor (albarans, pressupost-ia: cal la clau d’Anthropic i el sí de
   l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 
@@ -2022,14 +2046,13 @@ ja tornada a posar a la carpeta): falta `tools/proves/signaremot409test.mjs`, ad
      validades, per a tothom.
    - ~~Pressupost dictat~~ (V87.401). ~~WhatsApp i pressupost acceptat/rebutjat~~ (V87.402). ~~Signatura a la pantalla~~ (V87.403).
    - ~~Enviar amb el PDF (Gmail)~~ (V87.405–407). ~~Signatura amb certificat amb l’AutoFirma~~ (V87.408, l’Héctor 27/10/2026: «sempre amb
-     certificat»). **Preguntar-li:** el «Conforme del client» del parte (encara a la pantalla: no hi ha document ni AutoFirma al mòbil); si vol
-     l’enllaç per signar a distància (cada destinatari obre un enllaç i signa amb la seva AutoFirma sense haver de tornar el PDF per
-     correu: cal una part petita al servidor, Supabase, sense cost).
+     certificat»). ~~Enllaç per signar a distància~~ (V87.409; l’Héctor ha d’executar `supabase/aco_signa_v878409.sql`). **Preguntar-li:** el
+     «Conforme del client» del parte (encara a la pantalla: no hi ha document ni AutoFirma al mòbil).
    - ~~Comptes del Pol, manual d’ús i vídeos~~ (26/10/2026; vegeu la V87.404): **l’Héctor ha de crear els dos comptes al panell de
      Supabase** (`GUIES_USUARIS\COMPTES_POL.txt`) i compartir el manual i la pàgina dels vídeos amb el Pol.
    - Després: descompte al pressupost d’obra · obra nova en
      3 passos · revisor del pressupost · parte per veu · previsió de caixa. Estudi del mercat: https://claude.ai/artifact/67earcqHnbhfC3RQyj4nv6.
-   - **Esperen (cost o servidor):** IA directa, VeriFactu, bot de WhatsApp, banc, cobrament en línia, signatura a distància, fitxatge fase 2.
+   - **Esperen (cost o servidor):** IA directa, VeriFactu, bot de WhatsApp, banc, cobrament en línia, fitxatge fase 2.
 2. **Comodoro:** fet a les V87.398–399 («Tornar a llegir els descompostos d’un Excel…»: 63 partides, 62 al cèntim); falta que l’Héctor hi triï l’Excel v07.
 3. **Repàs complet de les proves: fet a la V87.399** (26/10/2026, `D:\aco-tmp\totes-wt.sh` a `D:\aco-tmp\wt379`, resultat a
    `D:\aco-tmp\totes-399.txt`): **111 proves, totes en verd**. A la tanda en van fallar 5 (honoraris332, pdfpressupost, seguiment321,

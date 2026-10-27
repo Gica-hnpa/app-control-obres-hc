@@ -113,22 +113,30 @@ import "./theme-v878403.css";
 import "./theme-v878405.css";
 import "./theme-v878406.css";
 import "./theme-v878408.css";
+import "./theme-v878409.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
 import { setLang, readLang } from "./i18n.js";
 
-// V87.252 · primer es carreguen les dades desades a l'ordinador (si l'app s'ha obert
-// amb OBRIR_APP.bat) i després l'app, perquè llegeixi les dades bones des del principi.
-// V87.257 · després, el núvol: baixa el que s'hagi fet des d'altres aparells.
-// V87.258 · abans de tot, l'espai gran (IndexedDB) en lloc dels 5 MB del navegador.
-// V87.268 · i l'idioma de l'usuari (o de l'aparell), perquè les finestres del núvol ja surtin en el seu idioma.
-startBigStore().catch(() => false).then(() => { try { setLang(readLang(sessionStorage.getItem("aco_current_user8779") || "")); } catch {} }).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
-  const { default: App } = await import("./App.jsx");
-  createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
-  // V87.271 · App sense cobertura: a la versió publicada, l'app es guarda dins de l'aparell (sw.js) i s'obre encara
-  // que no hi hagi cobertura. No a OBRIR_APP.bat (allà sempre hi ha el servidor de l'ordinador).
-  if (import.meta.env.PROD && "serviceWorker" in navigator && !window.__acoLocalDisk) {
-    navigator.serviceWorker.register("./sw.js").catch(e => console.warn("Sense cobertura: no s'ha pogut preparar", e));
-  }
-});
+// V87.409 · L'enllaç per signar a distància («…/#signa=<clau>»): només la pàgina per signar, sense arrencar l'app (ni les dades
+// de l'aparell ni el núvol del compte que hi pugui haver en aquest navegador).
+const signa878409 = (() => { try { return (/^#signa=([A-Za-z0-9_-]{40,})/.exec(location.hash || "") || [])[1] || ""; } catch { return ""; } })();
+if (signa878409) {
+  import("./SignaRemot.jsx").then(({ default: SignaRemot }) => createRoot(document.getElementById("root")).render(<React.StrictMode><SignaRemot token={signa878409} /></React.StrictMode>));
+} else {
+  // V87.252 · primer es carreguen les dades desades a l'ordinador (si l'app s'ha obert
+  // amb OBRIR_APP.bat) i després l'app, perquè llegeixi les dades bones des del principi.
+  // V87.257 · després, el núvol: baixa el que s'hagi fet des d'altres aparells.
+  // V87.258 · abans de tot, l'espai gran (IndexedDB) en lloc dels 5 MB del navegador.
+  // V87.268 · i l'idioma de l'usuari (o de l'aparell), perquè les finestres del núvol ja surtin en el seu idioma.
+  startBigStore().catch(() => false).then(() => { try { setLang(readLang(sessionStorage.getItem("aco_current_user8779") || "")); } catch {} }).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
+    const { default: App } = await import("./App.jsx");
+    createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
+    // V87.271 · App sense cobertura: a la versió publicada, l'app es guarda dins de l'aparell (sw.js) i s'obre encara
+    // que no hi hagi cobertura. No a OBRIR_APP.bat (allà sempre hi ha el servidor de l'ordinador).
+    if (import.meta.env.PROD && "serviceWorker" in navigator && !window.__acoLocalDisk) {
+      navigator.serviceWorker.register("./sw.js").catch(e => console.warn("Sense cobertura: no s'ha pogut preparar", e));
+    }
+  });
+}

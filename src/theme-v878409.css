@@ -1,0 +1,55 @@
+/* V87.409 · Signar a distància: la pàgina de l'enllaç (.sr409) i, a l'app, la línia de l'enllaç i les còpies signades a part */
+
+/* ---- la pàgina per signar (qui rep l'enllaç; no és dins de l'app) ---- */
+body.sr409-body{background:#eef2f6!important;margin:0}
+.sr409{--sr-acc:#1E3A8A;--sr-fg:#0f172a;--sr-fg2:#475569;--sr-fg3:#5F7075;--sr-line:#d6dde7;--sr-bg:#eef2f6;--sr-card:#fff;--sr-ok:#166534;--sr-okbg:#dcfce7;--sr-mal:#b91c1c;--sr-malbg:#fee2e2;
+  min-height:100vh;background:var(--sr-bg);color:var(--sr-fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.sr409 *{box-sizing:border-box}
+.sr409 .barra{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--sr-card);border-bottom:3px solid var(--sr-acc);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.sr409 .marca{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--sr-acc);min-width:0}
+.sr409 .marca img{display:block;height:40px;width:auto;max-width:180px;object-fit:contain}
+.sr409 .marca b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr409 .idiomes{display:flex;gap:2px;background:#f1f5f9;border-radius:999px;padding:3px;flex-shrink:0}
+.sr409 .idiomes button{border:0;background:transparent;color:var(--sr-fg2);font:inherit;font-size:13px;font-weight:700;padding:6px 10px;border-radius:999px;min-height:32px;cursor:pointer}
+.sr409 .idiomes button.on{background:var(--sr-card);color:var(--sr-fg);box-shadow:0 1px 3px rgba(15,23,42,.15)}
+.sr409 .cos{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:16px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+.sr409 .targeta{background:var(--sr-card);border:1px solid var(--sr-line);border-radius:16px;padding:16px 18px;box-shadow:0 1px 4px rgba(15,23,42,.05);min-width:0}
+.sr409 .targeta.buida{display:flex;flex-direction:column;gap:6px}
+.sr409 .targeta.buida span{color:var(--sr-fg2)}
+.sr409 .cap small{display:block;text-transform:uppercase;letter-spacing:.06em;font-size:12px;font-weight:800;color:var(--sr-acc)}
+.sr409 .cap h1{margin:4px 0 6px;font-size:24px;line-height:1.2;text-wrap:balance}
+.sr409 .cap p{margin:2px 0;color:var(--sr-fg2)}
+.sr409 h2{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:17px}
+.sr409 .xip{font-size:12px;font-weight:800;background:#f1f5f9;color:var(--sr-fg2);border-radius:999px;padding:3px 9px}
+.sr409 .rols{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.sr409 .rols li{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--sr-line);border-radius:12px;padding:10px 12px}
+.sr409 .rols li.ok{border-color:#86efac;background:#f0fdf4}
+.sr409 .rols li.mal{border-color:#fca5a5;background:#fef2f2}
+.sr409 .rols .r{display:flex;flex-direction:column;min-width:0}
+.sr409 .rols .r small,.sr409 .rols .qui small{color:var(--sr-fg3);font-size:13px}
+.sr409 .rols .qui{display:flex;align-items:flex-start;gap:8px;color:var(--sr-ok);min-width:0}
+.sr409 .rols li.mal .qui{color:var(--sr-mal)}
+.sr409 .rols .qui > span{display:flex;flex-direction:column;color:var(--sr-fg)}
+.sr409 .signa{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;background:var(--sr-acc);color:#fff;font:inherit;font-weight:800;padding:10px 14px;min-height:40px;cursor:pointer}
+.sr409 .signa:disabled{opacity:.55;cursor:default}
+.sr409 .pend{font-size:13px;font-weight:700;color:var(--sr-fg3)}
+.sr409 .estat{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 0;color:var(--sr-fg2);font-weight:700}
+.sr409 .estat.ok{color:var(--sr-ok)}
+.sr409 .err{margin:12px 0 0;background:var(--sr-malbg);color:var(--sr-mal);border-radius:10px;padding:10px 12px;font-weight:700}
+.sr409 .nota{margin:12px 0 0;color:var(--sr-fg3);font-size:13px}
+.sr409 a{color:var(--sr-acc);font-weight:700}
+.sr409 .link{border:0;background:none;color:var(--sr-acc);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer;padding:0}
+.sr409 .doc-cap{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.sr409 .sec{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--sr-line);background:var(--sr-card);color:var(--sr-fg);font:inherit;font-weight:800;border-radius:10px;padding:8px 12px;min-height:38px;cursor:pointer}
+.sr409 .pdf{display:flex;flex-direction:column;gap:10px;background:#e2e8f0;border-radius:10px;padding:8px;min-height:120px}
+.sr409 .pdf canvas{display:block;background:#fff;box-shadow:0 1px 4px rgba(15,23,42,.18);border-radius:2px;max-width:100%}
+.sr409 .peu{margin:0;text-align:center;color:var(--sr-fg3);font-size:13px}
+.sr409 :focus-visible{outline:3px solid var(--sr-acc)!important;outline-offset:2px}
+@media(max-width:560px){.sr409 .cap h1{font-size:20px}.sr409 .targeta{padding:14px}.sr409 .rols li{align-items:flex-start}.sr409 .signa{width:100%;justify-content:center}}
+
+/* ---- a l'app: l'enllaç per signar i les còpies signades a part ---- */
+.sigcert-v878408 .enllac-v878409{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px dashed #93c5fd;background:#eff6ff;border-radius:12px;padding:8px 12px;color:#1e3a8a;font-size:13px}
+.sigcert-v878408 .enllac-v878409 > span{flex:1;min-width:180px}
+.sigcert-v878408 .enllac-v878409 .link{font-size:13px}
+.sigcert-v878408 .apart-v878409{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:#9a3412;background:#ffedd5;border-radius:999px;padding:1px 8px}

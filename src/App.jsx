@@ -18,6 +18,7 @@ import {dadesDemo} from "./dadesDemo.js";
 import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
 import * as af878408 from "./autofirma.js";
 import {llegeixSignatures,marcaDe} from "./signaturesPdf.js";
+import {propsSig as propsSigC878409,ajuntaSig as ajuntaSigC878409,comencaAmb as comencaAmb878409,enllacSigna as enllacSigna878409,senseServidor as senseServidor878409} from "./signaComu.js";
 import * as gmail878405 from "./googleMail.js";
 import {configured as gcalConfigured,connected as gcalConnected,connect as gcalConnect,syncGoogle,primaryEvents as gcalPrimary,potReconnectar as gcalPotReconnectar,prepara as gcalPrepara,recorda as gcalRecorda} from "./googleCal.js";
 import {ECONOMIC_RECOVERY_V87214} from "./economicRecoveryV87214.js";
@@ -29,7 +30,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.408.1";
+const APP_VERSION878264="87.409";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3087,26 +3088,8 @@ function Fotografies8761({data,setData}){
 function carpetaDe878408(obra,data,pref){const ids=documentFolders8775(obra,data||{}).map(f=>f.id);return ids.includes(pref)?pref:ids.includes("01_DOCUMENTACIO_PREVIA")?"01_DOCUMENTACIO_PREVIA":(ids[0]||pref)}
 function signatDe878408(obraId,tipus,ref){try{return (window.__acoSignats878408?.(obraId)||[]).find(x=>x?.signat878408?.tipus===tipus&&String(x.signat878408.ref)===String(ref))||null}catch{return null}}
 async function hashText878408(s){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(s||""))));return [...h].slice(0,8).map(x=>x.toString(16).padStart(2,"0")).join("")}
-// el requadre (mm des de dalt a l'esquerra) en punts del PDF (des de baix a l'esquerra), una mica més petit perquè no toqui la vora
-function propsSig878408({motiu,obra,s}){
-  const p={signReason:motiu,signatureProductionCity:obra?.poblacio||"",layer2Text:"Signat digitalment per\n$$SUBJECTCN$$\n$$SIGNDATE=dd/MM/yyyy HH:mm$$",layer2FontSize:"7",layer2FontFamily:"1"};
-  if(s){const k=72/25.4,m=1.2;Object.assign(p,{signaturePage:String(s.pag),signaturePositionOnPageLowerLeftX:String(Math.round((s.x+m)*k)),signaturePositionOnPageLowerLeftY:String(Math.round((297-s.y-s.h+m)*k)),signaturePositionOnPageUpperRightX:String(Math.round((s.x+s.w-m)*k)),signaturePositionOnPageUpperRightY:String(Math.round((297-s.y-m)*k))})}
-  return p;
-}
-const paraules878408=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z0-9]+/g," ").split(" ").filter(w=>w.length>2);
-// a qui (rol) correspon una signatura: pel NIF o pel nom de qui ha de signar cada requadre
-function rolDe878408(sg,rols,usats){
-  const n=new Set(paraules878408(sg.nom+" "+sg.org));let best=null,bs=0;
-  for(const r of rols){if(usats.has(r.k))continue;if(r.nif&&sg.nif&&String(r.nif).toUpperCase()===sg.nif)return r.k;const w=paraules878408(r.nom);const sc=w.length?w.filter(x=>n.has(x)).length/w.length:0;if(sc>bs){bs=sc;best=r.k}}
-  return bs>=0.5?best:null;
-}
-// la llista de signatures d'un PDF signat: les d'abans conserven el seu rol; la nova, el triat (o el que li toqui pel nom)
-function ajuntaSig878408(llegides,abans,rols,nouRol){
-  const usats=new Set((abans||[]).map(x=>x.rol).filter(Boolean));
-  return llegides.map((p,i)=>{const o=(abans||[])[i]&&(abans[i].nif||"")===(p.nif||"")?abans[i]:null;let rol=o?.rol||"";
-    if(!rol&&nouRol&&i===llegides.length-1&&!usats.has(nouRol))rol=nouRol;if(!rol)rol=rolDe878408(p,rols,usats)||"";if(rol)usats.add(rol);
-    return {rol,nom:p.nom,nif:p.nif,org:p.org,emissor:p.emissor,quan:p.quan,valida:!!p.valida,integre:p.integre,via:o?.via||(nouRol&&i===llegides.length-1?"autofirma":"pujat")}});
-}
+// el requadre, les signatures i a qui toca cadascuna: src/signaComu.js (els fa servir també la pàgina per signar a distància)
+const propsSig878408=propsSigC878409,ajuntaSig878408=ajuntaSigC878409;
 function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",carpeta="01_DOCUMENTACIO_PREVIA",inline=false,close,onSignat,abans}){
   const obraId=obra?.id;
   const[rec,setRec]=useState(()=>signatDe878408(obraId,tipus,refId));
@@ -3120,15 +3103,28 @@ function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",car
   const atura=useRef(false);
   const pc=af878408.potSignar();
   const sigs=rec?.signat878408?.signatures||[];
+  // V87.409 · signar a distància: l'enllaç d'aquest document (obra › signaRemot878409[«tipus-ref»])
+  const forcaNou=useRef(false);const[rev,setRev]=useState(0);
+  const recRef=useRef(rec);recRef.current=rec;const onSignatRef=useRef(onSignat);onSignatRef.current=onSignat;
+  const clauR=`${tipus}-${String(refId)}`;
+  const llegeixRemot=()=>window.__acoSignaRemot878409?.get(obraId,clauR)||null;
+  const[remot,setRemot]=useState(llegeixRemot);
+  const[copiat,setCopiat]=useState(false);
+  const aparts=(window.__acoSignatsApart878409?.(obraId)||[]).filter(x=>x?.signat878408?.tipus===tipus&&String(x.signat878408.ref)===String(refId));
+  const sigsApart=aparts.flatMap(a=>(a.signat878408?.signatures||[]).map(s=>({...s,doc:a.id}))).filter(s=>s.nif?!sigs.some(x=>x.nif===s.nif):true);
   const canviat=!!rec&&!!hash&&!!rec.signat878408?.hash&&rec.signat878408.hash!==hash;
   const marca=h=>`${tipus}-${String(refId).replace(/[^A-Za-z0-9_.-]/g,"")}:${h}`;
   useEffect(()=>{let viu=true;setBase(null);setErr("");(async()=>{
     const h=await hashText878408(typeof clau==="function"?clau():clau);if(!viu)return;setHash(h);
-    const r=nou?null:signatDe878408(obraId,tipus,refId);setRec(r);
+    const r=forcaNou.current?null:signatDe878408(obraId,tipus,refId);forcaNou.current=false;setRec(r);
     try{
       if(r){const f=await getDocFile(r.id,obraId);if(!viu)return;if(f){setBase({bytes:new Uint8Array(await f.arrayBuffer()),signes:r.signat878408?.signes||[]});return}setErr(t("No s’ha pogut obrir el PDF signat en aquest aparell."));return}
       const x=await htmlAPdfPerSignar(fesHtml(),{marca:marca(h),titol});if(viu)setBase(x);
-    }catch(e){console.warn(e);if(viu)setErr(t("No s’ha pogut preparar el PDF."))}})();return()=>{viu=false}},[obraId,tipus,refId,nou]);
+    }catch(e){console.warn(e);if(viu)setErr(t("No s’ha pogut preparar el PDF."))}})();return()=>{viu=false}},[obraId,tipus,refId,nou,rev]);
+  // quan arriben signatures fetes a distància (les baixa l'App), es torna a llegir el PDF signat
+  useEffect(()=>{const h=e=>{const d=e?.detail;if(d?.obraId===obraId&&d?.clau===clauR){setRemot(llegeixRemot());if(d.rec){setRev(x=>x+1);onSignatRef.current?.(d.rec)}}};window.addEventListener("aco-signa-remot-878409",h);
+    if(llegeixRemot()?.estat==="obert")window.__acoSyncSigna878409?.(obraId,clauR).catch(()=>{});
+    return()=>window.removeEventListener("aco-signa-remot-878409",h)},[obraId,clauR]);
   const nomArxiu=n=>nomPdf(titol+(n?` (${t("signat")})`:""));
   async function desa(bytes,signes,signatures){
     const nom=nomArxiu(true),now=new Date().toISOString();
@@ -3144,14 +3140,18 @@ function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",car
     const ses=af878408.obre();                 // dins del toc: el navegador pregunta «Obrir Autofirma?»
     setOcupat(true);atura.current=false;
     try{
-      let b=baseRef.current;for(let i=0;!b&&i<120;i++){await new Promise(r=>setTimeout(r,500));b=baseRef.current}
+      let b=null,ara=recRef.current?.signat878408?.signatures||[];
+      if(llegeixRemot()?.estat==="obert"){const nb=await window.__acoSyncSigna878409?.(obraId,clauR).catch(()=>null);if(nb?.bytes){b={bytes:nb.bytes,signes:nb.signes||[]};ara=nb.rec?.signat878408?.signatures||ara}}
+      if(!b){b=baseRef.current;for(let i=0;!b&&i<120;i++){await new Promise(r=>setTimeout(r,500));b=baseRef.current}}
       if(!b)throw new Error(t("No s’ha pogut preparar el PDF."));
+      if(ara.some(x=>x.rol===rol.k&&x.valida))throw new Error(t("Aquest requadre ja l’ha signat algú a distància."));
       const s=(b.signes||[]).find(x=>x.rol===rol.k);
       const r=await af878408.signaPdf(b.bytes,{ses,props:propsSig878408({motiu:[titol,i18nT(rol.label)].filter(Boolean).join(" · "),obra,s}),atura:()=>atura.current,onEstat:setEstat});
       setEstat("desant");
       const ll=await llegeixSignatures(r.pdf);
-      if(ll.length<=sigs.length)throw new Error(t("El PDF que ha tornat l’AutoFirma no porta la signatura nova."));
-      await desa(r.pdf,b.signes,ajuntaSig878408(ll,sigs,rols,rol.k));setEstat("fet");
+      if(ll.length<=ara.length)throw new Error(t("El PDF que ha tornat l’AutoFirma no porta la signatura nova."));
+      const ns=ajuntaSig878408(ll,ara,rols,rol.k);await desa(r.pdf,b.signes,ns);setEstat("fet");
+      await pujaRemot(r.pdf,ns);
     }catch(e){console.warn(e);setEstat("");if(e?.codi==="aturat")return;setErr(e?.codi==="noObre"?"noObre":e?.codi==="cancel"?t("S’ha cancel·lat a l’AutoFirma."):(e?.message||t("No s’ha pogut signar.")))}
     finally{setOcupat(false)}
   }
@@ -3163,29 +3163,71 @@ function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",car
       const ll=await llegeixSignatures(bytes);
       if(!ll.length)throw new Error(t("Aquest PDF no porta cap signatura amb certificat."));
       const m=marcaDe(bytes);if(m&&!m.startsWith(marca("").replace(/:$/,"")+":"))throw new Error(t("Aquest PDF és d’un altre document."));
-      if(ll.length<sigs.length)throw new Error(t("Aquest PDF té menys signatures que el que ja hi ha desat."));
-      await desa(bytes,baseRef.current?.signes||rec?.signat878408?.signes||[],ajuntaSig878408(ll,sigs,rols,null));setEstat("pujat");
+      if(llegeixRemot()?.estat==="obert")await window.__acoSyncSigna878409?.(obraId,clauR).catch(()=>null);
+      const ara=recRef.current?.signat878408?.signatures||[];
+      let bb=baseRef.current?.bytes||null;if(ara.length&&!bb){const fr=recRef.current?await getDocFile(recRef.current.id,obraId):null;bb=fr?new Uint8Array(await fr.arrayBuffer()):null}
+      if(ara.length&&bb&&!comencaAmb878409(bytes,bb)){await desaApart(bytes,ll);setEstat("apart");return}
+      if(ll.length<ara.length)throw new Error(t("Aquest PDF té menys signatures que el que ja hi ha desat."));
+      const ns=ajuntaSig878408(ll,ara,rols,null);await desa(bytes,baseRef.current?.signes||recRef.current?.signat878408?.signes||[],ns);setEstat("pujat");
+      await pujaRemot(bytes,ns);
     }catch(x){setErr(x?.message||String(x))}finally{setOcupat(false)}
   }
   function canviaRol(i,k){if(!rec)return;const ll=sigs.map((s,j)=>j===i?{...s,rol:k}:(k&&s.rol===k?{...s,rol:""}:s));const r={...rec,signat878408:{...rec.signat878408,signatures:ll}};window.__acoDesaSignat878408?.(obraId,r);setRec(r);onSignat?.(r)}
   function descarrega(){const b=baseRef.current;if(b)descarregaBlob878405(new Blob([b.bytes],{type:"application/pdf"}),nomArxiu(sigs.length))}
-  function enviaPerSignar(){const b=baseRef.current;if(!b)return;
+  function enviaPdf(b){
     window.__acoEnviar878407?.({title:`${titol} · ${t("per signar")}`,obra,pdf:{blob:new Blob([b.bytes],{type:"application/pdf"}),nom:nomArxiu(sigs.length)},
       message:t("Bon dia,\n\nUs envio {doc} perquè el signeu amb el vostre certificat digital (amb l’AutoFirma: «Firmar» i triar aquest PDF). Un cop signat, responeu aquest correu amb el PDF signat.\n\nSalutacions,\n{signa}")})}
-  function deNou(){if(!rec)return;if(!confirm(t("Fer un PDF nou amb el document d’ara? El signat d’abans es queda a Documents.")))return;window.__acoDesaSignat878408?.(obraId,{...rec,linkedType:"signat878408-anterior",nom:rec.nom.replace(/\.pdf$/i,"")+` (${t("anterior")}).pdf`});setRec(null);setNou(n=>n+1)}
+  function infoRemot(b){const e=emissorTecnic878396()||{};const logo=String(e.logo||"");
+    return {titol,emissor:{nom:e.nom||"",mail:e.mail||"",tel:e.tel||"",logo:logo.length<250000?logo:"",color:colorDocs878396()},obra:{nom:obra?.nom||"",adreca:obra?.adreca||"",poblacio:obra?.poblacio||""},
+      idioma:docLang878283(obra),rols:rols.map(r=>({k:r.k,label:r.label,nom:r.nom||"",nif:r.nif||""})),signes:b.signes||[],signatures:sigs.map(s=>({rol:s.rol,nom:s.nom,nif:s.nif,quan:s.quan}))}}
+  async function creaRemot(b){
+    const cl=window.__acoCloud;if(!cl?.rpc||!cl.status?.().connected){const e=new Error("sense");e.status=404;throw e}
+    const j=await cl.rpc("aco_signa_crea",{p_obra:obraId,p_ref:clauR,p_info:infoRemot(b),p_pdf:af878408.aB64(b.bytes)});
+    if(!j?.id||!j?.token)throw new Error(t("No s’ha pogut crear l’enllaç per signar."));
+    const rm={id:j.id,token:j.token,versio:j.versio||1,creat:new Date().toISOString(),expira:j.expira||"",tipus,ref:String(refId),titol,carpeta,hash:rec?.signat878408?.hash||hash,signes:b.signes||[],rols:rols.map(r=>({k:r.k,label:r.label,nom:r.nom||"",nif:r.nif||""})),estat:"obert"};
+    window.__acoSignaRemot878409?.set(obraId,clauR,rm);setRemot(rm);return rm;
+  }
+  // el PDF signat aquí (a l'app) també va a l'enllaç, perquè qui signi a distància ho faci a sobre; si ja hi són tots, l'enllaç es tanca
+  async function pujaRemot(bytes,ns){const rm=llegeixRemot();if(!rm||rm.estat!=="obert")return;
+    try{const j=await window.__acoCloud?.rpc?.("aco_signa_puja",{p_id:rm.id,p_versio:rm.versio,p_pdf:af878408.aB64(bytes)});
+      if(j?.ok){const totes=rols.length>0&&rols.every(x=>(ns||[]).some(s=>s.rol===x.k&&s.valida));
+        const n={...rm,versio:j.versio,estat:totes?"complet":"obert"};window.__acoSignaRemot878409?.set(obraId,clauR,n);setRemot(n);
+        if(totes)try{await window.__acoCloud?.rpc?.("aco_signa_tanca",{p_id:rm.id})}catch(e){console.warn(e)}}
+      else if(j?.error==="versio"){await window.__acoSyncSigna878409?.(obraId,clauR,{forca:true}).catch(()=>null);setEstat("");setErr(t("Algú ha signat a distància mentre signaves. Torna a signar."))}
+    }catch(e){console.warn(e)}}
+  async function enviaPerSignar(){const b=baseRef.current;if(!b||ocupat)return;setErr("");setEstat("");
+    let rm=remot&&remot.estat==="obert"?remot:null;
+    if(!rm){setOcupat(true);try{rm=await creaRemot(b)}catch(e){console.warn(e);setOcupat(false);if(senseServidor878409(e)){enviaPdf(b);return}setErr(t("No s’ha pogut crear l’enllaç per signar."));return}setOcupat(false)}
+    const link=enllacSigna878409(rm.token);
+    window.__acoEnviar878407?.({title:`${titol} · ${t("per signar")}`,obra,
+      message:t("Bon dia,\n\nUs envio {doc} per signar-lo amb el vostre certificat digital. Obriu aquest enllaç a l’ordinador (cal tenir l’AutoFirma):\n{enllac}\n\nTotes les signatures queden al mateix document.\n\nSalutacions,\n{signa}").split("{enllac}").join(link)})}
+  async function copiaEnllac(){const rm=llegeixRemot();if(!rm)return;const link=enllacSigna878409(rm.token);try{await navigator.clipboard.writeText(link);setCopiat(true);setTimeout(()=>setCopiat(false),2500)}catch{window.prompt(t("Copia l’enllaç:"),link)}}
+  async function tancaRemot(preg=true){const rm=llegeixRemot();if(!rm)return;if(preg&&!confirm(t("Tancar l’enllaç? Qui encara no hagi signat ja no ho podrà fer.")))return;
+    try{await window.__acoCloud?.rpc?.("aco_signa_tanca",{p_id:rm.id})}catch(e){console.warn(e)}
+    window.__acoSignaRemot878409?.set(obraId,clauR,null);setRemot(null)}
+  // un PDF que algú ha signat sense les signatures d'ara no s'hi pot ajuntar: es desa a Documents com a còpia a part
+  async function desaApart(bytes,ll){
+    const sg=ajuntaSig878408(ll,[],rols,null);const qui=ll[ll.length-1]?.nom||"";
+    const nom=nomPdf(titol+` (${t("signat a part")}${qui?" · "+qui:""})`),now=new Date().toISOString();
+    const id=`doc-signat-apart-${tipus}-${String(refId).replace(/[^A-Za-z0-9_-]/g,"")}-${Date.now()}`;
+    const f=new File([bytes],nom,{type:"application/pdf"});await saveDocFile(id,f,obraId);
+    window.__acoDesaSignat878408?.(obraId,{id,obraId,nom,tipus:"PDF",folder:carpeta,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size,storage:"indexeddb",hasFile:true,linkedType:"signat878408-apart",signat878408:{tipus,ref:String(refId),titol,signatures:sg}});
+  }
+  function deNou(){if(!rec)return;if(!confirm(t("Fer un PDF nou amb el document d’ara? El signat d’abans es queda a Documents.")))return;window.__acoDesaSignat878408?.(obraId,{...rec,linkedType:"signat878408-anterior",nom:rec.nom.replace(/\.pdf$/i,"")+` (${t("anterior")}).pdf`});if(llegeixRemot())tancaRemot(false);setRec(null);forcaNou.current=true;setNou(n=>n+1)}
   const quan=v=>v?new Date(v).toLocaleString(loc878272(),{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-  const textEstat={obrint:t("Obrint l’AutoFirma…"),certificat:t("Tria el certificat i signa a l’AutoFirma…"),rebut:t("Desant el PDF signat…"),desant:t("Desant el PDF signat…"),fet:t("Signat i desat a Documents."),pujat:t("PDF signat desat a Documents.")}[estat]||"";
+  const textEstat={obrint:t("Obrint l’AutoFirma…"),certificat:t("Tria el certificat i signa a l’AutoFirma…"),rebut:t("Desant el PDF signat…"),desant:t("Desant el PDF signat…"),fet:t("Signat i desat a Documents."),pujat:t("PDF signat desat a Documents."),apart:t("Aquest PDF s’ha signat sense les signatures d’ara i no s’hi pot ajuntar: s’ha desat a Documents com a còpia a part.")}[estat]||"";
   const sense=sigs.map((s,i)=>({...s,i})).filter(s=>!s.rol||!rols.some(r=>r.k===s.rol));
   const cos=<div className="sigcert-v878408">
     <div className="cap"><FileCheck size={18} aria-hidden="true"/><b>{titol}</b>{sigs.length>0&&<span className="xip">{sigs.length===1?t("1 signatura"):t("{n} signatures",{n:sigs.length})}</span>}</div>
     {canviat&&<div className="avis" role="alert"><AlertTriangle size={16} aria-hidden="true"/><span>{t("El document ha canviat després de signar-lo.")}</span><button type="button" className="link" onClick={deNou}>{t("Fer un PDF nou per signar")}</button></div>}
-    <ul className="rols">{rols.map(r=>{const s=sigs.find(x=>x.rol===r.k);
+    <ul className="rols">{rols.map(r=>{const s=sigs.find(x=>x.rol===r.k)||sigsApart.find(x=>x.rol===r.k);
       return <li key={r.k} className={s?(s.valida?"ok":"mal"):""}><span className="r"><b>{i18nT(r.label)}</b>{r.nom&&<small>{r.nom}</small>}</span>
-        {s?<span className="qui">{s.valida?<Check size={16} aria-hidden="true"/>:<AlertTriangle size={16} aria-hidden="true"/>}<span><b>{s.nom||s.org}{s.nif?` · ${s.nif}`:""}</b><small>{[quan(s.quan),s.emissor,s.valida?"":t("la signatura no és vàlida")].filter(Boolean).join(" · ")}</small></span></span>
+        {s?<span className="qui">{s.valida?<Check size={16} aria-hidden="true"/>:<AlertTriangle size={16} aria-hidden="true"/>}<span><b>{s.nom||s.org}{s.nif?` · ${s.nif}`:""}{s.doc&&<span className="apart-v878409">{t("còpia a part")}</span>}</b><small>{[quan(s.quan),s.emissor,s.valida?"":t("la signatura no és vàlida")].filter(Boolean).join(" · ")}</small></span></span>
         :pc?<button type="button" className="primary signa" disabled={ocupat||!base} onClick={()=>signa(r)}><Signature size={16} aria-hidden="true"/> {t("Signar amb AutoFirma")}</button>
         :<span className="pend">{t("Pendent")}</span>}</li>})}</ul>
     {sense.length>0&&<div className="altres"><b>{t("Altres signatures del PDF")}</b>{sense.map(s=><div key={s.i} className="alt"><span><b>{s.nom||s.org}{s.nif?` · ${s.nif}`:""}</b><small>{[quan(s.quan),s.emissor,s.valida?"":t("la signatura no és vàlida")].filter(Boolean).join(" · ")}</small></span>
       <select aria-label={t("De qui és")} value="" onChange={e=>canviaRol(s.i,e.target.value)}><option value="">{t("De qui és?")}</option>{rols.map(r=><option key={r.k} value={r.k}>{i18nT(r.label)}</option>)}</select></div>)}</div>}
+    {remot&&remot.estat==="obert"&&<div className="enllac-v878409"><Share2 size={16} aria-hidden="true"/><span>{t("Enllaç per signar a distància")}{remot.expira?` · ${t("fins al {d}",{d:new Date(remot.expira).toLocaleDateString(loc878272())})}`:""}</span><button type="button" className="link" onClick={copiaEnllac}>{copiat?t("Copiat"):t("Copiar l’enllaç")}</button><button type="button" className="link" onClick={()=>tancaRemot(true)}>{t("Tancar l’enllaç")}</button></div>}
     {(ocupat||estat)&&textEstat&&<p className={`estat ${["fet","pujat"].includes(estat)?"ok":""}`} role="status">{["fet","pujat"].includes(estat)&&<Check size={16} aria-hidden="true"/>}{textEstat}{ocupat&&["obrint","certificat"].includes(estat)&&<button type="button" className="link" onClick={()=>{atura.current=true}}>{t("Aturar")}</button>}</p>}
     {err==="noObre"?<div className="err" role="alert">{t("No s’ha pogut obrir l’AutoFirma.")} <a href={af878408.DESCARREGA} target="_blank" rel="noopener noreferrer">{t("Descarregar l’AutoFirma")}</a></div>:err?<div className="err" role="alert">{err}</div>:null}
     {!pc&&<p className="nota">{t("Per signar amb certificat cal l’ordinador amb l’AutoFirma.")}</p>}
@@ -4840,6 +4882,11 @@ const estatRef878402=useRef(null);
 // V87.403 · i, amb `sig`, la signatura d'acceptació del client (a les dades de l'obra, `signatures878403`)
 const sigRef878403=useRef(null);
 useEffect(()=>{const h=e=>{const d=e?.detail;if(d?.id&&d?.sig)sigRef878403.current?.(d.id,d.sig);if(d?.id&&d?.estat)estatRef878402.current?.(d.id,d.estat)};window.addEventListener("aco-estat-obra",h);return()=>window.removeEventListener("aco-estat-obra",h)},[]);
+// V87.409 · signar a distància: l'App mira cada 2 minuts (i en tornar a l'app) si algú ha signat amb l'enllaç i es baixa el PDF
+const odRef878409=useRef(odata);odRef878409.current=odata;const obRef878409=useRef(obres);obRef878409.current=obres;
+const vistes878409=useRef({});const cuaSigna878409=useRef(Promise.resolve());const remotAra878409=useRef({});
+useEffect(()=>{const fes=()=>{if(document.visibilityState!=="hidden")window.__acoSyncSigna878409?.().catch(()=>{})};const t0=setTimeout(fes,8000);const iv=setInterval(fes,120000);
+  const vis=()=>{if(document.visibilityState==="visible")fes()};document.addEventListener("visibilitychange",vis);return()=>{clearTimeout(t0);clearInterval(iv);document.removeEventListener("visibilitychange",vis)}},[]);
 function openObra(id){
   const now=new Date().toISOString();
   setObraId(id);setTab("Resum");setSelActa(null);
@@ -5717,6 +5764,59 @@ window.__acoEnviar878407=enviaDoc878407;
 window.__acoSignats878408=id=>((viewOdata878233?.[id]?.documents)||[]).filter(x=>x?.linkedType==="signat878408");
 window.__acoDesaSignat878408=(id,rec,{anterior=false}={})=>{if(!id||!rec)return;const igual=x=>x?.linkedType==="signat878408"&&x.signat878408?.tipus===rec.signat878408?.tipus&&String(x.signat878408?.ref)===String(rec.signat878408?.ref);
   setD(id,d=>{const docs=(d.documents||[]).filter(x=>x?.id!==rec.id);return {...d,documents:rec.linkedType==="signat878408"?[rec,...docs.filter(x=>anterior||!igual(x)).map(x=>igual(x)?{...x,linkedType:"signat878408-anterior"}:x)]:[rec,...docs]}})};
+// V87.409 · l'enllaç per signar a distància de cada document: obra › signaRemot878409[«tipus-ref»] = {id, token, versio, tipus, ref,
+// titol, carpeta, hash, signes, rols, estat: obert | complet | tancat}. «get» veu també el que s'acaba de desar (encara sense dibuixar).
+window.__acoSignatsApart878409=id=>((viewOdata878233?.[id]?.documents)||[]).filter(x=>x?.linkedType==="signat878408-apart");
+window.__acoSignaRemot878409={
+  get:(id,k)=>{const c=`${id}|${k}`;if(c in remotAra878409.current)return remotAra878409.current[c];return odRef878409.current?.[id]?.signaRemot878409?.[k]||null},
+  set:(id,k,v)=>{if(!id||!k)return;remotAra878409.current[`${id}|${k}`]=v||null;setD(id,d=>{const m={...(d.signaRemot878409||{})};if(v)m[k]=v;else delete m[k];return {...d,signaRemot878409:m}})}};
+async function syncSigna0878409(nomesObra,nomesClau,{forca=false}={}){
+  const cl=window.__acoCloud;if(!cl?.rpc||!cl.status?.().connected)return null;
+  const RS=window.__acoSignaRemot878409,od=odRef878409.current||{},meves=[];
+  for(const [oid,d] of Object.entries(od)){const m=d?.signaRemot878409;if(!m||typeof m!=="object")continue;
+    for(const k of Object.keys(m)){const v=RS.get(oid,k);if(v&&v.id&&v.estat==="obert"&&(!nomesObra||(oid===nomesObra&&(!nomesClau||k===nomesClau))))meves.push({oid,k,v})}}
+  if(!meves.length)return null;
+  let llista=null;try{llista=await cl.rpc("aco_signa_llista",{})}catch(e){return null}
+  const perId=new Map((Array.isArray(llista)?llista:[]).map(x=>[x.id,x]));
+  let res=null;
+  for(const {oid,k,v} of meves){
+    const sv=perId.get(v.id);
+    if(!sv){RS.set(oid,k,{...v,estat:"tancat"});continue}              // caducat o tancat al núvol
+    if(!forca&&!(sv.versio>Math.max(v.versio||0,vistes878409.current[v.id]||0)))continue;
+    let bx=null;try{bx=await cl.rpc("aco_signa_baixa",{p_id:v.id})}catch(e){console.warn(e)}
+    if(!bx?.pdf)continue;
+    vistes878409.current[v.id]=bx.versio;
+    const bytes=af878408.deB64(bx.pdf);
+    const ll=await llegeixSignatures(bytes);
+    const docs=(odRef878409.current?.[oid]?.documents)||[];
+    const rec=docs.find(x=>x?.linkedType==="signat878408"&&x.signat878408?.tipus===v.tipus&&String(x.signat878408.ref)===String(v.ref))||null;
+    const abans=rec?.signat878408?.signatures||[];
+    if(!ll.length||ll.length<abans.length||(ll.length===abans.length&&!forca)){RS.set(oid,k,{...v,versio:bx.versio});continue}
+    const sigs=ajuntaSig878408(ll,abans,v.rols||[],null,bx.signades||sv.signades||[]);
+    const nom=nomPdf(v.titol+` (${t("signat")})`),now=new Date().toISOString();
+    // el mateix nom a tots els aparells del compte: si dos aparells el baixen alhora, és el mateix document
+    const id=`doc-signat-${v.tipus}-${String(v.ref).replace(/[^A-Za-z0-9_-]/g,"")}-${String(v.id).slice(0,8)}-v${bx.versio}`;
+    const fl=new File([bytes],nom,{type:"application/pdf"});
+    try{await saveDocFile(id,fl,oid)}catch(e){console.warn(e);continue}
+    const r={id,obraId:oid,nom,tipus:"PDF",folder:v.carpeta||rec?.folder||"01_DOCUMENTACIO_PREVIA",data:new Date().toLocaleDateString("ca-ES"),createdAt:rec?.createdAt||now,updatedAt:now,size:fl.size,storage:"indexeddb",hasFile:true,linkedType:"signat878408",
+      signat878408:{tipus:v.tipus,ref:String(v.ref),titol:v.titol,hash:rec?.signat878408?.hash||v.hash||"",signes:v.signes||rec?.signat878408?.signes||[],signatures:sigs}};
+    window.__acoDesaSignat878408?.(oid,r);
+    const totes=(v.rols||[]).length>0&&(v.rols||[]).every(x=>sigs.some(sg=>sg.rol===x.k&&sg.valida));
+    RS.set(oid,k,{...v,versio:bx.versio,estat:totes?"complet":"obert"});
+    if(totes)try{await cl.rpc("aco_signa_tanca",{p_id:v.id})}catch(e){console.warn(e)}
+    // el que passa quan algú signa: l'acta, «Signada»; el pressupost signat pel client, l'obra «Acceptat»
+    if(sigs.slice(abans.length).some(x=>x.valida)){
+      if(v.tipus==="acta")setD(oid,d=>({...d,actes:(d.actes||[]).map(a=>String(a.id)===String(v.ref)?{...a,estat:["","Esborrany","Enviada"].includes(a.estat||"")?"Signada":a.estat}:a)}));
+      if(v.tipus==="pressupost"&&sigs.some(x=>x.rol==="client"&&x.valida)){const ob=(obRef878409.current||[]).find(o=>o.id===oid);const st=normalizeExpedientStatus878136(ob?.estat);
+        if(ob&&["","Pressupostat","Pendent de resposta","En revisió","No acceptat"].includes(st))try{window.dispatchEvent(new CustomEvent("aco-estat-obra",{detail:{id:oid,estat:"Acceptat"}}))}catch{}}
+    }
+    try{window.dispatchEvent(new CustomEvent("aco-signa-remot-878409",{detail:{obraId:oid,clau:k,rec:r}}))}catch{}
+    if(oid===nomesObra&&k===nomesClau)res={bytes,signes:r.signat878408.signes,rec:r};
+  }
+  return res;
+}
+// una sola feina alhora (el repàs de cada 2 minuts i el que demana la finestra de signatura)
+window.__acoSyncSigna878409=(...a)=>{const p=cuaSigna878409.current.then(()=>syncSigna0878409(...a));cuaSigna878409.current=p.catch(()=>{});return p};
 function addPressupostTecnic8742(p){
   const year=String(obra?.any||new Date().getFullYear());
   const numero=p.numero||nextGlobalDocNumber8745(odata,"pressupost",year);
@@ -16730,7 +16830,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.408.1",
+    app_version:"87.409",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
