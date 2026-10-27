@@ -1757,6 +1757,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       `collegiat`, com a la fitxa de l'agent de l'obra). `clientAsAgent878192` també porta el mòbil, la titulació i el col·legiat.
     - Estils `src/theme-v878406.css`. Prova: `assistents406test.mjs` (15). Adaptada `enviar405test`. Lliçó 12 (Visites) del manual i del vídeo
       posada al dia.
+  - **V87.407 · «Enviar» amb el PDF a tots els documents** (l'Héctor, 27/10/2026: «a l'hora d'enviar pressupostos, certificacions i
+    factures passa el mateix i no es pot»; l'acta ja l'enviava bé amb el Gmail): fins ara només l'acta i la vista d'un document passaven el
+    document a la finestra «Enviar» (`emailDraft(title,{doc})`); la resta l'obria sense PDF.
+    - **Ara porten el PDF:** el pressupost d'obra (Accions › Enviar, `budgetPrintDoc878179`), la certificació (la general a origen,
+      `certPdfDoc878407`, separat d'`openCertPdf87216`), la factura de l'obra (`docFactura878337`), la factura VeriFactu
+      (`enviaVF878407`), la proforma sense factura (botó nou, `docPf878407`), la Facturació de l'empresa (`docDe878407`, també des del seu
+      PDF), el pressupost i la factura d'honoraris de l'expedient i la vista prèvia d'aquests (`QuotePreview8743`, que surt a Pressupostos i
+      a Facturació del tècnic, ara amb «Enviar»), i la Facturació del tècnic (botó nou a cada factura). `docQuote878407(type,doc)`.
+    - Des de qualsevol pantalla: `window.__acoEnviar878407({title, obra, doc|pdf})` (`enviaDoc878407` de l'App: els destinataris de
+      l'obra que toca, no de l'oberta).
+    - La finestra «Enviar» accepta també un PDF ja fet (`draft.pdf.blob`): s'adjunta tal com és (per als PDF signats de la V87.408).
+    - Prova: `enviar407test.mjs` (23, Gmail simulat, constructora i tècnic). Adaptada `whatsapp402test` (amb el PDF, a l'ordinador el
+      WhatsApp el descarrega i la finestra ho diu).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -1917,7 +1930,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (26/10/2026, després de la V87.406)
+### Per començar una sessió nova (27/10/2026, després de la V87.407)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
