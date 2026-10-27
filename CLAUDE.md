@@ -32,7 +32,7 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
   `src/localDiskSync.js` → `..\DADES\app-control-obres-DADES-LOCALS.json`, còpia diària a
   `DADES\COPIES_AUTOMATIQUES`.
 - **Núvol: Supabase** (`src/cloudSync.js`, configuració a `src/cloudConfig.js`).
-  - Projecte: `https://bdjendguvbevyowghzfh.supabase.co` (pla gratuït; es pausa si fa 7 dies que no s’usa).
+  - Projecte: `https://bdjendguvbevyowghzfh.supabase.co` (projecte «app control de obras»; pla **Pro** des del 27/10/2026, Micro: ja no es pausa).
   - Auth amb correu i contrasenya. Els comptes d’empresa entren amb un usuari curt que es converteix en
     `<usuari>@usuaris.controlobres.app`.
   - Taula `aco_kv` (una fila per clau; `aco_odata` es parteix en una fila per obra) amb RLS per usuari.
@@ -2042,9 +2042,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Urgent (27/10/2026): Supabase.** La transferència del mes (11,56 GB de 5,5 GB) ja és gastada: si l’Héctor no passa a **Pro** (25 $ al mes,
-250 GB, límit de despesa activat de sèrie) abans del 28/10, el núvol de tots els comptes pot quedar aturat (errors 402) fins al cicle de
-facturació següent. És decisió seva (pagament): Supabase › organització «Héctor» › Billing. La V87.408.1 treu la causa (vegeu-la).
+**Supabase (27/10/2026, resolt):** pel correu de la transferència (11,56 GB de 5,5 GB), l’Héctor ha passat l’organització «Héctor» a **Pro**
+(25 $ al mes, 250 GB, límit de despesa activat) i el projecte de l’app (**«app control de obras»**, bdjendguvbevyowghzfh) a **Micro** (inclòs).
+El projecte vell **«app gestion de obras»** (de les primeres versions) és en una organització gratuïta, **pausat** (es pot reprendre fins a
+l’1/12/2027 i se’n poden baixar les dades). La V87.408.1 treu la causa del consum (vegeu-la).
 La **V87.409** (signar a distància amb un enllaç) és publicada, però fins que l’Héctor executi `supabase/aco_signa_v878409.sql` a
 Supabase › SQL Editor, «Enviar per signar» continua enviant el PDF per correu.
 
@@ -2172,7 +2173,7 @@ Supabase › SQL Editor, «Enviar per signar» continua enviant el PDF per corre
 - **Portal de client amb compte de núvol propi** (avui els clients només tenen el portal intern).
 - Obres compartides: hores, agenda i albarans no es comparteixen; «només consulta» no es bloqueja a la pantalla (l'Héctor, 25/10/2026:
   «de moment no»: no en comparteix cap així; si cal, un mode propi, no el `readOnly` del portal, que també limita les pestanyes).
-- Seguretat: considerar Supabase Pro en comercialitzar (les regles antigues d’arxius anònimes es van esborrar a la V87.262).
+- Seguretat: Supabase ja és Pro des del 27/10/2026 (les regles antigues d’arxius anònimes es van esborrar a la V87.262).
 - Dades a revisar amb l’Héctor: partides certificades per sobre del 100 %, codis repetits
   (CALA ROVIRA 01.16, Verbania 04.01), dates desordenades a JAVI PUADO i MARICEL.
 - La foto de COMODORO s’ha de tornar a posar (la vella no es va desar mai).
