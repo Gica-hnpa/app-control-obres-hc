@@ -1811,6 +1811,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       sense AutoFirma, pressupost, certificació, mòbil). L'Edge de la prova s'obre amb `--ignore-certificate-errors`; l'app agafa els ports i
       el llançament de `window.__acoAfirmaPorts878408`, `__acoAfirmaObre878408` i `__acoAfirmaEspera878408`. Adaptada `signatura403test`
       (7: ara només el parte i que el pressupost té «Signar amb certificat…»).
+  - **V87.408.1 · Menys transferència del núvol** (27/10/2026, correu urgent de Supabase: 11,56 GB de transferència d'un màxim de 5,5 GB al
+    pla gratuït; a partir del 28/10, si no es fa res, el núvol respon amb errors 402 fins al cicle de facturació següent o fins a passar a
+    Pro; rebaixar el consum no esborra el ja gastat):
+    - **Causa:** cada aparell amb l'app oberta, cada 20 s, baixava senceres totes les obres compartides (`aco_shared?select=*`: obra, dades i
+      foto; les 12 de l'Héctor fan 3,8 MB → uns 680 MB per hora a cada aparell obert, i uns 540 MB a Brava) i tornava a baixar la darrera
+      peça canviada (els 5 s de marge de `pullSince`) i la que s'acabava de pujar des del mateix aparell.
+    - **Ara** (`cloudSync.js`): `pullSince` amb cursor demana primer només `key,deleted,device,updated_at` i després el contingut
+      (`key=in.(…)`, `pgIn`) de les peces que no tenim; una peça «ja» (`meta.at` amb la mateixa data, i és del marge o d'aquest aparell) només
+      avança el cursor (`all` / `rows` a `cycle`). `sharedCycle` demana la llista (`SH_LLISTA`, sense obra, dades ni foto) i l'obra sencera
+      només si ha canviat al núvol o no la tenim (`sm.at[obra]` = data del núvol de la versió coneguda, `knowSh(id, x, h, at)`); `shCache`
+      (de la sessió) evita tornar-la a baixar mentre espera per aplicar-se. `pujaMeva`: el canvi d'aquí puja igual (PATCH amb `updated_at=eq.`).
+      `shareObra` desa la data que torna el núvol. La primera volta després d'actualitzar, cada aparell baixa una vegada les compartides.
+    - Prova `egress4091test.mjs` (14; el Supabase de proves compta els bytes que surten, `GET`/`POST /__egress`, i no compta les consultes
+      amb la capçalera `x-no-compta`): en 100 s oberta, de 7,9 MB a 14 kB; un canvi de l'Héctor fa baixar només aquella obra; el que es desa
+      aquí no es torna a baixar; els canvis d'un altre aparell continuen arribant.
+    - Encara gasta: la còpia diària (`tools/copies`, uns 32 MB al dia sense comprimir) i les fotos i documents en obrir obres en un aparell nou.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -1971,12 +1987,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (27/10/2026, després de la V87.408)
+### Per començar una sessió nova (27/10/2026, després de la V87.408.1)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
 
-**Estat (publicada la V87.408 a Render):**
+**Urgent (27/10/2026): Supabase.** La transferència del mes (11,56 GB de 5,5 GB) ja és gastada: si l’Héctor no passa a **Pro** (25 $ al mes,
+250 GB, límit de despesa activat de sèrie) abans del 28/10, el núvol de tots els comptes pot quedar aturat (errors 402) fins al cicle de
+facturació següent. És decisió seva (pagament): Supabase › organització «Héctor» › Billing. La V87.408.1 treu la causa (vegeu-la).
+La **V87.409** (signar a distància amb un enllaç) és escrita però **sense provar ni pujar** (`git stash` «V87.409 signar a distancia», o
+ja tornada a posar a la carpeta): falta `tools/proves/signaremot409test.mjs`, adaptar el pas 4 de `signatura408test`, i l’SQL
+`supabase/aco_signa_v878409.sql` (l’ha d’executar l’Héctor).
+
+**Estat (publicada la V87.408.1 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
