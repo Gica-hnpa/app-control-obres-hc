@@ -4522,6 +4522,8 @@ export default {
   "Obertes": "Abiertas",
   "Tancades i altres": "Cerradas y otras",
   "Nova feina pendent": "Nueva tarea pendiente",
+  "Facturat en part": "Facturado en parte",
+  "retenció": "retención",
   "Feina pendent": "Tarea pendiente",
   "Entrar a l’obra": "Entrar en la obra",
   "Apuntar hores": "Apuntar horas",

@@ -31,7 +31,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.419";
+const APP_VERSION878264="87.420";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17362,7 +17362,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.419",
+    app_version:"87.420",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -18168,14 +18168,14 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
         <button type="button" className="chev-v878390" aria-expanded={ob} aria-label={i18nT("Detalls")} onClick={()=>tog390(k)}><ChevronRight size={18} aria-hidden="true"/></button>
         <span className="imp"><small>{i18nT("Base")}</small>{money(b)}</span>
         <span className="imp iva"><small>{i18nT("IVA")}</small>{money(b*ivaRate878252(f)/100)}</span>
-        <span className="imp tot"><small>{i18nT("Total")}</small><b>{money(totalIva8743(f))}</b></span>
+        <span className="imp tot"><small>{i18nT("Total")}</small><b>{money(totalIva8743(f))}</b>{(()=>{const r=b+b*ivaRate878252(f)/100-totalIva8743(f);return r>0.005?<em className="ret-v878420">{i18nT("retenció")} {money(-r)}</em>:null})()}</span>
         {vig?<button type="button" className={`cobra ${cob?"on":""} ${vencuda873(f)?"venc":""}`} onClick={()=>cobra873(f)}>{cob?i18nT("Cobrada {d}",{d:f.dataCobrament?fmtAppDate8748(f.dataCobrament):""}).trim():vencuda873(f)?i18nT("Vençuda"):i18nT("Pendent de cobrar")}</button>:<em className="anul">{i18nT("Anul·lada")}</em>}
         <span className="acc"><button type="button" className="secondary small" onClick={()=>setPreview({doc:{...f,numero:f.displayNumero},obra:f.obra})}><FileText size={15} aria-hidden="true"/> {i18nT("PDF")}</button>{window.__acoEnviar878407&&<button type="button" className="secondary small" onClick={()=>window.__acoEnviar878407({title:`${i18nT("Factura")} ${f.displayNumero||""}`.trim(),obra:f.obra,doc:docQuote878407("factura",{...f,numero:f.displayNumero})})}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}<ActionMenu87213 label="⋯" fletxa={false} titol={i18nT("Accions factura")}><button type="button" onClick={()=>openObraTab?openObraTab(f.obra.id,"Factures"):openObra(f.obra.id)}>{i18nT("Obrir a l’expedient")}</button><button type="button" onClick={()=>printQuote8745("factura",{...f,numero:f.displayNumero},f.obra)}><Printer size={15} aria-hidden="true"/> {i18nT("Imprimir")}</button>{vig&&!/emesa/i.test(String(f.estat||""))&&!cob&&<button type="button" onClick={()=>updateFacturaGlobal87109(f,{estat:"Emesa"})}>{i18nT("Marcar com a emesa")}</button>}{vig?<button type="button" className="danger-text-v87229" onClick={()=>{if(confirm(i18nT("Anul·lar la factura {n}?",{n:f.displayNumero})))updateFacturaGlobal87109(f,{estat:"Anul·lada"})}}>{i18nT("Anul·lar")}</button>:<button type="button" onClick={()=>updateFacturaGlobal87109(f,{estat:"Pendent"})}>{i18nT("Tornar a pendent")}</button>}</ActionMenu87213></span>
       </div>})}
     </div>}
     {files873.some(vigent873)&&(()=>{const v=files873.filter(vigent873),bs=v.reduce((x,f)=>x+baseIva8743(f),0),iv=v.reduce((x,f)=>x+baseIva8743(f)*ivaRate878252(f)/100,0),tt=v.reduce((x,f)=>x+totalIva8743(f),0),pd=v.filter(f=>!cobrada873(f)).reduce((x,f)=>x+totalIva8743(f),0);
       const per=[anyF873==="tots"?i18nT("Tots els anys"):(mesOk390?nomMes390(mesOk390)+" "+anyF873:anyF873),client?i18nT(client):"",obra?obres873.find(o=>o.id===obra)?.nom:""].filter(Boolean).join(" · ");
-      return <div className="fe-total-v878390"><div className="tit"><b>{i18nT("Total")}</b><small>{per} · {v.length===1?i18nT("1 factura"):i18nT("{n} factures",{n:v.length})}</small></div><div className="fe-kpis"><div><small>{i18nT("Base")}</small><b>{money(bs)}</b></div><div><small>{i18nT("IVA")}</small><b>{money(iv)}</b></div><div><small>{i18nT("Total")}</small><b>{money(tt)}</b></div><div className={pd>0.005?"warn":""}><small>{i18nT("Pendent de cobrar")}</small><b>{money(pd)}</b></div></div></div>})()}
+      return <div className="fe-total-v878390"><div className="tit"><b>{i18nT("Total")}</b><small>{per} · {v.length===1?i18nT("1 factura"):i18nT("{n} factures",{n:v.length})}</small></div><div className="fe-kpis"><div><small>{i18nT("Base")}</small><b>{money(bs)}</b></div><div><small>{i18nT("IVA")}</small><b>{money(iv)}</b></div>{bs+iv-tt>0.005&&<div><small>{i18nT("Retenció")}</small><b>{money(-(bs+iv-tt))}</b></div>}<div><small>{i18nT("Total")}</small><b>{money(tt)}</b></div><div className={pd>0.005?"warn":""}><small>{i18nT("Pendent de cobrar")}</small><b>{money(pd)}</b></div></div></div>})()}
     {all.length>0&&<details className="plegat-v878366 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><b>{i18nT("Gràfics i informes")}</b><span>{resumFact878397(graf397,anyF873==="tots"?null:+anyF873)}</span></summary>{inf397&&<><GraficaFact878397 items={graf397} any={anyF873==="tots"?null:+anyF873}/><div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={aggregate8776(rows,f=>statusKeyFactura8776(f.estat),()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div></>}</details>}
   </div>;
 }
@@ -18195,8 +18195,11 @@ function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab,clientsList
     const d=odata[o.id]||empty();
     const factures=uniqueFactures8743(d.facturesTecnic||[]);
     return (d.pressupostosTecnic||[]).map((p,i)=>{
-      const facturat=!!p.facturat||factures.some(f=>f.pressupostId===p.id);
-      return {...p,displayNumero:displayDocNumber8745(p,"pressupost",o,i+1),obra:o,clientNom:(clientsList||[]).find(c=>c.id===o.client)?.nom||o.clientNomCompartit||o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o),facturat};
+      // V87.420 · abans, una sola factura (p. ex. el 50 %) ja el marcava «Facturat»
+      const fact420=factures.filter(f=>f.pressupostId===p.id&&!/anul/i.test(String(f.estat||""))).reduce((x,f)=>x+(+f.base||0),0);
+      const facturat=!!p.facturat||(fact420>0.004&&fact420>=(+p.base||0)-0.005);
+      const parcial420=!facturat&&fact420>0.004;
+      return {...p,parcial420,fact420,displayNumero:displayDocNumber8745(p,"pressupost",o,i+1),obra:o,clientNom:(clientsList||[]).find(c=>c.id===o.client)?.nom||o.clientNomCompartit||o.propietat||o.client||"Sense client",tipologia:o.tipusTreball||moduleLabel8737(o),facturat};
     });
   });
   const clients=[...new Set(all.map(r=>r.clientNom).filter(Boolean))],tipologies=[...new Set(all.map(r=>r.tipologia).filter(Boolean))];
@@ -18281,14 +18284,14 @@ function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab,clientsList
         <td>{fmtAppDate8748(p.data)||"—"}</td>
         <td className="n">{money(baseIva8743(p))}</td>
         <td className="n"><b>{money(totalIva8743(p))}</b></td>
-        <td><em className={`xip-v878317 e-${estatPres878317(p)}`}>{estatPres878317(p)==="facturats"?i18nT("Facturat"):i18nT(p.estat||"Pendent")}</em></td>
+        <td><em className={`xip-v878317 e-${estatPres878317(p)}`}>{estatPres878317(p)==="facturats"?i18nT("Facturat"):p.parcial420?i18nT("Facturat en part"):i18nT(p.estat||"Pendent")}</em></td>
         <td onClick={e=>e.stopPropagation()}><div className="acts-v878316"><button type="button" className="secondary" onClick={()=>setPreview({doc:{...p,numero:p.displayNumero},obra:p.obra})}>{i18nT("PDF")}</button><details className="mes-v878317"><summary aria-label={i18nT("Més accions")}>⋯</summary><div><button type="button" onClick={()=>setEditDoc(p)}>{i18nT("Gestionar pressupost")}</button><button type="button" onClick={()=>openObraTab?openObraTab(p.obra.id,"Pressupostos"):openObra(p.obra.id)}>{i18nT("Obrir l’expedient")}</button></div></details></div></td>
       </tr>)}</React.Fragment>)}</tbody></table></div>
       <div className="pres-cards-v878316">{anysLlista878317.map(any=><section key={any}>{anyEf878317==="tots"&&<h3>{any}</h3>}{llista878317.filter(p=>any878316(p)===any).map(p=><div role="button" tabIndex={0} key={p.obra.id+p.id} className="pres-card-v878316" onClick={()=>setEditDoc(p)} onKeyDown={e=>{if(e.key==="Enter")setEditDoc(p)}}>
         <span className="l1"><b>{p.displayNumero}</b><span>{p.clientNom}</span></span>
         <strong>{p.concepte?i18nT(p.concepte):i18nT("Pressupost")}</strong>
         <span className="l3">{codiCurt878270(p.obra)} · {p.obra.nom}</span>
-        <span className="l4"><em className={`xip-v878317 e-${estatPres878317(p)}`}>{estatPres878317(p)==="facturats"?i18nT("Facturat"):i18nT(p.estat||"Pendent")}</em><span className="dt">{fmtAppDate8748(p.data)}</span><b>{money(totalIva8743(p))}</b></span>
+        <span className="l4"><em className={`xip-v878317 e-${estatPres878317(p)}`}>{estatPres878317(p)==="facturats"?i18nT("Facturat"):p.parcial420?i18nT("Facturat en part"):i18nT(p.estat||"Pendent")}</em><span className="dt">{fmtAppDate8748(p.data)}</span><b>{money(totalIva8743(p))}</b></span>
         <span className="l5" onClick={e=>e.stopPropagation()}><button type="button" className="secondary" onClick={()=>setPreview({doc:{...p,numero:p.displayNumero},obra:p.obra})}>{i18nT("PDF")}</button><button type="button" className="secondary" onClick={()=>openObraTab?openObraTab(p.obra.id,"Pressupostos"):openObra(p.obra.id)}>{i18nT("Obrir l’expedient")}</button></span>
       </div>)}</section>)}</div></>}
       <details className="filtres-v878316"><summary><span>{i18nT("Més filtres")}</span>{nFiltres878316?<b>{i18nT("{n} actius",{n:nFiltres878316})}</b>:<em>{i18nT("Client, expedient, tipologia, dates")}</em>}</summary><FilterBar8776><label><span>{i18nT("Període")}</span><select value={period} onChange={e=>setPeriod(e.target.value)}><option value="all">{i18nT("Tot")}</option><option value="week">{i18nT("Setmana actual")}</option><option value="month">{i18nT("Mes en curs")}</option><option value="year">{i18nT("Any actual")}</option><option value="dates">{i18nT("Dates")}</option></select></label>{period==="dates"&&<><label><span>{i18nT("Des de")}</span><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label><span>{i18nT("Fins")}</span><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></label></>}<label><span>{i18nT("Client")}</span><select value={client} onChange={e=>setClient(e.target.value)}><option value="">{i18nT("Tots")}</option>{clients.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select></label><label><span>{i18nT("Obra")}</span><select value={obra} onChange={e=>setObra(e.target.value)}><option value="">{i18nT("Totes")}</option>{obres.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label><label><span>{i18nT("Tipologia")}</span><select value={tipus} onChange={e=>setTipus(e.target.value)}><option value="">{i18nT("Totes")}</option>{tipologies.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</select></label></FilterBar8776>{nFiltres878316>0&&<button type="button" className="secondary" onClick={()=>{setPeriod("all");setFrom("");setTo("");setClient("");setObra("");setTipus("")}}>{i18nT("Treure els filtres")}</button>}</details>
@@ -19623,7 +19626,7 @@ function honorarisPendents878307(obres=[],odata={}){
     const d=odata?.[o.id]||{};const fs=d.facturesTecnic||[];
     for(const p of d.pressupostosTecnic||[]){
       if(!/^(acceptat|acceptada|facturat)$/i.test(String(p.estat||"").trim()))continue;
-      const facturat=fs.filter(f=>f.pressupostId===p.id).reduce((s,f)=>s+(+f.base||0),0);
+      const facturat=fs.filter(f=>f.pressupostId===p.id&&!/anul/i.test(String(f.estat||""))).reduce((s,f)=>s+(+f.base||0),0);
       const pend=Math.round(((+p.base||0)-facturat)*100)/100;
       if(pend>0.004)out.push({o,p,pend,facturat});
     }
