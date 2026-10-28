@@ -23,6 +23,9 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 | V87.419 | Inici del tècnic: requadres i llista, accions de les feines («Apuntar hores», «feina»), expedients nous de cada encàrrec | `v419test` (17) |
 | V87.420 | Diners del tècnic: «Facturat en part», la retenció a Facturació, les anul·lades no compten; les xifres quadren entre pantalles | `v420test` (11) |
 | V87.421 | Repàs exhaustiu (336 pantalles): l'estat sencer a Expedients; Google no s'obre en sortir de l'Agenda | `repas411` |
+| V87.422 | El treballador ja no canvia l'estat de les obres des de la llista (ni «Importar») | `v422test` (15) |
+| (sense canvis) | La cadena dels diners de la constructora: parte → certificació → Despeses (mà d'obra) → Per facturar → factura → Rendiment, amb les mateixes xifres a tot arreu | `v422test` (13) |
+| (sense canvis) | Repàs exhaustiu a l'iPad (820 px) amb els quatre comptes | `repas411` MIDES=ipad |
 
 ## Per fer (ordre)
 
@@ -49,6 +52,9 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 
 ### 4. Gestió total (`demo-gestio`) i treballador (`demo-treballador`)
 - [ ] Que cada un vegi només el que li toca i que tot el que fa el treballador (hores, despeses, notes) arribi a l'oficina.
+      **Pregunta per a l'Héctor:** el treballador és un compte a part; les seves hores i despeses es desen al seu compte i, a les obres
+      compartides, hores, agenda i despeses no es comparteixen. Perquè arribin a l'oficina cal decidir com (compartir-les pel núvol, o el
+      fitxatge fase 2): és feina del servidor i cal el seu sí.
 
 ### 5. Mòbil i iPad
 - [ ] Els mateixos recorreguts a 390 px i 820 px: res tallat, menús que s'obren, botons que no es tapen (com el ＋ i «Guardar dades»).

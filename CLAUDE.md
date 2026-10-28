@@ -2065,6 +2065,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       (`expcolstest`) (`src/theme-v878421.css`).
     - **Google Calendar:** la reconnexió del primer toc (V87.331, només a l'ordinador) escoltava tot el document: el toc de sortir de l'Agenda
       (p. ex. «Ajustos» al menú) obria la finestra de Google. Ara només els tocs de dins de l'Agenda (`.agenda-v878256`).
+  - **V87.422 · El treballador no canvia l'estat de les obres des de la llista** (repàs funcional, tanda 8): a la llista d'obres del perfil
+    treballador hi havia el desplegable «Canviar estat» (i «Importar»), perquè el compte és administrador del seu espai
+    (`allowAdminActions`); ara `allowAdminActions` és fals per al treballador (`esTreballador878326`). Dins de l'obra ja era només lectura.
+    - **Comprovat sense canviar res** (`v422test.mjs`, 15): la cadena dels diners de la constructora (parte amb una partida i 8 h → certificació
+      nova → mà d'obra a Despeses → Per facturar → «Fer factura», que demana les dades fiscals de l'empresa si falten → Facturació › Factures →
+      Rendiment amb ingressos, costos i facturat que pugen el que toca → la certificació diu el número de la factura); i el repàs exhaustiu a
+      l'iPad (`repas411.mjs` amb `MIDES=ipad`, nou: 820 × 1180; 168 pantalles, cap problema).
+    - **Pregunta oberta per a l'Héctor:** les hores i despeses del treballador es desen al seu compte i no arriben a l'oficina (a les obres
+      compartides no es comparteixen hores, agenda ni despeses): cal decidir com (núvol o fitxatge fase 2).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2238,7 +2247,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.421 a Render):**
+**Estat (publicada la V87.422 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
