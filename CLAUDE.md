@@ -2108,6 +2108,33 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       d'imprevistos. Estils `src/theme-v878423.css`. Prova: `v423test.mjs` (25). Eina nova `tools/proves/capturahtml.mjs` (`FILES=`, `SEL=`,
       `EXPR=`: captura d'un HTML desat, p. ex. els PDF que desa una prova amb `OUT=`; `captureBeyondViewport` treu la barra de desplaçament i
       mou uns píxels la pàgina, per això retalla amb marge).
+  - **V87.424 · Compartir només el Pressupost i les Certificacions, amb una certificació pròpia per comparar** (l'Héctor, 28/10/2026, per
+    treballar amb el Martí Sais: «compartir una part d'expedient com a document de treball de tècnic a tècnic… que pugui treballar amb el
+    mateix pressupost on surti el pressupost original, els imprevistos i noves partides, treure els llistats en PDF… i fer-se la seva
+    certificació per comparar amb la meva com a tècnic de la constructora»):
+    - **Abans:** a una obra compartida, un compte de perfil tècnic no veia el Pressupost ni les Certificacions (`tabsPerfil878326` i
+      `hasModule2Access8747` les amagaven) i, amb «Pot editar», hauria certificat a sobre de les certificacions de qui comparteix.
+    - **Obres compartides** (`tabsCompartida878424`): el Pressupost i les Certificacions surten sempre, sigui quin sigui el perfil (no al
+      treballador); `GestioObra8746` també s'obre sense el mòdul d'obra si l'obra és compartida.
+    - **«Pressupost i certificacions»**, permís nou a «Compartir» (`ShareModal878259`): al núvol és un editor (perquè la seva certificació
+      arribi), i a l'obra es desa `parts878424 = {[usuari]: "pressupost"}` (`window.__acoPatchObra878424` de l'App, abans de `shareObra`).
+      Qui la rep (`partCompartida878424`, amb `window.__acoEmpresa.username`) només veu **Resum · Pressupost · Certificacions**, sense el ＋ i
+      amb les fases de consulta.
+    - **El seu Pressupost** és de consulta (`PressupostCompartit878424`): la targeta «Previst i imprevistos» (amb els PDF de l'original i dels
+      imprevistos) i el pressupost per capítols plegats amb les marques (taronja, vermell) (`ClientBudgetReadOnlyV87235 marques`).
+    - **La seva certificació**: `GestioObra8746` rep `contrast878424 = {me, nom}` i treballa amb `ambContrast878424` (el mateix pressupost,
+      les seves quantitats i les certificacions de l'obra que encara no té, amb l'id `ct-…`; sense factures) i `desaContrast878424` (en desar,
+      només les quantitats certificades —`CAMPS_CERT878424`, `cert_N`— i la llista de certificacions van a `data.contrast878424[usuari] =
+      {nom, at, p:{[pid]:{certsByNum…}}, certs}`; `pidC878424` = l'id de la partida o pressupost|codi|concepte). Les de qui comparteix no es
+      toquen. Títol «La meva certificació N»; sense «Fer factura», signar, «Afegir feina», «Importar Excel», eliminar ni marcar noves.
+    - **«Comparar»** (botó al costat de Resum · Partides; `potComp878424`): per a qui comparteix, si algun compte hi ha fet la seva
+      (`usuarisContrast878424`); per a qui la rep, sempre. `ComparaCert878424` (`comparaCert878424`): a origen fins a la certificació triada,
+      el total de cadascú i la diferència, «Només les diferències» / «Totes», per capítols (al mòbil en fitxes) i **«PDF de la comparació»**
+      (`compara878424`, `comparaPrintHtml878424`).
+    - **Sincronitzat:** tot viu a l'obra compartida (`aco_shared`), i com que cadascú escriu la seva clau de `contrast878424`, la fusió per
+      apartats ho ajunta sense preguntar.
+    - Estils `src/theme-v878424.css`. Prova: `v424test.mjs` (18: demo-constructor comparteix «Reforma integral pis C/ Nou 5» amb demo-tecnic;
+      pestanyes, pressupost de consulta, la seva certificació desada a part, comparar als dos comptes, PDF, «Pot editar» i mòbil).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2281,7 +2308,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.423 a Render):**
+**Estat (publicada la V87.424 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2300,6 +2327,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   (Verbania: 55 iguals i 28 noves a la fase principal), dos PDF (original i imprevistos), resum amb totes les partides; les noves i les que
   pugen en taronja, «Marcar com a nova» a mà (V87.413; l’Héctor ha de marcar la 3.09 i la 3.10 de Verbania), i als imprevistos mai el que baixa;
   partides que no s’executaran (tota o en part) en vermell i el resum de l’obra amb gràfic als PDF de les certificacions (V87.423).
+- **Compartir només el Pressupost i les Certificacions** (V87.424): l’altre compte (p. ex. el Martí) hi fa la seva certificació i tots dos la comparen.
 - **Dades de l’obra amb Contactes** (V87.414): els camps buits o de farciment s’omplen amb la fitxa de Contactes i es tria amb un cercador
   per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.

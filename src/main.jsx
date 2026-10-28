@@ -123,6 +123,7 @@ import "./theme-v878416.css";
 import "./theme-v878420.css";
 import "./theme-v878421.css";
 import "./theme-v878423.css";
+import "./theme-v878424.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";

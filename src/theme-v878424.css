@@ -1,0 +1,45 @@
+/* V87.424 · Obra compartida «només Pressupost i certificacions»: la certificació pròpia i «Comparar» */
+html body .pres-comp-v878424{display:flex;flex-direction:column;gap:14px}
+html body .client-budget-line-v87235.nova-v878413,html body .client-budget-line-v87235.puja-v878413{background:#FFF7ED}
+html body .client-budget-line-v87235.nova-v878413 span,html body .client-budget-line-v87235.puja-v878413 span{color:#9A3412}
+html body .client-budget-line-v87235.noexec-v878423{background:#FEF2F2}
+html body .client-budget-line-v87235.noexec-v878423 span{color:#B91C1C}
+
+html body .compara-v878424{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+html body .compara-v878424 .cap-c{display:flex;flex-direction:column;gap:10px}
+html body .compara-v878424 .qui{display:flex;align-items:center;gap:8px;font-weight:600}
+html body .compara-v878424 .qui select{max-width:100%;min-height:36px}
+html body .compara-v878424 .xif{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+html body .compara-v878424 .xif>div{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 12px;border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC}
+html body .compara-v878424 .xif small{font-size:12px;font-weight:700;color:#5F7075;text-transform:uppercase;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .compara-v878424 .xif b{font-size:18px;color:#0F172A;font-variant-numeric:tabular-nums}
+html body .compara-v878424 .xif span{font-size:12px;color:#5F7075}
+html body .compara-v878424 .xif .d{background:#FFF7ED;border-color:#FED7AA}
+html body .compara-v878424 .xif .d b{color:#9A3412}
+html body .compara-v878424 .eines{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+html body .compara-v878424 .eines .seg{display:inline-flex;border:1px solid #CBD5E1;border-radius:10px;overflow:hidden}
+html body .compara-v878424 .eines .seg button{border:0;background:#fff;padding:6px 12px;min-height:36px;font-weight:600;color:#334155;cursor:pointer}
+html body .compara-v878424 .eines .seg button[aria-pressed="true"]{background:var(--co-accent,#2563EB);color:#fff}
+html body .compara-v878424 .taula-c{display:flex;flex-direction:column;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden}
+html body .compara-v878424 .fila{display:grid;grid-template-columns:minmax(0,1fr) 130px 130px 120px;gap:10px;align-items:baseline;padding:7px 12px;border-top:1px solid #EEF2F6;font-size:14px}
+html body .compara-v878424 .fila:first-child{border-top:0}
+html body .compara-v878424 .fila.h{background:#F1F5F9;font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.03em}
+html body .compara-v878424 .fila.cap{display:block;background:#F8FAFC;font-size:13px}
+html body .compara-v878424 .fila .p{min-width:0}
+html body .compara-v878424 .fila .p small{color:#5F7075;font-variant-numeric:tabular-nums;margin-right:4px}
+html body .compara-v878424 .fila .n{text-align:right;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:1px}
+html body .compara-v878424 .fila .n small{color:#5F7075;font-size:12px}
+html body .compara-v878424 .fila.dif{background:#FFF7ED}
+html body .compara-v878424 .fila.dif .d b,html body .compara-v878424 .fila.dif .d small{color:#9A3412}
+html body .compara-v878424 .fila.nova .p{color:#9A3412}
+html body .compara-v878424 .fila.noexec .p{color:#B91C1C}
+html body .compara-v878424 .cap-dif,html body .compara-v878424 .at{margin:0;font-size:13px;color:#5F7075}
+@media (max-width:760px){
+  html body .compara-v878424 .xif{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .compara-v878424 .xif>div:last-child{grid-column:1/-1}
+  html body .compara-v878424 .fila{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 8px}
+  html body .compara-v878424 .fila.h{display:none}
+  html body .compara-v878424 .fila .p{grid-column:1/-1}
+  html body .compara-v878424 .fila .n{text-align:left}
+  html body .compara-v878424 .fila .n::before{content:attr(data-l);font-size:12px;color:#5F7075;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
