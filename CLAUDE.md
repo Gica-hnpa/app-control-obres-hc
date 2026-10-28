@@ -1903,6 +1903,41 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       «Control d'obres», Habilitar.
     - Estils `src/theme-v878411.css`. Prova: `v411test.mjs` (27; `NOMES=1345`). Eina nova `repas411.mjs` (repàs exhaustiu: pantalles, camps
       tallats, PDF, Enviar i Signar de cada apartat; informe a `D:/aco-tmp/repas411`).
+  - **V87.412 · El pressupost inicial i els documents amb els mateixos botons** (l'Héctor, 28/10/2026: «recuperar a Brava els pressupostos
+    inicials i separar les partides noves… sense que s'esborri res de les certificacions»; «simplifica… varies de veure PDF»):
+    - **Pressupost › Accions › «Pressupost inicial…»** (`PressupostInicial878412`): compara el pressupost d'ara amb l'Excel, BC3 o PDF original
+      (els de Documents de l'obra o «Un altre arxiu…»; `partidesArxiu878412` amb els lectors dels Amidaments) o el fixa «Tal com és ara».
+      `src/pressupostInicial.js` (`compara`, funció pura): primer pel codi si el text s'assembla (`semblanca` ≥ 0,5; a Verbania la fase principal
+      es va renumerar: la 02.03 d'ara no és la de l'Excel), després pel text igual o molt semblant amb la mateixa unitat; les de l'Excel que són
+      en un altre pressupost de l'obra no compten com a tretes (`window.__acoDadesObra878412`). Ensenya Iguals · Han canviat · Noves · Ja no hi
+      són (amb casella per no comptar-les) i «Fixar-lo com a pressupost inicial».
+    - **Res no s'esborra:** a cada partida aparellada `ini878412 = {q, pu}` (la quantitat i el preu d'aleshores), les noves `noInicial878412`
+      (`esFora878410` les compta com a noves) i a la fitxa del pressupost (l'entrada de `pressupostos` amb `budgetId`; les dades del pressupost
+      triat només desen partides, pressupostos, certificacions i factures) `inicial878412 = {nom, font, at, total, n, tretes}`
+      (`iniPres878412`). «Treure’l» ho desfà.
+    - `previst878410` amb l'inicial: previst = Σ partides al preu i la quantitat inicials + les tretes; imprevistos = fora de pressupost + més
+      amidament + **canvis de quantitat o preu** (`canviada878412`) + **ja no hi són** (negatiu). Targeta, capçalera, resum (columna
+      «Pressupost» amb l'import inicial, etiqueta «Canviada», fila «Eren a l’inicial i ja no hi són»), PDF del pressupost original (amb els
+      valors inicials i les tretes) i PDF dels imprevistos (seccions noves).
+    - **Simulació amb les dades de debò** (còpia del 27/10 i l'Excel de Verbania de `COPIES_NUVOL/arxius`, només llegint): fase principal 55
+      iguals i 28 noves (les «Base» afegides a mà) → inicial 100.357,57 € (no 142.382,31); fase P1 55 iguals, 2 amb el preu canviat (02.03,
+      02.17) i 3 noves. David Fuster i Cala Rovira 11 no tenen l'Excel a Documents: cal «Un altre arxiu…».
+    - **Documents amb els mateixos botons** (`BotonsDoc878412`, al visor `DocViewer` i a la vista d'honoraris `QuotePreview8743`): Tancar ·
+      Enviar · **Descarregar el PDF** (un PDF de debò amb `htmlAPdf`; al mòbil, «Compartir» amb el PDF) · Imprimir. Fora «Descarregar document» i
+      «Compartir» (feien un HTML), «Imprimir / Guardar PDF», «Imprimir / PDF». **Acta:** un sol «PDF de l’acta» (fora «Previsualitzar acta» i
+      «Obrir acta formal / imprimir»; la vista prèvia de dins de l'acta ja no hi és).
+    - **Facturació de l'obra:** «PDF» de la proforma obre el document (abans «Imprimir / PDF» imprimia directament); amb factura, només «PDF
+      factura» i el seu «Enviar» (la proforma era el mateix document). **Documents:** «Enviar» a cada document amb l'arxiu adjunt (fora
+      l'«Enviar» general, que no adjuntava res).
+    - **Repàs exhaustiu de la nit del 28/10** (`repas411.mjs` sobre la V87.411: 4 comptes —tècnic, constructora, gestió total i una còpia de
+      les dades de l'Héctor—, ordinador i mòbil, 336 pantalles, i a l'ordinador tots els PDF, «Enviar» i «Signar amb certificat» de cada
+      apartat i de la primera acta): **cap error de JavaScript ni res que surti per la dreta**; 62 avisos de text tallat que eren 7 coses,
+      arreglades: el text de les feines pendents (ara un `textarea.txt-in-v878412` que passa de línia), l'estat a Expedients (172 px),
+      Obra i logística al mòbil (una columna), el tipus de treball de la calculadora d'honoraris (dues columnes), els noms del Planning (dues
+      línies), els Ajustos del pressupost (columnes de 260 px i l'adreça de l'obra en un `textarea`) i Documents › Enviar.
+    - Estils `src/theme-v878412.css`. Proves: `inicial412unit.mjs` (10) i `v412test.mjs` (23). Adaptades `docmobiltest`, `documentstest`
+      (l'acta es mira al visor), `assistents406test`, `enviar405test`, `enviar407test`, `factclienttest`, `vfemetretest`, `clientsvirtuals`
+      (el «PDF» de la proforma), `seguiment321test` (el text de la feina és un `textarea`) i `pressupost368test` (logística en una columna).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb

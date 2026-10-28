@@ -1,0 +1,71 @@
+/* V87.412 · El pressupost inicial (comparar amb l'Excel original sense esborrar res) i el visor de documents més senzill */
+@media screen{
+html body .ini-v878412{display:flex;flex-direction:column;gap:12px}
+html body .ini-ara-v878412{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 12px;border:1px solid #BBF7D0;border-radius:12px;background:#F0FDF4}
+html body .ini-ara-v878412 b{color:#166534}
+html body .ini-ara-v878412 span{color:#334155;font-size:14px}
+html body .link-v878412{border:0;background:none;padding:4px 0;min-height:32px;font:inherit;font-weight:700;color:var(--co-accent,#2563EB);cursor:pointer;margin-left:auto}
+html body .link-v878412.perill{color:#B91C1C}
+html body .ini-q-v878412{margin:0;font-weight:700;color:#0F172A}
+html body .ini-fonts-v878412{display:flex;flex-direction:column;gap:8px}
+html body .ini-font-v878412{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:10px 12px;border:1px solid #CBD5E1;border-radius:12px;background:#fff;font:inherit;text-align:left;cursor:pointer;position:relative}
+html body .ini-font-v878412:hover{border-color:var(--co-accent,#2563EB);background:#F8FAFC}
+html body .ini-font-v878412 span{display:flex;flex-direction:column;min-width:0}
+html body .ini-font-v878412 b{overflow-wrap:anywhere}
+html body .ini-font-v878412 small{color:#5F7075;font-size:12px}
+html body .ini-font-v878412 input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+html body .ini-ocupat-v878412{margin:0;color:#5F7075}
+html body .ini-err-v878412{margin:0;padding:8px 12px;border-radius:10px;background:#FEF2F2;color:#B91C1C}
+html body .ini-res-v878412{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html body .ini-res-v878412>div{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 12px;border:1px solid #E2E8F0;border-radius:12px;background:#F8FAFC}
+html body .ini-res-v878412 small{font-size:12px;font-weight:700;color:#5F7075;text-transform:uppercase}
+html body .ini-res-v878412 b{font-size:17px;font-variant-numeric:tabular-nums}
+html body .ini-res-v878412 span{font-size:12px;color:#5F7075;overflow-wrap:anywhere}
+html body .ini-res-v878412 .o{background:#FFF7ED;border-color:#FED7AA}
+html body .ini-res-v878412 .o b{color:#9A3412}
+html body .ini-sec-v878412{border:1px solid #E2E8F0;border-radius:12px;overflow:hidden}
+html body .ini-cap-v878412{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:8px 12px;border:0;background:#fff;font:inherit;text-align:left;cursor:pointer}
+html body .ini-cap-v878412 span{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+html body .ini-cap-v878412[aria-expanded=true] svg{transform:rotate(90deg)}
+html body .ini-sec-v878412 ul{list-style:none;margin:0;padding:0 12px 8px;max-height:320px;overflow:auto;border-top:1px solid #EEF2F6}
+html body .ini-sec-v878412 li{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:14px}
+html body .ini-sec-v878412 li:not(:has(.ck)){grid-template-columns:auto minmax(0,1fr) auto}
+html body .ini-sec-v878412 li .c{color:#5F7075;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .ini-sec-v878412 li .n{min-width:0;overflow-wrap:anywhere}
+html body .ini-sec-v878412 li .n small{display:block;color:#5F7075;font-size:12px}
+html body .ini-sec-v878412 li b{font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .ini-sec-v878412 li.o .n{color:#9A3412}
+html body .ini-nota-v878412{margin:0;font-size:13px;color:#5F7075}
+html body .fora-v878410.canv-v878412{background:#FEF3C7;color:#92400E}
+html body .previst-v878410 .pi-ini-v878412{margin:8px 0 0;font-size:13px;color:#5F7075}
+}
+@media (max-width:700px){
+html body .ini-res-v878412{grid-template-columns:1fr}
+}
+
+/* V87.412 · correccions del repàs exhaustiu (repas411.mjs: 336 pantalles, cap error; camps i desplegables amb el text tallat) */
+/* feines pendents de l'obra: el text en un quadre que passa a la línia següent (abans una línia que el tallava) */
+html body .task-row-v8769.tasca-v878321>textarea.txt-in-v878412{width:100%;min-width:0;min-height:38px;resize:vertical;font:inherit;line-height:1.35;padding:7px 9px;border:1px solid #CBD5E1;border-radius:8px;background:#fff;box-sizing:border-box;overflow-wrap:anywhere}
+@media (max-width:1100px){
+  html body .task-row-v8769.tasca-v878321:not(.obert-v878366)>textarea.txt-in-v878412{display:none!important}
+  html body .task-row-v8769.tasca-v878321.obert-v878366>textarea.txt-in-v878412{grid-column:1/-1;grid-row:auto}
+}
+/* Expedients: el desplegable de l'estat sencer («Pendent de resposta») */
+@media (min-width:1101px){
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 .exp-status-cell-v878247 select{max-width:none!important;min-width:172px!important;width:auto!important}
+}
+/* Pressupost › Obra i logística al mòbil: una columna (les opcions dels desplegables són llargues) */
+@media (max-width:700px){
+  html body .logis-cos-v878368 .camps{grid-template-columns:minmax(0,1fr)!important}
+}
+/* calculadora d'honoraris: el tipus de treball ocupa dues columnes */
+@media (min-width:1101px){
+  html body .honor-calc-grid-v8790>label:has(>select){grid-column:span 2}
+}
+/* Planning: el nom del capítol en dues línies (abans tallat amb «…») */
+html body .gt-left-v878253 .cap{white-space:normal!important;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
+/* Ajustos del pressupost: columnes més amples i l'adreça de l'obra en dues línies */
+@media (min-width:1101px){
+  html body .form-grid.compact-form-v87160{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))!important}
+}
+html body .compact-form-v87160 textarea.adr-v878412{min-height:52px!important;resize:vertical}
