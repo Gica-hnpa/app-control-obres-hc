@@ -1996,6 +1996,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       l'obra es fa client. El valor va en un `input[name=client]` amagat (abans un `select`).
     - Prova: `v415test.mjs` (18). Adaptades `fitxestest` i `dadestest` (client de l'obra nova amb el cercador). **Les lliçons de vídeo que
       trien el client de l'obra nova** (`guia404-llicons.mjs`, `select[name=client]`) s'han de tornar a gravar.
+  - **V87.416 · Triar l'obra amb el cercador i la feina de l'Inici per l'expedient** (repàs funcional, tanda 2):
+    - **`TriaObra878416`** (`.tc-v878413.to-v878416`, el mateix aspecte que `TriaContacte878413`): un camp on s'escriuen lletres del nom, el
+      número curt o llarg, el client, el promotor, la població o l'adreça (`coincideix878315`); «Obertes» primer i «Tancades i altres» a sota
+      (20 sense buscar). Props: `buit` (p. ex. «Sense expedient»), `extra` (`[[valor, text]]`, p. ex. «+ Crear nou expedient»). Substitueix el
+      desplegable de l'obra a la **cita de l'Agenda** (`AgendaEditor878256`, que ara rep `clients`), a **«+ Afegir hores»** (`ManualHours878256`)
+      i a **les hores del treballador** (`HoresTreballador878327`, només les obertes). Contenidor `.tria-obra-v878416`.
+    - **Inici › «+ Afegir feina»** (`Inici`): primer «Expedient o treball» amb tots els oberts (abans, primer el client —de sèrie el primer de la
+      llista— i només els seus expedients); el client surt de l'expedient. Amb «+ Crear nou expedient», el client es tria de Contactes
+      (`TriaContacte878413`, `.tria-cli-v878416`; un contacte que no és client o «+ Client nou…» → client nou) i el nom i el tipus de
+      l'expedient nou. Sense expedient triat: «Selecciona un expedient o crea’n un de nou.» Fora el text que explicava el formulari; «Nova
+      feina pendent» i «Guardar la feina» (abans «tasca»).
+    - **Dates amb només la primera lletra en majúscula** (`theme-v878416.css`, `::first-letter`): `text-transform:capitalize` deia «Dimecres,
+      28 D’octubre» o «Octubre De 2026» (hores del treballador, partes, Planning, Agenda › Equip).
+    - Prova: `v416test.mjs` (23: tècnic a l'ordinador, treballador i mòbil). Adaptades `perfils326test` i `veutest`.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2169,7 +2183,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.415 a Render):**
+**Estat (publicada la V87.416 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

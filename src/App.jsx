@@ -31,7 +31,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.415";
+const APP_VERSION878264="87.416";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7537,7 +7537,7 @@ function HoresTreballador878327({obres=[],obraFixa=""}){
     <div className="cap"><div>{!obraFixa&&<h1>{t("Les meves hores")}</h1>}<span>{t("Aquesta setmana")}: <b>{fh(hSetm)}</b></span></div>{!nou&&<button type="button" className="primary" onClick={obre}>{t("+ Afegir hores")}</button>}</div>
     {nou&&<div className="nou card">
       <label><span>{t("Dia")}</span><input type="date" value={nou.data} onChange={e=>setNou(x=>({...x,data:e.target.value}))}/></label>
-      {!obraFixa&&<label><span>{t("Obra")}</span><select value={nou.obraId} onChange={e=>setNou(x=>({...x,obraId:e.target.value}))}><option value="">{t("Tria l’obra…")}</option>{oberts.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select></label>}
+      {!obraFixa&&<div className="tria-obra-v878416"><TriaObra878416 etiqueta={t("Obra")} obres={oberts} valor={nou.obraId} onTria={v=>setNou(x=>({...x,obraId:v}))}/></div>}
       <label><span>{t("Hores")}</span><input inputMode="decimal" value={nou.hores} onFocus={e=>e.currentTarget.select()} onChange={e=>setNou(x=>({...x,hores:e.target.value}))}/></label>
       <label className="wide"><span>{t("Què has fet (opcional)")}</span><input value={nou.feina} onChange={e=>setNou(x=>({...x,feina:e.target.value}))}/></label>
       <div className="acc"><button type="button" className="secondary" onClick={()=>setNou(null)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desa}>{t("Desar")}</button></div>
@@ -7578,10 +7578,10 @@ const [showNewTask,setShowNewTask]=useState(false);
 const [openWorkMonth,setOpenWorkMonth]=useState(false);
 const [viewTask,setViewTask]=useState(null);
 const clientRoleOptions878181=['Promotor','Arquitecte','Arquitecte tècnic','Immobiliària','Constructora','Industrial','Administració','Particular','Autònom','Altres'];
-const [taskDraft,setTaskDraft]=useState({clientId:(clients?.[0]?.id)||'__new__',newClientNom:'',newClientTipus:'Promotor',newClientNif:'',obraId:'__new__',newObraNom:'',newObraTipus:'Gestió integral d’obra',text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:''});
+const [taskDraft,setTaskDraft]=useState({clientId:'__new__',newClientNom:'',newClientTipus:'Promotor',newClientNif:'',obraId:'',newObraNom:'',newObraTipus:'Gestió integral d’obra',text:'',prioritat:'Normal',estat:'Pendent',dataMaxima:todayISO8743(),hora:'09:00',notes:''});
 const selectedClient=taskDraft.clientId||'__new__';
 const currentClient=clients.find(c=>c.id===selectedClient);
-const taskObres=(obres||[]).filter(o=>selectedClient!=='__new__'&&(o.client||'')===selectedClient&&isExpedientOpen878136(o.estat)).sort((a,b)=>String(a.nom||'').localeCompare(String(b.nom||''),'ca',{numeric:true}));
+const taskObres=(obres||[]).filter(o=>isExpedientOpen878136(o.estat)).sort((a,b)=>String(a.nom||'').localeCompare(String(b.nom||''),'ca',{numeric:true}));
 const selectedObra=taskObres.find(o=>o.id===taskDraft.obraId);
 function newSlug878140(txt,prefix){return `${prefix}-${String(txt||prefix).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,38)||Date.now()}-${Date.now().toString(36)}`}
 function buildTask878140(extra={}){
@@ -7601,7 +7601,8 @@ function saveHomeTask878140(){
   }
   let oid=taskDraft.obraId;
   let createdObra=null;
-  if(!oid||oid==='__new__'){
+  if(!oid){alert(i18nT("Selecciona un expedient o crea’n un de nou."));return;}
+  if(oid==='__new__'){
     const nom=String(taskDraft.newObraNom||'').trim();
     if(!nom){alert(i18nT("Escriu el nom de l’expedient o treball."));return;}
     oid=newSlug878140(nom,'exp');
@@ -7663,12 +7664,11 @@ return <>
     <CardOPlega878369 title={i18nT("Pròximes cites")} resum={properes.length?`${properes.length} · ${properes[0].title||properes[0].titol||properes[0].tipus||""} · ${fmtEventDate878136(properes[0])}`:i18nT("No hi ha cites futures.")} className="home-cites-v878314"><div className="upcoming-list-v878138 upcoming-list-v878140">{properes.length===0?<p>{i18nT("No hi ha cites futures.")}</p>:properes.map(e=><button key={eventKey878137(e)} onClick={()=>e.obraId?openObraTab?.(e.obraId,'Agenda / Avisos'):setScreen('Agenda')}><b>{e.title||e.titol||e.tipus||i18nT("Cita")}</b><span>{fmtEventDate878136(e)} · {e.hora||i18nT("Hora pendent")}</span>{e.obra&&<em>{e.obra}</em>}</button>)}</div></CardOPlega878369>
     <CardOPlega878369 title={t("Feines pendents")} resum={nF878366?[nF878366===1?t("1 feina"):t("{n} feines",{n:nF878366}),nVenc878369?(nVenc878369===1?t("1 vençuda"):t("{n} vençudes",{n:nVenc878369})):""].filter(Boolean).join(" · "):t("Cap")} obert={showNewTask} action={<button className="primary" onClick={()=>setShowNewTask(v=>!v)}>{showNewTask?t('Tancar'):' + '+t('Afegir feina')}</button>}>
       {showNewTask&&<div className="home-task-create-v878139 home-task-create-v878140">
-        <div className="home-task-create-head-v878139"><b>{i18nT("Nova tasca / feina pendent")}</b><span>{i18nT("La data és la data màxima d’entrega. Pots crear client i expedient des d’aquí sense anar a una altra pestanya.")}</span></div>
+        <div className="home-task-create-head-v878139"><b>{i18nT("Nova feina pendent")}</b></div>
         <div className="home-task-form-v878139 home-task-form-v878140">
-          <label><span>{i18nT("Client")}</span><select value={selectedClient} onChange={e=>{const cid=e.target.value;const first=(obres||[]).find(o=>o.client===cid&&isExpedientOpen878136(o.estat));setTaskDraft(d=>({...d,clientId:cid,obraId:cid==='__new__'?'__new__':(first?.id||'__new__')}))}}><option value="__new__">{i18nT("+ Crear nou client")}</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select></label>
-          {selectedClient==='__new__'&&<><label><span>{i18nT("Nou client / contacte")}</span><input value={taskDraft.newClientNom||''} onChange={e=>setTaskDraft(d=>({...d,newClientNom:e.target.value}))} placeholder={i18nT("Nom del client")}/></label><label><span>{i18nT("Rol / tipologia")}</span><select value={taskDraft.newClientTipus||'Promotor'} onChange={e=>setTaskDraft(d=>({...d,newClientTipus:e.target.value}))}>{clientRoleOptions878181.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</select></label><label><span>{i18nT("NIF/CIF opcional")}</span><input value={taskDraft.newClientNif||''} onChange={e=>setTaskDraft(d=>({...d,newClientNif:e.target.value}))}/></label></>}
-          <label><span>{i18nT("Expedient o treball")}</span><select value={taskDraft.obraId||'__new__'} onChange={e=>setTaskDraft(d=>({...d,obraId:e.target.value}))}><option value="__new__">{i18nT("+ Crear nou expedient")}</option>{taskObres.map(o=><option key={o.id} value={o.id}>{expedientCode8739(o)} · {o.nom}</option>)}</select></label>
-          {(!taskDraft.obraId||taskDraft.obraId==='__new__')&&<><label><span>{i18nT("Nou expedient")}</span><input value={taskDraft.newObraNom||''} onChange={e=>setTaskDraft(d=>({...d,newObraNom:e.target.value}))} placeholder={i18nT("Nom de l’obra o treball")}/></label><label><span>{i18nT("Tipus feina")}</span><select value={taskDraft.newObraTipus||'Gestió integral d’obra'} onChange={e=>setTaskDraft(d=>({...d,newObraTipus:e.target.value}))}><option value="Gestió integral d’obra">{i18nT("Gestió integral d’obra")}</option><option value="Direcció d’obra">{i18nT("Direcció d’obra")}</option><option value="Direcció d’execució">{i18nT("Direcció d’execució")}</option><option value="Seguretat i salut">{i18nT("Seguretat i salut")}</option><option value="Informe / certificat">{i18nT("Informe / certificat")}</option><option value="Altres">{i18nT("Altres")}</option></select></label></>}
+          <div className="tria-obra-v878416 span-2-v878139"><TriaObra878416 etiqueta={i18nT("Expedient o treball")} obres={taskObres} clients={clients} valor={taskDraft.obraId||''} onTria={v=>{const o=(obres||[]).find(x=>x.id===v);setTaskDraft(d=>({...d,obraId:v,clientId:o?(o.client||'__new__'):(v==='__new__'?'__new__':d.clientId)}))}} extra={[["__new__",i18nT("+ Crear nou expedient")]]}/></div>
+          {taskDraft.obraId==='__new__'&&<><div className="tria-cli-v878416"><TriaContacte878413 etiqueta={i18nT("Client")} valor={selectedClient!=='__new__'?(currentClient?.nom||''):(taskDraft.newClientNom||'')} onTria={(d,x)=>{if(x?.c){setTaskDraft(t0=>({...t0,clientId:x.c.id}));return}setTaskDraft(t0=>({...t0,clientId:'__new__',newClientNom:d.nom||'',newClientNif:netV878304(d.nif)||''}))}} onNou={n=>setTaskDraft(t0=>({...t0,clientId:'__new__',newClientNom:n||''}))} nouText={i18nT("+ Client nou…")}/></div>
+          {selectedClient==='__new__'&&<><label><span>{i18nT("Nou client / contacte")}</span><input value={taskDraft.newClientNom||''} onChange={e=>setTaskDraft(d=>({...d,newClientNom:e.target.value}))} placeholder={i18nT("Nom del client")}/></label><label><span>{i18nT("Rol / tipologia")}</span><select value={taskDraft.newClientTipus||'Promotor'} onChange={e=>setTaskDraft(d=>({...d,newClientTipus:e.target.value}))}>{clientRoleOptions878181.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</select></label><label><span>{i18nT("NIF/CIF opcional")}</span><input value={taskDraft.newClientNif||''} onChange={e=>setTaskDraft(d=>({...d,newClientNif:e.target.value}))}/></label></>}<label><span>{i18nT("Nou expedient")}</span><input value={taskDraft.newObraNom||''} onChange={e=>setTaskDraft(d=>({...d,newObraNom:e.target.value}))} placeholder={i18nT("Nom de l’obra o treball")}/></label><label><span>{i18nT("Tipus feina")}</span><select value={taskDraft.newObraTipus||'Gestió integral d’obra'} onChange={e=>setTaskDraft(d=>({...d,newObraTipus:e.target.value}))}><option value="Gestió integral d’obra">{i18nT("Gestió integral d’obra")}</option><option value="Direcció d’obra">{i18nT("Direcció d’obra")}</option><option value="Direcció d’execució">{i18nT("Direcció d’execució")}</option><option value="Seguretat i salut">{i18nT("Seguretat i salut")}</option><option value="Informe / certificat">{i18nT("Informe / certificat")}</option><option value="Altres">{i18nT("Altres")}</option></select></label></>}
           <label className="span-2-v878139"><span>{i18nT("Tasca / feina pendent")}</span><input value={taskDraft.text||''} onChange={e=>setTaskDraft(d=>({...d,text:e.target.value}))} placeholder={i18nT("Ex. Preparar certificació, revisar pressupost, enviar acta...")}/></label>
           <label><span>{i18nT("Data màxima entrega")}</span><input type="date" value={taskDraft.dataMaxima||''} onChange={e=>setTaskDraft(d=>({...d,dataMaxima:e.target.value}))}/></label>
           <label><span>{i18nT("Prioritat")}</span><select value={taskDraft.prioritat||'Normal'} onChange={e=>setTaskDraft(d=>({...d,prioritat:e.target.value}))}><option value="Baixa">{i18nT("Baixa")}</option><option value="Normal">{i18nT("Normal")}</option><option value="Alta">{i18nT("Alta")}</option><option value="Urgent">{i18nT("Urgent")}</option></select></label>
@@ -7676,7 +7676,7 @@ return <>
           <label><span>{i18nT("Hora límit opcional")}</span><input type="time" value={taskDraft.hora||'09:00'} onChange={e=>setTaskDraft(d=>({...d,hora:e.target.value}))}/></label>
           <label className="span-2-v878139"><span>{i18nT("Notes internes")}</span><input value={taskDraft.notes||''} onChange={e=>setTaskDraft(d=>({...d,notes:e.target.value}))} placeholder={i18nT("Comentari ràpid per saber què s’ha de fer")}/></label>
         </div>
-        <div className="home-task-actions-v878139"><button className="primary" onClick={saveHomeTask878140}>{i18nT("Guardar tasca")}</button></div>
+        <div className="home-task-actions-v878139"><button className="primary" onClick={saveHomeTask878140}>{i18nT("Guardar la feina")}</button></div>
       </div>}
       <div className="client-task-list-v878138 client-task-list-v878140">
       {tasksByClient.length===0?<Empty text="No tens feines pendents."/>:tasksByClient.map(g=><section key={g.key} className="client-task-group-v878138 client-task-group-v878140"><header><b>{g.label}</b><span>{g.items.length===1?i18nT("1 feina"):i18nT("{n} feines",{n:g.items.length})}</span></header>{g.items.map(({obra:o,task:t})=>{const tone=taskDeadlineTone878140(t);return <div key={`${o.id}-${t.id}`} className={`task-card-pro-v878140 ${tone}`}><div className="task-colorbar-v878140"><i style={{width:`${taskDeadlinePercent878140(t)}%`}}/></div><button className="task-main-v878137 task-main-pro-v878140" onClick={()=>setViewTask({obra:o,task:t})}><b>{t.text||i18nT("Tasca pendent")}<em className={`dies-v878314 ${tone}`}>{diesTasca878314(t)}</em></b><span>{o.nom} · {i18nT(t.estat||"Pendent")} {i18nT("· màxim")} {taskDueLabel878140(t)} · {i18nT(t.prioritat||"Normal")}</span>{t.notes&&<em>{t.notes}</em>}</button><select className="task-action-select-v878140" aria-label={i18nT("Accions")} defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value='';doTaskAction878140(o,t,v)}}><option value="" disabled>{i18nT("Accions")}</option><option value="view">{i18nT("Veure / editar tasca")}</option><option value="enter">{i18nT("Entrar a l’expedient")}</option><option value="time">{i18nT("Iniciar temps")}</option><option value="process">{i18nT("Marcar en procés")}</option><option value="done">{i18nT("Fet")}</option><option value="cancel">{i18nT("Anul·lar")}</option></select></div>})}</section>)}{nF878366>5&&<button type="button" className="link totes-f-v878366" onClick={()=>setTotesF878366(v=>!v)}>{totesF878366?i18nT("Veure només les primeres"):i18nT("Veure-les totes ({n})",{n:nF878366})}</button>}
@@ -8759,6 +8759,36 @@ function TriaContacte878413({grups=null,valor="",onTria,onCap,onNou,etiqueta="",
       {altres.length>0&&<div className="tc-grup altres"><h5>{t("Altres contactes")}</h5>{altres.map(fila)}</div>}
       {grups&&!cercant&&!tots&&vis.some(x=>!grups.includes(x.g))&&<button type="button" className="link tc-tots" onClick={()=>setTots(true)}>{t("Veure tots els contactes")}</button>}
       {onNou&&<button type="button" className="tc-fila nou" onClick={()=>{const n=q.trim();tanca();onNou(n)}}><Plus size={15} aria-hidden="true"/> {cercant?t("Nou: «{q}»",{q:q.trim()}):String(nouText||t("Nou contacte")).replace(/^[+＋]\s*/,"")}</button>}
+    </div>}
+  </div>;
+}
+// V87.416 · triar una obra o un expedient (Agenda, hores, feines): amb 40 expedients el desplegable era llarg i no s'hi podia buscar. Un
+// camp on s'escriuen lletres del nom, el número, el client o la població; les obertes primer i, a sota, les tancades. Mateix aspecte que
+// el de Contactes (`.tc-v878413`).
+function TriaObra878416({obres=[],clients=[],valor="",onTria,buit="",extra=[],etiqueta="",required=false}){
+  const [obert,setObert]=useState(false);
+  const [q,setQ]=useState("");
+  const ref=useRef(null);
+  useEffect(()=>{if(!obert)return;const f=e=>{if(ref.current&&!ref.current.contains(e.target)){setObert(false);setQ("")}};document.addEventListener("pointerdown",f,true);return ()=>document.removeEventListener("pointerdown",f,true)},[obert]);
+  const nomCl=id=>{const c=(clients||[]).find(x=>String(x.id)===String(id));return netV878304(c?.nom)||""};
+  const et=o=>[codiCurt878270(o),o.nom].filter(Boolean).join(" · ");
+  const sel=(obres||[]).find(o=>String(o.id)===String(valor));
+  const mostra=sel?et(sel):(extra.find(([k])=>k===valor)?.[1]||(valor===""&&buit?buit:""));
+  const cercant=!!q.trim();
+  const llista=(obres||[]).filter(o=>!cercant||coincideix878315(q,{noms:[o.nom,codiCurt878270(o),expedientCode8739(o),nomCl(o.client),o.propietat,o.poblacio,o.adreca]}));
+  const oberts=llista.filter(o=>isExpedientOpen878136(o.estat)),altres=llista.filter(o=>!isExpedientOpen878136(o.estat));
+  const tanca=()=>{setObert(false);setQ("")};
+  const tria=v=>{tanca();onTria?.(v)};
+  const fila=o=><button type="button" role="option" aria-selected={String(o.id)===String(valor)} key={o.id} className="tc-fila" onClick={()=>tria(o.id)}><b>{et(o)}</b><small>{[nomCl(o.client),o.poblacio,isExpedientOpen878136(o.estat)?"":i18nT(o.estat||"")].filter(Boolean).join(" · ")}</small></button>;
+  return <div className={`tc-v878413 to-v878416${obert?" obert":""}`} ref={ref} onKeyDown={e=>{if(e.key==="Escape"&&obert){e.stopPropagation();tanca()}}}>
+    {etiqueta&&<span className="tc-et">{etiqueta}</span>}
+    <div className="tc-camp"><input type="search" value={obert?q:mostra} placeholder={obert?(mostra||t("Escriu el nom, el número o el client…")):(buit||t("Tria’n un…"))} onFocus={()=>{setObert(true);setQ("")}} onChange={e=>{setQ(e.target.value);setObert(true)}} aria-label={etiqueta||t("Buscar")} aria-expanded={obert} autoComplete="off" required={required&&!valor}/><ChevronRight size={16} className="chev" aria-hidden="true"/></div>
+    {obert&&<div className="tc-panell" role="listbox">
+      {buit&&!cercant&&<button type="button" className="tc-fila cap" onClick={()=>tria("")}>{buit}</button>}
+      {!cercant&&extra.map(([k,l])=><button type="button" key={k} className="tc-fila nou" onClick={()=>tria(k)}>{l}</button>)}
+      {oberts.length>0&&<div className="tc-grup"><h5>{t("Obertes")}</h5>{oberts.slice(0,80).map(fila)}</div>}
+      {altres.length>0&&<div className="tc-grup altres"><h5>{t("Tancades i altres")}</h5>{altres.slice(0,cercant?80:20).map(fila)}</div>}
+      {!llista.length&&<p className="tc-buit">{t("No n’hi ha cap amb «{q}».",{q:q.trim()})}</p>}
     </div>}
   </div>;
 }
@@ -17262,7 +17292,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.415",
+    app_version:"87.416",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19403,11 +19433,11 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
       {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}
     </div>}
     {view==="equip"?<EquipSetmana878381 dies={weekDays.slice(0,5)} obres={safeObres} odata={odata} openObraTab={openObraTab} todayIso={todayIso}/>:view==="mes"?renderMonth():view==="setmana"?renderTimeGrid(weekDays):view==="dia"?renderTimeGrid([cursor]):renderList()}
-    {form&&<AgendaEditor878256 form={form} setForm={setForm} obres={safeObres} save={save} remove={remove} close={()=>setForm(null)} openObra={openObra} readOnly={readOnly||!!form.readOnly}/>}
+    {form&&<AgendaEditor878256 form={form} setForm={setForm} obres={safeObres} clients={clients} save={save} remove={remove} close={()=>setForm(null)} openObra={openObra} readOnly={readOnly||!!form.readOnly}/>}
   </div>;
 }
 
-function AgendaEditor878256({form,setForm,obres=[],save,remove,close,openObra,readOnly=false}){
+function AgendaEditor878256({form,setForm,obres=[],clients=[],save,remove,close,openObra,readOnly=false}){
   const set=(k,v)=>setForm(f=>{
     const n={...f,[k]:v};
     if(k==="tipus"&&!f.comptaTouched){n.compta=!!AGENDA_TYPES878256.find(x=>x.k===v)?.hours}
@@ -19429,7 +19459,7 @@ function AgendaEditor878256({form,setForm,obres=[],save,remove,close,openObra,re
       <label className="chk"><input type="checkbox" checked={!!form.allDay} onChange={e=>set("allDay",e.target.checked)}/>{i18nT("Tot el dia")}</label>
     </div>
     <div className="ag-grid">
-      <label><span>{i18nT("Expedient")}</span><select value={form.obraId||""} onChange={e=>set("obraId",e.target.value)}><option value="">{i18nT("Sense expedient")}</option>{sorted.map(o=><option key={o.id} value={o.id}>{o.nom} · {expedientCode8739(o)}</option>)}</select></label>
+      <div className="tria-obra-v878416"><TriaObra878416 etiqueta={i18nT("Expedient")} obres={sorted} clients={clients} valor={form.obraId||""} onTria={v=>set("obraId",v)} buit={i18nT("Sense expedient")}/></div>
       <label><span>{i18nT("Lloc")}</span><input value={form.adreca||""} onChange={e=>set("adreca",e.target.value)} placeholder={i18nT("Adreça o lloc")}/></label>
       <label><span>{i18nT("Avís")}</span><select value={form.avis??""} onChange={e=>set("avis",e.target.value)}>{AGENDA_ALERTS878256.map(([v,l])=><option key={v} value={v}>{i18nT(l)}</option>)}</select></label>
     </div>
@@ -19505,7 +19535,7 @@ function ManualHours878256({obres=[],clients=[],initial={},close}){
   const sorted=[...(obres||[])].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0));
   return <Modal title={t("Apuntar hores o una visita")} close={close}><div className="temps-manual-v878255">
     <label><span>{t("Data")}</span><input type="date" value={m.data} onChange={e=>setM(x=>({...x,data:e.target.value}))}/></label>
-    <label className="wide"><span>{t("Expedient")}</span><select value={m.obraId} onChange={e=>setM(x=>({...x,obraId:e.target.value}))}>{sorted.map(o=><option key={o.id} value={o.id}>{o.nom} · {cName(o.client)}</option>)}</select></label>
+    <div className="wide tria-obra-v878416"><TriaObra878416 etiqueta={t("Expedient")} obres={sorted} clients={clients} valor={m.obraId} onTria={v=>setM(x=>({...x,obraId:v}))}/></div>
     <label className="wide"><span>{t("Quina feina?")}</span><div className="kinds">{TIME_KINDS878255.map(k=><button type="button" key={k} aria-pressed={m.tipus===k} onClick={()=>setM(x=>({...x,tipus:k}))}>{k}</button>)}</div></label>
     <label><span>{t("Com ho vols apuntar?")}</span><select value={m.mode} onChange={e=>setM(x=>({...x,mode:e.target.value}))}><option value="hores">{t("Total d’hores")}</option><option value="interval">{t("Hora d’inici i de final")}</option></select></label>
     {m.mode==="hores"?<label><span>{t("Hores")}</span><input inputMode="decimal" value={m.hores} onChange={e=>setM(x=>({...x,hores:e.target.value}))}/></label>:<><label><span>{t("Inici")}</span><input type="time" value={m.inici} onChange={e=>setM(x=>({...x,inici:e.target.value}))}/></label><label><span>{t("Final")}</span><input type="time" value={m.final} onChange={e=>setM(x=>({...x,final:e.target.value}))}/></label></>}

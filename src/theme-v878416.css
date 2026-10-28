@@ -1,0 +1,12 @@
+/* V87.416 · triar una obra o un expedient amb el cercador (Agenda, hores, feines): el mateix aspecte que el de Contactes */
+html body .tria-obra-v878416,html body .tria-cli-v878416{min-width:0;display:grid}
+html body .to-v878416 .tc-fila.nou{margin:0 0 4px;border-top:0!important;border-bottom:1px solid var(--co-line,#E2E8F0)!important;border-radius:8px 8px 0 0!important}
+html body .to-v878416 .tc-fila.cap{border-bottom:1px solid var(--co-line,#E2E8F0)!important;border-radius:8px 8px 0 0!important}
+/* Dates: només la primera lletra en majúscula. Amb «capitalize» sortia «Dimecres, 28 D’octubre» o «Octubre De 2026». */
+html body .gt-head-v878253 .top span,html body .hores-treb-v878327 .dia>header b,html body .parte-v878349 .dia b,html body .partes-mes-v878349>.mes-cap b,
+html body .parte-resum-v878349 .pr-dia b,html body .equip-v878381 thead th,html body .equip-v878381 .eq-dies button small{text-transform:none!important}
+html body .hores-treb-v878327 .dia>header b,html body .parte-v878349 .dia b,html body .partes-mes-v878349>.mes-cap b,html body .parte-resum-v878349 .pr-dia b,
+html body .equip-v878381 .eq-dies button small{display:inline-block}
+html body .gt-head-v878253 .top span::first-letter,html body .hores-treb-v878327 .dia>header b::first-letter,html body .parte-v878349 .dia b::first-letter,
+html body .partes-mes-v878349>.mes-cap b::first-letter,html body .parte-resum-v878349 .pr-dia b::first-letter,html body .equip-v878381 thead th::first-letter,
+html body .equip-v878381 .eq-dies button small::first-letter{text-transform:uppercase}
