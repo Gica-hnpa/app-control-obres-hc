@@ -2010,6 +2010,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Dates amb només la primera lletra en majúscula** (`theme-v878416.css`, `::first-letter`): `text-transform:capitalize` deia «Dimecres,
       28 D’octubre» o «Octubre De 2026» (hores del treballador, partes, Planning, Agenda › Equip).
     - Prova: `v416test.mjs` (23: tècnic a l'ordinador, treballador i mòbil). Adaptades `perfils326test` i `veutest`.
+  - **V87.417 · Canviar una persona a Contactes la canvia a les obres** (repàs funcional, tanda 3):
+    - **Per què:** l'obra desa el promotor en camps propis (`propietat`, `emailPropietat`, `telefonPropietat`, `mobilPropietat`,
+      `nifPropietat`, `contactePropietat`, `empresaPropietat`, l'adreça) i el nom de la constructora i dels tècnics (`constructor`, `do`,
+      `deo`, `css`). Canviar el contacte a Contactes posava al dia les còpies d'agents però no aquests camps, i «Enviar» i els documents
+      continuaven amb el correu vell (i a «Enviar» la mateixa persona sortia dues vegades, amb el correu nou i el vell).
+    - **Ara** (`obresPersona878417(obres, abans, després)`, funció pura; l'App ho aplica amb `window.__acoPersona878417` a la llista
+      d'obres i a `odata[id].obra`): en desar un contacte (`Contactes878315`) o la fitxa d'un client (`FitxaClient`), les obres on és el
+      promotor (pel nom, el NIF o `promotorAgentId`) reben els camps nous **que eren buits, de farciment o iguals que els d'abans** (si una
+      obra en tenia de propis, es queden), i el nom nou als camps de la constructora o dels tècnics que deien el nom d'abans. Les obres que
+      ens han compartit no es toquen (tampoc les seves còpies d'agents: `updateAgentLibrary878191` se les salta, com `propagaClient878415`).
+    - **El mòbil** a la fitxa del contacte (`EditorContacte878315`) i a la del client (`FitxaClient`); abans només el telèfon (el WhatsApp fa
+      servir el mòbil). «Nou contacte» (`clientNou878406`) el desa.
+    - **Eliminar un client** també el treu de Contactes (`amagarAgent878301`, `treureDeLaLlista878303`): hi tornava com a agent. Les obres i
+      les actes on surt el conserven. El missatge diu «obres» o «expedients» segons el perfil.
+    - Prova: `v417test.mjs` (18: promotor amb el correu vell i una obra amb un de propi, «Enviar», nom d’un tècnic, fitxa d’un client, contacte nou
+      amb el mòbil i eliminar-lo, recarregar, mòbil).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2183,7 +2199,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.416 a Render):**
+**Estat (publicada la V87.417 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

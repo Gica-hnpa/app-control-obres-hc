@@ -4522,6 +4522,7 @@ export default {
   "Obertes": "Abiertas",
   "Tancades i altres": "Cerradas y otras",
   "Nova feina pendent": "Nueva tarea pendiente",
+  "Aquest client té {n} obres. Si l’elimines, les obres no s’esborren però es queden sense client. Continuar?": "Este cliente tiene {n} obras. Si lo eliminas, las obras no se borran pero se quedan sin cliente. ¿Continuar?",
   "Guardar la feina": "Guardar la tarea",
   "No n’hi ha cap amb «{q}».": "No hay ninguna con «{q}».",
   "Cap d’aquest grup amb «{q}».": "Ninguno de este grupo con «{q}».",

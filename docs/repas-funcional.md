@@ -18,14 +18,14 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 | V87.414 | Dades de l'obra: els camps s'omplen amb Contactes; cercador per blocs sense repetits | `v414test` (17) |
 | V87.415 | Les fitxes de client de farciment s'omplen soles amb Contactes; desar un client posa al dia les seves còpies; «Nova obra» tria el client de Contactes | `v415test` (18) |
 | V87.416 | Triar l'obra amb el cercador (cita, «+ Afegir hores», hores del treballador); «+ Afegir feina» de l'Inici per l'expedient; dates «28 d’octubre» | `v416test` (23) |
+| V87.417 | Canviar una persona a Contactes (o la fitxa d'un client) la canvia a les obres (promotor, constructora, tècnics); el mòbil a la fitxa del contacte i del client; un client eliminat surt de Contactes | `v417test` (18) |
 
 ## Per fer (ordre)
 
 ### 1. Contactes i persones (a tot arreu on es tria algú)
 - [x] Dades de l'obra (client, promotor, constructora, tècnics, industrials).
 - [x] Nova obra (client).
-- [ ] Contactes: crear, editar (també un contacte que és client i agent alhora: que canviï a les dues fitxes), eliminar, treure de la
-      llista; que surti igual a Dades, a les actes i a «Enviar».
+- [x] Contactes: crear, editar (també un contacte que és client i agent alhora), eliminar; que surti igual a Dades, a les actes i a «Enviar».
 - [x] Agenda: la cita amb l'obra (cercador). Hores i feines de l'Inici, també.
 - [ ] Empresa › Industrials i Treballadors: crear, editar, documents; que surtin al Planning, als partes i a Agenda › Equip.
 
