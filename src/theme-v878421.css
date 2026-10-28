@@ -1,0 +1,8 @@
+/* V87.421 · Expedients a l'ordinador: la columna de l'estat prou ampla perquè «Pendent de resposta» hi càpiga sencer. La regla de la
+   V87.412 (min-width:172px) no s'hi aplicava: en guanyava una de la V87.289 (td:nth-child(8) select, més específica) */
+@media (min-width:1101px){
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(8){width:196px!important}
+  /* el lloc de més, de la tipologia i de l'adreça (el nom del treball continua tenint més del 20 % de la taula) */
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(6),html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 th:nth-child(7){width:10%!important}
+  html body .expedients-page-v8741 table.exp-table-v8742.exp-table-v878289 td:nth-child(8) .exp-status-cell-v878247 select{width:100%!important;min-width:0!important;max-width:none!important}
+}

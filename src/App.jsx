@@ -31,7 +31,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.420";
+const APP_VERSION878264="87.421";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17362,7 +17362,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.420",
+    app_version:"87.421",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19366,6 +19366,8 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
       if(provat||!gcalPotReconnectar())return;
       if(!window.matchMedia?.("(hover:hover) and (pointer:fine)")?.matches)return;
       if(e.target?.closest?.(".modal,.modal-backdrop,.ag-veu-v878294,.veu-cita-v878294"))return;
+      // V87.421 · només els tocs de dins de l'Agenda (abans també el de sortir-ne: tocar «Ajustos» al menú obria la finestra de Google)
+      if(!e.target?.closest?.(".agenda-v878256"))return;
       provat=true;gcalConnect().catch(()=>{});
     };
     const ja=()=>{setGc(s=>({...s,on:true,err:""}));gcSyncRef.current?.()};

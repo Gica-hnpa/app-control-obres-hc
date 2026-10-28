@@ -2057,6 +2057,14 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Comprovat amb les dades d'exemple: el facturat és el mateix a Facturació i a Rendiment; el pendent de facturar = honoraris acceptats −
       facturats + hores; anul·lar una factura torna el pressupost a «Acceptat», puja el pendent i baixa el facturat del Rendiment.
     - Prova: `v420test.mjs` (11).
+  - **V87.421 · Correccions del repàs exhaustiu sobre la V87.420** (`repas411.mjs`, 336 pantalles amb els quatre comptes, ordinador i
+    mòbil, PDF, «Enviar» i «Signar»: informe a `D:/aco-tmp/repas420`; cap error de l'app):
+    - **Expedients a l'ordinador:** l'estat «Pendent de resposta» no hi cabia. La regla de la V87.412 (`min-width:172px`) no s'hi aplicava:
+      en guanyava una de la V87.289 (`td:nth-child(8) select`, més específica). Ara la columna de l'estat fa 196 px i el desplegable n'ocupa
+      tota l'amplada; la tipologia i l'adreça passen del 11-12 % al 10 % perquè el nom del treball continuï tenint més del 20 % de la taula
+      (`expcolstest`) (`src/theme-v878421.css`).
+    - **Google Calendar:** la reconnexió del primer toc (V87.331, només a l'ordinador) escoltava tot el document: el toc de sortir de l'Agenda
+      (p. ex. «Ajustos» al menú) obria la finestra de Google. Ara només els tocs de dins de l'Agenda (`.agenda-v878256`).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2230,7 +2238,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.420 a Render):**
+**Estat (publicada la V87.421 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

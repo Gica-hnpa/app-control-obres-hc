@@ -22,6 +22,7 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 | V87.418 | El Planning diu el nom d'ara del treballador; canviar el nom d'un industrial no en perd els documents ni el Planning; el nom d'un client canviat arriba a les seves còpies | `v418test` (10) |
 | V87.419 | Inici del tècnic: requadres i llista, accions de les feines («Apuntar hores», «feina»), expedients nous de cada encàrrec | `v419test` (17) |
 | V87.420 | Diners del tècnic: «Facturat en part», la retenció a Facturació, les anul·lades no compten; les xifres quadren entre pantalles | `v420test` (11) |
+| V87.421 | Repàs exhaustiu (336 pantalles): l'estat sencer a Expedients; Google no s'obre en sortir de l'Agenda | `repas411` |
 
 ## Per fer (ordre)
 
