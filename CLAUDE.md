@@ -1962,6 +1962,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       rendiment de l'encàrrec és una pestanya d'Honoraris), `v365test` («Enviar» a cada document) i `alhorarealtest` (no compta els avisos
       `GSI_LOGGER` de la finestra de Google, que el navegador de proves bloqueja). Totes les proves de la V87.412: 119, i passades soles les
       que fallaven, totes bé (`contrasenyestest` a `wt379`: la memòria cau de la carpeta principal es fa malbé).
+  - **V87.414 · Dades de l'obra amb Contactes: els camps s'omplen sols i un cercador per triar** (l'Héctor, 28/10/2026: «quan tens un client
+    a Contactes i el poses a Dades… les dades que ja tenim s'han d'emplenar soles… a Verbania tinc Brava i els camps estan buits»; «han de
+    sortir conforme a Contactes, perquè surten barrejats i repetits… del bloc que toca… i posant les primeres lletres he de poder filtrar»):
+    - **Per què Brava sortia buida:** tenia dues fitxes. La de client (`aco_clients`, id `brava`) amb dades de farciment («Pendent», «972 XXX
+      XXX», «pendent@brava.cat») i la de Contactes (l'agent `client-agent-brava` de `__global_agents_878188`) amb les de debò. Contactes les
+      ensenya juntes, però Dades › Client llegia només la de client.
+    - **Omplir** (`buit878413`: buit, «Pendent», «XXX», «pendent@…»; `contacteDe878413`: la fitxa de Contactes de la mateixa persona —pel
+      client, el NIF o el nom— amb més dades; `omple878413`: cada camp buit o de farciment, i l'adreça si només hi havia el poble). La llista és
+      la de Contactes (`lib878414` = `window.__acoContactes878406()` amb `dadesContacte878413`: l'agent i la fitxa de client ajuntats). A
+      Dades: el client (`ompleClient878414`), la constructora i els tècnics (`ompleRols878414`), els industrials (`ompleInds878414`) i el promotor
+      quan no és el client (un efecte que omple els camps `…Propietat` buits). En «Guardar dades», la fitxa de client queda corregida.
+    - **Triar** (`TriaContacte878413`, `.tc-v878413`): un camp on s'escriuen les primeres lletres (`coincideix878315`) i, a sota, els contactes
+      de Contactes (una fila per persona, `filesContactes878406`) del bloc que toca: Client tots (per blocs), Promotor `promotor`, Constructora
+      `constructora`, direcció d'obra, d'execució i S+S `tecnic`; buscant algú d'un altre bloc, a «Altres contactes» (o «Veure tots els
+      contactes»); «— Cap (pendent) —» i «+ Nou…». Es tanca tocant fora o amb Esc. Els industrials («Afegir industrial», `AgentPicker878301`)
+      també amb la llista de Contactes sense repetits. Client d'una obra compartida: el desplegable d'abans (`__prom__`).
+    - El client triat que encara no és client (`triaClient878414`): «Altres contactes» (`altresContactes878347`) ara són tots els grups.
+    - Al mòbil i l'iPad, «Guardar dades» a l'esquerra (el ＋ de l'obra el tapava).
+    - Estils `src/theme-v878414.css`. Prova: `v414test.mjs` (17: client amb farciment, tècnic repetit en dues obres, blocs, filtrar, triar,
+      desar, mòbil). Adaptades al cercador `fitxestest`, `dadestest` i `compartides347test` (que ara també espera que el contacte que posa
+      s'hagi desat abans de recarregar, `__acoStore.flush`).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2135,7 +2156,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.413 a Render):**
+**Estat (publicada la V87.414 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2153,6 +2174,9 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
 - **Previst i imprevistos** (V87.410–413): pressupost original separat de les partides noves, «Pressupost inicial…» des de l’Excel original
   (Verbania: 55 iguals i 28 noves a la fase principal), dos PDF (original i imprevistos), resum amb totes les partides; les noves i les que
   pugen en taronja, «Marcar com a nova» a mà (V87.413; l’Héctor ha de marcar la 3.09 i la 3.10 de Verbania), i als imprevistos mai el que baixa.
+- **Dades de l’obra amb Contactes** (V87.414): els camps buits o de farciment s’omplen amb la fitxa de Contactes i es tria amb un cercador
+  per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
+  subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.
 - **Repàs exhaustiu** (`tools/proves/repas411.mjs`, `WEBROOT=` per passar-lo sobre una còpia): 336 pantalles, PDF, Enviar i Signar.
 - **No fet:** perfils autònom i promotor amb compte propi, IA al servidor (albarans, pressupost-ia: cal la clau d’Anthropic i el sí de
   l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.

@@ -1,0 +1,25 @@
+/* V87.414 · triar un contacte a Dades de l'obra: un camp per escriure les primeres lletres i, a sota, els contactes del bloc que toca
+   (els de Contactes, sense repetits) */
+html body .tc-v878413{position:relative;display:grid;gap:5px;min-width:0}
+html body .tc-v878413 .tc-et{font-size:12px;font-weight:600;color:var(--co-ink-2,#334155)}
+html body .tc-v878413 .tc-camp{position:relative;min-width:0}
+html body .tc-v878413 .tc-camp input{width:100%;max-width:100%;padding-right:34px!important;box-sizing:border-box}
+html body .tc-v878413 .tc-camp .chev{position:absolute;right:11px;top:50%;transform:translateY(-50%) rotate(90deg);pointer-events:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body .tc-v878413.obert .tc-camp .chev{transform:translateY(-50%) rotate(-90deg)}
+html body .tc-v878413 .tc-panell{position:absolute;top:100%;left:0;right:0;z-index:80;margin-top:4px;max-height:min(60vh,380px);overflow:auto;overscroll-behavior:contain;background:var(--co-surface,#fff);border:1px solid var(--co-line,#E2E8F0);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.16);padding:6px}
+html body .tc-v878413 .tc-fila{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;min-height:42px;padding:7px 10px!important;border:0!important;background:none!important;box-shadow:none!important;border-radius:8px!important;text-align:left;cursor:pointer;color:var(--co-ink,#152328)}
+html body .tc-v878413 .tc-fila:hover,html body .tc-v878413 .tc-fila:focus-visible{background:#EFF6FF!important}
+html body .tc-v878413 .tc-fila[aria-selected="true"]{background:#F1F5F9!important}
+html body .tc-v878413 .tc-fila b{font-weight:600;overflow-wrap:anywhere}
+html body .tc-v878413 .tc-fila small{font-size:12px;color:var(--co-ink-3,#5F7075);overflow-wrap:anywhere}
+html body .tc-v878413 .tc-fila.cap{min-height:36px;color:var(--co-ink-3,#5F7075)}
+html body .tc-v878413 .tc-fila.nou{flex-direction:row;align-items:center;gap:6px;margin-top:4px;border-top:1px solid var(--co-line,#E2E8F0)!important;border-radius:0 0 8px 8px!important;color:var(--co-accent,#2563EB);font-weight:600}
+html body .tc-v878413 .tc-grup h5{margin:8px 10px 2px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+html body .tc-v878413 .tc-grup.altres{margin-top:4px;border-top:1px dashed var(--co-line,#E2E8F0)}
+html body .tc-v878413 .tc-buit{margin:8px 10px;color:var(--co-ink-3,#5F7075)}
+html body .tc-v878413 .tc-tots{display:block;margin:6px 10px;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;min-height:0!important;color:var(--co-accent,#2563EB)!important;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+/* les targetes de Dades no han de tallar la llista */
+html body .card:has(.tc-v878413.obert),html body .dades-acc-v878363:has(.tc-v878413.obert){overflow:visible!important}
+
+/* Al mòbil i l'iPad, el botó ＋ de l'obra tapava «Guardar dades» */
+@media (max-width:1280px),(pointer:coarse){html body .dades-desar-v878304{display:flex!important;justify-content:flex-start!important;padding-right:84px}}

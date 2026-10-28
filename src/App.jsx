@@ -31,7 +31,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.413";
+const APP_VERSION878264="87.414";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8688,7 +8688,7 @@ function FitxaPersona878304({v={},onChange,tipus="persona",readOnly=false}){
     <CampsAdreca878304 v={v} onChange={onChange} readOnly={readOnly} etiqueta={emp?(tipus==="tecnic"?t("Adreça del despatx (carrer i número)"):t("Adreça de l’empresa (carrer i número)")):""}/>
   </div>;
 }
-// V87.413 · (l'Héctor, 28/10/2026: «quan tens un client a Contactes i el poses a Dades de l'expedient, les dades que ja tenim s'han d'emplenar
+// V87.414 · (l'Héctor, 28/10/2026: «quan tens un client a Contactes i el poses a Dades de l'expedient, les dades que ja tenim s'han d'emplenar
 // soles… a Verbania tinc el meu client Brava i els camps estan buits»). La fitxa de client de Brava tenia dades de farciment («Pendent», «972 XXX
 // XXX», «pendent@…») i les de debò eren a la seva fitxa de Contactes (l'agent). A Dades, cada camp buit o de farciment s'omple amb la fitxa de
 // Contactes de la mateixa persona (pel client, el NIF o el nom) que té més dades.
@@ -8696,7 +8696,7 @@ function buit878413(v){const s=String(v??"").trim();return !s||/^(pendent|pendie
 const CAMPS_OMPLE878413=["rao","nif","telefon","mobil","email","contacte","contacteMobil","titulacio","collegiat","empresa","ofici"];
 function contacteDe878413(lib=[],{nom="",nif="",clientId=""}={}){
   const k=normalizeSearch878191(nom),nn=x=>String(x||"").replace(/[\s.-]/g,"").toUpperCase(),n=buit878413(nif)?"":nn(nif);
-  const cand=(lib||[]).filter(a=>a&&typeof a==="object"&&((clientId&&(a.sourceClientId878192===clientId||a.id==="client-agent-"+clientId))||(n&&nn(a.nif)===n)||(k&&[a.nom,a.empresa,a.rao].some(x=>x&&normalizeSearch878191(x)===k))));
+  const cand=(lib||[]).filter(a=>a&&typeof a==="object"&&((clientId&&(a._clientId===clientId||a.sourceClientId878192===clientId||a.id==="client-agent-"+clientId))||(n&&nn(a.nif)===n)||(k&&[a.nom,a.empresa,a.rao].some(x=>x&&normalizeSearch878191(x)===k))));
   if(!cand.length)return null;
   const pes=a=>CAMPS_OMPLE878413.filter(f=>!buit878413(a[f])).length+(!buit878413(a.carrer||a.adreca)?2:0);
   return [...cand].sort((x,y)=>pes(y)-pes(x))[0];
@@ -8708,6 +8708,46 @@ function omple878413(p={},font){
   if(!buit878413(pa.carrer)&&(buit878413(o.carrer)||normalizeSearch878191(o.carrer)===normalizeSearch878191(o.poblacio))){o.carrer=pa.carrer;if(!buit878413(pa.codiPostal))o.codiPostal=pa.codiPostal;if(!buit878413(pa.poblacio))o.poblacio=pa.poblacio}
   else{if(buit878413(o.codiPostal)&&!buit878413(pa.codiPostal))o.codiPostal=pa.codiPostal;if(buit878413(o.poblacio)&&!buit878413(pa.poblacio))o.poblacio=pa.poblacio}
   return o;
+}
+// V87.414 · triar un contacte a Dades de l'obra (l'Héctor, 28/10/2026: «han de sortir conforme a Contactes, perquè surten de tot tipus barrejats
+// i repetits… al desplegable, els del bloc que toca… i posant les primeres lletres ja he de poder filtrar»). La llista és la de Contactes
+// (una fila per persona, `filesContactes878406`); només el grup del paper (els altres, a «Altres contactes» en buscar o amb «Veure tots
+// els contactes»). En triar-ne un, la fitxa porta totes les dades que se’n tenen (la de Contactes i la de client).
+function dadesContacte878413(x){
+  const ag=x?.ag||{},c=x?.c||null;
+  const base=personaAgent878304(cleanAgentCopy878301(ag));
+  const deClient=c?{...clientPersona878304(c),empresa:netV878304(c.rao)}:null;
+  const o=omple878413(base,deClient);
+  return {...o,id:ag.id||"",_clientId:c?.id||"",_grup:x?.g||"",nom:netV878304(o.nom)||netV878304(c?.nom)||"",rol:ag.rol||o.rol||""};
+}
+function TriaContacte878413({grups=null,valor="",onTria,onCap,onNou,etiqueta="",nouText=""}){
+  const [obert,setObert]=useState(false);
+  const [q,setQ]=useState("");
+  const [tots,setTots]=useState(false);
+  const ref=useRef(null);
+  const files=useMemo(()=>{if(!obert)return [];try{return window.__acoContactes878406?.()||[]}catch(e){console.warn(e);return []}},[obert]);
+  useEffect(()=>{if(!obert)return;const f=e=>{if(ref.current&&!ref.current.contains(e.target)){setObert(false);setQ("")}};document.addEventListener("pointerdown",f,true);return ()=>document.removeEventListener("pointerdown",f,true)},[obert]);
+  const cercant=!!q.trim();
+  const coinc=x=>coincideix878315(q,{noms:[x.ag.nom,x.ag.empresa,x.c?.nom,x.c?.rao,...contactesDe878315(x.c||x.ag).map(p=>p.nom)],nums:[x.ag.telefon,x.ag.mobil,x.ag.nif,x.c?.telefon,x.c?.mobil,x.c?.nif]});
+  const vis=files.filter(x=>!cercant||coinc(x));
+  const delBloc=grups?vis.filter(x=>grups.includes(x.g)):vis;
+  const altres=grups&&(cercant||tots)?vis.filter(x=>!grups.includes(x.g)):[];
+  const tanca=()=>{setObert(false);setQ("");setTots(false)};
+  const tria=x=>{tanca();onTria?.(dadesContacte878413(x),x)};
+  const fila=x=>{const a=agentDeContacte878406(x);return <button type="button" role="option" aria-selected={normalizeSearch878191(a.nom)===normalizeSearch878191(valor)} key={x.ag._persona878301||x.ag.id||a.nom} className="tc-fila" onClick={()=>tria(x)}><b>{a.nom}</b><small>{[a.empresa&&normalizeSearch878191(a.empresa)!==normalizeSearch878191(a.nom)?a.empresa:"",a.nif,a.mobil||a.telefon].filter(Boolean).join(" · ")}</small></button>};
+  const perGrups=l=>GRUPS_CONTACTE878315.map(([g,lab])=>{const ll=l.filter(x=>x.g===g);return ll.length?<div key={g} className="tc-grup"><h5>{i18nT(lab)}</h5>{ll.map(fila)}</div>:null});
+  return <div className={`tc-v878413${obert?" obert":""}`} ref={ref} onKeyDown={e=>{if(e.key==="Escape"&&obert){e.stopPropagation();tanca()}}}>
+    {etiqueta&&<span className="tc-et">{etiqueta}</span>}
+    <div className="tc-camp"><input type="search" value={obert?q:valor} placeholder={obert?(valor||t("Escriu les primeres lletres…")):t("— Cap (pendent) —")} onFocus={()=>{setObert(true);setQ("")}} onChange={e=>{setQ(e.target.value);setObert(true)}} aria-label={etiqueta||t("Buscar a Contactes")} aria-expanded={obert} autoComplete="off"/><ChevronRight size={16} className="chev" aria-hidden="true"/></div>
+    {obert&&<div className="tc-panell" role="listbox">
+      {onCap&&valor&&!cercant&&<button type="button" className="tc-fila cap" onClick={()=>{tanca();onCap()}}>{t("— Cap (pendent) —")}</button>}
+      {grups?delBloc.map(fila):perGrups(delBloc)}
+      {!delBloc.length&&<p className="tc-buit">{cercant?(altres.length?t("Cap d’aquest grup amb «{q}».",{q:q.trim()}):t("No hi ha cap contacte amb «{q}».",{q:q.trim()})):t("Encara no hi ha cap contacte d’aquest grup.")}</p>}
+      {altres.length>0&&<div className="tc-grup altres"><h5>{t("Altres contactes")}</h5>{altres.map(fila)}</div>}
+      {grups&&!cercant&&!tots&&vis.some(x=>!grups.includes(x.g))&&<button type="button" className="link tc-tots" onClick={()=>setTots(true)}>{t("Veure tots els contactes")}</button>}
+      {onNou&&<button type="button" className="tc-fila nou" onClick={()=>{const n=q.trim();tanca();onNou(n)}}><Plus size={15} aria-hidden="true"/> {cercant?t("Nou: «{q}»",{q:q.trim()}):String(nouText||t("Nou contacte")).replace(/^[+＋]\s*/,"")}</button>}
+    </div>}
+  </div>;
 }
 // Fitxa d'un client (Clients) ↔ fitxa de persona
 function clientPersona878304(c={}){return {mobil:netV878304(c.mobil),contacteMobil:netV878304(c.contacteMobil),nom:netV878304(c.nom),rao:netV878304(c.rao)===netV878304(c.nom)?"":netV878304(c.rao),nif:netV878304(c.nif),contacte:netV878304(c.contacte)===netV878304(c.nom)?"":netV878304(c.contacte),telefon:netV878304(c.telefon),email:netV878304(c.email),carrer:netV878304(c.adreca),codiPostal:netV878304(c.codiPostal),poblacio:netV878304(c.poblacio)}}
@@ -8776,7 +8816,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   const [clientChoice,setClientChoice0]=useState(()=>obra.compartida?(clientIdObra878347(obra)||"__prom__"):(obra.client||client?.id||""));
   // V87.347 · al desplegable del client, també els altres contactes (promotors i altres) que encara no són clients: en triar-ne un i
   // desar, es fa client amb les seves dades
-  const altresContactes878347=useMemo(()=>{const noms=new Set((clients||[]).map(c=>normalizeSearch878191(c.nom)));return (agentsLib878301||[]).filter(a=>{const g=agentCategory878188(a);return (g==="promotor"||g==="altres")&&a.nom&&!noms.has(normalizeSearch878191(a.nom))&&!/^(pendent|pendiente|particular)$/i.test(String(a.nom).trim())})},[agentsLib878301,clients]);
+  const altresContactes878347=useMemo(()=>{const noms=new Set((clients||[]).map(c=>normalizeSearch878191(c.nom)));return (agentsLib878301||[]).filter(a=>{return a.nom&&!noms.has(normalizeSearch878191(a.nom))&&!/^(pendent|pendiente|particular)$/i.test(String(a.nom).trim())})},[agentsLib878301,clients]);
   const clauAg878347=a=>"ag:"+(a._persona878301||normalizeSearch878191(a.nom));
   const agentTriat878347=String(clientChoice||"").startsWith("ag:")?altresContactes878347.find(a=>clauAg878347(a)===clientChoice)||null:null;
   // V87.303 · si s'ha començat a canviar el formulari, no es torna a omplir amb el que hi ha desat (fins a «Guardar dades»
@@ -8837,6 +8877,14 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   function promoterPatch87210(agent={}){
     const pa=partsAdreca878304(agent);
     return {promotorAgentId:agent.id||"",propietat:agent.nom||agent.empresa||"",nifPropietat:agent.nif||"",adrecaPropietat:composaAdreca878304(pa)||agent.adreca||"",emailPropietat:agent.email||"",telefonPropietat:agent.telefon||"",contactePropietat:netV878304(agent.contacte),mobilPropietat:netV878304(agent.mobil),contacteMobilPropietat:netV878304(agent.contacteMobil),empresaPropietat:netV878304(agent.empresa)===netV878304(agent.nom)?"":netV878304(agent.empresa),carrerPropietat:pa.carrer,cpPropietat:pa.codiPostal,poblacioPropietat:pa.poblacio};
+  }
+  // V87.414 · el client triat a Contactes: la seva fitxa de client o, si no en té, el contacte (que es fa client en desar)
+  function triaClient878414(d,x){
+    if(x?.c){setClientChoice(x.c.id);return}
+    const k=x?.ag?._persona878301||normalizeSearch878191(x?.ag?.nom||d.nom);
+    const a=altresContactes878347.find(y=>(y._persona878301||normalizeSearch878191(y.nom))===k);
+    if(a){setClientChoice(clauAg878347(a));return}
+    setClientChoice("__new__");setNewClient878159(p=>({...p,nom:d.nom||p.nom,rao:netV878304(d.empresa)===netV878304(d.nom)?"":netV878304(d.empresa),nif:netV878304(d.nif)||"Pendent",email:netV878304(d.email),telefon:netV878304(d.telefon),adreca:composaAdreca878304(d)||"",codiPostal:netV878304(d.codiPostal),poblacio:netV878304(d.poblacio)}));
   }
   function choosePromoter87210(value){
     if(value==="__new__"){setForm(previous=>({...previous,promotorAgentId:"",propietat:"",nifPropietat:"",adrecaPropietat:"",emailPropietat:"",telefonPropietat:"",contactePropietat:"",empresaPropietat:"",carrerPropietat:"",cpPropietat:"",poblacioPropietat:""}));setTimeout(()=>{try{document.querySelector(".prom-tab-v878304 .fitxa-persona-v878304 input")?.focus()}catch{}},50);return}
@@ -8942,13 +8990,32 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   // Promotor (i les que ja tenen algú), amb «+ Altres agents».
   const [sub878304,setSub878304]=useState(()=>{try{return sessionStorage.getItem("aco_dades_sub_v878304")||"obra"}catch{return "obra"}});
   const triaSub878304=k=>{setSub878304(k);try{sessionStorage.setItem("aco_dades_sub_v878304",k)}catch{}};
-  const [clientEd878304,setClientEd0878304]=useState(()=>{const c=(clients||[]).find(x=>x.id===(obra.client||client?.id));return c?clientPersona878304(c):null});
+  // V87.414 · les fitxes s'omplen amb el que ja hi ha a Contactes (camps buits o de farciment)
+  const lib878414=useMemo(()=>{try{return (window.__acoContactes878406?.()||[]).map(dadesContacte878413)}catch(e){console.warn(e);return []}},[clients,agentsLib878301]);
+  const ompleClient878414=c=>c?omple878413(clientPersona878304(c),contacteDe878413(lib878414,{nom:c.nom,nif:c.nif,clientId:c.id})):null;
+  const ompleRols878414=o=>Object.fromEntries(Object.entries(o||{}).map(([k,r])=>[k,netV878304(r?.nom)?omple878413(r,contacteDe878413(lib878414,{nom:r.nom,nif:r.nif})):r]));
+  const ompleInds878414=l=>(l||[]).map(x=>netV878304(x?.nom)?omple878413(x,contacteDe878413(lib878414,{nom:x.nom,nif:x.nif})):x);
+  const [clientEd878304,setClientEd0878304]=useState(()=>{const c=(clients||[]).find(x=>x.id===(obra.client||client?.id));return ompleClient878414(c)});
   const setClientEd878304=f=>{editant878303.current=true;setClientEd0878304(f)};
   const [promEsClient878304,setPromEsClient0878304]=useState(()=>!obra.compartida&&!promotorDiferent878304(obra,client));
   const setPromEsClient878304=v=>{editant878303.current=true;setPromEsClient0878304(v)};
-  const [rols878304,setRols0878304]=useState(()=>rolsDe878304(obra,data.agents));
+  const [rols878304,setRols0878304]=useState(()=>ompleRols878414(rolsDe878304(obra,data.agents)));
   const setRol878304=(f,patch,replace=false)=>{editant878303.current=true;setRols0878304(p=>({...p,[f]:replace?patch:{...(p[f]||{}),...patch}}))};
-  const [inds878304,setInds0878304]=useState(()=>indsDe878304(data.agents));
+  const [inds878304,setInds0878304]=useState(()=>ompleInds878414(indsDe878304(data.agents)));
+  // V87.414 · el promotor (si no és el mateix client): els camps buits, de la seva fitxa de Contactes
+  useEffect(()=>{
+    if(obra.compartida||promEsClient878304||!netV878304(form.propietat))return;
+    const ct=contacteDe878413(lib878414,{nom:form.propietat,nif:form.nifPropietat});if(!ct)return;
+    setForm0(p=>{
+      const ara={nif:p.nifPropietat,telefon:p.telefonPropietat,mobil:p.mobilPropietat,email:p.emailPropietat,contacte:p.contactePropietat,contacteMobil:p.contacteMobilPropietat,rao:p.empresaPropietat,...partsAdreca878304({carrer:p.carrerPropietat,codiPostal:p.cpPropietat,poblacio:p.poblacioPropietat,adreca:p.adrecaPropietat})};
+      const o=omple878413(ara,{...ct,rao:normalizeSearch878191(ct.empresa)===normalizeSearch878191(ct.nom)?"":ct.empresa});
+      const m={...p,nifPropietat:o.nif||"",telefonPropietat:o.telefon||"",mobilPropietat:o.mobil||"",emailPropietat:o.email||"",contactePropietat:o.contacte||"",contacteMobilPropietat:o.contacteMobil||"",empresaPropietat:o.rao||"",carrerPropietat:o.carrer||"",cpPropietat:o.codiPostal||"",poblacioPropietat:o.poblacio||""};
+      m.adrecaPropietat=composaAdreca878304({carrer:m.carrerPropietat,codiPostal:m.cpPropietat,poblacio:m.poblacioPropietat})||p.adrecaPropietat||"";
+      if(!m.promotorAgentId&&ct.id)m.promotorAgentId=ct.id;
+      const camps=["nifPropietat","telefonPropietat","mobilPropietat","emailPropietat","contactePropietat","contacteMobilPropietat","empresaPropietat","adrecaPropietat"];
+      return camps.some(k=>String(m[k]||"")!==String(p[k]||""))?m:p;
+    });
+  },[obra.id,form.propietat,promEsClient878304,lib878414]);// eslint-disable-line react-hooks/exhaustive-deps
   const setInds878304=f=>{editant878303.current=true;setInds0878304(f)};
   const [trets878304,setTrets0878304]=useState([]);
   const [indPicker878304,setIndPicker878304]=useState(false);
@@ -8959,8 +9026,8 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   const propia878363=constructoraPropia878363();
   useEffect(()=>{if(propia878363&&sub878304==="constructor")setSub878304("obra")},[]);
   // es tornen a omplir amb el que hi ha desat (una altra obra, o un canvi d'un altre lloc) si no s'està escrivint
-  useEffect(()=>{if(editant878303.current)return;setRols0878304(rolsDe878304(obra,data.agents));setInds0878304(indsDe878304(data.agents));setPromEsClient0878304(!obra.compartida&&!promotorDiferent878304(obra,client));setTrets0878304([])},[obra.id,obra.updatedAt]);
-  useEffect(()=>{if(clientChoice==="__new__")return;const a=String(clientChoice||"").startsWith("ag:")?altresContactes878347.find(x=>clauAg878347(x)===clientChoice):null;const c=a?{nom:a.nom,rao:a.empresa||"",nif:a.nif,email:a.email,telefon:a.telefon,mobil:a.mobil,contacte:a.contacte,contacteMobil:a.contacteMobil,adreca:a.adreca,codiPostal:a.codiPostal,poblacio:a.poblacio}:(clients||[]).find(x=>x.id===clientChoice);setClientEd0878304(c?clientPersona878304(c):null)},[clientChoice,(clients||[]).find(x=>x.id===clientChoice)?.updatedAt]);
+  useEffect(()=>{if(editant878303.current)return;setRols0878304(ompleRols878414(rolsDe878304(obra,data.agents)));setInds0878304(ompleInds878414(indsDe878304(data.agents)));setPromEsClient0878304(!obra.compartida&&!promotorDiferent878304(obra,client));setTrets0878304([])},[obra.id,obra.updatedAt]);
+  useEffect(()=>{if(clientChoice==="__new__")return;const a=String(clientChoice||"").startsWith("ag:")?altresContactes878347.find(x=>clauAg878347(x)===clientChoice):null;const c=a?{nom:a.nom,rao:a.empresa||"",nif:a.nif,email:a.email,telefon:a.telefon,mobil:a.mobil,contacte:a.contacte,contacteMobil:a.contacteMobil,adreca:a.adreca,codiPostal:a.codiPostal,poblacio:a.poblacio}:(clients||[]).find(x=>x.id===clientChoice);setClientEd0878304(c?(a?clientPersona878304(c):ompleClient878414(c)):null)},[clientChoice,(clients||[]).find(x=>x.id===clientChoice)?.updatedAt]);
   const promPersona878304={mobil:form.mobilPropietat||"",contacteMobil:form.contacteMobilPropietat||"",nom:form.propietat||"",rao:form.empresaPropietat||"",nif:form.nifPropietat||"",contacte:form.contactePropietat||"",telefon:form.telefonPropietat||"",email:form.emailPropietat||"",...partsAdreca878304({carrer:form.carrerPropietat,codiPostal:form.cpPropietat,poblacio:form.poblacioPropietat,adreca:form.adrecaPropietat})};
   function setProm878304(patch){setForm(p=>{const m={...p};if(m.carrerPropietat===undefined){const pa=partsAdreca878304({adreca:p.adrecaPropietat});m.carrerPropietat=pa.carrer;m.cpPropietat=pa.codiPostal;m.poblacioPropietat=pa.poblacio}
     const map={mobil:"mobilPropietat",contacteMobil:"contacteMobilPropietat",nom:"propietat",rao:"empresaPropietat",nif:"nifPropietat",contacte:"contactePropietat",telefon:"telefonPropietat",email:"emailPropietat",carrer:"carrerPropietat",codiPostal:"cpPropietat",poblacio:"poblacioPropietat"};
@@ -8977,14 +9044,14 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     const match=r.id&&choices.some(x=>x.id===r.id)?r.id:(choices.find(x=>netV878304(r.nom)&&normalizeSearch878191(x.nom)===normalizeSearch878191(r.nom))?.id||"");
     const val=match||(netV878304(r.nom)||r.nou?"__aquesta__":"");
     return <div className="span-all rol-tab-v878304">
-      <label className="rol-tria-v878304"><span>{t("Triar de la llista d’agents")}</span><select value={val} onChange={e=>{const v=e.target.value;if(v==="")setRol878304(f,{},true);else if(v==="__new__")setRol878304(f,{nou:true,nom:""},true);else if(v!=="__aquesta__"){const ag=choices.find(x=>x.id===v);if(ag)setRol878304(f,personaAgent878304(ag),true)}}}><option value="">{t("— Cap (pendent) —")}</option>{val==="__aquesta__"&&<option value="__aquesta__">{netV878304(r.nom)||t("Nou")} · {t("fitxa d’aquesta obra")}</option>}{choices.map(x=><option key={x.id} value={x.id}>{x.nom}{x.empresa&&x.empresa!==x.nom?` · ${x.empresa}`:""}</option>)}<option value="__new__">{t("+ Nou (escriure’l)")}</option></select></label>
+      <div className="rol-tria-v878304"><TriaContacte878413 grups={f==="constructor"?["constructora"]:["tecnic"]} etiqueta={t("Triar de Contactes")} valor={netV878304(r.nom)} onCap={()=>setRol878304(f,{},true)} onTria={(d,x)=>setRol878304(f,{...d,id:x?.ag?.id||d.id},true)} onNou={n=>setRol878304(f,{nou:true,nom:n||""},true)} nouText={t("+ Nou (escriure’l)")}/></div>
       {(netV878304(r.nom)||r.nou)?<FitxaPersona878304 v={r} onChange={patch=>setRol878304(f,patch)} tipus={tipus}/>:<p className="hint">{t("Tria’l de la llista o fes-ne un de nou.")}</p>}
     </div>;
   }
   function industrialsTab878304(){
-    const lib=fontAgents878304.filter(x=>agentGroup878301(x)==="industrial");
+    const lib=lib878414.filter(x=>x._grup==="industrial");
     return <div className="span-all inds-tab-v878304">
-      {indPicker878304&&<AgentPicker878301 library={lib.length?lib:fontAgents878304} existing={inds878304} onAdd={list=>{setInds878304(p=>[...p,...list.map(x=>({...personaAgent878304(x),id:"",sourceAgentId:x.id,rol:x.rol||"Industrial"}))]);setIndPicker878304(false)}} onNew={()=>{const k="nou-"+Date.now();setInds878304(p=>[...p,{id:"",_k:k,nom:"",rol:"Industrial"}]);setIndObert878304(k);setIndPicker878304(false)}} close={()=>setIndPicker878304(false)}/>}
+      {indPicker878304&&<AgentPicker878301 library={lib.length?lib:lib878414} existing={inds878304} onAdd={list=>{setInds878304(p=>[...p,...list.map(x=>({...personaAgent878304(x),id:"",sourceAgentId:x.id,rol:x.rol||"Industrial"}))]);setIndPicker878304(false)}} onNew={()=>{const k="nou-"+Date.now();setInds878304(p=>[...p,{id:"",_k:k,nom:"",rol:"Industrial"}]);setIndObert878304(k);setIndPicker878304(false)}} close={()=>setIndPicker878304(false)}/>}
       <div className="actions-inline"><button type="button" className="secondary" onClick={()=>setIndPicker878304(true)}><Plus/> {t("Afegir industrial")}</button></div>
       {inds878304.length===0?<p className="hint">{t("Aquesta obra encara no té industrials.")}</p>:inds878304.map((x,i)=>{const k=x.id||x._k||String(i);const ob=indObert878304===k;return <div key={k} className="ind-v878304">
         <div className="ind-head-v878304"><button type="button" onClick={()=>setIndObert878304(ob?null:k)}><b>{netV878304(x.nom)||t("Industrial sense nom")}</b><span>{[netV878304(x.ofici)||(x.rol&&x.rol!=="Industrial"?i18nT(x.rol):""),netV878304(x.telefon)].filter(Boolean).join(" · ")}</span></button>
@@ -9015,19 +9082,19 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
       </>;return propia878363?<details className="span-all mes-dades-v878363"><summary>{t("Més dades")}</summary><div className="form-grid no-pad">{camps878363}</div></details>:camps878363})()}
       </>}
       {sub878304==="client"&&<>
-      <label><span>{i18nT("Client / carpeta")}</span><select value={clientChoice||""} onChange={e=>setClientChoice(e.target.value)}><option value="" disabled>{i18nT("Selecciona client...")}</option>
+      {obra.compartida?<label><span>{i18nT("Client / carpeta")}</span><select value={clientChoice||""} onChange={e=>setClientChoice(e.target.value)}><option value="" disabled>{i18nT("Selecciona client...")}</option>
         {obra.compartida&&<option value="__prom__">{promotorReal878347(obra)||obra.clientNomCompartit||i18nT("Promotor de l’obra")}</option>}
         {!obra.compartida&&clientChoice&&clientChoice!=="__new__"&&!String(clientChoice).startsWith("ag:")&&!(clients||[]).some(c=>c.id===clientChoice)&&<option value={clientChoice}>{obra.clientNomCompartit||obra.propietat||clientChoice}</option>}
         {(clients||[]).length>0&&<optgroup label={i18nT("Clients")}>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</optgroup>}
         {altresContactes878347.length>0&&<optgroup label={i18nT("Altres contactes")}>{altresContactes878347.map(a=><option key={clauAg878347(a)} value={clauAg878347(a)}>{a.nom}{a.empresa&&normalizeSearch878191(a.empresa)!==normalizeSearch878191(a.nom)?` · ${a.empresa}`:""}</option>)}</optgroup>}
-        <option value="__new__">{i18nT("+ Crear client nou")}</option></select></label>
+        <option value="__new__">{i18nT("+ Crear client nou")}</option></select></label>:<div className="rol-tria-v878304 client-tria-v878414"><TriaContacte878413 etiqueta={i18nT("Client / carpeta")} valor={selectedClient?.nom||(String(clientChoice||"").startsWith("ag:")?(altresContactes878347.find(x=>clauAg878347(x)===clientChoice)?.nom||""):"")||(clientChoice==="__new__"?netV878304(newClient878159.nom):"")} onTria={triaClient878414} onNou={n=>{setClientChoice("__new__");setNewClient878159(p=>({...p,nom:n||p.nom}))}} nouText={i18nT("+ Crear client nou")}/></div>}
       {clientChoice==="__new__"&&<div className="span-all new-client-inline-v87159"><h4>{i18nT("Crear client nou")}</h4><div className="form-grid compact-v87151 no-pad"><label><span>{i18nT("Nom client *")}</span><input value={newClient878159.nom} onChange={e=>setNewClient878159(p=>({...p,nom:e.target.value}))}/></label><label><span>{i18nT("Raó social")}</span><input value={newClient878159.rao} onChange={e=>setNewClient878159(p=>({...p,rao:e.target.value}))} placeholder={i18nT("Opcional")}/></label><label><span>{i18nT("Rol / tipologia")}</span><select value={newClient878159.tipus||"Promotor"} onChange={e=>setNewClient878159(p=>({...p,tipus:e.target.value}))}><option value="Promotor">{i18nT("Promotor")}</option><option value="Arquitecte">{i18nT("Arquitecte")}</option><option value="Arquitecte tècnic">{i18nT("Arquitecte tècnic")}</option><option value="Immobiliària">{i18nT("Immobiliària")}</option><option value="Constructora">{i18nT("Constructora")}</option><option value="Industrial">{i18nT("Industrial")}</option><option value="Administració">{i18nT("Administració")}</option><option value="Particular">{i18nT("Particular")}</option><option value="Altres">{i18nT("Altres")}</option></select></label><label><span>{i18nT("NIF/CIF")}</span><input value={newClient878159.nif} onChange={e=>setNewClient878159(p=>({...p,nif:e.target.value}))}/></label><label><span>{i18nT("Email")}</span><input value={newClient878159.email} onChange={e=>setNewClient878159(p=>({...p,email:e.target.value}))}/></label><label><span>{i18nT("Telèfon")}</span><input value={newClient878159.telefon} onChange={e=>setNewClient878159(p=>({...p,telefon:e.target.value}))}/></label><label><span>{i18nT("Adreça client")}</span><input value={newClient878159.adreca} onChange={e=>setNewClient878159(p=>({...p,adreca:e.target.value}))}/></label></div></div>}
       {clientChoice!=="__new__"&&clientEd878304&&<div className="span-all"><FitxaPersona878304 v={clientEd878304} onChange={patch=>setClientEd878304(p=>({...(p||{}),...patch}))} tipus="persona"/><small className="hint">{i18nT("Són les dades de la fitxa del client: es canvien també a Clients i a les seves altres obres.")}</small></div>}
       </>}
       {sub878304==="promotor"&&<div className="span-all prom-tab-v878304">
         {!obra.compartida&&<label className="quick-exp-check-v878304"><input type="checkbox" checked={promEsClient878304} onChange={e=>setPromEsClient878304(e.target.checked)}/><span>{i18nT("El promotor és el mateix client")}{selectedClient?` (${selectedClient.nom})`:""}</span></label>}
         {promEsClient878304?<p className="hint">{i18nT("Les dades del promotor són les del client (pestanya «Client»).")}</p>:<>
-          <label className="rol-tria-v878304"><span>{i18nT("Triar de la llista")}</span><select value={selectedPromoter87210?.id||""} onChange={e=>choosePromoter87210(e.target.value)}><option value="">{i18nT("Selecciona’l o escriu-lo a sota…")}</option>{promoterChoices87210.map(agent=><option key={agent.id} value={agent.id}>{agent.nom}{agent.nif?` · ${agent.nif}`:""}</option>)}<option value="__new__">{i18nT("+ Promotor nou (escriure’l)")}</option></select></label>
+          <div className="rol-tria-v878304"><TriaContacte878413 grups={["promotor"]} etiqueta={i18nT("Triar de Contactes")} valor={netV878304(form.propietat)} onTria={(d,x)=>{const ag={...d,id:x?.ag?.id||d.id,rol:d.rol||"Promotor / propietat"};setForm(prev=>({...prev,...promoterPatch87210(ag)}));addAgentToObraIfNeeded878159(ag)}} onNou={n=>{choosePromoter87210("__new__");if(n)setTimeout(()=>setProm878304({nom:n}),0)}} nouText={i18nT("+ Promotor nou (escriure’l)")}/></div>
           <FitxaPersona878304 v={promPersona878304} onChange={setProm878304} tipus="persona"/>
         </>}
       </div>}
@@ -17139,7 +17206,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.413",
+    app_version:"87.414",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
