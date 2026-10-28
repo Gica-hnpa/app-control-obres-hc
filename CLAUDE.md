@@ -1938,6 +1938,30 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils `src/theme-v878412.css`. Proves: `inicial412unit.mjs` (10) i `v412test.mjs` (23). Adaptades `docmobiltest`, `documentstest`
       (l'acta es mira al visor), `assistents406test`, `enviar405test`, `enviar407test`, `factclienttest`, `vfemetretest`, `clientsvirtuals`
       (el «PDF» de la proforma), `seguiment321test` (el text de la feina és un `textarea`) i `pressupost368test` (logística en una columna).
+  - **V87.413 · Partides noves i partides que pugen, en taronja; marcar-les a mà** (l'Héctor, 28/10/2026, ordenant el pressupost de Verbania
+    per a una entrega: «si afegeixo una partida nova… que es vegi en taronja… si en alguna partida de la certificació s'hi han afegit més
+    unitats, la descripció també en taronja… a la llista de les noves, també les que han pujat; a la baixa, mai»; «la 3.09 i la 3.10 no posa
+    res de nova i ho són»):
+    - **Amb el pressupost inicial fixat**, una partida que s'hi afegeix després (editant, de Preus, dictada, d'un Excel…) queda marcada sola
+      com a nova (`noInicial878412`, un efecte d'`Obra` que la marca quan arriba a les dades). Sense l'inicial fixat, les partides que
+      s'afegeixen al pressupost en són part (com abans).
+    - **Marcar a mà** (`NovaPartida878413`, `marcaNova878413`): a la fitxa de la partida del pressupost (tocant-ne el concepte, fora d'edició es
+      desa al moment amb `persistBudgetCaps878179`) i a «Fitxa / accions» de la certificació: «Marcar com a nova» (`nova878413`) o, si ho és,
+      «No és nova» (`noNova878413`). La marca a mà mana sobre tot (`esFora878410`) i l'efecte no la toca. No al portal de client.
+    - **Partides que pugen** (`puja878413`, `qBase878413`, `mesQ878413`): certificades a origen per sobre de la quantitat d'ara (o de la
+      inicial, si era més gran) o amb més import que a l'inicial. En taronja (`taronja878413` → `nova-v878413` / `puja-v878413`) al pressupost
+      (la descripció i la fila, també al mòbil, amb l'etiqueta «+N ut»), a Certificacions › Partides (al moment, mentre s'escriu la quantitat),
+      al resum «Totes les partides» (abans verdes) i als PDF de les certificacions (la descripció en `#9A3412`; al PDF del pressupost, només
+      les noves).
+    - **Imprevistos (`previst878410`) només el que puja:** les partides noves, el més amidament (per sobre de `qBase878413`) i «Més quantitat
+      o preu que a l’inicial» (abans «Canvis de quantitat o preu», també a la baixa); fora «Ja no hi són» de la targeta, el total i el PDF dels
+      imprevistos (es queden al pressupost original i a la fila del resum).
+    - Estils `src/theme-v878413.css` (el fons de la fila guanya `background:transparent!important` de `theme-v87257`; al mòbil, el concepte
+      amb `>span:first-child strong`). Prova: `v413test.mjs` (24). Adaptada `v412test` (5 i 8: sense el que baixa).
+    - Proves del 28/10 adaptades als botons de la V87.410–412: `perfils326test` (textarea de la feina), `simple354test` i `graficatest` (el
+      rendiment de l'encàrrec és una pestanya d'Honoraris), `v365test` («Enviar» a cada document) i `alhorarealtest` (no compta els avisos
+      `GSI_LOGGER` de la finestra de Google, que el navegador de proves bloqueja). Totes les proves de la V87.412: 119, i passades soles les
+      que fallaven, totes bé (`contrasenyestest` a `wt379`: la memòria cau de la carpeta principal es fa malbé).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2098,7 +2122,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 
 ## Pendent o a mitges
 
-### Per començar una sessió nova (27/10/2026, després de la V87.410)
+### Per començar una sessió nova (28/10/2026, després de la V87.412)
 
 > **Tot en català**: la conversa (també les notes curtes entre eina i eina) i els textos de l’app. El 25/10 se’n van escapar en anglès i
 > l’Héctor s’hi va enfadar molt. Abans d’enviar qualsevol línia, comprovar que és en català.
@@ -2107,10 +2131,11 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 (25 $ al mes, 250 GB, límit de despesa activat) i el projecte de l’app (**«app control de obras»**, bdjendguvbevyowghzfh) a **Micro** (inclòs).
 El projecte vell **«app gestion de obras»** (de les primeres versions) és en una organització gratuïta, **pausat** (es pot reprendre fins a
 l’1/12/2027 i se’n poden baixar les dades). La V87.408.1 treu la causa del consum (vegeu-la).
-La **V87.409** (signar a distància amb un enllaç) és publicada, però fins que l’Héctor executi `supabase/aco_signa_v878409.sql` a
-Supabase › SQL Editor, «Enviar per signar» continua enviant el PDF per correu.
+L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la nit l’enllaç funcionava). **Gmail API:** el 28/10 a l’Héctor li
+sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
+**AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.410 a Render):**
+**Estat (publicada la V87.413 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2124,7 +2149,11 @@ Supabase › SQL Editor, «Enviar per signar» continua enviant el PDF per corre
   (Imatge de l’empresa amb logo i color, Documents amb 7 estils d’encapçalament, accessos ràpids…), castellà, sense cobertura.
 - **Enviar i signar:** tots els documents s’envien des del Gmail amb el seu PDF (V87.405–407; l’Héctor ja ha enviat una acta així);
   l’acta, el pressupost i la certificació se signen amb certificat digital amb l’AutoFirma (V87.408; falta que l’Héctor ho provi amb el seu),
-  també a distància amb un enllaç perquè tothom signi el mateix PDF (V87.409; falta que l’Héctor executi l’SQL).
+  també a distància amb un enllaç perquè tothom signi el mateix PDF (V87.409).
+- **Previst i imprevistos** (V87.410–413): pressupost original separat de les partides noves, «Pressupost inicial…» des de l’Excel original
+  (Verbania: 55 iguals i 28 noves a la fase principal), dos PDF (original i imprevistos), resum amb totes les partides; les noves i les que
+  pugen en taronja, «Marcar com a nova» a mà (V87.413; l’Héctor ha de marcar la 3.09 i la 3.10 de Verbania), i als imprevistos mai el que baixa.
+- **Repàs exhaustiu** (`tools/proves/repas411.mjs`, `WEBROOT=` per passar-lo sobre una còpia): 336 pantalles, PDF, Enviar i Signar.
 - **No fet:** perfils autònom i promotor amb compte propi, IA al servidor (albarans, pressupost-ia: cal la clau d’Anthropic i el sí de
   l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 

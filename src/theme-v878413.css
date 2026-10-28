@@ -1,0 +1,33 @@
+/* V87.413 · partides noves i partides que pugen en taronja (l'Héctor, 28/10/2026: «les partides noves… vull que es vegin en taronja… i si en
+   alguna partida de la certificació s'hi han afegit més unitats, també la descripció en taronja»). Mai les que baixen. */
+
+/* Pressupost (ordinador): la fila amb un fons taronja clar i la descripció en taronja */
+html body .budget-v25-line:has(.budget-concept-v877.nova-v878413),
+html body .budget-v25-line:has(.budget-concept-v877.puja-v878413),
+html body .budget-v25-line:has(.budget-concept-v877.nova-v878413):hover,
+html body .budget-v25-line:has(.budget-concept-v877.puja-v878413):hover{background:#FFF7ED!important;box-shadow:inset 3px 0 0 #EA580C!important}
+html body .budget-concept-v877.nova-v878413 .budget-concept-summary-v87173,
+html body .budget-concept-v877.puja-v878413 .budget-concept-summary-v87173{color:#9A3412!important;font-weight:700}
+
+/* Pressupost (mòbil): la línia de la partida */
+html body .budget-partida-mobile-summary-v87196.nova-v878413,
+html body .budget-partida-mobile-summary-v87196.puja-v878413{background:#FFF7ED!important;box-shadow:inset 3px 0 0 #EA580C}
+html body .budget-partida-mobile-summary-v87196.nova-v878413>span:first-child strong,
+html body .budget-partida-mobile-summary-v87196.puja-v878413>span:first-child strong{color:#9A3412!important;font-weight:600!important}
+
+/* Certificació › Partides: la partida que puja, com les noves */
+html body .cert-grid-v69.row.puja-v878413>div:nth-child(-n+6){background:#FFF7ED}
+html body .cert-grid-v69.row.puja-v878413 .concept-line-v877>span{color:#9A3412;font-weight:600}
+
+/* Resum de certificacions: la partida que puja, en taronja (abans, verda com les certificades) */
+html body .cert-resum-row-v8717.part-v878411.puja>*{background:#FFF7ED!important}
+html body .cert-resum-row-v8717.part-v878411.puja .cap .nom,html body .cert-resum-row-v8717.part-v878411.puja .total{color:#9A3412;font-weight:600!important}
+html body .parts-m-v878411 li.puja{background:#FFF7ED}
+html body .parts-m-v878411 li.puja .n,html body .parts-m-v878411 li.puja .x small{color:#9A3412}
+
+/* La fitxa de la partida: «Marcar com a nova» / «No és nova» */
+html body .nova-fitxa-v878413{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--co-line,#E2E8F0);border-radius:10px}
+html body .nova-fitxa-v878413.es{background:#FFF7ED;border-color:#FDBA74}
+html body .nova-fitxa-v878413.es span{color:#9A3412;font-weight:600}
+html body .nova-fitxa-v878413 .fora-v878410{margin-left:0}
+html body .nova-fitxa-v878413 button{margin-left:auto}
