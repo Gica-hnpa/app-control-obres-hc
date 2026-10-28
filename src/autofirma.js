@@ -9,7 +9,7 @@
 
 const MIN_PORT = 49152, MAX_PORT = 65535;
 const ESPERA_ENTRE = 2000;          // entre intents de connexió i entre preguntes «getresult»
-const ESPERA_MAX = 75000;           // l'AutoFirma (Java) pot trigar a obrir-se
+const ESPERA_MAX = 120000;          // l'AutoFirma (Java) pot trigar a obrir-se (a l'ordinador de l'Héctor, 30 s abans de respondre)
 export const DESCARREGA = "https://firmaelectronica.gob.es/Home/Descargas.html";
 
 const espera = ms => new Promise(r => setTimeout(r, ms));
@@ -67,12 +67,15 @@ export function obre() {
   return { id, ports, t0: Date.now() };
 }
 
-function intenta(port) {
+// V87.411 · si el port no escolta, el navegador ho diu al moment; si escolta, la connexió segura de l'AutoFirma pot trigar molt la
+// primera vegada (al registre de l'ordinador de l'Héctor, 30 s). Abans es tallava als 1,8 s i, en tallar-la, l'AutoFirma es tancava sola
+// («Se ha cerrado la comunicacion… 1006 · Cerramos la aplicacion»): «No s'ha pogut obrir l'AutoFirma». Ara s'espera fins al final.
+function intenta(port, ms = 1800) {
   return new Promise(res => {
     let ws;
     try { ws = new WebSocket(`wss://127.0.0.1:${port}`); } catch { res(null); return; }
     const fi = v => { clearTimeout(tm); ws.onopen = ws.onerror = ws.onclose = null; res(v); };
-    const tm = setTimeout(() => { try { ws.close(); } catch {} fi(null); }, 1800);
+    const tm = setTimeout(() => { try { ws.close(); } catch {} fi(null); }, ms);
     ws.onopen = () => fi(ws);
     ws.onerror = ws.onclose = () => fi(null);
   });
@@ -81,7 +84,7 @@ async function connecta(ses, atura) {
   const max = +window.__acoAfirmaEspera878408 || ESPERA_MAX;   // les proves l'escurcen
   while (Date.now() - ses.t0 < max) {
     if (atura?.()) throw Object.assign(new Error("aturat"), { codi: "aturat" });
-    for (const p of ses.ports) { const ws = await intenta(p); if (ws) return ws; }
+    for (const p of ses.ports) { const ws = await intenta(p, Math.max(3000, max - (Date.now() - ses.t0))); if (ws) return ws; }
     await espera(ESPERA_ENTRE);
   }
   throw Object.assign(new Error("No s’ha pogut obrir l’AutoFirma."), { codi: "noObre" });

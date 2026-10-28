@@ -1,0 +1,60 @@
+/* V87.411 · Resum de certificacions amb totes les partides (certificades en verd, noves en taronja), «Previst i imprevistos» amb el
+   desglossament i els dos PDF, partides noves marcades a la certificació, i la taula de registres d'hores sense camps tallats */
+@media screen{
+/* «Previst i imprevistos»: el desglossament dels imprevistos i els botons dels PDF */
+html body .previst-v878410 .pi-xifres .desg-v878411{display:block;font-size:12px;color:#9A3412}
+html body .pi-pdf-v878411{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+html body .pi-pdf-v878411 button{display:inline-flex;align-items:center;gap:6px;min-height:36px}
+
+/* Certificació › Partides: les partides noves en taronja */
+html body .cert-grid-v69.row.fora-row-v878411>div:nth-child(-n+6){background:#FFF7ED}
+html body .cert-grid-v69.row.fora-row-v878411 .concept-line-v877>span{color:#9A3412;font-weight:600}
+html body .cert-grid-v69.row .concept-line-v877 .fora-v878410{font-weight:700}
+
+/* Resum: Capítols · Totes les partides */
+html body .seg-v878411{display:inline-flex;margin:0 0 10px;border:1px solid #CBD5E1;border-radius:10px;overflow:hidden;background:#fff}
+html body .seg-v878411 button{min-height:36px;padding:6px 14px;border:0;background:transparent;font:inherit;font-weight:700;color:#334155;cursor:pointer}
+html body .seg-v878411 button+button{border-left:1px solid #CBD5E1}
+html body .seg-v878411 button.on{background:var(--co-accent,#2563EB);color:#fff}
+html body .cert-resum-v8717.amb-parts-v878411{max-width:none}
+html body .cert-resum-v8717.amb-parts-v878411 .cert-resum-row-v8717{grid-template-columns:minmax(300px,1fr) 120px repeat(var(--cert-cols,1),112px) 120px 170px 124px!important}
+html body .cert-resum-row-v8717.capr-v878411>*{background:#EEF2F6!important;font-weight:700!important}
+html body .cert-resum-row-v8717.part-v878411>*{font-size:13px;font-weight:400!important}
+html body .cert-resum-row-v8717.part-v878411 .cap{display:flex!important;flex-wrap:wrap;align-items:baseline;gap:4px 8px;padding-left:22px!important}
+html body .cert-resum-row-v8717.part-v878411 .cap .codi{color:#5F7075;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .cert-resum-row-v8717.part-v878411 .cap .nom{min-width:0;overflow-wrap:anywhere}
+html body .cert-resum-row-v8717.part-v878411 .cap .fora-v878410{margin-left:0}
+html body .cert-resum-row-v8717.part-v878411.feta>*{background:#F0FDF4!important}
+html body .cert-resum-row-v8717.part-v878411.feta .cap .nom,html body .cert-resum-row-v8717.part-v878411.feta .total{color:#166534;font-weight:600!important}
+html body .cert-resum-row-v8717.part-v878411.nova>*{background:#FFF7ED!important}
+html body .cert-resum-row-v8717.part-v878411.nova .cap .nom,html body .cert-resum-row-v8717.part-v878411.nova .pres i{color:#9A3412;font-weight:600!important;font-style:normal}
+html body .cert-resum-row-v8717 .pct{text-align:center;color:#5F7075}
+html body .cert-resum-row-v8717.sub-row-v878411>*{background:#F8FAFC!important;font-weight:700!important}
+html body .cert-resum-row-v8717.sub-row-v878411.fora-row-v878411>*{background:#FFF7ED!important;color:#9A3412!important}
+html body .cert-resum-row-v8717.sub-row-v878411 .cap small{font-weight:600}
+
+/* Resum al mòbil i l'iPad: les partides de cada capítol */
+html body .parts-m-v878411{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;border-top:1px solid #E2E8F0}
+html body .parts-m-v878411 li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 6px;border-bottom:1px solid #EEF2F6;font-size:13px}
+html body .parts-m-v878411 li .n{min-width:0;overflow-wrap:anywhere}
+html body .parts-m-v878411 li .n small{color:#5F7075;font-variant-numeric:tabular-nums}
+html body .parts-m-v878411 li .x{display:flex;flex-direction:column;align-items:flex-end;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .parts-m-v878411 li .x small{font-size:12px;color:#5F7075}
+html body .parts-m-v878411 li.feta{background:#F0FDF4}
+html body .parts-m-v878411 li.feta .n,html body .parts-m-v878411 li.feta .x b{color:#166534}
+html body .parts-m-v878411 li.nova{background:#FFF7ED}
+html body .parts-m-v878411 li.nova .n,html body .parts-m-v878411 li.nova .x small{color:#9A3412}
+html body .cert-resum-m-v878386 summary .fora-v878410{margin-left:6px}
+html body .cert-resum-m-v878386 .tot .o span,html body .cert-resum-m-v878386 .tot .o b{color:#9A3412}
+}
+
+/* Registres de temps a l'ordinador: la taula cap a la pantalla (abans 1.150 px fixos) i «Editar» obre un formulari a sota de la fila */
+@media screen and (min-width:1101px){
+html body .temps-validat-v8754 table.time-table-v8754{min-width:0!important}
+html body .temps-validat-v8754 table.time-table-v8754 td{overflow-wrap:anywhere}
+html body .temps-validat-v8754 table.time-table-v8754 tr.editant-v878411>td{background:#EFF6FF!important}
+html body .temps-validat-v8754 table.time-table-v8754 tr.edit-form-v878411>td{background:#F8FAFC!important;padding:14px!important;border-top:0!important}
+html body .temps-validat-v8754 tr.edit-form-v878411 .time-form-v8754{grid-template-columns:repeat(4,minmax(0,1fr))}
+html body .temps-validat-v8754 tr.edit-form-v878411 .time-form-v8754 :is(input,select){min-height:38px}
+html body .temps-validat-v8754 tr.edit-form-v878411 .card-actions{margin-top:10px;display:flex;justify-content:flex-end}
+}

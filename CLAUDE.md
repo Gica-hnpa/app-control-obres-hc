@@ -1877,6 +1877,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       d'honoraris» sempre torna a la llista (des d'on es pot fer un pressupost a mà).
     - Estils `src/theme-v878410.css`. Prova: `v410test.mjs` (25: constructora, tècnic, gestió total i mòbil). Adaptades (les hores són a
       Honoraris › Hores i la calculadora dins dels pressupostos) `honoraris332test`, `comptador382test`, `tempstest`, `clientsvirtuals` i `v366test`.
+  - **V87.411 · Els dos PDF del previst i els imprevistos, el resum amb totes les partides i l'AutoFirma que tarda** (l'Héctor, 28/10/2026 a la nit):
+    - **Per què no lligava Verbania** (16.000 a la capçalera i 22.500 als imprevistos): a la fase 2, 16.260,69 € de partides noves + 6.323,00 € de
+      tres partides del pressupost certificades per sobre del previst (02.10, 02.14, 03.03). Ara la capçalera i la targeta diuen el mateix: a
+      la targeta, «Fora de pressupost …» i «Més amidament …» a sota dels imprevistos (`desg-v878411`); la capçalera fa servir `previst878410`.
+    - **Dos PDF** (a «Previst i imprevistos» —Certificacions › Resum i Rendiment— i a Pressupost › Accions): **«PDF del pressupost original»**
+      (`docPresOriginal878411`, el pressupost sense les partides noves, `original878411`) i **«PDF dels imprevistos»** (`docImprevistos878411`, tipus
+      `imprevistos878411`, plantilla `imprevistosPrintHtml878411`: resum, partides noves per capítol amb l'etiqueta i el certificat, i el més
+      amidament amb previst, certificat i diferència). S'obren al visor de l'App per `window.__acoObreDoc878411`.
+    - **Partides noves en taronja** també a Certificacions › Partides (`fora-row-v878411`) i als PDF del pressupost i de les certificacions
+      (`fora-et-v878411`, amb `etFora878410(r,D)` en l'idioma del document).
+    - **Resum de certificacions amb totes les partides** (`resumCert878411`, `CertResumV69`): «Capítols · Totes les partides» (de sèrie totes,
+      es recorda a l'aparell, `aco_resum_vista_v878411`); les certificades en verd (`feta`), les noves en taronja (`nova`) amb «+ import» a la
+      columna del pressupost i sense sumar-lo; a baix, «Pressupost original», «Fora de pressupost» i el total (amb el pressupost original).
+      L'import pendent es compta partida per partida. Al mòbil, la llista de partides dins de cada capítol (`parts-m-v878411`).
+    - **«Només aquesta certificació»**: l'import del capítol a la dreta (`td.num`; no era expressament).
+    - **Registres d'hores**: «Presa de dades» i «Desplaçament» (temps del viatge, a part dels km) als tipus de feina i a les tasques; a
+      l'ordinador «Editar» obre un formulari a sota de la fila (`edit-form-v878411`; abans els camps es tallaven dins de les columnes); al mòbil
+      i l'iPad, la fitxa de sempre. La taula ja no fa 1.150 px fixos.
+    - **AutoFirma que no s'obria** (registre de l'ordinador de l'Héctor: l'AutoFirma escoltava, però la primera connexió segura trigava ~30 s
+      i l'app la tallava a 1,8 s; en tallar-la, l'AutoFirma es tanca sola): ara cada intent espera fins al final (`intenta(port, ms)`,
+      `ESPERA_MAX` 120 s).
+    - **Correu amb l'enllaç en blau** (`googleMail.js`: `multipart/alternative` amb `htmlCos`) i la frase «Us envio … per signar-lo» sense repetir.
+    - **Gmail API**: a l'Héctor li sortia «falta activar la Gmail API» → console.cloud.google.com/apis/library/gmail.googleapis.com, projecte
+      «Control d'obres», Habilitar.
+    - Estils `src/theme-v878411.css`. Prova: `v411test.mjs` (27; `NOMES=1345`). Eina nova `repas411.mjs` (repàs exhaustiu: pantalles, camps
+      tallats, PDF, Enviar i Signar de cada apartat; informe a `D:/aco-tmp/repas411`).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb

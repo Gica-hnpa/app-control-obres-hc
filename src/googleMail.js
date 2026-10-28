@@ -61,11 +61,19 @@ async function b64Blob(blob) { const b = new Uint8Array(await blob.arrayBuffer()
 const linies = s => s.replace(/.{1,76}/g, "$&\r\n").replace(/\r\n$/, "");
 const capcalera = s => /^[\x20-\x7e]*$/.test(s) ? s : `=?UTF-8?B?${b64Text(s)}?=`;
 const nomArxiu = n => `"${capcalera(String(n || "document.pdf").replace(/"/g, "'"))}"`;
+// V87.411 · el text va també en HTML, amb els enllaços en blau i que es poden tocar (l'Héctor: l'enllaç per signar sortia com a text)
+const escH = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+export function htmlCos(text) {
+  const parts = String(text ?? "").split(/(https?:\/\/[^\s<>"]+)/g);
+  const cos = parts.map((p, i) => i % 2 ? `<a href="${escH(p)}" style="color:#1a73e8;text-decoration:underline">${escH(p)}</a>` : escH(p)).join("").replace(/\r?\n/g, "<br>");
+  return `<!doctype html><html><body><div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#202124">${cos}</div></body></html>`;
+}
+const alternativa = (text, fa) => [`Content-Type: multipart/alternative; boundary="${fa}"`, "", `--${fa}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64", "", linies(b64Text(text)), `--${fa}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "", linies(b64Text(htmlCos(text))), `--${fa}--`];
 export async function mime({ to = [], subject = "", text = "", adjunts = [] }) {
-  const fr = "aco" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const fr = "aco" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8), fa = "alt" + fr;
   const cap = [`To: ${to.join(", ")}`, `Subject: ${capcalera(subject)}`, "MIME-Version: 1.0"];
-  if (!adjunts.length) return [...cap, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64", "", linies(b64Text(text))].join("\r\n");
-  const parts = [`--${fr}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64", "", linies(b64Text(text))];
+  if (!adjunts.length) return [...cap, ...alternativa(text, fa)].join("\r\n");
+  const parts = [`--${fr}`, ...alternativa(text, fa)];
   for (const a of adjunts) {
     parts.push(`--${fr}`, `Content-Type: ${a.blob.type || "application/pdf"}; name=${nomArxiu(a.nom)}`, `Content-Disposition: attachment; filename=${nomArxiu(a.nom)}`, "Content-Transfer-Encoding: base64", "", linies(await b64Blob(a.blob)));
   }
