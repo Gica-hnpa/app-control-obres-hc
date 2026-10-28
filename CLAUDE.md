@@ -2074,6 +2074,40 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       l'iPad (`repas411.mjs` amb `MIDES=ipad`, nou: 820 × 1180; 168 pantalles, cap problema).
     - **Pregunta oberta per a l'Héctor:** les hores i despeses del treballador es desen al seu compte i no arriben a l'oficina (a les obres
       compartides no es comparteixen hores, agenda ni despeses): cal decidir com (núvol o fitxatge fase 2).
+  - **V87.423 · Partides que no s'executaran i el resum de l'obra als PDF de les certificacions** (l'Héctor, 28/10/2026: «quan imprimim la
+    certificació a origen… que es vegin totes les partides, les fetes i no fetes… marcar les que no s'acabaran d'executar tota la quantitat i
+    posar-hi quina… com un envà de 7 que al final es fa de pladur… el total no pot sumar l'original amb els imprevistos… en vermell… al final un
+    resum: pressupost original, que no s'executarà, imprevistos o noves i pendent segons el pressupost original… i del certificat, el que és del
+    pressupost original i dels imprevistos, també al PDF «Certificació 1»… potser un gràfic»):
+    - **La marca** (`qFinal878423` a la partida = la quantitat que s'executarà; 0 = gens; sense el camp, sencera): a la fitxa de la partida del
+      Pressupost (`FitxaPartida878361`) i a «Fitxa / accions» de la Certificació (`CertPartidaModal87216`), sota «Marcar com a nova»:
+      `NoExecPartida878423` amb la casella «No s’executarà tota la quantitat» (proposa el que ja s'ha certificat) i «Quantitat que
+      s’executarà» (si és la prevista o més, es treu la marca). Fora d'edició es desa al moment (`posa878423` / `posaPartida878423`).
+      Etiqueta «No s’executarà» o «Només 33,80 ml» (`etNoExec878423`). Mai compta menys del que ja s'ha certificat.
+    - **Vermell** (`colorPartida878423`: vermell mana sobre el taronja): la fila del pressupost (`noexec-v878423`) i la seva etiqueta
+      (`noexec-et-v878423`; **compte: la classe de la fila i la de l'etiqueta han de ser diferents**, si no la fila es torna `inline-block`),
+      Certificació › Partides, el resum «Totes les partides» (amb la fila «No s’executaran») i els PDF de les certificacions.
+    - **Els càlculs** a `previsio878423(items, ini)` (`previst878410` ara hi passa les partides; els PDF, les files del document amb les
+      quantitats a origen d'aquella certificació): `noExec` (des de l'inicial o el d'ara, el més gran, fins a la quantitat que s'executarà) +
+      les partides de l'inicial que ja no hi són = `imNoExec`; `previsio` = original − no s'executaran + imprevistos; `executat` separat en
+      `exeOrig` / `exeImp` (més amidament i partides noves); `pendent` = previsió − executat (`pendOrig` / `pendImp`); i `act` = la
+      certificació d'ara separada igual. Una partida nova marcada compta als imprevistos només el que s'executarà.
+    - **Targeta «Previst i imprevistos»** (Certificacions › Resum i Rendiment): sis xifres (Pressupost original · No s’executaran ·
+      Imprevistos i partides noves · Previsió final · Executat · Pendent d’executar) i el gràfic `GraficaFinal878423` (`barresFinal878423`: dues
+      barres a la mateixa escala, pressupost original —blau el que s'executarà, vermell el que no— i previsió final —verd executat i blau clar
+      pendent del pressupost, taronja i taronja clar dels imprevistos—, amb la llegenda i els imports). La capçalera del pressupost diu també
+      «− … no s’executarà».
+    - **PDF a origen** (`certPrintHtmlV8772`): el quadre horitzontal amb **totes** les partides (abans només les que tenien alguna quantitat);
+      a la primera pàgina, l'import de la certificació separat (del pressupost original / d'imprevistos i partides noves); al final del quadre,
+      **«Resum de l’obra»** (`resumFinalHtml878423`, `CSS_FIN878423`): la taula de les sis xifres, el requadre de la certificació i el gràfic
+      (en HTML, no SVG, perquè surti igual al PDF de `htmlAPdf`). El document porta `fin423` (`certPdfDoc878407`). El PDF «només aquesta
+      certificació» (`certCurrentPrintHtml87216`) porta el mateix resum a sota del total. El PDF dels imprevistos, «Partides que no
+      s’executaran» i la previsió final. El PDF del pressupost no canvia.
+    - Amb Verbania (còpia del DADES, fase P1): marcant el paviment 02.04 sencer i la 02.03 a 33,80 de 66,60 ml, no s'executaran 7.909,21 €,
+      previsió final 105.697,85 € (121,54 % de l'original) i la certificació 1 (25.356,14 €) és 3.200,52 € del pressupost original i 22.155,62 €
+      d'imprevistos. Estils `src/theme-v878423.css`. Prova: `v423test.mjs` (25). Eina nova `tools/proves/capturahtml.mjs` (`FILES=`, `SEL=`,
+      `EXPR=`: captura d'un HTML desat, p. ex. els PDF que desa una prova amb `OUT=`; `captureBeyondViewport` treu la barra de desplaçament i
+      mou uns píxels la pàgina, per això retalla amb marge).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2247,7 +2281,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.422 a Render):**
+**Estat (publicada la V87.423 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2264,7 +2298,8 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   també a distància amb un enllaç perquè tothom signi el mateix PDF (V87.409).
 - **Previst i imprevistos** (V87.410–413): pressupost original separat de les partides noves, «Pressupost inicial…» des de l’Excel original
   (Verbania: 55 iguals i 28 noves a la fase principal), dos PDF (original i imprevistos), resum amb totes les partides; les noves i les que
-  pugen en taronja, «Marcar com a nova» a mà (V87.413; l’Héctor ha de marcar la 3.09 i la 3.10 de Verbania), i als imprevistos mai el que baixa.
+  pugen en taronja, «Marcar com a nova» a mà (V87.413; l’Héctor ha de marcar la 3.09 i la 3.10 de Verbania), i als imprevistos mai el que baixa;
+  partides que no s’executaran (tota o en part) en vermell i el resum de l’obra amb gràfic als PDF de les certificacions (V87.423).
 - **Dades de l’obra amb Contactes** (V87.414): els camps buits o de farciment s’omplen amb la fitxa de Contactes i es tria amb un cercador
   per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.

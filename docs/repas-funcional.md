@@ -24,6 +24,7 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 | V87.420 | Diners del tècnic: «Facturat en part», la retenció a Facturació, les anul·lades no compten; les xifres quadren entre pantalles | `v420test` (11) |
 | V87.421 | Repàs exhaustiu (336 pantalles): l'estat sencer a Expedients; Google no s'obre en sortir de l'Agenda | `repas411` |
 | V87.422 | El treballador ja no canvia l'estat de les obres des de la llista (ni «Importar») | `v422test` (15) |
+| V87.423 | Partides que no s'executaran (tota o en part) en vermell; al PDF a origen totes les partides i el resum de l'obra amb gràfic; la certificació separada entre pressupost original i imprevistos (també al PDF «només aquesta») | `v423test` (25, Verbania) |
 | (sense canvis) | La cadena dels diners de la constructora: parte → certificació → Despeses (mà d'obra) → Per facturar → factura → Rendiment, amb les mateixes xifres a tot arreu | `v422test` (13) |
 | (sense canvis) | Repàs exhaustiu a l'iPad (820 px) amb els quatre comptes | `repas411` MIDES=ipad |
 

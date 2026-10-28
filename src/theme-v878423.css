@@ -1,0 +1,61 @@
+/* V87.423 · Partides que no s'executaran (tota o en part): en vermell, com les noves en taronja; la fitxa de la partida i el resum de l'obra */
+html body .noexec-et-v878423{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:5px;background:#FEE2E2;color:#B91C1C;font-size:12px;font-weight:700;font-style:normal;white-space:nowrap;vertical-align:1px}
+
+/* Pressupost: la fila i el concepte en vermell */
+html body .budget-v25-line:has(.budget-concept-v877.noexec-v878423),
+html body .budget-v25-line:has(.budget-concept-v877.noexec-v878423):hover{background:#FEF2F2!important;box-shadow:inset 3px 0 0 #DC2626!important}
+html body .budget-concept-v877.noexec-v878423 .budget-concept-summary-v87173{color:#B91C1C!important;font-weight:700}
+html body .budget-partida-mobile-summary-v87196.noexec-v878423{background:#FEF2F2!important;box-shadow:inset 3px 0 0 #DC2626}
+html body .budget-partida-mobile-summary-v87196.noexec-v878423>span:first-child strong{color:#B91C1C!important;font-weight:600!important}
+
+/* Certificació › Partides */
+html body .cert-grid-v69.row.noexec-v878423>div:nth-child(-n+6){background:#FEF2F2}
+html body .cert-grid-v69.row.noexec-v878423 .concept-line-v877>span{color:#B91C1C;font-weight:600}
+
+/* Resum de certificacions */
+html body .cert-resum-row-v8717.part-v878411.noexec>*{background:#FEF2F2!important}
+html body .cert-resum-row-v8717.part-v878411.noexec .cap .nom{color:#B91C1C;font-weight:600!important}
+html body .cert-resum-row-v8717.sub-row-v878411.noexec-row-v878423>*{background:#FEF2F2!important;color:#B91C1C!important}
+html body .parts-m-v878411 li.noexec{background:#FEF2F2}
+html body .parts-m-v878411 li.noexec .n{color:#B91C1C}
+html body .cert-resum-m-v878386 .tot .r{color:#B91C1C}
+
+/* La fitxa de la partida: «No s’executarà tota la quantitat» */
+html body .noexec-fitxa-v878423{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--co-line,#E2E8F0);border-radius:10px}
+html body .noexec-fitxa-v878423.es{background:#FEF2F2;border-color:#FCA5A5}
+html body .noexec-fitxa-v878423 .ck{display:flex;align-items:center;gap:8px;min-height:36px;font-weight:600;cursor:pointer}
+html body .noexec-fitxa-v878423 .ck input{width:20px;height:20px;margin:0;accent-color:#DC2626}
+html body .noexec-fitxa-v878423 .cos{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+html body .noexec-fitxa-v878423 .q{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html body .noexec-fitxa-v878423 .q>span:first-child{font-size:13px;color:#5F7075;font-weight:600}
+html body .noexec-fitxa-v878423 .q .in{display:inline-flex;align-items:center;gap:6px}
+html body .noexec-fitxa-v878423 .q input{width:110px;max-width:100%;min-height:36px;padding:4px 8px;border:1px solid #CBD5E1;border-radius:8px;font-variant-numeric:tabular-nums;text-align:right}
+html body .noexec-fitxa-v878423 .noexec-et-v878423{margin-left:0}
+html body .noexec-fitxa-v878423 .nota{font-size:12px;color:#5F7075}
+html body .noexec-fitxa-v878423 .avis{flex-basis:100%;font-size:12px;color:#B91C1C;font-weight:600}
+
+/* La targeta «Previst i imprevistos»: sis xifres i el gràfic */
+html body .previst-v878410 .pi-xifres.pi6-v878423{grid-template-columns:repeat(3,minmax(0,1fr))}
+html body .previst-v878410 .pi-xifres .noex.si{background:#FEF2F2;border-color:#FECACA}
+html body .previst-v878410 .pi-xifres .noex.si b{color:#B91C1C}
+html body .previst-v878410 .pi-xifres .fin{background:#EFF6FF;border-color:#BFDBFE}
+html body .previst-v878410 .pi-xifres .fin b{color:#0F2D5C}
+html body .previst-v878410 .pi-xifres .pend b{color:#0F172A}
+html body .previst-v878410 .pi-det .noex-v878423 h4{color:#B91C1C}
+html body .previst-v878410 .pi-det .noex-v878423 li b{color:#B91C1C}
+html body .fin-graf-v878423{margin:12px 0 4px;display:flex;flex-direction:column;gap:10px}
+html body .fin-graf-v878423 .fila{display:flex;flex-direction:column;gap:4px}
+html body .fin-graf-v878423 .et{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#334155}
+html body .fin-graf-v878423 .et b{font-variant-numeric:tabular-nums;color:#0F172A}
+html body .fin-graf-v878423 .barra{display:flex;gap:2px;height:16px;background:#F1F5F9;border-radius:4px;overflow:hidden}
+html body .fin-graf-v878423 .barra i{display:block;height:100%;flex:0 0 auto}
+html body .fin-graf-v878423 .lleg{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px;font-size:12px;color:#334155}
+html body .fin-graf-v878423 .lleg li{display:flex;align-items:center;gap:6px;min-width:0}
+html body .fin-graf-v878423 .lleg i{display:block;width:10px;height:10px;border-radius:2px;flex:0 0 10px}
+html body .fin-graf-v878423 .lleg span{flex:1;min-width:0}
+html body .fin-graf-v878423 .lleg b{font-variant-numeric:tabular-nums;white-space:nowrap;color:#0F172A}
+@media (max-width:760px){
+  html body .previst-v878410 .pi-xifres.pi6-v878423{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .fin-graf-v878423 .lleg{grid-template-columns:1fr}
+}
+html body .budget-grand-total .noexec-tot-v878423{color:#B91C1C!important}
