@@ -22,11 +22,12 @@ export function enllacSigna(token) {
 export function propsSig({ motiu, obra, poblacio, s }) {
   const p = { signReason: motiu, signatureProductionCity: poblacio ?? obra?.poblacio ?? "", layer2Text: "Signat digitalment per\n$$SUBJECTCN$$\n$$SIGNDATE=dd/MM/yyyy HH:mm$$", layer2FontSize: "7", layer2FontFamily: "1", alwaysCreateRevision: "true" };
   if (s) {
-    const k = 72 / 25.4, m = 1.2;
+    // V87.425 · `ph`: l'alçada del full (297 mm vertical, 210 mm horitzontal)
+    const k = 72 / 25.4, m = 1.2, ph = +s.ph || 297;
     Object.assign(p, {
       signaturePage: String(s.pag),
-      signaturePositionOnPageLowerLeftX: String(Math.round((s.x + m) * k)), signaturePositionOnPageLowerLeftY: String(Math.round((297 - s.y - s.h + m) * k)),
-      signaturePositionOnPageUpperRightX: String(Math.round((s.x + s.w - m) * k)), signaturePositionOnPageUpperRightY: String(Math.round((297 - s.y - m) * k)),
+      signaturePositionOnPageLowerLeftX: String(Math.round((s.x + m) * k)), signaturePositionOnPageLowerLeftY: String(Math.round((ph - s.y - s.h + m) * k)),
+      signaturePositionOnPageUpperRightX: String(Math.round((s.x + s.w - m) * k)), signaturePositionOnPageUpperRightY: String(Math.round((ph - s.y - m) * k)),
     });
   }
   return p;

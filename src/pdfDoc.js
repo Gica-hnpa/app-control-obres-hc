@@ -1,12 +1,12 @@
 // V87.405 · Un document de l'app (l'HTML de l'acta, del pressupost, de la factura…) en un PDF de debò per adjuntar-lo al correu
-// o compartir-lo. L'HTML es dibuixa en un marc amagat de 794 px (un A4 a 96 ppp), es talla en pàgines sense partir cap línia,
-// fila de taula, foto ni signatura, i cada pàgina va al PDF com una imatge (A4, 12 mm de marge a dalt i a baix).
-// Les llibreries (html2canvas i jsPDF) només es carreguen quan es fa el primer PDF.
+// o compartir-lo. Les llibreries (html2canvas i jsPDF) només es carreguen quan es fa el primer PDF.
+// V87.425 · Els fulls surten de src/fullsA4.js, el mateix que fa servir la vista prèvia: cada pàgina és un A4 vertical o horitzontal
+// (el que digui el document) amb els marges del seu @page, sense partir cap línia, fila, foto ni signatura, i al PDF cada pàgina és una
+// imatge a la seva mida. Abans tot es dibuixava a l'amplada d'un A4 vertical i el quadre resum de les certificacions sortia tallat.
+import { prepara, aPunt } from "./fullsA4.js";
 
-const AMPLE = 794;                       // px d'un A4 a 96 ppp
-const MM = AMPLE / 210;                  // px per mm
-const MARGE_MM = 12;                     // marge de dalt i de baix de cada pàgina
-const ALT_PAG = Math.floor((297 - 2 * MARGE_MM) * MM);
+const MARC = 1200;                       // px del marc: hi cap un A4 horitzontal (1123 px a 96 ppp)
+const PX_MM = 96 / 25.4;
 
 const espera = ms => new Promise(r => setTimeout(r, ms));
 
@@ -14,84 +14,43 @@ function marc(html) {
   return new Promise((resolve, reject) => {
     const f = document.createElement("iframe");
     f.setAttribute("aria-hidden", "true");
-    f.style.cssText = `position:fixed;left:-12000px;top:0;width:${AMPLE}px;height:${ALT_PAG}px;border:0;opacity:0;pointer-events:none`;
+    f.style.cssText = `position:fixed;left:-14000px;top:0;width:${MARC}px;height:1200px;border:0;opacity:0;pointer-events:none`;
     document.body.appendChild(f);
     const doc = f.contentDocument;
     doc.open();
-    // sense els marges de la impressió: al marc, la pàgina ja fa l'amplada d'un A4 i el document hi posa els seus
-    doc.write(String(html || "").replace(/<head>/i, `<head><style>html,body{margin:0!important;background:#fff!important}@page{margin:0}</style>`));
+    doc.write(String(html || ""));
     doc.close();
     const fi = async () => {
-      try {
-        const imgs = [...doc.images];
-        await Promise.all(imgs.map(i => i.complete ? null : new Promise(r => { i.onload = i.onerror = r; setTimeout(r, 8000); })));
-        try { await doc.fonts?.ready; } catch {}
-        await espera(80);
-        resolve(f);
-      } catch (e) { reject(e); }
+      try { await aPunt(doc); await espera(80); resolve(f); } catch (e) { reject(e); }
     };
     if (doc.readyState === "complete") fi(); else f.onload = fi;
   });
 }
 
-// on es pot tallar la pàgina: no pot partir cap element petit (línia de text, fila, foto, requadre de signatura…)
-function talls(doc) {
-  const total = Math.ceil(Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight));
-  const sel = "p,li,tr,img,figure,h1,h2,h3,h4,h5,h6,pre,blockquote,dt,dd,.cd396,.cd396-sign,.cd396-peu,.k3box,.no-break,.sig,svg,canvas";
-  const blocs = [];
-  for (const el of doc.querySelectorAll(sel)) {
-    const r = el.getBoundingClientRect();
-    if (r.height > 0 && r.height < ALT_PAG * 0.85) blocs.push([r.top + doc.defaultView.scrollY, r.bottom + doc.defaultView.scrollY]);
-  }
-  // els que s'han de començar en una pàgina nova (page-break-before / break-before)
-  const forcats = [];
-  for (const el of doc.body.querySelectorAll("*")) {
-    const cs = doc.defaultView.getComputedStyle(el);
-    if (cs.breakBefore === "page" || cs.pageBreakBefore === "always") forcats.push(el.getBoundingClientRect().top + doc.defaultView.scrollY);
-  }
-  const parteix = y => blocs.some(([a, b]) => a < y - 1 && b > y + 1);
-  const pags = [];
-  let ini = 0;
-  while (ini < total - 2) {
-    let fi = Math.min(ini + ALT_PAG, total);
-    const forc = forcats.filter(y => y > ini + 20 && y < fi).sort((a, b) => a - b)[0];
-    if (forc) fi = forc;
-    else if (fi < total) {
-      // el tall més avall que no parteixi res (com a molt, mitja pàgina enrere)
-      const cands = [fi, ...blocs.flatMap(([a, b]) => [a, b])].filter(y => y > ini + ALT_PAG * 0.5 && y <= fi).sort((a, b) => b - a);
-      const bo = cands.find(y => !parteix(y));
-      if (bo) fi = Math.floor(bo);
-    }
-    pags.push([ini, fi]);
-    ini = fi;
-  }
-  return { pags, total };
-}
-
-// cada pàgina com una imatge JPEG ({src, altMm}); també la fan servir les proves per mirar com queda
+// cada pàgina com una imatge JPEG ({src, l, wMm, hMm}); també la fan servir les proves per mirar com queda
 export async function paginesImatge(html, { escala = 2, qualitat = 0.82 } = {}) {
   const { default: html2canvas } = await import("html2canvas");
   const f = await marc(html);
   try {
-    const doc = f.contentDocument;
-    const { pags, total } = talls(doc);
+    const doc = f.contentDocument, win = doc.defaultView;
+    const { fulls } = prepara(doc, { pdf: true });
+    const total = Math.ceil(Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight));
     // el marc fa l'alçada de tot el document: així html2canvas ho veu tot
     f.style.height = total + "px";
     await espera(30);
     const out = [];
-    // V87.408 · on cau cada requadre de signatura ([data-signa]): pàgina i posició en mm des de dalt a l'esquerra del full A4
+    // V87.408 · on cau cada requadre de signatura ([data-signa]): pàgina i posició en mm des de dalt a l'esquerra del full
     out.signes = [];
     for (const el of doc.querySelectorAll("[data-signa]")) {
-      const r = el.getBoundingClientRect(), top = r.top + doc.defaultView.scrollY;
-      const i = pags.findIndex(([a, b]) => top >= a - 1 && top < b);
+      const r = el.getBoundingClientRect(), top = r.top + win.scrollY, left = r.left + win.scrollX;
+      const i = fulls.findIndex(p => top >= p.y - 1 && top < p.y + p.h);
       if (i < 0 || !r.width || !r.height) continue;
-      out.signes.push({ rol: el.getAttribute("data-signa"), pag: i + 1, x: r.left / MM, y: MARGE_MM + (top - pags[i][0]) / MM, w: r.width / MM, h: r.height / MM });
+      const p = fulls[i];
+      out.signes.push({ rol: el.getAttribute("data-signa"), pag: i + 1, x: (left - p.x) / PX_MM, y: (top - p.y) / PX_MM, w: r.width / PX_MM, h: r.height / PX_MM, ph: p.l ? 210 : 297 });
     }
-    for (let i = 0; i < pags.length; i++) {
-      const [a, b] = pags[i];
-      const alt = Math.max(1, b - a);
-      const cv = await html2canvas(doc.body, { x: 0, y: a, width: AMPLE, height: alt, windowWidth: AMPLE, windowHeight: total, scrollX: 0, scrollY: 0, scale: escala, backgroundColor: "#ffffff", useCORS: true, logging: false });
-      out.push({ src: cv.toDataURL("image/jpeg", qualitat), altMm: alt / MM });
+    for (const p of fulls) {
+      const cv = await html2canvas(doc.body, { x: Math.round(p.x), y: Math.round(p.y), width: Math.round(p.w), height: Math.round(p.h), windowWidth: MARC, windowHeight: total, scrollX: 0, scrollY: 0, scale: escala, backgroundColor: "#ffffff", useCORS: true, logging: false });
+      out.push({ src: cv.toDataURL("image/jpeg", qualitat), l: p.l, wMm: p.l ? 297 : 210, hMm: p.l ? 210 : 297 });
     }
     return out;
   } finally { f.remove(); }
@@ -99,8 +58,8 @@ export async function paginesImatge(html, { escala = 2, qualitat = 0.82 } = {}) 
 
 async function fesPdf(html, opts = {}) {
   const [pags, { jsPDF }] = await Promise.all([paginesImatge(html, opts), import("jspdf")]);
-  const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
-  pags.forEach((p, i) => { if (i) pdf.addPage("a4", "portrait"); pdf.addImage(p.src, "JPEG", 0, MARGE_MM, 210, p.altMm, undefined, "FAST"); });
+  const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: pags[0]?.l ? "landscape" : "portrait", compress: true });
+  pags.forEach((p, i) => { if (i) pdf.addPage("a4", p.l ? "landscape" : "portrait"); pdf.addImage(p.src, "JPEG", 0, 0, p.wMm, p.hMm, undefined, "FAST"); });
   // V87.408 · la marca de l'app (a les paraules clau del PDF): diu de quin document és un PDF que torna signat
   if (opts.titol || opts.marca) pdf.setDocumentProperties({ title: opts.titol || "", keywords: opts.marca ? "aco878408:" + opts.marca : "", creator: "Control d'Obres" });
   return { pdf, signes: pags.signes || [] };

@@ -26,6 +26,7 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 | V87.422 | El treballador ja no canvia l'estat de les obres des de la llista (ni «Importar») | `v422test` (15) |
 | V87.423 | Partides que no s'executaran (tota o en part) en vermell; al PDF a origen totes les partides i el resum de l'obra amb gràfic; la certificació separada entre pressupost original i imprevistos (també al PDF «només aquesta») | `v423test` (25, Verbania) |
 | V87.424 | Compartir «Pressupost i certificacions»: l'altre compte veu el pressupost (consulta) i hi fa la seva certificació; «Comparar» i PDF de la comparació; un tècnic ja veu el pressupost i les certificacions de les obres compartides | `v424test` (18) |
+| V87.425 | Documents en fulls A4: vista prèvia i «Descarregar el PDF» amb pàgines verticals i horitzontals (el quadre a origen ja no surt tallat), capçalera de taula repetida; «Previst i imprevistos» i el quadre resum plegats a tots els aparells, el previst com un compte net | `v425test` (15) |
 | (sense canvis) | La cadena dels diners de la constructora: parte → certificació → Despeses (mà d'obra) → Per facturar → factura → Rendiment, amb les mateixes xifres a tot arreu | `v422test` (13) |
 | (sense canvis) | Repàs exhaustiu a l'iPad (820 px) amb els quatre comptes | `repas411` MIDES=ipad |
 

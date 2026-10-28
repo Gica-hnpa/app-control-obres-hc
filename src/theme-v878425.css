@@ -1,0 +1,37 @@
+/* V87.425 · Vista prèvia dels documents en fulls A4 (vertical o horitzontal), els mateixos del PDF */
+html body .exact-print-preview-v878193.a4-v878425{background:#C9D1DA;padding:0;border-radius:12px;overflow:hidden;min-height:0}
+html body .exact-print-preview-v878193.a4-v878425:not(.fit-v878290)>iframe{border:0;border-radius:0;box-shadow:none;background:#C9D1DA;height:min(74vh,calc(100dvh - 270px));min-height:400px}
+html body .exact-print-preview-v878193.a4-v878425.fit-v878290{padding:0}
+html body .exact-print-preview-v878193.a4-v878425 .fit-wrap-v878290>iframe{box-shadow:none;background:#C9D1DA}
+
+/* «Compartir»: el permís es llegeix sencer */
+html body .share-modal-v878259 .row,html body .share-modal-v878259 .add{grid-template-columns:minmax(0,1fr) minmax(200px,auto) auto}
+@media (max-width:560px){
+  html body .share-modal-v878259 .add{grid-template-columns:minmax(0,1fr) auto}
+  html body .share-modal-v878259 .add input{grid-column:1/-1}
+  html body .share-modal-v878259 .row{grid-template-columns:minmax(0,1fr) auto}
+  html body .share-modal-v878259 .row select{grid-column:1/-1;grid-row:2}
+}
+
+/* «Previst i imprevistos» i el quadre resum: plegats a tots els aparells; la línia del resum es llegeix sencera */
+html body details.card.plega-v878369.previst-v878410>summary .t small,html body details.card.plega-v878369.quadre-v878425>summary .t small{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
+html body details.card.plega-v878369.quadre-v878425>.cos{padding:0}
+html body details.card.plega-v878369.quadre-v878425>.cos>.cert-resum-scroll-v87216{border:0;border-radius:0;box-shadow:none;margin:0}
+html body details.card.plega-v878369.quadre-v878425>.cos>.cert-resum-scroll-v87216>.seg-v878411{margin:12px 14px}
+html body details.card.plega-v878369.quadre-v878425>.cos>.cert-resum-m-v878386{padding:10px 12px}
+
+/* oberta, la targeta és un compte net (una línia per xifra) en lloc de sis requadres de colors */
+html body .previst-v878410 .pi-xifres.llibre-v878425{display:flex;flex-direction:column;gap:0;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;background:#fff}
+html body .previst-v878410 .pi-xifres.llibre-v878425>div{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:1px;align-items:baseline;padding:10px 14px;border:0;border-top:1px solid #EEF2F6;border-radius:0;background:#fff}
+html body .previst-v878410 .pi-xifres.llibre-v878425>div:first-child{border-top:0}
+html body .previst-v878410 .pi-xifres.llibre-v878425>div>small{grid-column:1;grid-row:1;font-size:14px;font-weight:600;color:#334155;text-transform:none;letter-spacing:0}
+html body .previst-v878410 .pi-xifres.llibre-v878425>div>b{grid-column:2;grid-row:1;font-size:16px;text-align:right;white-space:nowrap}
+html body .previst-v878410 .pi-xifres.llibre-v878425>div>span{grid-column:1/-1;font-size:12.5px;color:#5F7075}
+html body .previst-v878410 .pi-xifres.llibre-v878425>.noex.si,html body .previst-v878410 .pi-xifres.llibre-v878425>.imp.si,html body .previst-v878410 .pi-xifres.llibre-v878425>.exe{background:#fff}
+html body .previst-v878410 .pi-xifres.llibre-v878425>.fin{background:#F1F5F9;border-top:2px solid #CBD5E1}
+html body .previst-v878410 .pi-xifres.llibre-v878425>.fin>small{font-weight:800;color:#0F172A}
+html body .previst-v878410 .pi-xifres.llibre-v878425>.fin>b{font-size:18px;color:#0F2D5C}
+html body .previst-v878410 .pi-xifres.llibre-v878425>.exe>b{color:#166534}
+html body .previst-v878410 .pi-xifres.llibre-v878425>.pend>small{font-weight:800;color:#0F172A}
+html body .previst-v878410 .pi-xifres.llibre-v878425>.pend>b{font-size:18px}
+html body .previst-v878410 .pi-xifres.llibre-v878425 .desg-v878411{display:block}

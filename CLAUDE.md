@@ -2135,6 +2135,31 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       apartats ho ajunta sense preguntar.
     - Estils `src/theme-v878424.css`. Prova: `v424test.mjs` (18: demo-constructor comparteix «Reforma integral pis C/ Nou 5» amb demo-tecnic;
       pestanyes, pressupost de consulta, la seva certificació desada a part, comparar als dos comptes, PDF, «Pot editar» i mòbil).
+  - **V87.425 · Documents en fulls A4 (vista prèvia i PDF) i les targetes del resum plegades** (l'Héctor, 28/10/2026: «al descarregar el PDF
+    a origen el quadre surt tallat… imprimir ja surt tot… qualsevol previsualització a qualsevol dispositiu ha de ser com si fos un A4 en vertical
+    o horitzontal»; «a l'ordinador també plegat com a resum total… el quadre plegat i, en obrir-lo, per capítols i per partides… net i clar»):
+    - **`src/fullsA4.js`** (`prepara(doc, {pdf})`, `aPunt(doc)`), el mateix per a la vista prèvia i el PDF: fa valer els estils d'imprimir del
+      document (les regles de `@media print` passen a valer sempre i les de `@media screen` es treuen), cada full (cada `.page` de primer nivell, o el
+      body) fa l'amplada del paper amb els marges del seu `@page` (vertical o horitzontal pel `size`, la pàgina amb nom —`page:`— o la classe
+      «landscape»; sense marges, 10 mm) i es talla en pàgines sense partir cap línia, fila, foto, requadre, contenidor flex/grid ni bloc de text
+      petit; allà on acaba una pàgina hi posa l'espai fins a la següent (`tr.a4-espai` a les taules, amb la **capçalera de la taula repetida**,
+      `.a4-cap`; `div.a4-espai`; un marge als elements de flex/grid; un text de més d'una pàgina es parteix entre línies). Un títol (h1–h6) no es
+      queda sol a baix: passa a la pàgina següent. Torna `{fulls:[{x,y,w,h,l}], ample}` (px del document).
+    - **PDF** (`src/pdfDoc.js`): un marc de 1200 px, `prepara(doc,{pdf:true})` i una imatge per full a la seva mida (A4 vertical 210 × 297 o
+      horitzontal 297 × 210, `addPage("a4", "landscape")`), amb els marges del document (abans 12 mm fixos i tot a 794 px: el quadre resum de les
+      certificacions, de 277 mm, sortia tallat per la meitat). Les signatures (`signes`) porten `ph` (l'alçada del full) i `propsSig`
+      (`src/signaComu.js`) la fa servir. **Imprimir** no canvia (ja sortia bé: `@page` amb nom).
+    - **Vista prèvia** (`ExactHtmlPreview878193`, `.a4-v878425`): fulls blancs amb ombra sobre gris (`.a4-full`, darrere del contingut). A
+      l'ordinador (`FrameA4878425`) el marc es llegeix baixant i, si un full no hi cap (A4 horitzontal), s'encongeix (`zoom`); al mòbil i l'iPad
+      (`FitFrame878290`), els fulls encongits a l'amplada de la pantalla. Fora la nota «Vista prèvia fidel… Aquesta és la mateixa plantilla…».
+    - **Plegades a tots els aparells** (`CardOPlega878369 sempre`): «Previst i imprevistos» (línia: «Previsió final … · Executat … (… %) ·
+      Pendent …»; oberta, un compte net, una línia per xifra —`.llibre-v878425`, les mateixes sis xifres— en lloc de sis requadres de colors) i
+      el **quadre resum** de les certificacions (`QuadreResum878425`: «N capítols · Certificat … (… %) · Pendent …», a dins «Capítols · Totes les
+      partides»).
+    - «Compartir»: el desplegable del permís ja hi cap sencer («Pressupost i certificacions»).
+    - Estils `src/theme-v878425.css`. Prova: `v425test.mjs` (15: plegades a l'ordinador i al mòbil, el toc les obre, vista prèvia i PDF del document a
+      origen —vertical + horitzontal, res fora del full—, pressupost vertical, compartir). Eines: `fullsa4mira.mjs` (aplica `fullsA4.js` a un HTML desat
+      i en fa la captura) i `imprimeixhtml.mjs`.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2308,7 +2333,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.424 a Render):**
+**Estat (publicada la V87.425 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2328,6 +2353,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   pugen en taronja, «Marcar com a nova» a mà (V87.413; l’Héctor ha de marcar la 3.09 i la 3.10 de Verbania), i als imprevistos mai el que baixa;
   partides que no s’executaran (tota o en part) en vermell i el resum de l’obra amb gràfic als PDF de les certificacions (V87.423).
 - **Compartir només el Pressupost i les Certificacions** (V87.424): l’altre compte (p. ex. el Martí) hi fa la seva certificació i tots dos la comparen.
+- **Documents en fulls A4** (V87.425): la vista prèvia i el PDF, vertical o horitzontal segons la pàgina (el quadre a origen ja no surt tallat).
 - **Dades de l’obra amb Contactes** (V87.414): els camps buits o de farciment s’omplen amb la fitxa de Contactes i es tria amb un cercador
   per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.
@@ -2336,6 +2362,9 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 
 **Què fer, per ordre:**
+0. **Seguir `docs/full-de-ruta.md`** (l’Héctor, 28/10/2026: «marquem un camí… si no anem donant tombs d’una pantalla a l’altra»): un bloc
+   alhora (el següent: constructora dins de l’obra), el patró de pantalla igual per a totes i els encàrrecs nous a la «Llista d’espera».
+   Abans de començar un bloc, llistar-ne les pantalles i el que no segueix el patró, i esperar el sí de l’Héctor.
 1. **Llista de l’Héctor (26/10/2026, «posa-ho en llista i continua»; publicar cada versió i dir-li-ho):**
    - ~~Propostes visuals~~ (V87.400): esperant que validi a https://claude.ai/artifact/1sPHEQWBTS529xEieexRDd (Sí / No / Canviar-la); les
      validades, per a tothom.

@@ -4596,4 +4596,5 @@ export default {
   "Dif.": "Dif.",
   "Pressupost i certificacions": "Presupuesto y certificaciones",
   "La meva certificació {n}": "Mi certificación {n}",
+  "Quadre resum": "Cuadro resumen",
 };

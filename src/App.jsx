@@ -17,6 +17,7 @@ import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.j
 import {encarrecDe,estatPassos,estatDocs} from "./encarrecsTecnics.js";
 import {dadesDemo} from "./dadesDemo.js";
 import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
+import {prepara as fullsA4878425,aPunt as aPuntA4878425} from "./fullsA4.js";
 import * as af878408 from "./autofirma.js";
 import {llegeixSignatures,marcaDe} from "./signaturesPdf.js";
 import {propsSig as propsSigC878409,ajuntaSig as ajuntaSigC878409,comencaAmb as comencaAmb878409,enllacSigna as enllacSigna878409,senseServidor as senseServidor878409} from "./signaComu.js";
@@ -31,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.424";
+const APP_VERSION878264="87.425";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7079,9 +7080,10 @@ function ContacteObra878304({obra={},client={}}){
 function MB({a,i,l,on}){return <button className={`menu-btn ${a?"active":""}`} onClick={on}>{i}<span>{l}</span></button>}
 function Card({title,children,action,className=""}){return <div className={`card ${className}`.trim()}><div className="card-head"><h2>{title}</h2>{action}</div>{children}</div>}
 // V87.369 · al mòbil, la targeta és una línia plegada (el títol, quants i el primer) i es desplega en tocar-la (l'Héctor: «tot recollit»)
-function CardOPlega878369({title,resum,action,className="",children,obert=false}){
+function CardOPlega878369({title,resum,action,className="",children,obert=false,sempre=false}){
   const mobil=useMobil878363();
-  if(!mobil)return <Card title={title} action={action} className={className}>{children}</Card>;
+  // V87.425 · `sempre`: plegada també a l'ordinador i l'iPad (només el títol i la línia del resum)
+  if(!mobil&&!sempre)return <Card title={title} action={action} className={className}>{children}</Card>;
   return <details className={`card plega-v878369 ${className}`.trim()} open={obert||undefined}><summary><span className="t"><b>{title}</b>{resum?<small>{resum}</small>:null}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{action?<div className="acc">{action}</div>:null}{children}</div></details>;
 }
 function ActionMenu87213({label="Més accions",children,fletxa=true,className="",titol}){
@@ -12223,6 +12225,15 @@ function useFitDoc878290(){
   useEffect(()=>{let m;try{m=window.matchMedia?.(FIT_MQ878290)}catch{}if(!m)return;const on=()=>setV(m.matches);m.addEventListener?.("change",on);return ()=>m.removeEventListener?.("change",on)},[]);
   return v;
 }
+// V87.425 · la vista prèvia en fulls A4 (vertical o horitzontal, el que digui el document), els mateixos del PDF (src/fullsA4.js)
+async function fullsVista878425(f){let d=null;try{d=f?.contentDocument}catch{}if(!d?.body||!d.body.childElementCount)return null;if(!d.documentElement.__a4){await aPuntA4878425(d);if(!d.documentElement.__a4)fullsA4878425(d)}return d.documentElement.__a4}
+// a l'ordinador: el marc es pot llegir baixant, i si el full és més ample que el marc (un A4 horitzontal) s'encongeix fins a cabre-hi
+function FrameA4878425({html,title}){
+  const fr=useRef(null);
+  function ajusta(){const f=fr.current;let d=null;try{d=f?.contentDocument}catch{}const a=d?.documentElement?.__a4;if(!a||!a.ample)return;d.documentElement.style.zoom="";const cw=d.documentElement.clientWidth||f.clientWidth;const s=Math.min(1,(cw-8)/(a.ample+24));d.documentElement.style.zoom=s<0.995?String(s):""}
+  useEffect(()=>{const on=()=>ajusta();window.addEventListener("resize",on);return()=>window.removeEventListener("resize",on)},[]);
+  return <iframe ref={fr} title={title} srcDoc={html} onLoad={async()=>{await fullsVista878425(fr.current);ajusta()}}/>;
+}
 function FitFrame878290({html,title}){
   const wrap=useRef(null),frame=useRef(null);
   const [m,setM]=useState(null);
@@ -12240,7 +12251,7 @@ function FitFrame878290({html,title}){
     const ro=typeof ResizeObserver!=="undefined"&&wrap.current?new ResizeObserver(()=>setM(p=>{const cw=wrap.current?.clientWidth;if(!p||!cw)return p;const s=Math.min(1,cw/p.docW);return Math.abs(s-p.s)>0.001?{...p,s}:p})):null;ro?.observe(wrap.current);
     return ()=>{window.removeEventListener("resize",on);window.removeEventListener("orientationchange",on);ro?.disconnect()}},[]);
   useEffect(()=>{setM(null)},[html]);
-  const carregat=()=>{mesura();setTimeout(mesura,350);setTimeout(mesura,1200)};
+  const carregat=async()=>{mesura();await fullsVista878425(frame.current);mesura();setTimeout(mesura,350);setTimeout(mesura,1200)};
   return <div ref={wrap} className="fit-wrap-v878290" style={{height:m?Math.ceil(m.docH*m.s):"60vh"}}><iframe ref={frame} title={title} srcDoc={html} scrolling="no" onLoad={carregat} style={m?{width:m.docW,height:m.docH,transform:`scale(${m.s})`}:{width:A4_PX878290}}/></div>;
 }
 function FitBox878290({children}){
@@ -12258,7 +12269,7 @@ function FitBox878290({children}){
 }
 function ExactHtmlPreview878193({html,title="Vista prèvia exacta"}){
   const fit=useFitDoc878290();
-  return <div className={`exact-print-preview-v878193 ${fit?"fit-v878290":""}`}><div className="exact-print-note-v878193"><b>{t("Vista prèvia fidel")}</b><span>{fit?t("Amplia-la amb dos dits."):t("Aquesta és la mateixa plantilla que s’utilitzarà en imprimir o guardar el PDF, inclosa l’orientació i la mida de pàgina.")}</span></div>{fit?<FitFrame878290 html={html} title={title}/>:<iframe title={title} srcDoc={html}/>}</div>
+  return <div className={`exact-print-preview-v878193 a4-v878425 ${fit?"fit-v878290":""}`}>{fit?<FitFrame878290 html={html} title={title}/>:<FrameA4878425 html={html} title={title}/>}</div>
 }
 // V87.407 · el document d'un pressupost o d'una factura d'honoraris, per adjuntar-lo en enviar-lo
 function docQuote878407(type,doc){const fa=type==="factura";return {...doc,type:fa?"facturatecnica":"pressuposttecnic",title:`${fa?i18nT("Factura"):i18nT("Pressupost")} ${doc?.numero||""}`.trim()}}
@@ -15299,7 +15310,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     </div>
   </div>
   {sigCert408&&<SignaturaCert878408 obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
-  {certMode8711==="comparar"&&compara878424&&<ComparaCert878424 raw={compara878424.raw} bid={compara878424.bid} num={certNum} obra={obra} openDoc={openDoc} guest={contrast878424}/>}{certMode8711==="resum"&&!readOnly&&<PrevistImprevist878410 data={data}/>}{certMode8711==="resum"&&(readOnly?<ClientCertSummaryV87235 data={data}/>:<CertResumV69 data={data}/>)} 
+  {certMode8711==="comparar"&&compara878424&&<ComparaCert878424 raw={compara878424.raw} bid={compara878424.bid} num={certNum} obra={obra} openDoc={openDoc} guest={contrast878424}/>}{certMode8711==="resum"&&!readOnly&&<PrevistImprevist878410 data={data}/>}{certMode8711==="resum"&&(readOnly?<ClientCertSummaryV87235 data={data}/>:<QuadreResum878425 data={data}/>)} 
   {extraOpen878125&&<Modal title={i18nT("Afegir feina · Certificació {n}",{n:certNum})} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p className="cert-add-intro-v878255">{i18nT("Què vols afegir a la Certificació")} {certNum}?</p>
   <div className="cert-add-kinds-v878255" role="radiogroup" aria-label={i18nT("Tipus de feina")}>
     {[["modificacio","Feina nova o extra","Una feina que no era al pressupost, o un canvi. Hi poses la quantitat i el preu, i queda afegida al pressupost."],["provisio","Partida a compte","Un import provisional que només surt en aquesta certificació (provisió de fons)."],["administracio","Hores i materials","Feina pagada per hores. Apuntes les hores d’oficial i de peó i els materials, i l’import se suma sol."]].map(([k,t,d])=><button type="button" key={k} role="radio" aria-checked={extraDraft878125.tipus===k} className={extraDraft878125.tipus===k?"on":""} onClick={()=>{const tipus=k;setExtraDraft878125(x=>({...x,tipus,cap:tipus==="administracio"?(x.cap||"C98 FEINES PER ADMINISTRACIÓ"):(x.cap==="C98 FEINES PER ADMINISTRACIÓ"?"":x.cap),ut:tipus==="administracio"?"€":(x.ut==="€"?"ut":x.ut),q:tipus==="administracio"?"":(x.q||"1"),pu:tipus==="administracio"?"":(x.pu||"0")}))}}><b>{t}</b><span>{d}</span></button>)}
@@ -15685,8 +15696,9 @@ function PrevistImprevist878410({data={},fase=""}){
   // V87.411 · els dos PDF: el pressupost tal com es va fer i la llista dels imprevistos (s'obren al visor de l'App, amb l'obra d'ara)
   const obre=mk=>window.__acoObreDoc878411?.(mk);
   // V87.423 · l'Héctor (28/10/2026): «pressupost original, que no s'executarà, imprevistos o noves i pendent segons el pressupost original»
-  return <CardOPlega878369 title={t("Previst i imprevistos")} resum={`${t("Previsió final")} ${money(p.previsio)} · ${t("Pendent")} ${money(p.pendent)}`} className="previst-v878410">
-    <div className="pi-xifres pi6-v878423">
+  // V87.425 · l'Héctor (28/10/2026): «a l'ordinador també hauria de sortir plegat com a resum total i, en desplegar-lo, veure tota la informació»
+  return <CardOPlega878369 sempre title={t("Previst i imprevistos")} resum={`${t("Previsió final")} ${money(p.previsio)} · ${t("Executat")} ${money(p.executat)} (${pc(p.executat,p.previsio)}) · ${t("Pendent")} ${money(p.pendent)}`} className="previst-v878410">
+    <div className="pi-xifres pi6-v878423 llibre-v878425">
       <div><small>{t("Pressupost original")}</small><b>{money(p.previst)}</b><span>{p.nOrig===1?t("1 partida"):t("{n} partides",{n:p.nOrig})}</span></div>
       <div className={`noex ${p.imNoExec>0.005?"si":""}`}><small>{t("No s’executaran")}</small><b>{p.imNoExec>0.005?"− ":""}{money(p.imNoExec)}</b><span>{nNo?(nNo===1?t("1 partida"):t("{n} partides",{n:nNo})):t("Cap")}</span></div>
       <div className={`imp ${p.imprevistos>0.005?"si":""}`}><small>{t("Imprevistos i partides noves")}</small><b>{p.imprevistos>0.005?"+ ":p.imprevistos<-0.005?"− ":""}{money(Math.abs(p.imprevistos))}</b>{n>0?<>{Math.abs(p.imNoves)>0.005&&<span className="desg-v878411">{t("Fora de pressupost")} {money(p.imNoves)}</span>}{Math.abs(p.imMes)>0.005&&<span className="desg-v878411">{t("Més amidament")} {money(p.imMes)}</span>}{p.canv.length>0&&<span className="desg-v878411">{t("Més quantitat o preu que a l’inicial")} {sg(p.imCanv)}</span>}</>:<span>{t("Cap")}</span>}</div>
@@ -15780,6 +15792,13 @@ function resumCert878411(data={}){
   const tretes=iniPres878412(data)?.tretes||[],presTretes=tretes.reduce((s,i)=>s+(+i.q||0)*(+i.pu||0),0);
   const noExec=all.filter(p=>p.noexec&&p.noImp>0.005),presNoExec=noExec.reduce((s,p)=>s+p.noImp,0);
   return {certs,capRows,noves,noExec,presNoExec,totalCerts,nouVals,origVals,totalPres:totalPres+presTretes,presCaps:totalPres,tretes,presTretes,presNoves,totalExec,totalNou,totalOrig:totalExec-totalNou,pendent:capRows.reduce((s,c)=>s+c.pendent,0)};
+}
+// V87.425 · el quadre resum de les certificacions, plegat a tots els aparells: la línia diu el total i, en obrir-lo, capítols o partides
+function QuadreResum878425({data}){
+  const R=useMemo(()=>resumCert878411(data),[data]);
+  if(!R.capRows.length)return <CertResumV69 data={data}/>;
+  const n=R.capRows.length,pc=R.totalPres>0.005?R.totalExec/R.totalPres*100:0;
+  return <details className="card plega-v878369 quadre-v878425"><summary><span className="t"><b>{i18nT("Quadre resum")}</b><small>{n===1?i18nT("1 capítol"):i18nT("{n} capítols",{n})} · {i18nT("Certificat")} {money(R.totalExec)} ({pct(pc)}) · {i18nT("Pendent")} {money(R.pendent)}</small></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><CertResumV69 data={data}/></div></details>;
 }
 function CertResumV69({data}){
 const mobil878386=useTauleta878387();
@@ -17547,7 +17566,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.424",
+    app_version:"87.425",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
