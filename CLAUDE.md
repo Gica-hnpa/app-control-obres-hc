@@ -2039,6 +2039,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       posa `nom` i `empresa`): abans Contactes ensenyava el nom de la còpia, el d'abans.
     - Prova: `v418test.mjs` (10: treballador reanomenat al Planning, industrial amb un document i al Planning reanomenat a Contactes, client
       reanomenat i la seva còpia, recarregar).
+  - **V87.419 · Inici del tècnic: les feines** (repàs funcional, tanda 5, `demo-tecnic`; `v419test.mjs`, 17):
+    - **Comprovat com un usuari:** els quatre requadres de l'Inici porten a la llista d'Expedients amb el mateix nombre (la fila de l'any,
+      `.year-row-v8742`, no és un expedient); «Fet» treu la feina de l'Inici i la deixa feta a l'expedient; un expedient nou de cèdula, CEE,
+      ITE i amiant es crea amb el seu número i el seu tipus, s'obre amb l'encàrrec al Resum i es troba al cercador.
+    - **Accions de cada feina** (el desplegable de l'Inici): «Veure / editar feina» (abans «tasca»), «Entrar a l’obra» a la constructora,
+      **«Apuntar hores»** (abans «Iniciar temps», que no engegava cap rellotge: obre les hores de l'expedient) i només als comptes amb hores
+      pròpies (`senseHoresPropies878342`: la constructora no en té). «Feina pendent» en lloc de «Tasca pendent» i de «Tasca / feina pendent».
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2212,7 +2219,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.418 a Render):**
+**Estat (publicada la V87.419 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

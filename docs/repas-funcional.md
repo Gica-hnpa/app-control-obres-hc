@@ -20,6 +20,7 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 | V87.416 | Triar l'obra amb el cercador (cita, «+ Afegir hores», hores del treballador); «+ Afegir feina» de l'Inici per l'expedient; dates «28 d’octubre» | `v416test` (23) |
 | V87.417 | Canviar una persona a Contactes (o la fitxa d'un client) la canvia a les obres (promotor, constructora, tècnics); el mòbil a la fitxa del contacte i del client; un client eliminat surt de Contactes | `v417test` (18) |
 | V87.418 | El Planning diu el nom d'ara del treballador; canviar el nom d'un industrial no en perd els documents ni el Planning; el nom d'un client canviat arriba a les seves còpies | `v418test` (10) |
+| V87.419 | Inici del tècnic: requadres i llista, accions de les feines («Apuntar hores», «feina»), expedients nous de cada encàrrec | `v419test` (17) |
 
 ## Per fer (ordre)
 
@@ -31,8 +32,8 @@ dades de l'Héctor (`ACO_DADES_DIR`).
 - [x] Empresa › Industrials i Treballadors: crear, editar, documents; que surtin al Planning, als partes i a Agenda › Equip (V87.418).
 
 ### 2. Tècnic (`demo-tecnic`)
-- [ ] Inici: requadres, cites, feines (crear, fer, vençudes), nota de veu.
-- [ ] Expedients: paquets, filtres, cercador, nou expedient de cada tipus (cèdula, CEE, ITE, amiant, direcció d'obra).
+- [x] Inici: requadres, feines (crear, fer, accions) (V87.416, V87.419). Falten les cites i la nota de veu (ja tenen les seves proves).
+- [x] Expedients: paquets, cercador, nou expedient de cada encàrrec tècnic (V87.419).
 - [ ] Dins d'un encàrrec: Resum (passos, documents del tràmit, enllaços), Dades, Documents (adjuntar, enviar), Visites (acta: assistents,
       fotos, dictat, PDF, signar), Agenda, Honoraris (pressupost, calculadora, factura, hores, rendiment), Despeses.
 - [ ] Pressupostos, Hores, Facturació (factura, cobrament, gestoria, gràfiques), Les meves despeses, Rendiment, Ajustos.
