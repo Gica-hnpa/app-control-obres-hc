@@ -2026,6 +2026,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       les actes on surt el conserven. El missatge diu «obres» o «expedients» segons el perfil.
     - Prova: `v417test.mjs` (18: promotor amb el correu vell i una obra amb un de propi, «Enviar», nom d’un tècnic, fitxa d’un client, contacte nou
       amb el mòbil i eliminar-lo, recarregar, mòbil).
+  - **V87.418 · Els noms canviats arriben a tot arreu** (repàs funcional, tanda 4: Empresa › Treballadors i Industrials):
+    - **Planning:** cada assignació desa el nom de quan es va fer (`capPlans[cap].qui = [{k, nom}]`), i si es canviava el nom del
+      treballador a Empresa el Planning continuava dient el vell. Ara el nom surt de la fitxa d'ara (`nomQui878418`: `t:<id>` → el
+      treballador de `aco_treballadors_v878339`, amb `trebsAra878418` que només torna a llegir la llista si ha canviat; `c:<colla>` → la
+      colla; la resta, el nom desat). Agenda › Equip i les coincidències ja el llegien de la fitxa.
+    - **La clau d'una persona és el seu nom** (`agentPersona878301` → `nom:<nom>`): canviar el nom d'un industrial a Contactes en perdia els
+      documents d'Empresa › Industrials (`aco_docs_industrials_v878339`, per persona) i l'assignació al Planning (`i:<persona>`). Ara, en
+      desar un contacte amb un altre nom (Contactes o la fitxa d'un client), `window.__acoCanviPersona878418(kVell, kNou, nomNou)` de l'App
+      passa els documents a la clau nova i canvia `i:<vella>` per `i:<nova>` (amb el nom nou) a les obres pròpies (no a les compartides).
+    - **El nom d'un client** canviat a la seva fitxa també va a les seves còpies de Contactes i de les obres (`propagaClient878415` ara hi
+      posa `nom` i `empresa`): abans Contactes ensenyava el nom de la còpia, el d'abans.
+    - Prova: `v418test.mjs` (10: treballador reanomenat al Planning, industrial amb un document i al Planning reanomenat a Contactes, client
+      reanomenat i la seva còpia, recarregar).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2199,7 +2212,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.417 a Render):**
+**Estat (publicada la V87.418 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

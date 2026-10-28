@@ -31,7 +31,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.417";
+const APP_VERSION878264="87.418";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5805,6 +5805,19 @@ estatRef878402.current=(id,st)=>updateObraStatus878247(id,st);
 sigRef878403.current=(id,sg)=>{const now=new Date().toISOString();setOdata(prev=>{if(!prev[id])return prev;const cur=prev[id];
   const l=[...(cur.signatures878403||[]).filter(x=>!(x.tipus===sg.tipus&&(x.budgetId||"principal")===(sg.budgetId||"principal"))),sg];
   const next={...prev,[id]:{...cur,signatures878403:l,updatedAt:now}};try{saveOdata878104(next,authUser8779)}catch(e){}return next})};
+// V87.418 · el nom d'una persona ha canviat (la seva clau és el nom): els seus documents d'industrial i el Planning de les obres pròpies
+window.__acoCanviPersona878418=(kVell,kNou,nomNou)=>{
+  if(!kVell||!kNou||kVell===kNou||currentAccount878233.readOnly)return;
+  try{const m={...(lsJson8779(DOCIND_KEY878339,{})||{})};if(m[kVell]&&!m[kNou]){m[kNou]=m[kVell];delete m[kVell];lsSet8779(DOCIND_KEY878339,JSON.stringify(m))}}catch(e){console.warn(e)}
+  const kv="i:"+kVell,kn="i:"+kNou;
+  setOdata(prev=>{let ch=false;const next={...prev};
+    Object.entries(prev||{}).forEach(([id,d])=>{const cfg=d?.ganttConfig87217,plans=cfg?.capPlans;if(!plans||typeof plans!=="object")return;
+      let comp=!!d.obra?.compartida;try{comp=comp||!!window.__acoOwnerOf?.(id)}catch{}if(comp)return;
+      let tocat=false;const np={};
+      Object.entries(plans).forEach(([cap,pl])=>{if((pl?.qui||[]).some(q=>q?.k===kv)){tocat=true;np[cap]={...pl,qui:pl.qui.filter(q=>q?.k!==kn).map(q=>q?.k===kv?{k:kn,nom:nomNou||q.nom}:q)}}else np[cap]=pl});
+      if(tocat){ch=true;next[id]={...d,ganttConfig87217:{...cfg,capPlans:np},updatedAt:new Date().toISOString()}}});
+    if(!ch)return prev;try{saveOdata878104(next,authUser8779)}catch(e){}return next});
+};
 // V87.417 · una persona canviada a Contactes o a la fitxa d'un client: les obres on surt (obresPersona878417)
 window.__acoPersona878417=(abans,despres)=>{
   if(currentAccount878233.readOnly)return 0;
@@ -8182,6 +8195,7 @@ function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openC
       // V87.336 · un promotor que només era a la fitxa d'una obra passa a la llista de contactes
       if(ag._dePromotor878336){const {_dePromotor878336,...net}=cleanAgentCopy878301(ag);setOdata?.(prev=>addToLibrary878303(prev,{...net,...patch}))}
       const kNou=agentPersona878301({nom:v.nom});
+      if(ag._persona878301&&kNou&&kNou!==ag._persona878301)window.__acoCanviPersona878418?.(ag._persona878301,kNou,v.nom);
       if(v.logo!==(edit.inicial.__logo||"")||kNou!==ag._persona878301){if(ag._persona878301&&kNou!==ag._persona878301)desaLogo878315(ag._persona878301,"");desaLogo878315(kNou,v.logo||"")}
     }
     setEdit(null);
@@ -8347,6 +8361,7 @@ function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,
     // V87.415 · la mateixa persona a Contactes i a les obres, amb les mateixes dades
     setOdata?.(prev=>propagaClient878415(prev,client,fixed));
     if(setOdata)window.__acoPersona878417?.(abans878417,clientPersona878304(client));
+    {const kV=agentPersona878301({nom:abans878417.nom}),kN=agentPersona878301({nom:client.nom});if(setOdata&&kV&&kN&&kV!==kN)window.__acoCanviPersona878418?.(kV,kN,client.nom)}
     setForm(fixed);
     setEdit(false);
     alert(i18nT("Client guardat."));
@@ -8841,6 +8856,8 @@ function propagaClient878415(odata={},client={},fixed={}){
   const es=a=>a&&typeof a==="object"&&(a.sourceClientId878192===client.id||a.id==="client-agent-"+client.id||(key&&agentPersona878301(a)===key));
   const nv=v=>buit878413(v)?"":String(v).trim();
   const patch={};
+  // V87.418 · també el nom (Contactes ensenyava el de la còpia, i continuava dient el d'abans)
+  if(nv(fixed.nom)){patch.nom=nv(fixed.nom);patch.empresa=nv(fixed.rao)||nv(fixed.nom)}
   for(const [k,v] of [["nif",fixed.nif],["email",fixed.email],["telefon",fixed.telefon],["mobil",fixed.mobil],["contacte",fixed.contacte],["contacteMobil",fixed.contacteMobil],["carrer",fixed.adreca],["codiPostal",fixed.codiPostal],["poblacio",fixed.poblacio],["provincia",fixed.provincia]])if(nv(v))patch[k]=nv(v);
   if(patch.carrer)patch.adreca=composaAdreca878304({carrer:patch.carrer,codiPostal:patch.codiPostal||fixed.codiPostal,poblacio:patch.poblacio||fixed.poblacio});
   if(!Object.keys(patch).length)return odata;
@@ -11849,6 +11866,11 @@ function industrialsObra878341(lib=[],clients=[]){
   (clients||[]).forEach(c=>{const ag=clientAsAgent878192(c);const k=agentPersona878301(ag);if(k&&!vist.has(k)&&grupContacte878315(ag,c)==="industrial"){vist.add(k);out.push({...ag,_persona878301:k})}});
   return out.sort((a,b)=>String(a.nom||"").localeCompare(String(b.nom||""),"ca",{sensitivity:"base"}));
 }
+// V87.418 · el nom de qui hi treballa és el d'ara: el Planning desa el nom de quan es va assignar, i si es canviava a Empresa ›
+// Treballadors continuava dient el d'abans (Agenda › Equip ja el llegia de la fitxa)
+let cacheTreb878418={raw:null,l:[]};
+function trebsAra878418(){let raw="";try{raw=localStorage.getItem(lsKey8779(TREB_KEY878339))||""}catch{}if(raw!==cacheTreb878418.raw)cacheTreb878418={raw,l:llegeixTreballadors878339()};return cacheTreb878418.l}
+function nomQui878418(q){const k=String(q?.k||"");if(k.startsWith("t:")){const w=trebsAra878418().find(x=>"t:"+x.id===k);if(w?.nom)return w.nom}if(k.startsWith("c:"))return k.slice(2);return q?.nom||""}
 // una persona (treballador) que és a dos capítols alhora; una colla compta pels seus treballadors
 function coincidencies878341(plans={},resolt={},pot){
   const persones={};
@@ -12034,7 +12056,7 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
     {real&&<span className="real" style={{left:X(real.from),width:Wd(real.from,real.to)}} title={`Certificat: ${real.from.toLocaleDateString("ca-ES")} – ${real.to.toLocaleDateString("ca-ES")} · ${money(real.done)} (${pct878252(real.pct)})`}><em style={{width:`${Math.min(100,real.pct)}%`}}/></span>}
     {real&&real.hits.map(c=><b key={c.n} className="mark" style={{left:X(toD(c.date))}} title={`C-${c.n} · ${fmtAppDate8748(c.data)}`}/>)}
     {!real&&!plan&&budget>0&&<small className="none">{i18nT("Sense planificar ni certificar")}</small>}
-    {plan&&qui?.length>0&&<small className="qui-v878341" style={{left:X(plan.from)+Wd(plan.from,plan.to)+6}}>{qui.map(q=>q.nom).join(" · ")}</small>}
+    {plan&&qui?.length>0&&<small className="qui-v878341" style={{left:X(plan.from)+Wd(plan.from,plan.to)+6}}>{qui.map(nomQui878418).join(" · ")}</small>}
     <i className="today" style={{left:X(today)}}/>
   </div>;
   return <div ref={granRef878321} className={`gantt-v878253 ${gran878321?"gantt-gran-v878321":""} ${esTreballador878326()?"gantt-treb-v878328":""}`}>
@@ -12062,7 +12084,7 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
       {coinc878341.length>0&&<div className="gt-coinc-v878341">{coinc878341.map((c,i)=><div key={i}>{i18nT("{nom} és a «{a}» i a «{b}» alhora ({d})",{nom:c.nom,a:c.a,b:c.b,d:+c.from===+c.to?fmtAppDate8748(isoDate8776(c.from)):`${fmtAppDate8748(isoDate8776(c.from))} – ${fmtAppDate8748(isoDate8776(c.to))}`})}</div>)}</div>}
       {vista878362==="taula"?<div className="gt-taula-v878362">
         <div className="cap-t"><span>{i18nT("Capítol")}</span><span>{i18nT("Inici")}</span><span>{i18nT("Final")}</span><span>{i18nT("Dies")}</span></div>
-        {rows.map(c=>{const pl=plans[c.cap]||{};const qui=(pl.qui||[]).map(q=>q.nom).filter(Boolean);const lag=Math.round(parseNum8770(pl.lag)||0);const treb=esTreballador878326();const ob=obertT878377.has(c.cap);
+        {rows.map(c=>{const pl=plans[c.cap]||{};const qui=(pl.qui||[]).map(nomQui878418).filter(Boolean);const lag=Math.round(parseNum8770(pl.lag)||0);const treb=esTreballador878326();const ob=obertT878377.has(c.cap);
           return <section key={c.cap} className={`cap-bloc-v878377 ${ob?"obert":""}`}><button type="button" className={"fila"+(c.plan?"":" sense")} data-cap={c.cap} aria-expanded={ob} onClick={()=>togT878377(c.cap)}>
             <span className="cap"><b>{c.cap}</b>{!treb&&<small>{eur0878252(c.budget)} · {pct878252(c.budget?c.certified/c.budget*100:0)}</small>}</span>
             <span className="d"><small>{i18nT("Inici")}</small><b>{c.plan?fmtAppDate8748(isoDate8776(c.plan.from)):"—"}</b></span>
@@ -17340,7 +17362,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.417",
+    app_version:"87.418",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
