@@ -31,7 +31,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.414";
+const APP_VERSION878264="87.415";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2792,10 +2792,9 @@ function QuickExpedientForm878254({clients=[],onSubmit,allAgents=[],fixedClientI
     <datalist id="agents-list-v878254">{agentNames.map(n=><option key={n} value={n}/>)}</datalist>
     <datalist id="promotors-list-v878304">{promotorNames.map(n=><option key={n} value={n}/>)}</datalist>
     <div className="quick-exp-grid-v878254">
-      <label><span>{i18nT("Client")}</span>
-        {fixedClientId?<><input type="hidden" name="client" value={fixedClientId}/><b className="fixed">{(clients||[]).find(c=>c.id===fixedClientId)?.nom||i18nT("Client")}</b></>
-        :<select name="client" value={client} onChange={e=>setClient(e.target.value)} required>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}<option value="__new__">{i18nT("+ Client nou…")}</option></select>}
-      </label>
+      {fixedClientId?<label><span>{i18nT("Client")}</span><input type="hidden" name="client" value={fixedClientId}/><b className="fixed">{(clients||[]).find(c=>c.id===fixedClientId)?.nom||i18nT("Client")}</b></label>
+        // V87.415 · el client es tria de Contactes (com a Dades de l'obra): un contacte que encara no és client omple el client nou
+        :<div className="quick-exp-client-v878415"><input type="hidden" name="client" value={client}/><TriaContacte878413 etiqueta={i18nT("Client")} valor={isNew?(net(nou.nom)?nou.nom:i18nT("+ Client nou…")):(selClient?.nom||"")} onTria={(d,x)=>{if(x?.c){setClient(x.c.id);return}setClient("__new__");const pa=partsAdreca878304(d);setNou({nom:d.nom||"",nif:net(d.nif),telefon:net(d.telefon)||net(d.mobil),email:net(d.email),adreca:net(pa.carrer),cp:net(pa.codiPostal),poblacio:net(pa.poblacio)})}} onNou={n=>{setClient("__new__");setNou(p=>({...p,nom:n||""}))}} nouText={i18nT("+ Client nou…")}/></div>}
       {isNew&&<label><span>{i18nT("Nom complet o raó social del client")}</span><input name="clientNouNom" required autoFocus value={nou.nom} onChange={e=>chNou("nom",e.target.value)} placeholder={i18nT("Ex. Manuel Cebrián Vélez")}/></label>}
       <label className={isNew?"":"wide"}><span>{i18nT("Nom de l’obra o treball")}</span><input name="nom" required autoFocus={!isNew} placeholder={isBudget?"Ex. Pressupost reforma bany Mundet":"Ex. Reforma interior Verbania"}/></label>
       <label><span>{i18nT("Tipus de feina")}</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{groups.map(g=><optgroup key={g.label} label={g.label}>{g.types.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</optgroup>)}{extra.length>0&&<optgroup label={i18nT("Altres tipus")}>{extra.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</optgroup>}</select></label>
@@ -4835,6 +4834,18 @@ useEffect(()=>{if(!obraId||!authUser8779||dataLoadedUser8781!==authUser8779)retu
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),dataOwnerUser878233)},[clients,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),dataOwnerUser878233)},[obres,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,dataOwnerUser878233)},[odata,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
+// V87.415 · un cop per sessió i usuari: les fitxes de client de farciment, amb les dades de Contactes (la d'abans es guarda a part)
+const repCli878415=useRef("");
+useEffect(()=>{
+  if(!authUser8779||dataLoadedUser8781!==authUser8779||currentAccount878233.readOnly||repCli878415.current===authUser8779||!(clients||[]).length)return;
+  const t0=setTimeout(()=>{
+    repCli878415.current=authUser8779;
+    const r=reparaClients878415(clients,odata);if(!r)return;
+    try{lsSet8779("aco_clients_abans_v878415",JSON.stringify({at:new Date().toISOString(),clients:stripHeavy878185(clients)}),dataOwnerUser878233)}catch{}
+    setClients(p=>{const rr=reparaClients878415(p,odata);return rr?rr.nous:p});
+  },4000);
+  return ()=>clearTimeout(t0);
+},[clients,odata,authUser8779,dataLoadedUser8781]);// eslint-disable-line react-hooks/exhaustive-deps
 // V87.331 · Menús desplegables (Accions, ⋯, Afegir, Imprimir…). L'Héctor: «el desplegable queda fix i no se'n va si no apreto de
 // nou el botó; un desplegable, quan hi estic a sobre es desplega i si amb el ratolí vaig a un altre lloc es plega sol». Es tanquen en
 // tocar fora o amb Esc; amb el ratolí (no al mòbil ni a l'iPad), s'obren en passar-hi per sobre i es pleguen en marxar-ne.
@@ -6116,7 +6127,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 
 {screen==="Inici"&&<Inici obrirPaquet={(pk,st="")=>{setOs("");setOc("");setOy("");setOt("");setOst(st);setOpk(pk);nav("Treballs / Expedients")}} clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {(screen==="Clients"||screen==="Agents")&&<SafeRenderBoundary878108><Contactes878315 clients={clients} setClients={setClients} obres={obres} odata={odata} setOdata={setOdata} openClient={openClient}/></SafeRenderBoundary878108>}
-{screen==="Fitxa client"&&<FitxaClient setClients={currentAccount878233.readOnly?undefined:setClients} setObres={setObres} client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} odata={viewOdata878233} partidaLibrary={partidaLibrary} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} openObra={openObra} back={()=>nav("Clients")}/>}
+{screen==="Fitxa client"&&<FitxaClient setClients={currentAccount878233.readOnly?undefined:setClients} setOdata={currentAccount878233.readOnly?undefined:setOdata} setObres={setObres} client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} odata={viewOdata878233} partidaLibrary={partidaLibrary} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} openObra={openObra} back={()=>nav("Clients")}/>}
 
 {screen==="Treballs / Expedients"&&<Projectes amagades878347={amagades878347.size} mostraAmagades878347={()=>{lsSet8779(AMAGADES_KEY878347,"[]");setAmagTick878347(x=>x+1)}} byClient={byClient} allObres={viewObres878233} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt,opk,setOpk}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"}/>} 
 {screen==="Obra"&&<Obra crono878376={authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&!senseHoresPropies878342()?{on:timer.running&&timer.obraId===obraId,since:timer.start,start:()=>{const t0=timerRef878254.current;if(t0.running)stopTimerFor878254(t0,"canvi d’obra");startTimer()},stop:()=>stopTimerFor878254(timerRef878254.current,"pausa")}:null} obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} agentsLib878301={agentsLibrary878301(viewOdata878233,viewClients878233)} keepAgent878303={ag=>setOdata(prev=>guardarALaLlista878303(prev,ag))} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>compressImage878259(file,1600,0.75).then(u=>{lsSet8779(obraFotoKey878259(obraId),u);setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u,teFoto:true,fotoAt:new Date().toISOString()}:o))}).catch(e=>alert("No s’ha pogut posar la foto: "+(e?.message||e)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,...(r.puOrig878346!=null?{pu:r.puOrig878346}:{}),sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
@@ -8288,7 +8299,7 @@ function ClientInlineEditor878134({client,tipusOpts=[],onSave,onDelete}){
   </div>
 }
 
-function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,openObra,back,setClients,setObres}){
+function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,openObra,back,setClients,setObres,setOdata}){
   const [edit,setEdit]=useState(false);
   // V87.315 · el logo es desa a part (a la llista de clients es perdia) i es pot treure
   const [logo,setLogo]=useState(()=>logoClient878315(client));
@@ -8316,6 +8327,8 @@ function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,
     try{let k=lsKey8779("aco_clients");let all=JSON.parse(localStorage.getItem(k)||"[]");all=all.map(c=>c.id===client.id?{...c,...fixed}:c);localStorage.setItem(k,JSON.stringify(all));}catch(e){}
     Object.assign(client,fixed);
     setClients?.(p=>(p||[]).map(c=>c.id===client.id?{...c,...fixed}:c));
+    // V87.415 · la mateixa persona a Contactes i a les obres, amb les mateixes dades
+    setOdata?.(prev=>propagaClient878415(prev,client,fixed));
     setForm(fixed);
     setEdit(false);
     alert(i18nT("Client guardat."));
@@ -8748,6 +8761,49 @@ function TriaContacte878413({grups=null,valor="",onTria,onCap,onNou,etiqueta="",
       {onNou&&<button type="button" className="tc-fila nou" onClick={()=>{const n=q.trim();tanca();onNou(n)}}><Plus size={15} aria-hidden="true"/> {cercant?t("Nou: «{q}»",{q:q.trim()}):String(nouText||t("Nou contacte")).replace(/^[+＋]\s*/,"")}</button>}
     </div>}
   </div>;
+}
+// V87.415 · les fitxes de client amb dades de farciment (Brava: «Pendent», «972 XXX XXX», «pendent@…» i l'adreça només amb el poble) s'omplen
+// amb la fitxa de Contactes de la mateixa persona (pel client, el NIF o el nom); només els camps buits o de farciment. Es fa en obrir l'app.
+function reparaClients878415(clients=[],odata={}){
+  let ags=[];try{ags=agentsLibrary878301(odata,[]).map(a=>personaAgent878304(cleanAgentCopy878301(a)))}catch(e){console.warn(e);return null}
+  if(!ags.length)return null;
+  let n=0;
+  const nous=(clients||[]).map(c=>{
+    if(!c||typeof c!=="object"||!c.id)return c;
+    const ct=contacteDe878413(ags,{nom:c.nom,nif:c.nif,clientId:c.id});if(!ct)return c;
+    const o={...c};let canvi=false;
+    for(const f of ["nif","telefon","email","mobil","contacteMobil"])if(buit878413(o[f])&&!buit878413(ct[f])){o[f]=String(ct[f]).trim();canvi=true}
+    if(buit878413(o.contacte)&&!buit878413(ct.contacte)){o.contacte=String(ct.contacte).trim();canvi=true}
+    const pa=partsAdreca878304(ct);
+    if(!buit878413(pa.carrer)&&(buit878413(o.adreca)||normalizeSearch878191(o.adreca)===normalizeSearch878191(o.poblacio))){
+      o.adreca=pa.carrer;if(!buit878413(pa.codiPostal))o.codiPostal=pa.codiPostal;if(!buit878413(pa.poblacio))o.poblacio=pa.poblacio;if(!buit878413(ct.provincia))o.provincia=ct.provincia;canvi=true;
+    }else{
+      if(buit878413(o.codiPostal)&&!buit878413(pa.codiPostal)){o.codiPostal=pa.codiPostal;canvi=true}
+      if(buit878413(o.poblacio)&&!buit878413(pa.poblacio)){o.poblacio=pa.poblacio;canvi=true}
+    }
+    if(!canvi)return c;n++;return {...o,updatedAt:new Date().toISOString()};
+  });
+  return n?{nous,n}:null;
+}
+// V87.415 · en desar la fitxa d'un client, les seves còpies de Contactes (agents de les obres i de la llista) es posen al dia amb les
+// mateixes dades (només les que ja hi són: no se'n crea cap de nova). Abans, cada fitxa anava per lliure i Brava en tenia dues de diferents.
+function propagaClient878415(odata={},client={},fixed={}){
+  const key=agentPersona878301(clientAsAgent878192(client));
+  const es=a=>a&&typeof a==="object"&&(a.sourceClientId878192===client.id||a.id==="client-agent-"+client.id||(key&&agentPersona878301(a)===key));
+  const nv=v=>buit878413(v)?"":String(v).trim();
+  const patch={};
+  for(const [k,v] of [["nif",fixed.nif],["email",fixed.email],["telefon",fixed.telefon],["mobil",fixed.mobil],["contacte",fixed.contacte],["contacteMobil",fixed.contacteMobil],["carrer",fixed.adreca],["codiPostal",fixed.codiPostal],["poblacio",fixed.poblacio],["provincia",fixed.provincia]])if(nv(v))patch[k]=nv(v);
+  if(patch.carrer)patch.adreca=composaAdreca878304({carrer:patch.carrer,codiPostal:patch.codiPostal||fixed.codiPostal,poblacio:patch.poblacio||fixed.poblacio});
+  if(!Object.keys(patch).length)return odata;
+  let canvi=false;const next={...(odata||{})};const ara=new Date().toISOString();
+  for(const [k,d] of Object.entries(odata||{})){
+    if(!d||typeof d!=="object"||!Array.isArray(d.agents)||!d.agents.some(es))continue;
+    // les obres que ens han compartit són d'un altre compte: no es toquen
+    let compartida=!!d.obra?.compartida;try{compartida=compartida||!!window.__acoOwnerOf?.(k)}catch{}
+    if(compartida)continue;
+    next[k]={...d,agents:d.agents.map(a=>es(a)?{...a,...patch,updatedAt:ara}:a),updatedAt:ara};canvi=true;
+  }
+  return canvi?next:odata;
 }
 // Fitxa d'un client (Clients) ↔ fitxa de persona
 function clientPersona878304(c={}){return {mobil:netV878304(c.mobil),contacteMobil:netV878304(c.contacteMobil),nom:netV878304(c.nom),rao:netV878304(c.rao)===netV878304(c.nom)?"":netV878304(c.rao),nif:netV878304(c.nif),contacte:netV878304(c.contacte)===netV878304(c.nom)?"":netV878304(c.contacte),telefon:netV878304(c.telefon),email:netV878304(c.email),carrer:netV878304(c.adreca),codiPostal:netV878304(c.codiPostal),poblacio:netV878304(c.poblacio)}}
@@ -17206,7 +17262,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.414",
+    app_version:"87.415",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

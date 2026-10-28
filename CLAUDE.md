@@ -1983,6 +1983,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils `src/theme-v878414.css`. Prova: `v414test.mjs` (17: client amb farciment, tècnic repetit en dues obres, blocs, filtrar, triar,
       desar, mòbil). Adaptades al cercador `fitxestest`, `dadestest` i `compartides347test` (que ara també espera que el contacte que posa
       s'hagi desat abans de recarregar, `__acoStore.flush`).
+  - **V87.415 · Una sola fitxa per persona: clients i Contactes al dia, i «Nova obra» amb el cercador** (repàs funcional, tanda 1, vegeu
+    `docs/repas-funcional.md`):
+    - **Reparació en obrir l'app** (`reparaClients878415`, un efecte de l'App, un cop per sessió i usuari, 4 s després que les dades quedin
+      quietes; no al portal de client): cada fitxa de client amb camps buits o de farciment s'omple amb la seva fitxa de Contactes
+      (`contacteDe878413`; l'adreça si només hi havia el poble). La llista d'abans es guarda a `aco_clients_abans_v878415`.
+    - **Desar la fitxa d'un client** (`FitxaClient`, Contactes › un client) posa al dia les seves còpies de Contactes i de les obres
+      (`propagaClient878415`: per `sourceClientId878192`, `client-agent-<id>` o el nom; només les que ja hi són, mai en crea; les obres
+      compartides per un altre compte no es toquen).
+    - **«Nova obra»** (`QuickExpedientForm878254`, `.quick-exp-client-v878415`): el client es tria amb `TriaContacte878413` (tots els
+      contactes); un contacte que encara no és client omple «Dades del client nou» (nom, NIF, telèfon, correu, adreça, CP, població) i en crear
+      l'obra es fa client. El valor va en un `input[name=client]` amagat (abans un `select`).
+    - Prova: `v415test.mjs` (18). Adaptades `fitxestest` i `dadestest` (client de l'obra nova amb el cercador). **Les lliçons de vídeo que
+      trien el client de l'obra nova** (`guia404-llicons.mjs`, `select[name=client]`) s'han de tornar a gravar.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2156,7 +2169,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.414 a Render):**
+**Estat (publicada la V87.415 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
