@@ -1,0 +1,19 @@
+/* V87.429.1 · Visor d'arxius dins de l'app: el PDF pàgina a pàgina, les imatges i els botons de baix */
+.modal:has(.visor-v8784291){max-width:min(1000px,96vw)}
+.visor-v8784291{background:#E5E9EC;border-radius:12px;padding:10px;min-height:120px;display:flex;flex-direction:column;align-items:center}
+.visor-v8784291 .pdf-v8784291{width:100%;max-width:960px;display:flex;flex-direction:column;gap:10px}
+.visor-v8784291 .pdf-v8784291 img,.visor-v8784291 .img-v8784291{display:block;width:100%;height:auto;max-width:100%;background:#fff;box-shadow:0 1px 4px rgba(15,35,50,.18);border-radius:2px}
+.visor-v8784291 .img-v8784291{width:auto;max-height:78vh;margin:0 auto}
+.visor-v8784291 .carregant-v8784291,.visor-v8784291 .no-v8784291,.visor-v8784291 .mes-v8784291{margin:18px 8px;color:var(--co-ink-2,#334a52);text-align:center;font-size:14px}
+.visor-v8784291 .mes-v8784291{margin:4px 8px 8px}
+.visor-acts-v8784291{flex-wrap:wrap;gap:8px;position:sticky;bottom:0;background:#fff;padding-top:10px;padding-bottom:max(10px,env(safe-area-inset-bottom,0px));z-index:2}
+.visor-acts-v8784291 button{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+/* a les notes, el nom del document obre el visor */
+.notes-docs-v878278 .obre-v8784291{color:var(--co-accent,#2563EB);text-decoration:underline;text-underline-offset:2px;word-break:break-word;flex:1;min-width:0}
+@media (max-width:700px){
+  .visor-v8784291{padding:6px;border-radius:8px}
+  .visor-v8784291 .pdf-v8784291{gap:6px}
+  .visor-acts-v8784291{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+  .visor-acts-v8784291 .primary{grid-column:1 / -1;justify-content:center}
+  .visor-acts-v8784291 button{justify-content:center}
+}

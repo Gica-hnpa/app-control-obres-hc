@@ -2251,7 +2251,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       sense cap cost, només la línia d'ingressos (abans la de benefici anava a sobre de la d'ingressos i la de costos a 0).
     - Estils `src/theme-v878428.css`. Prova: `v428test.mjs` (22). Adaptades `v410test`, `v411test`, `v412test` (comparar des de «Tancar»;
       «Reobrir-lo» en lloc de «Treure'l»), `v413test`, `v423test`, `v426test`, `v427test`, `pressuposttest`, `pressupost320test`,
-      `pressupost361test`, `habitualstest`, `v366test`, `whatsapp402test`, `facturacio337test` i `pdfpressuposttest` (crea abans una fase buida).
+      `pressupost361test`, `habitualstest`, `v366test`, `whatsapp402test`, `facturacio337test`, `pdfpressuposttest` (crea abans una fase buida), `menustest`,
+      `signatura403test`, `dictat401test`, `marca351test` i `grafica384test` (sense costos, una sola línia). Les 41 proves del pressupost i les certificacions, en verd.
   - **V87.429 · La fila de cada capítol de la certificació amb l'import de cada bloc** (l'Héctor, 29/10/2026, amb Verbania: «a la fila blava del
     capítol, el preu total del capítol (s/pressupost original) i, a les certificacions, l'import de cada bloc: anterior, C1 i a origen… perquè
     es vegi sempre en imprimir el quadre»): a Certificació › Partides (a partir de 761 px), la fila del capítol (`cap-fila-v878429`, una fila
@@ -2259,6 +2260,17 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     pressupost), el d'abans, el d'aquesta certificació i l'executat a origen, i el % de cadascun sobre el pressupost del capítol; es toca per
     plegar-la i desplegar-la. Al mòbil (partides en fitxes), la línia d'abans (`cap-m-v878429`). Al PDF a origen, la fila del capítol del quadre
     (`filaCap878429`, `tr.cap-v878429`) porta el mateix (abans només l'import a origen). Estils `src/theme-v878429.css`. Prova: `v429test.mjs` (8).
+  - **V87.429.1 · Els documents s'obren dins de l'app** (l'Héctor, 29/10/2026, en una visita: «no he pogut obrir un PDF de l'últim expedient…
+    no obre el document»; era el PDF de Documents › 01 · Documentació prèvia de la 2026-031, pujat des d'un altre aparell i bo al núvol): en obrir
+    un document, l'app esperava a llegir l'arxiu (de l'aparell o del núvol) i després obria una pestanya nova, que el Safari de l'iPhone i l'iPad
+    bloqueja sense avisar (ja no és el toc); a l'acta, l'«Obrir» era un enllaç «data:», que els navegadors tampoc obren, i a les notes el document
+    no tenia res per obrir-lo. Ara **un visor dins de l'app** (`VisorArxiu8784291`, muntat a l'App amb
+    `VisorArxiuGlobal8784291`, event `aco-visor-arxiu`; `obreVisor8784291(nom, carrega)`, `obreDataUrl8784291(nom, url)`): s'obre al moment i el PDF
+    s'hi dibuixa pàgina a pàgina (`PaginesPdf8784291`, pdf.js, cada pàgina com a imatge JPEG perquè el mòbil no es quedi sense memòria; com a molt
+    120 pàgines), les imatges tal com són i la resta es descarrega; a baix (fixos), Tancar · Compartir (mòbil i iPad) o Obrir en una pestanya
+    (ordinador) · Descarregar. A Documents, les actes, les notes (el nom del document), els documents de l'apartat, els de l'encàrrec tècnic, els
+    d'Empresa i el PDF d'un albarà. Estils `src/theme-v8784291.css`. Prova: `v4291test.mjs` (12: el PDF es treu de l'aparell i es baixa del núvol,
+    sense cap `window.open`; nota; mòbil).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2432,7 +2444,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.429 a Render):**
+**Estat (publicada la V87.429.1 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

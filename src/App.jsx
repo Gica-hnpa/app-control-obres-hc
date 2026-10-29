@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.429";
+const APP_VERSION878264="87.429.1";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3509,7 +3509,7 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
       </div>
       <div className="notes-files-v878278">
         <div className="notes-files-head-v878278"><b>{t("Documents")}</b>{!readOnly&&<label className="secondary file-btn-v8761">{t("Adjuntar document")}<input type="file" multiple onChange={e=>{addActaDocFiles8764(e.target.files,setDraft);e.target.value=""}}/></label>}</div>
-        {(draft.docs||[]).length>0?<ul className="notes-docs-v878278">{draft.docs.map(x=><li key={x.id}><Paperclip size={14}/><span>{x.nom}</span>{!readOnly&&<button type="button" aria-label={t("Treure el document")} onClick={()=>set("docs",draft.docs.filter(y=>y.id!==x.id))}><X size={14}/></button>}</li>)}</ul>:<small>{t("Encara no hi ha documents.")}</small>}
+        {(draft.docs||[]).length>0?<ul className="notes-docs-v878278">{draft.docs.map(x=><li key={x.id}><Paperclip size={14}/><a href="#" role="button" className="obre-v8784291" onClick={e=>{e.preventDefault();obreDataUrl8784291(x.nom,x.url)}}>{x.nom}</a>{!readOnly&&<button type="button" aria-label={t("Treure el document")} onClick={()=>set("docs",draft.docs.filter(y=>y.id!==x.id))}><X size={14}/></button>}</li>)}</ul>:<small>{t("Encara no hi ha documents.")}</small>}
       </div>
     </fieldset>
     {!readOnly&&<div className="modal-actions notes-actions-v878278">{!draft.isNew&&canDelete&&<button type="button" className="danger" onClick={esborrar}>{t("Eliminar la nota")}</button>}<button type="button" className="secondary" onClick={tanca}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar la nota")}</button></div>}
@@ -3861,7 +3861,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
             <div className="section-head-v8764"><div><b>{t("Documents adjunts a l’acta")}</b><span>{t("Afegeix documents específics d’aquesta acta.")}</span></div><label className="secondary file-btn-v8761">{t("Afegir documents")}<input type="file" multiple onChange={e=>addActaDocFiles8764(e.target.files,setDraft)}/></label></div>
             <div className="docs-acta-list-v8764">
               {(draft.docs||[]).length===0&&<span>{t("No hi ha documents adjunts a aquesta acta.")}</span>}
-              {(draft.docs||[]).map(d=><div className="doc-acta-row-v8764" key={d.id}><b>{d.nom}</b><span>{fmtDate8761(d.data)}</span><a className="secondary small" href={d.url} target="_blank" rel="noreferrer">{t("Obrir")}</a><button type="button" className="danger small" onClick={()=>removeDoc8764(d.id)}>{t("Eliminar")}</button></div>)}
+              {(draft.docs||[]).map(d=><div className="doc-acta-row-v8764" key={d.id}><b>{d.nom}</b><span>{fmtDate8761(d.data)}</span><a href="#" role="button" className="secondary small" onClick={e=>{e.preventDefault();obreDataUrl8784291(d.nom,d.url)}}>{t("Obrir")}</a><button type="button" className="danger small" onClick={()=>removeDoc8764(d.id)}>{t("Eliminar")}</button></div>)}
             </div>
           </div>}
 
@@ -6173,7 +6173,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
   <label title="Engegar el comptador sol en entrar a una obra"><input type="checkbox" checked={autoTimerOn878254} onChange={toggleAutoTimer878254}/>Automàtic</label>
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
-{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)}/></div></>
+{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/></main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)}/></div></>
 }
 
 
@@ -9324,7 +9324,7 @@ function ExpedientSection8769({label,data,setData}){
   function remove(id){setData(d=>{const sd=d.sectionDocs||{};return {...d,sectionDocs:{...sd,[cfg.key]:(sd[cfg.key]||[]).filter(x=>x.id!==id)}}})}
   return <Card title={t(cfg.title)} action={<label className="primary file-btn-v8761">{t("Afegir arxius")}<input type="file" multiple onChange={e=>addSectionFiles8769(e.target.files,cfg.key,setData)}/></label>}>
     <div className="exp-section-v8769"><p>{t(cfg.desc)}</p><label><span>{t("Notes internes / criteri tècnic")}</span><textarea value={note} onChange={e=>setNote(e.target.value)} placeholder={t("Escriu aquí criteris, comprovacions, pendents o conclusions...")}/></label></div>
-    <div className="section-doc-list-v8769">{docs.length===0&&<Empty text="Encara no hi ha arxius en aquesta pestanya."/>}{docs.map(d=><div key={d.id} className="doc-acta-row-v8764"><b>{d.nom}</b><span>{fmtDate8761(d.data)}</span><a className="secondary small" href={d.url} target="_blank" rel="noreferrer">{t("Obrir")}</a><button className="danger small" onClick={()=>remove(d.id)}>{t("Eliminar")}</button></div>)}</div>
+    <div className="section-doc-list-v8769">{docs.length===0&&<Empty text="Encara no hi ha arxius en aquesta pestanya."/>}{docs.map(d=><div key={d.id} className="doc-acta-row-v8764"><b>{d.nom}</b><span>{fmtDate8761(d.data)}</span><a href="#" role="button" className="secondary small" onClick={e=>{e.preventDefault();obreDataUrl8784291(d.nom,d.url)}}>{t("Obrir")}</a><button className="danger small" onClick={()=>remove(d.id)}>{t("Eliminar")}</button></div>)}</div>
   </Card>
 }
 function TasquesTab8769({data,setData}){
@@ -11618,7 +11618,7 @@ function EncarrecTecnic878306({obra={},data={},setData,readOnly=false}){
     }catch(err){alert(t("No s’ha pogut desar el document: {e}",{e:String(err?.message||err)}))}
     finally{setPujant("")}
   }
-  async function obre(x){const f=await getDocFile(x.id,x.obraId||obra?.id).catch(()=>null);if(f)window.open(URL.createObjectURL(f),"_blank");else alert(t("Aquest document no és en aquest aparell i no s’ha pogut baixar del núvol."))}
+  function obre(x){obreVisor8784291(x.nom,()=>getDocFile(x.id,x.obraId||obra?.id).catch(()=>null))}
   // els documents del tràmit compten com un pas més (dins de «Tràmit»)
   const passos=e.passos.map(p=>p.k==="tramit"?{...p,fet:p.fet+dd.total-dd.falten,total:p.total+dd.total,docs:true}:p).map(p=>({...p,complet:p.total>0&&p.fet===p.total}));
   const fet=passos.reduce((x,p)=>x+p.fet,0),total=passos.reduce((x,p)=>x+p.total,0),pct=total?Math.round(fet/total*100):0;
@@ -16604,10 +16604,7 @@ function XipResum878339({r}){
   if(r.falten)return <span className="xip-v878339 falta">{r.falten===1?t("Falta 1 document"):t("Falten {n} documents",{n:r.falten})}</span>;
   return r.total?<span className="xip-v878339 ok">{t("Tot vigent")}</span>:null;
 }
-async function obreArxiu878339(id){
-  const u=lsGet8779(arxiuKey878339(id),"");if(!u){alert(t("Aquest arxiu no és en aquest aparell."));return}
-  try{const b=await (await fetch(u)).blob();window.open(URL.createObjectURL(b),"_blank","noopener")}catch{window.open(u,"_blank","noopener")}
-}
+function obreArxiu878339(id,nom){obreDataUrl8784291(nom||t("Document"),lsGet8779(arxiuKey878339(id),""))}
 async function llegeixArxiu878339(file){
   if(!file)return null;
   if(/^image\//.test(file.type))return {url:await compressImage878259(file,1600,0.82),nom:file.name};
@@ -16627,7 +16624,7 @@ function DocsLlista878339({docs=[],obligats=[],onChange}){
       <div className="cap"><b>{i18nT(d.tipus)}</b><span className={`xip-v878339 ${e.k}`}>{etEstat878339(e)}</span></div>
       <div className="camps">
         <label><span>{t("Caduca el")}</span><input type="date" value={d.venciment||""} onChange={x=>put(d.tipus,{venciment:x.target.value,fet:true})}/></label>
-        {d.teArxiu?<button type="button" className="secondary small" onClick={()=>obreArxiu878339(d.id)}><FileText size={15} aria-hidden="true"/> {d.nomArxiu||t("Veure")}</button>:null}
+        {d.teArxiu?<button type="button" className="secondary small" onClick={()=>obreArxiu878339(d.id,d.nomArxiu)}><FileText size={15} aria-hidden="true"/> {d.nomArxiu||t("Veure")}</button>:null}
         <label className="secondary small puja-v878339"><Paperclip size={15} aria-hidden="true"/> {d.teArxiu?t("Canviar"):t("Adjuntar")}<input type="file" accept="application/pdf,.pdf,image/*" hidden onChange={x=>{const f=x.target.files?.[0];x.target.value="";puja(d.tipus,f)}}/></label>
         {!d.teArxiu&&!d.venciment&&!d.fet&&<button type="button" className="link" onClick={()=>put(d.tipus,{fet:true})}>{t("El tinc")}</button>}
         {!obligats.includes(d.tipus)&&<button type="button" className="link danger-text-v87229" onClick={()=>treu(d.tipus)}>{t("Treure")}</button>}
@@ -17565,7 +17562,8 @@ async function openOriginal(d){
   if(d?.storage==="generat"&&String(d?.tipus||"").toUpperCase().includes("PRESSUPOST")){openDoc?.(budgetDocFromCurrent878189(d));return}
   const remoteUrl=d?.url||publicStorageDocumentUrl878245(d);
   if(d?.storage==="supabase"&&remoteUrl){window.open(remoteUrl,"_blank");return}
-  if(d?.hasFile){let file=await getDocFile(d.id,d.obraId||obra?.id);if(file){let url=URL.createObjectURL(file);window.open(url,"_blank");return}}
+  // V87.429.1 · al visor de l'app (abans una pestanya nova després d'esperar l'arxiu: l'iPhone i l'iPad no l'obrien)
+  if(d?.hasFile){obreVisor8784291(d.nom,()=>getDocFile(d.id,d.obraId||obra?.id));return}
   openDoc?.({type:"document",title:d.nom,subtitle:"Document registrat. L’original no està disponible."});
 }
 async function remove(d){if(!confirm(t("Segur que vols eliminar aquest document d’aquest expedient?")))return;if(d.storage==="supabase"&&d.path) await deleteFromSupabaseStorage(d.path).catch(()=>{});if(d.storage==="indexeddb"||d.hasFile) await deleteDocFile(d.id).catch(()=>{});setDocs(p=>p.filter(x=>x.id!==d.id))}
@@ -17810,7 +17808,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.429",
+    app_version:"87.429.1",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19307,6 +19305,61 @@ const VIA_KEY878405="aco_correu_v878405";
 const viaCorreu878405=()=>{const v=lsJson8779(VIA_KEY878405,{})?.via;return v==="aparell"?"aparell":"gmail"};
 const tactil878405=()=>{try{return window.matchMedia("(pointer:coarse)").matches}catch{return false}};
 function descarregaBlob878405(blob,nom){const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=nom;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)}
+// V87.429.1 · Visor d'arxius dins de l'app (l'Héctor, 29/10/2026, en una visita: «no he pogut obrir un PDF… no obre el document»; era un
+// PDF de Documents › 01 · Documentació prèvia pujat des d'un altre aparell). Abans s'esperava a llegir l'arxiu (de l'aparell o del núvol)
+// i després s'obria una pestanya nova: el Safari de l'iPhone i l'iPad la bloqueja sense avisar (ja no és el toc) i l'app instal·lada no
+// l'obre; a l'acta l'enllaç era un «data:», que els navegadors tampoc obren, i a les notes el document no tenia res per obrir-lo. Ara
+// s'obre al moment una finestra de l'app: el PDF s'hi dibuixa pàgina a pàgina (pdf.js, en imatges perquè el mòbil no es quedi sense
+// memòria), les imatges tal com són i la resta es descarrega. «Compartir» al mòbil, «Descarregar» i, a l'ordinador, «Obrir en una pestanya».
+const MAX_PAG8784291=120;
+function obreVisor8784291(nom,carrega){try{window.dispatchEvent(new CustomEvent("aco-visor-arxiu",{detail:{nom,carrega,at:Date.now()}}))}catch{}}
+function blobDeDataUrl8784291(u){try{const s=String(u||"");if(!s.startsWith("data:"))return null;const i=s.indexOf(",");const h=s.slice(0,i),b=s.slice(i+1);const mime=(h.match(/data:([^;,]+)/)||[])[1]||"application/octet-stream";let bytes;if(/;base64/i.test(h)){const bin=atob(b);bytes=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)bytes[k]=bin.charCodeAt(k)}else bytes=new TextEncoder().encode(decodeURIComponent(b));return new Blob([bytes],{type:mime})}catch{return null}}
+function obreDataUrl8784291(nom,u){obreVisor8784291(nom,async()=>{const s=String(u||"");if(!s)return null;if(s.startsWith("data:"))return blobDeDataUrl8784291(s);const r=await fetch(s);return r.ok?await r.blob():null})}
+function VisorArxiuGlobal8784291(){const[v,setV]=useState(null);useEffect(()=>{const h=e=>setV(e.detail||null);window.addEventListener("aco-visor-arxiu",h);return()=>window.removeEventListener("aco-visor-arxiu",h)},[]);return v?<VisorArxiu8784291 key={v.at} nom={v.nom} carrega={v.carrega} close={()=>setV(null)}/>:null}
+function PaginesPdf8784291({blob,onError}){
+  const[pags,setPags]=useState([]);const[total,setTotal]=useState(0);const ref=useRef(null);
+  useEffect(()=>{let viu=true;const urls=[];
+    (async()=>{try{const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;if(!viu)return;setTotal(pdf.numPages);
+      const n=Math.min(pdf.numPages,MAX_PAG8784291);
+      for(let i=1;i<=n&&viu;i++){const pg=await pdf.getPage(i);const v1=pg.getViewport({scale:1});
+        const css=Math.min(ref.current?.clientWidth||800,1000),dpr=Math.min(window.devicePixelRatio||1,2);const px=Math.min(css*dpr*1.4,2200);
+        const vp=pg.getViewport({scale:px/v1.width});const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+        await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+        const b=await new Promise(ok=>{try{c.toBlob(ok,"image/jpeg",0.86)}catch{ok(null)}});c.width=0;c.height=0;try{pg.cleanup()}catch{}
+        if(!viu||!b)break;const u=URL.createObjectURL(b);urls.push(u);setPags(p=>[...p,{n:i,src:u,r:v1.height/v1.width}])}
+      try{pdf.destroy()}catch{}
+    }catch(e){console.warn(e);if(viu)onError?.()}})();
+    return()=>{viu=false;setTimeout(()=>urls.forEach(u=>URL.revokeObjectURL(u)),1500)}},[blob]);
+  const fins=Math.min(total,MAX_PAG8784291);
+  return <div className="pdf-v8784291" ref={ref} data-pagines={total} data-fetes={pags.length}>
+    {pags.map(p=><img key={p.n} src={p.src} alt={t("Pàgina {n}",{n:p.n})} style={{aspectRatio:`1 / ${p.r}`}}/>)}
+    {(!total||pags.length<fins)&&<p className="carregant-v8784291">{t("Carregant…")}</p>}
+    {total>MAX_PAG8784291&&pags.length>=fins&&<p className="mes-v8784291">{t("Surten les {n} primeres pàgines de {total}. Descarrega’l per veure’l sencer.",{n:MAX_PAG8784291,total})}</p>}
+  </div>;
+}
+function VisorArxiu8784291({nom,carrega,close}){
+  const[estat,setEstat]=useState("carregant");const[blob,setBlob]=useState(null);const[url,setUrl]=useState("");
+  useEffect(()=>{let viu=true;(async()=>{try{const b=await carrega?.();if(!viu)return;if(!b){setEstat("no");return}setBlob(b);setEstat("ok")}catch(e){console.warn(e);if(viu)setEstat("no")}})();return()=>{viu=false}},[]);
+  useEffect(()=>{if(!blob)return;const u=URL.createObjectURL(blob);setUrl(u);return()=>URL.revokeObjectURL(u)},[blob]);
+  const tipus=String(blob?.type||"");const esPdf=/pdf/i.test(tipus)||/\.pdf$/i.test(nom||"");const esImg=!esPdf&&(/^image\//.test(tipus)||/\.(jpe?g|png|gif|webp)$/i.test(nom||""));
+  const pc=usePC878428();
+  const nomF=nom||t("Document");
+  async function comparteix(){const f=new File([blob],nomF,{type:tipus||(esPdf?"application/pdf":"application/octet-stream")});if(navigator.canShare?.({files:[f]})){try{await navigator.share({files:[f],title:nomF});return}catch(e){if(e?.name==="AbortError")return}}descarregaBlob878405(blob,nomF)}
+  return <Modal title={nomF} close={close}><div className={"visor-v8784291 "+estat}>
+    {estat==="carregant"&&<p className="carregant-v8784291">{t("Obrint el document…")}</p>}
+    {estat==="no"&&<p className="no-v8784291">{t("Aquest document no és en aquest aparell i no s’ha pogut baixar del núvol.")}</p>}
+    {estat==="ok"&&esPdf&&<PaginesPdf8784291 blob={blob} onError={()=>setEstat("nopdf")}/>}
+    {estat==="nopdf"&&<p className="no-v8784291">{t("Aquest PDF no es pot veure aquí. Descarrega’l per obrir-lo.")}</p>}
+    {estat==="ok"&&esImg&&url&&<img className="img-v8784291" src={url} alt={nomF}/>}
+    {estat==="ok"&&!esPdf&&!esImg&&<p className="no-v8784291">{t("Aquest tipus d’arxiu no es pot veure dins de l’app.")}</p>}
+  </div>
+  <div className="modal-actions visor-acts-v8784291">
+    <button type="button" className="secondary" onClick={close}>{t("Tancar")}</button>
+    {blob&&!pc&&<button type="button" className="secondary comparteix-v8784291" onClick={comparteix}><Share2 size={15} aria-hidden="true"/> {t("Compartir")}</button>}
+    {blob&&pc&&url&&<button type="button" className="secondary pestanya-v8784291" onClick={()=>window.open(url,"_blank","noopener")}>{t("Obrir en una pestanya")}</button>}
+    {blob&&<button type="button" className="primary descarrega-v8784291" onClick={()=>descarregaBlob878405(blob,nomF)}><Download size={15} aria-hidden="true"/> {t("Descarregar")}</button>}
+  </div></Modal>;
+}
 function EmailModal({draft,setDraft,close}){
   const ag=draft.agents||[],selIds=draft.selected||[];
   const sel=ag.filter(a=>selIds.includes(a.id));
@@ -20470,7 +20523,7 @@ async function albaraFromPdf878259(file){
   }
   return {foto:c.toDataURL("image/jpeg",0.72),pdf:pdfData,pdfNom:file.name,pdfText:text.trim()};
 }
-function openDataUrl878259(dataUrl){try{const [h,b]=String(dataUrl).split(",");const mime=(h.match(/data:([^;]+)/)||[])[1]||"application/pdf";const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);const url=URL.createObjectURL(new Blob([u],{type:mime}));window.open(url,"_blank","noopener");setTimeout(()=>URL.revokeObjectURL(url),60000)}catch(e){alert(t("No s’ha pogut obrir el PDF."))}}
+function openDataUrl878259(dataUrl,nom){obreDataUrl8784291(nom||t("Albarà")+".pdf",dataUrl)}
 function albaraPrompt878259(text=""){
   if(text&&text.length>40)return ["Aquest és el text d’un albarà (extret del PDF). Torna’m les dades EXACTAMENT en aquest format:",...albaraFormat878259(),"","TEXT DE L’ALBARÀ:",text.slice(0,6000)].join("\n");
   return ["Llegeix l’albarà del fitxer o la foto que t’adjunto i torna’m les dades EXACTAMENT en aquest format:",...albaraFormat878259()].join("\n");
@@ -21364,7 +21417,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
   const triaGrup=g=>{setA(x=>({...x,tipusMeva:g.nou,...(x.isNew&&!String(x.base||"").trim()?{iva:ivaMeva878323(g.nou)}:{}),...(g.k==="km"?{iva:"0",preuKm:x.preuKm??"0,26"}:{})}));setPas("dades")};
   function triaMeva(m){setA(x=>m?{...x,meva:true,tipus:undefined,isp:false,cobreix:[],...NO_IMP}:{...x,meva:false,tipus:tipusDespesa878311({...x,meva:false})||"Albarà",tipusMeva:"",km:""})}
   const fotoBloc=<>
-    <div className="alb-photo">{a.foto?<img src={a.foto} alt={t("Albarà")}/>:<span>{a.meva?t("Sense tiquet"):t("Sense foto ni PDF")}</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?t("Canviar la foto"):t("Fer foto")}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{t("Adjuntar PDF")}</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf)}>{t("Obrir el PDF")}{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>
+    <div className="alb-photo">{a.foto?<img src={a.foto} alt={t("Albarà")}/>:<span>{a.meva?t("Sense tiquet"):t("Sense foto ni PDF")}</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?t("Canviar la foto"):t("Fer foto")}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{t("Adjuntar PDF")}</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf,a.pdfNom)}>{t("Obrir el PDF")}{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>
     {(!a.meva||a.foto||a.pdf)&&<div className="alb-ai">
       {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?t("Llegint…"):t("Llegir automàticament")}</button>}<button type="button" className="secondary" onClick={()=>setAi(true)}>{t("Llegir amb ChatGPT (copiar i enganxar)")}</button></div>
       :<div className="box"><b>{t("Llegir amb IA")}</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>{t("Copiar les instruccions")}{teText?t(" amb el text del PDF"):""} {t("i obrir ChatGPT")}</button></li><li>{teText?t("A ChatGPT, enganxa-ho i envia (el text del PDF ja hi va inclòs)."):t("A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa les instruccions.")}</li><li>{t("Copia la resposta i enganxa-la aquí:")}</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder={t("Proveïdor: …  Total: …  | Concepte | Quantitat | …")}/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>{t("Tancar")}</button><button type="button" className="primary" onClick={applyAnswer}>{t("Omplir les dades")}</button></div></div>}

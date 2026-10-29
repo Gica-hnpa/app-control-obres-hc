@@ -4664,4 +4664,7 @@ export default {
   "Quant. pressupost": "Cant. presupuesto",
   "Preu pressupost": "Precio presupuesto",
   "partides marcades amb color com a fora de pressupost": "partidas marcadas con color como fuera de presupuesto",
+  "Aquest PDF no es pot veure aquí. Descarrega’l per obrir-lo.": "Este PDF no se puede ver aquí. Descárgalo para abrirlo.",
+  "Aquest tipus d’arxiu no es pot veure dins de l’app.": "Este tipo de archivo no se puede ver dentro de la app.",
+  "Surten les {n} primeres pàgines de {total}. Descarrega’l per veure’l sencer.": "Salen las {n} primeras páginas de {total}. Descárgalo para verlo entero.",
 };
