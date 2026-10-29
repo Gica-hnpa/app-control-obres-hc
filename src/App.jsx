@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.436";
+const APP_VERSION878264="87.437";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9980,15 +9980,16 @@ function dadesRendEmpresa878343(obres=[],odata={},fase=""){
   const per=(obres||[]).map(o=>{const d=odata?.[o.id]||{};const x={o,cert:{},fact:{},dir:{},pers:{},dge:cfgRend878342(d).dge||0,bi:cfgRend878342(d).bi};
     // V87.428 · amb una fase, només el d'aquella fase (el Rendiment de l'obra amb la fase triada)
     const certBud=new Map((d.certificacions||[]).map(c=>[c.id,c.budgetId||"principal"]));
-    const fOk=f=>!fase||(f.budgetId||certBud.get(f.certId)||"principal")===fase,dOk=a=>!fase||faseDe878342(a,d)===fase;
+    const alt437=altIds878437(d);
+    const fOk=f=>okFase878437(d,f.budgetId||certBud.get(f.certId)||"principal",fase,alt437),dOk=a=>okFase878437(d,faseDe878342(a,d),fase,alt437);
     proformesObra878337(d).filter(fOk).forEach(f=>posa(x,"cert",f.data,+f.base||0));
     const certBid=new Map((d.certificacions||[]).map(c=>[c.id,c.data]));
     facturesObraValides878347(d).filter(fOk).forEach(f=>posa(x,"fact",f.data||certBid.get(f.certId),+f.base||0));
     (d.facturesVF878285||[]).filter(f=>f.estat!=="Anulada"&&fOk(f)).forEach(f=>posa(x,"fact",f.data||certBid.get(f.certId),+f.base||0));
     desp.filter(a=>a.obraId===o.id&&tipusDespesa878311(a)!=="Empresa"&&dOk(a)).forEach(a=>posa(x,"dir",a.data,albaraBase878259(a)));
     llegeixPersonal878340(o.id).filter(dOk).forEach(r=>posa(x,"pers",r.data,(parseNum8770(r.hores)||0)*costHoraA878340(o.id,treb.find(w=>w.id===r.treballadorId),r)));
-    // V87.431 · a la gestió total, també les hores del tècnic (a tota l'obra)
-    if(!fase)horesTecnic878431(o.id).forEach(r=>{const dt=rowDate878255(r);if(dt)posa(x,"pers",isoDay878255(dt),timeHours878120(r)*preuTecnic878431(r))});
+    // V87.431 · també les hores del tècnic (V87.437: cada una a la seva fase)
+    horesTecnic878431(o.id).forEach(r=>{if(!okFase878437(d,faseHores878437(r,d),fase,alt437))return;const dt=rowDate878255(r);if(dt)posa(x,"pers",isoDay878255(dt),timeHours878120(r)*preuTecnic878431(r))});
     return x});
   const emp={};desp.filter(a=>tipusDespesa878311(a)==="Empresa").forEach(a=>{const am=anyMes(a.data);if(!am)return;((emp[am[0]]??=Array(12).fill(0)))[am[1]]+=albaraBase878259(a)});
   return {per,emp,despEmp:desp.filter(a=>tipusDespesa878311(a)==="Empresa")};
@@ -10238,6 +10239,14 @@ function faseDe878342(x,d={}){
   if(cap){const bs=[...new Set(ps.filter(p=>String(p.cap||"").trim()===cap).map(p=>p.budgetId||"principal"))];if(bs.length===1)return bs[0]}
   return "";
 }
+// V87.437 · fases alternatives (l'Héctor, 29/10/2026: dues opcions d'execució en un expedient): es marquen a la barra de fases i no sumen a
+// «Tota l'obra» (pressupost, certificat, despeses, hores, rendiment de l'obra i de l'empresa). La principal no pot ser alternativa.
+function altIds878437(d={}){return new Set((d?.budgetGroups||[]).filter(g=>g&&g.alternativa878437&&g.id!=="principal").map(g=>g.id))}
+function esAlt878437(d={},bid){return !!bid&&bid!=="principal"&&altIds878437(d).has(bid)}
+// una fase (o tota l'obra, "") hi compta: amb una fase, només aquella; a tota l'obra, totes menys les alternatives
+function okFase878437(d,bid,fase,alt){const b=bid||"";return fase?b===fase:!(alt||altIds878437(d)).has(b)}
+// V87.437 · la fase d'unes hores del tècnic (l'Héctor: «les hores en cadascuna de les fases»): la triada en apuntar-les; les d'abans, la principal
+function faseHores878437(r,d={}){const gs=fasesObra878342(d);if(gs.length<2)return gs[0]?.id||"principal";return r?.budgetId&&gs.some(g=>g.id===r.budgetId)?r.budgetId:"principal"}
 function totalFase878342(d,bid){return (d?.partides||[]).filter(r=>(r.budgetId||"principal")===bid).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0)}
 // amidaments de cada fase: els de la principal, on eren (`amidaments878328`); els de les altres, a `amidamentsFases878342[fase]`
 function amidDe878342(d={},fase="principal"){return (!fase||fase==="principal")?(d.amidaments878328||{}):((d.amidamentsFases878342||{})[fase]||{})}
@@ -10267,16 +10276,17 @@ function horesTecnic878431(obraId){
   return readTimeRows878255(obraId).filter(r=>isHoursRow878255(r)&&!r.treballador&&(!r.obraId||String(r.obraId)===String(obraId))&&timeHours878120(r)>0);
 }
 const preuTecnic878431=r=>parseNum8770(r?.preuHora)||parseNum8770(r?.preu)||defaultRate878255();
-function costTecnic878431(obraId){let h=0,c=0;horesTecnic878431(obraId).forEach(r=>{const n=timeHours878120(r);h+=n;c+=n*preuTecnic878431(r)});return {h,c}}
+function costTecnic878431(obraId,fase="",d=null){let h=0,c=0;const alt=d?altIds878437(d):new Set();horesTecnic878431(obraId).forEach(r=>{if(d&&!okFase878437(d,faseHores878437(r,d),fase,alt))return;const n=timeHours878120(r);h+=n;c+=n*preuTecnic878431(r)});return {h,c}}
 function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId="",opts={}){
-  const dins=x=>!fase||faseDe878342(x,d)===fase;
-  const pf=proformesObra878337(d).filter(f=>!fase||(f.budgetId||"principal")===fase);
+  const alt437=altIds878437(d);
+  const dins=x=>okFase878437(d,faseDe878342(x,d),fase,alt437);
+  const pf=proformesObra878337(d).filter(f=>okFase878437(d,f.budgetId||"principal",fase,alt437));
   const certificat=pf.reduce((s,f)=>s+(+f.base||0),0);
   const certBid=new Map((d.certificacions||[]).map(c=>[c.id,c.budgetId||"principal"]));
-  const fDins=x=>!fase||(x.budgetId||certBid.get(x.certId)||"principal")===fase;
+  const fDins=x=>okFase878437(d,x.budgetId||certBid.get(x.certId)||"principal",fase,alt437);
   const fo=facturesObraValides878347(d).filter(fDins),ve=(d.facturesVF878285||[]).filter(x=>x.estat!=="Anulada"&&fDins(x));
   const facturat=fo.reduce((s,x)=>s+(+x.base||0),0)+ve.reduce((s,x)=>s+(+x.base||0),0);
-  const pressupost=fase?totalFase878342(d,fase):(d.partides||[]).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
+  const pressupost=fase?totalFase878342(d,fase):(d.partides||[]).filter(r=>!alt437.has(r.budgetId||"principal")).reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
   let horesMa=0;
   // V87.426 · els albarans inclosos en una factura (que ja compta) no es tornen a comptar
   const cob426=cobertsPer878311(despeses);
@@ -10284,9 +10294,9 @@ function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId="",opts
   const treb=llegeixTreballadors878339();
   let hores=horesMa,costP=0;personal.filter(dins).forEach(r=>{const n=parseNum8770(r.hores)||0;hores+=n;costP+=n*costHoraA878340(obraId,treb.find(w=>w.id===r.treballadorId),r)});
   if(costP>0.005)perTipus.Personal=costP;
-  // V87.431 · les hores del tècnic, a tota l'obra (no tenen fase); a Despeses de l'obra no hi surten (opts.tecnic=false)
+  // V87.431 · les hores del tècnic; a Despeses de l'obra no hi surten (opts.tecnic=false). V87.437 · cada una a la seva fase
   let horesTec=0;
-  if(!fase&&opts.tecnic!==false){const tc=costTecnic878431(obraId);if(tc.c>0.005){perTipus.Tecnic=tc.c;horesTec=tc.h}}
+  if(opts.tecnic!==false){const tc=costTecnic878431(obraId,fase,d);if(tc.c>0.005){perTipus.Tecnic=tc.c;horesTec=tc.h}}
   const directe=Object.values(perTipus).reduce((s,x)=>s+x,0);
   const ingressos=Math.max(certificat,facturat);
   const cfg=cfgRend878342(d);
@@ -10298,22 +10308,25 @@ function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId="",opts
     pct:ingressos>0.005?benefici/ingressos*100:null,margePct:ingressos>0.005?marge/ingressos*100:null,senseFase,cfg};
 }
 // Barra de fases (a dalt de l'Econòmic)
-function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova,onRenom,onElimina,readOnly=false}){
+function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova,onRenom,onElimina,onAlt,readOnly=false}){
   const gs=fasesObra878342(data);
   const act=ensureBudgetGroups8786(data).active;
   const pfs=proformesObra878337(data);
   const info=g=>{const rows=(data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id&&!esFora878410(r));const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);const cert=pfs.filter(f=>(f.budgetId||"principal")===g.id).reduce((s,f)=>s+(+f.base||0),0);return {n:rows.length,total,pc:total>0.005?cert/total*100:null}};
-  const totalObra=gs.reduce((s,g)=>s+info(g).total,0);
+  const alt437=altIds878437(data);
+  const totalObra=gs.filter(g=>!alt437.has(g.id)).reduce((s,g)=>s+info(g).total,0);
+  const actAlt=alt437.has(act);
   return <div className="fases-v878342" role="group" aria-label={t("Fases de l’obra")}>
     <span className="tit">{t("Fases")}</span>
     <div className="llista">
-      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id;return <button type="button" key={g.id} className={on?"on":""} aria-pressed={on} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id)}}>
-        <em>{i+1}</em><b>{budgetName878273(g)}</b><span>{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
+      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id)}}>
+        <em>{al?"A":i+1}</em><b>{budgetName878273(g)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
     </div>
     {!readOnly&&<details className="mes-v878342"><summary aria-label={t("Més opcions de les fases")}>⋯</summary><div className="menu">
       <button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onNova?.()}}>{t("+ Nova fase")}</button>
       {!tota&&<button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onRenom?.(act)}}>{t("Canviar el nom de «{fase}»",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
+      {!tota&&onAlt&&act!=="principal"&&gs.length>1&&<button type="button" className="alt-btn-v878437" onClick={e=>{e.currentTarget.closest("details").open=false;onAlt(act,!actAlt)}}>{actAlt?t("«{fase}» ja no és una alternativa",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})}):t("Marcar «{fase}» com a alternativa",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
       {!tota&&gs.length>1&&<button type="button" className="danger-text-v87229" onClick={e=>{e.currentTarget.closest("details").open=false;onElimina?.(act)}}>{t("Eliminar «{fase}»",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
     </div></details>}
   </div>;
@@ -10408,20 +10421,20 @@ function ResumFases878342({data,despeses,personal,obraId,ambBenefici}){
   const gs=fasesObra878342(data);
   const fs=gs.map(g=>({g,r:rendimentFase878342(data,g.id,despeses,personal,obraId)}));
   const sense=despeses.filter(a=>!faseDe878342(a,data)),senseP=personal.filter(r=>!faseDe878342(r,data));
-  const tec=costTecnic878431(obraId);
+  const alt437=altIds878437(data);
   return <CardOPlega878369 bloc426 icona={Layers} title={t("Per fases")} className="rf-fases-v878342">
     <div className="rf-taula-wrap-v878342"><table className="rf-taula-v878342"><thead><tr><th>{t("Fase")}</th><th>{t("Pressupost")}</th><th>{t("Certificat")}</th><th>{t("Facturat")}</th><th>{t("Despeses")}</th>{ambBenefici&&<th>{t("Benefici")}</th>}{ambBenefici&&<th>%</th>}</tr></thead>
-    <tbody>{fs.map(({g,r},i)=><tr key={g.id}><td><b>{i+1} · {budgetName878273(g)}</b></td><td data-l={t("Pressupost")}>{money(r.pressupost)}</td><td data-l={t("Certificat")}>{money(r.certificat)}</td><td data-l={t("Facturat")}>{money(r.facturat)}</td><td data-l={t("Despeses")}>{money(r.directe)}</td>{ambBenefici&&<td data-l={t("Benefici")}><b className={r.benefici>=0?"good":"bad"}>{money(r.benefici)}</b></td>}{ambBenefici&&<td data-l="%">{r.pct!=null?pct(r.pct):"—"}</td>}</tr>)}
-    {(sense.length>0||senseP.length>0)&&<tr className="sense"><td>{t("Sense fase")}</td><td data-l={t("Pressupost")}>—</td><td data-l={t("Certificat")}>—</td><td data-l={t("Facturat")}>—</td><td data-l={t("Despeses")}>{money(sense.reduce((s,a)=>s+albaraBase878259(a),0))}{senseP.length?` · ${fh878340(senseP.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0))}`:""}</td>{ambBenefici&&<td/>}{ambBenefici&&<td/>}</tr>}
-    {tec.c>0.005&&<tr className="sense tec-v878431"><td>{t("Hores tècniques")}</td><td data-l={t("Pressupost")}>—</td><td data-l={t("Certificat")}>—</td><td data-l={t("Facturat")}>—</td><td data-l={t("Despeses")}>{money(tec.c)} · {fh878340(tec.h)}</td>{ambBenefici&&<td/>}{ambBenefici&&<td/>}</tr>}</tbody></table></div>
+    <tbody>{fs.map(({g,r},i)=><tr key={g.id} className={alt437.has(g.id)?"alt-v878437":""}><td><b>{alt437.has(g.id)?"A":i+1} · {budgetName878273(g)}</b>{alt437.has(g.id)&&<small className="alt-et-v878437">{t("Alternativa · no suma")}</small>}{r.horesTec>0.004&&<small className="tec-v878437">{t("Hores tècniques: {h}",{h:fh878340(r.horesTec)})}</small>}</td><td data-l={t("Pressupost")}>{money(r.pressupost)}</td><td data-l={t("Certificat")}>{money(r.certificat)}</td><td data-l={t("Facturat")}>{money(r.facturat)}</td><td data-l={t("Despeses")}>{money(r.directe)}</td>{ambBenefici&&<td data-l={t("Benefici")}><b className={r.benefici>=0?"good":"bad"}>{money(r.benefici)}</b></td>}{ambBenefici&&<td data-l="%">{r.pct!=null?pct(r.pct):"—"}</td>}</tr>)}
+    {(sense.length>0||senseP.length>0)&&<tr className="sense"><td>{t("Sense fase")}</td><td data-l={t("Pressupost")}>—</td><td data-l={t("Certificat")}>—</td><td data-l={t("Facturat")}>—</td><td data-l={t("Despeses")}>{money(sense.reduce((s,a)=>s+albaraBase878259(a),0))}{senseP.length?` · ${fh878340(senseP.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0))}`:""}</td>{ambBenefici&&<td/>}{ambBenefici&&<td/>}</tr>}</tbody></table></div>
   </CardOPlega878369>;
 }
 // Per capítols de la fase: pressupost, certificat, cost real i diferència (en tocar un capítol, les seves partides)
 function CapitolsFase878342({data,fase="",despeses=[]}){
   const[obert,setObert]=useState({});
-  const rows=(data.partides||[]).filter(r=>!fase||(r.budgetId||"principal")===fase);
+  const alt437=altIds878437(data);
+  const rows=(data.partides||[]).filter(r=>okFase878437(data,r.budgetId||"principal",fase,alt437));
   if(!rows.length)return null;
-  const ds=despeses.filter(a=>!fase||faseDe878342(a,data)===fase);
+  const ds=despeses.filter(a=>okFase878437(data,faseDe878342(a,data),fase,alt437));
   const costCaps=costPerCapitol878312(rows,ds);
   const caps=new Map();
   rows.forEach(r=>{const k=String(r.cap||"").trim()||"—";if(!caps.has(k))caps.set(k,{cap:k,pres:0,cert:0,rows:[]});const c=caps.get(k);const v=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);c.pres+=v;c.cert+=certQtyTotal8789(r)*parseNum8770(r.pu);c.rows.push(r)});
@@ -10999,6 +11012,13 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     const id="bg-"+Date.now(),now=new Date().toISOString(),n=String(nom).trim();
     setEconomicData878242?.(d=>({...d,activeBudgetIdObra:id,updatedAt:now,budgetGroups:[...(d.budgetGroups||[]),{id,nom:n,tipus,createdAt:now}],pressupostos:[...(d.pressupostos||[]),{id:"budget-marker-"+id,budgetId:id,versio:"Annex",data:todayShort8713(),nom:n,estat:`${tipus} · creat · 0 partides`,import:0,createdAt:now,updatedAt:now}]}));
   }
+  function altDirectBudget878437(id,on){
+    const bid=id||"";if(!bid||bid==="principal")return;
+    const cur=directBudgetInfo878214.groups.find(g=>g.id===bid);
+    setEconomicData878242?.(d=>{const gs=d.budgetGroups||[];const now=new Date().toISOString();
+      const nou=gs.some(g=>g.id===bid)?gs.map(g=>g.id===bid?{...g,alternativa878437:on?true:undefined}:g):[...gs,{...(cur||{}),id:bid,alternativa878437:on?true:undefined}];
+      return {...d,budgetGroups:nou,updatedAt:now}});
+  }
   function renameDirectBudget878305(id){
     const bid=id||"principal",cur=directBudgetInfo878214.groups.find(g=>g.id===bid);
     const nom=prompt(i18nT("Nom del pressupost:"),cur?.nom||i18nT("Pressupost"));
@@ -11076,7 +11096,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
     {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} quota={parseNum8770(client?.quotaFixa)||0} acord={acordClient878434(client)} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc} inici={tab==="Gestió temps"?"Hores":tab==="Rendiment"?"Rendiment":tab==="Factures"?"Factures":tab==="Pressupostos"?"Pressupostos":""} despeses={<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves setObraData={readOnly?null:(id,up)=>setData(up)}/>} rendiment={ALIAS878308["Rendiment"]==="Honoraris"} temps={ALIAS878308["Gestió temps"]==="Honoraris"&&!esTreballador878326()&&!senseHoresPropies878342()?<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} acord={acordClient878434(client)} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>:null}/>} 
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
-    {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} readOnly={readOnly||partCompartida878424(obra)}/>}
+    {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} onAlt={altDirectBudget878437} readOnly={readOnly||partCompartida878424(obra)}/>}
     {activeTab==="Pressupost obra"&&!readOnly&&<BudgetBar878273 data={data} groups={directBudgetInfo878214.groups} active={directBudgetId878214} select={selectDirectBudget878214}/>}
     {activeTab==="Pressupost obra"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<Pressupost data={directBudgetData878214} setData={setDirectBudgetData878214} importExcel={(e)=>importExcel?.(e,directBudgetId878214)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={directBudgetInfo878214.groups} activeBudgetId={directBudgetId878214} selectBudget={selectDirectBudget878214} addBudget={readOnly?undefined:addDirectBudget878305} renameBudget={readOnly?undefined:renameDirectBudget878305} deleteBudget={readOnly?undefined:deleteDirectBudget878305} totalActive={directBudgetTotal878214} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
     {activeTab==="Pressupost ràpid"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<PressupostRapid878150 data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
@@ -15992,7 +16012,8 @@ function etOrigen878428(r,tr=t){const e=etFora878410(r,tr),f=tr("Fora de pressup
 function previst878410(d={},fase=""){
   const ini428=iniPres878412(d,fase);
   // V87.428 · amb el pressupost reobert, el que s'hi corregeix compta com a pressupost (fins que es torni a tancar)
-  const ps=obertCorregit878428((d.partides||[]).filter(r=>!fase||(r.budgetId||"principal")===fase),ini428);
+  const alt437=altIds878437(d);
+  const ps=obertCorregit878428((d.partides||[]).filter(r=>okFase878437(d,r.budgetId||"principal",fase,alt437)),ini428);
   const nMax=Math.max(0,...(d.certificacions||[]).map(c=>+c.numero||0),...ps.flatMap(r=>Object.keys(r.certsByNum||{}).map(Number).filter(Number.isFinite)));
   // V87.423 · el càlcul és a `previsio878423` (també el fan servir els PDF de les certificacions, amb les quantitats a origen d'aquella certificació)
   const items=ps.map(r=>({r,qc:certQtyTotal8789(r),cert:nMax?certOriginAmount878223(r,nMax):0,qAct:nMax?certQty8783(r,nMax):0,impAct:nMax?certAmount878223(r,nMax):0}));
@@ -18126,7 +18147,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.436",
+    app_version:"87.437",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19170,6 +19191,10 @@ const[form,setForm]=useState(null);const[desp,setDesp]=useState(null);
 const n=v=>parseNum8770(v)||0;
 const rate0=n(preuClient)||defaultRate878255();
 const estatDe878434=feina=>estatAcord878434(acord,feina)||(quota>0?"quota":PERFIL878304==="complet"?"nofactura":"pendent");
+// V87.437 · amb diverses fases, cada apunt d'hores va a una fase (de sèrie, la triada a la barra de fases; les d'abans, la principal)
+const gs437=fasesObra878342(data||{}),multi437=gs437.length>1,alt437=altIds878437(data||{});
+const faseAct437=gs437.some(g=>g.id===data?.activeBudgetIdObra)?data.activeBudgetIdObra:"principal";
+const nomFase437=id=>budgetName878273(gs437.find(g=>g.id===id)||{id});
 const estat0=estatDe878434(null);
 const imp=r=>timeBillImport878291(r);
 const hRows=rows.filter(isHoursRow878255);
@@ -19179,8 +19204,8 @@ const totalDesp=rows.filter(r=>!isHoursRow878255(r)).reduce((s,r)=>s+imp(r),0)+m
 const pendent=rows.filter(r=>pendentFact878430(r,quota)).reduce((s,r)=>s+imp(r),0);
 const hQuota=quota>0?hRows.filter(r=>estatFactDe878317(r,quota)==="quota").reduce((s,r)=>s+timeHours878120(r),0):0;
 function marcarTot(){const pend=rows.filter(r=>pendentFact878430(r,quota));if(!pend.length)return;if(!confirm(i18nT("Marcar com a facturats els {n} registres pendents?",{n:pend.length})))return;const ids=new Set(pend.map(r=>r.id)),at=new Date().toISOString();setRows(p=>p.map(r=>ids.has(r.id)?{...r,facturat:true,noFactura:false,facturatAt:at}:r))}
-function nou(){setForm({id:"",data:todayISO8743(),tipusFeina:TASQUES878430[0],hores:"1",preuHora:String(rate0),observacions:"",estat:estatDe878434(TASQUES878430[0])})}
-function edita(r){const e=estatFactDe878317(r,quota);setForm({...r,tipusFeina:r.tipusFeina||r.tasca||"Altres",hores:String(r.hores??""),preuHora:String(r.preuHora??rate0),estat:e,_orig:e})}
+function nou(){setForm({id:"",data:todayISO8743(),tipusFeina:TASQUES878430[0],hores:"1",preuHora:String(rate0),observacions:"",estat:estatDe878434(TASQUES878430[0]),...(multi437?{budgetId:faseAct437}:{})})}
+function edita(r){const e=estatFactDe878317(r,quota);setForm({...r,tipusFeina:r.tipusFeina||r.tasca||"Altres",hores:String(r.hores??""),preuHora:String(r.preuHora??rate0),estat:e,_orig:e,...(multi437?{budgetId:faseHores878437(r,data)}:{})})}
 const setF=(k,v)=>setForm(f=>({...f,[k]:v}));
 function desa(){const h=n(form.hores);if(!(h>0)){alert(i18nT("Escriu les hores."));return}
   const{estat,_orig,_tocat,...f}=form;const r={...f,tipusRegistre:"Honoraris",tasca:f.tipusFeina,hores:String(Math.round(h*100)/100),preuHora:String(n(f.preuHora)||rate0),...(estat!==_orig?patchEstatFact878317(estat):{})};
@@ -19190,7 +19215,7 @@ function elimina(id){if(!confirm(i18nT("Segur que vols eliminar aquest registre?
 function timerMs878186(){return timer?.running?Math.max(Date.now()-(timer.start||Date.now()),0):Math.max((timer?.elapsed||0),0)}
 function timerHours(){return timerMs878186()/3600000}
 function timerClock878186(){const sec=Math.floor(timerMs878186()/1000);const h=Math.floor(sec/3600);const m=Math.floor((sec%3600)/60);const s=sec%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
-function stopTimerToRows878162(){const h=Math.max(timerHours(),0.01);setRows(p=>[...p,{id:"hr-chrono-"+Date.now(),obraId,data:new Date().toISOString().slice(0,10),tipusRegistre:"Honoraris",tipusFeina:timer.label||"Treball tècnic",tasca:timer.task||"Temps cronometrat",hores:h.toFixed(2),preuHora:timer.rate||rate0,observacions:timer.task||"",...(estat0==="pendent"?{}:patchEstatFact878317(estat0))}]);setTimer?.(t=>({...t,running:false,start:null,elapsed:0,task:""}))}
+function stopTimerToRows878162(){const h=Math.max(timerHours(),0.01);setRows(p=>[...p,{id:"hr-chrono-"+Date.now(),obraId,data:new Date().toISOString().slice(0,10),tipusRegistre:"Honoraris",tipusFeina:timer.label||"Treball tècnic",tasca:timer.task||"Temps cronometrat",hores:h.toFixed(2),preuHora:timer.rate||rate0,observacions:timer.task||"",...(multi437?{budgetId:faseAct437}:{}),...(estat0==="pendent"?{}:patchEstatFact878317(estat0))}]);setTimer?.(t=>({...t,running:false,start:null,elapsed:0,task:""}))}
 // els apunts per mesos i dies (els més nous a dalt); sense data, al final
 const items=[...rows.map(r=>({k:"r"+r.id,r,d:rowDate878255(r),h:isHoursRow878255(r)?timeHours878120(r):0,v:imp(r),desp:!isHoursRow878255(r)})),
   ...meves.map(a=>{const d=parseDate8776(a.data);return {k:"a"+a.id,a,d:d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null,h:0,v:albaraBase878259(a),desp:true}})];
@@ -19205,7 +19230,7 @@ const resum=(h,v,dv)=>[h>0.004?hh878385(h):"",v>0.004?money(v):"",dv>0.004?i18nT
 const canvia=(id,p)=>setRows(q=>q.map(y=>y.id===id?{...y,...p}:y));
 const fila=x=>x.a?<li key={x.k} className="apunt-v878430 desp"><span className="t">{etiquetaMeva878323(x.a.tipusMeva||"Despesa")}</span><span className="o">{[x.a.proveidor,x.a.notes].filter(Boolean).join(" · ")}</span><span className="h">{x.a.km?`${qty2(x.a.km)} km`:""}</span><span className="v">{money(x.v)}</span><span className="e"/><button type="button" className="ed" aria-label={i18nT("Editar")} onClick={()=>setDesp({...x.a})}><PenLine size={15} aria-hidden="true"/></button></li>
   :x.desp?<li key={x.k} className="apunt-v878430 desp"><span className="t">{i18nT(x.r.tipusRegistre)}</span><span className="o">{x.r.observacions||""}</span><span className="h">{x.r.tipusRegistre==="Kilometratge"?`${qty2(n(x.r.km))} km`:""}</span><span className="v">{money(x.v)}</span><span className="e"><EstatFact878317 r={x.r} quota={quota} onChange={p=>canvia(x.r.id,p)}/></span><button type="button" className="ed" aria-label={i18nT("Eliminar")} onClick={()=>elimina(x.r.id)}><Trash2 size={15} aria-hidden="true"/></button></li>
-  :<li key={x.k} className="apunt-v878430"><span className="t">{i18nT(x.r.tipusFeina||x.r.tasca||"Hores")}</span><span className="o">{x.r.observacions||(x.r.tasca&&x.r.tasca!==x.r.tipusFeina?i18nT(x.r.tasca):"")}</span><span className="h">{hh878385(x.h)}</span><span className="v">{money(x.v)}</span><span className="e"><EstatFact878317 r={x.r} quota={quota} onChange={p=>canvia(x.r.id,p)}/></span><button type="button" className="ed" aria-label={i18nT("Editar")} onClick={()=>edita(x.r)}><PenLine size={15} aria-hidden="true"/></button></li>;
+  :<li key={x.k} className="apunt-v878430"><span className="t">{i18nT(x.r.tipusFeina||x.r.tasca||"Hores")}</span><span className="o">{multi437&&<em className={`fase-v878437${alt437.has(faseHores878437(x.r,data))?" alt":""}`}>{nomFase437(faseHores878437(x.r,data))}</em>}{x.r.observacions||(x.r.tasca&&x.r.tasca!==x.r.tipusFeina?i18nT(x.r.tasca):"")}</span><span className="h">{hh878385(x.h)}</span><span className="v">{money(x.v)}</span><span className="e"><EstatFact878317 r={x.r} quota={quota} onChange={p=>canvia(x.r.id,p)}/></span><button type="button" className="ed" aria-label={i18nT("Editar")} onClick={()=>edita(x.r)}><PenLine size={15} aria-hidden="true"/></button></li>;
 const tasques=form&&form.tipusFeina&&!TASQUES878430.includes(form.tipusFeina)?[form.tipusFeina,...TASQUES878430]:TASQUES878430;
 const estats=[["pendent",i18nT("Pendent")],...(quota>0?[["quota",i18nT("Dins de la quota")]]:[]),["facturat",i18nT("Facturat")],["nofactura",i18nT("No es factura")]];
 return <div className="stack temps-validat-v8754 hores-v878430">
@@ -19233,6 +19258,7 @@ return <div className="stack temps-validat-v8754 hores-v878430">
   </details>)}</div>}
   {form&&<Modal title={form.id?i18nT("Editar les hores"):i18nT("Apuntar hores")} close={()=>setForm(null)}><div className="hores-form-v878430">
     <label><span>{i18nT("Dia")}</span><input type="date" value={form.data||""} onChange={e=>setF("data",e.target.value)}/></label>
+    {multi437&&<div className="camp fase-v878437"><span>{i18nT("Fase")}</span><div className="xips-v878430">{gs437.map(g=><button type="button" key={g.id} className={form.budgetId===g.id?"on":""} aria-pressed={form.budgetId===g.id} onClick={()=>setF("budgetId",g.id)}>{nomFase437(g.id)}{alt437.has(g.id)?` · ${i18nT("Alternativa")}`:""}</button>)}</div></div>}
     <div className="camp"><span>{i18nT("Feina")}</span><div className="xips-v878430">{tasques.map(x=><button type="button" key={x} className={form.tipusFeina===x?"on":""} aria-pressed={form.tipusFeina===x} onClick={()=>setForm(f=>({...f,tipusFeina:x,...(f.id||f._tocat?{}:{estat:estatDe878434(x)})}))}>{i18nT(x)}</button>)}</div></div>
     <div className="dos-v878430"><label><span>{i18nT("Hores")}</span><input inputMode="decimal" value={form.hores} onChange={e=>setF("hores",e.target.value)} aria-label={i18nT("Hores")}/></label><label><span>€/h</span><input inputMode="decimal" value={form.preuHora} onChange={e=>setF("preuHora",e.target.value)} aria-label={i18nT("Preu per hora")}/></label></div>
     <div className="xips-v878430 rapid">{["0,5","1","2","4","8"].map(v=><button type="button" key={v} className={n(form.hores)===n(v)?"on":""} onClick={()=>setF("hores",v)}>{v} h</button>)}</div>
@@ -20510,6 +20536,9 @@ function ManualHours878256({obres=[],clients=[],initial={},close}){
   const[m,setM]=useState(()=>({data:isoDay878255(new Date()),obraId:(obres||[]).find(o=>isExpedientOpen878136(o.estat))?.id||(obres||[])[0]?.id||"",tipus:"Visita d’obra",mode:"hores",hores:"1",inici:"09:00",final:"10:00",preu:"",notes:"",km:"",...initial}));
   // V87.434 · el preu per hora de l'acord amb el client de l'expedient (si no se n'ha escrit cap)
   useEffect(()=>{if(!m.preuTocat)setM(x=>({...x,preu:String(acordObra878434(obres,x.obraId,clients)?.preu||defaultRate878255()).replace(".",",")}))},[m.obraId]);
+  // V87.437 · la fase de les hores, si l'expedient en té diverses (de sèrie, la triada a la barra de fases)
+  const d437=(m.obraId&&window.__acoDadesObra878412?.(m.obraId))||{};const gs437=fasesObra878342(d437),alt437=altIds878437(d437);
+  const fase437=gs437.length>1?(gs437.some(g=>g.id===m.budgetId)?m.budgetId:gs437.some(g=>g.id===d437.activeBudgetIdObra)?d437.activeBudgetIdObra:"principal"):"";
   function save(){
     if(!m?.obraId){alert(t("Tria l’expedient."));return}
     let h=parseNum8770(m.hores);
@@ -20519,14 +20548,15 @@ function ManualHours878256({obres=[],clients=[],initial={},close}){
     const id="hr-"+Date.now();
     const ac434=acordObra878434(obres,m.obraId,clients),eH434=estatAcord878434(ac434,m.tipus);
     const eK434=acordViu878434(ac434)?(ac434.despeses==="repercutir"?"pendent":ac434.quota>0?"quota":"nofactura"):null;
-    if(h>0)addTimeRow878255(m.obraId,{id,data:m.data,tipusRegistre:"Honoraris",tipusFeina:m.tipus,tasca:m.tipus,hores:h.toFixed(2),preuHora:(parseNum8770(m.preu)||ac434?.preu||defaultRate878255()).toFixed(2),...(eH434?patchEstatFact878317(eH434):{}),km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:m.notes||"",inici:m.mode==="interval"?m.inici:"",final:m.mode==="interval"?m.final:"",manual:true,createdAt:new Date().toISOString()});
+    if(h>0)addTimeRow878255(m.obraId,{id,data:m.data,tipusRegistre:"Honoraris",tipusFeina:m.tipus,tasca:m.tipus,...(fase437?{budgetId:fase437}:{}),hores:h.toFixed(2),preuHora:(parseNum8770(m.preu)||ac434?.preu||defaultRate878255()).toFixed(2),...(eH434?patchEstatFact878317(eH434):{}),km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:m.notes||"",inici:m.mode==="interval"?m.inici:"",final:m.mode==="interval"?m.final:"",manual:true,createdAt:new Date().toISOString()});
     if(km>0)addTimeRow878255(m.obraId,{id:id+"-km",data:m.data,tipusRegistre:"Kilometratge",tipusFeina:m.tipus,tasca:"Desplaçament",hores:"0",preuHora:"0",km:String(km),preuKm:ac434?.kmPreu>0?String(ac434.kmPreu):"0.30",...(eK434?patchEstatFact878317(eK434):{}),quantitat:"1",preuUnitari:"0",observacions:m.notes||"",manual:true,createdAt:new Date().toISOString()});
     close();
   }
   const sorted=[...(obres||[])].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0));
   return <Modal title={t("Apuntar hores o una visita")} close={close}><div className="temps-manual-v878255">
     <label><span>{t("Data")}</span><input type="date" value={m.data} onChange={e=>setM(x=>({...x,data:e.target.value}))}/></label>
-    <div className="wide tria-obra-v878416"><TriaObra878416 etiqueta={t("Expedient")} obres={sorted} clients={clients} valor={m.obraId} onTria={v=>setM(x=>({...x,obraId:v}))}/></div>
+    <div className="wide tria-obra-v878416"><TriaObra878416 etiqueta={t("Expedient")} obres={sorted} clients={clients} valor={m.obraId} onTria={v=>setM(x=>({...x,obraId:v,budgetId:""}))}/></div>
+    {fase437&&<label className="wide fase-v878437"><span>{t("Fase")}</span><div className="kinds">{gs437.map(g=><button type="button" key={g.id} aria-pressed={fase437===g.id} onClick={()=>setM(x=>({...x,budgetId:g.id}))}>{budgetName878273(g)}{alt437.has(g.id)?` · ${t("Alternativa")}`:""}</button>)}</div></label>}
     <label className="wide"><span>{t("Quina feina?")}</span><div className="kinds">{TIME_KINDS878255.map(k=><button type="button" key={k} aria-pressed={m.tipus===k} onClick={()=>setM(x=>({...x,tipus:k}))}>{k}</button>)}</div></label>
     <label><span>{t("Com ho vols apuntar?")}</span><select value={m.mode} onChange={e=>setM(x=>({...x,mode:e.target.value}))}><option value="hores">{t("Total d’hores")}</option><option value="interval">{t("Hora d’inici i de final")}</option></select></label>
     {m.mode==="hores"?<label><span>{t("Hores")}</span><input inputMode="decimal" value={m.hores} onChange={e=>setM(x=>({...x,hores:e.target.value}))}/></label>:<><label><span>{t("Inici")}</span><input type="time" value={m.inici} onChange={e=>setM(x=>({...x,inici:e.target.value}))}/></label><label><span>{t("Final")}</span><input type="time" value={m.final} onChange={e=>setM(x=>({...x,final:e.target.value}))}/></label></>}

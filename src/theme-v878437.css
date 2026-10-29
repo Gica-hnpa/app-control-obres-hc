@@ -1,0 +1,14 @@
+/* V87.437 · fases alternatives i la fase de les hores */
+html body .fases-v878342>.llista>button.alt-v878437{border-style:dashed;background:var(--co-surface)}
+html body .fases-v878342>.llista>button.alt-v878437 em{background:#FEF3C7;color:#92400E}
+html body .fases-v878342>.llista>button.alt-v878437.on em{background:#B45309;color:#fff}
+html body .fases-v878342>.llista>button.alt-v878437 b{color:var(--co-ink-2)}
+html body .alt-et-v878437{display:inline-block;font-style:normal;font:600 12px var(--app-font);color:#92400E;background:#FEF3C7;border-radius:999px;padding:1px 8px;margin-right:6px;line-height:1.5}
+html body .fases-v878342 .mes-v878342>.menu>button.alt-btn-v878437{color:#92400E}
+html body .rf-taula-v878342 tr.alt-v878437 td{color:var(--co-ink-3)}
+html body .rf-taula-v878342 tr.alt-v878437 td b{color:var(--co-ink-2)}
+html body .rf-taula-v878342 td small.alt-et-v878437,html body .rf-taula-v878342 td small.tec-v878437{display:block;margin:3px 0 0;width:max-content}
+html body .rf-taula-v878342 td small.tec-v878437{font:500 12px var(--app-font);color:var(--co-ink-3)}
+html body .apunt-v878430 .o em.fase-v878437{display:inline-block;font-style:normal;font:600 12px var(--app-font);color:var(--co-accent);background:color-mix(in srgb,var(--co-accent) 9%,var(--co-surface));border-radius:999px;padding:1px 8px;margin-right:6px;white-space:nowrap}
+html body .apunt-v878430 .o em.fase-v878437.alt{color:#92400E;background:#FEF3C7}
+html body .hores-form-v878430 .fase-v878437 .xips-v878430{flex-wrap:wrap}

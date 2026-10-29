@@ -4718,4 +4718,9 @@ export default {
 "Buscar pel nom, l’empresa, el NIF o el telèfon": "Buscar por nombre, empresa, NIF o teléfono",
 "Busques algú d’un altre grup?": "¿Buscas a alguien de otro grupo?",
 "Encara no hi ha cap contacte.": "Todavía no hay ningún contacto.",
+"Alternativa": "Alternativa",
+"Marcar «{fase}» com a alternativa": "Marcar «{fase}» como alternativa",
+"«{fase}» ja no és una alternativa": "«{fase}» ya no es una alternativa",
+"Alternativa · no suma": "Alternativa · no suma",
+"Hores tècniques: {h}": "Horas técnicas: {h}",
 };

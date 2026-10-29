@@ -2420,6 +2420,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       (`.agent-picker-cap-v878436`; abans, al peu), els **grups de Contactes** (`grupContacte878315`; abans els d'agents, amb «Administració»)
       i, amb «Tots» i sense buscar, cada grup plegat (`details.ap-grup-v878436`, «triats / quants»).
     - Estils `src/theme-v878436.css`. Prova: `v436test.mjs` (14, demo-gestio, ordinador i mòbil).
+  - **V87.437 · Les hores del tècnic per fase i les fases alternatives** (l'Héctor, 30/10/2026: «les hores en cadascuna de les fases i sí a
+    l'alternativa»):
+    - **Hores per fase:** en una obra amb diverses fases, «Apuntar hores» (`HonorarisTemps`) i «Apuntar hores o una visita» (`ManualHours878256`)
+      demanen la **fase** (xips; de sèrie la triada a la barra de fases) i la desen a l'apunt (`budgetId`); el comptador, la de la barra.
+      Cada apunt diu la seva fase (`em.fase-v878437`). Les d'abans (sense fase) compten a la principal (`faseHores878437`).
+      `costTecnic878431(obraId, fase, d)`: el compte de cada fase porta les seves «Hores tècniques» (abans només a «Tota l'obra»), i «Per
+      fases» les diu a cada fila (ja no hi ha la fila «Hores tècniques» a part). També a la gràfica i al Rendiment de l'empresa.
+    - **Fase alternativa** (dues opcions d'execució en un expedient): «⋯» de la barra de fases › «Marcar «…» com a alternativa» / «… ja no és
+      una alternativa» (`altDirectBudget878437`; a `budgetGroups` `alternativa878437:true`; la principal no ho pot ser). A la barra, «A» i
+      l'etiqueta «Alternativa», amb la vora discontínua; a «Per fases», «Alternativa · no suma». **No suma a «Tota l'obra»**
+      (`altIds878437`, `okFase878437`): pressupost i total de la barra, certificat, facturat, despeses, hores, previsió, capítols, gràfica i
+      Rendiment de l'empresa (`rendimentFase878342`, `previst878410`, `CapitolsFase878342`, `dadesRendEmpresa878343`). Amb la fase triada,
+      es veu sencera com abans.
+    - Estils `src/theme-v878437.css`. Prova: `v437test.mjs` (16, demo-gestio).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2593,7 +2607,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.436 a Render):**
+**Estat (publicada la V87.437 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
