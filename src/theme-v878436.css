@@ -1,0 +1,62 @@
+/* V87.436 · triar un contacte en una finestra (l'Héctor, 29/10/2026: «el desplegable no pot tenir els grups de Contactes i després un
+   submenú amb els de dins de cada? … la llista és interminable i fins al final no hi ha crear nou… o obrir una altra pantalla amb filtres»):
+   a dalt el cercador i «+ Nou»; els grups de Contactes com a filtres; amb «Tots», cada grup plegat. Al mòbil, a pantalla sencera. */
+html body .tc-v878436 .tc-camp input{cursor:pointer;caret-color:transparent}
+html body .tc-v878436.obert .tc-camp .chev{transform:translateY(-50%) rotate(90deg)}
+html body .tc-fons-v878436{position:fixed;inset:0;z-index:9000;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+html body .tc-finestra-v878436{width:min(640px,100%);height:min(720px,calc(100dvh - 32px));background:var(--co-surface,#fff);border-radius:16px;box-shadow:0 18px 50px rgba(15,23,42,.28);display:flex;flex-direction:column;overflow:hidden;text-align:left}
+html body .tc-finestra-v878436>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 12px 10px 18px;border-bottom:1px solid var(--co-line,#E2E8F0)}
+html body .tc-finestra-v878436>header b{font-size:17px;font-weight:700;color:var(--co-ink,#14202B)}
+html body .tc-finestra-v878436>header .tanca{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;min-height:40px;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;border-radius:10px!important;color:var(--co-ink-2,#334155)}
+html body .tc-finestra-v878436>header .tanca:hover{background:#F1F5F9!important}
+html body .tc-finestra-v878436 .tc-cap-v878436{display:flex;gap:8px;align-items:center;padding:12px 16px 8px}
+html body .tc-finestra-v878436 .tc-cap-v878436 .cerca{position:relative;flex:1;min-width:0;display:flex;align-items:center}
+html body .tc-finestra-v878436 .tc-cap-v878436 .cerca svg{position:absolute;left:11px;color:var(--co-ink-3,#5F7075);pointer-events:none}
+html body .tc-finestra-v878436 .tc-cap-v878436 .cerca input{width:100%;min-height:42px;padding-left:34px!important;box-sizing:border-box}
+html body .tc-v878413 .tc-finestra-v878436 .tc-cap-v878436 .tc-fila.nou{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;width:auto!important;flex:0 0 auto;min-height:42px;margin:0!important;padding:0 14px!important;border:0!important;border-radius:10px!important;background:var(--co-accent,#2563EB)!important;color:#fff!important;font-weight:700;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis}
+html body .tc-v878413 .tc-finestra-v878436 .tc-cap-v878436 .tc-fila.nou:hover{filter:brightness(1.07)}
+html body .tc-xips-v878436{display:flex;gap:6px;flex-wrap:wrap;padding:2px 16px 10px;border-bottom:1px solid var(--co-line,#E2E8F0)}
+html body .tc-xips-v878436 button{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px!important;border:1px solid var(--co-line,#D5DEE5)!important;border-radius:999px!important;background:#fff!important;box-shadow:none!important;color:var(--co-ink-2,#334155)!important;font-size:13.5px;font-weight:600;white-space:nowrap}
+html body .tc-xips-v878436 button small{font-size:12px;font-weight:700;color:var(--co-ink-3,#5F7075)}
+html body .tc-xips-v878436 button.on{background:#EFF6FF!important;border-color:var(--co-accent,#2563EB)!important;color:var(--co-accent,#1D4ED8)!important}
+html body .tc-xips-v878436 button.on small{color:inherit}
+html body .tc-v878413 .tc-finestra-v878436 .tc-panell{position:static;flex:1;min-height:0;max-height:none;margin:0;overflow:auto;overscroll-behavior:contain;border:0;border-radius:0;box-shadow:none;padding:6px 8px 14px;background:transparent}
+html body .tc-v878413 .tc-finestra-v878436 .tc-fila{position:relative;padding-right:38px!important;border-radius:10px!important}
+html body .tc-finestra-v878436 .tc-fila .ok{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--co-accent,#2563EB)}
+html body .tc-finestra-v878436 .tc-fila.cap{margin-bottom:4px}
+html body .tc-finestra-v878436 details.tc-grup-v878436{border:1px solid var(--co-line,#E2E8F0);border-radius:12px;background:#F8FAFC;margin:0 0 8px}
+html body .tc-finestra-v878436 details.tc-grup-v878436>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px 0 14px;cursor:pointer}
+html body .tc-finestra-v878436 details.tc-grup-v878436>summary::-webkit-details-marker{display:none}
+html body .tc-v878413 .tc-finestra-v878436 details.tc-grup-v878436>summary h5{flex:1;margin:0;font-size:14.5px;font-weight:700;letter-spacing:0;text-transform:none;color:var(--co-ink,#14202B)}
+html body .tc-finestra-v878436 details.tc-grup-v878436>summary .n{font-size:12.5px;font-weight:700;color:var(--co-ink-3,#5F7075);background:#fff;border:1px solid var(--co-line,#E2E8F0);border-radius:999px;padding:1px 9px}
+html body .tc-finestra-v878436 details.tc-grup-v878436>summary .chev{transform:rotate(90deg);color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body .tc-finestra-v878436 details.tc-grup-v878436[open]{background:#fff;box-shadow:inset 3px 0 0 #93C5FD}
+html body .tc-finestra-v878436 details.tc-grup-v878436[open]>summary{border-bottom:1px solid var(--co-line,#E2E8F0)}
+html body .tc-finestra-v878436 details.tc-grup-v878436[open]>summary .chev{transform:rotate(-90deg)}
+html body .tc-v878413 .tc-finestra-v878436 details.tc-grup-v878436>.tc-fila{border-radius:0!important}
+html body .tc-v878413 .tc-finestra-v878436 details.tc-grup-v878436>.tc-fila:last-child{border-radius:0 0 12px 12px!important}
+html body .tc-finestra-v878436 .tc-peu-v878436{margin:12px 8px 0;color:var(--co-ink-3,#5F7075);font-size:13.5px}
+html body .tc-finestra-v878436 .tc-peu-v878436 .link{padding:0!important;border:0!important;background:none!important;box-shadow:none!important;min-height:0!important;color:var(--co-accent,#2563EB)!important;font-weight:600;text-decoration:underline}
+@media (max-width:700px){
+  html body .tc-fons-v878436{padding:0;align-items:stretch}
+  html body .tc-finestra-v878436{width:100%;height:100dvh;border-radius:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  html body .tc-finestra-v878436 .tc-cap-v878436{flex-wrap:wrap}
+  html body .tc-finestra-v878436 .tc-cap-v878436 .cerca{flex:1 1 100%}
+  html body .tc-v878413 .tc-finestra-v878436 .tc-cap-v878436 .tc-fila.nou{flex:1 1 100%;max-width:none;justify-content:center}
+  html body .tc-xips-v878436{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  html body .tc-xips-v878436::-webkit-scrollbar{display:none}
+}
+/* afegir agents a l'obra: el cercador i «Crear un agent nou» a dalt; els grups de Contactes i, amb «Tots», cada grup plegat */
+html body .agent-picker-v878436 .agent-picker-cap-v878436{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+html body .agent-picker-v878436 .agent-picker-cap-v878436 .pro-search-line{flex:1 1 240px;min-width:0;margin:0}
+html body .agent-picker-v878436 .agent-picker-cap-v878436>.primary{display:inline-flex;align-items:center;gap:6px;min-height:42px;white-space:nowrap}
+html body .agent-picker-v878436 details.ap-grup-v878436{border:1px solid var(--co-line,#E2E8F0);border-radius:12px;background:#F8FAFC;flex:none}
+html body .agent-picker-v878436 details.ap-grup-v878436>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px 0 14px;cursor:pointer}
+html body .agent-picker-v878436 details.ap-grup-v878436>summary::-webkit-details-marker{display:none}
+html body .agent-picker-v878436 details.ap-grup-v878436>summary b{flex:1;font-size:14.5px}
+html body .agent-picker-v878436 details.ap-grup-v878436>summary .n{font-size:12.5px;font-weight:700;color:var(--co-ink-3,#5F7075);background:#fff;border:1px solid var(--co-line,#E2E8F0);border-radius:999px;padding:1px 9px}
+html body .agent-picker-v878436 details.ap-grup-v878436>summary .chev{transform:rotate(90deg);color:var(--co-ink-3,#5F7075)}
+html body .agent-picker-v878436 details.ap-grup-v878436[open]{background:#fff;box-shadow:inset 3px 0 0 #93C5FD}
+html body .agent-picker-v878436 details.ap-grup-v878436[open]>summary{border-bottom:1px solid var(--co-line,#E2E8F0)}
+html body .agent-picker-v878436 details.ap-grup-v878436[open]>summary .chev{transform:rotate(-90deg)}
+html body .agent-picker-v878436 details.ap-grup-v878436>label{margin:6px 8px;border-radius:10px}

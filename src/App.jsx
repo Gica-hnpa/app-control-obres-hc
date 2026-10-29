@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.435";
+const APP_VERSION878264="87.436";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9062,33 +9062,65 @@ function dadesContacte878413(x){
   const o=omple878413(base,deClient);
   return {...o,id:ag.id||"",_clientId:c?.id||"",_grup:x?.g||"",nom:netV878304(o.nom)||netV878304(c?.nom)||"",rol:ag.rol||o.rol||""};
 }
-function TriaContacte878413({grups=null,valor="",onTria,onCap,onNou,etiqueta="",nouText=""}){
+// V87.436 · el camp obre una finestra (l'Héctor, 29/10/2026: «el desplegable no pot tenir els grups de Contactes i després un submenú
+// amb els de dins de cada? … si en tingués molts la llista és interminable i fins al final no hi ha crear nou… o obrir una altra pantalla
+// amb això i filtres»): a dalt el cercador i «+ Nou»; els grups de Contactes com a filtres (amb quants n'hi ha); amb «Tots», cada grup
+// plegat; buscant, els que coincideixen de tots els grups (els del grup triat primer).
+function TriaContacte878413({grups=null,valor="",onTria,onCap,onNou,etiqueta="",nouText="",titol=""}){
   const [obert,setObert]=useState(false);
   const [q,setQ]=useState("");
-  const [tots,setTots]=useState(false);
-  const ref=useRef(null);
-  const files=useMemo(()=>{if(!obert)return [];try{return window.__acoContactes878406?.()||[]}catch(e){console.warn(e);return []}},[obert]);
-  useEffect(()=>{if(!obert)return;const f=e=>{if(ref.current&&!ref.current.contains(e.target)){setObert(false);setQ("")}};document.addEventListener("pointerdown",f,true);return ()=>document.removeEventListener("pointerdown",f,true)},[obert]);
+  const obre=(qq="")=>{setQ(qq);setObert(true)};
+  return <div className={`tc-v878413 tc-v878436${obert?" obert":""}`}>
+    {etiqueta&&<span className="tc-et">{etiqueta}</span>}
+    <div className="tc-camp"><input type="search" readOnly value={valor} placeholder={t("— Cap (pendent) —")} onClick={()=>{if(!obert)obre()}} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "||e.key==="ArrowDown"){e.preventDefault();obre()}}} onChange={e=>{setQ(e.target.value);setObert(true)}} aria-label={etiqueta||t("Buscar a Contactes")} aria-haspopup="dialog" aria-expanded={obert} autoComplete="off"/><ChevronRight size={16} className="chev" aria-hidden="true"/></div>
+    {obert&&<FinestraContactes878436 titol={titol||etiqueta||t("Contactes")} grups={grups} valor={valor} q={q} setQ={setQ} nouText={nouText}
+      onTria={x=>{setObert(false);onTria?.(dadesContacte878413(x),x)}} onCap={onCap?()=>{setObert(false);onCap()}:null} onNou={onNou?q=>{setObert(false);onNou(q)}:null} close={()=>setObert(false)}/>}
+  </div>;
+}
+function FinestraContactes878436({titol,grups=null,valor="",q="",setQ,nouText="",onTria,onCap,onNou,close}){
+  useHoldSync878266();
+  const finRef=useRef(null);
+  // tocar fora de la finestra la tanca (el fons, amb el clic: així el toc no arriba al que hi ha a sota)
+  useEffect(()=>{const f=e=>{const el=finRef.current;if(!el||el.contains(e.target)||e.target?.classList?.contains("tc-fons-v878436"))return;close()};document.addEventListener("pointerdown",f,true);return()=>document.removeEventListener("pointerdown",f,true)},[close]);
+  const [g,setG]=useState(()=>grups?.[0]||"");
+  const files=useMemo(()=>{try{return window.__acoContactes878406?.()||[]}catch(e){console.warn(e);return []}},[]);
+  const fi=useMemo(()=>{try{return matchMedia("(hover:hover) and (pointer:fine)").matches}catch{return false}},[]);
+  useEffect(()=>{const f=e=>{if(e.key==="Escape"){e.stopPropagation();e.preventDefault();close()}};window.addEventListener("keydown",f,true);return()=>window.removeEventListener("keydown",f,true)},[close]);
   const cercant=!!q.trim();
   const coinc=x=>coincideix878315(q,{noms:[x.ag.nom,x.ag.empresa,x.c?.nom,x.c?.rao,...contactesDe878315(x.c||x.ag).map(p=>p.nom)],nums:[x.ag.telefon,x.ag.mobil,x.ag.nif,x.c?.telefon,x.c?.mobil,x.c?.nif]});
   const vis=files.filter(x=>!cercant||coinc(x));
-  const delBloc=grups?vis.filter(x=>grups.includes(x.g)):vis;
-  const altres=grups&&(cercant||tots)?vis.filter(x=>!grups.includes(x.g)):[];
-  const tanca=()=>{setObert(false);setQ("");setTots(false)};
-  const tria=x=>{tanca();onTria?.(dadesContacte878413(x),x)};
-  const fila=x=>{const a=agentDeContacte878406(x);return <button type="button" role="option" aria-selected={normalizeSearch878191(a.nom)===normalizeSearch878191(valor)} key={x.ag._persona878301||x.ag.id||a.nom} className="tc-fila" onClick={()=>tria(x)}><b>{a.nom}</b><small>{[a.empresa&&normalizeSearch878191(a.empresa)!==normalizeSearch878191(a.nom)?a.empresa:"",a.nif,a.mobil||a.telefon].filter(Boolean).join(" · ")}</small></button>};
-  const perGrups=l=>GRUPS_CONTACTE878315.map(([g,lab])=>{const ll=l.filter(x=>x.g===g);return ll.length?<div key={g} className="tc-grup"><h5>{i18nT(lab)}</h5>{ll.map(fila)}</div>:null});
-  return <div className={`tc-v878413${obert?" obert":""}`} ref={ref} onKeyDown={e=>{if(e.key==="Escape"&&obert){e.stopPropagation();tanca()}}}>
-    {etiqueta&&<span className="tc-et">{etiqueta}</span>}
-    <div className="tc-camp"><input type="search" value={obert?q:valor} placeholder={obert?(valor||t("Escriu les primeres lletres…")):t("— Cap (pendent) —")} onFocus={()=>{setObert(true);setQ("")}} onChange={e=>{setQ(e.target.value);setObert(true)}} aria-label={etiqueta||t("Buscar a Contactes")} aria-expanded={obert} autoComplete="off"/><ChevronRight size={16} className="chev" aria-hidden="true"/></div>
-    {obert&&<div className="tc-panell" role="listbox">
-      {onCap&&valor&&!cercant&&<button type="button" className="tc-fila cap" onClick={()=>{tanca();onCap()}}>{t("— Cap (pendent) —")}</button>}
-      {grups?delBloc.map(fila):perGrups(delBloc)}
-      {!delBloc.length&&<p className="tc-buit">{cercant?(altres.length?t("Cap d’aquest grup amb «{q}».",{q:q.trim()}):t("No hi ha cap contacte amb «{q}».",{q:q.trim()})):t("Encara no hi ha cap contacte d’aquest grup.")}</p>}
-      {altres.length>0&&<div className="tc-grup altres"><h5>{t("Altres contactes")}</h5>{altres.map(fila)}</div>}
-      {grups&&!cercant&&!tots&&vis.some(x=>!grups.includes(x.g))&&<button type="button" className="link tc-tots" onClick={()=>setTots(true)}>{t("Veure tots els contactes")}</button>}
-      {onNou&&<button type="button" className="tc-fila nou" onClick={()=>{const n=q.trim();tanca();onNou(n)}}><Plus size={15} aria-hidden="true"/> {cercant?t("Nou: «{q}»",{q:q.trim()}):String(nouText||t("Nou contacte")).replace(/^[+＋]\s*/,"")}</button>}
-    </div>}
+  const n=k=>vis.filter(x=>x.g===k).length;
+  const grupsAmb=GRUPS_CONTACTE878315.filter(([k])=>files.some(x=>x.g===k));
+  const sel=normalizeSearch878191(valor);
+  const fila=x=>{const a=agentDeContacte878406(x);const on=!!sel&&normalizeSearch878191(a.nom)===sel;return <button type="button" role="option" aria-selected={on} key={x.ag._persona878301||x.ag.id||a.nom} className="tc-fila" onClick={()=>onTria(x)}><b>{a.nom}</b><small>{[a.empresa&&normalizeSearch878191(a.empresa)!==normalizeSearch878191(a.nom)?a.empresa:"",a.nif,a.mobil||a.telefon].filter(Boolean).join(" · ")}</small>{on&&<Check size={16} className="ok" aria-hidden="true"/>}</button>};
+  const delG=g?vis.filter(x=>x.g===g):vis;
+  const altres=g&&cercant?vis.filter(x=>x.g!==g):[];
+  const nomG=k=>i18nT((GRUPS_CONTACTE878315.find(([x])=>x===k)||[k,k])[1]);
+  // sense buscar i amb «Tots»: cada grup plegat (si només n’hi ha un, obert)
+  const unSol=grupsAmb.length===1;
+  const llistaTots=GRUPS_CONTACTE878315.map(([k,lab])=>{const ll=vis.filter(x=>x.g===k);if(!ll.length)return null;
+    if(cercant)return <div key={k} className="tc-grup"><h5>{i18nT(lab)}</h5>{ll.map(fila)}</div>;
+    return <details key={k} className="tc-grup tc-grup-v878436" open={unSol||undefined}><summary><h5>{i18nT(lab)}</h5><span className="n">{ll.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary>{ll.map(fila)}</details>});
+  const nouLab=cercant?t("Nou: «{q}»",{q:q.trim()}):String(nouText||t("Nou contacte")).replace(/^[+＋]\s*/,"");
+  return <div className="tc-fons-v878436" onClick={e=>{if(e.target===e.currentTarget)close()}}>
+    <div className="tc-finestra-v878436" ref={finRef} role="dialog" aria-modal="true" aria-label={titol}>
+      <header><b>{titol}</b><button type="button" className="tanca" onClick={close} aria-label={t("Tancar")}><X size={20}/></button></header>
+      <div className="tc-cap-v878436">
+        <label className="cerca"><Search size={16} aria-hidden="true"/><input type="search" value={q} autoFocus={fi} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar pel nom, l’empresa, el NIF o el telèfon")} aria-label={t("Buscar a Contactes")} autoComplete="off"/></label>
+        {onNou&&<button type="button" className="primary tc-fila nou" onClick={()=>onNou(q.trim())}><Plus size={16} aria-hidden="true"/> {nouLab}</button>}
+      </div>
+      {grupsAmb.length>1&&<div className="tc-xips-v878436" role="tablist">
+        <button type="button" role="tab" aria-selected={!g} className={!g?"on":""} onClick={()=>setG("")}>{t("Tots")} <small>{vis.length}</small></button>
+        {grupsAmb.map(([k,lab])=><button type="button" role="tab" key={k} aria-selected={g===k} className={g===k?"on":""} onClick={()=>setG(k)}>{i18nT(lab)} <small>{n(k)}</small></button>)}
+      </div>}
+      <div className="tc-panell" role="listbox">
+        {onCap&&valor&&!cercant&&<button type="button" className="tc-fila cap" onClick={onCap}>{t("— Cap (pendent) —")}</button>}
+        {g?delG.map(fila):llistaTots}
+        {!delG.length&&<p className="tc-buit">{cercant?(altres.length?t("Cap d’aquest grup amb «{q}».",{q:q.trim()}):t("No hi ha cap contacte amb «{q}».",{q:q.trim()})):g?t("Encara no hi ha cap contacte d’aquest grup."):t("Encara no hi ha cap contacte.")}</p>}
+        {altres.length>0&&<div className="tc-grup altres"><h5>{t("Altres contactes")}</h5>{altres.map(fila)}</div>}
+        {g&&!cercant&&<p className="tc-peu-v878436">{t("Busques algú d’un altre grup?")} <button type="button" className="link" onClick={()=>setG("")}>{t("Veure tots els contactes")}</button></p>}
+      </div>
+    </div>
   </div>;
 }
 // V87.416 · triar una obra o un expedient (Agenda, hores, feines): amb 40 expedients el desplegable era llarg i no s'hi podia buscar. Un
@@ -17582,15 +17614,19 @@ function AgentPicker878301({library=[],existing=[],onAdd,onNew,close}){
   const[q,setQ]=useState(""),[g,setG]=useState(""),[sel,setSel]=useState([]);
   const lib=useMemo(()=>{const m=new Map();for(const ag of library||[]){const k=agentPersona878301(ag);if(!k)continue;const e=m.get(k);if(e){for(const f of AGENT_FIELDS878301)if(!e[f]&&ag[f])e[f]=ag[f];continue}m.set(k,{...ag,_persona878301:k})}return [...m.values()]},[library]);
   const ja=new Set((existing||[]).map(agentPersona878301).filter(Boolean));
-  const counts={};lib.forEach(ag=>{const x=agentGroup878301(ag);counts[x]=(counts[x]||0)+1});
+  // V87.436 · els grups de Contactes (abans, els d'agents: «Administració» i «Constructors» no eren els de Contactes)
+  const gDe=ag=>grupContacte878315(ag,null);
   const qq=normalizeSearch878191(q);
-  const rows=lib.filter(ag=>(!g||agentGroup878301(ag)===g)&&(!qq||normalizeSearch878191([ag.nom,ag.rol,ag.empresa,ag.email,ag.telefon,ag.nif].join(" ")).includes(qq)));
+  const perQ=lib.filter(ag=>!qq||normalizeSearch878191([ag.nom,ag.rol,ag.empresa,ag.email,ag.telefon,ag.nif].join(" ")).includes(qq));
+  const counts={};perQ.forEach(ag=>{const x=gDe(ag);counts[x]=(counts[x]||0)+1});
+  const rows=perQ.filter(ag=>!g||gDe(ag)===g);
   const toggle=k=>setSel(s=>s.includes(k)?s.filter(x=>x!==k):[...s,k]);
-  return <Modal title={t("Afegir agents a l’obra")} close={close}><div className="agent-picker-v878301">
-    <div className="agent-picker-groups-v878301"><button type="button" className={!g?"on":""} onClick={()=>setG("")}>{t("Tots")} <small>{lib.length}</small></button>{AGENT_GROUPS878301.filter(x=>counts[x]).map(x=><button type="button" key={x} className={g===x?"on":""} onClick={()=>setG(x)}>{agentGroupLabel878301(x)} <small>{counts[x]}</small></button>)}</div>
-    <div className="pro-search-line"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar per nom, empresa o rol")}/></div>
-    <div className="agent-picker-list-v878301">{rows.length===0?<Empty text="Cap agent amb aquest filtre."/>:rows.map(ag=>{const k=ag._persona878301,hi=ja.has(k);return <label key={k} className={`${hi?"ja":""} ${sel.includes(k)?"on":""}`}><input type="checkbox" disabled={hi} checked={hi||sel.includes(k)} onChange={()=>toggle(k)}/><span><b>{ag.nom}</b><small>{[ag.rol?i18nT(ag.rol):"",ag.empresa&&ag.empresa!==ag.nom?ag.empresa:""].filter(Boolean).join(" · ")}</small></span>{hi&&<em>{t("Ja hi és")}</em>}</label>})}</div>
-    <div className="agent-picker-foot-v878301"><button type="button" className="secondary" onClick={onNew}><Plus/> {t("Crear un agent nou")}</button><span/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!sel.length} onClick={()=>onAdd(lib.filter(ag=>sel.includes(ag._persona878301)))}>{sel.length?t("Afegir ({n})",{n:sel.length}):t("Afegir")}</button></div>
+  const filaAg878436=ag=>{const k=ag._persona878301,hi=ja.has(k);return <label key={k} className={`${hi?"ja":""} ${sel.includes(k)?"on":""}`}><input type="checkbox" disabled={hi} checked={hi||sel.includes(k)} onChange={()=>toggle(k)}/><span><b>{ag.nom}</b><small>{[ag.rol?i18nT(ag.rol):"",ag.empresa&&ag.empresa!==ag.nom?ag.empresa:""].filter(Boolean).join(" · ")}</small></span>{hi&&<em>{t("Ja hi és")}</em>}</label>};
+  return <Modal title={t("Afegir agents a l’obra")} close={close}><div className="agent-picker-v878301 agent-picker-v878436">
+    <div className="agent-picker-cap-v878436"><div className="pro-search-line"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar per nom, empresa o rol")} aria-label={t("Buscar")}/></div>{onNew&&<button type="button" className="primary" onClick={onNew}><Plus size={16} aria-hidden="true"/> {t("Crear un agent nou")}</button>}</div>
+    <div className="agent-picker-groups-v878301"><button type="button" className={!g?"on":""} onClick={()=>setG("")}>{t("Tots")} <small>{perQ.length}</small></button>{GRUPS_CONTACTE878315.filter(([x])=>counts[x]).map(([x,lab])=><button type="button" key={x} className={g===x?"on":""} onClick={()=>setG(x)}>{i18nT(lab)} <small>{counts[x]}</small></button>)}</div>
+    <div className="agent-picker-list-v878301">{rows.length===0?<Empty text="Cap agent amb aquest filtre."/>:(g||qq)?rows.map(filaAg878436):GRUPS_CONTACTE878315.filter(([x])=>counts[x]).map(([x,lab])=>{const ll=rows.filter(ag=>gDe(ag)===x);const n=ll.filter(ag=>sel.includes(ag._persona878301)).length;return <details key={x} className="ap-grup-v878436" open={Object.keys(counts).length===1||undefined}><summary><b>{i18nT(lab)}</b><span className="n">{n?n+" / ":""}{ll.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary>{ll.map(filaAg878436)}</details>})}</div>
+    <div className="agent-picker-foot-v878301"><span/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!sel.length} onClick={()=>onAdd(lib.filter(ag=>sel.includes(ag._persona878301)))}>{sel.length?t("Afegir ({n})",{n:sel.length}):t("Afegir")}</button></div>
   </div></Modal>;
 }
 // V87.301 · Botó per tornar a dalt de la pàgina quan és llarga (p. ex. els agents d'una obra). Surt en baixar; no tapa res.
@@ -18090,7 +18126,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.435",
+    app_version:"87.436",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

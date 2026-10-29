@@ -4715,4 +4715,7 @@ export default {
 "Importar un pressupost fet a part": "Importar un presupuesto hecho aparte",
 "O fer-lo aquí": "O hacerlo aquí",
 "Llegir un pressupost en BC3…": "Leer un presupuesto en BC3…",
+"Buscar pel nom, l’empresa, el NIF o el telèfon": "Buscar por nombre, empresa, NIF o teléfono",
+"Busques algú d’un altre grup?": "¿Buscas a alguien de otro grupo?",
+"Encara no hi ha cap contacte.": "Todavía no hay ningún contacto.",
 };

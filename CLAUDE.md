@@ -2404,6 +2404,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       (`window.__acoAmid878435 = {file, passar}`, `window.__acoObraTab878435` de l'Obra), es llegeix amb el lector dels amidaments (amb el
       descompost i els preus de l'arxiu) i s'obre sol «Passar-ho a pressupost» (`passarDespres878435`).
     - Estils `src/theme-v878435.css`. Prova: `v435test.mjs` (14). Adaptades `amidaments328test`, `pressupost368test` i `preus378test`.
+  - **V87.436 · Triar un contacte en una finestra amb els grups de Contactes** (l'Héctor, 29/10/2026: «quan desplego les dades de l'obra i
+    agents, el menú desplegable no pot tenir els grups que tenim ara de Contactes i després un submenú amb els de dins de cada? … si en
+    tingués molts la llista és interminable i fins al final no hi ha crear nou… o en comptes de desplegable obrir una altra pantalla amb
+    això i filtres»):
+    - **`TriaContacte878413`** (client, promotor, constructora, tècnics de Dades; client de «Nova obra» i de la feina de l'Inici): el camp
+      (només lectura) obre **`FinestraContactes878436`** (`.tc-fons-v878436` › `.tc-finestra-v878436`; dins del mateix `.tc-v878413`, amb
+      `useHoldSync878266`): a dalt el títol i ×, el **cercador i «+ Nou…»** (`.tc-cap-v878436`; buscant, «Nou: «…»»), els **grups de
+      Contactes com a filtres** amb quants n'hi ha (`.tc-xips-v878436`; «Tots» o el grup del camp —`grups`— de sèrie) i la llista: amb
+      «Tots», **cada grup plegat** (`details.tc-grup-v878436`, amb el nombre; si només n'hi ha un, obert); amb un grup, els seus contactes i
+      «Veure tots els contactes»; buscant, els que coincideixen de tots els grups (amb un grup triat, la resta a «Altres contactes»). El
+      triat porta ✓. Es tanca amb ×, Esc, tocant fora o triant. Al mòbil, a pantalla sencera (cercador i «+ Nou» a dalt, els filtres en una
+      fila que es llisca). El text de la cerca és del camp (`q`, `setQ`): escriure al camp també busca.
+    - **«Afegir agents a l'obra»** (`AgentPicker878301`, també «Afegir industrial»): el cercador i **«Crear un agent nou» a dalt**
+      (`.agent-picker-cap-v878436`; abans, al peu), els **grups de Contactes** (`grupContacte878315`; abans els d'agents, amb «Administració»)
+      i, amb «Tots» i sense buscar, cada grup plegat (`details.ap-grup-v878436`, «triats / quants»).
+    - Estils `src/theme-v878436.css`. Prova: `v436test.mjs` (14, demo-gestio, ordinador i mòbil).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2577,7 +2593,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.435 a Render):**
+**Estat (publicada la V87.436 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
