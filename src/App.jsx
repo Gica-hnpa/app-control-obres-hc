@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.430";
+const APP_VERSION878264="87.431";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2317,7 +2317,8 @@ function printQuote8745(type,doc,obra){
 }
 function uniqueFactures8743(rows=[]){
   const seen=new Set();
-  return rows.filter(f=>{let k=f.pressupostId?`p:${f.pressupostId}`:`id:${f.id}`;if(seen.has(k))return false;seen.add(k);return true;})
+  // V87.431 · un pressupost es pot facturar en diverses factures (V87.420, «Facturat en part»): només es treuen les repetides (mateix número)
+  return rows.filter(f=>{let k=f.pressupostId?`p:${f.pressupostId}:${f.numero||f.id}`:`id:${f.id}`;if(seen.has(k))return false;seen.add(k);return true;})
 }
 
 // V87.122 · còpies locals de recuperació abans d'accions de risc (import Excel, baixada núvol, etc.)
@@ -4434,32 +4435,109 @@ const STORAGE_LIMIT_CHARS878250=(typeof window!=="undefined"&&window.__acoStore)
   </Card>
 }
 
-function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc,temps=null,rendiment=false,inici="",quota=0}){
+function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc,temps=null,rendiment=false,inici="",quota=0,despeses=null}){
   // V87.332 · sense cap pressupost d'honoraris, s'obre directament la calculadora
   // V87.410 · (l'Héctor, 27/10/2026: «les pestanyes no són del tot lògiques… la segona hauria d'anar dins de la primera») la calculadora és
   // dins de «Pressupostos d'honoraris»; el comptador i els registres d'hores, a «Hores»; el rendiment, a «Rendiment»; a dalt, el resultat
   const tePres=(data?.pressupostosTecnic||[]).length>0;
-  // V87.430 · si l'expedient no té cap pressupost d'honoraris o el client paga una quota fixa (l'Héctor: «si estic fent el seguiment per
-  // una empresa normalment aquí no poso honoraris»), primer les hores (abans s'obria la calculadora). Els encàrrecs tècnics (cèdula, CEE…)
-  // continuen començant pel pressupost d'honoraris.
-  const horesPrimer=!!temps&&(quota>0||(!tePres&&!esTecnicPur878332(obra)));
-  const[sub,setSub]=useState(()=>{const x=window.__acoHonSub878410||inici;window.__acoHonSub878410="";return (x==="Hores"&&temps)||(x==="Rendiment"&&rendiment)?x:horesPrimer?"Hores":"Pressupostos"});
-  // si s'hi arriba des de «Hores» o «Rendiment» (el ＋ del mòbil, l'Inici…), s'obre aquella pestanya
-  useEffect(()=>{if(inici==="Hores"&&temps)setSub("Hores");else if(inici==="Rendiment"&&rendiment)setSub("Rendiment")},[inici]);
+  // V87.431 · «El meu encàrrec» d'una obra o d'un expedient que no és un encàrrec tècnic (l'Héctor, 29/10/2026: «un cop ja creat
+  // l'expedient no té sentit tenir aquesta targeta… de creació de pressupost d'honoraris… les 3 pestanyes bàsiques: el control del temps
+  // dedicat per mi, les possibles despeses que he tingut i com a molt les factures… que s'ha de vincular amb la meva facturació»):
+  // Hores · Despeses · Factures. Els pressupostos d'honoraris es fan a Pressupostos (menú) i els acceptats es facturen des de «Factures».
+  // Els encàrrecs tècnics (cèdula, CEE…) continuen amb el pressupost d'honoraris a dins.
+  const pur=esTecnicPur878332(obra);
+  // V87.430 · si l'expedient no té cap pressupost d'honoraris o el client paga una quota fixa, primer les hores
+  const horesPrimer=!!temps&&(quota>0||(!tePres&&!pur));
+  const[sub,setSub]=useState(()=>{const x=window.__acoHonSub878410||inici;window.__acoHonSub878410="";return x||""});
+  // si s'hi arriba des de «Hores», «Rendiment» o «Fer factura» (el ＋ del mòbil, l'Inici, Facturació…), s'obre aquella pestanya
+  useEffect(()=>{if(inici)setSub(inici)},[inici]);
   const[calc,setCalc]=useState(()=>!tePres);
-  const tabs0=[["Pressupostos",t("Pressupostos d’honoraris")],["Factures",t("Factures honoraris")],...(temps?[["Hores",t("Hores")]]:[]),...(rendiment?[["Rendiment",t("Rendiment")]]:[])];
-  const tabs=horesPrimer?[...tabs0.filter(x=>x[0]==="Hores"),...tabs0.filter(x=>x[0]!=="Hores")]:tabs0;
-  return <div className="stack honoraris-exp-v8778">
-    {rendiment&&!quota&&<ResultatEncarrec878410 data={data} obra={obra} onClick={()=>setSub("Rendiment")}/>}
-    <div className="subtabs-v8746">{tabs.map(([k,l])=><button key={k} className={sub===k?"active":""} onClick={()=>{setSub(k);if(k==="Pressupostos")setCalc(false)}}>{l}</button>)}</div>
-    {sub==="Pressupostos"&&(calc?<div className="calc-dins-v878410"><button type="button" className="link tornar" onClick={()=>setCalc(false)}>‹ {t("Tornar als pressupostos")}</button><HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} onCreatePressupost={p=>{addPressupost?.(p);setCalc(false)}}/></div>
+  let tabs;
+  if(pur){const tabs0=[["Pressupostos",t("Pressupostos d’honoraris")],["Factures",t("Factures honoraris")],...(temps?[["Hores",t("Hores")]]:[]),...(rendiment?[["Rendiment",t("Rendiment")]]:[])];
+    tabs=horesPrimer?[...tabs0.filter(x=>x[0]==="Hores"),...tabs0.filter(x=>x[0]!=="Hores")]:tabs0}
+  else tabs=[...(temps?[["Hores",t("Hores")]]:[]),...(despeses?[["Despeses",t("Despeses")]]:[]),["Factures",t("Factures")]];
+  const s=tabs.some(x=>x[0]===sub)?sub:pur?(horesPrimer?"Hores":"Pressupostos"):tabs[0][0];
+  return <div className={`stack honoraris-exp-v8778${pur?"":" encarrec-v878431"}`}>
+    {pur&&rendiment&&!quota&&<ResultatEncarrec878410 data={data} obra={obra} onClick={()=>setSub("Rendiment")}/>}
+    <div className="subtabs-v8746">{tabs.map(([k,l])=><button key={k} className={s===k?"active":""} onClick={()=>{setSub(k);if(k==="Pressupostos")setCalc(false)}}>{l}</button>)}</div>
+    {s==="Pressupostos"&&(calc?<div className="calc-dins-v878410"><button type="button" className="link tornar" onClick={()=>setCalc(false)}>‹ {t("Tornar als pressupostos")}</button><HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} onCreatePressupost={p=>{addPressupost?.(p);setCalc(false)}}/></div>
       :<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupost} updatePressupost={updatePressupost} facturarPressupost={facturarPressupost} deletePressupost={deletePressupost} openEmail={openEmail} openDoc={openDoc} onCalcular={()=>setCalc(true)}/>)}
-    {sub==="Factures"&&<FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>}
-    {sub==="Hores"&&temps}
-    {sub==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>}
+    {s==="Factures"&&(pur?<FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>
+      :<FacturesEncarrec878431 data={data} obra={obra} quota={quota} updatePressupost={updatePressupost} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>)}
+    {s==="Hores"&&temps}
+    {s==="Despeses"&&despeses}
+    {s==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>}
   </div>
 }
-// V87.410 · Rendiment real d'un encàrrec (l'Héctor, 27/10/2026: «els registres manuals o pel comptador s'han de comptar com a despesa de
+// V87.431 · «Factures» del meu encàrrec: a dalt, el que hi ha per facturar (les hores pendents, les meves despeses no repercutides i els
+// pressupostos d'honoraris acceptats que falten per facturar) amb «Fer factura»; a sota, les factures de l'expedient (les mateixes que surten
+// a Facturació). Amb un client de quota fixa, les despeses no hi compten (les paga la quota), però es poden afegir a la factura.
+function FacturesEncarrec878431({data,obra,quota=0,updatePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc}){
+  const[tick,setTick]=useState(0);
+  useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-time-rows-changed",h);window.addEventListener("aco-albarans-changed",h);return()=>{window.removeEventListener("aco-time-rows-changed",h);window.removeEventListener("aco-albarans-changed",h)}},[]);
+  const[fer,setFer]=useState(null);
+  const hores=useMemo(()=>readTimeRows878255(obra.id).filter(r=>pendentFact878430(r,quota)&&timeBillImport878291(r)>0.004).map(r=>({...r,_d:rowDate878255(r)})),[obra.id,quota,tick]);
+  const desp=useMemo(()=>readAlbarans878259().filter(a=>a.meva&&String(a.obraId||"")===String(obra.id)&&!a.facturatClient&&albaraBase878259(a)>0.004),[obra.id,tick]);
+  const hon=honorarisPendents878307([obra],{[obra.id]:data});
+  const tH=hores.reduce((s,r)=>s+timeBillImport878291(r),0),nH=hores.filter(isHoursRow878255).reduce((s,r)=>s+timeHours878120(r),0);
+  const tD=quota>0?0:desp.reduce((s,a)=>s+albaraBase878259(a),0);
+  const total=tH+tD+hon.reduce((s,x)=>s+x.pend,0);
+  const ambHores=hores.length>0||(!quota&&desp.length>0);
+  return <div className="stack fact-enc-v878431">
+    {(ambHores||hon.length>0)&&<section className="perfact-v878431">
+      <header><span><small>{t("Per facturar")}</small><b>{money(total)}</b></span>{ambHores&&<button type="button" className="primary" onClick={()=>setFer({})}>{t("Fer factura")}</button>}</header>
+      <ul>
+        {hores.length>0&&<li><span>{t("Hores")}{nH>0?` · ${fh878340(nH)}`:""}</span><b>{money(tH)}</b></li>}
+        {!quota&&desp.length>0&&<li><span>{desp.length===1?t("1 despesa"):t("{n} despeses",{n:desp.length})}</span><b>{money(tD)}</b></li>}
+        {hon.map(({p,pend,facturat})=><li key={p.id} className="pres"><span>{t("Pressupost d’honoraris")}{p.numero?` ${p.numero}`:""}{facturat>0.004?<small> · {t("ja facturat {x}",{x:money(facturat)})}</small>:null}</span><b>{money(pend)}</b><button type="button" className="secondary small" onClick={()=>setFer({p,pend})}>{t("Fer factura")}</button></li>)}
+      </ul>
+    </section>}
+    <FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>
+    {fer&&<FerFacturaEncarrec878431 obra={obra} hores={fer.p?[]:hores} despeses={fer.p?[]:desp} quota={quota} pres={fer.p?fer:null} addFactura={addFactura} updatePressupost={updatePressupost} close={()=>setFer(null)}/>}
+  </div>;
+}
+function FerFacturaEncarrec878431({obra,hores=[],despeses=[],quota=0,pres=null,addFactura,updatePressupost,close}){
+  const ordH=[...hores].sort((a,b)=>(a._d||0)-(b._d||0));
+  const[selH,setSelH]=useState(()=>new Set(ordH.map(r=>r.id)));
+  const[selD,setSelD]=useState(()=>new Set(quota>0?[]:despeses.map(a=>a.id)));
+  const chH=ordH.filter(r=>selH.has(r.id)),chD=despeses.filter(a=>selD.has(a.id));
+  const sum=pres?pres.pend:chH.reduce((s,r)=>s+timeBillImport878291(r),0)+chD.reduce((s,a)=>s+albaraBase878259(a),0);
+  const period=(()=>{const ds=chH.map(r=>r._d).filter(Boolean).sort((a,b)=>a-b);if(!ds.length)return "";const f=d=>d.toLocaleDateString("ca-ES",{month:"long",year:"numeric"});const a=f(ds[0]),b=f(ds[ds.length-1]);return a===b?a:`${a} – ${b}`})();
+  const[f,setF]=useState(()=>({data:todayISO8743(),concepte:pres?(pres.p.concepte||"Honoraris tècnics"):`Honoraris tècnics${period?` · ${period}`:""}`,iva:String(pres?.p?.iva??21),retencio:"0",base:""}));
+  const base=f.base!==""?parseNum8770(f.base):sum;
+  const iva=f.iva===""?21:parseNum8770(f.iva),ret=parseNum8770(f.retencio);
+  const liniaDesp=a=>[a.data?fmtAppDate8748(a.data):"",a.proveidor||a.concepte||(a.tipusMeva?etiquetaMeva878323(a.tipusMeva):t("Despesa"))].filter(Boolean).join(" · ");
+  function toggle(set,id){set(s=>{const n=new Set(s);n.has(id)?n.delete(id):n.add(id);return n});setF(x=>({...x,base:""}))}
+  function submit(e){
+    e.preventDefault();
+    if(!pres&&!chH.length&&!chD.length){alert(t("Tria almenys un registre."));return}
+    if(!(base>0)){alert(t("Escriu l’import."));return}
+    const id="ft-"+Date.now();
+    const text=pres?(pres.p.text||""):[...chH.map(r=>`${timeRowLabel878256(r)} · ${money(timeBillImport878291(r))}`),...chD.map(a=>`${liniaDesp(a)} · ${money(albaraBase878259(a))}`)].join("\n");
+    addFactura?.({id,data:f.data,concepte:f.concepte,text,base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:"Pendent",pressupostId:pres?.p?.id||"",hoursRows:chH.map(r=>r.id),despeses:chD.map(a=>a.id)});
+    const at=new Date().toISOString();
+    if(chH.length){const ids=new Set(chH.map(r=>r.id));writeTimeRows878255(obra.id,readTimeRows878255(obra.id).map(x=>ids.has(x.id)?{...x,facturat:true,noFactura:false,foraQuota:true,facturatAt:at,facturaId:id}:x))}
+    if(chD.length){const ids=new Set(chD.map(a=>a.id));writeAlbarans878259(readAlbarans878259().map(a=>ids.has(a.id)?{...a,facturatClient:true,facturaId:id,updatedAt:at}:a))}
+    if(pres&&base>=pres.pend-0.004)updatePressupost?.(pres.p.id,{estat:"Facturat",facturat:true});
+    close();
+  }
+  return <Modal title={pres?t("Factura del pressupost d’honoraris"):t("Fer factura")} close={close}><form className="inv-hours-v878256 fer-fact-v878431" onSubmit={submit}>
+    <p className="who"><b>{obra.nom}</b></p>
+    {!pres&&<div className="lines">
+      {ordH.map(r=><label key={r.id} className={selH.has(r.id)?"on":""}><input type="checkbox" checked={selH.has(r.id)} onChange={()=>toggle(setSelH,r.id)}/><span>{timeRowLabel878256(r)}{r.observacions?<small>{r.observacions}</small>:null}</span><b>{money(timeBillImport878291(r))}</b></label>)}
+      {despeses.map(a=><label key={a.id} className={`desp ${selD.has(a.id)?"on":""}`}><input type="checkbox" checked={selD.has(a.id)} onChange={()=>toggle(setSelD,a.id)}/><span>{liniaDesp(a)}</span><b>{money(albaraBase878259(a))}</b></label>)}
+    </div>}
+    <div className="grid">
+      <label className="wide"><span>{t("Concepte")}</span><input value={f.concepte} onChange={e=>setF(x=>({...x,concepte:e.target.value}))}/></label>
+      <label><span>{t("Data")}</span><input type="date" value={f.data} onChange={e=>setF(x=>({...x,data:e.target.value}))}/></label>
+      <label><span>{t("Base sense IVA (€)")}</span><input inputMode="decimal" value={f.base!==""?f.base:sum.toFixed(2).replace(".",",")} onChange={e=>setF(x=>({...x,base:e.target.value}))}/></label>
+      <label><span>{t("IVA %")}</span><input inputMode="decimal" value={f.iva} onChange={e=>setF(x=>({...x,iva:e.target.value}))}/></label>
+      <label><span>{t("Retenció %")}</span><input inputMode="decimal" value={f.retencio} onChange={e=>setF(x=>({...x,retencio:e.target.value}))}/></label>
+    </div>
+    <div className="quote-total-v8742"><span>{t("Total factura")}</span><b>{money(invoiceTotal8746({base,iva,retencio:ret,descompte:0}))}</b></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button className="primary">{t("Crear la factura")}</button></div>
+  </form></Modal>;
+}// V87.410 · Rendiment real d'un encàrrec (l'Héctor, 27/10/2026: «els registres manuals o pel comptador s'han de comptar com a despesa de
 // personal meu al meu preu/h, perquè si no no sé el rendiment real de la meva feina»): honoraris (el facturat o, si encara no se n'ha
 // facturat res, els pressupostos acceptats; si no n'hi ha cap d'acceptat, els que no s'han rebutjat) − despeses de l'expedient (les de
 // Despeses i les del registre: quilometratge, dietes…) − hores × preu per hora (el de cada registre o, si no en té, el de sèrie).
@@ -5935,7 +6013,7 @@ function updateFacturaTecnica8743(id,patch){setD(obraId,d=>({...d,facturesTecnic
 function deletePressupostTecnic8744(id){if(confirm("Eliminar aquest pressupost?"))setD(obraId,d=>({...d,pressupostosTecnic:(d.pressupostosTecnic||[]).filter(p=>p.id!==id),facturesTecnic:(d.facturesTecnic||[]).filter(f=>f.pressupostId!==id)}))}
 function deleteFacturaTecnica8744(id){if(confirm("Eliminar aquesta factura?"))setD(obraId,d=>({...d,facturesTecnic:(d.facturesTecnic||[]).filter(f=>f.id!==id)}))}
 
-function addFacturaTecnica8742(f){const numero=f.numero||nextGlobalDocNumber8745(odata,"factura",obra?.any);setD(obraId,d=>{let rows=d.facturesTecnic||[];const id="ft-"+Date.now();const now=new Date().toISOString();const doc={id,numero,data:f.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:f.concepte||"Factura tècnica",text:f.text||"",base:+f.base||0,iva:+f.iva||21,retencio:+f.retencio||0,descompte:+f.descompte||0,estat:f.estat||"Esborrany",pressupostId:f.pressupostId||""};return {...d,facturesTecnic:[...rows,doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}})}
+function addFacturaTecnica8742(f){const numero=f.numero||nextGlobalDocNumber8745(odata,"factura",obra?.any);setD(obraId,d=>{let rows=d.facturesTecnic||[];const id=f.id||"ft-"+Date.now();const now=new Date().toISOString();const doc={id,numero,data:f.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:f.concepte||"Factura tècnica",text:f.text||"",base:+f.base||0,iva:(f.iva===""||f.iva==null||isNaN(+f.iva))?21:+f.iva,retencio:+f.retencio||0,descompte:+f.descompte||0,estat:f.estat||"Esborrany",pressupostId:f.pressupostId||"",hoursRows:f.hoursRows||[],despeses:f.despeses||[]};return {...d,facturesTecnic:[...rows,doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}})}
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);const now=new Date().toISOString();setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon"),nif:f.get("nif"),adreca:f.get("adreca"),collegiat:f.get("collegiat"),createdAt:now,updatedAt:now}]}));setModal(null)}
 function addActa(e){e.preventDefault();let f=new FormData(e.currentTarget);
 let titol=String(f.get("titol")||"").trim(), dataActa=String(f.get("data")||"").trim(), text=String(f.get("text")||"").trim();
@@ -9774,6 +9852,8 @@ function dadesRendEmpresa878343(obres=[],odata={},fase=""){
     (d.facturesVF878285||[]).filter(f=>f.estat!=="Anulada"&&fOk(f)).forEach(f=>posa(x,"fact",f.data||certBid.get(f.certId),+f.base||0));
     desp.filter(a=>a.obraId===o.id&&tipusDespesa878311(a)!=="Empresa"&&dOk(a)).forEach(a=>posa(x,"dir",a.data,albaraBase878259(a)));
     llegeixPersonal878340(o.id).filter(dOk).forEach(r=>posa(x,"pers",r.data,(parseNum8770(r.hores)||0)*costHoraA878340(o.id,treb.find(w=>w.id===r.treballadorId),r)));
+    // V87.431 · a la gestió total, també les hores del tècnic (a tota l'obra)
+    if(!fase)horesTecnic878431(o.id).forEach(r=>{const dt=rowDate878255(r);if(dt)posa(x,"pers",isoDay878255(dt),timeHours878120(r)*preuTecnic878431(r))});
     return x});
   const emp={};desp.filter(a=>tipusDespesa878311(a)==="Empresa").forEach(a=>{const am=anyMes(a.data);if(!am)return;((emp[am[0]]??=Array(12).fill(0)))[am[1]]+=albaraBase878259(a)});
   return {per,emp,despEmp:desp.filter(a=>tipusDespesa878311(a)==="Empresa")};
@@ -10044,7 +10124,16 @@ function facturesObraValides878347(d={}){
   const propies=[...fo.filter(f=>!f.importada),...(d?.facturesVF878285||[]).filter(x=>x.estat!=="Anulada")];
   return fo.filter(f=>!f.importada||!propies.some(x=>Math.abs((+x.base||0)-(+f.base||0))<0.01));
 }
-function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId=""){
+// V87.431 · a la gestió total, les hores del tècnic (Obra › Hores) × el seu preu per hora són un cost més de l'obra (l'Héctor, 29/10/2026:
+// «el cost d'hores que entri en el rendiment»). Al compte de l'Héctor i al perfil tècnic no: allà l'obra és del client i les hores són de
+// l'encàrrec (en surt el rendiment de l'encàrrec i el del menú Rendiment).
+function horesTecnic878431(obraId){
+  if(PERFIL878304!=="complet"||!obraId)return [];
+  return readTimeRows878255(obraId).filter(r=>isHoursRow878255(r)&&!r.treballador&&(!r.obraId||String(r.obraId)===String(obraId))&&timeHours878120(r)>0);
+}
+const preuTecnic878431=r=>parseNum8770(r?.preuHora)||parseNum8770(r?.preu)||defaultRate878255();
+function costTecnic878431(obraId){let h=0,c=0;horesTecnic878431(obraId).forEach(r=>{const n=timeHours878120(r);h+=n;c+=n*preuTecnic878431(r)});return {h,c}}
+function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId="",opts={}){
   const dins=x=>!fase||faseDe878342(x,d)===fase;
   const pf=proformesObra878337(d).filter(f=>!fase||(f.budgetId||"principal")===fase);
   const certificat=pf.reduce((s,f)=>s+(+f.base||0),0);
@@ -10060,6 +10149,9 @@ function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId=""){
   const treb=llegeixTreballadors878339();
   let hores=horesMa,costP=0;personal.filter(dins).forEach(r=>{const n=parseNum8770(r.hores)||0;hores+=n;costP+=n*costHoraA878340(obraId,treb.find(w=>w.id===r.treballadorId),r)});
   if(costP>0.005)perTipus.Personal=costP;
+  // V87.431 · les hores del tècnic, a tota l'obra (no tenen fase); a Despeses de l'obra no hi surten (opts.tecnic=false)
+  let horesTec=0;
+  if(!fase&&opts.tecnic!==false){const tc=costTecnic878431(obraId);if(tc.c>0.005){perTipus.Tecnic=tc.c;horesTec=tc.h}}
   const directe=Object.values(perTipus).reduce((s,x)=>s+x,0);
   const ingressos=Math.max(certificat,facturat);
   const cfg=cfgRend878342(d);
@@ -10067,7 +10159,7 @@ function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId=""){
   const marge=ingressos-directe,benefici=marge-dge;
   const senseFase=fase?{n:despeses.filter(a=>!faseDe878342(a,d)).length+personal.filter(r=>!faseDe878342(r,d)).length,
     imp:despeses.filter(a=>!faseDe878342(a,d)).reduce((s,a)=>s+albaraBase878259(a),0)}:{n:0,imp:0};
-  return {pressupost,certificat,facturat,ingressos,perTipus,hores,directe,marge,dge,dgePct:cfg.dge||0,benefici,biPct:cfg.bi,
+  return {pressupost,certificat,facturat,ingressos,perTipus,hores,horesTec,directe,marge,dge,dgePct:cfg.dge||0,benefici,biPct:cfg.bi,
     pct:ingressos>0.005?benefici/ingressos*100:null,margePct:ingressos>0.005?marge/ingressos*100:null,senseFase,cfg};
 }
 // Barra de fases (a dalt de l'Econòmic)
@@ -10105,7 +10197,7 @@ function RendimentFases878342({data={},setData,obraId="",fase="principal",tota=f
   const desaCfg=(k,v)=>{if(readOnly||!setData)return;const val=String(v||"").replace(/[^\d,.]/g,"");setData(d=>({...d,rendiment878342:{...(d.rendiment878342||{}),[k]:val},updatedAt:new Date().toISOString()}))};
   // V87.344 · Materials (factures de material i albarans) · Mà d'obra (la facturada i les hores del personal) · Industrials
   const P=r.perTipus;
-  const files=[["mat","Materials",(P.Material||0)+(P["Albarà"]||0)],["ma","Mà d’obra",(P.MaObra||0)+(P.Personal||0)],["ind","Industrials",P.Subcontracta||0],["alt","Altres despeses",P.Altres||0],["com","Comissions",P.Comissio||0]].filter(x=>x[2]>0.005);
+  const files=[["mat","Materials",(P.Material||0)+(P["Albarà"]||0)],["ma","Mà d’obra",(P.MaObra||0)+(P.Personal||0)],["tec","Hores tècniques",P.Tecnic||0],["ind","Industrials",P.Subcontracta||0],["alt","Altres despeses",P.Altres||0],["com","Comissions",P.Comissio||0]].filter(x=>x[2]>0.005);
   const bo=r.benefici>=0;
   // barra: on van els ingressos (costos directes, DGE, benefici)
   const base=Math.max(r.ingressos,r.directe+r.dge,1);
@@ -10129,7 +10221,7 @@ function RendimentFases878342({data={},setData,obraId="",fase="principal",tota=f
       {r.ingressos<0.005&&r.directe<0.005?null:<>
       <div className="rf-compte-v878342">
         <div className="l ing"><span>{r.facturat>r.certificat+0.005?t("Ingressos (facturat)"):t("Ingressos (certificat a origen)")}</span><b>{money(r.ingressos)}</b></div>
-        {files.map(([k,l,v])=><div key={k} className="l cost"><span>− {t(l)}{k==="ma"&&r.hores>0?<small> · {t("personal: {h}",{h:fh878340(r.hores)})}</small>:null}</span><b>{money(v)}</b></div>)}
+        {files.map(([k,l,v])=><div key={k} className="l cost"><span>− {t(l)}{k==="ma"&&r.hores>0?<small> · {t("personal: {h}",{h:fh878340(r.hores)})}</small>:null}{k==="tec"&&r.horesTec>0?<small> · {fh878340(r.horesTec)}</small>:null}</span><b>{money(v)}</b></div>)}
         {!files.length&&<div className="l cost buit"><span>− {t("Despeses de l’obra")}</span><b>{money(0)}</b></div>}
         <div className="l sub"><span>= {t("Marge de l’obra")}</span><b>{money(r.marge)}</b><em>{r.margePct!=null?pct(r.margePct):"—"}</em></div>
         {ambBenefici&&<div className="l cost"><span>− {t("Despeses generals (DGE) · {p} dels ingressos",{p:pct(r.dgePct)})}</span><b>{money(r.dge)}</b></div>}
@@ -10181,10 +10273,12 @@ function ResumFases878342({data,despeses,personal,obraId,ambBenefici}){
   const gs=fasesObra878342(data);
   const fs=gs.map(g=>({g,r:rendimentFase878342(data,g.id,despeses,personal,obraId)}));
   const sense=despeses.filter(a=>!faseDe878342(a,data)),senseP=personal.filter(r=>!faseDe878342(r,data));
+  const tec=costTecnic878431(obraId);
   return <CardOPlega878369 bloc426 icona={Layers} title={t("Per fases")} className="rf-fases-v878342">
     <div className="rf-taula-wrap-v878342"><table className="rf-taula-v878342"><thead><tr><th>{t("Fase")}</th><th>{t("Pressupost")}</th><th>{t("Certificat")}</th><th>{t("Facturat")}</th><th>{t("Despeses")}</th>{ambBenefici&&<th>{t("Benefici")}</th>}{ambBenefici&&<th>%</th>}</tr></thead>
     <tbody>{fs.map(({g,r},i)=><tr key={g.id}><td><b>{i+1} · {budgetName878273(g)}</b></td><td data-l={t("Pressupost")}>{money(r.pressupost)}</td><td data-l={t("Certificat")}>{money(r.certificat)}</td><td data-l={t("Facturat")}>{money(r.facturat)}</td><td data-l={t("Despeses")}>{money(r.directe)}</td>{ambBenefici&&<td data-l={t("Benefici")}><b className={r.benefici>=0?"good":"bad"}>{money(r.benefici)}</b></td>}{ambBenefici&&<td data-l="%">{r.pct!=null?pct(r.pct):"—"}</td>}</tr>)}
-    {(sense.length>0||senseP.length>0)&&<tr className="sense"><td>{t("Sense fase")}</td><td data-l={t("Pressupost")}>—</td><td data-l={t("Certificat")}>—</td><td data-l={t("Facturat")}>—</td><td data-l={t("Despeses")}>{money(sense.reduce((s,a)=>s+albaraBase878259(a),0))}{senseP.length?` · ${fh878340(senseP.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0))}`:""}</td>{ambBenefici&&<td/>}{ambBenefici&&<td/>}</tr>}</tbody></table></div>
+    {(sense.length>0||senseP.length>0)&&<tr className="sense"><td>{t("Sense fase")}</td><td data-l={t("Pressupost")}>—</td><td data-l={t("Certificat")}>—</td><td data-l={t("Facturat")}>—</td><td data-l={t("Despeses")}>{money(sense.reduce((s,a)=>s+albaraBase878259(a),0))}{senseP.length?` · ${fh878340(senseP.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0))}`:""}</td>{ambBenefici&&<td/>}{ambBenefici&&<td/>}</tr>}
+    {tec.c>0.005&&<tr className="sense tec-v878431"><td>{t("Hores tècniques")}</td><td data-l={t("Pressupost")}>—</td><td data-l={t("Certificat")}>—</td><td data-l={t("Facturat")}>—</td><td data-l={t("Despeses")}>{money(tec.c)} · {fh878340(tec.h)}</td>{ambBenefici&&<td/>}{ambBenefici&&<td/>}</tr>}</tbody></table></div>
   </CardOPlega878369>;
 }
 // Per capítols de la fase: pressupost, certificat, cost real i diferència (en tocar un capítol, les seves partides)
@@ -10844,7 +10938,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} 
     {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} 
     {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
-    {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} quota={parseNum8770(client?.quotaFixa)||0} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc} inici={tab==="Gestió temps"?"Hores":tab==="Rendiment"?"Rendiment":""} rendiment={ALIAS878308["Rendiment"]==="Honoraris"} temps={ALIAS878308["Gestió temps"]==="Honoraris"&&!esTreballador878326()&&!senseHoresPropies878342()?<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>:null}/>} 
+    {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} quota={parseNum8770(client?.quotaFixa)||0} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc} inici={tab==="Gestió temps"?"Hores":tab==="Rendiment"?"Rendiment":tab==="Factures"?"Factures":tab==="Pressupostos"?"Pressupostos":""} despeses={<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves setObraData={readOnly?null:(id,up)=>setData(up)}/>} rendiment={ALIAS878308["Rendiment"]==="Honoraris"} temps={ALIAS878308["Gestió temps"]==="Honoraris"&&!esTreballador878326()&&!senseHoresPropies878342()?<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>:null}/>} 
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
     {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} readOnly={readOnly||partCompartida878424(obra)}/>}
     {activeTab==="Pressupost obra"&&!readOnly&&<BudgetBar878273 data={data} groups={directBudgetInfo878214.groups} active={directBudgetId878214} select={selectDirectBudget878214}/>}
@@ -12450,7 +12544,7 @@ function FacturesTecniques8738({data,obra,addFactura,updateFactura,deleteFactura
   function submit(e){e.preventDefault();const payload={...form,text,base:+form.base||0,iva:+form.iva||21,retencio:+form.retencio||0,descompte:+form.descompte||0,estat:form.estat||"Esborrany"};if(editing)updateFactura?.(editing,payload);else addFactura?.(payload);reset(null)}
   const liveDoc={...form,text,base:+form.base||0,iva:+form.iva||21};
   return <div className="stack quote-module-v8743 quote-module-v8744">{preview&&<QuotePreview8743 type="factura" doc={preview} obra={obra} close={()=>setPreview(null)}/>}<Card title={t("Factures")} action={<button className="primary" onClick={()=>setOpen(!open)}><Plus/> {t("Nova factura")}</button>}>
-    <div className="module-note-v8738"><b>{t("Facturació del treball professional.")}</b><span>{t("Pot sortir d’un pressupost acceptat o crear-se manualment amb conceptes afegits.")}</span></div>
+    
     {open&&<form className="quote-form-v8742 quote-form-v8744" onSubmit={submit}><div className="quote-form-main-v8744"><div><div className="form-grid"><label><span>{t("Concepte")}</span><input value={form.concepte} onChange={e=>setForm({...form,concepte:e.target.value})}/></label><label><span>{t("Base imposable")}</span><input type="number" step="0.01" value={form.base} onChange={e=>setForm({...form,base:e.target.value})}/></label><label><span>{t("IVA %")}</span><input type="number" step="1" value={form.iva} onChange={e=>setForm({...form,iva:e.target.value})}/></label><label><span>{t("Descompte %")}</span><input type="number" step="1" value={form.descompte||"0"} onChange={e=>setForm({...form,descompte:e.target.value})}/></label><label><span>{t("Retenció %")}</span><select value={form.retencio||"0"} onChange={e=>setForm({...form,retencio:e.target.value})}><option value="0">0%</option><option value="7">7%</option><option value="15">15%</option></select></label><label><span>{t("Data")}</span><input type="date" value={form.data||todayISO8743()} onChange={e=>setForm({...form,data:e.target.value})}/></label><label><span>{t("Estat")}</span><select value={form.estat||"Esborrany"} onChange={e=>setForm({...form,estat:e.target.value})}><option value="Esborrany">{t("Esborrany")}</option><option value="Enviada">{t("Enviada")}</option><option value="Cobrada">{t("Cobrada")}</option><option value="Anul·lada">{t("Anul·lada")}</option></select></label></div><label className="span-all quote-text-v8742 quote-text-v8744"><span>{t("Text factura")}</span><textarea value={text} onChange={e=>setText(e.target.value)}/></label><label className="span-all quote-text-v8742 quote-text-v8744"><span>{t("Compte bancari / observacions de pagament")}</span><textarea value={form.compteBancari||""} onChange={e=>setForm({...form,compteBancari:e.target.value})} placeholder={t("Ex: Pagament per transferència al compte ES...")}/></label><label className="span-all quote-text-v8742 quote-text-v8744"><span>{t("Observacions factura")}</span><textarea value={form.observacions||""} onChange={e=>setForm({...form,observacions:e.target.value})}/></label><div className="quote-total-v8742"><span>{t("Total amb IVA")}</span><b>{money(invoiceTotal8746({...form,base:+form.base||0,iva:+form.iva||21,retencio:+form.retencio||0,descompte:+form.descompte||0}))}</b></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>reset(null)}>{t("Cancel·lar")}</button><button className="primary">{editing?t("Guardar canvis"):t("Guardar factura")}</button></div></div><InlineQuotePreview8744 type="factura" doc={liveDoc} obra={obra}/></div></form>}
     <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha factures en aquest expedient."/>}{rows.map(f=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={f.id}><div><strong>{f.numero||"FAC"}</strong><span>{f.concepte?conceptTr878299(f.concepte):f.tipus||t("Factura / proforma")}</span><small>{f.data||"—"} · {f.estat||t("Pendent")} {t("· Creat:")} {fmtCreationDate878233(f.createdAt)}</small></div><b>{money(totalIva8743(f))}<small>{t("IVA inclòs")}</small></b><div className="actions-inline quote-actions-desktop-v87118"><button className="secondary" onClick={()=>setPreview(f)}>{t("Veure PDF")}</button><button className="secondary" onClick={()=>reset(f)}>{t("Editar")}</button><button className="secondary" onClick={()=>openEmail?.(`${t("Factura")} ${f.numero||""}`.trim(),{doc:docQuote878407("factura",f)})}>{t("Enviar")}</button><button className="danger" onClick={()=>deleteFactura?.(f.id)}>{t("Eliminar")}</button></div><select className="quote-mobile-action-v87118" aria-label={i18nT("Accions")} defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="pdf")setPreview(f);if(v==="edit")reset(f);if(v==="send")openEmail?.(`${t("Factura")} ${f.numero||""}`.trim(),{doc:docQuote878407("factura",f)});if(v==="delete")deleteFactura?.(f.id)}}><option value="" disabled>{t("Accions")}</option><option value="pdf">{t("Veure PDF")}</option><option value="edit">{t("Editar")}</option><option value="send">{t("Enviar")}</option><option value="delete">{t("Eliminar")}</option></select></div>)}</div>
   </Card></div>
@@ -17884,7 +17978,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.430",
+    app_version:"87.431",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -21233,7 +21327,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),""),pdf:a.tePdf?lsGet8779(albaraPdfKey878259(a.id),""):""})}
   return <div className={`albarans-v878259 despeses-v878311 ${fixedObra?"alb-obra-v878279":""}${obra426?" desp-obra-v878426":""}`}>
     <div className="alb-head">
-      {fixedObra?<div><h2 className="alb-obra-title-v878279">{mevesObra?i18nT("Despeses de l’expedient"):i18nT("Despeses d’aquesta obra")}</h2></div>:<div><h1>{meves?i18nT("Les meves despeses"):i18nT("Despeses")}</h1></div>}
+      {fixedObra?<div><h2 className="alb-obra-title-v878279">{mevesObra?((()=>{const o=obres.find(x=>x.id===fixedObra);return o&&!esTecnicPur878332(o)})()?i18nT("Les meves despeses"):i18nT("Despeses de l’expedient")):i18nT("Despeses d’aquesta obra")}</h2></div>:<div><h1>{meves?i18nT("Les meves despeses"):i18nT("Despeses")}</h1></div>}
       <div className="actions">
         {/* V87.367 · icona + paraula (opció B de l'Héctor, 23/10/2026) i una sola línia: «Fer foto» i «Adjuntar» a la vista, la resta a «Accions» */}
         {meves&&<button type="button" className="primary" onClick={novaMeva878329}><Plus size={16} aria-hidden="true"/> {i18nT("Nova despesa")}</button>}
@@ -21321,7 +21415,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   </div>;
   // V87.348 · per grups (Materials, Mà d'obra, Industrials, Altres, Empresa); dins, per obra o per any i obra; les factures amb el
   // desglossament a dins; la mà d'obra per dies, amb els treballadors ordenats per categoria
-  function rend426(){if(!fixedObra)return null;try{return rendimentFase878342(odata?.[fixedObra]||{},fase878342||"",tots.filter(a=>a.obraId===fixedObra),llegeixPersonal878340(fixedObra),fixedObra)}catch{return null}}
+  function rend426(){if(!fixedObra)return null;try{return rendimentFase878342(odata?.[fixedObra]||{},fase878342||"",tots.filter(a=>a.obraId===fixedObra),llegeixPersonal878340(fixedObra),fixedObra,{tecnic:false})}catch{return null}}
   function total426(){const r=rend426();return r?(r.directe||0)+(r.dge||0):0}
   function llista878348(){
     const sumB=rs=>rs.filter(a=>!coberts[a.id]).reduce((x,a)=>x+albaraBase878259(a),0);

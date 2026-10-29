@@ -2296,7 +2296,35 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       **Rendiment** del tècnic, «Clients amb quota · any» (`QuotesClients878430`; tocant-ne un, la fitxa del client).
     - El rendiment de l'encàrrec (`timeRowsForObra878120`) compta també les hores de les dades d'exemple (`h-demo-…`; abans només `hr-…`).
     - Estils `src/theme-v878430.css`. Prova: `v430test.mjs` (22: hores per dies, apuntar, editar, despesa, quota a la fitxa, «Dins de la quota»,
-      una feina a part, Rendiment, mòbil). Adaptades `tempstest`, `clientsvirtuals`, `v410test`, `v411test` (editar un apunt) i `notestest` (V87.429.1).
+      una feina a part, Rendiment, mòbil). Adaptades `tempstest`, `clientsvirtuals`, `v410test`, `v411test` (editar un apunt), `v366test` i `notestest` (V87.429.1). Les 18 proves d’hores, honoraris i facturació, en verd.
+  - **V87.431 · «El meu encàrrec» amb Hores · Despeses · Factures i el cost de les hores del tècnic al Rendiment de l'obra** (l'Héctor,
+    29/10/2026: «un cop ja creat l'expedient no té sentit tenir aquesta targeta… de creació de pressupost d'honoraris… un paquet que el puc
+    utilitzar o no… les 3 pestanyes bàsiques: el control del temps dedicat per mi, les possibles despeses que he tingut i com a molt la relació
+    de factures… cap al meu client, que s'ha de vincular amb la meva facturació»; «el cost d'hores que entri en el rendiment»):
+    - **Honoraris d'una obra o d'un expedient que no és un encàrrec tècnic** (`HonorarisExpedient8778`, `.encarrec-v878431`): només **Hores ·
+      Despeses · Factures** (sense «Pressupostos d'honoraris», la calculadora, «Rendiment» ni la línia del resultat). Hores = `HonorarisTemps`
+      (prop `temps`); Despeses = Les meves despeses de l'expedient (prop `despeses`: `Albarans878259 meves` amb l'obra, títol «Les meves
+      despeses»); Factures = `FacturesEncarrec878431`. Els pressupostos d'honoraris es fan al menú Pressupostos. **Els encàrrecs tècnics**
+      (`esTecnicPur878332`: cèdula, CEE, ITE, amiant…) **continuen com abans**, amb el pressupost d'honoraris a dins. A la gestió total (Hores
+      és una pestanya a part), Despeses · Factures.
+    - **Factures de l'encàrrec** (`FacturesEncarrec878431`): a dalt, **«Per facturar»** (`.perfact-v878431`: les hores pendents, les meves
+      despeses no repercutides —no amb un client de quota— i els pressupostos d'honoraris acceptats que falten per facturar,
+      `honorarisPendents878307`) amb **«Fer factura»** (`FerFacturaEncarrec878431`: les entrades amb casella, concepte, data, base, IVA i
+      retenció; en crear-la, les hores queden facturades amb `facturaId` i les despeses `facturatClient`) i, a cada pressupost, «Fer factura»
+      de la resta (amb el seu concepte; si arriba a la base, el pressupost passa a «Facturat»). A sota, les factures de l'expedient
+      (`FacturesTecniques8738`, sense el text «Facturació del treball professional…»), que són les de Facturació. `addFacturaTecnica8742`
+      accepta `id`, `hoursRows` i `despeses`, i l'IVA 0 ja no es torna 21. Arribar-hi des de «Fer factura» (Facturació › Pendent de
+      facturar, `facturarPressupostTecnic8742`) obre «Factures» (prop `inici`).
+    - **Rendiment de l'obra a la gestió total** (`PERFIL878304==="complet"`; `horesTecnic878431`, `costTecnic878431`, `preuTecnic878431`):
+      les hores del tècnic (Obra › Hores, sense les dels treballadors `treballador:true`) × el seu €/h (o el de sèrie) són la línia
+      **«− Hores tècniques · N h»** del compte de l'obra (`rendimentFase878342` → `perTipus.Tecnic`, `horesTec`; només a tota l'obra: no tenen
+      fase; a «Per fases», una fila «Hores tècniques») i compten a la gràfica i al Rendiment de l'empresa (`dadesRendEmpresa878343`, a
+      `pers`). A Despeses de l'obra no hi surten (`rendimentFase878342(…, {tecnic:false})`). Al compte de l'Héctor i al perfil tècnic, no:
+      l'obra és del client.
+    - **Un pressupost facturat en diverses factures** (`uniqueFactures8743`): fins ara, de les factures d'un mateix pressupost d'honoraris
+      només en sortia una a les llistes (es treien com si fossin repetides); ara només es treuen les del mateix número. A la còpia del núvol
+      del 29/10 no n'hi havia cap de repetida.
+    - Estils `src/theme-v878431.css`. Prova: `v431test.mjs`. Adaptada `v430test` (cas 0).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2470,7 +2498,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.430 a Render):**
+**Estat (publicada la V87.431 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

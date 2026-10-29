@@ -4689,4 +4689,8 @@ export default {
   "Encara no hi ha hores apuntades.": "Todavía no hay horas apuntadas.",
   "Comptabilitat": "Contabilidad",
   "Gestió administrativa": "Gestión administrativa",
+"Pressupost d’honoraris": "Presupuesto de honorarios",
+"Escriu l’import.": "Escribe el importe.",
+"Factura del pressupost d’honoraris": "Factura del presupuesto de honorarios",
+"Hores tècniques": "Horas técnicas",
 };

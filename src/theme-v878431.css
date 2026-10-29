@@ -1,0 +1,21 @@
+/* V87.431 · «El meu encàrrec» (Hores · Despeses · Factures): el bloc «Per facturar» i la finestra «Fer factura» */
+.perfact-v878431{display:grid;gap:10px;background:var(--co-surface,#fff);border:1px solid var(--co-line,#dde4e8);border-radius:14px;padding:14px}
+.perfact-v878431>header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.perfact-v878431>header>span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.perfact-v878431>header small{font-size:12px;color:var(--co-ink-3,#5F7075)}
+.perfact-v878431>header b{font-size:20px;color:#B45309;font-variant-numeric:tabular-nums;white-space:nowrap}
+.perfact-v878431>ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.perfact-v878431>ul>li{display:flex;align-items:center;gap:10px;min-height:40px;padding:6px 12px;background:var(--co-bg,#F4F7F8);border-radius:10px}
+.perfact-v878431>ul>li>span{flex:1;min-width:0;color:var(--co-ink-2,#334a52)}
+.perfact-v878431>ul>li>span small{color:var(--co-ink-3,#5F7075);font-size:12px}
+.perfact-v878431>ul>li>b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.perfact-v878431>ul>li>button{flex:none}
+html body .fer-fact-v878431 .lines label.desp span{color:var(--co-ink-2,#334a52)}
+html body .fer-fact-v878431 .lines label.desp:not(.on) span{color:var(--co-ink-3,#5F7075)}
+@media (max-width:700px){
+  .perfact-v878431>header button{width:100%}
+  .perfact-v878431>ul>li{flex-wrap:wrap}
+  .perfact-v878431>ul>li.pres>button{width:100%}
+}
+/* Hores · Despeses · Factures en una sola fila també al mòbil (una regla vella del mòbil les apilava) */
+html body .stack.honoraris-exp-v8778.encarrec-v878431>.subtabs-v8746{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important}
