@@ -2271,6 +2271,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     (ordinador) · Descarregar. A Documents, les actes, les notes (el nom del document), els documents de l'apartat, els de l'encàrrec tècnic, els
     d'Empresa i el PDF d'un albarà. Estils `src/theme-v8784291.css`. Prova: `v4291test.mjs` (12: el PDF es treu de l'aparell i es baixa del núvol,
     sense cap `window.open`; nota; mòbil).
+  - **V87.430 · Les hores de l'expedient per dies i mesos, «Dins de la quota» i el rendiment de la quota del client** (l'Héctor, 29/10/2026:
+    «si estic fent el seguiment per una empresa normalment aquí no poso honoraris… el que necessito són com la pestanya d'hores per imputar el
+    temps… apunts per dia… un bloc amb desplegable per dies, per mesos o el total d'obra, i amb l'opció a facturar o no… amb Brava cobro una
+    quantitat fixa al mes… hauria de poder veure si surt rendible o li he de modificar»):
+    - **Hores de l'expedient** (`HonorarisTemps` reescrit, `.hores-v878430`, a Honoraris › Hores i a la pestanya «Hores» de la gestió total): a
+      dalt les xifres (Hores · Import de les hores · Despeses · Dins de la quota · Per facturar) i **Apuntar hores** · **Despesa** (l'editor de
+      Les meves despeses amb l'expedient, `novaDespesa878318({meva:true,obraId})`) i «Marcar tot com a facturat»; el comptador, plegat com abans;
+      a sota, **cada mes plegable** (el primer obert) amb **els seus dies plegables** i els apunts (hores del registre i les meves despeses de
+      l'expedient), cadascun amb l'estat i ✎. Finestra «Apuntar hores» / «Editar les hores»: dia, feina en xips (`TASQUES878430`: Visita d'obra ·
+      Pressupost · Certificacions · Comptabilitat · Reunió · Desplaçament · Gestió administrativa · Altres), hores (0,5 · 1 · 2 · 4 · 8 h), €/h (el
+      del client per a la quota o el de sèrie), nota i facturació. Fora la taula, «Afegir registre manual» i el resum de kpis.
+    - **Estat «Dins de la quota»** (`estatFactDe878317(r, quota)`, `pendentFact878430`): amb un client de quota fixa, cada apunt és de sèrie dins de
+      la quota i, si és una feina a part, «Pendent» (`foraQuota:true`) i surt a Per facturar (Hores, Facturació › Pendent de facturar i
+      l'expedient). Abans, totes les hores d'un client amb quota quedaven fora del pendent. A la gestió total (`PERFIL878304==="complet"`), de sèrie
+      «No es factura».
+    - **Honoraris de l'expedient** (`HonorarisExpedient8778`, prop `quota`): si l'expedient no té pressupost d'honoraris (i no és un encàrrec
+      tècnic com la cèdula o el CEE) o el client paga quota, **primer «Hores»** (abans s'obria la calculadora); amb quota, sense la línia del resultat
+      de l'encàrrec (la quota és de totes les obres).
+    - **Rendiment de la quota** (`RendimentQuota878430`, `rendQuota878430`, `anyQuota878430`; targeta plegable a la fitxa del client, Contactes ›
+      client): camp nou **«Preu per hora per a la quota (€/h)»** (`client.preuHoraQuota`; buit, el de sèrie). Per a cada mes des del primer
+      apunt: quota, hores dins de la quota (també les que no es facturen) × €/h, despeses (les del registre que no es facturen a part i les meves
+      despeses de les seves obres no repercutides) i resultat; l'any, el preu per hora real i «Quota que ho cobriria»; «Per obra». Al
+      **Rendiment** del tècnic, «Clients amb quota · any» (`QuotesClients878430`; tocant-ne un, la fitxa del client).
+    - El rendiment de l'encàrrec (`timeRowsForObra878120`) compta també les hores de les dades d'exemple (`h-demo-…`; abans només `hr-…`).
+    - Estils `src/theme-v878430.css`. Prova: `v430test.mjs` (22: hores per dies, apuntar, editar, despesa, quota a la fitxa, «Dins de la quota»,
+      una feina a part, Rendiment, mòbil). Adaptades `tempstest`, `clientsvirtuals`, `v410test`, `v411test` (editar un apunt) i `notestest` (V87.429.1).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2444,7 +2470,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.429.1 a Render):**
+**Estat (publicada la V87.430 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

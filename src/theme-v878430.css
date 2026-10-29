@@ -1,0 +1,73 @@
+/* V87.430 · Hores de l'expedient (xifres, Apuntar hores · Despesa, mesos i dies plegables) i Rendiment de la quota del client */
+.hores-v878430{gap:12px}
+.hores-cap-v878430{display:grid;gap:12px;background:var(--co-surface,#fff);border:1px solid var(--co-line,#dde4e8);border-radius:14px;padding:14px}
+.xifres-v878430,.qr-xifres-v878430{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.xifres-v878430>span,.qr-xifres-v878430>span,.qr-linies-v878430>span{display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:var(--co-bg,#F4F7F8);border-radius:10px;min-width:0}
+.xifres-v878430 small,.qr-xifres-v878430 small,.qr-linies-v878430 small{font-size:12px;color:var(--co-ink-3,#5F7075)}
+.xifres-v878430 b,.qr-xifres-v878430 b,.qr-linies-v878430 b{font-size:18px;color:var(--co-ink,#0F2330);font-variant-numeric:tabular-nums;white-space:nowrap}
+.xifres-v878430 .pend b{color:#B45309}
+.botons-v878430{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.botons-v878430 button{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.botons-v878430 .link{margin-left:auto}
+.quota-v878430{margin:0;font-size:13px;color:var(--co-ink-2,#334a52)}
+.mesos-v878430{display:grid;gap:10px}
+.mes-v878430,.dia-v878430,.qr-obres-v878430{border:1px solid var(--co-line,#dde4e8);border-radius:14px;background:var(--co-surface,#fff)}
+.mes-v878430>summary,.dia-v878430>summary,.qr-obres-v878430>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 14px}
+.mes-v878430>summary::-webkit-details-marker,.dia-v878430>summary::-webkit-details-marker,.qr-obres-v878430>summary::-webkit-details-marker{display:none}
+.mes-v878430>summary b,.dia-v878430>summary b,.qr-obres-v878430>summary b{flex:1;min-width:0;font-size:15px}
+.mes-v878430>summary span,.dia-v878430>summary span,.qr-obres-v878430>summary span{color:var(--co-ink-2,#334a52);font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums}
+.mes-v878430>summary .chev,.dia-v878430>summary .chev,.qr-obres-v878430>summary .chev{flex:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+.mes-v878430[open]>summary .chev,.dia-v878430[open]>summary .chev,.qr-obres-v878430[open]>summary .chev{transform:rotate(90deg)}
+.dies-v878430{display:grid;gap:6px;padding:0 10px 10px}
+.dia-v878430{border-radius:10px;background:var(--co-bg,#F4F7F8)}
+.dia-v878430>summary{min-height:44px;padding:6px 12px}
+.dia-v878430>summary b{font-size:14px;font-weight:600}
+.dia-v878430>ul{list-style:none;margin:0;padding:0 8px 8px;display:grid;gap:6px}
+.apunt-v878430{display:grid;grid-template-columns:minmax(110px,170px) minmax(0,1fr) 76px 100px 150px 36px;align-items:center;gap:8px;background:var(--co-surface,#fff);border-radius:8px;padding:6px 8px}
+.apunt-v878430 .t{font-weight:600;min-width:0}
+.apunt-v878430 .o{color:var(--co-ink-3,#5F7075);font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.apunt-v878430 .h,.apunt-v878430 .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.apunt-v878430 .v{font-weight:600}
+.apunt-v878430 .e select{width:100%;min-height:36px}
+.apunt-v878430 .ed{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--co-line,#dde4e8);border-radius:8px;background:var(--co-surface,#fff);color:var(--co-ink-2,#334a52);cursor:pointer}
+.apunt-v878430.desp .t{color:var(--co-ink-2,#334a52)}
+.estat-fact-v878317.ef-quota{color:#0F766E}
+/* finestra «Apuntar hores» */
+.hores-form-v878430{display:grid;gap:14px;padding:8px 20px 12px}
+.hores-form-v878430 label,.hores-form-v878430 .camp{display:grid;gap:6px;min-width:0}
+.hores-form-v878430 label>span,.hores-form-v878430 .camp>span{font-size:13px;font-weight:600;color:var(--co-ink-2,#334a52)}
+.dos-v878430{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.xips-v878430{display:flex;flex-wrap:wrap;gap:6px}
+.xips-v878430 button{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--co-line,#dde4e8);background:var(--co-surface,#fff);color:var(--co-ink,#0F2330);font:inherit;font-size:14px;cursor:pointer}
+.xips-v878430 button.on{background:var(--co-accent,#2563EB);border-color:var(--co-accent,#2563EB);color:#fff}
+.xips-v878430.rapid button{min-height:32px;font-size:13px}
+/* Rendiment de la quota (fitxa del client) */
+.quota-rend-v878430 .xifra .bo,.qr-taula-v878430 .bo,.qr-linies-v878430 .bo,.qr-xifres-v878430 .res.bo b{color:#15803D}
+.quota-rend-v878430 .xifra .mal,.qr-taula-v878430 .mal,.qr-linies-v878430 .mal,.qr-xifres-v878430 .res.mal b{color:#B91C1C}
+.quota-rend-v878430 .cos{display:grid;gap:12px}
+.qr-cap-v878430{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;color:var(--co-ink-2,#334a52);font-size:14px}
+.qr-cap-v878430 select{margin-left:auto;min-height:36px}
+.qr-linies-v878430{display:flex;flex-wrap:wrap;gap:8px}
+.qr-taula-v878430{display:grid;border:1px solid var(--co-line,#dde4e8);border-radius:10px;overflow:hidden}
+.qr-taula-v878430>div{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(5,minmax(0,1fr));gap:8px;padding:8px 12px;align-items:center}
+.qr-taula-v878430>div>span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.qr-taula-v878430 .cap{background:var(--co-bg,#F4F7F8);font-size:12px;font-weight:600;color:var(--co-ink-3,#5F7075)}
+.qr-taula-v878430 .fila{border-top:1px solid var(--co-line,#dde4e8)}
+.qr-obres-v878430 .fila{display:grid;grid-template-columns:minmax(0,1fr) 90px 110px;gap:8px;padding:8px 14px;border-top:1px solid var(--co-line,#dde4e8);align-items:center}
+.qr-obres-v878430 .fila>span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+.qr-obres-v878430 .fila small{display:block;color:var(--co-ink-3,#5F7075);font-size:12px}
+@media (max-width:1100px){
+  .apunt-v878430{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"t h v" "o e ed";row-gap:4px}
+  .apunt-v878430 .t{grid-area:t}.apunt-v878430 .o{grid-area:o}.apunt-v878430 .h{grid-area:h}.apunt-v878430 .v{grid-area:v}.apunt-v878430 .e{grid-area:e;min-width:150px}.apunt-v878430 .ed{grid-area:ed}
+}
+@media (max-width:700px){
+  .xifres-v878430,.qr-xifres-v878430{grid-template-columns:1fr 1fr}
+  .botons-v878430 .link{margin-left:0}
+  .mes-v878430>summary,.dia-v878430>summary{flex-wrap:wrap;row-gap:2px}
+  .mes-v878430>summary span,.dia-v878430>summary span{order:3;flex-basis:100%;text-align:left;font-size:13px}
+  .apunt-v878430 .e{min-width:0}
+  .qr-taula-v878430>div{grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));padding:8px 10px}
+  .qr-taula-v878430 .c{display:none}
+  .qr-obres-v878430 .fila{grid-template-columns:minmax(0,1fr) 70px 90px;padding:8px 10px}
+}
+.botons-v878430 button.link{background:none;border:0;box-shadow:none;color:var(--co-accent,#2563EB);text-decoration:underline;text-underline-offset:2px;padding:0 4px;min-height:36px;font:inherit;font-size:14px;cursor:pointer}
