@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus} from "lucide-react";
+import {Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.433";
+const APP_VERSION878264="87.434";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4435,7 +4435,7 @@ const STORAGE_LIMIT_CHARS878250=(typeof window!=="undefined"&&window.__acoStore)
   </Card>
 }
 
-function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc,temps=null,rendiment=false,inici="",quota=0,despeses=null}){
+function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,facturarPressupost,deletePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc,temps=null,rendiment=false,inici="",quota=0,despeses=null,acord=null}){
   // V87.332 · sense cap pressupost d'honoraris, s'obre directament la calculadora
   // V87.410 · (l'Héctor, 27/10/2026: «les pestanyes no són del tot lògiques… la segona hauria d'anar dins de la primera») la calculadora és
   // dins de «Pressupostos d'honoraris»; el comptador i els registres d'hores, a «Hores»; el rendiment, a «Rendiment»; a dalt, el resultat
@@ -4463,7 +4463,7 @@ function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,factur
     {s==="Pressupostos"&&(calc?<div className="calc-dins-v878410"><button type="button" className="link tornar" onClick={()=>setCalc(false)}>‹ {t("Tornar als pressupostos")}</button><HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} onCreatePressupost={p=>{addPressupost?.(p);setCalc(false)}}/></div>
       :<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupost} updatePressupost={updatePressupost} facturarPressupost={facturarPressupost} deletePressupost={deletePressupost} openEmail={openEmail} openDoc={openDoc} onCalcular={()=>setCalc(true)}/>)}
     {s==="Factures"&&(pur?<FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>
-      :<FacturesEncarrec878431 data={data} obra={obra} quota={quota} updatePressupost={updatePressupost} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>)}
+      :<FacturesEncarrec878431 data={data} obra={obra} quota={quota} acord={acord} updatePressupost={updatePressupost} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>)}
     {s==="Hores"&&temps}
     {s==="Despeses"&&despeses}
     {s==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>}
@@ -4472,7 +4472,7 @@ function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,factur
 // V87.431 · «Factures» del meu encàrrec: a dalt, el que hi ha per facturar (les hores pendents, les meves despeses no repercutides i els
 // pressupostos d'honoraris acceptats que falten per facturar) amb «Fer factura»; a sota, les factures de l'expedient (les mateixes que surten
 // a Facturació). Amb un client de quota fixa, les despeses no hi compten (les paga la quota), però es poden afegir a la factura.
-function FacturesEncarrec878431({data,obra,quota=0,updatePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc}){
+function FacturesEncarrec878431({data,obra,quota=0,acord=null,updatePressupost,addFactura,updateFactura,deleteFactura,openEmail,openDoc}){
   const[tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-time-rows-changed",h);window.addEventListener("aco-albarans-changed",h);return()=>{window.removeEventListener("aco-time-rows-changed",h);window.removeEventListener("aco-albarans-changed",h)}},[]);
   const[fer,setFer]=useState(null);
@@ -4480,33 +4480,34 @@ function FacturesEncarrec878431({data,obra,quota=0,updatePressupost,addFactura,u
   const desp=useMemo(()=>readAlbarans878259().filter(a=>a.meva&&String(a.obraId||"")===String(obra.id)&&!a.facturatClient&&albaraBase878259(a)>0.004),[obra.id,tick]);
   const hon=honorarisPendents878307([obra],{[obra.id]:data});
   const tH=hores.reduce((s,r)=>s+timeBillImport878291(r),0),nH=hores.filter(isHoursRow878255).reduce((s,r)=>s+timeHours878120(r),0);
-  const tD=quota>0?0:desp.reduce((s,a)=>s+albaraBase878259(a),0);
+  const despIncl=acordViu878434(acord)?acord.despeses==="incloses":quota>0;
+  const tD=despIncl?0:desp.reduce((s,a)=>s+albaraBase878259(a),0);
   const total=tH+tD+hon.reduce((s,x)=>s+x.pend,0);
-  const ambHores=hores.length>0||(!quota&&desp.length>0);
+  const ambHores=hores.length>0||(!despIncl&&desp.length>0);
   const fact432=uniqueFactures8743(data.facturesTecnic||[]).filter(f=>!/anul/i.test(String(f.estat||"")));
   return <div className="stack fact-enc-v878431">
     {(ambHores||hon.length>0)&&<section className="perfact-v878431">
       <header><span><small>{t("Per facturar")}</small><b>{money(total)}</b></span>{ambHores&&<button type="button" className="primary" onClick={()=>setFer({})}>{t("Fer factura")}</button>}</header>
       <ul>
         {hores.length>0&&<li><span>{t("Hores")}{nH>0?` · ${fh878340(nH)}`:""}</span><b>{money(tH)}</b></li>}
-        {!quota&&desp.length>0&&<li><span>{desp.length===1?t("1 despesa"):t("{n} despeses",{n:desp.length})}</span><b>{money(tD)}</b></li>}
+        {!despIncl&&desp.length>0&&<li><span>{desp.length===1?t("1 despesa"):t("{n} despeses",{n:desp.length})}</span><b>{money(tD)}</b></li>}
         {hon.map(({p,pend,facturat})=><li key={p.id} className="pres"><span>{t("Pressupost d’honoraris")}{p.numero?` ${p.numero}`:""}{facturat>0.004?<small> · {t("ja facturat {x}",{x:money(facturat)})}</small>:null}</span><b>{money(pend)}</b><button type="button" className="secondary small" onClick={()=>setFer({p,pend})}>{t("Fer factura")}</button></li>)}
       </ul>
     </section>}
     <FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>
     {/* V87.432 · la gràfica de les factures de l'expedient (abans era a la pestanya «Rendiment» de l'encàrrec), plegada */}
     {fact432.length>0&&<CardOPlega878369 bloc426 icona={TrendingUp} title={t("Gràfica")} className="graf-enc-v878432"><IngressosChart878292 title={t("Ingressos d’aquesta obra")} items={fact432.map(f=>({data:f.data,import:baseIva8743(f)}))}/></CardOPlega878369>}
-    {fer&&<FerFacturaEncarrec878431 obra={obra} hores={fer.p?[]:hores} despeses={fer.p?[]:desp} quota={quota} pres={fer.p?fer:null} addFactura={addFactura} updatePressupost={updatePressupost} close={()=>setFer(null)}/>}
+    {fer&&<FerFacturaEncarrec878431 obra={obra} hores={fer.p?[]:hores} despeses={fer.p?[]:desp} quota={quota} despIncl={despIncl} acord={acord} pres={fer.p?fer:null} addFactura={addFactura} updatePressupost={updatePressupost} close={()=>setFer(null)}/>}
   </div>;
 }
-function FerFacturaEncarrec878431({obra,hores=[],despeses=[],quota=0,pres=null,addFactura,updatePressupost,close}){
+function FerFacturaEncarrec878431({obra,hores=[],despeses=[],quota=0,despIncl=quota>0,acord=null,pres=null,addFactura,updatePressupost,close}){
   const ordH=[...hores].sort((a,b)=>(a._d||0)-(b._d||0));
   const[selH,setSelH]=useState(()=>new Set(ordH.map(r=>r.id)));
-  const[selD,setSelD]=useState(()=>new Set(quota>0?[]:despeses.map(a=>a.id)));
+  const[selD,setSelD]=useState(()=>new Set(despIncl?[]:despeses.map(a=>a.id)));
   const chH=ordH.filter(r=>selH.has(r.id)),chD=despeses.filter(a=>selD.has(a.id));
   const sum=pres?pres.pend:chH.reduce((s,r)=>s+timeBillImport878291(r),0)+chD.reduce((s,a)=>s+albaraBase878259(a),0);
   const period=(()=>{const ds=chH.map(r=>r._d).filter(Boolean).sort((a,b)=>a-b);if(!ds.length)return "";const f=d=>d.toLocaleDateString("ca-ES",{month:"long",year:"numeric"});const a=f(ds[0]),b=f(ds[ds.length-1]);return a===b?a:`${a} – ${b}`})();
-  const[f,setF]=useState(()=>({data:todayISO8743(),concepte:pres?(pres.p.concepte||"Honoraris tècnics"):`Honoraris tècnics${period?` · ${period}`:""}`,iva:String(pres?.p?.iva??21),retencio:"0",base:""}));
+  const[f,setF]=useState(()=>({data:todayISO8743(),concepte:pres?(pres.p.concepte||"Honoraris tècnics"):`Honoraris tècnics${period?` · ${period}`:""}`,iva:String(pres?.p?.iva??acord?.iva??21).replace(".",","),retencio:String(acord?.retencio??0).replace(".",","),base:""}));
   const base=f.base!==""?parseNum8770(f.base):sum;
   const iva=f.iva===""?21:parseNum8770(f.iva),ret=parseNum8770(f.retencio);
   const liniaDesp=a=>[a.data?fmtAppDate8748(a.data):"",a.proveidor||a.concepte||(a.tipusMeva?etiquetaMeva878323(a.tipusMeva):t("Despesa"))].filter(Boolean).join(" · ");
@@ -8486,6 +8487,8 @@ function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,
   function changePoblacio(v){setForm(f=>{const cp=cpForPoblacio8773(v);return {...f,poblacio:v,codiPostal:cp||f.codiPostal,provincia:provinciaForCp8773(cp)||provinciaForPoblacio8773(v)||f.provincia}})}
   function save(){
     const fixed={...form};
+    // V87.434 · la quota, el preu per hora i l'acord es desen a la seva targeta («Acord amb el client»)
+    delete fixed.quotaFixa;delete fixed.preuHoraQuota;delete fixed.acord878434;
     if(fixed.rao && fixed.nif && sameFiscalValue87101(fixed.rao,fixed.nif)) fixed.rao=fixed.nom||fixed.rao;
     if(!fixed.nom||!fixed.rao||!fixed.nif||!fixed.adreca||!fixed.codiPostal||!fixed.poblacio){alert(i18nT("Cal emplenar els camps obligatoris: nom/raó social, NIF/CIF, adreça, codi postal i població."));return}
     learnCpPoblacio8775(fixed.codiPostal,fixed.poblacio);
@@ -8524,16 +8527,13 @@ function FitxaClient({client,obres,odata={},partidaLibrary=[],setPartidaLibrary,
         <label className="chk"><input type="checkbox" checked={!!form.facturacio878297?.actiu} onChange={e=>set("facturacio878297",{prefix:"",proper:1,digits:3,...(form.facturacio878297||{}),actiu:e.target.checked})}/>{i18nT("Faig jo les seves factures (botó «Fer factura» al costat de cada proforma)")}</label>
         {form.facturacio878297?.actiu&&<div className="fact-client-camps-v878297"><label><span>{i18nT("Sèrie (el que va davant del número)")}</span><input value={form.facturacio878297?.prefix||""} onChange={e=>set("facturacio878297",{...form.facturacio878297,prefix:e.target.value})} placeholder="BC2026-"/></label><label><span>{i18nT("Número següent")}</span><input inputMode="numeric" value={form.facturacio878297?.proper??1} onChange={e=>set("facturacio878297",{...form.facturacio878297,proper:+e.target.value.replace(/\D/g,"")||1})}/></label><label><span>{i18nT("Xifres")}</span><select value={form.facturacio878297?.digits||3} onChange={e=>set("facturacio878297",{...form.facturacio878297,digits:+e.target.value})}>{[2,3,4,5].map(x=><option key={x} value={x}>{x}</option>)}</select></label><small>{i18nT("La propera serà: {n}",{n:fmtNumFactura878297(form.facturacio878297,form.facturacio878297?.proper||1)})}</small></div>}
       </fieldset>}
-      <label className="quota-client-v878291"><span>{i18nT("Quota fixa mensual (€)")}</span><input inputMode="decimal" value={form.quotaFixa||""} onChange={e=>set("quotaFixa",e.target.value)} disabled={!edit} placeholder={i18nT("Buit si no en té")}/></label>
-      {/* V87.430 · el preu per hora amb què es comparen les hores amb la quota (buit: el de sèrie) */}
-      {(edit||parseNum8770(form.quotaFixa)>0)&&<label className="quota-client-v878291"><span>{i18nT("Preu per hora per a la quota (€/h)")}</span><input inputMode="decimal" value={form.preuHoraQuota||""} onChange={e=>set("preuHoraQuota",e.target.value)} disabled={!edit} placeholder={String(defaultRate878255())}/></label>}
       <label className="span-all"><span>{i18nT("Adreça")}</span><input value={form.adreca||""} onChange={e=>set("adreca",e.target.value)} disabled={!edit}/></label>
       <label><span>{i18nT("Codi postal")}</span><input list="cp-list-v8773" value={form.codiPostal||""} onChange={e=>changeCp(e.target.value)} disabled={!edit}/></label>
       <label><span>{i18nT("Població")}</span><input list="poblacio-list-v8773" value={form.poblacio||""} onChange={e=>changePoblacio(e.target.value)} disabled={!edit}/></label>
       <label><span>{i18nT("Província")}</span><input value={form.provincia||provinciaForCp8773(form.codiPostal)||provinciaForPoblacio8773(form.poblacio)||""} onChange={e=>set("provincia",e.target.value)} disabled={!edit}/></label>
       <label className="span-all"><span>{i18nT("Observacions / criteris client")}</span><textarea value={form.observacions||""} onChange={e=>set("observacions",e.target.value)} disabled={!edit}/></label>
     </div>}
-  </Card><RendimentQuota878430 client={client} obres={obres}/><ClientExpedientsList878108 obres={obres} openObra={openObra} clientName={form.nom||client.nom}/><ClientHabituals878280 client={client} obres={obres} odata={odata} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/></div>
+  </Card>{teModul878326("tecnic")&&<AcordClient878434 client={client} setClients={setClients}/>}<RendimentQuota878430 client={client} obres={obres}/><ClientExpedientsList878108 obres={obres} openObra={openObra} clientName={form.nom||client.nom}/><ClientHabituals878280 client={client} obres={obres} odata={odata} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/></div>
 }
 
 // V87.280 · Partides habituals del client: les que més es fan servir als seus pressupostos, classificades en capítols
@@ -8620,6 +8620,35 @@ function ClientHabituals878280({client={},obres=[],odata={},partidaLibrary=[],se
 // Per a cada mes des del primer apunt: la quota, les hores dins de la quota (també les que «no es facturen») × el preu per hora (el del
 // client o el de sèrie), les despeses (les del registre que no es facturen a part i les meves despeses de les seves obres no repercutides) i
 // el resultat. Les hores que es facturen a part no hi compten.
+// V87.434 · «Acord amb el client» (l'Héctor, 29/10/2026: «el cost o el pactat amb l'empresa amb qui treballo… a la fitxa del client, i que
+// cada vegada que faci alguna obra d'ell es tingui en compte… algun altre tècnic li pot passar el mateix amb un o més clients»). Es desa al
+// client: quotaFixa i preuHoraQuota (com abans) i acord878434 = {cobra:[quota|hores|pressupost], inclou:[feines de TASQUES878430 que entren a
+// la quota], quotaDes:"AAAA-MM", kmPreu, despeses:"incloses"|"repercutir", iva, retencio}. Sense acord, tot com abans.
+const COBRA878434=[["quota","Quota mensual"],["hores","Per hores"],["pressupost","Pressupost d’honoraris"]];
+const mesAra878434=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`};
+function acordClient878434(c){
+  if(!c)return null;const a=c.acord878434||null;const quota=parseNum8770(c.quotaFixa)||0;
+  const num=v=>v!=null&&String(v).trim()!==""?parseNum8770(v):null;
+  return {fet:!!a,quota,cobra:Array.isArray(a?.cobra)?a.cobra:[...(quota>0?["quota"]:[]),"hores"],preu:parseNum8770(c.preuHoraQuota)||0,inclou:Array.isArray(a?.inclou)?a.inclou:null,quotaDes:a?.quotaDes||"",kmPreu:parseNum8770(a?.kmPreu)||0,kmTxt:String(a?.kmPreu||"").trim(),despeses:a?.despeses||(quota>0?"incloses":"repercutir"),iva:num(a?.iva),retencio:num(a?.retencio)};
+}
+// l'estat de facturació d'unes hores d'una feina: dins de la quota (si la feina hi entra), a facturar (si cobra per hores) o no es factura
+function estatAcord878434(ac,feina){
+  if(!ac||(!ac.fet&&!(ac.quota>0)))return null;
+  if(ac.quota>0&&(!ac.inclou||!TASQUES878430.includes(feina)||ac.inclou.includes(feina)))return "quota";
+  return ac.cobra.includes("hores")?"pendent":"nofactura";
+}
+const acordViu878434=ac=>!!ac&&(ac.fet||ac.quota>0);
+function clientsAra878434(){try{const v=JSON.parse(localStorage.getItem(lsKey8779("aco_clients"))||"[]");return Array.isArray(v)?v:[]}catch{return []}}
+function acordObra878434(obres,obraId,clients){const o=(obres||[]).find(x=>String(x.id)===String(obraId));if(!o)return null;const cid=clientIdObra878347(o);return acordClient878434((clients||clientsAra878434()).find(c=>c.id===cid))}
+const kmObra878434=(obres,obraId)=>{const a=acordObra878434(obres,obraId);return a?.kmPreu>0?a.kmTxt:"0,26"};
+// les quotes per facturar: cada mes des de «quotaDes» fins ara que encara no té cap factura de quota (de cap expedient del client)
+function quotesPendents878434(clients,obres,odata){
+  const fetes=new Set();Object.values(odata||{}).forEach(d=>(d?.facturesTecnic||[]).forEach(f=>{if(f?.quota878434&&!/anul/i.test(String(f.estat||"")))fetes.add(f.quota878434.client+"|"+f.quota878434.mes)}));
+  const ara=mesAra878434(),out=[];
+  for(const c of clients||[]){const ac=acordClient878434(c);if(!ac||!(ac.quota>0)||!ac.quotaDes)continue;const os=(obres||[]).filter(o=>!o.compartida&&o.client===c.id);if(!os.length)continue;
+    let[y,m]=ac.quotaDes.split("-").map(Number);for(let i=0;i<36&&y&&m;i++){const k=`${y}-${String(m).padStart(2,"0")}`;if(k>ara)break;if(!fetes.has(c.id+"|"+k))out.push({c,ac,mes:k,import:ac.quota,obres:os});m++;if(m>12){m=1;y++}}}
+  return out;
+}
 function rendQuota878430(client,obres){
   const quota=parseNum8770(client?.quotaFixa)||0,rate=parseNum8770(client?.preuHoraQuota)||defaultRate878255();
   const ids=new Set((obres||[]).map(o=>String(o.id))),nomO=new Map((obres||[]).map(o=>[String(o.id),o]));
@@ -8628,7 +8657,7 @@ function rendQuota878430(client,obres){
     const ko=d.getFullYear()+"|"+oid;const o=perObra.get(ko)||{any:String(d.getFullYear()),oid,h:0,desp:0};o.h+=h;o.desp+=desp;perObra.set(ko,o)};
   for(const o of obres||[])for(const r of readTimeRows878255(o.id)){const d=rowDate878255(r);if(!d)continue;const e=estatFactDe878317(r,quota);if(e==="pendent"||e==="facturat")continue;
     if(isHoursRow878255(r))suma(d,String(o.id),timeHours878120(r),0);else suma(d,String(o.id),0,timeImport878120(r))}
-  for(const a of readAlbarans878259())if(a.meva&&a.obraId&&ids.has(String(a.obraId))&&!a.facturatClient){const d=parseDate8776(a.data);if(d)suma(d,String(a.obraId),0,albaraBase878259(a))}
+  if(acordClient878434(client)?.despeses!=="repercutir")for(const a of readAlbarans878259())if(a.meva&&a.obraId&&ids.has(String(a.obraId))&&!a.facturatClient){const d=parseDate8776(a.data);if(d)suma(d,String(a.obraId),0,albaraBase878259(a))}
   return {quota,rate,mes,perObra,nomO};
 }
 // un any: els mesos des del primer apunt fins avui, els totals, el preu per hora real i la quota que ho cobriria
@@ -8641,6 +8670,38 @@ function anyQuota878430(R,any){
 }
 const nomMes878430=k=>{const[y,m]=String(k).split("-").map(Number);const s=new Date(y,m-1,1).toLocaleDateString(loc878272(),{month:"long",year:"numeric"});return s.charAt(0).toUpperCase()+s.slice(1)};
 function useTempsCanvia878430(){const[tick,setTick]=useState(0);useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-time-rows-changed",h);window.addEventListener("aco-albarans-changed",h);return()=>{window.removeEventListener("aco-time-rows-changed",h);window.removeEventListener("aco-albarans-changed",h)}},[]);return tick}
+function AcordClient878434({client,setClients}){
+  const ini=()=>{const ac=acordClient878434(client);return {cobra:ac.cobra,quotaFixa:client.quotaFixa||"",preuHoraQuota:client.preuHoraQuota||"",quotaDes:ac.quotaDes||mesAra878434(),inclou:ac.inclou||[...TASQUES878430],kmPreu:client.acord878434?.kmPreu||"",despeses:ac.despeses,iva:ac.iva==null?"21":String(ac.iva).replace(".",","),retencio:ac.retencio==null?"0":String(ac.retencio).replace(".",",")}};
+  const[f,setF]=useState(ini);const[canvi,setCanvi]=useState(false);
+  useEffect(()=>{setF(ini());setCanvi(false)},[client.id]);
+  const set=(k,v)=>{setF(x=>({...x,[k]:v}));setCanvi(true)};
+  const tog=(k,v)=>set(k,f[k].includes(v)?f[k].filter(x=>x!==v):[...f[k],v]);
+  const ambQ=f.cobra.includes("quota"),ro=!setClients;
+  const ac=acordClient878434(client);
+  const xifra=ac.quota>0?i18nT("{q} al mes",{q:money(ac.quota)}):ac.preu>0?`${money(ac.preu)}/h`:null;
+  function desa(){
+    if(ambQ&&!(parseNum8770(f.quotaFixa)>0)){alert(i18nT("Escriu l’import de la quota."));return}
+    const patch={quotaFixa:ambQ?f.quotaFixa:"",preuHoraQuota:f.preuHoraQuota,acord878434:{cobra:f.cobra,inclou:f.inclou,quotaDes:ambQ?(f.quotaDes||mesAra878434()):"",kmPreu:f.kmPreu,despeses:f.despeses,iva:f.iva,retencio:f.retencio,at:new Date().toISOString()}};
+    Object.assign(client,patch);setClients(p=>(p||[]).map(c=>c.id===client.id?{...c,...patch}:c));setCanvi(false);
+  }
+  const ch=(on,txt,fn,k)=><button type="button" key={k||txt} className={on?"on":""} aria-pressed={on} disabled={ro} onClick={fn}>{txt}</button>;
+  return <CardOPlega878369 bloc426 className="acord-v878434" icona={Handshake} title={i18nT("Acord amb el client")} xifra={xifra}>
+    <div className="ac-camp"><span>{i18nT("Com cobro")}</span><div className="xips-v878430">{COBRA878434.map(([k,l])=>ch(f.cobra.includes(k),i18nT(l),()=>tog("cobra",k),k))}</div></div>
+    <div className="ac-grid">
+      {ambQ&&<label><span>{i18nT("Quota al mes (€)")}</span><input inputMode="decimal" value={f.quotaFixa} disabled={ro} onChange={e=>set("quotaFixa",e.target.value)}/></label>}
+      {ambQ&&<label><span>{i18nT("Es factura des de")}</span><input type="month" value={f.quotaDes} disabled={ro} onChange={e=>set("quotaDes",e.target.value)}/></label>}
+      <label><span>{i18nT("Preu per hora (€/h)")}</span><input inputMode="decimal" value={f.preuHoraQuota} disabled={ro} placeholder={String(defaultRate878255())} onChange={e=>set("preuHoraQuota",e.target.value)}/></label>
+    </div>
+    {ambQ&&<div className="ac-camp"><span>{i18nT("Feines dins de la quota")}</span><div className="xips-v878430">{TASQUES878430.map(x=>ch(f.inclou.includes(x),i18nT(x),()=>tog("inclou",x),x))}</div></div>}
+    <div className="ac-camp"><span>{i18nT("Desplaçaments i despeses")}</span><div className="xips-v878430">{ch(f.despeses==="incloses",i18nT("Inclosos"),()=>set("despeses","incloses"))}{ch(f.despeses==="repercutir",i18nT("A repercutir"),()=>set("despeses","repercutir"))}</div></div>
+    <div className="ac-grid">
+      <label><span>{i18nT("€ per km")}</span><input inputMode="decimal" value={f.kmPreu} disabled={ro} placeholder="0,26" onChange={e=>set("kmPreu",e.target.value)}/></label>
+      <label><span>{i18nT("IVA %")}</span><input inputMode="decimal" value={f.iva} disabled={ro} onChange={e=>set("iva",e.target.value)}/></label>
+      <label><span>{i18nT("Retenció %")}</span><input inputMode="decimal" value={f.retencio} disabled={ro} onChange={e=>set("retencio",e.target.value)}/></label>
+    </div>
+    {!ro&&<div className="ac-desar"><button type="button" className="primary" disabled={!canvi} onClick={desa}>{i18nT("Desar l’acord")}</button></div>}
+  </CardOPlega878369>;
+}
 function RendimentQuota878430({client,obres=[]}){
   const tick=useTempsCanvia878430();
   const R=useMemo(()=>rendQuota878430(client,obres),[client,client?.quotaFixa,client?.preuHoraQuota,obres,tick]);
@@ -10953,7 +11014,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Seguretat i salut"&&<ExpedientSection8769 label="Seguretat i salut" data={data} setData={setData}/>} 
     {activeTab==="Tancament / Entrega"&&<ExpedientSection8769 label="Tancament / Entrega" data={data} setData={setData}/>} 
     {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
-    {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} quota={parseNum8770(client?.quotaFixa)||0} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc} inici={tab==="Gestió temps"?"Hores":tab==="Rendiment"?"Rendiment":tab==="Factures"?"Factures":tab==="Pressupostos"?"Pressupostos":""} despeses={<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves setObraData={readOnly?null:(id,up)=>setData(up)}/>} rendiment={ALIAS878308["Rendiment"]==="Honoraris"} temps={ALIAS878308["Gestió temps"]==="Honoraris"&&!esTreballador878326()&&!senseHoresPropies878342()?<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>:null}/>} 
+    {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} quota={parseNum8770(client?.quotaFixa)||0} acord={acordClient878434(client)} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc} inici={tab==="Gestió temps"?"Hores":tab==="Rendiment"?"Rendiment":tab==="Factures"?"Factures":tab==="Pressupostos"?"Pressupostos":""} despeses={<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves setObraData={readOnly?null:(id,up)=>setData(up)}/>} rendiment={ALIAS878308["Rendiment"]==="Honoraris"} temps={ALIAS878308["Gestió temps"]==="Honoraris"&&!esTreballador878326()&&!senseHoresPropies878342()?<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} acord={acordClient878434(client)} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>:null}/>} 
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
     {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} readOnly={readOnly||partCompartida878424(obra)}/>}
     {activeTab==="Pressupost obra"&&!readOnly&&<BudgetBar878273 data={data} groups={directBudgetInfo878214.groups} active={directBudgetId878214} select={selectDirectBudget878214}/>}
@@ -10980,7 +11041,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
     {esTreballador878326()&&activeTab==="Gestió temps"&&<HoresTreballador878327 obres={[obra]} obraFixa={obra.id}/>}
     {!esTreballador878326()&&ambEmpresa878338()&&activeTab==="Gestió temps"&&<PersonalObra878340 obra={obra} data={data}/>}
-    {!esTreballador878326()&&!senseHoresPropies878342()&&(activeTab==="Gestió temps"||(activeTab===ALIAS878308["Gestió temps"]&&activeTab!=="Honoraris"))&&<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>} 
+    {!esTreballador878326()&&!senseHoresPropies878342()&&(activeTab==="Gestió temps"||(activeTab===ALIAS878308["Gestió temps"]&&activeTab!=="Honoraris"))&&<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} acord={acordClient878434(client)} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>} 
     {activeTab==="Rendiment"&&<RendimentHonorarisExpedient878120 data={data} obra={obra}/>}{activeTab!=="Rendiment"&&activeTab===ALIAS878308["Rendiment"]&&activeTab!=="Honoraris"&&<details className="rend-plegat-v878354"><summary>{t("Rendiment de l’encàrrec")}</summary><RendimentHonorarisExpedient878120 data={data} obra={obra}/></details>} 
     {activeTab==="Rendiments"&&<RendimentsClient878247 obres={[obra]} odata={{[obra.id]:data}} openObra={()=>{}}/>}
   </>;
@@ -17994,7 +18055,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.433",
+    app_version:"87.434",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -18720,7 +18781,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
   function createFacturaGlobal8778(payload){
     if(!setOdata)return;
     const o=obres.find(x=>x.id===payload.obraId);if(!o)return;
-    setOdata(prev=>{const d=prev[o.id]||empty();const id=payload.id||("ft-"+Date.now());const numero=nextGlobalDocNumber8745(prev,"factura",o.any);const now=new Date().toISOString();const doc={id,numero,data:payload.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:payload.concepte||"Factura tècnica",text:payload.text||"",base:+payload.base||0,iva:payload.iva===""||payload.iva==null?21:+payload.iva,retencio:+payload.retencio||0,descompte:+payload.descompte||0,estat:payload.estat||"Pendent",hoursRows:payload.hoursRows||[]};return {...prev,[o.id]:{...d,facturesTecnic:[...(d.facturesTecnic||[]),doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}}});
+    setOdata(prev=>{const d=prev[o.id]||empty();const id=payload.id||("ft-"+Date.now());const numero=nextGlobalDocNumber8745(prev,"factura",o.any);const now=new Date().toISOString();const doc={id,numero,data:payload.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:payload.concepte||"Factura tècnica",text:payload.text||"",base:+payload.base||0,iva:payload.iva===""||payload.iva==null?21:+payload.iva,retencio:+payload.retencio||0,descompte:+payload.descompte||0,estat:payload.estat||"Pendent",hoursRows:payload.hoursRows||[],...(payload.quota878434?{quota878434:payload.quota878434}:{})};return {...prev,[o.id]:{...d,facturesTecnic:[...(d.facturesTecnic||[]),doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}}});
   }
   function updateFacturaGlobal87109(row,patch){
     if(!setOdata||!row?.obra?.id)return;
@@ -19021,7 +19082,7 @@ function RendimentHonorarisExpedient878120({data={},obra={}}){
 // factura (de sèrie a la gestió total: el tècnic d'una empresa no les cobra). Abans: un resum, el formulari «Afegir registre manual» amb
 // tipus de registre, tipus de feina i tasca, i una taula.
 const TASQUES878430=["Visita d’obra","Pressupost","Certificacions","Comptabilitat","Reunió","Desplaçament","Gestió administrativa","Altres"];
-function HonorarisTemps({obraId,obra=null,crono=null,data,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,quota=0,preuClient=0}){
+function HonorarisTemps({obraId,obra=null,crono=null,data,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,quota=0,preuClient=0,acord=null}){
 // V87.382 · el comptador sap de quina obra és: «Iniciar» ho apunta (abans no, i el rellotge de la barra no el veia ni el desava) i, si
 // compta una altra obra, aquí no es pot aturar ni reiniciar (el temps aniria a aquesta): «Desar l’altra i començar aquí»
 const altra878382=!!(timer?.running&&timer.obraId&&timer.obraId!==obraId);
@@ -19037,7 +19098,8 @@ const meves=useMemo(()=>readAlbarans878259().filter(a=>a.meva&&a.obraId&&String(
 const[form,setForm]=useState(null);const[desp,setDesp]=useState(null);
 const n=v=>parseNum8770(v)||0;
 const rate0=n(preuClient)||defaultRate878255();
-const estat0=quota>0?"quota":PERFIL878304==="complet"?"nofactura":"pendent";
+const estatDe878434=feina=>estatAcord878434(acord,feina)||(quota>0?"quota":PERFIL878304==="complet"?"nofactura":"pendent");
+const estat0=estatDe878434(null);
 const imp=r=>timeBillImport878291(r);
 const hRows=rows.filter(isHoursRow878255);
 const totalH=hRows.reduce((s,r)=>s+timeHours878120(r),0);
@@ -19046,11 +19108,11 @@ const totalDesp=rows.filter(r=>!isHoursRow878255(r)).reduce((s,r)=>s+imp(r),0)+m
 const pendent=rows.filter(r=>pendentFact878430(r,quota)).reduce((s,r)=>s+imp(r),0);
 const hQuota=quota>0?hRows.filter(r=>estatFactDe878317(r,quota)==="quota").reduce((s,r)=>s+timeHours878120(r),0):0;
 function marcarTot(){const pend=rows.filter(r=>pendentFact878430(r,quota));if(!pend.length)return;if(!confirm(i18nT("Marcar com a facturats els {n} registres pendents?",{n:pend.length})))return;const ids=new Set(pend.map(r=>r.id)),at=new Date().toISOString();setRows(p=>p.map(r=>ids.has(r.id)?{...r,facturat:true,noFactura:false,facturatAt:at}:r))}
-function nou(){setForm({id:"",data:todayISO8743(),tipusFeina:TASQUES878430[0],hores:"1",preuHora:String(rate0),observacions:"",estat:estat0})}
+function nou(){setForm({id:"",data:todayISO8743(),tipusFeina:TASQUES878430[0],hores:"1",preuHora:String(rate0),observacions:"",estat:estatDe878434(TASQUES878430[0])})}
 function edita(r){const e=estatFactDe878317(r,quota);setForm({...r,tipusFeina:r.tipusFeina||r.tasca||"Altres",hores:String(r.hores??""),preuHora:String(r.preuHora??rate0),estat:e,_orig:e})}
 const setF=(k,v)=>setForm(f=>({...f,[k]:v}));
 function desa(){const h=n(form.hores);if(!(h>0)){alert(i18nT("Escriu les hores."));return}
-  const{estat,_orig,...f}=form;const r={...f,tipusRegistre:"Honoraris",tasca:f.tipusFeina,hores:String(Math.round(h*100)/100),preuHora:String(n(f.preuHora)||rate0),...(estat!==_orig?patchEstatFact878317(estat):{})};
+  const{estat,_orig,_tocat,...f}=form;const r={...f,tipusRegistre:"Honoraris",tasca:f.tipusFeina,hores:String(Math.round(h*100)/100),preuHora:String(n(f.preuHora)||rate0),...(estat!==_orig?patchEstatFact878317(estat):{})};
   if(f.id)setRows(p=>p.map(x=>x.id===f.id?{...x,...r}:x));else setRows(p=>[...p,{...r,id:"hr-"+Date.now(),obraId,createdAt:new Date().toISOString()}]);
   setForm(null)}
 function elimina(id){if(!confirm(i18nT("Segur que vols eliminar aquest registre?")))return;setRows(p=>p.filter(r=>r.id!==id));setForm(null)}
@@ -19100,11 +19162,11 @@ return <div className="stack temps-validat-v8754 hores-v878430">
   </details>)}</div>}
   {form&&<Modal title={form.id?i18nT("Editar les hores"):i18nT("Apuntar hores")} close={()=>setForm(null)}><div className="hores-form-v878430">
     <label><span>{i18nT("Dia")}</span><input type="date" value={form.data||""} onChange={e=>setF("data",e.target.value)}/></label>
-    <div className="camp"><span>{i18nT("Feina")}</span><div className="xips-v878430">{tasques.map(x=><button type="button" key={x} className={form.tipusFeina===x?"on":""} aria-pressed={form.tipusFeina===x} onClick={()=>setF("tipusFeina",x)}>{i18nT(x)}</button>)}</div></div>
+    <div className="camp"><span>{i18nT("Feina")}</span><div className="xips-v878430">{tasques.map(x=><button type="button" key={x} className={form.tipusFeina===x?"on":""} aria-pressed={form.tipusFeina===x} onClick={()=>setForm(f=>({...f,tipusFeina:x,...(f.id||f._tocat?{}:{estat:estatDe878434(x)})}))}>{i18nT(x)}</button>)}</div></div>
     <div className="dos-v878430"><label><span>{i18nT("Hores")}</span><input inputMode="decimal" value={form.hores} onChange={e=>setF("hores",e.target.value)} aria-label={i18nT("Hores")}/></label><label><span>€/h</span><input inputMode="decimal" value={form.preuHora} onChange={e=>setF("preuHora",e.target.value)} aria-label={i18nT("Preu per hora")}/></label></div>
     <div className="xips-v878430 rapid">{["0,5","1","2","4","8"].map(v=><button type="button" key={v} className={n(form.hores)===n(v)?"on":""} onClick={()=>setF("hores",v)}>{v} h</button>)}</div>
     <label><span>{i18nT("Nota")}</span><input value={form.observacions||""} onChange={e=>setF("observacions",e.target.value)}/></label>
-    <div className="camp"><span>{i18nT("Facturació")}</span><div className="xips-v878430">{estats.map(([v,l])=><button type="button" key={v} className={form.estat===v?"on":""} aria-pressed={form.estat===v} onClick={()=>setF("estat",v)}>{l}</button>)}</div></div>
+    <div className="camp"><span>{i18nT("Facturació")}</span><div className="xips-v878430">{estats.map(([v,l])=><button type="button" key={v} className={form.estat===v?"on":""} aria-pressed={form.estat===v} onClick={()=>setForm(f=>({...f,estat:v,_tocat:true}))}>{l}</button>)}</div></div>
   </div><div className="modal-actions">{form.id&&<button type="button" className="danger" onClick={()=>elimina(form.id)}>{i18nT("Eliminar")}</button>}<button type="button" className="secondary" onClick={()=>setForm(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={desa}>{i18nT("Desar")}</button></div></Modal>}
   {desp&&<AlbaraEditor878259 a={desp} setA={setDesp} obres={[obra||{id:obraId,nom:""}]} proveidors={[...new Set(readAlbarans878259().map(a=>a.proveidor).filter(Boolean))]} save={a=>{if(desaDespesa878318(a))setDesp(null)}} remove={a=>{if(eliminaDespesa878318(a))setDesp(null)}} close={()=>setDesp(null)} tots={readAlbarans878259()}/>}
 </div>}
@@ -20374,7 +20436,9 @@ function timeRowLabel878256(r){
 }
 function ManualHours878256({obres=[],clients=[],initial={},close}){
   const cName=id=>(clients||[]).find(c=>c.id===id)?.nom||"Sense client";
-  const[m,setM]=useState(()=>({data:isoDay878255(new Date()),obraId:(obres||[]).find(o=>isExpedientOpen878136(o.estat))?.id||(obres||[])[0]?.id||"",tipus:"Visita d’obra",mode:"hores",hores:"1",inici:"09:00",final:"10:00",preu:String(defaultRate878255()),notes:"",km:"",...initial}));
+  const[m,setM]=useState(()=>({data:isoDay878255(new Date()),obraId:(obres||[]).find(o=>isExpedientOpen878136(o.estat))?.id||(obres||[])[0]?.id||"",tipus:"Visita d’obra",mode:"hores",hores:"1",inici:"09:00",final:"10:00",preu:"",notes:"",km:"",...initial}));
+  // V87.434 · el preu per hora de l'acord amb el client de l'expedient (si no se n'ha escrit cap)
+  useEffect(()=>{if(!m.preuTocat)setM(x=>({...x,preu:String(acordObra878434(obres,x.obraId,clients)?.preu||defaultRate878255()).replace(".",",")}))},[m.obraId]);
   function save(){
     if(!m?.obraId){alert(t("Tria l’expedient."));return}
     let h=parseNum8770(m.hores);
@@ -20382,8 +20446,10 @@ function ManualHours878256({obres=[],clients=[],initial={},close}){
     const km=parseNum8770(m.km);
     if(!(h>0)&&!(km>0)){alert(t("Posa les hores o els quilòmetres."));return}
     const id="hr-"+Date.now();
-    if(h>0)addTimeRow878255(m.obraId,{id,data:m.data,tipusRegistre:"Honoraris",tipusFeina:m.tipus,tasca:m.tipus,hores:h.toFixed(2),preuHora:(parseNum8770(m.preu)||defaultRate878255()).toFixed(2),km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:m.notes||"",inici:m.mode==="interval"?m.inici:"",final:m.mode==="interval"?m.final:"",manual:true,createdAt:new Date().toISOString()});
-    if(km>0)addTimeRow878255(m.obraId,{id:id+"-km",data:m.data,tipusRegistre:"Kilometratge",tipusFeina:m.tipus,tasca:"Desplaçament",hores:"0",preuHora:"0",km:String(km),preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:m.notes||"",manual:true,createdAt:new Date().toISOString()});
+    const ac434=acordObra878434(obres,m.obraId,clients),eH434=estatAcord878434(ac434,m.tipus);
+    const eK434=acordViu878434(ac434)?(ac434.despeses==="repercutir"?"pendent":ac434.quota>0?"quota":"nofactura"):null;
+    if(h>0)addTimeRow878255(m.obraId,{id,data:m.data,tipusRegistre:"Honoraris",tipusFeina:m.tipus,tasca:m.tipus,hores:h.toFixed(2),preuHora:(parseNum8770(m.preu)||ac434?.preu||defaultRate878255()).toFixed(2),...(eH434?patchEstatFact878317(eH434):{}),km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:m.notes||"",inici:m.mode==="interval"?m.inici:"",final:m.mode==="interval"?m.final:"",manual:true,createdAt:new Date().toISOString()});
+    if(km>0)addTimeRow878255(m.obraId,{id:id+"-km",data:m.data,tipusRegistre:"Kilometratge",tipusFeina:m.tipus,tasca:"Desplaçament",hores:"0",preuHora:"0",km:String(km),preuKm:ac434?.kmPreu>0?String(ac434.kmPreu):"0.30",...(eK434?patchEstatFact878317(eK434):{}),quantitat:"1",preuUnitari:"0",observacions:m.notes||"",manual:true,createdAt:new Date().toISOString()});
     close();
   }
   const sorted=[...(obres||[])].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0));
@@ -20393,7 +20459,7 @@ function ManualHours878256({obres=[],clients=[],initial={},close}){
     <label className="wide"><span>{t("Quina feina?")}</span><div className="kinds">{TIME_KINDS878255.map(k=><button type="button" key={k} aria-pressed={m.tipus===k} onClick={()=>setM(x=>({...x,tipus:k}))}>{k}</button>)}</div></label>
     <label><span>{t("Com ho vols apuntar?")}</span><select value={m.mode} onChange={e=>setM(x=>({...x,mode:e.target.value}))}><option value="hores">{t("Total d’hores")}</option><option value="interval">{t("Hora d’inici i de final")}</option></select></label>
     {m.mode==="hores"?<label><span>{t("Hores")}</span><input inputMode="decimal" value={m.hores} onChange={e=>setM(x=>({...x,hores:e.target.value}))}/></label>:<><label><span>{t("Inici")}</span><input type="time" value={m.inici} onChange={e=>setM(x=>({...x,inici:e.target.value}))}/></label><label><span>{t("Final")}</span><input type="time" value={m.final} onChange={e=>setM(x=>({...x,final:e.target.value}))}/></label></>}
-    <label><span>{t("Preu per hora (€)")}</span><input inputMode="decimal" value={m.preu} onChange={e=>setM(x=>({...x,preu:e.target.value}))}/></label>
+    <label><span>{t("Preu per hora (€)")}</span><input inputMode="decimal" value={m.preu} onChange={e=>setM(x=>({...x,preu:e.target.value,preuTocat:true}))}/></label>
     <label><span>{t("Quilòmetres")} <em>{t("opcional")}</em></span><input inputMode="decimal" value={m.km} onChange={e=>setM(x=>({...x,km:e.target.value}))} placeholder="0"/></label>
     <label className="wide"><span>{t("Notes")} <em>{t("opcional")}</em></span><input value={m.notes} onChange={e=>setM(x=>({...x,notes:e.target.value}))} placeholder={t("Ex. revisió de plànols amb el client")}/></label>
     <div className="modal-actions wide"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={save}>{t("Desar")}</button></div>
@@ -20427,26 +20493,34 @@ function HoursToInvoice878256({obres=[],clients=[],onCreate,odata,openObraTab}){
   function marcarFacturat(g){if(!confirm(t("Marcar com a facturades les {n} entrades de «{obra}» sense fer cap factura (p. ex. si ja les has facturat per un altre camí)?",{n:g.rows.length,obra:g.o.nom})))return;const ids=new Set(g.rows.map(r=>r.id));const at=new Date().toISOString();writeTimeRows878255(g.o.id,readTimeRows878255(g.o.id).map(x=>ids.has(x.id)?{...x,facturat:true,facturatAt:at}:x))}
   const groups=(()=>{const m={};rows.forEach(r=>{const k=r._obra.id;(m[k]??={o:r._obra,rows:[],h:0,v:0,from:null,to:null});const g=m[k];g.rows.push(r);if(isHoursRow878255(r))g.h+=timeBillHours878291(r);g.v+=timeBillImport878291(r);if(r._d&&(!g.from||r._d<g.from))g.from=r._d;if(r._d&&(!g.to||r._d>g.to))g.to=r._d});return Object.values(m).sort((a,b)=>b.v-a.v)})();
   const hon=useMemo(()=>odata?honorarisPendents878307(obres,odata):[],[obres,odata]);
+  const quotes=useMemo(()=>quotesPendents878434(clients,obres,odata),[clients,obres,odata]);const[fQuota,setFQuota]=useState(null);
   const visible=groups.filter(g=>!clientF||cName(g.o)===clientF);
   const honV=hon.filter(x=>!clientF||cName(x.o)===clientF);
-  const total=visible.reduce((s,g)=>s+g.v,0)+honV.reduce((s,x)=>s+x.pend,0);
+  const quotesV=quotes.filter(q=>!clientF||q.c.nom===clientF);
+  const total=visible.reduce((s,g)=>s+g.v,0)+honV.reduce((s,x)=>s+x.pend,0)+quotesV.reduce((s,q)=>s+q.import,0);
   const hours=visible.reduce((s,g)=>s+g.h,0);
   const nExp=new Set([...visible.map(g=>g.o.id),...honV.map(x=>x.o.id)]).size;
-  const clientNames=[...new Set([...groups.map(g=>cName(g.o)),...hon.map(x=>cName(x.o))])].sort((a,b)=>a.localeCompare(b,"ca"));
+  const clientNames=[...new Set([...groups.map(g=>cName(g.o)),...hon.map(x=>cName(x.o)),...quotes.map(q=>q.c.nom)])].sort((a,b)=>a.localeCompare(b,"ca"));
   return <section className="tobill-v878256">
     <header>
       <div><h2>{i18nT("Pendent de facturar")}</h2></div>
       <button type="button" className="secondary" onClick={()=>setManual({})}>{i18nT("+ Apuntar visita o feina")}</button>
     </header>
-    <div className="tobill-sum"><b>{money(total)}</b><span>{nExp} {i18nT("expedient")}{nExp===1?"":"s"}{hours>0.004?` · ${hours.toLocaleString(loc878272(),{maximumFractionDigits:2})} h`:""}</span>{clientNames.length>1&&veure878369&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{clientNames.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select>}{(honV.length+visible.length)>0&&<button type="button" className="secondary tobill-veure-v878369" aria-expanded={veure878369} onClick={()=>{if(veure878369)setClientF("");setVeure878369(v=>!v)}}>{veure878369?i18nT("Amagar"):i18nT("Veure-ho ({n})",{n:honV.length+visible.length})}</button>}</div>
-    {(veure878369||(honV.length+visible.length)===0)&&<>
+    <div className="tobill-sum"><b>{money(total)}</b><span>{nExp} {i18nT("expedient")}{nExp===1?"":"s"}{hours>0.004?` · ${hours.toLocaleString(loc878272(),{maximumFractionDigits:2})} h`:""}</span>{clientNames.length>1&&veure878369&&<select value={clientF} onChange={e=>setClientF(e.target.value)} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{clientNames.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select>}{(honV.length+visible.length+quotesV.length)>0&&<button type="button" className="secondary tobill-veure-v878369" aria-expanded={veure878369} onClick={()=>{if(veure878369)setClientF("");setVeure878369(v=>!v)}}>{veure878369?i18nT("Amagar"):i18nT("Veure-ho ({n})",{n:honV.length+visible.length+quotesV.length})}</button>}</div>
+    {(veure878369||(honV.length+visible.length+quotesV.length)===0)&&<>
+    {quotesV.length>0&&<div className="tobill-list tobill-quota-v878434">{quotesV.map(q=><div key={q.c.id+q.mes} className="tobill-row">
+      <span className="nm"><b>{i18nT("Quota · {mes}",{mes:nomMes878430(q.mes)})}</b><small>{q.c.nom}</small></span>
+      <span className="num">—</span>
+      <span className="num"><b>{money(q.import)}</b></span>
+      <span className="tobill-btns-v878291"><button type="button" className="primary" onClick={()=>setFQuota(q)}>{i18nT("Fer factura")}</button></span>
+    </div>)}</div>}
     {honV.length>0&&<div className="tobill-list tobill-hon-v878307">{honV.map(({o,p,pend,facturat})=><div key={p.id} className="tobill-row">
       <span className="nm"><b>{o.nom}</b><small>{cName(o)} · {i18nT("Honoraris acceptats")}{p.numero?` ${p.numero}`:""}{facturat>0.004?` · ${i18nT("ja facturat {x}",{x:money(facturat)})}`:""}</small></span>
       <span className="num">—</span>
       <span className="num"><b>{money(pend)}</b></span>
       <span className="tobill-btns-v878291">{openObraTab&&<button type="button" className="primary" onClick={()=>openObraTab(o.id,"Honoraris")}>{i18nT("Fer factura")}</button>}</span>
     </div>)}</div>}
-    {visible.length===0?(honV.length===0&&<p className="tobill-empty">{i18nT("No hi ha res pendent de facturar.")}</p>)
+    {visible.length===0?(honV.length===0&&quotesV.length===0&&<p className="tobill-empty">{i18nT("No hi ha res pendent de facturar.")}</p>)
     :<div className="tobill-list">{visible.map(g=><div key={g.o.id} className="tobill-row">
       <span className="nm"><b>{g.o.nom}</b><small>{cName(g.o)} · {g.rows.length} {i18nT("registre")}{g.rows.length===1?"":"s"}{g.from?` · ${g.from.toLocaleDateString("ca-ES")}${g.to&&g.to-g.from>0?` – ${g.to.toLocaleDateString("ca-ES")}`:""}`:""}</small></span>
       <span className="num">{g.h.toLocaleString("ca-ES",{maximumFractionDigits:2})} h</span>
@@ -20456,16 +20530,39 @@ function HoursToInvoice878256({obres=[],clients=[],onCreate,odata,openObraTab}){
     </>}
     {enQuota>0&&<p className="tobill-quota-v878291">{i18nT("{n} entrades de clients amb quota fixa no surten aquí: ja estan pagades amb la quota.",{n:enQuota})}</p>}
     {manual&&<ManualHours878256 obres={obres} clients={clients} initial={manual} close={()=>setManual(null)}/>}
-    {invoice&&<InvoiceFromHours878256 group={invoice} clientName={cName(invoice.o)} onCreate={onCreate} close={()=>setInvoice(null)}/>}
+    {invoice&&<InvoiceFromHours878256 group={invoice} clientName={cName(invoice.o)} acord={acordClient878434((clients||[]).find(c=>c.id===invoice.o?.client))} onCreate={onCreate} close={()=>setInvoice(null)}/>}
+    {fQuota&&<InvoiceQuota878434 q={fQuota} onCreate={onCreate} close={()=>setFQuota(null)}/>}
   </section>;
 }
-function InvoiceFromHours878256({group,clientName,onCreate,close}){
+function InvoiceQuota878434({q,onCreate,close}){
+  const tancada=x=>/tancat|anul/i.test(String(x.estat||""))?1:0;
+  const os=[...q.obres].sort((a,b)=>tancada(a)-tancada(b)||String(b.lastWorkedAt||b.updatedAt||"").localeCompare(String(a.lastWorkedAt||a.updatedAt||"")));
+  const[f,setF]=useState(()=>({obraId:os[0]?.id||"",data:todayISO8743(),concepte:`${t("Quota mensual")} · ${nomMes878430(q.mes).toLowerCase()}`,base:String(q.import).replace(".",","),iva:String(q.ac.iva??21).replace(".",","),retencio:String(q.ac.retencio??0).replace(".",",")}));
+  const set=(k,v)=>setF(x=>({...x,[k]:v}));
+  const base=parseNum8770(f.base),iva=f.iva===""?21:parseNum8770(f.iva),ret=parseNum8770(f.retencio);
+  function submit(e){e.preventDefault();if(!f.obraId)return;if(!(base>0)){alert(t("Escriu la base."));return}
+    onCreate?.({id:"ft-"+Date.now(),obraId:f.obraId,data:f.data,concepte:f.concepte,text:"",base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:"Pendent",quota878434:{client:q.c.id,mes:q.mes}});close()}
+  return <Modal title={t("Factura de la quota")} close={close}><form className="inv-hours-v878256 inv-quota-v878434" onSubmit={submit}>
+    <p className="who"><b>{q.c.nom}</b><span>{nomMes878430(q.mes)}</span></p>
+    <div className="grid">
+      <label className="wide"><span>{t("Expedient")}</span><select value={f.obraId} onChange={e=>set("obraId",e.target.value)}>{os.map(o=><option key={o.id} value={o.id}>{codiCurt878270(o)} · {o.nom}</option>)}</select></label>
+      <label className="wide"><span>{t("Concepte")}</span><input value={f.concepte} onChange={e=>set("concepte",e.target.value)}/></label>
+      <label><span>{t("Data")}</span><input type="date" value={f.data} onChange={e=>set("data",e.target.value)}/></label>
+      <label><span>{t("Base sense IVA (€)")}</span><input inputMode="decimal" value={f.base} onChange={e=>set("base",e.target.value)}/></label>
+      <label><span>{t("IVA %")}</span><input inputMode="decimal" value={f.iva} onChange={e=>set("iva",e.target.value)}/></label>
+      <label><span>{t("Retenció %")}</span><input inputMode="decimal" value={f.retencio} onChange={e=>set("retencio",e.target.value)}/></label>
+    </div>
+    <div className="quote-total-v8742"><span>{t("Total factura")}</span><b>{money(invoiceTotal8746({base,iva,retencio:ret,descompte:0}))}</b></div>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button className="primary">{t("Crear la factura")}</button></div>
+  </form></Modal>;
+}
+function InvoiceFromHours878256({group,clientName,acord=null,onCreate,close}){
   const ordered=[...group.rows].sort((a,b)=>(a._d||0)-(b._d||0));
   const[sel,setSel]=useState(()=>new Set(ordered.map(r=>r.id)));
   const chosen=ordered.filter(r=>sel.has(r.id));
   const sum=chosen.reduce((s,r)=>s+timeBillImport878291(r),0);
   const period=(()=>{const ds=chosen.map(r=>r._d).filter(Boolean);if(!ds.length)return "";const f=d=>d.toLocaleDateString("ca-ES",{month:"long",year:"numeric"});const a=f(ds[0]),b=f(ds[ds.length-1]);return a===b?a:`${a} – ${b}`})();
-  const[f,setF]=useState(()=>({data:todayISO8743(),concepte:`Honoraris tècnics${period?` · ${period}`:""}`,iva:"21",retencio:"0",estat:"Pendent",base:""}));
+  const[f,setF]=useState(()=>({data:todayISO8743(),concepte:`Honoraris tècnics${period?` · ${period}`:""}`,iva:String(acord?.iva??21).replace(".",","),retencio:String(acord?.retencio??0).replace(".",","),estat:"Pendent",base:""}));
   const base=f.base!==""?parseNum8770(f.base):sum;
   const iva=f.iva===""?21:parseNum8770(f.iva),ret=parseNum8770(f.retencio);
   function toggle(id){setSel(s=>{const n=new Set(s);n.has(id)?n.delete(id):n.add(id);return n});setF(x=>({...x,base:""}))}
@@ -21298,7 +21395,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
     setEdit(novaDespesa878318({...(fixedObra&&fase878342&&tipNou!=="Empresa"?{budgetId:fase878342}:{}),obraId:meves?(obraF||""):tipNou==="Empresa"?"":(obraF||obresSorted[0]?.id||""),...(meves?{meva:true}:{tipus:tipNou,...(tipNou==="Empresa"?{categoria:CATEGORIES_EMPRESA878338[0]}:{})}),...(treb?{perRevisar:true,deTreballador:true}:{}),...extra}));
   }
   // V87.329 · «+ Nova despesa» del tècnic: l'editor demana primer l'expedient i després el tipus (si hi ha un apartat triat, ja ve posat)
-  function novaMeva878329(){const g=GRUPS_MEVA878323.find(x=>x.k===tipusF);setEdit(novaDespesa878318({meva:true,obraId:obraF||"",...(obraF?{__exp:true}:{}),...(g?{tipusMeva:g.nou,iva:ivaMeva878323(g.nou),...(g.k==="km"?{preuKm:"0,26"}:{})}:{})}))}
+  function novaMeva878329(){const g=GRUPS_MEVA878323.find(x=>x.k===tipusF);setEdit(novaDespesa878318({meva:true,obraId:obraF||"",...(obraF?{__exp:true}:{}),...(g?{tipusMeva:g.nou,iva:ivaMeva878323(g.nou),...(g.k==="km"?{preuKm:kmObra878434(obres,obraF)}:{})}:{})}))}
   function save(a){if(desaDespesa878318(a))setEdit(null)}
   function exporta878338(compartir=false){
     const r2=x=>Math.round((+x||0)*100)/100;
@@ -21662,7 +21759,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
   const nrmC=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
   const llistaExp=obres.filter(o=>!cerca.trim()||nrmC(`${o.nom} ${codiCurt878270(o)} ${o.poblacio||""} ${o.adreca||""}`).includes(nrmC(cerca.trim()))).slice(0,60);
   const triaExp=id=>{setA(x=>({...x,obraId:id,__exp:true,...NO_IMP}));setPas(a.tipusMeva?"dades":"tipus");setCerca("")};
-  const triaGrup=g=>{setA(x=>({...x,tipusMeva:g.nou,...(x.isNew&&!String(x.base||"").trim()?{iva:ivaMeva878323(g.nou)}:{}),...(g.k==="km"?{iva:"0",preuKm:x.preuKm??"0,26"}:{})}));setPas("dades")};
+  const triaGrup=g=>{setA(x=>({...x,tipusMeva:g.nou,...(x.isNew&&!String(x.base||"").trim()?{iva:ivaMeva878323(g.nou)}:{}),...(g.k==="km"?{iva:"0",preuKm:x.preuKm??kmObra878434(obres,x.obraId)}:{})}));setPas("dades")};
   function triaMeva(m){setA(x=>m?{...x,meva:true,tipus:undefined,isp:false,cobreix:[],...NO_IMP}:{...x,meva:false,tipus:tipusDespesa878311({...x,meva:false})||"Albarà",tipusMeva:"",km:""})}
   const fotoBloc=<>
     <div className="alb-photo">{a.foto?<img src={a.foto} alt={t("Albarà")}/>:<span>{a.meva?t("Sense tiquet"):t("Sense foto ni PDF")}</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?t("Canviar la foto"):t("Fer foto")}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{t("Adjuntar PDF")}</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf,a.pdfNom)}>{t("Obrir el PDF")}{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>

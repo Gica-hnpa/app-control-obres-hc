@@ -2358,6 +2358,29 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils `src/theme-v878433.css`. Prova: `v433test.mjs` (12: compte de l'Héctor amb una còpia del DADES a «obra CALA ROVIRA 11» i
       demo-tecnic al mòbil). Adaptades `fitxa319test` (els agents sense botó a la capçalera), `encarrec333test` (els passos, tots plegats
       d'entrada des de la V87.432) i `v426test` (els capítols, targetes secundàries més baixes).
+  - **V87.434 · «Acord amb el client»** (l'Héctor, 29/10/2026: «el cost o el pactat amb l'empresa amb qui treballo… hauria d'estar en alguna
+    targeta meva amb el client… i que cada vegada que fes alguna obra d'ell es tingui en compte… algun altre tècnic li pot passar el mateix
+    amb un o més clients»):
+    - **On:** Contactes › fitxa del client, targeta principal plegada «Acord amb el client» (`AcordClient878434`, `.acord-v878434`, icona
+      `Handshake`; només amb el mòdul tècnic). A la línia, «300,00 € al mes» o el preu per hora. Es desa amb «Desar l'acord», a part de la
+      fitxa (desar la fitxa ja no toca la quota ni l'acord). La quota i el preu per hora ja no són a les dades de la fitxa.
+    - **Què es desa al client:** `quotaFixa` i `preuHoraQuota` (els de sempre) i `acord878434 = {cobra:[quota|hores|pressupost], inclou:[feines
+      de TASQUES878430 que entren a la quota], quotaDes:"AAAA-MM", kmPreu, despeses:"incloses"|"repercutir", iva, retencio}`.
+      `acordClient878434(c)` ho llegeix (sense acord, com abans: amb quota, tot dins de la quota i les despeses incloses).
+    - **Què fa a les obres del client:**
+      - **Apuntar hores** (`HonorarisTemps`, prop `acord`; també «+ Apuntar visita o feina» de Facturació): el preu per hora de l'acord i l'estat
+        segons la feina (`estatAcord878434`): dins de la quota si la feina hi entra; si no, «Pendent» si cobra per hores o «No es factura».
+        Si es toca l'estat a mà, canviar de feina ja no el canvia.
+      - **Les meves despeses de quilometratge:** el € per km de l'acord (`kmObra878434`; sense acord, 0,26).
+      - **Factures de l'encàrrec** (`FacturesEncarrec878431`, `FerFacturaEncarrec878431`): les despeses «a repercutir» surten a «Per facturar»
+        també amb quota; l'IVA i la retenció de l'acord. «Fer factura» de les hores a Facturació (`InvoiceFromHours878256`), igual.
+      - **Facturació › Pendent de facturar:** la quota de cada mes des de «Es factura des de» (`quotesPendents878434`): «Quota · Octubre del
+        2026 · client · 300,00 €» amb «Fer factura» (`InvoiceQuota878434`: l'expedient del client on es desa —de sèrie l'obert treballat més
+        recentment—, «Quota mensual · octubre del 2026», base, IVA i retenció). La factura porta `quota878434 = {client, mes}`
+        (`createFacturaGlobal8778`) i el mes deixa de ser pendent.
+      - **Rendiment de la quota:** les despeses «a repercutir» ja no es resten de la quota.
+    - **De passada:** a la fitxa del client, al mòbil, la llista d'expedients passava de l'amplada (`obra-row-code-v8739`).
+    - Estils `src/theme-v878434.css`. Prova: `v434test.mjs` (17). Adaptada `v430test` (la quota es posa a l'acord).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2531,7 +2554,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.433 a Render):**
+**Estat (publicada la V87.434 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

@@ -1,0 +1,13 @@
+/* V87.434 · «Acord amb el client» (Contactes › fitxa del client) i la quota de cada mes a Facturació › Pendent de facturar */
+html body .acord-v878434>.cos{gap:14px}
+html body .acord-v878434 .ac-camp{display:grid;gap:6px;min-width:0}
+html body .acord-v878434 .ac-camp>span,html body .acord-v878434 .ac-grid label>span{font-size:13px;font-weight:600;color:var(--co-ink-2,#334a52)}
+html body .acord-v878434 .ac-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+html body .acord-v878434 .ac-grid label{display:grid;gap:6px;min-width:0}
+html body .acord-v878434 .ac-grid input{width:100%;max-width:100%;box-sizing:border-box}
+html body .acord-v878434 .xips-v878430 button:disabled{opacity:.75;cursor:default}
+html body .acord-v878434 .ac-desar{display:flex;justify-content:flex-end}
+html body .tobill-quota-v878434 .tobill-row .nm b{color:var(--co-accent,#2563EB)}
+@media (max-width:700px){html body .acord-v878434 .ac-grid{grid-template-columns:1fr 1fr}html body .acord-v878434 .ac-desar .primary{width:100%}}
+/* la llista d'expedients de la fitxa del client, al mòbil: el text passa de línia i l'estat va a sota (abans passava de l'amplada) */
+@media (max-width:700px){html body button.obra-row-code-v8739{grid-template-columns:auto minmax(0,1fr);padding:12px 14px;gap:12px}html body button.obra-row-code-v8739 .grow{min-width:0}html body button.obra-row-code-v8739 .grow>*{overflow-wrap:anywhere;min-width:0}html body button.obra-row-code-v8739>:last-child:not(.grow){grid-column:2;justify-self:start}}
