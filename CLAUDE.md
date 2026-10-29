@@ -2160,6 +2160,53 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Estils `src/theme-v878425.css`. Prova: `v425test.mjs` (15: plegades a l'ordinador i al mòbil, el toc les obre, vista prèvia i PDF del document a
       origen —vertical + horitzontal, res fora del full—, pressupost vertical, compartir). Eines: `fullsa4mira.mjs` (aplica `fullsA4.js` a un HTML desat
       i en fa la captura) i `imprimeixhtml.mjs`.
+  - **V87.426 · L'Econòmic de l'obra en targetes plegables iguals** (Bloc 1 del full de ruta; l'Héctor, 29/10/2026 a la nit: «pantalles netes…
+    targetes desplegables, inclosos els capítols i les partides del pressupost, de la mateixa mida, forma i tamany; i no posis comentaris com a
+    Ajustos, que surt la línia dels %»; «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les opcions…
+    les eines dins d'editar… canviar el nom i eliminar ja surten a les fases»):
+    - **Targeta plegable comuna** (`bloc-v878426`, `src/theme-v878426.css`): una línia de 58 px amb la icona, el títol, com a molt una xifra a la
+      dreta i la fletxa, sense línia de comentari; a dins, parts també plegables (`sub-v878426`). `CardOPlega878369` té el mode `bloc426`
+      (`icona`, `xifra`). Les files que es despleguen (proformes, factures) són `fila-v878426`.
+    - **Pressupost:** Fases · «Ajustos del pressupost» (un sol bloc, el construeix l'Obra amb `ajustos878426()` i el passa per `GestioObra8746` →
+      `Pressupost`: el % del marge d'intermediari —la comissió amagada, ara una línia «Marge d'intermediari»—, «Preus i marges», «Obra i
+      logística» i «Número i condicions per al client», que abans eren dos blocs a part) · «Avisos» (plegat, amb el nombre; fora el ⚠ de la
+      capçalera i els de baix) · el pressupost · «Descompost del pressupost» (mà d'obra, materials…; abans «Resum del pressupost» dins de la
+      targeta). Capçalera: **Editar · Imprimir · Accions**. «Imprimir» (`imprimir426`, `.imprimir-modal-v878426`): PDF del pressupost, PDF del
+      pressupost original i dels imprevistos, Exportar Excel, Guardar a Documents. «Accions»: Enviar, Signar amb certificat, Afegir partides
+      (llibreria, dictar, Excel, PDF, IA), Pressupost inicial. Editant: «Afegir» i **«Eines»** (renumerar, validar descompostos, tornar a llegir els
+      descompostos —editant, a les partides que s'editen—, buidar). Amb la barra de fases (`ambFases878426`) ja no hi ha canviar el nom, eliminar
+      ni «Un pressupost nou al costat» (són al «⋯» de les fases).
+    - **Capítols i partides com a targetes:** el capítol, tota la línia es toca (`cap-carta-v878426`, la fletxa a la dreta); sense «N partides» ni
+      «N capítols». Fora d'edició, cada partida és una targeta (`.cartes-v878426`: codi, concepte, import) i, en tocar-la, la **fitxa de la partida
+      s'obre a sota** (`FitxaPartida878361 inline`, `fitxa426`); «Editar» de la fitxa obre l'edició i la fitxa en finestra, i «Fer un descompost
+      senzill» o «Treure el mínim» l'obren amb aquell pas a punt (`budgetPartidaView87208.que` → prop `inicial`). Editant, com abans, i la
+      partida nova («+ Afegir partida») s'obre sola.
+    - **Certificacions:** «Avisos» (`BudgetWarnings878253`, plegat, sense els textos que expliquen) · «Certificacions» (plegada, el total certificat i
+      «Nova»; oberta, **totes**, de punta a punta). Tocant-ne una (`detall426`), la seva pantalla: «‹ Certificacions», capçalera (data, factura) amb
+      **Editar · Imprimir · Accions** («Imprimir»: PDF de la certificació, a origen, administració i les línies d'amidament; «Accions»: Enviar, Signar,
+      Fer / Veure la factura, Afegir feina, retirades, Importar Excel, Eliminar) i les targetes **Resum** (`ResumCert878426`: tres xifres —la
+      certificació, l'executat a origen amb la barra i el pendent— i el previst i imprevistos), **Partides** (la graella; s'obre en editar) i
+      **Quadre resum**. `certMode8711`: "" o "emplenar" (Partides oberta). Eliminar-la torna a la llista.
+    - **Previst i imprevistos** (`PrevistImprevist878410`, `nu` sense targeta pròpia): sense comptadors de partides ni comentaris («Cap», «% de…»).
+    - **Facturació de l'obra** (`Fact`): les xifres (pressupost d'obra, base, **IVA**, total amb IVA i el % facturat) · «Proformes» (les que encara no
+      tenen factura; cada una es desplega amb base, IVA, retenció, deducció, PDF, Enviar i Fer factura) · «Factures» (per número; PDF, Enviar,
+      «Signatura del client», Eliminar; VeriFactu igual). **«Enviar» d'una factura:** «Enviar la factura» o «Enviar-la perquè la tornin signada»,
+      que obre `SignaturaCert878408` amb `tipus:"factura"` i el rol «Rebut pel client» (AutoFirma, enllaç a distància o pujar el PDF signat); el
+      signat es desa a Documents › 07 (certificacions i facturació) i la factura diu «Signada». La plantilla (`proformaPrintHtml8783`) porta el
+      requadre del client quan es prepara per signar o ja està signada.
+    - **Despeses de l'obra** (constructora i gestió total, `obra426`): el total sense IVA a dalt i un sol **«Accions»** (Fer foto, Adjuntar, Entrar a
+      mà, Importar Excel, Seleccionar, Filtres); una targeta per cost amb l'import sense IVA: **Mà d'obra** (amb «Hores del personal» a dins, que
+      abans era una línia a part a l'Obra; prop `personal426`), **Factures d'industrials**, **Factures de materials**, Altres (si n'hi ha) i
+      **Despeses generals (DGE)** (el % de l'obra sobre els ingressos). Fora els requadres, els totals i la línia de vistes.
+    - El total de Despeses i les DGE surten de `rendimentFase878342` (el mateix càlcul que el Rendiment). Com al Rendiment
+      (`useDespesesObra878312`), els albarans inclosos en una factura no compten; `rendimentFase878342` i `rendimentObra878339` també els
+      treuen ara (`cobertsPer878311`), per si se’ls passa la llista sencera.
+    - **Rendiment de l'obra:** a dalt, quatre xifres amb color (previsió final, certificat a origen amb la barra, despeses —amb les DGE— i benefici);
+      la **gràfica a la vista** (`EvolucioObra878366`, ja no plegada); i les targetes «Compte de l'obra» (el compte i els % de DGE i BI), «Previst i
+      imprevistos», «Per fases» i «Per capítols».
+    - Prova: `v426test.mjs` (29: pressupost, certificacions, facturació —fer factura i enviar-la per signar—, despeses, rendiment i mòbil).
+      Adaptades als blocs i a «Imprimir» unes 30 proves (pressupost, certificacions, facturació, despeses, hores del personal, menús, documents,
+      enviar, signar, `clientsvirtuals`…).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2333,7 +2380,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.425 a Render):**
+**Estat (publicada la V87.426 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2354,6 +2401,8 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   partides que no s’executaran (tota o en part) en vermell i el resum de l’obra amb gràfic als PDF de les certificacions (V87.423).
 - **Compartir només el Pressupost i les Certificacions** (V87.424): l’altre compte (p. ex. el Martí) hi fa la seva certificació i tots dos la comparen.
 - **Documents en fulls A4** (V87.425): la vista prèvia i el PDF, vertical o horitzontal segons la pàgina (el quadre a origen ja no surt tallat).
+- **L’Econòmic de l’obra en targetes plegables iguals** (V87.426, Bloc 1): Pressupost, Certificacions, Facturació, Despeses i Rendiment;
+  «Editar · Imprimir · Accions»; enviar una factura perquè la tornin signada.
 - **Dades de l’obra amb Contactes** (V87.414): els camps buits o de farciment s’omplen amb la fitxa de Contactes i es tria amb un cercador
   per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.

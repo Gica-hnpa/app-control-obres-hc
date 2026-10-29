@@ -1,0 +1,253 @@
+/* V87.426 · L'Econòmic de l'obra en blocs plegables (l'Héctor, 29/10/2026: «pantalles netes… blocs que es despleguen»).
+   Un bloc és una línia amb la icona, el títol i el resum; en tocar-la, s'obre. El mateix a Pressupost, Certificacions, Facturació,
+   Despeses i Rendiment. */
+html body details.card.bloc-v878426{padding:0!important;overflow:visible;margin:0 0 12px}
+html body details.card.bloc-v878426>summary{list-style:none;cursor:pointer;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:12px;min-height:58px!important;padding:10px 16px}
+html body details.card.bloc-v878426>summary::-webkit-details-marker{display:none}
+html body details.card.bloc-v878426>summary>svg:first-child{flex:none;color:var(--co-accent,#2563EB)}
+html body details.card.bloc-v878426>summary .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body details.card.bloc-v878426>summary .t b{font-size:15.5px;line-height:1.25;color:var(--co-ink,#0f172a)}
+html body details.card.bloc-v878426>summary .t small{font-size:13px;line-height:1.35;color:var(--co-ink-3,#5F7075)}
+html body details.card.bloc-v878426>summary .n{flex:none;min-width:26px;height:26px;padding:0 8px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:#FFEDD5;color:#9A3412}
+html body details.card.bloc-v878426>summary .xifra{flex:none;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a);white-space:nowrap}
+html body details.card.bloc-v878426>summary .chev{flex:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body details.card.bloc-v878426[open]>summary{border-bottom:1px solid var(--co-line)}
+html body details.card.bloc-v878426[open]>summary .chev{transform:rotate(90deg)}
+html body details.card.bloc-v878426>.cos{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+html body details.card.bloc-v878426 em.mg-n-v878380{flex:none;font-style:normal;font-size:12.5px;font-weight:600;color:#C2410C;background:#FFF7ED;border:1px solid #FED7AA;border-radius:999px;padding:1px 8px}
+
+/* Avisos: en taronja */
+html body details.card.bloc-v878426.avisos-v878426{border-color:#FED7AA;background:#FFFBF5}
+html body details.card.bloc-v878426.avisos-v878426>summary>svg:first-child{color:#C2410C}
+html body details.card.bloc-v878426.avisos-v878426[open]>summary{border-bottom-color:#FED7AA}
+html body .avisos-pres-v878320.dins-v878426{margin:0}
+
+/* Dins d'un bloc: cada part, una línia que també es desplega */
+html body .bloc-v878426 .sub-v878426{margin:0!important;padding:0!important;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .bloc-v878426 details.sub-v878426>summary,html body .bloc-v878426 div.sub-v878426{list-style:none;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:10px!important;min-height:50px;padding:8px 12px!important;cursor:pointer;position:static!important}
+html body .bloc-v878426 div.sub-v878426{cursor:default}
+html body .bloc-v878426 details.sub-v878426>summary::-webkit-details-marker{display:none}
+html body .bloc-v878426 details.sub-v878426>summary::after{content:none!important;display:none!important}
+html body .bloc-v878426 .sub-v878426>summary>svg:first-child{flex:none;color:var(--co-ink-2,#334155)}
+html body .bloc-v878426 .sub-v878426 .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+html body .bloc-v878426 .sub-v878426 .t b{font-size:14.5px;color:var(--co-ink,#0f172a)}
+html body .bloc-v878426 .sub-v878426 .t small{font-size:12.5px;color:var(--co-ink-3,#5F7075);line-height:1.35}
+html body .bloc-v878426 .sub-v878426>summary .chev{flex:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body .bloc-v878426 details.sub-v878426[open]>summary{border-bottom:1px solid var(--co-line)}
+html body .bloc-v878426 details.sub-v878426[open]>summary .chev{transform:rotate(90deg)}
+html body .bloc-v878426 details.sub-v878426>.cos{padding:10px 12px 12px}
+html body .bloc-v878426 details.sub-v878426>.pressupost-rapid-v87150{padding:4px 8px 8px}
+
+/* El % (marge d'intermediari), ara dins dels ajustos */
+html body .com-fila-v878426 .com-espia-v878346{position:relative;display:inline-grid;place-items:center;width:38px;height:38px;min-height:38px;padding:0;border-radius:10px;border:1px solid var(--co-line-strong,#CBD5E1);background:var(--co-surface,#fff);color:var(--co-ink-2,#334155);cursor:pointer;flex:0 0 auto}
+html body .com-fila-v878426 .com-espia-v878346>i{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#CBD5E1;box-shadow:0 0 0 2px var(--co-surface,#fff)}
+html body .com-fila-v878426 .com-espia-v878346.on{border-color:#16A34A;color:#15803D}
+html body .com-fila-v878426 .com-espia-v878346.on>i{background:#22C55E;box-shadow:0 0 0 2px var(--co-surface,#fff),0 0 6px 1px rgba(34,197,94,.75)}
+html body .bloc-v878426 button.sub-v878426.com-fila-v878426{display:flex!important;align-items:center;gap:10px;width:100%;min-height:54px;padding:8px 12px!important;text-align:left;color:var(--co-ink,#0f172a)!important;font:inherit;cursor:pointer;box-shadow:none!important}
+html body .bloc-v878426 button.sub-v878426.com-fila-v878426:disabled{opacity:.55;cursor:not-allowed}
+html body .bloc-v878426 button.sub-v878426.com-fila-v878426>.chev{flex:none;color:var(--co-ink-3,#5F7075)}
+
+/* El resum del descompost (mà d'obra, materials…), a sota del pressupost, amb el mateix aspecte */
+html body .budget-card-v878248+.resum-pres-v878362{margin:12px 0 0;border-radius:var(--co-r-lg,16px)}
+
+/* «Imprimir»: una pantalla amb les opcions */
+html body .imprimir-modal-v878426{display:flex;flex-direction:column;gap:8px;min-width:min(420px,100%)}
+html body .imprimir-modal-v878426 .opcio{display:flex!important;align-items:center;gap:12px;width:100%;min-height:52px;padding:10px 14px!important;border:1px solid var(--co-line)!important;border-radius:12px!important;background:var(--co-surface,#fff)!important;color:var(--co-ink,#0f172a)!important;font:600 15px var(--app-font)!important;text-align:left;cursor:pointer;box-shadow:none!important}
+html body .imprimir-modal-v878426 .opcio:hover{border-color:var(--co-accent,#2563EB)!important;background:#F5F8FF!important}
+html body .imprimir-modal-v878426 .opcio>svg{flex:none;color:var(--co-accent,#2563EB)}
+html body .imprimir-modal-v878426 .grup{margin:8px 2px 0;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+
+/* El nombre de partides de cada capítol ja no hi és: la columna queda buida */
+html body .budget-v25-cap-head>span:empty{min-width:0}
+@media (max-width:700px){
+  html body details.card.bloc-v878426>summary{padding:10px 12px;gap:10px}
+  html body details.card.bloc-v878426>.cos{padding:10px 12px 12px}
+  html body .budget-v25-cap-head>span:empty{display:none}
+}
+html body .modal:has(>.imprimir-modal-v878426){width:min(520px,calc(100vw - 32px))!important;max-width:520px!important}
+html body .modal>.imprimir-modal-v878426{padding:14px 18px 18px;min-width:0}
+
+/* Totes les targetes, la mateixa forma: vora, cantonada de 14 px i una línia de 58 px */
+html body details.card.bloc-v878426{border-radius:14px!important;border:1px solid var(--co-line)!important;box-shadow:0 1px 2px rgba(15,23,42,.04)!important}
+html body .fases-v878342{border-radius:14px!important}
+
+/* Capítols del pressupost: targetes que es despleguen (tota la línia es toca; la fletxa a la dreta) */
+html body .budget-card-v878248 .budget-v25-cap{border:1px solid var(--co-line)!important;border-radius:14px!important;background:var(--co-surface,#fff)!important;margin:0 0 10px!important;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)!important}
+html body .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:12px!important;min-height:58px!important;padding:10px 16px!important;background:var(--co-surface,#fff)!important;border:0!important;border-radius:0!important;cursor:pointer;grid-template-columns:none!important;box-shadow:none!important;position:static!important}
+html body .budget-card-v878248 .cap-carta-v878426>button:first-child{display:none!important}
+html body .budget-card-v878248 .cap-carta-v878426>.budget-chapter-title-v87230{flex:1 1 auto;min-width:0}
+html body .budget-card-v878248 .cap-carta-v878426>.budget-chapter-title-v87230 b{font-size:15.5px!important;line-height:1.25;color:var(--co-ink,#0f172a)!important;text-transform:none}
+html body .budget-card-v878248 .cap-carta-v878426>.budget-chapter-title-v87230 small:empty{display:none}
+html body .budget-card-v878248 .cap-carta-v878426>span:empty{display:none!important}
+html body .budget-card-v878248 .cap-carta-v878426>.budget-chapter-total-v87230{flex:none;margin:0!important;font-size:15px!important;font-weight:700;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a)!important;white-space:nowrap;text-align:right}
+html body .budget-card-v878248 .cap-carta-v878426>.budget-chapter-total-v87230 small{display:none!important}
+html body .budget-card-v878248 .cap-carta-v878426>select{flex:none}
+html body .budget-card-v878248 .cap-carta-v878426>.cap-chev-v878426{flex:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body .budget-card-v878248 .cap-carta-v878426.obert>.cap-chev-v878426{transform:rotate(90deg)}
+html body .budget-card-v878248 .budget-v25-cap:has(>.cap-carta-v878426.obert)>.cap-carta-v878426{border-bottom:1px solid var(--co-line)!important}
+html body .budget-card-v878248 .budget-v25-cap.dins-grup-v878336{margin-left:14px!important}
+
+/* Partides: dins del capítol, una targeta per partida (codi, concepte, import); en tocar-la s'obre la fitxa a sota */
+html body .budget-card-v878248 .budget-v25-lines.cartes-v878426{display:flex!important;flex-direction:column;gap:8px;padding:10px 12px 12px!important;background:var(--co-bg,#F4F7F8)!important;border:0!important}
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line.head{display:none!important}
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line{display:block!important;padding:0!important;margin:0!important;border:1px solid var(--co-line)!important;border-radius:12px!important;background:var(--co-surface,#fff)!important;grid-template-columns:none!important;min-height:0!important;box-shadow:none!important;overflow:hidden}
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line>*:not(.budget-partida-mobile-summary-v87196):not(.fitxa-partida-v878361){display:none!important}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196{display:flex!important;flex-direction:row!important;align-items:center!important;gap:12px!important;width:100%;min-height:54px!important;margin:0!important;padding:8px 14px!important;border:0!important;border-radius:0!important;background:transparent!important;text-align:left;cursor:pointer;box-shadow:none!important;font:inherit}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child{flex:1 1 auto;min-width:0;display:flex!important;flex-direction:row!important;flex-wrap:nowrap;align-items:center;gap:10px}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>b{flex:none;font-size:13px;font-weight:700;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>strong{flex:0 1 auto;min-width:0;font-size:14.5px;font-weight:600;color:var(--co-ink,#0f172a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>small{display:none!important}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>em{flex:none}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child{flex:none;display:flex!important;flex-direction:row!important;align-items:center;gap:10px}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child>small{display:none!important}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child>b{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a);white-space:nowrap}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196 .chev{flex:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196[aria-expanded=true] .chev{transform:rotate(90deg)}
+html body .budget-card-v878248 .cartes-v878426 .fitxa-oberta-v878426>.budget-partida-mobile-summary-v87196{border-bottom:1px solid var(--co-line)!important}
+html body .fitxa-partida-v878361.inline-v878426{padding:12px 14px 14px}
+html body .fitxa-partida-v878361.inline-v878426>.peu-v878426{display:flex;justify-content:flex-end;margin-top:10px}
+@media (max-width:700px){
+  html body .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426{padding:10px 12px!important;gap:10px!important}
+  html body .budget-card-v878248 .budget-v25-lines.cartes-v878426{padding:8px!important}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196{padding:8px 10px!important;gap:8px!important}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>b{display:none}
+  html body .budget-card-v878248 .budget-v25-cap.dins-grup-v878336{margin-left:6px!important}
+}
+
+/* ── Certificacions ── */
+/* «Nova» dins de la línia de la llista (no plega ni desplega) */
+html body details.card.bloc-v878426>summary .nova-v878426{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 12px;border-radius:9px;font:600 13.5px var(--app-font)}
+/* la llista, de punta a punta i amb les files iguals */
+html body .bloc-v878426 .cert-taula-v878364.cert-files-v878426{max-width:none;width:100%;gap:6px}
+html body .bloc-v878426 .cert-files-v878426 .cert-row-v878273{min-height:54px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff);cursor:pointer;grid-template-columns:minmax(120px,1fr) 160px 140px 44px}
+html body .bloc-v878426 .cert-files-v878426.amb-fact .cert-row-v878273{grid-template-columns:minmax(120px,1fr) 160px 140px 140px 44px}
+html body .bloc-v878426 .cert-files-v878426 .cert-row-v878273:hover{border-color:var(--co-accent,#2563EB)}
+html body .bloc-v878426 .cert-files-v878426 .cert-row-v878273>b{font-size:15px}
+html body .bloc-v878426 .cert-files-v878426 .cert-row-v878273>strong{text-align:right;font-variant-numeric:tabular-nums}
+html body .bloc-v878426 .cert-files-v878426 .cap-t{display:grid;grid-template-columns:minmax(120px,1fr) 160px 140px 44px;gap:10px;padding:0 12px}
+html body .bloc-v878426 .cert-files-v878426.amb-fact .cap-t{grid-template-columns:minmax(120px,1fr) 160px 140px 140px 44px}
+/* la certificació triada: tornar, capçalera i targetes */
+html body .cert-detall-v878426{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+html body .cert-detall-v878426 .tornar-v878426{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:4px 8px 4px 2px;border:0;background:none;color:var(--co-accent,#2563EB);font:600 14.5px var(--app-font);cursor:pointer;box-shadow:none}
+html body .cert-cap-v878426{display:flex;align-items:center;flex-wrap:wrap;gap:12px 16px;padding:14px 16px!important;margin:0!important;border-radius:14px!important}
+html body .cert-cap-v878426>.esq{flex:1 1 200px;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .cert-cap-v878426>.esq>b{font-size:18px;color:var(--co-ink,#0f172a)}
+html body .cert-cap-v878426>.esq>small{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--co-ink-3,#5F7075)}
+html body .cert-cap-v878426>.esq .fa{font-style:normal;font-weight:600;color:#15803D;background:#ECFDF3;border:1px solid #BBF7D0;border-radius:999px;padding:1px 8px}
+html body .cert-cap-v878426>.tot{flex:none;font-size:20px;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a)}
+html body .cert-cap-v878426>.botons{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+html body .cert-cap-v878426>.botons>button,html body .cert-cap-v878426>.botons>.action-menu-v87213>summary{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:8px 14px;border-radius:8px;font:600 13.5px var(--app-font);white-space:nowrap}
+html body .cert-cap-v878426>.botons>.action-menu-v87213>summary{background:var(--co-surface,#fff)!important;color:var(--co-ink,#0f172a)!important;border:1px solid var(--co-line-strong,#CBD5E1)!important}
+html body .cert-cap-v878426>.botons>.action-menu-v87213>summary>span{display:none}
+html body .cert-cap-v878426 .action-menu-panel-v87213{right:0;left:auto;min-width:270px}
+html body .cert-cap-v878426 .bloq-v878364{display:inline-flex;align-items:center;gap:6px;color:#15803D;font-weight:600}
+html body .bloc-v878426.cert-partides-v878426>.cert-grid-wrap-v69{margin:0;border:0;border-top:1px solid var(--co-line);border-radius:0 0 14px 14px}
+html body .bloc-v878426.quadre-bloc-v878426>.cos{padding:0!important}
+html body .bloc-v878426.quadre-bloc-v878426>.cos>.cert-resum-scroll-v87216{border:0;border-radius:0 0 14px 14px;box-shadow:none;margin:0}
+html body .bloc-v878426.quadre-bloc-v878426>.cos>.cert-resum-scroll-v87216>.seg-v878411{margin:12px 14px}
+html body .bloc-v878426.quadre-bloc-v878426>.cos>.cert-resum-m-v878386{padding:10px 12px}
+/* el resum de la certificació: tres xifres amb color i, a sota, el previst i imprevistos */
+html body .resum-cert-v878426{display:flex;flex-direction:column;gap:14px}
+html body .xifres-v878426{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+html body .xifres-v878426 .x{position:relative;display:flex;flex-direction:column;gap:4px;padding:14px 16px 14px 18px;border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff);overflow:hidden}
+html body .xifres-v878426 .x::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+html body .xifres-v878426 .x.act{--c:#2563EB;background:#F5F8FF}
+html body .xifres-v878426 .x.exe{--c:#16A34A}
+html body .xifres-v878426 .x.pen{--c:#D97706}
+html body .xifres-v878426 .x small{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+html body .xifres-v878426 .x b{font-size:21px;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a)}
+html body .xifres-v878426 .x .barra{display:block;height:8px;border-radius:999px;background:#E5E7EB;overflow:hidden;margin-top:4px}
+html body .xifres-v878426 .x .barra i{display:block;height:100%;background:#16A34A;border-radius:999px}
+html body .xifres-v878426 .x em{font-style:normal;font-size:12.5px;font-weight:600;color:#15803D}
+html body .previst-v878410.nu-v878426{display:flex;flex-direction:column;gap:12px}
+/* «Imprimir» de la certificació: l'opció de les línies d'amidament */
+html body .imprimir-modal-v878426 .chk-v878426{font-weight:500!important}
+html body .imprimir-modal-v878426 .chk-v878426 input{width:18px;height:18px;flex:none}
+/* avisos de les certificacions dins de la targeta */
+html body .avisos-cert-v878426 .budget-warnings-v878253{margin:0}
+@media (max-width:700px){
+  html body .xifres-v878426{grid-template-columns:1fr}
+  html body .xifres-v878426 .x{flex-direction:row;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px;padding:12px 14px 12px 16px}
+  html body .xifres-v878426 .x .barra{flex:1 1 100%}
+  html body .cert-cap-v878426>.botons{flex:1 1 100%}
+  html body .cert-cap-v878426>.botons>*{flex:1 1 0;min-width:0}
+  html body .cert-cap-v878426>.botons>button,html body .cert-cap-v878426>.botons>.action-menu-v87213>summary{justify-content:center;width:100%;padding:8px 6px}
+  html body details.card.bloc-v878426>summary .nova-v878426{padding:6px 10px}
+  html body .bloc-v878426 .cert-files-v878426.amb-fact .cert-row-v878273,html body .bloc-v878426 .cert-files-v878426 .cert-row-v878273{grid-template-columns:minmax(0,1fr) auto 40px!important}
+}
+html body .stack>details.card.bloc-v878426,html body .stack>.cert-detall-v878426{margin:0}
+
+/* ── Facturació de l'obra ── */
+html body .fact-v878426{display:flex;flex-direction:column;gap:12px}
+html body .fact-v878426>details.card.bloc-v878426{margin:0}
+html body .fact-xifres-v878426{padding:0!important;overflow:hidden;border-radius:14px!important}
+html body .fact-xifres-v878426 .fact-summary-v87101{grid-template-columns:repeat(4,minmax(0,1fr)) 200px;border:0;padding:14px 16px}
+html body .fact-xifres-v878426 .fact-summary-v87101>div{border-radius:12px;min-height:82px}
+/* files que es despleguen (proformes i factures) */
+html body .fila-v878426{border:1px solid var(--co-line);border-radius:12px;background:var(--co-surface,#fff)}
+html body .fila-v878426>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:54px;padding:8px 14px}
+html body .fila-v878426>summary::-webkit-details-marker{display:none}
+html body .fila-v878426>summary .num{flex:none;font-weight:700;font-size:14.5px;color:var(--co-ink,#0f172a);font-variant-numeric:tabular-nums}
+html body .fila-v878426>summary .t{flex:1;min-width:0;font-size:13.5px;color:var(--co-ink-2,#334155);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .fila-v878426>summary .xifra{flex:none;font-size:14.5px;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a);white-space:nowrap}
+html body .fila-v878426>summary .chev{flex:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body .fila-v878426[open]>summary{border-bottom:1px solid var(--co-line)}
+html body .fila-v878426[open]>summary .chev{transform:rotate(90deg)}
+html body .fila-v878426>.cos{padding:12px 14px 14px;display:flex;flex-direction:column;gap:12px}
+html body .fila-v878426 .signada-v878426{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;color:#15803D;background:#ECFDF3;border:1px solid #BBF7D0;border-radius:999px;padding:2px 9px}
+html body .fila-v878426 .vf-badge-v878285{flex:none}
+html body .imps-v878426{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+html body .imps-v878426>div{display:flex;flex-direction:column;gap:2px;padding:8px 12px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-bg,#F4F7F8)}
+html body .imps-v878426>div small{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+html body .imps-v878426>div b{font-size:16px;font-variant-numeric:tabular-nums}
+html body .imps-v878426>div.tot{background:#F5F8FF;border-color:#C7D7FE}
+html body .params-v878426{display:grid;grid-template-columns:repeat(3,minmax(0,160px));gap:10px}
+html body .params-v878426 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .botons-v878426{display:flex;flex-wrap:wrap;gap:8px}
+html body .botons-v878426>button{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:8px 14px;border-radius:8px;font:600 13.5px var(--app-font)}
+html body .bloc-v878426>.cos>.fila-v878426+.fila-v878426{margin-top:0}
+@media (max-width:900px){
+  html body .fact-xifres-v878426 .fact-summary-v87101{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+}
+@media (max-width:700px){
+  html body .fila-v878426>summary{gap:8px;padding:8px 10px}
+  html body .fila-v878426>summary .t{font-size:12.5px}
+  html body .params-v878426{grid-template-columns:repeat(3,minmax(0,1fr))}
+  html body .botons-v878426>button{flex:1 1 calc(50% - 8px);justify-content:center}
+}
+html body .fact-layout-v87101.fact-v878426{display:flex!important;flex-direction:column!important;gap:12px!important}
+html body .params-v878426 select{min-height:38px;border-radius:8px;padding:6px 10px;border:1px solid var(--co-line-strong,#CBD5E1);background:var(--co-surface,#fff)}
+
+/* ── Despeses de l'obra ── */
+html body .alb-obra-v878279 .alb-head .tot-v878426{font-size:19px;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a);white-space:nowrap}
+html body .desp-cartes-v878426{display:flex;flex-direction:column;gap:12px}
+html body .desp-cartes-v878426>details.card.bloc-v878426{margin:0}
+html body .desp-bloc-v878426.g-ma>summary>svg:first-child{color:#B45309}
+html body .desp-bloc-v878426.g-sub>summary>svg:first-child{color:#7C3AED}
+html body .desp-bloc-v878426.g-mat>summary>svg:first-child{color:#0E7490}
+html body .desp-bloc-v878426.dge-v878426>summary>svg:first-child{color:#475569}
+html body .desp-bloc-v878426 .buit-v878426{padding:6px 2px;color:var(--co-ink-3,#5F7075);font-size:14px}
+html body .desp-bloc-v878426>.cos>.taula-v878348,html body .desp-bloc-v878426>.cos>.dies-v878348{margin:0}
+html body .alb-obra-v878279 .accions-v878367 .action-upload-v87213 input{display:none}
+html body .desp-obra-v878426 .alb-filters.plegat-v878349{display:none!important}
+html body .desp-obra-v878426>.alb-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+html body .desp-obra-v878426>.alb-head>div:first-child{flex:1 1 auto;min-width:0}
+html body .desp-obra-v878426>.alb-head .actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+html body .desp-obra-v878426>.alb-head h2{margin:0}
+
+/* ── Rendiment de l'obra ── */
+html body .rend-v878426>details.card.bloc-v878426{margin:0}
+html body .xifres-v878426.x4{grid-template-columns:repeat(4,minmax(0,1fr))}
+html body .xifres-v878426 .x.ben{--c:#16A34A}
+html body .xifres-v878426 .x.ben.dolent{--c:#DC2626}
+html body .xifres-v878426 .x.ben.bo b{color:#15803D}
+html body .xifres-v878426 .x.ben.dolent b{color:#B91C1C}
+html body .xifres-v878426 .x.ben em{color:inherit}
+html body .graf-v878426{border-radius:14px!important}
+@media (max-width:1000px){html body .xifres-v878426.x4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){html body .xifres-v878426.x4{grid-template-columns:1fr}}
+/* les partides noves o que pugen (taronja) i les que no s'executaran (vermell): la targeta sencera amb el color */
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line:has(>.budget-partida-mobile-summary-v87196.nova-v878413),
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line:has(>.budget-partida-mobile-summary-v87196.puja-v878413){background:#FFF7ED!important;border-color:#FDBA74!important;box-shadow:inset 3px 0 0 #EA580C!important}
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line:has(>.budget-partida-mobile-summary-v87196.noexec-v878423){background:#FEF2F2!important;border-color:#FECACA!important;box-shadow:inset 3px 0 0 #DC2626!important}
+html body .cert-cap-v878426 .cert-barra-v878364 .accions-v878364>summary>span{display:none!important}
