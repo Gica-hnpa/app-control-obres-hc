@@ -4710,4 +4710,9 @@ export default {
 "Escriu la base.": "Escribe la base.",
 "Factura de la quota": "Factura de la cuota",
 "Per hores": "Por horas",
+"Portar la partida dels amidaments": "Traer la partida de las mediciones",
+"Portar les {n} partides dels amidaments": "Traer las {n} partidas de las mediciones",
+"Importar un pressupost fet a part": "Importar un presupuesto hecho aparte",
+"O fer-lo aquí": "O hacerlo aquí",
+"Llegir un pressupost en BC3…": "Leer un presupuesto en BC3…",
 };

@@ -1,0 +1,28 @@
+/* V87.435 · Amidaments en targetes plegades, el pressupost buit amb les seves opcions i el BC3 al menú «Afegir» (l'Héctor, 29/10/2026:
+   «en adjuntar els amidaments surt desplegat i hem quedat que sempre tot amb targeta desplegable»; «quan poso primer els amidaments, en
+   obrir el pressupost hauria de tenir l'opció de totes les partides per posar preus, i després la de crear o importar el pressupost»). */
+html body .amid-v878435 .amid-barra-v878435{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+html body .amid-v878435 .amid-barra-v878435 .amid-passar-v878328{display:inline-flex;padding:0}
+html body .amid-v878435 .amid-barra-v878435 .amid-passar-v878328 .primary{padding:9px 16px;font-size:14.5px;display:inline-flex;align-items:center;gap:6px}
+html body .amid-v878435 .amid-cos-v878328{display:flex;flex-direction:column;gap:12px}
+html body .amid-v878435 details.card.bloc-v878426{margin:0}
+html body .amid-v878435 details.card.bloc-v878426.preus-v878368>summary,html body .amid-v878435 details.card.bloc-v878426.logis-v878368>summary{flex-wrap:nowrap;gap:12px;border-bottom:0}
+html body .amid-v878435 details.card.bloc-v878426.preus-v878368>.cos,html body .amid-v878435 details.card.bloc-v878426.logis-v878368>.cos{display:flex;flex-direction:column;gap:12px}
+html body .amid-v878435 .amid-bloc-v878435>.cos{display:flex;flex-direction:column;gap:10px}
+html body .amid-v878435 .amid-bloc-v878435 details.amid-cap-v878328{margin:0}
+html body .amid-v878435 .resum-v878435{margin:0;color:var(--co-ink-3,#5F7075);font-size:13.5px}
+@media (max-width:700px){
+  html body .amid-v878435 .amid-barra-v878435>*{flex:1 1 auto}
+  html body .amid-v878435 .amid-barra-v878435 .amid-passar-v878328,html body .amid-v878435 .amid-barra-v878435 .amid-passar-v878328 .primary{width:100%;justify-content:center}
+}
+/* el pressupost buit */
+html body .card.pres-buit-v878435{display:flex;flex-direction:column;gap:12px;padding:14px 16px;margin:0 0 12px}
+html body .pres-buit-v878435 .primary.gran{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;font-size:15.5px;font-weight:700}
+html body .pres-buit-v878435 .fila{display:flex;align-items:center;justify-content:space-between;gap:8px 14px;flex-wrap:wrap}
+html body .pres-buit-v878435 .fila>span{font-weight:600;color:var(--co-ink,#14202B)}
+html body .pres-buit-v878435 .bt{display:flex;gap:8px;flex-wrap:wrap}
+html body .pres-buit-v878435 .bt>*{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+@media (max-width:700px){
+  html body .pres-buit-v878435 .fila{flex-direction:column;align-items:stretch}
+  html body .pres-buit-v878435 .bt>*{flex:1 1 0;justify-content:center}
+}

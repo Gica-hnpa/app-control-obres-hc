@@ -148,6 +148,13 @@ function tall(doc, root, ini, ALT, forcats) {
   return { fi, el };
 }
 
+// quantes columnes té una taula (les <col> o la fila amb més cel·les, comptant els colspan)
+function colsTaula(t) {
+  if (!t) return 1;
+  let n = [...t.querySelectorAll(":scope>colgroup>col")].reduce((s, c) => s + (c.span || 1), 0);
+  for (const r of [...t.rows].slice(0, 12)) { if (r.classList.contains("a4-espai")) continue; n = Math.max(n, [...r.cells].reduce((s, c) => s + (c.colSpan || 1), 0)); }
+  return Math.max(1, n);
+}
 // porta l'element (o la línia de text) a `y`
 function empeny(doc, t, y) {
   const win = doc.defaultView;
@@ -176,10 +183,12 @@ function empeny(doc, t, y) {
   let posa;
   if (el.tagName === "TR") {
     const tr = doc.createElement("tr"); tr.className = "a4-espai"; tr.setAttribute("aria-hidden", "true");
-    const td = doc.createElement("td"); td.colSpan = 99; tr.appendChild(td);
+    // V87.435 · la fila d'espai ocupa just les columnes de la taula: amb «colspan 99», a les taules d'amplada fixa (el pressupost) el
+    // navegador hi feia 93 columnes buides i la de la descripció quedava sense amplada (la lletra sortia en vertical a la vista i al PDF)
+    const taula = el.closest("table"), cap = taula?.tHead;
+    const td = doc.createElement("td"); td.colSpan = colsTaula(taula); tr.appendChild(td);
     el.parentNode.insertBefore(tr, el);
     // com en imprimir: la capçalera de la taula torna a sortir a dalt de la pàgina nova
-    const taula = el.closest("table"), cap = taula?.tHead;
     if (cap && el.parentElement !== cap && win.getComputedStyle(cap).display !== "none") {
       const files = [...cap.rows].map(r => { const c = r.cloneNode(true); c.classList.add("a4-cap"); c.setAttribute("aria-hidden", "true"); return c; });
       files.forEach(c => el.parentNode.insertBefore(c, el));

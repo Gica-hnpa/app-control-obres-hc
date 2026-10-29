@@ -2381,6 +2381,29 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       - **Rendiment de la quota:** les despeses «a repercutir» ja no es resten de la quota.
     - **De passada:** a la fitxa del client, al mòbil, la llista d'expedients passava de l'amplada (`obra-row-code-v8739`).
     - Estils `src/theme-v878434.css`. Prova: `v434test.mjs` (17). Adaptada `v430test` (la quota es posa a l'acord).
+  - **V87.435 · La vista prèvia sense columnes estretes, menús que no es tallen pels costats, Amidaments en targetes i el pressupost buit
+    amb les seves opcions** (l'Héctor, 29/10/2026: «quan poso primer els amidaments, en obrir el pressupost no hauria de tenir l'opció que
+    tingués totes les partides per posar preus? I després la de crear o importar el pressupost si l'he fet a part… en BC3»; «en adjuntar
+    els amidaments surt desplegat»; «torna a sortir tallat» —el menú «Afegir»—; «mira com surt el pressupost» —text en vertical a la vista
+    prèvia, imprimir sortia bé—):
+    - **Vista prèvia i PDF** (`src/fullsA4.js`): la fila d'espai entre pàgines d'una taula feia `colSpan=99`, i a les taules amb
+      `table-layout:fixed` això repartia l'amplada en 99 columnes: les de debò quedaven estretíssimes (text en vertical; amb 120 files, 40
+      fulls en lloc de 4). Ara fa les columnes que té la taula (`colsTaula`: les `<col>` o la fila amb més cel·les, amb els colspan).
+    - **Menús desplegables** (l'efecte de l'App de la V87.303/364): a més d'escurçar-los o obrir-los cap amunt, si el panell surt per un
+      costat de la pantalla o d'un contenidor que el talla (`overflow-x` diferent de `visible`), s'alinea per l'altre (`left`/`right`
+      amb `!important`; els fixos, respecte de la pantalla).
+    - **Amidaments** (`Amidaments878328`, `.amid-v878435`): fora la targeta que ho embolcallava; a dalt, «Llegir PDF, Excel o BC3» /
+      «Llegir un altre arxiu», «Passar-ho a pressupost» i «⋯» (`.amid-barra-v878435`); a sota, tres targetes principals plegades:
+      **Amidaments** (`details.amid-bloc-v878435`, «N partides»: el resum i els capítols), **Preus** (`details.preus-v878368`, el total o
+      «Sense preu»; els xips de d'on surten els preus, a dins) i **Obra, logística i marges** (`details.logis-v878368`; el resum, a dins,
+      `p.resum-v878435`).
+    - **Pressupost buit** (`PresBuit878435`, `.pres-buit-v878435`, a sobre de la targeta del pressupost, fora d'edició, no al portal ni en
+      una obra compartida): si la fase té amidaments, **«Portar les N partides dels amidaments»** (porta als Amidaments i obre «Passar-ho a
+      pressupost»); **«Importar un pressupost fet a part»**: Excel · **BC3** · PDF; i «Des de Preus» · «Començar pressupost buit». El menú
+      «Afegir» del pressupost buit també té «Llegir un pressupost en BC3…». **El BC3** (`bc3Pres878435`) va als Amidaments de la fase
+      (`window.__acoAmid878435 = {file, passar}`, `window.__acoObraTab878435` de l'Obra), es llegeix amb el lector dels amidaments (amb el
+      descompost i els preus de l'arxiu) i s'obre sol «Passar-ho a pressupost» (`passarDespres878435`).
+    - Estils `src/theme-v878435.css`. Prova: `v435test.mjs` (14). Adaptades `amidaments328test`, `pressupost368test` i `preus378test`.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2554,7 +2577,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.434 a Render):**
+**Estat (publicada la V87.435 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
