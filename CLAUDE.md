@@ -2225,6 +2225,33 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Proves:** les ajudes comunes (`helpers` d'`alhoratest.mjs`) deixen el pressupost obert (com qui ja l'ha obert una vegada), llevat que
       la pàgina tingui `sessionStorage.__presNoTocar`. Estils `src/theme-v878427.css`. Prova: `v427test.mjs` (18). Adaptades `pressuposttest` i
       `pdfpressuposttest` (el nom del pressupost és a la línia de la targeta).
+  - **V87.428 · «Tancar el pressupost», un sol nom («Fora de pressupost») i les accions a la vista a l'ordinador** (l'Héctor, 29/10/2026:
+    «pressupost inicial i després pressupost amb IA… a dins del pressupost aquest no tocaré res mai… quan estigui tot fet o ens ve determinat
+    per uns amidaments hauríem de poder tenir l'opció de pressupost tancat i, per si ens hem deixat alguna cosa, reobrir-lo… un cop tancat amb
+    el client, el que es crea de nou ha d'anar a partides noves / fora de pressupost / imprevistos: posem un únic nom entendible i genèric…
+    a l'ordinador, a fora com enviar i imprimir, que ja queden poques accions; al mòbil i l'iPad, recollit»):
+    - **Accions** (`Pressupost`, `usePC878428` = més de 1100 px amb ratolí): a l'ordinador, **Editar · Imprimir · Enviar · Signar · Afegir ·
+      Tancar el pressupost** a la vista (`afegir-v878428`; sense fases, un «⋯» amb canviar el nom, eliminar i un pressupost al costat); al mòbil
+      i l'iPad, **Editar · Imprimir · Accions** (Enviar, Signar amb certificat…, Afegir partides, Aquest pressupost). «Afegir» (`afegir428`):
+      **Des de Preus** (abans «Afegir partides de la llibreria») i Dictar; **Començar buit, Importar Excel, Llegir un PDF i Pressupost amb IA,
+      només amb el pressupost buit** (per fer-ne un altre, una fase nova). Amb el pressupost buit no hi ha Enviar, Signar ni Tancar.
+    - **«Tancar el pressupost» / «Reobrir el pressupost»** (`TancarPressupost878428`, en lloc de «Pressupost inicial…»): tancar
+      (`tancaPressupost878428`) desa a cada partida la quantitat i el preu d'aquell moment (`ini878412`, com «Tal com és ara») i a la fitxa
+      del pressupost `inicial878412 = {font:"tancat", at, primer, total, n, tretes}`; el que s'hi afegeix després queda fora de pressupost sol
+      (l'efecte de la V87.413). Reobrir (`reobrePressupost878428`) posa `inicial878412.obert = {at, snap}` (com era cada partida, per
+      `clauP878428`): no es marca res i el que s'hi corregeix compta com a pressupost (`obertCorregit878428` dins de `previst878410`); en
+      tornar-lo a tancar, les partides noves d'aquells dies i les corregides passen al pressupost, i les de fora de pressupost i el que havia pujat
+      estant tancat, no. La comparació amb l'Excel original (V87.412) és ara «Comparar-lo amb l'arxiu original…» dins de la finestra de tancar
+      (sense «Tal com és ara»; «Tancar-lo així»). Tancat: cadenat a la targeta del pressupost i «Pressupost tancat el …» a la capçalera.
+    - **Un sol nom: «Fora de pressupost»** per a les partides noves i els imprevistos: la targeta (abans «Partides noves i imprevistos»), la
+      línia de la previsió (abans «Imprevistos i partides noves»), l'etiqueta de cada partida («Fora de pressupost · cert. 2», «· parte»; dins de
+      la targeta, només d'on surt, `etOrigen878428`), «Marcar-la fora de pressupost» / «Tornar-la al pressupost», el gràfic, els PDF («PDF fora de
+      pressupost», «FORA DE PRESSUPOST»). La targeta «Previst i imprevistos» es diu **«Previsió final»**. «a l'inicial» → «al pressupost».
+    - **Rendiment de l'obra:** la gràfica a baix (després de les targetes) i amb la fase triada (`dadesRendEmpresa878343(obres, odata, fase)`);
+      sense cap cost, només la línia d'ingressos (abans la de benefici anava a sobre de la d'ingressos i la de costos a 0).
+    - Estils `src/theme-v878428.css`. Prova: `v428test.mjs` (22). Adaptades `v410test`, `v411test`, `v412test` (comparar des de «Tancar»;
+      «Reobrir-lo» en lloc de «Treure'l»), `v413test`, `v423test`, `v426test`, `v427test`, `pressuposttest`, `pressupost320test`,
+      `pressupost361test`, `habitualstest`, `v366test`, `whatsapp402test`, `facturacio337test` i `pdfpressuposttest` (crea abans una fase buida).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2398,7 +2425,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.427 a Render):**
+**Estat (publicada la V87.428 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2422,6 +2449,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
 - **L’Econòmic de l’obra en targetes plegables iguals** (V87.426, Bloc 1): Pressupost, Certificacions, Facturació, Despeses i Rendiment;
   «Editar · Imprimir · Accions»; enviar una factura perquè la tornin signada.
   V87.427: el pressupost també és una targeta plegable, les partides noves i els imprevistos en una targeta a part i el número de les partides al mòbil.
+  V87.428: «Tancar el pressupost» / «Reobrir-lo», un sol nom («Fora de pressupost»), les accions a la vista a l'ordinador i la gràfica del Rendiment a baix.
 - **Dades de l’obra amb Contactes** (V87.414): els camps buits o de farciment s’omplen amb la fitxa de Contactes i es tria amb un cercador
   per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.

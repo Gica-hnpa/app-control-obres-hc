@@ -22,8 +22,12 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **Targetes plegables iguals** (l’Héctor, 29/10/2026): totes de la mateixa mida i forma (també capítols i partides), una línia amb la
   icona, el títol i com a molt una xifra, **sense línia de comentari**. Accions: «Editar» · «Imprimir» (una pantalla amb els PDF) · «Accions»
   curt; les eines, dins d’«Editar». Els gràfics, a la vista (donen color). Classe comuna `bloc-v878426`.
+- **Accions a l’ordinador, a la vista** (l’Héctor, 29/10/2026: «a l’ordinador, a fora com enviar i imprimir, que ja queden poques
+  accions; al mòbil i l’iPad, recollit»): a l’ordinador (més de 1100 px i ratolí) cada acció és un botó amb icona i paraula; al mòbil i
+  l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
+- **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.427, 29/10/2026)
+## On som (V87.428, 29/10/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -31,7 +35,10 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **Bloc 1, començat (V87.426, la nit del 29/10):** Pressupost, Certificacions, Facturació, Despeses i Rendiment de l’obra en targetes
   plegables (encàrrec de l’Héctor). Queden del bloc 1: Resum, Dades, Documents, Visites, Agenda, Partes, Planning i Amidaments.
 - **V87.427 (29/10 al matí):** el pressupost també és una targeta plegable, «Partides noves i imprevistos» a part (amb l’import i la
-  numeració del pressupost) i el número de les partides al mòbil. Pendent (l’Héctor): millorar el recull d’«Accions».
+  numeració del pressupost) i el número de les partides al mòbil.
+- **V87.428 (29/10):** «Tancar el pressupost» / «Reobrir-lo» (en lloc de «Pressupost inicial»), un sol nom («Fora de pressupost»), les
+  accions del pressupost a la vista a l’ordinador, crear des d’Excel, PDF o IA només amb el pressupost buit, i la gràfica del Rendiment a baix
+  amb la fase triada.
 
 ## Blocs, per ordre
 
@@ -66,3 +73,5 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
 ## Llista d’espera (encàrrecs nous que encara no tenen bloc)
 
 - Descompte al pressupost d’obra · obra nova en 3 passos · revisor del pressupost · parte per veu · previsió de caixa.
+- Afegir una partida amb IA dins d’un capítol que ja existeix (l’Héctor, 29/10/2026: «en tot cas seria afegir partida amb IA dins d’un
+  capítol ja existent»; cal la IA directa, clau d’Anthropic).

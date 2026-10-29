@@ -1,0 +1,22 @@
+/* V87.428 · «Accions» del pressupost a la vista a l'ordinador (Enviar · Signar · Afegir · Tancar el pressupost) i la finestra de
+   «Tancar / Reobrir el pressupost» (l'Héctor, 29/10/2026). */
+html body .pres-accions-v878366>button.secondary{white-space:nowrap}
+html body .pres-accions-v878366 .mes-v878428>summary{padding-left:10px;padding-right:10px}
+
+html body .tancar-v878428{display:flex;flex-direction:column;gap:14px;padding:16px 20px 18px}
+html body .tancar-v878428 .xif{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;padding:14px 16px;border:1px solid var(--co-line,#E2E8F0);border-radius:12px;background:var(--co-bg-2,#F8FAFC)}
+html body .tancar-v878428 .xif b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a)}
+html body .tancar-v878428 .xif span{font-size:14px;color:var(--co-ink-2,#334155)}
+html body .tancar-v878428 .xif small{margin-left:auto;font-size:13px;color:var(--co-ink-3,#5F7075)}
+html body .tancar-v878428>p{margin:0;font-size:14.5px;line-height:1.45;color:var(--co-ink-2,#334155)}
+html body .tancar-v878428 .modal-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px}
+html body .tancar-v878428 .modal-actions .comp-v878428{margin-right:auto}
+html body .tancar-v878428 .modal-actions .primary{display:inline-flex;align-items:center;gap:6px}
+@media (max-width:700px){
+  html body .tancar-v878428 .modal-actions .comp-v878428{flex:1 0 100%;text-align:left}
+}
+/* a l'ordinador, cada botó en una línia (icona i paraula), sense retallar-ne el text */
+html body .budget-card-v878248>.card-head .pres-accions-v878366>button{flex-direction:row!important;flex-wrap:nowrap!important;white-space:nowrap!important;max-width:none!important;overflow:visible!important}
+html body .budget-card-v878248>.card-head .pres-accions-v878366>button>svg{flex:none}
+html body .tancar-v878428 .comp-v878428{border:0;background:none;padding:4px 0;min-height:36px;font:inherit;font-size:14px;font-weight:700;color:var(--co-accent,#2563EB);cursor:pointer;text-align:left}
+html body .tancar-v878428 .modal-actions{padding:0;border:0}
