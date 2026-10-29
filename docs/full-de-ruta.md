@@ -22,6 +22,10 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **Targetes plegables iguals** (l’Héctor, 29/10/2026): totes de la mateixa mida i forma (també capítols i partides), una línia amb la
   icona, el títol i com a molt una xifra, **sense línia de comentari**. Accions: «Editar» · «Imprimir» (una pantalla amb els PDF) · «Accions»
   curt; les eines, dins d’«Editar». Els gràfics, a la vista (donen color). Classe comuna `bloc-v878426`.
+- **Tres nivells de targetes** (l’Héctor, 29/10/2026: «remarcar més les principals i anar a menys amb les secundàries… que es vegi on es
+  torna a recollir»; V87.432): **principals** amb vora marcada i ombra (oberta: capçalera blau clar amb franja i la fletxa amunt; si és
+  llarga, «Recollir» a baix); **secundàries** (dins d’una principal) amb fons gris clar i sense ombra; **files**, blanques. **Tot plegat
+  d’entrada.**
 - **Accions a l’ordinador, a la vista** (l’Héctor, 29/10/2026: «a l’ordinador, a fora com enviar i imprimir, que ja queden poques
   accions; al mòbil i l’iPad, recollit»): a l’ordinador (més de 1100 px i ratolí) cada acció és un botó amb icona i paraula; al mòbil i
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.

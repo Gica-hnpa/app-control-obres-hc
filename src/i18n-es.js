@@ -4693,4 +4693,5 @@ export default {
 "Escriu l’import.": "Escribe el importe.",
 "Factura del pressupost d’honoraris": "Factura del presupuesto de honorarios",
 "Hores tècniques": "Horas técnicas",
+"Recollir": "Recoger",
 };

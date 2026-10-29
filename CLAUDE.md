@@ -2325,6 +2325,26 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       només en sortia una a les llistes (es treien com si fossin repetides); ara només es treuen les del mateix número. A la còpia del núvol
       del 29/10 no n'hi havia cap de repetida.
     - Estils `src/theme-v878431.css`. Prova: `v431test.mjs`. Adaptada `v430test` (cas 0).
+  - **V87.432 · Tres nivells de targetes i tot plegat d'entrada** (l'Héctor, 29/10/2026: «remarcar més ressaltat les targetes principals i
+    vas a menys amb les secundàries… quan desplegues no es distingeix bé on està per tornar a recollir… i com sempre per defecte sempre les
+    targetes plegades»; `src/theme-v878432.css`):
+    - **Principals** (`details.card.bloc-v878426`, `details.card.plega-v878369`, `details.ajustos-bloc-v878366`): vora #C3CED6 i ombra,
+      títol de 16 px, la icona en un requadre blau clar i la fletxa en un cercle. **Oberta:** vora blava, la capçalera en blau clar (#EFF6FF)
+      amb una franja blava a l'esquerra (`inset 4px`), la icona i la fletxa en blau ple i la fletxa **apuntant amunt** (és on es recull).
+      Els avisos, igual en taronja.
+    - **«Recollir»** (`Recollir878432`, `button.recollir-v878432`, l'últim fill de cada targeta principal: `CardOPlega878369`,
+      `PresCard878427`, les 14 escrites a mà i els blocs d'Ajustos): una barra blau clar a baix que només surt si la targeta oberta fa més
+      del 70 % de la pantalla (`ResizeObserver`); la plega i, si la capçalera queda fora de la vista, hi torna.
+    - **Secundàries** (`.bloc-v878426 .sub-v878426`, els mesos de les hores `mes-v878430`, `details.plegat-v878366`, els passos de
+      l'encàrrec `enc-pas-v878333` i els capítols del pressupost `.budget-v25-cap`): fons gris clar (#F8FAFC), sense ombra, títol de 14,5 px;
+      oberta, fons blanc i franja blau clar (`inset 3px`) a la capçalera. **Files** (dies, partides): blanques, com abans.
+    - **Plegat d'entrada:** el primer mes de les hores (V87.430), el pas actual de l'encàrrec tècnic a l'ordinador, el primer capítol del
+      pressupost al portal de client i els apartats de «Dades de l'empresa» a l'ordinador. Es queden: la llista de certificacions buida (hi
+      surt l'avís) i el pressupost, que recorda com el va deixar l'usuari en aquell aparell.
+    - **La gràfica de les factures de l'expedient** (abans a la pestanya «Rendiment» de l'encàrrec, que la V87.431 va treure) és a «Factures»,
+      en una targeta plegada «Gràfica» (`graf-enc-v878432`).
+    - Prova: `v432test.mjs`. Eina `visual432.mjs` (captures de Pressupost, Rendiment i Despeses a l'ordinador i al mòbil). Adaptades
+      `v430test`, `v411test` (els mesos plegats), `simple354test` i `graficatest` (V87.431).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2498,7 +2518,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.431 a Render):**
+**Estat (publicada la V87.432 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

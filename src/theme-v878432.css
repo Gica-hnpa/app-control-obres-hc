@@ -1,0 +1,91 @@
+/* V87.432 · Tres nivells de targetes (l'Héctor, 29/10/2026: «remarcar més ressaltat les targetes principals i vas a menys amb les
+   secundàries… quan desplegues no es distingeix bé on està per tornar a recollir»).
+   1 · Principals (els blocs de cada pantalla): vora més marcada, ombra, títol de 16 px i la icona en un requadre blau. Oberta: la
+       capçalera es pinta de blau clar amb una franja a l'esquerra, la fletxa (en un cercle blau) apunta amunt i, si és llarga, a baix
+       hi ha «Recollir».
+   2 · Secundàries (dins d'una principal, els mesos, els capítols, els blocs d'informes): fons gris clar, sense ombra, títol de 14,5 px.
+       Oberta: fons blanc i una franja blau clar a l'esquerra de la capçalera.
+   3 · Files (partides, dies, factures): com abans.
+   Els blaus són els de sempre (#2563EB…): amb la «Imatge de l'empresa» es tornen el color de l'empresa. */
+
+/* ── 1 · Principals ───────────────────────────────────────────────────────────────────────────────────────── */
+html body details.card.bloc-v878426,
+html body details.card.plega-v878369,
+html body details.ajustos-bloc-v878366{background:#fff!important;border:1px solid #C3CED6!important;border-radius:14px!important;box-shadow:0 1px 2px rgba(15,23,42,.07),0 4px 12px rgba(15,23,42,.06)!important}
+html body details.card.bloc-v878426>summary,
+html body details.card.plega-v878369>summary,
+html body details.ajustos-bloc-v878366>summary{min-height:60px!important;border-radius:13px;transition:background .15s}
+html body details.card.bloc-v878426>summary .t b,
+html body details.card.plega-v878369>summary .t b,
+html body details.ajustos-bloc-v878366>summary b{font-size:16px!important;font-weight:700!important;color:#0F172A!important}
+html body details.card.bloc-v878426>summary>svg:first-child{box-sizing:content-box;width:18px;height:18px;padding:8px;border-radius:10px;background:#EFF6FF;color:#2563EB}
+html body details.card.bloc-v878426>summary .chev,
+html body details.card.plega-v878369>summary .chev,
+html body details.ajustos-bloc-v878366>summary .chev{box-sizing:content-box;width:18px;height:18px;padding:6px;border-radius:999px;background:#EEF2F6;color:#334155;transition:transform .15s,background .15s}
+html body details.card.bloc-v878426>summary:hover .chev,
+html body details.card.plega-v878369>summary:hover .chev,
+html body details.ajustos-bloc-v878366>summary:hover .chev{background:#DBEAFE;color:#1D4ED8}
+/* oberta: la capçalera, pintada; la fletxa, amunt (és on es recull) */
+html body details.card.bloc-v878426[open],
+html body details.card.plega-v878369[open],
+html body details.ajustos-bloc-v878366[open]{border-color:#93C5FD!important;box-shadow:0 0 0 1px #BFDBFE,0 8px 22px rgba(37,99,235,.10)!important}
+html body details.card.bloc-v878426[open]>summary,
+html body details.card.plega-v878369[open]>summary,
+html body details.ajustos-bloc-v878366[open]>summary{background:#EFF6FF;border-bottom:1px solid #BFDBFE!important;border-radius:13px 13px 0 0;box-shadow:inset 4px 0 0 #2563EB}
+html body details.card.bloc-v878426[open]>summary .chev,
+html body details.card.plega-v878369[open]>summary .chev,
+html body details.ajustos-bloc-v878366[open]>summary .chev{transform:rotate(-90deg)!important;background:#2563EB;color:#fff}
+html body details.card.bloc-v878426[open]>summary>svg:first-child{background:#2563EB;color:#fff}
+/* els avisos, en taronja */
+html body details.card.bloc-v878426.avisos-v878426{border-color:#FDBA74!important}
+html body details.card.bloc-v878426.avisos-v878426>summary>svg:first-child{background:#FFEDD5;color:#C2410C}
+html body details.card.bloc-v878426.avisos-v878426[open]{box-shadow:0 0 0 1px #FED7AA,0 8px 22px rgba(194,65,12,.10)!important}
+html body details.card.bloc-v878426.avisos-v878426[open]>summary{background:#FFF7ED;border-bottom-color:#FED7AA!important;box-shadow:inset 4px 0 0 #EA580C}
+html body details.card.bloc-v878426.avisos-v878426[open]>summary>svg:first-child,
+html body details.card.bloc-v878426.avisos-v878426[open]>summary .chev{background:#EA580C;color:#fff}
+/* «Recollir», a baix d'una principal oberta i llarga */
+html body button.recollir-v878432{display:flex!important;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px!important;margin:0!important;padding:8px 12px!important;border:0!important;border-top:1px solid #BFDBFE!important;border-radius:0 0 13px 13px!important;background:#EFF6FF!important;color:#1D4ED8!important;font:600 14px/1.2 var(--app-font,system-ui)!important;cursor:pointer;box-shadow:inset 4px 0 0 #2563EB!important}
+html body button.recollir-v878432:hover{background:#DBEAFE!important}
+html body button.recollir-v878432[hidden]{display:none!important}
+html body details.avisos-v878426 button.recollir-v878432{background:#FFF7ED!important;color:#C2410C!important;border-top-color:#FED7AA!important;box-shadow:inset 4px 0 0 #EA580C!important}
+
+/* ── 2 · Secundàries ──────────────────────────────────────────────────────────────────────────────────────── */
+html body .bloc-v878426 .sub-v878426,
+html body details.mes-v878430,
+html body details.plegat-v878366,
+html body details.enc-pas-v878333,
+html body .budget-card-v878248 .budget-v25-cap{background:#F8FAFC!important;border:1px solid #E2E8F0!important;border-radius:12px!important;box-shadow:none!important}
+html body .bloc-v878426 details.sub-v878426>summary,
+html body details.mes-v878430>summary,
+html body details.plegat-v878366>summary,
+html body details.enc-pas-v878333>summary,
+html body .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426{background:transparent!important;min-height:52px!important;border-radius:11px}
+html body .bloc-v878426 .sub-v878426 .t b,
+html body details.mes-v878430>summary b,
+html body details.plegat-v878366>summary b,
+html body .budget-card-v878248 .cap-carta-v878426>.budget-chapter-title-v87230 b{font-size:14.5px!important;font-weight:600!important;color:#1E293B!important}
+html body .bloc-v878426 .sub-v878426>summary>svg:first-child{color:#64748B}
+html body .bloc-v878426 .sub-v878426>summary .chev,
+html body details.mes-v878430>summary .chev,
+html body .budget-card-v878248 .cap-carta-v878426>.cap-chev-v878426{color:#64748B}
+/* oberta: fons blanc i una franja blau clar a la capçalera */
+html body .bloc-v878426 details.sub-v878426[open],
+html body details.mes-v878430[open],
+html body details.plegat-v878366[open],
+html body details.enc-pas-v878333[open],
+html body .budget-card-v878248 .budget-v25-cap:has(>.cap-carta-v878426.obert){background:#fff!important;border-color:#CBD5E1!important}
+html body .bloc-v878426 details.sub-v878426[open]>summary,
+html body details.mes-v878430[open]>summary,
+html body details.plegat-v878366[open]>summary,
+html body details.enc-pas-v878333[open]>summary,
+html body .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426.obert{background:#F5F8FF!important;border-radius:11px 11px 0 0;box-shadow:inset 3px 0 0 #93C5FD;border-bottom:1px solid #E2E8F0!important}
+html body .bloc-v878426 details.sub-v878426[open]>summary .chev,
+html body details.mes-v878430[open]>summary .chev,
+html body .budget-card-v878248 .cap-carta-v878426.obert>.cap-chev-v878426{color:#2563EB;transform:rotate(-90deg)!important}
+html body details.plegat-v878366[open]>summary::after{transform:rotate(-90deg)!important;color:#2563EB}
+/* dins d'una secundària oberta, el fons de les partides (abans gris) passa a blanc perquè es distingeixi del capítol plegat */
+html body .budget-card-v878248 .budget-v25-cap:has(>.cap-carta-v878426.obert)>.budget-v25-lines.cartes-v878426{background:#fff!important}
+
+/* ── 3 · Files ────────────────────────────────────────────────────────────────────────────────────────────── */
+html body details.dia-v878430{background:#fff!important;border:1px solid #E2E8F0!important;border-radius:10px!important}
+html body details.dia-v878430[open]>summary{box-shadow:inset 3px 0 0 #BFDBFE;border-bottom:1px solid #EEF2F6}
