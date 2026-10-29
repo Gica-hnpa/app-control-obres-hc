@@ -23,13 +23,15 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   icona, el títol i com a molt una xifra, **sense línia de comentari**. Accions: «Editar» · «Imprimir» (una pantalla amb els PDF) · «Accions»
   curt; les eines, dins d’«Editar». Els gràfics, a la vista (donen color). Classe comuna `bloc-v878426`.
 
-## On som (V87.426, 29/10/2026)
+## On som (V87.427, 29/10/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
 - **Tancat el 28/10:** el bloc «Certificacions · previst i imprevistos · compartir · PDF» (V87.410–425).
 - **Bloc 1, començat (V87.426, la nit del 29/10):** Pressupost, Certificacions, Facturació, Despeses i Rendiment de l’obra en targetes
   plegables (encàrrec de l’Héctor). Queden del bloc 1: Resum, Dades, Documents, Visites, Agenda, Partes, Planning i Amidaments.
+- **V87.427 (29/10 al matí):** el pressupost també és una targeta plegable, «Partides noves i imprevistos» a part (amb l’import i la
+  numeració del pressupost) i el número de les partides al mòbil. Pendent (l’Héctor): millorar el recull d’«Accions».
 
 ## Blocs, per ordre
 

@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Signature,Eraser,Check,Eye,ChevronRight,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks} from "lucide-react";
+import {Signature,Eraser,Check,Eye,ChevronRight,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.426";
+const APP_VERSION878264="87.427";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7088,6 +7088,35 @@ function CardOPlega878369({title,resum,action,className="",children,obert=false,
   if(!mobil&&!sempre)return <Card title={title} action={action} className={className}>{children}</Card>;
   return <details className={`card plega-v878369 ${className}`.trim()} open={obert||undefined}><summary><span className="t"><b>{title}</b>{resum?<small>{resum}</small>:null}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{action?<div className="acc">{action}</div>:null}{children}</div></details>;
 }
+// V87.427 · el pressupost és una targeta plegable com les altres (l'Héctor, 29/10/2026: «el pressupost és una targeta desplegable com la
+// resta»). La capçalera (Editar · Imprimir · Accions) i les partides hi són a dins; mentre s'edita, no es plega. Es recorda a l'aparell.
+const PRES_OBERT878427="pres-obert-v878427";
+function presObertInici878427(){try{return lsVisual878400()?.getItem(PRES_OBERT878427)==="1"}catch{return false}}
+function PresCard878427({pleg=true,titol,xifra=null,action,obert=false,editant=false,onToggle,children}){
+  if(!pleg)return <Card className="budget-card-v878248" title={titol} action={action}>{children}</Card>;
+  return <details className="card bloc-v878426 budget-card-v878248 pres-bloc-v878427" open={obert} onToggle={e=>{const o=e.currentTarget.open;if(o!==obert)onToggle?.(o)}}>
+    <summary onClick={e=>{if(editant)e.preventDefault()}}><Calculator size={18} aria-hidden="true"/><span className="t"><b>{titol}</b></span>{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    <div className="card-head">{action}</div>
+    <div className="pres-cos-v878427">{children}</div>
+  </details>;
+}
+// V87.427 · les partides noves i els imprevistos, a part del pressupost (l'Héctor: «una targeta de partides noves i imprevistos que, tot i
+// que segueixin la numeració del pressupost, les puguem visualitzar i tenir l'import a part»). Cada una porta el seu número del pressupost
+// i, tocant-la, s'obre al pressupost.
+const ordreCodi878427=(a,b)=>String(a.r?.codi||"").localeCompare(String(b.r?.codi||""),"ca",{numeric:true});
+function ImprevistosPres878427({p,onAnar,onPdf}){
+  if(!p||(!p.noves.length&&!p.mes.length&&!p.canv.length))return null;
+  const sg=v=>(v>0.005?"+ ":v<-0.005?"− ":"")+money(Math.abs(v));
+  const fila=(x,i,extra,imp)=><li key={x.r?.id||x.r?.codi||i}><button type="button" className="pi-fila-v878427" onClick={()=>onAnar?.(x.r)}><span className="c">{x.r?.codi||"—"}</span><span className="n"><span className="cc">{x.r?.concepte||t("Sense concepte")}</span>{extra}</span><b>{imp}</b><ChevronRight size={16} className="chev" aria-hidden="true"/></button></li>;
+  const seccio=(k,titol,tot,llista,cos)=>llista.length?<section className={"pi-sec-v878427 "+k}><h4><span>{titol}</span><b>{tot}</b></h4><ul>{[...llista].sort(ordreCodi878427).map(cos)}</ul></section>:null;
+  const canvi=x=>[Math.abs(x.qa-x.qi)>0.0005?qty2(x.qi)+" → "+qty2(x.qa)+" "+(x.r?.ut||""):"",Math.abs(x.pa-x.pi)>0.005?money(x.pi)+" → "+money(x.pa):""].filter(Boolean).join(" · ");
+  return <CardOPlega878369 bloc426 icona={FilePlus} title={t("Partides noves i imprevistos")} xifra={sg(p.imprevistos)} className="imprev-pres-v878427">
+    {seccio("noves",t("Partides noves"),money(p.imNoves),p.noves,(x,i)=>fila(x,i,<em className="fora-v878410">{etFora878410(x.r)}</em>,money(x.imp)))}
+    {seccio("mes",t("Més amidament que el previst"),money(p.imMes),p.mes,(x,i)=>fila(x,i,<small>+{qty2(x.dq)} {x.r?.ut||""}</small>,money(x.imp)))}
+    {seccio("canv",t("Més quantitat o preu que a l’inicial"),sg(p.imCanv),p.canv,(x,i)=>fila(x,i,<small>{canvi(x)}</small>,sg(x.dif)))}
+    {onPdf&&<div className="pi-pdf-v878427"><button type="button" className="secondary" onClick={onPdf}><Printer size={15} aria-hidden="true"/> {t("PDF dels imprevistos")}</button></div>}
+  </CardOPlega878369>;
+}
 function ActionMenu87213({label="Més accions",children,fletxa=true,className="",titol}){
   return <details className={"action-menu-v87213"+(className?" "+className:"")}><summary title={titol} aria-label={titol}>{label}{fletxa&&<span className="fl-v878385" aria-hidden="true"/>}</summary><div className="action-menu-panel-v87213" onClick={e=>{if(e.target.closest("button,a,label"))e.currentTarget.parentElement?.removeAttribute("open")}}>{children}</div></details>
 }
@@ -13249,6 +13278,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [descOpen875,setDescOpen875]=useState({});
   const [budgetPartidaView87208,setBudgetPartidaView87208]=useState(null);
   const[fitxa426,setFitxa426]=useState(null);
+  const[presObert427,setPresObert427]=useState(presObertInici878427);
+  const giraPres427=o=>{setPresObert427(o);try{const ls=lsVisual878400();if(o)ls?.setItem(PRES_OBERT878427,"1");else ls?.removeItem(PRES_OBERT878427)}catch{}};
   const [editBudget8760b,setEditBudget8760b]=useState(false);
   useEffect(()=>{const av=v=>{window.__acoEditPres878380=v;window.dispatchEvent(new Event("aco-edit-pres-878380"))};av(!!editBudget8760b);return ()=>{if(editBudget8760b)av(false)}},[editBudget8760b]);
   // V87.346 · comissió amagada (l'Héctor, 22/10/2026: «un clic amb un espia per posar el %… que em refaci el pressupost aplicant a
@@ -14180,6 +14211,15 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   let lastBudgetMain87226="__none__";
 
   // V87.426 · la fitxa de la partida: dins de la seva targeta (fora d'edició) o en una finestra (editant)
+  // V87.427 · des de la targeta dels imprevistos: s'obre el pressupost, el capítol (i el seu grup) i la fitxa de la partida
+  const anarPartida427=r=>{
+    const e=Object.entries(caps||{}).find(([,a])=>(a||[]).indexOf(r)>=0)||Object.entries(caps||{}).find(([,a])=>(a||[]).some(x=>x?.id&&x.id===r?.id));
+    if(!e)return;const [cap,items]=e;const i=items.indexOf(r)>=0?items.indexOf(r):items.findIndex(x=>x?.id===r?.id);
+    const sc=String(items.find(x=>x.scopePrincipal)?.scopePrincipal||""),mc=String(items.find(x=>x.capPrincipal)?.capPrincipal||"");
+    giraPres427(true);if(mc)setGrupObert878336(o=>({...o,[sc+"__"+mc]:true}));setOpen(o=>({...o,[cap]:true}));
+    if(editBudget8760b)setOpenBudgetRow87173(budgetRowKey87173(cap,i));else setFitxa426(cap+"__"+i);
+    setTimeout(()=>{const el=document.querySelector(".pres-bloc-v878427 .fitxa-oberta-v878426, .pres-bloc-v878427 .budget-row-open-v87173");el?.scrollIntoView?.({block:"start",behavior:"smooth"})},250);
+  };
   const fitxaPartida426=(cap,index,inline)=>{const row=(caps?.[cap]||[])[index];
       // V87.413 / V87.423 · la marca de nova i la quantitat que s'executarà: editant, a la partida; si no, es desa al moment
       const posa878423=patch=>{if(editBudget8760b){Object.entries(patch).forEach(([k,vv])=>upd(cap,index,k,vv));return}const next={...caps,[cap]:(caps[cap]||[]).map((r,j)=>j===index?{...r,...patch}:r)};setCaps(next);persistBudgetCaps878179(next)};
@@ -14229,7 +14269,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {ajustos878426?.cos}
     </div></details>}
     {budgetWorkTab878180!=="Validar descompostos"&&avisos878320.length>0&&<details className="card bloc-v878426 avisos-v878426"><summary><AlertTriangle size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Avisos")}</b></span><span className="n">{avisos878320.length}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><AvisosPressupost878320 avisos={avisos878320} dins/></div></details>}
-    <Card className="budget-card-v878248" title={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className="budget-grand-total budget-total-right-v87196">{fora878410>0.005||pi878411.imNoExec>0.005?<><small>{i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
+    <PresCard878427 pleg={!quickMode&&!clientMode} titol={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005?"":" sol-v878427")}>{fora878410>0.005||pi878411.imNoExec>0.005?<><small>{i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
       <div className="budget-botons-v878320 pres-accions-v878366">
       {/* V87.426 · l'Héctor (29/10/2026): «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les
           opcions… les eines dins d'editar… canviar el nom i eliminar ja surten a les fases». «Editar» · «Imprimir» · «Accions» curt;
@@ -14403,7 +14443,9 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           <div className="modal-actions"><button type="button" className="secondary" onClick={cancelDescompostChanges878229}>{i18nT("Cancel·lar")}</button><button type="button" className="secondary" onClick={()=>saveDescompostChanges878229(cap,i,false)}>{i18nT("Guardar sense canviar el pressupost")}</button><button type="button" className="primary" onClick={()=>applyDescompostToPartida878160(cap,i)}>{i18nT("Guardar i actualitzar el total de la partida")}</button></div>
         </Modal>
       })()}
-    </Card>
+    </PresCard878427>
+    {/* V87.427 · les partides noves i els imprevistos, a part */}
+    {!clientMode&&!quickMode&&budgetWorkTab878180!=="Validar descompostos"&&<ImprevistosPres878427 p={pi878411} onAnar={anarPartida427} onPdf={()=>openDoc?.({...docImprevistos878411({...data,partides:Object.values(caps).flat()},""),pressupostNom:budgetGroups?.length>1?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):""})}/>}
     {!editBudget8760b&&!clientMode&&budgetWorkTab878180!=="Validar descompostos"&&<ResumPressupost878362 partides={data.partides||[]}/>}
   </div>
 }
@@ -17682,7 +17724,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.426",
+    app_version:"87.427",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

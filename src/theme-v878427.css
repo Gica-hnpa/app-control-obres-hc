@@ -1,0 +1,52 @@
+/* V87.427 · El pressupost, una targeta plegable com les altres (l'Héctor, 29/10/2026), la targeta «Partides noves i imprevistos» i el
+   número de cada partida també al mòbil. */
+
+/* El pressupost: la línia de dalt com les altres targetes; a dins, la capçalera (Editar · Imprimir · Accions) i les partides */
+html body details.card.pres-bloc-v878427>.card-head{margin:10px 12px 0!important;border-radius:12px}
+html body details.card.pres-bloc-v878427>.card-head>h2{display:none!important}
+html body details.card.pres-bloc-v878427>.pres-cos-v878427{padding:10px 12px 14px}
+/* el total ja és a la línia de dalt: a la capçalera només hi surt el desglossament (original, fora de pressupost, no s'executarà) */
+html body details.card.pres-bloc-v878427 .budget-grand-total.sol-v878427{display:none!important}
+
+/* «Partides noves i imprevistos»: cada partida amb el seu número del pressupost i el seu import */
+html body .imprev-pres-v878427 .pi-sec-v878427{display:flex;flex-direction:column;gap:6px}
+html body .imprev-pres-v878427 .pi-sec-v878427>h4{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 2px 0;font-size:13px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--co-ink-2,#334155)}
+html body .imprev-pres-v878427 .pi-sec-v878427>h4>b{font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0;font-size:14px;color:#9A3412}
+html body .imprev-pres-v878427 .pi-sec-v878427>ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+html body .imprev-pres-v878427 .pi-fila-v878427{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:12px;min-height:54px;padding:8px 14px;border:1px solid #FED7AA;border-left:4px solid #F97316;border-radius:12px;background:#FFFBF5;cursor:pointer}
+html body .imprev-pres-v878427 .pi-fila-v878427:hover{border-color:#FDBA74}
+html body .imprev-pres-v878427 .pi-fila-v878427:focus-visible{outline:2px solid var(--co-accent,#2563EB)!important;outline-offset:2px}
+html body .imprev-pres-v878427 .pi-fila-v878427>.c{flex:none;min-width:44px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--co-ink-3,#5F7075)}
+html body .imprev-pres-v878427 .pi-fila-v878427>.n{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px}
+html body .imprev-pres-v878427 .pi-fila-v878427>.n>.cc{min-width:0;font-size:14.5px;font-weight:600;color:var(--co-ink,#0f172a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .imprev-pres-v878427 .pi-fila-v878427>.n>em,html body .imprev-pres-v878427 .pi-fila-v878427>.n>small{flex:none;font-style:normal;font-size:12.5px;white-space:nowrap}
+html body .imprev-pres-v878427 .pi-fila-v878427>.n>small{color:#9A3412;font-weight:600}
+html body .imprev-pres-v878427 .pi-fila-v878427>b{flex:none;font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a);white-space:nowrap}
+html body .imprev-pres-v878427 .pi-fila-v878427>.chev{flex:none;color:var(--co-ink-3,#5F7075)}
+html body .imprev-pres-v878427 .pi-pdf-v878427{display:flex;justify-content:flex-end}
+html body details.card.bloc-v878426.imprev-pres-v878427>summary>svg:first-child{color:#C2410C}
+
+@media (max-width:700px){
+  html body details.card.pres-bloc-v878427>.card-head{margin:8px 8px 0!important}
+  html body details.card.pres-bloc-v878427>.pres-cos-v878427{padding:8px 8px 12px}
+  /* el número de la partida a dalt i el concepte a sota, totes les targetes de la mateixa alçada */
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child{display:grid!important;grid-template-columns:auto 1fr;grid-template-areas:"codi et" "conc conc";align-items:center;column-gap:8px;row-gap:2px}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>b{display:block!important;grid-area:codi;font-size:12.5px!important;line-height:1.2}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>em{grid-area:et;justify-self:start;font-size:11.5px}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>strong{grid-area:conc;font-size:14px!important;line-height:1.3}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196{min-height:58px!important}
+  html body .imprev-pres-v878427 .pi-fila-v878427{display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"c b chev" "n n n";row-gap:2px;padding:8px 12px}
+  html body .imprev-pres-v878427 .pi-fila-v878427>.c{grid-area:c}
+  html body .imprev-pres-v878427 .pi-fila-v878427>.n{grid-area:n}
+  html body .imprev-pres-v878427 .pi-fila-v878427>b{grid-area:b}
+  html body .imprev-pres-v878427 .pi-fila-v878427>.chev{grid-area:chev}
+}
+/* en anar a una partida des dels imprevistos, que la capçalera fixa del pressupost no la tapi */
+html body .pres-bloc-v878427 .fitxa-oberta-v878426,html body .pres-bloc-v878427 .budget-row-open-v87173{scroll-margin-top:calc(var(--obra-bar-h,46px) + 150px)}
+@media (max-width:700px){html body .pres-bloc-v878427 .fitxa-oberta-v878426,html body .pres-bloc-v878427 .budget-row-open-v87173{scroll-margin-top:calc(var(--obra-bar-h,46px) + 190px)}}
+@media (max-width:700px){
+  /* totes les targetes de partida de la mateixa alçada: la fila del número sempre igual i el concepte en dues línies com a molt */
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child{grid-template-rows:20px auto}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>em{line-height:18px!important;padding-top:0!important;padding-bottom:0!important;max-height:20px}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>strong{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal!important;overflow:hidden;min-height:2.6em}
+}

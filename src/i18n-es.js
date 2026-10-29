@@ -4626,4 +4626,5 @@ export default {
   "Cost": "Coste",
   "Rebut pel client": "Recibido por el cliente",
   "Totes les proformes ja tenen factura.": "Todas las proformas ya tienen factura.",
+  "Partides noves i imprevistos": "Partidas nuevas e imprevistos",
 };

@@ -2207,6 +2207,24 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Prova: `v426test.mjs` (29: pressupost, certificacions, facturació —fer factura i enviar-la per signar—, despeses, rendiment i mòbil).
       Adaptades als blocs i a «Imprimir» unes 30 proves (pressupost, certificacions, facturació, despeses, hores del personal, menús, documents,
       enviar, signar, `clientsvirtuals`…).
+  - **V87.427 · El pressupost, una targeta plegable més, i les partides noves i els imprevistos a part** (l'Héctor, 29/10/2026 al matí, mirant
+    la V87.426: «el pressupost és una targeta desplegable com la resta i podria haver una targeta de partides noves i imprevistos que, tot i que
+    segueixin la numeració del pressupost, les puguem visualitzar i tenir l'import a part… i al pressupost, almenys al mòbil, no surt la
+    numeració de les partides»):
+    - **Pressupost** (`PresCard878427`, `pres-bloc-v878427`): una targeta plegada com les altres (nom del pressupost i l'import: l'original si
+      hi ha partides noves o que no s'executaran; si no, el total). A dins, la capçalera de sempre (Editar · Imprimir · Accions, fixa en baixar;
+      el total ja no s'hi repeteix, només el desglossament) i els capítols. Mentre s'edita no es plega. **Es recorda a l'aparell**
+      (`pres-obert-v878427` al localStorage de debò, `lsVisual878400`): si es deixa obert, la propera vegada ja surt obert. Al portal de client i
+      al pressupost ràpid, la targeta d'abans.
+    - **«Partides noves i imprevistos»** (`ImprevistosPres878427`, sota el pressupost; amb `previst878410` del pressupost triat): l'import dels
+      imprevistos a la línia; a dins, «Partides noves», «Més amidament que el previst» i «Més quantitat o preu que a l'inicial», cada partida amb el
+      seu número del pressupost (ordenades pel número), l'etiqueta i l'import, i «PDF dels imprevistos». Tocant-ne una (`anarPartida427`)
+      s'obre el pressupost, el capítol (i el seu grup) i la fitxa de la partida, a la vista.
+    - **Mòbil:** el número de cada partida torna a sortir (la V87.426 l'amagava): a dalt el número i l'etiqueta, a sota el concepte en dues
+      línies com a molt; totes les targetes de partida fan la mateixa alçada.
+    - **Proves:** les ajudes comunes (`helpers` d'`alhoratest.mjs`) deixen el pressupost obert (com qui ja l'ha obert una vegada), llevat que
+      la pàgina tingui `sessionStorage.__presNoTocar`. Estils `src/theme-v878427.css`. Prova: `v427test.mjs` (18). Adaptades `pressuposttest` i
+      `pdfpressuposttest` (el nom del pressupost és a la línia de la targeta).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2380,7 +2398,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.426 a Render):**
+**Estat (publicada la V87.427 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2403,6 +2421,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
 - **Documents en fulls A4** (V87.425): la vista prèvia i el PDF, vertical o horitzontal segons la pàgina (el quadre a origen ja no surt tallat).
 - **L’Econòmic de l’obra en targetes plegables iguals** (V87.426, Bloc 1): Pressupost, Certificacions, Facturació, Despeses i Rendiment;
   «Editar · Imprimir · Accions»; enviar una factura perquè la tornin signada.
+  V87.427: el pressupost també és una targeta plegable, les partides noves i els imprevistos en una targeta a part i el número de les partides al mòbil.
 - **Dades de l’obra amb Contactes** (V87.414): els camps buits o de farciment s’omplen amb la fitxa de Contactes i es tria amb un cercador
   per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.
