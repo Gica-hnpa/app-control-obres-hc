@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.428";
+const APP_VERSION878264="87.429";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -15450,8 +15450,21 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       const isOpen=certCapsOpen879[cap]??(capIdx===0&&!mobil878366);
       const capCurrent=items.reduce((sum,r)=>sum+certAmount878223(r,certNum,qDraft(r)),0);
       const capOrigin=items.reduce((sum,r)=>sum+certOriginAmount878223(r,certNum,qDraft(r)),0);
+      // V87.429 · la fila del capítol amb l'import de cada bloc (l'Héctor, 29/10/2026): el pressupost original del capítol (sense el de fora de
+      // pressupost), el d'abans, el d'aquesta certificació i l'executat a origen, cadascun sota la seva columna (al mòbil, la línia d'abans)
+      const capPres878429=items.filter(r=>!esFora878410(r)).reduce((s,r)=>s+(parseNum8770(r.q)||0)*parseNum8770(r.pu),0);
+      const capPrev878429=items.reduce((s,r)=>s+certAmount878223(r,prevNum),0);
+      const pcCap878429=v=>capPres878429>0.005?pct(v/capPres878429*100):"—";
+      const giraCap878429=()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}));
       return <div key={cap}>
-      <button type="button" className="cert-cap-v69 cert-cap-toggle-v879" onClick={()=>setCertCapsOpen879(o=>({...o,[cap]:!isOpen}))}><span>{isOpen?"▾":"▸"} {cap}</span><span className="cert-cap-totals-v87223"><b>{i18nT("Cert.")} {certNum}: {money(capCurrent)}</b><strong>{i18nT("A origen:")} {money(capOrigin)}</strong></span></button>
+      <div role="button" tabIndex={0} aria-expanded={isOpen} className="cert-grid-v69 cap-fila-v878429" onClick={giraCap878429} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();giraCap878429()}}}>
+        <div className="nom">{isOpen?"▾":"▸"} {cap}</div>
+        <div className="imp fb">{money(capPres878429)}</div>
+        <div/><div className="pc">{pcCap878429(capPrev878429)}</div><div className="imp fb">{money(capPrev878429)}</div>
+        <div/><div className="pc">{pcCap878429(capCurrent)}</div><div className="imp act fb">{money(capCurrent)}</div>
+        <div/><div className="pc">{pcCap878429(capOrigin)}</div><div className="imp ori">{money(capOrigin)}</div>
+      </div>
+      <button type="button" className="cert-cap-v69 cert-cap-toggle-v879 cap-m-v878429" onClick={giraCap878429}><span>{isOpen?"▾":"▸"} {cap}</span><span className="cert-cap-totals-v87223"><b>{i18nT("Cert.")} {certNum}: {money(capCurrent)}</b><strong>{i18nT("A origen:")} {money(capOrigin)}</strong></span></button>
       {isOpen&&items.map((r,rowIdx)=>{
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=certAmount878223(r,prevNum), ia=certAmount878223(r,certNum,qa), qo=qOrigin(r), io=certOriginAmount878223(r,certNum,qa);
         return <div className={`cert-grid-v69 row${qFinal878423(r)!==null?" noexec-v878423":esFora878410(r)?" fora-row-v878411":puja878413(r,certQtyTotal8789(r)-qFor(r,certNum)+qa)?" puja-v878413":""}`} key={r.id||`${cap}-${rowIdx}`}>
@@ -17797,7 +17810,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.428",
+    app_version:"87.429",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19141,6 +19154,15 @@ function certPrintHtmlV8772(doc,obra,client){
   const originRowsHtml=originRows.map(r=>{const cap=r.cap||"PRESSUPOST IMPORTAT";const show=cap!==lastOriginCap878132;lastOriginCap878132=cap;return `${show?`<tr class="cap"><td colspan="5">${escHtmlV8772(cap==="PRESSUPOST IMPORTAT"?D(cap):cap)}</td><td class="num">${money(originCapTotals87225[cap]||0)}</td></tr>`:""}<tr><td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"${estilConcepte878423(r,r.qOrigen)}><b>${escHtmlV8772(r.concepte)}</b>${etiquetesDoc878423(r,D)}</td><td class="num">${qty2(r.qOrigin)}</td><td class="num">${money(r.pu)}</td><td class="num">${money(r.impOrigin)}</td></tr>`}).join("") || `<tr><td colspan="6" class="empty">${D("No hi ha partides certificades a origen.")}</td></tr>`;
   // V87.423 · al quadre a origen hi surten totes les partides, les fetes i les que no (l'Héctor: «que es vegin totes les partides, les fetes i no fetes»)
   const printRows=sortPartides878132(rows);
+  // V87.429 · la fila del capítol del quadre amb l'import de cada bloc: pressupost original (sense el de fora de pressupost), anterior, actual i
+  // a origen, cadascun a la seva columna (l'Héctor, 29/10/2026: «perquè sempre es visualitzi al quadre en imprimir-lo»)
+  const capTot878429={};
+  printRows.forEach(r=>{const cap=r.cap||"PRESSUPOST IMPORTAT",pu=parseNum8770(r.pu),t=capTot878429[cap]||(capTot878429[cap]={pres:0,ant:0,act:0,ori:0});
+    if(!esFora878410(r))t.pres+=(+r.q||0)*pu;
+    t.ant+=r.impPrev!==undefined?(+r.impPrev||0):(+r.qPrev||0)*pu;t.act+=r.impActual!==undefined?(+r.impActual||0):(+r.qAct||0)*pu;
+    const qO=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));t.ori+=(+r.impOrigen||0)||qO*pu});
+  const pcCap878429=(t,v)=>t.pres>0.005?pct(v/t.pres*100):"—";
+  const filaCap878429=cap=>{const t=capTot878429[cap]||{pres:0,ant:0,act:0,ori:0};return `<tr class="cap cap-v878429"><td colspan="5">${escHtmlV8772(cap==="PRESSUPOST IMPORTAT"?D(cap):cap)}</td><td class="num fb">${money(t.pres)}</td><td></td><td class="num">${pcCap878429(t,t.ant)}</td><td class="num fb">${money(t.ant)}</td><td></td><td class="num">${pcCap878429(t,t.act)}</td><td class="num fb">${money(t.act)}</td><td></td><td class="num">${pcCap878429(t,t.ori)}</td><td class="num">${money(t.ori)}</td></tr>`};
   let lastCap="__none__";
   const wideRows=printRows.map(r=>{
     const cap=r.cap||"PRESSUPOST IMPORTAT";
@@ -19149,7 +19171,7 @@ function certPrintHtmlV8772(doc,obra,client){
     const qOri=(+r.qOrigen||0)||((+r.qPrev||0)+(+r.qAct||0));
     const impOri=(+r.impOrigen||0)||qOri*parseNum8770(r.pu);
     const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
-    return `${showCap?`<tr class="cap"><td colspan="14">${escHtmlV8772(cap==="PRESSUPOST IMPORTAT"?D(cap):cap)}</td><td class="num">${money(originCapTotals87225[cap]||0)}</td></tr>`:""}<tr>
+    return `${showCap?filaCap878429(cap):""}<tr>
       <td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"${estilConcepte878423(r,r.qOrigen)}><b>${escHtmlV8772(r.concepte)}</b>${etiquetesDoc878423(r,D)}</td><td>${qty2(r.q)}</td><td>${money(r.pu)}</td><td>${money(pres)}</td>
       <td class="${(+r.qPrev||0)>0?'green':''}">${qty2(r.qPrev)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${money(ant)}</td>
       <td class="${(+r.qAct||0)>0?'green':''}">${qty2(r.qAct)}</td><td class="${(+r.qAct||0)>0?'green':''}">${pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td class="${(+r.qAct||0)>0?'green':''}">${money(act)}</td>
@@ -19166,7 +19188,7 @@ function certPrintHtmlV8772(doc,obra,client){
     .cover{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px;margin:8px 0 10px}.cover b{grid-column:1/-1;font-size:13px}.cover span{background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:7px;font-weight:700;color:#334155}
     table{width:100%;border-collapse:collapse;table-layout:fixed} th,td{border:1px solid #94a3b8;padding:3px 4px;text-align:right;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden} th{background:#dbeafe;color:#0f172a;font-weight:900}.concept{text-align:left!important;white-space:normal!important;overflow:hidden!important;overflow-wrap:anywhere!important;word-break:normal!important;line-height:1.16}.concept b{font-weight:700}.print-desc-static-v878126{display:block;white-space:pre-wrap;color:#475569;line-height:1.22;margin-top:2px;font-size:8px;font-weight:400}
     .summary{font-size:9.6px}.summary .part{width:13mm}.summary .ut{width:6mm}.summary .concept-col{width:auto}.summary .num{width:16mm}.summary .imp{width:22mm}.summary tfoot th{background:#b7c9dd;border-top:2px solid #0f172a}.deduction-box{width:112mm;margin:5mm 0 0 auto;border:1px solid #94a3b8;border-radius:6px;overflow:hidden}.deduction-box div{display:flex;justify-content:space-between;padding:5px 7px;border-bottom:1px solid #cbd5e1}.deduction-box div:last-child{border-bottom:0;background:#dbeafe;font-weight:900}.certs-list{width:95mm;margin:4mm 0 0 auto}.certs-list table{font-size:9px}.certs-list h3{margin-bottom:4px;text-align:left}
-    .wide{font-size:6.2px;line-height:1.04}.wide col.part{width:5.0%}.wide col.ut{width:2.4%}.wide col.concept-col{width:39.0%}.wide col.q{width:3.1%}.wide col.pu{width:4.0%}.wide col.imp{width:4.8%}.wide col.pct{width:2.7%}.wide col.imp-total{width:5.0%}.wide th,.wide td{padding:1.5px 1.5px}.wide .blocks th{background:#b7c9dd;border-top:2px solid #0f172a;border-bottom:2px solid #0f172a;text-align:center}.wide .green{background:#d9ead3;font-weight:700}.wide th:nth-child(6),.wide td:nth-child(6),.wide th:nth-child(9),.wide td:nth-child(9),.wide th:nth-child(12),.wide td:nth-child(12){border-right:2px solid #0f172a}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900;border-top:2px solid #0f172a;border-bottom:1.5px solid #0f172a;white-space:normal!important;font-size:7px}.cap td.num{text-align:right!important}.measure td{background:#fff!important;text-align:left!important;white-space:normal!important}.measure-inner{margin-top:3px;font-size:6.5px}.measure-inner th,.measure-inner td{padding:1.8px 2px}.cert-bottom-summary{margin-top:6mm;max-width:110mm;margin-left:auto}.cert-bottom-summary table{font-size:8px}.cert-bottom-summary th,.cert-bottom-summary td{text-align:right!important;padding:3px 4px}.cert-bottom-summary h3{text-align:left;margin:0 0 4px}
+    .wide{font-size:6.2px;line-height:1.04}.wide col.part{width:5.0%}.wide col.ut{width:2.4%}.wide col.concept-col{width:39.0%}.wide col.q{width:3.1%}.wide col.pu{width:4.0%}.wide col.imp{width:4.8%}.wide col.pct{width:2.7%}.wide col.imp-total{width:5.0%}.wide th,.wide td{padding:1.5px 1.5px}.wide .blocks th{background:#b7c9dd;border-top:2px solid #0f172a;border-bottom:2px solid #0f172a;text-align:center}.wide .green{background:#d9ead3;font-weight:700}.wide th:nth-child(6),.wide td:nth-child(6),.wide th:nth-child(9),.wide td:nth-child(9),.wide th:nth-child(12),.wide td:nth-child(12){border-right:2px solid #0f172a}.cap td{background:#9fbad4!important;text-align:left!important;font-weight:900;border-top:2px solid #0f172a;border-bottom:1.5px solid #0f172a;white-space:normal!important;font-size:7px}.cap td.num{text-align:right!important}.wide tr.cap-v878429 td{border-right:1px solid #94a3b8}.wide tr.cap-v878429 td.fb{border-right:2px solid #0f172a}.measure td{background:#fff!important;text-align:left!important;white-space:normal!important}.measure-inner{margin-top:3px;font-size:6.5px}.measure-inner th,.measure-inner td{padding:1.8px 2px}.cert-bottom-summary{margin-top:6mm;max-width:110mm;margin-left:auto}.cert-bottom-summary table{font-size:8px}.cert-bottom-summary th,.cert-bottom-summary td{text-align:right!important;padding:3px 4px}.cert-bottom-summary h3{text-align:left;margin:0 0 4px}
     thead{display:table-header-group} tfoot{display:table-footer-group}.cover span.o{color:#9A3412}${CSS_FIN878423}.wide th{white-space:normal!important;line-height:1.05}.empty{text-align:left;color:#64748b;padding:10px!important}
     @media screen{body{background:#e5e7eb;padding:16px}.page{box-shadow:0 2px 12px rgba(15,23,42,.15);margin:0 auto 16px;background:#fff;padding:8mm}.landscape{padding:6mm}}
     @media print{body{background:#fff!important;padding:0!important}.page{box-shadow:none!important;margin:0!important}.portrait{padding:0!important;width:182mm!important}.landscape{padding:0!important;width:277mm!important;min-height:185mm!important}.wide{table-layout:fixed!important;width:100%!important}.wide .concept{overflow:visible!important}}

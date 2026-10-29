@@ -1,0 +1,14 @@
+/* V87.429 · Certificació › Partides: la fila de cada capítol amb l'import de cada bloc sota la seva columna (pressupost original, el d'abans,
+   aquesta certificació i a origen). Al mòbil (fins a 760 px, partides en fitxes), la línia d'abans. */
+html body .cert-grid-wrap-v69 .cert-grid-v69.cap-fila-v878429,html body .cert-grid-v69.cap-fila-v878429{display:none!important}
+@media (min-width:761px){
+  html body button.cert-cap-v69.cap-m-v878429{display:none!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.cap-fila-v878429,html body .cert-grid-v69.cap-fila-v878429{display:grid!important;background:#EEF3FA;color:var(--co-ink,#0f172a);cursor:pointer;font-size:13.5px;font-weight:600;border-top:1px solid var(--co-line,#E2E8F0)}
+  html body .cert-grid-v69.cap-fila-v878429:hover{background:#E3ECF7}
+  html body .cert-grid-v69.cap-fila-v878429:focus-visible{outline:2px solid var(--co-accent,#2563EB)!important;outline-offset:-2px}
+  html body .cert-grid-v69.cap-fila-v878429>div{background:transparent;white-space:nowrap}
+  html body .cert-grid-v69.cap-fila-v878429>.nom{grid-column:span 5;text-align:left!important;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+  html body .cert-grid-v69.cap-fila-v878429>.imp{text-align:right!important;font-weight:700;font-variant-numeric:tabular-nums}
+  html body .cert-grid-v69.cap-fila-v878429>.pc{text-align:right!important;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+  html body .cert-grid-v69.cap-fila-v878429>.act{color:#166534}
+}
