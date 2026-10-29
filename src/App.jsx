@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.432";
+const APP_VERSION878264="87.433";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9463,12 +9463,12 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
       {sub878304==="industrials"&&industrialsTab878304()}
     </div>
   );
-  return <div className="fitxa-dades-stack-v878133">{promoterModal87210&&<Modal title={promoterModal87210.id?i18nT("Editar promotor / client final"):i18nT("Crear promotor / client final")} close={()=>setPromoterModal87210(null)}><div className="promoter-modal-v87210"><DatalistCP8773/><div className="module-note-v8738"><b>{i18nT("Independent del client de la carpeta")}</b><span>{i18nT("Aquesta fitxa identifica la propietat o client final que sortirà als documents de l’expedient.")}</span></div><div className="form-grid"><label><span>{i18nT("Nom complet / raó social *")}</span><input autoFocus value={promoterModal87210.nom||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nom:e.target.value}))}/></label><label><span>{i18nT("Empresa o nom fiscal")}</span><input value={promoterModal87210.empresa||""} onChange={e=>setPromoterModal87210(previous=>({...previous,empresa:e.target.value}))}/></label><label><span>{i18nT("DNI / NIF / CIF")}</span><input value={promoterModal87210.nif||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nif:e.target.value}))}/></label><label><span>{i18nT("Telèfon")}</span><input value={promoterModal87210.telefon||""} onChange={e=>setPromoterModal87210(previous=>({...previous,telefon:e.target.value}))}/></label><label className="span-all"><span>{i18nT("Adreça del promotor")}</span><input value={promoterModal87210.adreca||""} onChange={e=>setPromoterModal87210(previous=>({...previous,adreca:e.target.value}))}/></label><label><span>{i18nT("Email")}</span><input type="email" value={promoterModal87210.email||""} onChange={e=>setPromoterModal87210(previous=>({...previous,email:e.target.value}))}/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPromoterModal87210(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={savePromoterModal87210}>{i18nT("Guardar i seleccionar")}</button></div></div></Modal>}{/* V87.304 · els agents principals ja es veuen a les pestanyes (punt verd) i a la pestanya Agents */}<Card title={diuObra878326()?i18nT("Dades de l’obra"):i18nT("Dades de l’expedient")} action={<div className="actions-inline"><button className="primary" onClick={saveAll}>{i18nT("Guardar dades")}</button></div>}>
+  return <div className="fitxa-dades-stack-v878133">{promoterModal87210&&<Modal title={promoterModal87210.id?i18nT("Editar promotor / client final"):i18nT("Crear promotor / client final")} close={()=>setPromoterModal87210(null)}><div className="promoter-modal-v87210"><DatalistCP8773/><div className="module-note-v8738"><b>{i18nT("Independent del client de la carpeta")}</b><span>{i18nT("Aquesta fitxa identifica la propietat o client final que sortirà als documents de l’expedient.")}</span></div><div className="form-grid"><label><span>{i18nT("Nom complet / raó social *")}</span><input autoFocus value={promoterModal87210.nom||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nom:e.target.value}))}/></label><label><span>{i18nT("Empresa o nom fiscal")}</span><input value={promoterModal87210.empresa||""} onChange={e=>setPromoterModal87210(previous=>({...previous,empresa:e.target.value}))}/></label><label><span>{i18nT("DNI / NIF / CIF")}</span><input value={promoterModal87210.nif||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nif:e.target.value}))}/></label><label><span>{i18nT("Telèfon")}</span><input value={promoterModal87210.telefon||""} onChange={e=>setPromoterModal87210(previous=>({...previous,telefon:e.target.value}))}/></label><label className="span-all"><span>{i18nT("Adreça del promotor")}</span><input value={promoterModal87210.adreca||""} onChange={e=>setPromoterModal87210(previous=>({...previous,adreca:e.target.value}))}/></label><label><span>{i18nT("Email")}</span><input type="email" value={promoterModal87210.email||""} onChange={e=>setPromoterModal87210(previous=>({...previous,email:e.target.value}))}/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPromoterModal87210(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={savePromoterModal87210}>{i18nT("Guardar i seleccionar")}</button></div></div></Modal>}{/* V87.304 · els agents principals ja es veuen a les pestanyes (punt verd) i a la pestanya Agents */}<details className="card bloc-v878426 dades-bloc-v878433"><summary><ClipboardList size={18} aria-hidden="true"/><span className="t"><b>{diuObra878326()?i18nT("Dades de l’obra"):i18nT("Dades de l’expedient")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
     {mobil878363?<div className="dades-acc-v878363">{tabsVisibles878304.map(([k,l])=><React.Fragment key={k}><button type="button" className={`acc-cap ${acc878363===k?"on":""} ${ple878304(k)?"ple":""}`} aria-expanded={acc878363===k} onClick={e=>{const el=e.currentTarget;if(acc878363===k)setAcc878363("");else{setAcc878363(k);triaSub878304(k);setTimeout(()=>{try{el.scrollIntoView({block:"start",behavior:"smooth"})}catch{}},60)}}}><span>{l}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></button>{acc878363===k&&cos878363}</React.Fragment>)}{simple878304&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>:
     <div className="dades-tabs-v878304" role="tablist">{tabsVisibles878304.map(([k,l])=><button type="button" role="tab" key={k} aria-selected={sub878304===k} className={`${sub878304===k?"on":""} ${ple878304(k)?"ple":""}`} onClick={()=>triaSub878304(k)}>{l}</button>)}{simple878304&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>}
     {mobil878363?null:cos878363}
     <div className="dades-desar-v878304"><button className="primary" onClick={saveAll}>{i18nT("Guardar dades")}</button></div>
-  </Card>
+  </div><Recollir878432/></details>
   </div>
 }
 
@@ -10139,11 +10139,11 @@ function facturesObraValides878347(d={}){
   const propies=[...fo.filter(f=>!f.importada),...(d?.facturesVF878285||[]).filter(x=>x.estat!=="Anulada")];
   return fo.filter(f=>!f.importada||!propies.some(x=>Math.abs((+x.base||0)-(+f.base||0))<0.01));
 }
-// V87.431 · a la gestió total, les hores del tècnic (Obra › Hores) × el seu preu per hora són un cost més de l'obra (l'Héctor, 29/10/2026:
-// «el cost d'hores que entri en el rendiment»). Al compte de l'Héctor i al perfil tècnic no: allà l'obra és del client i les hores són de
-// l'encàrrec (en surt el rendiment de l'encàrrec i el del menú Rendiment).
+// V87.431 · les hores del tècnic (Obra › Hores) × el seu preu per hora són un cost més de l'obra (l'Héctor, 29/10/2026: «el cost d'hores
+// que entri en el rendiment»). V87.433 · als comptes amb el mòdul tècnic i el d'obra: la gestió total i el compte de l'Héctor («segueixo
+// sense veure lo de les hores tècniques»). La constructora no fa hores de tècnic i el perfil tècnic no té el rendiment de l'obra.
 function horesTecnic878431(obraId){
-  if(PERFIL878304!=="complet"||!obraId)return [];
+  if(!teModul878326("tecnic")||!teModul878326("obra")||!obraId)return [];
   return readTimeRows878255(obraId).filter(r=>isHoursRow878255(r)&&!r.treballador&&(!r.obraId||String(r.obraId)===String(obraId))&&timeHours878120(r)>0);
 }
 const preuTecnic878431=r=>parseNum8770(r?.preuHora)||parseNum8770(r?.preu)||defaultRate878255();
@@ -17551,9 +17551,10 @@ return <div className={`agent-drawer-v878133 ${review&&marked.includes(a.id)?"ma
 </>;
 const afegir878319=<button type="button" className="primary" onClick={e=>{e.preventDefault();e.stopPropagation();setObert878319(true);setPicker(true)}}><Plus/> {t("Afegir agent")}</button>;
 // V87.319 · a Dades, la llista d'agents plegada (l'Héctor: «si no necessito emplenar res, que no ocupi tant d'espai»)
-if(plegat){const noms=local.map(a=>a.nom).filter(Boolean);return <details className="card agents-plegat-v878319" open={obert878319} onToggle={e=>setObert878319(e.currentTarget.open)}>
-  <summary><span className="tit"><b>{t("Agents de l’obra")}</b><small>{local.length?(noms.slice(0,3).join(" · ")+(noms.length>3?" · +"+(noms.length-3):"")):t("Cap agent")}</small></span><span className="n">{local.length}</span>{afegir878319}</summary>
-  {obert878319&&cos878319}</details>}
+// V87.433 · com les altres targetes principals: icona, títol, quants i la fletxa; «Afegir agent» a dins
+if(plegat)return <details className="card bloc-v878426 agents-plegat-v878319" open={obert878319} onToggle={e=>setObert878319(e.currentTarget.open)}>
+  <summary><Users size={18} aria-hidden="true"/><span className="t"><b>{t("Agents de l’obra")}</b></span><span className="xifra">{local.length}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+  {obert878319&&<div className="cos"><div className="acc">{afegir878319}</div>{cos878319}</div>}<Recollir878432/></details>;
 return <Card title={t("Relació d’agents de l’obra")} action={<div className="actions-inline">{afegir878319}</div>}>{cos878319}</Card>}
 
 function SeguimentFotos(){const[photos,setPhotos]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_photos"))||"[]"));useEffect(()=>{localStorage.setItem(lsKey8779("aco_photos"),JSON.stringify(photos))},[photos]);function add(e){let files=[...(e.target.files||[])];files.forEach(f=>{let r=new FileReader();r.onload=()=>setPhotos(p=>[...p,{id:"ph-"+Date.now()+Math.random(),name:f.name,url:r.result}]);r.readAsDataURL(f)})}return <Card title="Fotografies" action={<label className="primary upload-label"><Plus/> Afegir fotografies<input type="file" multiple accept="image/*" onChange={add}/></label>}><div className="real-photo-grid">{photos.length===0?<Empty text="Encara no hi ha fotografies. També les podràs incorporar directament dins les actes."/>:photos.map(p=><div><img src={p.url}/><span>{p.name}</span></div>)}</div></Card>}
@@ -17993,7 +17994,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.432",
+    app_version:"87.433",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

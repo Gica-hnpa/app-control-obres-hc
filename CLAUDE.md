@@ -2319,8 +2319,8 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       les hores del tècnic (Obra › Hores, sense les dels treballadors `treballador:true`) × el seu €/h (o el de sèrie) són la línia
       **«− Hores tècniques · N h»** del compte de l'obra (`rendimentFase878342` → `perTipus.Tecnic`, `horesTec`; només a tota l'obra: no tenen
       fase; a «Per fases», una fila «Hores tècniques») i compten a la gràfica i al Rendiment de l'empresa (`dadesRendEmpresa878343`, a
-      `pers`). A Despeses de l'obra no hi surten (`rendimentFase878342(…, {tecnic:false})`). Al compte de l'Héctor i al perfil tècnic, no:
-      l'obra és del client.
+      `pers`). A Despeses de l'obra no hi surten (`rendimentFase878342(…, {tecnic:false})`). Des de la V87.433, també al
+      compte de l'Héctor.
     - **Un pressupost facturat en diverses factures** (`uniqueFactures8743`): fins ara, de les factures d'un mateix pressupost d'honoraris
       només en sortia una a les llistes (es treien com si fossin repetides); ara només es treuen les del mateix número. A la còpia del núvol
       del 29/10 no n'hi havia cap de repetida.
@@ -2345,6 +2345,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       en una targeta plegada «Gràfica» (`graf-enc-v878432`).
     - Prova: `v432test.mjs`. Eina `visual432.mjs` (captures de Pressupost, Rendiment i Despeses a l'ordinador i al mòbil). Adaptades
       `v430test`, `v411test` (els mesos plegats), `simple354test` i `graficatest` (V87.431).
+  - **V87.433 · Dades de l'expedient i Agents de l'obra plegades, i les Hores tècniques al compte de l'Héctor** (l'Héctor, 29/10/2026, amb
+    captures de la V87.432: «dades de l'expedient surt la targeta oberta i els agents de l'obra a baix de tot… segueixo sense veure lo de les
+    hores tècniques»):
+    - **Dades** (`FitxaDadesTab8769`): la `Card` sempre oberta «Dades de l'expedient / de l'obra» és ara una targeta principal plegada
+      (`details.card.bloc-v878426.dades-bloc-v878433`, icona `ClipboardList`); a dins, les pestanyes (o els apartats al mòbil) i un sol
+      «Guardar dades» a baix; «Recollir» si és llarga. **Agents de l'obra** (`AgentsObraCard plegat`, `agents-plegat-v878319`): la mateixa
+      targeta (icona `Users`, títol, quants a la dreta i la fletxa), sense la línia dels noms ni el botó a la capçalera; «Afegir agent» a
+      dins. Les dues, una sota l'altra.
+    - **Hores tècniques** (`horesTecnic878431`): ara als comptes amb el mòdul tècnic i el d'obra (`teModul878326`): la gestió total i **el compte
+      de l'Héctor** (abans només la gestió total). La constructora no en fa i el perfil tècnic no té el Rendiment de l'obra.
+    - Estils `src/theme-v878433.css`. Prova: `v433test.mjs` (12: compte de l'Héctor amb una còpia del DADES a «obra CALA ROVIRA 11» i
+      demo-tecnic al mòbil). Adaptades `fitxa319test` (els agents sense botó a la capçalera), `encarrec333test` (els passos, tots plegats
+      d'entrada des de la V87.432) i `v426test` (els capítols, targetes secundàries més baixes).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2518,7 +2531,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.432 a Render):**
+**Estat (publicada la V87.433 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

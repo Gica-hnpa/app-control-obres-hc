@@ -1,0 +1,5 @@
+/* V87.433 · Dades de l'expedient i Agents de l'obra com a targetes principals plegades (l'Héctor, 29/10/2026: «dades de l'expedient surt
+   la targeta oberta i els agents de l'obra a baix de tot»). La fletxa vella dels agents (V87.319) ja no hi va: hi ha la de la targeta. */
+html body details.card.bloc-v878426.agents-plegat-v878319>summary::before{content:none!important;display:none!important}
+html body details.card.bloc-v878426.dades-bloc-v878433>.cos>.dades-desar-v878304{margin-top:4px}
+html body .fitxa-dades-stack-v878133:has(>details.dades-bloc-v878433)+.fitxa-dades-stack-v878133{margin-top:12px}
