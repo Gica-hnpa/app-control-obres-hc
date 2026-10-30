@@ -1,0 +1,8 @@
+/* V87.447 · La fitxa de la partida, oberta dins de la seva targeta també al mòbil i a l'iPad.
+   Una regla de styles.css (fila plegada: tot amagat menys el resum) guanyava i la fitxa no sortia des de la V87.426 */
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line>.fitxa-partida-v878361{display:flex!important;min-width:0}
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line.fitxa-oberta-v878426{overflow:hidden}
+@media (max-width:700px){
+  html body .fitxa-partida-v878361.inline-v878426 .xifres{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .fitxa-partida-v878361.inline-v878426{padding:12px}
+}
