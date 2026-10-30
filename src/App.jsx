@@ -33,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.447";
+const APP_VERSION878264="87.448";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8637,7 +8637,7 @@ const CAPS_STD878280=[["01","Treballs previs i enderrocs"],["02","Moviment de te
 const CAP_RULES878280=[
   ["24",/administracio|per hores|hores d.oficial|hores de peo/],
   ["21",/seguretat i salut|\bepi\b|proteccio colectiva|xarxa de seguretat|senyalitzacio d.obra/],
-  ["20",/\bruna\b|\brunes\b|residu|contenidor|abocador|bigbag|neteja final|neteja d.obra|neteja general/],
+  ["20",/\bruna\b|\brunes\b|residu|contenidor|contenedor|abocador|vertedero|escombro|bigbag|neteja final|neteja d.obra|neteja general|limpieza final|limpieza de obra|limpieza general/],
   ["01",/enderroc|demolic|desmunt|arrencad|retirada|extraccio|repicat|picat de|desmuntatge|aixecament de paviment/],
   ["02",/excavacio|terraple|rebliment|\brasa\b|desbrossa|moviment de terres|anivellament del terreny/],
   ["03",/fonament|sabata|riostra|llosa de fonament|mur de contencio|micropilot/],
@@ -13256,7 +13256,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obraId="",onAfe
   // el lloc («del bany», «de la cuina») no tria el capítol: «alicatat del bany» és un revestiment, no un aparell sanitari
   const LLOC401=/\b(?:de\s+la|del|dels|de\s+les|de\s+l['’]|a\s+la|al|en\s+el|en\s+la)\s*(?:cuina|banys?|lavabos?|menjador|sala|habitaci[oó]|habitacions|passad[ií]s|terrassa|balc[oó]|safareig|rebedor|dormitoris?|cocina|ba[ñn]os?|comedor|sal[oó]n)\b/gi;
   // sense capítol clar («25 Altres»), cap nou «ALTRES» (no el primer capítol del pressupost que tampoc en té)
-  const destDe=c=>{const c2=String(c||"").replace(LLOC401,"");const s=/alicat|enrajolat|aplacat/i.test(c2)?"08":capStd878280({concepte:c2});const ja=s!=="25"&&capsAra.find(k=>capStd878280({concepte:"",cap:k})===s);if(ja)return ja;return "nou:"+((CAPS_STD878280.find(x=>x[0]===s)||[])[1]||"Altres").toUpperCase()};
+  const destDe=c=>{const c2=String(c||"").replace(LLOC401,"");const s=/alicat|enrajolat|aplacat/i.test(c2)?"08":capStd878280({concepte:c2});const ja=s!=="25"&&capsAra.find(k=>capStd878280({concepte:"",cap:k})===s);if(ja)return ja;return "nou:"+t((CAPS_STD878280.find(x=>x[0]===s)||[])[1]||"Altres").toUpperCase()};
   function llegeix(){
     const its=llegirDictat(text);
     const amb=preusAmidaments878368(its.map(x=>({concepte:x.concepte,ut:x.ut,q:x.q,codi:""})),partidaLibrary,bancPreus878368(),obraId);
@@ -17000,7 +17000,7 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
         </div>})}
       </div>}
       {rows.length>0&&<div className="fe-total-v878390"><div className="tit"><b>{t("Total")}</b><small>{periode} · {rows.length===1?t("1 factura"):t("{n} factures",{n:rows.length})}</small></div><div className="fe-kpis"><div><small>{t("Base")}</small><b>{money(sum("base"))}</b></div><div><small>{t("IVA")}</small><b>{money(sum("ivaImp"))}</b></div>{Math.abs(sum("retImp"))>0.005&&<div><small>{t("Retenció")}</small><b>{money(sum("retImp"))}</b></div>}<div><small>{t("Total")}</small><b>{money(sum("total"))}</b></div><div className={pendent>0.005?"warn":""}><small>{t("Pendent de cobrar")}</small><b>{money(pendent)}</b></div></div></div>}
-      {factures.length>0&&<details className="card bloc-v878426 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{t("Gràfics i informes")}</b></span><span className="xifra">{resumFact878397(graf397,anyF==="tots"?null:+anyF)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{inf397&&<GraficaFact878397 items={graf397} any={anyF==="tots"?null:+anyF}/>}</div><Recollir878432/></details>}
+      {factures.length>0&&<details className="card bloc-v878426 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{t("Gràfics i informes")}</b></span><span className="xifra" title={resumFact878397(graf397,anyF==="tots"?null:+anyF)}>{resumFact878397(graf397,anyF==="tots"?null:+anyF,true)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{inf397&&<GraficaFact878397 items={graf397} any={anyF==="tots"?null:+anyF}/>}</div><Recollir878432/></details>}
     </>}
     {vista==="per"&&(!perFacturar.length?<div className="fe-buit"><b>{t("Totes les certificacions estan facturades.")}</b></div>
       :<div className="fe-llista per"><div className="fe-row pf cap" aria-hidden="true"><span>{t("Certificació")}</span><span>{t("Obra i client")}</span><span>{t("Base")}</span><span>{t("IVA")}</span><span>{t("Total")}</span><span/></div>{perFacturar.map(x=><div key={x.k} className="fe-row pf">
@@ -18373,7 +18373,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.447",
+    app_version:"87.448",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -18965,9 +18965,10 @@ function difFact878397(a,b){return a==null||b==null||Math.abs(b)<0.005?null:(a-b
 function difTxt878397(d){return d==null?"":`${d>=0?"+":"−"}${Math.abs(d).toLocaleString(loc878272(),{maximumFractionDigits:0})} %`}
 function XipDif878397({d,vs}){if(d==null)return null;return <b className={`gf-dif-v878397 ${d>=0?"up":"down"}`}>{d>=0?"▲":"▼"} {difTxt878397(d)}{vs?<small> {t("respecte de {any}",{any:vs})}</small>:null}</b>}
 // la línia del bloc plegat: l'any (fins avui, si és l'actual) i la diferència amb el mateix període de l'any passat
-function resumFact878397(items,anyTriat){const a0=new Date(),ara={y:a0.getFullYear(),m:a0.getMonth(),d:a0.getDate()};const y=anyTriat&&anyTriat<=ara.y?anyTriat:ara.y;
+function resumFact878397(items,anyTriat,curt){const a0=new Date(),ara={y:a0.getFullYear(),m:a0.getMonth(),d:a0.getDate()};const y=anyTriat&&anyTriat<=ara.y?anyTriat:ara.y;
   const pts=ptsFact878397(items);if(!pts.length)return "";const ms=[...Array(12).keys()],cut=y===ara.y?ara:null;
   const a=sumaFact878397(pts,y,ms,cut),b=pts.some(p=>p.y===y-1)?sumaFact878397(pts,y-1,ms,cut):null;const d=difFact878397(a,b);
+  if(curt)return `${money(a)}${d!=null?` · ${difTxt878397(d)}`:""}`;
   return `${y===ara.y?t("{x} fins avui",{x:y}):y}: ${money(a)}${d!=null?` · ${difTxt878397(d)} ${t("respecte de {any}",{any:y-1})}`:""}`}
 // Barres (columnes) de diversos anys: un grup per mes (o una barra per any, `centrar`), 4 px arrodonits a dalt, 2 px entre barres,
 // la franja del mes en passar-hi per sobre o tocar-la, i el requadre amb l'import de cada any i la diferència amb l'anterior
@@ -19196,7 +19197,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
     {files873.some(vigent873)&&(()=>{const v=files873.filter(vigent873),bs=v.reduce((x,f)=>x+baseIva8743(f),0),iv=v.reduce((x,f)=>x+baseIva8743(f)*ivaRate878252(f)/100,0),tt=v.reduce((x,f)=>x+totalIva8743(f),0),pd=v.filter(f=>!cobrada873(f)).reduce((x,f)=>x+totalIva8743(f),0);
       const per=[anyF873==="tots"?i18nT("Tots els anys"):(mesOk390?nomMes390(mesOk390)+" "+anyF873:anyF873),client?i18nT(client):"",obra?obres873.find(o=>o.id===obra)?.nom:""].filter(Boolean).join(" · ");
       return <div className="fe-total-v878390"><div className="tit"><b>{i18nT("Total")}</b><small>{per} · {v.length===1?i18nT("1 factura"):i18nT("{n} factures",{n:v.length})}</small></div><div className="fe-kpis"><div><small>{i18nT("Base")}</small><b>{money(bs)}</b></div><div><small>{i18nT("IVA")}</small><b>{money(iv)}</b></div>{bs+iv-tt>0.005&&<div><small>{i18nT("Retenció")}</small><b>{money(-(bs+iv-tt))}</b></div>}<div><small>{i18nT("Total")}</small><b>{money(tt)}</b></div><div className={pd>0.005?"warn":""}><small>{i18nT("Pendent de cobrar")}</small><b>{money(pd)}</b></div></div></div>})()}
-    {all.length>0&&<details className="card bloc-v878426 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Gràfics i informes")}</b></span><span className="xifra">{resumFact878397(graf397,anyF873==="tots"?null:+anyF873)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{inf397&&<><GraficaFact878397 items={graf397} any={anyF873==="tots"?null:+anyF873}/><div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={aggregate8776(rows,f=>statusKeyFactura8776(f.estat),()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div></>}</div><Recollir878432/></details>}
+    {all.length>0&&<details className="card bloc-v878426 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Gràfics i informes")}</b></span><span className="xifra" title={resumFact878397(graf397,anyF873==="tots"?null:+anyF873)}>{resumFact878397(graf397,anyF873==="tots"?null:+anyF873,true)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{inf397&&<><GraficaFact878397 items={graf397} any={anyF873==="tots"?null:+anyF873}/><div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={aggregate8776(rows,f=>statusKeyFactura8776(f.estat),()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div></>}</div><Recollir878432/></details>}
   </div>;
 }
 function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab,clientsList=[]}){

@@ -2554,6 +2554,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **V87.447 · Al mòbil i a l'iPad, tocar una partida obre la seva fitxa** (trobat gravant la lliçó del pressupost): des de la V87.426 la fitxa hi era però amagada: una regla vella de
     `styles.css` (`.budget-row-collapsed-v87173>*:not(…){display:none!important}`) guanyava a la de la V87.426; ni `v426test` ni `v427test` ho veien perquè miren l'ordinador o si
     l'element existeix. Al mòbil, les xifres en dues columnes. Estils `src/theme-v878447.css`. Prova: `v447test.mjs` (12: mòbil, iPad i ordinador, mira que es vegi de debò).
+  - **V87.448 · L'import de les targetes no es talla** (trobat gravant en castellà: «Presupuesto principal 13.328,0…»): la xifra no s'encongeix mai i és el títol qui passa de línia
+    (`src/theme-v878448.css`). A Facturació, «Gràfics i informes» diu només l'import i el % (`resumFact878397(…, true)`; el text sencer, al `title`). El capítol nou del dictat surt en
+    l'idioma de l'usuari («OTROS», no «ALTRES»: `t()` a `destDe`), i «limpieza final», «escombro», «contenedor»… van a Gestió de residus. Prova: `v448test.mjs` (4). Adaptada `fact397test`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2733,7 +2736,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.447 a Render):**
+**Estat (publicada la V87.448 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
