@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.439";
+const APP_VERSION878264="87.440";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3092,7 +3092,7 @@ function signatDe878408(obraId,tipus,ref){try{return (window.__acoSignats878408?
 async function hashText878408(s){const h=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(s||""))));return [...h].slice(0,8).map(x=>x.toString(16).padStart(2,"0")).join("")}
 // el requadre, les signatures i a qui toca cadascuna: src/signaComu.js (els fa servir també la pàgina per signar a distància)
 const propsSig878408=propsSigC878409,ajuntaSig878408=ajuntaSigC878409;
-function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",carpeta="01_DOCUMENTACIO_PREVIA",inline=false,close,onSignat,abans}){
+function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",carpeta="01_DOCUMENTACIO_PREVIA",inline=false,close,onSignat,abans,autoEnvia=false}){
   const obraId=obra?.id;
   const[rec,setRec]=useState(()=>signatDe878408(obraId,tipus,refId));
   const[base,setBase0]=useState(null);              // {bytes, signes}: el PDF que se signa (el signat d'ara o un de nou)
@@ -3203,6 +3203,9 @@ function SignaturaCert878408({obra,tipus,refId,titol,rols=[],fesHtml,clau="",car
     const link=enllacSigna878409(rm.token);
     window.__acoEnviar878407?.({title:`${titol} · ${t("per signar")}`,obra,
       message:t("Bon dia,\n\nUs envio {doc} per signar-lo amb el vostre certificat digital. Obriu aquest enllaç a l’ordinador (cal tenir l’AutoFirma):\n{enllac}\n\nTotes les signatures queden al mateix document.\n\nSalutacions,\n{signa}").split("{enllac}").join(link).split("{doc}").join(titol)})}
+  // V87.440 · «Enviar-la perquè la tornin signada»: quan el PDF és a punt, es crea l'enllaç i s'obre «Enviar» (correu o WhatsApp)
+  const autoFet440=useRef(false);
+  useEffect(()=>{if(autoEnvia&&base&&!autoFet440.current){autoFet440.current=true;enviaPerSignar()}},[autoEnvia,base]);
   async function copiaEnllac(){const rm=llegeixRemot();if(!rm)return;const link=enllacSigna878409(rm.token);try{await navigator.clipboard.writeText(link);setCopiat(true);setTimeout(()=>setCopiat(false),2500)}catch{window.prompt(t("Copia l’enllaç:"),link)}}
   async function tancaRemot(preg=true){const rm=llegeixRemot();if(!rm)return;if(preg&&!confirm(t("Tancar l’enllaç? Qui encara no hagi signat ja no ho podrà fer.")))return;
     try{await window.__acoCloud?.rpc?.("aco_signa_tanca",{p_id:rm.id})}catch(e){console.warn(e)}
@@ -15259,7 +15262,10 @@ let prevNum=certNum>1?certNum-1:0;
 const pfCert878337=obraData&&cert?proformesObra878337(obraData).find(p=>p.certId===cert.id):null;
 const faCert878337=obraData&&cert?(obraData.facturesObra878297||[]).find(x=>x.certId===cert.id):null;
 const vfCert878337=obraData&&cert?(obraData.facturesVF878285||[]).find(x=>x.certId===cert.id&&x.estat!=="Anulada"):null;
-const potFacturar878337=!clientMode&&!readOnly&&!!setObraData&&!!pfCert878337&&!faCert878337&&!vfCert878337&&pfCert878337.base>0.005&&(esEmpresaFactura878337()||!!client?.facturacio878297?.actiu);
+// V87.440 · «Fer factura» surt sempre (l'Héctor, 30/10/2026, a Verbania: «com passo la certificació a proforma o a factura directa? no hi ha
+// l'opció»): abans només si el client ja tenia la numeració activada. Sense numeració, la finestra demana la sèrie i la deixa activada.
+const faOk878440=esEmpresaFactura878337()||(!!client&&!obra?.compartida);
+const potFacturar878337=!clientMode&&!readOnly&&!!setObraData&&!!pfCert878337&&!faCert878337&&!vfCert878337&&pfCert878337.base>0.005&&faOk878440;
 const[ferFactura878337,setFerFactura878337]=useState(false);
 // V87.364 · una certificació amb factura no es pot tocar (abans el Σ en mode consulta obria l'edició i la deixava a 0)
 const bloq878364=!!(faCert878337||vfCert878337);
@@ -15267,9 +15273,11 @@ const bloq878364=!!(faCert878337||vfCert878337);
 const facturats878439=new Set((certs||[]).filter(c=>certFacturada878439(obraData,c.id)).map(c=>String(+c.numero)));
 // V87.408 · signatura amb certificat de la certificació (direcció facultativa, constructora i promotor, al mateix PDF)
 const[sigCert408,setSigCert408]=useState(false);
+const[enviar440,setEnviar440]=useState(false);
 const ref408=String(cert?.id||`n${certNum}`);
 const rec408=obra?.id&&cert?signatDe878408(obra.id,"certificacio",ref408):null;
 const sigs408=rec408?.signat878408?.signatures||[];
+const enviaCert878440=()=>openEmail(`${i18nT("Certificació")} ${certNum}`,rec408?{pdf:{carrega:()=>getDocFile(rec408.id,obra?.id),nom:rec408.nom}}:{doc:certPdfDoc878407("origen")});
 const mobil878366=useMobil878363();
 const[focus878364,setFocus878364]=useState(null);
 // V87.424 · comparar la certificació amb la que hi fa un altre compte (obra compartida «només Pressupost i certificacions»)
@@ -15280,8 +15288,8 @@ useEffect(()=>{if(!editing||!focus878364)return;const tm=setTimeout(()=>{const e
 const pfs878364=obraData?proformesObra878337(obraData):[];
 const faDe878364=c=>(obraData?.facturesObra878297||[]).find(x=>x.certId===c.id);
 const vfDe878364=c=>(obraData?.facturesVF878285||[]).find(x=>x.certId===c.id&&x.estat!=="Anulada");
-const potFactDe878364=c=>{const pf=pfs878364.find(x=>x.certId===c.id);return !clientMode&&!readOnly&&!!setObraData&&!!pf&&!faDe878364(c)&&!vfDe878364(c)&&pf.base>0.005&&(esEmpresaFactura878337()||!!client?.facturacio878297?.actiu)};
-const ambFact878364=!clientMode&&!!obraData&&(esEmpresaFactura878337()||!!client?.facturacio878297?.actiu||certs.some(c=>faDe878364(c)||vfDe878364(c)));
+const potFactDe878364=c=>{const pf=pfs878364.find(x=>x.certId===c.id);return !clientMode&&!readOnly&&!!setObraData&&!!pf&&!faDe878364(c)&&!vfDe878364(c)&&pf.base>0.005&&faOk878440};
+const ambFact878364=!clientMode&&!!obraData&&(faOk878440||certs.some(c=>faDe878364(c)||vfDe878364(c)));
 let allRows878132=sortPartides878132(data.partides||[]);
 let hiddenCount878132=allRows878132.filter(r=>isCertHidden878132(r,certNum)).length;
 let rows=allRows878132.filter(r=>showHiddenCert878132||!isCertHidden878132(r,certNum));
@@ -15817,8 +15825,9 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       :<><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button>{!readOnly&&!contrast878424&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}</>}
     {!editing&&<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>}
     {!editing&&<ActionMenu87213 className="accions-v878364" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
-      {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>openEmail(`${i18nT("Certificació")} ${certNum}`,rec408?{pdf:{carrega:()=>getDocFile(rec408.id,obra?.id),nom:rec408.nom}}:{doc:certPdfDoc878407("origen")})}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+      {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>{if(!contrast878424&&obra?.id&&cert)setEnviar440(true);else enviaCert878440()}}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
       {!clientMode&&!contrast878424&&obra?.id&&cert&&<button type="button" className="sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
+      {!clientMode&&!contrast878424&&pfCert878337&&!faCert878337&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
       {faCert878337?<button type="button" onClick={()=>openDoc?.(docFactura878337(faCert878337,pfCert878337,obraData))}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>
         :potFacturar878337&&!contrast878424&&<button type="button" className="cert-fer-v878337" onClick={()=>setFerFactura878337(true)}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Fer factura")}</button>}
       {!readOnly&&!bloq878364&&!contrast878424&&<button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}
@@ -15837,7 +15846,11 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       <button type="button" className="opcio" onClick={()=>{setImprimirC426(false);setAdminPrintOpen87221(true)}}><Printer size={20} aria-hidden="true"/> {i18nT("Escollir una partida")}</button></>}
     <label className="opcio chk-v878426"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> {i18nT("Incloure línies d’amidament a la certificació")}</label>
   </div></Modal>}
-  {sigCert408&&<SignaturaCert878408 obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
+  {enviar440&&<Modal title={i18nT("Enviar la certificació {n}",{n:certNum})} close={()=>setEnviar440(false)}><div className="imprimir-modal-v878426">
+    <button type="button" className="opcio" onClick={()=>{setEnviar440(false);enviaCert878440()}}><Mail size={20} aria-hidden="true"/> {i18nT("Enviar la certificació")}</button>
+    <button type="button" className="opcio" onClick={()=>{setEnviar440(false);setSigCert408("envia")}}><Signature size={20} aria-hidden="true"/> {i18nT("Enviar-la perquè la tornin signada")}</button>
+  </div></Modal>}
+  {sigCert408&&<SignaturaCert878408 autoEnvia={sigCert408==="envia"} obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
   {detall426&&cert&&<details className="card bloc-v878426 cert-resum-v878426"><summary><LayoutDashboard size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Resum")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
     {readOnly?<ClientCertSummaryV87235 data={data}/>:<ResumCert878426 data={data} imp={editing?certTotal(certNum):certListTotal878215(cert)} num={certNum}/>}
   </div><Recollir878432/></details>}
@@ -16535,7 +16548,7 @@ return <div className={`fact-layout-v61 fact-layout-v87101 fact-v878426 ${readOn
       <button type="button" className="secondary" onClick={()=>openDoc(docPf878407(f))}><Printer size={15} aria-hidden="true"/> {t("PDF")}</button>
       {openEmail&&<button type="button" className="secondary" onClick={()=>openEmail(`Proforma ${f.numero}`,{doc:docPf878407(f)})}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button>}
       {canEdit&&vf.estat==="actiu"&&<button type="button" className="primary vf-emetre-btn-v878285" onClick={()=>setEmetreVF(f)}>{t("Emetre factura")}</button>}
-      {canEdit&&(serie878297||esEmpresaFactura878337())&&vf.estat!=="actiu"&&<button type="button" className="primary fa-fer-v878297" onClick={()=>setFerFactura(f)}><ReceiptText size={15} aria-hidden="true"/> {t("Fer factura")}</button>}
+      {canEdit&&(serie878297||esEmpresaFactura878337()||(!!client&&!obra?.compartida))&&vf.estat!=="actiu"&&<button type="button" className="primary fa-fer-v878297" onClick={()=>setFerFactura(f)}><ReceiptText size={15} aria-hidden="true"/> {t("Fer factura")}</button>}
     </div>
     {anuladesDe(f).length>0&&<small className="vf-anulades-v878286">{t("Anul·lades:")} {anuladesDe(f).join(", ")}</small>}
   </div></details>})}
@@ -16681,15 +16694,18 @@ function calcPf878337(data,f,legacy){const p=paramsPf878337(data,f,legacy);const
 function docFactura878337(fa,f,data){const pf=f||{numeroCert:fa.certNum,numero:fa.pfNumero,rows:[],allRows:[],base:fa.base};return {type:"proforma",autoPrint:false,esFactura:true,title:`Factura ${fa.numero}`,subtitle:`Certificació ${pf.numeroCert} · ${fmtDate8714(fa.data)}`,proforma:pf,agents:data?.agents||[],iva:fa.iva,ret:fa.ret,ded:fa.ded,total:fa.total,base:fa.base,ivaImp:fa.ivaImp,retImp:fa.retImp,factura878297:fa}}
 // V87.297 · Fer la factura d'una proforma. V87.337: als comptes d'empresa, amb la sèrie de l'empresa; l'IVA i la retenció es trien aquí
 // mateix (també des de la certificació) i, si falten el CIF o l'adreça de l'empresa, es posen aquí.
+function docProforma878440(f,data){const c=calcPf878337(data,f);return {type:"proforma",autoPrint:false,title:`Proforma ${f.numero}`,subtitle:`Certificació ${f.numeroCert} · ${fmtDate8714(f.data)}`,proforma:f,agents:data?.agents||[],iva:c.iva,ret:c.ret,ded:c.ded,total:c.total,base:c.base,ivaImp:c.ivaImp,retImp:c.retImp}}
 function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
   const emp=esEmpresaFactura878337();
   const sc=client?.facturacio878297||{};
+  const noSerie=!emp&&!sc.actiu;
   const se=emp?serieEmpresa878337():null;
   const digits=emp?se.digits:(+sc.digits||3);
   const usades=useMemo(()=>emp?facturesEmpresa878337(data,obra?.id):facturesSerieClient878313(client?.id||"",obra?.id||"",data),[]);
   const proposa=pf=>{const maxUsat=usades.filter(x=>String(x.numero||"").startsWith(pf)).reduce((m,x)=>Math.max(m,+x.num||0),0);const proper=emp?(+se.propers[pf]||1):(+sc.proper||1);return String(Math.max(proper,maxUsat+1))};
-  const [prefix,setPrefix]=useState(emp?se.prefix:(sc.prefix||""));
-  const [num,setNum]=useState(()=>proposa(emp?se.prefix:(sc.prefix||"")));
+  const pref0=emp?se.prefix:(sc.prefix||(noSerie?`F${new Date().getFullYear()}-`:""));
+  const [prefix,setPrefix]=useState(pref0);
+  const [num,setNum]=useState(()=>proposa(pref0));
   const [iva,setIva]=useState(+c0.iva||0);
   const [ret,setRet]=useState(+c0.ret||0);
   const base=+c0.base||0,ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;
@@ -16713,13 +16729,14 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
     const fa={id:"fo-"+Date.now(),certId:k,budgetId:f.budgetId||"principal",pfNumero:f.numero,certNum:f.numeroCert,numero,num:+num,...(emp?{serieEmpresa:true,prefix}:{serieClient:client?.id||""}),data:dataF,base,ded:c0.ded,iva,ivaImp,ret,retImp,total,destinatari:dest,createdAt:new Date().toISOString()};
     setData(d=>({...d,factParams:{...(d.factParams||{}),[k]:{...((d.factParams||{})[k]||{}),iva,ret,ded:c0.ded}},facturesObra878297:[...(d.facturesObra878297||[]),fa],updatedAt:new Date().toISOString()}));
     if(emp)desaSerieEmpresa878337(prefix,+num>=(+se.propers[prefix]||1)?+num+1:null);
+    else if(noSerie)updateClient878297(client,{facturacio878297:{digits:3,...sc,actiu:true,prefix,proper:+num+1}},setClients);
     else if(+num>=(+sc.proper||1))updateClient878297(client,{facturacio878297:{...sc,proper:+num+1}},setClients);
     close(fa);
   }
   return <Modal title={t("Fer factura · Certificació {n}",{n:f.numeroCert})} close={()=>close()}><div className="fer-factura-v878297 fer-factura-v878337">
-    {!emp&&<p className="ajuda">{t("Es fa amb la numeració de {client}. La proforma es queda igual.",{client:client?.nom||""})}</p>}
+    {!emp&&!noSerie&&<p className="ajuda">{t("Es fa amb la numeració de {client}. La proforma es queda igual.",{client:client?.nom||""})}</p>}
     <div className="form-grid compact-v87151 no-pad">
-      <label><span>{t("Número de factura")}</span><div className="num-v878297">{emp?<input className="pref-v878337" value={prefix} aria-label={t("Sèrie")} onChange={e=>{const p=e.target.value.replace(/\s/g,"");setPrefix(p);setNum(proposa(p))}}/>:<b>{prefix}</b>}<input inputMode="numeric" value={num} onChange={e=>setNum(e.target.value.replace(/\D/g,""))}/></div><small>{numero}{jaHiEs?` · ${t("ja existeix")}`:""}</small></label>
+      <label><span>{t("Número de factura")}</span><div className="num-v878297">{emp||noSerie?<input className="pref-v878337" value={prefix} aria-label={t("Sèrie")} onChange={e=>{const p=e.target.value.replace(/\s/g,"");setPrefix(p);setNum(proposa(p))}}/>:<b>{prefix}</b>}<input inputMode="numeric" value={num} onChange={e=>setNum(e.target.value.replace(/\D/g,""))}/></div><small>{numero}{jaHiEs?` · ${t("ja existeix")}`:""}</small></label>
       <label><span>{t("Data de la factura")}</span><input type="date" value={dataF} onChange={e=>setDataF(e.target.value)}/></label>
       <label><span>{t("IVA")}</span><select value={iva} onChange={e=>setIva(+e.target.value)}>{[21,10,4,0].map(x=><option key={x} value={x}>{x} %</option>)}</select></label>
       <label><span>{t("Retenció")}</span><select value={ret} onChange={e=>setRet(+e.target.value)}>{[0,1,7,15,19].map(x=><option key={x} value={x}>{x} %</option>)}</select></label>
@@ -16747,7 +16764,7 @@ function signaCorreu878408(){const e=empresaInfo878259();return window.__acoEmpr
 function draftCorreu878337({title,obra,data,clients,primer=null}){
   const out=[];const vist=new Set();
   // V87.402 · també el mòbil (per al WhatsApp): hi entra qui té un correu o un telèfon
-  const add=(nom,email,rol,sel,tel)=>{let e=String(email||"").trim();const tl=String(tel||"").trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))e="";const nTel=tl.replace(/\D/g,"");
+  const add=(nom,email,rol,sel,tel)=>{let e=String(email||"").trim();const tl=String(tel||"").trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)||buit878413(e)||/@despatx\.cat$/i.test(e))e="";const nTel=tl.replace(/\D/g,"");
     const k=(e||nTel).toLowerCase();if(!e&&nTel.length<9||vist.has(k))return;vist.add(k);out.push({id:"d"+out.length,nom:String(nom||"").trim()||e||tl,email:e,tel:nTel.length>=9?tl:"",rol:rol||"",sel:!!sel})};
   // V87.405 · una acta va, primer de tot, als seus assistents (ja marcats)
   if(Array.isArray(primer))primer.forEach(a=>a&&add(a.nom,a.email,a.rol||a.tipus||"",true,a.mobil||a.telefon));
@@ -18233,7 +18250,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.439",
+    app_version:"87.440",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19953,7 +19970,8 @@ function EmailModal({draft,setDraft,close}){
       :<span className="seg-v878405"><button type="button" className={via==="gmail"?"on":""} aria-pressed={via==="gmail"} onClick={()=>{setVia("gmail");setCanviar(false)}}>Gmail</button><button type="button" className={via==="aparell"?"on":""} aria-pressed={via==="aparell"} onClick={()=>{setVia("aparell");setCanviar(false)}}>{t("Correu de l’aparell")}</button></span>}
     </div>
     {msg&&<p className={`estat-v878405 ${fet?"ok":""}`} role="status">{fet&&<Check size={16} aria-hidden="true"/>}{msg}</p>}
-    {alt&&<div className="alt-v878405" role="alert"><p>{alt}</p><button type="button" className="secondary" onClick={obrirGmail}><Mail size={16} aria-hidden="true"/> {ambPdf?t("Obrir el Gmail amb el correu escrit i descarregar el PDF"):t("Obrir el Gmail amb el correu escrit")}</button></div>}
+    {sel.length>0&&!tos.length&&<p className="sense-correu-v878440" role="status">{t("No té adreça de correu: escriu-la a «Una altra adreça» o envia-ho per WhatsApp.")}</p>}
+    {alt&&<div className="alt-v878405" role="alert"><p>{alt}</p>{tactil878405()&&<button type="button" className="primary" onClick={()=>{setAlt(null);setEstat("");correuAparell()}}><Share2 size={16} aria-hidden="true"/> {t("Enviar amb el correu del mòbil")}</button>}<button type="button" className="secondary" onClick={obrirGmail}><Mail size={16} aria-hidden="true"/> {ambPdf?t("Obrir el Gmail amb el correu escrit i descarregar el PDF"):t("Obrir el Gmail amb el correu escrit")}</button></div>}
     <div className="modal-actions">{fet?<button type="button" className="primary" onClick={close}>{t("Tancar")}</button>:<>
       <button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button>
       <button type="button" className="secondary wa-v878402" disabled={!pdfLlest&&ambPdf&&tactil878405()} onClick={whatsapp}><MessageCircle size={16} aria-hidden="true"/> WhatsApp</button>

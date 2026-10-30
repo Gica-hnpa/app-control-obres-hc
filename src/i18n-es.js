@@ -4727,4 +4727,8 @@ export default {
   "sense quantitat": "sin cantidad",
   "Calcular a {p}": "Calcular a {p}",
   "Partida {codi}: {q} × {p} = {t}. Calcular-la així en aquesta certificació?": "Partida {codi}: {q} × {p} = {t}. ¿Calcularla así en esta certificación?",
+"Enviar la certificació {n}": "Enviar la certificación {n}",
+"Enviar la certificació": "Enviar la certificación",
+"No té adreça de correu: escriu-la a «Una altra adreça» o envia-ho per WhatsApp.": "No tiene dirección de correo: escríbela en «Otra dirección» o envíalo por WhatsApp.",
+"Enviar amb el correu del mòbil": "Enviar con el correo del móvil",
 };

@@ -87,14 +87,29 @@ TRAMITS.amiant = {
   docs: [["informe", "Informe de localització i diagnosi signat"], ["laboratori", "Resultats del laboratori (mostres)"], ["inventari", "Inventari de materials amb l’estat i el risc"], ["planols", "Plànols amb la localització"], ["fotos", "Fotos de cada material"], ["propietat", "Document de la propietat (nota simple, escriptura o IBI)"], ["pressupost", "Pressupost de retirada d’una empresa RERA"], ["acord", "Acord de la junta (comunitats)"]],
 };
 
-export function estatDocs(k, passos = {}, documents = []) {
+// V87.440 · documents finals (l'Héctor, 30/10/2026: «el de tramitació, els acusaments de rebut al departament que sigui i els documents
+// finals que es generen»): van a la carpeta Tramitació i es marquen al pas «Lliurament». La clau porta «f:» al davant.
+TRAMITS.cedula.finals = [["rebut", "Acusament de rebut de l’Agència de l’Habitatge"], ["cedula", "Cèdula d’habitabilitat"]];
+TRAMITS.cee.finals = [["rebut", "Acusament de rebut de l’ICAEN"], ["etiqueta", "Etiqueta energètica registrada"]];
+TRAMITS.ite.finals = [["rebut", "Acusament de rebut"]];
+TRAMITS.amiant.finals = [["rebut", "Acusament de rebut, si es presenta"]];
+
+// V87.440 · A quina carpeta de Documents va cada document de l'encàrrec (l'Héctor: «només hi ha documents previs i després de tramitació…
+// i després sí que hauria d'haver una de fotos»)
+export const PREVIS = "01_DOCUMENTACIO_PREVIA", TRAMITACIO = "01_TRAMITS_AJUNTAMENT", FOTOS = "06B_FOTOS_OBRA";
+const DOCS_PREVIS = new Set(["dni", "propietat", "anterior", "representacio", "planol", "planols", "encarrec", "acord"]);
+export function carpetaDoc(key = "") { return DOCS_PREVIS.has(key) ? PREVIS : TRAMITACIO; }
+
+export function estatDocs(k, passos = {}, documents = [], nFotos = 0) {
   const tr = TRAMITS[k]; if (!tr) return null;
   const noCal = passos.docsNoCal || {}, fets = passos.docsFets || {};
+  const estat = d => { const fitxers = (documents || []).filter(x => x && x.tramit878306 === d.key); const fotos = d.key === "fotos" && nFotos > 0; return { ...d, fitxers, fotos, fet: fitxers.length > 0 || fotos || !!fets[d.key] || !!noCal[d.key], noCal: !!noCal[d.key] }; };
   const llista = [...tr.docs.map(([key, nom]) => ({ key, nom })), ...(passos.docsPropis || []).map(nom => ({ key: "p:" + nom, nom, propi: true }))]
     // V87.333 · un document és fet si s'ha marcat (docsFets), s'hi ha adjuntat l'arxiu o (abans) s'havia marcat «No cal»
-    .map(d => { const fitxers = (documents || []).filter(x => x && x.tramit878306 === d.key); return { ...d, fitxers, fet: fitxers.length > 0 || !!fets[d.key] || !!noCal[d.key], noCal: !!noCal[d.key] }; });
+    .map(estat);
+  const finals = (tr.finals || []).map(([key, nom]) => estat({ key: "f:" + key, nom }));
   const cal = llista, falten = cal.filter(d => !d.fet).length;
-  return { nom: tr.nom, url: tr.url, docs: llista, falten, total: cal.length, aPunt: cal.length > 0 && falten === 0, presentat: passos.presentat || null };
+  return { nom: tr.nom, url: tr.url, docs: llista, finals, falten, total: cal.length, aPunt: cal.length > 0 && falten === 0, presentat: passos.presentat || null };
 }
 
 // Quin encàrrec tècnic és una obra (pel tipus de feina); null si no n'és cap
@@ -104,16 +119,61 @@ export function encarrecDe(obra = {}) {
   return null;
 }
 
+// V87.440 · Els punts que l'app ja sap no cal marcar-los (l'Héctor, 30/10/2026: marcar «com si el tingués» per poder continuar no és la
+// millor manera): es marquen sols amb el que hi ha a l'expedient. Text del punt → què el fa bo.
+const AUTO_PUNTS = {
+  "Dades del propietari i de l’habitatge": "client", "Dades del client i de l’immoble": "client",
+  "Referència cadastral": "rc", "Pressupost acceptat": "pressupost", "Factura": "factura",
+  "Fotos": "fotos", "Fotos de cada element": "fotos", "Fotos de les deficiències": "fotos",
+  "Presentació a l’Agència de l’Habitatge": "presentat", "Registre a l’ICAEN": "presentat",
+  "Data de venciment apuntada": "venciment", "Data de la propera inspecció apuntada": "venciment", "Data de la propera revisió apuntada": "venciment",
+};
+export function autoPunts(obra = {}, data = {}, client = null) {
+  const buit = v => { const s = String(v || "").trim(); return !s || /^(pendent|pendiente|particular)$/i.test(s); };
+  const ps = data.passos878305 || {};
+  return {
+    client: !buit(client?.nom || obra.propietat) && !buit(obra.adreca),
+    rc: String(obra.rc || "").replace(/[^0-9a-z]/gi, "").length >= 14,
+    pressupost: (data.pressupostosTecnic || []).some(p => /acceptat|facturat/i.test(String(p.estat || "")) && !/no acceptat/i.test(String(p.estat || ""))),
+    factura: (data.facturesTecnic || []).some(f => !/anul/i.test(String(f.estat || ""))),
+    fotos: (data.fotos || []).length > 0,
+    presentat: !!ps.presentat, venciment: !!ps.venciment,
+  };
+}
+
 // Punts de cada pas (els de la llista i els propis de l'obra) i com va: pas actual = el primer que no té tots els punts fets
-export function estatPassos(k, passos = {}) {
+export function estatPassos(k, passos = {}, auto = {}) {
   const e = ENCARRECS[k]; if (!e) return null;
   const fets = passos.fets || {}, propis = passos.propis || {};
   const llista = e.passos.map((p, i) => {
-    const items = [...p.items.map((text, n) => ({ id: `${p.k}.${n}`, text })), ...(propis[p.k] || []).map((text, n) => ({ id: `${p.k}.p${n}`, text, propi: true }))];
-    const fet = items.filter(it => fets[it.id]).length;
+    const items = [...p.items.map((text, n) => ({ id: `${p.k}.${n}`, text, auto: !!auto[AUTO_PUNTS[text]] })), ...(propis[p.k] || []).map((text, n) => ({ id: `${p.k}.p${n}`, text, propi: true }))];
+    const fet = items.filter(it => it.auto || fets[it.id]).length;
     return { ...p, i, items, fet, total: items.length, complet: items.length > 0 && fet === items.length };
   });
   const actual = llista.findIndex(p => !p.complet);
   const fetTot = llista.reduce((s, p) => s + p.fet, 0), totalTot = llista.reduce((s, p) => s + p.total, 0);
   return { nom: e.nom, passos: llista, actual: actual < 0 ? llista.length : actual, acabat: actual < 0, fet: fetTot, total: totalTot };
+}
+
+// V87.440 · Com va tot l'encàrrec: els passos amb els documents (els de presentar a «Tràmit», els finals a «Lliurament»), el pas on som, què
+// toca ara i què ha quedat pendent d'abans. On som = l'últim pas amb feina marcada (si és sencer, el següent): si un punt d'un pas no
+// es té, es continua igualment i queda a «pendents», sense haver-lo de marcar com si es tingués.
+export function resumEncarrec(k, passos = {}, documents = [], auto = {}, nFotos = 0) {
+  const e = estatPassos(k, passos, auto), dd = estatDocs(k, passos, documents, nFotos);
+  if (!e || !dd) return null;
+  const fets = passos.fets || {};
+  const llista = e.passos.map(p => {
+    const docs = p.k === "tramit" ? dd.docs : p.k === "lliurament" ? dd.finals : [];
+    const fet = p.fet + docs.filter(d => d.fet).length, total = p.total + docs.length;
+    return { ...p, llDocs: docs, fet, total, complet: total > 0 && fet === total };
+  });
+  const amb = llista.map(p => p.items.some(it => fets[it.id]) || p.llDocs.some(d => d.fet && !d.fotos));
+  let pos = Math.max(amb.lastIndexOf(true), 0);
+  while (pos < llista.length && llista[pos].complet) pos++;
+  const acabat = pos >= llista.length;
+  const faltaDe = p => [...p.items.filter(it => !(it.auto || fets[it.id])).map(it => ({ pas: p.k, nomPas: p.nom, text: it.text, propi: !!it.propi })), ...p.llDocs.filter(d => !d.fet).map(d => ({ pas: p.k, nomPas: p.nom, text: d.nom, propi: !!d.propi }))];
+  const ara = acabat ? null : faltaDe(llista[pos])[0] || null;
+  const pendents = llista.filter(p => p.i < pos).flatMap(faltaDe);
+  const fet = llista.reduce((n, p) => n + p.fet, 0), total = llista.reduce((n, p) => n + p.total, 0);
+  return { nom: e.nom, passos: llista, dd, pos, actual: acabat ? "" : llista[pos].k, acabat, ara, pendents, fet, total, pct: total ? Math.round(fet / total * 100) : 0 };
 }

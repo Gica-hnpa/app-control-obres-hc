@@ -2475,6 +2475,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       «Calcular a {preu}» (`recalcImport878439`, pregunta abans). Amb la còpia del 29/10: 5 partides de Cala Rovira 11 importades d'un Excel
       (07.11 cert. 4, 07.11-02 cert. 2, 07.12 cert. 6, 12001 cert. 6, 13014 cert. 7).
     - Estils `src/theme-v878439.css`. Prova: `v439test.mjs` (21).
+  - **V87.440 · De la certificació a la proforma o la factura, enviar-la perquè la tornin signada i el correu al mòbil** (l'Héctor, 30/10/2026, a
+    Verbania: «com passo la certificació 1 que ja està acceptada a proforma o a factura directa per enviar? no hi ha l'opció… inclús la
+    certificació que he enviat per WhatsApp he de tenir l'opció que me la retorni signada… i per mòbil no he pogut enviar-li al correu»):
+    - **«Fer factura» surt sempre** (`faOk878440`: comptes d'empresa, o el compte amb el client de l'obra si no és una obra compartida): a Verbania
+      no sortia perquè el client (Brava) no tenia activada «Factures d'aquest client» (`potFacturar878337` ho exigia des de la V87.297). A
+      `FerFactura878297`, sense numeració (`noSerie`), la sèrie es pot escriure (de sèrie `F<any>-`) i en crear la factura queda activada a la fitxa
+      del client. També a Facturació de l'obra.
+    - **Accions de la certificació:** «Proforma» (`docProforma878440`, s'obre al visor: Enviar · Descarregar el PDF · Imprimir) i «Fer factura».
+    - **«Enviar» de la certificació pregunta** (`enviar440`): «Enviar la certificació» (amb el PDF) o «Enviar-la perquè la tornin signada»
+      (`SignaturaCert878408 autoEnvia`: quan el PDF és a punt, crea l'enllaç i obre «Enviar», amb l'enllaç al missatge: correu o WhatsApp).
+    - **Finestra «Enviar»:** les adreces de farciment no es proposen (`pendent@…`, `@despatx.cat`; a Verbania, `pendent@brava.cat`); si els marcats no
+      tenen correu, ho diu (`sense-correu-v878440`); si el Gmail falla al mòbil, «Enviar amb el correu del mòbil» (`correuAparell`: Compartir amb el PDF).
+    - **Gmail API:** encara s'ha d'activar (console.cloud.google.com/apis/library/gmail.googleapis.com, projecte «Control d'obres», Habilitar).
+    - Estils `src/theme-v878440.css`. Prova: `v440test.mjs` (23, compte de l'Héctor amb una còpia del DADES a Verbania, ordinador i mòbil). Adaptada `factclienttest`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2654,7 +2668,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.439 a Render):**
+**Estat (publicada la V87.440 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
