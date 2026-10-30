@@ -1,0 +1,5 @@
+/* V87.445 · Al mòbil, «Nova» de la targeta Certificacions només amb el + (si no, el títol i l'import es trepitjaven) */
+@media (max-width:700px){
+  html body details.card.bloc-v878426>summary .nova-v878426 .tx-v878445{display:none}
+  html body details.card.bloc-v878426>summary .nova-v878426{padding:6px 9px}
+}
