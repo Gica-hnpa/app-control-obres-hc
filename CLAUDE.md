@@ -2434,6 +2434,35 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       Rendiment de l'empresa (`rendimentFase878342`, `previst878410`, `CapitolsFase878342`, `dadesRendEmpresa878343`). Amb la fase triada,
       es veu sencera com abans.
     - Estils `src/theme-v878437.css`. Prova: `v437test.mjs` (16, demo-gestio).
+  - **V87.438 · Les mateixes targetes a totes les pantalles del menú** (l'Héctor, 30/10/2026: «les targetes han de ser totes de la mateixa
+    tipologia independentment dels colors… els contactes no són iguals que les de dins d'una obra»). Eina nova `tools/proves/targetes437.mjs`
+    (inventari: per a cada pantalla del menú i cada apartat d'una obra, cada targeta amb la classe, si té icona, si té línia de comentari, la
+    vora i el títol; `OUT=`, `W=`, `COMPTES=`; resultat a `signatures-<W>.txt` i captures). Totes ara són `details.card.bloc-v878426`
+    (icona, títol, una xifra, la fletxa; «Recollir» si són llargues):
+    - **Contactes** (`Contactes878315`, `.contactes-v878438`): a dalt el títol i «Nou contacte» (`pant-cap-v878438`, sense la targeta que ho
+      embolcallava), el cercador i cada grup una targeta (`grup-v878438`, icona de `ICONA_GRUP878438`, quants n'hi ha); un d'obert alhora.
+    - **`CardOPlega878369`** (Inici: Pròximes cites, Feines pendents, Obres en curs, Encàrrecs tècnics; Rendiment; Hores › Setmana) ja no és
+      una targeta oberta a l'ordinador i una línia amb comentari al mòbil: sempre la targeta comuna, plegada d'entrada, amb `xifra` (o el
+      `resum`, retallat) i `icona`; les gràfiques, obertes a l'ordinador (`obertPC`). Manté la classe `plega-v878369`.
+    - **Ajustos:** cada bloc amb la seva icona (`IC438`, `icAj438`).
+    - **Despeses del menú** (empresa i «Les meves despeses»): cada grup una targeta amb l'import (`desp-cartes-v878438`, `togGrup438`;
+      tancar el grup del filtre de dalt també treu el filtre). Fora la vora de color a l'esquerra.
+    - **Facturació** («Gràfics i informes»), **Hores** («Gràfica i informes»), **Pressupostos** («Informes i gràfics»), **Rendiment del
+      tècnic** («Per anys», «Per expedient», «Clients amb quota») i **Resum de l'obra al mòbil** («Pes per capítol»): la targeta comuna, sense
+      la línia de comentari.
+    - **Dades de l'empresa** (`DadesEmpresa878337({sub})`): els apartats són targetes principals a Empresa i secundàries (`sub-v878426`) dins
+      d'Ajustos; fora la targeta «Dades de l'empresa» que ho embolcallava.
+    - Les dates «Pressupost tancat el …», «Reobert el …», «Fixat el …» es mostren en hora d'aquí (`diaLocal878437`; abans, entre les 00:00 i la
+      1:00 o les 2:00, el dia d'abans).
+    - Queden amb un altre format, a propòsit: els filtres (`expf-v878275`, `filtres-v878316`), les files que es despleguen (hores del personal,
+      fitxatge) i l'encàrrec tècnic (vegeu la proposta).
+    - Estils `src/theme-v878438.css`. Prova: `v438test.mjs` (17).
+  - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
+    amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
+    (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
+    documents, tràmit, lliurament i venciment); B: fitxa de visita per a cada tipus (cèdula amb peces i superfície útil, CEE per al CE3X, amiant
+    amb l'inventari, ITE amb les deficiències); C: el document final el fa l'app; D: «Informe tècnic» amb tipus i apartats; E: Inici per moments
+    i venciments. **Esperant el sí de l'Héctor** i les respostes (mínims de la cèdula, camps del CE3X, model d'amiant, tipus d'informes, terminis).
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2607,7 +2636,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.437 a Render):**
+**Estat (publicada la V87.438 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

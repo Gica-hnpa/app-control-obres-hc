@@ -1,0 +1,41 @@
+/* V87.438 · Les mateixes targetes a totes les pantalles (l'Héctor, 30/10/2026: «les targetes han de ser totes de la mateixa tipologia…
+   els contactes no són iguals que les de dins d'una obra») */
+/* Contactes: capçalera d'una línia, el cercador i els grups com a targetes principals */
+html body .contactes-v878438 .pant-cap-v878438{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+html body .contactes-v878438 .pant-cap-v878438 h1{margin:0}
+html body .contactes-v878438 .pant-cap-v878438 .primary{display:inline-flex;align-items:center;gap:6px}
+html body .contactes-v878438 .cerca-v878315{margin:0 0 14px;padding:0 12px;min-height:46px;border:1px solid #C3CED6;border-radius:12px;background:#fff}
+html body .contactes-v878438 .cerca-v878315 input{border:0!important;box-shadow:none!important;background:transparent!important;min-height:44px}
+html body .contactes-v878438 .grups-v878438{display:flex;flex-direction:column;gap:0}
+html body .contactes-v878438 details.grup-v878438>.cos{padding:0!important;gap:0!important}
+html body .contactes-v878438 details.grup-v878438 .llista-v878315{border-radius:0 0 13px 13px;overflow:hidden}
+html body .contactes-v878438 details.grup-v878438 .contacte-v878315{padding:10px 16px}
+html body .contactes-v878438 .llista-cerca-v878438{padding:0!important;overflow:hidden;border:1px solid #C3CED6;border-radius:14px;box-shadow:0 1px 2px rgba(15,23,42,.07),0 4px 12px rgba(15,23,42,.06)}
+html body .contactes-v878438 .agents-buidar-v878303{margin:0 0 12px}
+/* els plegables de l'Inici, les Hores i el Rendiment (abans una targeta oberta a l'ordinador i una línia amb comentari al mòbil) */
+html body details.card.bloc-v878426.plega-v878369>summary .xifra{min-width:0;max-width:52%;overflow:hidden;text-overflow:ellipsis}
+html body details.card.bloc-v878426.plega-v878369>summary .t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body details.card.bloc-v878426.plega-v878369>.cos>.acc{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+/* Despeses del menú: els grups com a targetes principals (abans una capçalera grisa amb la vora de color a l'esquerra) */
+html body .desp-cartes-v878438{display:flex;flex-direction:column;gap:0}
+html body details.card.bloc-v878426.grup-v878348{border-left-width:1px!important;overflow:visible}
+html body details.card.bloc-v878426.grup-v878348>summary.grup-cap-v878350{display:flex;align-items:center;gap:12px;width:auto;padding:10px 16px;min-height:60px;background:transparent;cursor:pointer;list-style:none}
+html body details.card.bloc-v878426.grup-v878348>summary.grup-cap-v878350::-webkit-details-marker{display:none}
+html body details.card.bloc-v878426.grup-v878348[open]>summary.grup-cap-v878350{background:#EFF6FF}
+html body details.card.bloc-v878426.grup-v878348>summary.grup-cap-v878350 .chev{transform:none}
+html body details.card.bloc-v878426.grup-v878348[open]>summary.grup-cap-v878350 .chev{transform:rotate(-90deg)}
+html body details.card.bloc-v878426.grup-v878348>.cos{padding:0 0 4px!important;gap:0!important}
+/* Ajustos: els blocs amb la icona */
+html body details.card.bloc-v878426.ajustos-bloc-v878366{margin:0 0 12px}
+html body details.card.bloc-v878426.ajustos-bloc-v878366>summary{padding:10px 16px;font-size:inherit}
+/* una xifra llarga (un resum) no aixafa el títol */
+html body details.card.bloc-v878426>summary .xifra{flex:0 1 auto;min-width:0;max-width:55%;overflow:hidden;text-overflow:ellipsis}
+html body details.card.bloc-v878426>summary .t{flex:1 1 auto}
+/* informes plegats: el contingut amb el marge de les targetes */
+html body details.card.bloc-v878426.informes-v878317>.cos{padding:12px 16px 14px}
+/* Dades de l'empresa: els apartats com a targetes (sense la targeta «Dades de l'empresa» que ho embolcallava) */
+html body .dades-v878438 details.de-sec-v878386{margin:0 0 12px}
+html body .dades-v878438 details.card.bloc-v878426.de-sec-v878386>.cos{padding:12px 16px 14px}
+html body .dades-v878438 details.sub-v878426.de-sec-v878386{margin:0 0 8px!important}
+html body .dades-v878438 details.sub-v878426.de-sec-v878386>.cos{padding:10px 12px 12px}
+html body .dades-v878438 .actions-inline{margin:4px 0 0}
