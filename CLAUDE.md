@@ -2538,6 +2538,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **MagicPlan:** la seva API existeix (capçaleres `customer` i `key`), però la clau no pot anar al navegador: caldria una funció del servidor, i s'ha de confirmar amb
       MagicPlan que el «Report Plan» de l'Héctor la inclou. **Falta un plànol exportat de debò (PDF i CSV)** per afinar la lectura.
     - Estils `src/theme-v878443.css`. Prova: `v443test.mjs` (18). Adaptades `v441test`, `encarrec333test` i `amiant324test` (una targeta més).
+  - **V87.444 · Els altres encàrrecs tècnics: informe, plànols, render, tràmit municipal i postobra** (l'Héctor, 30/10/2026: «revisa-ho treball per treball i ves penjant version»):
+    - `ENCARRECS` de `src/encarrecsTecnics.js` amb cinc treballs més (`informe`, `planols`, `render`, `tramit`, `postobra`): passos, documents finals (`TRAMITS.<k>.finals`) i, a
+      l'informe, els plànols i el tràmit, la seva `FITXA_VISITA`. **Llistes proposades perquè l'Héctor les corregeixi.** Els regexp de `tipus` no agafen «Projecte / llicència d'obres».
+    - `teTramit(k)`: només els que tenen pas «Tràmit» (cèdula, CEE, ITE, amiant, tràmit municipal). **Sense tràmit:** a Documents la segona carpeta es diu «Documents finals» (la
+      mateixa carpeta, `01_TRAMITS_AJUNTAMENT`), i a l'Inici surten a **«En curs»** amb «N de M fets» (abans haurien dit «Falten documents»).
+    - La data de venciment del Lliurament només surt als treballs que tenen el punt «Data de…» (cèdula, CEE, ITE, amiant). «Presentació a l'Ajuntament» es marca sola en presentar.
+    - Prova: `v444test.mjs` (33: cada treball amb el Resum, Documents i Dades, el tràmit presentat, una cèdula igual que abans, l'Inici i el mòbil).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2717,7 +2724,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.443 a Render):**
+**Estat (publicada la V87.444 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

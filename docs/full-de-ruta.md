@@ -76,8 +76,8 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
 
 ## Llista d’espera (encàrrecs nous que encara no tenen bloc)
 
-- **Encàrrecs tècnics, segona volta** (30/10/2026; proposta amb captures a https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck): bloc «Encàrrec»,
-  fitxa de visita per a cada tipus, document final, «Informe tècnic» i Inici amb venciments. Esperant el sí de l’Héctor i les seves respostes.
+- ~~**Encàrrecs tècnics, segona volta**~~ (30/10/2026, amb el sí de l’Héctor; proposta a https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck): fet a les V87.441–444 (targetes,
+  programes de l’ordinador, fitxa de la visita amb la IA i els cinc treballs que faltaven). Falta el que depèn de l’Héctor: el document final que fa l’app (C) i els tipus d’informe (D).
 
 - Descompte al pressupost d’obra · obra nova en 3 passos · revisor del pressupost · parte per veu · previsió de caixa.
 - Afegir una partida amb IA dins d’un capítol que ja existeix (l’Héctor, 29/10/2026: «en tot cas seria afegir partida amb IA dins d’un

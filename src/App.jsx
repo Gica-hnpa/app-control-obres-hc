@@ -14,7 +14,7 @@ import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
-import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc,FITXA_VISITA,promptFitxa,llegirFitxa} from "./encarrecsTecnics.js";
+import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc,teTramit,FITXA_VISITA,promptFitxa,llegirFitxa} from "./encarrecsTecnics.js";
 import {pcWindows as pcWindows878442,llegeix as llegeixProgs878442,desa as desaProgs878442,enllac as enllacProg878442,ambClau as ambClau878442,rutaOk as rutaOk878442,blobReg as blobReg878442} from "./programesPc.js";
 import {dadesDemo} from "./dadesDemo.js";
 import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
@@ -33,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.443";
+const APP_VERSION878264="87.444";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12006,7 +12006,9 @@ const ENLLACOS_TRAMIT878333={
     {nom:"Ajuts per retirar l’amiant",desc:"Agència de Residus",url:"https://residus.gencat.cat/ca/consultes_i_tramits_-_nou/subvencions/amiant/"},
     {nom:"Amiant: preguntes freqüents",desc:"Agència de Residus",url:"https://residus.gencat.cat/ca/ambits_dactuacio/tipus_de_residu/amiant/ciutadania/preguntes-frequents/"},
     {nom:"Registre d’empreses amb risc d’amiant (RERA)",desc:"Per a l’empresa que el retiri",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Registre-dEmpreses-amb-Risc-per-Amiant-RERA"}],
-  ite:[{nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"}]
+  ite:[{nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"}],
+  informe:[{nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"}],
+  planols:[{nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"}]
 };
 // V87.441 · L'encàrrec tècnic amb les targetes de sempre (l'Héctor, 30/10/2026: «la targeta aquesta no està com la resta i ja et vaig dir que
 // les vull totes iguals»; «si n'hi ha algun que no el marco, em queda com a pendent… però com deixa marcar-ho com si el tingués vaig
@@ -12115,7 +12117,7 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
         </div>
       </div>}
       {p.k==="lliurament"&&<>
-        <label className="venc-v878441"><span>{t(VENC_ETIQ878441[k]||"Data de venciment")}</span><input type="date" value={ps.venciment||""} disabled={readOnly} onChange={ev=>venciment(ev.target.value)}/></label>
+        {p.items.some(it=>/^Data de/.test(it.text))&&<label className="venc-v878441"><span>{t(VENC_ETIQ878441[k]||"Data de venciment")}</span><input type="date" value={ps.venciment||""} disabled={readOnly} onChange={ev=>venciment(ev.target.value)}/></label>}
         {p.llDocs.length>0&&<div className="enc-docs-v878333"><h5>{t("Documents finals")}</h5><ul className="enc-items-v878333">{p.llDocs.map(filaDoc)}</ul></div>}
       </>}
       {!readOnly&&<div className="passos-afegir-v878305"><input value={nou[p.k]||""} onChange={ev=>{const v=ev.target.value;setNou(x=>({...x,[p.k]:v}))}} onKeyDown={ev=>{if(ev.key==="Enter")afegeix(p.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})} aria-label={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(p.k)}><Plus/> {t("Afegir")}</button></div>}
@@ -12139,15 +12141,16 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
 // V87.306 · Inici: els encàrrecs tècnics oberts segons els documents del tràmit: «Falten documents», «A punt per presentar» i
 // «Presentats» (abans, pel pas en què eren)
 function EncarrecsInici878305({obres=[],odata={},openObra}){
-  const g={falten:[],apunt:[],presentats:[]};
+  const g={falten:[],apunt:[],presentats:[],encurs:[]};
   for(const o of obres||[]){
     const k=encarrecDe(o);if(!k||/tancat|anul|no acceptat/i.test(String(o.estat||"")))continue;
     const d=odata?.[o.id]||{};const dd=estatDocs(k,d.passos878305||{},d.documents||[],(d.fotos||[]).length);if(!dd)continue;
+    if(!teTramit(k)){g.encurs.push({o,dd,r:resumEncarrec(k,d.passos878305||{},d.documents||[],autoPunts(o,d,null),(d.fotos||[]).length)});continue}
     (dd.presentat?g.presentats:dd.aPunt?g.apunt:g.falten).push({o,dd});
   }
-  const grups=[["falten","Falten documents"],["apunt","A punt per presentar"],["presentats","Presentats"]].filter(([x])=>g[x].length);
+  const grups=[["falten","Falten documents"],["apunt","A punt per presentar"],["presentats","Presentats"],["encurs","En curs"]].filter(([x])=>g[x].length);
   if(!grups.length)return null;
-  return <CardOPlega878369 icona={ClipboardCheck} title={t("Encàrrecs tècnics")} xifra={grups.reduce((n,[x])=>n+g[x].length,0)} className="encarrecs-inici-v878305"><div className="encarrecs-grups-v878305">{grups.map(([x,nom])=><section key={x}><header><b>{t(nom)}</b><span>{g[x].length}</span></header>{g[x].map(({o,dd})=><button type="button" key={o.id} onClick={()=>openObra?.(o.id)}><b>{o.nom}</b><small>{x==="falten"?t("Falten {n} de {m}",{n:dd.falten,m:dd.total}):x==="presentats"?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):t("Tot a punt")}</small></button>)}</section>)}</div></CardOPlega878369>;
+  return <CardOPlega878369 icona={ClipboardCheck} title={t("Encàrrecs tècnics")} xifra={grups.reduce((n,[x])=>n+g[x].length,0)} className="encarrecs-inici-v878305"><div className="encarrecs-grups-v878305">{grups.map(([x,nom])=><section key={x}><header><b>{t(nom)}</b><span>{g[x].length}</span></header>{g[x].map(({o,dd,r})=><button type="button" key={o.id} onClick={()=>openObra?.(o.id)}><b>{o.nom}</b><small>{x==="encurs"?t("{n} de {m} fets",{n:r?.fet||0,m:r?.total||0}):x==="falten"?t("Falten {n} de {m}",{n:dd.falten,m:dd.total}):x==="presentats"?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):t("Tot a punt")}</small></button>)}</section>)}</div></CardOPlega878369>;
 }
 // V87.356 · La foto de la façana del Cadastre (servei públic de la Direcció General del Cadastre, sense clau): amb la referència
 // cadastral de l'obra (Dades › Obra), un botó la posa com a foto de l'obra. Si el Cadastre no en té, ho diu.
@@ -18010,7 +18013,7 @@ function documentFolders8775(obra,data={}){
   // V87.441 · als encàrrecs tècnics (l'Héctor, 30/10/2026: «només hi ha documents previs i després de tramitació… i després sí que hauria
   // d'haver una de fotos»): tres carpetes. Si hi ha arxius pujats a una altra carpeta, també surt, per no perdre'ls de vista.
   if(esTecnicPur878332(obra)&&teModul878326("tecnic")&&!obra?.compartida){
-    const base=[{id:"01_DOCUMENTACIO_PREVIA",label:i18nT("Documents previs"),desc:""},{id:"01_TRAMITS_AJUNTAMENT",label:i18nT("Tramitació"),desc:""},{id:"06B_FOTOS_OBRA",label:i18nT("Fotos"),desc:"",fotos:true}];
+    const ambTramit=teTramit(encarrecDe(obra));const base=[{id:"01_DOCUMENTACIO_PREVIA",label:i18nT("Documents previs"),desc:""},{id:"01_TRAMITS_AJUNTAMENT",label:ambTramit?i18nT("Tramitació"):i18nT("Documents finals"),desc:"",finals:!ambTramit},{id:"06B_FOTOS_OBRA",label:i18nT("Fotos"),desc:"",fotos:true}];
     const propis=[...new Set((data.documents||[]).filter(d=>d?.folder&&d?.hasFile&&!d?.linkedType&&!d?.docData).map(d=>d.folder))].filter(id=>!base.some(b=>b.id===id));
     const r=[...base,...propis.map(id=>folders.find(x=>x.id===id)||{id,label:i18nT("Altres"),desc:""})];r.encarrec878441=true;return r;
   }
@@ -18142,7 +18145,7 @@ function treuFoto878441(x){if(!confirm(t("Treure aquesta foto de l’expedient?"
 // V87.441 · als encàrrecs tècnics, una targeta plegada per carpeta (com la resta de l'app)
 if(folders.encarrec878441)return <div className="docs-enc-v878441">
   {status&&<div className="doc-status-v38">{status}</div>}
-  {folders.map(c=>{const sh=docs.filter(d=>docFolder(d)===c.id),gn=generatedDocs878148.filter(d=>docFolder(d)===c.id),fotos=c.fotos?(data.fotos||[]):[],n=sh.length+gn.length+fotos.length;const Ic=c.fotos?Camera:c.id==="01_TRAMITS_AJUNTAMENT"?Send:FolderOpen;
+  {folders.map(c=>{const sh=docs.filter(d=>docFolder(d)===c.id),gn=generatedDocs878148.filter(d=>docFolder(d)===c.id),fotos=c.fotos?(data.fotos||[]):[],n=sh.length+gn.length+fotos.length;const Ic=c.fotos?Camera:c.finals?PackageCheck:c.id==="01_TRAMITS_AJUNTAMENT"?Send:FolderOpen;
     return <details key={c.id} className="card bloc-v878426 doc-carpeta-v878441"><summary><Ic size={18} aria-hidden="true"/><span className="t"><b>{c.label}</b></span><span className="xifra">{n}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
       <div className="cos">
         {!esTreballador878326()&&<div className="acc">{c.fotos?<><label className="secondary file-btn-v8761"><Upload size={16} aria-hidden="true"/> {t("Adjuntar fotos")}<input type="file" accept="image/*" multiple onChange={e=>{const fs=[...(e.target.files||[])];e.target.value="";if(fs.length)addPhotoFiles8761(fs,setData)}}/></label><label className="primary file-btn-v8761"><Camera size={16} aria-hidden="true"/> {t("Fer foto")}<input type="file" accept="image/*" capture="environment" onChange={e=>{const fs=[...(e.target.files||[])];e.target.value="";if(fs.length)addPhotoFiles8761(fs,setData)}}/></label></>:<label className="primary upload-label"><Upload/> {t("Adjuntar")}<input type="file" onChange={e=>add(e,c.id)}/></label>}</div>}
@@ -18370,7 +18373,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.443",
+    app_version:"87.444",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

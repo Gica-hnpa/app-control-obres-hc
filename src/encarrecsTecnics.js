@@ -57,6 +57,67 @@ export const ENCARRECS = {
   },
 };
 
+// V87.444 · Els altres encàrrecs tècnics (l'Héctor, 30/10/2026: «revisa-ho treball per treball»). Llistes proposades perquè les corregeixi.
+// Si no hi ha pas «Tràmit», el que surt del treball va a la carpeta «Documents finals» i no hi ha documents per presentar.
+Object.assign(ENCARRECS, {
+  informe: {
+    nom: "Informe tècnic",
+    tipus: /informe t[èe]cnic|patologi|peritatge/i,
+    passos: [
+      { k: "encarrec", nom: "Encàrrec", items: ["Dades del client i de l’immoble", "Referència cadastral", "Motiu i abast de l’informe", "Pressupost acceptat"] },
+      { k: "documentacio", nom: "Documentació", items: ["Plànols o croquis", "Escriptura o nota simple", "Informes anteriors i antecedents", "Reclamació o carta rebuda, si n’hi ha"] },
+      { k: "visita", nom: "Visita", items: ["Inspecció dels danys", "Fotos", "Mesures i comprovacions", "Proves o testimonis, si calen"] },
+      { k: "oficina", nom: "Oficina", items: ["Descripció de l’immoble", "Estudi de les causes", "Conclusions", "Reparació proposada i valoració"] },
+      { k: "lliurament", nom: "Lliurament", items: ["Informe al client", "Factura"] },
+    ],
+  },
+  planols: {
+    nom: "Plànols",
+    tipus: /^pl[àa]nols|aixecament/i,
+    passos: [
+      { k: "encarrec", nom: "Encàrrec", items: ["Dades del client i de l’immoble", "Referència cadastral", "Què s’ha d’aixecar (plantes, seccions, alçats)", "Pressupost acceptat"] },
+      { k: "documentacio", nom: "Documentació", items: ["Plànols existents", "Escriptura o nota simple", "Fitxa del Cadastre"] },
+      { k: "visita", nom: "Visita", items: ["Amidament de cada planta", "Alçades i nivells", "Portes i finestres", "Fotos"] },
+      { k: "oficina", nom: "Oficina", items: ["Plànols dibuixats", "Superfícies de cada peça", "Revisió amb el client"] },
+      { k: "lliurament", nom: "Lliurament", items: ["Plànols al client", "Factura"] },
+    ],
+  },
+  render: {
+    nom: "Render / 3D",
+    tipus: /render|\b3d\b/i,
+    passos: [
+      { k: "encarrec", nom: "Encàrrec", items: ["Dades del client i de l’immoble", "Vistes i estil que vol el client", "Pressupost acceptat"] },
+      { k: "documentacio", nom: "Documentació", items: ["Plànols", "Fotos de l’estat actual", "Materials i referències"] },
+      { k: "oficina", nom: "Oficina", items: ["Model 3D", "Primera proposta al client", "Canvis acordats", "Imatges finals"] },
+      { k: "lliurament", nom: "Lliurament", items: ["Imatges al client", "Factura"] },
+    ],
+  },
+  tramit: {
+    nom: "Tràmit municipal",
+    tipus: /tr[àa]mit municipal|comunicaci[óo] pr[èe]via/i,
+    passos: [
+      { k: "encarrec", nom: "Encàrrec", items: ["Dades del client i de l’immoble", "Referència cadastral", "Què s’ha de tramitar (llicència o comunicació)", "Pressupost acceptat"] },
+      { k: "documentacio", nom: "Documentació", items: ["Escriptura o nota simple", "Plànols", "Projecte o memòria", "Requeriments de l’Ajuntament, si n’hi ha"] },
+      { k: "visita", nom: "Visita", items: ["Comprovació a l’immoble", "Fotos"] },
+      { k: "oficina", nom: "Oficina", items: ["Memòria o documentació tècnica", "Full d’assumeix o visat, si cal", "Taxes calculades"] },
+      { k: "tramit", nom: "Tràmit", items: ["Presentació a l’Ajuntament"] },
+      { k: "lliurament", nom: "Lliurament", items: ["Resolució o comunicació al client", "Factura"] },
+    ],
+  },
+  postobra: {
+    nom: "Postobra",
+    tipus: /postobra|documentaci[óo] final/i,
+    passos: [
+      { k: "encarrec", nom: "Encàrrec", items: ["Dades del client i de l’immoble", "Què s’ha d’entregar", "Pressupost acceptat"] },
+      { k: "documentacio", nom: "Documentació", items: ["Projecte i plànols de l’obra", "Certificat final d’obra", "Garanties i manuals", "Certificats de les instal·lacions"] },
+      { k: "visita", nom: "Visita", items: ["Comprovació de l’obra acabada", "Fotos"] },
+      { k: "oficina", nom: "Oficina", items: ["Plànols finals d’obra", "Llibre de l’edifici", "Manual d’ús i manteniment"] },
+      { k: "lliurament", nom: "Lliurament", items: ["Documentació al client", "Factura"] },
+    ],
+  },
+});
+export const teTramit = k => !!ENCARRECS[k]?.passos.some(p => p.k === "tramit");
+
 // V87.306 · Documents del tràmit (l'Héctor, 19/10/2026: els passos que s'han de marcar per avançar no l'ajuden a la visita;
 // vol una llista de consulta i «un apartat per entrar documents abans de l'enllaç amb Habitatge o Indústria»). Llista proposada
 // perquè la corregeixi. Cada document es puja a Documents de l'obra (camp `tramit878306` = la clau) o es marca «No cal»
@@ -93,6 +154,11 @@ TRAMITS.cedula.finals = [["rebut", "Acusament de rebut de l’Agència de l’Ha
 TRAMITS.cee.finals = [["rebut", "Acusament de rebut de l’ICAEN"], ["etiqueta", "Etiqueta energètica registrada"]];
 TRAMITS.ite.finals = [["rebut", "Acusament de rebut"]];
 TRAMITS.amiant.finals = [["rebut", "Acusament de rebut, si es presenta"]];
+TRAMITS.tramit = { nom: "Presentar a l’Ajuntament", url: "", docs: [["instancia", "Instància o comunicació signada"], ["memoria", "Memòria o projecte"], ["planols", "Plànols"], ["taxes", "Justificant de les taxes"], ["representacio", "Autorització de representació"]], finals: [["rebut", "Acusament de rebut de l’Ajuntament"], ["resolucio", "Resolució o llicència"]] };
+TRAMITS.informe = { nom: "", url: "", docs: [], finals: [["informe", "Informe signat"], ["visat", "Visat del col·legi, si cal"]] };
+TRAMITS.planols = { nom: "", url: "", docs: [], finals: [["pdf", "Plànols en PDF"], ["dwg", "Plànols en DWG"]] };
+TRAMITS.render = { nom: "", url: "", docs: [], finals: [["imatges", "Imatges finals"]] };
+TRAMITS.postobra = { nom: "", url: "", docs: [], finals: [["llibre", "Llibre de l’edifici"], ["plafinals", "Plànols finals d’obra"]] };
 
 // V87.440 · A quina carpeta de Documents va cada document de l'encàrrec (l'Héctor: «només hi ha documents previs i després de tramitació…
 // i després sí que hauria d'haver una de fotos»)
@@ -121,6 +187,9 @@ export const FITXA_VISITA = {
   cedula: [["any", "Any de construcció"], ["superficie", "Superfície útil (m²)"], ["alcada", "Alçada lliure (m)"], ["dormitoris", "Nombre de dormitoris"], ["peces", "Peces i superfícies", 1], ["ventilacio", "Ventilació i il·luminació", 1], ["instal", "Instal·lacions", 1]],
   ite: [["any", "Any de construcció"], ["plantes", "Nombre de plantes"], ["habitatges", "Nombre d’habitatges"], ["estructura", "Estructura", 1], ["facanes", "Façanes i cobertes", 1], ["instal", "Instal·lacions", 1], ["deficiencies", "Deficiències", 1]],
   amiant: [["tipus", "Tipus d’edifici"], ["any", "Any de construcció"], ["elements", "Elements inspeccionats (lloc, material i estat)", 1], ["mostres", "Mostres preses", 1], ["risc", "Valoració del risc", 1]],
+  informe: [["objecte", "Objecte de l’informe", 1], ["antecedents", "Antecedents", 1], ["danys", "Danys observats", 1], ["causes", "Causes probables", 1], ["reparacio", "Reparació proposada", 1]],
+  planols: [["plantes", "Nombre de plantes"], ["superficie", "Superfície útil (m²)"], ["alcada", "Alçada lliure (m)"], ["peces", "Peces i superfícies", 1]],
+  tramit: [["tipus", "Tipus de tràmit"], ["pem", "Pressupost de l’obra (€)"], ["descripcio", "Descripció de l’actuació", 1], ["normativa", "Normativa aplicable", 1]],
 };
 const nomCamp = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\([^)]*\)/g, " ").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 // Les instruccions per a ChatGPT o Claude: omplir la fitxa amb la documentació de la visita. Res no s'inventa, i el que no se sap es deixa buit.
@@ -169,7 +238,7 @@ const AUTO_PUNTS = {
   "Dades del propietari i de l’habitatge": "client", "Dades del client i de l’immoble": "client",
   "Referència cadastral": "rc", "Pressupost acceptat": "pressupost", "Factura": "factura",
   "Fotos": "fotos", "Fotos de cada element": "fotos", "Fotos de les deficiències": "fotos",
-  "Presentació a l’Agència de l’Habitatge": "presentat", "Registre a l’ICAEN": "presentat",
+  "Presentació a l’Agència de l’Habitatge": "presentat", "Registre a l’ICAEN": "presentat", "Presentació a l’Ajuntament": "presentat",
   "Data de venciment apuntada": "venciment", "Data de la propera inspecció apuntada": "venciment", "Data de la propera revisió apuntada": "venciment",
 };
 export function autoPunts(obra = {}, data = {}, client = null) {
