@@ -2489,12 +2489,34 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       tenen correu, ho diu (`sense-correu-v878440`); si el Gmail falla al mòbil, «Enviar amb el correu del mòbil» (`correuAparell`: Compartir amb el PDF).
     - **Gmail API:** encara s'ha d'activar (console.cloud.google.com/apis/library/gmail.googleapis.com, projecte «Control d'obres», Habilitar).
     - Estils `src/theme-v878440.css`. Prova: `v440test.mjs` (23, compte de l'Héctor amb una còpia del DADES a Verbania, ordinador i mòbil). Adaptada `factclienttest`.
+  - **V87.441 · Els encàrrecs tècnics amb les targetes de sempre, sense haver de marcar el que no es té** (l'Héctor, 30/10/2026, amb el CEE de
+    Cornellà de Terri: «si n'hi ha algun que no el marco, em queda com a pendent, però com que deixa marcar-ho com si el tingués vaig continuant…
+    és la millor manera?»; «la targeta de preparar amb IA no està com la resta… les vull totes iguals»; «en aquests treballs no calen agents…
+    només el client o el representant si és una agència… en documents només documents previs, de tramitació i fotos»):
+    - **Encàrrec** (`EncarrecTecnic878306` reescrit, `.encarrec-v878441`, al Resum): a dalt, `.enc-cap-v878441`: el nom, el xip, la barra, **«Ara toca»**
+      (`.ara-v878441`, el primer punt que falta des de l'últim pas on s'ha marcat alguna cosa; tocant-lo s'obre la seva targeta) i **«Pendent»**
+      (`.pend-v878441`, el que s'ha saltat, cada punt obre la seva targeta). A sota, **una targeta comuna per pas** (`details.card.bloc-v878426.enc-bloc-v878441`,
+      plegada, amb la icona `ICONA_PAS878441` i «fets/total»), **Enllaços** i **Preparar-lo amb IA**, iguals que les altres.
+    - **`resumEncarrec`, `estatPassos`, `autoPunts`** (`src/encarrecsTecnics.js`, funcions pures): un punt que no es té ja no atura res ni s'ha de
+      marcar «com si el tingués». L'app marca sola (casella desactivada) el que ja sap (`AUTO_PUNTS`): les dades del client, la referència
+      cadastral, el pressupost acceptat, la factura, les fotos, «presentat» i el venciment.
+    - **Lliurament:** la data de venciment (`passos878305.venciment`; `VENC_ETIQ878441`: «Data de la propera inspecció» a la ITE, «…revisió» a l'amiant) i
+      **«Documents finals»** (`TRAMITS.<k>.finals`: l'acusament de rebut, la cèdula, l'etiqueta registrada…; van a Tramitació, clau `f:<key>`).
+    - **Documents d'un encàrrec** (`documentFolders8775` torna `encarrec878441`, `.docs-enc-v878441`): tres targetes, **Documents previs · Tramitació ·
+      Fotos** (la foto és `data.fotos`, amb «Treure la foto»); si hi ha arxius pujats a una altra carpeta, aquella carpeta també surt. Cada document de
+      l'encàrrec va a la seva (`carpetaDoc`, `DOCS_PREVIS`).
+    - **Dades:** sense la targeta «Agents de l'obra» ni «+ Altres agents»; pestanyes Obra · Client · Promotor · **Representant** (rol nou a `ROLS878304`;
+      es tria del grup «Immobiliàries / agències» de Contactes).
+    - **Acta d'un encàrrec:** a dalt de la llista, **«D'aquest encàrrec»** (`AssistentsActa878406 suggerits`, `.ass-sug-v878441`): el client, el promotor i el
+      representant.
+    - Estils `src/theme-v878441.css`. Prova: `v441test.mjs` (19). Adaptades `encarrec333test`, `amiant324test`, `v432test`, `facturacio337test`,
+      `factclienttest`, `enviar407test` i les lliçons `guia404-llicons` (**la lliçó dels encàrrecs s'ha de tornar a gravar**).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
     documents, tràmit, lliurament i venciment); B: fitxa de visita per a cada tipus (cèdula amb peces i superfície útil, CEE per al CE3X, amiant
     amb l'inventari, ITE amb les deficiències); C: el document final el fa l'app; D: «Informe tècnic» amb tipus i apartats; E: Inici per moments
-    i venciments. **Esperant el sí de l'Héctor** i les respostes (mínims de la cèdula, camps del CE3X, model d'amiant, tipus d'informes, terminis).
+    i venciments. L'Héctor hi va donar el sí el 30/10/2026 («revisa-ho treball per treball i ves penjant version»), començant pel CEE (V87.441). Falten les seves respostes: mínims de la cèdula, camps del CE3X, model d'amiant, tipus d'informes i terminis.
   - **Comptes del Pol** (26/10/2026, el fill de l'Héctor, per aprendre l'app, ensenyar-la als clients i treballar junts): `demo-pol-tecnic`
     i `demo-pol-constructor` (amb «demo-», la benvinguda proposa el perfil i les dades d'exemple). Contrasenyes i passos a
     `GUIES_USUARIS\COMPTES_POL.txt` (fora del Git); **els ha de crear l'Héctor al panell de Supabase**. Al Supabase de proves hi són amb
@@ -2668,7 +2690,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.440 a Render):**
+**Estat (publicada la V87.441 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

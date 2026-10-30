@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus} from "lucide-react";
+import {MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -14,7 +14,7 @@ import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
-import {encarrecDe,estatPassos,estatDocs} from "./encarrecsTecnics.js";
+import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc} from "./encarrecsTecnics.js";
 import {dadesDemo} from "./dadesDemo.js";
 import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
 import {prepara as fullsA4878425,aPunt as aPuntA4878425} from "./fullsA4.js";
@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.440";
+const APP_VERSION878264="87.441";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3581,7 +3581,7 @@ function agentDeContacte878406(x){
   const nom=net(ag.nom||c?.nom||c?.rao);
   return {nom,rol:net(ag.rol)||net(c?.tipus)||"",empresa:net(ag.empresa)||net(c?.rao)||"",email:net(ag.email||c?.email),telefon:net(ag.telefon||c?.telefon),mobil:net(ag.mobil||c?.mobil||ag.contacteMobil),nif:net(ag.nif||c?.nif),collegiat:net(ag.collegiat||c?.collegiat),titulacio:net(ag.titulacio||c?.titulacio)};
 }
-function AssistentsActa878406({seleccionats=[],onTria,onTreu}){
+function AssistentsActa878406({seleccionats=[],onTria,onTreu,suggerits=null}){
   const [q,setQ]=useState("");
   const [n,setN]=useState(0);                 // es torna a llegir la llista després de crear un contacte
   const [obert,setObert]=useState("");
@@ -3590,6 +3590,9 @@ function AssistentsActa878406({seleccionats=[],onTria,onTreu}){
   const sel=new Set(seleccionats.map(a=>agentPersona878301(a)).filter(Boolean));
   const cercant=!!q.trim();
   const vis=files.filter(x=>!cercant||coincideix878315(q,{noms:[x.ag.nom,x.ag.empresa,x.c?.nom,x.c?.rao,...contactesDe878315(x.c||x.ag).map(p=>p.nom)],nums:[x.ag.telefon,x.ag.mobil,x.ag.nif,x.c?.telefon,x.c?.mobil,x.c?.nif]}));
+  // V87.441 · en un encàrrec tècnic, a dalt el client, el promotor i el representant (l'Héctor: «que pugui agafar la del client o la del representant»)
+  const nomsSug=(suggerits||[]).map(x=>normalizeSearch878191(String(x||""))).filter(x=>x&&!/^(pendent|pendiente)$/.test(x));
+  const sug=nomsSug.length?files.filter(x=>nomsSug.includes(normalizeSearch878191(x.ag.nom))||nomsSug.includes(normalizeSearch878191(x.c?.nom||""))):[];
   const tria=x=>{const k=x.ag._persona878301||agentPersona878301(x.ag);if(sel.has(k))onTreu?.(k);else onTria?.(agentDeContacte878406(x))};
   function desaNou(v){const c=window.__acoNouContacte878406?.(v);setNou(false);setN(i=>i+1);if(c){const ag=clientAsAgent878192(c);if(ag)onTria?.(agentDeContacte878406({ag:{...ag,mobil:c.mobil||"",collegiat:c.collegiat||"",titulacio:c.titulacio||""},c}))}}
   const fila=x=>{const k=x.ag._persona878301||agentPersona878301(x.ag);const on=sel.has(k);const a=agentDeContacte878406(x);
@@ -3600,6 +3603,7 @@ function AssistentsActa878406({seleccionats=[],onTria,onTreu}){
     </div>
     <div className="ass-eines-v878406"><input type="search" value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar a Contactes: nom, empresa o telèfon")} aria-label={t("Buscar a Contactes")}/><button type="button" className="secondary" onClick={()=>setNou(true)}><Plus size={16} aria-hidden="true"/> {t("Nou contacte")}</button></div>
     {files.length===0&&<p className="muted">{t("Encara no hi ha contactes. Crea’n un amb «Nou contacte».")}</p>}
+    {!cercant&&sug.length>0&&<div className="ass-sug-v878441"><b>{t("D’aquest encàrrec")}</b><div className="ass-llista-v878406">{sug.map(fila)}</div></div>}
     <div className="ass-grups-v878406">{GRUPS_CONTACTE878315.map(([g,lab])=>{const l=vis.filter(x=>x.g===g);if(!l.length)return null;const nSel=l.filter(x=>sel.has(x.ag._persona878301||agentPersona878301(x.ag))).length;
       return <details key={g} className="ass-grup-v878406" open={cercant||obert===g} onToggle={e=>{if(!cercant){const o=e.currentTarget.open;setObert(v=>o?g:(v===g?"":v))}}}>
         <summary><span>{i18nT(lab)}</span><em>{nSel?t("{s} de {n}",{s:nSel,n:l.length}):l.length}</em></summary>
@@ -3847,7 +3851,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
             <label><span>{t("Coordinació S+S (CSS)")}</span><input value={draft.css||""} onChange={e=>upd("css",e.target.value)}/></label>
           </div>}
 
-          {actaPanel8799==="Agents"&&<AssistentsActa878406 seleccionats={selectedAgents} onTria={triaAss878406} onTreu={treuAss878406}/>}
+          {actaPanel8799==="Agents"&&<AssistentsActa878406 seleccionats={selectedAgents} onTria={triaAss878406} onTreu={treuAss878406} suggerits={esTecnicPur878332(obra)&&teModul878326("tecnic")?[client?.nom,obra?.propietat,obra?.representant]:null}/>}
 
                     {actaPanel8799==="Observacions"&&<DictatActa878263 value={draft.text||""} onChange={v=>upd("text",v)}/>}
                     {actaPanel8799==="Observacions"&&<label className="span-all acta-textarea-v8768"><span>{t("Text de l’acta")}</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder={t("Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents...")}/></label>}
@@ -9302,7 +9306,7 @@ function fitxaEditable878304(ag={}){const p=personaAgent878304(ag),o={};for(cons
 function tipusFitxaAgent878304(a={}){const g=agentGroup878301(a);return g==="tecnic"?"tecnic":g==="constructora"?"empresa":g==="industrial"?"industrial":"persona"}
 function personaAgent878304(ag={}){const {_persona878301,_obres878301,_identity878191,_sourceKeys,_fromClient878192,...r}=ag||{};return {...r,...partsAdreca878304(ag)}}
 // Constructora i tècnics de l'obra (una persona per paper): el nom va a l'obra; la fitxa, als agents de l'obra
-const ROLS878304=[["constructor","Constructora / contractista","constructora","empresa"],["do","Direcció d’obra","do","tecnic"],["deo","Direcció d’execució","deo","tecnic"],["css","Coordinació S+S","css","tecnic"]];
+const ROLS878304=[["constructor","Constructora / contractista","constructora","empresa"],["do","Direcció d’obra","do","tecnic"],["deo","Direcció d’execució","deo","tecnic"],["css","Coordinació S+S","css","tecnic"],["representant","Representant","representant","empresa"]];
 function rolsDe878304(obra={},agents=[]){
   const o={};
   for(const [f,rol] of ROLS878304){
@@ -9499,6 +9503,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
       normalizedToSave.adrecaPropietat=composaAdreca878304(pp);
     }
     for(const [f] of ROLS878304)normalizedToSave[f]=netV878304(rols878304[f]?.nom)||"Pendent";
+    if(!netV878304(rols878304.representant?.nom)&&!netV878304(ownStr878288(obra,"representant")))delete normalizedToSave.representant;
     {const trets=trets878304;setData?.(d=>({...d,agents:desaAgentsDades878304(d.agents,rols878304,inds878304,trets),updatedAt:new Date().toISOString()}));setTrets0878304([])}
     // V87.187: sincronitza la targeta superior d'agents amb el promotor escrit a Dades.
     if(String(normalizedToSave.propietat||"").trim()){
@@ -9585,7 +9590,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     const match=r.id&&choices.some(x=>x.id===r.id)?r.id:(choices.find(x=>netV878304(r.nom)&&normalizeSearch878191(x.nom)===normalizeSearch878191(r.nom))?.id||"");
     const val=match||(netV878304(r.nom)||r.nou?"__aquesta__":"");
     return <div className="span-all rol-tab-v878304">
-      <div className="rol-tria-v878304"><TriaContacte878413 grups={f==="constructor"?["constructora"]:["tecnic"]} etiqueta={t("Triar de Contactes")} valor={netV878304(r.nom)} onCap={()=>setRol878304(f,{},true)} onTria={(d,x)=>setRol878304(f,{...d,id:x?.ag?.id||d.id},true)} onNou={n=>setRol878304(f,{nou:true,nom:n||""},true)} nouText={t("+ Nou (escriure’l)")}/></div>
+      <div className="rol-tria-v878304"><TriaContacte878413 grups={f==="constructor"?["constructora"]:f==="representant"?["immobiliaria"]:["tecnic"]} etiqueta={t("Triar de Contactes")} valor={netV878304(r.nom)} onCap={()=>setRol878304(f,{},true)} onTria={(d,x)=>setRol878304(f,{...d,id:x?.ag?.id||d.id},true)} onNou={n=>setRol878304(f,{nou:true,nom:n||""},true)} nouText={t("+ Nou (escriure’l)")}/></div>
       {(netV878304(r.nom)||r.nou)?<FitxaPersona878304 v={r} onChange={patch=>setRol878304(f,patch)} tipus={tipus}/>:<p className="hint">{t("Tria’l de la llista o fes-ne un de nou.")}</p>}
     </div>;
   }
@@ -9601,10 +9606,12 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
       </div>})}
     </div>;
   }
-  const simple878304=isSimpleWorkType878151(form.tipusTreball||form.tipologia);
-  const TABS878304=[["obra",t("Obra")],["client",t("Client")],["promotor",t("Promotor")],["constructor",t("Constructora")],["do",t("Direcció d’obra")],["deo",t("Direcció d’execució")],["css",t("Coordinació S+S")],["industrials",t("Industrials")]];
+  // V87.441 · als encàrrecs tècnics no cal el tema agents (l'Héctor, 30/10/2026): Obra, Client, Promotor i, si l'encàrrec el fa una agència, Representant
+  const pur878441=esTecnicPur878332(form)&&teModul878326("tecnic");
+  const simple878304=isSimpleWorkType878151(form.tipusTreball||form.tipologia)||pur878441;
+  const TABS878304=[["obra",t("Obra")],["client",t("Client")],["promotor",t("Promotor")],...(pur878441?[["representant",t("Representant")]]:[]),["constructor",t("Constructora")],["do",t("Direcció d’obra")],["deo",t("Direcció d’execució")],["css",t("Coordinació S+S")],["industrials",t("Industrials")]];
   const ple878304=k=>k==="obra"?true:k==="client"?!!clientChoice:k==="promotor"?(promEsClient878304||!!netV878304(form.propietat)):k==="industrials"?inds878304.length>0:!!netV878304(rols878304[k]?.nom);
-  const tabsVisibles878304=TABS878304.filter(([k])=>!(k==="constructor"&&propia878363)).filter(([k])=>!simple878304||totes878304||["obra","client","promotor"].includes(k)||ple878304(k)||sub878304===k);
+  const tabsVisibles878304=TABS878304.filter(([k])=>!(k==="constructor"&&propia878363)).filter(([k])=>!simple878304||totes878304||["obra","client","promotor","representant"].includes(k)||ple878304(k)||sub878304===k);
   const cos878363=(
     <div className="form-grid fitxa-form-v8773 fitxa-form-v87159"><DatalistCP8773/>
       {sub878304==="obra"&&<>
@@ -9644,8 +9651,8 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     </div>
   );
   return <div className="fitxa-dades-stack-v878133">{promoterModal87210&&<Modal title={promoterModal87210.id?i18nT("Editar promotor / client final"):i18nT("Crear promotor / client final")} close={()=>setPromoterModal87210(null)}><div className="promoter-modal-v87210"><DatalistCP8773/><div className="module-note-v8738"><b>{i18nT("Independent del client de la carpeta")}</b><span>{i18nT("Aquesta fitxa identifica la propietat o client final que sortirà als documents de l’expedient.")}</span></div><div className="form-grid"><label><span>{i18nT("Nom complet / raó social *")}</span><input autoFocus value={promoterModal87210.nom||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nom:e.target.value}))}/></label><label><span>{i18nT("Empresa o nom fiscal")}</span><input value={promoterModal87210.empresa||""} onChange={e=>setPromoterModal87210(previous=>({...previous,empresa:e.target.value}))}/></label><label><span>{i18nT("DNI / NIF / CIF")}</span><input value={promoterModal87210.nif||""} onChange={e=>setPromoterModal87210(previous=>({...previous,nif:e.target.value}))}/></label><label><span>{i18nT("Telèfon")}</span><input value={promoterModal87210.telefon||""} onChange={e=>setPromoterModal87210(previous=>({...previous,telefon:e.target.value}))}/></label><label className="span-all"><span>{i18nT("Adreça del promotor")}</span><input value={promoterModal87210.adreca||""} onChange={e=>setPromoterModal87210(previous=>({...previous,adreca:e.target.value}))}/></label><label><span>{i18nT("Email")}</span><input type="email" value={promoterModal87210.email||""} onChange={e=>setPromoterModal87210(previous=>({...previous,email:e.target.value}))}/></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setPromoterModal87210(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={savePromoterModal87210}>{i18nT("Guardar i seleccionar")}</button></div></div></Modal>}{/* V87.304 · els agents principals ja es veuen a les pestanyes (punt verd) i a la pestanya Agents */}<details className="card bloc-v878426 dades-bloc-v878433"><summary><ClipboardList size={18} aria-hidden="true"/><span className="t"><b>{diuObra878326()?i18nT("Dades de l’obra"):i18nT("Dades de l’expedient")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
-    {mobil878363?<div className="dades-acc-v878363">{tabsVisibles878304.map(([k,l])=><React.Fragment key={k}><button type="button" className={`acc-cap ${acc878363===k?"on":""} ${ple878304(k)?"ple":""}`} aria-expanded={acc878363===k} onClick={e=>{const el=e.currentTarget;if(acc878363===k)setAcc878363("");else{setAcc878363(k);triaSub878304(k);setTimeout(()=>{try{el.scrollIntoView({block:"start",behavior:"smooth"})}catch{}},60)}}}><span>{l}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></button>{acc878363===k&&cos878363}</React.Fragment>)}{simple878304&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>:
-    <div className="dades-tabs-v878304" role="tablist">{tabsVisibles878304.map(([k,l])=><button type="button" role="tab" key={k} aria-selected={sub878304===k} className={`${sub878304===k?"on":""} ${ple878304(k)?"ple":""}`} onClick={()=>triaSub878304(k)}>{l}</button>)}{simple878304&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>}
+    {mobil878363?<div className="dades-acc-v878363">{tabsVisibles878304.map(([k,l])=><React.Fragment key={k}><button type="button" className={`acc-cap ${acc878363===k?"on":""} ${ple878304(k)?"ple":""}`} aria-expanded={acc878363===k} onClick={e=>{const el=e.currentTarget;if(acc878363===k)setAcc878363("");else{setAcc878363(k);triaSub878304(k);setTimeout(()=>{try{el.scrollIntoView({block:"start",behavior:"smooth"})}catch{}},60)}}}><span>{l}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></button>{acc878363===k&&cos878363}</React.Fragment>)}{simple878304&&!pur878441&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>:
+    <div className="dades-tabs-v878304" role="tablist">{tabsVisibles878304.map(([k,l])=><button type="button" role="tab" key={k} aria-selected={sub878304===k} className={`${sub878304===k?"on":""} ${ple878304(k)?"ple":""}`} onClick={()=>triaSub878304(k)}>{l}</button>)}{simple878304&&!pur878441&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>}
     {mobil878363?null:cos878363}
     <div className="dades-desar-v878304"><button className="primary" onClick={saveAll}>{i18nT("Guardar dades")}</button></div>
   </div><Recollir878432/></details>
@@ -11142,10 +11149,10 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
   const renderTab=()=> <>
     {activeTab==="Resum"&&!readOnly&&<AvisosObra878360 obra={obra} data={data} setTab={setTab}/>}
     {activeTab==="Resum"&&<ObraHero878252 obra={obra} client={client} data={data} scope={directBudgetData878214} tabs={navigationTabs} setTab={setTab} uploadImage={uploadImage}/>}
-    {activeTab==="Resum"&&<EncarrecTecnic878306 obra={obra} data={data} setData={setData} readOnly={readOnly}/>}
+    {activeTab==="Resum"&&<EncarrecTecnic878306 obra={obra} client={client} data={data} setData={setData} readOnly={readOnly}/>}
     {activeTab==="Gantt"&&<GanttObraVisual878253 data={directBudgetData878214} setData={strictClientReadOnly878242||esTreballador878326()?undefined:setDirectBudgetData878214} industrials={industrialsObra878341(agentsLib878301||[],clients||[])}/>}
     {activeTab==="Dades"&&<FitxaDadesTab8769 obra={obra} client={client} clients={clients} setClients={setClients} data={data} save={updateObraFitxa8721} allAgents={uniqAgents8768([...(allAgents||[]),...(data.agents||[])])} setData={setData} openAgent={openAgent} keepAgent878303={keepAgent878303} agentsLib878301={agentsLib878301}/>} 
-    {(activeTab==="Agents"||(activeTab==="Dades"&&ALIAS878308["Agents"]))&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145">{activeTab==="Agents"&&<PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/>}<AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303} plegat={activeTab==="Dades"}/></div>} 
+    {(activeTab==="Agents"||(activeTab==="Dades"&&ALIAS878308["Agents"]&&!(esTecnicPur878332(obra)&&teModul878326("tecnic"))))&&<div className="fitxa-dades-stack-v878133 agents-tab-v87145">{activeTab==="Agents"&&<PrincipalAgentsPanel878134 obra={obra} client={client} agents={sortAgents878134(uniqAgents8768([...(data.agents||[])]))}/>}<AgentsObraCard data={data&&data.agents?data:{agents:[]}} libraryAgents={agentsLib878301||sortAgents878134(uniqAgents8768([...(allAgents||[]),...(data.agents||[])]))} setData={setData} openAgent={openAgent} onKeep878303={keepAgent878303} plegat={activeTab==="Dades"}/></div>} 
     {activeTab==="Plànols"&&<ExpedientSection8769 label="Plànols" data={data} setData={setData}/>} 
     {activeTab==="Memòria / Informe / Certificat"&&<ExpedientSection8769 label="Memòria / Informe / Certificat" data={data} setData={setData}/>} 
     {activeTab==="Renders / Presentació"&&<ExpedientSection8769 label="Renders / Presentació" data={data} setData={setData}/>} 
@@ -11983,60 +11990,83 @@ function iaCeePrompt878333(obra={}){
     `4. Les mesures de millora més habituals per a aquest tipus d’immoble, amb el text per posar-les al certificat.`,
     `Si et falta alguna dada, pregunta-me-la abans.`].join("\n");
 }
-function EncarrecTecnic878306({obra={},data={},setData,readOnly=false}){
+// V87.441 · L'encàrrec tècnic amb les targetes de sempre (l'Héctor, 30/10/2026: «la targeta aquesta no està com la resta i ja et vaig dir que
+// les vull totes iguals»; «si n'hi ha algun que no el marco, em queda com a pendent… però com deixa marcar-ho com si el tingués vaig
+// continuant: és la millor manera?»). A dalt, com va: el progrés, què toca ara i què ha quedat pendent d'abans (no cal marcar res que no es
+// tingui per continuar). A sota, una targeta plegada per a cada pas, una per als enllaços i una per a la IA. El que l'app ja sap es marca sol.
+const ICONA_PAS878441={encarrec:ClipboardList,documentacio:FolderOpen,visita:MapPin,oficina:Monitor,tramit:Send,lliurament:PackageCheck};
+const VENC_ETIQ878441={ite:"Data de la propera inspecció",amiant:"Data de la propera revisió"};
+function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=false}){
   const k=encarrecDe(obra);const ps=data.passos878305||{};
-  const e=k?estatPassos(k,ps):null;const dd=k?estatDocs(k,ps,data.documents||[]):null;
+  const r=k?resumEncarrec(k,ps,data.documents||[],autoPunts(obra,data,client),(data.fotos||[]).length):null;
   const[nou,setNou]=useState({});const[nouDoc,setNouDoc]=useState("");const[pujant,setPujant]=useState("");const[iaMsg,setIaMsg]=useState("");
-  const mobil878387=useMobil878363();
-  if(!e||!dd)return null;
+  const targetes=useRef({});
+  if(!r)return null;
+  const dd=r.dd;
   const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({...cur,fets:{...(cur.fets||{})},propis:{...(cur.propis||{})},docsNoCal:{...(cur.docsNoCal||{})},docsFets:{...(cur.docsFets||{})},docsPropis:[...(cur.docsPropis||[])]});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
   const toggle=id=>desa(p=>{if(p.fets[id])delete p.fets[id];else p.fets[id]=true;return p});
   const toggleDoc=doc=>desa(p=>{if(doc.fet){delete p.docsFets[doc.key];delete p.docsNoCal[doc.key]}else p.docsFets[doc.key]=true;return p});
   const afegeix=pk=>{const tx=String(nou[pk]||"").trim();if(!tx)return;desa(p=>{p.propis[pk]=[...(p.propis[pk]||[]),tx];return p});setNou(x=>({...x,[pk]:""}))};
   const afegeixDoc=()=>{const tx=nouDoc.trim();if(!tx)return;desa(p=>{if(!p.docsPropis.includes(tx))p.docsPropis.push(tx);return p});setNouDoc("")};
   const presentat=v=>desa(p=>{if(v)p.presentat=new Date().toISOString();else delete p.presentat;return p});
+  const venciment=v=>desa(p=>{if(v)p.venciment=v;else delete p.venciment;return p});
   async function puja(doc,f){
     if(!f||!confirmBigDocument878263(f))return;
     setPujant(doc.key);
     const id=`doc-${obra?.id||"exp"}-${Date.now()}`,now=new Date().toISOString();
     try{
       await saveDocFile(id,f,obra?.id);
-      setData?.(d=>({...d,documents:[{id,obraId:obra?.id,nom:f.name,tipus:f.name.split(".").pop()?.toUpperCase()||"DOC",folder:"01_TRAMITS_AJUNTAMENT",data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size,storage:"indexeddb",hasFile:true,tramit878306:doc.key},...(d.documents||[])]}));
+      setData?.(d=>({...d,documents:[{id,obraId:obra?.id,nom:f.name,tipus:f.name.split(".").pop()?.toUpperCase()||"DOC",folder:carpetaDoc(doc.key),data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size,storage:"indexeddb",hasFile:true,tramit878306:doc.key},...(d.documents||[])]}));
     }catch(err){alert(t("No s’ha pogut desar el document: {e}",{e:String(err?.message||err)}))}
     finally{setPujant("")}
   }
   function obre(x){obreVisor8784291(x.nom,()=>getDocFile(x.id,x.obraId||obra?.id).catch(()=>null))}
-  // els documents del tràmit compten com un pas més (dins de «Tràmit»)
-  const passos=e.passos.map(p=>p.k==="tramit"?{...p,fet:p.fet+dd.total-dd.falten,total:p.total+dd.total,docs:true}:p).map(p=>({...p,complet:p.total>0&&p.fet===p.total}));
-  const fet=passos.reduce((x,p)=>x+p.fet,0),total=passos.reduce((x,p)=>x+p.total,0),pct=total?Math.round(fet/total*100):0;
-  const actual=passos.find(p=>!p.complet)?.k||"";
+  const obrePas=pk=>{const el=targetes.current[pk];if(!el)return;el.open=true;requestAnimationFrame(()=>{try{el.scrollIntoView({block:"start",behavior:"smooth"})}catch{}})};
   const rc=rcNet878305(obra.rc);
   const enllacos=(ENLLACOS_TRAMIT878333[k]||[]).map(x=>({...x,url:x.url,copia:x.rc&&rc?rc.slice(0,20):""}));
   function ia(url,nom){const ok=copyText878256(iaCeePrompt878333(obra));setIaMsg(ok?t("Copiat. A {nom}, enganxa-ho (Ctrl+V) i envia.",{nom}):t("No s’ha pogut copiar."));window.open(url,"_blank","noopener,noreferrer")}
-  const estat=dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("A punt per presentar"):t("{n} de {m} fets",{n:fet,m:total});
-  return <Card title={t(e.nom)} className="encarrec-v878306 encarrec-v878333" action={<span className={`enc-xip-v878306 ${dd.presentat?"presentat":dd.aPunt?"ok":""}`}>{estat}</span>}>
-    <div className="enc-progres-v878333" aria-label={t("{n} de {m} fets",{n:fet,m:total})}><i style={{width:`${pct}%`}}/></div>
-    <div className="enc-passos-v878333">{passos.map((p,i)=><details key={p.k} className={`enc-pas-v878333 ${p.complet?"fet":""} ${p.k===actual?"actual":""}`} >
-      <summary><span className="num" aria-hidden="true">{p.complet?"✓":i+1}</span><b>{t(p.nom)}</b><small>{p.fet}/{p.total}</small></summary>
-      <ul className="enc-items-v878333">{p.items.map(it=><li key={it.id}><label><input type="checkbox" checked={!!(ps.fets||{})[it.id]} disabled={readOnly} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label></li>)}</ul>
-      {p.docs&&<div className="enc-docs-v878333">
+  const estat=dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("A punt per presentar"):t("{n} de {m} fets",{n:r.fet,m:r.total});
+  const txt=x=>x.propi?x.text:t(x.text);
+  const fotosInput=<input type="file" accept="image/*" multiple onChange={ev=>{const fs=[...(ev.target.files||[])];ev.target.value="";if(fs.length)addPhotoFiles8761(fs,setData)}}/>;
+  const filaPunt=it=><li key={it.id}>
+    <label><input type="checkbox" checked={!!it.auto||!!(ps.fets||{})[it.id]} disabled={readOnly||!!it.auto} onChange={()=>toggle(it.id)}/><span>{it.propi?it.text:t(it.text)}</span></label>
+    {/^Fotos/.test(it.text)&&!readOnly&&<label className="enc-adjunta-v878333"><Camera size={14} aria-hidden="true"/><span>{t("Afegir fotos")}</span>{fotosInput}</label>}
+  </li>;
+  const filaDoc=doc=><li key={doc.key} className={doc.fet?"fet":""}>
+    <label><input type="checkbox" checked={doc.fet} disabled={readOnly||doc.fitxers.length>0||!!doc.fotos} onChange={()=>toggleDoc(doc)}/><span>{doc.propi?doc.nom:t(doc.nom)}</span></label>
+    {doc.fitxers.map(x=><button type="button" className="enc-fitxer-v878306" key={x.id} onClick={()=>obre(x)}><Paperclip size={12}/> {x.nom}</button>)}
+    {!readOnly&&(doc.key==="fotos"?<label className="enc-adjunta-v878333"><Camera size={14} aria-hidden="true"/><span>{t("Afegir fotos")}</span>{fotosInput}</label>:<label className={`enc-adjunta-v878333 ${pujant===doc.key?"off":""}`} title={t("Adjuntar l’arxiu")}><Paperclip size={14}/><span>{pujant===doc.key?t("Desant…"):t("Adjuntar")}</span><input type="file" disabled={!!pujant} onChange={ev=>{const f=ev.target.files?.[0];ev.target.value="";puja(doc,f)}}/></label>)}
+  </li>;
+  const targeta=(key,Ic,titol,xifra,cos,cl="")=><details key={key} ref={el=>{if(el)targetes.current[key]=el}} className={`card bloc-v878426 enc-bloc-v878441 ${cl}`.trim()}>
+    <summary><Ic size={18} aria-hidden="true"/><span className="t"><b>{titol}</b></span>{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    <div className="cos">{cos}</div><Recollir878432/></details>;
+  return <section className="encarrec-v878333 encarrec-v878441">
+    <header className="enc-cap-v878441">
+      <div className="fila"><b>{t(r.nom)}</b><span className={`enc-xip-v878306 ${dd.presentat?"presentat":dd.aPunt?"ok":""}`}>{estat}</span></div>
+      <div className="enc-progres-v878333" aria-label={t("{n} de {m} fets",{n:r.fet,m:r.total})}><i style={{width:`${r.pct}%`}}/></div>
+      {r.ara&&<button type="button" className="ara-v878441" onClick={()=>obrePas(r.ara.pas)}><small>{t("Ara toca")} · {t(r.ara.nomPas)}</small><b>{txt(r.ara)}</b><ChevronRight size={16} aria-hidden="true"/></button>}
+      {r.pendents.length>0&&<div className="pend-v878441"><small>{t("Pendent")}</small><div>{r.pendents.slice(0,4).map((x,i)=><button type="button" key={i} onClick={()=>obrePas(x.pas)}>{txt(x)}</button>)}{r.pendents.length>4&&<span>{t("i {n} més",{n:r.pendents.length-4})}</span>}</div></div>}
+    </header>
+    {r.passos.map(p=>targeta(p.k,p.complet?Check:(ICONA_PAS878441[p.k]||ClipboardList),t(p.nom),`${p.fet}/${p.total}`,<>
+      <ul className="enc-items-v878333">{p.items.map(filaPunt)}</ul>
+      {p.k==="tramit"&&<div className="enc-docs-v878333">
         <h5>{t("Documents per presentar")}</h5>
-        <ul className="enc-items-v878333">{dd.docs.map(doc=><li key={doc.key} className={doc.fet?"fet":""}>
-          <label><input type="checkbox" checked={doc.fet} disabled={readOnly||doc.fitxers.length>0} onChange={()=>toggleDoc(doc)}/><span>{doc.propi?doc.nom:t(doc.nom)}</span></label>
-          {doc.fitxers.map(x=><button type="button" className="enc-fitxer-v878306" key={x.id} onClick={()=>obre(x)}><Paperclip size={12}/> {x.nom}</button>)}
-          {!readOnly&&<label className={`enc-adjunta-v878333 ${pujant===doc.key?"off":""}`} title={t("Adjuntar l’arxiu")}><Paperclip size={14}/><span>{pujant===doc.key?t("Desant…"):t("Adjuntar")}</span><input type="file" disabled={!!pujant} onChange={ev=>{const f=ev.target.files?.[0];ev.target.value="";puja(doc,f)}}/></label>}
-        </li>)}</ul>
+        <ul className="enc-items-v878333">{p.llDocs.map(filaDoc)}</ul>
         {!readOnly&&<div className="passos-afegir-v878305"><input aria-label={t("Afegir un document que demanin")} value={nouDoc} onChange={ev=>setNouDoc(ev.target.value)} onKeyDown={ev=>{if(ev.key==="Enter")afegeixDoc()}} placeholder={t("Afegir un document que demanin")}/><button type="button" className="secondary" onClick={afegeixDoc}><Plus/> {t("Afegir")}</button></div>}
         <div className="enc-tramit-v878306">
           {dd.url&&<a className={`${dd.aPunt&&!dd.presentat?"primary":"secondary"} enc-tramit-btn-v878306`} href={dd.url} target="_blank" rel="noopener noreferrer">{t(dd.nom)} <ExternalLink size={14}/></a>}
           {!readOnly&&(dd.presentat?<button type="button" className="enc-link-v878306" onClick={()=>presentat(false)}>{t("Desfer")}</button>:<button type="button" className="secondary" onClick={()=>presentat(true)}>{t("Marcar com a presentat")}</button>)}
         </div>
       </div>}
+      {p.k==="lliurament"&&<>
+        <label className="venc-v878441"><span>{t(VENC_ETIQ878441[k]||"Data de venciment")}</span><input type="date" value={ps.venciment||""} disabled={readOnly} onChange={ev=>venciment(ev.target.value)}/></label>
+        {p.llDocs.length>0&&<div className="enc-docs-v878333"><h5>{t("Documents finals")}</h5><ul className="enc-items-v878333">{p.llDocs.map(filaDoc)}</ul></div>}
+      </>}
       {!readOnly&&<div className="passos-afegir-v878305"><input value={nou[p.k]||""} onChange={ev=>{const v=ev.target.value;setNou(x=>({...x,[p.k]:v}))}} onKeyDown={ev=>{if(ev.key==="Enter")afegeix(p.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})} aria-label={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(p.k)}><Plus/> {t("Afegir")}</button></div>}
-    </details>)}</div>
-    {enllacos.length>0&&<details className="enc-enllacos-v878333 plegat-v878366"><summary><b>{t("Enllaços del tràmit")}</b><span>{enllacos.length}</span></summary><div className="tiles">{enllacos.map(x=><a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}><b>{t(x.nom)}</b><small>{t(x.desc)}{x.copia?` · ${x.copia}`:""}</small><ExternalLink size={14} aria-hidden="true"/></a>)}</div></details>}
-    {k==="cee"&&!readOnly&&<div className="enc-ia-v878333"><h4>{t("Preparar-lo amb IA")}</h4><div className="botons"><button type="button" className="secondary" onClick={()=>ia("https://chatgpt.com/","ChatGPT")}>{t("Copiar i obrir ChatGPT")}</button><button type="button" className="secondary" onClick={()=>ia("https://claude.ai/new","Claude")}>{t("Copiar i obrir Claude")}</button></div>{iaMsg&&<p className="msg">{iaMsg}</p>}</div>}
-  </Card>;
+    </>,p.complet?"fet":""))}
+    {enllacos.length>0&&targeta("enllacos",ExternalLink,t("Enllaços"),enllacos.length,<div className="enc-enllacos-v878333"><div className="tiles">{enllacos.map(x=><a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}><b>{t(x.nom)}</b><small>{t(x.desc)}{x.copia?` · ${x.copia}`:""}</small><ExternalLink size={14} aria-hidden="true"/></a>)}</div></div>)}
+    {k==="cee"&&!readOnly&&targeta("ia",WandSparkles,t("Preparar-lo amb IA"),null,<div className="enc-ia-v878333"><div className="botons"><button type="button" className="secondary" onClick={()=>ia("https://chatgpt.com/","ChatGPT")}>{t("Copiar i obrir ChatGPT")}</button><button type="button" className="secondary" onClick={()=>ia("https://claude.ai/new","Claude")}>{t("Copiar i obrir Claude")}</button></div>{iaMsg&&<p className="msg">{iaMsg}</p>}</div>)}
+  </section>;
 }
 // V87.306 · Inici: els encàrrecs tècnics oberts segons els documents del tràmit: «Falten documents», «A punt per presentar» i
 // «Presentats» (abans, pel pas en què eren)
@@ -12044,7 +12074,7 @@ function EncarrecsInici878305({obres=[],odata={},openObra}){
   const g={falten:[],apunt:[],presentats:[]};
   for(const o of obres||[]){
     const k=encarrecDe(o);if(!k||/tancat|anul|no acceptat/i.test(String(o.estat||"")))continue;
-    const d=odata?.[o.id]||{};const dd=estatDocs(k,d.passos878305||{},d.documents||[]);if(!dd)continue;
+    const d=odata?.[o.id]||{};const dd=estatDocs(k,d.passos878305||{},d.documents||[],(d.fotos||[]).length);if(!dd)continue;
     (dd.presentat?g.presentats:dd.aPunt?g.apunt:g.falten).push({o,dd});
   }
   const grups=[["falten","Falten documents"],["apunt","A punt per presentar"],["presentats","Presentats"]].filter(([x])=>g[x].length);
@@ -17909,6 +17939,13 @@ function documentFolders8775(obra,data={}){
   if(hasCertData878193||["Direcció / seguiment d’obra","Gestió integral d’obra","Control econòmic d’obra"].includes(tipus)) folders=add(folders,"07_CERTIFICACIONS_FACTURACIO_OBRA",i18nT("07 · Certificacions / facturació obra"),i18nT("Certificacions, albarans, factures d’obra i documentació econòmica de l’obra."));
   folders=add(folders,"08_DOCUMENTACIO_FINAL",i18nT("08 · Final d’obra"),i18nT("CFO, llibre de l’edifici, manuals, garanties, as-built final i lliurament al client."));
   folders=add(folders,"99_ALTRES",i18nT("99 · Altres"),i18nT("Documents puntuals pendents d’ordenar o que no encaixen en cap carpeta."));
+  // V87.441 · als encàrrecs tècnics (l'Héctor, 30/10/2026: «només hi ha documents previs i després de tramitació… i després sí que hauria
+  // d'haver una de fotos»): tres carpetes. Si hi ha arxius pujats a una altra carpeta, també surt, per no perdre'ls de vista.
+  if(esTecnicPur878332(obra)&&teModul878326("tecnic")&&!obra?.compartida){
+    const base=[{id:"01_DOCUMENTACIO_PREVIA",label:i18nT("Documents previs"),desc:""},{id:"01_TRAMITS_AJUNTAMENT",label:i18nT("Tramitació"),desc:""},{id:"06B_FOTOS_OBRA",label:i18nT("Fotos"),desc:"",fotos:true}];
+    const propis=[...new Set((data.documents||[]).filter(d=>d?.folder&&d?.hasFile&&!d?.linkedType&&!d?.docData).map(d=>d.folder))].filter(id=>!base.some(b=>b.id===id));
+    const r=[...base,...propis.map(id=>folders.find(x=>x.id===id)||{id,label:i18nT("Altres"),desc:""})];r.encarrec878441=true;return r;
+  }
   return folders;
 }
 
@@ -17941,7 +17978,7 @@ const activeFolder=folders.find(f=>f.id===folder)||folders[0];
 function setDocs(updater){setData(d=>{const current=dedupeDocumentRecords878246(d.documents||[]);const next=typeof updater==="function"?updater(current):updater;return {...d,documents:dedupeDocumentRecords878246(next)};});}
 function docFolder(d){return d.folder||"01_DOCUMENTACIO_PREVIA"}
 function saveCfg(){saveStorageCfg(cfg);setStatus(isStorageReady(cfg)?"Storage configurat. Prova pujar un document.":"Falten dades de configuració.")}
-async function add(e){let f=e.target.files?.[0];if(!f)return;if(!confirmBigDocument878263(f)){e.target.value="";return}let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC",now=new Date().toISOString();let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,folder,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size};try{if(isStorageReady(cfg)){setStatus("Pujant document a Supabase Storage...");let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient",folder});setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);setStatus("Document pujat a Supabase Storage.");return;}await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);setStatus(`Document guardat a ${activeFolder?.label||"Documents"}.`);}catch(err){try{await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}}finally{if(e?.target)e.target.value=""}}
+async function add(e,fld=folder){let f=e.target.files?.[0];if(!f)return;if(!confirmBigDocument878263(f)){e.target.value="";return}let id=`doc-${obra?.id||"exp"}-${Date.now()}`,tipus=f.name.split(".").pop()?.toUpperCase()||"DOC",now=new Date().toISOString();let baseMeta={id,obraId:obra?.id,nom:f.name,tipus,folder:fld,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size};try{if(isStorageReady(cfg)){setStatus("Pujant document a Supabase Storage...");let up=await uploadToSupabaseStorage(f,{id,obraId:obra?.id||"expedient",folder:fld});setDocs(p=>[{...baseMeta,storage:"supabase",path:up.path,url:up.publicUrl,hasFile:true},...p]);setStatus("Document pujat a Supabase Storage.");return;}await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true},...p]);setStatus(`Document guardat a ${folders.find(x=>x.id===fld)?.label||"Documents"}.`);}catch(err){try{await saveDocFile(id,f,obra?.id);setDocs(p=>[{...baseMeta,storage:"indexeddb",hasFile:true,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut pujar a Supabase. S’ha guardat localment en aquest navegador.");}catch(e2){setDocs(p=>[{...baseMeta,storage:"registre",hasFile:false,error:String(err?.message||err)},...p]);setStatus("No s’ha pogut guardar l’original. Revisa Storage o mida del fitxer.")}}finally{if(e?.target)e.target.value=""}}
 function budgetDocFromCurrent878189(d){
   const rows=Array.isArray(data?.partides)?data.partides:[];
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
@@ -18031,12 +18068,27 @@ const shownGenerated878148=generatedDocs878148.filter(d=>docFolder(d)===folder);
 const cnt878365=f=>docs.filter(d=>docFolder(d)===f.id).length+generatedDocs878148.filter(d=>docFolder(d)===f.id).length;
 const[obert878365,setObert878365]=useState(false);
 const totalDocs=docs.length+generatedDocs878148.length;
+const filaGen878441=d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data}{d.import?" · "+money(d.import):""}</span></div><div className="actions-inline">{d.tipus==="EXCEL PRESSUPOST"&&<button className="secondary small" onClick={()=>exportImportedBudgetCopy878245(d)}>{t("Exportar còpia Excel")}</button>}<button className="secondary small" onClick={()=>d.docData?openDoc?.(d.docData):openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}.`})}>{d.docData?t("Obrir"):t("Info")}</button></div></div>;
+const filaDoc878441=d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} {t("· Creat:")} {fmtCreationDate878233(d.createdAt)} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>{isExcelDocument878245(d)?t("Veure Excel"):t("Obrir")}</button>{/* V87.412 · «Enviar» a cada document, amb l'arxiu adjunt (abans hi havia un «Enviar» general que no adjuntava res) */}{openEmail&&!esTreballador878326()&&(d.docData||d.hasFile!==false)&&<button className="secondary small env-doc-v878412" onClick={()=>openEmail(d.nom||t("Document"),d.docData?{doc:d.docData}:{pdf:{carrega:()=>getDocFile(d.id,obra?.id),nom:d.nom||"document"}})}><Mail size={14} aria-hidden="true"/> {t("Enviar")}</button>}{!esTreballador878326()&&<button className="danger small" onClick={()=>remove(d)}>{t("Eliminar")}</button>}</div></details>;
+function treuFoto878441(x){if(!confirm(t("Treure aquesta foto de l’expedient?")))return;setData(d=>({...d,fotos:(d.fotos||[]).filter(y=>y.id!==x.id),actes:(d.actes||[]).map(a=>(a.fotoIds||[]).includes(x.id)?{...a,fotoIds:a.fotoIds.filter(y=>y!==x.id)}:a)}))}
+// V87.441 · als encàrrecs tècnics, una targeta plegada per carpeta (com la resta de l'app)
+if(folders.encarrec878441)return <div className="docs-enc-v878441">
+  {status&&<div className="doc-status-v38">{status}</div>}
+  {folders.map(c=>{const sh=docs.filter(d=>docFolder(d)===c.id),gn=generatedDocs878148.filter(d=>docFolder(d)===c.id),fotos=c.fotos?(data.fotos||[]):[],n=sh.length+gn.length+fotos.length;const Ic=c.fotos?Camera:c.id==="01_TRAMITS_AJUNTAMENT"?Send:FolderOpen;
+    return <details key={c.id} className="card bloc-v878426 doc-carpeta-v878441"><summary><Ic size={18} aria-hidden="true"/><span className="t"><b>{c.label}</b></span><span className="xifra">{n}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+      <div className="cos">
+        {!esTreballador878326()&&<div className="acc">{c.fotos?<><label className="secondary file-btn-v8761"><Upload size={16} aria-hidden="true"/> {t("Adjuntar fotos")}<input type="file" accept="image/*" multiple onChange={e=>{const fs=[...(e.target.files||[])];e.target.value="";if(fs.length)addPhotoFiles8761(fs,setData)}}/></label><label className="primary file-btn-v8761"><Camera size={16} aria-hidden="true"/> {t("Fer foto")}<input type="file" accept="image/*" capture="environment" onChange={e=>{const fs=[...(e.target.files||[])];e.target.value="";if(fs.length)addPhotoFiles8761(fs,setData)}}/></label></>:<label className="primary upload-label"><Upload/> {t("Adjuntar")}<input type="file" onChange={e=>add(e,c.id)}/></label>}</div>}
+        {fotos.length>0&&<div className="photo-grid-v8761">{fotos.map(x=><div className="photo-card-v8761" key={x.id}><FileImg878261 src={x.src}/><div><b>{x.nom}</b><span>{fmtDate8761(x.data)}</span></div>{!esTreballador878326()&&<button type="button" className="treu-foto-v878441" aria-label={t("Treure la foto")} onClick={()=>treuFoto878441(x)}><Trash2 size={15} aria-hidden="true"/></button>}</div>)}</div>}
+        {sh.length+gn.length>0&&<div className="doc-list-v38">{gn.map(filaGen878441)}{sh.map(filaDoc878441)}</div>}
+        {n===0&&<Empty text="Aquesta carpeta encara no té documents."/>}
+      </div><Recollir878432/></details>})}
+</div>;
 return <Card title={t("Documents")} action={esTreballador878326()?null:<div className="actions-inline"><label className="primary upload-label"><Upload/> {t("Adjuntar")}<input type="file" onChange={add}/></label></div>}>
   {showCfg&&<div className="storage-config"><b>{t("Configuració opcional Supabase Storage")}</b><p>{t("Si no configures Storage, els originals es guarden en local IndexedDB d’aquest navegador. Cada document queda vinculat a l’expedient i a una carpeta documental.")}</p><div className="form-grid no-pad"><label><span>{t("URL Supabase")}</span><input value={cfg.url} onChange={e=>setCfg({...cfg,url:e.target.value})}/></label><label><span>{t("Anon key")}</span><input value={cfg.key} onChange={e=>setCfg({...cfg,key:e.target.value})}/></label><label><span>{t("Bucket")}</span><input value={cfg.bucket} onChange={e=>setCfg({...cfg,bucket:e.target.value})}/></label></div><button className="primary" onClick={saveCfg}>{t("Guardar configuració")}</button></div>}
   {status&&<div className="doc-status-v38">{status}</div>}
   <div className={"documents-pro-v87152 docs-md-v878365"+(obert878365?" amb-sel":"")}>
     <nav className="docs-carpetes-v878365" aria-label={t("Carpetes")}>{folders.map(f=>{const n=cnt878365(f);return <button type="button" key={f.id} className={(folder===f.id?"on":"")+(n?"":" buida")} aria-pressed={folder===f.id} title={f.desc||""} onClick={()=>{setFolder(f.id);setObert878365(true)}}><FolderOpen size={17} aria-hidden="true"/><b>{f.label}</b><span className="n">{n}</span></button>})}</nav>
-    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152 docs-det-v878365"><div className="folder-head-v8775"><button type="button" className="link tornar-v878365" onClick={()=>setObert878365(false)}><ChevronLeft size={18} aria-hidden="true"/> {t("Carpetes")}</button><div><h3>{activeFolder?.label}</h3></div><span>{shown.length+shownGenerated878148.length} {t("docs")}</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(d=><div className="doc-row-v38 auto-doc-row-v87148" key={d.id}><div><b>{d.nom}</b><span>{d.tipus} · {d.data}{d.import?" · "+money(d.import):""}</span></div><div className="actions-inline">{d.tipus==="EXCEL PRESSUPOST"&&<button className="secondary small" onClick={()=>exportImportedBudgetCopy878245(d)}>{t("Exportar còpia Excel")}</button>}<button className="secondary small" onClick={()=>d.docData?openDoc?.(d.docData):openDoc?.({type:"document",title:d.nom,subtitle:`Document generat des de ${d.origen}.`})}>{d.docData?t("Obrir"):t("Info")}</button></div></div>)}{shown.map(d=><details className="doc-row-v38 doc-row-accordion-v87152" key={d.id}><summary><div><b>{d.nom}</b><span>{d.tipus} · {d.data} {t("· Creat:")} {fmtCreationDate878233(d.createdAt)} · {sizeTxt(d.size)} · {storageLabel(d)}</span>{d.error&&<em>{d.error}</em>}</div></summary><div className="doc-row-actions-v87152"><select value={docFolder(d)} onChange={e=>moveDoc(d,e.target.value)}>{folders.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</select><button className="secondary small" onClick={()=>openOriginal(d)}>{isExcelDocument878245(d)?t("Veure Excel"):t("Obrir")}</button>{/* V87.412 · «Enviar» a cada document, amb l'arxiu adjunt (abans hi havia un «Enviar» general que no adjuntava res) */}{openEmail&&!esTreballador878326()&&(d.docData||d.hasFile!==false)&&<button className="secondary small env-doc-v878412" onClick={()=>openEmail(d.nom||t("Document"),d.docData?{doc:d.docData}:{pdf:{carrega:()=>getDocFile(d.id,obra?.id),nom:d.nom||"document"}})}><Mail size={14} aria-hidden="true"/> {t("Enviar")}</button>}{!esTreballador878326()&&<button className="danger small" onClick={()=>remove(d)}>{t("Eliminar")}</button>}</div></details>)}</>}</div></section>
+    <section className="doc-folder-content-v8775 doc-folder-content-pro-v87152 docs-det-v878365"><div className="folder-head-v8775"><button type="button" className="link tornar-v878365" onClick={()=>setObert878365(false)}><ChevronLeft size={18} aria-hidden="true"/> {t("Carpetes")}</button><div><h3>{activeFolder?.label}</h3></div><span>{shown.length+shownGenerated878148.length} {t("docs")}</span></div><div className="doc-list-v38">{shown.length+shownGenerated878148.length===0?<Empty text="Aquesta carpeta encara no té documents."/>:<>{shownGenerated878148.map(filaGen878441)}{shown.map(filaDoc878441)}</>}</div></section>
   </div>
 </Card>
 }
@@ -18250,7 +18302,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.440",
+    app_version:"87.441",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
