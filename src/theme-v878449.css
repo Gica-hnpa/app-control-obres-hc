@@ -1,0 +1,206 @@
+/* V87.449 · La targeta del pressupost: una sola fitxa de partida, selecció directa i llista per comprar */
+
+/* La línia de la partida diu quantitat i preu també a l'ordinador i l'iPad */
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child>small.q-v878449{display:inline!important;font-size:12.5px;font-weight:500;color:var(--co-ink-3,#5F7075);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (max-width:1100px){html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child>small.q-v878449{display:none!important}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>small{display:block!important;grid-column:1/-1;font-size:12.5px;color:var(--co-ink-3,#5F7075)}}
+
+/* Fitxa */
+html body .fitxa-v878449{gap:16px}
+html body .fitxa-v878449 h4{margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+html body .fitxa-v878449 h4 small{font-weight:500;text-transform:none;letter-spacing:0}
+html body .fitxa-v878449 .desc p{font-size:14px;color:var(--co-ink-2,#334155)}
+html body .fitxa-v878449 .desc textarea{min-height:84px;padding:10px 12px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface,#fff);resize:vertical}
+html body .fitxa-v878449 .preu{border:0;border-radius:0;padding:0}
+html body .fitxa-v878449 .origen-v878368{margin:8px 0 0;font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .fitxa-v878449 .eines{display:flex;justify-content:flex-start;margin-top:10px}
+
+/* Camps en editar */
+html body .camps-v878449{display:grid;grid-template-columns:minmax(0,120px) minmax(0,84px) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:10px 12px;align-items:start}
+html body .camps-v878449 .conc{grid-column:1/-1}
+html body .camps-v878449 label,html body .camps-v878449 .imp{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .camps-v878449 label>span:first-child,html body .camps-v878449 .imp>span{font-size:12.5px;font-weight:600;color:var(--co-ink-3,#5F7075)}
+html body .camps-v878449 input{width:100%;min-width:0;min-height:42px;padding:8px 10px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface,#fff);font:inherit;box-sizing:border-box}
+html body .camps-v878449 .budget-num-input-v878241{text-align:right;font-variant-numeric:tabular-nums}
+html body .camps-v878449 .amb{display:flex;gap:6px;min-width:0}
+html body .camps-v878449 .amb input{flex:1 1 auto}
+html body .camps-v878449 .amb button{flex:none;width:42px;min-height:42px;padding:0;display:grid;place-items:center;font-size:17px}
+html body .camps-v878449 small{font-size:12px;color:var(--co-ink-3,#5F7075)}
+html body .camps-v878449 .imp b{min-height:42px;display:flex;align-items:center;justify-content:flex-end;padding:0 12px;border-radius:10px;background:#EFF6FF;font-size:15px;font-variant-numeric:tabular-nums}
+@media (max-width:700px){
+  html body .camps-v878449{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .camps-v878449 .imp{grid-column:1/-1}
+}
+
+/* El descompost, en taula */
+html body .dt-v878449{--col-v878449:minmax(0,1fr) 92px 84px 88px 116px 104px;border:1px solid var(--co-line);border-radius:12px;overflow:hidden;font-size:13.5px;font-variant-numeric:tabular-nums;background:var(--co-surface,#fff)}
+html body .dt-v878449.sense-t{--col-v878449:minmax(0,1fr) 92px 84px 88px}
+html body .dt-v878449>div{display:grid;grid-template-columns:var(--col-v878449);gap:0 10px;align-items:baseline;padding:7px 12px;border-top:1px solid var(--co-line)}
+html body .dt-v878449>div:first-child{border-top:0}
+html body .dt-v878449 .cap{background:#F8FAFC;font-size:12px;font-weight:700;color:var(--co-ink-3,#5F7075)}
+html body .dt-v878449 .cap>span:not(:first-child),html body .dt-v878449 .l>span:not(.c){text-align:right}
+html body .dt-v878449 .grup{background:#F8FAFC}
+html body .dt-v878449 .grup>b{grid-column:1/4;font-size:13.5px;text-align:left!important;justify-self:start}
+html body .dt-v878449 .grup>b small{margin-left:8px;font-weight:500;color:var(--co-ink-3,#5F7075)}
+html body .dt-v878449 .grup .i{grid-column:4;text-align:right;font-weight:700}
+html body .dt-v878449 .grup .ti{grid-column:5/7;text-align:right;font-weight:700}
+html body .dt-v878449 .c{min-width:0}
+html body .dt-v878449 .c small{display:block;font-size:11.5px;color:var(--co-ink-3,#5F7075)}
+html body .dt-v878449 .l .ti{font-weight:600}
+html body .dt-v878449 .peu>span{grid-column:1/4;text-align:left!important;justify-self:start}
+html body .dt-v878449 .peu .i{grid-column:4;text-align:right}
+html body .dt-v878449 .peu .ti{grid-column:5/7;text-align:right}
+html body .dt-v878449 .peu.pc{color:var(--co-ink-2,#334155)}
+html body .dt-v878449 .peu.pc b{font-weight:500}
+html body .dt-v878449 .peu.pc small{color:var(--co-ink-3,#5F7075)}
+html body .dt-v878449 .peu.cd{font-weight:700;background:#F8FAFC}
+html body .dt-v878449 .peu.final{font-weight:800;font-size:15px;background:#EFF6FF}
+@media (max-width:700px){
+  html body .dt-v878449 .cap{display:none}
+  html body .dt-v878449>div{gap:2px 8px;padding:8px 10px}
+  html body .dt-v878449 .grup,html body .dt-v878449 .peu{grid-template-columns:minmax(0,1fr) auto auto}
+  html body .dt-v878449 .grup>b,html body .dt-v878449 .peu>span{grid-column:1}
+  html body .dt-v878449 .grup .i,html body .dt-v878449 .peu .i{grid-column:2}
+  html body .dt-v878449 .grup .ti,html body .dt-v878449 .peu .ti{grid-column:3;min-width:92px}
+  html body .dt-v878449 .l{grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:"c c c" "r p i" "tq tq ti"}
+  html body .dt-v878449 .l .c{grid-area:c;text-align:left}
+  html body .dt-v878449 .l .r{grid-area:r;text-align:left;color:var(--co-ink-3,#5F7075)}
+  html body .dt-v878449 .l .p{grid-area:p;text-align:left;color:var(--co-ink-3,#5F7075)}
+  html body .dt-v878449 .l .p::before{content:"× "}
+  html body .dt-v878449 .l .i{grid-area:i;color:var(--co-ink-3,#5F7075)}
+  html body .dt-v878449 .l .tq{grid-area:tq;text-align:left}
+  html body .dt-v878449 .l .tq::before{content:attr(data-l) " ";color:var(--co-ink-3,#5F7075)}
+  html body .dt-v878449 .l .ti{grid-area:ti}
+  html body .dt-v878449.sense-t .l{grid-template-areas:"c c c" "r p i"}
+}
+
+/* Sense descompost */
+html body .fitxa-v878449 .sense{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:1px dashed #F59E0B;border-radius:12px;background:#FFFBEB}
+html body .fitxa-v878449 .sense>b{color:#92400E;font-size:14px}
+html body .fitxa-v878449 .sense .bts{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Les dues marques, iguals i en una fila */
+html body .marques-v878449{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+html body .marques-v878449 .nova-fitxa-v878413,html body .marques-v878449 .noexec-fitxa-v878423{display:contents}
+html body .marques-v878449 .ck{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:8px 14px;margin:0;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface,#fff);font-size:14px;font-weight:600;color:var(--co-ink,#0f172a);cursor:pointer}
+html body .marques-v878449 .ck input{width:20px;height:20px;margin:0;flex:none}
+html body .marques-v878449 .nova-fitxa-v878413.es .ck{border-color:#FDBA74;background:#FFF7ED;color:#9A3412}
+html body .marques-v878449 .noexec-fitxa-v878423.es .ck{border-color:#FECACA;background:#FEF2F2;color:#991B1B}
+html body .marques-v878449 .cos{flex:1 0 100%;margin:0}
+@media (max-width:700px){html body .marques-v878449 .ck{flex:1 1 100%}}
+
+/* Peu de la fitxa */
+html body .fitxa-partida-v878361.inline-v878426>.eines-v878449{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-start;margin-top:0;padding-top:12px;border-top:1px solid var(--co-line)}
+html body .eines-v878449 .moure-v878320{min-height:40px;max-width:220px;margin:0}
+html body .eines-v878449 .fet-v878449{margin-left:auto;min-width:84px}
+@media (max-width:700px){
+  html body .eines-v878449 .moure-v878320{max-width:none;flex:1 1 100%}
+  html body .eines-v878449>button{flex:1 1 auto}
+  html body .eines-v878449 .fet-v878449{margin-left:0}
+}
+
+/* Selecció: una casella a cada partida */
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line>.sel-fila-v878449{display:grid!important;grid-template-columns:22px minmax(52px,auto) minmax(0,1fr) auto;gap:12px;align-items:center;min-height:52px;padding:8px 14px;margin:0;cursor:pointer;border-radius:12px}
+html body .sel-fila-v878449 input{width:20px;height:20px;margin:0}
+html body .sel-fila-v878449>b{font-size:13px;font-weight:700;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+html body .sel-fila-v878449>span{min-width:0;font-size:14.5px;font-weight:600;color:var(--co-ink,#0f172a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .sel-fila-v878449>strong{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line>.sel-fila-v878449.on{background:#EFF6FF}
+html body .budget-v25-line:has(>.sel-fila-v878449.on){border-color:#93C5FD!important}
+@media (max-width:700px){
+  html body .budget-card-v878248 .cartes-v878426>.budget-v25-line>.sel-fila-v878449{grid-template-columns:22px minmax(0,1fr) auto;padding:8px 10px;gap:10px}
+  html body .sel-fila-v878449>b{grid-column:2;grid-row:1}
+  html body .sel-fila-v878449>span{grid-column:2;grid-row:2;white-space:normal;font-size:14px}
+  html body .sel-fila-v878449>input{grid-row:1/3}
+  html body .sel-fila-v878449>strong{grid-column:3;grid-row:1/3;font-size:14px}
+}
+html body .budget-chapter-title-v87230:has(.cap-sel-v878449){display:flex;align-items:center;gap:10px}
+html body .cap-sel-v878449{width:20px;height:20px;margin:0;flex:none}
+/* seleccionant, el capítol només és el seu nom i la casella: fora el «⋯» */
+html body .budget-v25-cap-head:has(.cap-sel-v878449) select{display:none!important}
+
+/* La barra de la selecció, sempre a la vista */
+html body .sel-barra-v878449{position:sticky;bottom:12px;z-index:60;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:12px 0 0;padding:10px 14px;border:1px solid #93C5FD;border-radius:14px;background:#fff;box-shadow:0 6px 22px rgba(15,23,42,.16)}
+html body .sel-barra-v878449 .n{display:flex;align-items:baseline;gap:10px;min-width:0}
+html body .sel-barra-v878449 .n b{font-size:14.5px;color:var(--co-ink,#0f172a)}
+html body .sel-barra-v878449 .n span{font-size:13.5px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+html body .sel-barra-v878449 .bts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-left:auto}
+html body .sel-barra-v878449 .moure{min-height:38px;max-width:200px;margin:0}
+@media (max-width:1100px),(pointer:coarse){
+  html body .sel-barra-v878449{bottom:calc(var(--nav-h-v878268,62px) + env(safe-area-inset-bottom,0px) + 8px)}
+  html body:has(.sel-barra-v878449) .obra-plus-v878302{display:none}
+}
+@media (max-width:700px){
+  html body .sel-barra-v878449{padding:10px;gap:8px}
+  html body .sel-barra-v878449 .n{order:1;flex:1 1 0;flex-direction:column;align-items:flex-start;gap:0}
+  html body .sel-barra-v878449 .acabar{order:2;flex:none;min-width:88px}
+  html body .sel-barra-v878449 .bts{order:3;width:100%;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .sel-barra-v878449 .moure{max-width:none;width:100%}
+  html body .sel-barra-v878449 .bts>*{min-width:0;white-space:nowrap;padding-inline:8px}
+}
+/* al mòbil, la fitxa ocupa tota l'amplada que pot */
+@media (max-width:700px){
+  html body .budget-card-v878248 .budget-v25-lines.cartes-v878426{padding:6px 4px!important}
+  html body .fitxa-partida-v878361.inline-v878426.fitxa-v878449{padding:10px 8px}
+}
+
+/* Descompost del pressupost: la llista per comprar */
+html body .resum-pres-v878362 .sense-preu-v878449{display:flex;gap:10px;align-items:flex-start;margin:0;padding:10px 12px;border:1px solid #FDE68A;border-radius:10px;background:#FFFBEB;color:#92400E;font-size:13.5px}
+html body .resum-pres-v878362 .sense-preu-v878449 svg{flex:none;margin-top:2px}
+html body .resum-pres-v878362 .sense-preu-v878449 small{display:block;margin-top:2px;font-size:12.5px;line-height:1.4}
+html body .bloc-v878426 .ll-bloc-v878449>summary .imp{font-variant-numeric:tabular-nums;font-size:14.5px}
+html body .bloc-v878426 .ll-bloc-v878449 .t b small{margin-left:6px;font-weight:500;color:var(--co-ink-3,#5F7075)}
+html body .ll-v878449{font-size:13.5px;font-variant-numeric:tabular-nums}
+html body .ll-v878449>div{display:grid;grid-template-columns:minmax(0,1fr) 124px 112px 112px;gap:2px 12px;align-items:baseline;padding:8px 14px;border-top:1px solid var(--co-line)}
+html body .ll-v878449>div:first-child{border-top:0}
+html body .ll-v878449 .cap{background:#F8FAFC;font-size:12px;font-weight:700;color:var(--co-ink-3,#5F7075)}
+html body .ll-v878449 .cap>span:not(:first-child),html body .ll-v878449 .l>*:not(.c){text-align:right}
+html body .ll-v878449 .c{min-width:0;font-weight:600;color:var(--co-ink,#0f172a)}
+html body .ll-v878449 .c small{display:block;font-weight:500;font-size:12px;color:var(--co-ink-3,#5F7075)}
+html body .ll-v878449 .p small{display:block;font-size:11.5px;color:var(--co-ink-3,#5F7075)}
+html body .ll-v878449 .i{font-weight:700}
+html body .exp-v878449{display:flex;justify-content:flex-end}
+@media (max-width:700px){
+  html body .ll-v878449 .cap{display:none}
+  html body .ll-v878449>div{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"c c c" "q p i";padding:8px 10px}
+  html body .ll-v878449 .c{grid-area:c}
+  html body .ll-v878449 .q{grid-area:q;text-align:left!important;color:var(--co-ink-3,#5F7075)}
+  html body .ll-v878449 .p{grid-area:p;text-align:left!important;color:var(--co-ink-3,#5F7075)}
+  html body .ll-v878449 .p::before{content:"× "}
+  html body .ll-v878449 .i{grid-area:i}
+}
+
+/* Una regla vella (styles.css) posa text-align:right i nowrap a tots els <b> de la fila de la partida */
+html body .sel-fila-v878449>b{text-align:left!important;justify-self:start}
+html body .fitxa-v878449 .sense>b{white-space:normal;text-align:left}
+html body .fitxa-v878449 h4{text-align:left}
+
+/* Seleccionant, només el que serveix per seleccionar */
+html body .budget-v25-cap:has(.cap-sel-v878449) .add-line-btn{display:none}
+html body:has(.sel-barra-v878449) .backtop-v878301{display:none}
+
+/* Mòbil: els quatre botons d'editar, sense trepitjar-se */
+@media (max-width:480px){
+  html body .budget-botons-v878320.pres-accions-v878366:has(.eines-v878426){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+}
+/* Mòbil i iPad: amb una fitxa oberta, res a sobre dels números */
+@media (max-width:1100px),(pointer:coarse){
+  html body:has(.fitxa-v878449) .obra-plus-v878302,html body:has(.fitxa-v878449) .backtop-v878301{display:none}
+}
+/* Mòbil: cada recurs, més curt */
+@media (max-width:700px){
+  html body .dt-v878449 .l .r,html body .dt-v878449 .l .p,html body .dt-v878449 .l .tq{text-align:left!important}
+  html body .dt-v878449 .c small{display:inline;margin-right:6px}
+  html body details.card.pres-bloc-v878427>.pres-cos-v878427{padding-inline:4px}
+}
+@media (max-width:700px){
+  html body details.card.pres-bloc-v878427 .budget-v25{padding-inline:0!important}
+}
+
+/* Mòbil: totes les partides, la mateixa alçada; la taula del total, sense tallar els imports */
+@media (max-width:700px){
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196{min-height:104px!important}
+  html body .budget-card-v878248 .cartes-v878426 .sel-fila-v878449{min-height:0}
+}
+html body .resum-pres-v878362 .taula td:not(:first-child),html body .resum-pres-v878362 .taula th:not(:first-child){white-space:nowrap}
+html body .resum-pres-v878362 .taula td:first-child small{white-space:nowrap}
