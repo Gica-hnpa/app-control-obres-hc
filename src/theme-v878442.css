@@ -1,0 +1,16 @@
+/* V87.442 · Programes de l'ordinador (Ajustos) */
+html body .prog-ajustos-v878442{display:flex;flex-direction:column;gap:10px}
+html body .prog-ajustos-v878442 .fila{display:grid;grid-template-columns:minmax(120px,200px) minmax(0,1fr) auto auto;align-items:end;gap:8px 10px}
+html body .prog-ajustos-v878442 label{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .prog-ajustos-v878442 label>span{font-size:13px;font-weight:600;color:var(--co-ink-2)}
+html body .prog-ajustos-v878442 input{width:100%;min-width:0}
+html body .prog-ajustos-v878442 .estat{font-size:13px;color:var(--co-ink-3);padding:0 0 9px}
+html body .prog-ajustos-v878442 .estat.mal{color:#B91C1C;font-weight:600}
+html body .prog-ajustos-v878442 .obrir{display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap}
+html body .prog-ajustos-v878442 .treu{padding:9px 6px;color:#B91C1C}
+html body .prog-ajustos-v878442 .acc{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+html body .prog-ajustos-v878442 .pas{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:10px 12px;border-radius:10px;background:#EFF6FF}
+html body .prog-ajustos-v878442 .pas span{font-size:14px;color:var(--co-ink)}
+html body .encarrec-v878441 .enc-enllacos-v878333 a.prog-v878442{border-color:var(--co-accent,#2563EB)}
+html body .encarrec-v878441 .enc-enllacos-v878333 a.prog-v878442 b{color:var(--co-accent,#2563EB)}
+html body .prog-ajustos-v878442 .treu{background:none;border:0;box-shadow:none;align-self:end}

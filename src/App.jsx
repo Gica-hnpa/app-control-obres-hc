@@ -15,6 +15,7 @@ import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces
 import {llegirDictat} from "./dictatPartides.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
 import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc} from "./encarrecsTecnics.js";
+import {pcWindows as pcWindows878442,llegeix as llegeixProgs878442,desa as desaProgs878442,enllac as enllacProg878442,ambClau as ambClau878442,rutaOk as rutaOk878442,blobReg as blobReg878442} from "./programesPc.js";
 import {dadesDemo} from "./dadesDemo.js";
 import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
 import {prepara as fullsA4878425,aPunt as aPuntA4878425} from "./fullsA4.js";
@@ -32,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.441";
+const APP_VERSION878264="87.442";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9532,8 +9533,8 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   const selectedClient=(clients||[]).find(c=>c.id===clientChoice);
   // V87.304 · Pestanyes de Dades (encàrrec de l'Héctor del 19/10/2026): Obra · Client · Promotor · Constructora · Direcció d'obra ·
   // Direcció d'execució · Coordinació S+S · Industrials. A cadascuna, tots els camps; l'adreça separada del codi postal i de la
-  // població. Tot es desa amb «Guardar dades». En una feina tècnica senzilla (cèdula, certificat…) només surten Obra, Client i
-  // Promotor (i les que ja tenen algú), amb «+ Altres agents».
+  // població. Tot es desa amb «Guardar dades». En una feina tècnica senzilla només surten Obra, Client i Promotor (i les que ja
+  // tenen algú), amb «+ Altres agents»; en un encàrrec tècnic (cèdula, CEE…), també el Representant, i sense agents (V87.441).
   const [sub878304,setSub878304]=useState(()=>{try{return sessionStorage.getItem("aco_dades_sub_v878304")||"obra"}catch{return "obra"}});
   const triaSub878304=k=>{setSub878304(k);try{sessionStorage.setItem("aco_dades_sub_v878304",k)}catch{}};
   // V87.414 · les fitxes s'omplen amb el que ja hi ha a Contactes (camps buits o de farciment)
@@ -11230,13 +11231,13 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
 // accions; a sota, els apartats en una tira que es pot lliscar, amb «Més» per a la resta. Abans hi havia «Apartats de
 // l'obra» i «Accions» per separat, i cada apartat s'obria en una finestra a sobre amb un altre selector.
 const OBRA_TABS_MAIN878269=["Resum","Pressupost","Pressupost ràpid","Pressupost obra","Certificacions","Gestió obra","Certificacions obra","Actes","Notes","Documents","Agenda / Avisos","Tasques","Gantt"];
-function tabLabel878269(tab,all=[]){
+function tabLabel878269(tab,all=[],pur=false){
   if(tab==="Certificacions obra")return t("Certificacions");
   if(tab==="Amidaments obra")return t("Amidaments");
   if(tab==="Partes obra")return t("Partes d’obra");
   if(tab==="Agenda / Avisos")return t("Agenda");
   // V87.308 · apartats ajuntats: Dades amb els agents; el seguiment econòmic amb el rendiment
-  if(tab==="Dades"&&all.length&&!all.includes("Agents"))return t("Dades i agents");
+  if(tab==="Dades"&&all.length&&!all.includes("Agents"))return pur?t("Dades"):t("Dades i agents");
   if(tab==="Actes"&&all.length&&!all.includes("Notes"))return t("Visites");
   if(tab==="Seguiment econòmic"&&all.length&&!all.includes("Rendiment"))return t("Rendiment");
   // V87.299 · noms nous (decisió de l'Héctor del 18/10/2026). Només canvia el que es veu: les dades i les claus no.
@@ -11858,9 +11859,9 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
       </div>
     </div>
     <div className={`obra-tabs-bar-v878269 obra-blocs-bar-v878299 ${narrow?"narrow":""}`}>
-      <div className="obra-blocs-v878299" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all))])))}>{blocs.map(b=>{const on=b.k===blocActiu.k,open=obert?.k===b.k;return <button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={narrow&&b.tabs.length>1?open:undefined} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>clickBloc(b)}>{BLOC_ICON878299[b.k]}<span className="nom">{t(b.k)}</span>{narrow&&on&&<small>{tabLabel878269(active,all)}</small>}</button>})}</div>
-      {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(blocActiu.k)}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all)}</button></React.Fragment>)}</div>}
-      {obert&&<div className="obra-bloc-panel-v878299" role="menu" aria-label={t(obert.k)}>{obert.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="menuitem" className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all)}</button></React.Fragment>)}</div>}
+      <div className="obra-blocs-v878299" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{blocs.map(b=>{const on=b.k===blocActiu.k,open=obert?.k===b.k;return <button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={narrow&&b.tabs.length>1?open:undefined} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>clickBloc(b)}>{BLOC_ICON878299[b.k]}<span className="nom">{t(b.k)}</span>{narrow&&on&&<small>{tabLabel878269(active,all,pur)}</small>}</button>})}</div>
+      {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(blocActiu.k)}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
+      {obert&&<div className="obra-bloc-panel-v878299" role="menu" aria-label={t(obert.k)}>{obert.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="menuitem" className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
     </div>
   </>;
 }
@@ -11962,6 +11963,33 @@ const CHART_COLORS878252=["var(--co-s1)","var(--co-s2)","var(--co-s3)","var(--co
 // apretar, que surti la resta d'informació»; «pujar o no cal no sé si em serveix: millor un checklist i després els enllaços»).
 // Un sol bloc: el progrés, els passos plegables (obert, el primer que falta), els documents del tràmit dins del pas «Tràmit» (es marquen
 // i, si es vol, s'hi adjunta l'arxiu), el botó del tràmit i «Marcar com a presentat», i a sota els enllaços del tràmit i l'ajuda amb IA.
+// V87.442 · Obrir un programa de l'ordinador des de l'app (l'Héctor, 30/10/2026: «si jo ja el tinc, pots entrar directament al programa?…
+// que un altre tècnic pugui fer el mateix»). Cada ordinador ho prepara una vegada amb un arxiu que obre l'usuari; la llista es desa a l'aparell.
+function ProgramesPc878442(){
+  const ls=lsVisual878400();
+  const [llista,setLlista]=useState(()=>llegeixProgs878442(ls));
+  const [baixat,setBaixat]=useState(false);
+  const posa=l=>{setLlista(l);desaProgs878442(ls,l)};
+  const canvia=(i,camp,v)=>{posa(llista.map((p,j)=>j===i?{...p,[camp]:v,preparat:false}:p));setBaixat(false)};
+  const valids=llista.filter(p=>String(p.nom||"").trim()&&rutaOk878442(p.ruta));
+  const prepara=()=>{const l=ambClau878442(llista);posa(l);descarregaBlob878405(blobReg878442(l.filter(p=>String(p.nom||"").trim()&&rutaOk878442(p.ruta))),"control-obres-programes.reg");setBaixat(true)};
+  const fet=()=>{posa(llista.map(p=>String(p.nom||"").trim()&&rutaOk878442(p.ruta)?{...p,preparat:true}:p));setBaixat(false)};
+  const desfes=()=>{const l=llista.filter(p=>p.preparat);if(!l.length)return;descarregaBlob878405(blobReg878442(l,{treure:true}),"control-obres-treure-programes.reg");posa(llista.map(p=>({...p,preparat:false})));setBaixat(false)};
+  return <div className="prog-ajustos-v878442">
+    {llista.map((p,i)=><div className="fila" key={i}>
+      <label><span>{t("Programa")}</span><input value={p.nom||""} onChange={e=>canvia(i,"nom",e.target.value)}/></label>
+      <label className="ruta"><span>{t("Ruta de l’arxiu .exe")}</span><input value={p.ruta||""} spellCheck={false} placeholder="C:\Program Files\…\programa.exe" onChange={e=>canvia(i,"ruta",e.target.value)}/></label>
+      {p.preparat?<a className="secondary obrir" href={enllacProg878442(p.k)}><Monitor size={16} aria-hidden="true"/> {t("Obrir")}</a>:<span className={String(p.ruta||"").trim()&&!rutaOk878442(p.ruta)?"estat mal":"estat"}>{String(p.ruta||"").trim()&&!rutaOk878442(p.ruta)?t("Ruta no vàlida"):t("Sense preparar")}</span>}
+      <button type="button" className="link treu" aria-label={t("Treure {nom}",{nom:p.nom||t("Programa")})} onClick={()=>{posa(llista.filter((_,j)=>j!==i));setBaixat(false)}}><Trash2 size={16} aria-hidden="true"/></button>
+    </div>)}
+    <div className="acc">
+      <button type="button" className="secondary" onClick={()=>posa([...llista,{nom:"",ruta:"",preparat:false}])}><Plus size={16} aria-hidden="true"/> {t("Afegir un programa")}</button>
+      <button type="button" className="primary" disabled={!valids.length} onClick={prepara}>{t("Preparar aquest ordinador")}</button>
+      {llista.some(p=>p.preparat)&&<button type="button" className="link" onClick={desfes}>{t("Desfer-ho en aquest ordinador")}</button>}
+    </div>
+    {baixat&&<div className="pas"><span>{t("Obre l’arxiu «control-obres-programes.reg» que s’acaba de baixar i digues que sí.")}</span><button type="button" className="primary" onClick={fet}>{t("Ja l’he obert")}</button></div>}
+  </div>;
+}
 const ENLLACOS_TRAMIT878333={
   cedula:[
     {nom:"Presentar la cèdula (Agència de l’Habitatge)",desc:"Tràmit de la cèdula de segona ocupació",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Cedula-dhabitabilitat-de-segona-ocupacio"},
@@ -11969,14 +11997,16 @@ const ENLLACOS_TRAMIT878333={
     {nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"},
     {nom:"Cercador de cèdules",desc:"Si ja en té una i quan caduca",url:"https://agenciahabitatge.gencat.cat/ca/temes/rehabilitacio-i-qualitat-de-ledificacio/control-de-qualitat-dhabitatges/cercador-de-cedules",rc:true}],
   cee:[
-    {nom:"CE3X",desc:"Programa del certificat (Ministeri, per a Windows)",url:"https://www.miteco.gob.es/es/energia/eficiencia/certificacion-energetica/documentos-reconocidos/procedimientos-certificacion-proyecto-terminados.html"},
+    {nom:"CE3X",desc:"Programa del certificat (Ministeri, per a Windows)",url:"https://www.miteco.gob.es/es/energia/eficiencia/certificacion-energetica/documentos-reconocidos/procedimientos-certificacion-proyecto-terminados.html",programa:"ce3x"},
+    {nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"},
     {nom:"Registrar el certificat (ICAEN)",desc:"Tràmit de registre",url:"https://icaen.gencat.cat/ca/energia/usos_energia/edificis/certificacio/index.html"},
     {nom:"Cercador de certificats energètics",desc:"Si ja en té un",url:"https://certificacioenergetica.gencat.cat/icaen-visor/AppJava/services/certificats/show"}],
   amiant:[
+    {nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"},
     {nom:"Ajuts per retirar l’amiant",desc:"Agència de Residus",url:"https://residus.gencat.cat/ca/consultes_i_tramits_-_nou/subvencions/amiant/"},
     {nom:"Amiant: preguntes freqüents",desc:"Agència de Residus",url:"https://residus.gencat.cat/ca/ambits_dactuacio/tipus_de_residu/amiant/ciutadania/preguntes-frequents/"},
     {nom:"Registre d’empreses amb risc d’amiant (RERA)",desc:"Per a l’empresa que el retiri",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Registre-dEmpreses-amb-Risc-per-Amiant-RERA"}],
-  ite:[]
+  ite:[{nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"}]
 };
 // Ajuda amb IA (sense pagar: es copia i s'enganxa a ChatGPT o Claude) per preparar el certificat energètic
 function iaCeePrompt878333(obra={}){
@@ -12024,6 +12054,9 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
   const obrePas=pk=>{const el=targetes.current[pk];if(!el)return;el.open=true;requestAnimationFrame(()=>{try{el.scrollIntoView({block:"start",behavior:"smooth"})}catch{}})};
   const rc=rcNet878305(obra.rc);
   const enllacos=(ENLLACOS_TRAMIT878333[k]||[]).map(x=>({...x,url:x.url,copia:x.rc&&rc?rc.slice(0,20):""}));
+  const progs=pcWindows878442()?llegeixProgs878442(lsVisual878400()).filter(p=>p.preparat):[];
+  const prog=x=>x.programa?progs.find(p=>p.k===x.programa):null;
+  const altresProgs=progs.filter(p=>!enllacos.some(x=>x.programa===p.k));
   function ia(url,nom){const ok=copyText878256(iaCeePrompt878333(obra));setIaMsg(ok?t("Copiat. A {nom}, enganxa-ho (Ctrl+V) i envia.",{nom}):t("No s’ha pogut copiar."));window.open(url,"_blank","noopener,noreferrer")}
   const estat=dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("A punt per presentar"):t("{n} de {m} fets",{n:r.fet,m:r.total});
   const txt=x=>x.propi?x.text:t(x.text);
@@ -12064,7 +12097,7 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
       </>}
       {!readOnly&&<div className="passos-afegir-v878305"><input value={nou[p.k]||""} onChange={ev=>{const v=ev.target.value;setNou(x=>({...x,[p.k]:v}))}} onKeyDown={ev=>{if(ev.key==="Enter")afegeix(p.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})} aria-label={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(p.k)}><Plus/> {t("Afegir")}</button></div>}
     </>,p.complet?"fet":""))}
-    {enllacos.length>0&&targeta("enllacos",ExternalLink,t("Enllaços"),enllacos.length,<div className="enc-enllacos-v878333"><div className="tiles">{enllacos.map(x=><a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}><b>{t(x.nom)}</b><small>{t(x.desc)}{x.copia?` · ${x.copia}`:""}</small><ExternalLink size={14} aria-hidden="true"/></a>)}</div></div>)}
+    {enllacos.length+altresProgs.length>0&&targeta("enllacos",ExternalLink,t("Enllaços"),enllacos.length+altresProgs.length,<div className="enc-enllacos-v878333"><div className="tiles">{altresProgs.map(p=><a key={p.k} className="prog-v878442" href={enllacProg878442(p.k)}><b>{t("Obrir {nom}",{nom:p.nom})}</b><small>{t("En aquest ordinador")}</small></a>)}{enllacos.map(x=>prog(x)?<a key={x.url} className="prog-v878442" href={enllacProg878442(x.programa)}><b>{t("Obrir {nom}",{nom:prog(x).nom})}</b><small>{t("En aquest ordinador")}</small></a>:<a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}><b>{t(x.nom)}</b><small>{t(x.desc)}{x.copia?` · ${x.copia}`:""}</small><ExternalLink size={14} aria-hidden="true"/></a>)}</div></div>)}
     {k==="cee"&&!readOnly&&targeta("ia",WandSparkles,t("Preparar-lo amb IA"),null,<div className="enc-ia-v878333"><div className="botons"><button type="button" className="secondary" onClick={()=>ia("https://chatgpt.com/","ChatGPT")}>{t("Copiar i obrir ChatGPT")}</button><button type="button" className="secondary" onClick={()=>ia("https://claude.ai/new","Claude")}>{t("Copiar i obrir Claude")}</button></div>{iaMsg&&<p className="msg">{iaMsg}</p>}</div>)}
   </section>;
 }
@@ -18302,7 +18335,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.441",
+    app_version:"87.442",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -18502,7 +18535,7 @@ const ajRef878366=useRef(null);
 useEffect(()=>{const el=ajRef878366.current;if(!el)return;const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;el.querySelectorAll("details.ajustos-grup-v878354[open]").forEach(o=>{if(o!==d)o.open=false});const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};el.addEventListener("click",h,true);return()=>el.removeEventListener("click",h,true)},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
+const IC438={marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
 const bloc878366=(k,tit,cont)=><details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366" data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
 return <div className="stack ajustos-v878366" ref={ajRef878366}>
@@ -18514,6 +18547,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {!esTreballador878326()&&teModul878326("obra")&&bloc878366("marges",t("Preus i marges"),<MargesAjustos878378/>)}
 {bloc878366("idioma",t("Idioma"),<IdiomaUsuari878268 user={authUser}/>)}
 {!esTreballador878326()&&bloc878366("enllacos",t("Enllaços de les obres"),<EnllacosAjustos878305/>)}
+{!esTreballador878326()&&teModul878326("tecnic")&&pcWindows878442()&&bloc878366("programes",t("Programes de l’ordinador"),<ProgramesPc878442/>)}
 {(!window.__acoEmpresa||/^demo-/.test(String(window.__acoEmpresa?.username||"")))&&bloc878366("aspecte",t("Aspecte"),<AspecteAjustos878400/>)}
 {role878366==="admin"&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
 {bloc878366("usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>)}

@@ -2511,6 +2511,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       representant.
     - Estils `src/theme-v878441.css`. Prova: `v441test.mjs` (19). Adaptades `encarrec333test`, `amiant324test`, `v432test`, `facturacio337test`,
       `factclienttest`, `enviar407test` i les lliçons `guia404-llicons` (**la lliçó dels encàrrecs s'ha de tornar a gravar**).
+  - **V87.442 · Obrir els programes de l'ordinador des de l'encàrrec** (l'Héctor, 30/10/2026, amb el CEE de Cornellà de Terri: «al CE3X em porta a la
+    pàgina del Ministeri, però si jo ja el tinc pots entrar directament al programa?… això pot estar en una targeta on un altre tècnic pugui fer el mateix?»):
+    - **Per què així:** una pàgina web no pot engegar programes pel seu compte. **Ajustos › «Programes de l'ordinador»** (`ProgramesPc878442`,
+      `.prog-ajustos-v878442`; només Windows amb ratolí —`pcWindows`—, mòdul tècnic, no el treballador): la llista de programes (de sèrie el CE3X a
+      `C:\Program Files (x86)\CE3Xv3.2\ce3xv3.2.exe`), «Preparar aquest ordinador» baixa `control-obres-programes.reg`, l'usuari l'obre ell mateix
+      (Windows pregunta) i «Ja l'he obert» el dona per preparat. «Desfer-ho en aquest ordinador» baixa `control-obres-treure-programes.reg`.
+    - **`src/programesPc.js`** (funcions pures): el `.reg` (`textReg`, `blobReg`, UTF-16 amb la marca) registra a HKCU, sense administrador, el protocol
+      `controlobres-<clau>:`, que obre el programa **sense passar-li res** (l'ordre no porta `%1`). `rutaOk` només accepta una ruta completa acabada en
+      `.exe`; `escReg` treu salts de línia i escapa barres i cometes. La llista és **de cada aparell** (`programes-pc-v878442` al localStorage de debò,
+      `lsVisual878400`): cada tècnic prepara el seu ordinador. **L'app i les proves mai obren el `.reg`.**
+    - **Encàrrec › Enllaços:** el CE3X preparat surt com a **«Obrir CE3X · En aquest ordinador»** (`a.prog-v878442`, `programa:"ce3x"` a
+      `ENLLACOS_TRAMIT878333`) en lloc de la pàgina del Ministeri; els altres programes preparats, a sobre. El navegador pregunta «Obrir…?» la primera vegada.
+      MagicPlan també al CEE, a l'amiant i a la ITE.
+    - **Falta provar-ho amb el Windows de l'Héctor** (les proves comproven el text del `.reg` i els enllaços, no el registre).
+    - Estils `src/theme-v878442.css`. Prova: `v442test.mjs`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2690,7 +2705,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.441 a Render):**
+**Estat (publicada la V87.442 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
