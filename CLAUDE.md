@@ -2548,6 +2548,9 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
   - **V87.445 · Les línies de les targetes no es tallen al mòbil** (trobat revisant les pantalles per als vídeos): «Feines pendents» diu «5 · 1 vençuda» (el
     títol ja diu què són), Hores › «Setmana» diu «26/10 – 01/11 · 12,00 h» (abans «Setmana del … al …» no hi cabia) i, a la targeta Certificacions, «Nova» és només el
     + al mòbil (`tx-v878445`; a l'ordinador, amb la paraula). Estils `src/theme-v878445.css`. Prova: `v445test.mjs` (6). Adaptada `v369test`.
+  - **V87.446 · Detalls trobats gravant els vídeos**: a la constructora, el cercador d'Obres diu «Buscar obra, client o població…» i el Resum «Aquesta obra encara no té pressupost.»
+    (`diuObra878326`; abans, «expedient»). El menú «Accions» de la certificació, en una columna (amb dues, «Importar Excel de certificació» quedava tallat al mòbil). La casella «Treballa
+    a l'empresa» de la fitxa del treballador, al costat del seu text. Estils `src/theme-v878446.css`. Prova: `v446test.mjs` (7).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2727,7 +2730,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.445 a Render):**
+**Estat (publicada la V87.446 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

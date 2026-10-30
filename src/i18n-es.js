@@ -211,6 +211,8 @@ export default {
   "Pressupost preparat, sense certificacions": "Presupuesto preparado, sin certificaciones",
   "{a} de {b}": "{a} de {b}",
   "Aquest expedient encara no té pressupost d’obra.": "Este expediente aún no tiene presupuesto de obra.",
+  "Aquesta obra encara no té pressupost.": "Esta obra aún no tiene presupuesto.",
+  "Buscar obra, client o població…": "Buscar obra, cliente o población…",
   "Pressupost vigent": "Presupuesto vigente",
   "{n} partides · {m} capítols": "{n} partidas · {m} capítulos",
   "Certificat a origen": "Certificado a origen",

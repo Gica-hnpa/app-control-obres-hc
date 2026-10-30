@@ -33,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.445";
+const APP_VERSION878264="87.446";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8926,7 +8926,7 @@ const sortHead878192=(key,label)=><button type="button" className={`exp-sort-hea
 const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)return;updateStatus(obra.id,value)};
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
   <Card title={t(etObres878304())} action={esTreballador878326()?null:<div className="actions-inline">{allowAdminActions&&<button type="button" className="secondary imp-obres-btn-v878358" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-importar-obres"))}catch{}}}>{t("Importar")}</button>}<button className="primary" onClick={newObra}><Plus/> {t(etNovaObra878304())}</button></div>}>
-    <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar expedient, client, obra o població…")} aria-label={t("Buscar")}/></div>
+    <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={diuObra878326()?t("Buscar obra, client o població…"):t("Buscar expedient, client, obra o població…")} aria-label={t("Buscar")}/></div>
     <div className="filters filters-v8741 filters-v8742 desktop-filters-v87119">
       <div className="search-field"><Search size={16}/><input aria-label={t("Buscar")} value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={t("Buscar per número, codi, client, treball, adreça o municipi…")}/></div>
     </div>
@@ -12192,7 +12192,7 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
         {hasBudget?<div className="obra-hero-progress-v878252">
           <div className="lbl"><span>{s.lastN?t("Certificat a origen · C-{n}",{n:s.lastN}):t("Pressupost preparat, sense certificacions")}</span><b>{pct878252(s.executed)}</b></div>
           <div className="track"><i style={{width:`${Math.min(100,s.executed)}%`}}/></div>
-        </div>:esTecnicPur878332(obra)?null:<p className="hint">{t("Aquest expedient encara no té pressupost d’obra.")}</p>}
+        </div>:esTecnicPur878332(obra)?null:<p className="hint">{diuObra878326()?t("Aquesta obra encara no té pressupost."):t("Aquest expedient encara no té pressupost d’obra.")}</p>}
 
       </div>
     </div>
@@ -18373,7 +18373,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.445",
+    app_version:"87.446",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

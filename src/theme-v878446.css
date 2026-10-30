@@ -1,0 +1,7 @@
+/* V87.446 · El menú «Accions» de la certificació en una columna (amb dues, «Importar Excel de certificació» quedava tallat al mòbil) */
+html body .cert-barra-v878364 .accions-v878364 .action-menu-panel-v87213{display:flex!important;flex-direction:column;align-items:stretch;gap:2px}
+html body .cert-barra-v878364 .accions-v878364 .action-menu-panel-v87213>*{width:100%!important;max-width:none!important;white-space:normal}
+/* La casella «Treballa a l'empresa», al costat del seu text */
+html body .treb-ed-v878339 .chk-v878339{justify-content:flex-start}
+html body .treb-ed-v878339 .chk-v878339 input{flex:none;width:18px!important;height:18px;margin:0}
+html body .treb-ed-v878339 .chk-v878339 span{flex:1 1 auto;text-align:left}
