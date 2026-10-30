@@ -2457,6 +2457,24 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Queden amb un altre format, a propòsit: els filtres (`expf-v878275`, `filtres-v878316`), les files que es despleguen (hores del personal,
       fitxatge) i l'encàrrec tècnic (vegeu la proposta).
     - Estils `src/theme-v878438.css`. Prova: `v438test.mjs` (17).
+  - **V87.439 · L'import de cada partida a la certificació és sempre quantitat × preu** (l'Héctor, 30/10/2026, amb una captura de Verbania:
+    «revisa per què no està ben feta aquesta multiplicació… això no pot passar més perquè genera dubtes»; «fent un canvi s'han d'actualitzar
+    els camps i les fórmules»):
+    - **Causa:** a la 03.03 del pressupost P1 la certificació 1 deia 22,38 × 85,20 = 4.003,78 €. El 28/10 a les 13:31 es va canviar la partida des
+      de Certificació › «Fitxa / accions» (concepte i preu de 178,90 a 85,20 €), i `updatePartidaMeta878132` guardava a `certAmountsByNum` l'import
+      de cada certificació amb el preu d'abans (22,38 × 178,90), una cosa pensada per a les partides d'administració. A més, canviar la quantitat
+      d'una certificació no tocava aquest import desat.
+    - **Ara:** canviar el preu des de la fitxa torna a calcular les certificacions; només les que **tenen factura** (`certFacturada878439`) guarden
+      l'import d'abans. Les d'administració (`esAdminRow878439`: `adminMonthlyAuto`, tipus «administració» o línies d'hores), com sempre.
+      Canviar la quantitat d'una certificació treu l'import desat d'aquella certificació (`posaQCert878439`, als tres llocs on es desa la quantitat).
+    - **Dades d'abans** (`reparaImportsCert878439`, en obrir una obra pròpia): els imports desats d'una partida normal que no són quantitat × preu,
+      si no venen d'un Excel de certificació (`certImportedExcelV87231`) ni la certificació té factura, es tornen a calcular; el d'abans va a
+      `aco_imports_cert_abans_v878439_<obra>`. Amb la còpia del 29/10, només la 03.03 de Verbania: 4.003,78 → 1.906,78 €.
+    - **Si queda algun import que no és quantitat × preu** (d'un Excel de certificació, o una certificació amb factura després de canviar el preu):
+      a Certificació › Partides i al PDF a origen, sota l'import, «a X €» en taronja (`PreuCert878439`, `notaPreu878439`) i, si es pot tocar,
+      «Calcular a {preu}» (`recalcImport878439`, pregunta abans). Amb la còpia del 29/10: 5 partides de Cala Rovira 11 importades d'un Excel
+      (07.11 cert. 4, 07.11-02 cert. 2, 07.12 cert. 6, 12001 cert. 6, 13014 cert. 7).
+    - Estils `src/theme-v878439.css`. Prova: `v439test.mjs` (21).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2636,7 +2654,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.438 a Render):**
+**Estat (publicada la V87.439 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

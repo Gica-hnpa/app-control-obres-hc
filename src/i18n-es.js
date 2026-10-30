@@ -4723,4 +4723,8 @@ export default {
 "«{fase}» ja no és una alternativa": "«{fase}» ya no es una alternativa",
 "Alternativa · no suma": "Alternativa · no suma",
 "Hores tècniques: {h}": "Horas técnicas: {h}",
+  "a {p}": "a {p}",
+  "sense quantitat": "sin cantidad",
+  "Calcular a {p}": "Calcular a {p}",
+  "Partida {codi}: {q} × {p} = {t}. Calcular-la així en aquesta certificació?": "Partida {codi}: {q} × {p} = {t}. ¿Calcularla así en esta certificación?",
 };

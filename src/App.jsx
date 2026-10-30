@@ -32,7 +32,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.438";
+const APP_VERSION878264="87.439";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5810,12 +5810,7 @@ if(!Number.isFinite(n))n=0;
 setD(obraId,d=>({...d,partides:d.partides.map(r=>{
   const activeBid=d.activeBudgetIdObra||"principal";
   if((r.budgetId||"principal")!==activeBid||r.codi!==codi)return r;
-  const next={...r,[field]:n};
-  if(String(field).startsWith("cert_")){
-    const certKey=String(field).replace("cert_","");
-    next.certsByNum={...(r.certsByNum||{}),[certKey]:n};
-  }
-  return next;
+  return posaQCert878439(r,field,n);
 })}))
 }
 function updateCertDate(id,value){setD(obraId,d=>({...d,certificacions:(d.certificacions||[]).map(c=>c.id===id?stampCertificationDate87218(c,value):c)}))}
@@ -7413,6 +7408,60 @@ function certAmount878223(r,n,quantityOverride){
   if(r?.certAmountsByNum&&Object.prototype.hasOwnProperty.call(r.certAmountsByNum,key))return parseNum8770(r.certAmountsByNum[key]);
   const q=quantityOverride===undefined?certQty8783(r,n):parseNum8770(quantityOverride);
   return q*parseNum8770(r?.pu);
+}
+// V87.439 · partides d'administració (1 p.a. amb el total de cada mes): el seu import de cada certificació va a part del preu.
+function esAdminRow878439(r={}){
+  const n=o=>o&&typeof o==="object"?Object.keys(o).length:0;
+  return !!(r?.adminMonthlyAuto||/administraci/i.test(String(r?.tipus||""))||n(r?.certAdminMonthlyByNum)||n(r?.certAdminLinesByNum));
+}
+function certFacturada878439(d,certId){
+  if(!d||!certId)return false;
+  return (d.facturesObra878297||[]).some(x=>x.certId===certId)||(d.facturesVF878285||[]).some(x=>x.certId===certId&&x.estat!=="Anulada");
+}
+// V87.439 · canviar la quantitat d'una certificació torna a calcular-ne l'import (quantitat × preu): fora l'import desat d'aquella
+// certificació (abans es quedava i la quantitat nova no canviava res). Les d'administració porten el total del mes i no es toquen.
+function posaQCert878439(r,field,n){
+  const next={...r,[field]:n};
+  if(String(field).startsWith("cert_")){
+    const k=String(field).replace("cert_","");
+    next.certsByNum={...(r.certsByNum||{}),[k]:n};
+    if(!esAdminRow878439(r)&&r.certAmountsByNum&&Object.prototype.hasOwnProperty.call(r.certAmountsByNum,k)){const a={...r.certAmountsByNum};delete a[k];next.certAmountsByNum=a}
+  }
+  return next;
+}
+// V87.439 · import d'una certificació que no és quantitat × preu (s'ensenya el preu amb què es va certificar).
+function preuCertDiferent878439(r,q,imp){
+  const qq=parseNum8770(q)||0,ii=parseNum8770(imp)||0;
+  if(Math.abs(ii-qq*parseNum8770(r?.pu))<=0.01)return null;
+  return {preu:qq>0.000001?ii/qq:null};
+}
+// al PDF de la certificació, el mateix: el preu amb què es va certificar, si no és el de la partida
+function notaPreu878439(r,q,imp){const d=preuCertDiferent878439(r,q,imp);return d&&d.preu!==null?`<br><small style="color:#9A3412">a ${money(d.preu)}</small>`:""}
+function PreuCert878439({r,q,imp,recalc}){
+  const d=preuCertDiferent878439(r,q,imp);
+  if(!d)return null;
+  return <span className="preu-cert-v878439"><small>{d.preu!==null?i18nT("a {p}",{p:money(d.preu)}):i18nT("sense quantitat")}</small>{recalc&&<button type="button" className="recalc-v878439" onClick={recalc}>{i18nT("Calcular a {p}",{p:money(r?.pu)})}</button>}</span>;
+}
+// V87.439 · reparació en obrir l'obra: l'import fixat d'una partida normal que es va quedar amb el preu d'abans en canviar-lo des de la
+// fitxa de la certificació (abans de la V87.439). No toca les importades d'un Excel de certificació, les d'administració ni les
+// certificacions amb factura.
+function reparaImportsCert878439(d={}){
+  const certs=d?.certificacions||[];
+  const certDe=(bid,num)=>certs.find(c=>String(c.budgetId||"principal")===String(bid||"principal")&&+c.numero===+num);
+  const canvis=[];
+  const partides=(d?.partides||[]).map(r=>{
+    if(!r||!r.certAmountsByNum||r.certImportedExcelV87231||esAdminRow878439(r))return r;
+    const a={...r.certAmountsByNum};let tocat=false;
+    Object.entries(a).forEach(([n,v])=>{
+      const calc=certQty8783(r,+n)*parseNum8770(r.pu);
+      const c=certDe(r.budgetId,n);
+      if(Math.abs(calc-parseNum8770(v))<=0.005||(c&&certFacturada878439(d,c.id)))return;
+      canvis.push({codi:r.codi,budgetId:r.budgetId||"principal",n:+n,abans:parseNum8770(v),ara:calc});
+      delete a[n];tocat=true;
+    });
+    return tocat?{...r,certAmountsByNum:a}:r;
+  });
+  return canvis.length?{partides,canvis}:null;
 }
 function certOriginAmount878223(r,maxCert=1,currentQuantityOverride){
   let total=0;
@@ -10754,12 +10803,7 @@ function GestioObra8746({data:data0,setData:setData0,importExcel,deletePressupos
     let n=parseNum8770(raw); if(!Number.isFinite(n))n=0;
     setData(d=>({...d,partides:(d.partides||[]).map(r=>{
       if((r.budgetId||"principal")!==activeBudgetId||r.codi!==codi)return r;
-      const next={...r,[field]:n};
-      if(String(field).startsWith("cert_")){
-        const certKey=String(field).replace("cert_","");
-        next.certsByNum={...(r.certsByNum||{}),[certKey]:n};
-      }
-      return next;
+      return posaQCert878439(r,field,n);
     })}));
   }
   function scopedSaveCert(){
@@ -10929,6 +10973,17 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     try{lsSet8779(`aco_descompostos_abans_v878384_${obra.id}`,JSON.stringify({at:new Date().toISOString(),taules:r.abans}))}catch{}
     setData(d=>{const rr=reparaDescompostos878384(d?.partides||[]);return rr?{...d,partides:rr.partides,updatedAt:new Date().toISOString()}:d});
   },[obra?.id,data?.partides]);// eslint-disable-line react-hooks/exhaustive-deps
+  // V87.439 · l'import d'una certificació que es va quedar amb el preu d'abans en canviar la partida des de la certificació (Verbania,
+  // 03.03: 22,38 × 85,20 deia 4.003,78 €): es torna a calcular en obrir l'obra; el d'abans es guarda a part.
+  const repImp878439=useRef("");
+  useEffect(()=>{
+    if(readOnly||!obra?.id||obra?.compartida||repImp878439.current===obra.id)return;
+    const r=reparaImportsCert878439(data||{});
+    if(!r)return;
+    repImp878439.current=obra.id;
+    try{lsSet8779(`aco_imports_cert_abans_v878439_${obra.id}`,JSON.stringify({at:new Date().toISOString(),canvis:r.canvis}))}catch{}
+    setData(d=>{const rr=reparaImportsCert878439(d||{});return rr?{...d,partides:rr.partides,updatedAt:new Date().toISOString()}:d});
+  },[obra?.id,data?.partides]);// eslint-disable-line react-hooks/exhaustive-deps
   // V87.413 · amb el pressupost inicial fixat, una partida que s'hi afegeix després (editant, de Preus, dictada, d'un Excel…) és nova
   // (l'Héctor, 28/10/2026: «si afegeixo una partida nova… que es vegi en taronja»)
   useEffect(()=>{
@@ -11052,12 +11107,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     const n=parseNum8770(raw);
     setDirectBudgetData878214(scope=>({...scope,partides:(scope.partides||[]).map(r=>{
       if(String(r.codi||"")!==String(codi||""))return r;
-      const next={...r,[field]:Number.isFinite(n)?n:0};
-      if(String(field).startsWith("cert_")){
-        const certKey=String(field).replace("cert_","");
-        next.certsByNum={...(r.certsByNum||{}),[certKey]:Number.isFinite(n)?n:0};
-      }
-      return next;
+      return posaQCert878439(r,field,Number.isFinite(n)?n:0);
     })}));
   }
   function addDirectCert878214(){
@@ -15213,6 +15263,8 @@ const potFacturar878337=!clientMode&&!readOnly&&!!setObraData&&!!pfCert878337&&!
 const[ferFactura878337,setFerFactura878337]=useState(false);
 // V87.364 · una certificació amb factura no es pot tocar (abans el Σ en mode consulta obria l'edició i la deixava a 0)
 const bloq878364=!!(faCert878337||vfCert878337);
+// V87.439 · números de les certificacions d'aquest pressupost que ja tenen factura (en canviar el preu d'una partida, guarden l'import)
+const facturats878439=new Set((certs||[]).filter(c=>certFacturada878439(obraData,c.id)).map(c=>String(+c.numero)));
 // V87.408 · signatura amb certificat de la certificació (direcció facultativa, constructora i promotor, al mateix PDF)
 const[sigCert408,setSigCert408]=useState(false);
 const ref408=String(cert?.id||`n${certNum}`);
@@ -15378,12 +15430,23 @@ function updatePartidaMeta878132(row,patch){
       const amounts={...(r.certAmountsByNum||{})};
       const nums=new Set([...Object.keys(r.certsByNum||{}),...Object.keys(r.certAdminMonthlyByNum||{}),...Object.keys(r.certAdminLinesByNum||{}),...Object.keys(amounts)]);
       Object.keys(r).filter(key=>/^cert_\d+$/.test(key)).forEach(key=>nums.add(key.slice(5)));
+      // V87.439 · una partida normal: l'import de cada certificació és quantitat × preu, i canviar el preu el torna a calcular (abans es
+      // quedava l'import d'abans: a Verbania, 22,38 × 85,20 deia 4.003,78 €, que era el preu vell). Només les certificacions amb factura
+      // guarden l'import d'abans. Les d'administració, com sempre.
+      const admin=esAdminRow878439(r);
+      const puVell=parseNum8770(r.pu), canviPreu=patch.pu!==undefined&&Math.abs(parseNum8770(patch.pu)-puVell)>0.000001;
       nums.forEach(num=>{
-        if(Object.prototype.hasOwnProperty.call(amounts,num)&&parseNum8770(amounts[num])>0)return;
+        const fixat=Object.prototype.hasOwnProperty.call(amounts,num)&&parseNum8770(amounts[num])>0;
+        const current=certQty8783(r,+num)*puVell;
+        if(!admin){
+          if(facturats878439.has(String(num))){if(!fixat&&current>0.000001)amounts[num]=current}
+          else if(canviPreu)delete amounts[num];
+          return;
+        }
+        if(fixat)return;
         const monthly=(r.certAdminMonthlyByNum||{})[num];
         const legacy=(r.certAdminLinesByNum||{})[num];
         const adminTotal=adminPayloadTotal87224(monthly)||adminPayloadTotal87224({lines:Array.isArray(legacy)?legacy:[]});
-        const current=certQty8783(r,+num)*parseNum8770(r.pu);
         if(adminTotal>0.000001||current>0.000001)amounts[num]=adminTotal||current;
       });
       const monthly=Object.fromEntries(Object.entries(r.certAdminMonthlyByNum||{}).map(([num,payload])=>[num,remapAdmin(payload)]));
@@ -15397,6 +15460,17 @@ function updatePartidaMeta878132(row,patch){
     return normalizeAdministrationRows87224({...d,partides,certAdminMonthlyByNum:globalAdmin,updatedAt:new Date().toISOString()});
   });
   if(patch.codi && patch.codi!==oldCode){setDraft(x=>{const n={...x}; if(n[oldCode]!==undefined){n[patch.codi]=n[oldCode]; delete n[oldCode];} return n;});}
+}
+// V87.439 · un import d'aquesta certificació que no és quantitat × preu (p. ex. d'un Excel de certificació): calcular-lo amb el preu
+function recalcImport878439(row){
+  const k=String(certNum),q=certQty8783(row,certNum),nou=q*parseNum8770(row.pu);
+  if(!confirm(i18nT("Partida {codi}: {q} × {p} = {t}. Calcular-la així en aquesta certificació?",{codi:row.codi,q:qty2(q),p:money(row.pu),t:money(nou)})))return;
+  setData?.(d=>({...d,partides:(d.partides||[]).map(r=>{
+    const same=row.id?r.id===row.id:String(r.codi||"").trim()===String(row.codi||"").trim();
+    if(!same||!r.certAmountsByNum)return r;
+    const a={...r.certAmountsByNum};delete a[k];
+    return {...r,certAmountsByNum:a,updatedAt:new Date().toISOString()};
+  }),updatedAt:new Date().toISOString()}));
 }
 function printSavedAdmin878132(payload){
   if(!payload||!(payload.lines||[]).length){alert(i18nT("No hi ha cap quadre d’administració guardat en aquesta certificació."));return;}
@@ -15810,10 +15884,10 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
         let qp=qFor(r,prevNum), qa=qDraft(r), ip=certAmount878223(r,prevNum), ia=certAmount878223(r,certNum,qa), qo=qOrigin(r), io=certOriginAmount878223(r,certNum,qa);
         return <div className={`cert-grid-v69 row${qFinal878423(r)!==null?" noexec-v878423":esFora878410(r)?" fora-row-v878411":puja878413(r,certQtyTotal8789(r)-qFor(r,certNum)+qa)?" puja-v878413":""}`} key={r.id||`${cap}-${rowIdx}`}>
           <div>{r.codi}</div><div className="cert-unit-v87216">{r.ut}</div><div className="concept cert-concept-v877 cert-concept-v87216"><div className="concept-line-v877"><span>{r.concepte}{esFora878410(r)&&<em className="fora-v878410">{etFora878410(r)}</em>}{!esFora878410(r)&&mesQ878413(r,certQtyTotal8789(r)-qFor(r,certNum)+qa)>0&&<em className="fora-v878410 mes-v878411">+{qty2(mesQ878413(r,certQtyTotal8789(r)-qFor(r,certNum)+qa))} {r.ut||""}</em>}{canviada878412(r)&&<em className="fora-v878410 canv-v878412" title={i18nT("Inicial: {q} × {p}",{q:qty2(r.ini878412.q),p:money(r.ini878412.pu)})}>{i18nT("Canviada")}</em>}{qFinal878423(r)!==null&&<em className="noexec-et-v878423">{etNoExec878423(r)}</em>}</span><button type="button" className="secondary small cert-actions-btn-v878133" onClick={()=>setPartidaPanel87216(r)}>{i18nT("Fitxa / accions")}</button></div>{r.desc&&<small className="cert-desc-hint-v87216">{i18nT("Descripció completa disponible a la fitxa")}</small>}</div><div data-l={i18nT("Pressupost")}>{qty2(r.q)}</div><div>{money(r.pu)}</div><div>{money((+r.q||0)*parseNum8770(r.pu))}</div>
-          <div className={qp>0?"prev-fill":""} data-l={i18nT("Anterior")}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}</div>
+          <div className={qp>0?"prev-fill":""} data-l={i18nT("Anterior")}>{qty2(qp)}</div><div className={qp>0?"prev-fill":""}>{pct(pc(qp,r))}</div><div className={qp>0?"prev-fill":""}>{money(ip)}<PreuCert878439 r={r} q={qp} imp={ip}/></div>
           <div className={qa>0?"current-fill":""} data-l={i18nT("Aquesta certificació")}><div className="cert-current-cell-v8780">{editing?<><input className="cert-edit-input-v69" data-codi={r.codi} inputMode="decimal" value={draft[r.codi]??String(qFor(r,certNum))} onKeyDown={focusNextCertInput878106} onFocus={e=>e.currentTarget.select()} onChange={e=>setDraft(d=>({...d,[r.codi]:e.target.value}))}/><button type="button" className="measure-btn-v8780" title={i18nT("Línies d’amidament")} onClick={()=>setMedicioTarget8780(r)}>∑</button></>:(bloq878364?<span className="cert-q-v878364">{qty2(qFor(r,certNum))}</span>:<button type="button" className="cert-q-v878364 edit" aria-label={i18nT("Quantitat de la partida {c}",{c:r.codi})} onClick={()=>{setEditing(true);setCertMode8711("emplenar");setFocus878364(r.codi)}}>{qty2(qFor(r,certNum))}</button>)}</div></div>
-          <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}</div>
-          <div className={qo>0?"origin-fill":""} data-l={i18nT("A origen")}>{qty2(qo)}</div><div className={qo>0?"origin-fill":""}>{pct(pc(qo,r))}</div><div className={qo>0?"origin-fill":""}>{money(io)}</div>
+          <div className={qa>0?"current-fill":""}>{pct(pc(qa,r))}</div><div className={qa>0?"current-fill":""}>{money(ia)}<PreuCert878439 r={r} q={qa} imp={ia} recalc={!bloq878364&&!readOnly&&!clientMode&&!contrast878424&&!esAdminRow878439(r)?()=>recalcImport878439(r):null}/></div>
+          <div className={qo>0?"origin-fill":""} data-l={i18nT("A origen")}>{qty2(qo)}</div><div className={qo>0?"origin-fill":""}>{pct(pc(qo,r))}</div><div className={qo>0?"origin-fill":""}>{money(io)}{!esAdminRow878439(r)&&<PreuCert878439 r={r} q={qo} imp={io}/>}</div>
         </div>
       })}
     </div>})}
@@ -18159,7 +18233,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.438",
+    app_version:"87.439",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19595,8 +19669,8 @@ function certPrintHtmlV8772(doc,obra,client){
     const pctOri=r.pctOrigen ?? ((+r.q||0)?qOri/(+r.q)*100:0);
     return `${showCap?filaCap878429(cap):""}<tr>
       <td>${escHtmlV8772(r.codi)}</td><td>${escHtmlV8772(r.ut)}</td><td class="concept"${estilConcepte878423(r,r.qOrigen)}><b>${escHtmlV8772(r.concepte)}</b>${etiquetesDoc878423(r,D)}</td><td>${qty2(r.q)}</td><td>${money(r.pu)}</td><td>${money(pres)}</td>
-      <td class="${(+r.qPrev||0)>0?'green':''}">${qty2(r.qPrev)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${money(ant)}</td>
-      <td class="${(+r.qAct||0)>0?'green':''}">${qty2(r.qAct)}</td><td class="${(+r.qAct||0)>0?'green':''}">${pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td class="${(+r.qAct||0)>0?'green':''}">${money(act)}</td>
+      <td class="${(+r.qPrev||0)>0?'green':''}">${qty2(r.qPrev)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${pct((+r.q||0)?(+r.qPrev||0)/(+r.q)*100:0)}</td><td class="${(+r.qPrev||0)>0?'green':''}">${money(ant)}${notaPreu878439(r,r.qPrev,ant)}</td>
+      <td class="${(+r.qAct||0)>0?'green':''}">${qty2(r.qAct)}</td><td class="${(+r.qAct||0)>0?'green':''}">${pct((+r.q||0)?(+r.qAct||0)/(+r.q)*100:0)}</td><td class="${(+r.qAct||0)>0?'green':''}">${money(act)}${notaPreu878439(r,r.qAct,act)}</td>
       <td class="${qOri>0?'green':''}">${qty2(qOri)}</td><td class="${qOri>0?'green':''}">${pct(pctOri)}</td><td class="${qOri>0?'green':''}">${money(impOri)}</td>
     </tr>${doc.includeMesures&&r.mesures&&r.mesures.length?`<tr class="measure"><td></td><td colspan="14"><b>${D("Línies de medició:")}</b><table class="measure-inner"><thead><tr><th>${D("Concepte")}</th><th>${D("Unitats")}</th><th>${D("Llargada")}</th><th>${D("Amplada")}</th><th>${D("Alçada")}</th><th>${D("Total")}</th></tr></thead><tbody>${r.mesures.map(m=>`<tr><td>${escHtmlV8772(m.concepte||"")}</td><td>${escHtmlV8772(m.unitats||"")}</td><td>${escHtmlV8772(m.llargada||"")}</td><td>${escHtmlV8772(m.amplada||"")}</td><td>${escHtmlV8772(m.alcada||"")}</td><td>${qty2(medicioCalc8780(m,r.ut))}</td></tr>`).join("")}</tbody></table></td></tr>`:""}`;
   }).join("");

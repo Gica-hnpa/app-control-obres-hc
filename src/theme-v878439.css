@@ -1,0 +1,5 @@
+/* V87.439 · una certificació amb un import que no és quantitat × preu: el preu amb què es va certificar, en taronja, i «Calcular a …» */
+.preu-cert-v878439{display:block;line-height:1.25;margin-top:2px;text-align:right}
+.preu-cert-v878439 small{display:block;font-size:12px;font-weight:700;color:#9A3412}
+.preu-cert-v878439 .recalc-v878439{all:unset;cursor:pointer;display:inline-block;font-size:12px;font-weight:600;color:var(--co-accent,#2563EB);text-decoration:underline;padding:2px 0}
+.preu-cert-v878439 .recalc-v878439:focus-visible{outline:2px solid var(--co-accent,#2563EB)!important;outline-offset:2px}
