@@ -97,7 +97,7 @@ TRAMITS.amiant.finals = [["rebut", "Acusament de rebut, si es presenta"]];
 // V87.440 · A quina carpeta de Documents va cada document de l'encàrrec (l'Héctor: «només hi ha documents previs i després de tramitació…
 // i després sí que hauria d'haver una de fotos»)
 export const PREVIS = "01_DOCUMENTACIO_PREVIA", TRAMITACIO = "01_TRAMITS_AJUNTAMENT", FOTOS = "06B_FOTOS_OBRA";
-const DOCS_PREVIS = new Set(["dni", "propietat", "anterior", "representacio", "planol", "planols", "encarrec", "acord"]);
+const DOCS_PREVIS = new Set(["dni", "propietat", "anterior", "representacio", "planol", "planols", "encarrec", "acord", "visita"]);
 export function carpetaDoc(key = "") { return DOCS_PREVIS.has(key) ? PREVIS : TRAMITACIO; }
 
 export function estatDocs(k, passos = {}, documents = [], nFotos = 0) {
@@ -113,6 +113,50 @@ export function estatDocs(k, passos = {}, documents = [], nFotos = 0) {
 }
 
 // Quin encàrrec tècnic és una obra (pel tipus de feina); null si no n'és cap
+// V87.443 · Fitxa de la visita (l'Héctor, 30/10/2026: «el plànol, les fotos i les dades que em genera el MagicPlan… un apartat per poder
+// incorporar la documentació i després, amb la targeta de preparació amb IA, emplenar o llegir el que calgui»). Cada treball té els seus camps;
+// [clau, nom, text llarg]. Es desa a l'obra (data.fitxa878443 = {clau: valor}).
+export const FITXA_VISITA = {
+  cee: [["tipus", "Tipus d’edifici"], ["any", "Any de construcció"], ["zona", "Zona climàtica"], ["superficie", "Superfície útil habitable (m²)"], ["alcada", "Alçada lliure (m)"], ["plantes", "Nombre de plantes"], ["orientacio", "Orientació de les façanes"], ["facanes", "Façanes (tipus i aïllament)", 1], ["finestres", "Finestres (m² per orientació, vidre i marc)", 1], ["coberta", "Coberta", 1], ["terra", "Terra", 1], ["calefaccio", "Calefacció", 1], ["acs", "Aigua calenta (ACS)", 1], ["refrigeracio", "Refrigeració", 1]],
+  cedula: [["any", "Any de construcció"], ["superficie", "Superfície útil (m²)"], ["alcada", "Alçada lliure (m)"], ["dormitoris", "Nombre de dormitoris"], ["peces", "Peces i superfícies", 1], ["ventilacio", "Ventilació i il·luminació", 1], ["instal", "Instal·lacions", 1]],
+  ite: [["any", "Any de construcció"], ["plantes", "Nombre de plantes"], ["habitatges", "Nombre d’habitatges"], ["estructura", "Estructura", 1], ["facanes", "Façanes i cobertes", 1], ["instal", "Instal·lacions", 1], ["deficiencies", "Deficiències", 1]],
+  amiant: [["tipus", "Tipus d’edifici"], ["any", "Any de construcció"], ["elements", "Elements inspeccionats (lloc, material i estat)", 1], ["mostres", "Mostres preses", 1], ["risc", "Valoració del risc", 1]],
+};
+const nomCamp = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\([^)]*\)/g, " ").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+// Les instruccions per a ChatGPT o Claude: omplir la fitxa amb la documentació de la visita. Res no s'inventa, i el que no se sap es deixa buit.
+export function promptFitxa(k, { nomTreball = "", dades = "", text = "", altres = [] } = {}) {
+  const camps = FITXA_VISITA[k] || [];
+  const parts = [
+    "Soc arquitecte tècnic i estic fent aquest treball d’un immoble existent a Catalunya: " + (nomTreball || "encàrrec tècnic") + ".",
+    dades ? "Dades: " + dades + "." : "",
+    "Omple la fitxa de sota amb el que puguis treure de la documentació de la visita. Respon en català, amb una línia per camp i exactament aquest format, i deixa buit el que no sàpigues (no t’inventis cap dada):",
+    camps.map(c => c[1] + ":").join("\n"),
+  ];
+  if (k === "cee") parts.push("Després, escriu una línia amb --- i, a sota, per al CE3X: la zona climàtica de la població segons el CTE, els valors per defecte que acostuma a posar el CE3X segons l’any de construcció, quan convé fer servir valors coneguts, i les mesures de millora més habituals amb el text per posar-les al certificat.");
+  else parts.push("Després, escriu una línia amb --- i, a sota, el que hauria de comprovar o que falta per poder acabar el treball.");
+  if (altres.length) parts.push("T’adjunto també aquests arxius (plànols o fotos): " + altres.join(", ") + ".");
+  if (text) parts.push("DOCUMENTACIÓ DE LA VISITA:\n" + text);
+  return parts.filter(Boolean).join("\n\n");
+}
+// Llegeix la resposta: «Camp: valor», amb guions o negretes si n'hi ha, i les línies següents d'un valor llarg. Acaba a la línia ---.
+export function llegirFitxa(k, resposta = "") {
+  const camps = FITXA_VISITA[k] || [];
+  const perNom = new Map();
+  camps.forEach(c => { perNom.set(nomCamp(c[1]), c[0]); perNom.set(nomCamp(c[0]), c[0]); });
+  const out = {};
+  let act = null;
+  for (const brut of String(resposta).split(/\r?\n/)) {
+    const l = brut.replace(/^[\s>*•·\-–]+/, "").replace(/\*\*/g, "").replace(/\s+$/, "");
+    if (/^\s*[-–—_*]{3,}\s*$/.test(brut)) break;
+    const m = l.match(/^([^:：]{2,70})[:：]\s*(.*)$/);
+    const clau = m ? perNom.get(nomCamp(m[1])) : null;
+    if (clau) { act = clau; out[clau] = m[2].trim(); continue; }
+    if (act && l.trim() && camps.find(c => c[0] === act)?.[2]) out[act] = (out[act] ? out[act] + "\n" : "") + l.trim();
+    else if (!l.trim()) act = null;
+  }
+  for (const c of Object.keys(out)) if (!out[c] || /^(—|-|–|n\/?d|no consta|desconegut|sense dades|\?)\.?$/i.test(out[c])) delete out[c];
+  return { camps: out, n: Object.keys(out).length };
+}
 export function encarrecDe(obra = {}) {
   const tipus = String(obra.tipusTreball || obra.tipologia || "");
   for (const [k, e] of Object.entries(ENCARRECS)) if (e.tipus.test(tipus)) return k;

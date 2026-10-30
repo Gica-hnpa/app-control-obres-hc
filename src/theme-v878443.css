@@ -1,0 +1,16 @@
+/* V87.443 · Fitxa de la visita i documentació per a la IA */
+html body .encarrec-v878441 .fitxa-v878443{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 12px}
+html body .encarrec-v878441 .fitxa-v878443 label{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .encarrec-v878441 .fitxa-v878443 label.llarg{grid-column:1/-1}
+html body .encarrec-v878441 .fitxa-v878443 label>span{font-size:13px;font-weight:600;color:var(--co-ink-2)}
+html body .encarrec-v878441 .fitxa-v878443 input,html body .encarrec-v878441 .fitxa-v878443 textarea{width:100%;min-width:0;box-sizing:border-box}
+html body .encarrec-v878441 .enc-ia-v878333{display:flex;flex-direction:column;gap:10px}
+html body .encarrec-v878441 .enc-ia-v878333 h5{margin:0;font:700 13.5px var(--app-font);color:var(--co-ink)}
+html body .encarrec-v878441 .vis-docs-v878443{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+html body .encarrec-v878441 .vis-docs-v878443 .llista{display:flex;flex-wrap:wrap;gap:6px}
+html body .encarrec-v878441 .vis-docs-v878443 label.off{opacity:.6;pointer-events:none}
+html body .encarrec-v878441 .enc-ia-v878333 .msg{margin:0}
+html body .encarrec-v878441 .nota-v878443{margin:0;font-size:13px;color:#9A3412}
+html body .encarrec-v878441 .resp-v878443{display:flex;flex-direction:column;gap:4px}
+html body .encarrec-v878441 .resp-v878443 span{font-size:13px;font-weight:600;color:var(--co-ink-2)}
+html body .encarrec-v878441 .resp-v878443 textarea{width:100%;box-sizing:border-box}

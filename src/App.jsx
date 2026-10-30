@@ -14,7 +14,7 @@ import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
-import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc} from "./encarrecsTecnics.js";
+import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc,FITXA_VISITA,promptFitxa,llegirFitxa} from "./encarrecsTecnics.js";
 import {pcWindows as pcWindows878442,llegeix as llegeixProgs878442,desa as desaProgs878442,enllac as enllacProg878442,ambClau as ambClau878442,rutaOk as rutaOk878442,blobReg as blobReg878442} from "./programesPc.js";
 import {dadesDemo} from "./dadesDemo.js";
 import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
@@ -33,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.442";
+const APP_VERSION878264="87.443";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12008,22 +12008,34 @@ const ENLLACOS_TRAMIT878333={
     {nom:"Registre d’empreses amb risc d’amiant (RERA)",desc:"Per a l’empresa que el retiri",url:"https://tramits.gencat.cat/ca/tramits/tramits-temes/Registre-dEmpreses-amb-Risc-per-Amiant-RERA"}],
   ite:[{nom:"MagicPlan",desc:"Plànol i superfícies",url:"https://cloud.magicplan.app/"}]
 };
-// Ajuda amb IA (sense pagar: es copia i s'enganxa a ChatGPT o Claude) per preparar el certificat energètic
-function iaCeePrompt878333(obra={}){
-  const rc=rcNet878305(obra.rc);
-  return [`Soc arquitecte tècnic i he de fer un certificat d’eficiència energètica (CEE) amb el programa CE3X d’un immoble existent a Catalunya.`,
-    `Dades: ${[obra.nom,obra.adreca,obra.poblacio,rc?`referència cadastral ${rc}`:""].filter(Boolean).join(" · ")}.`,
-    `Ajuda’m a preparar-lo, en català i de manera pràctica:`,
-    `1. Amb la referència cadastral (si la pots consultar) o el que t’indiqui, l’any de construcció probable i la zona climàtica de la població segons el CTE.`,
-    `2. Una llista del que he de mirar i fotografiar a la visita per entrar-ho al CE3X (envolupant, finestres, ponts tèrmics, instal·lacions).`,
-    `3. Els valors per defecte o estimats que acostuma a posar el CE3X per a les façanes, la coberta, el terra i les finestres segons l’any de construcció, i quan convé fer servir valors coneguts.`,
-    `4. Les mesures de millora més habituals per a aquest tipus d’immoble, amb el text per posar-les al certificat.`,
-    `Si et falta alguna dada, pregunta-me-la abans.`].join("\n");
-}
 // V87.441 · L'encàrrec tècnic amb les targetes de sempre (l'Héctor, 30/10/2026: «la targeta aquesta no està com la resta i ja et vaig dir que
 // les vull totes iguals»; «si n'hi ha algun que no el marco, em queda com a pendent… però com deixa marcar-ho com si el tingués vaig
 // continuant: és la millor manera?»). A dalt, com va: el progrés, què toca ara i què ha quedat pendent d'abans (no cal marcar res que no es
 // tingui per continuar). A sota, una targeta plegada per a cada pas, una per als enllaços i una per a la IA. El que l'app ja sap es marca sol.
+// V87.443 · el text de la documentació de la visita (PDF, CSV, Excel); la resta (plànols en imatge, fotos) s'adjunta al xat
+async function textVisita878443(docs,obraId){
+  const parts=[],altres=[];let total=0;const MAX=50000;
+  for(const x of docs){
+    try{
+      const f=await getDocFile(x.id,x.obraId||obraId);if(!f){altres.push(x.nom);continue}
+      const ext=String(x.nom||"").split(".").pop().toLowerCase();let tx="";
+      if(ext==="pdf"){const {linies}=await liniesPdf(pdfjsLib,await f.arrayBuffer(),40);tx=linies.map(l=>l.text).join("\n")}
+      else if(ext==="csv"||ext==="txt")tx=await f.text();
+      else if(ext==="xlsx"||ext==="xls"){const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});tx=wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n")}
+      if(!String(tx).trim()){altres.push(x.nom);continue}
+      const resta=MAX-total;if(resta<=0){altres.push(x.nom);continue}
+      const tros=tx.length>resta?tx.slice(0,resta):tx;total+=tros.length;parts.push("— "+x.nom+" —\n"+tros);if(tros.length<tx.length)altres.push(x.nom);
+    }catch(e){console.warn(e);altres.push(x.nom)}
+  }
+  return {text:parts.join("\n\n"),altres};
+}
+// Un camp de la fitxa: es desa en sortir-ne, no a cada lletra
+function CampFitxa878443({nom,llarg,valor="",disabled,onDesa}){
+  const [v,setV]=useState(valor);const[toc,setToc]=useState(false);
+  useEffect(()=>{if(!toc)setV(valor)},[valor,toc]);
+  const props={value:v,disabled,onFocus:()=>setToc(true),onChange:e=>setV(e.target.value),onBlur:()=>{setToc(false);if(v!==valor)onDesa(v)}};
+  return <label className={llarg?"llarg":""}><span>{nom}</span>{llarg?<textarea rows={2} {...props}/>:<input {...props}/>}</label>;
+}
 const ICONA_PAS878441={encarrec:ClipboardList,documentacio:FolderOpen,visita:MapPin,oficina:Monitor,tramit:Send,lliurament:PackageCheck};
 const VENC_ETIQ878441={ite:"Data de la propera inspecció",amiant:"Data de la propera revisió"};
 function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=false}){
@@ -12031,6 +12043,9 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
   const r=k?resumEncarrec(k,ps,data.documents||[],autoPunts(obra,data,client),(data.fotos||[]).length):null;
   const[nou,setNou]=useState({});const[nouDoc,setNouDoc]=useState("");const[pujant,setPujant]=useState("");const[iaMsg,setIaMsg]=useState("");
   const targetes=useRef({});
+  const [iaObert,setIaObert]=useState(false);const[txtVis,setTxtVis]=useState(null);const[resp,setResp]=useState("");const[respMsg,setRespMsg]=useState("");
+  const docsVis=(data.documents||[]).filter(x=>x.tramit878306==="visita");const sigVis=docsVis.map(x=>x.id).join("|");
+  useEffect(()=>{if(!iaObert)return;if(!sigVis){setTxtVis({text:"",altres:[]});return}let viu=true;setTxtVis(null);textVisita878443(docsVis,obra?.id).then(x=>{if(viu)setTxtVis(x)});return()=>{viu=false}},[iaObert,sigVis]);
   if(!r)return null;
   const dd=r.dd;
   const desa=f=>setData?.(d=>{const cur=d.passos878305||{};const next=f({...cur,fets:{...(cur.fets||{})},propis:{...(cur.propis||{})},docsNoCal:{...(cur.docsNoCal||{})},docsFets:{...(cur.docsFets||{})},docsPropis:[...(cur.docsPropis||[])]});return {...d,passos878305:{...next,updatedAt:new Date().toISOString()}}});
@@ -12057,7 +12072,15 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
   const progs=pcWindows878442()?llegeixProgs878442(lsVisual878400()).filter(p=>p.preparat):[];
   const prog=x=>x.programa?progs.find(p=>p.k===x.programa):null;
   const altresProgs=progs.filter(p=>!enllacos.some(x=>x.programa===p.k));
-  function ia(url,nom){const ok=copyText878256(iaCeePrompt878333(obra));setIaMsg(ok?t("Copiat. A {nom}, enganxa-ho (Ctrl+V) i envia.",{nom}):t("No s’ha pogut copiar."));window.open(url,"_blank","noopener,noreferrer")}
+  const cF=FITXA_VISITA[k]||[];const fitxa=data.fitxa878443||{};const nF=cF.filter(c=>String(fitxa[c[0]]||"").trim()).length;
+  function ia(url,nom){const ok=copyText878256(promptFitxa(k,{nomTreball:r.nom,dades:[obra.nom,obra.adreca,obra.poblacio,rc?`referència cadastral ${rc}`:""].filter(Boolean).join(" · "),text:txtVis?.text||"",altres:txtVis?.altres||[]}));setIaMsg(ok?t("Copiat. A {nom}, enganxa-ho (Ctrl+V) i envia.",{nom}):t("No s’ha pogut copiar."));window.open(url,"_blank","noopener,noreferrer")}
+  const posaCamp=(key,v)=>setData?.(d=>({...d,fitxa878443:{...(d.fitxa878443||{}),[key]:v}}));
+  function omple(){const {camps,n}=llegirFitxa(k,resp);if(!n){setRespMsg(t("No hi he trobat cap camp de la fitxa."));return}
+    const nous=Object.entries(camps).filter(([key])=>!String(fitxa[key]||"").trim());
+    setData?.(d=>({...d,fitxa878443:{...(d.fitxa878443||{}),...Object.fromEntries(nous)}}));setResp("");
+    const m=n-nous.length;setRespMsg([nous.length===1?t("Fitxa omplerta: 1 camp."):t("Fitxa omplerta: {n} camps.",{n:nous.length}),m===1?t("1 ja tenia dada i no s’ha tocat."):m?t("{m} ja tenien dada i no s’han tocat.",{m}):""].filter(Boolean).join(" "));
+    if(targetes.current.fitxa)targetes.current.fitxa.open=true}
+  async function pujaVis(fs){for(const f of fs)await puja({key:"visita"},f)}
   const estat=dd.presentat?t("Presentat el {d}",{d:new Date(dd.presentat).toLocaleDateString(loc878272())}):dd.aPunt?t("A punt per presentar"):t("{n} de {m} fets",{n:r.fet,m:r.total});
   const txt=x=>x.propi?x.text:t(x.text);
   const fotosInput=<input type="file" accept="image/*" multiple onChange={ev=>{const fs=[...(ev.target.files||[])];ev.target.value="";if(fs.length)addPhotoFiles8761(fs,setData)}}/>;
@@ -12070,7 +12093,7 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
     {doc.fitxers.map(x=><button type="button" className="enc-fitxer-v878306" key={x.id} onClick={()=>obre(x)}><Paperclip size={12}/> {x.nom}</button>)}
     {!readOnly&&(doc.key==="fotos"?<label className="enc-adjunta-v878333"><Camera size={14} aria-hidden="true"/><span>{t("Afegir fotos")}</span>{fotosInput}</label>:<label className={`enc-adjunta-v878333 ${pujant===doc.key?"off":""}`} title={t("Adjuntar l’arxiu")}><Paperclip size={14}/><span>{pujant===doc.key?t("Desant…"):t("Adjuntar")}</span><input type="file" disabled={!!pujant} onChange={ev=>{const f=ev.target.files?.[0];ev.target.value="";puja(doc,f)}}/></label>)}
   </li>;
-  const targeta=(key,Ic,titol,xifra,cos,cl="")=><details key={key} ref={el=>{if(el)targetes.current[key]=el}} className={`card bloc-v878426 enc-bloc-v878441 ${cl}`.trim()}>
+  const targeta=(key,Ic,titol,xifra,cos,cl="",onToggle)=><details key={key} ref={el=>{if(el)targetes.current[key]=el}} className={`card bloc-v878426 enc-bloc-v878441 ${cl}`.trim()} onToggle={onToggle}>
     <summary><Ic size={18} aria-hidden="true"/><span className="t"><b>{titol}</b></span>{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
     <div className="cos">{cos}</div><Recollir878432/></details>;
   return <section className="encarrec-v878333 encarrec-v878441">
@@ -12097,8 +12120,20 @@ function EncarrecTecnic878306({obra={},client=null,data={},setData,readOnly=fals
       </>}
       {!readOnly&&<div className="passos-afegir-v878305"><input value={nou[p.k]||""} onChange={ev=>{const v=ev.target.value;setNou(x=>({...x,[p.k]:v}))}} onKeyDown={ev=>{if(ev.key==="Enter")afegeix(p.k)}} placeholder={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})} aria-label={t("Afegir un punt a «{pas}»",{pas:t(p.nom)})}/><button type="button" className="secondary" onClick={()=>afegeix(p.k)}><Plus/> {t("Afegir")}</button></div>}
     </>,p.complet?"fet":""))}
+    {cF.length>0&&targeta("fitxa",ClipboardList,t("Fitxa de la visita"),`${nF}/${cF.length}`,<div className="fitxa-v878443">{cF.map(([key,nom,llarg])=><CampFitxa878443 key={key} nom={t(nom)} llarg={!!llarg} valor={fitxa[key]||""} disabled={readOnly} onDesa={v=>posaCamp(key,v)}/>)}</div>)}
     {enllacos.length+altresProgs.length>0&&targeta("enllacos",ExternalLink,t("Enllaços"),enllacos.length+altresProgs.length,<div className="enc-enllacos-v878333"><div className="tiles">{altresProgs.map(p=><a key={p.k} className="prog-v878442" href={enllacProg878442(p.k)}><b>{t("Obrir {nom}",{nom:p.nom})}</b><small>{t("En aquest ordinador")}</small></a>)}{enllacos.map(x=>prog(x)?<a key={x.url} className="prog-v878442" href={enllacProg878442(x.programa)}><b>{t("Obrir {nom}",{nom:prog(x).nom})}</b><small>{t("En aquest ordinador")}</small></a>:<a key={x.url} href={x.url} target="_blank" rel="noopener noreferrer" onClick={()=>{if(x.copia)copyText878256(x.copia)}} title={x.copia?t("En obrir-lo, la referència cadastral queda copiada: enganxa-la al cercador."):undefined}><b>{t(x.nom)}</b><small>{t(x.desc)}{x.copia?` · ${x.copia}`:""}</small><ExternalLink size={14} aria-hidden="true"/></a>)}</div></div>)}
-    {k==="cee"&&!readOnly&&targeta("ia",WandSparkles,t("Preparar-lo amb IA"),null,<div className="enc-ia-v878333"><div className="botons"><button type="button" className="secondary" onClick={()=>ia("https://chatgpt.com/","ChatGPT")}>{t("Copiar i obrir ChatGPT")}</button><button type="button" className="secondary" onClick={()=>ia("https://claude.ai/new","Claude")}>{t("Copiar i obrir Claude")}</button></div>{iaMsg&&<p className="msg">{iaMsg}</p>}</div>)}
+    {cF.length>0&&!readOnly&&targeta("ia",WandSparkles,t("Preparar-lo amb IA"),docsVis.length||null,<div className="enc-ia-v878333">
+      <div className="vis-docs-v878443"><h5>{t("Documentació de la visita")}</h5>
+        {docsVis.length>0&&<div className="llista">{docsVis.map(x=><button type="button" className="enc-fitxer-v878306" key={x.id} onClick={()=>obre(x)}><Paperclip size={12}/> {x.nom}</button>)}</div>}
+        <label className={`secondary file-btn-v8761 ${pujant==="visita"?"off":""}`}><Upload size={16} aria-hidden="true"/> {pujant==="visita"?t("Desant…"):t("Afegir plànol o dades")}<input type="file" multiple accept=".pdf,.csv,.txt,.xlsx,.xls,image/*" disabled={!!pujant} onChange={ev=>{const fs=[...(ev.target.files||[])];ev.target.value="";if(fs.length)pujaVis(fs)}}/></label>
+      </div>
+      <div className="botons"><button type="button" className="secondary" disabled={iaObert&&txtVis===null} onClick={()=>ia("https://chatgpt.com/","ChatGPT")}>{t("Copiar i obrir ChatGPT")}</button><button type="button" className="secondary" disabled={iaObert&&txtVis===null} onClick={()=>ia("https://claude.ai/new","Claude")}>{t("Copiar i obrir Claude")}</button></div>
+      {iaMsg&&<p className="msg">{iaMsg}</p>}
+      {txtVis?.altres?.length>0&&<p className="nota-v878443">{t("Adjunta-ho també al xat: {noms}",{noms:txtVis.altres.join(", ")})}</p>}
+      <label className="resp-v878443"><span>{t("Resposta de la IA")}</span><textarea rows={4} value={resp} onChange={ev=>{setResp(ev.target.value);setRespMsg("")}}/></label>
+      <div className="botons"><button type="button" className="primary" disabled={!resp.trim()} onClick={omple}>{t("Omplir la fitxa")}</button></div>
+      {respMsg&&<p className="msg">{respMsg}</p>}
+    </div>,"",ev=>{if(ev.currentTarget.open)setIaObert(true)})}
   </section>;
 }
 // V87.306 · Inici: els encàrrecs tècnics oberts segons els documents del tràmit: «Falten documents», «A punt per presentar» i
@@ -18335,7 +18370,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.442",
+    app_version:"87.443",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

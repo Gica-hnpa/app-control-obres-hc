@@ -2526,6 +2526,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       MagicPlan també al CEE, a l'amiant i a la ITE.
     - **Falta provar-ho amb el Windows de l'Héctor** (les proves comproven el text del `.reg` i els enllaços, no el registre).
     - Estils `src/theme-v878442.css`. Prova: `v442test.mjs`.
+  - **V87.443 · Fitxa de la visita i documentació que llegeix la IA** (l'Héctor, 30/10/2026: «el plànol i la documentació que em genera el MagicPlan… podria connectar-se…
+    si no, com a 2a opció, un apartat per poder incorporar la documentació i després, amb la targeta de preparació amb IA, emplenar o llegir el que calgui»):
+    - **Fitxa de la visita** (targeta comuna a l'encàrrec, després dels passos; `.fitxa-v878443`, xifra `n/total`): els camps de cada treball (`FITXA_VISITA` de
+      `src/encarrecsTecnics.js`: CEE 14, cèdula 7, ITE 7, amiant 5). Es desa a l'obra (`data.fitxa878443 = {clau: valor}`), cada camp en sortir-ne (`CampFitxa878443`).
+    - **Preparar-lo amb IA** (ara a tots els treballs amb fitxa): **Documentació de la visita** (`.vis-docs-v878443`, «Afegir plànol o dades»: PDF, CSV, TXT, Excel o imatge;
+      va a Documents previs, `tramit878306:"visita"`), «Copiar i obrir ChatGPT / Claude» (`promptFitxa`: la fitxa per omplir i el text de la documentació,
+      `textVisita878443`, 50.000 lletres com a molt; el que no es pot llegir, «Adjunta-ho també al xat: …») i **Resposta de la IA** amb «Omplir la fitxa» (`llegirFitxa`:
+      «Camp: valor», amb guions o negretes, valors de diverses línies; s'atura a la línia ---; un buit o «—» no es posa). **Només omple els camps buits:** el que ja s'ha
+      escrit no es toca. Substitueix `iaCeePrompt878333`. Gratuït (copiar i enganxar).
+    - **MagicPlan:** la seva API existeix (capçaleres `customer` i `key`), però la clau no pot anar al navegador: caldria una funció del servidor, i s'ha de confirmar amb
+      MagicPlan que el «Report Plan» de l'Héctor la inclou. **Falta un plànol exportat de debò (PDF i CSV)** per afinar la lectura.
+    - Estils `src/theme-v878443.css`. Prova: `v443test.mjs` (18). Adaptades `v441test`, `encarrec333test` i `amiant324test` (una targeta més).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2705,7 +2717,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.442 a Render):**
+**Estat (publicada la V87.443 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
