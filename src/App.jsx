@@ -33,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.449";
+const APP_VERSION878264="87.450";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12985,6 +12985,83 @@ function TaulaDescompost878449({parts,q=0}){
     <div className="peu final"><span>{t("Preu unitari")}</span><b className="i">{money(parts.preu)}</b>{ambTotal&&<b className="ti">{money(parts.preu*q)}</b>}</div>
   </div>
 }
+// V87.450 · Editor del descompost (l'Héctor, 31/10/2026: «la primera meitat posa 3 vegades el mateix… els avisos ocupen massa… tot és mòbil»): el
+// preu a dalt una sola vegada, les tres maneres de fer-lo en una tira i les línies en fitxes curtes, a pantalla sencera al mòbil.
+const MODES878450=[["detallat","Descompost"],["subcontracta","Preu tancat"],["paquet","Per lots"]];
+function LiniaDesc878450({tr,idx,on,kind="resource"}){
+  if(kind==="final")return null;
+  if(kind==="subtotal")return <div className="dn-sub-v878450"><span>{tr.concepte}</span><b>{tr.total}</b></div>;
+  const area=<textarea rows={Math.min(3,Math.ceil(String(tr.concepte||"").length/(kind==="percentage"?18:38))||1)} aria-label={i18nT("Concepte")} value={tr.concepte||""} onChange={e=>on.cell(idx,"concepte",e.target.value)}/>;
+  const treu=<button type="button" className="treu" aria-label={i18nT("Eliminar")} title={i18nT("Eliminar")} onClick={()=>on.del(idx)}><X size={16}/></button>;
+  if(kind==="percentage")return <div className="dn-pct-v878450">{area}<label className="p"><input inputMode="decimal" aria-label="%" value={tr.q||""} onChange={e=>on.cell(idx,"q",e.target.value)}/><i>%</i></label><b>{tr.total}</b>{treu}</div>;
+  return <div className="dn-l-v878450">{area}{treu}
+    <input className="u" aria-label={i18nT("Unitat")} value={tr.ut||""} onChange={e=>on.cell(idx,"ut",e.target.value)}/>
+    <input className="n" inputMode="decimal" aria-label={i18nT("Rendiment")} value={tr.q||""} onChange={e=>on.cell(idx,"q",e.target.value)}/>
+    <input className="n" inputMode="decimal" aria-label={i18nT("Preu")} value={tr.pu||""} onChange={e=>on.cell(idx,"pu",e.target.value)}/>
+    <input className="n t" inputMode="decimal" aria-label={i18nT("Import")} value={tr.total||""} onChange={e=>on.cell(idx,"total",e.target.value)}/>
+  </div>;
+}
+function EditorDescompost878450({row={},costMode="detallat",detected=0,closed={},pricing={},on}){
+  const rows=row.descompostTable?.rows||[];
+  // el tipus de cada línia surt del càlcul: les taules acabades d'importar encara no el porten
+  const kinds=recalculateBreakdownTableV87232({rows}).table.rows.map(r=>r.calculatedKind878232||"resource");
+  const ut=row.ut||"ut",q=parseNum8770(row.q)||0;
+  const manual=costMode==="detallat"&&row.descompostValidatedManual878232===true;
+  const preu=costMode==="detallat"?(manual?(parseNum8770(row.descompostValidatedPu)||0):detected):(closed.total||0);
+  const actual=parseNum8770(row.pu)||0,canvia=Math.abs(preu-actual)>0.005;
+  // després de l'última línia de recursos de cada bloc, «+ Línia»
+  const fiBloc=idx=>{const r=rows[idx],s=rows[idx+1];const noRes=s&&!s.isSection&&kinds[idx+1]!=="resource";if(r.isSection)return !s||s.isSection||noRes;if(kinds[idx]!=="resource")return false;return !s||s.isSection||noRes};
+  const titols=<div className="dn-tit-v878450" aria-hidden="true"><span>{i18nT("Unitat")}</span><span>{i18nT("Rendiment")}</span><span>{i18nT("Preu")}</span><span>{i18nT("Import")}</span></div>;
+  const senseGrup=rows.length&&!rows[0].isSection;
+  return <div className="desc-nou-v878450">
+    <div className="dn-cap-v878450">
+      <div className="dn-preu-v878450">
+        {costMode==="detallat"?<label><span>{t("Preu per {ut}",{ut})}</span><input inputMode="decimal" value={manual?(row.descompostValidatedPu||""):qty2(detected)} onChange={e=>on.preu(e.target.value)} onBlur={e=>manual&&on.preu(qty2(parseNum8770(e.target.value)||0))}/></label>:<div className="ro"><span>{t("Preu per {ut}",{ut})}</span><b>{money(preu)}</b></div>}
+        {q>0&&<div className="tot"><span>× {qty2(q)} {ut}</span><b>{money(preu*q)}</b></div>}
+      </div>
+      {manual&&<div className="dn-man-v878450"><span>{t("Preu a mà · el descompost dona {p}",{p:money(detected)})}</span><button type="button" onClick={on.preuAuto}>{i18nT("Posar aquest")}</button></div>}
+      <div className="dn-modes-v878450" role="tablist">{MODES878450.map(([k,l])=><button type="button" key={k} role="tab" aria-selected={costMode===k} className={costMode===k?"on":""} onClick={()=>on.mode(k)}>{i18nT(l)}</button>)}</div>
+    </div>
+
+    {costMode==="detallat"&&<div className="dn-cos-v878450">
+      {rows.length?<>
+        {senseGrup&&titols}
+        {rows.map((tr,idx)=><React.Fragment key={tr.id||idx}>
+          {tr.isSection?<><div className="dn-grup-v878450"><input aria-label={i18nT("Grup")} value={tr.concepte||""} onChange={e=>on.cell(idx,"concepte",e.target.value)}/><button type="button" className="treu" aria-label={i18nT("Eliminar")} title={i18nT("Eliminar")} onClick={()=>on.del(idx)}><X size={16}/></button></div>{rows[idx+1]&&!rows[idx+1].isSection&&kinds[idx+1]==="resource"&&titols}</>:<LiniaDesc878450 tr={tr} idx={idx} on={on} kind={kinds[idx]}/>}
+          {fiBloc(idx)&&<button type="button" className="dn-mes-v878450" onClick={()=>on.add(false,idx+1)}><Plus size={15}/>{i18nT("Línia")}</button>}
+        </React.Fragment>)}
+      </>:<div className="dn-buit-v878450"><button type="button" className="primary" onClick={()=>on.add(false)}><Plus size={15}/>{i18nT("Primera línia")}</button>{row.descompost&&<label><span>{i18nT("Text anterior")}</span><textarea value={row.descompost||""} onChange={e=>on.text(e.target.value)}/></label>}</div>}
+      <div className="dn-eines-v878450"><button type="button" onClick={()=>on.add(true)}><Plus size={15}/>{i18nT("Grup")}</button><label className="upload-label"><Upload size={15}/>{i18nT("Importar Excel")}<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>on.excel(e.target.files?.[0])}/></label></div>
+      {row.descompostSource&&<p className="dn-origen-v878450">{row.descompostSource}{row.descompostSheet?` · ${row.descompostSheet}`:""}</p>}
+    </div>}
+
+    {costMode==="subcontracta"&&<div className="dn-cos-v878450">
+      <div className="dn-camps-v878450">
+        <label className="ample"><span>{i18nT("Industrial")}</span><input value={pricing.industrial||""} onChange={e=>on.pricing("industrial",e.target.value)}/></label>
+        <label className="ample"><span>{i18nT("Preu de l'oferta")}</span><input inputMode="decimal" value={pricing.base??qty2(parseNum8770(row.pu)||0)} onChange={e=>on.pricing("base",e.target.value)}/></label>
+        {[["ciPct","CI %"],["dgePct","DGE %"],["biPct","BI %"],["margePct","Altres %"]].map(([k,l])=><label key={k}><span>{i18nT(l)}</span><input inputMode="decimal" value={pricing[k]??"0"} onChange={e=>on.pricing(k,e.target.value)}/></label>)}
+      </div>
+      <div className="dn-compte-v878450">{[["Oferta",closed.base],["CI",closed.ci],["DGE",closed.dge],["BI",closed.bi],["Altres",closed.marge]].filter(([,v],n)=>n===0||Number(v)).map(([l,v])=><div key={l}><span>{i18nT(l)}</span><b>{money(v)}</b></div>)}</div>
+    </div>}
+
+    {costMode==="paquet"&&<div className="dn-cos-v878450">
+      {(row.costPackageRows878229||[]).map((line,index)=><div className="dn-lot-v878450" key={line.id||index}>
+        <input className="c" aria-label={i18nT("Concepte")} value={line.concepte||""} onChange={e=>on.pkg(index,"concepte",e.target.value)}/>
+        <button type="button" className="treu" aria-label={i18nT("Eliminar")} title={i18nT("Eliminar")} onClick={()=>on.pkgDel(index)}><X size={16}/></button>
+        <input aria-label={i18nT("Industrial")} placeholder={i18nT("Industrial")} value={line.industrial||""} onChange={e=>on.pkg(index,"industrial",e.target.value)}/>
+        <input className="n" inputMode="decimal" aria-label={i18nT("Import")} value={line.import||""} onChange={e=>on.pkg(index,"import",e.target.value)}/>
+      </div>)}
+      <button type="button" className="dn-mes-v878450" onClick={on.pkgAdd}><Plus size={15}/>{i18nT("Lot")}</button>
+      <div className="dn-camps-v878450">{[["ciPct","CI %"],["dgePct","DGE %"],["biPct","BI %"],["margePct","Altres %"]].map(([k,l])=><label key={k}><span>{i18nT(l)}</span><input inputMode="decimal" value={pricing[k]??"0"} onChange={e=>on.pricing(k,e.target.value)}/></label>)}</div>
+    </div>}
+
+    <div className="modal-actions dn-peu-v878450">
+      {canvia&&<button type="button" className="enllac" onClick={on.desaSense}>{t("Desar sense canviar el preu ({p})",{p:money(actual)})}</button>}
+      <button type="button" className="secondary" onClick={on.cancela}>{i18nT("Cancel·lar")}</button>
+      <button type="button" className="primary" onClick={on.desa}>{i18nT("Desar")}</button>
+    </div>
+  </div>;
+}
 // V87.361 · V87.449 · la fitxa de la partida, una de sola per llegir-la i per editar-la (l'Héctor, 30/10/2026: «és un jeroglífic»): sense
 // repetir el que ja diu la línia de la partida, amb el descompost a la vista, les dues marques en una fila i un sol botó per a cada cosa.
 function FitxaPartida878361({row={},editable=false,onChange,onSet,openBreakdown,onEditar,onNova,onFinal,qc=0,defectes={},onAmid=null,eines=null}){
@@ -14502,15 +14579,26 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       return {...prev,[cap]:arr};
     });
   }
-  function addDetailedBreakdownRow878229(cap,i,isSection=false){
+  function preuCalculat878450(cap,i){
+    setCaps(prev=>{
+      const arr=[...(prev[cap]||[])];
+      const current={...(arr[i]||{})};
+      current.descompostValidatedManual878232=false;
+      current.descompostValidatedPu=qty2(descompostTableTotal878174(current.descompostTable)||0);
+      arr[i]=current;
+      return {...prev,[cap]:arr};
+    });
+  }
+  function addDetailedBreakdownRow878229(cap,i,isSection=false,pos=null){
     setCaps(prev=>{
       const arr=[...(prev[cap]||[])];
       const current={...(arr[i]||{})};
       const table=current.descompostTable||{source:"Descompost manual",title:current.concepte||"",rows:[]};
       const line=isSection
         ? {id:`sec-${Date.now()}`,isSection:true,concepte:"NOU GRUP",ut:"",q:"",pu:"",total:""}
-        : {id:`lin-${Date.now()}`,isSection:false,concepte:"Nou recurs / concepte",ut:"ut",q:"1,00",pu:"0,00",total:"0,00"};
-      const recalculated=recalculateBreakdownTableV87232({...table,rows:[...(table.rows||[]),line]});
+        : {id:`lin-${Date.now()}`,isSection:false,concepte:"",ut:"ut",q:"1,00",pu:"0,00",total:"0,00"};
+      const noves=[...(table.rows||[])];noves.splice(pos==null?noves.length:pos,0,line);
+      const recalculated=recalculateBreakdownTableV87232({...table,rows:noves});
       arr[i]={...current,descompostTable:recalculated.table,descompost:descompostTableToText878174(recalculated.table),descompostValidatedPu:qty2(recalculated.total||0),descompostValidatedManual878232:false};
       return {...prev,[cap]:arr};
     });
@@ -14574,7 +14662,6 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     persistBudgetCaps878179(next);
     setEditSnapshot878176(cloneJson878176(next));
     setDescompostModal87173(null);
-    alert(applyPrice?`Descompost guardat i preu aplicat: ${money(validated)}.`:"Descompost guardat. El preu del pressupost no s'ha modificat.");
   }
 
   function applyDescompostToPartida878160(cap,i){
@@ -15007,18 +15094,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
             return {...prev,[cap]:arr};
           });
         };
-        return <Modal title={`${i18nT("Cost / descompost")} · ${row.codi||""} ${row.concepte||""}`} close={cancelDescompostChanges878229}>
-          <div className="descompost-modal-v87173 descompost-modal-v87174 descompost-modal-v87229">
-            <div className="cost-mode-picker-v87229"><div><b>{i18nT("Com has rebut aquest preu?")}</b><span>{i18nT("Escull el model que realment correspon a aquesta partida.")}</span></div><select value={costMode} onChange={e=>changeCostMode878229(cap,i,e.target.value)}><option value="detallat">{i18nT("Descompost detallat · mà d'obra, materials i recursos")}</option><option value="subcontracta">{i18nT("Preu tancat de subcontracta · guixaire, pintor, serraller...")}</option><option value="paquet">{i18nT("Paquet / import global · electricitat, aigua, climatització...")}</option></select></div>
-            <div className="descompost-modal-grid-v87173"><label><span>{i18nT("Total calculat")}</span><b>{money(shownTotal)}</b></label>{costMode==="detallat"?<label><span>{i18nT("Preu/ut que s'aplicarà")}</span><input inputMode="decimal" value={row.descompostValidatedPu||qty2(detected||parseNum8770(row.pu)||0)} onChange={e=>updateDetailedValidatedPu878232(cap,i,e.target.value)} onBlur={e=>updateDetailedValidatedPu878232(cap,i,qty2(parseNum8770(e.target.value)||0))}/><small>{row.descompostValidatedManual878232?i18nT("Ajust manual actiu"):i18nT("S'actualitza automàticament amb el descompost")}</small></label>:<label><span>{i18nT("Base abans de marges")}</span><b>{money(closedCalc.base)}</b></label>}<label><span>{i18nT("Preu actual partida")}</span><b>{money(parseNum8770(row.pu)||0)}</b></label></div>
-
-            {costMode==="detallat"&&<div className="cost-mode-content-v87229"><div className="module-note-v8738 breakdown-live-note-v87232"><b>{i18nT("Recalcul automàtic activat")}</b><span>{i18nT("Quan canvies el rendiment o el preu, es recalculen la línia, les files percentuals, el preu unitari final i el total de la partida.")}</span></div><div className="descompost-modal-head-v87173"><div className="actions-inline"><label className="secondary upload-label">{i18nT("Importar Excel descomposat")}<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>importDescompostExcel878161(cap,i,e.target.files?.[0])}/></label><button type="button" className="secondary" onClick={()=>addDetailedBreakdownRow878229(cap,i,false)}>{i18nT("+ Línia")}</button><button type="button" className="secondary" onClick={()=>addDetailedBreakdownRow878229(cap,i,true)}>{i18nT("+ Grup")}</button></div><span>{row.descompostSource?`Origen: ${row.descompostSource}${row.descompostSheet?` · ${row.descompostSheet}`:""}`:i18nT("Excel IA / BEDEC / TCQ / base pròpia")}</span></div>{table?.rows?.length?<div className="descompost-excel-wrap-v87174">{table.title&&<div className="descompost-title-v87174">{table.title}</div>}<table className="descompost-excel-table-v87174"><thead><tr><th>{i18nT("Concepte")}</th><th>{i18nT("Unitat")}</th><th>{i18nT("Rendiment")}</th><th>{i18nT("Preu/Ut")}</th><th>{i18nT("Preu total")}</th><th>{i18nT("Accions")}</th></tr></thead><tbody>{table.rows.map((tr,idx)=>tr.isSection?<tr key={tr.id||idx} className="descompost-section-v87174"><td colSpan="5"><input value={tr.concepte||""} onChange={e=>updateTableCell(idx,"concepte",e.target.value)}/></td><td><div className="row-icon-actions-v87229"><button type="button" onClick={()=>duplicateDetailedBreakdownRow878229(cap,i,idx)} title={i18nT("Duplicar")}>⧉</button><button type="button" className="danger" onClick={()=>removeDetailedBreakdownRow878229(cap,i,idx)} title={i18nT("Eliminar")}>×</button></div></td></tr>:<tr key={tr.id||idx} className={tr.calculatedKind878232&&tr.calculatedKind878232!=="resource"?"breakdown-calculated-row-v87232":""}><td><input value={tr.concepte||""} onChange={e=>updateTableCell(idx,"concepte",e.target.value)}/></td><td><input value={tr.ut||""} onChange={e=>updateTableCell(idx,"ut",e.target.value)}/></td><td><input inputMode="decimal" value={tr.q||""} onChange={e=>updateTableCell(idx,"q",e.target.value)}/></td><td><input inputMode="decimal" value={tr.pu||""} onChange={e=>updateTableCell(idx,"pu",e.target.value)} readOnly={tr.calculatedKind878232==="percentage"||tr.calculatedKind878232==="final"}/></td><td><input inputMode="decimal" value={tr.total||""} onChange={e=>updateTableCell(idx,"total",e.target.value)} readOnly={tr.calculatedKind878232==="percentage"||tr.calculatedKind878232==="subtotal"||tr.calculatedKind878232==="final"}/></td><td><div className="row-icon-actions-v87229"><button type="button" onClick={()=>duplicateDetailedBreakdownRow878229(cap,i,idx)} title={i18nT("Duplicar")}>⧉</button><button type="button" className="danger" onClick={()=>removeDetailedBreakdownRow878229(cap,i,idx)} title={i18nT("Eliminar")}>×</button></div></td></tr>)}</tbody><tfoot><tr><th colSpan="4">{i18nT("PREU UNITARI FINAL / TOTAL DETECTAT")}</th><th>{money(detected)}</th><th></th></tr></tfoot></table></div>:<div className="empty-breakdown-v87229"><b>{i18nT("Encara no hi ha línies de descompost.")}</b><span>{i18nT("Importa un Excel o crea les línies manualment.")}</span><div><button type="button" className="primary" onClick={()=>addDetailedBreakdownRow878229(cap,i,false)}>{i18nT("+ Primera línia")}</button><button type="button" className="secondary" onClick={()=>addDetailedBreakdownRow878229(cap,i,true)}>{i18nT("+ Primer grup")}</button></div>{row.descompost&&<label className="descompost-textarea-v87173"><span>{i18nT("Text anterior")}</span><textarea value={row.descompost||""} onChange={e=>upd(cap,i,"descompost",e.target.value)}/></label>}</div>}</div>}
-
-            {costMode==="subcontracta"&&<div className="cost-mode-content-v87229"><div className="module-note-v8738"><b>{i18nT("Preu tancat de l'industrial")}</b><span>{i18nT("No cal inventar hores ni materials. Introdueix l'oferta rebuda i després aplica els marges de la constructora.")}</span></div><div className="closed-cost-main-v87229"><label><span>{i18nT("Industrial / subcontracta")}</span><input value={pricing.industrial||""} onChange={e=>updateCostPricing878229(cap,i,"industrial",e.target.value)} placeholder={i18nT("Ex.: Guixaire Joan / Pintures SL")}/></label><label><span>{i18nT("Preu tancat rebut")}</span><input inputMode="decimal" value={pricing.base??qty2(parseNum8770(row.pu)||0)} onChange={e=>updateCostPricing878229(cap,i,"base",e.target.value)} placeholder="0,00"/></label></div><div className="company-margins-v87229"><label><span>{i18nT("CI %")}</span><input inputMode="decimal" value={pricing.ciPct??"0"} onChange={e=>updateCostPricing878229(cap,i,"ciPct",e.target.value)}/></label><label><span>{i18nT("DGE %")}</span><input inputMode="decimal" value={pricing.dgePct??"0"} onChange={e=>updateCostPricing878229(cap,i,"dgePct",e.target.value)}/></label><label><span>{i18nT("BI %")}</span><input inputMode="decimal" value={pricing.biPct??"0"} onChange={e=>updateCostPricing878229(cap,i,"biPct",e.target.value)}/></label><label><span>{i18nT("Altres / marge %")}</span><input inputMode="decimal" value={pricing.margePct??"0"} onChange={e=>updateCostPricing878229(cap,i,"margePct",e.target.value)}/></label></div><div className="cost-calculation-v87229"><span>{i18nT("Oferta industrial")} <b>{money(closedCalc.base)}</b></span><span>{i18nT("+ CI")} <b>{money(closedCalc.ci)}</b></span><span>{i18nT("+ DGE")} <b>{money(closedCalc.dge)}</b></span><span>{i18nT("+ BI")} <b>{money(closedCalc.bi)}</b></span><span>{i18nT("+ altres")} <b>{money(closedCalc.marge)}</b></span><strong>{i18nT("Preu de venda")} {money(closedCalc.total)}</strong></div></div>}
-
-            {costMode==="paquet"&&<div className="cost-mode-content-v87229"><div className="module-note-v8738"><b>{i18nT("Imports globals per lots o instal·lacions")}</b><span>{i18nT("Afegeix només els totals que tens: electricitat, aigua, climatització, telecomunicacions... Després aplica els marges d'empresa al conjunt.")}</span></div><div className="package-cost-head-v87229"><b>{(row.costPackageRows878229||[]).length} {i18nT("lots · base")} {money(closedCalc.base)}</b><button type="button" className="primary" onClick={()=>addPackageCostRow878229(cap,i)}>{i18nT("+ Afegir lot")}</button></div><div className="package-cost-list-v87229">{!(row.costPackageRows878229||[]).length?<Empty text="Encara no hi ha lots. Afegeix Electricitat, Aigua, Climatització o el paquet que hagis rebut."/>:(row.costPackageRows878229||[]).map((line,index)=><div className="package-cost-row-v87229" key={line.id||index}><label><span>{i18nT("Concepte")}</span><input value={line.concepte||""} onChange={e=>updatePackageCostRow878229(cap,i,index,"concepte",e.target.value)} placeholder={i18nT("Ex.: Instal·lació elèctrica")}/></label><label><span>{i18nT("Industrial")}</span><input value={line.industrial||""} onChange={e=>updatePackageCostRow878229(cap,i,index,"industrial",e.target.value)} placeholder={i18nT("Empresa / autònom")}/></label><label><span>{i18nT("Import tancat")}</span><input inputMode="decimal" value={line.import||""} onChange={e=>updatePackageCostRow878229(cap,i,index,"import",e.target.value)}/></label><div className="row-icon-actions-v87229"><button type="button" onClick={()=>duplicatePackageCostRow878229(cap,i,index)} title={i18nT("Duplicar")}>⧉</button><button type="button" className="danger" onClick={()=>removePackageCostRow878229(cap,i,index)} title={i18nT("Eliminar")}>×</button></div></div>)}</div><div className="company-margins-v87229"><label><span>{i18nT("CI %")}</span><input inputMode="decimal" value={pricing.ciPct??"0"} onChange={e=>updateCostPricing878229(cap,i,"ciPct",e.target.value)}/></label><label><span>{i18nT("DGE %")}</span><input inputMode="decimal" value={pricing.dgePct??"0"} onChange={e=>updateCostPricing878229(cap,i,"dgePct",e.target.value)}/></label><label><span>{i18nT("BI %")}</span><input inputMode="decimal" value={pricing.biPct??"0"} onChange={e=>updateCostPricing878229(cap,i,"biPct",e.target.value)}/></label><label><span>{i18nT("Altres / marge %")}</span><input inputMode="decimal" value={pricing.margePct??"0"} onChange={e=>updateCostPricing878229(cap,i,"margePct",e.target.value)}/></label></div><div className="cost-calculation-v87229"><span>{i18nT("Lots industrials")} <b>{money(closedCalc.base)}</b></span><span>{i18nT("+ CI")} <b>{money(closedCalc.ci)}</b></span><span>{i18nT("+ DGE")} <b>{money(closedCalc.dge)}</b></span><span>{i18nT("+ BI")} <b>{money(closedCalc.bi)}</b></span><span>{i18nT("+ altres")} <b>{money(closedCalc.marge)}</b></span><strong>{i18nT("Preu de venda")} {money(closedCalc.total)}</strong></div>{row.groupedSourceRows878229?.length>0&&<details className="grouped-source-v87229"><summary>{i18nT("Veure les")} {row.groupedSourceRows878229.length} {i18nT("partides originals conservades")}</summary>{row.groupedSourceRows878229.map((source,index)=><div key={index}><b>{source.codi||"—"}</b><span>{source.concepte||i18nT("Partida")}</span><strong>{money((parseNum8770(source.q)||0)*(parseNum8770(source.pu)||0))}</strong></div>)}</details>}</div>}
-          </div>
-          <div className="modal-actions"><button type="button" className="secondary" onClick={cancelDescompostChanges878229}>{i18nT("Cancel·lar")}</button><button type="button" className="secondary" onClick={()=>saveDescompostChanges878229(cap,i,false)}>{i18nT("Guardar sense canviar el pressupost")}</button><button type="button" className="primary" onClick={()=>applyDescompostToPartida878160(cap,i)}>{i18nT("Guardar i actualitzar el total de la partida")}</button></div>
+        return <Modal title={`${row.codi||""} ${row.concepte||""}`} close={cancelDescompostChanges878229}>
+          <EditorDescompost878450 row={row} costMode={costMode} detected={detected} closed={closedCalc} pricing={pricing} on={{
+            cell:updateTableCell,mode:m=>changeCostMode878229(cap,i,m),preu:v=>updateDetailedValidatedPu878232(cap,i,v),preuAuto:()=>preuCalculat878450(cap,i),
+            add:(sec,pos)=>addDetailedBreakdownRow878229(cap,i,sec,pos),del:idx=>removeDetailedBreakdownRow878229(cap,i,idx),excel:f=>importDescompostExcel878161(cap,i,f),text:v=>upd(cap,i,"descompost",v),
+            pricing:(k,v)=>updateCostPricing878229(cap,i,k,v),pkg:(n,k,v)=>updatePackageCostRow878229(cap,i,n,k,v),pkgAdd:()=>addPackageCostRow878229(cap,i),pkgDel:n=>removePackageCostRow878229(cap,i,n),
+            cancela:cancelDescompostChanges878229,desa:()=>applyDescompostToPartida878160(cap,i),desaSense:()=>saveDescompostChanges878229(cap,i,false)}}/>
         </Modal>
       })()}
     </PresCard878427>
@@ -18430,7 +18511,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.449",
+    app_version:"87.450",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
