@@ -1,0 +1,58 @@
+/* V87.455 · Les pantalles del menú principal al mòbil: fora el títol gros que repetia la capçalera, l'Inici i la llista d'obres més curts, i a Despeses, sense els requadres
+   que repetien les targetes. */
+
+/* qualsevol camp sense estil propi: amb la vora sencera (no la del navegador). Especificitat zero: mana qualsevol altra regla */
+:where(.main) :where(input:not([type=checkbox],[type=radio],[type=file],[type=range],[type=color]),select,textarea){box-sizing:border-box;border:1px solid var(--co-line-strong,#C3CED6);border-radius:10px;background:#fff;padding:6px 10px}
+
+@media (max-width:767px){
+  /* el títol ja el diu la capçalera */
+  html body .facturacio-v878337>.fe-head>h1,
+  html body .rend-emp-v878343>.fe-head>h1,
+  html body .empresa-v878339>.fe-head>h1,
+  html body .cap-v878340>h1{display:none}
+  html body .rend-emp-v878343>.fe-head:not(:has(>:not(h1))),
+  html body .empresa-v878339>.fe-head:not(:has(>:not(h1))),
+  html body .facturacio-v878337>.fe-head:not(:has(>:not(h1))){display:none}
+
+  /* Inici */
+  html body .home-head-title-v878251 h1{font-size:21px!important;line-height:1.2!important;margin:2px 0 6px!important}
+  html body .home-kpis-v878251.home-kpis-v878314{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  html body .home-kpis-v878314>button{padding:8px 8px!important;min-height:0!important;justify-content:space-between}
+  html body .home-kpis-v878314>button>small{font-size:12px!important;letter-spacing:0!important;text-transform:none!important;line-height:1.2!important;white-space:normal!important}
+  html body .home-kpis-v878314>button>b{font-size:20px!important;line-height:1.15!important}
+
+  html body .main :is(section,div):has(>details.card.plega-v878369){gap:0!important}
+  html body .main details.card.plega-v878369{margin:0 0 8px!important}
+
+  /* la llista d'obres: sense el títol, els paquets en una línia que es llisca */
+  html body .card:has(>.exp-paquets-v878314)>.card-head>h2{display:none}
+  html body .card:has(>.exp-paquets-v878314)>.card-head{display:flex!important;flex-direction:row!important;justify-content:flex-end;gap:8px;padding:8px 12px!important;min-height:0}
+  html body .exp-paquets-v878314{display:flex!important;gap:6px;margin:4px 0 8px;padding:1px;overflow-x:auto;scrollbar-width:none}
+  html body .exp-paquets-v878314::-webkit-scrollbar{display:none}
+  html body .exp-paquets-v878314>button{flex:0 0 auto;flex-direction:row;align-items:baseline;gap:6px;padding:7px 12px;border-radius:999px}
+  html body .exp-paquets-v878314>button small{font-size:12.5px;letter-spacing:0;text-transform:none}
+  html body .exp-paquets-v878314>button b{font-size:15px}
+
+  /* Despeses (menú): les targetes ja diuen cada grup; el total, Filtres i Seleccionar en una línia */
+  html body .albarans-v878259:has(>.desp-grups-v878338){display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>*{order:5;grid-column:1/-1;min-width:0;margin:0!important}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-head{order:1;grid-row:1}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.desp-grups-v878338{display:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-vista-v878318{display:contents}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-vista-v878318>*{order:2;grid-row:2;grid-column:1/-1;min-width:0;margin:0}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-vista-v878318>button{order:3;grid-row:3;grid-column:3;align-self:center}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.filtres-btn-v878349{order:3;grid-row:3;grid-column:2;align-self:center}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis{order:3;grid-row:3;grid-column:1;display:block;align-self:center}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis>div{flex-direction:row;align-items:baseline;gap:6px;padding:0;border:0;background:none;box-shadow:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis>div:not(:first-child){display:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis small,
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis span{display:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis b{font-size:20px}
+
+  /* Rendiment de l'empresa: les xifres, més baixes */
+  html body .rc-kpis-v878343{gap:8px!important}
+  html body .rc-kpis-v878343>div{padding:8px 12px!important;min-height:0!important}
+  html body .rc-kpis-v878343>div>b{font-size:17px!important;line-height:1.25}
+  html body .rc-kpis-v878343>div>span{font-size:12px!important;line-height:1.25}
+  html body .rc-kpis-v878343>div:nth-child(2)>span{display:none}
+}
