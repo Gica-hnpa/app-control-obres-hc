@@ -35,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.460";
+const APP_VERSION878264="87.461";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -18756,7 +18756,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.460",
+    app_version:"87.461",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -22048,8 +22048,8 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   const[grupsOberts878350,setGrupsOberts878350]=useState(()=>new Set());
   const togObert878348=k=>setObert878348(x=>{const n=new Set(x);if(n.has(k))n.delete(k);else n.add(k);return n});
   const esMa878348=a=>tipusDespesa878311(a)==="MaObra";
-  // la llista nova, als comptes d'empresa (constructora, gestió total); el compte de l'Héctor i els tècnics, com abans
-  const nova878348=!meves&&!treb&&ambEmpresa878338();
+  // la llista per grups, als comptes d'empresa i, des de la V87.461, dins de l'obra a tots els comptes (l'Héctor: «aquí no està desplegable»)
+  const nova878348=!meves&&!treb&&(ambEmpresa878338()||!!fixedObra);
   const obra426=!!fixedObra&&nova878348;
   // V87.375 · les meves despeses (tècnic i compte de l'Héctor) també amb aquest format (l'Héctor, 24/10/2026: «similar a la de les empreses
   // però adaptada a les despeses dels tècnics»): a dalt els apartats que filtren, de seguida la llista per apartats (plegats) en columnes
@@ -22152,6 +22152,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   function elimina878345(){const ids=selRows878345.map(a=>a.id);const n=ids.length;if(!n||!confirm(n===1?i18nT("Eliminar aquesta despesa?"):i18nT("Eliminar les {n} despeses seleccionades?",{n})))return;
     const set=new Set(ids);writeAlbarans878259(readAlbarans878259().filter(a=>!set.has(a.id)));try{ids.forEach(id=>{localStorage.removeItem(lsKey8779(albaraFotoKey878259(id)));localStorage.removeItem(lsKey8779(albaraPdfKey878259(id)))})}catch{};setSel878345(new Set())}
   function open(a){setEdit({...a,foto:lsGet8779(albaraFotoKey878259(a.id),""),pdf:a.tePdf?lsGet8779(albaraPdfKey878259(a.id),""):""})}
+  function veure878461(a){const pdf=a?.tePdf&&!a?.teFoto?lsGet8779(albaraPdfKey878259(a.id),""):"";if(pdf)obreDataUrl8784291(([a.proveidor,a.numero].filter(Boolean).join(" · ")||i18nT("Document"))+".pdf",pdf);else setDoc878348(a)}
   return <div className={`albarans-v878259 despeses-v878311 ${fixedObra?"alb-obra-v878279":""}${obra426?" desp-obra-v878426":""}`}>
     <div className="alb-head">
       {fixedObra?<div><h2 className="alb-obra-title-v878279">{mevesObra?((()=>{const o=obres.find(x=>x.id===fixedObra);return o&&!esTecnicPur878332(o)})()?i18nT("Les meves despeses"):i18nT("Despeses de l’expedient")):i18nT("Despeses d’aquesta obra")}</h2></div>:<div><h1>{meves?i18nT("Les meves despeses"):i18nT("Despeses")}</h1></div>}
@@ -22159,6 +22160,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
         {/* V87.367 · icona + paraula (opció B de l'Héctor, 23/10/2026) i una sola línia: «Fer foto» i «Adjuntar» a la vista, la resta a «Accions» */}
         {meves&&<button type="button" className="primary" onClick={novaMeva878329}><Plus size={16} aria-hidden="true"/> {i18nT("Nova despesa")}</button>}
         {obra426&&hiHa878388&&<b className="tot-v878426">{money(total426())}</b>}
+        {obra426&&ambRep878347&&pendent>0.005&&<small className="rep-v878461">{i18nT("Per repercutir")} <b>{money(pendent)}</b></small>}
         {!meves&&!obra426&&<label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/><Camera size={16} aria-hidden="true"/> {i18nT("Fer foto")}</label>}
         {!meves&&!obra426&&<label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/><Paperclip size={16} aria-hidden="true"/> {i18nT("Adjuntar")}</label>}
         {!meves&&!treb&&<ActionMenu87213 className="accions-v878367" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
@@ -22243,44 +22245,72 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   // V87.348 · per grups (Materials, Mà d'obra, Industrials, Altres, Empresa); dins, per obra o per any i obra; les factures amb el
   // desglossament a dins; la mà d'obra per dies, amb els treballadors ordenats per categoria
   function rend426(){if(!fixedObra)return null;try{return rendimentFase878342(odata?.[fixedObra]||{},fase878342||"",tots.filter(a=>a.obraId===fixedObra),llegeixPersonal878340(fixedObra),fixedObra,{tecnic:false})}catch{return null}}
-  function total426(){const r=rend426();return r?(r.directe||0)+(r.dge||0):0}
+  function total426(){const r=rend426();return total+(r?.perTipus?.Personal||0)+(r?.dge||0)}
   function llista878348(){
     const sumB=rs=>rs.filter(a=>!coberts[a.id]).reduce((x,a)=>x+albaraBase878259(a),0);
     const nOk=rs=>rs.filter(a=>!coberts[a.id]).length;
     const sm=selMode878345&&!treb;
     const mostraObra=!fixedObra&&vistaD878348!=="obra"&&vistaD878348!=="any";
-    const ull=a=>(a.teFoto||a.tePdf)?<button type="button" className="ull-v878348" aria-label={i18nT("Veure el document")} title={i18nT("Veure el document")} onClick={e=>{e.stopPropagation();setDoc878348(a)}}><Eye size={17} aria-hidden="true"/></button>:null;
+    const ull=a=>(a.teFoto||a.tePdf)?<button type="button" className="ull-v878348" aria-label={i18nT("Veure el document")} title={i18nT("Veure el document")} onClick={e=>{e.stopPropagation();veure878461(a)}}><Eye size={17} aria-hidden="true"/></button>:null;
     const clic=a=>()=>sm?togSel878345(a.id):open(a);
     const tecla=a=>e=>{if(e.key==="Enter"||(sm&&e.key===" ")){e.preventDefault();clic(a)()}};
-    const paquet=(k,cap,rs,cos,def=false)=>{const on=def?!obert878348.has(k):obert878348.has(k);return <section key={k} className={`paq-v878348 ${on?"obert":""}`}>
-      <button type="button" className="paq-cap" aria-expanded={on} onClick={()=>togObert878348(k)}><ChevronRight size={16} className="chev" aria-hidden="true"/><span className="nm">{cap}</span><span className="n">{nD(nOk(rs))}</span><b className="imp">{money(sumB(rs))}</b></button>
+    const paquet=(k,cap,rs,cos,def=false,nTxt="")=>{const on=def?!obert878348.has(k):obert878348.has(k);return <section key={k} className={`paq-v878348 ${on?"obert":""}`}>
+      <button type="button" className="paq-cap" aria-expanded={on} onClick={()=>togObert878348(k)}><ChevronRight size={16} className="chev" aria-hidden="true"/><span className="nm">{cap}</span><span className="n">{nTxt||nD(nOk(rs))}</span><b className="imp">{money(sumB(rs))}</b></button>
       {on&&<div className="paq-cos">{cos()}</div>}</section>};
     const perObra=rs=>{const m=new Map();rs.forEach(a=>{const k=a.obraId||"";if(!m.has(k))m.set(k,[]);m.get(k).push(a)});return [...m.entries()].map(([k,l])=>({k,obra:obraDe878348(k),rows:l})).sort((a,b)=>(a.k?0:1)-(b.k?0:1)||(isExpedientOpen878136(b.obra?.estat)?1:0)-(isExpedientOpen878136(a.obra?.estat)?1:0)||sumB(b.rows)-sumB(a.rows))};
     const perAny=rs=>{const m=new Map();rs.forEach(a=>{const y=String(a.data||"").slice(0,4)||"—";if(!m.has(y))m.set(y,[]);m.get(y).push(a)});return [...m.entries()].map(([y,l])=>({y,rows:l})).sort((a,b)=>String(b.y).localeCompare(String(a.y)))};
     const nomObra=o=><><b>{o.obra?.nom||(o.rows.every(a=>tipusDespesa878311(a)==="Empresa")?i18nT("Despeses de l’empresa"):etExp==="obra"?i18nT("Sense obra"):i18nT("Sense expedient"))}</b>{o.obra&&<small>{codiCurt878270(o.obra)}{o.obra.client?` · ${cName(o.obra.client)}`:""}</small>}</>;
     function filaF(a,dins=false){
       const on=sm&&sel878345.has(a.id),cob=coberts[a.id],o=obraDe878348(a.obraId),tip=tipusDespesa878311(a);
-      const lin=(a.linies||[]).filter(l=>l&&(l.concepte||l.import||l.preu));const kO="f:"+a.id,ob=obert878348.has(kO);
+      const lin=(a.linies||[]).filter(l=>l&&(l.concepte||l.import||l.preu));const kO="f:"+a.id,ob=!sm&&obert878348.has(kO);
       const nota=String(a.notes||"").split("\n")[0].trim();
-      const nInc=esFactura878311(a)?(a.cobreix||[]).filter(id=>tots.some(x=>x.id===id)).length:0;
+      const incs=esFactura878311(a)?(a.cobreix||[]).map(id=>tots.find(x=>x.id===id)).filter(Boolean):[];const nInc=incs.length;
+      const gira=()=>sm?togSel878345(a.id):togObert878348(kO);
       const det=[a.proveidor?nota.slice(0,80):"",nInc===1?i18nT("Inclou 1 albarà"):nInc>1?i18nT("Inclou {n} albarans",{n:nInc}):"",mostraObra?(tip==="Empresa"?i18nT(a.categoria||"Despesa de l’empresa"):o?.nom||""):"",etFase878342(a),imputacio878311(a)].filter(Boolean).join(" · ");
-      return <div key={a.id} className={`fila-v878348 ${cob?"cob":""} ${on?"on":""} ${dins?"dins":""}`}>
-        <div className="l" role="button" tabIndex={0} aria-pressed={sm?on:undefined} onClick={clic(a)} onKeyDown={tecla(a)}>
-          <span className="ic">{sm?<input type="checkbox" checked={on} readOnly tabIndex={-1} aria-hidden="true"/>:lin.length?<button type="button" className={`exp ${ob?"on":""}`} aria-expanded={ob} aria-label={i18nT("Desglossament")} onClick={e=>{e.stopPropagation();togObert878348(kO)}}><ChevronRight size={16} aria-hidden="true"/></button>:null}</span>
+      return <div key={a.id} className={`fila-v878348 ${cob?"cob":""} ${on?"on":""} ${dins?"dins":""} ${ob?"ob-v878461":""}`}>
+        <div className="l" role="button" tabIndex={0} aria-pressed={sm?on:undefined} aria-expanded={sm?undefined:ob} onClick={gira} onKeyDown={e=>{if(e.key==="Enter"||(sm&&e.key===" ")){e.preventDefault();gira()}}}>
+          <span className="ic">{sm?<input type="checkbox" checked={on} readOnly tabIndex={-1} aria-hidden="true"/>:<ChevronRight size={16} className="chev" aria-hidden="true"/>}</span>
           <span className="num"><small className="m-only">{i18nT("Núm.")} </small>{a.numero||"—"}</span>
           <span className="dt"><small className="m-only">{i18nT("Data")} </small>{a.data?fmtAppDate8748(a.data):"—"}</span>
           <span className="dt ent"><small className="m-only">{i18nT("Entrada")} </small>{dataEntrada878348(a)?fmtAppDate8748(dataEntrada878348(a)):"—"}</span>
-          <span className="pr"><b>{(tip==="Albarà"||tip==="Comissio")&&<em className={`tip-v878311 t-${tip==="Albarà"?"alb":"com"}`}>{etTipusDespesa878338(tip)}</em>}{a.proveidor||nota.slice(0,80)||i18nT("Proveïdor pendent")}</b>{det&&<small>{det}</small>}{cob&&<small className="cob">{i18nT("Inclòs a la factura {n}",{n:[cob.proveidor,cob.numero].filter(Boolean).join(" · ")||"—"})}</small>}</span>
+          <span className="pr"><b>{tip==="Comissio"&&<em className="tip-v878311 t-com">{etTipusDespesa878338(tip)}</em>}{a.proveidor||nota.slice(0,80)||i18nT("Proveïdor pendent")}</b>{det&&<small>{det}</small>}{cob&&<small className="cob">{i18nT("Inclòs a la factura {n}",{n:[cob.proveidor,cob.numero].filter(Boolean).join(" · ")||"—"})}</small>}</span>
           <span className="imp"><small className="m-only">{i18nT("Base")} </small>{money(albaraBase878259(a))}</span>
           <span className="imp iva"><small className="m-only">{i18nT("IVA")} </small>{a.isp?"ISP":money(despesaIva878311(a))}</span>
           <span className="imp tot"><small className="m-only">{i18nT("Total")} </small><b>{money(despesaTotal878311(a))}</b></span>
           <span className="doc">{ull(a)}</span>
         </div>
-        {ob&&lin.length>0&&<div className="desg-v878348">{lin.map((l,i)=>{const imp=parseNum8770(l.import)||(parseNum8770(l.quantitat)*parseNum8770(l.preu));return <div key={i}><span className="c">{l.concepte||"—"}</span><span className="q">{[l.quantitat,l.unitat].filter(Boolean).join(" ")}{parseNum8770(l.preu)?` × ${money(parseNum8770(l.preu))}`:""}</span><b>{money(imp)}</b></div>})}</div>}
+        {ob&&<div className="det-v878461">
+          {xifres(albaraBase878259(a),a.isp?"ISP":money(despesaIva878311(a)),despesaTotal878311(a))}
+          <div className="bots">
+            {(a.teFoto||a.tePdf)&&<button type="button" className="primary" onClick={()=>veure878461(a)}><Eye size={15} aria-hidden="true"/> {esFactura878311(a)?i18nT("Veure la factura"):tip==="Albarà"?i18nT("Veure l’albarà"):i18nT("Veure el document")}</button>}
+            <button type="button" className="secondary" onClick={()=>open(a)}><PenLine size={15} aria-hidden="true"/> {i18nT("Editar")}</button>
+            {ambRep878347&&!cob&&tip!=="Empresa"&&<button type="button" className={`rep-bt-v878461 ${a.facturatClient?"on":""}`} aria-pressed={!!a.facturatClient} onClick={()=>toggleFacturat(a)}>{a.facturatClient?i18nT("Repercutida al client"):i18nT("Per repercutir")}</button>}
+          </div>
+          {nInc>0&&albaransDe(a,incs)}
+          {lin.length>0&&<div className="desg-v878348">{lin.map((l,i)=>{const imp=parseNum8770(l.import)||(parseNum8770(l.quantitat)*parseNum8770(l.preu));return <div key={i}><span className="c">{l.concepte||"—"}</span><span className="q">{[l.quantitat,l.unitat].filter(Boolean).join(" ")}{parseNum8770(l.preu)?` × ${money(parseNum8770(l.preu))}`:""}</span><b>{money(imp)}</b></div>})}</div>}
+        </div>}
       </div>;
     }
+    const xifres=(b,iva,tot)=><div className="xif-v878461"><span><small>{i18nT("Base")}</small><b>{money(b)}</b></span><span><small>{i18nT("IVA")}</small><b>{iva}</b></span><span><small>{i18nT("Total")}</small><b>{money(tot)}</b></span></div>;
+    // els albarans que inclou una factura, a dins seu, amb la suma i la diferència amb la base de la factura
+    function albaransDe(a,incs){const suma=incs.reduce((x,y)=>x+albaraBase878259(y),0),dif=albaraBase878259(a)-suma;
+      return <div className="incl-v878461"><b className="tit">{i18nT("Albarans d’aquesta factura")}</b>
+        {incs.map(x=>{const nt=String(x.notes||"").split("\n")[0].trim();const tx=(nrmX878344(x.proveidor)!==nrmX878344(a.proveidor)?x.proveidor:"")||nt;
+          return <div key={x.id} className="alb" role="button" tabIndex={0} onClick={()=>open(x)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();open(x)}}}><span className="num">{x.numero||"—"}</span><span className="dt">{x.data?fmtAppDate8748(x.data):"—"}</span><span className="tx">{tx}</span><b className="imp">{money(albaraBase878259(x))}</b><span className="doc">{ull(x)}</span></div>})}
+        <div className="suma"><span>{i18nT("Suma dels albarans")}</span><b>{money(suma)}</b></div>
+        {Math.abs(dif)>0.005&&<div className="suma dif"><span>{i18nT("Diferència amb la factura")}</span><b>{money(dif)}</b></div>}
+      </div>}
     // les files d'un Excel amb el mateix número i proveïdor són una sola factura (a dins, les línies)
-    function factures(rs){
+    function factures(rs,clau=""){
+      const llista=new Set(rows.map(a=>a.id));
+      const vis=rs.filter(a=>sm||!coberts[a.id]||!llista.has(coberts[a.id].id));
+      const esAlb=a=>tipusDespesa878311(a)==="Albarà";
+      const fact=vis.filter(a=>!esAlb(a)),alb=vis.filter(esAlb);
+      if(!alb.length)return taulaF(fact);
+      const obert=!fact.length||sm;
+      return <>{fact.length>0&&taulaF(fact)}{paquet("alb|"+clau+(obert?"|o":""),<b>{i18nT("Albarans sense factura")}</b>,alb,()=>taulaF(alb),obert,alb.length===1?i18nT("1 albarà"):i18nT("{n} albarans",{n:alb.length}))}</>;
+    }
+    function taulaF(rs){
       const fs=[],idx=new Map();
       rs.forEach(a=>{const num=String(a.numero||"").trim();const k=num?[a.obraId,nrmX878344(a.proveidor),nrmX878344(num)].join("|"):"id:"+a.id;if(idx.has(k))fs[idx.get(k)].rows.push(a);else{idx.set(k,fs.length);fs.push({k,rows:[a]})}});
       return <div className="taula-v878348">
@@ -22298,7 +22328,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
               <span className="imp tot"><small className="m-only">{i18nT("Total")} </small><b>{money(st)}</b></span>
               <span className="doc"/>
             </div>
-            {ob&&<div className="membres-v878348">{f.rows.map(x=>filaF(x,true))}</div>}
+            {ob&&<div className="membres-v878348">{xifres(sb,money(si),st)}{f.rows.map(x=>filaF(x,true))}</div>}
           </div>})}
       </div>;
     }
@@ -22325,15 +22355,15 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
           </div>}
         </section>})}</div>;
     }
-    const cos=(g,rs)=>g.k==="ma"?dies(rs):factures(rs);
-    const nivell=(g,rs)=>vistaD878348==="obra"&&!fixedObra?perObra(rs).map((o,i,arr)=>paquet(g.k+"|o:"+o.k,nomObra(o),o.rows,()=>cos(g,o.rows),arr.length===1))
-      :vistaD878348==="any"&&!fixedObra?perAny(rs).map((y,i,arr0)=>paquet(g.k+"|y:"+y.y,<b>{y.y}</b>,y.rows,()=>perObra(y.rows).map((o,j,arr)=>paquet(g.k+"|y:"+y.y+"|o:"+o.k,nomObra(o),o.rows,()=>cos(g,o.rows),arr.length===1)),arr0.length===1))
-      :cos(g,rs);
+    const cos=(g,rs,clau)=>g.k==="ma"?dies(rs):factures(rs,clau);
+    const nivell=(g,rs)=>vistaD878348==="obra"&&!fixedObra?perObra(rs).map((o,i,arr)=>paquet(g.k+"|o:"+o.k,nomObra(o),o.rows,()=>cos(g,o.rows,g.k+"|o:"+o.k),arr.length===1))
+      :vistaD878348==="any"&&!fixedObra?perAny(rs).map((y,i,arr0)=>paquet(g.k+"|y:"+y.y,<b>{y.y}</b>,y.rows,()=>perObra(y.rows).map((o,j,arr)=>paquet(g.k+"|y:"+y.y+"|o:"+o.k,nomObra(o),o.rows,()=>cos(g,o.rows,g.k+"|y:"+y.y+"|o:"+o.k),arr.length===1)),arr0.length===1))
+      :cos(g,rs,g.k);
     const grups=GRUPS_DESP878344.filter(g=>rows.some(a=>grupDespesa878344(a)===g.k));
     const obG=g=>tipusF===g.k||grups.length===1||grupsOberts878350.has(g.k)||!!cerca878348.trim();
     if(obra426){const r=rend426();const ICO={ma:HardHat,ind:Factory,mat:Package,alt:Receipt};
       const gira=(k,o)=>setGrupsOberts878350(x=>{const n=new Set(x);if(o)n.add(k);else n.delete(k);return n});
-      const gs=["ma","ind","mat","alt"].map(k=>GRUPS_DESP878344.find(g=>g.k===k)).filter(g=>g&&(g.k!=="alt"||rows.some(a=>grupDespesa878344(a)===g.k)));
+      const gs=["ma","ind","mat","alt"].map(k=>GRUPS_DESP878344.find(g=>g.k===k)).filter(g=>g&&((g.k!=="alt"&&(g.k!=="ma"||personal426))||rows.some(a=>grupDespesa878344(a)===g.k)));
       return <div className="desp-llista-v878348 desp-cartes-v878426">{gs.map(g=>{const rs=rows.filter(a=>grupDespesa878344(a)===g.k),ob=grupsOberts878350.has(g.k)||!!cerca878348.trim();const Ic=ICO[g.k]||Receipt;const extra=g.k==="ma"?(r?.perTipus?.Personal||0):0;
         return <details key={g.k} className={`card bloc-v878426 desp-bloc-v878426 g-${g.c}`} open={ob} onToggle={e=>{const o=e.currentTarget.open;if(o!==grupsOberts878350.has(g.k))gira(g.k,o)}}><summary className="grup-cap-v878350" aria-expanded={ob}><Ic size={18} aria-hidden="true"/><span className="t"><b>{g.k==="ind"?i18nT("Factures d’industrials"):g.k==="mat"?i18nT("Factures de materials"):i18nT(g.label)}</b></span><span className="xifra">{money(sumB(rs)+extra)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
           {g.k==="ma"&&personal426}
@@ -22355,7 +22385,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
     const kmDe=rs=>rs.reduce((x,a)=>x+(parseNum8770(a.km)||0),0);
     const nKm=rs=>{const k=kmDe(rs);return k>0?` · ${fmtKm(k)}`:""};
     const mostraObra=!fixedObra&&vistaD878348==="tot";
-    const ull=a=>(a.teFoto||a.tePdf)?<button type="button" className="ull-v878348" aria-label={i18nT("Veure el document")} title={i18nT("Veure el document")} onClick={e=>{e.stopPropagation();setDoc878348(a)}}><Eye size={17} aria-hidden="true"/></button>:null;
+    const ull=a=>(a.teFoto||a.tePdf)?<button type="button" className="ull-v878348" aria-label={i18nT("Veure el document")} title={i18nT("Veure el document")} onClick={e=>{e.stopPropagation();veure878461(a)}}><Eye size={17} aria-hidden="true"/></button>:null;
     const paquet=(k,cap,rs,cos,def=false)=>{const on=def?!obert878348.has(k):obert878348.has(k);return <section key={k} className={`paq-v878348 ${on?"obert":""}`}>
       <button type="button" className="paq-cap" aria-expanded={on} onClick={()=>togObert878348(k)}><ChevronRight size={16} className="chev" aria-hidden="true"/><span className="nm">{cap}</span><span className="n">{nD(rs.length)}{nKm(rs)}</span><b className="imp">{money(sumB(rs))}</b></button>
       {on&&<div className="paq-cos">{cos()}</div>}</section>};

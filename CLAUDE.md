@@ -2605,6 +2605,14 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **La resta de comptes:** `syncBancComu878460`, 6 s després d'obrir l'app (només amb el mòdul Obra): mira la capçalera i baixa les partides només si ha canviat `versio`; es guarden a l'aparell a `banc-comu-v878460` (sense `aco_`: no es pugen). `bancPreus878368()` = el banc propi o, si no n'hi ha, el comú (etiqueta «Banc comú», sense tocar-ne res).
     - **IPC:** l'enllaç «Calcular l'IPC (INE)» ja porta l'any del banc i l'últim mes publicat (`urlIpc878460`). Gener 2023 → setembre 2026: 13,4 % (INE).
     - Estils `src/theme-v878460.css`. Prova: `v460test.mjs` (18). El Supabase de proves té `/rest/v1/aco_banc_comu` i `GET /__banc`; `SENSE_BANC=1`: la taula no existeix.
+  - **V87.461 · Factures i albarans en un llistat que es desplega, i les targetes de Despeses a tots els comptes** (l'Héctor, 31/10/2026: «millora tema factures i albarans perquè aquí no està desplegable, han de sortir les factures, el llistat, i després veure les factures»; sense captura: s'ha entès Despeses de l'obra; les factures d'honoraris de l'expedient, `FacturesTecniques8738`, no s'han tocat):
+    - **Dins de l'obra, les targetes a tots els comptes** (`nova878348` amb `fixedObra`): el compte de l'Héctor encara tenia la llista plana. «Per repercutir» a la capçalera (`rep-v878461`) i a cada despesa (`rep-bt-v878461`). Sense mà d'obra ni hores del personal, la targeta de Mà d'obra no surt.
+    - **El llistat** (`filaF`, `ob-v878461`): cada factura és una línia que es desplega (abans, tocar-la obria l'editor): a dins, «Veure la factura», «Editar», els seus albarans (`albaransDe`, `incl-v878461`, amb la suma i la diferència amb la base de la factura) i les línies. Els albarans inclosos ja no surten ratllats al llistat (només si la factura no hi és pels filtres); en seleccionar, surten tots. La resta, a «Albarans sense factura» (`factures`, `taulaF`; plegat, obert si no hi ha cap factura).
+    - **Mòbil:** cada fila en dues línies (proveïdor i total; número i data); la base i l'IVA, a dins (`xif-v878461`).
+    - El PDF s'obre al visor de l'app (`veure878461`): el marc no funciona a l'iPhone.
+    - **Total de dalt = la suma de les targetes** (`total426`): amb una fase triada deia 0 € si les despeses no tenien fase, i les targetes les ensenyaven.
+    - La llista plana vella (`fila`, `vista`) ja no es fa servir enlloc: es pot esborrar.
+    - Estils `src/theme-v878461.css`. Prova: `v461test.mjs` (26: constructora, gestió total al mòbil i compte de l'Héctor amb una còpia).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2795,7 +2803,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.460 a Render):**
+**Estat (publicada la V87.461 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

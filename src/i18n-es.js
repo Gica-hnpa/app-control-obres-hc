@@ -4964,4 +4964,11 @@ export default {
 "Tots els comptes faran servir els preus de «{n}». Compartir-lo?": "Todas las cuentas usarán los precios de «{n}». ¿Compartirlo?",
 "Els comptes deixaran de veure aquest banc. Deixar de compartir-lo?": "Las cuentas dejarán de ver este banco. ¿Dejar de compartirlo?",
 "Falta executar a Supabase l’SQL del banc comú.": "Falta ejecutar en Supabase el SQL del banco común.",
+"Albarans sense factura": "Albaranes sin factura",
+"Albarans d’aquesta factura": "Albaranes de esta factura",
+"Suma dels albarans": "Suma de los albaranes",
+"Diferència amb la factura": "Diferencia con la factura",
+"Veure l’albarà": "Ver el albarán",
+"1 albarà": "1 albarán",
+"{n} albarans": "{n} albaranes",
 };

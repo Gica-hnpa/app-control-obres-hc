@@ -1,0 +1,70 @@
+/* V87.461 · Despeses: el llistat de factures, cada una es desplega amb els seus albarans i el document (l'Héctor, 31/10/2026: «aquí no està desplegable; han de sortir
+   les factures, el llistat, i després veure les factures»). Dins de l'obra, les targetes a tots els comptes. */
+
+/* la fila: la fletxa es gira i, oberta, té el perímetre del nivell 3 */
+html body .fila-v878348 .ic .chev{transition:transform .15s;color:var(--co-ink-3,#5F7075)}
+html body .fila-v878348.ob-v878461>.l .ic .chev{transform:rotate(90deg);color:#0B1F4B}
+html body .fila-v878348.ob-v878461{margin:4px 6px;border:2px solid #2563EB;border-radius:10px;overflow:hidden;background:#fff}
+html body .fila-v878348.ob-v878461>.l{background:#BFDBFE;border-bottom:1.5px solid #2563EB}
+html body .fila-v878348.ob-v878461>.l:hover{background:#BFDBFE}
+html body .fila-v878348.ob-v878461>.l .dt,
+html body .fila-v878348.ob-v878461>.l .pr small{color:#1E293B}
+html body .fila-v878348.multi.obert{margin:4px 6px;border:2px solid #2563EB;border-radius:10px;overflow:hidden}
+html body .fila-v878348.multi.obert>.l{background:#BFDBFE}
+
+/* a dins: els botons, els albarans i les línies */
+html body .det-v878461{display:flex;flex-direction:column;gap:10px;padding:10px 14px 12px}
+html body .det-v878461 .bots{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+html body .det-v878461 .bots button{display:inline-flex;align-items:center;gap:6px;min-height:38px}
+html body .rep-bt-v878461{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;min-height:38px;padding:0 12px;border:1.5px solid #B45309;border-radius:10px;background:#FFF7ED;color:#92400E;font:600 13px var(--app-font);cursor:pointer}
+html body .rep-bt-v878461.on{border-color:#15803D;background:#F0FDF4;color:#166534}
+html body .rep-bt-v878461:focus-visible{outline:2px solid var(--co-accent);outline-offset:1px}
+html body .det-v878461 .desg-v878348{padding:0;background:none}
+
+html body .incl-v878461{display:flex;flex-direction:column;border:1px solid var(--co-line-strong,#C3CED6);border-radius:8px;overflow:hidden;background:#fff}
+html body .incl-v878461 .tit{padding:7px 10px;background:#F1F5F9;border-bottom:1px solid var(--co-line,#DCE3E8);font:700 13px var(--app-font);color:var(--co-ink,#1E293B)}
+html body .incl-v878461 .alb{display:grid;grid-template-columns:112px 90px minmax(0,1fr) 104px 32px;gap:8px;align-items:center;min-height:38px;padding:3px 10px;border-bottom:1px solid var(--co-line,#DCE3E8);font-size:13.5px;cursor:pointer}
+html body .incl-v878461 .alb:hover{background:var(--co-surface-2,#F8FAFC)}
+html body .incl-v878461 .alb:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .incl-v878461 .alb .num{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+html body .incl-v878461 .alb .dt{color:var(--co-ink-2,#334155);font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .incl-v878461 .alb .tx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--co-ink-3,#5F7075)}
+html body .incl-v878461 .alb .imp{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .incl-v878461 .suma{display:flex;justify-content:space-between;gap:12px;padding:6px 10px;font-size:13.5px}
+html body .incl-v878461 .suma b{font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .incl-v878461 .suma.dif{padding-top:0;color:#B45309;font-weight:600}
+
+/* la base, l'IVA i el total, a l'ordinador ja són a les columnes de la fila */
+html body .xif-v878461{display:none}
+
+/* el que queda per repercutir, al costat del total de l'obra */
+html body .rep-v878461{font-size:13px;color:#92400E;white-space:nowrap}
+html body .rep-v878461 b{font-variant-numeric:tabular-nums}
+
+/* els albarans sense factura, a sota de les factures */
+html body .desp-llista-v878348 .cos>.taula-v878348+.paq-v878348{border-top:0}
+html body .desp-llista-v878348 .cos>.paq-v878348:first-child{border-top:0}
+
+@media (max-width:767px){
+  /* al mòbil, cada factura en dues línies: el proveïdor i el total, i el número i la data; la resta, a dins */
+  html body .taula-v878348:not(.taula-meva-v878375) .fila-v878348>.l .imp:not(.tot){display:none}
+  html body .fila-v878348>.l .ic{margin-right:-4px}
+  html body .fila-v878348.ob-v878461,
+  html body .fila-v878348.multi.obert{margin:4px}
+  html body .det-v878461{padding:8px 10px 10px}
+  html body .xif-v878461{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  html body .xif-v878461>span{display:flex;flex-direction:column;min-width:0}
+  html body .xif-v878461 small{font-size:12px;color:var(--co-ink-3,#5F7075)}
+  html body .xif-v878461 b{font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  html body .xif-v878461>span:last-child{align-items:flex-end}
+  html body .membres-v878348>.xif-v878461{padding:8px 10px}
+  html body .det-v878461 .bots button{flex:1 1 auto;justify-content:center}
+  html body .rep-bt-v878461{justify-content:center}
+  html body .fila-v878348 .incl-v878461 .alb>*{order:0;flex:none;font-size:13px;color:inherit;text-align:left;margin:0}
+  html body .incl-v878461 .alb{grid-template-columns:minmax(0,1fr) auto auto 30px;gap:6px;padding:3px 6px 3px 10px}
+  html body .fila-v878348 .incl-v878461 .alb .tx{display:none}
+  html body .fila-v878348 .incl-v878461 .alb .dt{font-size:12.5px;color:var(--co-ink-2,#334155)}
+  html body .fila-v878348 .incl-v878461 .alb .imp{text-align:right}
+  html body .desp-obra-v878426>.alb-head>.actions .rep-v878461{order:3;flex:1 1 100%}
+  html body .desp-obra-v878426>.alb-head>.actions{flex-wrap:wrap}
+}
