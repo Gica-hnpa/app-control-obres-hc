@@ -24,14 +24,9 @@
   html body .main :is(section,div):has(>details.card.plega-v878369){gap:0!important}
   html body .main details.card.plega-v878369{margin:0 0 8px!important}
 
-  /* la llista d'obres: sense el títol, els paquets en una línia que es llisca */
+  /* la llista d'obres: sense el títol (els paquets, en quadres fixos: V87.457) */
   html body .card:has(>.exp-paquets-v878314)>.card-head>h2{display:none}
   html body .card:has(>.exp-paquets-v878314)>.card-head{display:flex!important;flex-direction:row!important;justify-content:flex-end;gap:8px;padding:8px 12px!important;min-height:0}
-  html body .exp-paquets-v878314{display:flex!important;gap:6px;margin:4px 0 8px;padding:1px;overflow-x:auto;scrollbar-width:none}
-  html body .exp-paquets-v878314::-webkit-scrollbar{display:none}
-  html body .exp-paquets-v878314>button{flex:0 0 auto;flex-direction:row;align-items:baseline;gap:6px;padding:7px 12px;border-radius:999px}
-  html body .exp-paquets-v878314>button small{font-size:12.5px;letter-spacing:0;text-transform:none}
-  html body .exp-paquets-v878314>button b{font-size:15px}
 
   /* Despeses (menú): les targetes ja diuen cada grup; el total, Filtres i Seleccionar en una línia */
   html body .albarans-v878259:has(>.desp-grups-v878338){display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px}

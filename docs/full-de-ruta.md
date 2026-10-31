@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.456, 31/10/2026)
+## On som (V87.457, 31/10/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -46,6 +46,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   amb la fase triada.
 - **V87.451–455 (nit del 30-31/10):** saber on som (capçaleres plenes i fixes), Econòmic, resta de l’obra, iPad i menú principal al mòbil.
 - **V87.456 (31/10):** Verbania al mòbil: descompostos al seu lloc, preus per famílies, hores previstes contra apuntades, la certificació facturada només amb el quadre resum i «Enviar» del pressupost que pregunta.
+- **V87.457 (31/10):** paquets d'Obres fixos, Fitxa · Seguiment · Econòmic en tres targetes al mòbil, nivells de blau i perímetres ben marcats i les famílies de preus separades.
 
 ## Blocs, per ordre
 

@@ -85,15 +85,15 @@ html body .pres-bloc-v878427 .budget-grand-total.sol-v878427{display:none}
   html body .pres-cos-v878427{padding:6px 5px!important}
 
   /* el descompost de la fitxa, en dues línies per recurs */
-  html body .dt-v878449 .l{grid-template-columns:auto auto auto minmax(0,1fr)!important;grid-template-areas:"c c c ti" "r p i tq"!important;gap:1px 7px!important;padding:6px 10px!important}
+  html body .dt-v878449 .l{grid-template-columns:auto auto minmax(0,1fr) auto!important;grid-template-areas:"c c c ti" "r p i tq"!important;gap:1px 7px!important;padding:6px 10px!important}
   html body .dt-v878449 .l .c{font-weight:600}
   html body .dt-v878449 .l .r,html body .dt-v878449 .l .p,html body .dt-v878449 .l .i,html body .dt-v878449 .l .tq{font-size:12.5px;color:var(--co-ink-3,#5F7075);white-space:nowrap}
   html body .dt-v878449 .l .i::before{content:"= "}
   html body .dt-v878449 .l .tq{text-align:right!important}
   html body .dt-v878449 .l .tq::before{content:none!important}
-  html body .dt-v878449 .l .ti{align-self:start;text-align:right}
-  html body .dt-v878449.sense-t .l{grid-template-columns:auto auto minmax(0,1fr)!important;grid-template-areas:"c c i" "r p ."!important}
-  html body .dt-v878449.sense-t .l .i{font-size:inherit;color:inherit;font-weight:600}
+  html body .dt-v878449 .l .ti{align-self:start;text-align:right;white-space:nowrap}
+  html body .dt-v878449.sense-t .l{grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-areas:"c c i" "r p ."!important}
+  html body .dt-v878449.sense-t .l .i{font-size:inherit;color:inherit;font-weight:600;align-self:start}
   html body .dt-v878449.sense-t .l .i::before{content:none}
 
   /* la fila del codi i l'estat, baixa */
@@ -105,17 +105,17 @@ html body .pres-bloc-v878427 .budget-grand-total.sol-v878427{display:none}
   html body .obra-acc-btn-v878269,html body .crono-v878376{width:32px!important;height:32px!important;min-height:32px!important;min-width:32px;padding:0!important}
   html body .crono-v878376.on{width:auto!important;padding:0 8px!important}
 
-  /* una sola tira: Fitxa · Seguiment · [Econòmic / Pressupost] */
-  html body .obra-tabs-bar-v878269.obra-blocs-bar-v878299{padding:5px 8px 5px!important;margin-bottom:8px!important;border-bottom:1px solid var(--co-line,#DCE3E7)}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299{display:flex;gap:2px;padding:3px;background:#E4EAF0;border-radius:12px}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button{flex:0 0 auto;flex-direction:row;justify-content:center;gap:5px;min-height:42px;padding:0 9px;border:0;border-radius:10px;background:transparent;color:#3B4A5C;font-size:13.5px}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button svg{width:17px;height:17px}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on{flex:1 1 0;min-width:0;justify-content:flex-start;background:#1D4ED8;color:#fff;padding:0 8px 0 10px;box-shadow:0 1px 3px rgba(29,78,216,.35)}
+  /* Fitxa · Seguiment · Econòmic: tres targetes separades (V87.457: la tira única semblava una sola targeta) */
+  html body .obra-tabs-bar-v878269.obra-blocs-bar-v878299{padding:6px 8px 6px!important;margin-bottom:8px!important;border-bottom:1px solid var(--co-line,#DCE3E7)}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button{position:relative;flex-direction:column;justify-content:center;gap:2px;min-width:0;min-height:60px;padding:6px 4px;border-radius:12px;background:#fff;font-size:14px;text-align:center}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button svg{width:19px;height:19px}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on{background:#1D4ED8;color:#fff}
   html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.open{box-shadow:0 0 0 2px #93C5FD}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 .txt-v878451{display:block;min-width:0;line-height:1.15;text-align:left}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on .nom{display:block;font-size:11px;font-weight:600;opacity:.92}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on small{display:block;font:700 14.5px var(--app-font,inherit);color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button .gira-v878451{margin-left:auto;flex:none;width:16px;height:16px;opacity:.9;transition:transform .15s}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 .txt-v878451{display:block;width:100%;min-width:0;line-height:1.15;text-align:center}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 .nom{display:block;font-weight:700}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on small{display:block;font:600 12px var(--app-font,inherit);color:#DBEAFE;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button .gira-v878451{position:absolute;top:5px;right:5px;width:15px;height:15px;opacity:.9;transition:transform .15s}
   html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.open .gira-v878451{transform:rotate(180deg)}
   html body .obra-bloc-panel-v878299{margin:6px 0 2px!important}
 

@@ -2581,6 +2581,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **«Enviar» del pressupost pregunta** (`enviar456`, `enviaPres456`): «Enviar el pressupost» (amb el PDF) o «Enviar-lo perquè el tornin signat» (`SignaturaCert878408 autoEnvia`, enllaç al missatge). Al pressupost ràpid, directe.
     - **Mòbil:** tira de l'obra opaca, «A dalt» rodó de 44 px al costat del ＋ i només en tornar enrere, menús sense l'ombra 100vmax, ＋ i «A dalt» amagats amb un menú obert, quantitats alineades, hover enganxat fora (`@media (hover:none)`), «Reobrir» amb la icona al costat (`div.tancar-v878428`: la regla afectava també el botó).
     - Estils `src/theme-v878456.css`. Proves: `descomp456unit.mjs` (16, Excels inventats) i `v456test.mjs` (còpia del DADES a Verbania). Adaptades `v449test`, `resum362test`, `v410test`, `v411test`, `v413test`, `v439test`, `cert364test`, `agentstest`, `whatsapp402test`, `enviar407test` i `facturacio337test`.
+  - **V87.457 · Paquets fixos, tres targetes a l'obra i els nivells ben marcats** (l'Héctor, 31/10/2026, mirant la V87.456 al mòbil: «la pantalla d'obres no pot ser que funcioni amb scroll… les targetes de fitxa, seguiment i econòmic abans eren més visibles i ara sembla que és una única targeta… el blau és molt suau… o remarcar bé els perímetres… obres Runa i el paquet es distorsiona al final amb el següent»; `src/theme-v878457.css`):
+    - **Obres / Expedients:** els paquets tornen a ser quadres fixos (fora les regles de la V87.455 i del «visual nou» que els feien lliscar; mana la graella de `theme-v878314.css`).
+    - **Fitxa · Seguiment · Econòmic al mòbil:** tres targetes separades (`theme-v878451.css`), de 66 px, amb vora pròpia; l'activa, plena de blau i amb l'apartat a sota (desfà la tira única de la V87.451).
+    - **Nivells:** principal oberta, blau fosc ple (#1D4ED8) i perímetre de 2 px; capítol o secundària oberts, **blau mitjà ple** (#60A5FA, abans #DBEAFE) i perímetre #2563EB; partida o família oberta, blau clar (#BFDBFE) i perímetre. Tancades, vora marcada de 1,5 px. Les partides, sobre un fons gris blavós (#E8EEF5) que les separa del capítol.
+    - **Llista de preus:** cada família, una caixa tancada i separada de la següent (`.fam-v878456`), amb les files alternes.
+    - **Descompost de la fitxa al mòbil:** l'import no es parteix en vertical amb conceptes llargs.
+    - Prova: `v457test.mjs` (10). Adaptades `v451test` i `v455test`. `v451test` va fallar un cop al mòbil i, tornada a passar sense tocar l'app, en verd (causa no aclarida; `resum362test` va fer el mateix a la V87.456).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2771,7 +2778,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.456 a Render):**
+**Estat (publicada la V87.457 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

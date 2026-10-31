@@ -1,0 +1,71 @@
+/* V87.457 · Perímetres i nivells ben marcats (l'Héctor, 31/10/2026: «haurien de destacar més les targetes i capítols per diferenciar bé quan obres el capítol de
+   les partides… el blau és molt suau… o remarcar bé els perímetres»; «les targetes de fitxa, seguiment i econòmic abans eren més visibles»).
+   Nivell 1, principal oberta: blau fosc ple. Nivell 2, capítol o secundària oberts: blau mitjà ple. Nivell 3, partida o família oberta: blau clar, a dins d'un
+   perímetre blau. Tancades, totes amb una vora gris marcada. Els blaus es tornen el color de l'empresa amb la «Imatge de l'empresa». */
+
+/* ── Fitxa · Seguiment · Econòmic: el bloc actiu, ple ─────────────────────────────────────────────── */
+html body .obra-blocs-v878299 button{border:1.5px solid #8FA0B3;color:#1E293B;box-shadow:0 1px 3px rgba(15,23,42,.14)}
+html body .obra-blocs-v878299 button:hover{border-color:#475569}
+html body .obra-blocs-v878299 button.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff;box-shadow:0 2px 7px rgba(29,78,216,.38)}
+
+/* ── Perímetres: tancades ─────────────────────────────────────────────────────────────────────────── */
+html body details.card.bloc-v878426,
+html body details.card.plega-v878369,
+html body details.ajustos-bloc-v878366{border:1.5px solid #8FA0B3!important;box-shadow:0 1px 3px rgba(15,23,42,.14),0 4px 12px rgba(15,23,42,.08)!important}
+html body .bloc-v878426 .sub-v878426,
+html body details.mes-v878430,
+html body details.plegat-v878366,
+html body details.enc-pas-v878333,
+html body .budget-card-v878248 .budget-v25-cap{background:#F1F5F9!important;border:1.5px solid #94A3B8!important}
+
+/* ── Nivell 1: principal oberta ───────────────────────────────────────────────────────────────────── */
+html body details.card.bloc-v878426[open],
+html body details.card.plega-v878369[open],
+html body details.ajustos-bloc-v878366[open]{border:2px solid #1D4ED8!important}
+html body details.card.bloc-v878426.avisos-v878426[open]{border:2px solid #C2410C!important}
+
+/* ── Nivell 2: capítol o secundària oberts ────────────────────────────────────────────────────────── */
+html body .bloc-v878426 details.sub-v878426[open],
+html body details.mes-v878430[open],
+html body details.plegat-v878366[open],
+html body details.enc-pas-v878333[open],
+html body .budget-card-v878248 .budget-v25-cap:has(>.cap-carta-v878426.obert){background:#fff!important;border:2px solid #2563EB!important;box-shadow:0 3px 10px rgba(37,99,235,.2)!important}
+html body .bloc-v878426 details.sub-v878426[open]>summary,
+html body details.mes-v878430[open]>summary,
+html body details.plegat-v878366[open]>summary,
+html body details.enc-pas-v878333[open]>summary,
+html body .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426.obert{background:#60A5FA!important}
+html body .bloc-v878426 details.sub-v878426[open]>summary .t b,
+html body .bloc-v878426 details.sub-v878426[open]>summary .t b small,
+html body .bloc-v878426 details.sub-v878426[open]>summary .imp,
+html body .bloc-v878426 details.sub-v878426[open]>summary .chev,
+html body .bloc-v878426 details.sub-v878426[open]>summary>svg:first-child,
+html body details.mes-v878430[open]>summary b,
+html body details.mes-v878430[open]>summary .chev,
+html body details.plegat-v878366[open]>summary b,
+html body details.enc-pas-v878333[open]>summary b,
+html body .budget-card-v878248 .cap-carta-v878426.obert>.budget-chapter-title-v87230 b,
+html body .budget-card-v878248 .cap-carta-v878426.obert>.budget-chapter-total-v87230,
+html body .budget-card-v878248 .cap-carta-v878426.obert>.cap-chev-v878426{color:#0B1F4B!important}
+
+/* ── Les partides, a dins del capítol: un fons que les separa i vores clares ───────────────────────── */
+html body .budget-card-v878248 .budget-v25-lines.cartes-v878426{background:#E8EEF5!important;gap:7px;padding:9px 4px 10px!important}
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line{border:1.5px solid #94A3B8!important;box-shadow:0 1px 2px rgba(15,23,42,.1)}
+/* nivell 3: la partida oberta */
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line.fitxa-oberta-v878426,
+html body .budget-card-v878248 .cartes-v878426>.budget-v25-line.budget-row-open-v87173{border:2px solid #2563EB!important}
+html body .budget-card-v878248 .cartes-v878426 .fitxa-oberta-v878426>.budget-partida-mobile-summary-v87196,
+html body .budget-card-v878248 .cartes-v878426 .budget-row-open-v87173>.budget-partida-mobile-summary-v87196{background:#BFDBFE!important;border-bottom:1.5px solid #2563EB!important}
+
+/* ── La llista de preus: cada família, una caixa tancada i clarament separada de la següent ────────── */
+html body .preus-v878456{gap:9px;padding:10px 8px 12px;background:#E8EEF5;border-radius:0 0 10px 10px}
+html body .fam-v878456{border:1.5px solid #94A3B8;border-radius:10px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.1)}
+html body .fam-v878456[open]{border:2px solid #2563EB}
+html body .fam-v878456[open]>summary{background:#BFDBFE;border-bottom:1.5px solid #2563EB}
+html body .fam-v878456[open]>summary .n,
+html body .fam-v878456[open]>summary .n small,
+html body .fam-v878456[open]>summary>b,
+html body .fam-v878456[open]>summary .chev{color:#0B1F4B}
+html body .fam-v878456 .ll-v878449>div{border-top:1px solid #CBD5E1}
+html body .fam-v878456 .ll-v878449>div:first-child{border-top:0}
+html body .fam-v878456 .ll-v878449>div:nth-child(even){background:#F8FAFC}
