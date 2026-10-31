@@ -3,7 +3,7 @@
 html body .pres-accions-v878366>button.secondary{white-space:nowrap}
 html body .pres-accions-v878366 .mes-v878428>summary{padding-left:10px;padding-right:10px}
 
-html body .tancar-v878428{display:flex;flex-direction:column;gap:14px;padding:16px 20px 18px}
+html body div.tancar-v878428{display:flex;flex-direction:column;gap:14px;padding:16px 20px 18px}
 html body .tancar-v878428 .xif{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;padding:14px 16px;border:1px solid var(--co-line,#E2E8F0);border-radius:12px;background:var(--co-bg-2,#F8FAFC)}
 html body .tancar-v878428 .xif b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--co-ink,#0f172a)}
 html body .tancar-v878428 .xif span{font-size:14px;color:var(--co-ink-2,#334155)}

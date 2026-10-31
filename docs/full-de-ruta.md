@@ -22,6 +22,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **Targetes plegables iguals** (l’Héctor, 29/10/2026): totes de la mateixa mida i forma (també capítols i partides), una línia amb la
   icona, el títol i com a molt una xifra, **sense línia de comentari**. Accions: «Editar» · «Imprimir» (una pantalla amb els PDF) · «Accions»
   curt; les eines, dins d’«Editar». Els gràfics, a la vista (donen color). Classe comuna `bloc-v878426`.
+- **Nivells, des de la V87.451** (nit del 30-31/10/2026; substitueix els colors de sota): la principal oberta, capçalera **plena de blau** i fixa en baixar; el capítol o la secundària oberts, **blau clar**; les files, blanques. Al mòbil, una sola tira Fitxa · Seguiment · Econòmic amb l’apartat dins del bloc actiu, i sense títols que repeteixin la tira o la capçalera.
 - **Tres nivells de targetes** (l’Héctor, 29/10/2026: «remarcar més les principals i anar a menys amb les secundàries… que es vegi on es
   torna a recollir»; V87.432): **principals** amb vora marcada i ombra (oberta: capçalera blau clar amb franja i la fletxa amunt; si és
   llarga, «Recollir» a baix); **secundàries** (dins d’una principal) amb fons gris clar i sense ombra; **files**, blanques. **Tot plegat
@@ -31,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.428, 29/10/2026)
+## On som (V87.456, 31/10/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -43,6 +44,8 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.428 (29/10):** «Tancar el pressupost» / «Reobrir-lo» (en lloc de «Pressupost inicial»), un sol nom («Fora de pressupost»), les
   accions del pressupost a la vista a l’ordinador, crear des d’Excel, PDF o IA només amb el pressupost buit, i la gràfica del Rendiment a baix
   amb la fase triada.
+- **V87.451–455 (nit del 30-31/10):** saber on som (capçaleres plenes i fixes), Econòmic, resta de l’obra, iPad i menú principal al mòbil.
+- **V87.456 (31/10):** Verbania al mòbil: descompostos al seu lloc, preus per famílies, hores previstes contra apuntades, la certificació facturada només amb el quadre resum i «Enviar» del pressupost que pregunta.
 
 ## Blocs, per ordre
 
