@@ -41,6 +41,10 @@ com abans: llegeix el que pot sola i, per a la resta, copiar i enganxar a ChatGP
 **Què fa:** llegeix albarans, factures i tiquets (foto o PDF), llegeix pressupostos i amidaments en PDF quan l’app no se’n surt, fa les
 partides d’un pressupost a partir d’un text, un dictat o uns arxius, i busca el preu amb el descompost de les que no en tenen.
 
+**On es fa servir (V87.459):** al pressupost buit, «Fer el pressupost amb IA»; a «Afegir» o «Accions», «Pressupost amb IA». Es diu o s’escriu què s’ha de
+fer, s’hi poden adjuntar amidaments, plànols o fotos, i l’app ensenya les partides amb els preus per revisar-les abans d’afegir-les. Primer es mira Preus, el banc i les
+obres anteriors; la IA només posa el preu de les que queden.
+
 **Passos (només cal fer-los una vegada):**
 
 1. **Clau d’Anthropic:** a console.anthropic.com, crear un compte de pagament, posar-hi un **límit de despesa mensual** i crear una clau.

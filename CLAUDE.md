@@ -2595,6 +2595,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Pressupost en PDF** (`PdfPressupost878305`, `dubtosPdf878458`): primer la lectura de l'app (gratis); si no hi troba res, si el total no quadra o si n'hi ha més d'un 20 % per revisar, la IA, sola, a trossos de 30.000 lletres (escanejat: l'arxiu, fins a 14 MB). «Tornar-lo a llegir amb la IA». **Amidaments en PDF:** si l'app no hi troba res, la IA.
     - **Preus amb IA** (`PreusIa878368`): de 15 en 15 amb la funció nova.
     - Estils `src/theme-v878458.css`. Prova: `v458test.mjs` (9). El Supabase de proves té `/functions/v1/aco-ia` i `POST /__aco-ia {limit, falla}`. Adaptades `pressupost368test` i `pdfpressuposttest` (amb `SENSE_IA`). **Falta provar-ho amb la IA de debò** (cal la clau).
+  - **V87.459 · Pressupost automàtic amb IA** (l'Héctor, 31/10/2026: «insisteixo en poder fer pressupost automàtic amb la IA»; un petit autònom ha de poder fer-se el pressupost sense saber-ne). **Va amb la funció `aco-ia` de la V87.458, encara sense instal·lar: mentre no ho estigui, el botó diu «Dictar partides…» com abans.**
+    - **On:** «Fer el pressupost amb IA» al pressupost buit (`PresBuit878435`; si la fase ja té amidaments, primer «Portar les N partides») i «Pressupost amb IA» a «Afegir» i «Accions», en lloc de «Dictar partides…» i del botó vell de copiar i enganxar.
+    - **Com** (`DictarPartides878401`, `ambIa`): es diu o s'escriu què s'ha de fer i es poden adjuntar amidaments (BC3, Excel, PDF), plànols o fotos (com a molt 4; PDF fins a 14 MB). `iaCrida("partides")` fa les partides; els preus surten com als amidaments (`preusAmidaments878368`: Preus, banc amb l'IPC, obres anteriors) i les que queden sense preu, de `iaCrida("preus")` de 15 en 15; marges amb `margesLinia878378`. Revisió de sempre abans d'afegir-les (`tipus:"IA"`, origen «IA · …»). Capítols: el del pressupost amb el mateix nom o «Capítol nou: NOM». «Llegir-ho sense IA» si no hi ha funció o falla.
+    - Estils `src/theme-v878459.css`. Prova: `v459test.mjs` (17, amb la funció simulada). Adaptades amb `SENSE_IA` `dictat401test`, `v428test`, `pressupost320test`, `pressuposttest`, `v413test`, `pestanyestest` i `v435test`. **Falta provar-ho amb la IA de debò** (cal la clau). Gravar les lliçons amb `SENSE_IA=1` mentre la funció no estigui instal·lada a producció.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2785,7 +2789,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.458 a Render):**
+**Estat (publicada la V87.459 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
