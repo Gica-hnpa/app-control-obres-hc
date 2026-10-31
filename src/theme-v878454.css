@@ -1,0 +1,18 @@
+/* V87.454 · L'iPad. La certificació ja no és una taula que s'ha de lliscar per arribar a la casella: cada partida és una fitxa baixa, amb el pressupost, aquesta
+   certificació i a origen un al costat de l'altre. Al pressupost, la quantitat i el preu no es parteixen. */
+@media (min-width:761px) and (max-width:1100px){
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row{grid-template-columns:repeat(3,minmax(0,1fr) 62px 96px)!important;grid-template-areas:"c c c c c c c c c" "d e f j k l m n o"!important;gap:2px 6px!important;align-items:stretch}
+  html body .cert-grid-v69.row>div[data-m]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-content:space-between;justify-items:start;gap:0 4px}
+  html body .cert-grid-v69.row>div[data-m]::before{grid-column:1/-1;width:auto;font-size:12px}
+  html body .cert-grid-v69.row>div:nth-child(n+4):not([data-m]){align-self:end}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-current-cell-v8780{grid-column:1/-1;width:100%}
+  html body .xifres-v878426.x4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  html body .xifres-v878426 .x{padding:10px 12px 10px 16px}
+  html body .xifres-v878426 .x small{font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .xifres-v878426 .x b{font-size:18px;white-space:nowrap}
+}
+@media (min-width:768px) and (max-width:1100px){
+  html body .cert-grid-wrap-v69 button.cap-m-v878429.obert{top:calc(var(--cap-obra-v878451) + 60px)}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>strong{flex:0 1 auto;min-width:0}
+  html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:first-child>small{flex:none;white-space:nowrap}
+}

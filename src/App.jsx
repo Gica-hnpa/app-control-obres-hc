@@ -33,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.453";
+const APP_VERSION878264="87.454";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -15522,7 +15522,7 @@ const ref408=String(cert?.id||`n${certNum}`);
 const rec408=obra?.id&&cert?signatDe878408(obra.id,"certificacio",ref408):null;
 const sigs408=rec408?.signat878408?.signatures||[];
 const enviaCert878440=()=>openEmail(`${i18nT("Certificació")} ${certNum}`,rec408?{pdf:{carrega:()=>getDocFile(rec408.id,obra?.id),nom:rec408.nom}}:{doc:certPdfDoc878407("origen")});
-const mobil878366=useMobil878363();
+const mobil878366=useTauleta878387();
 const[focus878364,setFocus878364]=useState(null);
 // V87.424 · comparar la certificació amb la que hi fa un altre compte (obra compartida «només Pressupost i certificacions»)
 const potComp878424=!!compara878424&&!clientMode&&(!!contrast878424||usuarisContrast878424(compara878424.raw,compara878424.bid).length>0);
@@ -18519,7 +18519,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.453",
+    app_version:"87.454",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

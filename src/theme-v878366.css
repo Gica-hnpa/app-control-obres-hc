@@ -15,8 +15,8 @@ html body .pres-accions-v878366 .accions-v878366 .action-menu-panel-v87213{right
   html body .pres-accions-v878366>button,html body .pres-accions-v878366>.action-menu-v87213>summary{justify-content:center;width:100%}
 }
 
-/* ── certificació › partides al mòbil: una fitxa per partida (pressupost, aquesta certificació i a origen) */
-@media (max-width:760px){
+/* ── certificació › partides al mòbil: una fitxa per partida (pressupost, aquesta certificació i a origen). Des de la V87.454, també a l'iPad dret */
+@media (max-width:1100px){
   html body .cert-grid-wrap-v69{overflow:visible!important;max-width:100%!important}
   html body .cert-grid-wrap-v69 .cert-grid-v69.group,html body .cert-grid-wrap-v69 .cert-grid-v69.header{display:none!important}
   html body .cert-grid-wrap-v69>div{min-width:0!important;width:auto!important}
