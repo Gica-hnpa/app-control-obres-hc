@@ -33,7 +33,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.452";
+const APP_VERSION878264="87.453";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12648,7 +12648,7 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
             <span className="cap"><b>{c.cap}</b>{!treb&&<small>{eur0878252(c.budget)} · {pct878252(c.budget?c.certified/c.budget*100:0)}</small>}</span>
             <span className="d"><small>{i18nT("Inici")}</small><b>{c.plan?fmtAppDate8748(isoDate8776(c.plan.from)):"—"}</b></span>
             <span className="d"><small>{i18nT("Final")}</small><b>{c.plan?fmtAppDate8748(isoDate8776(c.plan.to)):"—"}</b></span>
-            <span className="d n"><small>{i18nT("Dies")}</small><b>{c.plan?.dur||"—"}</b></span>
+            <span className="d n"><small>{i18nT("Dies")}</small><b data-u={c.plan?.dur?i18nT("dies"):undefined}>{c.plan?.dur||"—"}</b></span>
             {!c.plan&&<span className="sp-v878389">{i18nT("Sense planificar")}</span>}
             {(c.plan?.via||qui.length>0)&&<span className="extra">{c.plan?.via&&<em className="via">↳ {i18nT("Després de «{cap}»",{cap:c.plan.via})}{lag?" "+(lag>0?"+":"−")+Math.abs(lag)+" "+i18nT("dies"):""}</em>}{qui.length>0&&<em className="qui">{qui.join(" · ")}</em>}</span>}
           </button>
@@ -18519,7 +18519,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.452",
+    app_version:"87.453",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
