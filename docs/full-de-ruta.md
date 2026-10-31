@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.459, 31/10/2026)
+## On som (V87.460, 31/10/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -49,6 +49,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.457 (31/10):** paquets d'Obres fixos, Fitxa · Seguiment · Econòmic en tres targetes al mòbil, nivells de blau i perímetres ben marcats i les famílies de preus separades.
 - **V87.458 (31/10):** la IA llegeix sola albarans, factures i PDF (funció `aco-ia`, encara sense instal·lar).
 - **V87.459 (31/10):** pressupost automàtic amb IA, a partir d’un text, un dictat, amidaments, plànols o fotos (la mateixa funció, encara sense instal·lar).
+- **V87.460 (31/10):** banc de preus comú: l’Héctor comparteix el seu, amb l’any i l’IPC, amb tots els comptes (falta l’SQL i importar la base).
 
 ## Blocs, per ordre
 

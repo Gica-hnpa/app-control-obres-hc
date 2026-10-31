@@ -59,3 +59,14 @@ límit), `IA_MODEL_DOC` (de sèrie `claude-sonnet-5-5`), `IA_MODEL_PRES` (de sè
 
 **Abans d’obrir-ho als clients:** les fotos, les factures i les adreces de les obres s’envien a Anthropic per llegir-les. S’ha de dir a
 les condicions del servei; cal parlar-ho amb la gestoria.
+
+## Banc de preus comú (V87.460)
+
+Perquè tots els comptes facin servir la base de preus de l’Héctor. **Abans:** comprovar que es té permís per repartir-la (si és d’un col·legi o d’una base amb llicència, n’ha de donar permís qui en té els drets).
+
+1. **SQL:** Supabase › SQL Editor › enganxar `supabase/aco_banc_comu_v878460.sql` › Run.
+2. **Importar la base:** a l’app, Ajustos › Preus i marges › Banc de preus › Importar BC3.
+3. **Posar-la al dia:** «Preus de l’any» 2023 i «Actualització (%)» 13,4 (gener 2023 → setembre 2026, INE). «Calcular l’IPC (INE)» dona el número d’ara.
+4. **Compartir-la:** «Compartir amb tots els comptes».
+
+Quan es canvia el %, arriba sol a tots els comptes. Un compte que importi el seu banc fa servir el seu.

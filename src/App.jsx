@@ -35,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.459";
+const APP_VERSION878264="87.460";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5097,6 +5097,7 @@ useEffect(()=>{const h=e=>{const d=e?.detail;if(d?.id&&d?.sig)sigRef878403.curre
 // V87.409 · signar a distància: l'App mira cada 2 minuts (i en tornar a l'app) si algú ha signat amb l'enllaç i es baixa el PDF
 const odRef878409=useRef(odata);odRef878409.current=odata;const obRef878409=useRef(obres);obRef878409.current=obres;
 const vistes878409=useRef({});const cuaSigna878409=useRef(Promise.resolve());const remotAra878409=useRef({});
+useEffect(()=>{const t0=setTimeout(()=>{syncBancComu878460().catch(()=>{})},6000);return()=>clearTimeout(t0)},[]);
 useEffect(()=>{const fes=()=>{if(document.visibilityState!=="hidden")window.__acoSyncSigna878409?.().catch(()=>{})};const t0=setTimeout(fes,8000);const iv=setInterval(fes,120000);
   const vis=()=>{if(document.visibilityState==="visible")fes()};document.addEventListener("visibilitychange",vis);return()=>{clearTimeout(t0);clearInterval(iv);document.removeEventListener("visibilitychange",vis)}},[]);
 function openObra(id){
@@ -13355,9 +13356,63 @@ const coma878328=v=>v===""||v==null?"":String(Math.round(Number(v)*1000)/1000).r
 // preus (BC3, p. ex. els «Preus de la construcció» de Girona), la IA per a les que queden (descompost en BC3), i l'obra i la logística
 // (accés, runes, plantes, permisos), que poden abaratir o encarir el pressupost. Funcions pures a src/preusAuto.js.
 const BANC_KEY878368="aco_banc_preus_v878368";
-function bancPreus878368(){const b=lsJson8779(BANC_KEY878368,null);return b&&Array.isArray(b.partides)&&b.partides.length?b:null}
+// V87.460 · banc de preus comú: l'Héctor comparteix el seu (supabase/aco_banc_comu_v878460.sql) i arriba a tots els comptes amb l'any i el % d'IPC.
+// Es guarda a l'aparell en una clau que no es puja (sense «aco_»). El banc propi, si n'hi ha, mana.
+const BANC_COMU878460="banc-comu-v878460";let bancComuMem878460;
+function bancComu878460(){
+  if(bancComuMem878460!==undefined)return bancComuMem878460;
+  try{const b=JSON.parse(localStorage.getItem(BANC_COMU878460)||"null");bancComuMem878460=b&&Array.isArray(b.partides)&&b.partides.length?{...b,comu:true}:null}catch{bancComuMem878460=null}
+  return bancComuMem878460;
+}
+function desaBancComu878460(b){
+  try{if(b)localStorage.setItem(BANC_COMU878460,JSON.stringify(b));else localStorage.removeItem(BANC_COMU878460)}catch{}
+  bancComuMem878460=b?{...b,comu:true}:null;
+  try{window.dispatchEvent(new Event("aco-banc-comu"))}catch{}
+}
+function bancPropi878460(){const b=lsJson8779(BANC_KEY878368,null);return b&&Array.isArray(b.partides)&&b.partides.length?b:null}
+async function syncBancComu878460(){
+  const nv=window.__acoCloud?.bancComu;if(!nv||esTreballador878326()||!teModul878326("obra"))return;
+  let cap;try{cap=await nv.cap()}catch{return}
+  const loc=bancComu878460();
+  if(!cap){if(loc)desaBancComu878460(null);return}
+  const mateixa=loc&&new Date(loc.versio).getTime()===new Date(cap.versio).getTime();
+  if(mateixa){if(Number(loc.pct)!==Number(cap.pct)||loc.any!==cap.any_preus||loc.nom!==cap.nom){const{comu,...r}=loc;desaBancComu878460({...r,pct:Number(cap.pct)||0,any:cap.any_preus,nom:cap.nom})}return}
+  if(bancPropi878460())return;
+  try{const partides=await nv.baixa();if(Array.isArray(partides)&&partides.length)desaBancComu878460({nom:cap.nom,any:cap.any_preus,pct:Number(cap.pct)||0,versio:cap.versio,partides})}catch{}
+}
+function bancPreus878368(){return bancPropi878460()||bancComu878460()}
+// l'adreça de la calculadora de l'INE amb l'any del banc: de gener d'aquell any a l'últim mes publicat (surt cap al dia 15 del mes següent)
+function urlIpc878460(any){
+  const a=parseInt(any,10);if(!(a>1990))return "https://www.ine.es/varipc/";
+  const ara=new Date(),d=new Date(ara.getFullYear(),ara.getMonth()-(ara.getDate()<15?2:1),1);
+  return `https://www.ine.es/varipc/verVariaciones.do?idmesini=1&anyoini=${a}&idmesfin=${d.getMonth()+1}&anyofin=${d.getFullYear()}&ntipo=1&enviar=Calcular`;
+}
+// Només el compte de l'Héctor: compartir el seu banc amb tots els comptes
+function CompartirBanc878460({b}){
+  const nv=window.__acoCloud?.bancComu;
+  const[cap,setCap]=useState(undefined);
+  const[fent,setFent]=useState(false);
+  const[err,setErr]=useState("");
+  useEffect(()=>{let viu=true;nv?.cap().then(c=>{if(viu)setCap(c)}).catch(()=>{if(viu)setCap(null)});return()=>{viu=false}},[]);
+  // l'any i el % d'ara arriben a tothom sense tornar a pujar les partides
+  useEffect(()=>{if(b.comu||!cap)return;const pct=Number(b.pct)||0,any=b.any||null;if(Number(cap.pct)===pct&&cap.any_preus===any)return;nv.posa({pct,any_preus:any}).then(()=>nv.cap()).then(setCap).catch(()=>{})},[b.pct,b.any,cap?.versio]);
+  const fes=async fn=>{setFent(true);setErr("");try{await fn()}catch(e){setErr(e?.status===404?t("Falta executar a Supabase l’SQL del banc comú."):String(e?.message||e))}setFent(false)};
+  const puja=()=>fes(async()=>{await nv.puja(b);setCap(await nv.cap())});
+  const comparteix=()=>{if(confirm(t("Tots els comptes faran servir els preus de «{n}». Compartir-lo?",{n:b.nom})))puja()};
+  const deixa=()=>{if(confirm(t("Els comptes deixaran de veure aquest banc. Deixar de compartir-lo?")))fes(async()=>{await nv.treu();setCap(null);if(b.comu)desaBancComu878460(null)})};
+  if(!nv||cap===undefined)return null;
+  const vell=cap&&!b.comu&&new Date(cap.versio).getTime()!==new Date(b.data).getTime();
+  return <div className="comu-v878460">
+    {cap?<><span className="ok"><Check size={15} aria-hidden="true"/> {t("Compartit amb tots els comptes")}</span>
+      {vell&&<button type="button" className="secondary" disabled={fent} onClick={puja}>{fent?t("Pujant…"):t("Actualitzar el banc comú")}</button>}
+      <button type="button" className="link" disabled={fent} onClick={deixa}>{t("Deixar de compartir")}</button></>
+    :!b.comu&&<button type="button" className="secondary" disabled={fent} onClick={comparteix}><Share2 size={15} aria-hidden="true"/> {fent?t("Pujant…"):t("Compartir amb tots els comptes")}</button>}
+    {err&&<p className="err">{err}</p>}
+  </div>;
+}
 function BancPreus878368({compacte=false,onCanvi}){
   const[b,setB]=useState(()=>bancPreus878368());
+  useEffect(()=>{const f=()=>setB(x=>x&&!x.comu?x:bancPreus878368());window.addEventListener("aco-banc-comu",f);return()=>window.removeEventListener("aco-banc-comu",f)},[]);
   const[llegint,setLlegint]=useState(false);
   const[err,setErr]=useState("");
   async function llegeix(file){
@@ -13374,19 +13429,21 @@ function BancPreus878368({compacte=false,onCanvi}){
     }catch(e){setErr(t("No s’ha pogut llegir l’arxiu: {e}",{e:String(e?.message||e)}))}
     setLlegint(false);
   }
-  function treu(){if(!b||!confirm(t("Treure el banc de preus «{n}»?",{n:b.nom})))return;lsSet8779(BANC_KEY878368,"");setB(null);onCanvi?.(null)}
+  function treu(){if(!b||b.comu||!confirm(t("Treure el banc de preus «{n}»?",{n:b.nom})))return;lsSet8779(BANC_KEY878368,"");setB(bancComu878460());onCanvi?.(null);syncBancComu878460().catch(()=>{})}
   // V87.372 · l'any dels preus i el % d'actualització (IPC de l'INE): s'aplica en posar el preu, no toca el banc
   const posa878372=patch=>{const nou={...b,...patch};try{lsSet8779(BANC_KEY878368,JSON.stringify(nou))}catch{}setB(nou);onCanvi?.(nou)};
   const anyAra878372=new Date().getFullYear();
   return <div className={`banc-v878368 ${compacte?"compacte":""}`}>
-    <div className="txt"><b>{t("Banc de preus")}</b>{b?<span>{b.nom} · {t("{n} partides",{n:b.partides.length.toLocaleString(loc878272())})}</span>:<span className="cap">{t("Cap banc de preus")}</span>}</div>
-    <div className="bt"><label className="button secondary"><Upload size={15} aria-hidden="true"/> {llegint?t("Llegint…"):b?t("Canviar"):t("Importar BC3")}<input type="file" hidden accept=".bc3" disabled={llegint} onChange={e=>{const f=e.target.files?.[0];e.target.value="";llegeix(f)}}/></label>{b&&<button type="button" className="secondary" onClick={treu}>{t("Treure")}</button>}</div>
-    {b&&<div className="act-v878372">
+    <div className="txt"><b>{t("Banc de preus")}{b?.comu&&<em className="comu-et-v878460">{t("Banc comú")}</em>}</b>{b?<span>{b.nom} · {t("{n} partides",{n:b.partides.length.toLocaleString(loc878272())})}</span>:<span className="cap">{t("Cap banc de preus")}</span>}</div>
+    <div className="bt"><label className="button secondary"><Upload size={15} aria-hidden="true"/> {llegint?t("Llegint…"):b&&!b.comu?t("Canviar"):t("Importar BC3")}<input type="file" hidden accept=".bc3" disabled={llegint} onChange={e=>{const f=e.target.files?.[0];e.target.value="";llegeix(f)}}/></label>{b&&!b.comu&&<button type="button" className="secondary" onClick={treu}>{t("Treure")}</button>}</div>
+    {b?.comu&&Number(b.pct)>0&&<div className="act-v878372"><em>{t("Els preus del {a} pugen un {p} %",{a:b.any||"banc",p:String(b.pct).replace(".",",")})}</em></div>}
+    {b&&!b.comu&&<div className="act-v878372">
       <label><span>{t("Preus de l’any")}</span><input type="number" inputMode="numeric" min="1990" max={anyAra878372} defaultValue={b.any||""} key={`any-${b.data}`} onBlur={e=>{const v=parseInt(e.target.value,10);posa878372({any:v>1990&&v<=anyAra878372?v:null})}}/></label>
       <label><span>{t("Actualització (%)")}</span><input type="text" inputMode="decimal" defaultValue={b.pct?String(b.pct).replace(".",","):""} key={`pct-${b.data}`} placeholder="0" onBlur={e=>{const v=parseNum8770(e.target.value);posa878372({pct:Number.isFinite(v)?Math.round(v*100)/100:0})}}/></label>
-      <a className="button secondary" href="https://www.ine.es/varipc/" target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden="true"/> {t("Calcular l’IPC (INE)")}</a>
+      <a className="button secondary" href={urlIpc878460(b.any)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden="true"/> {t("Calcular l’IPC (INE)")}</a>
       {Number(b.pct)>0&&<em>{t("Els preus del {a} pugen un {p} %",{a:b.any||"banc",p:String(b.pct).replace(".",",")})}</em>}
     </div>}
+    {b&&!window.__acoEmpresa&&<CompartirBanc878460 b={b}/>}
     {err&&<p className="err">{err}</p>}
   </div>;
 }
@@ -13667,7 +13724,8 @@ function MargesObra878378({data={},setData,readOnly=false}){
 function MargesAjustos878378(){
   const[v,setV]=useState(()=>lsJson8779(MARGES_KEY878378,{})||{});
   const set=x=>setV(o=>{const n={...o,...x};lsSet8779(MARGES_KEY878378,JSON.stringify(n));return n});
-  return <MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/>;
+  // el compte de l'Héctor no té «Preus» al menú: el banc de preus és aquí
+  return <>{!PERFIL878304&&<div className="banc-ajustos-v878460"><BancPreus878368/></div>}<MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/></>;
 }
 function Logistica878368({obra={},cond={},setCond,readOnly}){
   const k={...COND_DEFECTE,...cond};
@@ -18698,7 +18756,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.459",
+    app_version:"87.460",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

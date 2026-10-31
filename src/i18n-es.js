@@ -4955,4 +4955,13 @@ export default {
   "Revisa la quantitat": "Revisa la cantidad",
   "Tornar enrere": "Volver atrás",
   "Fer el pressupost amb IA": "Hacer el presupuesto con IA",
+"Banc comú": "Banco común",
+"Compartir amb tots els comptes": "Compartir con todas las cuentas",
+"Compartit amb tots els comptes": "Compartido con todas las cuentas",
+"Deixar de compartir": "Dejar de compartir",
+"Actualitzar el banc comú": "Actualizar el banco común",
+"Pujant…": "Subiendo…",
+"Tots els comptes faran servir els preus de «{n}». Compartir-lo?": "Todas las cuentas usarán los precios de «{n}». ¿Compartirlo?",
+"Els comptes deixaran de veure aquest banc. Deixar de compartir-lo?": "Las cuentas dejarán de ver este banco. ¿Dejar de compartirlo?",
+"Falta executar a Supabase l’SQL del banc comú.": "Falta ejecutar en Supabase el SQL del banco común.",
 };

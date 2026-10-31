@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.459";
+const VERSION = "V87.460";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -1042,6 +1042,14 @@ async function syncNow() { await cycle({ returning: true }); }
 // V87.409 · funcions del núvol que es criden amb el compte connectat (p. ex. les peticions de signatura a distància)
 async function rpc(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/rest/v1/rpc/${name}`, { method: "POST", body: body || {} }); }
 async function callFunction(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/functions/v1/${name}`, { method: "POST", body }); }
+// V87.460 · Banc de preus comú (una sola fila, supabase/aco_banc_comu_v878460.sql). «cap» no porta les partides: només es baixen si ha canviat la versió.
+const bancComu = {
+  cap: async () => { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return (await api(`/rest/v1/aco_banc_comu?id=eq.1&select=nom,any_preus,pct,n,versio`))?.[0] || null; },
+  baixa: async () => (await api(`/rest/v1/aco_banc_comu?id=eq.1&select=dades`))?.[0]?.dades || [],
+  puja: b => api(`/rest/v1/aco_banc_comu?on_conflict=id`, { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: [{ id: 1, nom: b.nom || "", any_preus: b.any || null, pct: Number(b.pct) || 0, n: b.partides.length, dades: b.partides, versio: b.data || new Date().toISOString(), updated_at: new Date().toISOString() }] }),
+  posa: p => api(`/rest/v1/aco_banc_comu?id=eq.1`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: { ...p, updated_at: new Date().toISOString() } }),
+  treu: () => api(`/rest/v1/aco_banc_comu?id=eq.1`, { method: "DELETE", headers: { Prefer: "return=minimal" } }),
+};
 async function switchTo(user, pass) {
   const was = active; active = false;
   try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
@@ -1082,7 +1090,7 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, bancComu, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
   session = readSession();
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
