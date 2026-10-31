@@ -1,0 +1,77 @@
+/* V87.452 · Les xifres de dalt de Facturació, Certificacions i Rendiment, el mateix bloc a totes tres. Al mòbil, de dos en dos i baixes; menys espai entre
+   targetes perquè a la primera pantalla hi càpiga la feina. */
+html body .xifres-v878426 .x.iva{--c:#94A3B8}
+html body .xifres-v878426 .x.tot{--c:#0F172A}
+html body .fact-v878426 .fact-xifres-v878452{align-self:stretch;width:100%;margin-bottom:2px}
+
+@media (max-width:767px){
+  /* les targetes, més juntes: el marge de la V87.451 i el buit del contenidor se sumaven (28 px) */
+  html body .obra-page-v87105 .stack,
+  html body .obra-page-v87105 .fact-layout-v87101{gap:8px!important}
+  html body .obra-page-v87105 .stack>details.card.bloc-v878426,
+  html body .obra-page-v87105 .fact-layout-v87101>details.card.bloc-v878426{margin-bottom:0!important}
+
+  /* les xifres, de dos en dos */
+  html body .xifres-v878426,
+  html body .xifres-v878426.x4{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  html body .xifres-v878426:not(.x4) .x:first-child{grid-column:1/-1}
+  html body .xifres-v878426 .x{flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:center;gap:1px;padding:8px 10px 8px 14px;min-width:0}
+  html body .xifres-v878426 .x small{font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .xifres-v878426 .x b{font-size:17px;line-height:1.25;white-space:nowrap}
+  html body .xifres-v878426 .x .barra{flex:none;height:5px;margin-top:4px}
+  html body .xifres-v878426 .x em{font-size:12px;line-height:1.2}
+}
+
+/* Certificació › Partides: fora de l'ordinador petit el codi va a la seva columna; al mòbil, amb el concepte */
+html body .cod-m-v878452,html body .ut-m-v878452{display:none}
+html body .edita-fix-v878452{display:contents}
+html body .tot-m-v878452{display:none}
+
+@media (max-width:760px){
+  /* el capítol, com al pressupost: secundari, i obert en blau clar i fix a sota de «Partides» */
+  html body .cert-grid-wrap-v69 button.cert-cap-v69.cap-m-v878429{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:1px 8px;align-items:center;min-height:52px;margin:0 0 6px;padding:6px 10px 6px 12px!important;border:1px solid var(--co-line,#DCE3E7)!important;border-radius:12px!important;background:#F8FAFC!important;color:var(--co-ink,#0f172a)!important;box-shadow:none!important}
+  html body .cert-grid-wrap-v69 button.cap-m-v878429 .nom{grid-column:1;flex:none;font:700 14.5px/1.25 var(--app-font,inherit);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .cert-grid-wrap-v69 button.cap-m-v878429 .gl{display:none}
+  html body .cert-grid-wrap-v69 button.cap-m-v878429 .cert-cap-totals-v87223{grid-column:1;display:flex;gap:2px 12px;margin:0!important;font-size:12.5px;justify-content:flex-start;justify-self:start;white-space:nowrap}
+  html body .cert-grid-wrap-v69 button.cap-m-v878429 .chev{grid-column:2;grid-row:1/3;width:16px;height:16px;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+  html body .cert-grid-wrap-v69 button.cap-m-v878429.obert{position:sticky;top:calc(var(--cap-obra-v878451) + 52px);z-index:38;background:#DBEAFE!important;border-color:#93C5FD!important}
+  html body .cert-grid-wrap-v69 button.cap-m-v878429.obert .nom{color:#1E3A8A}
+  html body .cert-grid-wrap-v69 button.cap-m-v878429.obert .chev{transform:rotate(-90deg);color:#1E3A8A}
+
+  /* la partida: el concepte i tres línies (pressupost, aquesta i a origen) */
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row{position:relative;grid-template-columns:minmax(0,1fr) 64px 92px!important;grid-template-areas:"c c c" "d e f" "j k l" "m n o"!important;gap:0 4px!important;margin:0 0 6px;padding:7px 10px 6px!important;border:1px solid var(--co-line,#DCE3E7)!important;border-radius:12px}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row>div:nth-child(1),html body .cert-grid-wrap-v69 .cert-grid-v69.row>div:nth-child(2){display:none!important}
+  html body .cert-grid-v69.row .cod-m-v878452{display:inline;margin-right:6px;font-weight:700;color:var(--co-ink-3,#5F7075);font-size:12.5px}
+  html body .cert-grid-v69.row .ut-m-v878452{display:inline;font-style:normal;color:var(--co-ink-3,#5F7075)}
+  html body .cert-grid-v69.row .concept-line-v877{display:block}
+  html body .cert-grid-v69.row .concept-line-v877>span{display:block;padding-right:38px;font-size:13.5px;line-height:1.3;font-weight:600}
+  html body .cert-grid-v69.row .cert-desc-hint-v87216{display:none!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-actions-btn-v878133{position:absolute;top:2px;right:2px;display:flex;align-items:center;justify-content:center;width:38px;height:38px;min-width:0;min-height:38px;margin:0;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;font-size:0!important;line-height:0;color:var(--co-ink-3,#5F7075)}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-actions-btn-v878133::after{content:"⋯";font-size:20px;line-height:1;font-weight:700;color:var(--co-ink-2,#334155)}
+  html body .cert-grid-v69.row>div:nth-child(n+4){padding:1px 0!important;margin:0!important;border:0!important;font-size:13px;justify-content:center;min-height:26px}
+  html body .cert-grid-v69.row>div[data-m]{flex-direction:row;align-items:center;justify-content:flex-start;gap:4px;white-space:nowrap}
+  html body .cert-grid-v69.row>div[data-m]::before{content:attr(data-m);flex:none;width:68px;margin:0;font:600 12.5px var(--app-font,inherit);letter-spacing:0;text-transform:none;color:var(--co-ink-3,#5F7075)}
+  html body .cert-grid-v69.row .cert-current-cell-v8780{flex:1 1 auto;min-width:0;width:auto;gap:3px}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-current-cell-v8780{position:relative;flex:1 1 auto;width:auto;max-width:none}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-edit-input-v69{width:100%!important;max-width:none!important;min-width:0;height:34px;min-height:34px;padding:0 36px 0 6px!important;font-size:16px!important;text-align:right}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .measure-btn-v8780{position:absolute;right:2px;top:2px;width:30px;height:30px;min-height:30px;padding:0}
+  html body .cert-grid-v69.row .cert-q-v878364{min-height:30px;padding:2px 8px;font-size:13.5px}
+
+  /* els totals, cada un a la seva línia */
+  html body .cert-grid-wrap-v69 .cert-grid-v69.total{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:2px 10px!important;width:auto!important;padding:8px 10px!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.total>div{grid-column:auto!important;min-width:0;padding:0!important;border:0!important;background:none!important;text-align:left;font-size:12.5px;white-space:nowrap}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.total>div:nth-child(even){text-align:right;font-variant-numeric:tabular-nums}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.total>div:nth-child(3),html body .cert-grid-wrap-v69 .cert-grid-v69.total>div:nth-child(4){font-size:14.5px;font-weight:700;color:#1E3A8A}
+}
+
+/* Editant una certificació: el total, Cancel·lar i Guardar sempre a la vista */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .edita-fix-v878452{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom,0px));z-index:80;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-top:1px solid var(--co-line,#DCE3E7);box-shadow:0 -6px 16px rgba(16,24,40,.1)}
+  html body .edita-fix-v878452>button{margin:0;white-space:nowrap}
+  html body .edita-fix-v878452>button svg{width:17px;height:17px}
+  html body .tot-m-v878452{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+  html body .tot-m-v878452 small{font-size:12px;color:var(--co-ink-3,#5F7075);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .tot-m-v878452 b{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  html body .obra-page-v87105:has(.edita-fix-v878452){padding-bottom:76px}
+  html body:has(.edita-fix-v878452) .obra-plus-v878302{display:none}
+}

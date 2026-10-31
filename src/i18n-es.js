@@ -4891,4 +4891,5 @@ export default {
 "Altres %": "Otros %",
 "Oferta": "Oferta",
 "Desar sense canviar el preu ({p})": "Guardar sin cambiar el precio ({p})",
+"Aquesta": "Esta",
 };
