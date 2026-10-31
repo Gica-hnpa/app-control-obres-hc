@@ -49,8 +49,8 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
     i el correu del propietari el posa el servidor.
   - Edge Function `verifactu` (V87.285, `supabase/functions/verifactu/index.ts`) i SQL `aco_verifactu_v87285.sql`:
     factures amb VeriFactu. **Encara no instal·lades** (vegeu `docs/verifactu-pla.md`).
-  - Edge Function `llegir-albara` (codi a `supabase/functions/llegir-albara/index.ts`) per llegir albarans
-    amb Claude (Anthropic, model Haiku 4.5). **Encara no desplegada.**
+  - Edge Function `aco-ia` (V87.458, `supabase/functions/aco-ia/index.ts`): tota la IA de l’app (albarans, factures, PDF,
+    pressupost i preus) amb Claude. **Encara no instal·lada** (passos a `docs/pressupost-ia.md`).
   - Funció `aco_espai()` (V87.263, `supabase/aco_espai_v87263.sql`): mida de la base de dades i dels arxius per a
     Configuració → «Espai al núvol» (només l’Héctor; els comptes d’empresa reben null). És «security definer»: el
     Security Advisor la marca com a avís, i és d’esperar.
@@ -76,7 +76,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
 │  ├─ src\main.jsx                     ← ordre d’arrencada: bigStore → localDiskSync → cloudSync → App
 │  ├─ src\bigStore.js · localDiskSync.js · cloudSync.js · cloudConfig.js
 │  ├─ src\theme-v87249.css … theme-v87257.css   ← estils (el número de versió visible és al 249)
-│  ├─ supabase\*.sql · supabase\functions\llegir-albara\
+│  ├─ supabase\*.sql · supabase\functions\aco-ia\
 │  ├─ tools\proves\                    ← proves automàtiques (NO pujar a GitHub: hi ha contrasenyes)
 │  ├─ docs\estado-actual.md
 │  ├─ .gitignore                       ← el que no es puja mai (node_modules, dist, tools\proves, .bat…)
@@ -2588,6 +2588,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Llista de preus:** cada família, una caixa tancada i separada de la següent (`.fam-v878456`), amb les files alternes.
     - **Descompost de la fitxa al mòbil:** l'import no es parteix en vertical amb conceptes llargs.
     - Prova: `v457test.mjs` (10). Adaptades `v451test` i `v455test`. `v451test` va fallar un cop al mòbil i, tornada a passar sense tocar l'app, en verd (causa no aclarida; `resum362test` va fer el mateix a la V87.456).
+  - **V87.458 · La IA llegeix sola albarans, factures i PDF** (l'Héctor, 31/10/2026: «mira'm doncs com està tema lectura pdf… recordo que havia de copiar text a IA i no ho feia automàtic… ha de ser automàtic, i la factura igual»). **Funció `aco-ia`, escrita però NO instal·lada: fins que l'Héctor la instal·li, l'app fa com abans.**
+    - **Una sola funció del servidor** (`supabase/functions/aco-ia/index.ts`; substitueix `llegir-albara` i `pressupost-ia`, que no es van instal·lar mai i s'han esborrat): `ping`, `despesa`, `pressupost`, `partides`, `preus`. Sonnet 5.5 per llegir i Opus 5.5 per fer partides i preus (es poden canviar amb secrets). Les dues primeres, amb resposta en JSON amb esquema (`output_config.format`). La clau mai no surt del servidor. Mentre la IA treballa s'envien espais perquè Supabase no talli als 150 s (el JSON se'ls salta), i es talla als 370 s (el límit és 400). **Límit per compte i mes** (`IA_LIMIT_MES`, de sèrie 300; `supabase/aco_ia_v878458.sql`, amb `grant`; sense la taula, sense límit).
+    - **`src/iaObra.js`**: `iaActiva` (una pregunta per sessió), `iaCrida`, `trossosText` (trossos que es toquen 20 línies), `partidesDeIa` (treu les repetides), `pressupostDeIa`, `despesaDeIa`, `albaransDeFactura`. `window.__acoIaOff878458` per provar el camí sense funció.
+    - **Despeses:** la foto o el PDF es llegeixen sols en triar-los (un sol cop: `llegit878458`). La IA diu si és albarà o factura i, si és una factura, quins albarans inclou (`cobreix`) i si és inversió del subjecte passiu. Amb la funció, fora el botó de ChatGPT.
+    - **Pressupost en PDF** (`PdfPressupost878305`, `dubtosPdf878458`): primer la lectura de l'app (gratis); si no hi troba res, si el total no quadra o si n'hi ha més d'un 20 % per revisar, la IA, sola, a trossos de 30.000 lletres (escanejat: l'arxiu, fins a 14 MB). «Tornar-lo a llegir amb la IA». **Amidaments en PDF:** si l'app no hi troba res, la IA.
+    - **Preus amb IA** (`PreusIa878368`): de 15 en 15 amb la funció nova.
+    - Estils `src/theme-v878458.css`. Prova: `v458test.mjs` (9). El Supabase de proves té `/functions/v1/aco-ia` i `POST /__aco-ia {limit, falla}`. Adaptades `pressupost368test` i `pdfpressuposttest` (amb `SENSE_IA`). **Falta provar-ho amb la IA de debò** (cal la clau).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2778,7 +2785,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.457 a Render):**
+**Estat (publicada la V87.458 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

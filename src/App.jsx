@@ -13,6 +13,7 @@ import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878
 import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
+import {iaCridable,iaActiva,iaSabuda,iaCrida,arxiuDeDataUrl,pressupostDeIa,despesaDeIa,albaransDeFactura} from "./iaObra.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
 import {perFamilies as perFamilies878456,perCategories as perCategories878456} from "./familiesRecursos.js";
 import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc,teTramit,FITXA_VISITA,promptFitxa,llegirFitxa} from "./encarrecsTecnics.js";
@@ -34,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.457";
+const APP_VERSION878264="87.458";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13639,6 +13640,9 @@ function Logistica878368({obra={},cond={},setCond,readOnly}){
     {pct>0&&<p className="pct"><b>+{pct} %</b> {t("de mà d’obra per l’accés")}</p>}
   </div>;
 }
+const iaErr878458=e=>i18nT(String(e?.message||e));
+// V87.458 · la lectura de l'app no és de fiar si no hi troba res, si el total no quadra amb el del PDF o si n'hi ha moltes per revisar
+const dubtosPdf878458=r=>!r.partides.length||(r.totalPdf!=null&&Math.abs(r.totalPdf-(r.total||0))>Math.max(1,r.totalPdf*0.01))||r.partides.filter(p=>p.revisar).length>r.partides.length*0.2;
 function PreusIa878368({obra={},cond={},linies=[],close,aplica}){
   const sense=linies.filter(l=>!(Number(l.pu)>0));
   const semblants=linies.filter(l=>Number(l.pu)>0&&l.semblant878368);
@@ -13649,7 +13653,8 @@ function PreusIa878368({obra={},cond={},linies=[],close,aplica}){
   const[err,setErr]=useState("");
   const[msg,setMsg]=useState("");
   const[resposta,setResposta]=useState("");
-  const[off,setOff]=useState(()=>!!window.__acoIaPressupostOff878368||!window.__acoCloud?.callFunction);
+  const[off,setOff]=useState(()=>iaSabuda()!==true);
+  useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setOff(!x)});return()=>{viu=false}},[]);
   const llista=ambSemblants?[...sense,...semblants]:sense;
   const ctx={obra:{nom:obra.nom,adreca:obra.adreca,poblacio:obra.poblacio,tipus:obra.tipus},cond};
   const prompt=planolsSi=>promptPreusIa({...ctx,partides:llista,ambPlanols:planolsSi});
@@ -13667,18 +13672,17 @@ function PreusIa878368({obra={},cond={},linies=[],close,aplica}){
   async function directe(){
     setErr("");setEstat("fent");const preus={},avisos=[];
     try{
-      for(let i=0;i<llista.length;i+=25){
-        const tros=llista.slice(i,i+25);
+      for(let i=0;i<llista.length;i+=15){
+        const tros=llista.slice(i,i+15);
         setMsg(t("Preus de les partides {a} a {b} de {n}…",{a:i+1,b:i+tros.length,n:llista.length}));
-        const r=await window.__acoCloud.callFunction("pressupost-ia",{prompt:promptPreusIa({...ctx,partides:tros,ambPlanols:planols.length>0}),imatges:planols.map(x=>({tipus:x.tipus,dades:x.dades}))});
-        if(r?.error)throw Object.assign(new Error(r.error),{status:502});
+        const r=await iaCrida("preus",{text:promptPreusIa({...ctx,partides:tros,ambPlanols:planols.length>0}),arxius:planols.map(x=>({tipus:x.tipus,dades:x.dades}))});
         const lr=respostaIa(r?.text||"",tros.map(l=>l.codi));Object.assign(preus,lr.preus);avisos.push(...lr.avisos);
       }
       setEstat("");setMsg("");aplica(preus,avisos);
     }catch(e){
       setEstat("");setMsg("");
-      if(e.status===404||/not found|requested function/i.test(String(e.message))){window.__acoIaPressupostOff878368=true;setOff(true);setErr(t("La IA de l’app encara no està activada: fes-ho amb Claude o ChatGPT."))}
-      else setErr(t("No s’ha pogut fer: {e}",{e:String(e?.message||e)}));
+      if(e.status===404){setOff(true);setErr(t("La IA de l’app encara no està activada: fes-ho amb Claude o ChatGPT."))}
+      else setErr(t("No s’ha pogut fer: {e}",{e:iaErr878458(e)}));
     }
   }
   function copia(url){
@@ -13747,6 +13751,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
         r=llegirAmidamentsPdf(ls);
         // un PDF de pressupost (amb preus i sense mides) també val
         if(!r.partides.length){const p=llegirPressupostPdf(ls);if(p.partides.length)r={font:"PDF",nom:"",caps:p.caps,partides:p.partides.map(x=>({...x,mides:[]})),avisos:p.avisos}}
+        if(!r.partides.length&&await iaActiva()){const ia=await pressupostDeIa(file,ls.map(l=>l.text).join("\n"));r={font:"PDF",nom:"",caps:[...new Set(ia.partides.map(x=>x.cap))],partides:ia.partides.map(x=>({...x,mides:[]})),avisos:ia.avisos}}
       }else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){
         const wb=XLSX.read(buf,{type:"array",cellDates:false});
         r=llegirExcelAmidaments(wb.SheetNames.map(n=>({nom:n,files:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})})));
@@ -13903,6 +13908,8 @@ function PdfPressupost878305({onImport,close}){
   const[fitxer,setFitxer]=useState(null);
   const[textPdf,setTextPdf]=useState("");
   const[ia,setIa]=useState(null); // {de:"tria"|"revisa", answer, msg}
+  const[iaOn,setIaOn]=useState(()=>iaSabuda()===true);const[pasIa,setPasIa]=useState("");
+  useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setIaOn(x)});return()=>{viu=false}},[]);
   const iaRes=useMemo(()=>ia?.answer?parseAiBudget878256(ia.answer):null,[ia?.answer]);
   const nm=v=>typeof v==="number"?v:(numeroPdf878305(v)??0);
   const coma=v=>String(Number(v)||0).replace(".",",");
@@ -13912,11 +13919,24 @@ function PdfPressupost878305({onImport,close}){
     setErr("");setEstat("llegint");setFitxer(f);setTextPdf("");setRes(null);setFiles([]);
     try{
       const {linies}=await liniesPdf(pdfjsLib,await f.arrayBuffer());
-      setTextPdf(linies.map(l=>l.text).join("\n"));
+      const text=linies.map(l=>l.text).join("\n");setTextPdf(text);
       const r=llegirPressupostPdf(linies);
-      if(!r.partides.length){setErr(t("L’app no hi ha trobat cap partida (si el PDF és una foto o un escaneig, no té text per llegir). Prova de llegir-lo amb ChatGPT o Claude."));setEstat("tria");return}
+      let fallaIa=false;
+      if(dubtosPdf878458(r)&&await iaActiva()){if(await llegeixIa(f,text,r))return;fallaIa=true}
+      if(!r.partides.length){if(!fallaIa)setErr(t("L’app no hi ha trobat cap partida (si el PDF és una foto o un escaneig, no té text per llegir). Prova de llegir-lo amb ChatGPT o Claude."));setEstat("tria");return}
       setRes(r);setFiles(r.partides.map((p,i)=>({...p,q:coma(p.q),pu:coma(p.pu),_i:i,sel:!(p.revisar&&!p.imp)})));setEstat("revisa");
     }catch(e){setErr(t("No s’ha pogut llegir el PDF: {e}",{e:String(e?.message||e)}));setEstat("tria")}
+  }
+  // V87.458 · la IA llegeix el PDF sola: el text a trossos o, si és escanejat, l'arxiu
+  async function llegeixIa(f,text,local){
+    setErr("");setEstat("llegint");setPasIa(t("Llegint-lo amb la IA…"));
+    try{
+      const r=await pressupostDeIa(f,text,(i,n)=>setPasIa(n>1?t("Llegint-lo amb la IA: {i} de {n}…",{i,n}):t("Llegint-lo amb la IA…")));
+      setPasIa("");
+      if(!r.partides.length)throw new Error("La IA no hi ha trobat cap partida.");
+      setRes({totalPdf:r.total||local?.totalPdf||null,avisos:r.avisos,ia:true});
+      setFiles(r.partides.map((p,i)=>({...p,q:coma(p.q),pu:coma(p.pu),_i:i,sel:true})));setEstat("revisa");return true;
+    }catch(e){setPasIa("");setErr(t("No s’ha pogut llegir amb la IA: {e}",{e:iaErr878458(e)}));setEstat(local?.partides?.length?"revisa":"tria");return false}
   }
   function copiaIa(url,nom){
     const amb=!!textPdf&&textPdf.length<=IA_PDF_MAX878305;
@@ -13944,7 +13964,7 @@ function PdfPressupost878305({onImport,close}){
     if(r){alert(r.nou?t("Fet: s’ha creat el pressupost «{nom}» amb {n} partides. El que ja hi havia no s’ha tocat.",{nom:r.nom,n:r.partides}):t("Fet: s’han posat {n} partides al pressupost.",{n:r.partides}));close?.()}
     else{setErr(t("No s’ha pogut desar."));setEstat("revisa")}
   }
-  const botoIa=(cls="secondary")=><button type="button" className={`${cls} pdf-ia-obre-v878305`} onClick={()=>setIa({de:estat==="revisa"?"revisa":"tria",answer:"",msg:""})}>{t("Llegir-lo amb ChatGPT o Claude")}</button>;
+  const botoIa=(cls="secondary")=>iaOn?<button type="button" className={`${cls} pdf-ia-obre-v878305`} disabled={estat==="llegint"} onClick={()=>llegeixIa(fitxer,textPdf,res)}>{t("Tornar-lo a llegir amb la IA")}</button>:<button type="button" className={`${cls} pdf-ia-obre-v878305`} onClick={()=>setIa({de:estat==="revisa"?"revisa":"tria",answer:"",msg:""})}>{t("Llegir-lo amb ChatGPT o Claude")}</button>;
   return <Modal title={t("Llegir un pressupost en PDF")} close={close}><div className="pdf-press-v878305">
     {ia?<div className="ai-budget-v878256 pdf-ia-v878305">
       <section>
@@ -13961,11 +13981,13 @@ function PdfPressupost878305({onImport,close}){
       <div className="modal-actions"><button type="button" className="secondary" onClick={()=>setIa(null)}>{t("Tornar")}</button><span className="sp"/><button type="button" className="primary" disabled={!iaRes?.partides} onClick={revisaIa}>{t("Revisar les partides")}{iaRes?.partides?` (${iaRes.partides})`:""}</button></div>
     </div>:(estat==="tria"||estat==="llegint")?<>
       <p>{t("Tria el PDF del pressupost. L’app en llegeix els capítols i les partides i te les ensenya abans de desar-les.")}</p>
+      {pasIa&&<p className="pas-ia-v878458">{pasIa}</p>}
       {err&&<p className="err-v878305">{err}</p>}
       <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button>{fitxer&&err&&estat==="tria"&&botoIa("primary")}<label className={`${fitxer&&err?"secondary":"primary"} action-upload-v87213 pdf-tria-v878305 ${estat==="llegint"?"off":""}`}>{estat==="llegint"?t("Llegint…"):fitxer&&err?t("Un altre PDF"):t("Triar el PDF")}<input type="file" accept="application/pdf,.pdf" disabled={estat==="llegint"} onChange={e=>{tria(e.target.files?.[0]);e.target.value=""}}/></label></div>
     </>:<>
       <div className="pdf-resum-v878305"><b>{t("{n} partides en {c} capítols",{n:files.length,c:caps.length})}</b><span>{t("Total del que has triat: {t}",{t:money(total)})}{res?.totalPdf!=null?<> · {t("Total del PDF: {t}",{t:money(res.totalPdf)})}</>:null}</span>{nRevisar>0&&<em>⚠ {t("{n} partides per revisar (marcades en groc)",{n:nRevisar})}</em>}</div>
       {err&&<p className="err-v878305">{err}</p>}
+      {res?.ia&&res.avisos?.length>0&&<p className="avis-ia-v878458">{res.avisos.join(" · ")}</p>}
       <div className="pdf-taula-v878305">{caps.map(c=><section key={c}><h4>{c}</h4><table><thead><tr><th></th><th>{t("Codi")}</th><th>{t("Ut")}</th><th>{t("Concepte")}</th><th>{t("Quantitat")}</th><th>{t("Preu")}</th><th>{t("Import")}</th></tr></thead><tbody>{files.filter(p=>p.cap===c).map(p=><tr key={p._i} className={`${p.sel?"":"off"} ${p.revisar?"revisar":""}`}>
         <td><input type="checkbox" checked={!!p.sel} onChange={e=>ch(p._i,"sel",e.target.checked)} aria-label={t("Incloure")}/></td>
         <td className="codi">{p.codi}</td>
@@ -18620,7 +18642,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.457",
+    app_version:"87.458",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -21534,16 +21556,12 @@ function readAlbaraText878259(text){
   });
   return {proveidor:prov.replace(/\s{2,}.*/,"").slice(0,80),numero,data,base:base||(total&&ivaPct?total/(1+ivaPct/100):0),iva:ivaPct||(base&&total?Math.round((total/base-1)*100):0),total,linies};
 }
-// Lectura directa amb IA (funció «llegir-albara» de Supabase). Si no està configurada, retorna null.
-let albaraAiOff878259=false;
+// V87.458 · Lectura directa amb IA (funció «aco-ia» de Supabase). Si no està instal·lada, retorna null.
 async function readAlbaraAI878259(a){
-  if(albaraAiOff878259||!window.__acoCloud?.callFunction)return null;
-  const src=a.pdf||a.foto;if(!src)return null;
-  const [h,b]=String(src).split(",");const tipus=(h.match(/data:([^;]+)/)||[])[1]||"image/jpeg";
-  try{const r=await window.__acoCloud.callFunction("llegir-albara",{tipus,dades:b,text:String(a.pdfText||"").slice(0,8000)});if(r?.error)throw new Error(r.error);return r}
-  catch(e){if(e.status===404||/not found|requested function/i.test(e.message)){albaraAiOff878259=true;return null}
-    // Sense connexió o sense sessió del núvol: es passa al text del PDF / ChatGPT.
-    if(!e.status)return null;throw e}
+  if(!iaCridable()||!await iaActiva())return null;
+  const arxiu=arxiuDeDataUrl(a.pdf||a.foto);if(!arxiu&&!a.pdfText)return null;
+  try{return despesaDeIa(await iaCrida("despesa",{arxius:arxiu?[arxiu]:[],text:String(a.pdfText||"").slice(0,8000)}))}
+  catch(e){if(e.offline||e.status===404)return null;throw e}
 }
 function fillAlbara878259(x,p){
   const fmt=v=>v?String(Math.round(v*100)/100).replace(".",","):"";
@@ -22304,6 +22322,8 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
   const ivaNum=a.isp?0:(a.iva===""||a.iva==null?21:parseNum8770(a.iva));
   const totalAuto=baseNum?baseNum*(1+ivaNum/100):0;
   const[llegint,setLlegint]=useState(false);
+  const[iaOn,setIaOn]=useState(()=>iaSabuda()===true);
+  useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setIaOn(x)});return()=>{viu=false}},[]);
   // Llegeix l'albarà sol: primer amb la IA directa (si està configurada) i, si no, amb el text del PDF.
   async function autoRead(cur){
     setLlegint(true);setMsg(i18nT("Llegint l’albarà…"));
@@ -22311,13 +22331,20 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
     if(cur.isNew&&!cur.meva&&tipusDespesa878311(cur)==="Albarà"&&/\bfactura\b/i.test(cur.pdfText||"")&&!/\balbar[àaá]n?\b/i.test(cur.pdfText||""))setA(x=>({...x,tipus:"Material"}));
     try{
       const ai=await readAlbaraAI878259(cur);
-      if(ai){setA(x=>fillAlbara878259(x,ai));setMsg(i18nT("Llegit amb IA: {n} línies{total}. Revisa-ho abans de desar.",{n:(ai.linies||[]).length,total:ai.total?` · ${i18nT("total")} ${money(+ai.total||0)}`:""}));return}
+      if(ai){setA(x=>{
+        const y=fillAlbara878259(x,ai);if(!x.isNew||x.meva)return y;
+        // la IA diu si és albarà o factura; si és una factura, també quins albarans inclou
+        const tipus=ai.isp?"Subcontracta":["Albarà","Material"].includes(tipusDespesa878311(x))&&ai.tipusApp?ai.tipusApp:tipusDespesa878311(x);
+        const cob=tipus!=="Albarà"&&x.obraId?albaransDeFactura(ai.albarans,tots.filter(z=>z.id!==x.id&&!z.meva&&tipusDespesa878311(z)==="Albarà"&&z.obraId===x.obraId)):[];
+        return {...y,tipus,...(ai.isp?{isp:true}:{}),...(cob.length?{cobreix:cob}:{})};
+      });setMsg(i18nT("Llegit amb IA: {n} línies{total}. Revisa-ho abans de desar.",{n:(ai.linies||[]).length,total:ai.total?` · ${i18nT("total")} ${money(+ai.total||0)}`:""}));return}
       if(String(cur.pdfText||"").length>40){const p=readAlbaraText878259(cur.pdfText);if(p.total||p.base||p.linies.length){setA(x=>fillAlbara878259(x,p));setMsg(i18nT("Llegit del PDF: {n} línies{total}. Revisa-ho abans de desar.",{n:p.linies.length,total:p.total?` · ${i18nT("total")} ${money(p.total)}`:""}));return}}
-      setMsg(cur.pdf||cur.foto?i18nT("No l’he pogut llegir sol: posa el total a mà o fes servir «Llegir amb ChatGPT».") :"");
-    }catch(e){setMsg(i18nT("No s’ha pogut llegir amb IA: {error}. Pots fer-ho amb ChatGPT.",{error:e?.message||e}))}
+      setMsg(cur.pdf||cur.foto?(iaSabuda()===true?i18nT("No l’he pogut llegir: posa les dades a mà."):i18nT("No l’he pogut llegir sol: posa el total a mà o fes servir «Llegir amb ChatGPT».")):"");
+    }catch(e){setMsg(i18nT("No s’ha pogut llegir: {error}. Posa les dades a mà.",{error:iaErr878458(e).replace(/\.$/,"")}))}
     finally{setLlegint(false)}
   }
-  useEffect(()=>{if(a.isNew&&(a.pdf||a.foto)&&!a.__llegit){setA(x=>({...x,__llegit:true}));autoRead(a)}},[]);
+  const llegit878458=useRef(false);
+  useEffect(()=>{if(a.isNew&&(a.pdf||a.foto)&&!a.__llegit&&!llegit878458.current){llegit878458.current=true;setA(x=>({...x,__llegit:true}));autoRead(a)}},[]);
   async function photo(file){if(!file)return;try{let r;if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)){r=await albaraFromPdf878259(file)}else{r={foto:await compressImage878259(file),pdf:"",tePdf:false,pdfNom:"",pdfText:""}}setA(x=>({...x,...r}));autoRead({...a,...r})}catch(e){alert(e.message)}}
   const teText=String(a.pdfText||"").length>40;
   function copyPrompt(open){const ok=copyText878256(albaraPrompt878259(a.pdfText||""));setMsg(ok?(teText?i18nT("Copiat, amb el text del PDF. A ChatGPT, enganxa-ho (Ctrl+V) i envia: no cal adjuntar res."):i18nT("Instruccions copiades. A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa el text (Ctrl+V).")):i18nT("No s’han pogut copiar."));if(open)window.open("https://chatgpt.com/","_blank","noopener,noreferrer")}
@@ -22348,7 +22375,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
   const fotoBloc=<>
     <div className="alb-photo">{a.foto?<img src={a.foto} alt={t("Albarà")}/>:<span>{a.meva?t("Sense tiquet"):t("Sense foto ni PDF")}</span>}<div className="alb-photo-acts"><label className="secondary"><input type="file" accept="image/*" capture="environment" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{a.foto&&!a.pdf&&!a.tePdf?t("Canviar la foto"):t("Fer foto")}</label><label className="secondary"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{photo(e.target.files?.[0]);e.target.value=""}}/>{t("Adjuntar PDF")}</label>{a.pdf&&<button type="button" className="secondary" onClick={()=>openDataUrl878259(a.pdf,a.pdfNom)}>{t("Obrir el PDF")}{a.pdfNom?` · ${a.pdfNom}`:""}</button>}</div></div>
     {(!a.meva||a.foto||a.pdf)&&<div className="alb-ai">
-      {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?t("Llegint…"):t("Llegir automàticament")}</button>}<button type="button" className="secondary" onClick={()=>setAi(true)}>{t("Llegir amb ChatGPT (copiar i enganxar)")}</button></div>
+      {!ai?<div className="alb-ai-btns">{(a.foto||a.pdf)&&<button type="button" className="primary" disabled={llegint} onClick={()=>autoRead(a)}>{llegint?t("Llegint…"):t("Llegir automàticament")}</button>}{!iaOn&&<button type="button" className="secondary" onClick={()=>setAi(true)}>{t("Llegir amb ChatGPT (copiar i enganxar)")}</button>}</div>
       :<div className="box"><b>{t("Llegir amb IA")}</b><ol><li><button type="button" className="link" onClick={()=>copyPrompt(true)}>{t("Copiar les instruccions")}{teText?t(" amb el text del PDF"):""} {t("i obrir ChatGPT")}</button></li><li>{teText?t("A ChatGPT, enganxa-ho i envia (el text del PDF ja hi va inclòs)."):t("A ChatGPT, adjunta-hi la foto o el PDF de l’albarà i enganxa les instruccions.")}</li><li>{t("Copia la resposta i enganxa-la aquí:")}</li></ol><textarea rows={5} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder={t("Proveïdor: …  Total: …  | Concepte | Quantitat | …")}/><div className="row"><button type="button" className="secondary" onClick={()=>setAi(false)}>{t("Tancar")}</button><button type="button" className="primary" onClick={applyAnswer}>{t("Omplir les dades")}</button></div></div>}
       {msg&&<p className="msg">{msg}</p>}
     </div>}

@@ -33,30 +33,25 @@ El **banc de preus** (Preus › Banc de preus, o dins dels Amidaments) s’impor
 de Girona o un export del BEDEC / TCQ. Es desa al compte (també al núvol). Fins a uns 12 MB; si és més gran, cal exportar-ne
 només els capítols que es fan servir.
 
-## La IA dins de l’app (quan l’Héctor ho digui)
+## La IA dins de l’app (V87.458)
 
-La funció del servidor `supabase/functions/pressupost-ia` ja és escrita, **però no instal·lada**.
+La funció del servidor és `supabase/functions/aco-ia/index.ts`. **És escrita però no instal·lada.** Mentre no ho estigui, l’app fa
+com abans: llegeix el que pot sola i, per a la resta, copiar i enganxar a ChatGPT o Claude. En instal·lar-la no cal tocar res de l’app.
 
-**Què fa:**
-- rep les instruccions i, si n’hi ha, fins a 4 plànols (PDF o imatges);
-- crida Claude (model `claude-opus-5-5`, es pot canviar a `claude-sonnet-5-5`);
-- pot buscar preus a internet (el generador de CYPE amb la ubicació de l’obra, bancs públics…);
-- torna el BC3. L’app ho fa sol, de 25 en 25 partides, amb el botó «Fer els preus».
+**Què fa:** llegeix albarans, factures i tiquets (foto o PDF), llegeix pressupostos i amidaments en PDF quan l’app no se’n surt, fa les
+partides d’un pressupost a partir d’un text, un dictat o uns arxius, i busca el preu amb el descompost de les que no en tenen.
 
-**Per activar-la:**
-1. Crear una clau d’API a console.anthropic.com (és de pagament, per ús).
-2. Al panell de Supabase: Edge Functions › Secrets › `ANTHROPIC_API_KEY` = la clau. Si es vol, també `PRESSUPOST_MODEL` i
-   `PRESSUPOST_WEB=0` (per no buscar a internet).
-3. Instal·lar la funció: `supabase functions deploy pressupost-ia`.
+**Passos (només cal fer-los una vegada):**
 
-**Quant costaria:** preus de Claude Opus 5.5, 4 $ per milió de paraules-símbol d’entrada i 20 $ de sortida; la cerca a internet,
-uns 10 $ per cada 1.000 cerques. Un pressupost de 50 partides surt per uns **0,50–1 €** (amb Sonnet 5.5, la meitat).
+1. **Clau d’Anthropic:** a console.anthropic.com, crear un compte de pagament, posar-hi un **límit de despesa mensual** i crear una clau.
+   La clau només es posa a Supabase: no s’escriu mai enlloc més.
+2. **Secret a Supabase:** panell del projecte › Edge Functions › Secrets › `ANTHROPIC_API_KEY` = la clau.
+3. **Límit per compte:** SQL Editor › enganxar `supabase/aco_ia_v878458.sql` › Run.
+4. **Instal·lar la funció:** Edge Functions › Deploy a new function › Via Editor › nom `aco-ia` › enganxar `supabase/functions/aco-ia/index.ts` › Deploy.
+5. **Provar-ho:** a l’app, Despeses › Fer foto d’un albarà: s’ha d’omplir sol.
 
-**Què s’envia a Anthropic:** les partides sense preu, l’adreça de l’obra, les condicions d’accés i els plànols que s’hi posin. Cap
-nom de client.
+**Es pot canviar sense tocar el codi** (Edge Functions › Secrets): `IA_LIMIT_MES` (peticions per compte i mes; de sèrie 300; 0 = sense
+límit), `IA_MODEL_DOC` (de sèrie `claude-sonnet-5-5`), `IA_MODEL_PRES` (de sèrie `claude-opus-5-5`), `IA_WEB=0` (no buscar preus a internet).
 
-## Pendent
-
-- El banc de preus de Girona de l’Héctor (el passarà; si no és en BC3, fer-ne el lector).
-- Llegir els plànols per revisar les quantitats (ara la IA els fa servir per entendre l’obra, però l’app no en treu amidaments).
-- Preguntar a l’Héctor si vol que la IA busqui a internet (més precís però més car i més lent).
+**Abans d’obrir-ho als clients:** les fotos, les factures i les adreces de les obres s’envien a Anthropic per llegir-les. S’ha de dir a
+les condicions del servei; cal parlar-ho amb la gestoria.

@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.457";
+const VERSION = "V87.458";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -1038,7 +1038,7 @@ function typing() { if (holds) return true; const el = document.activeElement; r
 function schedule(ms = 4000) { clearTimeout(timer); timer = setTimeout(() => cycle(), ms); }
 async function syncNow() { await cycle({ returning: true }); }
 // V87.258.2 · entrar amb un altre compte des de la pantalla d'entrada de l'app.
-// V87.259.2 · funcions de Supabase (p. ex. «llegir-albara»), amb la sessió de l'usuari.
+// V87.259.2 · funcions de Supabase (p. ex. «aco-ia»), amb la sessió de l'usuari.
 // V87.409 · funcions del núvol que es criden amb el compte connectat (p. ex. les peticions de signatura a distància)
 async function rpc(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/rest/v1/rpc/${name}`, { method: "POST", body: body || {} }); }
 async function callFunction(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/functions/v1/${name}`, { method: "POST", body }); }
