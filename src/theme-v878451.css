@@ -1,0 +1,140 @@
+/* V87.451 · Saber on som (l'Héctor, 31/10/2026: «remarcar targetes o títols per diferenciar més on estem… una aplicació senzilla i agradable a la vista»).
+   Al mòbil, la capçalera de l'obra ocupava mitja pantalla abans d'arribar al contingut. Ara és una sola tira amb el bloc i l'apartat, i les fases en
+   una línia. Les targetes es diferencien per nivells: la principal oberta té la capçalera plena de color i es queda fixa en baixar; el capítol obert,
+   en blau clar, es queda fix a sota; la partida oberta, en blanc amb la vora blava. */
+
+/* ── Nivell 1: targeta principal oberta ───────────────────────────────────────────────────────────── */
+html body details.card.bloc-v878426[open]>summary,
+html body details.card.plega-v878369[open]>summary,
+html body details.ajustos-bloc-v878366[open]>summary{background:#1D4ED8;border-bottom:0!important;box-shadow:none;color:#fff}
+html body details.card.bloc-v878426[open]>summary .t b,
+html body details.card.plega-v878369[open]>summary .t b,
+html body details.ajustos-bloc-v878366[open]>summary b,
+html body details.card.bloc-v878426[open]>summary .xifra,
+html body details.card.plega-v878369[open]>summary .xifra{color:#fff!important}
+html body details.card.bloc-v878426[open]>summary .t small,
+html body details.card.plega-v878369[open]>summary .t small{color:#DBEAFE!important}
+html body details.card.bloc-v878426[open]>summary>svg:first-child{background:rgba(255,255,255,.18);color:#fff}
+html body details.card.bloc-v878426[open]>summary .chev,
+html body details.card.plega-v878369[open]>summary .chev,
+html body details.ajustos-bloc-v878366[open]>summary .chev{background:rgba(255,255,255,.18);color:#fff}
+html body details.card.bloc-v878426[open]>summary:hover .chev,
+html body details.card.plega-v878369[open]>summary:hover .chev,
+html body details.ajustos-bloc-v878366[open]>summary:hover .chev{background:rgba(255,255,255,.3);color:#fff}
+html body details.card.bloc-v878426[open]>summary .n{background:#fff;color:#9A3412}
+html body details.card.bloc-v878426[open]>summary em.mg-n-v878380{background:#fff;border-color:#fff}
+html body details.card.bloc-v878426[open],
+html body details.card.plega-v878369[open],
+html body details.ajustos-bloc-v878366[open]{border-color:#1D4ED8!important;box-shadow:0 8px 22px rgba(29,78,216,.14)!important}
+/* els avisos, en taronja ple */
+html body details.card.bloc-v878426.avisos-v878426[open]{border-color:#C2410C!important;box-shadow:0 8px 22px rgba(194,65,12,.12)!important}
+html body details.card.bloc-v878426.avisos-v878426[open]>summary{background:#C2410C;box-shadow:none}
+html body details.card.bloc-v878426.avisos-v878426[open]>summary>svg:first-child,
+html body details.card.bloc-v878426.avisos-v878426[open]>summary .chev{background:rgba(255,255,255,.18);color:#fff}
+
+/* ── Nivell 2: secundària oberta i capítol obert ──────────────────────────────────────────────────── */
+html body .bloc-v878426 details.sub-v878426[open]>summary,
+html body details.mes-v878430[open]>summary,
+html body details.plegat-v878366[open]>summary,
+html body details.enc-pas-v878333[open]>summary,
+html body .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426.obert{background:#DBEAFE!important;box-shadow:none;border-bottom:0!important}
+html body .bloc-v878426 details.sub-v878426[open]>summary .t b,
+html body details.mes-v878430[open]>summary b,
+html body details.plegat-v878366[open]>summary b,
+html body .budget-card-v878248 .cap-carta-v878426.obert>.budget-chapter-title-v87230 b{color:#1E3A8A!important;font-weight:700!important}
+html body .bloc-v878426 details.sub-v878426[open],
+html body details.mes-v878430[open],
+html body details.plegat-v878366[open],
+html body details.enc-pas-v878333[open],
+html body .budget-card-v878248 .budget-v25-cap:has(>.cap-carta-v878426.obert){border-color:#93C5FD!important}
+
+/* ── La capçalera de la targeta oberta es queda a la vista en baixar ───────────────────────────────── */
+html body{--cap-obra-v878451:var(--obra-bar-h,46px)}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){html body{--cap-obra-v878451:calc(53px + var(--obra-bar-h,46px))}}
+html body .obra-page-v87105 details.card.bloc-v878426[open]>summary{position:sticky;top:var(--cap-obra-v878451);z-index:40}
+html body .obra-page-v87105 details.card.bloc-v878426[open]{overflow:clip;overflow-clip-margin:24px}
+html body .obra-page-v87105 details.card.bloc-v878426[open]:has(details[open]):has(.menu),
+html body .obra-page-v87105 details.card.bloc-v878426[open]:has(.action-menu-v87213[open]){overflow:visible}
+/* el capítol obert, just a sota de la targeta del pressupost */
+html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap:has(>.cap-carta-v878426.obert){overflow:clip!important;overflow-clip-margin:24px}
+html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426.obert{position:sticky!important;top:calc(var(--cap-obra-v878451) + 60px)!important;z-index:38;backdrop-filter:none}
+/* a l'ordinador i l'iPad, qui es queda fixa és la barra Editar · Imprimir · Accions: la capçalera blava marxa i el capítol va just a sota de la barra */
+@media (min-width:768px){
+  html body .obra-page-v87105 details.pres-bloc-v878427[open]>summary{position:static}
+  html body .obra-page-v87105 .budget-card-v878248.pres-bloc-v878427>.card-head{top:var(--cap-obra-v878451);margin:0!important;padding:8px 12px!important;min-height:0!important;border-radius:0 0 12px 12px;box-shadow:0 4px 10px rgba(16,24,40,.08);background:#fff!important;backdrop-filter:none!important}
+  html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426.obert{top:calc(var(--cap-obra-v878451) + 55px)!important}
+}
+
+/* El total del pressupost ja és a la línia de la targeta: a dins, només el que hi canvia */
+html body .pres-bloc-v878427 .budget-grand-total:not(.tancat-v878451)>small,
+html body .pres-bloc-v878427 .budget-grand-total>b{display:none}
+html body .pres-bloc-v878427 .budget-grand-total.sol-v878427{display:none}
+
+/* ── La barra de l'obra al mòbil ──────────────────────────────────────────────────────────────────── */
+@media (max-width:767px){
+  /* fora els espais buits entre la capçalera, la barra de l'obra i el contingut */
+  html body .main{gap:8px!important}
+  html body .mobile-top.app-head-v878268{margin-bottom:0!important}
+  html body .obra-page-v87105{gap:0!important}
+  html body details.card.bloc-v878426>summary{min-height:52px!important;padding:6px 12px!important;gap:10px!important}
+  html body details.card.plega-v878369>summary{min-height:52px!important}
+  html body details.card.bloc-v878426>summary>svg:first-child{padding:6px!important}
+  html body details.card.bloc-v878426{margin-bottom:8px!important}
+  html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426.obert{top:calc(var(--cap-obra-v878451) + 52px)!important}
+  html body .obra-page-v87105 .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426{min-height:46px!important;padding:6px 10px!important}
+  html body .pres-cos-v878427{padding:6px 5px!important}
+
+  /* el descompost de la fitxa, en dues línies per recurs */
+  html body .dt-v878449 .l{grid-template-columns:auto auto auto minmax(0,1fr)!important;grid-template-areas:"c c c ti" "r p i tq"!important;gap:1px 7px!important;padding:6px 10px!important}
+  html body .dt-v878449 .l .c{font-weight:600}
+  html body .dt-v878449 .l .r,html body .dt-v878449 .l .p,html body .dt-v878449 .l .i,html body .dt-v878449 .l .tq{font-size:12.5px;color:var(--co-ink-3,#5F7075);white-space:nowrap}
+  html body .dt-v878449 .l .i::before{content:"= "}
+  html body .dt-v878449 .l .tq{text-align:right!important}
+  html body .dt-v878449 .l .tq::before{content:none!important}
+  html body .dt-v878449 .l .ti{align-self:start;text-align:right}
+  html body .dt-v878449.sense-t .l{grid-template-columns:auto auto minmax(0,1fr)!important;grid-template-areas:"c c i" "r p ."!important}
+  html body .dt-v878449.sense-t .l .i{font-size:inherit;color:inherit;font-weight:600}
+  html body .dt-v878449.sense-t .l .i::before{content:none}
+
+  /* la fila del codi i l'estat, baixa */
+  html body .obra-bar-info-v878269{padding:0 0 4px!important;gap:6px!important;min-height:0}
+  html body .obra-bar-right-v878269{gap:5px}
+  html body .obra-bar-txt-v878269 small{font-size:12.5px!important}
+  html body .obra-estat-v878269 select{max-width:132px;height:32px!important;min-height:32px!important;font-size:12.5px!important;padding:0 22px 0 9px!important}
+  html body .obra-estat-ro-v878269{font-size:12.5px!important;padding:4px 9px!important}
+  html body .obra-acc-btn-v878269,html body .crono-v878376{width:32px!important;height:32px!important;min-height:32px!important;min-width:32px;padding:0!important}
+  html body .crono-v878376.on{width:auto!important;padding:0 8px!important}
+
+  /* una sola tira: Fitxa · Seguiment · [Econòmic / Pressupost] */
+  html body .obra-tabs-bar-v878269.obra-blocs-bar-v878299{padding:5px 8px 5px!important;margin-bottom:8px!important;border-bottom:1px solid var(--co-line,#DCE3E7)}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299{display:flex;gap:2px;padding:3px;background:#E4EAF0;border-radius:12px}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button{flex:0 0 auto;flex-direction:row;justify-content:center;gap:5px;min-height:42px;padding:0 9px;border:0;border-radius:10px;background:transparent;color:#3B4A5C;font-size:13.5px}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button svg{width:17px;height:17px}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on{flex:1 1 0;min-width:0;justify-content:flex-start;background:#1D4ED8;color:#fff;padding:0 8px 0 10px;box-shadow:0 1px 3px rgba(29,78,216,.35)}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.open{box-shadow:0 0 0 2px #93C5FD}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 .txt-v878451{display:block;min-width:0;line-height:1.15;text-align:left}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on .nom{display:block;font-size:11px;font-weight:600;opacity:.92}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.on small{display:block;font:700 14.5px var(--app-font,inherit);color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button .gira-v878451{margin-left:auto;flex:none;width:16px;height:16px;opacity:.9;transition:transform .15s}
+  html body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.open .gira-v878451{transform:rotate(180deg)}
+  html body .obra-bloc-panel-v878299{margin:6px 0 2px!important}
+
+  /* les fases, en una línia que es llisca */
+  html body .fases-v878342{flex-wrap:nowrap!important;padding:0!important;border:0!important;background:none!important;margin:0 0 8px!important;gap:6px;position:relative}
+  html body .fases-v878342>.llista{order:0!important;flex:1 1 0!important;flex-basis:0!important;gap:6px;padding:1px;scrollbar-width:none}
+  html body .fases-v878342>.llista::-webkit-scrollbar{display:none}
+  html body .fases-v878342>.llista>button{grid-template-columns:auto auto;grid-template-areas:"n b";flex:0 0 auto;column-gap:7px;padding:3px 12px 3px 4px;min-height:38px;max-width:66vw;border-radius:10px;background:#fff}
+  html body .fases-v878342>.llista>button em{width:26px;height:26px;border-radius:7px;font-size:13px}
+  html body .fases-v878342>.llista>button b{font-size:13.5px}
+  html body .fases-v878342>.llista>button span{display:none}
+  html body .fases-v878342 .mes-v878342{position:relative!important;right:auto!important}
+  html body .fases-v878342 .mes-v878342>summary{width:36px;height:38px}
+}
+
+/* ── El ＋ de l'obra: més petit, i s'aparta mentre es baixa ─────────────────────────────────────────── */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .obra-plus-v878302{right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));transition:opacity .18s ease,transform .18s ease}
+  html body .obra-plus-v878302.baixa-v878451{opacity:0;transform:scale(.7);pointer-events:none}
+  html body .obra-plus-btn-v878302{width:48px;height:48px}
+  html body .obra-plus-btn-v878302 svg{width:24px;height:24px}
+}
