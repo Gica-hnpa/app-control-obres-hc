@@ -2624,6 +2624,10 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Honoraris › Hores:** una línia (`crono-fila-v878463`) amb el rellotge que corre i «Aturar i desar»; fora el formulari plegat. Amb el comptador en una altra obra, «Desar l'altra i començar aquí» pregunta per aquella i després engega aquí.
     - **Fora el comptador automàtic** (`autoTimerOn878254`, la casella «Automàtic» de la bombolla): l'Héctor no el vol (V87.376).
     - Estils `src/theme-v878463.css`. Prova: `comptador463test.mjs` (20; substitueix `comptador382test`). Adaptades `mobiltest`, `v366test` i `v410test`. **Compte:** una prova tallada amb `timeout` deixa el servidor i el Supabase de proves en marxa i la següent falla en entrar: `D:\aco-tmp\passa.sh prova1 prova2…` les passa d'una en una sense tallar-les.
+  - **V87.464 · Resum i Agenda de l'obra plegats** (Bloc 1; l'Héctor, 1/11/2026: «continua havent pantalles desplegades quan entres»; `plegat462.mjs`: eren les dues pantalles de l'obra més llargues al mòbil):
+    - **Resum** (`ObraHero878252`, `net-v878464`): primer la barra de l'executat, les xifres i `ObraFollowUp878253`; el contacte (`ContacteObra878304`), els enllaços, «Compartir» i la foto, a la targeta plegada **«Contacte i enllaços»** (`contacte-bloc-v878464`), a tots els aparells. Fora el requadre gran de dalt.
+    - **Agenda de l'obra:** dues targetes plegades, **«Cites i avisos»** (`AgendaExpedient8774`, amb quantes) i **«Feines pendents»** (`TasquesTab8769`, amb quantes i les vençudes). La de cites es queda oberta després de dictar o de cancel·lar (`oberta464`).
+    - Estils `src/theme-v878464.css`. Prova: `v464test.mjs` (11). Adaptades `constructor336test` (l'Agenda general en Llista: el diumenge, «demà» cau a la setmana següent; i els Documents d'un encàrrec) i `seguiment321test`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2814,7 +2818,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.463 a Render):**
+**Estat (publicada la V87.464 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

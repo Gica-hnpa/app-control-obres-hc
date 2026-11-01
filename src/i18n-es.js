@@ -4978,4 +4978,5 @@ export default {
   "Descartar aquest temps?": "¿Descartar este tiempo?",
   "Contacte i enllaços": "Contacto y enlaces",
   "Cites i avisos": "Citas y avisos",
+  "Descartar": "Descartar",
 };
