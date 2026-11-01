@@ -1,0 +1,17 @@
+/* V87.462 · Amidaments només amb quantitats: els preus i la logística, a la finestra de «Passar-ho a pressupost» */
+html body .amid-v878328 .amid-fila-v878328{grid-template-columns:minmax(0,1fr) 150px 36px}
+html body .amid-v878328 .amid-fila-v878328 .treu{grid-column:3}
+html body .amid-v878435 .amid-barra-v878435{flex-wrap:nowrap}
+html body .amid-v878435 .amid-barra-v878435 .action-menu-v87213{flex:none}
+html body .passar-v878328 details{margin:0}
+html body .passar-v878328 details>summary{flex-wrap:nowrap}
+html body .passar-v878328 details>summary .t{flex:1;min-width:0}
+html body .passar-v878328 details>summary .xifra{flex:none;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .passar-v878328 details>summary .chev{flex:none;transition:transform .15s}
+html body .passar-v878328 details[open]>summary .chev{transform:rotate(90deg)}
+@media (max-width:767px){
+  html body .amid-v878328 .amid-fila-v878328{grid-template-columns:minmax(0,1fr) 36px}
+  html body .amid-v878328 .amid-fila-v878328 .q{max-width:170px}
+  html body .amid-v878328 .amid-fila-v878328 .treu{grid-column:2}
+  html body .amid-v878435 .amid-barra-v878435 .amid-passar-v878328{flex:1 1 auto;min-width:0}
+}

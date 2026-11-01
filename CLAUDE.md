@@ -2613,6 +2613,11 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Total de dalt = la suma de les targetes** (`total426`): amb una fase triada deia 0 € si les despeses no tenien fase, i les targetes les ensenyaven.
     - La llista plana vella (`fila`, `vista`) ja no es fa servir enlloc: es pot esborrar.
     - Estils `src/theme-v878461.css`. Prova: `v461test.mjs` (26: constructora, gestió total al mòbil i compte de l'Héctor amb una còpia).
+  - **V87.462 · Amidaments només amb quantitats i el pressupost sempre plegat** (l'Héctor, 1/11/2026, amb una captura de CP Front de Mar: «aquesta pantalla d'amidaments pq hem de parlar de preus?»; «continua havent pantalles desplegades quan entres»):
+    - **Amidaments** (`Amidaments878328`): a dalt, «Passar-ho a pressupost» i «⋯» (amb «Llegir un altre arxiu» i «Buidar els amidaments»), una sola línia; sense preus, sense «Preu a mà» ni descompost a les files (`data-pu`, `data-font` i `data-nota` només per a les proves).
+    - **«Preus» i «Obra, logística i marges»** passen a la finestra de «Passar-ho a pressupost» (`eines878462`, prop `eines` de `PassarPressupost878328`), plegades. Els preus es continuen posant sols en llegir l'arxiu: només no es veuen.
+    - **Pressupost:** la targeta ja no recorda si s'havia deixat oberta (V87.427): surt sempre plegada. `pres-prova-obert-v878462` només el posen les proves (`helpers` d'`alhoratest.mjs`).
+    - Estils `src/theme-v878462.css`. Eina nova `plegat462.mjs` (què s'obre desplegat en entrar a cada pantalla, `W=`, `COMPTES=`, `WEBROOT=`). Adaptades `amidaments328test`, `pressupost368test`, `pressupost372test`, `preus378test`, `v435test` i `v427test`. `amidaments328test` va fallar una vegada al pas del PDF i, tornada a passar, en verd.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2803,7 +2808,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.461 a Render):**
+**Estat (publicada la V87.462 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -2921,7 +2926,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   (`DADES_REPARADES/app-control-obres-hector-backup-reparat-v87-211-2026-07-22.json`, dades reals de clients).
   Es va treure del repositori a la V87.259.2, però continua als commits antics. Cal reescriure l’historial
   (git filter-repo o BFG) i forçar la pujada; fer-ho amb calma i amb còpia abans.
-- **VeriFactu (abans de l’1/1/2027 per a les S.L.)**: **ATURAT fins que l’Héctor parli amb la gestoria** (no instal·lar res
+- **VeriFactu (1/1/2027 per a les S.L. segons el BOE; Hisenda ha anunciat l’octubre de 2028, encara sense norma: vegeu `docs/verifactu-pla.md`)**: **ATURAT fins que l’Héctor parli amb la gestoria** (no instal·lar res
   del servidor). Fet a l’app i al simulador (V87.285). Falta instal·lar l’SQL i la
   funció `verifactu`, el compte de proves de Verifacti (comprovar l’API), rectificatives, honoraris, còpies del
   registre i la declaració responsable (fabricant: gestoria). Tot a `docs/verifactu-pla.md`.

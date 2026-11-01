@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.460, 31/10/2026)
+## On som (V87.462, 1/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.

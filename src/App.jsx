@@ -35,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.461";
+const APP_VERSION878264="87.462";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7252,8 +7252,9 @@ function CardOPlega878369({title,resum,action,className="",children,obert=false,
   return <details className={`card bloc-v878426 plega-v878369 ${className}`.trim()} open={obert||(obertPC&&!mobil)||undefined}><summary>{Ic?<Ic size={18} aria-hidden="true"/>:null}<span className="t"><b>{title}</b></span>{xf!=null&&xf!==""?<span className="xifra">{xf}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{action?<div className="acc">{action}</div>:null}{children}</div><Recollir878432/></details>;
 }
 // V87.427 · el pressupost és una targeta plegable com les altres (l'Héctor, 29/10/2026: «el pressupost és una targeta desplegable com la
-// resta»). La capçalera (Editar · Imprimir · Accions) i les partides hi són a dins; mentre s'edita, no es plega. Es recorda a l'aparell.
-const PRES_OBERT878427="pres-obert-v878427";
+// resta»). La capçalera (Editar · Imprimir · Accions) i les partides hi són a dins; mentre s'edita, no es plega. V87.462: surt sempre plegat (abans es recordava
+// a l'aparell i l'Héctor el trobava desplegat en entrar); aquesta marca només la posen les proves.
+const PRES_OBERT878427="pres-prova-obert-v878462";
 function presObertInici878427(){try{return lsVisual878400()?.getItem(PRES_OBERT878427)==="1"}catch{return false}}
 // V87.435 · el pressupost buit (l'Héctor, 29/10/2026: «quan poso primer els amidaments, en obrir el pressupost hauria de tenir l'opció
 // que tingués totes les partides per posar preus, i després la de crear o importar el pressupost si l'he fet a part… i en BC3»)
@@ -13889,9 +13890,31 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
   const canvia=(id,patch)=>desa(a=>({linies:(a.linies||[]).map(l=>l.id===id?{...l,...patch}:l),passat:null}));
   const treu=id=>desa(a=>({linies:(a.linies||[]).filter(l=>l.id!==id),passat:null}));
   const buida=()=>{if(confirm(t("Treure tots els amidaments d’aquesta obra? El pressupost no canvia.")))setData(d=>treuAmid878342(d,fase878342))};
-  const tria=<label className={`button ${linies.length?"secondary":"primary"} tria-v878328`}><Upload/>{llegint?t("Llegint…"):linies.length?t("Llegir un altre arxiu"):t("Llegir PDF, Excel o BC3")}<input type="file" hidden accept=".pdf,.xlsx,.xls,.xlsm,.csv,.ods,.bc3" disabled={llegint} onChange={e=>{const f=e.target.files?.[0];e.target.value="";llegeix(f)}}/></label>;
+  const fileInput878462=<input type="file" hidden accept=".pdf,.xlsx,.xls,.xlsm,.csv,.ods,.bc3" disabled={llegint} onChange={e=>{const f=e.target.files?.[0];e.target.value="";llegeix(f)}}/>;
+  const tria=<label className="button primary tria-v878328"><Upload/>{llegint?t("Llegint…"):t("Llegir PDF, Excel o BC3")}{fileInput878462}</label>;
+  // V87.462 · als Amidaments només hi ha quantitats (l’Héctor, 1/11/2026: «pq hem de parlar de preus?»): els preus i la logística es decideixen en passar-ho a pressupost
+  const eines878462=<>
+  <details className="preus-v878368">
+    <summary><Euro size={18} aria-hidden="true"/><span className="t"><b>{t("Preus")}</b></span><span className="xifra">{ambPreu.length>0?money(total):t("Sense preu")}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    <div className="cos">
+      <span className="xips">{[["arxiu","Arxiu"],["llibreria","Preus"],["obres","Obres"],["banc","Banc"],["ia","IA"],["ma","A mà"]].map(([f,l])=>{const n=nFont878368(f);return n?<em key={f} className={`x-${f}`}>{t(l)} {n}</em>:null})}{nSemb878368>0&&<em className="x-semb">{t("Semblants")} {nSemb878368}</em>}{nSense878368>0&&<em className="x-sense">{t("Sense preu")} {nSense878368}</em>}</span>
+      {!readOnly&&<BancPreus878368 compacte/>}
+      {!readOnly&&<div className="bt"><button type="button" className="secondary" onClick={buscaPreus878368}><Search size={15} aria-hidden="true"/> {t("Buscar preus")}</button>{(nSense878368>0||nSemb878368>0)&&<button type="button" className="primary" onClick={()=>setIa878368(true)}>{t("Preus amb IA")}{nSense878368?` (${nSense878368})`:""}</button>}</div>}
+      {avisIa878368.map(a=><p className="avis" key={a}>⚠ {a}</p>)}
+    </div>
+  </details>
+  <details className="logis-v878368">
+    <summary><Truck size={18} aria-hidden="true"/><span className="t"><b>{t("Obra, logística i marges")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    <div className="cos">
+      <p className="resum-v878435">{[resumMarges878378(margesObra878378(data)),nLogis878368?t("{n} partides de logística",{n:nLogis878368}):""].filter(Boolean).join(" · ")}</p>
+      <MargesObra878378 data={data} setData={readOnly?null:setData} readOnly={readOnly}/>
+      <Logistica878368 obra={obra} cond={cond878368} readOnly={readOnly} setCond={c=>setData(d=>({...d,condicions878368:c}))}/>
+      {!readOnly&&<div className="bt"><button type="button" className="primary" onClick={posaLogistica878368}><Plus size={15} aria-hidden="true"/> {nLogis878368?t("Tornar a fer les partides de logística"):t("Afegir les partides de logística")}</button></div>}
+    </div>
+  </details>
+  </>;
   return <div className="amid-v878328 amid-v878435">
-    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{tria}{linies.length>0&&<span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span>}{linies.length>0&&<ActionMenu87213 label="⋯" fletxa={false} titol={t("Més opcions")}><button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213>}</div>}
+    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{linies.length>0?<><span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span><ActionMenu87213 label="⋯" fletxa={false} titol={t("Més opcions")}><label className="action-upload-v87213 tria-v878328"><Upload size={15} aria-hidden="true"/>{llegint?t("Llegint…"):t("Llegir un altre arxiu")}{fileInput878462}</label><button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213></>:tria}</div>}
       <div className="amid-cos-v878328">
       {err&&<p className="amid-err-v878328">{err}</p>}
       {pendent&&<div className="amid-pendent-v878328"><b>{t("{n} partides de «{nom}»",{n:pendent.r.partides.length,nom:pendent.file.name})}</b><div><button type="button" className="primary" onClick={()=>aplica(pendent.r,pendent.file,false)}>{t("Substituir les d’ara")}</button><button type="button" className="secondary" onClick={()=>aplica(pendent.r,pendent.file,true)}>{t("Afegir-les a les d’ara")}</button><button type="button" className="ghost" onClick={()=>setPendent(null)}>{t("Cancel·lar")}</button></div></div>}
@@ -13899,7 +13922,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
         <details className="card bloc-v878426 amid-bloc-v878435"><summary><Ruler size={18} aria-hidden="true"/><span className="t"><b>{t("Amidaments")}</b></span><span className="xifra">{nPart878328(linies.length)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
         <div className="amid-resum-v878328">
           <span className="font"><FileText/>{am.font?.nom}{am.font?.tipus?` · ${am.font.tipus}`:""}</span>
-          <span>{nPart878328(linies.length)} · {caps.length===1?t("1 capítol"):t("{n} capítols",{n:caps.length})}{ambPreu.length>0&&<> · {t("amb preu: {t}",{t:money(total)})}</>}</span>
+          <span>{nPart878328(linies.length)} · {caps.length===1?t("1 capítol"):t("{n} capítols",{n:caps.length})}</span>
           {(am.avisos||[]).map(a=><span className="avis" key={a}>⚠ {/^\d+ partides sense quantitat$/.test(a)?t("{n} partides sense quantitat",{n:parseInt(a)}):i18nT(a)}</span>)}
           {am.passat&&<span className="passat">✓ {t("Passat al pressupost «{nom}» el {d}",{nom:am.passat.nom,d:new Date(am.passat.data).toLocaleDateString(loc878272())})}</span>}
         </div>
@@ -13908,10 +13931,9 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
           {ls.map(l=>{
             const suma=Math.round((l.mides||[]).reduce((s,m)=>s+(Number(m.parcial)||0),0)*1000)/1000;
             const difereix=(l.mides||[]).length>0&&Math.abs(suma-(Number(l.q)||0))>Math.max(0.011,Math.abs(Number(l.q)||0)*0.005);
-            return <div className={`amid-fila-v878328 ${obert===l.id?"oberta":""} ${!(Number(l.q)>0)?"sense-q":""}`} key={l.id}>
+            return <div className={`amid-fila-v878328 ${obert===l.id?"oberta":""} ${!(Number(l.q)>0)?"sense-q":""}`} key={l.id} data-pu={Number(l.pu)>0?money(l.pu):undefined} data-font={Number(l.pu)>0&&(l.font878368||"arxiu")!=="arxiu"?(l.semblant878368?t("Semblant"):t(FONTS878368[l.font878368]||""))+(l.confirmar878368?" ⚠":""):undefined} data-nota={l.nota878368||undefined}>
               <button type="button" className="concepte" onClick={()=>setObert(obert===l.id?null:l.id)}><code>{l.codi}</code><span>{l.concepte}</span>{(l.mides||[]).length>0&&<small className="n-mides">∑ {(l.mides||[]).length}</small>}</button>
               <label className="q"><input key={`${l.id}-${l.q}`} inputMode="decimal" defaultValue={coma878328(l.q)} readOnly={readOnly} aria-label={t("Quantitat")} onKeyDown={e=>{if(e.key==="Enter"){const v=numeroPdf878305(e.currentTarget.value)??0;if(v!==Number(l.q))canvia(l.id,{q:v});e.currentTarget.blur()}}} onBlur={e=>{const v=numeroPdf878305(e.target.value)??0;if(v!==Number(l.q))canvia(l.id,{q:v})}}/><em>{l.ut||"ut"}</em></label>
-              {Number(l.pu)>0&&<span className="pu">{money(l.pu)}{(l.font878368||"arxiu")!=="arxiu"&&<em className={`font-v878368 x-${l.semblant878368?"semb":l.font878368}`}>{l.semblant878368?t("Semblant"):t(FONTS878368[l.font878368]||"")}{l.confirmar878368?" ⚠":""}</em>}</span>}
               {!readOnly&&<button type="button" className="treu" title={t("Treure")} aria-label={t("Treure")} onClick={()=>treu(l.id)}><Trash2/></button>}
               {obert===l.id&&<div className="detall">
                 {l.desc&&<p className="desc">{l.desc}</p>}
@@ -13919,43 +13941,22 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
                   <tbody>{l.mides.map((m,i)=><tr key={i}><td>{m.concepte}</td><td>{coma878328(m.unitats)}</td><td>{coma878328(m.llargada)}</td><td>{coma878328(m.amplada)}</td><td>{coma878328(m.alcada)}</td><td>{coma878328(m.parcial)}</td></tr>)}</tbody>
                   <tfoot><tr><td colSpan={5}>{t("Suma")}</td><td>{coma878328(suma)}</td></tr></tfoot></table>}
                 {difereix&&<p className="avis">⚠ {t("La quantitat ({q}) no és la suma de les línies ({s}).",{q:coma878328(l.q),s:coma878328(suma)})} {!readOnly&&<button type="button" className="link" onClick={()=>canvia(l.id,{q:suma})}>{t("Posar-hi la suma")}</button>}</p>}
-                {!l.desc&&!(l.mides||[]).length&&!l.nota878368&&!l.descomp878368?.length&&!l.taula878368&&<p className="buit">{t("Sense descripció ni línies de mides.")}</p>}
-                {l.nota878368&&<p className="nota-v878368">{l.semblant878368?t("Preu d’una partida semblant: {n}",{n:l.nota878368}):l.nota878368}</p>}
-                {(()=>{const tb=taulaLinia878368(l);return tb?<details className="desc-v878368"><summary>{t("Descompost")}</summary><table><tbody>{(tb.rows||[]).map(r=>r.isSection?<tr key={r.id} className="sec"><td colSpan={4}>{r.concepte}</td></tr>:<tr key={r.id}><td>{r.concepte}</td><td>{r.ut==="%"?"":r.q}</td><td>{r.ut==="%"?`${r.q} %`:r.pu}</td><td>{r.total}</td></tr>)}</tbody></table></details>:null})()}
-                {!readOnly&&<label className="preu-ma-v878368"><span>{t("Preu a mà")}</span><input key={`pm-${l.id}-${l.pu}`} inputMode="decimal" defaultValue={l.font878368==="ma"?coma878328(l.pu):""} placeholder={Number(l.pu)>0?coma878328(l.pu):"0,00"} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.blur()}} onBlur={e=>{const raw=e.target.value.trim();if(!raw)return;const v=numeroPdf878305(raw)??0;preuMa878368(l.id,v)}}/></label>}
+                {!l.desc&&!(l.mides||[]).length&&<p className="buit">{t("Sense descripció ni línies de mides.")}</p>}
               </div>}
             </div>;
           })}
         </details>)}
         </div><Recollir878432/></details>
-        <details className="card bloc-v878426 preus-v878368">
-          <summary><Euro size={18} aria-hidden="true"/><span className="t"><b>{t("Preus")}</b></span><span className="xifra">{ambPreu.length>0?money(total):t("Sense preu")}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
-          <div className="cos">
-            <span className="xips">{[["arxiu","Arxiu"],["llibreria","Preus"],["obres","Obres"],["banc","Banc"],["ia","IA"],["ma","A mà"]].map(([f,l])=>{const n=nFont878368(f);return n?<em key={f} className={`x-${f}`}>{t(l)} {n}</em>:null})}{nSemb878368>0&&<em className="x-semb">{t("Semblants")} {nSemb878368}</em>}{nSense878368>0&&<em className="x-sense">{t("Sense preu")} {nSense878368}</em>}</span>
-            {!readOnly&&<BancPreus878368 compacte/>}
-            {!readOnly&&<div className="bt"><button type="button" className="secondary" onClick={buscaPreus878368}><Search size={15} aria-hidden="true"/> {t("Buscar preus")}</button>{(nSense878368>0||nSemb878368>0)&&<button type="button" className="primary" onClick={()=>setIa878368(true)}>{t("Preus amb IA")}{nSense878368?` (${nSense878368})`:""}</button>}</div>}
-            {avisIa878368.map(a=><p className="avis" key={a}>⚠ {a}</p>)}
-          </div><Recollir878432/>
-        </details>
-        <details className="card bloc-v878426 logis-v878368">
-          <summary><Truck size={18} aria-hidden="true"/><span className="t"><b>{t("Obra, logística i marges")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
-          <div className="cos">
-            <p className="resum-v878435">{[resumMarges878378(margesObra878378(data)),nLogis878368?t("{n} partides de logística",{n:nLogis878368}):""].filter(Boolean).join(" · ")}</p>
-            <MargesObra878378 data={data} setData={readOnly?null:setData} readOnly={readOnly}/>
-            <Logistica878368 obra={obra} cond={cond878368} readOnly={readOnly} setCond={c=>setData(d=>({...d,condicions878368:c}))}/>
-            {!readOnly&&<div className="bt"><button type="button" className="primary" onClick={posaLogistica878368}><Plus size={15} aria-hidden="true"/> {nLogis878368?t("Tornar a fer les partides de logística"):t("Afegir les partides de logística")}</button></div>}
-          </div><Recollir878432/>
-        </details>
       </>}
       </div>
     {ia878368&&<PreusIa878368 obra={obra} cond={cond878368} linies={linies} close={()=>setIa878368(false)} aplica={aplicaIa878368}/>}
-    {passar&&<PassarPressupost878328 data={data} linies={linies} partidaLibrary={partidaLibrary} close={()=>setPassar(false)} fet={res=>{setPassar(false);const passat={data:new Date().toISOString(),nom:res.nom,budgetId:res.budgetId,n:res.partides};
+    {passar&&<PassarPressupost878328 eines={eines878462} data={data} linies={linies} partidaLibrary={partidaLibrary} close={()=>setPassar(false)} fet={res=>{setPassar(false);const passat={data:new Date().toISOString(),nom:res.nom,budgetId:res.budgetId,n:res.partides};
       // V87.344 · passats a un pressupost nou (una fase nova): els amidaments van amb aquella fase
       if(res.budgetId&&res.budgetId!==(fase878342||"principal"))setData(d=>{const a=amidDe878342(d,fase878342);return posaAmid878342(treuAmid878342(d,fase878342),res.budgetId,{...a,passat})});
       else desa(()=>({passat}));goPressupost?.()}}/>}
   </div>;
 }
-function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet}){
+function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,eines=null}){
   const bid0=String(data.activeBudgetIdObra||"principal");
   const teActiu=(data.partides||[]).some(r=>(r.budgetId||"principal")===bid0);
   const nomActiu=budgetLabel8786(data,bid0)||t("Pressupost principal");
@@ -13972,6 +13973,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet})
   const pct878368=pctAcces(data.condicions878368||{});
   const nDesc878368=linies.filter(l=>Number(l.pu)>0&&(l.taula878368||l.descomp878368?.length)).length;
   const[ambPct878368,setAmbPct878368]=useState(pct878368>0);
+  useEffect(()=>{if(pct878368>0)setAmbPct878368(true)},[pct878368>0]);
   const mg878378=margesObra878378(data);
   const[ambMg878378,setAmbMg878378]=useState(true);
   const nMg878378=linies.filter(l=>Number(l.pu)>0&&FONTS_MARGES878378.includes(l.font878368)).length;
@@ -14000,6 +14002,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet})
         <label><input type="radio" name="desti878328" checked={desti==="nou"} onChange={()=>setDesti("nou")}/><span>{t("Un pressupost nou: «{nom}»",{nom:nomNou})}</span></label>
         <label><input type="radio" name="desti878328" checked={desti==="afegir"} onChange={()=>setDesti("afegir")}/><span>{t("Afegir-les a «{nom}»",{nom:nomActiu})}</span></label>
       </div>:<p>{t("Aniran a «{nom}», que ara és buit.",{nom:nomActiu})}</p>}
+      {eines}
       <ul className="preus">
         {nArxiu>0&&<li>{t("{n} amb el preu de l’arxiu",{n:nArxiu})}</li>}
         {nLib>0&&<li><label><input type="checkbox" checked={usaLib} onChange={e=>setUsaLib(e.target.checked)}/> {t("{n} amb el preu de Preus (mateix codi o mateixa partida)",{n:nLib})}</label></li>}
@@ -14131,7 +14134,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const [descOpen875,setDescOpen875]=useState({});
   const[fitxa426,setFitxa426]=useState(null);
   const[presObert427,setPresObert427]=useState(presObertInici878427);
-  const giraPres427=o=>{setPresObert427(o);try{const ls=lsVisual878400();if(o)ls?.setItem(PRES_OBERT878427,"1");else ls?.removeItem(PRES_OBERT878427)}catch{}};
+  const giraPres427=o=>setPresObert427(o);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
   useEffect(()=>{const av=v=>{window.__acoEditPres878380=v;window.dispatchEvent(new Event("aco-edit-pres-878380"))};av(!!editBudget8760b);return ()=>{if(editBudget8760b)av(false)}},[editBudget8760b]);
   // V87.346 · comissió amagada (l'Héctor, 22/10/2026: «un clic amb un espia per posar el %… que em refaci el pressupost aplicant a
@@ -18756,7 +18759,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.461",
+    app_version:"87.462",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

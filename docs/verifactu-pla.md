@@ -3,6 +3,8 @@
 Decisions de l'Héctor (16/10/2026):
 - **Qui factura amb l'app:** tothom que tingui l'opció. Ell, com a autònom, i també les constructores (S.L.).
 - **Obligatori:** les **S.L. des de l'1/1/2027**, els autònoms des de l'1/7/2027. El fabricant del programa hi està obligat des del 29/07/2025.
+  - **Ajornament anunciat, encara sense norma (comprovat l'1/11/2026):** Hisenda va anunciar el 5/10/2026 que preveu passar-ho a l'octubre de 2028, sense dia concret. El text consolidat del BOE (RD 1007/2023) continua amb les dates de dalt: l'última modificació és del 3/12/2025. Mentre no surti la norma, valen aquestes dates. L'anunci no toca el termini del fabricant, segons fonts secundàries. Mirar el BOE abans de començar a cobrar.
+  - **Factura electrònica:** segons fonts secundàries, l'Ordre HAC/1028/2026 fixa el 6/10/2027 per a qui factura més de 8 M€ i el 6/10/2028 per a la resta.
 - **Com s'envia:** amb un **intermediari** (recomanat Verifacti, uns 2,90 € al mes per NIF; alternativa fiskaly). No cal certificat digital a l'app.
 - **Qui paga:** **model A**. El compte de l'intermediari és de l'Héctor i ell ho cobra dins de la quota. Hi ha un interruptor per compte.
 - **On:** sobretot **dins de les obres**, a «Facturació obra», a partir de les certificacions. És el **mòdul 3**: facturació de les empreses (constructores). També a les factures d'honoraris del tècnic.
