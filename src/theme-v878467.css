@@ -1,0 +1,45 @@
+/* V87.467 · «Visual nou», segona proposta (l'Héctor, 1/11/2026: «la interfaç no pot ser més moderna?… clara i maca»). Només amb l'opció d'Ajustos › Aspecte.
+   Menys línies i més aire: les targetes se separen per l'ombra, no per la vora; botons de 44 px amb el mateix radi; menys pes als controls secundaris. */
+html[data-visual="nou"]{--co-bg:#F5F6F8;--co-line:#E7EAEE;--co-line-strong:#DEE2E8;--co-radius:18px;--co-shadow:0 1px 2px rgba(16,24,40,.05),0 8px 20px -12px rgba(16,24,40,.14)}
+html[data-visual="nou"] body{background:var(--co-bg)}
+
+/* targetes */
+html[data-visual="nou"] body .main .card,
+html[data-visual="nou"] body details.card.bloc-v878426,
+html[data-visual="nou"] body details.ajustos-bloc-v878366{border:0!important;border-radius:18px!important;box-shadow:var(--co-shadow)!important;background:#fff}
+html[data-visual="nou"] body details.card.bloc-v878426>summary,
+html[data-visual="nou"] body details.ajustos-bloc-v878366>summary{min-height:62px!important;border-radius:18px}
+html[data-visual="nou"] body details.card.bloc-v878426:not([open])>summary .chev,
+html[data-visual="nou"] body details.ajustos-bloc-v878366:not([open])>summary .chev{background:none;color:#98A2B3;padding:6px 0}
+html[data-visual="nou"] body details.card.bloc-v878426>summary>svg:first-child{box-sizing:content-box;width:20px;height:20px;padding:9px;border-radius:12px;background:#EEF3FE;color:var(--co-accent,#2563EB)}
+html[data-visual="nou"] body details.card.bloc-v878426>summary .t b{font-size:16px;font-weight:600;letter-spacing:-.01em}
+html[data-visual="nou"] body details.card.bloc-v878426>summary .xifra{font-weight:600;color:#344054}
+html[data-visual="nou"] body details.card.bloc-v878426[open]{overflow:clip}
+html[data-visual="nou"] body details.card.bloc-v878426[open]>summary{border-radius:18px 18px 0 0}
+
+/* botons */
+html[data-visual="nou"] body .main button.primary,
+html[data-visual="nou"] body .main .button.primary{min-height:44px;border:0!important;border-radius:12px!important;font-weight:600;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+html[data-visual="nou"] body .main button.secondary,
+html[data-visual="nou"] body .main .button.secondary,
+html[data-visual="nou"] body .main .action-menu-v87213>summary{min-height:44px;border:0!important;border-radius:12px!important;background:#fff!important;color:#344054!important;font-weight:600;box-shadow:0 1px 2px rgba(16,24,40,.06),inset 0 0 0 1px #E7EAEE}
+
+/* barra de l'obra */
+html[data-visual="nou"] body .obra-blocs-bar-v878299 .obra-blocs-v878299 button{border:0!important;border-radius:16px!important;background:#fff;color:#344054;box-shadow:var(--co-shadow)}
+html[data-visual="nou"] body .obra-blocs-bar-v878299 .obra-blocs-v878299 button.on{background:var(--co-accent,#2563EB);color:#fff;box-shadow:0 6px 14px -6px rgba(37,99,235,.55)}
+html[data-visual="nou"] body .obra-blocs-bar-v878299.narrow .obra-blocs-v878299 button.open{box-shadow:0 6px 14px -6px rgba(37,99,235,.55)}
+
+/* fases: un sol control */
+html[data-visual="nou"] body .fases-v878342{border:0!important;background:#E9ECF1!important;border-radius:14px;padding:4px!important;gap:4px;box-shadow:none}
+html[data-visual="nou"] body .fases-v878342>.llista{gap:4px;padding:0}
+html[data-visual="nou"] body .fases-v878342>.llista>button{border:0!important;border-radius:11px;background:none;box-shadow:none!important}
+html[data-visual="nou"] body .fases-v878342>.llista>button.on{background:#fff;box-shadow:0 1px 3px rgba(16,24,40,.14)!important}
+html[data-visual="nou"] body .fases-v878342 .mes-v878342>summary{border:0!important;background:none;border-radius:11px}
+
+/* capçalera i barra de baix */
+@media (max-width:1280px),(pointer:coarse){
+  html[data-visual="nou"] body .app-head-v878268{background:rgba(245,246,248,.86)!important;backdrop-filter:saturate(170%) blur(14px);-webkit-backdrop-filter:saturate(170%) blur(14px);border-bottom:0!important;box-shadow:none!important}
+  html[data-visual="nou"] body .bottom-nav-v878268{background:rgba(255,255,255,.88)!important;backdrop-filter:saturate(170%) blur(16px);-webkit-backdrop-filter:saturate(170%) blur(16px);border-top:1px solid rgba(16,24,40,.06)!important}
+  html[data-visual="nou"] body .bottom-nav-v878268 button.on svg{box-sizing:content-box;padding:3px 14px;margin:-3px 0;border-radius:999px;background:#E8EFFD}
+  html[data-visual="nou"] body .bottom-nav-v878268 button{gap:1px}
+}

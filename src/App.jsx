@@ -35,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.465";
+const APP_VERSION878264="87.467";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13898,7 +13898,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
   </details>
   </>;
   return <div className="amid-v878328 amid-v878435">
-    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{linies.length>0?<><span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span><ActionMenu87213 label="⋯" fletxa={false} titol={t("Més opcions")}><label className="action-upload-v87213 tria-v878328"><Upload size={15} aria-hidden="true"/>{llegint?t("Llegint…"):t("Llegir un altre arxiu")}{fileInput878462}</label><button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213></>:tria}</div>}
+    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{linies.length>0?<><span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span><ActionMenu87213 label={t("Accions")}><label className="action-upload-v87213 tria-v878328"><Upload size={15} aria-hidden="true"/>{llegint?t("Llegint…"):t("Llegir un altre arxiu")}{fileInput878462}</label><button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213></>:tria}</div>}
       <div className="amid-cos-v878328">
       {err&&<p className="amid-err-v878328">{err}</p>}
       {pendent&&<div className="amid-pendent-v878328"><b>{t("{n} partides de «{nom}»",{n:pendent.r.partides.length,nom:pendent.file.name})}</b><div><button type="button" className="primary" onClick={()=>aplica(pendent.r,pendent.file,false)}>{t("Substituir les d’ara")}</button><button type="button" className="secondary" onClick={()=>aplica(pendent.r,pendent.file,true)}>{t("Afegir-les a les d’ara")}</button><button type="button" className="ghost" onClick={()=>setPendent(null)}>{t("Cancel·lar")}</button></div></div>}
@@ -15151,7 +15151,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         const del=!ambFases878426&&!clientMode&&deleteBudget&&budgetGroups?.length>1?<button type="button" className="danger-text-v87229" onClick={()=>deleteBudget(activeBudgetId)}>{i18nT("Eliminar aquest pressupost")}</button>:null;
         const costat=alCostat428();
         if(pc428)return <>{env}{sig}<ActionMenu87213 className="accions-v878366 afegir-v878428" fletxa={false} label={<><Plus size={16} aria-hidden="true"/> {i18nT("Afegir")}</>}>{afegir428()}</ActionMenu87213>{tanc}{(ren||del||costat)&&<ActionMenu87213 className="accions-v878366 mes-v878428" fletxa={false} titol={i18nT("Més")} label={<Ellipsis size={16} aria-hidden="true"/>}>{ren}{del}{costat}</ActionMenu87213>}</>;
-        return <ActionMenu87213 className="accions-v878366" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
+        return <ActionMenu87213 className="accions-v878366" label={i18nT("Accions")}>
           {env}{sig}
           <small className="amh-v878273">{i18nT("Afegir partides")}</small>{afegir428()}
           {(tanc||ren||del)&&<><small className="amh-v878273">{i18nT("Aquest pressupost")}</small>{tanc}{ren}{del}</>}
@@ -16292,7 +16292,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       :!editing?<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>
       :<><div className="edita-fix-v878452"><span className="tot-m-v878452"><small>{i18nT("Certificació {n}",{n:certNum})}</small><b>{money(certTotal(certNum))}</b></span><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button></div>{!readOnly&&!contrast878424&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}</>}
     {!editing&&<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>}
-    {!editing&&<ActionMenu87213 className="accions-v878364" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
+    {!editing&&<ActionMenu87213 className="accions-v878364" label={i18nT("Accions")}>
       {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>{if(!contrast878424&&obra?.id&&cert)setEnviar440(true);else enviaCert878440()}}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
       {!clientMode&&!contrast878424&&obra?.id&&cert&&<button type="button" className="sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
       {!clientMode&&!contrast878424&&pfCert878337&&!faCert878337&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
@@ -18745,7 +18745,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.465",
+    app_version:"87.467",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -22169,7 +22169,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
         {obra426&&ambRep878347&&pendent>0.005&&<small className="rep-v878461">{i18nT("Per repercutir")} <b>{money(pendent)}</b></small>}
         {!meves&&!obra426&&<label className="primary alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/><Camera size={16} aria-hidden="true"/> {i18nT("Fer foto")}</label>}
         {!meves&&!obra426&&<label className="secondary alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";newFromPhoto(f)}}/><Paperclip size={16} aria-hidden="true"/> {i18nT("Adjuntar")}</label>}
-        {!meves&&!treb&&<ActionMenu87213 className="accions-v878367" label={<><Ellipsis size={16} aria-hidden="true"/> {i18nT("Accions")}</>}>
+        {!meves&&!treb&&<ActionMenu87213 className="accions-v878367" label={i18nT("Accions")}>
           {obra426&&<><label className="action-upload-v87213 alb-cam"><input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={e=>{const f=e.target.files?.[0];e.target.value="";e.target.closest("details")?.removeAttribute("open");newFromPhoto(f)}}/><Camera size={15} aria-hidden="true"/> {i18nT("Fer foto")}</label>
           <label className="action-upload-v87213 alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";e.target.closest("details")?.removeAttribute("open");newFromPhoto(f)}}/><Paperclip size={15} aria-hidden="true"/> {i18nT("Adjuntar")}</label></>}
           <button type="button" className="entrar-ma-v878367" onClick={()=>newFromPhoto(null)}><PenLine size={15} aria-hidden="true"/> {i18nT("Entrar a mà")}</button>

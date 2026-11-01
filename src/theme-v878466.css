@@ -1,0 +1,11 @@
+/* V87.466 · Amidaments: «Accions» en lloc de «⋯» i el menú amb l'amplada del text (abans feia 110 px i «Llegir un altre arxiu» es tallava) */
+html body .amid-v878435 .amid-barra-v878435 .action-menu-panel-v87213{width:max-content;min-width:230px;max-width:calc(100vw - 24px)}
+html body .amid-v878435 .amid-barra-v878435 .action-menu-panel-v87213 .tria-v878328{display:flex;width:100%;white-space:normal;box-sizing:border-box}
+html body .lib-cap-v878465 .action-menu-panel-v87213{right:0;left:auto;width:max-content;min-width:200px}
+@media (max-width:700px){
+  /* les fases, repartides a l'amplada: abans la tercera quedava tallada */
+  html body .fases-v878342>.llista>button{flex:1 1 0;min-width:92px;width:auto;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 8px}
+  html body .fases-v878342>.llista>button em{display:none}
+  html body .fases-v878342>.llista>button b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body .fases-v878342>.llista>button span{display:none}
+}

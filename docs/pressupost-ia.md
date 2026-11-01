@@ -14,7 +14,8 @@ A l’obra › Econòmic › **Amidaments**:
    2. **Preus**: la llibreria pròpia, primer pel codi i després per una partida semblant.
    3. **Banc**: el banc de preus BC3 importat, pel mateix codi o per una partida semblant amb la mateixa unitat.
    4. Les **semblants** surten marcades per revisar.
-2. **Obra i logística** (plegat):
+   Des de la V87.462 la pantalla d’Amidaments no ensenya preus: els passos 2 i 3 són a la finestra «Passar-ho a pressupost».
+2. **Obra, logística i marges** (plegat):
    - les dades de l’obra: adreça amb «Veure el lloc» (Google Maps), accés del camió, carrer, runes, planta i ascensor, elevació
      de materials, tràmit, setmanes, abocador, tall de carrer, horari i habitatge ocupat;
    - «Afegir les partides de logística» fa el capítol **00 Implantació, logística i permisos**: contenidors segons la runa dels

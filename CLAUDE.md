@@ -2629,6 +2629,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Agenda de l'obra:** dues targetes plegades, **«Cites i avisos»** (`AgendaExpedient8774`, amb quantes) i **«Feines pendents»** (`TasquesTab8769`, amb quantes i les vençudes). La de cites es queda oberta després de dictar o de cancel·lar (`oberta464`).
     - Estils `src/theme-v878464.css`. Prova: `v464test.mjs` (11). Adaptades `constructor336test` (l'Agenda general en Llista: el diumenge, «demà» cau a la setmana següent; i els Documents d'un encàrrec) i `seguiment321test`.
   - **V87.465 · Preus, Agenda i Partes al mòbil** (Bloc 2): **Preus:** fora el requadre blau gros; una línia amb «Nova partida» i «⋯» («Nou capítol») i el banc en una targeta plegada (`BancBloc878465`, amb quantes partides). **Agenda:** al mòbil i l'iPad, els filtres i la llegenda plegats a «Filtres» (`ag-filtres-v878465`, `tauleta878465`); el botó de Google es queda a la vista. **Partes:** sense repetir el títol al mòbil. Estils `src/theme-v878465.css`. Adaptada `neteja353test`.
+  - **V87.466–467 · Menús clars, fases sense tallar i «Visual nou», segona proposta** (l'Héctor, 1/11/2026, amb captures de CP Front de Mar: «els 3 punts no es veuen bé en obrir-se»; «queda bé els 3 punts i després a sota Accions amb tres punts més… la interfaç no pot ser més moderna?… clara i maca»):
+    - **Amidaments:** «Accions» en lloc de «⋯», i el menú amb l'amplada del text (feia 110 px i «Llegir un altre arxiu» es tallava: el panell absolut d'un `details` petit s'encongeix; cal `width:max-content`). A Preus, igual.
+    - **«Accions»** sense l'icona dels tres punts al davant (pressupost, certificació, despeses).
+    - **Fases al mòbil:** repartides a l'amplada i sense el número (la tercera quedava tallada); si no hi caben, es llisquen.
+    - **Visual nou** (`src/theme-v878467.css`, només amb Ajustos › Aspecte › «Visual nou (en proves)», al compte de l'Héctor i als `demo-*`): targetes sense vora, separades per l'ombra (a la V87.457 l'Héctor va demanar perímetres marcats: ara proposa una altra manera de separar-les), radi de 18 px, botons de 44 px, xebró sense cercle, fases com un sol control, capçalera i barra de baix translúcides, i l'apartat actiu de la barra de baix amb una píndola. Les proposicions de la V87.400 continuen sota la mateixa opció. **Si el valida, es treu la condició i es posa per a tothom.**
+    - Estils `src/theme-v878466.css` i `src/theme-v878467.css`. Adaptada `v435test`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2819,7 +2825,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.465 a Render):**
+**Estat (publicada la V87.467 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
