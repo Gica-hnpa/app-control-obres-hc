@@ -1,0 +1,19 @@
+/* V87.465 · Preus: una línia a dalt (fora el requadre gros) i el banc plegat. Agenda: filtres plegats al mòbil i l'iPad. Partes: sense repetir el títol al mòbil */
+html body .library-hero-v87196.lib-cap-v878465{display:flex!important;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:10px;padding:0 0 4px;border-radius:0;background:none!important;box-shadow:none;border:0}
+html body .library-hero-v87196.lib-cap-v878465 h2,html body .library-hero-v87196.lib-cap-v878465 h2 *{color:var(--co-ink,#0f172a)!important;margin:0}
+html body .library-hero-v87196.lib-cap-v878465 .actions-inline{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+html body .library-hero-v87196.lib-cap-v878465 .primary{width:auto;white-space:nowrap}
+html body .banc-bloc-v878465 .banc-v878368{border:0;padding:0;background:none}
+html body .banc-bloc-v878465 .banc-v878368 .txt>b{display:none}
+html body .ag-filtres-v878465>summary{display:none;list-style:none}
+html body .ag-filtres-v878465>summary::-webkit-details-marker{display:none}
+@media (max-width:1100px){
+  html body .ag-filtres-v878465>summary{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface);color:var(--co-ink,#0f172a);font:600 13.5px var(--app-font);cursor:pointer}
+  html body .ag-filtres-v878465[open]>summary{margin-bottom:8px}
+}
+@media (max-width:700px){
+  html body .library-hero-v87196.lib-cap-v878465>div:first-child{display:none}
+  html body .library-hero-v87196.lib-cap-v878465 .actions-inline{width:100%}
+  html body .library-hero-v87196.lib-cap-v878465 .actions-inline>.primary{flex:1 1 auto;justify-content:center}
+  html body .partes-cap-v878349>h2{display:none}
+}

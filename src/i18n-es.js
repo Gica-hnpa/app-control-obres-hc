@@ -4979,4 +4979,5 @@ export default {
   "Contacte i enllaços": "Contacto y enlaces",
   "Cites i avisos": "Citas y avisos",
   "Descartar": "Descartar",
+  "Nova partida": "Nueva partida",
 };
