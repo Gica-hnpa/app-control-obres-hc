@@ -35,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.462";
+const APP_VERSION878264="87.463";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6242,43 +6242,24 @@ function addEvent(e){e.preventDefault();let f=new FormData(e.currentTarget);
   setD(item.obraId||obraId,d=>({...d,events:[...(d.events||[]),item]}));setModal(null)}
 function addManualHours(e){e.preventDefault();let f=new FormData(e.currentTarget);let hi=f.get("inici"),hf=f.get("final");let h=calcHours(hi,hf),now=new Date().toISOString();setD(obraId,d=>({...d,hores:[...d.hores,{id:"h"+Date.now(),data:f.get("data"),etiqueta:f.get("etiqueta"),tasca:f.get("tasca"),inici:hi,final:hf,hores:h,preu:+f.get("preu")||50,createdAt:now,updatedAt:now}]}))}
 function startTimer(){setTimer(t=>({...t,running:true,start:Date.now(),elapsed:0,obraId:obraId,auto:false}))}
-// V87.254 · Comptador automàtic: comença en entrar a una obra i es desa en sortir-ne,
-// en canviar d'obra o en deixar la pestanya. Menys d'1 minut no compta.
-// V87.327 · el treballador no té el comptador automàtic (apunta les hores per obra i dia)
-const[autoTimerOn878254,setAutoTimerOn878254]=useState(()=>{try{if((empresaInfo878259()||{}).perfil==="treballador"||senseHoresPropies878342())return false;return localStorage.getItem("aco_auto_timer_v878376")==="1"}catch{return false}});
-// V87.376 · el comptador ja no s'engega sol en obrir una obra (l'Héctor, 24/10/2026: «vam quedar que no posàvem comptador automàtic»;
-// abans comptava també quan només es mirava l'obra i la bombolla tapava «Passar-ho a pressupost»). Es posa en marxa amb el rellotge de
-// la barra de l'obra (`crono878376`) i continua fins a «Pausa i desa»; la bombolla només surt quan compta i no s'és a la mateixa obra.
+// V87.463 · Comptador de temps (l’Héctor, 1/11/2026, amb el CEE de Cornellà: «no em va funcionar bé»). Abans el temps només era a la memòria:
+// si l’app es recarregava (el mòbil en segon pla, una versió nova, canvis d’un altre aparell) es perdia. I en aturar-lo es desava sol com a
+// «Temps cronometrat», al preu de sèrie, sense l’acord del client ni la fase, i si feia menys d’un minut no es desava i no deia res.
+// Ara el temps es recorda a l’aparell i, en aturar-lo, una finestra demana què s’ha fet i deixa corregir les hores.
 const timerRef878254=useRef(timer);
 useEffect(()=>{timerRef878254.current=timer},[timer]);
-function hhmm878254(ms){const d=new Date(ms);return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`}
-function stopTimerFor878254(t,reason="auto"){
-  if(!t?.running||!t?.start)return;
-  const end=Date.now(),ms=end-t.start;
-  setTimer(x=>({...x,running:false,start:null,elapsed:0,auto:false,obraId:""}));
-  if(ms<60000||!t.obraId)return;
-  const h=Math.round(ms/36e5*100)/100,now=new Date().toISOString();
-  addTimeRow878255(t.obraId,{id:"hr-"+end,data:isoDay878255(new Date(t.start)),tipusRegistre:"Honoraris",tipusFeina:t.auto?"Treball a l’expedient":"Temps cronometrat",tasca:t.task||(t.auto?"Temps automàtic":"Temps cronometrat"),hores:h.toFixed(2),preuHora:defaultRate878255().toFixed(2),km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:t.auto?`Comptador automàtic · ${reason}`:"",inici:hhmm878254(t.start),final:hhmm878254(end),auto:!!t.auto,createdAt:now});
+const[fiTemps878463,setFiTemps878463]=useState(null);
+const timerEnMarxa878463=useRef(false);
+const timerKey878463=()=>"comptador-v878463__"+(authUser8779||"");
+useEffect(()=>{if(!authUser8779)return;try{const x=JSON.parse(lsVisual878400()?.getItem(timerKey878463())||"null");if(x?.running&&x.start)setTimer(t=>({...t,...x,elapsed:0}))}catch{}},[authUser8779]);
+useEffect(()=>{if(!authUser8779)return;try{const m=lsVisual878400();if(timer.running&&timer.start){m?.setItem(timerKey878463(),JSON.stringify({running:true,start:timer.start,obraId:timer.obraId||"",label:timer.label||""}));timerEnMarxa878463.current=true}else if(timerEnMarxa878463.current){m?.removeItem(timerKey878463());timerEnMarxa878463.current=false}}catch{}},[timer.running,timer.start,timer.obraId,authUser8779]);
+function aturaTemps878463(despres=""){const t=timerRef878254.current;if(t?.running&&t.start)setFiTemps878463({t,end:Date.now(),despres})}
+function acabaTemps878463(fi,row){
+  if(row)addTimeRow878255(fi.t.obraId,row);
+  setTimer(x=>({...x,running:false,start:null,elapsed:0,auto:false,obraId:"",task:"",label:row?.tipusFeina||x.label}));
+  setFiTemps878463(null);
+  if(fi.despres)setTimeout(()=>setTimer(x=>({...x,running:true,start:Date.now(),elapsed:0,obraId:fi.despres,auto:false,task:""})),0);
 }
-function startAutoTimerFor878254(id){setTimer(t=>t.running?t:({...t,running:true,start:Date.now(),elapsed:0,obraId:id,auto:true,task:"",label:"Obra"}))}
-useEffect(()=>{
-  if(!authUser8779||currentAccount878233.role!=="admin")return;
-  const t=timerRef878254.current;
-  const inObra=screen==="Obra"&&!!obraId;
-  if(t.running&&t.auto&&(!inObra||t.obraId!==obraId))stopTimerFor878254(t,inObra?"canvi d’obra":"sortida de l’obra");
-  if(inObra&&autoTimerOn878254&&!(t.running&&t.obraId===obraId)&&!(t.running&&!t.auto))setTimeout(()=>startAutoTimerFor878254(obraId),0);
-},[screen,obraId,autoTimerOn878254,authUser8779]);
-useEffect(()=>{
-  const onVis=()=>{
-    const t=timerRef878254.current;
-    if(document.visibilityState==="hidden"){if(t.running&&t.auto)stopTimerFor878254(t,"pestanya en segon pla")}
-    else if(screen==="Obra"&&obraId&&autoTimerOn878254&&!t.running)startAutoTimerFor878254(obraId);
-  };
-  document.addEventListener("visibilitychange",onVis);
-  const onUnload=()=>{const t=timerRef878254.current;if(t.running&&t.auto)stopTimerFor878254(t,"tancar l’app")};
-  window.addEventListener("pagehide",onUnload);
-  return()=>{document.removeEventListener("visibilitychange",onVis);window.removeEventListener("pagehide",onUnload)};
-},[screen,obraId,autoTimerOn878254]);
 useEffect(()=>{
   if(!dataLoadedUser8781||currentAccount878233.role!=="admin")return;
   let moved=0;
@@ -6292,8 +6273,7 @@ useEffect(()=>{
   });
   if(moved)console.info("Hores automàtiques traslladades al registre:",moved);
 },[dataLoadedUser8781]);
-function toggleAutoTimer878254(){const next=!autoTimerOn878254;setAutoTimerOn878254(next);try{localStorage.setItem("aco_auto_timer_v878376",next?"1":"0")}catch{};if(!next){const t=timerRef878254.current;if(t.running&&t.auto)stopTimerFor878254(t,"automàtic desactivat")}}
-function stopTimer(){if(timer.running){stopTimerFor878254(timer,"manual");return}let h=Math.max(timer.elapsed/3600000,0.01),now=new Date().toISOString();setD(timer.obraId||obraId,d=>({...d,hores:[...d.hores,{id:"h"+Date.now(),data:new Date().toLocaleDateString("ca-ES"),etiqueta:timer.label,tasca:timer.task||"Temps cronometrat",inici:"—",final:"—",hores:h,preu:+timer.rate||50,createdAt:now,updatedAt:now}]}));setTimer(t=>({...t,running:false,start:null,elapsed:0,task:""}))}
+function stopTimer(){if(timer.running){aturaTemps878463();return}let h=Math.max(timer.elapsed/3600000,0.01),now=new Date().toISOString();setD(timer.obraId||obraId,d=>({...d,hores:[...d.hores,{id:"h"+Date.now(),data:new Date().toLocaleDateString("ca-ES"),etiqueta:timer.label,tasca:timer.task||"Temps cronometrat",inici:"—",final:"—",hores:h,preu:+timer.rate||50,createdAt:now,updatedAt:now}]}));setTimer(t=>({...t,running:false,start:null,elapsed:0,task:""}))}
 function deleteHour(id){setD(obraId,d=>({...d,hores:d.hores.filter(h=>h.id!==id)}))}
 function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=String(b).split(":").map(Number);let mins=(bh*60+bm)-(ah*60+am);return Math.max(mins/60,0)}
 
@@ -6308,7 +6288,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 {screen==="Fitxa client"&&<FitxaClient setClients={currentAccount878233.readOnly?undefined:setClients} setOdata={currentAccount878233.readOnly?undefined:setOdata} setObres={setObres} client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} odata={viewOdata878233} partidaLibrary={partidaLibrary} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} openObra={openObra} back={()=>nav("Clients")}/>}
 
 {screen==="Treballs / Expedients"&&<Projectes amagades878347={amagades878347.size} mostraAmagades878347={()=>{lsSet8779(AMAGADES_KEY878347,"[]");setAmagTick878347(x=>x+1)}} byClient={byClient} allObres={viewObres878233} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt,opk,setOpk}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"&&!esTreballador878326()}/>} 
-{screen==="Obra"&&<Obra crono878376={authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&!senseHoresPropies878342()?{on:timer.running&&timer.obraId===obraId,since:timer.start,start:()=>{const t0=timerRef878254.current;if(t0.running)stopTimerFor878254(t0,"canvi d’obra");startTimer()},stop:()=>stopTimerFor878254(timerRef878254.current,"pausa")}:null} obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} agentsLib878301={agentsLibrary878301(viewOdata878233,viewClients878233)} keepAgent878303={ag=>setOdata(prev=>guardarALaLlista878303(prev,ag))} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>compressImage878259(file,1600,0.75).then(u=>{lsSet8779(obraFotoKey878259(obraId),u);setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u,teFoto:true,fotoAt:new Date().toISOString()}:o))}).catch(e=>alert("No s’ha pogut posar la foto: "+(e?.message||e)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,...(r.puOrig878346!=null?{pu:r.puOrig878346}:{}),sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
+{screen==="Obra"&&<Obra crono878376={authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&!senseHoresPropies878342()?{on:timer.running&&timer.obraId===obraId,since:timer.start,start:()=>{if(timerRef878254.current.running)aturaTemps878463(obraId);else startTimer()},stop:()=>aturaTemps878463()}:null} obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} agentsLib878301={agentsLibrary878301(viewOdata878233,viewClients878233)} keepAgent878303={ag=>setOdata(prev=>guardarALaLlista878303(prev,ag))} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>compressImage878259(file,1600,0.75).then(u=>{lsSet8779(obraFotoKey878259(obraId),u);setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u,teFoto:true,fotoAt:new Date().toISOString()}:o))}).catch(e=>alert("No s’ha pogut posar la foto: "+(e?.message||e)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,...(r.puOrig878346!=null?{pu:r.puOrig878346}:{}),sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
 <AgendaReminders878256 odata={viewOdata878233} openObra={openObra}/><AiBudgetHost878256/>{screen==="Agenda"&&<SafeRenderBoundary878108><Agenda878256 odata={viewOdata878233} events={[...Object.entries(viewOdata878233||{}).flatMap(([oid,d])=>Array.isArray(d?.events)?d.events.map(e=>({...e,obraId:e.obraId||oid,client:e.client||viewClients878233.find(c=>c.id===viewObres878233.find(o=>o.id===oid)?.client)?.nom,obra:e.obra||viewObres878233.find(o=>o.id===oid)?.nom,adreca:e.adreca||viewObres878233.find(o=>o.id===oid)?.adreca})):[]),...invoiceAlerts8776(viewObres878233,viewOdata878233)]} clients={viewClients878233} obres={viewObres878233} openObra={openObra} openObraTab={openObraTab} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={calY} selDay={selDay} setSelDay={setSelDay} setOdata={currentAccount878233.role==="admin"?setOdata:undefined} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab} clientsList={clients}/></SafeRenderBoundary878108>}
@@ -6317,11 +6297,11 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
 {screen==="Pressupostos honoraris"&&<HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra}/>}{screen==="Configuració"&&<Configuracio clients={viewClients878233} obres={viewObres878233} odata={viewOdata878233} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={setPartidaLibrary} setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser8779}/>} {screen==="Traça"&&<SafeRenderBoundary878108>{esTreballador878326()?<HoresTreballador878327 obres={obres}/>:senseHoresPropies878342()?<HoresEmpresa878340 senseMeves obres={obres} odata={odata}/>:ambEmpresa878338()?<HoresEmpresa878340 updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} obres={obres} clients={clients} odata={odata} openObra={openObra}/>:<GestioTemps878255 updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} obres={obres} clients={clients} odata={odata} openObra={openObra}/>}</SafeRenderBoundary878108>}
 {modal==="client"&&<Modal title="Nou client" close={()=>setModal(null)}><FormClient onSubmit={addClient}/></Modal>}{impObres878358&&<ImportarObres878358 obres={obres} numsFact={impObres878358?Object.values(odata||{}).flatMap(d=>(d?.facturesObra878297||[]).map(f=>String(f.numero||""))).filter(Boolean):[]} onImporta={importaObresAnteriors878358} close={()=>setImpObres878358(false)}/>}{modal==="obra"&&<Modal title={t(etNovaObra878304())} close={()=>setModal(null)}><QuickExpedientForm878254 clients={viewClients878233} allAgents={allAgents8749(viewOdata878233,viewClients878233)} onSubmit={addObra} fixedClientId={currentAccount878233.role!=="admin"?(scopedClientId878233||""):""}/></Modal>}{modal==="partida"&&<Modal title="Nova partida" close={()=>setModal(null)}><FormPartida onSubmit={addPartida}/></Modal>}{modal==="agent"&&<Modal title="Nou agent de l’expedient" close={()=>setModal(null)}><FormAgent onSubmit={addAgent}/></Modal>}{modal==="acta"&&<Modal title="Nova acta d’expedient" close={()=>setModal(null)}><FormActa agents={ensureAgents8748(uniqAgents8749([...allAgents8749(odata,clients),...(data.agents||[])]))} openAgent={()=>setModal("agent")} onSubmit={addActa}/></Modal>}{modal==="event"&&<Modal title="Nova cita o nota" close={()=>setModal(null)}><FormEvent clients={clients} obres={obres} calM={calM} calY={calY} selDay={selDay} onSubmit={addEvent}/></Modal>}{authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&!senseHoresPropies878342()&&timer.running&&!(screen==="Obra"&&timer.obraId===obraId)&&<div className={`work-timer-v878254 ${timer.running?"on":""} ${timerObert878264?"obert":""}`} role="status" onClick={e=>{if(e.target.closest("button,label,input"))return;setTimerObert878264(v=>!v)}} title={i18nT("Comptador de temps (toca per obrir o plegar)")}>
   <span className="dot"/>
-  <span className="txt">{timer.running?<><b><TimerClock878304 start={timer.start}/></b><span className="lbl"> {timer.auto?"comptant temps a":"cronòmetre a"} {(obres.find(o=>o.id===timer.obraId)||{}).nom||"l’obra"}</span></>:<span className="lbl">Comptador aturat</span>}</span>
-  {timer.running?<button type="button" onClick={()=>stopTimerFor878254(timerRef878254.current,"pausa")}>Pausa i desa</button>:(screen==="Obra"&&obraId&&<button type="button" onClick={()=>startAutoTimerFor878254(obraId)}>Reprendre</button>)}
-  <label title="Engegar el comptador sol en entrar a una obra"><input type="checkbox" checked={autoTimerOn878254} onChange={toggleAutoTimer878254}/>Automàtic</label>
+  <span className="txt"><b><TimerClock878304 start={timer.start}/></b><span className="lbl"> {(obres.find(o=>o.id===timer.obraId)||{}).nom||i18nT("Obra")}</span></span>
+  <button type="button" onClick={()=>aturaTemps878463()}>{i18nT("Aturar i desar")}</button>
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
+{fiTemps878463&&<DesarTemps878463 fi={fiTemps878463} obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} close={()=>setFiTemps878463(null)} acaba={row=>acabaTemps878463(fiTemps878463,row)}/>}
 {email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/></main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)}/></div></>
 }
 
@@ -18759,7 +18739,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.462",
+    app_version:"87.463",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19794,12 +19774,9 @@ function RendimentHonorarisExpedient878120({data={},obra={}}){
 // tipus de registre, tipus de feina i tasca, i una taula.
 const TASQUES878430=["Visita d’obra","Pressupost","Certificacions","Comptabilitat","Reunió","Desplaçament","Gestió administrativa","Altres"];
 function HonorarisTemps({obraId,obra=null,crono=null,data,timer,setTimer,startTimer,stopTimer,addManualHours,deleteHour,quota=0,preuClient=0,acord=null}){
-// V87.382 · el comptador sap de quina obra és: «Iniciar» ho apunta (abans no, i el rellotge de la barra no el veia ni el desava) i, si
-// compta una altra obra, aquí no es pot aturar ni reiniciar (el temps aniria a aquesta): «Desar l’altra i començar aquí»
+// V87.382 · si compta una altra obra, aquí només es pot desar aquella i començar aquí
 const altra878382=!!(timer?.running&&timer.obraId&&timer.obraId!==obraId);
-const engega878382=()=>crono?crono.start():setTimer?.(t=>({...t,running:true,start:Date.now(),elapsed:0,obraId,auto:false}));
 const key=lsKey8779(`aco_honoraris_rows_${obraId||"default"}`);
-const tipusFeina=["Pressupost","Certificació d'obra","Acta d'obra","Memòria tècnica","Project management","Direcció d’obra","Direcció d’execució","Visita obra","Presa de dades","Desplaçament","Reunió","Trucades / emails","Gestió administrativa","Altres"];
 const[rows,setRows]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}});
 useEffect(()=>{localStorage.setItem(key,JSON.stringify(rows));localStorage.setItem(lsKey8779("aco_honoraris_sync_tick"),String(Date.now()))},[rows,key]);
 useEffect(()=>{const h=e=>{if(String(e?.detail?.obraId||"")===String(obraId||"")){try{setRows(JSON.parse(localStorage.getItem(key)||"[]"))}catch{}}};window.addEventListener("aco-time-rows-changed",h);return()=>window.removeEventListener("aco-time-rows-changed",h)},[key,obraId]);
@@ -19831,10 +19808,6 @@ function desa(){const h=n(form.hores);if(!(h>0)){alert(i18nT("Escriu les hores."
   if(f.id)setRows(p=>p.map(x=>x.id===f.id?{...x,...r}:x));else setRows(p=>[...p,{...r,id:"hr-"+Date.now(),obraId,createdAt:new Date().toISOString()}]);
   setForm(null)}
 function elimina(id){if(!confirm(i18nT("Segur que vols eliminar aquest registre?")))return;setRows(p=>p.filter(r=>r.id!==id));setForm(null)}
-function timerMs878186(){return timer?.running?Math.max(Date.now()-(timer.start||Date.now()),0):Math.max((timer?.elapsed||0),0)}
-function timerHours(){return timerMs878186()/3600000}
-function timerClock878186(){const sec=Math.floor(timerMs878186()/1000);const h=Math.floor(sec/3600);const m=Math.floor((sec%3600)/60);const s=sec%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
-function stopTimerToRows878162(){const h=Math.max(timerHours(),0.01);setRows(p=>[...p,{id:"hr-chrono-"+Date.now(),obraId,data:new Date().toISOString().slice(0,10),tipusRegistre:"Honoraris",tipusFeina:timer.label||"Treball tècnic",tasca:timer.task||"Temps cronometrat",hores:h.toFixed(2),preuHora:timer.rate||rate0,observacions:timer.task||"",...(multi437?{budgetId:faseAct437}:{}),...(estat0==="pendent"?{}:patchEstatFact878317(estat0))}]);setTimer?.(t=>({...t,running:false,start:null,elapsed:0,task:""}))}
 // els apunts per mesos i dies (els més nous a dalt); sense data, al final
 const items=[...rows.map(r=>({k:"r"+r.id,r,d:rowDate878255(r),h:isHoursRow878255(r)?timeHours878120(r):0,v:imp(r),desp:!isHoursRow878255(r)})),
   ...meves.map(a=>{const d=parseDate8776(a.data);return {k:"a"+a.id,a,d:d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null,h:0,v:albaraBase878259(a),desp:true}})];
@@ -19868,7 +19841,7 @@ return <div className="stack temps-validat-v8754 hores-v878430">
     </div>
     {quota>0&&<p className="quota-v878430">{i18nT("Quota fixa del client: {q} al mes",{q:money(quota)})}</p>}
   </div>
-  <details className="plegat-v878366"><summary><b>{i18nT("Comptador de temps")}</b><span>{altra878382?i18nT("En marxa en una altra obra"):timer.running?i18nT("Temps en marxa"):i18nT("Comptador aturat")}</span></summary><Card title={i18nT("Comptador de temps")}><div className="time-form-v8754 timer-panel-v87162"><label><span>{i18nT("Tipus de feina")}</span><select value={timer.label||"Pressupost"} onChange={e=>setTimer?.(t=>({...t,label:e.target.value}))}>{[...new Set([...TASQUES878430,...tipusFeina])].map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</select></label><label><span>{i18nT("Tasca")}</span><input value={timer.task||""} onChange={e=>setTimer?.(t=>({...t,task:e.target.value}))} placeholder={i18nT("Què estàs fent?")}/></label><label><span>€/h</span><input type="number" step="0.01" value={timer.rate||rate0} onChange={e=>setTimer?.(t=>({...t,rate:e.target.value}))}/></label><div className={timer.running?"timer-clock-v87162 timer-live-v87186":"timer-clock-v87162"}><span>{altra878382?i18nT("En marxa en una altra obra"):timer.running?i18nT("Temps en marxa"):i18nT("Comptador aturat")}</span><b className="timer-live-clock-v87186">{timerClock878186()}</b><em>{timerHours().toFixed(2)} h</em></div></div><div className="card-actions">{altra878382?<button className="primary" onClick={engega878382}>{i18nT("Desar l’altra i començar aquí")}</button>:timer.running?<button className="primary" onClick={stopTimerToRows878162}>{i18nT("Aturar i guardar registre")}</button>:<button className="primary" onClick={engega878382}>{i18nT("Iniciar comptador")}</button>}{!altra878382&&<button className="secondary" onClick={()=>setTimer?.(t=>({...t,running:false,start:null,elapsed:0,task:""}))}>{i18nT("Reiniciar")}</button>}</div></Card></details>
+  {crono&&<div className={`crono-fila-v878463 ${crono.on?"on":""}`}>{crono.on?<><Clock size={17} aria-hidden="true"/><b><TimerClock878304 start={crono.since}/></b><span>{i18nT("Temps en marxa")}</span><button type="button" className="primary" onClick={crono.stop}>{i18nT("Aturar i desar")}</button></>:altra878382?<><Clock size={17} aria-hidden="true"/><span>{i18nT("En marxa en una altra obra")}</span><button type="button" className="secondary" onClick={crono.start}>{i18nT("Desar l’altra i començar aquí")}</button></>:<button type="button" className="secondary" onClick={crono.start}><Clock size={16} aria-hidden="true"/> {i18nT("Engegar el comptador")}</button>}</div>}
   {mesos.length===0?<Empty text="Encara no hi ha hores apuntades."/>:<div className="mesos-v878430">{mesos.map((m,i)=><details key={m.mk||"sense"} className="mes-v878430">
     <summary><b>{nomMes(m.mk)}</b><span>{resum(m.h,m.v,m.dv)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
     <div className="dies-v878430">{[...m.dies.values()].sort((a,b)=>b.dk.localeCompare(a.dk)).map(d=><details key={d.dk||"sense"} className="dia-v878430">
@@ -19886,6 +19859,29 @@ return <div className="stack temps-validat-v8754 hores-v878430">
   </div><div className="modal-actions">{form.id&&<button type="button" className="danger" onClick={()=>elimina(form.id)}>{i18nT("Eliminar")}</button>}<button type="button" className="secondary" onClick={()=>setForm(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={desa}>{i18nT("Desar")}</button></div></Modal>}
   {desp&&<AlbaraEditor878259 a={desp} setA={setDesp} obres={[obra||{id:obraId,nom:""}]} proveidors={[...new Set(readAlbarans878259().map(a=>a.proveidor).filter(Boolean))]} save={a=>{if(desaDespesa878318(a))setDesp(null)}} remove={a=>{if(eliminaDespesa878318(a))setDesp(null)}} close={()=>setDesp(null)} tots={readAlbarans878259()}/>}
 </div>}
+
+// V87.463 · En aturar el comptador: què s'ha fet i quantes hores (es poden corregir, p. ex. si s'ha quedat en marxa); el preu i la facturació surten de l'acord amb el client
+function DesarTemps878463({fi,obres=[],clients=[],odata={},close,acaba}){
+  const tm=fi.t,end=fi.end,obra=obres.find(o=>o.id===tm.obraId)||{};
+  const client=clients.find(c=>c.id===clientIdObra878347(obra));
+  const acord=acordClient878434(client),quota=parseNum8770(client?.quotaFixa)||0;
+  const d=odata[tm.obraId]||{},gs=fasesObra878342(d),multi=gs.length>1,alt=altIds878437(d);
+  const hh=ms=>{const x=new Date(ms);return `${String(x.getHours()).padStart(2,"0")}:${String(x.getMinutes()).padStart(2,"0")}`};
+  const[feina,setFeina]=useState(TASQUES878430.includes(tm.label)?tm.label:"Altres");
+  const[hores,setHores]=useState(String(Math.max(Math.round((end-tm.start)/36e5*100)/100,0.01)).replace(".",","));
+  const[nota,setNota]=useState("");
+  const[fase,setFase]=useState(gs.some(g=>g.id===d.activeBudgetIdObra)?d.activeBudgetIdObra:"principal");
+  function desa(){const h=parseNum8770(hores)||0;if(!(h>0)){alert(i18nT("Escriu les hores."));return}
+    const estat=estatAcord878434(acord,feina)||(quota>0?"quota":PERFIL878304==="complet"?"nofactura":"pendent");
+    acaba({id:"hr-"+end,data:isoDay878255(new Date(tm.start)),tipusRegistre:"Honoraris",tipusFeina:feina,tasca:feina,hores:String(Math.round(h*100)/100),preuHora:String(parseNum8770(client?.preuHoraQuota)||defaultRate878255()),km:"0",preuKm:"0.30",quantitat:"1",preuUnitari:"0",observacions:nota.trim(),inici:hh(tm.start),final:hh(end),...(multi?{budgetId:fase}:{}),...patchEstatFact878317(estat),createdAt:new Date().toISOString()})}
+  return <Modal title={i18nT("Desar el temps")} close={close}><div className="hores-form-v878430 fi-temps-v878463">
+    <p className="on-v878463"><b>{obra.nom||i18nT("Obra")}</b><span>{hh(tm.start)} – {hh(end)}</span></p>
+    {multi&&<div className="camp fase-v878437"><span>{i18nT("Fase")}</span><div className="xips-v878430">{gs.map(g=><button type="button" key={g.id} className={fase===g.id?"on":""} aria-pressed={fase===g.id} onClick={()=>setFase(g.id)}>{budgetName878273(g)}{alt.has(g.id)?` · ${i18nT("Alternativa")}`:""}</button>)}</div></div>}
+    <div className="camp"><span>{i18nT("Feina")}</span><div className="xips-v878430">{TASQUES878430.map(x=><button type="button" key={x} className={feina===x?"on":""} aria-pressed={feina===x} onClick={()=>setFeina(x)}>{i18nT(x)}</button>)}</div></div>
+    <label><span>{i18nT("Hores")}</span><input inputMode="decimal" value={hores} onChange={e=>setHores(e.target.value)} aria-label={i18nT("Hores")}/></label>
+    <label><span>{i18nT("Nota")}</span><input value={nota} onChange={e=>setNota(e.target.value)}/></label>
+  </div><div className="modal-actions"><button type="button" className="danger" onClick={()=>{if(confirm(i18nT("Descartar aquest temps?")))acaba(null)}}>{i18nT("Descartar")}</button><button type="button" className="secondary" onClick={close}>{i18nT("Continuar comptant")}</button><button type="button" className="primary" onClick={desa}>{i18nT("Desar")}</button></div></Modal>;
+}
 
 function AvisosPanel({openObra}){
 const[items,setItems]=useState(()=>JSON.parse(localStorage.getItem(lsKey8779("aco_avisos_generals_v36"))||"null")||[

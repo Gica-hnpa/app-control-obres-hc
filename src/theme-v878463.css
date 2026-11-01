@@ -1,0 +1,9 @@
+/* V87.463 · Comptador de temps: una línia a Honoraris › Hores i una finestra en aturar-lo */
+html body .crono-fila-v878463{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+html body .crono-fila-v878463.on{padding:8px 12px;border:1.5px solid #86EFAC;border-radius:12px;background:#F0FDF4;color:#166534}
+html body .crono-fila-v878463 b{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700}
+html body .crono-fila-v878463 span{flex:1;min-width:0;font-size:13.5px}
+html body .crono-fila-v878463 button{display:inline-flex;align-items:center;gap:6px}
+html body .fi-temps-v878463 .on-v878463{margin:0;display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:14.5px}
+html body .fi-temps-v878463 .on-v878463 b{min-width:0;overflow-wrap:anywhere}
+html body .fi-temps-v878463 .on-v878463 span{flex:none;color:var(--co-ink-3);font-variant-numeric:tabular-nums}

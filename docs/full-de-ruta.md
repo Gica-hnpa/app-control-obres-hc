@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.462, 1/11/2026)
+## On som (V87.463, 1/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -87,5 +87,7 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
   programes de l’ordinador, fitxa de la visita amb la IA i els cinc treballs que faltaven). Falta el que depèn de l’Héctor: el document final que fa l’app (C) i els tipus d’informe (D).
 
 - Descompte al pressupost d’obra · obra nova en 3 passos · revisor del pressupost · parte per veu · previsió de caixa.
+- **Comparador de pressupostos** (l’Héctor, 1/11/2026: per estudiar quan s’acabi el que hi ha pendent): quan hi ha diverses ofertes d’un mateix industrial, per decidir qui s’agafa (constructora i gestió total), i comparatius de preus per al tècnic.
+- **Idees de Motor de Presupuestos i Pillar** (mirats l’1/11/2026, a partir de pàgines públiques): abans de generar amb IA, ensenyar com s’ha entès l’encàrrec i preguntar el que falta; canviar el pressupost amb paraules normals, veient què canvia; rapportini per WhatsApp o veu; conciliació bancària.
 - Afegir una partida amb IA dins d’un capítol que ja existeix (l’Héctor, 29/10/2026: «en tot cas seria afegir partida amb IA dins d’un
   capítol ja existent»; cal la IA directa, clau d’Anthropic).

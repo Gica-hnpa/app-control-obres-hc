@@ -2618,6 +2618,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **«Preus» i «Obra, logística i marges»** passen a la finestra de «Passar-ho a pressupost» (`eines878462`, prop `eines` de `PassarPressupost878328`), plegades. Els preus es continuen posant sols en llegir l'arxiu: només no es veuen.
     - **Pressupost:** la targeta ja no recorda si s'havia deixat oberta (V87.427): surt sempre plegada. `pres-prova-obert-v878462` només el posen les proves (`helpers` d'`alhoratest.mjs`).
     - Estils `src/theme-v878462.css`. Eina nova `plegat462.mjs` (què s'obre desplegat en entrar a cada pantalla, `W=`, `COMPTES=`, `WEBROOT=`). Adaptades `amidaments328test`, `pressupost368test`, `pressupost372test`, `preus378test`, `v435test` i `v427test`. `amidaments328test` va fallar una vegada al pas del PDF i, tornada a passar, en verd.
+  - **V87.463 · Comptador de temps** (l'Héctor, 1/11/2026: «no em va funcionar bé fent una feina del CEE de Cornellà»; no va dir què va fallar). Trobat al codi: el temps només era a la memòria (qualsevol recàrrega el perdia), el rellotge d'Honoraris › Hores no corria (des de la V87.304 l'App ja no es torna a dibuixar cada segon), i aturar-lo des de la barra desava sol «Temps cronometrat» al preu de sèrie, sense l'acord del client ni la fase, i si feia menys d'un minut no desava res sense dir-ho.
+    - **El temps es recorda a l'aparell** (`comptador-v878463__<usuari>` al localStorage de debò, `timerKey878463`): sobreviu a una recàrrega. No passa d'un aparell a un altre.
+    - **En aturar-lo, una finestra** (`DesarTemps878463`, `aturaTemps878463`, `acabaTemps878463`): la feina (`TASQUES878430`), les hores (es poden corregir), la nota i, amb diverses fases, la fase; Descartar · Continuar comptant · Desar. El preu i l'estat de facturació surten de l'acord amb el client. El temps continua comptant fins que es desa.
+    - **Honoraris › Hores:** una línia (`crono-fila-v878463`) amb el rellotge que corre i «Aturar i desar»; fora el formulari plegat. Amb el comptador en una altra obra, «Desar l'altra i començar aquí» pregunta per aquella i després engega aquí.
+    - **Fora el comptador automàtic** (`autoTimerOn878254`, la casella «Automàtic» de la bombolla): l'Héctor no el vol (V87.376).
+    - Estils `src/theme-v878463.css`. Prova: `comptador463test.mjs` (20; substitueix `comptador382test`). Adaptades `mobiltest`, `v366test` i `v410test`. **Compte:** una prova tallada amb `timeout` deixa el servidor i el Supabase de proves en marxa i la següent falla en entrar: `D:\aco-tmp\passa.sh prova1 prova2…` les passa d'una en una sense tallar-les.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2808,7 +2814,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.462 a Render):**
+**Estat (publicada la V87.463 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

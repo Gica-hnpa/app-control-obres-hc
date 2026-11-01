@@ -4971,4 +4971,11 @@ export default {
 "Veure l’albarà": "Ver el albarán",
 "1 albarà": "1 albarán",
 "{n} albarans": "{n} albaranes",
+  "Aturar i desar": "Parar y guardar",
+  "Engegar el comptador": "Poner en marcha el contador",
+  "Desar el temps": "Guardar el tiempo",
+  "Continuar comptant": "Seguir contando",
+  "Descartar aquest temps?": "¿Descartar este tiempo?",
+  "Contacte i enllaços": "Contacto y enlaces",
+  "Cites i avisos": "Citas y avisos",
 };
