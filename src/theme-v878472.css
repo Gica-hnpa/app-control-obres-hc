@@ -1,0 +1,15 @@
+/* V87.472 · «Fer factura»: motiu de l'IVA 0 %, compte per cobrar, IVA de sèrie del client i dia de cobrament */
+html body .fer-factura-v878337 .compte-v878472{margin:12px 0;padding:12px;border:1px solid var(--co-line,#DCE3E7);border-radius:12px;background:#F8FAFC;display:flex;flex-direction:column;gap:8px}
+html body .fer-factura-v878337 .compte-v878472>b{font:700 14px var(--app-font);color:#0f172a}
+/* a la proforma de l'obra, el motiu ocupa tota la fila dels selectors */
+html body .params-v878426 .iva0-v878472{grid-column:1/-1;flex:1 1 100%;display:flex;flex-wrap:wrap;gap:10px;min-width:0}
+html body .params-v878426 .iva0-v878472 label{flex:1 1 220px;min-width:0}
+html body .params-v878426 .iva0-v878472 select,html body .params-v878426 .iva0-v878472 input{width:100%;max-width:100%}
+/* fitxa del client */
+html body .serie-v878472 .ample-v878472{grid-column:1/-1}
+/* dia de cobrament */
+html body .cobrament-v878472{display:flex;flex-direction:column;gap:14px}
+html body .cobrament-v878472 label{display:flex;flex-direction:column;gap:4px;font-weight:600}
+html body .cobrament-v878472 input[type=date]{width:100%;max-width:260px;font-size:16px;min-height:44px}
+html body .cobrament-v878472 .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+@media (max-width:700px){html body .cobrament-v878472 .actions button{flex:1 1 40%}html body .cobrament-v878472 input[type=date]{max-width:100%}}

@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.471, 2/11/2026)
+## On som (V87.472, 2/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -55,6 +55,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.469 (2/11):** lectures de la IA per compte (tècnic 150, constructora 500, paquets propis) i el cost de debò de cada crida. La funció `aco-ia` s'ha instal·lat el mateix dia.
 - **V87.470 (2/11):** Despeses per data d'emissió i cercador per número, data o client a Despeses i Facturació.
 - **V87.471 (2/11):** Facturació amb factures de debò: «Per facturar» alineat, curt al mòbil i amb el total, filtres plegats al mòbil, sense el títol repetit a l'iPad i el menú lateral sense barra. Amb això s'acaba de mirar el Bloc 2.
+- **V87.472 (2/11):** «Fer factura» amb el NIF i l’IVA de sèrie, el motiu de l’IVA 0 % a la factura, l’entitat i l’IBAN, i el dia de cobrament (correccions de l’Héctor provant el Bloc 2 amb Brava).
 
 ## Blocs, per ordre
 
@@ -91,6 +92,7 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
 - ~~**Encàrrecs tècnics, segona volta**~~ (30/10/2026, amb el sí de l’Héctor; proposta a https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck): fet a les V87.441–444 (targetes,
   programes de l’ordinador, fitxa de la visita amb la IA i els cinc treballs que faltaven). Falta el que depèn de l’Héctor: el document final que fa l’app (C) i els tipus d’informe (D).
 
+- **Encàrrecs tècnics, tercera volta** (l’Héctor, 2/11/2026, amb el CEE de Cornellà; encaixa al Bloc 3): un estat per a la feina acabada que espera l’etiqueta, la factura o el cobrament (proposta: «Pendent de tancar», amb el que falta a la vista) i diversos encàrrecs dins d’un expedient (CEE, amiant, cèdula), amb el que és comú compartit. Falta el seu sí i saber si els cobra amb un preu conjunt o un per encàrrec.
 - Descompte al pressupost d’obra · obra nova en 3 passos · revisor del pressupost · parte per veu · previsió de caixa.
 - **Comparador de pressupostos** (l’Héctor, 1/11/2026: per estudiar quan s’acabi el que hi ha pendent): quan hi ha diverses ofertes d’un mateix industrial, per decidir qui s’agafa (constructora i gestió total), i comparatius de preus per al tècnic.
 - **Idees de Motor de Presupuestos i Pillar** (mirats l’1/11/2026, a partir de pàgines públiques): abans de generar amb IA, ensenyar com s’ha entès l’encàrrec i preguntar el que falta; canviar el pressupost amb paraules normals, veient què canvia; rapportini per WhatsApp o veu; conciliació bancària.

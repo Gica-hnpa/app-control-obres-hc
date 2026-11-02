@@ -2669,6 +2669,14 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Menú lateral a l'ordinador:** amb un nom d'empresa llarg sortia una barra de desplaçament a baix: `.active-user-v8780` feia sempre 150 px i la columna no s'encongia. Ara l'etiqueta s'encongeix i el nom de l'app va a 17 px, en una línia.
     - **Compte:** `.action-menu-v87213>summary span` posa la lletra a 18 px: un `span` amb text dins del `label` d'un menú ha de portar `font-size:inherit`.
     - Estils `src/theme-v878471.css`. Prova: `v471test.mjs` (29).
+  - **V87.472 · «Fer factura» amb els valors de sèrie, la frase legal de l'IVA 0 %, l'entitat i l'IBAN, i el dia de cobrament** (l'Héctor, 2/11/2026, provant Facturació amb Brava: «m'hauria de posar valors per defecte com el NIF… i el % de IVA»; «a 0 %, a sota la factura la coletilla de perquè està exempta»; «el número de compte i l'entitat»; «he de poder posar el dia de cobrament, no el dia que ho fiscalitzo jo»):
+    - **A qui es factura** (`destFactura878472`): primer el destinatari de la darrera factura de l'obra; si no, als comptes d'empresa el client de l'obra (raó social, NIF, adreça sencera) i al compte de l'Héctor el promotor (l'emissor és el client). El que falti surt de la fitxa de Contactes de la mateixa persona (`contacteDe878413`). Una obra compartida sense client propi només té el nom del promotor: si a Contactes no hi ha el NIF, surt buit.
+    - **IVA i retenció de sèrie** (`defFactura878472`, `client.fact878472 = {iva, ret, motiu0, motiu0Text}`, a la fitxa del client, bloc «Factures a aquest client»: comptes d'empresa o client amb sèrie activada). Ordre: el de la certificació (`factParams`) → la darrera factura de l'obra → el client → 21 %. Hi passen `calcPf878337(data,f,legacy,client)`, `calc` de `Fact` i Per facturar.
+    - **IVA 0 %**: motiu «Inversió del subjecte passiu» (de sèrie; exigeix el NIF del client) o «Un altre motiu» amb text; es desa a la factura i a `factParams` (`motiu0`, `motiu0Text`, `motiuPf878472`) i surt sota els totals de la factura i la proforma (`fraseIva0878472`, en l'idioma del document). Les factures d'abans, sense motiu, no canvien. A la gestoria, columna «Motiu IVA 0 %» a l'Excel i «ISP» al llistat PDF. **El text l'ha de validar la gestoria**, i la inversió només val per a destinataris empresaris o professionals en obres de construcció o rehabilitació (art. 84.Uno.2.º f de la Llei 37/1992).
+    - **`ivaNum878472`**: un IVA desat pot ser 0. `+x||21` el tornava 21: el PDF deia «IVA 21 %» amb la quota a zero, i a les factures d'honoraris el 0 no es podia desar.
+    - **Entitat i IBAN**: `banc` a Empresa › Dades › Cobraments i a Ajustos › Documents (emissor d'honoraris); `fraseCompte878472` a la factura, amb l'IBAN de 4 en 4; si l'empresa no té IBAN, «Fer factura» demana «Compte per cobrar» (opcional). A les factures d'honoraris, les observacions ja no amaguen la forma de pagament.
+    - **Dia de cobrament** (`CobramentFactura878472`, a les dues Facturacions): el botó obre una finestra amb el dia (de sèrie avui); si ja és cobrada, es pot corregir o «Tornar a pendent».
+    - Estils `src/theme-v878472.css`. Prova: `v472test.mjs` (31). Adaptades `fact373test` i `facturacio337test`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2859,7 +2867,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.471 a Render):**
+**Estat (publicada la V87.472 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
