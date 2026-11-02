@@ -5030,4 +5030,9 @@ export default {
   "{s} partides no tenen preu. Buscar-los amb la IA gastarà com a mínim {l} lectures i pot trigar uns {m} minuts. Continuar? (Si dius que no, podràs posar els preus a mà.)": "{s} partidas no tienen precio. Buscarlos con la IA gastará como mínimo {l} lecturas y puede tardar unos {m} minutos. ¿Continuar? (Si dices que no, podrás poner los precios a mano.)",
   "S’ha tallat la connexió mentre la IA treballava. No bloquegis el mòbil ni canviïs d’app, i torna-ho a provar.": "Se ha cortado la conexión mientras la IA trabajaba. No bloquees el móvil ni cambies de app, y vuelve a intentarlo.",
   "Buscant els preus…": "Buscando los precios…",
+"Afegir encàrrec": "Añadir encargo",
+"Treure aquest encàrrec": "Quitar este encargo",
+"Treure «{nom}» d’aquest expedient? El que s’hi ha marcat es perdrà. Els arxius es queden a Documents.": "¿Quitar «{nom}» de este expediente? Lo marcado se perderá. Los archivos se quedan en Documentos.",
+"Tots (preu conjunt)": "Todos (precio conjunto)",
+"Fer la factura: {n}": "Hacer la factura: {n}",
 };

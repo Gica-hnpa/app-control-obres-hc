@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.476, 2/11/2026)
+## On som (V87.477, 2/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -60,6 +60,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.474 (2/11):** estat «Pendent de tancar», amb el que falta a la vista i avís en tancar.
 - **V87.475 (2/11):** actes que no es desen fins a guardar-les (fora les buides), «Eliminar» dins de l’acta i «Compartir» i la foto a dalt del Resum.
 - **V87.476 (2/11):** «Pressupost amb IA» llegeix els amidaments tal com són i la IA només busca els preus que falten; pantalla encesa i missatge clar al mòbil.
+- **V87.477 (2/11):** diversos encàrrecs en un expedient: «Afegir encàrrec» al Resum, el que és comú compartit i cobrar-los junts o per separat.
 
 ## Blocs, per ordre
 
@@ -96,7 +97,7 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
 - ~~**Encàrrecs tècnics, segona volta**~~ (30/10/2026, amb el sí de l’Héctor; proposta a https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck): fet a les V87.441–444 (targetes,
   programes de l’ordinador, fitxa de la visita amb la IA i els cinc treballs que faltaven). Falta el que depèn de l’Héctor: el document final que fa l’app (C) i els tipus d’informe (D).
 
-- **Encàrrecs tècnics, tercera volta** (l’Héctor, 2/11/2026, amb el CEE de Cornellà; encaixa al Bloc 3): un estat per a la feina acabada que espera l’etiqueta, la factura o el cobrament (proposta: «Pendent de tancar», amb el que falta a la vista) i diversos encàrrecs dins d’un expedient (CEE, amiant, cèdula), amb el que és comú compartit. Falta el seu sí i saber si els cobra amb un preu conjunt o un per encàrrec.
+- ~~**Encàrrecs tècnics, tercera volta**~~ (l’Héctor, 2/11/2026, amb el CEE de Cornellà): fet a les V87.474 («Pendent de tancar») i V87.477 (diversos encàrrecs, preu conjunt o per encàrrec).
 - **Permís de gestió d’un compte** (l’Héctor, 2/11/2026: «si jo porto la facturació i despeses de Brava… hauria de poder veure les seves pestanyes generals… però no sempre serà així… el millor és que des del perfil de Brava em doni permís»). Proposta, per decidir:
   - **Qui dona el permís:** a Brava, Ajustos › «Qui em porta la gestió»: escriu el compte (p. ex. el de l’Héctor), marca què pot veure (Facturació · Despeses · Rendiment) i si només mira o també hi treballa. Ho pot treure quan vulgui.
   - **Qui el rep:** al menú, «Comptes que porto» › Brava: s’obren aquelles pantalles amb una franja «Estàs a Brava · Tornar al meu compte». No es barreja amb les dades pròpies.

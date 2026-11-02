@@ -2698,6 +2698,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Si l'arxiu no es pot llegir** (un PDF escanejat, sense text a la caixa): `pressupostDeIa` (`accio:"pressupost"`, llegir, no inventar); si no hi troba partides, com abans. Plànols i fotos, com abans. Amb PDF i Excel alhora, el que té més partides, sense repetir-les. **La funció del servidor no canvia.**
     - **Mòbil** (l'Héctor a les 22:04 amb una partida dictada: «No hi ha connexió amb el núvol»): pantalla encesa mentre treballa la IA (`pantallaEncesa878476`) i missatge clar si es talla la connexió; camps de 16 px perquè l'iPhone no ampliï la pantalla. **La causa del tall no està confirmada** (cal mirar `aco_ia_crides`): si es repeteix, cal fer la crida en dos passos (encarregar i preguntar).
     - Estils `src/theme-v878476.css`. Prova: `v476test.mjs` (11, Excel inventat i PDF sense text). El PDF i l'Excel de Llafranc són d'un client: no copiar-los a les proves.
+  - **V87.477 · Diversos encàrrecs en un expedient** (l'Héctor, 2/11/2026, amb el CEE de Cornellà: «sí a tot»: CEE, amiant, cèdula… en un mateix expedient, amb el que és comú compartit, i cobrar-los amb un preu conjunt o un per encàrrec):
+    - **Al Resum d'un encàrrec tècnic** (`EncarrecTecnic878306`, ara amb `EncarrecUn878477` per a cada un): un botó per encàrrec amb «{n} de {m}» (`.enc-xips-v878477`), «Afegir encàrrec» (`.enc-tria-v878477`) i «Treure aquest encàrrec» (pregunta; els arxius es queden a Documents). Amb un sol encàrrec, tot com abans. Només als expedients que ja són un encàrrec tècnic. No al treballador ni al portal.
+    - **Dades:** el principal es queda a `data.passos878305`, sense prefix (les dades d'abans no es toquen); els altres a `data.encarrecsExtra878477 = [{id:"enc-<k>", k, at, passos}]` (amb `id`, perquè `merge3` els ajunti element per element). Funcions pures a `src/encarrecsTecnics.js`: `encarrecsDe`, `ambPassos`, `marcaPunt`, `marcaDoc`, `afegeixEncarrec`, `treuEncarrec`, `resumDe`, `nomEncarrec`, `autoPunts(obra, data, client, e)`.
+    - **El que és comú:** el client, la referència cadastral, les fotos, la fitxa de la visita (per clau; la clau del tràmit passa de `tipus` a `tipusTramit`: cap obra en tenia) i els documents de `DOCS_COMUNS` (dni, propietat, representacio, fotos). Un punt amb el mateix text es marca a tots els encàrrecs. Els altres documents d'un encàrrec afegit porten prefix (`cedula:certificat`), perquè «certificat» no és el mateix a la cèdula que al CEE. «Presentat» i el venciment són de cada encàrrec. `carpetaDoc` no depèn del prefix.
+    - **Cobrar-los:** amb 2 o més encàrrecs, els pressupostos i les factures d'honoraris tenen el camp «Encàrrec» (`TriaEncarrec878477`, `encarrec878477`): «Tots (preu conjunt)» o un de sol; la calculadora també, i posa el treball. Sense encàrrec val per a tots (`autoPunts`); amb encàrrec, només per a aquell. Treure un encàrrec passa els seus pressupostos i factures a tot l'expedient.
+    - **Inici** (`EncarrecsInici878305`), **«Pendent de tancar»** (`faltaTancar878474`, amb «Nom: …» i «Fer la factura: {n}») i **Documents** (`documentFolders8775`, `ambTramit`) miren tots els encàrrecs.
+    - Estils `src/theme-v878477.css`. Proves: `encarrecs477unit.mjs` (28, sense navegador) i `v477test.mjs` (27).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2888,7 +2895,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.476 a Render):**
+**Estat (publicada la V87.477 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

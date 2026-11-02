@@ -1,0 +1,12 @@
+/* V87.477 · Diversos encàrrecs en un expedient: un botó per encàrrec a dalt del Resum, amb com va, i «Afegir encàrrec» */
+.enc-xips-v878477{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.enc-xips-v878477 button{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:46px;padding:6px 13px;border:1.5px solid #C3CED6;border-radius:10px;background:#fff;color:var(--co-ink-1,#16222B);font:inherit;text-align:left;cursor:pointer}
+.enc-xips-v878477 button b{font-size:14px;line-height:1.25}
+.enc-xips-v878477 button small{font-size:12px;color:var(--co-ink-3)}
+.enc-xips-v878477 button.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
+.enc-xips-v878477 button.on small{color:#DBEAFE}
+.enc-xips-v878477 button.mes{flex-direction:row;align-items:center;gap:6px;border-style:dashed;color:#1D4ED8;font-size:14px;font-weight:600}
+.enc-tria-v878477{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:10px;border:1.5px solid #BFDBFE;border-radius:10px;background:#EFF6FF}
+.enc-tria-v878477 button{min-height:40px;padding:6px 13px;border:1px solid #93C5FD;border-radius:8px;background:#fff;color:#1D4ED8;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.enc-treu-v878477{display:inline-flex;align-items:center;gap:6px;min-height:40px;margin:10px 0 0;padding:6px 4px;border:0;background:none;color:#B91C1C;font:inherit;font-size:13.5px;cursor:pointer}
+@media (hover:hover){.enc-xips-v878477 button:not(.on):hover,.enc-tria-v878477 button:hover{background:#DBEAFE}.enc-treu-v878477:hover{text-decoration:underline}}

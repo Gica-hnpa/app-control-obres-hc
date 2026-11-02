@@ -164,12 +164,15 @@ TRAMITS.postobra = { nom: "", url: "", docs: [], finals: [["llibre", "Llibre de 
 // i després sí que hauria d'haver una de fotos»)
 export const PREVIS = "01_DOCUMENTACIO_PREVIA", TRAMITACIO = "01_TRAMITS_AJUNTAMENT", FOTOS = "06B_FOTOS_OBRA";
 const DOCS_PREVIS = new Set(["dni", "propietat", "anterior", "representacio", "planol", "planols", "encarrec", "acord", "visita"]);
-export function carpetaDoc(key = "") { return DOCS_PREVIS.has(key) ? PREVIS : TRAMITACIO; }
+export function carpetaDoc(key = "") { return DOCS_PREVIS.has(String(key).split(":").pop()) ? PREVIS : TRAMITACIO; }
 
-export function estatDocs(k, passos = {}, documents = [], nFotos = 0) {
+// V87.477 · En un expedient amb diversos encàrrecs, aquests documents són un de sol (el DNI del propietari es demana una vegada). La resta poden
+// dir-se igual sense ser el mateix («certificat» a la cèdula i al CEE): als encàrrecs afegits porten el nom de l'encàrrec al davant (`pre`).
+const DOCS_COMUNS = new Set(["dni", "propietat", "representacio", "fotos"]);
+export function estatDocs(k, passos = {}, documents = [], nFotos = 0, pre = "") {
   const tr = TRAMITS[k]; if (!tr) return null;
   const noCal = passos.docsNoCal || {}, fets = passos.docsFets || {};
-  const estat = d => { const fitxers = (documents || []).filter(x => x && x.tramit878306 === d.key); const fotos = d.key === "fotos" && nFotos > 0; return { ...d, fitxers, fotos, fet: fitxers.length > 0 || fotos || !!fets[d.key] || !!noCal[d.key], noCal: !!noCal[d.key] }; };
+  const estat = d0 => { const d = { ...d0, key: DOCS_COMUNS.has(d0.key) ? d0.key : pre + d0.key }; const fitxers = (documents || []).filter(x => x && x.tramit878306 === d.key); const fotos = d.key === "fotos" && nFotos > 0; return { ...d, fitxers, fotos, fet: fitxers.length > 0 || fotos || !!fets[d.key] || !!noCal[d.key], noCal: !!noCal[d.key] }; };
   const llista = [...tr.docs.map(([key, nom]) => ({ key, nom })), ...(passos.docsPropis || []).map(nom => ({ key: "p:" + nom, nom, propi: true }))]
     // V87.333 · un document és fet si s'ha marcat (docsFets), s'hi ha adjuntat l'arxiu o (abans) s'havia marcat «No cal»
     .map(estat);
@@ -189,7 +192,7 @@ export const FITXA_VISITA = {
   amiant: [["tipus", "Tipus d’edifici"], ["any", "Any de construcció"], ["elements", "Elements inspeccionats (lloc, material i estat)", 1], ["mostres", "Mostres preses", 1], ["risc", "Valoració del risc", 1]],
   informe: [["objecte", "Objecte de l’informe", 1], ["antecedents", "Antecedents", 1], ["danys", "Danys observats", 1], ["causes", "Causes probables", 1], ["reparacio", "Reparació proposada", 1]],
   planols: [["plantes", "Nombre de plantes"], ["superficie", "Superfície útil (m²)"], ["alcada", "Alçada lliure (m)"], ["peces", "Peces i superfícies", 1]],
-  tramit: [["tipus", "Tipus de tràmit"], ["pem", "Pressupost de l’obra (€)"], ["descripcio", "Descripció de l’actuació", 1], ["normativa", "Normativa aplicable", 1]],
+  tramit: [["tipusTramit", "Tipus de tràmit"], ["pem", "Pressupost de l’obra (€)"], ["descripcio", "Descripció de l’actuació", 1], ["normativa", "Normativa aplicable", 1]],
 };
 const nomCamp = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\([^)]*\)/g, " ").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 // Les instruccions per a ChatGPT o Claude: omplir la fitxa amb la documentació de la visita. Res no s'inventa, i el que no se sap es deixa buit.
@@ -231,6 +234,52 @@ export function encarrecDe(obra = {}) {
   for (const [k, e] of Object.entries(ENCARRECS)) if (e.tipus.test(tipus)) return k;
   return null;
 }
+export const nomEncarrec = k => ENCARRECS[k]?.nom || "";
+
+// V87.477 · Diversos encàrrecs en un expedient (l'Héctor, 2/11/2026: el CEE, la cèdula i l'amiant del mateix immoble, sense fer-ne tres expedients).
+// El primer és el del tipus de treball, amb els passos de sempre (data.passos878305); els altres són a data.encarrecsExtra878477 =
+// [{id, k, at, passos}]. Cadascun té els seus passos, però el client, les fotos, la fitxa i els documents comuns són un de sol, i un punt amb el
+// mateix text es marca a tots (l'escriptura es demana una vegada).
+export function encarrecsDe(obra = {}, data = {}) {
+  const pr = encarrecDe(obra);
+  const out = pr ? [{ k: pr, passos: data.passos878305 || {}, pre: "" }] : [];
+  for (const e of data.encarrecsExtra878477 || []) if (ENCARRECS[e?.k] && !out.some(x => x.k === e.k)) out.push({ k: e.k, passos: e.passos || {}, pre: e.k + ":", extra: true });
+  return out;
+}
+export function ambPassos(d, obra, k, f) {
+  if (k === encarrecDe(obra)) return { ...d, passos878305: f(d.passos878305 || {}) };
+  return { ...d, encarrecsExtra878477: (d.encarrecsExtra878477 || []).map(e => e.k === k ? { ...e, passos: f(e.passos || {}) } : e) };
+}
+const idsPunt = (k, text) => (ENCARRECS[k]?.passos || []).flatMap(p => p.items.flatMap((tx, n) => tx === text ? [`${p.k}.${n}`] : []));
+export function marcaPunt(d, obra, text, on) {
+  return encarrecsDe(obra, d).reduce((out, e) => {
+    const ids = idsPunt(e.k, text); if (!ids.length) return out;
+    return ambPassos(out, obra, e.k, p => { const fets = { ...(p.fets || {}) }; ids.forEach(id => { if (on) fets[id] = true; else delete fets[id]; }); return { ...p, fets, updatedAt: new Date().toISOString() }; });
+  }, d);
+}
+export function marcaDoc(d, obra, k, key, on) {
+  const quins = DOCS_COMUNS.has(key) ? encarrecsDe(obra, d).map(e => e.k) : [k];
+  return quins.reduce((out, x) => ambPassos(out, obra, x, p => {
+    const docsFets = { ...(p.docsFets || {}) }, docsNoCal = { ...(p.docsNoCal || {}) };
+    if (on) docsFets[key] = true; else { delete docsFets[key]; delete docsNoCal[key]; }
+    return { ...p, docsFets, docsNoCal, updatedAt: new Date().toISOString() };
+  }), d);
+}
+// Un encàrrec nou arrenca amb el que ja s'ha marcat als altres
+export function afegeixEncarrec(d, obra, k) {
+  const tots = encarrecsDe(obra, d); if (!ENCARRECS[k] || tots.some(e => e.k === k)) return d;
+  const fets = {}, docsFets = {};
+  for (const e of tots) {
+    for (const p of ENCARRECS[e.k].passos) p.items.forEach((tx, n) => { if (e.passos.fets?.[`${p.k}.${n}`]) idsPunt(k, tx).forEach(id => { fets[id] = true; }); });
+    for (const x of DOCS_COMUNS) if (e.passos.docsFets?.[x]) docsFets[x] = true;
+  }
+  return { ...d, encarrecsExtra878477: [...(d.encarrecsExtra878477 || []), { id: "enc-" + k, k, at: new Date().toISOString(), passos: { fets, docsFets } }] };
+}
+// Els arxius es queden a Documents; el pressupost o la factura que eren d'aquest encàrrec passen a ser de tot l'expedient
+export function treuEncarrec(d, k) {
+  const neteja = x => x?.encarrec878477 === k ? { ...x, encarrec878477: "" } : x;
+  return { ...d, encarrecsExtra878477: (d.encarrecsExtra878477 || []).filter(e => e.k !== k), pressupostosTecnic: (d.pressupostosTecnic || []).map(neteja), facturesTecnic: (d.facturesTecnic || []).map(neteja) };
+}
 
 // V87.440 · Els punts que l'app ja sap no cal marcar-los (l'Héctor, 30/10/2026: marcar «com si el tingués» per poder continuar no és la
 // millor manera): es marquen sols amb el que hi ha a l'expedient. Text del punt → què el fa bo.
@@ -241,14 +290,16 @@ const AUTO_PUNTS = {
   "Presentació a l’Agència de l’Habitatge": "presentat", "Registre a l’ICAEN": "presentat", "Presentació a l’Ajuntament": "presentat",
   "Data de venciment apuntada": "venciment", "Data de la propera inspecció apuntada": "venciment", "Data de la propera revisió apuntada": "venciment",
 };
-export function autoPunts(obra = {}, data = {}, client = null) {
+// V87.477 · Preu conjunt o per encàrrec: un pressupost o una factura sense encàrrec val per a tots; amb encàrrec (`encarrec878477`), només per a aquell.
+export function autoPunts(obra = {}, data = {}, client = null, e = null) {
   const buit = v => { const s = String(v || "").trim(); return !s || /^(pendent|pendiente|particular)$/i.test(s); };
-  const ps = data.passos878305 || {};
+  const ps = e?.passos || data.passos878305 || {};
+  const seu = x => !e || !x.encarrec878477 || x.encarrec878477 === e.k;
   return {
     client: !buit(client?.nom || obra.propietat) && !buit(obra.adreca),
     rc: String(obra.rc || "").replace(/[^0-9a-z]/gi, "").length >= 14,
-    pressupost: (data.pressupostosTecnic || []).some(p => /acceptat|facturat/i.test(String(p.estat || "")) && !/no acceptat/i.test(String(p.estat || ""))),
-    factura: (data.facturesTecnic || []).some(f => !/anul/i.test(String(f.estat || ""))),
+    pressupost: (data.pressupostosTecnic || []).some(p => seu(p) && /acceptat|facturat/i.test(String(p.estat || "")) && !/no acceptat/i.test(String(p.estat || ""))),
+    factura: (data.facturesTecnic || []).some(f => seu(f) && !/anul/i.test(String(f.estat || ""))),
     fotos: (data.fotos || []).length > 0,
     presentat: !!ps.presentat, venciment: !!ps.venciment,
   };
@@ -271,8 +322,8 @@ export function estatPassos(k, passos = {}, auto = {}) {
 // V87.440 · Com va tot l'encàrrec: els passos amb els documents (els de presentar a «Tràmit», els finals a «Lliurament»), el pas on som, què
 // toca ara i què ha quedat pendent d'abans. On som = l'últim pas amb feina marcada (si és sencer, el següent): si un punt d'un pas no
 // es té, es continua igualment i queda a «pendents», sense haver-lo de marcar com si es tingués.
-export function resumEncarrec(k, passos = {}, documents = [], auto = {}, nFotos = 0) {
-  const e = estatPassos(k, passos, auto), dd = estatDocs(k, passos, documents, nFotos);
+export function resumEncarrec(k, passos = {}, documents = [], auto = {}, nFotos = 0, pre = "") {
+  const e = estatPassos(k, passos, auto), dd = estatDocs(k, passos, documents, nFotos, pre);
   if (!e || !dd) return null;
   const fets = passos.fets || {};
   const llista = e.passos.map(p => {
@@ -290,3 +341,4 @@ export function resumEncarrec(k, passos = {}, documents = [], auto = {}, nFotos 
   const fet = llista.reduce((n, p) => n + p.fet, 0), total = llista.reduce((n, p) => n + p.total, 0);
   return { nom: e.nom, passos: llista, dd, pos, actual: acabat ? "" : llista[pos].k, acabat, ara, pendents, fet, total, pct: total ? Math.round(fet / total * 100) : 0 };
 }
+export function resumDe(obra, data, client, e) { return resumEncarrec(e.k, e.passos, data.documents || [], autoPunts(obra, data, client, e), (data.fotos || []).length, e.pre); }
