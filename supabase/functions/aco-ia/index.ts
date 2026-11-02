@@ -1,4 +1,4 @@
-// APP CONTROL D'OBRES · V87.458 · Funció «aco-ia» (Supabase Edge Function). ENCARA NO INSTAL·LADA.
+// APP CONTROL D'OBRES · V87.458 · Funció «aco-ia» (Supabase Edge Function). Instal·lada el 2/11/2026, amb «Verify JWT» apagat.
 // Tota la IA de l'app en una sola funció (substitueix «llegir-albara» i «pressupost-ia», que no es van instal·lar mai):
 //   accio "ping"      → si la funció hi és i quantes peticions queden aquest mes.
 //   accio "despesa"   → llegeix un albarà, una factura o un tiquet (foto, PDF o text) i torna les dades per a Despeses.
@@ -10,7 +10,7 @@
 // IA_MODEL_PRES (de sèrie claude-opus-5-5), IA_WEB=0 (no buscar a internet), IA_LIMIT_TECNIC i IA_LIMIT_EMPRESA (lectures al mes, de
 // sèrie 150 i 500; 0 = sense límit). Les lectures es compten a aco_ia_us i cada crida queda, amb el seu cost de debò, a aco_ia_crides
 // (supabase/aco_ia_v878458.sql). Sense aquest SQL la funció no treballa: així no es pot gastar sense comptar.
-import Anthropic from "npm:@anthropic-ai/sdk";
+import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
 
 const KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const MODEL_DOC = Deno.env.get("IA_MODEL_DOC") ?? "claude-sonnet-5-5";
@@ -23,8 +23,10 @@ const LIMIT_EMPRESA = Number(Deno.env.get("IA_LIMIT_EMPRESA") ?? 500);
 const LECTURA_USD = 0.03;
 const PES: Record<string, number> = { despesa: 1, pressupost: 6, partides: 8, preus: WEB ? 15 : 6 };
 const SB_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SB_ANON = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+// Claus de Supabase: les noves són diccionaris JSON ({"default": "sb_…"}) i, si no n'hi ha, les d'abans. La nova només va a «apikey».
+const claus = (nom: string) => { try { return String(JSON.parse(Deno.env.get(nom) ?? "{}")?.default ?? ""); } catch { return ""; } };
+const SB_ANON = claus("SUPABASE_PUBLISHABLE_KEYS") || (Deno.env.get("SUPABASE_ANON_KEY") ?? "");
+const SB_SERVICE = claus("SUPABASE_SECRET_KEYS") || (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 const MAX_TEXT = 60000, MAX_ARXIUS = 4;
 const MAX_MS = 370000; // Supabase talla la funció als 400 s
 
@@ -112,10 +114,10 @@ const lecturesDe = (accio: string, cost: number, ok: boolean) => Math.max(ok ? P
 // Les lectures de cada compte (taula aco_ia_us)
 const mes = () => new Date().toISOString().slice(0, 7);
 const sb = (path: string, init: RequestInit = {}) => fetch(`${SB_URL}/rest/v1/${path}`, {
-  ...init, headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json", ...(init.headers ?? {}) },
+  ...init, headers: { apikey: SB_SERVICE, ...(SB_SERVICE.startsWith("sb_") ? {} : { Authorization: `Bearer ${SB_SERVICE}` }), "Content-Type": "application/json", ...(init.headers ?? {}) },
 });
 async function usuari(req: Request): Promise<string> {
-  const r = await fetch(`${SB_URL}/auth/v1/user`, { headers: { apikey: SB_ANON, Authorization: req.headers.get("Authorization") ?? "" } });
+  const r = await fetch(`${SB_URL}/auth/v1/user`, { headers: { apikey: req.headers.get("apikey") || SB_ANON, Authorization: req.headers.get("Authorization") ?? "" } });
   if (!r.ok) throw new Error("Cal entrar a l'app.");
   return String((await r.json())?.id || "");
 }

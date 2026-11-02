@@ -36,8 +36,8 @@ només els capítols que es fan servir.
 
 ## La IA dins de l’app (V87.458)
 
-La funció del servidor és `supabase/functions/aco-ia/index.ts`. **És escrita però no instal·lada.** Mentre no ho estigui, l’app fa
-com abans: llegeix el que pot sola i, per a la resta, copiar i enganxar a ChatGPT o Claude. En instal·lar-la no cal tocar res de l’app.
+La funció del servidor és `supabase/functions/aco-ia/index.ts`. **Instal·lada el 2/11/2026.** Si no respon, l’app fa com abans: llegeix
+el que pot sola i, per a la resta, copiar i enganxar a ChatGPT o Claude.
 
 **Què fa:** llegeix albarans, factures i tiquets (foto o PDF), llegeix pressupostos i amidaments en PDF quan l’app no se’n surt, fa les
 partides d’un pressupost a partir d’un text, un dictat o uns arxius, i busca el preu amb el descompost de les que no en tenen.
@@ -46,14 +46,16 @@ partides d’un pressupost a partir d’un text, un dictat o uns arxius, i busca
 fer, s’hi poden adjuntar amidaments, plànols o fotos, i l’app ensenya les partides amb els preus per revisar-les abans d’afegir-les. Primer es mira Preus, el banc i les
 obres anteriors; la IA només posa el preu de les que queden.
 
-**Passos (només cal fer-los una vegada):**
+**Passos (fets el 2/11/2026; aquí, per si s’han de tornar a fer):**
 
-1. **Clau d’Anthropic:** a console.anthropic.com, crear un compte de pagament, comprar 50 $ de saldo, posar-hi un **límit de despesa mensual** de 50 $, deixar la **recàrrega automàtica apagada** i crear una clau.
+1. **Saldo i clau d’Anthropic:** l’Héctor té el pla Max, que porta 100 $ de crèdits d’API al mes sense posar cap targeta. A claude.ai › Settings › Billing › API credits, vincular l’organització de la Console (un pla només es vincula a una organització, i canviar-la és parlant amb suport). Quan s’acaben, la IA s’atura fins al mes següent; no se’n cobra res més, i el que no es gasta no passa al mes següent. Després, a platform.claude.com/settings/keys, **Create key**: caducitat **Never** i, com a workspace, el **Default Workspace** (obligatori: la funció no envia la capçalera `anthropic-workspace-id`, i una clau sense workspace dona error 400).
+   Si un dia en calen més: platform.claude.com/settings/billing › Buy credits, posar-hi un **límit de despesa mensual** i deixar la **recàrrega automàtica apagada**.
    La clau només es posa a Supabase: no s’escriu mai enlloc més.
 2. **Secret a Supabase:** panell del projecte › Edge Functions › Secrets › `ANTHROPIC_API_KEY` = la clau.
 3. **Comptador de lectures:** SQL Editor › enganxar `supabase/aco_ia_v878458.sql` › Run. **Sense aquest pas la funció no treballa**: l’app fa com si no hi hagués IA, perquè no es pugui gastar sense comptar.
-4. **Instal·lar la funció:** Edge Functions › Deploy a new function › Via Editor › nom `aco-ia` › enganxar `supabase/functions/aco-ia/index.ts` › Deploy.
-5. **Provar-ho:** a l’app, Despeses › Fer foto d’un albarà: s’ha d’omplir sol. Després, a Ajustos › Perfil i mòduls ha de sortir «Lectures amb IA aquest mes: 1 de 500».
+4. **Instal·lar la funció:** Edge Functions › Deploy a new function › Via Editor › nom `aco-ia` › enganxar `supabase/functions/aco-ia/index.ts` › Deploy. Per canviar-la més endavant: Edge Functions › aco-ia › Code › enganxar › Deploy.
+5. **Apagar la comprovació antiga:** a la pestanya Settings de la funció, apagar **Verify JWT with legacy secret** i Save changes. No és cap risc: la funció comprova ella mateixa que qui entra és un compte de l’app.
+6. **Provar-ho:** a l’app, recarregar i obrir Ajustos › Perfil i mòduls: ha de sortir «Lectures amb IA aquest mes: 0 de 500». Després, Despeses › Adjuntar un albarà: s’ha d’omplir sol i el comptador ha de pujar.
 
 **Es pot canviar sense tocar el codi** (Edge Functions › Secrets): `IA_LIMIT_TECNIC` i `IA_LIMIT_EMPRESA` (lectures al mes; de sèrie 150 i 500; 0 = sense
 límit), `IA_MODEL_DOC` (de sèrie `claude-sonnet-5-5`), `IA_MODEL_PRES` (de sèrie `claude-opus-5-5`), `IA_WEB=0` (no buscar preus a internet).
@@ -63,7 +65,7 @@ les condicions del servei; cal parlar-ho amb la gestoria.
 
 ## Quant costa (estimació del 2/11/2026)
 
-**Són estimacions:** la IA encara no s’ha fet servir mai de debò. Els tokens surten del que fa la funció (`aco-ia`) i de les mides de les fotos i els PDF; els preus, de la pàgina oficial d’Anthropic del 2/11/2026 (Sonnet 5.5: 2 $ / 10 $ per milió de tokens; Opus 5.5: 4 $ / 20 $; Haiku 5.5: 0,10 $ / 0,50 $; cerca a internet: 10 $ per 1.000 cerques). Canvi fet servir: 1 $ ≈ 0,87 € (mitjan 2026).
+**Són estimacions:** el 2/11/2026 només s’havia provat de debò amb 2 documents; el cost real de cada crida és a `aco_ia_crides` (consultes a sota). Els tokens surten del que fa la funció (`aco-ia`) i de les mides de les fotos i els PDF; els preus, de la pàgina oficial d’Anthropic del 2/11/2026 (Sonnet 5.5: 2 $ / 10 $ per milió de tokens; Opus 5.5: 4 $ / 20 $; Haiku 5.5: 0,10 $ / 0,50 $; cerca a internet: 10 $ per 1.000 cerques). Canvi fet servir: 1 $ ≈ 0,87 € (mitjan 2026).
 
 | Feina | Cost normal | Cost alt |
 |---|---|---|
@@ -85,7 +87,8 @@ les condicions del servei; cal parlar-ho amb la gestoria.
 | Molt d’ús: 150 / 30 despeses, 8 / 3 pressupostos | 30,52 $ | 10,02 $ | 1.116 $ ≈ 971 € |
 | Normal, llegint amb Haiku i sense internet | | | 79 $ ≈ 69 € |
 
-**Com es paga:** Anthropic no ven paquets per empresa. Hi ha un sol compte i una sola clau: es compra saldo per endavant (no es retorna i caduca al cap d’un any) i cada crida en descompta el que costa. Es pot posar un límit de despesa al mes; el primer nivell del compte (Start) en té un de màxim de 500 $. El «paquet per empresa» el fa l’app, amb un límit per compte.
+**Com es paga:** Anthropic no ven paquets per empresa. Hi ha un sol compte i una sola clau: primer es gasten els 100 $ al mes del pla Max (no passen al mes següent) i, si cal, saldo comprat per endavant (no es retorna i caduca al cap d’un any); cada crida en descompta el que costa. Es pot posar un límit de despesa al mes; el primer nivell del compte (Start) en té un de màxim de 500 $. El «paquet per empresa» el fa l’app, amb un límit per compte.
+**Abans de cobrar-ho als clients:** les condicions dels crèdits prohibeixen vendre’ls, però no aclareixen si un producte de pagament els pot gastar; s’ha de mirar.
 
 ## Lectures: el paquet de cada compte (V87.469)
 

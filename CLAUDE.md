@@ -50,7 +50,7 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
   - Edge Function `verifactu` (V87.285, `supabase/functions/verifactu/index.ts`) i SQL `aco_verifactu_v87285.sql`:
     factures amb VeriFactu. **Encara no instal·lades** (vegeu `docs/verifactu-pla.md`).
   - Edge Function `aco-ia` (V87.458, `supabase/functions/aco-ia/index.ts`): tota la IA de l’app (albarans, factures, PDF,
-    pressupost i preus) amb Claude. **Encara no instal·lada** (passos a `docs/pressupost-ia.md`).
+    pressupost i preus) amb Claude. **Instal·lada el 2/11/2026** (passos a `docs/pressupost-ia.md`).
   - Funció `aco_espai()` (V87.263, `supabase/aco_espai_v87263.sql`): mida de la base de dades i dels arxius per a
     Configuració → «Espai al núvol» (només l’Héctor; els comptes d’empresa reben null). És «security definer»: el
     Security Advisor la marca com a avís, i és d’esperar.
@@ -2588,17 +2588,17 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Llista de preus:** cada família, una caixa tancada i separada de la següent (`.fam-v878456`), amb les files alternes.
     - **Descompost de la fitxa al mòbil:** l'import no es parteix en vertical amb conceptes llargs.
     - Prova: `v457test.mjs` (10). Adaptades `v451test` i `v455test`. `v451test` va fallar un cop al mòbil i, tornada a passar sense tocar l'app, en verd (causa no aclarida; `resum362test` va fer el mateix a la V87.456).
-  - **V87.458 · La IA llegeix sola albarans, factures i PDF** (l'Héctor, 31/10/2026: «mira'm doncs com està tema lectura pdf… recordo que havia de copiar text a IA i no ho feia automàtic… ha de ser automàtic, i la factura igual»). **Funció `aco-ia`, escrita però NO instal·lada: fins que l'Héctor la instal·li, l'app fa com abans.**
+  - **V87.458 · La IA llegeix sola albarans, factures i PDF** (l'Héctor, 31/10/2026: «mira'm doncs com està tema lectura pdf… recordo que havia de copiar text a IA i no ho feia automàtic… ha de ser automàtic, i la factura igual»). **Funció `aco-ia`, instal·lada el 2/11/2026: si no respon, l'app fa com abans.**
     - **Una sola funció del servidor** (`supabase/functions/aco-ia/index.ts`; substitueix `llegir-albara` i `pressupost-ia`, que no es van instal·lar mai i s'han esborrat): `ping`, `despesa`, `pressupost`, `partides`, `preus`. Sonnet 5.5 per llegir i Opus 5.5 per fer partides i preus (es poden canviar amb secrets). Les dues primeres, amb resposta en JSON amb esquema (`output_config.format`). La clau mai no surt del servidor. Mentre la IA treballa s'envien espais perquè Supabase no talli als 150 s (el JSON se'ls salta), i es talla als 370 s (el límit és 400). **Límit per compte i mes** (`IA_LIMIT_MES`, de sèrie 300; `supabase/aco_ia_v878458.sql`, amb `grant`; sense la taula, sense límit).
     - **`src/iaObra.js`**: `iaActiva` (una pregunta per sessió), `iaCrida`, `trossosText` (trossos que es toquen 20 línies), `partidesDeIa` (treu les repetides), `pressupostDeIa`, `despesaDeIa`, `albaransDeFactura`. `window.__acoIaOff878458` per provar el camí sense funció.
     - **Despeses:** la foto o el PDF es llegeixen sols en triar-los (un sol cop: `llegit878458`). La IA diu si és albarà o factura i, si és una factura, quins albarans inclou (`cobreix`) i si és inversió del subjecte passiu. Amb la funció, fora el botó de ChatGPT.
     - **Pressupost en PDF** (`PdfPressupost878305`, `dubtosPdf878458`): primer la lectura de l'app (gratis); si no hi troba res, si el total no quadra o si n'hi ha més d'un 20 % per revisar, la IA, sola, a trossos de 30.000 lletres (escanejat: l'arxiu, fins a 14 MB). «Tornar-lo a llegir amb la IA». **Amidaments en PDF:** si l'app no hi troba res, la IA.
     - **Preus amb IA** (`PreusIa878368`): de 15 en 15 amb la funció nova.
-    - Estils `src/theme-v878458.css`. Prova: `v458test.mjs` (9). El Supabase de proves té `/functions/v1/aco-ia` i `POST /__aco-ia {limit, falla}`. Adaptades `pressupost368test` i `pdfpressuposttest` (amb `SENSE_IA`). **Falta provar-ho amb la IA de debò** (cal la clau).
-  - **V87.459 · Pressupost automàtic amb IA** (l'Héctor, 31/10/2026: «insisteixo en poder fer pressupost automàtic amb la IA»; un petit autònom ha de poder fer-se el pressupost sense saber-ne). **Va amb la funció `aco-ia` de la V87.458, encara sense instal·lar: mentre no ho estigui, el botó diu «Dictar partides…» com abans.**
+    - Estils `src/theme-v878458.css`. Prova: `v458test.mjs` (9). El Supabase de proves té `/functions/v1/aco-ia` i `POST /__aco-ia {limit, falla}`. Adaptades `pressupost368test` i `pdfpressuposttest` (amb `SENSE_IA`).
+  - **V87.459 · Pressupost automàtic amb IA** (l'Héctor, 31/10/2026: «insisteixo en poder fer pressupost automàtic amb la IA»; un petit autònom ha de poder fer-se el pressupost sense saber-ne). **Va amb la funció `aco-ia` de la V87.458: si no respon, el botó diu «Dictar partides…» com abans.**
     - **On:** «Fer el pressupost amb IA» al pressupost buit (`PresBuit878435`; si la fase ja té amidaments, primer «Portar les N partides») i «Pressupost amb IA» a «Afegir» i «Accions», en lloc de «Dictar partides…» i del botó vell de copiar i enganxar.
     - **Com** (`DictarPartides878401`, `ambIa`): es diu o s'escriu què s'ha de fer i es poden adjuntar amidaments (BC3, Excel, PDF), plànols o fotos (com a molt 4; PDF fins a 14 MB). `iaCrida("partides")` fa les partides; els preus surten com als amidaments (`preusAmidaments878368`: Preus, banc amb l'IPC, obres anteriors) i les que queden sense preu, de `iaCrida("preus")` de 15 en 15; marges amb `margesLinia878378`. Revisió de sempre abans d'afegir-les (`tipus:"IA"`, origen «IA · …»). Capítols: el del pressupost amb el mateix nom o «Capítol nou: NOM». «Llegir-ho sense IA» si no hi ha funció o falla.
-    - Estils `src/theme-v878459.css`. Prova: `v459test.mjs` (17, amb la funció simulada). Adaptades amb `SENSE_IA` `dictat401test`, `v428test`, `pressupost320test`, `pressuposttest`, `v413test`, `pestanyestest` i `v435test`. **Falta provar-ho amb la IA de debò** (cal la clau). Gravar les lliçons amb `SENSE_IA=1` mentre la funció no estigui instal·lada a producció.
+    - Estils `src/theme-v878459.css`. Prova: `v459test.mjs` (17, amb la funció simulada). Adaptades amb `SENSE_IA` `dictat401test`, `v428test`, `pressupost320test`, `pressuposttest`, `v413test`, `pestanyestest` i `v435test`.
   - **V87.460 · Banc de preus comú** (l'Héctor, 31/10/2026: «si de moment es comercialitza per Girona poden utilitzar la meva base de preus…? la base és del 2023 i s'ha de posar al dia amb l'IPC»). **Falta que l'Héctor executi `supabase/aco_banc_comu_v878460.sql`, importi la base i hi doni al botó.** La base no és ni al disc ni al núvol. Abans de compartir-la, comprovar que té permís per repartir-la (la V87.372 ho descartava per als bancs amb llicència).
     - **Núvol:** taula `aco_banc_comu` (una sola fila: `nom`, `any_preus`, `pct`, `n`, `dades`, `versio`). Tots els comptes la llegeixen; només hi escriu el compte que no és `@usuaris.controlobres.app` (l'Héctor, la mateixa regla que `aco_espai()`). `__acoCloud.bancComu` (`cap`, `baixa`, `puja`, `posa`, `treu`).
     - **Compte de l'Héctor:** no té «Preus» al menú, i el banc només era dins dels Amidaments: ara també a Ajustos › «Preus i marges». `CompartirBanc878460`: «Compartir amb tots els comptes», «Compartit…», «Actualitzar el banc comú» (si n'importa un de nou) i «Deixar de compartir». L'any i el % arriben a tothom sense tornar a pujar les partides.
@@ -2641,13 +2641,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Inici:** «Revisar-la» amb una sola feina vençuda.
     - Estils `src/theme-v878468.css`. Prova: `v468test.mjs` (ordinador, iPad i mòbil).
     - Adaptades `v455test` (a l'ordinador, sense requadres) i `grafica384test` (fallava pel canvi de mes, no per la versió: l'eix arriba fins al mes d'avui). Cost de la IA per a 50 comptes: `docs/pressupost-ia.md`.
-  - **V87.469 · Lectures de la IA: el paquet de cada compte i el cost de debò** (l'Héctor, 2/11/2026: «un paquet de lectures per empresa a repercutir després»; **`aco-ia` continua sense instal·lar**):
+  - **V87.469 · Lectures de la IA: el paquet de cada compte i el cost de debò** (l'Héctor, 2/11/2026: «un paquet de lectures per empresa a repercutir després»):
     - **Comptador** (`supabase/functions/aco-ia/index.ts`): substitueix `IA_LIMIT_MES` (300 peticions iguals; pitjor cas 6.900 $/mes). 1 lectura = 3 cèntims (`LECTURA_USD`). Mínims `PES`: despesa 1, pressupost 6 per tros, partides 8, preus 15 (6 amb `IA_WEB=0`); si la crida ha costat més, compta el que ha costat (`lecturesDe`): així les lectures sempre cobreixen el cost. Una feina que falla no compta el mínim però sí el gastat (`fes`, amb `finally`). No es comença si no hi cap el mínim.
     - **Paquets** (`limitDe`): `aco_ia_comptes.lectures_mes` si n'hi ha; si no, pel perfil llegit d'`aco_kv` (`key=like.*__aco_empresa_v878259`; no el diu l'app): tècnic i treballador `IA_LIMIT_TECNIC` (150, 4,50 $); la resta i el compte principal `IA_LIMIT_EMPRESA` (500, 15 $). Màxim amb 30 constructores i 20 tècnics: 540 $/mes.
     - **Cost de debò** (`Gast`, `preuModel`, `costDe`): tokens (també els de memòria cau), cerques (`usage.server_tool_use.web_search_requests`) i preus oficials del 2/11/2026; un model desconegut es compta com el més car. A `aco_ia_us` per mes i a `aco_ia_crides` per crida, sense res del document. Consultes a `docs/pressupost-ia.md`.
     - **Sense l'SQL la funció no treballa** (`usat` torna `null`; abans, sense la taula no hi havia límit). L'SQL és el mateix fitxer, `supabase/aco_ia_v878458.sql` (puja bé si ja s'hagués executat l'antic). Només hi entra `service_role`: cap client pot veure el cost.
     - **App:** Ajustos › Perfil i mòduls, «Lectures amb IA aquest mes: 23 de 500» (`iaQuota`; no al treballador, ni sense límit, ni sense funció). Ajustos: fora el requadre buit de dalt de cada bloc (`src/theme-v878469.css`).
-    - **Proves:** `acoiafunciotest.mjs` (40; executa l'`index.ts` de debò amb la IA i el Supabase simulats i comprova els paràmetres contra l'SQL; `ACO_IA_FN=` per provar-ne una còpia: 7 errades posades a posta, totes detectades), `acoiasqltest.mjs` (27; Postgres de debò amb PGlite a `D:/aco-tmp/pglite-469`: de zero, dues vegades, sobre l'SQL antic, permisos i les consultes de la documentació) i `v469test.mjs` (11). Passen `v458test`, `v459test`, `perfils326test`, `pressupost368test`, `simple354test`, `v438test`, `v366test` i `i18ntest`. **Falta provar-ho amb la IA de debò** (cal la clau).
+    - **Proves:** `acoiafunciotest.mjs` (40; executa l'`index.ts` de debò amb la IA i el Supabase simulats i comprova els paràmetres contra l'SQL; `ACO_IA_FN=` per provar-ne una còpia: 7 errades posades a posta, totes detectades), `acoiasqltest.mjs` (27; Postgres de debò amb PGlite a `D:/aco-tmp/pglite-469`: de zero, dues vegades, sobre l'SQL antic, permisos i les consultes de la documentació) i `v469test.mjs` (11). Passen `v458test`, `v459test`, `perfils326test`, `pressupost368test`, `simple354test`, `v438test`, `v366test` i `i18ntest`.
+  - **Instal·lació de la IA** (2/11/2026, pas a pas amb l'Héctor; l'app no canvia):
+    - **Saldo:** el pla Max de l'Héctor porta 100 $ al mes de crèdits d'API sense targeta, vinculats a l'organització «Control d'obres» de la Console (platform.claude.com). Si s'acaben, la IA s'atura i no es cobra res; el que no es gasta no passa al mes següent. Abans de cobrar-ho als clients, mirar si un producte de pagament els pot gastar.
+    - **Al servidor:** clau `control-obres` (Default Workspace, sense caducitat) al secret `ANTHROPIC_API_KEY`, `aco_ia_v878458.sql` executat i funció `aco-ia` instal·lada des del panell (Via Editor), amb **Verify JWT apagat**: la funció comprova ella mateixa l'usuari (`/auth/v1/user`). **Per canviar-la:** Edge Functions › aco-ia › Code, enganxar `index.ts` i Deploy.
+    - **`index.ts`:** llibreria fixada a `@anthropic-ai/sdk@1.3.0` i claus noves de Supabase (`SUPABASE_PUBLISHABLE_KEYS`, `SUPABASE_SECRET_KEYS`; una clau `sb_…` només va a `apikey`).
+    - **Proves:** `acoiasdkreal.mjs` (13; executa l'`index.ts` amb la llibreria real, instal·lada a `D:/aco-tmp/sdk-469`, i una API i un Supabase simulats) i `acoiafunciotest.mjs` (40). **De debò:** 2 documents a Despeses, 2 lectures, s'omplen sols. Encara no s'han provat de debò el PDF de pressupost, les partides ni els preus.
+    - **Activa per a tots els comptes** (`brava`, `socoterm`, `oriol`, `marti`, `demo-*`). Com que la funció respon, «Dictar partides…» ja diu «Pressupost amb IA» i Despeses ja no té el botó de ChatGPT: els vídeos i el manual d'aquestes pantalles han quedat enrere.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2867,8 +2873,8 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   per blocs (sense repetits). **Següent (l’Héctor, 28/10/2026):** repàs usuari per usuari, pestanya per pestanya i subpestanya per
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.
 - **Repàs exhaustiu** (`tools/proves/repas411.mjs`, `WEBROOT=` per passar-lo sobre una còpia): 336 pantalles, PDF, Enviar i Signar.
-- **No fet:** perfils autònom i promotor amb compte propi, IA al servidor (albarans, pressupost-ia: cal la clau d’Anthropic i el sí de
-  l’Héctor), VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
+- **IA instal·lada (2/11/2026):** albarans, factures, PDF, pressupost i preus amb la funció `aco-ia`; de debò només s’ha provat la lectura de despeses.
+- **No fet:** perfils autònom i promotor amb compte propi, VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 
 **Què fer, per ordre:**
 0. **Seguir `docs/full-de-ruta.md`** (l’Héctor, 28/10/2026: «marquem un camí… si no anem donant tombs d’una pantalla a l’altra»): un bloc
@@ -2885,7 +2891,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
      Supabase** (`GUIES_USUARIS\COMPTES_POL.txt`) i compartir el manual i la pàgina dels vídeos amb el Pol.
    - Després: descompte al pressupost d’obra · obra nova en
      3 passos · revisor del pressupost · parte per veu · previsió de caixa. Estudi del mercat: https://claude.ai/artifact/67earcqHnbhfC3RQyj4nv6.
-   - **Esperen (cost o servidor):** IA directa, VeriFactu, bot de WhatsApp, banc, cobrament en línia, fitxatge fase 2.
+   - **Esperen (cost o servidor):** VeriFactu, bot de WhatsApp, banc, cobrament en línia, fitxatge fase 2.
 2. **Comodoro:** fet a les V87.398–399 («Tornar a llegir els descompostos d’un Excel…»: 63 partides, 62 al cèntim); falta que l’Héctor hi triï l’Excel v07.
 3. **Repàs complet de les proves: fet a la V87.399** (26/10/2026, `D:\aco-tmp\totes-wt.sh` a `D:\aco-tmp\wt379`, resultat a
    `D:\aco-tmp\totes-399.txt`): **111 proves, totes en verd**. A la tanda en van fallar 5 (honoraris332, pdfpressupost, seguiment321,
@@ -2895,7 +2901,7 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
 4. ~~Descompostos: el BI sobre el CD i la importació d’un sol descompost~~: fet a la V87.399.
 5. Les guies PDF de benvinguda (`GUIES_USUARIS`, amb contrasenyes: **només quan ho digui l’Héctor**; els textos de `guies.js` ja són al dia
    fins a la V87.394; falta posar-hi Ajustos › Documents).
-6. La resta de sota (VeriFactu ATURAT, IA al servidor, fitxatge fase 2, Google Drive, perfils autònom/promotor…), sempre amb el sí de l’Héctor.
+6. La resta de sota (VeriFactu ATURAT, fitxatge fase 2, Google Drive, perfils autònom/promotor…), sempre amb el sí de l’Héctor.
 
 **Problemes coneguts:**
 - Les proves s’han de passar d’una en una o amb la màquina tranquil·la: amb dues alhora en fallen d’aleatòries (fitxatge, horesunic,
@@ -2973,8 +2979,6 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
 - **Proposta de Despeses, Facturació, menús per perfil i noms** (`docs/proposta-global.md` apartat 10): noms (V87.300), menú del
   tècnic (V87.307), Despeses (V87.311) i cost real al Rendiment (V87.312) fets. Falta: menús segons el perfil i el mòdul (10.4) i
   els perfils Treballador i Autònom.
-- **Lectura d’albarans amb IA directa**: falta clau d’Anthropic + desplegar la funció
-  (`INSTRUCCIONS_LECTURA_ALBARANS_IA.txt`).
 - **Hores per treballador** (constructors) i mòduls per a **autònoms / operaris / promotors**.
 - **Portal de client amb compte de núvol propi** (avui els clients només tenen el portal intern).
 - Obres compartides: hores, agenda i albarans no es comparteixen; «només consulta» no es bloqueja a la pantalla (l'Héctor, 25/10/2026:
