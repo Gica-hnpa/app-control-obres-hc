@@ -2654,6 +2654,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **`index.ts`:** llibreria fixada a `@anthropic-ai/sdk@1.3.0` i claus noves de Supabase (`SUPABASE_PUBLISHABLE_KEYS`, `SUPABASE_SECRET_KEYS`; una clau `sb_…` només va a `apikey`).
     - **Proves:** `acoiasdkreal.mjs` (13; executa l'`index.ts` amb la llibreria real, instal·lada a `D:/aco-tmp/sdk-469`, i una API i un Supabase simulats) i `acoiafunciotest.mjs` (40). **De debò:** 2 documents a Despeses, 2 lectures, s'omplen sols. Encara no s'han provat de debò el PDF de pressupost, les partides ni els preus.
     - **Activa per a tots els comptes** (`brava`, `socoterm`, `oriol`, `marti`, `demo-*`). Com que la funció respon, «Dictar partides…» ja diu «Pressupost amb IA» i Despeses ja no té el botó de ChatGPT: els vídeos i el manual d'aquestes pantalles han quedat enrere.
+  - **V87.470 · Despeses per data d'emissió i cercador de despeses i factures** (l'Héctor, 2/11/2026: «hauran de sortir en ordre de data d'emissió i no d'entrada… un filtre per buscar per número, data o client… i el mateix amb les factures pròpies»):
+    - **Ordre de Despeses:** el de la V87.360 (data d'entrada) passa a ser la data d'emissió, l'última a dalt (`rows0`; sense data, la d'entrada). La columna «Entrada» es queda. Les factures emeses ja anaven per data d'emissió; dins de l'obra, la seva llista continua per número.
+    - **`src/cercaLlistes.js`** (`cercaOk`, `dataIso`, funcions pures): cada tros de la cerca ha de ser als textos (sense accents, majúscules ni puntuació) o a la data, escrita com es vulgui: 02/11/2026, 2-11-26, 2/11, 11/2026, 2026-11, 2026, novembre, noviembre.
+    - **Despeses:** el cercador dels filtres (`coincideix878348`) també troba la data d'emissió i el client de l'obra. Dins de l'obra, amb 6 despeses o més, la lupa és a la vista (`buscar-v878470`, `nObra878470`: obre els filtres amb el cursor al cercador, i «Filtres» surt d'«Accions»). Buscant, només surten les targetes amb resultats i, si no n'hi ha cap, «Cap despesa amb aquests filtres.».
+    - **Facturació** (`FacturacioEmpresa878337`, `FacturesGeneral8738`): amb 6 factures o més, cercador als filtres (`cerca-v878470`): número, data, client, obra i concepte. Buscant es mira a tots els anys, com a la llista d'obres: cap any marcat, sense el selector de mes, i el total i «Per a la gestoria» diuen «Cerca «…»». Tocar un any buida la cerca.
+    - Estils `src/theme-v878470.css`. Proves: `cerca470unit.mjs` (35) i `v470test.mjs` (37). Adaptada `v453test` (fallava des de la V87.464: l'Agenda de l'obra és una targeta plegada).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2844,7 +2850,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.469 a Render):**
+**Estat (publicada la V87.470 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

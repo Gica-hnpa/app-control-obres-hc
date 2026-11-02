@@ -1,0 +1,9 @@
+/* V87.470 · Cercador de despeses i factures */
+html body .albarans-v878259 .buscar-v878470{display:inline-flex;align-items:center;justify-content:center;width:40px;min-width:40px;height:40px;min-height:40px;padding:0}
+html body .albarans-v878259 .actions .buscar-v878470{margin-left:auto}
+html body .albarans-v878259 .buscar-v878470.on{border-color:var(--co-accent);color:var(--co-accent);box-shadow:0 0 0 1px var(--co-accent) inset}
+html body .facturacio-v878337 .fe-filtres .cerca-v878470{min-height:36px;flex:1 1 260px;min-width:220px;max-width:100%;padding:6px 10px;border:1px solid var(--co-line);border-radius:8px;background:var(--co-surface,#fff);font:inherit}
+@media (max-width:760px){
+  html body .facturacio-v878337 .fe-filtres .cerca-v878470{flex:1 1 100%;min-width:0;font-size:16px!important}
+  html body .albarans-v878259 .alb-filters .cerca-v878348{font-size:16px!important}
+}

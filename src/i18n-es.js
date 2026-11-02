@@ -4982,4 +4982,9 @@ export default {
   "Cites i avisos": "Citas y avisos",
   "Descartar": "Descartar",
   "Nova partida": "Nueva partida",
+  "Buscar número, data o concepte…": "Buscar número, fecha o concepto…",
+  "Buscar número, data, proveïdor o client…": "Buscar número, fecha, proveedor o cliente…",
+  "Buscar número, data, client o obra…": "Buscar número, fecha, cliente u obra…",
+  "Buscar número, data, client o expedient…": "Buscar número, fecha, cliente o expediente…",
+  "Cerca «{q}»": "Búsqueda «{q}»",
 };
