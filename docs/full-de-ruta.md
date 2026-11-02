@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.472, 2/11/2026)
+## On som (V87.473, 2/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -56,6 +56,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.470 (2/11):** Despeses per data d'emissió i cercador per número, data o client a Despeses i Facturació.
 - **V87.471 (2/11):** Facturació amb factures de debò: «Per facturar» alineat, curt al mòbil i amb el total, filtres plegats al mòbil, sense el títol repetit a l'iPad i el menú lateral sense barra. Amb això s'acaba de mirar el Bloc 2.
 - **V87.472 (2/11):** «Fer factura» amb el NIF i l’IVA de sèrie, el motiu de l’IVA 0 % a la factura, l’entitat i l’IBAN, i el dia de cobrament (correccions de l’Héctor provant el Bloc 2 amb Brava).
+- **V87.473 (2/11):** Hores del personal per setmanes de feina, amb el calendari laboral, «Emplenar hores», desfer i la mateixa pantalla des de l’obra (correcció de l’Héctor provant el Bloc 2).
 
 ## Blocs, per ordre
 
@@ -93,6 +94,12 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
   programes de l’ordinador, fitxa de la visita amb la IA i els cinc treballs que faltaven). Falta el que depèn de l’Héctor: el document final que fa l’app (C) i els tipus d’informe (D).
 
 - **Encàrrecs tècnics, tercera volta** (l’Héctor, 2/11/2026, amb el CEE de Cornellà; encaixa al Bloc 3): un estat per a la feina acabada que espera l’etiqueta, la factura o el cobrament (proposta: «Pendent de tancar», amb el que falta a la vista) i diversos encàrrecs dins d’un expedient (CEE, amiant, cèdula), amb el que és comú compartit. Falta el seu sí i saber si els cobra amb un preu conjunt o un per encàrrec.
+- **Permís de gestió d’un compte** (l’Héctor, 2/11/2026: «si jo porto la facturació i despeses de Brava… hauria de poder veure les seves pestanyes generals… però no sempre serà així… el millor és que des del perfil de Brava em doni permís»). Proposta, per decidir:
+  - **Qui dona el permís:** a Brava, Ajustos › «Qui em porta la gestió»: escriu el compte (p. ex. el de l’Héctor), marca què pot veure (Facturació · Despeses · Rendiment) i si només mira o també hi treballa. Ho pot treure quan vulgui.
+  - **Qui el rep:** al menú, «Comptes que porto» › Brava: s’obren aquelles pantalles amb una franja «Estàs a Brava · Tornar al meu compte». No es barreja amb les dades pròpies.
+  - **Per què no a «Compartir»:** compartir és obra per obra; això és de tot el compte.
+  - **Per dins:** una taula nova al núvol (qui dona, qui rep, què pot) i una regla perquè el gestor llegeixi el compte. Cal un SQL que ha d’executar l’Héctor. **Compte:** cada obra és una sola fila al núvol, o sigui que el permís tria quines pantalles es veuen, però no pot amagar a nivell de dades la resta de l’obra.
+  - **Mentrestant:** entrar amb el compte de Brava en una finestra InPrivate.
 - Descompte al pressupost d’obra · obra nova en 3 passos · revisor del pressupost · parte per veu · previsió de caixa.
 - **Comparador de pressupostos** (l’Héctor, 1/11/2026: per estudiar quan s’acabi el que hi ha pendent): quan hi ha diverses ofertes d’un mateix industrial, per decidir qui s’agafa (constructora i gestió total), i comparatius de preus per al tècnic.
 - **Idees de Motor de Presupuestos i Pillar** (mirats l’1/11/2026, a partir de pàgines públiques): abans de generar amb IA, ensenyar com s’ha entès l’encàrrec i preguntar el que falta; canviar el pressupost amb paraules normals, veient què canvia; rapportini per WhatsApp o veu; conciliació bancària.

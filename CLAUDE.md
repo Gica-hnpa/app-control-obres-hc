@@ -2677,6 +2677,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Entitat i IBAN**: `banc` a Empresa › Dades › Cobraments i a Ajustos › Documents (emissor d'honoraris); `fraseCompte878472` a la factura, amb l'IBAN de 4 en 4; si l'empresa no té IBAN, «Fer factura» demana «Compte per cobrar» (opcional). A les factures d'honoraris, les observacions ja no amaguen la forma de pagament.
     - **Dia de cobrament** (`CobramentFactura878472`, a les dues Facturacions): el botó obre una finestra amb el dia (de sèrie avui); si ja és cobrada, es pot corregir o «Tornar a pendent».
     - Estils `src/theme-v878472.css`. Prova: `v472test.mjs` (31). Adaptades `fact373test` i `facturacio337test`.
+  - **V87.473 · Hores del personal per setmanes de feina** (l'Héctor, 2/11/2026, amb una captura: «he de poder veure per setmanes de feina segons calendari laboral… i no que sortir aquest desplegable només entrar… en posar emplenar hores surt això dels treballs, des d'aquí o des de la pròpia obra… més pràctic i visible… he posat igual que el 22/10 i no puc tirar enrere»):
+    - **En entrar** (`PartHores878340`, `form473` fals): la setmana (‹ ›, «Setmana N», «Aquesta setmana», «Emplenar hores»), un requadre per dia laborable (`dia-t-v878473`: de dilluns a divendres, i dissabte o diumenge només si tenen hores; festius d'Empresa › Calendari, `festiusCalendari878473`) i una fila per treballador (`matriu-v878473`). Al mòbil, el nom a sobre i els dies a sota.
+    - **Tocar un dia, una casella o «Emplenar hores»** obre els treballadors d'aquell dia. En desar, torna a la setmana. Sortir amb canvis pregunta (`potSortir473`).
+    - **Desfer:** amb canvis, «Desfer els canvis» en lloc de «Com el…»; un dia ja desat es pot «Buidar el dia».
+    - **Al mòbil i l'iPad**, les hores es posen a la mateixa línia del treballador, sense obrir-la (`input.h-v878473`); a dins, l'obra i la fase.
+    - **Des de l'obra** (`PersonalObra878340`, Despeses › Mà d'obra › Hores del personal, i Hores a la gestió total): «Emplenar hores» obre la mateixa pantalla en una finestra (`obraFixa`): sense triar l'obra, només les hores d'aquella obra i sense tocar les de les altres. Substitueix «+ Afegir hores». En tornar a desar un dia, la nota de cada línia es conserva.
+    - Estils `src/theme-v878473.css`. Prova: `v473test.mjs` (28). Adaptades `personal340test`, `horesunic355test`, `fases342test`, `fitxatge357test`, `equip381test` i `v445test`. **La lliçó de vídeo de les hores s'ha de tornar a gravar** (`guia404-llicons.mjs`).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2867,7 +2874,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.472 a Render):**
+**Estat (publicada la V87.473 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

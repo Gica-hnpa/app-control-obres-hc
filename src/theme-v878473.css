@@ -1,0 +1,72 @@
+/* V87.473 · Hores del personal: en entrar, la setmana de feina; els treballadors, només en emplenar un dia */
+html body .setm-nav-v878473{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+html body .setm-nav-v878473 h1{margin:0}
+html body .setm-nav-v878473 .pas{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+html body .setm-nav-v878473 .pas>button.secondary{min-width:40px;min-height:40px;padding:0 10px;font-size:20px;line-height:1}
+html body .setm-nav-v878473 .tit{display:flex;flex-direction:column;align-items:center;min-width:112px;line-height:1.2}
+html body .setm-nav-v878473 .tit b{font:700 15px var(--app-font);color:var(--co-ink)}
+html body .setm-nav-v878473 .tit small{font-size:12.5px;color:var(--co-ink-3);font-variant-numeric:tabular-nums}
+html body .setm-nav-v878473 .emplena-v878473{margin-left:auto;display:inline-flex;align-items:center;gap:6px;min-height:42px}
+
+/* un requadre per dia laborable */
+html body .dies-v878473{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));gap:8px}
+html body button.dia-t-v878473{all:unset;box-sizing:border-box;cursor:pointer;min-width:0;min-height:88px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1.5px solid var(--co-line-strong,#CBD5E1);border-radius:14px;background:#fff;text-align:center}
+html body button.dia-t-v878473 small{font-size:12.5px;font-weight:600;color:var(--co-ink-3);text-transform:capitalize}
+html body button.dia-t-v878473 b{font:800 20px/1.15 var(--app-font);color:var(--co-ink)}
+html body button.dia-t-v878473 span{font-size:12.5px;font-weight:600;color:var(--co-accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-variant-numeric:tabular-nums}
+html body button.dia-t-v878473.ple{background:#EFF6FF;border-color:#93C5FD}
+html body button.dia-t-v878473.ple span{color:#1D4ED8;font-weight:700}
+html body button.dia-t-v878473.avui{border-color:var(--co-accent);box-shadow:inset 0 0 0 1px var(--co-accent)}
+html body button.dia-t-v878473.festiu{background:#F1F5F9;border-style:dashed}
+html body button.dia-t-v878473.festiu span{color:var(--co-ink-3)}
+html body button.dia-t-v878473:hover{border-color:var(--co-accent)}
+html body button.dia-t-v878473:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+
+/* una fila per treballador */
+html body .matriu-v878473{border:1px solid var(--co-line);border-radius:14px;background:#fff;overflow:hidden}
+html body .matriu-v878473 .f{display:grid;grid-template-columns:minmax(140px,1.5fr) repeat(var(--n,5),minmax(44px,1fr)) minmax(92px,auto);align-items:center;border-bottom:1px solid var(--co-line);min-width:0}
+html body .matriu-v878473 .f:last-child{border-bottom:0}
+html body .matriu-v878473 .f>*{min-width:0}
+html body .matriu-v878473 .f.cap{background:var(--co-surface-2,#F8FAFC);font-size:12.5px;font-weight:700;color:var(--co-ink-2)}
+html body .matriu-v878473 .f.cap .c{text-transform:capitalize}
+html body .matriu-v878473 .f.peu{background:var(--co-surface-2,#F8FAFC);font-weight:700}
+html body .matriu-v878473 .nom{display:flex;flex-direction:column;padding:8px 12px}
+html body .matriu-v878473 .nom b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .matriu-v878473 .nom small{font-size:12.5px;color:var(--co-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .matriu-v878473 .c{text-align:center;font-variant-numeric:tabular-nums}
+html body .matriu-v878473 .f>span.c{padding:8px 2px}
+html body .matriu-v878473 button.c{all:unset;box-sizing:border-box;cursor:pointer;min-height:44px;display:grid;place-items:center;text-align:center;font-variant-numeric:tabular-nums;color:var(--co-ink-3);border-left:1px solid var(--co-line)}
+html body .matriu-v878473 button.c.ple{color:var(--co-ink);font-weight:700}
+html body .matriu-v878473 button.c.festiu{background:#F1F5F9}
+html body .matriu-v878473 button.c:hover{background:#EFF6FF}
+html body .matriu-v878473 button.c:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .matriu-v878473 .t{display:flex;flex-direction:column;align-items:flex-end;padding:8px 12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .matriu-v878473 .t small{font-size:12.5px;color:var(--co-ink-3)}
+
+/* el dia */
+html body .form-v878473 .tornar-v878473{min-height:40px}
+html body .form-v878473 .desfes-v878473{display:inline-flex;align-items:center;gap:6px}
+html body .form-v878473 .fila-v878340 .linia select{max-width:520px}
+html body details.fila-m-v878390>summary>input.h-v878473{grid-area:tot;align-self:center;width:64px;min-height:44px;font-size:16px;text-align:right;font-variant-numeric:tabular-nums}
+html body .modal .peu-v878340{bottom:0}
+html body .modal .part-v878340 .setm-nav-v878473 .emplena-v878473{margin-left:auto}
+
+@media (max-width:640px){
+  html body .setm-nav-v878473 h1{display:none}
+  html body .setm-nav-v878473 .emplena-v878473{flex:1 1 100%;justify-content:center;margin-left:0}
+  html body .setm-nav-v878473 .pas{flex:1 1 100%;justify-content:center}
+  html body .dies-v878473{gap:6px}
+  html body button.dia-t-v878473{min-height:78px;padding:6px 2px}
+  html body button.dia-t-v878473 b{font-size:18px}
+  html body button.dia-t-v878473 span{font-size:12px}
+  /* el nom a sobre i els dies a sota: així hi caben sense lliscar */
+  html body .matriu-v878473 .f{grid-template-columns:repeat(var(--n,5),minmax(0,1fr)) 62px}
+  html body .matriu-v878473 .nom{grid-column:1/-1;flex-direction:row;gap:6px;align-items:baseline;padding:8px 10px 2px}
+  html body .matriu-v878473 .f.cap .nom{display:none}
+  html body .matriu-v878473 .f.peu .nom{display:none}
+  html body .matriu-v878473 button.c:first-of-type{border-left:0}
+  html body .matriu-v878473 .t{padding:6px 8px}
+  html body .matriu-v878473 .t small{display:none}
+}
+/* l'iPhone amplia la pantalla en tocar un camp de menys de 16 px */
+@media (max-width:1100px){html body .form-v878473 input,html body .form-v878473 select,html body details.fila-m-v878390>summary>input.h-v878473{font-size:16px!important}}
