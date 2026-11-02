@@ -65,7 +65,9 @@ les condicions del servei; cal parlar-ho amb la gestoria.
 
 ## Quant costa (estimació del 2/11/2026)
 
-**Són estimacions:** el 2/11/2026 només s’havia provat de debò amb 2 documents; el cost real de cada crida és a `aco_ia_crides` (consultes a sota). Els tokens surten del que fa la funció (`aco-ia`) i de les mides de les fotos i els PDF; els preus, de la pàgina oficial d’Anthropic del 2/11/2026 (Sonnet 5.5: 2 $ / 10 $ per milió de tokens; Opus 5.5: 4 $ / 20 $; Haiku 5.5: 0,10 $ / 0,50 $; cerca a internet: 10 $ per 1.000 cerques). Canvi fet servir: 1 $ ≈ 0,87 € (mitjan 2026).
+**Primera mesura real (2/11/2026, 2 despeses amb Sonnet):** 0,0099 $ i 0,0153 $, per sota dels 0,02–0,05 $ estimats. Cada crida compta 1 lectura. Els pressupostos, els PDF llargs i els preus encara no s’han mesurat.
+
+**La resta són estimacions.** El cost real de cada crida és a `aco_ia_crides` (consultes a sota). Els tokens surten del que fa la funció (`aco-ia`) i de les mides de les fotos i els PDF; els preus, de la pàgina oficial d’Anthropic del 2/11/2026 (Sonnet 5.5: 2 $ / 10 $ per milió de tokens; Opus 5.5: 4 $ / 20 $; Haiku 5.5: 0,10 $ / 0,50 $; cerca a internet: 10 $ per 1.000 cerques). Canvi fet servir: 1 $ ≈ 0,87 € (mitjan 2026).
 
 | Feina | Cost normal | Cost alt |
 |---|---|---|
