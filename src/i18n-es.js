@@ -5023,4 +5023,6 @@ export default {
   "Encara falta: {f}. Tancar-lo igualment?": "Todavía falta: {f}. ¿Cerrarlo igualmente?",
   "Per tancar: {f}": "Para cerrar: {f}",
   "Tot fet: ja es pot tancar": "Todo hecho: ya se puede cerrar",
+  "Aquesta acta està signada. Eliminar-la igualment?": "Esta acta está firmada. ¿Eliminarla igualmente?",
+  "Eliminar l’acta": "Eliminar el acta",
 };

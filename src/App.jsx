@@ -36,7 +36,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.474";
+const APP_VERSION878264="87.475";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3590,9 +3590,13 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
 // V87.309 · Visites (decisió de l'Héctor del 18/10/2026: «Actes + Notes → Visites», una llista per data, «+ Nota» i «+ Acta»,
 // cada una amb la seva numeració). La llista ajunta les actes i les notes de l'obra; en tocar-ne una s'obre la seva fitxa de
 // sempre (Actes8761 / Notes878278 amb `nomesFitxa`) i en tancar-la es torna aquí. El ＋ de l'obra hi arriba amb `start`.
+// V87.475 · l'Héctor, 2/11/2026: «surt aquesta del 22/10 sense res i no es pot ni eliminar». Fins ara, «+ Acta» la desava abans d'escriure-hi res i
+// «Cancel·lar» la deixava buida. Les que van quedar així (mai desades, sense res) es treuen en obrir Visites.
+function actaBuida878475(a){return !!a&&!a.updatedAt&&(a.estat||"Esborrany")==="Esborrany"&&!String(a.text||"").trim()&&!(a.fotoIds||[]).length&&!(a.agentIds||[]).length&&!(a.docs||[]).length&&!(a.croquis||[]).length&&!(a.signatures878403||[]).length}
 function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDoc,allAgents=[],start=null}){
   const[obert,setObert]=useState(null);// {tipus:"acta"|"nota", token, obrir, files}
   const fet=useRef(0);
+  useEffect(()=>{if(readOnly||!(data.actes||[]).some(actaBuida878475))return;setData(d=>({...d,actes:(d.actes||[]).filter(a=>!actaBuida878475(a))}))},[]);
   useEffect(()=>{if(!start?.token||fet.current===start.token)return;fet.current=start.token;setObert({tipus:start.tab==="Notes"?"nota":"acta",token:start.token,files:start.files||null})},[start?.token]);
   const tanca=()=>setObert(null);
   if(obert?.tipus==="nota")return <Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} nomesFitxa onTancar={tanca} start={{tab:"Notes",token:obert.token,obrir:obert.obrir,files:obert.files}}/>;
@@ -3771,10 +3775,10 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
       promotor:obra?.propietat||client?.nom||"Pendent",
       constructor:(typeof obra?.constructor==="string"?obra.constructor:"")||obra?.empresaConstructora||client?.rao||"Pendent",
       do:obra?.do||obra?.direccioObra||"Pendent",
-      deo:obra?.deo||obra?.direccioExecucio||"Héctor Cubero",
+      deo:obra?.deo||obra?.direccioExecucio||"Pendent",
       css:obra?.css||obra?.coordinacioSS||"Pendent"
     };
-    setData(d=>({...d,actes:[...(d.actes||[]),a]}));
+    // V87.475 · no es desa fins a «Guardar acta»: abans quedava una acta buida si es cancel·lava
     orig878303.current=new Set();
     setEditId(a.id);
     setDraft(a);
@@ -3788,7 +3792,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
       promotor:a.promotor||obra?.propietat||client?.nom||"Pendent",
       constructor:(typeof a?.constructor==="string"?a.constructor:"")||(typeof obra?.constructor==="string"?obra.constructor:"")||obra?.empresaConstructora||client?.rao||"Pendent",
       do:a.do||obra?.do||obra?.direccioObra||"Pendent",
-      deo:a.deo||obra?.deo||obra?.direccioExecucio||"Héctor Cubero",
+      deo:a.deo||obra?.deo||obra?.direccioExecucio||"Pendent",
       css:a.css||obra?.css||obra?.coordinacioSS||"Pendent"
     };
     orig878303.current=new Set(na.agentIds||[]);
@@ -3803,7 +3807,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
     // V87.406 · l'acta guarda la còpia només dels assistents que hi són
     normalized.assistents878406=(draft.assistents878406||[]).filter(a=>(normalized.agentIds||[]).includes(a.id));
     const sel878301=(normalized.agentIds||[]).filter(id=>!orig878303.current.has(id)).map(id=>agentsD878406.find(a=>a.id===id)).filter(Boolean);
-    setData(d=>{const cur=d.agents||[];const have=new Set(cur.map(agentPersona878301).filter(Boolean));const add=sel878301.filter(a=>{const k=agentPersona878301(a);if(!k||have.has(k))return false;have.add(k);return true}).map(cleanAgentCopy878301);return {...d,agents:add.length?[...cur,...add]:cur,actes:(d.actes||[]).map(a=>a.id===draft.id?normalized:a)}});
+    setData(d=>{const cur=d.agents||[];const have=new Set(cur.map(agentPersona878301).filter(Boolean));const add=sel878301.filter(a=>{const k=agentPersona878301(a);if(!k||have.has(k))return false;have.add(k);return true}).map(cleanAgentCopy878301);return {...d,agents:add.length?[...cur,...add]:cur,actes:(d.actes||[]).some(a=>a.id===draft.id)?(d.actes||[]).map(a=>a.id===draft.id?normalized:a):[...(d.actes||[]),normalized]}});
     setEditId(null);
     setDraft(null);
     
@@ -3811,7 +3815,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
   }
 
   function del(id){
-    if(!confirm(t("Eliminar aquesta acta?")))return;
+    if(!confirm((actes.find(a=>a.id===id)?.estat==="Signada")?t("Aquesta acta està signada. Eliminar-la igualment?"):t("Eliminar aquesta acta?")))return;
     setData(d=>({...d,actes:(d.actes||[]).filter(a=>a.id!==id)}));
     if(editId===id){setEditId(null);setDraft(null);onTancar?.()}
   }
@@ -3946,6 +3950,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
             <button type="button" className="secondary pdf-acta-v878412" onClick={()=>printableDoc&&openDoc?.(printableDoc)}><Printer size={15} aria-hidden="true"/> {t("PDF de l’acta")}</button>
             <button type="button" className="secondary" onClick={()=>openEmail?.(t("Acta {n}",{n:draft.numero||""}).trim(),sigRec878408?{assistents:selectedAgents,pdf:{carrega:()=>getDocFile(sigRec878408.id,obra?.id),nom:sigRec878408.nom}}:{doc:printableDoc,assistents:selectedAgents})}>{t("Enviar")}</button>
             <button type="button" className="secondary" onClick={()=>{setDraft(null);setEditId(null);onTancar?.()}}>{t("Cancel·lar")}</button>
+            {nomesFitxa&&!obra?.compartida&&actes.some(a=>a.id===draft.id)&&<button type="button" className="danger elimina-v878475" onClick={()=>del(draft.id)}><Trash2 size={15} aria-hidden="true"/> {t("Eliminar l’acta")}</button>}
           </div>
 
         </>}
@@ -12257,6 +12262,16 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
   const initials=String(obra.nom||"?").replace(/^obra\s+/i,"").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
   // V87.464 · primer el que es mira (les xifres); la resta, plegat, a tots els aparells (l’Héctor, 1/11/2026: «continua havent pantalles desplegades quan entres»)
   return <section className="obra-hero-v878252 net-v878464">
+    {/* V87.475 · la foto i «Compartir», a la vista: a la V87.464 havien quedat dins de la targeta plegada i no es trobaven */}
+    <div className="cap-resum-v878475">
+      <div className={`obra-hero-photo-v878252 ${obraFoto878259(obra)?"":"sense-foto-v878354"}`}>
+        {obraFoto878259(obra)?<img src={obraFoto878259(obra)} alt={`Foto de ${obra.nom||"l’obra"}`}/>:null}
+        {uploadImage&&!obraFoto878259(obra)&&rcNet878305(obra.rc).length>=14&&<button type="button" className="cadastre-v878356" disabled={cadastre878356==="..."} onClick={async()=>{setCadastre878356("...");try{const b=await fotoCadastre878356(obra.rc);await uploadImage(b);setCadastre878356("")}catch(e){setCadastre878356(e?.message||String(e))}}}>{cadastre878356==="..."?t("Buscant la foto…"):t("Foto del Cadastre")}</button>}
+        {cadastre878356&&cadastre878356!=="..."&&<small className="cadastre-err-v878356" role="status">{cadastre878356}</small>}
+        {uploadImage&&<><button type="button" onClick={()=>fileRef.current?.click()}>{obraFoto878259(obra)?t("Canviar foto"):t("Afegir foto de l’obra")}</button><input ref={fileRef} type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)uploadImage(f);e.target.value=""}}/></>}
+      </div>
+      <ShareObra878259 obra={obra}/>
+    </div>
     {hasBudget?<div className="obra-hero-progress-v878252">
           <div className="lbl"><span>{s.lastN?t("Certificat a origen · C-{n}",{n:s.lastN}):t("Pressupost preparat, sense certificacions")}</span><b>{pct878252(exe456)}</b></div>
           <div className="track"><i style={{width:`${Math.min(100,exe456)}%`}}/></div>
@@ -12271,13 +12286,6 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
     <details className="card bloc-v878426 contacte-bloc-v878464"><summary><Phone size={18} aria-hidden="true"/><span className="t"><b>{t("Contacte i enllaços")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
       <ContacteObra878304 obra={obra} client={client}/>
       <EnllacosObra878305 obra={obra}/>
-      <ShareObra878259 obra={obra}/>
-      <div className={`obra-hero-photo-v878252 ${obraFoto878259(obra)?"":"sense-foto-v878354"}`}>
-        {obraFoto878259(obra)?<img src={obraFoto878259(obra)} alt={`Foto de ${obra.nom||"l’obra"}`}/>:null}
-        {uploadImage&&!obraFoto878259(obra)&&rcNet878305(obra.rc).length>=14&&<button type="button" className="cadastre-v878356" disabled={cadastre878356==="..."} onClick={async()=>{setCadastre878356("...");try{const b=await fotoCadastre878356(obra.rc);await uploadImage(b);setCadastre878356("")}catch(e){setCadastre878356(e?.message||String(e))}}}>{cadastre878356==="..."?t("Buscant la foto…"):t("Foto del Cadastre")}</button>}
-        {cadastre878356&&cadastre878356!=="..."&&<small className="cadastre-err-v878356" role="status">{cadastre878356}</small>}
-        {uploadImage&&<><button type="button" onClick={()=>fileRef.current?.click()}>{obraFoto878259(obra)?t("Canviar foto"):t("Afegir foto de l’obra")}</button><input ref={fileRef} type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)uploadImage(f);e.target.value=""}}/></>}
-      </div>
     </div><Recollir878432/></details>
     {hasBudget&&(()=>{const ch=<div className="obra-hero-charts-v878252 un-v878336">
       <div className="chart-card">
@@ -18873,7 +18881,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.474",
+    app_version:"87.475",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
