@@ -86,6 +86,20 @@ export function partidesDeIa(respostes) {
   return { partides, total, avisos };
 }
 
+// V87.478 · Com han de ser les partides d'un pressupost fet amb la IA. Va amb la petició, abans del text dels arxius.
+export function reglesPartides(caps = []) {
+  const ja = caps.map(c => String(c).trim()).filter(Boolean).slice(0, 40);
+  return [
+    "Com han de ser les partides (això mana sobre qualsevol altra indicació):",
+    "- Cada feina que et diuen és UNA sola partida, amb tot el que porta a dins: materials, armadures, cèrcols, mà d'obra, mitjans i la runa d'aquella feina. Escriu-ho a la descripció de la partida; no en facis partides a part si no t'ho demanen.",
+    "- No afegeixis cap partida que no t'hagin dit, encara que sigui habitual. Si creus que falta alguna cosa, digues-ho a avisos.",
+    "- Només si et diuen una obra general sense concretar (per exemple «reformar un bany») o et passen plànols o arxius, desglossa-la, per feines i mai per materials.",
+    "- Fes els mínims capítols: les feines de la mateixa mena van al mateix capítol (tot el que és estructura, a ESTRUCTURA).",
+    ...(ja.length ? [`- Capítols que ja té el pressupost: ${ja.join(" · ")}. Si una partida hi encaixa, posa-la en aquell capítol, amb el mateix nom.`] : []),
+    "- El text pot venir d'un dictat: una paraula sense sentit pot ser una paraula mal entesa, sobretot un castellanisme de l'ofici (bovedilla, ferralla, mallazo…). Entén-la pel context i, si l'has canviat, digues-ho a avisos.",
+  ].join("\n");
+}
+
 // Un pressupost o uns amidaments en PDF: el text a trossos o, si és escanejat, l'arxiu sencer
 const MAX_ARXIU = 14 * 1024 * 1024;
 export async function pressupostDeIa(file, text, onPas) {

@@ -2705,6 +2705,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Cobrar-los:** amb 2 o més encàrrecs, els pressupostos i les factures d'honoraris tenen el camp «Encàrrec» (`TriaEncarrec878477`, `encarrec878477`): «Tots (preu conjunt)» o un de sol; la calculadora també, i posa el treball. Sense encàrrec val per a tots (`autoPunts`); amb encàrrec, només per a aquell. Treure un encàrrec passa els seus pressupostos i factures a tot l'expedient.
     - **Inici** (`EncarrecsInici878305`), **«Pendent de tancar»** (`faltaTancar878474`, amb «Nom: …» i «Fer la factura: {n}») i **Documents** (`documentFolders8775`, `ambTramit`) miren tots els encàrrecs.
     - Estils `src/theme-v878477.css`. Proves: `encarrecs477unit.mjs` (28, sense navegador) i `v477test.mjs` (27).
+  - **V87.478 · Pressupost amb IA: cada feina, una partida, i les de la mateixa mena al mateix capítol** (l'Héctor, 2/11/2026, dictant un forjat: 4 partides, 3 d'estructura en capítols diferents: «per què no ha fet una única partida si no li he dit de fer el ferro, cèrcol i residus a part?»):
+    - **Error antic (V87.361):** `nouCap878361` comparava el nom amb número («01 ESTRUCTURA») amb el nom sense («ESTRUCTURA»): no coincidien mai i cada partida d'un «Capítol nou» n'obria un (01, 02 i 03 ESTRUCTURA), encara que la revisió digués el mateix. Passava a «Des de Preus», al dictat i a la primera prova de Llafranc (les partides soltes). Ara amb `nomSenseNum878361`.
+    - **Què es demana a la IA** (`reglesPartides` de `src/iaObra.js`): una partida per feina, amb tot a dins (materials, armadures, cèrcols, mà d'obra, mitjans, runa), a la descripció; cap partida que no s'hagi dit (el que falti, a avisos); desglossar només una obra general o plànols, per feines i mai per materials; els mínims capítols; els capítols que ja té el pressupost; el text pot ser d'un dictat (una paraula sense sentit es llegeix pel context, i si es canvia es diu a avisos). **Va amb la petició, abans del text dels arxius, i no a la funció del servidor: així no cal tornar-la a instal·lar.** El `SYS_PARTIDES` d'`index.ts` continua dient que pot afegir protecció, runa i neteja; les regles diuen que hi manen a sobre.
+    - **Capítols** (`ambIa`, sense arxiu llegit): el que ja té el pressupost pel nom; si no, pel capítol estàndard de la partida (`stdDe`, si no en té, el del nom del capítol de la IA): el del pressupost que hi correspon o el primer d'aquesta tanda (`vist`). El que no se sap què és es queda on l'ha posat la IA. `CAP_RULES878280` 04 també coneix biguetes, bovedilles, revoltons, ferralla, armadures, mallat i encofrat. Les partides d'un arxiu llegit continuen amb els capítols de l'arxiu (Llafranc: 27, iguals al PDF i a l'Excel).
+    - **Preus:** norma nova a `promptPreusIa`: el preu ha d'incloure tot el que diu la descripció.
+    - **Dictat:** és el reconeixement de veu del navegador, en un sol idioma alhora; no es pot entrenar ni afegir-hi paraules («bovedilla» és castellà; en català, «revoltó»).
+    - Prova: `v478test.mjs` (16, IA simulada: el que se li envia i el que fa l'app amb la resposta; **com respon la IA de debò encara no s'ha provat**). El Supabase de proves accepta `POST /__aco-ia {partides:{…}}`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2895,7 +2902,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.477 a Render):**
+**Estat (publicada la V87.478 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

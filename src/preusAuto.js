@@ -247,6 +247,7 @@ export function promptPreusIa({ obra = {}, cond = {}, partides = [], provincia =
     `Normes:`,
     `- Fes servir exactament els codis de partida de la llista. Els recursos poden tenir codis propis (p. ex. MO.OF1, MAT.CIM…).`,
     `- Números amb punt decimal i sense símbol de moneda. El preu de la partida ha de ser la suma de rendiment × preu dels recursos (pots afegir un recurs «%MA» de tipus 0 amb el % de mitjans auxiliars).`,
+    `- El preu de cada partida ha d’incloure tot el que diu la seva descripció (materials, armadures, mà d’obra, mitjans i runa).`,
     `- No t’inventis una partida que no entenguis: posa-hi preu 0 i, al ~T, «A CONFIRMAR» i el motiu.`,
     `- Si la llista és llarga, pots dividir la resposta en parts; acaba cada part amb la línia «CONTINUARÀ» i espera que et digui «continua».`,
   ].filter(x => x !== "").join("\n");

@@ -14,7 +14,7 @@ import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
 import {cercaOk as cercaOk878470,dataIso as dataIso878470} from "./cercaLlistes.js";
-import {iaCridable,iaActiva,iaSabuda,iaQuota,iaCrida,arxiuDeDataUrl,arxiuDeFitxer,partidesDeIa,pressupostDeIa,despesaDeIa,albaransDeFactura} from "./iaObra.js";
+import {iaCridable,iaActiva,iaSabuda,iaQuota,iaCrida,arxiuDeDataUrl,arxiuDeFitxer,partidesDeIa,pressupostDeIa,despesaDeIa,albaransDeFactura,reglesPartides} from "./iaObra.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
 import {perFamilies as perFamilies878456,perCategories as perCategories878456} from "./familiesRecursos.js";
 import {ENCARRECS,encarrecsDe,nomEncarrec,ambPassos,marcaPunt,marcaDoc,afegeixEncarrec,treuEncarrec,resumDe,autoPunts,carpetaDoc,teTramit,FITXA_VISITA,promptFitxa,llegirFitxa} from "./encarrecsTecnics.js";
@@ -36,7 +36,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.477";
+const APP_VERSION878264="87.478";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8716,7 +8716,7 @@ const CAP_RULES878280=[
   ["02",/excavacio|terraple|rebliment|\brasa\b|desbrossa|moviment de terres|anivellament del terreny/],
   ["03",/fonament|sabata|riostra|llosa de fonament|mur de contencio|micropilot/],
   ["19",/bastida|plataforma elevadora|\bgrua\b|camio ploma|apuntalament|estintolament|mitjans auxiliars|provisionals/],
-  ["04",/forjat|\bbig(a|ues)\b|\bpilar|jasser|estructura|formigo armat|\bipn\b|\bheb?\b|perfil metal|cercol|reforc estructural|daus de formigo/],
+  ["04",/forjat|\bbig(a|ues)\b|\bpilar|jasser|estructura|formigo armat|\bipn\b|\bheb?\b|perfil metal|cercol|reforc estructural|daus de formigo|biguet|bovedill|revolto|ferralla|armadur|ferro corrugat|acer corrugat|mallat|encofrat|capa de compressio/],
   ["06",/coberta|cobertga|teul|canalo|rafec|carener|xapa sandvitx|claraboia|xemeneia|formacio( de)? pendent/],
   ["07",/impermeabil|aillament|lamina|tela asfaltica|\bsate\b|poliestire|llana de roca|\bxps\b|\beps\b/],
   ["16",/sanitari|lavabo|vater|inodor|\bwc\b|plat de dutxa|banyera|aixet|griferia|mampara|bidet/],
@@ -13613,7 +13613,8 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
   // el lloc («del bany», «de la cuina») no tria el capítol: «alicatat del bany» és un revestiment, no un aparell sanitari
   const LLOC401=/\b(?:de\s+la|del|dels|de\s+les|de\s+l['’]|a\s+la|al|en\s+el|en\s+la)\s*(?:cuina|banys?|lavabos?|menjador|sala|habitaci[oó]|habitacions|passad[ií]s|terrassa|balc[oó]|safareig|rebedor|dormitoris?|cocina|ba[ñn]os?|comedor|sal[oó]n)\b/gi;
   // sense capítol clar («25 Altres»), cap nou «ALTRES» (no el primer capítol del pressupost que tampoc en té)
-  const destDe=c=>{const c2=String(c||"").replace(LLOC401,"");const s=/alicat|enrajolat|aplacat/i.test(c2)?"08":capStd878280({concepte:c2});const ja=s!=="25"&&capsAra.find(k=>capStd878280({concepte:"",cap:k})===s);if(ja)return ja;return "nou:"+t((CAPS_STD878280.find(x=>x[0]===s)||[])[1]||"Altres").toUpperCase()};
+  const stdDe=c=>{const c2=String(c||"").replace(LLOC401,"");return /alicat|enrajolat|aplacat/i.test(c2)?"08":capStd878280({concepte:c2})};
+  const destDe=c=>{const s=stdDe(c);const ja=s!=="25"&&capsAra.find(k=>capStd878280({concepte:"",cap:k})===s);if(ja)return ja;return "nou:"+t((CAPS_STD878280.find(x=>x[0]===s)||[])[1]||"Altres").toUpperCase()};
   function posaFiles(amb,base,dest){
     const mg=margesObra878378(data),acc=pctAcces(data?.condicions878368||{});
     setFiles(amb.map((l,i)=>{const m=Number(l.pu)>0?margesLinia878378(l,{mg,ambMg:true,acc,ambAcc:acc>0}):null;const pu=m?.pu||0;
@@ -13653,7 +13654,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
       if(!lleg&&!text.trim()&&resta.length&&resta.every(a=>a.pdf)){const ia=await pressupostDeIa(resta[0].file,"");dIa=ia.partides||[];av0=[...(ia.avisos||[])]}
       if(!dIa.length&&(!lleg||text.trim()||resta.length)){
         const textArx=resta.filter(a=>a.text).map(a=>`${a.nom}:\n${a.text}`).join("\n\n");
-        const r=await iaCrida("partides",{text:[text,textArx].filter(x=>x.trim()).join("\n\n"),obra:[obra?.nom,obra?.adreca,obra?.poblacio].filter(Boolean).join(" · "),arxius:resta.filter(a=>a.dades).map(a=>({tipus:a.tipus,dades:a.dades})),idioma:getLang()});
+        const r=await iaCrida("partides",{text:[text.trim()||"El que surt als arxius adjunts.",reglesPartides(capsAra),textArx].filter(Boolean).join("\n\n"),obra:[obra?.nom,obra?.adreca,obra?.poblacio].filter(Boolean).join(" · "),arxius:resta.filter(a=>a.dades).map(a=>({tipus:a.tipus,dades:a.dades})),idioma:getLang()});
         const x=partidesDeIa(r);dIa=x.partides;av0=[...av0,...x.avisos];
       }
       const partides=[...delArxiu,...dIa];
@@ -13674,7 +13675,12 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
       }catch(e){av.push(t("No s’han pogut fer tots els preus: {e}",{e:iaErr878458(e)}))}
       amb=amb.map(l=>{const x=preus[l.codi];return x?{...l,pu:x.pu>0?x.pu:null,font878368:"ia",semblant878368:false,confirmar878368:!!x.confirmar,nota878368:x.nota||"",descomp878368:x.descomp||null,taula878368:null}:l});
       setDeIa(true);setAvisos(av);setDeArxiu476(lleg?{nom:lleg.nom,file:lleg.file}:null);
-      posaFiles(amb,partides,(l,i)=>{const cap=partides[i].cap,nom=nomSenseNum878361(cap);return capsAra.find(k=>k===cap)||capsAra.find(k=>nomSenseNum878361(k)===nom)||(lleg?String(cap):"nou:"+String(cap).replace(/^\d+(\.\d+)*\s+/,"").toUpperCase())});
+      // V87.478 · les feines de la mateixa mena van juntes, encara que la IA n'hagi fet un capítol per partida: al que ja té el pressupost o al primer que ha sortit
+      const vist={};
+      posaFiles(amb,partides,(l,i)=>{const cap=partides[i].cap,nom=nomSenseNum878361(cap);const ja=capsAra.find(k=>k===cap)||capsAra.find(k=>nomSenseNum878361(k)===nom);if(ja)return ja;if(lleg)return String(cap);
+        let s=stdDe(partides[i].concepte);if(s==="25")s=capStd878280({concepte:"",cap});
+        const hi=s!=="25"&&capsAra.find(k=>capStd878280({concepte:"",cap:k})===s);if(hi)return hi;
+        const nou="nou:"+String(cap).replace(/^\d+(\.\d+)*\s+/,"").toUpperCase();if(s==="25")return nou;return vist[s]=vist[s]||nou});
     }catch(e){setErr(iaErr878458(e))}
     try{encesa?.release?.()}catch{}
     setFent("");
@@ -14401,7 +14407,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   function toggleLibrarySelection87218(id){setLibrarySelected87218(prev=>({...prev,[id]:!prev[id]}))}
   function selectDisplayedLibrary87218(){setLibrarySelected87218(prev=>({...prev,...Object.fromEntries(libraryDisplayed87218.map(item=>[item.id,true]))}))}
   // V87.361 · les partides triades de Preus, cadascuna amb la seva quantitat i el seu capítol (un de nou, si cal); fora d'edició es desen al moment
-  function nouCap878361(nom,next){const keys=Object.keys(next||{});const ja=keys.find(k=>nomCap878320(k)===nomCap878320(nom));if(ja)return ja;
+  function nouCap878361(nom,next){const keys=Object.keys(next||{});const ja=keys.find(k=>nomSenseNum878361(k)===nomSenseNum878361(nom));if(ja)return ja;
     const nums=keys.map(k=>parseInt(String(k).match(/^[A-Z]{0,3}(\d+)/i)?.[1]||"0",10)).filter(n=>n>0);const base=String(nom||"").replace(/^[A-Z]{0,3}\d+(\.\d+)*[\s.\-·]*/i,"").trim()||"PARTIDES NOVES";
     return String((nums.length?Math.max(...nums):0)+1).padStart(2,"0")+" "+base}
   function afegeixLlibreria878361(sel=[]){
@@ -18955,7 +18961,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.477",
+    app_version:"87.478",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
