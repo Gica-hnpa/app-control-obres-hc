@@ -13,7 +13,7 @@ import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878
 import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
-import {iaCridable,iaActiva,iaSabuda,iaCrida,arxiuDeDataUrl,arxiuDeFitxer,partidesDeIa,pressupostDeIa,despesaDeIa,albaransDeFactura} from "./iaObra.js";
+import {iaCridable,iaActiva,iaSabuda,iaQuota,iaCrida,arxiuDeDataUrl,arxiuDeFitxer,partidesDeIa,pressupostDeIa,despesaDeIa,albaransDeFactura} from "./iaObra.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
 import {perFamilies as perFamilies878456,perCategories as perCategories878456} from "./familiesRecursos.js";
 import {encarrecDe,estatDocs,resumEncarrec,autoPunts,carpetaDoc,teTramit,FITXA_VISITA,promptFitxa,llegirFitxa} from "./encarrecsTecnics.js";
@@ -35,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.468";
+const APP_VERSION878264="87.469";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1858,6 +1858,8 @@ function f2u(file,cb){if(!file)return;let r=new FileReader();r.onload=()=>cb(r.r
 
 function PerfilModuls878326(){
   const emp=typeof window!=="undefined"?window.__acoEmpresa:null;
+  const[ia,setIa]=useState(null);
+  useEffect(()=>{let viu=true;iaQuota().then(q=>{if(viu)setIa(q)});return()=>{viu=false}},[]);
   const info=empresaInfo878259()||{};
   const perfil=PERFILS878326[info.perfil]?info.perfil:"";
   const m=moduls878326()||{tecnic:true,obra:true,empresa:true};
@@ -1865,6 +1867,7 @@ function PerfilModuls878326(){
   function canvia(k){if(!emp||k===perfil)return;if(!confirm(t("Canviar el perfil a «{p}»? L’app es tornarà a obrir amb els menús d’aquest perfil. Les dades no canvien.",{p:t(PERFILS878326[k].nom)})))return;lsSet8779("aco_empresa_v878259",JSON.stringify({...info,perfil:k,perfilAt:new Date().toISOString()}));try{window.__acoStore?.flush?.()}catch{}setTimeout(()=>location.reload(),300)}
   return <Card title={t("Perfil i mòduls")} className="perfil-moduls-v878326">
     <p className="actual"><span>{t("Perfil d’aquest compte")}</span><b>{emp?(perfil?t(PERFILS878326[perfil].nom):t("Sense triar")):t("Compte principal · tots els mòduls")}</b></p>
+    {ia&&ia.limit>0&&!esTreballador878326()&&<p className="actual lectures-v878469"><span>{t("Lectures amb IA aquest mes")}</span><b>{t("{n} de {m}",{n:ia.usat,m:ia.limit})}</b></p>}
     {!esTreballador878326()&&<div className="mods">{MODS.map(([k,n,d])=><div key={k} className={m[k]?"on":"off"}><b>{t(n)}</b><span>{t(d)}</span><em>{m[k]?t("Inclòs"):t("No inclòs")}</em></div>)}</div>}
     {emp&&<div className="tria"><span>{t("Canviar el perfil")}</span><div>{Object.entries(PERFILS878326).map(([k,p])=><button type="button" key={k} className={k===perfil?"primary":"secondary"} aria-pressed={k===perfil} onClick={()=>canvia(k)}>{t(p.nom)}</button>)}</div></div>}
   </Card>;
@@ -18747,7 +18750,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.468",
+    app_version:"87.469",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

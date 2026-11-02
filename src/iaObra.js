@@ -13,6 +13,12 @@ export async function iaActiva() {
   catch (e) { if (e?.status) activa = false; return false; }
 }
 export const iaSabuda = () => (window.__acoIaOff878458 ? false : activa);
+// V87.469 · Les lectures d'aquest mes, {limit, usat}; null si la IA no hi és
+export async function iaQuota() {
+  if (!await iaActiva()) return null;
+  try { const r = await iaCrida("ping"); return r?.ok ? { limit: Number(r.limit) || 0, usat: Number(r.usat) || 0 } : null; }
+  catch { return null; }
+}
 
 export async function iaCrida(accio, cos = {}) {
   let r;

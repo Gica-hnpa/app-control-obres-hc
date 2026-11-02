@@ -48,14 +48,14 @@ obres anteriors; la IA només posa el preu de les que queden.
 
 **Passos (només cal fer-los una vegada):**
 
-1. **Clau d’Anthropic:** a console.anthropic.com, crear un compte de pagament, posar-hi un **límit de despesa mensual** i crear una clau.
+1. **Clau d’Anthropic:** a console.anthropic.com, crear un compte de pagament, comprar 50 $ de saldo, posar-hi un **límit de despesa mensual** de 50 $, deixar la **recàrrega automàtica apagada** i crear una clau.
    La clau només es posa a Supabase: no s’escriu mai enlloc més.
 2. **Secret a Supabase:** panell del projecte › Edge Functions › Secrets › `ANTHROPIC_API_KEY` = la clau.
-3. **Límit per compte:** SQL Editor › enganxar `supabase/aco_ia_v878458.sql` › Run.
+3. **Comptador de lectures:** SQL Editor › enganxar `supabase/aco_ia_v878458.sql` › Run. **Sense aquest pas la funció no treballa**: l’app fa com si no hi hagués IA, perquè no es pugui gastar sense comptar.
 4. **Instal·lar la funció:** Edge Functions › Deploy a new function › Via Editor › nom `aco-ia` › enganxar `supabase/functions/aco-ia/index.ts` › Deploy.
-5. **Provar-ho:** a l’app, Despeses › Fer foto d’un albarà: s’ha d’omplir sol.
+5. **Provar-ho:** a l’app, Despeses › Fer foto d’un albarà: s’ha d’omplir sol. Després, a Ajustos › Perfil i mòduls ha de sortir «Lectures amb IA aquest mes: 1 de 500».
 
-**Es pot canviar sense tocar el codi** (Edge Functions › Secrets): `IA_LIMIT_MES` (peticions per compte i mes; de sèrie 300; 0 = sense
+**Es pot canviar sense tocar el codi** (Edge Functions › Secrets): `IA_LIMIT_TECNIC` i `IA_LIMIT_EMPRESA` (lectures al mes; de sèrie 150 i 500; 0 = sense
 límit), `IA_MODEL_DOC` (de sèrie `claude-sonnet-5-5`), `IA_MODEL_PRES` (de sèrie `claude-opus-5-5`), `IA_WEB=0` (no buscar preus a internet).
 
 **Abans d’obrir-ho als clients:** les fotos, les factures i les adreces de les obres s’envien a Anthropic per llegir-les. S’ha de dir a
@@ -87,7 +87,57 @@ les condicions del servei; cal parlar-ho amb la gestoria.
 
 **Com es paga:** Anthropic no ven paquets per empresa. Hi ha un sol compte i una sola clau: es compra saldo per endavant (no es retorna i caduca al cap d’un any) i cada crida en descompta el que costa. Es pot posar un límit de despesa al mes; el primer nivell del compte (Start) en té un de màxim de 500 $. El «paquet per empresa» el fa l’app, amb un límit per compte.
 
-**Abans d’obrir-ho als clients:** el límit d’ara compta peticions (300 al mes per compte) i totes valen igual: en el pitjor cas, 50 comptes × 300 × 0,46 $ = 6.900 $ al mes. S’ha de canviar per un comptador que pesi cada feina, i desar el cost de debò de cada crida (`aco_ia_us` només desa tokens, sense el model ni les cerques).
+## Lectures: el paquet de cada compte (V87.469)
+
+**1 lectura = 3 cèntims de dòlar del que costa de debò.** Cada feina compta un mínim, perquè l’usuari sàpiga què gasta; si aquella crida ha costat més (un PDF molt llarg, moltes cerques), compta el que ha costat. Si una feina falla, no compta el mínim però sí el que s’hagi gastat.
+
+| Feina | Mínim de lectures |
+|---|---|
+| Albarà, factura o tiquet | 1 (una factura llarga, 2 o 3) |
+| Pressupost o amidaments en PDF que l’app no sap llegir | 6 per tros |
+| Fer les partides d’un pressupost | 8 |
+| Tanda de preus (15 partides) | 15 amb internet · 6 sense |
+| Pressupost sencer (partides + 2 tandes de preus) | unes 40 |
+
+| Compte | Lectures al mes | Cost màxim |
+|---|---|---|
+| Tècnic i treballador | 150 | 4,50 $ |
+| Constructora, gestió total i compte principal | 500 | 15 $ |
+
+Així, els 50 comptes (30 constructores i 20 tècnics) **no poden passar de 540 $ al mes** encara que tothom ho gasti tot, i el límit de despesa d’Anthropic ho talla abans. Amb l’ús normal de la taula d’abans, una constructora gasta unes 180 lectures i un tècnic unes 55. El perfil el llegeix el servidor de les dades del núvol; l’app no li pot dir quin és. Cada compte veu les seves a Ajustos › Perfil i mòduls; **el cost en dòlars no surt enlloc de l’app**.
+
+**Posar un paquet diferent a un compte** (Supabase › SQL Editor, canviant el correu i el número):
+
+```sql
+insert into public.aco_ia_comptes (user_id, lectures_mes)
+select id, 1000 from auth.users where email = 'brava@usuaris.controlobres.app'
+on conflict (user_id) do update set lectures_mes = excluded.lectures_mes;
+```
+
+**Treure-li el paquet** (torna al del seu perfil):
+
+```sql
+delete from public.aco_ia_comptes
+where user_id = (select id from auth.users where email = 'brava@usuaris.controlobres.app');
+```
+
+**Quant ha gastat cada compte:**
+
+```sql
+select u.email, i.mes, i.lectures, i.n as crides, i.cost_usd
+from public.aco_ia_us i join auth.users u on u.id = i.user_id
+order by i.mes desc, i.cost_usd desc;
+```
+
+**Què costa de debò cada feina** (per comparar-ho amb l’estimació d’aquí dalt i per veure si les 150 i 500 lectures són el número bo):
+
+```sql
+select accio, model, count(*) as crides, round(avg(cost_usd), 4) as cost_mitja, max(cost_usd) as cost_maxim, round(avg(lectures), 1) as lectures
+from public.aco_ia_crides where ok
+group by accio, model order by accio, model;
+```
+
+A les crides no es desa res del document: només quina feina era, el model, els tokens, les cerques, el cost i les lectures.
 
 ## Banc de preus comú (V87.460)
 

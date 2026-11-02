@@ -2641,6 +2641,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Inici:** «Revisar-la» amb una sola feina vençuda.
     - Estils `src/theme-v878468.css`. Prova: `v468test.mjs` (ordinador, iPad i mòbil).
     - Adaptades `v455test` (a l'ordinador, sense requadres) i `grafica384test` (fallava pel canvi de mes, no per la versió: l'eix arriba fins al mes d'avui). Cost de la IA per a 50 comptes: `docs/pressupost-ia.md`.
+  - **V87.469 · Lectures de la IA: el paquet de cada compte i el cost de debò** (l'Héctor, 2/11/2026: «un paquet de lectures per empresa a repercutir després»; **`aco-ia` continua sense instal·lar**):
+    - **Comptador** (`supabase/functions/aco-ia/index.ts`): substitueix `IA_LIMIT_MES` (300 peticions iguals; pitjor cas 6.900 $/mes). 1 lectura = 3 cèntims (`LECTURA_USD`). Mínims `PES`: despesa 1, pressupost 6 per tros, partides 8, preus 15 (6 amb `IA_WEB=0`); si la crida ha costat més, compta el que ha costat (`lecturesDe`): així les lectures sempre cobreixen el cost. Una feina que falla no compta el mínim però sí el gastat (`fes`, amb `finally`). No es comença si no hi cap el mínim.
+    - **Paquets** (`limitDe`): `aco_ia_comptes.lectures_mes` si n'hi ha; si no, pel perfil llegit d'`aco_kv` (`key=like.*__aco_empresa_v878259`; no el diu l'app): tècnic i treballador `IA_LIMIT_TECNIC` (150, 4,50 $); la resta i el compte principal `IA_LIMIT_EMPRESA` (500, 15 $). Màxim amb 30 constructores i 20 tècnics: 540 $/mes.
+    - **Cost de debò** (`Gast`, `preuModel`, `costDe`): tokens (també els de memòria cau), cerques (`usage.server_tool_use.web_search_requests`) i preus oficials del 2/11/2026; un model desconegut es compta com el més car. A `aco_ia_us` per mes i a `aco_ia_crides` per crida, sense res del document. Consultes a `docs/pressupost-ia.md`.
+    - **Sense l'SQL la funció no treballa** (`usat` torna `null`; abans, sense la taula no hi havia límit). L'SQL és el mateix fitxer, `supabase/aco_ia_v878458.sql` (puja bé si ja s'hagués executat l'antic). Només hi entra `service_role`: cap client pot veure el cost.
+    - **App:** Ajustos › Perfil i mòduls, «Lectures amb IA aquest mes: 23 de 500» (`iaQuota`; no al treballador, ni sense límit, ni sense funció). Ajustos: fora el requadre buit de dalt de cada bloc (`src/theme-v878469.css`).
+    - **Proves:** `acoiafunciotest.mjs` (40; executa l'`index.ts` de debò amb la IA i el Supabase simulats i comprova els paràmetres contra l'SQL; `ACO_IA_FN=` per provar-ne una còpia: 7 errades posades a posta, totes detectades), `acoiasqltest.mjs` (27; Postgres de debò amb PGlite a `D:/aco-tmp/pglite-469`: de zero, dues vegades, sobre l'SQL antic, permisos i les consultes de la documentació) i `v469test.mjs` (11). Passen `v458test`, `v459test`, `perfils326test`, `pressupost368test`, `simple354test`, `v438test`, `v366test` i `i18ntest`. **Falta provar-ho amb la IA de debò** (cal la clau).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2831,7 +2838,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.468 a Render):**
+**Estat (publicada la V87.469 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

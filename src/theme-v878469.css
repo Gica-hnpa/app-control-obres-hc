@@ -1,0 +1,2 @@
+/* V87.469 · Ajustos: el títol repetit de dins de cada bloc ja s'amagava, però el seu requadre continuava ocupant lloc */
+html body details.ajustos-bloc-v878366>.cos>.card:only-child>.card-head:has(>h2:only-child){display:none}

@@ -4934,6 +4934,7 @@ export default {
   "La IA no ha respost.": "La IA no ha respondido.",
   "El PDF escanejat fa més de 14 MB: no es pot llegir amb la IA.": "El PDF escaneado pesa más de 14 MB: no se puede leer con la IA.",
   "S'ha acabat la IA d'aquest mes per a aquest compte.": "Se ha acabado la IA de este mes para esta cuenta.",
+  "Lectures amb IA aquest mes": "Lecturas con IA este mes",
   "La IA està saturada: torna-ho a provar d'aquí a un minut.": "La IA está saturada: vuelve a probarlo dentro de un minuto.",
   "El document és massa llarg per llegir-lo d'una vegada.": "El documento es demasiado largo para leerlo de una vez.",
   "La IA ha trigat massa: prova-ho amb menys feina de cop.": "La IA ha tardado demasiado: pruébalo con menos trabajo de golpe.",

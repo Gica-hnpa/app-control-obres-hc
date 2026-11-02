@@ -7,15 +7,21 @@
 //   accio "preus"     → busca el preu amb el descompost de les partides que no en tenen; torna un BC3 (src/preusAuto.js).
 // La clau d'Anthropic es guarda a Supabase (Edge Functions → Secrets → ANTHROPIC_API_KEY) i mai no surt del servidor. Només la
 // poden fer servir els usuaris connectats a l'app. Es pot canviar sense tocar el codi: IA_MODEL_DOC (de sèrie claude-sonnet-5-5),
-// IA_MODEL_PRES (de sèrie claude-opus-5-5), IA_WEB=0 (no buscar a internet) i IA_LIMIT_MES (peticions per compte i mes; 0 = sense
-// límit). El límit es compta a la taula aco_ia_us (supabase/aco_ia_v878458.sql); sense la taula, no hi ha límit.
+// IA_MODEL_PRES (de sèrie claude-opus-5-5), IA_WEB=0 (no buscar a internet), IA_LIMIT_TECNIC i IA_LIMIT_EMPRESA (lectures al mes, de
+// sèrie 150 i 500; 0 = sense límit). Les lectures es compten a aco_ia_us i cada crida queda, amb el seu cost de debò, a aco_ia_crides
+// (supabase/aco_ia_v878458.sql). Sense aquest SQL la funció no treballa: així no es pot gastar sense comptar.
 import Anthropic from "npm:@anthropic-ai/sdk";
 
 const KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const MODEL_DOC = Deno.env.get("IA_MODEL_DOC") ?? "claude-sonnet-5-5";
 const MODEL_PRES = Deno.env.get("IA_MODEL_PRES") ?? "claude-opus-5-5";
 const WEB = (Deno.env.get("IA_WEB") ?? "1") !== "0";
-const LIMIT = Number(Deno.env.get("IA_LIMIT_MES") ?? 300);
+const LIMIT_TECNIC = Number(Deno.env.get("IA_LIMIT_TECNIC") ?? 150);
+const LIMIT_EMPRESA = Number(Deno.env.get("IA_LIMIT_EMPRESA") ?? 500);
+// 1 lectura = 3 cèntims de dòlar. Cada feina compta un mínim i, si de debò ha costat més, el que ha costat: així les lectures d'un
+// compte sempre cobreixen el seu cost (150 lectures són 4,50 $ com a molt; 500, 15 $).
+const LECTURA_USD = 0.03;
+const PES: Record<string, number> = { despesa: 1, pressupost: 6, partides: 8, preus: WEB ? 15 : 6 };
 const SB_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SB_ANON = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -90,7 +96,20 @@ function blocsArxius(arxius: unknown): Anthropic.ContentBlockParam[] {
   return out;
 }
 
-// Comptar les peticions de cada compte (taula aco_ia_us). Si la taula no hi és, no es compta.
+// El que ha gastat una crida. Preus de la pàgina oficial d'Anthropic (2/11/2026), en $ per milió de tokens [entrada, sortida]; un model
+// que no hi sigui es compta com el més car. Cada cerca a internet, 1 cèntim.
+type Gast = { model: string; entrada: number; surt: number; cerques: number };
+function preuModel(model: string, entrada: number): [number, number] {
+  if (model.startsWith("claude-haiku-5-5")) return entrada > 100000 ? [0.5, 2.5] : [0.1, 0.5];
+  if (model.startsWith("claude-sonnet-5-5")) return [2, 10];
+  if (model.startsWith("claude-opus-5-5")) return [4, 20];
+  return [10, 50];
+}
+const costDe = (g: Gast) => { const [pe, ps] = preuModel(g.model, g.entrada); return (g.entrada * pe + g.surt * ps) / 1e6 + g.cerques * 0.01; };
+// una feina que ha fallat no compta el mínim, però sí el que ha costat
+const lecturesDe = (accio: string, cost: number, ok: boolean) => Math.max(ok ? PES[accio] ?? 1 : 0, Math.ceil(cost / LECTURA_USD - 1e-9));
+
+// Les lectures de cada compte (taula aco_ia_us)
 const mes = () => new Date().toISOString().slice(0, 7);
 const sb = (path: string, init: RequestInit = {}) => fetch(`${SB_URL}/rest/v1/${path}`, {
   ...init, headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json", ...(init.headers ?? {}) },
@@ -100,21 +119,39 @@ async function usuari(req: Request): Promise<string> {
   if (!r.ok) throw new Error("Cal entrar a l'app.");
   return String((await r.json())?.id || "");
 }
-async function usat(id: string): Promise<number> {
+// null: no es pot llegir la taula (falta l'SQL)
+async function usat(id: string): Promise<number | null> {
   try {
-    const r = await sb(`aco_ia_us?select=n&user_id=eq.${id}&mes=eq.${mes()}`);
-    if (!r.ok) return 0;
-    return Number((await r.json())?.[0]?.n ?? 0);
-  } catch { return 0; }
+    const r = await sb(`aco_ia_us?select=lectures&user_id=eq.${id}&mes=eq.${mes()}`);
+    if (!r.ok) return null;
+    return Number((await r.json())?.[0]?.lectures ?? 0);
+  } catch { return null; }
 }
-async function compta(id: string, entrada: number, sortida: number) {
-  try { await sb("rpc/aco_ia_compta", { method: "POST", body: JSON.stringify({ p_user: id, p_mes: mes(), p_in: entrada, p_out: sortida }) }); } catch { /* sense la taula, no es compta */ }
+// El paquet del compte, si n'hi ha posat un a aco_ia_comptes; si no, el del seu perfil. El perfil es llegeix de les dades del núvol, no
+// del que digui l'app. El compte principal (sense perfil) compta com una empresa.
+async function limitDe(id: string): Promise<number> {
+  try {
+    const r = await sb(`aco_ia_comptes?select=lectures_mes&user_id=eq.${id}`);
+    const fila = r.ok ? (await r.json())?.[0] : null;
+    if (fila) return Number(fila.lectures_mes);
+    const k = await sb(`aco_kv?select=value&user_id=eq.${id}&key=like.*__aco_empresa_v878259&deleted=is.false`);
+    const perfil = k.ok ? JSON.parse((await k.json())?.[0]?.value || "{}")?.perfil : "";
+    if (perfil === "tecnic" || perfil === "treballador") return LIMIT_TECNIC;
+  } catch (e) { console.error("No s'ha pogut mirar el paquet del compte", e); }
+  return LIMIT_EMPRESA;
+}
+async function compta(id: string, accio: string, g: Gast, ok: boolean) {
+  const cost = costDe(g);
+  try {
+    const r = await sb("rpc/aco_ia_compta", { method: "POST", body: JSON.stringify({ p_user: id, p_mes: mes(), p_accio: accio, p_model: g.model, p_ok: ok, p_in: g.entrada, p_out: g.surt, p_cerques: g.cerques, p_cost: Number(cost.toFixed(5)), p_lectures: lecturesDe(accio, cost, ok) }) });
+    if (!r.ok) console.error("No s'ha pogut comptar la crida", r.status, await r.text());
+  } catch (e) { console.error("No s'ha pogut comptar la crida", e); }
 }
 
-type Fi = { sortida: string; entrada: number; surt: number };
-async function demana(client: Anthropic, p: { model: string; max_tokens: number; system: string; content: Anthropic.ContentBlockParam[]; esquema?: unknown; effort?: string; web?: boolean }): Promise<Fi> {
+async function demana(client: Anthropic, gast: Gast, p: { model: string; max_tokens: number; system: string; content: Anthropic.ContentBlockParam[]; esquema?: unknown; effort?: string; web?: boolean }): Promise<string> {
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: p.content }];
-  let sortida = "", entrada = 0, surt = 0;
+  let sortida = "";
+  gast.model = p.model;
   const atura = new AbortController();
   const rellotge = setTimeout(() => atura.abort(), MAX_MS);
   try {
@@ -129,7 +166,10 @@ async function demana(client: Anthropic, p: { model: string; max_tokens: number;
         ...(p.web ? { tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }] } : {}),
       } as Anthropic.MessageStreamParams, { signal: atura.signal });
       const msg = await stream.finalMessage();
-      entrada += msg.usage?.input_tokens ?? 0; surt += msg.usage?.output_tokens ?? 0;
+      const u = msg.usage;
+      gast.entrada += (u?.input_tokens ?? 0) + (u?.cache_read_input_tokens ?? 0) + (u?.cache_creation_input_tokens ?? 0);
+      gast.surt += u?.output_tokens ?? 0;
+      gast.cerques += u?.server_tool_use?.web_search_requests ?? 0;
       for (const b of msg.content) if (b.type === "text") sortida += b.text;
       if (msg.stop_reason === "pause_turn") { messages.push({ role: "assistant", content: msg.content }); continue; }
       if (msg.stop_reason === "refusal") throw new Error("La IA no ho ha volgut fer.");
@@ -140,10 +180,10 @@ async function demana(client: Anthropic, p: { model: string; max_tokens: number;
     if (atura.signal.aborted) throw new Error("La IA ha trigat massa: prova-ho amb menys feina de cop.");
     throw e;
   } finally { clearTimeout(rellotge); }
-  return { sortida, entrada, surt };
+  return sortida;
 }
 
-async function fes(cos: Record<string, unknown>, id: string): Promise<unknown> {
+async function tasca(cos: Record<string, unknown>, gast: Gast): Promise<unknown> {
   const client = new Anthropic({ apiKey: KEY });
   const accio = String(cos.accio || "");
   const text = String(cos.text || "").slice(0, MAX_TEXT);
@@ -151,33 +191,37 @@ async function fes(cos: Record<string, unknown>, id: string): Promise<unknown> {
   const idioma = cos.idioma === "es" ? "Escriu en castellà." : "Escriu en català.";
   if (accio === "despesa") {
     if (!arxius.length && !text.trim()) throw new Error("No hi ha res per llegir.");
-    const r = await demana(client, { model: MODEL_DOC, max_tokens: 6000, system: SYS_DESPESA, effort: "low", esquema: ESQ_DESPESA,
+    const r = await demana(client, gast, { model: MODEL_DOC, max_tokens: 6000, system: SYS_DESPESA, effort: "low", esquema: ESQ_DESPESA,
       content: [...arxius, { type: "text", text: text ? `Llegeix aquest document. Text que l'app n'ha pogut treure:\n${text}` : "Llegeix aquest document." }] });
-    await compta(id, r.entrada, r.surt);
-    return JSON.parse(r.sortida);
+    return JSON.parse(r);
   }
   if (accio === "pressupost") {
     if (!arxius.length && !text.trim()) throw new Error("No hi ha res per llegir.");
-    const r = await demana(client, { model: MODEL_DOC, max_tokens: 24000, system: SYS_PRESSUPOST, effort: "low", esquema: ESQ_CAPITOLS,
+    const r = await demana(client, gast, { model: MODEL_DOC, max_tokens: 24000, system: SYS_PRESSUPOST, effort: "low", esquema: ESQ_CAPITOLS,
       content: [...arxius, { type: "text", text: `${cos.context ? `${String(cos.context).slice(0, 600)}\n\n` : ""}${text ? `Llegeix aquest document:\n${text}` : "Llegeix aquest document."}` }] });
-    await compta(id, r.entrada, r.surt);
-    return JSON.parse(r.sortida);
+    return JSON.parse(r);
   }
   if (accio === "partides") {
     if (!arxius.length && !text.trim()) throw new Error("Digues què s'ha de fer.");
-    const r = await demana(client, { model: MODEL_PRES, max_tokens: 24000, system: `${SYS_PARTIDES}\n${idioma}`, effort: "medium", esquema: ESQ_CAPITOLS,
+    const r = await demana(client, gast, { model: MODEL_PRES, max_tokens: 24000, system: `${SYS_PARTIDES}\n${idioma}`, effort: "medium", esquema: ESQ_CAPITOLS,
       content: [...arxius, { type: "text", text: `${cos.obra ? `Obra: ${String(cos.obra).slice(0, 2000)}\n\n` : ""}Què s'ha de fer:\n${text || "El que surt als arxius adjunts."}` }] });
-    await compta(id, r.entrada, r.surt);
-    return JSON.parse(r.sortida);
+    return JSON.parse(r);
   }
   if (accio === "preus") {
     if (!text.trim()) throw new Error("No hi ha cap partida per fer.");
-    const r = await demana(client, { model: MODEL_PRES, max_tokens: 24000, system: SYS_PREUS, effort: "medium", web: WEB, content: [...arxius, { type: "text", text }] });
-    await compta(id, r.entrada, r.surt);
-    if (!/~C\|/.test(r.sortida)) throw new Error("La IA no ha tornat cap preu.");
-    return { text: r.sortida, model: MODEL_PRES };
+    const r = await demana(client, gast, { model: MODEL_PRES, max_tokens: 24000, system: SYS_PREUS, effort: "medium", web: WEB, content: [...arxius, { type: "text", text }] });
+    if (!/~C\|/.test(r)) throw new Error("La IA no ha tornat cap preu.");
+    return { text: r, model: MODEL_PRES };
   }
   throw new Error("Acció desconeguda.");
+}
+
+// Es compta també si la feina falla a mig camí: el que s'ha gastat s'ha gastat.
+async function fes(cos: Record<string, unknown>, id: string): Promise<unknown> {
+  const gast: Gast = { model: "", entrada: 0, surt: 0, cerques: 0 };
+  let ok = false;
+  try { const r = await tasca(cos, gast); ok = true; return r; }
+  finally { if (gast.model) await compta(id, String(cos.accio || ""), gast, ok); }
 }
 
 const missatge = (e: unknown) => {
@@ -193,8 +237,11 @@ Deno.serve(async (req) => {
   let cos: Record<string, unknown>, id: string;
   try { cos = await req.json(); id = await usuari(req); } catch (e) { return json({ error: missatge(e) }, 401); }
   const n = await usat(id);
-  if (cos.accio === "ping") return json({ ok: true, limit: LIMIT, usat: n });
-  if (LIMIT > 0 && n >= LIMIT) return json({ error: "S'ha acabat la IA d'aquest mes per a aquest compte.", limit: true });
+  if (n === null) return json({ ok: false, error: "Falta executar supabase/aco_ia_v878458.sql a Supabase." });
+  const limit = await limitDe(id);
+  if (cos.accio === "ping") return json({ ok: true, limit, usat: n });
+  // si no hi cap ni el mínim de la feina, no es comença
+  if (limit > 0 && n + (PES[String(cos.accio)] ?? 1) > limit) return json({ error: "S'ha acabat la IA d'aquest mes per a aquest compte.", limit: true });
   // Supabase talla si no s'envia res en 150 s: mentre la IA treballa s'envien espais (el JSON se'ls salta) i al final la resposta
   const enc = new TextEncoder();
   const body = new ReadableStream({
