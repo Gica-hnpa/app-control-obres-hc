@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.473, 2/11/2026)
+## On som (V87.474, 2/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -57,6 +57,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.471 (2/11):** Facturació amb factures de debò: «Per facturar» alineat, curt al mòbil i amb el total, filtres plegats al mòbil, sense el títol repetit a l'iPad i el menú lateral sense barra. Amb això s'acaba de mirar el Bloc 2.
 - **V87.472 (2/11):** «Fer factura» amb el NIF i l’IVA de sèrie, el motiu de l’IVA 0 % a la factura, l’entitat i l’IBAN, i el dia de cobrament (correccions de l’Héctor provant el Bloc 2 amb Brava).
 - **V87.473 (2/11):** Hores del personal per setmanes de feina, amb el calendari laboral, «Emplenar hores», desfer i la mateixa pantalla des de l’obra (correcció de l’Héctor provant el Bloc 2).
+- **V87.474 (2/11):** estat «Pendent de tancar», amb el que falta a la vista i avís en tancar.
 
 ## Blocs, per ordre
 

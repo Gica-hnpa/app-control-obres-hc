@@ -2684,6 +2684,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Al mòbil i l'iPad**, les hores es posen a la mateixa línia del treballador, sense obrir-la (`input.h-v878473`); a dins, l'obra i la fase.
     - **Des de l'obra** (`PersonalObra878340`, Despeses › Mà d'obra › Hores del personal, i Hores a la gestió total): «Emplenar hores» obre la mateixa pantalla en una finestra (`obraFixa`): sense triar l'obra, només les hores d'aquella obra i sense tocar les de les altres. Substitueix «+ Afegir hores». En tornar a desar un dia, la nota de cada línia es conserva.
     - Estils `src/theme-v878473.css`. Prova: `v473test.mjs` (28). Adaptades `personal340test`, `horesunic355test`, `fases342test`, `fitxatge357test`, `equip381test` i `v445test`. **La lliçó de vídeo de les hores s'ha de tornar a gravar** (`guia404-llicons.mjs`).
+  - **V87.474 · Estat «Pendent de tancar»** (l'Héctor, 2/11/2026, amb el CEE de Cornellà, 620 €: la feina és acabada, però falta l'etiqueta de Gencat, la factura i el cobrament): estat nou (`EXPEDIENT_STATUS878136`, color groc `est-ptancar`), obert a tots els efectes. `faltaTancar878474` diu el que falta: els punts de Tràmit i Lliurament de l'encàrrec, «Per facturar» (honoraris acceptats), certificacions per facturar i «Per cobrar». Surt als avisos del Resum i de l'Inici («Per tancar: …») i, en passar a Tancat amb coses pendents, l'app pregunta (`potTancar878474`, a la barra de l'obra i a la llista). Estils `src/theme-v878474.css`. Prova: `v474test.mjs` (9).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2874,7 +2875,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.473 a Render):**
+**Estat (publicada la V87.474 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

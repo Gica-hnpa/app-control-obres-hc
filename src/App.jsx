@@ -36,7 +36,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.473";
+const APP_VERSION878264="87.474";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -535,10 +535,11 @@ class SafeRenderBoundary878108 extends React.Component{
 }
 
 const months=["Gener","Febrer","Març","Abril","Maig","Juny","Juliol","Agost","Setembre","Octubre","Novembre","Desembre"];
-const EXPEDIENT_STATUS878136=["Pressupostat","En procés","Acceptat","En curs / Actiu","Tancat","Anul·lat","No acceptat","Pendent de resposta","En revisió"];
+const EXPEDIENT_STATUS878136=["Pressupostat","En procés","Acceptat","En curs / Actiu","Pendent de tancar","Tancat","Anul·lat","No acceptat","Pendent de resposta","En revisió"];
 function normalizeExpedientStatus878136(v){
   const s=String(v||"").trim().toLowerCase();
   if(!s)return "Pendent de resposta";
+  if(s.includes("pendent de tanc")||s.includes("pendiente de cerr"))return "Pendent de tancar";
   if(s.includes("pressupost"))return "Pressupostat";
   if(s.includes("accept")&&!s.includes("no"))return "Acceptat";
   if(s.includes("proc"))return "En procés";
@@ -5927,6 +5928,7 @@ function updateObraFitxa8721(patch){
   });
 }
 function updateObraStatus878247(id,status){
+  if(!potTancar878474((obres||[]).find(x=>x.id===id),odata?.[id],status))return;
   const normalized=normalizeExpedientStatus878136(status);
   const now=new Date().toISOString();
   setOdata(prev=>{
@@ -7296,7 +7298,7 @@ const hh878385=x=>(Math.round((+x||0)*100)/100).toLocaleString(loc878272(),{mini
 function Kpi({t:titol,v}){return <div className="kpi"><small>{i18nT(titol)}</small><strong>{v}</strong></div>}
 // V87.273 · el text dels buits es tradueix (si és al diccionari; si no, surt en català)
 function Empty({text}){return <div className="empty">{typeof text==="string"?t(text):text}</div>}
-function Badge({estat}){let e=normalizeExpedientStatus878136(estat);let cls=e==="Acceptat"||e==="En curs / Actiu"?"ok":e==="Pressupostat"||e==="Pendent de resposta"||e==="En revisió"?"warn":e==="Anul·lat"||e==="No acceptat"?"danger":e==="Tancat"?"dark":"info";return <span className={`badge ${cls} est-v878299 est-${estatTone878299(e)}`}>{i18nT(e)}</span>}
+function Badge({estat}){let e=normalizeExpedientStatus878136(estat);let cls=e==="Acceptat"||e==="En curs / Actiu"?"ok":e==="Pressupostat"||e==="Pendent de resposta"||e==="En revisió"||e==="Pendent de tancar"?"warn":e==="Anul·lat"||e==="No acceptat"?"danger":e==="Tancat"?"dark":"info";return <span className={`badge ${cls} est-v878299 est-${estatTone878299(e)}`}>{i18nT(e)}</span>}
 
 function timeValue8783(v){
   if(!v)return 0;
@@ -8064,8 +8066,8 @@ function AspecteAjustos878400(){
   const canvia=v=>{try{const ls=lsVisual878400();if(v)ls.setItem(VISUAL_KEY878400,"1");else ls.removeItem(VISUAL_KEY878400)}catch{}location.reload()};
   return <div className="aspecte-v878400"><label><input type="checkbox" checked={on} onChange={e=>canvia(e.target.checked)}/><span><b>{t("Visual nou (en proves)")}</b><small>{t("Només en aquest aparell.")}</small></span></label></div>;
 }
-const STATUS_ORDER878251=["En curs / Actiu","Acceptat","En procés","Pressupostat","Pendent de resposta","En revisió","Tancat","No acceptat","Anul·lat"];
-const STATUS_COLOR878251={"En curs / Actiu":"var(--co-s1)","Pendent de resposta":"var(--co-s2)","Acceptat":"var(--co-s3)","Pressupostat":"var(--co-s4)","En revisió":"var(--co-s5)","En procés":"var(--co-s7)","No acceptat":"var(--co-s8)","Tancat":"var(--co-s0)","Anul·lat":"var(--co-s0)"};
+const STATUS_ORDER878251=["En curs / Actiu","Acceptat","En procés","Pressupostat","Pendent de resposta","En revisió","Pendent de tancar","Tancat","No acceptat","Anul·lat"];
+const STATUS_COLOR878251={"Pendent de tancar":"var(--co-s6)","En curs / Actiu":"var(--co-s1)","Pendent de resposta":"var(--co-s2)","Acceptat":"var(--co-s3)","Pressupostat":"var(--co-s4)","En revisió":"var(--co-s5)","En procés":"var(--co-s7)","No acceptat":"var(--co-s8)","Tancat":"var(--co-s0)","Anul·lat":"var(--co-s0)"};
 function donutArcs878251(parts=[],R=64,r=44,c=75){
   const total=parts.reduce((s,p)=>s+p.value,0)||1;let a=-Math.PI/2;
   return parts.filter(p=>p.value>0).map(p=>{
@@ -8141,8 +8143,26 @@ function quiObra878336(o={},clients=[]){
 // de l'empresa, dels treballadors i dels industrials caducats o que caduquen d'aquí a 30 dies.
 const TONS878360={bad:0,warn:1,info:2};
 function mesLocal878360(dt=new Date()){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")}
+// V87.474 · «Pendent de tancar» (l'Héctor, 2/11/2026, amb el CEE de Cornellà: la feina és acabada, però falta l'etiqueta, la factura i el
+// cobrament): l'expedient continua obert i el que falta surt als avisos de l'Inici i del Resum. En tancar-lo amb coses pendents, l'app ho diu.
+function faltaTancar878474(o,d={}){
+  const out=[];const tec=encarrecDe(o);const fets=d.passos878305?.fets||{};
+  if(tec){const r=resumEncarrec(tec,d.passos878305||{},d.documents||[],autoPunts(o,d,null),(d.fotos||[]).length);
+    (r?.passos||[]).filter(p=>p.k==="tramit"||p.k==="lliurament").forEach(p=>{p.items.filter(it=>!it.auto&&!fets[it.id]&&it.text!=="Factura").forEach(it=>out.push({txt:i18nT(it.text),tab:"Resum"}));p.llDocs.filter(x=>!x.fet).forEach(x=>out.push({txt:i18nT(x.nom),tab:"Resum"}))})}
+  const cob=x=>statusKeyFactura8776(x.estat)==="cobrades"||!!x.dataCobrament||!!x.cobrada;
+  const fs=(d.facturesTecnic||[]).filter(f=>!/anul/i.test(String(f.estat||"")));
+  const pendH=honorarisPendents878307([o],{[o.id]:d}).reduce((v,x)=>v+x.pend,0);
+  if(pendH>0.004)out.push({txt:i18nT("Per facturar: {i}",{i:money(pendH)}),tab:"Honoraris"});
+  else if(tec&&!fs.length)out.push({txt:i18nT("Fer la factura"),tab:"Honoraris"});
+  if(!tec&&teModul878326("obra")){const fets2=new Set([...(d.facturesObra878297||[]).map(f=>f.certId),...(d.facturesVF878285||[]).filter(e=>e.estat!=="Anulada").map(e=>e.certId)]);const n=proformesObra878337(d).filter(f=>f.base>0.005&&!fets2.has(f.certId)&&!paramsPf878337(d,f).fora).length;if(n)out.push({txt:n===1?i18nT("1 certificació per facturar"):i18nT("{n} certificacions per facturar",{n}),tab:"Facturació obra"})}
+  const perC=fs.filter(f=>!cob(f)).reduce((v,f)=>v+totalIva8743(f),0)+facturesObraValides878347(d).filter(f=>!cob(f)).reduce((v,f)=>v+(+f.total||0),0);
+  if(perC>0.004)out.push({txt:i18nT("Per cobrar: {i}",{i:money(perC)}),tab:fs.length?"Honoraris":"Facturació obra"});
+  return out;
+}
+function potTancar878474(o,d,nou){if(normalizeExpedientStatus878136(nou)!=="Tancat"||normalizeExpedientStatus878136(o?.estat)==="Tancat")return true;const fl=faltaTancar878474(o||{},d||{});return !fl.length||confirm(i18nT("Encara falta: {f}. Tancar-lo igualment?",{f:fl.map(x=>x.txt).join(" · ")}))}
 function avisosObra878360(o,d={},alb=null){
   const out=[];if(!o?.id)return out;
+  if(normalizeExpedientStatus878136(o.estat)==="Pendent de tancar"){const fl=faltaTancar878474(o,d);out.push({k:"tancar",obraId:o.id,tab:fl[0]?.tab||"Resum",tone:fl.length?"warn":"info",txt:fl.length?t("Per tancar: {f}",{f:fl.map(x=>x.txt).join(" · ")}):t("Tot fet: ja es pot tancar")})}
   // V87.402 · pressupost enviat fa 7 dies o més i l’obra encara «Pendent de resposta» (o «Pressupostat»)
   {const env=o.enviatPres878402,ara0=window.__acoAra878360?new Date(window.__acoAra878360):new Date();if(env?.at&&["Pendent de resposta","Pressupostat"].includes(normalizeExpedientStatus878136(o.estat))){const dies=Math.floor((ara0-new Date(env.at))/864e5);if(dies>=7)out.push({k:"pres",obraId:o.id,tab:"Pressupost",tone:"info",txt:t("Pressupost enviat fa {n} dies, sense resposta",{n:dies})})}}
   const per=(d.partes878349||[]).filter(p=>p.estat!=="certificat").length;
@@ -11258,7 +11278,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Dades econòmiques recuperades")}</b><span>{i18nT("S’han restaurat")} {data.economicRecoveryV87214.restored||0} {i18nT("preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.")}</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Certificacions recuperades")}</b><span>{i18nT("S’han reconstruït les certificacions")} {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} {i18nT("sense substituir les línies de medició actuals de la certificació 8.")}</span></div>}
     {!readOnly&&!partCompartida878424(obra)&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={tabsAmbAlies878308.filter(x=>!(x==="Gestió temps"&&ALIAS878308["Gestió temps"]==="Albarans"))} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
-    <ObraBar878269 crono={crono878376} pur={esTecnicPur878332(obra)&&teModul878326("tecnic")} teAmid={teAmidaments878342(data)} obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly||esTreballador878326()} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&!esTreballador878326()&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
+    <ObraBar878269 crono={crono878376} pur={esTecnicPur878332(obra)&&teModul878326("tecnic")} teAmid={teAmidaments878342(data)} obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{if(!potTancar878474(obra,data,next))return;setEstatObra(next);updateObraFitxa8721?.({estat:next})}} readOnly={readOnly||esTreballador878326()} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&!esTreballador878326()&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
       <aside className="obra-side-tabs obra-side-tabs-v87105 obra-side-tabs-v878238">
         <div className="obra-tabs-title-v87105"><b>{i18nT("Apartats de l’obra")}</b><button type="button" onClick={()=>setTabsOpen(false)}>×</button></div>
@@ -11346,7 +11366,7 @@ function useNarrow878299(){
 // el primer tros si és un text conegut; la resta es deixa igual (són dades).
 function conceptTr878299(c){return String(c||"").split(" · ").map((p,i)=>i===0?i18nT(p):p).join(" · ")}
 // V87.299 · Color de l'estat de l'expedient, a la llista i a l'obra (decisió de l'Héctor: en procés verd, tancat negre).
-function estatTone878299(v){return ({"Pendent de resposta":"pendent","Pressupostat":"press","En revisió":"revisio","Acceptat":"acceptat","En procés":"proces","En curs / Actiu":"curs","Tancat":"tancat","Anul·lat":"anulat","No acceptat":"noacc"})[normalizeExpedientStatus878136(v)]||"pendent"}
+function estatTone878299(v){return ({"Pendent de tancar":"ptancar","Pendent de resposta":"pendent","Pressupostat":"press","En revisió":"revisio","Acceptat":"acceptat","En procés":"proces","En curs / Actiu":"curs","Tancat":"tancat","Anul·lat":"anulat","No acceptat":"noacc"})[normalizeExpedientStatus878136(v)]||"pendent"}
 // V87.302 · Botó ＋ dins de l'obra (decisió de l'Héctor del 18/10/2026; mòbil i iPad): foto, nota, acta o hores per a aquesta
 // obra sense haver de buscar l'apartat. «Foto» obre la càmera i fa una nota nova amb la foto.
 // ── V87.349 · Partes d'obra (l'Héctor, 22/10/2026, per a un client constructor: «marcar sobre el pressupost el que ja està fet… i un
@@ -18853,7 +18873,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.473",
+    app_version:"87.474",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

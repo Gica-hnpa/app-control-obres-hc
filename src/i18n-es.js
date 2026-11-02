@@ -5014,4 +5014,13 @@ export default {
   "Buidar el dia": "Vaciar el día",
   "+ Una altra fase": "+ Otra fase",
   "Hores del personal · {obra}": "Horas del personal · {obra}",
+  "Pendent de tancar": "Pendiente de cerrar",
+  "Per facturar: {i}": "Por facturar: {i}",
+  "Per cobrar: {i}": "Por cobrar: {i}",
+  "Fer la factura": "Hacer la factura",
+  "1 certificació per facturar": "1 certificación por facturar",
+  "{n} certificacions per facturar": "{n} certificaciones por facturar",
+  "Encara falta: {f}. Tancar-lo igualment?": "Todavía falta: {f}. ¿Cerrarlo igualmente?",
+  "Per tancar: {f}": "Para cerrar: {f}",
+  "Tot fet: ja es pot tancar": "Todo hecho: ya se puede cerrar",
 };
