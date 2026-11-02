@@ -5035,4 +5035,9 @@ export default {
 "Treure «{nom}» d’aquest expedient? El que s’hi ha marcat es perdrà. Els arxius es queden a Documents.": "¿Quitar «{nom}» de este expediente? Lo marcado se perderá. Los archivos se quedan en Documentos.",
 "Tots (preu conjunt)": "Todos (precio conjunto)",
 "Fer la factura: {n}": "Hacer la factura: {n}",
+"1 capítol repetit": "1 capítulo repetido",
+"{n} capítols repetits": "{n} capítulos repetidos",
+"Ajuntar-los": "Unirlos",
+"Ajuntar els capítols que es diuen igual? Les partides passaran al primer i es tornaran a numerar.": "¿Unir los capítulos que se llaman igual? Las partidas pasarán al primero y se volverán a numerar.",
+"Aquest pressupost ja té partides: les de l’arxiu s’hi afegiran.": "Este presupuesto ya tiene partidas: las del archivo se añadirán.",
 };

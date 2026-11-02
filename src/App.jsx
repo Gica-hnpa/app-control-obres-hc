@@ -14,6 +14,7 @@ import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
 import {cercaOk as cercaOk878470,dataIso as dataIso878470} from "./cercaLlistes.js";
+import {capsRepetits,ajuntaCaps} from "./capsRepetits.js";
 import {iaCridable,iaActiva,iaSabuda,iaQuota,iaCrida,arxiuDeDataUrl,arxiuDeFitxer,partidesDeIa,pressupostDeIa,despesaDeIa,albaransDeFactura,reglesPartides} from "./iaObra.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
 import {perFamilies as perFamilies878456,perCategories as perCategories878456} from "./familiesRecursos.js";
@@ -36,7 +37,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.478";
+const APP_VERSION878264="87.479";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13659,7 +13660,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
       }
       const partides=[...delArxiu,...dIa];
       if(!partides.length)throw new Error("La IA no hi ha trobat cap partida.");
-      const av=[...av0];
+      const av=[...av0];if(lleg&&capsAra.length)av.unshift(t("Aquest pressupost ja té partides: les de l’arxiu s’hi afegiran."));
       // els preus propis primer; la IA només els que falten
       let amb=[...preusAmidaments878368(delArxiu,partidaLibrary,bancPreus878368(),obraId),...preusAmidaments878368(dIa.map(p=>({concepte:p.concepte,desc:p.desc,ut:p.ut,q:p.q,codi:""})),partidaLibrary,bancPreus878368(),obraId).map((l,i)=>({...l,codi:dIa[i].codi}))];
       const sense=amb.filter(l=>!(Number(l.pu)>0));const preus={};
@@ -15157,6 +15158,13 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const realPressupostos=(data.pressupostos||[]).filter(p=>!String(p.id||"").startsWith("budget-marker-")&&p.versio!=="Annex");
   const visiblePressupostos=realPressupostos.length?realPressupostos:(data.pressupostos||[]).filter(p=>String(p.id||"").startsWith("budget-marker-")||p.versio==="Annex");
   const budgetRows878211=Object.values(caps||{}).flat();
+  // V87.479 · capítols que es diuen igual (fins a la V87.477, cada partida d'un «capítol nou» n'obria un): un toc els ajunta, sense gastar res
+  const nRep879=editBudget8760b||quickMode||clientMode||!setData||(data.certificacions||[]).length?0:capsRepetits(caps);
+  function ajunta879(){
+    if(!confirm(i18nT("Ajuntar els capítols que es diuen igual? Les partides passaran al primer i es tornaran a numerar.")))return;
+    const next=ajuntaCaps(sortedCapEntries8779(capsRef878247.current||caps).map(([k,v])=>[k,sortPartides8779(v)]));
+    setCaps(next);setOpen({});persistBudgetCaps878179(next);
+  }
   const avisos878320=editBudget8760b?[]:avisosPressupost878320(budgetRows878211,(budgetGroups||[]).length<=1?obra?.id:"");
   const duplicateBudgetCodes878211=Object.entries(group(budgetRows878211.map(r=>({...r,_integrityKey878211:`${r.cap||""}__${r.codi||""}`})),"_integrityKey878211")).filter(([,items])=>items.length>1);
   const savedSelectedTotal878211=Number(totalActive)||0;
@@ -15256,6 +15264,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     </div><Recollir878432/></details>}
     {budgetWorkTab878180!=="Validar descompostos"&&avisos878320.length>0&&<details className="card bloc-v878426 avisos-v878426"><summary><AlertTriangle size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Avisos")}</b></span><span className="n">{avisos878320.length}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><AvisosPressupost878320 avisos={avisos878320} dins/></div><Recollir878432/></details>}
     {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={startManualBudget87115} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null}/>}
+    {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} titol={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
       <div className="budget-botons-v878320 pres-accions-v878366">
       {/* V87.426 · l'Héctor (29/10/2026): «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les
@@ -18961,7 +18970,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.478",
+    app_version:"87.479",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

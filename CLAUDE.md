@@ -2712,6 +2712,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Preus:** norma nova a `promptPreusIa`: el preu ha d'incloure tot el que diu la descripció.
     - **Dictat:** és el reconeixement de veu del navegador, en un sol idioma alhora; no es pot entrenar ni afegir-hi paraules («bovedilla» és castellà; en català, «revoltó»).
     - Prova: `v478test.mjs` (16, IA simulada: el que se li envia i el que fa l'app amb la resposta; **com respon la IA de debò encara no s'ha provat**). El Supabase de proves accepta `POST /__aco-ia {partides:{…}}`.
+  - **V87.479 · Ajuntar els capítols repetits** (l'Héctor, 2/11/2026, amb la captura de «pressupost PROVA IA»: 05, 06, 07 i 08 ENDERROCS, un per partida, i sense voler gastar 100 lectures més):
+    - **Diagnòstic:** el recorregut sencer amb el PDF i l'Excel reals de Llafranc (`arxiu478.mjs`, `ARXIUS="ruta1;ruta2"`, mòbil i responent «no» a l'avís dels preus; l'arxiu no es copia) dona 27 capítols sense cap repetit i els noms de l'arxiu («Enderroc de paviment interior»). Les de la captura («Enderroc paviment interior») les va escriure la IA, amb la numeració de l'error de `nouCap878361` arreglat a la V87.478. **No està confirmat** com es va arribar a veure aquella pantalla a les 23:09 (el més probable: el pressupost de la primera prova, sense buidar, perquè a les 23:06 el selector de l'iPhone no obria la carpeta del Drive). **Compte: amb l'arxiu, abans només s'havia comprovat la lectura, no el pas d'afegir-ho al pressupost; l'Héctor va rebre un «sí» massa ràpid.**
+    - **Línia «N capítols repetits · Ajuntar-los»** (`caps-rep-v878479`, a sobre de la targeta del pressupost; `capsRepetits` i `ajuntaCaps` de `src/capsRepetits.js`, funcions pures): compara el nom sense número i sense accents, dins del mateix capítol principal; passa les partides al primer i, si tots els capítols són «01 NOM» sense capítols principals, numera capítols i partides seguits (els codis propis, com els del BEDEC, es queden). Sense IA ni lectures. Només fora d'edició i sense certificacions.
+    - **Revisió:** amb un arxiu i un pressupost que ja té partides, avís «Aquest pressupost ja té partides: les de l'arxiu s'hi afegiran.»
+    - **«Contenido no disponible» en triar un arxiu del Drive a l'iPhone:** és el selector de l'iPhone, abans de tornar a l'app. Va amb el proveïdor de Google Drive de l'app Fitxers; l'app només obre el selector. Mentre no hi hagi el botó «Des de Google Drive» (Google Picker, cal una clau d'API del projecte de Google de l'Héctor), obrir abans l'app de Google Drive o desar l'arxiu a «Al meu iPhone».
+    - Estils `src/theme-v878479.css`. Prova: `v479test.mjs` (19).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2902,7 +2908,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.478 a Render):**
+**Estat (publicada la V87.479 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
