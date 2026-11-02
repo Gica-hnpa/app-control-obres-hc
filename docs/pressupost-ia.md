@@ -61,6 +61,34 @@ límit), `IA_MODEL_DOC` (de sèrie `claude-sonnet-5-5`), `IA_MODEL_PRES` (de sè
 **Abans d’obrir-ho als clients:** les fotos, les factures i les adreces de les obres s’envien a Anthropic per llegir-les. S’ha de dir a
 les condicions del servei; cal parlar-ho amb la gestoria.
 
+## Quant costa (estimació del 2/11/2026)
+
+**Són estimacions:** la IA encara no s’ha fet servir mai de debò. Els tokens surten del que fa la funció (`aco-ia`) i de les mides de les fotos i els PDF; els preus, de la pàgina oficial d’Anthropic del 2/11/2026 (Sonnet 5.5: 2 $ / 10 $ per milió de tokens; Opus 5.5: 4 $ / 20 $; Haiku 5.5: 0,10 $ / 0,50 $; cerca a internet: 10 $ per 1.000 cerques). Canvi fet servir: 1 $ ≈ 0,87 € (mitjan 2026).
+
+| Feina | Cost normal | Cost alt |
+|---|---|---|
+| Foto d’un albarà o tiquet (Sonnet) | 0,02 $ | 0,04 $ |
+| Factura en PDF (Sonnet) | 0,05 $ | 0,08 $ |
+| El mateix amb Haiku (per provar la qualitat) | 0,001–0,002 $ | |
+| Pressupost en PDF que l’app no sap llegir | 0,17 $ | 0,52 $ |
+| Fer les partides (Opus) | 0,22 $ | 0,54 $ |
+| Preus de 15 partides, sense internet | 0,17 $ | 0,25 $ |
+| Preus de 15 partides, amb internet | 0,46 $ | 0,98 $ |
+| Pressupost sencer amb IA (partides + 2 tandes de preus) | 0,57 $ sense internet · 1,14 $ amb internet | 2,50 $ |
+
+**Amb 50 comptes** (30 constructores i 20 tècnics), al mes:
+
+| Ús | Constructora | Tècnic | Total |
+|---|---|---|---|
+| Prudent: 30 / 8 despeses, 1 / 0,5 pressupostos, sense internet | 1,60 $ | 0,60 $ | 60 $ ≈ 52 € |
+| Normal: 60 / 15 despeses, 3 / 1 pressupostos | 5,51 $ | 1,75 $ | 200 $ ≈ 174 € |
+| Molt d’ús: 150 / 30 despeses, 8 / 3 pressupostos | 30,52 $ | 10,02 $ | 1.116 $ ≈ 971 € |
+| Normal, llegint amb Haiku i sense internet | | | 79 $ ≈ 69 € |
+
+**Com es paga:** Anthropic no ven paquets per empresa. Hi ha un sol compte i una sola clau: es compra saldo per endavant (no es retorna i caduca al cap d’un any) i cada crida en descompta el que costa. Es pot posar un límit de despesa al mes; el primer nivell del compte (Start) en té un de màxim de 500 $. El «paquet per empresa» el fa l’app, amb un límit per compte.
+
+**Abans d’obrir-ho als clients:** el límit d’ara compta peticions (300 al mes per compte) i totes valen igual: en el pitjor cas, 50 comptes × 300 × 0,46 $ = 6.900 $ al mes. S’ha de canviar per un comptador que pesi cada feina, i desar el cost de debò de cada crida (`aco_ia_us` només desa tokens, sense el model ni les cerques).
+
 ## Banc de preus comú (V87.460)
 
 Perquè tots els comptes facin servir la base de preus de l’Héctor. **Abans:** comprovar que es té permís per repartir-la (si és d’un col·legi o d’una base amb llicència, n’ha de donar permís qui en té els drets).

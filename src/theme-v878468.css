@@ -1,0 +1,19 @@
+/* V87.468 · Bloc 2. Despeses (menú) a l'ordinador i l'iPad, com al mòbil des de la V87.455: sense els requadres que repetien les targetes;
+   el total, les vistes, Filtres i Seleccionar en una línia, i els filtres plegats. */
+@media (min-width:768px){
+  html body .albarans-v878259:has(>.desp-grups-v878338){display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px 14px;align-items:center}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>*{order:5;grid-column:1/-1;min-width:0;margin:0!important}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-head{order:1;grid-row:1}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.desp-grups-v878338{display:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis{order:2;grid-row:2;grid-column:1;display:flex;gap:18px;align-items:baseline}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis>div{display:flex;flex-direction:row;align-items:baseline;gap:8px;padding:0;border:0;background:none;box-shadow:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis span{display:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-kpis b{font-size:22px;white-space:nowrap}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-vista-v878318{display:contents}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-vista-v878318>*{order:2;grid-row:2;grid-column:2;min-width:0;margin:0;justify-self:start}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-vista-v878318>button{order:4;grid-row:2;grid-column:4;justify-self:end}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.filtres-btn-v878349{order:3;grid-row:2;grid-column:3;display:inline-flex;align-self:center;min-height:38px}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.filtres-btn-v878349.on{background:var(--co-surface-2)}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-filters.plegat-v878349{display:none}
+  html body .albarans-v878259:has(>.desp-grups-v878338)>.alb-filters{order:4;grid-row:3}
+}

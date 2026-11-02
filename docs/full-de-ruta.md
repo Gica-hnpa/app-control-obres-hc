@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.467, 1/11/2026)
+## On som (V87.468, 2/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -51,14 +51,14 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.459 (31/10):** pressupost automàtic amb IA, a partir d’un text, un dictat, amidaments, plànols o fotos (la mateixa funció, encara sense instal·lar).
 - **V87.460 (31/10):** banc de preus comú: l’Héctor comparteix el seu, amb l’any i l’IPC, amb tots els comptes (falta l’SQL i importar la base).
 - **V87.461 (31/10):** factures i albarans en un llistat que es desplega.
-- **V87.462–465 (1/11):** Amidaments només amb quantitats (els preus i la logística, a «Passar-ho a pressupost»), pressupost sempre plegat, comptador de temps nou, Resum i Agenda de l'obra plegats, Preus amb una línia a dalt i els filtres de l'Agenda plegats al mòbil.
+- **V87.462–468 (1–2/11):** Amidaments només amb quantitats (els preus i la logística, a «Passar-ho a pressupost»), pressupost sempre plegat, comptador de temps nou, Resum i Agenda de l'obra plegats, Preus amb una línia a dalt i els filtres de l'Agenda plegats al mòbil.
 
 ## Blocs, per ordre
 
 | # | Bloc | Pantalles | Estat |
 |---|---|---|---|
 | 1 | **Constructora · dins de l’obra** | ~~Resum · Agenda · Amidaments~~ (V87.462–464) · ~~Pressupost · Certificacions · Facturació · Despeses · Rendiment~~ (V87.426) · Dades · Documents · Visites · Partes · Planning (mirats al mòbil, sense canvis) | Falta que l’Héctor el provi i el tanqui |
-| 2 | **Constructora · menú principal** | ~~Preus · Agenda~~ (V87.465) · Inici · Obres · Hores (Personal, Fitxatge) · Facturació · Despeses · Rendiment · Empresa · Contactes · Ajustos | En curs |
+| 2 | **Constructora · menú principal** | ~~Preus · Agenda~~ (V87.465) · ~~Despeses · Rendiment~~ (V87.468) · Inici · Obres · Hores · Empresa · Contactes · Ajustos (mirats a l'ordinador amb dades d'exemple, sense canvis) · Facturació (falta mirar-la amb factures) | En curs |
 | 3 | **Tècnic** | Inici · Expedients · encàrrec (cèdula, CEE, ITE, amiant) · Honoraris · Hores · Les meves despeses · Facturació · Rendiment · Pressupostos | Pendent |
 | 4 | **Gestió total i treballador** | El que només tenen ells; decidir com arriben a l’oficina les hores i les despeses del treballador | Pendent |
 | 5 | **Mòbil i iPad, repàs final** | Repàs exhaustiu de totes les pantalles; el «visual nou» que validi l’Héctor, per a tothom | Pendent |

@@ -35,7 +35,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.467";
+const APP_VERSION878264="87.468";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7994,7 +7994,7 @@ function OverdueReview878255({tasks=[],update,clients=[]}){
   function apply(patch,stillOverdue=false){update?.(cur.obra,cur.task,patch);setCustom("");if(stillOverdue){next();return}if(overdue.length<=1){setOpen(false);setI(0)}}
   const client=(clients||[]).find(c=>c.id===cur?.obra?.client)?.nom||"";
   return <>
-    <div className="overdue-banner-v878255"><span className="dot"/><b>{overdue.length} {overdue.length===1?i18nT("feina vençuda"):i18nT("feines vençudes")}</b><button type="button" className="primary" onClick={()=>{setI(0);setOpen(true)}}>{i18nT("Revisar-les")}</button></div>
+    <div className="overdue-banner-v878255"><span className="dot"/><b>{overdue.length} {overdue.length===1?i18nT("feina vençuda"):i18nT("feines vençudes")}</b><button type="button" className="primary" onClick={()=>{setI(0);setOpen(true)}}>{overdue.length===1?i18nT("Revisar-la"):i18nT("Revisar-les")}</button></div>
     {open&&cur&&<Modal title={i18nT("Feina vençuda · {i} de {n}",{i:Math.min(i,overdue.length-1)+1,n:overdue.length})} close={()=>setOpen(false)}>
       <div className="overdue-review-v878255">
         <div className="task"><b>{cur.task.text||cur.task.titol||i18nT("Feina")}</b><span>{cur.obra.nom}{client?` · ${client}`:""}</span><em>{i18nT("Vençuda fa")} {days} {days===1?i18nT("dia"):i18nT("dies")} {i18nT("· termini")} {taskDueLabel878140(cur.task)}{cur.task.prioritat?` · ${i18nT("prioritat")} ${i18nT(cur.task.prioritat)}`:""}</em>{cur.task.notes?<small>{cur.task.notes}</small>:null}</div>
@@ -10130,6 +10130,8 @@ function LiniesChart878343({labels=[],series=[],titol="",tipLabel}){
   // etiquetes al final de les línies, sense que es trepitgin
   const ends=!compact&&n>1&&series.length<=4?series.map(s=>{let k=s.vals.length-1;while(k>=0&&s.vals[k]==null)k--;return k<0?null:{s,k,y:Y(s.vals[k])}}).filter(Boolean).sort((a,b)=>a.y-b.y):[];
   for(let i=1;i<ends.length;i++)if(ends[i].y-ends[i-1].y<15)ends[i].y=ends[i-1].y+15;
+  // si s'han apilat a baix (totes les línies acaben al mateix lloc), es queden dins del gràfic
+  for(let i=ends.length-1;i>=0;i--){const lim=i===ends.length-1?T+ih:ends[i+1].y-15;if(ends[i].y>lim)ends[i].y=lim}
   const tipX=hi!=null?X(hi)/W*100:0;
   return <div className="rc-chart-v878343">
     {series.length>1&&<div className="rc-llegenda-v878343">{series.map(s=><span key={s.k}><i style={{background:s.dash?`repeating-linear-gradient(90deg,${s.color} 0 6px,transparent 6px 10px)`:s.color}}/>{s.nom}</span>)}</div>}
@@ -18745,7 +18747,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.467",
+    app_version:"87.468",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -22243,7 +22245,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
       :<div className="alb-list">
       <div className="alb-cap-v878311" aria-hidden="true"><span/><span/><span>{i18nT("Base")}</span><span>{i18nT("IVA")}</span><span>{i18nT("Total")}</span><span/></div>
       {rows.map(a=>fila(a,false))}</div>}
-      <div className="alb-peu-v878311"><span>{nD(compten.length)}{nCob?` · ${nCob===1?i18nT("1 inclòs en una factura"):i18nT("{n} inclosos en factures",{n:nCob})}`:""}</span><span>{i18nT("Total base")} <b>{money(total)}</b></span><span>{i18nT("Total amb IVA")} <b>{money(totalIva)}</b></span>{nouM878375&&ambRep878347&&(()=>{const pr=compten.filter(a=>a.obraId&&!a.facturatClient).reduce((x,a)=>x+albaraBase878259(a),0);return pr>0.005?<span className="rep-v878375">{i18nT("Per repercutir")} <b>{money(pr)}</b></span>:null})()}</div></>}
+      <div className="alb-peu-v878311"><span>{nD(compten.length)}{nCob?` · ${nCob===1?i18nT("1 inclòs en una factura"):i18nT("{n} inclosos en factures",{n:nCob})}`:""}</span>{!nova878348&&<span>{i18nT("Total base")} <b>{money(total)}</b></span>}<span>{i18nT("Total amb IVA")} <b>{money(totalIva)}</b></span>{nouM878375&&ambRep878347&&(()=>{const pr=compten.filter(a=>a.obraId&&!a.facturatClient).reduce((x,a)=>x+albaraBase878259(a),0);return pr>0.005?<span className="rep-v878375">{i18nT("Per repercutir")} <b>{money(pr)}</b></span>:null})()}</div></>}
     {doc878348&&<VisorDespesa878348 a={doc878348} close={()=>setDoc878348(null)}/>}
     {impX878344&&<ImportarDespeses878344 obres={obres} odata={odata} obraFixa={fixedObra} faseFixa={fase878342} setObraData={setObraData878345} close={()=>setImpX878344(false)}/>}
     {edit&&!treb&&<AlbaraEditor878259 a={edit} setA={setEdit} obres={obresSorted} proveidors={proveidors} save={save} remove={remove} close={()=>setEdit(null)} openObra={openObra} partidesDe={partidesDe} faseInfo={faseInfo878342} tots={tots}/>}

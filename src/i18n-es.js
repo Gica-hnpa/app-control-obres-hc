@@ -1164,6 +1164,7 @@ export default {
   "tasques vençudes": "tareas vencidas",
   "Decideix què en fas: acabar-les, posar-los un nou termini o canviar-ne l’estat.": "Decide qué haces con ellas: terminarlas, ponerles un nuevo plazo o cambiar su estado.",
   "Revisar-les": "Revisarlas",
+  "Revisar-la": "Revisarla",
   "Vençuda fa": "Vencida hace",
   "dia": "día",
   "dies": "días",

@@ -2635,6 +2635,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Fases al mòbil:** repartides a l'amplada i sense el número (la tercera quedava tallada); si no hi caben, es llisquen.
     - **Visual nou** (`src/theme-v878467.css`, només amb Ajustos › Aspecte › «Visual nou (en proves)», al compte de l'Héctor i als `demo-*`): targetes sense vora, separades per l'ombra (a la V87.457 l'Héctor va demanar perímetres marcats: ara proposa una altra manera de separar-les), radi de 18 px, botons de 44 px, xebró sense cercle, fases com un sol control, capçalera i barra de baix translúcides, i l'apartat actiu de la barra de baix amb una píndola. Les proposicions de la V87.400 continuen sota la mateixa opció. **Si el valida, es treu la condició i es posa per a tothom.**
     - Estils `src/theme-v878466.css` i `src/theme-v878467.css`. Adaptada `v435test`.
+  - **V87.468 · Bloc 2: Despeses i Rendiment a l'ordinador i l'iPad** (2/11/2026; l'Héctor: «fes el primer que tens pendent»):
+    - **Despeses (menú) a partir de 768 px** com al mòbil des de la V87.455: fora els cinc requadres que repetien les targetes (continuen al codi, amagats: `desp-grups-v878338`), el total, les vistes, Filtres i Seleccionar en una línia, els filtres plegats (el botó `filtres-btn-v878349`), i a baix ja no es repeteix «Total base» (`!nova878348`).
+    - **Gràfica del Rendiment** (`LiniesChart878343`): quan totes les línies acaben al mateix lloc, les etiquetes del final s'apilaven cap avall i «Benefici» quedava tallada; ara s'apilen cap amunt des de la base del gràfic.
+    - **Inici:** «Revisar-la» amb una sola feina vençuda.
+    - Estils `src/theme-v878468.css`. Prova: `v468test.mjs` (ordinador, iPad i mòbil).
+    - Adaptades `v455test` (a l'ordinador, sense requadres) i `grafica384test` (fallava pel canvi de mes, no per la versió: l'eix arriba fins al mes d'avui). Cost de la IA per a 50 comptes: `docs/pressupost-ia.md`.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2825,7 +2831,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.467 a Render):**
+**Estat (publicada la V87.468 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
