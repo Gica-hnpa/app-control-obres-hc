@@ -5025,4 +5025,9 @@ export default {
   "Tot fet: ja es pot tancar": "Todo hecho: ya se puede cerrar",
   "Aquesta acta està signada. Eliminar-la igualment?": "Esta acta está firmada. ¿Eliminarla igualmente?",
   "Eliminar l’acta": "Eliminar el acta",
+  "Llegint «{n}»…": "Leyendo «{n}»…",
+  "S’ha fet servir «{a}»: l’altre arxiu no s’ha tornat a llegir, per no repetir partides.": "Se ha usado «{a}»: el otro archivo no se ha vuelto a leer, para no repetir partidas.",
+  "{s} partides no tenen preu. Buscar-los amb la IA gastarà com a mínim {l} lectures i pot trigar uns {m} minuts. Continuar? (Si dius que no, podràs posar els preus a mà.)": "{s} partidas no tienen precio. Buscarlos con la IA gastará como mínimo {l} lecturas y puede tardar unos {m} minutos. ¿Continuar? (Si dices que no, podrás poner los precios a mano.)",
+  "S’ha tallat la connexió mentre la IA treballava. No bloquegis el mòbil ni canviïs d’app, i torna-ho a provar.": "Se ha cortado la conexión mientras la IA trabajaba. No bloquees el móvil ni cambies de app, y vuelve a intentarlo.",
+  "Buscant els preus…": "Buscando los precios…",
 };

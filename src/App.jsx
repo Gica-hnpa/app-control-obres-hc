@@ -36,7 +36,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.475";
+const APP_VERSION878264="87.476";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5782,7 +5782,7 @@ async function importPdfBudget878305(rows,meta={},budgetId="principal"){
   if(existents.length&&!meta.afegir){bid="bg-pdf-"+Date.now();nouGrup={id:bid,nom:`${meta.prefix||"PDF"} · ${meta.fileName||"pressupost"}`.replace(/\.(pdf|xlsx?|csv|bc3)$/i,"").slice(0,90),tipus:meta.tipusGrup||"Importació PDF",createdAt:new Date().toISOString(),sourceBudgetId:bid0}}
   createLocalRecoverySnapshot878122({clients,obres,odata},`Abans de llegir el PDF "${meta.fileName||""}" a ${obra?.nom||obraId}`,authUser8779);
   let doc=null;
-  if(meta.file){try{doc=await persistImportedExcelDocument878245(meta.file,{obraId,budgetId:bid,budgetName:nouGrup?.nom||budgetLabel8786(currentData,bid0)||"Pressupost principal",rows:rows.length,total:meta.total||0});doc={...doc,nom:meta.file.name,tipus:"PDF",linkedType:"pressupostPdf",sourceImport:"Pressupost llegit d’un PDF"}}catch{doc=null}}
+  if(meta.file){try{doc=await persistImportedExcelDocument878245(meta.file,{obraId,budgetId:bid,budgetName:nouGrup?.nom||budgetLabel8786(currentData,bid0)||"Pressupost principal",rows:rows.length,total:meta.total||0});doc={...doc,nom:meta.file.name,tipus:(meta.file.name.split(".").pop()||"PDF").toUpperCase(),linkedType:"pressupostPdf",sourceImport:"Pressupost llegit d’un PDF"}}catch{doc=null}}
   setD(obraId,d=>{
     const now=new Date().toISOString();
     const seed=nouGrup?[...(d.budgetGroups||[]),nouGrup]:(d.budgetGroups||[]);
@@ -13550,6 +13550,26 @@ function escalaMO878378(tb,f){let sec="";return {...tb,rows:(tb.rows||[]).map(r=
 // quantitat i la unitat, el preu es busca com als amidaments (Preus, banc amb l'IPC, obres anteriors; amb els marges de l'obra als preus
 // del banc) i el capítol, pels capítols estàndard (`capStd878280`: el del pressupost que hi correspon o un de nou). Es revisa i s'afegeix
 // al pressupost amb `afegeixLlibreria878361` (es desa al moment si no s'està editant). Sense IA.
+// V87.476 · l'Héctor, 2/11/2026, amb els amidaments de Llafranc (48 pàgines, 102 partides): «l'ha fet fatal». El botó demanava a la IA que tornés a
+// fer les partides amb paraules seves (conceptes curts, sense codi), i uns amidaments no s'han de reinterpretar: s'han de llegir tal com són. Un
+// PDF, un Excel o un BC3 amb partides es llegeix amb els mateixos lectors de la pestanya Amidaments (gratis i exacte: codis, descripcions, quantitats
+// i mides); la IA només posa els preus que falten. Si no se'n treu res (un escaneig), la IA llegeix el document; els plànols i les fotos, com abans.
+async function llegeixAmid878476(a,ext){
+  try{
+    const buf=await a.arrayBuffer();let r=null;
+    if(ext==="bc3"){const txt=textBc3(buf);r=llegirBc3(txt);const bb=new Map(llegirBancBc3(txt).partides.map(x=>[x.codi,x]));r={...r,partides:r.partides.map(x=>{const d=bb.get(x.codi);return d&&d.descomp.length&&Number(x.pu)>0?{...x,descomp:d.descomp}:x})}}
+    else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=XLSX.read(buf,{type:"array",cellDates:false});r=llegirExcelAmidaments(wb.SheetNames.map(n=>({nom:n,files:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})})))}
+    else if(ext==="pdf"){const {linies:ls}=await liniesPdf(pdfjsLib,buf,300);r=llegirAmidamentsPdf(ls);if(!r.partides.length){const p=llegirPressupostPdf(ls);if(p.partides.length)r={font:"PDF",nom:"",caps:p.caps,partides:p.partides.map(x=>({...x,mides:[]})),avisos:p.avisos}}}
+    const ps=r?.partides||[];
+    return ps.length>=3&&ps.filter(p=>Number(p.q)>0).length>=ps.length*0.6?r:null;
+  }catch(e){console.warn(e);return null}
+}
+function midesFila878476(l,j,q){
+  const dim=v=>v===""||v==null?"":coma878328(v);
+  const mides=(l.mides||[]).map((m,i)=>{const alguna=[m.llargada,m.amplada,m.alcada].some(v=>v!==""&&v!=null);return {id:`m-${Date.now()}-${j}-${i}`,concepte:m.concepte||"",unitats:m.unitats===""||m.unitats==null?(alguna?"1":dim(m.parcial)):dim(m.unitats),llargada:dim(m.llargada),amplada:dim(m.amplada),alcada:dim(m.alcada)}});
+  const suma=medicioTotal8780(mides,l.ut);
+  return mides.length>0&&Math.abs(suma-q)<=Math.max(0.011,Math.abs(q)*0.005)?mides:[];
+}
 function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraId="",onAfegir,close}){
   const[text,setText]=useState("");
   const[files,setFiles]=useState(null);
@@ -13558,6 +13578,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
   const[iaOn,setIaOn]=useState(()=>iaSabuda()===true);
   useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setIaOn(x)});return()=>{viu=false}},[]);
   const[arxius,setArxius]=useState([]);const[fent,setFent]=useState("");const[err,setErr]=useState("");const[avisos,setAvisos]=useState([]);const[deIa,setDeIa]=useState(false);
+  const[deArxiu476,setDeArxiu476]=useState(null);
   const capsAra=Object.keys(caps||{});
   // el lloc («del bany», «de la cuina») no tria el capítol: «alicatat del bany» és un revestiment, no un aparell sanitari
   const LLOC401=/\b(?:de\s+la|del|dels|de\s+les|de\s+l['’]|a\s+la|al|en\s+el|en\s+la)\s*(?:cuina|banys?|lavabos?|menjador|sala|habitaci[oó]|habitacions|passad[ií]s|terrassa|balc[oó]|safareig|rebedor|dormitoris?|cocina|ba[ñn]os?|comedor|sal[oó]n)\b/gi;
@@ -13567,10 +13588,10 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
     const mg=margesObra878378(data),acc=pctAcces(data?.condicions878368||{});
     setFiles(amb.map((l,i)=>{const m=Number(l.pu)>0?margesLinia878378(l,{mg,ambMg:true,acc,ambAcc:acc>0}):null;const pu=m?.pu||0;
       return {k:`d${i}`,on:true,concepte:l.concepte,desc:base[i].desc||"",q:String(base[i].q).replace(".",","),ut:base[i].ut,pu:pu?String(pu).replace(".",","):"",puOrig:pu,font:pu?l.font878368||"":"",
-        semblant:!!l.semblant878368,nota:l.nota878368||"",tb:m?.tb||null,mgRec:m?.mgRec||null,minim:m?.minim||null,notes:m?.notes||[],dest:dest(l,i),revisar:!!base[i].revisar}}));
+        semblant:!!l.semblant878368,nota:l.nota878368||"",tb:m?.tb||null,mgRec:m?.mgRec||null,minim:m?.minim||null,notes:m?.notes||[],dest:dest(l,i),revisar:!!base[i].revisar,orig:base[i]}}));
   }
   function llegeix(){
-    const its=llegirDictat(text);setDeIa(false);setErr("");
+    const its=llegirDictat(text);setDeIa(false);setDeArxiu476(null);setErr("");
     posaFiles(preusAmidaments878368(its.map(x=>({concepte:x.concepte,ut:x.ut,q:x.q,codi:""})),partidaLibrary,bancPreus878368(),obraId),its,l=>destDe(l.concepte));
   }
   async function afegeixArxius(llista){
@@ -13578,27 +13599,42 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
     for(const a of [...llista].slice(0,4)){
       try{
         const nom=a.name,ext=(nom.split(".").pop()||"").toLowerCase();
+        setFent(t("Llegint «{n}»…",{n:nom}));const llegit=await llegeixAmid878476(a,ext);
+        if(llegit){nous.push({nom,file:a,llegit});continue}
         if(ext==="bc3")nous.push({nom,text:textBc3(await a.arrayBuffer()).slice(0,50000)});
         else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=XLSX.read(await a.arrayBuffer(),{type:"array"});nous.push({nom,text:wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n").slice(0,50000)})}
-        else if(/^image\//.test(a.type))nous.push({nom,...arxiuDeDataUrl(await compressImage878259(a))});
-        else if(/pdf$/i.test(a.type)||ext==="pdf"){if(a.size>14*1024*1024){setErr(t("«{n}» fa més de 14 MB.",{n:nom}));continue}nous.push({nom,...await arxiuDeFitxer(a)})}
+        else if(/^image\//.test(a.type))nous.push({nom,file:a,...arxiuDeDataUrl(await compressImage878259(a))});
+        else if(/pdf$/i.test(a.type)||ext==="pdf"){if(a.size>14*1024*1024){setErr(t("«{n}» fa més de 14 MB.",{n:nom}));continue}nous.push({nom,file:a,pdf:true,...await arxiuDeFitxer(a)})}
         else setErr(t("«{n}» no es pot llegir: ha de ser un PDF, una foto, un Excel o un BC3.",{n:nom}));
       }catch(e){setErr(iaErr878458(e))}
     }
-    setArxius(x=>[...x,...nous].slice(0,4));
+    setFent("");setArxius(x=>[...x,...nous].slice(0,4));
   }
   async function ambIa(){
-    setErr("");setAvisos([]);setFent(t("La IA està fent les partides…"));
+    setErr("");setAvisos([]);setFent(arxius.some(a=>a.llegit)&&!text.trim()?t("Buscant els preus…"):t("La IA està fent les partides…"));
+    const encesa=await pantallaEncesa878476();
     try{
-      const textArx=arxius.filter(a=>a.text).map(a=>`${a.nom}:\n${a.text}`).join("\n\n");
-      const r=await iaCrida("partides",{text:[text,textArx].filter(x=>x.trim()).join("\n\n"),obra:[obra?.nom,obra?.adreca,obra?.poblacio].filter(Boolean).join(" · "),arxius:arxius.filter(a=>a.dades).map(a=>({tipus:a.tipus,dades:a.dades})),idioma:getLang()});
-      const {partides,avisos:av0}=partidesDeIa(r);
+      const lleg=[...arxius].filter(a=>a.llegit).sort((x,y)=>y.llegit.partides.length-x.llegit.partides.length)[0]||null;
+      const resta=arxius.filter(a=>!a.llegit);
+      const delArxiu=lleg?lleg.llegit.partides.map(p=>({...p})):[];
+      let dIa=[],av0=lleg?[...(lleg.llegit.avisos||[])]:[];
+      if(lleg&&arxius.filter(a=>a.llegit).length>1)av0.push(t("S’ha fet servir «{a}»: l’altre arxiu no s’ha tornat a llegir, per no repetir partides.",{a:lleg.nom}));
+      // un PDF que l'app no sap llegir (p. ex. escanejat), sense cap text: la IA el llegeix tal com és; si no hi troba partides, com abans
+      if(!lleg&&!text.trim()&&resta.length&&resta.every(a=>a.pdf)){const ia=await pressupostDeIa(resta[0].file,"");dIa=ia.partides||[];av0=[...(ia.avisos||[])]}
+      if(!dIa.length&&(!lleg||text.trim()||resta.length)){
+        const textArx=resta.filter(a=>a.text).map(a=>`${a.nom}:\n${a.text}`).join("\n\n");
+        const r=await iaCrida("partides",{text:[text,textArx].filter(x=>x.trim()).join("\n\n"),obra:[obra?.nom,obra?.adreca,obra?.poblacio].filter(Boolean).join(" · "),arxius:resta.filter(a=>a.dades).map(a=>({tipus:a.tipus,dades:a.dades})),idioma:getLang()});
+        const x=partidesDeIa(r);dIa=x.partides;av0=[...av0,...x.avisos];
+      }
+      const partides=[...delArxiu,...dIa];
       if(!partides.length)throw new Error("La IA no hi ha trobat cap partida.");
       const av=[...av0];
       // els preus propis primer; la IA només els que falten
-      let amb=preusAmidaments878368(partides.map(p=>({concepte:p.concepte,desc:p.desc,ut:p.ut,q:p.q,codi:""})),partidaLibrary,bancPreus878368(),obraId).map((l,i)=>({...l,codi:partides[i].codi}));
+      let amb=[...preusAmidaments878368(delArxiu,partidaLibrary,bancPreus878368(),obraId),...preusAmidaments878368(dIa.map(p=>({concepte:p.concepte,desc:p.desc,ut:p.ut,q:p.q,codi:""})),partidaLibrary,bancPreus878368(),obraId).map((l,i)=>({...l,codi:dIa[i].codi}))];
       const sense=amb.filter(l=>!(Number(l.pu)>0));const preus={};
-      try{
+      const trossos=Math.ceil(sense.length/15);
+      const fesPreus=sense.length<=30||confirm(t("{s} partides no tenen preu. Buscar-los amb la IA gastarà com a mínim {l} lectures i pot trigar uns {m} minuts. Continuar? (Si dius que no, podràs posar els preus a mà.)",{s:sense.length,l:trossos*15,m:trossos*2}));
+      if(fesPreus)try{
         for(let i=0;i<sense.length;i+=15){
           const tros=sense.slice(i,i+15);
           setFent(t("Preus de les partides {a} a {b} de {n}…",{a:i+1,b:i+tros.length,n:sense.length}));
@@ -13607,9 +13643,10 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
         }
       }catch(e){av.push(t("No s’han pogut fer tots els preus: {e}",{e:iaErr878458(e)}))}
       amb=amb.map(l=>{const x=preus[l.codi];return x?{...l,pu:x.pu>0?x.pu:null,font878368:"ia",semblant878368:false,confirmar878368:!!x.confirmar,nota878368:x.nota||"",descomp878368:x.descomp||null,taula878368:null}:l});
-      setDeIa(true);setAvisos(av);
-      posaFiles(amb,partides,(l,i)=>{const cap=partides[i].cap,nom=nomSenseNum878361(cap);return capsAra.find(k=>nomSenseNum878361(k)===nom)||"nou:"+String(cap).replace(/^\d+(\.\d+)*\s+/,"").toUpperCase()});
+      setDeIa(true);setAvisos(av);setDeArxiu476(lleg?{nom:lleg.nom,file:lleg.file}:null);
+      posaFiles(amb,partides,(l,i)=>{const cap=partides[i].cap,nom=nomSenseNum878361(cap);return capsAra.find(k=>k===cap)||capsAra.find(k=>nomSenseNum878361(k)===nom)||(lleg?String(cap):"nou:"+String(cap).replace(/^\d+(\.\d+)*\s+/,"").toUpperCase())});
     }catch(e){setErr(iaErr878458(e))}
+    try{encesa?.release?.()}catch{}
     setFent("");
   }
   const set=(k,patch)=>setFiles(fs=>fs.map(f=>f.k===k?{...f,...patch}:f));
@@ -13619,7 +13656,15 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
   const etCap=k=>k.startsWith("nou:")?t("Capítol nou: {c}",{c:k.slice(4)}):k;
   // si el preu s'ha canviat a mà, el descompost (que donava l'altre preu) no s'hi posa
   const igual=f=>Math.abs((parseNum8770(f.pu)||0)-f.puOrig)<0.005;
-  function afegeix(){
+  async function afegeix(){
+    if(deArxiu476){
+      const rows=triades.map((f,j)=>{const o=f.orig||{},pu=parseNum8770(f.pu)||0,q=parseNum8770(f.q)||0,tb=f.tb&&igual(f)?f.tb:null;
+        const origen=[pu>0?(f.font&&igual(f)?t(FONTS878368[f.font]||""):t("A mà")):"",f.font&&igual(f)&&f.semblant?t("semblant"):"",f.font&&igual(f)?f.nota:"",...(tb?f.notes:[])].filter(Boolean).join(" · ").slice(0,260);
+        return {codi:o.codi||"",cap:f.dest,capPrincipal:o.capPrincipal,capPath:o.capPath,ut:f.ut||"ut",concepte:String(f.concepte).trim(),desc:f.desc||"",q,pu,pressupostMesures:midesFila878476(o,j,q),...(tb?{descompostTable:tb}:{}),...(tb&&f.minim?{minim878378:f.minim}:{}),...(tb&&f.mgRec?{mg878378:f.mgRec}:{}),...(origen?{origenPreu878368:origen}:{})}});
+      const bid=String((typeof window.__acoDadesObra878412==="function"?window.__acoDadesObra878412(obraId):null)?.activeBudgetIdObra||data?.activeBudgetIdObra||"principal");
+      await window.__acoImportPdf878305?.(rows,{fileName:deArxiu476.nom,file:deArxiu476.file,prefix:t("Pressupost"),tipusGrup:"Amidaments",tipusPartida:"IA",estat:"Pressupost amb IA",afegir:true,total:Math.round(total*100)/100},bid);
+      close?.();return;
+    }
     const sel=triades.map(f=>{const pu=parseNum8770(f.pu)||0,tb=f.tb&&igual(f)?f.tb:null;
       const origen=[deIa?"IA":t("Dictat"),pu>0?(f.font&&igual(f)?t(FONTS878368[f.font]||""):t("A mà")):"",f.font&&igual(f)&&f.semblant?t("semblant"):"",f.font&&igual(f)?f.nota:"",...(tb?f.notes:[])].filter(Boolean).join(" · ").slice(0,260);
       return {item:{concepte:String(f.concepte).trim(),desc:f.desc||"",ut:f.ut||"u",pu,descompost:tb?descompostTableToText878174(tb):"",...(tb?{descompostTable:tb}:{}),...(tb&&f.mgRec?{mg878378:f.mgRec}:{}),...(tb&&f.minim?{minim878378:f.minim}:{}),tipus:deIa?"IA":"Dictat",origenPreu878368:origen},q:f.q,dest:f.dest}});
@@ -13631,7 +13676,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
       <DictatActa878263 value={text} onChange={setText} separador={iaOn?" ":"; "}/>
       {iaOn&&<div className="arxius-v878459">
         <label className="button secondary"><Paperclip size={15} aria-hidden="true"/> {t("Adjuntar amidaments, plànols o fotos")}<input type="file" hidden multiple accept="application/pdf,image/*,.xlsx,.xls,.xlsm,.csv,.ods,.bc3" onChange={e=>{const fl=e.target.files;afegeixArxius(fl);e.target.value=""}}/></label>
-        {arxius.map((a,i)=><span key={i} className="xip">{a.nom}<button type="button" aria-label={t("Treure")} onClick={()=>setArxius(x=>x.filter((_,n)=>n!==i))}>×</button></span>)}
+        {arxius.map((a,i)=><span key={i} className="xip">{a.nom}{a.llegit?<em className="llegit-v878476"> · {t("{n} partides",{n:a.llegit.partides.length})}</em>:null}<button type="button" aria-label={t("Treure")} onClick={()=>setArxius(x=>x.filter((_,n)=>n!==i))}>×</button></span>)}
       </div>}
       {fent&&<p className="pas-ia-v878458">{fent}</p>}
       {err&&<p className="err-v878305">{err}</p>}
@@ -13778,7 +13823,9 @@ function Logistica878368({obra={},cond={},setCond,readOnly}){
     {pct>0&&<p className="pct"><b>+{pct} %</b> {t("de mà d’obra per l’accés")}</p>}
   </div>;
 }
-const iaErr878458=e=>i18nT(String(e?.message||e));
+// V87.476 · a l'iPhone la connexió es pot tallar mentre la IA treballa (2/11/2026: «No hi ha connexió amb el núvol» amb cobertura): cal dir-ho clar
+const iaErr878458=e=>e?.offline?i18nT("S’ha tallat la connexió mentre la IA treballava. No bloquegis el mòbil ni canviïs d’app, i torna-ho a provar."):i18nT(String(e?.message||e));
+async function pantallaEncesa878476(){try{return await navigator.wakeLock?.request?.("screen")}catch{return null}}
 // V87.458 · la lectura de l'app no és de fiar si no hi troba res, si el total no quadra amb el del PDF o si n'hi ha moltes per revisar
 const dubtosPdf878458=r=>!r.partides.length||(r.totalPdf!=null&&Math.abs(r.totalPdf-(r.total||0))>Math.max(1,r.totalPdf*0.01))||r.partides.filter(p=>p.revisar).length>r.partides.length*0.2;
 function PreusIa878368({obra={},cond={},linies=[],close,aplica}){
@@ -14008,11 +14055,8 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
     setFent(true);
     const rows=linies.map((l,j)=>{
       const {tb,pu,notes,minim,mgRec}=margesLinia878378(l,{mg:mg878378,ambMg:ambMg878378,acc:pct878368,ambAcc:ambPct878368,preuLib:usaLib?preuLib:null});
-      const dim=v=>v===""||v==null?"":coma878328(v);
-      const mides=(l.mides||[]).map((m,i)=>{const alguna=[m.llargada,m.amplada,m.alcada].some(v=>v!==""&&v!=null);return {id:`m-${Date.now()}-${j}-${i}`,concepte:m.concepte||"",unitats:m.unitats===""||m.unitats==null?(alguna?"1":dim(m.parcial)):dim(m.unitats),llargada:dim(m.llargada),amplada:dim(m.amplada),alcada:dim(m.alcada)}});
-      const q=Number(l.q)||0,suma=medicioTotal8780(mides,l.ut);
-      const ambMides=mides.length>0&&Math.abs(suma-q)<=Math.max(0.011,Math.abs(q)*0.005);
-      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:ambMides?mides:[],...(tb?{descompostTable:tb}:{}),...(minim?{minim878378:minim}:{}),...(mgRec?{mg878378:mgRec}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
+      const q=Number(l.q)||0;
+      return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:midesFila878476(l,j,q),...(tb?{descompostTable:tb}:{}),...(minim?{minim878378:minim}:{}),...(mgRec?{mg878378:mgRec}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
     });
     const total=Math.round(rows.reduce((s,r)=>s+r.q*r.pu,0)*100)/100;
     try{
@@ -18881,7 +18925,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.475",
+    app_version:"87.476",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

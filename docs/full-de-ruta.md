@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.475, 2/11/2026)
+## On som (V87.476, 2/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -59,6 +59,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.473 (2/11):** Hores del personal per setmanes de feina, amb el calendari laboral, «Emplenar hores», desfer i la mateixa pantalla des de l’obra (correcció de l’Héctor provant el Bloc 2).
 - **V87.474 (2/11):** estat «Pendent de tancar», amb el que falta a la vista i avís en tancar.
 - **V87.475 (2/11):** actes que no es desen fins a guardar-les (fora les buides), «Eliminar» dins de l’acta i «Compartir» i la foto a dalt del Resum.
+- **V87.476 (2/11):** «Pressupost amb IA» llegeix els amidaments tal com són i la IA només busca els preus que falten; pantalla encesa i missatge clar al mòbil.
 
 ## Blocs, per ordre
 

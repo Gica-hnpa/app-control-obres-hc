@@ -2691,6 +2691,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Fora el nom de l'Héctor** com a DEO de sèrie de les actes (surtia a totes les empreses): ara «Pendent».
     - **«Compartir» i la foto de l'obra**, a dalt del Resum (`cap-resum-v878475`): a la V87.464 havien quedat dins de la targeta plegada «Contacte i enllaços» i no es trobaven.
     - Estils `src/theme-v878475.css`. Prova: `v475test.mjs` (10). Adaptades `v464test` i `plustest`.
+  - **V87.476 · «Pressupost amb IA»: uns amidaments es llegeixen tal com són** (l'Héctor, 2/11/2026, amb els amidaments de Llafranc —48 pàgines, 102 partides—, obra «pressupost PROVA IA» de Brava: «l'ha fet fatal», i 117 lectures per un sol pressupost):
+    - **Causa:** el botó enviava l'arxiu a la IA amb l'encàrrec de fer les partides (`accio:"partides"`: concepte curt, codi buit, agrupar en capítols) i després buscava tots els preus amb la IA de 15 en 15. 7 tandes a 15 lectures com a mínim + les partides. Tot i que l'app ja sabia llegir aquests arxius: 102 partides del PDF i 104 de l'Excel, amb 99 de coincidents pel nom.
+    - **Ara** (`llegeixAmid878476`): en adjuntar un PDF, Excel o BC3 es llegeix amb els lectors de la pestanya Amidaments (gratis i exacte); el xip diu «102 partides». «Fer el pressupost» porta codis, conceptes, descripcions, unitats, quantitats, capítols i mides (`midesFila878476`, també a «Passar-ho a pressupost»), posa els preus propis (Preus, banc, obres anteriors) i la IA només busca els que falten. Si en falten més de 30, abans diu quantes lectures gastarà. En afegir, fa servir `__acoImportPdf878305` i l'arxiu original va a Documents.
+    - **Lector d'amidaments en PDF** (`llegirAmidamentsPdf`): amb les mides que passaven de pàgina es perdia la quantitat (8 partides de 102 a Llafranc). El títol «AMIDAMENTS» de cada pàgina tancava la partida, el peu «… Pàgina 5» comptava com una mida (`PEU_PAGINA`), una etiqueta com «Bany 01» també (ara una mida sense decimals no compta) i dues línies «1 1,00» feien de total (`fiPartida`). Ara el PDF i l'Excel de Llafranc donen les mateixes quantitats. Descripcions fins a 4.000 lletres. Prova: `amidamentsunit.mjs` (35).
+    - **Si l'arxiu no es pot llegir** (un PDF escanejat, sense text a la caixa): `pressupostDeIa` (`accio:"pressupost"`, llegir, no inventar); si no hi troba partides, com abans. Plànols i fotos, com abans. Amb PDF i Excel alhora, el que té més partides, sense repetir-les. **La funció del servidor no canvia.**
+    - **Mòbil** (l'Héctor a les 22:04 amb una partida dictada: «No hi ha connexió amb el núvol»): pantalla encesa mentre treballa la IA (`pantallaEncesa878476`) i missatge clar si es talla la connexió; camps de 16 px perquè l'iPhone no ampliï la pantalla. **La causa del tall no està confirmada** (cal mirar `aco_ia_crides`): si es repeteix, cal fer la crida en dos passos (encarregar i preguntar).
+    - Estils `src/theme-v878476.css`. Prova: `v476test.mjs` (11, Excel inventat i PDF sense text). El PDF i l'Excel de Llafranc són d'un client: no copiar-los a les proves.
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2881,7 +2888,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.475 a Render):**
+**Estat (publicada la V87.476 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

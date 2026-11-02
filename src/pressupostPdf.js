@@ -262,24 +262,30 @@ const SECCIO_ALTRA = /^(pressupost|presupuesto|quadre de preus|cuadro de precios
 const titol = (re, l) => { const m = l.match(re); return !!m && (m[1] === m[1].toUpperCase() || /p[àa]gina\s+\d/i.test(l)); };
 const CAPCALERA_AMID = l => (String(l).toLowerCase().match(/(^|\s)(uds?\.?|n[uú]m\.?|text|tipus|longitud|anchura|altura|llargada|amplada|al[çc]ada|parciales|parcials|parcial|cantidad|quantitat|comentari|comentario|total|\[c\d\]|f[oó]rmula)(?=\s|$)/g) || []).length >= 3 && !/\d[.,]\d/.test(l);
 const r3 = n => Math.round((Number(n) || 0) * 1000) / 1000;
+// V87.476 · el peu de cada pàgina («23 de juliol de 2026 Pàgina 5»): si no, el número es comptava com una mida
+const PEU_PAGINA = /(^|\s)(p[aà]g(ina)?\.?|hoja|full)\s*\d+(\s*(de|\/)\s*\d+)?\s*$/i;
 export function llegirAmidamentsPdf(files) {
   const linies = (files || []).map(f => net(f.text ?? (f.items || []).map(i => i.s).join("  "))).filter(Boolean);
+  // V87.476 · què ve després (sense els peus i les capçaleres de pàgina): un total només ho és si s'acaba la partida
+  const fiPartida = i => { for (let j = i + 1; j < linies.length; j++) { const l = linies[j]; if (IGNORA.test(l) || PEU_PAGINA.test(l) || CAPCALERA_AMID(l) || titol(SECCIO_AMID, l)) continue; return PARTIDA.test(l) || CAP_PARAULA.test(l) || !!l.match(PARTIDA_UT) || /^(total|suma)\b/i.test(l); } return true; };
   const caps = [], partides = [], avisos = [];
   let cap = "", act = null, fora = false;
   const tanca = () => {
     if (!act) return;
     act.concepte = net(act.concepte).slice(0, 240) || "Partida";
-    act.desc = net(act.desc).slice(0, 1500);
+    act.desc = net(act.desc).slice(0, 4000);
     if (act.q == null) act.q = r3(act.mides.reduce((s, m) => s + (Number(m.parcial) || 0), 0));
     if (!act.q) act.revisar = "Sense quantitat";
     const ja = partides.find(p => p.codi === act.codi && clauNom(p.concepte) === clauNom(act.concepte));
     if (!ja) partides.push(act);
     act = null;
   };
-  for (const linia of linies) {
-    if (titol(SECCIO_AMID, linia)) { tanca(); fora = false; continue; }
+  for (let idx = 0; idx < linies.length; idx++) {
+    const linia = linies[idx];
+    // V87.476 · el títol es repeteix a cada pàgina: no tanca la partida (si les mides passaven de pàgina, es perdia la quantitat)
+    if (titol(SECCIO_AMID, linia)) { fora = false; continue; }
     if (partides.length + (act ? 1 : 0) > 0 && titol(SECCIO_ALTRA, linia) && !/(amidament|medici)/i.test(linia)) { tanca(); fora = true; continue; }
-    if (fora || IGNORA.test(linia) || CAPCALERA_AMID(linia)) continue;
+    if (fora || IGNORA.test(linia) || PEU_PAGINA.test(linia) || CAPCALERA_AMID(linia)) continue;
     const tokens = linia.split(" ").filter(t => t && !/#/.test(t)); // «C#*D#*E#*F#»: la fórmula del TCQ
     const nums = numsFinals(tokens);
     const txt = net(senseNumsFinals(tokens).join(" "));
@@ -321,7 +327,7 @@ export function llegirAmidamentsPdf(files) {
     const concepteMida = txt.replace(/^\d{1,3}\s+(?=\D)/, "");
     // «16,00 42,80 684,80» sota les mides: el primer número és la suma de les mides → és el total de la partida (amb el preu)
     const suma = r3(act.mides.reduce((s, x) => s + (Number(x.parcial) || 0), 0));
-    if (!txt && nums.length >= 2 && act.mides.length && Math.abs(nums[0] - suma) <= 0.011) {
+    if (!txt && nums.length >= 2 && act.mides.length && Math.abs(nums[0] - suma) <= 0.011 && fiPartida(idx)) {
       const qd = nums.length >= 3 ? quadra(nums) : null;
       act.q = nums[0]; if (qd?.ok) act.pu = qd.pu;
       tanca(); continue;
@@ -339,7 +345,7 @@ export function llegirAmidamentsPdf(files) {
       continue;
     }
     if (nums.length === 1 && !txt) { act.q = nums[0]; tanca(); continue; }
-    if (nums.length === 1 && txt.length <= 50) { act.mides.push({ concepte: concepteMida, unitats: nums[0], llargada: "", amplada: "", alcada: "", parcial: r3(nums[0]) }); continue; }
+    if (nums.length === 1 && txt.length <= 50 && /[.,]\d/.test(tokens[tokens.length - 1])) { act.mides.push({ concepte: concepteMida, unitats: nums[0], llargada: "", amplada: "", alcada: "", parcial: r3(nums[0]) }); continue; }
     if (act.mides.length) continue;
     const text = nums.length ? txt : linia;
     // el nom de la partida només continua si la línia segueix la frase (comença en minúscula); si no, és la descripció
