@@ -36,7 +36,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.470";
+const APP_VERSION878264="87.471";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17276,6 +17276,7 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
   const [mesF,setMesF]=useState("");
   const [clientF,setClientF]=useState("");
   const [cercaF,setCercaF]=useState("");
+  const [filtresM471,setFiltresM471]=useState(false);
   const [oberts,setOberts]=useState(()=>new Set());
   const tauleta=useTauleta878387();
   const [doc,setDoc]=useState(null);
@@ -17342,15 +17343,16 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
   const [inf397,setInf397]=useState(false);
   const graf397=factures.filter(r=>(!clientF||r.client===clientF)&&(!obraF||r.obra.id===obraF)).map(r=>({data:r.data,base:r.base}));
   return <div className="facturacio-v878337">
-    <div className="fe-head"><h1>{t("Facturació")}</h1>{vista==="factures"&&rows.length>0&&<ActionMenu87213 className="gestoria-v878390" label={<><Download size={15} aria-hidden="true"/> {t("Per a la gestoria")}</>}><button type="button" onClick={()=>exporta()}><Download size={15} aria-hidden="true"/> {t("Exportar Excel")}</button><button type="button" onClick={llistatPdf}><FileText size={15} aria-hidden="true"/> {t("Llistat en PDF")}</button>{potCompartir&&<button type="button" onClick={()=>exporta(true)}><Share2 size={15} aria-hidden="true"/> {t("Compartir l’Excel…")}</button>}</ActionMenu87213>}</div>
+    <div className="fe-head"><h1>{t("Facturació")}</h1>{vista==="factures"&&rows.length>0&&<ActionMenu87213 className="gestoria-v878390" titol={t("Per a la gestoria")} label={<><Download size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Per a la gestoria")}</span></>}><button type="button" onClick={()=>exporta()}><Download size={15} aria-hidden="true"/> {t("Exportar Excel")}</button><button type="button" onClick={llistatPdf}><FileText size={15} aria-hidden="true"/> {t("Llistat en PDF")}</button>{potCompartir&&<button type="button" onClick={()=>exporta(true)}><Share2 size={15} aria-hidden="true"/> {t("Compartir l’Excel…")}</button>}</ActionMenu87213>}</div>
     <div className="fe-vistes" role="group" aria-label={t("Facturació")}>
       <button type="button" aria-pressed={vista==="factures"} onClick={()=>setVista("factures")}>{t("Factures")}<em>{factures.length}</em></button>
       <button type="button" aria-pressed={vista==="per"} onClick={()=>setVista("per")}>{t("Per facturar")}{perFacturar.length>0&&<em className="warn">{perFacturar.length}</em>}</button>
       {honoraris&&<button type="button" aria-pressed={vista==="hon"} onClick={()=>setVista("hon")}>{t("Honoraris")}</button>}
     </div>
     {vista==="factures"&&<>
-      {factures.length>0&&<div className="fe-filtres">
+      {factures.length>0&&<div className={`fe-filtres ${filtresM471?"obert-v878471":""}`}>
         <div className="anys" role="group" aria-label={t("Any")}>{anys.map(a=><button type="button" key={a} aria-pressed={!cercant&&anyF===a} onClick={()=>{setAnyF(a);setCercaF("")}}>{a}</button>)}<button type="button" aria-pressed={!cercant&&anyF==="tots"} onClick={()=>{setAnyF("tots");setCercaF("")}}>{t("Tots")}</button></div>
+        {(()=>{const n=[mesOk,clientF,obraF,estatF,cercaF.trim()].filter(Boolean).length;return <button type="button" className="secondary filtres-m-v878471" aria-expanded={filtresM471} onClick={()=>setFiltresM471(v=>!v)}>{t("Filtres")}{n?` (${n})`:""}</button>})()}
         {!cercant&&mesos.length>1&&<select className="mes-v878390" value={mesOk} onChange={e=>setMesF(e.target.value)} aria-label={t("Mes")}><option value="">{t("Tots els mesos")}</option>{trims.length>1&&<optgroup label={t("Trimestres")}>{trims.map(q=><option key={q} value={q}>{nomPeriode878390(q)}</option>)}</optgroup>}<optgroup label={t("Mesos")}>{mesos.map(m=><option key={m} value={m}>{nomMes(m)}</option>)}</optgroup></select>}
         {clientsAmb.length>1&&<select className="client-v878390" value={clientF} onChange={e=>setClientF(e.target.value)} aria-label={t("Client")}><option value="">{t("Tots els clients")}</option>{clientsAmb.map(c=><option key={c} value={c}>{c}</option>)}</select>}
         {obresAmb.length>1&&<select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={t("Obra")}><option value="">{t("Totes les obres")}</option>{obresAmb.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>}
@@ -17376,14 +17378,15 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
       {factures.length>0&&<details className="card bloc-v878426 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{t("Gràfics i informes")}</b></span><span className="xifra" title={resumFact878397(graf397,anyF==="tots"?null:+anyF)}>{resumFact878397(graf397,anyF==="tots"?null:+anyF,true)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{inf397&&<GraficaFact878397 items={graf397} any={anyF==="tots"?null:+anyF}/>}</div><Recollir878432/></details>}
     </>}
     {vista==="per"&&(!perFacturar.length?<div className="fe-buit"><b>{t("Totes les certificacions estan facturades.")}</b></div>
-      :<div className="fe-llista per"><div className="fe-row pf cap" aria-hidden="true"><span>{t("Certificació")}</span><span>{t("Obra i client")}</span><span>{t("Base")}</span><span>{t("IVA")}</span><span>{t("Total")}</span><span/></div>{perFacturar.map(x=><div key={x.k} className="fe-row pf">
+      :<><div className="fe-llista per"><div className="fe-row pf cap" aria-hidden="true"><span>{t("Certificació")}</span><span>{t("Obra i client")}</span><span>{t("Base")}</span><span>{t("IVA")}</span><span>{t("Total")}</span><span/></div>{perFacturar.map(x=><div key={x.k} className="fe-row pf">
         <span className="num"><b>{etCert(x.f)}</b><small>{fmtAppDate8748(x.f.data)}</small></span>
         <span className="qui"><b>{x.obra.nom}</b><small>{x.obra.propietat||clientDe(x.obra).nom||""}</small></span>
         <span className="imp"><small>{t("Base")}</small>{money(x.c.base)}</span>
         <span className="imp iva"><small>{t("IVA")} {x.c.iva}%</small>{money(x.c.ivaImp)}</span>
         <span className="imp tot"><small>{t("Total")}</small><b>{money(x.c.total)}</b></span>
         <span className="acc">{vf.estat==="actiu"?<button type="button" className="primary small" onClick={()=>openObraTab?.(x.obra.id,"Facturació obra")}>{t("Emetre a l’obra")}</button>:<button type="button" className="primary small" onClick={()=>setFer({f:x.f,c:x.c,obra:x.obra,client:clientDe(x.obra),d:x.d})}>{t("Fer factura")}</button>}<ActionMenu87213 label="⋯"><button type="button" onClick={()=>openObraTab?.(x.obra.id,"Certificacions obra")}>{t("Obrir la certificació")}</button><button type="button" onClick={()=>fora(x)}>{t("Ja facturada fora de l’app")}</button></ActionMenu87213></span>
-      </div>)}</div>)}
+      </div>)}</div>
+      {(()=>{const s=k=>perFacturar.reduce((v,x)=>v+(+x.c[k]||0),0);return <div className="fe-total-v878390"><div className="tit"><b>{t("Total")}</b><small>{perFacturar.length===1?t("1 certificació"):t("{n} certificacions",{n:perFacturar.length})}</small></div><div className="fe-kpis"><div><small>{t("Base")}</small><b>{money(s("base"))}</b></div><div><small>{t("IVA")}</small><b>{money(s("ivaImp"))}</b></div>{Math.abs(s("retImp"))>0.005&&<div><small>{t("Retenció")}</small><b>{money(s("retImp"))}</b></div>}<div><small>{t("Total")}</small><b>{money(s("total"))}</b></div></div></div>})()}</>)}
     {vista==="hon"&&honoraris}
     {doc&&<DocViewer doc={doc.doc} obra={doc.obra} client={doc.client} close={()=>setDoc(null)} email={(title,x)=>correuDe(title,doc.obra,x?.doc)}/>}
     {fer&&<FerFactura878297 f={fer.f} c={fer.c} obra={fer.obra} client={fer.client} data={fer.d} setData={setObraData(fer.obra.id)} close={()=>setFer(null)}/>}
@@ -18755,7 +18758,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.470",
+    app_version:"87.471",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19503,6 +19506,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
   const[estatF873,setEstatF873]=useState("");
   const[mesF390,setMesF390]=useState("");
   const[cercaF470,setCercaF470]=useState("");
+  const[filtresM471,setFiltresM471]=useState(false);
   const cercant470=!!cercaF470.trim();
   const[oberts390,setOberts390]=useState(()=>new Set());
   const[inf397,setInf397]=useState(false);
@@ -19557,8 +19561,9 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
   return <div className="facturacio-v878337 fact-tec-v878373">{preview&&<QuotePreview8743 type="factura" doc={preview.doc} obra={preview.obra} close={()=>setPreview(null)}/>}{newOpen&&<NewGlobalFactura8778 obres={obres} onSave={createFacturaGlobal8778} close={()=>setNewOpen(false)}/>}
     <div className="fe-head">{dins?<span/>:<h1>{i18nT("Facturació")}</h1>}<div className="fe-head-acc-v878395">{base873.length>0&&<ActionMenu87213 className="gestoria-v878390" label={<><Download size={15} aria-hidden="true"/> {i18nT("Per a la gestoria")}</>}><button type="button" onClick={()=>exporta395()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button><button type="button" onClick={llistatPdf395}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>{potCompartir395&&<button type="button" onClick={()=>exporta395(true)}><Share2 size={15} aria-hidden="true"/> {i18nT("Compartir l’Excel…")}</button>}</ActionMenu87213>}<button type="button" className="primary" onClick={()=>setNewOpen(true)}><Plus size={16} aria-hidden="true"/> {i18nT("Nova factura")}</button></div></div>
     <HoursToInvoice878256 obres={obres} clients={clientList} onCreate={createFacturaGlobal8778} odata={odata} openObraTab={openObraTab}/>
-    <div className="fe-filtres">
+    <div className={`fe-filtres ${filtresM471?"obert-v878471":""}`}>
       <div className="anys" role="group" aria-label={i18nT("Any")}>{anys873.map(a=><button type="button" key={a} aria-pressed={!cercant470&&anyF873===a} onClick={()=>{setAnyF873(a);setCercaF470("")}}>{a}</button>)}<button type="button" aria-pressed={!cercant470&&anyF873==="tots"} onClick={()=>{setAnyF873("tots");setCercaF470("")}}>{i18nT("Tots")}</button></div>
+      {(()=>{const n=[mesOk390,client,obra,cercaF470.trim()].filter(Boolean).length;return <button type="button" className="secondary filtres-m-v878471" aria-expanded={filtresM471} onClick={()=>setFiltresM471(v=>!v)}>{i18nT("Filtres")}{n?` (${n})`:""}</button>})()}
       {!cercant470&&mesos390.length>1&&<select className="mes-v878390" value={mesOk390} onChange={e=>setMesF390(e.target.value)} aria-label={i18nT("Mes")}><option value="">{i18nT("Tots els mesos")}</option>{trims390.length>1&&<optgroup label={i18nT("Trimestres")}>{trims390.map(q=><option key={q} value={q}>{nomPeriode878390(q)}</option>)}</optgroup>}<optgroup label={i18nT("Mesos")}>{mesos390.map(m=><option key={m} value={m}>{nomMes390(m)}</option>)}</optgroup></select>}
       {clients873.length>1&&<select value={client} onChange={e=>setClient(e.target.value)} aria-label={i18nT("Client")}><option value="">{i18nT("Tots els clients")}</option>{clients873.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select>}
       {obres873.length>1&&<select value={obra} onChange={e=>setObra(e.target.value)} aria-label={i18nT("Expedient")}><option value="">{i18nT("Tots els expedients")}</option>{obres873.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>}

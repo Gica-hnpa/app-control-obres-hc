@@ -1616,7 +1616,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Fora**, a la Facturació del tècnic: la gràfica vella «Ingressos» (`IngressosChart878292`, que es queda als pressupostos d’honoraris i
       al Rendiment de l’obra) i «Resum / informes de factures» (`FinanceReports87110`); els tres gràfics rodons es queden.
     - Estils `src/theme-v878397.css`. Prova: `fact397test.mjs` (29; factures inventades de 4 anys als comptes `demo-tecnic` i
-      `demo-constructor`; s’ha de passar de l’1 de març al 31 de desembre i a partir del dia 3 del mes). Adaptades `graficatest` (la gràfica
+      `demo-constructor`; s’ha de passar de l’1 de març al 31 de desembre). Adaptades `graficatest` (la gràfica
       nova i les seves xifres) i `v366test` (el títol del bloc plegat porta la línia del resum).
   - **V87.398 · Tornar a llegir els descompostos d’un Excel** (per a Comodoro, on 63 de 65 partides no en tenien perquè es va importar
     abans de la V87.396): al Pressupost, **Accions › Eines › «Tornar a llegir els descompostos d’un Excel…»**, fora del mode d’edició.
@@ -2660,6 +2660,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Despeses:** el cercador dels filtres (`coincideix878348`) també troba la data d'emissió i el client de l'obra. Dins de l'obra, amb 6 despeses o més, la lupa és a la vista (`buscar-v878470`, `nObra878470`: obre els filtres amb el cursor al cercador, i «Filtres» surt d'«Accions»). Buscant, només surten les targetes amb resultats i, si no n'hi ha cap, «Cap despesa amb aquests filtres.».
     - **Facturació** (`FacturacioEmpresa878337`, `FacturesGeneral8738`): amb 6 factures o més, cercador als filtres (`cerca-v878470`): número, data, client, obra i concepte. Buscant es mira a tots els anys, com a la llista d'obres: cap any marcat, sense el selector de mes, i el total i «Per a la gestoria» diuen «Cerca «…»». Tocar un any buida la cerca.
     - Estils `src/theme-v878470.css`. Proves: `cerca470unit.mjs` (35) i `v470test.mjs` (37). Adaptada `v453test` (fallava des de la V87.464: l'Agenda de l'obra és una targeta plegada).
+  - **V87.471 · Facturació de l'empresa i del tècnic amb factures de debò** (l'última pantalla del Bloc 2, mirada amb dotze factures inventades de tres anys, `facturacio471.mjs`):
+    - **Per facturar a l'ordinador:** l'última columna d'una fila amb `auto` feia una amplada diferent de la capçalera, que no té botons, i els títols no quedaven a sobre de les xifres. Ara és de 190 px, com a les factures.
+    - **Per facturar al mòbil i l'iPad:** cada certificació en dues línies (número i data · total; obra i client · «Fer factura»); abans feia 200 px. La base i l'IVA surten a «Fer factura».
+    - **Total a baix de «Per facturar»** (base, IVA, retenció si n'hi ha, i total), com a Factures.
+    - **Filtres al mòbil** (≤700 px, `filtres-m-v878471`, `obert-v878471`, empresa i tècnic): els anys a la vista i la resta darrere de «Filtres», que diu quants n'hi ha d'actius («Filtres (1)»). La primera factura passa de 350 a 168 px. A l'iPad i l'ordinador, com abans.
+    - **Fora el títol que repeteix la capçalera fixa també a l'iPad** (la mateixa condició que la capçalera: ≤1280 px o pantalla tàctil; Facturació, Rendiment, Empresa i Hores). «Per a la gestoria» passa a la línia de les pestanyes; al mòbil, només la icona (`tx-v878471`, amb `titol` perquè tingui nom).
+    - **Menú lateral a l'ordinador:** amb un nom d'empresa llarg sortia una barra de desplaçament a baix: `.active-user-v8780` feia sempre 150 px i la columna no s'encongia. Ara l'etiqueta s'encongeix i el nom de l'app va a 17 px, en una línia.
+    - **Compte:** `.action-menu-v87213>summary span` posa la lletra a 18 px: un `span` amb text dins del `label` d'un menú ha de portar `font-size:inherit`.
+    - Estils `src/theme-v878471.css`. Prova: `v471test.mjs` (29).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2850,7 +2859,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.470 a Render):**
+**Estat (publicada la V87.471 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

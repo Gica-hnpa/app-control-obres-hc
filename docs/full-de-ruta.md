@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.469, 2/11/2026)
+## On som (V87.471, 2/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -52,14 +52,16 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.460 (31/10):** banc de preus comú: l’Héctor comparteix el seu, amb l’any i l’IPC, amb tots els comptes (falta l’SQL i importar la base).
 - **V87.461 (31/10):** factures i albarans en un llistat que es desplega.
 - **V87.462–468 (1–2/11):** Amidaments només amb quantitats (els preus i la logística, a «Passar-ho a pressupost»), pressupost sempre plegat, comptador de temps nou, Resum i Agenda de l'obra plegats, Preus amb una línia a dalt i els filtres de l'Agenda plegats al mòbil.
-- **V87.469 (2/11):** lectures de la IA per compte (tècnic 150, constructora 500, paquets propis) i el cost de debò de cada crida (la funció `aco-ia` continua sense instal·lar).
+- **V87.469 (2/11):** lectures de la IA per compte (tècnic 150, constructora 500, paquets propis) i el cost de debò de cada crida. La funció `aco-ia` s'ha instal·lat el mateix dia.
+- **V87.470 (2/11):** Despeses per data d'emissió i cercador per número, data o client a Despeses i Facturació.
+- **V87.471 (2/11):** Facturació amb factures de debò: «Per facturar» alineat, curt al mòbil i amb el total, filtres plegats al mòbil, sense el títol repetit a l'iPad i el menú lateral sense barra. Amb això s'acaba de mirar el Bloc 2.
 
 ## Blocs, per ordre
 
 | # | Bloc | Pantalles | Estat |
 |---|---|---|---|
 | 1 | **Constructora · dins de l’obra** | ~~Resum · Agenda · Amidaments~~ (V87.462–464) · ~~Pressupost · Certificacions · Facturació · Despeses · Rendiment~~ (V87.426) · Dades · Documents · Visites · Partes · Planning (mirats al mòbil, sense canvis) | Falta que l’Héctor el provi i el tanqui |
-| 2 | **Constructora · menú principal** | ~~Preus · Agenda~~ (V87.465) · ~~Despeses · Rendiment~~ (V87.468) · Inici · Obres · Hores · Empresa · Contactes · Ajustos (mirats a l'ordinador amb dades d'exemple, sense canvis) · Facturació (falta mirar-la amb factures) | En curs |
+| 2 | **Constructora · menú principal** | ~~Preus · Agenda~~ (V87.465) · ~~Despeses · Rendiment~~ (V87.468) · ~~Facturació~~ (V87.471) · Inici · Obres · Hores · Empresa · Contactes · Ajustos (mirats a l'ordinador amb dades d'exemple, sense canvis) | Falta que l'Héctor el provi i el tanqui |
 | 3 | **Tècnic** | Inici · Expedients · encàrrec (cèdula, CEE, ITE, amiant) · Honoraris · Hores · Les meves despeses · Facturació · Rendiment · Pressupostos | Pendent |
 | 4 | **Gestió total i treballador** | El que només tenen ells; decidir com arriben a l’oficina les hores i les despeses del treballador | Pendent |
 | 5 | **Mòbil i iPad, repàs final** | Repàs exhaustiu de totes les pantalles; el «visual nou» que validi l’Héctor, per a tothom | Pendent |

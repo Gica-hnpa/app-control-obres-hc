@@ -1,0 +1,44 @@
+/* V87.471 · Facturació: «Per facturar» amb les columnes alineades i més curt al mòbil, els filtres plegats al mòbil, sense el títol que repeteix la capçalera,
+   i el menú lateral sense barra de desplaçament amb noms d'empresa llargs */
+html body .sidebar-head{grid-template-columns:minmax(0,1fr) auto auto}
+html body .sidebar .brand{min-width:0;font-size:17px!important;white-space:nowrap}
+html body .sidebar .active-user-v8780{min-width:0;width:auto;max-width:100%}
+
+/* «Per facturar»: cada fila feia la seva última columna i la capçalera, sense botons, quedava desalineada */
+@media (min-width:1101px){
+  html body .facturacio-v878337 .fe-row.pf{grid-template-columns:minmax(110px,.9fr) minmax(0,2.2fr) minmax(90px,1fr) minmax(80px,.8fr) minmax(100px,1fr) 190px}
+}
+@media (max-width:1100px){
+  html body .facturacio-v878337 .fe-row.pf{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"num tot" "qui acc";gap:4px 10px}
+  html body .facturacio-v878337 .fe-row.pf .imp:not(.tot),html body .facturacio-v878337 .fe-row.pf .imp.tot small{display:none}
+  html body .facturacio-v878337 .fe-row.pf .num{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
+  html body .facturacio-v878337 .fe-row.pf .acc{justify-content:flex-end}
+}
+
+/* el títol ja el diu la capçalera fixa, també a l'iPad; «Per a la gestoria» va a la línia de les pestanyes */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .facturacio-v878337>.fe-head>h1,
+  html body .rend-emp-v878343>.fe-head>h1,
+  html body .empresa-v878339>.fe-head>h1,
+  html body .cap-v878340>h1{display:none}
+  html body .rend-emp-v878343>.fe-head:not(:has(>:not(h1))),
+  html body .empresa-v878339>.fe-head:not(:has(>:not(h1))),
+  html body .facturacio-v878337>.fe-head:not(:has(>:not(h1))){display:none}
+  html body .facturacio-v878337:has(>.fe-vistes){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
+  html body .facturacio-v878337:has(>.fe-vistes)>*{grid-column:1/-1;min-width:0}
+  html body .facturacio-v878337:has(>.fe-vistes)>.fe-vistes{grid-column:1;grid-row:1}
+  html body .facturacio-v878337:has(>.fe-vistes)>.fe-head{grid-column:2;grid-row:1}
+}
+
+html body .facturacio-v878337 .fe-head .gestoria-v878390>summary .tx-v878471{font-size:inherit;line-height:inherit}
+
+/* els filtres al mòbil: els anys a la vista i la resta darrere de «Filtres» */
+html body .facturacio-v878337 .filtres-m-v878471{display:none}
+@media (max-width:700px){
+  html body .facturacio-v878337 .fe-head .gestoria-v878390 .tx-v878471{display:none}
+  html body .facturacio-v878337 .fe-total-v878390 .fe-kpis>div:last-child:nth-child(odd){grid-column:1/-1}
+  html body .facturacio-v878337 .fe-filtres .anys{flex:0 1 auto}
+  html body .facturacio-v878337 .filtres-m-v878471{display:inline-flex;align-items:center;margin-left:auto;min-height:36px}
+  html body .facturacio-v878337 .fe-filtres.obert-v878471>.filtres-m-v878471{background:var(--co-surface-2)}
+  html body .facturacio-v878337 .fe-filtres:not(.obert-v878471)>:not(.anys):not(.filtres-m-v878471){display:none}
+}
