@@ -1,0 +1,43 @@
+/* V87.483 · Parte senzill: Personal · Material · Nota i fotos, cada un en un bloc, i la feina per partides plegada (només amb pressupost) */
+html body .parte-ed-v878349 .pe-bloc-v878483{display:flex;flex-direction:column;gap:8px;padding:12px 14px;margin:10px 0 0;background:#fff;border:1.5px solid #C3CED6;border-radius:16px}
+html body .parte-ed-v878349 .pe-bloc-v878483>h4{margin:0 0 2px;display:flex;align-items:center;gap:8px;font-size:15.5px;color:var(--co-ink)}
+html body .parte-ed-v878349 .pe-bloc-v878483>h4>svg{color:var(--co-accent,#2563EB);flex:none}
+html body .parte-ed-v878349 .pe-bloc-v878483>h4>small{margin-left:auto;font-size:13px;font-weight:700;color:var(--co-ink-2,#334155)}
+/* les hores amb − i + */
+html body .pe-hores-v878352 .pe-h{cursor:default}
+html body .pas-v878483{display:inline-flex;align-items:center;border:1.5px solid #C3CED6;border-radius:12px;overflow:hidden;background:#fff;flex:none}
+html body .pas-v878483>button{all:unset;box-sizing:border-box;width:44px;height:44px;display:grid;place-items:center;color:#1D4ED8;cursor:pointer}
+html body .pas-v878483>button:disabled{color:#CBD5E1;cursor:default}
+html body .pas-v878483>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+html body .pas-v878483>input{width:52px!important;min-height:44px;border:0!important;box-shadow:none!important;text-align:center!important;font-size:17px;font-weight:800;padding:0!important;background:transparent}
+html body .pas-v878483>.u{color:var(--co-ink-3);font-weight:600;margin:0 2px 0 -6px}
+/* el material: la foto de l'albarà i afegir */
+html body .parte-ed-v878349 .bts-v878483{display:flex;gap:8px;flex-wrap:wrap}
+html body .parte-ed-v878349 .bts-v878483>*{flex:1 1 140px;justify-content:center}
+html body .parte-ed-v878349 :is(.foto-alb-v878483,.fotos-btn-v878483){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 14px;border:1.5px dashed #94A3B8;border-radius:12px;background:#fff;color:#1D4ED8;font-weight:700;cursor:pointer}
+html body .parte-ed-v878349 .bts-v878483 .afegir{border:1.5px dashed #94A3B8;border-radius:12px;background:#fff;color:#1D4ED8;align-self:auto}
+html body .parte-ed-v878349 .llegint-v878483{margin:0;color:var(--co-ink-3);font-size:13.5px}
+/* la nota i les fotos */
+html body .parte-ed-v878349 .pe-nota-v878483 textarea{width:100%;min-height:72px;font-size:16px;border:1px solid var(--co-line);border-radius:12px;padding:10px}
+html body .parte-ed-v878349 .fotos-v878483{display:flex;gap:8px;flex-wrap:wrap}
+html body .parte-ed-v878349 .fotos-v878483 .foto{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;background:#F1F5F9;display:grid;place-items:center}
+html body .parte-ed-v878349 .fotos-v878483 .foto img{width:100%;height:100%;object-fit:cover}
+html body .parte-ed-v878349 .fotos-v878483 .foto .x{all:unset;position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:99px;background:rgba(15,23,42,.65);color:#fff;display:grid;place-items:center;font-size:16px;cursor:pointer}
+html body .parte-ed-v878349 .fotos-btn-v878483{align-self:flex-start}
+/* la feina per partides: una línia plegada, com les targetes */
+html body .parte-ed-v878349 details.pe-feina-v878483{margin:10px 0 0;background:#fff;border:1.5px solid #C3CED6;border-radius:16px;overflow:clip}
+html body .parte-ed-v878349 details.pe-feina-v878483>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:58px;padding:10px 14px;cursor:pointer}
+html body .parte-ed-v878349 details.pe-feina-v878483>summary::-webkit-details-marker{display:none}
+html body .parte-ed-v878349 details.pe-feina-v878483>summary>svg:first-child{color:var(--co-accent,#2563EB);flex:none}
+html body .parte-ed-v878349 details.pe-feina-v878483>summary .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .parte-ed-v878349 details.pe-feina-v878483>summary .t b{font-size:15.5px}
+html body .parte-ed-v878349 details.pe-feina-v878483>summary .t small{font-size:13px;color:var(--co-ink-3)}
+html body .parte-ed-v878349 details.pe-feina-v878483>summary .chev{color:#94A3B8;transition:transform .15s}
+html body .parte-ed-v878349 details.pe-feina-v878483[open]>summary{background:#1D4ED8;color:#fff}
+html body .parte-ed-v878349 details.pe-feina-v878483[open]>summary>svg,html body .parte-ed-v878349 details.pe-feina-v878483[open]>summary .t small{color:#fff}
+html body .parte-ed-v878349 details.pe-feina-v878483[open]>summary .chev{transform:rotate(-90deg)}
+html body .parte-ed-v878349 details.pe-feina-v878483>:not(summary){margin-left:10px;margin-right:10px}
+html body .parte-ed-v878349 details.pe-feina-v878483>.pe-fp-afegir{margin-bottom:10px}
+/* el resum del dia: les fotos */
+html body .parte-resum-v878349 .pr-fotos-v878483{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+html body .parte-resum-v878349 .pr-fotos-v878483 img{width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in}

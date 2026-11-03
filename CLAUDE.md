@@ -2744,6 +2744,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Disc D: ple (3/11/2026)**: vegeu «Com arrencar i provar». El `TEMP` de l'Edge de les proves, dins del perfil; `passa.sh` amb carpeta per prova.
     - Estils `src/theme-v878482.css`. Prova: `v482test.mjs` (13). Adaptades `visual400test` (el menú no és graella) i `perfils326test`.
     - **Compte:** `i18n-afegir.mjs` vol línies `"català": "castellà",`, no un JSON amb claus (va posar «{» al diccionari i no compilava).
+  - **V87.483 · Parte senzill, també sense pressupost** (l'Héctor, 3/11/2026 a la nit: «els partes haurien de ser molt més fàcils… personal amb temps
+    imputat, material, i nota amb comentari i fotos»; a l'obra Gulta 1 de Brava, sense pressupost, «Partes d'obra» deia «Aquesta obra encara no té pressupost»
+    i no deixava fer cap parte):
+    - **L'editor** (`ParteEditor878349`): fora les pestanyes Feina · Hores · Material; tres blocs a la vista (`pe-bloc-v878483`): **Personal** (les hores amb −
+      i +, `Pas878483`; dos tocs seguits compten tots dos), **Material** (amb **«Foto de l'albarà»**: la foto es desa amb la despesa del material
+      —`albaraFotoKey878259("dp-"+parte+"-"+línia)`, `ambFoto` a la línia, `teFoto` a la despesa; el camp no es pot dir `foto`, que el desat buida— i,
+      si hi ha IA, se n'omplen el concepte, el proveïdor, l'import, el número i el tipus amb `readAlbaraAI878259`) i **Nota i fotos** (dictat i fotos,
+      `part.fotos`, que `fileStore.js` desa i puja com les de les notes). La **feina per partides**, a sota, en una línia plegable
+      (`details.pe-feina-v878483`, oberta si ja n'hi ha de marcades) i **només si l'obra té pressupost**.
+    - Botó principal **«Desar el parte»**; «Passar a la certificació» només surt amb partides marcades. Es pot desar amb només una nota o una foto.
+    - **Partes d'obra** sense pressupost: «Parte d'avui» hi és sempre; «Preus per hora», només amb pressupost.
+    - El resum del dia ensenya les fotos (s'obren al visor).
+    - **Proves:** la marca `parte-feina-prova-v878483` (la posa l'harness, com `pres-prova-obert-v878462`) deixa la feina oberta per a les proves d'abans;
+      `v483test.mjs` (20) la treu. Adaptades `partes350test`, `partes352test`, `partes359test`, `signatura403test` i `avisos360test` («Desar el parte»).
+    - Estils `src/theme-v878483.css`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -2942,7 +2957,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.482 a Render):**
+**Estat (publicada la V87.483 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
