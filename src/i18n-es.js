@@ -5057,4 +5057,10 @@ export default {
 "gratis": "gratis",
 "Revisat": "Revisado",
 "Parte revisat. No hi havia feina nova per certificar.": "Parte revisado. No había trabajo nuevo que certificar.",
+"Opcions del capítol": "Opciones del capítulo",
+"Opcions": "Opciones",
+"Els capítols i les files editables estan oberts. Guarda o cancel·la des del menú Opcions.": "Los capítulos y las filas editables están abiertos. Guarda o cancela desde el menú Opciones.",
+"Per modificar quantitats, preus o conceptes, obre el menú Opcions.": "Para modificar cantidades, precios o conceptos, abre el menú Opciones.",
+"Opcions de la certificació {n}": "Opciones de la certificación {n}",
+"Opcions factura": "Opciones de la factura",
 };

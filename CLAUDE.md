@@ -2731,6 +2731,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Enviar el pressupost d'una obra nova:** surt «En curs / Actiu» i no passava mai a «Pendent de resposta», i la franja «Enviat el…» amb Acceptat / No acceptat no sortia. Ara, si no té certificacions ni partes, hi passa (`nova481` d'`enviatPressupost878402`).
     - **Parte sense feina nova** (només hores o material): queda «Revisat», sense dir cap certificació ni oferir «Treure de la certificació».
     - Proves: `usuari480a.mjs` (31), `v481test.mjs` (12, tres CSV dins de l'app) i `amidamentsunit.mjs` (49). Eina nova `mico480.mjs` (toca cada botó i plegable de totes les pantalles, i omple les finestres amb dades dolentes; `COMPTES=`, `MIDES=`, `FORMS=`, `OBRES=`, `IDIOMA=es`).
+  - **V87.482 · «Opcions», obres per Totes · Obertes · Tancades i el menú «Més» en llista** (l'Héctor, 3/11/2026 a la nit, mirant l'app de Brava
+    al mòbil: «el constructora no distingeix entre obertes i en execució… totes, obertes i tancades»; «en comptes de la paraula accions no seria millor
+    opcions, que és més entenedor»; el menú «Més» en graella, «com era abans en un llistat»):
+    - **«Opcions» en lloc d'«Accions»** a tots els menús (pressupost, certificació, despeses, capítols, factures) i «Opciones» en castellà. Les proves que
+      busquen el menú, adaptades (35 fitxers).
+    - **Obres de la constructora** (perfils que diuen «obra», `diuObra878326`): a la llista i a l'Inici, només **Totes · Obertes · Tancades**
+      (`paquets878482`, `PAQ_OBRA878482`; `paq878482` passa «En execució» i «Esperant resposta» d'abans a «Obertes»). El tècnic, com abans. Les ajudes
+      de les proves que tocaven «Total d’obres» també toquen «Totes».
+    - **Menú «Més» en llista** també amb el «Visual nou» (fora la graella d'icones de la V87.400). **Les captures de l'Héctor eren del «Visual nou»**:
+      l'opció es desa a l'aparell, no al compte, i per això li sortia també entrant amb Brava; als mòbils de Brava es veu com sempre.
+    - **Disc D: ple (3/11/2026)**: vegeu «Com arrencar i provar». El `TEMP` de l'Edge de les proves, dins del perfil; `passa.sh` amb carpeta per prova.
+    - Estils `src/theme-v878482.css`. Prova: `v482test.mjs` (13). Adaptades `visual400test` (el menú no és graella) i `perfils326test`.
+    - **Compte:** `i18n-afegir.mjs` vol línies `"català": "castellà",`, no un JSON amb claus (va posar «{» al diccionari i no compilava).
+  - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
+    és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
+    feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
+    l'obra); 2) dins de l'obra, quatre rajoles (Fitxa · Dia a dia —en lloc de «Seguiment»— · Pressupost · Comptabilitat) amb la llista dels seus apartats a
+    sota, sense el ＋; 3) pressupost buit en tres rajoles (Importar un arxiu · Amb IA · A mà); 4) **parte senzill** (personal amb hores, material, nota i
+    fotos; partides opcionals) que **no depengui del pressupost** (avui, sense pressupost, «Partes d'obra» diu «Aquesta obra encara no té pressupost» i
+    no es pot fer); 5) «Preus» fora del menú de la constructora (els preus surten sols de les obres anteriors) i passar a la IA els preus propis semblants.
+    **Esperant el sí de l'Héctor a cada punt.**
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2921,7 +2942,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.481 a Render):**
+**Estat (publicada la V87.482 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
