@@ -37,7 +37,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.479";
+const APP_VERSION878264="87.480";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13665,7 +13665,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
       let amb=[...preusAmidaments878368(delArxiu,partidaLibrary,bancPreus878368(),obraId),...preusAmidaments878368(dIa.map(p=>({concepte:p.concepte,desc:p.desc,ut:p.ut,q:p.q,codi:""})),partidaLibrary,bancPreus878368(),obraId).map((l,i)=>({...l,codi:dIa[i].codi}))];
       const sense=amb.filter(l=>!(Number(l.pu)>0));const preus={};
       const trossos=Math.ceil(sense.length/15);
-      const fesPreus=sense.length<=30||confirm(t("{s} partides no tenen preu. Buscar-los amb la IA gastarà com a mínim {l} lectures i pot trigar uns {m} minuts. Continuar? (Si dius que no, podràs posar els preus a mà.)",{s:sense.length,l:trossos*15,m:trossos*2}));
+      const fesPreus=sense.length<=30||confirm(t("{s} partides no tenen preu. Buscar-los amb la IA gastarà com a mínim {l} lectures i pot trigar uns {m} minuts. Continuar? (Si dius que no, els podràs buscar després des del pressupost.)",{s:sense.length,l:trossos*15,m:trossos*2}));
       if(fesPreus)try{
         for(let i=0;i<sense.length;i+=15){
           const tros=sense.slice(i,i+15);
@@ -13731,6 +13731,77 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
       </div>)}</div>}
       {files.length>0&&<p className="peu"><span>{triades.length===1?t("1 partida"):t("{n} partides",{n:triades.length})}</span><b>{money(total)}</b></p>}
       <div className="modal-actions"><button type="button" className="secondary" onClick={()=>setFiles(null)}>{iaOn?t("Tornar enrere"):t("Tornar a dictar")}</button><button type="button" className="primary" disabled={!triades.length} onClick={afegeix}>{triades.length===1?t("Afegir 1 partida"):t("Afegir {n} partides",{n:triades.length})}</button></div>
+    </>}
+  </div></Modal>;
+}
+// V87.480 · l'Héctor, 3/11/2026: «la resta de capítols sense preu… el puc fer un cop he dit que no amb els que falten?». Un «no» a l'avís de les
+// lectures deixava les partides a 0 € sense cap manera de tornar-ho a demanar. «N partides sense preu · Buscar preus»: primer els preus propis
+// (Preus, banc, obres anteriors), gratis; es poden triar els capítols i la IA només busca els que queden. Cada tanda es desa en arribar: si
+// es talla la connexió, el que ja s'ha pagat no es perd i la propera vegada només queden les que falten.
+const clauPartida878480=(cap,r)=>`${cap}|${r.codi||""}|${r.concepte||""}`;
+function sensePreu878480(caps={}){
+  const out=[];
+  Object.keys(caps||{}).sort((x,y)=>x.localeCompare(y,"ca",{numeric:true})).forEach(cap=>(caps[cap]||[]).forEach(r=>{
+    if((parseNum8770(r.q)||0)>0&&!(parseNum8770(r.pu)||0)&&String(r.concepte||"").trim()&&!certificada878380(r))out.push({clau:clauPartida878480(cap,r),cap,codi:r.codi||"",ut:r.ut||"",concepte:r.concepte||"",desc:r.desc||"",q:parseNum8770(r.q)||0,pu:null});
+  }));
+  // la IA torna els preus pel codi: sense codi, o amb el codi repetit, se'n posa un de provisional
+  const vist={};out.forEach(l=>{const c=String(l.codi||"").trim();vist[c]=(vist[c]||0)+1});
+  out.forEach((l,i)=>{const c=String(l.codi||"").trim();l.codiIa=c&&vist[c]===1?c:`P${i+1}`});
+  return out;
+}
+function BuscarPreus878480({linies=[],partidaLibrary=[],data={},obra=null,obraId="",onPosa,close}){
+  const[iaOn,setIaOn]=useState(()=>iaSabuda()===true);const[quota,setQuota]=useState(null);
+  useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setIaOn(x)});iaQuota().then(q=>{if(viu)setQuota(q)});return()=>{viu=false}},[]);
+  const amb=useMemo(()=>preusAmidaments878368(linies,partidaLibrary,bancPreus878368(),obraId),[]);
+  const caps=useMemo(()=>[...new Set(amb.map(l=>l.cap))],[amb]);
+  const[fora,setFora]=useState({});const[fent,setFent]=useState("");const[err,setErr]=useState("");const[fet,setFet]=useState(null);
+  const triades=amb.filter(l=>!fora[l.cap]),propis=triades.filter(l=>Number(l.pu)>0),perIa=triades.filter(l=>!(Number(l.pu)>0));
+  const lect=Math.ceil(perIa.length/15)*15,resta=quota?.limit?Math.max(0,quota.limit-quota.usat):null;
+  const mg=margesObra878378(data),acc=pctAcces(data?.condicions878368||{});
+  const patch=l=>{const m=margesLinia878378(l,{mg,ambMg:true,acc,ambAcc:acc>0});
+    const origen=[t(FONTS878368[l.font878368]||""),l.semblant878368?t("semblant"):"",l.nota878368||"",...(m.tb?m.notes:[])].filter(Boolean).join(" · ").slice(0,260);
+    return {clau:l.clau,cap:l.cap,patch:{pu:m.pu,...(m.tb?{descompostTable:m.tb,descompost:descompostTableToText878174(m.tb)}:{}),...(m.mgRec?{mg878378:m.mgRec}:{}),...(m.minim?{minim878378:m.minim}:{}),origenPreu878368:origen}}};
+  async function fes(ambIa){
+    setErr("");setFent(t("Posant els preus…"));const encesa=await pantallaEncesa878476();let nProp=0,nIa=0;const avisos=[];
+    try{
+      if(propis.length){onPosa(propis.map(patch));nProp=propis.length}
+      if(ambIa)for(let i=0;i<perIa.length;i+=15){
+        const tros=perIa.slice(i,i+15);
+        setFent(t("Preus de les partides {a} a {b} de {n}…",{a:i+1,b:i+tros.length,n:perIa.length}));
+        const pr=await iaCrida("preus",{text:promptPreusIa({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:tros.map(l=>({...l,codi:l.codiIa}))})});
+        const lr=respostaIa(pr?.text||"",tros.map(l=>l.codiIa));avisos.push(...lr.avisos);
+        const fets=tros.map(l=>{const x=lr.preus[l.codiIa];return x&&x.pu>0?{...l,pu:x.pu,font878368:"ia",semblant878368:false,nota878368:x.nota||"",descomp878368:x.descomp||null,taula878368:null}:null}).filter(Boolean);
+        if(fets.length){onPosa(fets.map(patch));nIa+=fets.length}
+      }
+    }catch(e){setErr(t("No s’han pogut fer tots els preus: {e}",{e:iaErr878458(e)}))}
+    try{encesa?.release?.()}catch{}
+    setFent("");setFet({n:nProp+nIa,queden:amb.length-nProp-nIa,avisos});
+  }
+  const marca=v=>setFora(v?{}:Object.fromEntries(caps.map(c=>[c,true])));
+  return <Modal title={t("Buscar preus")} close={fent?()=>{}:close}><div className="buscar-v878480">
+    {fet?<>
+      <p className="fet"><b>{fet.n===1?t("1 preu posat"):t("{n} preus posats",{n:fet.n})}</b>{fet.queden>0&&<span>{fet.queden===1?t("1 partida continua sense preu"):t("{n} partides continuen sense preu",{n:fet.queden})}</span>}</p>
+      {fet.avisos.length>0&&<p className="avis-ia-v878458">{fet.avisos.join(" · ")}</p>}
+      {err&&<p className="err-v878305">{err}</p>}
+      <div className="modal-actions"><button type="button" className="primary" onClick={close}>{t("Tancar")}</button></div>
+    </>:<>
+      <p className="n"><b>{amb.length===1?t("1 partida sense preu"):t("{n} partides sense preu",{n:amb.length})}</b></p>
+      {caps.length>1&&<div className="caps">
+        <div className="tots"><button type="button" onClick={()=>marca(true)}>{t("Tots")}</button><button type="button" onClick={()=>marca(false)}>{t("Cap")}</button></div>
+        {caps.map(c=><label key={c}><input type="checkbox" checked={!fora[c]} disabled={!!fent} onChange={e=>setFora(f=>({...f,[c]:!e.target.checked}))}/><span>{c}</span><em>{amb.filter(l=>l.cap===c).length}</em></label>)}
+      </div>}
+      <ul className="compte">
+        {propis.length>0&&<li>{propis.length===1?t("1 amb preu propi"):t("{n} amb preu propi",{n:propis.length})}<em>{t("gratis")}</em></li>}
+        {perIa.length>0&&<li>{perIa.length===1?t("1 per a la IA"):t("{n} per a la IA",{n:perIa.length})}{iaOn&&<em>{t("{l} lectures com a mínim",{l:lect})}</em>}</li>}
+        {iaOn&&perIa.length>0&&resta!=null&&<li className={resta<lect?"poc":""}>{t("Et queden {r} lectures aquest mes",{r:resta})}</li>}
+      </ul>
+      {fent&&<p className="pas-ia-v878458">{fent}</p>}
+      {err&&<p className="err-v878305">{err}</p>}
+      <div className="modal-actions"><button type="button" className="secondary" disabled={!!fent} onClick={close}>{t("Cancel·lar")}</button>
+        {iaOn&&propis.length>0&&perIa.length>0&&<button type="button" className="secondary" disabled={!!fent} onClick={()=>fes(false)}>{t("Només els propis ({n})",{n:propis.length})}</button>}
+        {iaOn&&perIa.length>0?<button type="button" className="primary" disabled={!!fent} onClick={()=>fes(true)}><WandSparkles size={15} aria-hidden="true"/> {t("Buscar preus ({n})",{n:triades.length})}</button>
+        :<button type="button" className="primary" disabled={!!fent||!propis.length} onClick={()=>fes(false)}>{t("Posar preus ({n})",{n:propis.length})}</button>}
+      </div>
     </>}
   </div></Modal>;
 }
@@ -14498,6 +14569,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   // només sortia editant, quan «Accions» ja no surt). Primer la finestra amb què es posarà; en acceptar, es desa al moment.
   const[desc398,setDesc398]=useState(null);
   const[dictat401,setDictat401]=useState(false);
+  const[preus480,setPreus480]=useState(null);const posaRef480=useRef(null);
   const[iaOn459,setIaOn459]=useState(()=>iaSabuda()===true);
   useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setIaOn459(x)});return()=>{viu=false}},[]);
   const[imprimir426,setImprimir426]=useState(false);
@@ -15160,6 +15232,14 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const budgetRows878211=Object.values(caps||{}).flat();
   // V87.479 · capítols que es diuen igual (fins a la V87.477, cada partida d'un «capítol nou» n'obria un): un toc els ajunta, sense gastar res
   const nRep879=editBudget8760b||quickMode||clientMode||!setData||(data.certificacions||[]).length?0:capsRepetits(caps);
+  // V87.480 · les partides sense preu d'aquest pressupost: també amb una comissió aplicada (el preu nou és l'original i a sobre, la comissió)
+  const nPreus480=editBudget8760b||quickMode||clientMode||!setData||tancat428?0:sensePreu878480(caps).length;
+  posaRef480.current=ls=>{
+    const next={...(capsRef878247.current||caps)},per=new Map(ls.map(x=>[x.clau,x.patch])),now=new Date().toISOString();
+    [...new Set(ls.map(x=>x.cap))].forEach(cap=>{next[cap]=(next[cap]||[]).map(r=>{const p=per.get(clauPartida878480(cap,r));if(!p)return r;
+      return {...r,...p,...(r.puOrig878346!=null?{puOrig878346:p.pu,pu:puCom878346(p.pu,parseNum8770(r.com878346))}:{}),updatedAt:now}})});
+    setCaps(next);persistBudgetCaps878179(next);
+  };
   function ajunta879(){
     if(!confirm(i18nT("Ajuntar els capítols que es diuen igual? Les partides passaran al primer i es tornaran a numerar.")))return;
     const next=ajuntaCaps(sortedCapEntries8779(capsRef878247.current||caps).map(([k,v])=>[k,sortPartides8779(v)]));
@@ -15237,6 +15317,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     </div></Modal>}
     {pdf878305&&<PdfPressupost878305 close={()=>setPdf878305(false)} onImport={(rows,meta)=>window.__acoImportPdf878305?.(rows,meta,activeBudgetId)}/>}
     {inicial878412&&<TancarPressupost878428 data={data} setData={setData} bid={data?.activeBudgetIdObra||activeBudgetId||"principal"} obraId={obra?.id} altres={(window.__acoDadesObra878412?.(obra?.id)?.partides||[]).filter(r=>(r.budgetId||"principal")!==(data?.activeBudgetIdObra||activeBudgetId||"principal"))} close={()=>setInicial878412(false)}/>}
+    {preus480&&<BuscarPreus878480 linies={preus480} partidaLibrary={partidaLibrary} data={data} obra={obra} obraId={obra?.id||""} onPosa={ls=>posaRef480.current?.(ls)} close={()=>setPreus480(null)}/>}
     {dictat401&&<DictarPartides878401 caps={editBudget8760b?(capsRef878247.current||caps):normalizeBudgetCaps878176(group(data.partides||[],"cap"))} partidaLibrary={partidaLibrary} data={data} obra={obra} obraId={obra?.id||""} onAfegir={afegeixLlibreria878361} close={()=>setDictat401(false)}/>}
     {desc398&&<Modal title={i18nT("Tornar a llegir els descompostos")} close={()=>setDesc398(null)}><div className="desc-v878398">
       {desc398.fet!=null?<><p className="fet"><b>{desc398.fet===1?i18nT("1 descompost posat."):i18nT("{n} descompostos posats.",{n:desc398.fet})}</b></p><div className="modal-actions"><button type="button" className="primary" onClick={()=>setDesc398(null)}>{i18nT("Tancar")}</button></div></>
@@ -15264,6 +15345,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     </div><Recollir878432/></details>}
     {budgetWorkTab878180!=="Validar descompostos"&&avisos878320.length>0&&<details className="card bloc-v878426 avisos-v878426"><summary><AlertTriangle size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Avisos")}</b></span><span className="n">{avisos878320.length}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><AvisosPressupost878320 avisos={avisos878320} dins/></div><Recollir878432/></details>}
     {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={startManualBudget87115} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null}/>}
+    {nPreus480>0&&nRep879===0&&<div className="caps-rep-v878479 sense-preu-v878480"><span>{nPreus480===1?i18nT("1 partida sense preu"):i18nT("{n} partides sense preu",{n:nPreus480})}</span><button type="button" className="secondary" onClick={()=>setPreus480(sensePreu878480(caps))}><Search size={15} aria-hidden="true"/> {i18nT("Buscar preus")}</button></div>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} titol={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
       <div className="budget-botons-v878320 pres-accions-v878366">
@@ -18970,7 +19052,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.479",
+    app_version:"87.480",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

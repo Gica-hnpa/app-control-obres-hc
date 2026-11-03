@@ -2718,6 +2718,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Revisió:** amb un arxiu i un pressupost que ja té partides, avís «Aquest pressupost ja té partides: les de l'arxiu s'hi afegiran.»
     - **«Contenido no disponible» en triar un arxiu del Drive a l'iPhone:** és el selector de l'iPhone, abans de tornar a l'app. Va amb el proveïdor de Google Drive de l'app Fitxers; l'app només obre el selector. Mentre no hi hagi el botó «Des de Google Drive» (Google Picker, cal una clau d'API del projecte de Google de l'Héctor), obrir abans l'app de Google Drive o desar l'arxiu a «Al meu iPhone».
     - Estils `src/theme-v878479.css`. Prova: `v479test.mjs` (19).
+  - **V87.480 · «Buscar preus» a un pressupost ja fet** (l'Héctor, 3/11/2026, després d'ajuntar els capítols de «pressupost PROVA IA»: «ara si vull la resta de capítols sense preu hauria de fer llegir a la IA i gastar en lectures… el puc fer un cop he dit que no amb els que falten?»; fins ara no es podia: un «no» a l'avís de les lectures era definitiu):
+    - **Línia «N partides sense preu · Buscar preus»** (`sense-preu-v878480`, a sobre de la targeta del pressupost; surt després de la de capítols repetits): no surt editant, amb el pressupost tancat, al portal ni al pressupost ràpid. `sensePreu878480(caps)`: partides amb quantitat, sense preu i sense certificar (les que no tenen codi, o el tenen repetit, porten un codi provisional per a la IA, `codiIa`).
+    - **Finestra** (`BuscarPreus878480`, `.buscar-v878480`): primer els preus propis, gratis (`preusAmidaments878368`: Preus, banc, obres anteriors); caselles per capítol (Tots · Cap); el compte abans de gastar res («N amb preu propi · gratis», «N per a la IA · L lectures com a mínim», «Et queden R lectures aquest mes»). Botons: «Només els propis (n)» i «Buscar preus (n)», o «Posar preus (n)» si no cal IA.
+    - **Cada tanda de 15 es desa en arribar** (`posaRef480`): un tall a mitja feina no perd el que ja s'ha pagat; la finestra diu quants preus s'han posat i quantes partides continuen sense preu, i la línia surt amb les que falten. Marges de l'obra amb `margesLinia878378`; amb comissió, el preu nou és l'original (`puOrig878346`) i a sobre, la comissió.
+    - Pantalla encesa mentre treballa (`pantallaEncesa878476`). L'avís de lectures diu: «Si dius que no, els podràs buscar després des del pressupost.»
+    - Estils `src/theme-v878480.css`. Prova: `v480test.mjs` (14; el Supabase de proves accepta `POST /__aco-ia {fallaDespres:N}`, que fa fallar la tanda N+1).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2908,7 +2914,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.479 a Render):**
+**Estat (publicada la V87.480 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

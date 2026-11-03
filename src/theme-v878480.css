@@ -1,0 +1,21 @@
+/* V87.480 · Buscar preus: les partides sense preu d'un pressupost ja fet */
+.sense-preu-v878480{border-color:#BFDBFE;background:#EFF6FF;color:#1E40AF}
+.buscar-v878480{display:flex;flex-direction:column;gap:12px}
+.buscar-v878480 p{margin:0}
+.buscar-v878480 .n{font-size:16px}
+.buscar-v878480 .caps{display:flex;flex-direction:column;border:1px solid var(--co-line,#D7DEE2);border-radius:10px;max-height:min(46vh,380px);overflow-y:auto}
+.buscar-v878480 .caps .tots{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--co-line,#D7DEE2);position:sticky;top:0;background:#fff;z-index:1}
+.buscar-v878480 .caps .tots button{all:unset;cursor:pointer;color:#1D4ED8;font-weight:600;padding:4px 10px;border-radius:8px}
+.buscar-v878480 .caps .tots button:focus-visible{outline:2px solid #1D4ED8}
+.buscar-v878480 .caps label{display:flex;align-items:center;gap:10px;padding:10px 12px;min-height:44px;box-sizing:border-box;border-bottom:1px solid #EEF1F3;cursor:pointer}
+.buscar-v878480 .caps label:last-child{border-bottom:0}
+.buscar-v878480 .caps label span{flex:1;min-width:0;overflow-wrap:anywhere}
+.buscar-v878480 .caps label em{font-style:normal;font-weight:700;color:var(--co-ink-3,#5F7075)}
+.buscar-v878480 .compte{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.buscar-v878480 .compte li{display:flex;justify-content:space-between;gap:12px;font-weight:600}
+.buscar-v878480 .compte li em{font-style:normal;font-weight:400;color:var(--co-ink-3,#5F7075);text-align:right}
+.buscar-v878480 .compte li.poc{color:#B91C1C}
+.buscar-v878480 .fet{display:flex;flex-direction:column;gap:4px}
+.buscar-v878480 .fet b{font-size:17px}
+.buscar-v878480 .fet span{color:#9A3412;font-weight:600}
+@media (max-width:700px){.buscar-v878480 .modal-actions{flex-wrap:wrap}.buscar-v878480 .modal-actions button{flex:1 1 100%}}
