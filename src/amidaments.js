@@ -103,6 +103,47 @@ export function llegirBc3(text) {
   return { font: "BC3", nom, caps, partides, avisos };
 }
 
+// ───────────── CSV ─────────────
+// V87.481 · Un CSV s'obria com un Excel i la biblioteca hi endevinava els números a l'americana: «12,5» passava a 125, «1.234,56» a
+// 1,23, «01.01» a 1.01, «02.10» a 2.1, i els accents d'un arxiu en UTF-8 es feien malbé, sense cap avís. Ara s'obre com a text i només
+// passa a número el que no pot ser res més: els codis i les dates es queden tal com són, i cada lector ja entén «12,5» o «03/11/2026».
+export function textCsv(buf) {
+  const u8 = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  if (u8.length < 3) return null;
+  if (u8[0] === 0xff && u8[1] === 0xfe) return new TextDecoder("utf-16le").decode(u8.subarray(2));
+  if (u8[0] === 0xfe && u8[1] === 0xff) return new TextDecoder("utf-16be").decode(u8.subarray(2));
+  if (u8[0] === 0x50 && u8[1] === 0x4b) return null; // zip: xlsx, xlsm, ods
+  for (let i = 0; i < Math.min(u8.length, 4096); i++) if (u8[i] === 0) return null; // xls i altres binaris
+  let tx;
+  try { tx = new TextDecoder("utf-8", { fatal: true }).decode(u8); } catch { tx = new TextDecoder("windows-1252").decode(u8); }
+  tx = tx.replace(/^\uFEFF/, "");
+  return /^\s*</.test(tx) ? null : tx; // un .xls que en realitat és HTML
+}
+const numCsv = t => {
+  const s = String(t).trim().replace(/\s*€$/, "");
+  if (/^-?(?:0|[1-9]\d{0,14})$/.test(s)) return Number(s);
+  if (/^-?\d+,\d+$/.test(s) || /^-?\d{1,3}(?:\.\d{3})+,\d+$/.test(s)) return Number(s.replace(/\./g, "").replace(",", "."));
+  if (/^-?\d{1,3}(?:,\d{3})+\.\d+$/.test(s)) return Number(s.replace(/,/g, ""));
+  return null;
+};
+export function llegeixLlibre(XLSX, buf, opc = { type: "array", cellDates: false }) {
+  const tx = textCsv(buf);
+  if (tx === null) return XLSX.read(buf, opc);
+  const wb = XLSX.read(tx, { type: "string", raw: true });
+  for (const nom of wb.SheetNames) {
+    const ws = wb.Sheets[nom];
+    for (const k of Object.keys(ws)) {
+      const c = ws[k];
+      if (k[0] === "!" || c.t !== "s") continue;
+      const n = numCsv(c.v);
+      if (n !== null) { c.t = "n"; c.v = n; delete c.w; }
+    }
+  }
+  return wb;
+}
+// Els fulls per a llegirExcelAmidaments, amb el text que es veu a cada cel·la: un codi 1.10 en una cel·la numèrica val 1.1, i es veu «1.10»
+export const fullsLlibre = (XLSX, wb) => wb.SheetNames.map(nom => ({ nom, files: XLSX.utils.sheet_to_json(wb.Sheets[nom], { header: 1, defval: "" }), textos: XLSX.utils.sheet_to_json(wb.Sheets[nom], { header: 1, defval: "", raw: false }) }));
+
 // ───────────── Excel / CSV ─────────────
 // fulls: [{ nom, files: [[cel·les]] }] (XLSX.utils.sheet_to_json amb header:1). Es busca la fila de capçalera (codi, unitat,
 // descripció, quantitat…) i el full que dona més partides. Accepta: llistes simples (Codi · Ut · Descripció · Quantitat [· Preu ·
@@ -115,8 +156,8 @@ const COLS = {
   ut: /^(ut|ud|u|uts|unitat|unidad|unit|unitats de mesura|unitat de mesura|ud de medida|unidad de medida|um|u m)$/,
   concepte: /^(descripcio|descripcion|concepte|concepto|resum|resumen|text|texto|designacio|designacion|partida d.obra|nom|nombre|description)/,
   q: /^(quantitat|quantitats|cantidad|cantidades|amidament|amidaments|medicio|medicions|medicion|mediciones|canpres|cant|q|total amidament|total medicion|quantitat total|cantidad total|medicio total|medicion total)(\s.*)?$/,
-  pu: /^(preu|precio|pu|preu unitari|precio unitario|p unitari|pu sense iva|precio unit|pres|€\/u)$/,
-  imp: /^(import|importe|total|imp|import total|importe total|imppres|parcial pressupost)$/,
+  pu: /^(?!.*\b(?:total|import|importe)\b)(?:preu|precio|pu|p u|p unitari|precio unit|prpres|pr pres|pres|pvp|€\/u)(?:\s.*)?$/,
+  imp: /^(import|importe|total|imp|import total|importe total|imppres|parcial pressupost|preu total|precio total|import €|importe €)$/,
   nat: /^(nat|naturalesa|naturaleza|tipus|tipo)$/,
   cap: /^(capitol|capitulo|chapter|cap)$/,
   com: /^(comentari|comentario|linia de medicio|linea de medicion|observacions|observaciones|ubicacio|ubicacion)$/,
@@ -127,7 +168,7 @@ const COLS = {
   parc: /^(parcial|parcials|parciales|total linia|total linea|subtotal)$/
 };
 const esNumCel = v => typeof v === "number" || /^-?\d{1,3}(?:[.\s]\d{3})*(?:,\d+)?$|^-?\d+(?:[.,]\d+)?$/.test(cel(v));
-const numCel = v => { if (typeof v === "number") return v; const t = cel(v).replace(/\s/g, ""); if (!t) return null; const s = t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : t; const n = Number(s); return Number.isFinite(n) ? n : null; };
+const numCel = v => { if (typeof v === "number") return v; const t = cel(v).replace(/[\s€]/g, ""); if (!t) return null; const s = t.lastIndexOf(",") > t.lastIndexOf(".") ? t.replace(/\./g, "").replace(",", ".") : t.replace(/,/g, ""); const n = Number(s); return Number.isFinite(n) ? n : null; };
 const CAP_FILA = /^(?:cap[ií]tol|cap[ií]tulo|cap\.)\s*(\d{1,3}(?:[.\-]\d{1,3})?)\s*[-.:·]?\s*(.*)$/i;
 const CAP_CODI = /^(c?\d{1,3}(?:\.\d{1,2})?)\s*[-.:·]?\s+(.+)$/i;
 
@@ -173,7 +214,7 @@ function capcaleraSenseTitols(files) {
   return { fila: -1, col, punts: Object.keys(col).length, senseTitols: true };
 }
 
-function llegirFull(files) {
+function llegirFull(files, textos) {
   const h = capcalera(files) || capcaleraSenseTitols(files);
   if (!h) return null;
   const { col } = h, caps = [], partides = [];
@@ -188,7 +229,8 @@ function llegirFull(files) {
   for (let i = h.fila + 1; i < files.length; i++) {
     const fila = files[i] || [];
     if (!fila.some(x => cel(x))) continue;
-    const codi = cel(v(fila, "codi")), concepte = cel(v(fila, "concepte")), ut = cel(v(fila, "ut"));
+    const c0 = v(fila, "codi"), tc = cel(textos?.[i]?.[col.codi]);
+    const codi = typeof c0 === "number" && /^\d+\.\d+$/.test(tc) ? tc : cel(c0), concepte = cel(v(fila, "concepte")), ut = cel(v(fila, "ut"));
     const q = numCel(v(fila, "q")), pu = numCel(v(fila, "pu")), imp = numCel(v(fila, "imp"));
     const capCol = cel(v(fila, "cap"));
     if (capCol && capCol !== cap) { tanca(); cap = capCol; if (!caps.includes(cap)) caps.push(cap); }
@@ -264,7 +306,7 @@ function midaDeFila(fila, col) {
 export function llegirExcelAmidaments(fulls) {
   let millor = null;
   for (const full of fulls || []) {
-    const r = llegirFull(full.files || []);
+    const r = llegirFull(full.files || [], full.textos);
     if (r && (!millor || r.partides.length > millor.partides.length)) millor = { ...r, full: full.nom };
   }
   const avisos = [];

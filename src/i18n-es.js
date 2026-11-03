@@ -5055,4 +5055,6 @@ export default {
 "{l} lectures com a mínim": "{l} lecturas como mínimo",
 "Et queden {r} lectures aquest mes": "Te quedan {r} lecturas este mes",
 "gratis": "gratis",
+"Revisat": "Revisado",
+"Parte revisat. No hi havia feina nova per certificar.": "Parte revisado. No había trabajo nuevo que certificar.",
 };

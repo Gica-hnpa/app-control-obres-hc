@@ -10,7 +10,7 @@ import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
 import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878305} from "./pressupostPdf.js";
-import {textBc3,llegirBc3,llegirExcelAmidaments} from "./amidaments.js";
+import {textBc3,llegirBc3,llegirExcelAmidaments,llegeixLlibre,fullsLlibre} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {llegirDictat} from "./dictatPartides.js";
 import {cercaOk as cercaOk878470,dataIso as dataIso878470} from "./cercaLlistes.js";
@@ -37,7 +37,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.480";
+const APP_VERSION878264="87.481";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1505,7 +1505,7 @@ function descompostRowsToText878161(rows=[],source="Excel descomposat") {
 }
 function workbookDescompostFromFile878161(file,{codi="",pu=0}={}){
   return file.arrayBuffer().then(ab=>{
-    const wb=XLSX.read(ab,{type:"array",cellDates:false});
+    const wb=llegeixLlibre(XLSX,ab);
     // V87.399 · la mateixa lectura que en importar tot el pressupost (blocs, títols, línies a 0 que no compten, % ben llegits i triats pel
     // preu de la partida) i, si l'Excel en porta diversos, el de la partida pel codi; si no en surt cap, la lectura d'abans
     const items=workbookDescompostsFromWorkbook878228(wb,file.name).filter(it=>it.table?.rows?.length);
@@ -1671,7 +1671,7 @@ function planDescompostos878398(rows=[],items=[],fileName="Excel"){
 }
 function workbookDescompostsMassius878176(file){
   return file.arrayBuffer().then(ab=>{
-    const wb=XLSX.read(ab,{type:"array",cellDates:false});
+    const wb=llegeixLlibre(XLSX,ab);
     const items=workbookDescompostsFromWorkbook878228(wb,file.name);
     if(!items.length)throw new Error("No he trobat cap full de descomposat vàlid. Recomanat: un full per partida, amb el codi de partida al nom del full o a les primeres files.");
     return items;
@@ -5652,7 +5652,7 @@ function parseRows(rows,sheetName){
 
   try{
     const ab=await file.arrayBuffer();
-    const wb=XLSX.read(ab,{type:"array",cellDates:false});
+    const wb=llegeixLlibre(XLSX,ab);
     let best={rows:[],sheet:"",caps:0,total:0};
     let bestScore=-999999;
     for(const sheetName of wb.SheetNames){
@@ -6004,7 +6004,8 @@ function enviatPressupost878402(id,via,a=[]){
   setObres(prev=>{const next=prev.map(o=>o.id===id?{...o,enviatPres878402:env,updatedAt:now}:o);try{lsSet8779("aco_obres",JSON.stringify(next),authUser8779)}catch(e){}return next});
   // també a les dades de l’obra: el pressupost rep l’obra d’aquí quan s’hi torna
   setOdata(prev=>{if(!prev[id])return prev;const next={...prev,[id]:{...prev[id],obra:{...(prev[id].obra||{}),enviatPres878402:env}}};try{saveOdata878104(next,authUser8779)}catch(e){}return next});
-  if(["Pressupostat","En revisió"].includes(st))updateObraStatus878247(id,"Pendent de resposta");
+  const d481=odata?.[id]||{},nova481=st==="En curs / Actiu"&&!(d481.certificacions||[]).length&&!(d481.partes878349||[]).length;
+  if(["Pressupostat","En revisió"].includes(st)||nova481)updateObraStatus878247(id,"Pendent de resposta");
 }
 function emailDraft(title,extra={}){const id=obra?.id;setEmail({...draftCorreu878337({title:i18nT(title),obra,data,clients:viewClients878233,primer:extra?.assistents}),pdf:extra?.pdf||(extra?.doc?{doc:extra.doc,obra,client}:null),onEnviat:id&&/^Pressupost/i.test(String(title||""))?(via,a)=>enviatPressupost878402(id,via,a):null})}
 // V87.407 · «Enviar» amb el PDF des de qualsevol pantalla (Facturació, Pressupostos, la vista d'un pressupost o d'una factura d'honoraris…)
@@ -11599,7 +11600,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
       const r=certificaParte878349(ambParte(d1,p1),p.id);res=r.certs;return r.d});
     despeses(p);
     setEsb(null);setVistaId(p.id);
-    setTimeout(()=>{const ks=Object.keys(res||{});setAvis(ks.length?(editat?t("Certificació {n} posada al dia.",{n:nomCerts(res)}):t("A la certificació {n}.",{n:nomCerts(res)})):t("No hi havia feina nova per certificar."))},0);
+    setTimeout(()=>{const ks=Object.keys(res||{});setAvis(ks.length?(editat?t("Certificació {n} posada al dia.",{n:nomCerts(res)}):t("A la certificació {n}.",{n:nomCerts(res)})):t("Parte revisat. No hi havia feina nova per certificar."))},0);
   }
   function elimina(p){const cert=p.estat==="certificat";if(!confirm(cert?t("Eliminar aquest parte? També se’n treu la feina de la certificació {n}.",{n:nomCerts(p.cert)}):t("Eliminar aquest parte?")))return;
     setData?.(d=>cert?desfesParte878359(d,p.id,true):({...d,partes878349:(d.partes878349||[]).filter(x=>x.id!==p.id),updatedAt:new Date().toISOString()}));despeses(p,true);setEsb(null);setVistaId("");setAvis("")}
@@ -11610,7 +11611,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   if(vista){const bloq=parteBloquejat878352(data,vista);const cert=vista.estat==="certificat";
     return <ParteResum878349 data={data} obraId={obra?.id} part={vista} treb={treb} readOnly={readOnly} avis={avis} treuAvis={()=>setAvis("")} nomCerts={nomCerts} bloquejat={bloq}
       onEdita={!readOnly&&(!cert||(!treb&&!bloq))?()=>{setAvis("");setEsb({...vista,hores:vista.hores||[],material:vista.material||[]})}:null} onCertifica={!cert&&!readOnly&&!treb?()=>certifica(vista):null}
-      onElimina={!readOnly&&!treb&&!bloq?()=>elimina(vista):null} onDesfes={cert&&!readOnly&&!treb&&!bloq?()=>desfes(vista):null} onTanca={()=>{setVistaId("");setAvis("")}}
+      onElimina={!readOnly&&!treb&&!bloq?()=>elimina(vista):null} onDesfes={cert&&nomCerts(vista.cert)&&!readOnly&&!treb&&!bloq?()=>desfes(vista):null} onTanca={()=>{setVistaId("");setAvis("")}}
       onSigna={!readOnly?sg=>setData?.(d=>({...d,partes878349:(d.partes878349||[]).map(x=>x.id===vista.id?{...x,signatures878403:[{...sg,rol:"client"}]}:x),updatedAt:new Date().toISOString()})):null}/>}
   // per mesos: l'últim obert, la resta plegats
   const mesos=[];partes.forEach(p=>{const k=String(p.data||"").slice(0,7)||"—";let m=mesos.find(x=>x.k===k);if(!m){m={k,partes:[]};mesos.push(m)}m.partes.push(p)});
@@ -11630,7 +11631,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
             <span className="dia"><b>{p.data?new Date(p.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"short",day:"numeric",month:"short"}):"—"}</b><small>{p.qui||""}</small></span>
             <span className="que">{que}</span>
             {!treb&&<b className="imp">{money(imp)}</b>}
-            <em className={`estat ${p.estat==="certificat"?"ok":"pend"}`}>{p.estat==="certificat"?t("Certificació {n}",{n:nomCerts(p.cert)}):t("Per revisar")}</em>
+            <em className={`estat ${p.estat==="certificat"?"ok":"pend"}`}>{p.estat==="certificat"?(nomCerts(p.cert)?t("Certificació {n}",{n:nomCerts(p.cert)}):t("Revisat")):t("Per revisar")}</em>
           </button>})}</div>}
       </section>})}
     {modalPreus}
@@ -11656,7 +11657,7 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
   const res=fets.length||(part.noves||[]).length||hores.length||material.length;
   return <div className="parte-resum-v878349">
     <div className="pe-cap"><button type="button" className="link tornar" onClick={onTanca}><ChevronLeft size={18} aria-hidden="true"/> {t("Partes d’obra")}</button>
-      <em className={`estat ${part.estat==="certificat"?"ok":"pend"}`}>{part.estat==="certificat"?t("Certificació {n}",{n:nomCerts(part.cert)}):t("Per revisar")}</em></div>
+      <em className={`estat ${part.estat==="certificat"?"ok":"pend"}`}>{part.estat==="certificat"?(nomCerts(part.cert)?t("Certificació {n}",{n:nomCerts(part.cert)}):t("Revisat")):t("Per revisar")}</em></div>
     {avis&&<div className="partes-avis-v878349" role="status"><span>{avis}</span><button type="button" className="link" onClick={treuAvis}>{t("D’acord")}</button></div>}
     <div className="pr-dia"><b>{part.data?new Date(part.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"}):"—"}</b>{part.qui?<span>{part.qui}</span>:null}{part.nota?<p>{part.nota}</p>:null}</div>
     {!res&&<div className="partes-buit-v878349"><b>{t("Aquest parte no té res marcat.")}</b></div>}
@@ -13589,7 +13590,7 @@ async function llegeixAmid878476(a,ext){
   try{
     const buf=await a.arrayBuffer();let r=null;
     if(ext==="bc3"){const txt=textBc3(buf);r=llegirBc3(txt);const bb=new Map(llegirBancBc3(txt).partides.map(x=>[x.codi,x]));r={...r,partides:r.partides.map(x=>{const d=bb.get(x.codi);return d&&d.descomp.length&&Number(x.pu)>0?{...x,descomp:d.descomp}:x})}}
-    else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=XLSX.read(buf,{type:"array",cellDates:false});r=llegirExcelAmidaments(wb.SheetNames.map(n=>({nom:n,files:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})})))}
+    else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(XLSX,buf);r=llegirExcelAmidaments(fullsLlibre(XLSX,wb))}
     else if(ext==="pdf"){const {linies:ls}=await liniesPdf(pdfjsLib,buf,300);r=llegirAmidamentsPdf(ls);if(!r.partides.length){const p=llegirPressupostPdf(ls);if(p.partides.length)r={font:"PDF",nom:"",caps:p.caps,partides:p.partides.map(x=>({...x,mides:[]})),avisos:p.avisos}}}
     const ps=r?.partides||[];
     return ps.length>=3&&ps.filter(p=>Number(p.q)>0).length>=ps.length*0.6?r:null;
@@ -13634,7 +13635,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
         setFent(t("Llegint «{n}»…",{n:nom}));const llegit=await llegeixAmid878476(a,ext);
         if(llegit){nous.push({nom,file:a,llegit});continue}
         if(ext==="bc3")nous.push({nom,text:textBc3(await a.arrayBuffer()).slice(0,50000)});
-        else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=XLSX.read(await a.arrayBuffer(),{type:"array"});nous.push({nom,text:wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n").slice(0,50000)})}
+        else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(XLSX,await a.arrayBuffer());nous.push({nom,text:wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n").slice(0,50000)})}
         else if(/^image\//.test(a.type))nous.push({nom,file:a,...arxiuDeDataUrl(await compressImage878259(a))});
         else if(/pdf$/i.test(a.type)||ext==="pdf"){if(a.size>14*1024*1024){setErr(t("«{n}» fa més de 14 MB.",{n:nom}));continue}nous.push({nom,file:a,pdf:true,...await arxiuDeFitxer(a)})}
         else setErr(t("«{n}» no es pot llegir: ha de ser un PDF, una foto, un Excel o un BC3.",{n:nom}));
@@ -14046,8 +14047,8 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
         if(!r.partides.length){const p=llegirPressupostPdf(ls);if(p.partides.length)r={font:"PDF",nom:"",caps:p.caps,partides:p.partides.map(x=>({...x,mides:[]})),avisos:p.avisos}}
         if(!r.partides.length&&await iaActiva()){const ia=await pressupostDeIa(file,ls.map(l=>l.text).join("\n"));r={font:"PDF",nom:"",caps:[...new Set(ia.partides.map(x=>x.cap))],partides:ia.partides.map(x=>({...x,mides:[]})),avisos:ia.avisos}}
       }else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){
-        const wb=XLSX.read(buf,{type:"array",cellDates:false});
-        r=llegirExcelAmidaments(wb.SheetNames.map(n=>({nom:n,files:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})})));
+        const wb=llegeixLlibre(XLSX,buf);
+        r=llegirExcelAmidaments(fullsLlibre(XLSX,wb));
       }else{setErr(t("Aquest arxiu no es pot llegir: ha de ser un PDF, un Excel o un BC3."));setLlegint(false);return}
       if(!r?.partides?.length)setErr(ext==="pdf"?t("L’app no hi ha trobat cap partida (si el PDF és una foto o un escaneig, no té text per llegir)."):t("L’app no hi ha trobat cap partida."));
       else if(linies.length)setPendent({r,file});
@@ -16857,7 +16858,7 @@ async function partidesArxiu878412(buf,nom){
   const ext=String(nom||"").split(".").pop().toLowerCase();
   if(ext==="bc3")return llegirBc3(textBc3(buf)).partides||[];
   if(ext==="pdf"){const {linies:ls}=await liniesPdf(pdfjsLib,buf,300);const a=llegirAmidamentsPdf(ls);if(a.partides.length&&a.partides.some(p=>+p.pu>0))return a.partides;return llegirPressupostPdf(ls).partides||[]}
-  if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=XLSX.read(buf,{type:"array",cellDates:false});return llegirExcelAmidaments(wb.SheetNames.map(n=>({nom:n,files:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""})}))).partides||[]}
+  if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(XLSX,buf);return llegirExcelAmidaments(fullsLlibre(XLSX,wb)).partides||[]}
   throw new Error(t("Aquest arxiu no es pot llegir: ha de ser un Excel, un BC3 o un PDF."));
 }
 // V87.428 · Tancar el pressupost (l'Héctor, 29/10/2026: «quan estigui tot fet, o ens ve determinat per uns amidaments ja definits, hauríem
@@ -18758,7 +18759,7 @@ async function openExcelPreview878245(d){
       file=await getDocFile(d.id,d.obraId);
     }
     if(!file)throw new Error("L’original d’aquest Excel no està disponible en aquest dispositiu.");
-    const workbook=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});
+    const workbook=llegeixLlibre(XLSX,await file.arrayBuffer());
     const excelSheets=workbook.SheetNames.map(name=>{
       const sourceRows=XLSX.utils.sheet_to_json(workbook.Sheets[name],{header:1,defval:""});
       const rows=sourceRows.slice(0,120).map(row=>Array.from(row||[]).slice(0,24));
@@ -19052,7 +19053,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.480",
+    app_version:"87.481",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -22152,7 +22153,7 @@ function ImportarObres878358({obres=[],numsFact=[],onImporta,close}){
   const nrm=nrmX878344;
   const jaF=f=>!!f.numero&&numsFact.includes(String(f.numero));
   const jaHi=o=>obres.some(x=>nrm(x.nom)===nrm(o.nom)&&(!o.any||String(x.any||"")===String(o.any)));
-  async function llegeix(file){setErr("");setFet(null);try{const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});const d=llegirExcelObres878358(wb);if(!d.obres.length&&!d.factures.length){setErr(t("No s’hi ha trobat cap obra ni cap factura. Cal una fila de títols amb el nom de l’obra (obres) o amb la base o el total (factures)."));return}setDades({...d,arxiu:file.name});setTreuO(new Set(d.obres.map((o,i)=>jaHi(o)?i:-1).filter(i=>i>=0)));setTreuF(new Set(d.factures.map((f,i)=>jaF(f)?i:-1).filter(i=>i>=0)))}catch(e){setErr(e?.message||String(e))}}
+  async function llegeix(file){setErr("");setFet(null);try{const wb=llegeixLlibre(XLSX,await file.arrayBuffer());const d=llegirExcelObres878358(wb);if(!d.obres.length&&!d.factures.length){setErr(t("No s’hi ha trobat cap obra ni cap factura. Cal una fila de títols amb el nom de l’obra (obres) o amb la base o el total (factures)."));return}setDades({...d,arxiu:file.name});setTreuO(new Set(d.obres.map((o,i)=>jaHi(o)?i:-1).filter(i=>i>=0)));setTreuF(new Set(d.factures.map((f,i)=>jaF(f)?i:-1).filter(i=>i>=0)))}catch(e){setErr(e?.message||String(e))}}
   const tog=(set,setSet,i)=>setSet(s=>{const n=new Set(s);if(n.has(i))n.delete(i);else n.add(i);return n});
   const nO=dades?dades.obres.length-treuO.size:0,nF=dades?dades.factures.length-treuF.size:0;
   function importa(){const r=onImporta?.({obres:dades.obres.filter((_,i)=>!treuO.has(i)).map(o=>({...o,estat:o.estat||estat})),factures:dades.factures.filter((_,i)=>!treuF.has(i)),arxiu:dades.arxiu,estat});setFet(r||{});setDades(null)}
@@ -22212,7 +22213,7 @@ function ImportarDespeses878344({obres=[],odata={},obraFixa="",faseFixa="",setOb
   const trobaObra=txt=>{const n=nrmX878344(txt);if(!n)return "";const o=obres.find(o=>nrmX878344(o.nom)===n||nrmX878344(codiCurt878270(o))===n||nrmX878344(o.codiExpedient)===n)||obres.find(o=>n.length>=4&&(nrmX878344(o.nom).includes(n)||n.includes(nrmX878344(o.nom))));return o?.id||""};
   async function llegeix(f){
     if(!f)return;setErr("");setNomArxiu(f.name);arxiu878345.current=f;
-    try{const ab=await f.arrayBuffer();const wb=XLSX.read(ab,{type:"array",cellDates:false});const fs=llegirExcelDespeses878344(wb);
+    try{const ab=await f.arrayBuffer();const wb=llegeixLlibre(XLSX,ab);const fs=llegirExcelDespeses878344(wb);
       if(!fs.some(x=>x.files.length)){setErr(t("No hi he trobat cap fila amb imports. Cal una fila de títols amb la base o el total (i, si n’hi ha, la data, el proveïdor, el número i el concepte)."));setFulls(fs);return}
       // les files sense data (una comissió, per exemple) van amb l'última data de l'Excel
       const dMax=fs.flatMap(x=>x.files.map(r=>r.data)).filter(Boolean).sort().pop()||"";

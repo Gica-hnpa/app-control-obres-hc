@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.480, 3/11/2026)
+## On som (V87.481, 3/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -64,6 +64,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.478 (2/11):** Pressupost amb IA: una partida per feina, cap partida que no s’hagi dit i les de la mateixa mena al mateix capítol (arreglat l’error que feia un capítol per partida).
 - **V87.479 (2/11):** «Ajuntar-los»: els capítols repetits d’un pressupost ja fet s’ajunten d’un toc, sense lectures.
 - **V87.480 (3/11):** «Buscar preus» a un pressupost ja fet: les partides sense preu, primer amb els preus propis (gratis) i després amb la IA, triant capítols i veient les lectures abans.
+- **V87.481 (3/11):** els CSV en format europeu ja es llegeixen bé a tot arreu (abans, 12,5 era 125, sense cap avís), i tres errors trobats amb un usuari fictici que fa tota una obra.
 
 ## Blocs, per ordre
 

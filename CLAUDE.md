@@ -2724,6 +2724,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Cada tanda de 15 es desa en arribar** (`posaRef480`): un tall a mitja feina no perd el que ja s'ha pagat; la finestra diu quants preus s'han posat i quantes partides continuen sense preu, i la línia surt amb les que falten. Marges de l'obra amb `margesLinia878378`; amb comissió, el preu nou és l'original (`puOrig878346`) i a sobre, la comissió.
     - Pantalla encesa mentre treballa (`pantallaEncesa878476`). L'avís de lectures diu: «Si dius que no, els podràs buscar després des del pressupost.»
     - Estils `src/theme-v878480.css`. Prova: `v480test.mjs` (14; el Supabase de proves accepta `POST /__aco-ia {fallaDespres:N}`, que fa fallar la tanda N+1).
+  - **V87.481 · Els CSV en format europeu i tres errors trobats amb un usuari fictici** (l'Héctor, 3/11/2026: «sobretot m'interessen proves amb usuaris ficticis per detectar errors»; eina nova `tools/proves/usuari480a.mjs`: una constructora de zero fa tota una obra, de les dades de l'empresa i els amidaments fins a la factura cobrada, el Rendiment, recarregar i un segon aparell, mirant que les xifres quadrin a cada pantalla, 31 proves):
+    - **CSV** (`llegeixLlibre`, `textCsv` i `fullsLlibre` de `src/amidaments.js`; a tot arreu on s'accepta un CSV: amidaments, pressupost amb IA, comparar amb l'arxiu original, descompostos, importar obres, importar despeses): s'obria com un Excel i la biblioteca endevinava els números a l'americana, **sense cap avís**: «12,5» → 125, «1.234,56» → 1,23, «01.01» → 1.01, «02.10» → 2.1, els accents d'un UTF-8 sense marca malmesos. Ara s'obre com a text (UTF-8, Windows-1252 o UTF-16; «;», «,» o tabulador) i només passa a número el que no pot ser res més: els codis i les dates es queden com són.
+    - **Excel de debò:** un codi 1.10 en una cel·la numèrica es llegia 1.1; als amidaments ara es queda com es veu (`textos` de `fullsLlibre`). `numCel` entén «€» i «1,234.56».
+    - **Amidaments en Excel:** la columna `PrPres` del Presto ja és el preu (abans, sense `ImpPres`, es perdia); «Preu total» és l'import, no el preu.
+    - **Enviar el pressupost d'una obra nova:** surt «En curs / Actiu» i no passava mai a «Pendent de resposta», i la franja «Enviat el…» amb Acceptat / No acceptat no sortia. Ara, si no té certificacions ni partes, hi passa (`nova481` d'`enviatPressupost878402`).
+    - **Parte sense feina nova** (només hores o material): queda «Revisat», sense dir cap certificació ni oferir «Treure de la certificació».
+    - Proves: `usuari480a.mjs` (31), `v481test.mjs` (12, tres CSV dins de l'app) i `amidamentsunit.mjs` (49). Eina nova `mico480.mjs` (toca cada botó i plegable de totes les pantalles, i omple les finestres amb dades dolentes; `COMPTES=`, `MIDES=`, `FORMS=`, `OBRES=`, `IDIOMA=es`).
   - **Proposta dels encàrrecs tècnics** (l'Héctor, 30/10/2026: «hem de fer un gir de volta a encàrrecs de tècnics com cèdules, energètics i
     amiants o d'altres informes… fes-me propostes en captura sense penjar-m'ho i amb un informe»): https://claude.ai/artifact/3ubYp6XdySSVzHcFWDy1ck
     (maquetes a `D:/aco-tmp/proposta-encarrecs`, `fes-informe.mjs`). A: bloc «Encàrrec» propi (on som, «Ara toca», Immoble amb el Cadastre,
@@ -2914,7 +2921,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.480 a Render):**
+**Estat (publicada la V87.481 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -3072,8 +3079,12 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
     **19/10/2026: el C: es va tornar a omplir** (6 GB lliures): l’Edge de cada prova deixava a `C:\Users\Hector\AppData\Local\Temp`
     una carpeta `scoped_dir…` de 0,39 GB (baixava components: llistes de seguretat i de bloqueig). N’hi havia 137 (uns 30 GB),
     moguts a `D:\aco-tmp\restes-edge-C` (no serveixen per a res: es poden esborrar). Ara totes les proves obren l’Edge amb
-    `--disable-component-update` i amb `TEMP`/`TMP` a `D:\aco-tmp`: ja no en deixen cap. **Una prova nova que obri l’Edge ha de
-    fer el mateix.**
+    `--disable-component-update` i amb `TEMP`/`TMP` a `D:\aco-tmp`.
+    **3/11/2026: el D: es va omplir (11 GB lliures):** amb el `TEMP` a `D:\aco-tmp`, cada Edge hi continuava deixant un `scoped_dir…` d’uns
+    180 MB i en dues setmanes n’hi havia 2.304 (396 GB), més 1.452 perfils vells i 342 carpetes `aco-…` (uns 70 GB); els va esborrar l’Héctor.
+    Ara el `TEMP` de cada Edge és **dins del seu perfil** (`path.join(profile,'temp')`), que s’esborra en tancar-lo, i `D:\aco-tmp\passa.sh` dona
+    a cada prova una carpeta pròpia (`ACO_PROVES_TMP=D:/aco-tmp/t/<n>`) que s’esborra en acabar. **Una prova nova que obri l’Edge ha de
+    fer el mateix** (si en surten de noves, mirar `D:\aco-tmp` de tant en tant).
   - **Les dades reals de l’Héctor canvien** (el 18/10/2026: ha tret les fotos perdudes de la piscina, ha connectat Google
     Calendar, ha posat contrasenya al portal de Socoterm, ha omplert la llibreria, ha esborrat les obres de prova i ha desat
     l’idioma «ca»). Les proves no han de dependre d’aquest estat:
