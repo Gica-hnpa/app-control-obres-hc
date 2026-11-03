@@ -2759,6 +2759,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Proves:** la marca `parte-feina-prova-v878483` (la posa l'harness, com `pres-prova-obert-v878462`) deixa la feina oberta per a les proves d'abans;
       `v483test.mjs` (20) la treu. Adaptades `partes350test`, `partes352test`, `partes359test`, `signatura403test` i `avisos360test` («Desar el parte»).
     - Estils `src/theme-v878483.css`.
+  - **V87.484 · Constructora al mòbil i l'iPad: la barra de baix per fer coses i l'Inici com a menú** (l'Héctor, 3/11/2026 a la nit, «sí a tot»: «els
+    accessos ràpids no podrien ser per fer partes, notes…»; «la pantalla d'inici i el desplegable són similars: amb la pantalla d'inici no n'hi ha prou?»;
+    «més pot ser també una rajola, contactes també, sortir més petita a baix»; «preus… llibreria de preus»). Només als perfils `constructor` i
+    `complet` (`modeObra878484`) i on surt la barra de baix (≤1280 px o pantalla tàctil, `useBarraBaix878484`); a l'ordinador i al tècnic, com abans.
+    - **Barra de baix** (`BottomNav878268` amb `onAccio`, `.accions-v878484`): **Inici · Parte · Despesa · Nota · Més**. «Despesa» és una etiqueta amb
+      un `input type=file` (foto o PDF, s'obre al moment). Dins d'una obra, l'acció es fa en aquella obra (event `aco-accio-484` que escolta l'`Obra`:
+      «Partes obra», «Notes» o «Albarans» amb `start878302`); fora, primer **«De quina obra?»** (`TriaObraAccio878484`: les obres obertes, la
+      treballada fa menys a dalt; a «Despesa», també **«Sense obra»** = despesa de l'empresa) i `window.__acoStart878484`, que l'`Obra` agafa en obrir-se.
+      `Albarans878259` rep `start` (i, des de fora, `window.__acoStartAlb878484`) i obre la despesa nova amb la foto (`newFromPhoto(file, ov)`).
+    - **Sense el ＋ dins de l'obra** (`ObraPlus878302`) per a aquests perfils: ja és a la barra.
+    - **L'Inici és el menú** (`IniciMenu878484`): vuit rajoles iguals (Pendent = avisos i feines junts, que s'obre a sota; Obres obertes; Agenda amb les
+      cites d'avui; Hores; Despeses; Facturació; Contactes; Més = el menú) i, a sota, «＋ Nova obra» i «Sortir» petit.
+    - **Hores** (`HoresEmpresa878340`): Personal · Fitxatge · **Calendari** (el calendari laboral d'Empresa, `CalendariEmpresa878393`).
+    - **«Preus» → «Llibreria de preus»** (menú, capçalera i títol).
+    - Estils `src/theme-v878484.css`. Prova: `v484test.mjs` (19).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -2957,7 +2972,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.483 a Render):**
+**Estat (publicada la V87.484 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

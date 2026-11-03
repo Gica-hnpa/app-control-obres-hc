@@ -1,0 +1,66 @@
+/* V87.484 · Constructora al mòbil i l'iPad: la barra de baix per fer coses i l'Inici com a menú en rajoles */
+/* la barra: Inici · Parte · Despesa · Nota · Més (les tres del mig, amb la icona en un requadre blau) */
+html body .bottom-nav-v878268.accions-v878484>label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:inherit;font:inherit;min-width:0}
+html body .bottom-nav-v878268.accions-v878484 .acc{color:var(--co-ink,#152328)}
+html body .bottom-nav-v878268.accions-v878484 .acc>svg{background:#2563EB;color:#fff;border-radius:12px;padding:5px;box-sizing:content-box;width:20px;height:20px}
+html body .bottom-nav-v878268.accions-v878484 .acc>span{font-weight:700}
+html body .bottom-nav-v878268.accions-v878484 .acc:active>svg{background:#1D4ED8}
+/* «De quina obra?» */
+html body .tria-acc-fons-v878484{position:fixed;inset:0;z-index:7000;background:rgba(15,23,42,.45);display:flex;align-items:flex-end;justify-content:center}
+html body .tria-acc-v878484{width:100%;max-width:640px;max-height:82vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;box-shadow:0 -10px 30px rgba(15,23,42,.2)}
+html body .tria-acc-v878484 .barra{width:44px;height:5px;border-radius:9px;background:#CBD5E1;margin:0 auto 4px}
+html body .tria-acc-v878484 .cap{display:flex;align-items:center;gap:8px}
+html body .tria-acc-v878484 .cap h3{margin:0;flex:1;font-size:18px}
+html body .tria-acc-v878484 .cap .x{all:unset;width:40px;height:40px;display:grid;place-items:center;border-radius:12px;cursor:pointer;color:#334155}
+html body .tria-acc-v878484 .llista{display:flex;flex-direction:column;gap:8px}
+html body .tria-acc-v878484 .llista>button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 14px;border:1.5px solid #C3CED6;border-radius:14px;background:#fff;cursor:pointer}
+html body .tria-acc-v878484 .llista>button:active{background:#EFF6FF}
+html body .tria-acc-v878484 .llista>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .tria-acc-v878484 .ico{width:38px;height:38px;border-radius:11px;background:#EAF1FD;color:#1D4ED8;display:grid;place-items:center;flex:none}
+html body .tria-acc-v878484 .t{flex:1;min-width:0;display:flex;flex-direction:column}
+html body .tria-acc-v878484 .t b{font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .tria-acc-v878484 .t small{font-size:13px;color:var(--co-ink-3)}
+html body .tria-acc-v878484 .chev{color:#94A3B8;flex:none}
+html body .tria-acc-v878484 .sense{border-style:dashed!important}
+html body .tria-acc-v878484 .buit{color:var(--co-ink-3);margin:8px 2px}
+/* l'Inici en rajoles */
+html body .inici-menu-v878484{display:flex;flex-direction:column;gap:12px;padding-bottom:12px}
+html body .inici-menu-v878484 .hola small{display:block;color:var(--co-ink-3);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+html body .inici-menu-v878484 .hola h1{margin:2px 0 0;font-size:22px;line-height:1.25}
+html body .inici-menu-v878484 .graella{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:700px){html body .inici-menu-v878484 .graella{grid-template-columns:repeat(4,minmax(0,1fr))}}
+html body .raj-v878484{all:unset;box-sizing:border-box;cursor:pointer;min-height:112px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;background:#fff;border:1.5px solid #C3CED6;border-radius:18px;box-shadow:0 1px 3px rgba(15,23,42,.06);min-width:0}
+html body .raj-v878484:active{transform:scale(.98)}
+html body .raj-v878484:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .raj-v878484 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+html body .raj-v878484 .ico{width:44px;height:44px;border-radius:13px;background:#EAF1FD;color:#1D4ED8;display:grid;place-items:center;flex:none}
+html body .raj-v878484 .num{font-size:24px;font-weight:800;line-height:1;color:var(--co-ink,#152328)}
+html body .raj-v878484 .num.txt{font-size:14px;font-weight:600;color:var(--co-ink-3);padding-top:6px}
+html body .raj-v878484 .tt{display:flex;flex-direction:column;min-width:0}
+html body .raj-v878484 .tt b{font-size:15.5px;color:var(--co-ink,#152328)}
+html body .raj-v878484 .tt small{font-size:12.5px;color:var(--co-ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .raj-v878484.avis{border-color:#F3B47A}
+html body .raj-v878484.avis .ico{background:#FFEDD5;color:#C2410C}
+html body .raj-v878484.avis .num{color:#9A3412}
+html body .raj-v878484.on{background:#1D4ED8;border-color:#1D4ED8}
+html body .raj-v878484.on .ico{background:rgba(255,255,255,.18);color:#fff}
+html body .raj-v878484.on :is(.num,.tt b,.tt small){color:#fff}
+/* «Pendent» obert: la llista a sota, de punta a punta */
+html body .inici-menu-v878484 .pend-v878484{grid-column:1/-1;background:#fff;border:2px solid #1D4ED8;border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:8px;margin-top:-2px}
+html body .inici-menu-v878484 .pend-v878484 .feines{display:flex;flex-direction:column;gap:6px}
+html body .inici-menu-v878484 .pend-v878484 .feina{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;min-height:54px;padding:8px 12px;border:1px solid var(--co-line);border-radius:12px;cursor:pointer}
+html body .inici-menu-v878484 .pend-v878484 .feina .t{flex:1;min-width:0;display:flex;flex-direction:column}
+html body .inici-menu-v878484 .pend-v878484 .feina .t b{font-size:14.5px}
+html body .inici-menu-v878484 .pend-v878484 .feina .t small{font-size:12.5px;color:var(--co-ink-3)}
+html body .inici-menu-v878484 .pend-v878484 .feina .chev{color:#94A3B8;flex:none}
+html body .inici-menu-v878484 .pend-v878484 .buit{margin:6px;color:var(--co-ink-3)}
+html body .inici-menu-v878484 .nova-obra-v878484{display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px;border-radius:14px;border:1.5px dashed #94A3B8;background:#fff;color:#1D4ED8;font-weight:700}
+html body .inici-menu-v878484 .sortir-v878484{align-self:flex-end;font-size:13.5px;color:var(--co-ink-3);padding:6px 4px;min-height:0}
+/* «Despesa» és una etiqueta (obre la càmera o els arxius): la mateixa forma que els botons de la barra */
+html body .bottom-nav-v878268.accions-v878484>label{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;font:600 11px/1.1 inherit;cursor:pointer;padding:6px 2px;border-radius:12px}
+html body .bottom-nav-v878268.accions-v878484>label span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .bottom-nav-v878268.accions-v878484>label.acc{color:var(--co-ink,#152328)}
+html body .bottom-nav-v878268.accions-v878484>label:active{background:#f1f5f9}
+/* «Sortir»: un enllaç petit, sense la vora del navegador */
+html body .inici-menu-v878484 .sortir-v878484{all:unset;box-sizing:border-box;cursor:pointer;align-self:flex-end;font-size:13.5px;color:var(--co-ink-3,#5F7075);padding:8px 6px;text-decoration:underline;text-underline-offset:3px}
+html body .inici-menu-v878484 .sortir-v878484:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
