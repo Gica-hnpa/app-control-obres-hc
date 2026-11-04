@@ -5111,4 +5111,5 @@ export default {
 "Desar la ubicació en fitxar": "Guardar la ubicación al fichar",
 "Ubicació de l’entrada": "Ubicación de la entrada",
 "Ubicació de la sortida": "Ubicación de la salida",
+"benefici de les obres": "beneficio de las obras",
 };

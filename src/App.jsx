@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.489";
+const APP_VERSION878264="87.490";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7884,7 +7884,7 @@ function DespesaTreballador878327({a,setA,save,close}){
   </div></Modal>;
 }
 function Inici({obrirPaquet,clients,setClients,obres,setObres,odata={},setOdata,events,setScreen,openObra,openObraTab,newObra,obreMenu}){
-const barra878484=useBarraBaix878484();const menu878484=barra878484&&modeObra878484();
+const barra878484=useBarraBaix878484();const menu878484=modeObra878484();
 const[totesF878366,setTotesF878366]=useState(false);
 if(esTreballador878326())return <IniciTreballador878327 obres={obres} odata={odata} events={events} setScreen={setScreen} openObra={openObra} openObraTab={openObraTab}/>;
 const now=new Date();
@@ -8097,6 +8097,7 @@ function useBarraBaix878484(){const q="(max-width:1280px),(hover:none) and (poin
 // V87.484 · l'Inici de la constructora al mòbil i l'iPad: el menú en rajoles iguals. «Pendent» (avisos i feines) s'obre a sota.
 function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setScreen,obrirPaquet,openObraTab,obreMenu,newObra,todayLabel=""}){
   const[obert,setObert]=useState("");
+  const pc490=!useBarraBaix878484();
   const[tick,setTick]=useState(0);
   useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-albarans-changed",h);return()=>window.removeEventListener("aco-albarans-changed",h)},[]);
   const avisos=useMemo(()=>{const alb=readAlbarans878259();return ordenaAvisos878360([...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients)])},[obres,odata,clients,tick]);
@@ -8123,7 +8124,7 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
       <R k="desp" ic={Camera} tit="Despeses" sub="albarans i factures" on={()=>setScreen("Albarans")}/>
       <R k="fact" ic={ReceiptText} tit="Facturació" sub="factures i cobraments" on={()=>setScreen("Factures")}/>
       <R k="cont" ic={Users} tit="Contactes" sub="clients i industrials" on={()=>setScreen("Clients")}/>
-      <R k="mes" ic={Ellipsis} tit="Més" sub="empresa, preus, ajustos" on={()=>obreMenu?.()}/>
+      {pc490&&ambEmpresa878338()?<R k="rend" ic={TrendingUp} tit="Rendiment" sub="benefici de les obres" on={()=>setScreen("Rendiment empresa")}/>:<R k="mes" ic={Ellipsis} tit="Més" sub="empresa, preus, ajustos" on={()=>obreMenu?.()}/>}
     </div>
     {newObra&&<button type="button" className="nova-obra-v878484" onClick={newObra}><Plus size={18} aria-hidden="true"/> {t("Nova obra")}</button>}
     <button type="button" className="link sortir-v878484" onClick={()=>document.querySelector(".logout-mini-v8778")?.click()}>{t("Sortir")}</button>
@@ -12065,7 +12066,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   useEffect(()=>{if(!menu)return;const off=e=>{if(!e.target.closest?.(".obra-acc-v878269,.obra-tabs-bar-v878269"))setMenu("")};document.addEventListener("pointerdown",off);return()=>document.removeEventListener("pointerdown",off)},[menu]);
   const all=uniqueTabs8769(["Resum",...tabs]);
   const pick=x=>{setMenu("");setTab(x);try{window.scrollTo({top:0})}catch{}};
-  const barra878485=useBarraBaix878484();const mo878485=barra878485&&modeObra878484();
+  const barra878485=useBarraBaix878484();const mo878485=modeObra878484();const fila490=barra878485?2:4;
   const[ob878485,setOb878485]=useState("");
   const blocs=mo878485?obraBlocs878485(all):obraBlocs878299(all,pur);
   const blocActiu=blocs.find(b=>b.tabs.includes(active))||blocs[0]||{k:"",tabs:[]};
@@ -12105,12 +12106,12 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
         </div>}
       </div>
     </div>
-    {mo878485?<div className="obra-tabs-bar-v878269 obra-rajoles-v878485">
+    {mo878485?<div className={"obra-tabs-bar-v878269 obra-rajoles-v878485"+(barra878485?"":" pc-v878490")}>
       <div className="obra-blocs-v878299 rajoles-v878485" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{(()=>{const obJ=blocs.findIndex(x=>x.k===ob878485);const out=[];
         blocs.forEach((b,j)=>{const on=b.k===blocActiu.k,open=ob878485===b.k;
           out.push(<button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>setOb878485(o=>o===b.k?"":b.k)}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(b.k)}</b><small>{on?tabLabel878269(active,all,pur):t(BLOC_SUB878485[b.k])}</small></span><ChevronDown className="chev" aria-hidden="true"/></button>);
           // la llista va a sota de la fila on és la rajola oberta (dues per fila)
-          if(obJ>=0&&(j%2===1||j===blocs.length-1)&&Math.floor(obJ/2)===Math.floor(j/2))out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485" role="menu" aria-label={t(blocs[obJ].k)}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)});
+          if(obJ>=0&&(j%fila490===fila490-1||j===blocs.length-1)&&Math.floor(obJ/fila490)===Math.floor(j/fila490))out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485" role="menu" aria-label={t(blocs[obJ].k)}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)});
         return out})()}</div>
     </div>:<div className={`obra-tabs-bar-v878269 obra-blocs-bar-v878299 ${narrow?"narrow":""}`}>
       <div className="obra-blocs-v878299" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{blocs.map(b=>{const on=b.k===blocActiu.k,open=obert?.k===b.k;return <button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={narrow&&b.tabs.length>1?open:undefined} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>clickBloc(b)}>{BLOC_ICON878299[b.k]}<span className="txt-v878451"><span className="nom">{t(b.k)}</span>{narrow&&on&&<small>{tabLabel878269(active,all,pur)}</small>}</span>{narrow&&on&&b.tabs.length>1&&<ChevronDown className="gira-v878451" aria-hidden="true"/>}</button>})}</div>
@@ -19264,7 +19265,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.489",
+    app_version:"87.490",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

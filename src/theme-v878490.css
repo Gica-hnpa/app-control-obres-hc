@@ -1,0 +1,24 @@
+/* V87.490 · A l'ordinador, el mateix que al mòbil per a la constructora: l'Inici en rajoles i, dins de l'obra, quatre rajoles amb la llista dels apartats a sota */
+/* dins de l'obra: les quatre rajoles en una fila */
+html body .obra-rajoles-v878485.pc-v878490 .rajoles-v878485{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}
+html body .obra-rajoles-v878485.pc-v878490 .rajoles-v878485>button{min-height:64px;padding:10px 30px 10px 12px;gap:10px}
+html body .obra-rajoles-v878485.pc-v878490 .rajoles-v878485>button>svg:first-child{width:36px;height:36px;padding:8px}
+html body .obra-rajoles-v878485.pc-v878490 .rajoles-v878485>button .t b{font-size:15px}
+html body .obra-rajoles-v878485.pc-v878490 .rajoles-v878485>button .t small{font-size:12.5px;-webkit-line-clamp:1}
+html body .obra-rajoles-v878485.pc-v878490 .rajoles-v878485>button .chev{top:50%;margin-top:-8px;right:10px}
+@media (hover:hover){html body .obra-rajoles-v878485.pc-v878490 .rajoles-v878485>button:not(.on):hover{border-color:#1D4ED8}}
+/* la llista dels apartats: en columnes, de punta a punta */
+html body .obra-rajoles-v878485.pc-v878490 .llista-v878485{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:4px!important;padding:6px!important}
+html body .obra-rajoles-v878485.pc-v878490 .llista-v878485>button{min-height:46px;border-radius:12px!important}
+html body .obra-rajoles-v878485.pc-v878490 .llista-v878485>button+button{border-top:0!important}
+@media (hover:hover){html body .obra-rajoles-v878485.pc-v878490 .llista-v878485>button:not(.on):hover{background:#F1F5F9}}
+/* l'Inici: «Pendent» s'obre a sota de la primera fila sencera (quatre rajoles), no al mig */
+@media (min-width:700px){
+  html body .inici-menu-v878484 .graella>button:nth-of-type(-n+4){order:0}
+  html body .inici-menu-v878484 .graella>.pend-v878484{order:1}
+  html body .inici-menu-v878484 .graella>button:nth-of-type(n+5){order:2}
+}
+@media (min-width:1281px) and (hover:hover) and (pointer:fine){
+  html body .inici-menu-v878484{max-width:1080px}
+  @media (hover:hover){html body .raj-v878484:not(.on):hover{border-color:#1D4ED8}}
+}
