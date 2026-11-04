@@ -2909,6 +2909,36 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     capítol obert, a dalt de les partides, el seu resum (`cap-resum-v878503`: partides planificades, pressupost, dies i qui hi treballa, del
     capítol i de les partides). **Agenda › Equip** (`equipSetmana878381`) també compta qui treballa a cada partida, els dies de la partida.
     Estils `src/theme-v878503.css`. Prova: `v503test.mjs`. Adaptada `v453test` (les quatre xifres al mòbil).
+  - **Tanda 9** (l'Héctor, 4/11/2026 a la nit, amb captures del mòbil de Socoterm i d'un Android; llista a `docs/revisio-modul-constructor.md`).
+  - **V87.504 · Rajoles de l'obra en una fila al mòbil i l'iPad** (`src/theme-v878504.css`): les quatre rajoles en una fila compacta (icona i nom
+    curt, `BLOC_CURT878504`: Pressupost, Comptes, Encàrrec; la rajola activa diu l'apartat a sota, si no és el mateix nom); la llista d'apartats
+    en dues columnes de files baixes (també amb el «Visual nou», que la feia tan alta a l'iPhone de l'Héctor), i amb la llista oberta no es veu
+    res més de l'obra (`html.obra-llista-v878504`, la posa `ObraBar878269`). Editant el pressupost, la barra (Guardar canvis · Cancel·lar ·
+    Afegir · Eines) passa a dues columnes al mòbil (a l'Android se sobreposaven); sense editar, una línia. L'ordinador, com abans. Prova:
+    `v504test.mjs`. Adaptades `v485test`, `v492test`, `v457test`, `v484test` («Pendent» sol des de la V87.495), `menustest` (la capçalera
+    fixa del pressupost amb les rajoles, i el menú «Opcions» de les fases) i `perfils326test`.
+  - **V87.505 · El preu per administració, els llistats en PDF i el proveïdor:**
+    - **Partida fora de pressupost per administració** (`preuFP878352`, `factorMarges878505`): si la categoria no té preu a facturar a l'obra, el
+      preu és el cost de l'empresa (el del treballador o la mitjana de la categoria) × (1 + DGE) × (1 + BI) dels marges de l'obra (si van «a part,
+      al resum», el cost); el material, igual si no hi ha % propi. Fora l'avís «Falta el preu per hora a facturar». A sota del preu, «Cost de
+      l'empresa + DGE 13 % + BI 6 %».
+    - **Llistats en PDF** (`informeHtml878505`; `window.__acoInforme878505` per a les proves): a dalt el logo, el nom i el NIF de l'empresa i el
+      títol amb el seu color; la capçalera de la taula del color, files alternes, números alineats, grups amb subtotal i el total marcat; una
+      cel·la buida, «—». Ho fan servir els llistats amb filtres (V87.501) i «Per a la gestoria › Llistat en PDF» de Despeses (factures rebudes per
+      mesos). **Abans, sense proveïdor, aquest llistat hi posava el concepte** (probablement el «proveïdor equivocat» que va veure l'Héctor).
+    - **Proveïdor** (`esMevaEmpresa878505`): si la IA llegeix com a proveïdor la mateixa empresa (el client de la factura), no es posa, la despesa
+      queda «per revisar» i el missatge ho diu. Seleccionar › **«Canviar el proveïdor…»** (`prov-v878505`) per corregir-ne diverses alhora.
+  - **V87.506 · Hores: la jornada, les hores extres i les hores dels partes des d'Hores** (`src/theme-v878506.css`):
+    - **Jornada del dia** (`jornadaDia878506`): les hores de l'horari d'Empresa › Calendari per a aquell dia de la setmana (`diesText878506`,
+      `horesText878506`: «Dilluns a dijous · 8:00-13:00 i 14:00-17:00»); si no n'hi ha, 9 h.
+    - **Hores › Personal** (`PartHores878340`): les hores dels partes es poden canviar aquí (`pEd506`; es desen al parte de l'obra amb el pont
+      `window.__acoSetD878506` i a la seva despesa, `sincronitzaDespesesParte878352`). Si un treballador passa de la jornada (amb les de totes les
+      obres), avís (`extres-v878506`) i «Desar el dia» no deixa fins que es corregeix o es marca **«Són hores extres»** amb el preu de l'hora extra;
+      les hores que passen van a les últimes línies del dia (`horesExtres`, `preuExtra` a la despesa: (h − extres) × cost + extres × preu).
+    - **Parte** (`ParteEditor878349`): el mateix avís al bloc Personal (amb les hores que el treballador té en altres obres aquell dia,
+      `horesDiaAltres878506`) i «Desar el parte» no deixa sense marcar-les; `h.extres878506 = {on, preu}` i `despesesParte878352` en calcula les
+      hores extres.
+    - Prova: `v506test.mjs` (també la V87.505).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3107,7 +3137,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.503 a Render):**
+**Estat (publicada la V87.506 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

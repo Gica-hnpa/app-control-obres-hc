@@ -1,0 +1,14 @@
+/* V87.506 · avís de la jornada (parte i Hores › Personal): el treballador que passa de les hores del dia i, si són hores extres, el preu */
+html body .extres-v878506{display:grid;gap:6px;margin:4px 0 6px;padding:9px 11px;border:1.5px solid #F59E0B;border-radius:11px;background:#FFFBEB;color:#7C2D12;font-size:13.5px;grid-column:1/-1}
+html body .extres-v878506.on{border-color:#16A34A;background:#F0FDF4;color:#14532D}
+html body .extres-v878506 p{margin:0;line-height:1.35}
+html body .extres-v878506 .chk{display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;min-height:32px}
+html body .extres-v878506 .chk input{width:20px;height:20px;margin:0;accent-color:#16A34A}
+html body .extres-v878506 .px{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html body .extres-v878506 .px span{font-weight:600}
+html body .extres-v878506 .px input{width:110px;max-width:100%;min-height:36px;padding:6px 10px;border:1px solid #CBD5E1;border-radius:9px;font-size:16px;background:#fff;color:#0F172A}
+/* les hores del parte, a Hores › Personal, ara es poden canviar */
+html body .linia-parte-v878355.ed-v878506{display:grid;grid-template-columns:minmax(0,1fr) 84px auto;align-items:center;gap:8px}
+html body .linia-parte-v878355.ed-v878506>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .linia-parte-v878355.ed-v878506 input{width:100%;min-height:36px;padding:6px 8px;border:1px solid #CBD5E1;border-radius:9px;font-size:16px;text-align:right;background:#fff;box-sizing:border-box}
+html body .linia-parte-v878355.ed-v878506 em{font-style:normal;font-size:12px;font-weight:700;color:#1D4ED8;background:#EAF1FD;border-radius:999px;padding:2px 8px}

@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.503, 4/11/2026)
+## On som (V87.506, 5/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -84,6 +84,10 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   - **V87.501:** llistats amb filtres a la seva pantalla (Certificacions, Facturació, Despeses, Rendiment), amb Excel, PDF i Imprimir.
   - **V87.502:** una obra tancada només es consulta i es llista; un canvi diu que està tancada i es pot reobrir.
   - **V87.503:** el Planning amb el resum (inici, final, durada, recursos), la targeta «Recursos» i qui treballa a cada partida.
+- **Tanda 9 (4/11 a la nit, amb captures del mòbil):**
+  - **V87.504:** les rajoles de l’obra en una fila al mòbil i l’iPad, la llista d’apartats en dues columnes (amb la llista oberta no es veu res més) i la barra d’eines del pressupost que passa de línia.
+  - **V87.505:** el preu per administració (cost + DGE i BI), llistats en PDF amb un format nou, el proveïdor que la IA llegia de la mateixa empresa i «Canviar el proveïdor…».
+  - **V87.506:** Hores: la jornada del dia (avís i hores extres amb preu) al parte i a Hores, i les hores dels partes es canvien des d’Hores.
   - **Pendent de la tanda 8:** propostes (agenda: avisos i visites; amidaments amb PDF i dictat; marques de la partida; caixa i bancs; on es canvia la DGE de l’obra), el descompost amb IA i BC3, treure «Afegir» de fora d'«Editar» i la Comptabilitat (l'Héctor l'explicarà).
 
 ## Blocs, per ordre

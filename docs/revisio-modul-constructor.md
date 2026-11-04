@@ -263,3 +263,16 @@ capítol) · Hores.
 23. **Obra tancada:** només consultar i fer llistats; si s’hi vol canviar alguna cosa, un avís que està tancada i, per continuar, canviar-ne
     l’estat (reobrir-la).
 24. **Pendent de fer a la V87.500 (fet però tret per no allargar les proves):** «Afegir» fora d’«Editar» només amb el pressupost buit.
+
+### Tanda 9 · demanat el 4/11/2026 a la nit (amb captures del mòbil: Socoterm, CP EDIFICI COMODORO, i un Android)
+
+1. **Rajoles de dins de l’obra:** la llista d’apartats d’una rajola (Fitxa, Dia a dia…) ocupa massa (un sota l’altre, molt alts).
+   Quan s’obre una rajola, les altres no s’han de veure a sota (distorsiona).
+2. **Textos que se sobreposen:** a l’Android, editant el pressupost, «Guardar canvis · Cancel·lar · Afegir · Eines» queden un sobre l’altre;
+   el títol «Presupuesto y certificaciones» de la rajola ocupa quatre línies.
+3. **Hores (menú principal) de l’empresa:** s’han de poder editar d’aquí les hores que venen dels partes, sense entrar a l’obra. Si un
+   treballador passa de 9 h en un dia (o de les del calendari de l’empresa), avisar que no pot ser o, si són hores extres, posar-hi un preu/h.
+4. **Parte, feina per administració:** no llegeix el preu/h de la mà d’obra i diu que falta el preu a facturar. El preu a facturar és el
+   cost de l’empresa més els % de DGE i BI.
+5. **Llistat de factures rebudes:** un format més maco.
+6. **Despeses amb el proveïdor equivocat** (provat per Socoterm): mirar per què (potser no l’han entrat bé).

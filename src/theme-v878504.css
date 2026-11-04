@@ -1,0 +1,30 @@
+/* V87.504 · Rajoles de l'obra al mòbil i l'iPad: les quatre en una fila, compactes, i la llista d'apartats en dues columnes baixes
+   (l'Héctor, 4/11/2026: «no cal que estigui un a sota de l'altre, que ocupa molt»). Amb la llista oberta, el que hi ha a sota no es veu. */
+html body .obra-rajoles-v878485 .rajoles-v878485>button .t .curt-v878504{display:none}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;width:100%!important;max-width:none!important;box-sizing:border-box}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button{flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;min-height:66px!important;padding:8px 4px 7px!important;border-radius:14px!important;text-align:center;position:relative}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button>svg:first-child{width:30px!important;height:30px!important;padding:6px!important;border-radius:9px!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button .t{flex:none!important;width:100%;align-items:center;gap:0!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button .t b{display:none!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button .t .curt-v878504{display:block;font-style:normal;font-weight:700;font-size:12.5px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button .t small{display:none!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button.on .t small{display:block!important;font-size:11.5px!important;line-height:1.2;max-width:100%;color:rgba(255,255,255,.9)!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button .chev{position:absolute;top:5px;right:5px;width:14px!important;height:14px!important}
+/* la llista: dues columnes de files baixes (icona a l'esquerra), també amb el «Visual nou» */
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>.llista-v878485.obra-bloc-panel-v878299{grid-column:1/-1!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;padding:8px!important;margin:2px 0 0!important;border:1.5px solid #1D4ED8!important;border-radius:14px!important;background:#F8FAFC!important;box-shadow:none!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>.llista-v878485.obra-bloc-panel-v878299>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-height:46px!important;height:auto!important;padding:8px 10px!important;border:1px solid #D5DEE6!important;border-radius:11px!important;background:#fff!important;color:var(--co-ink,#0F172A)!important;font-size:14px!important;font-weight:600!important;text-align:left!important;min-width:0}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>.llista-v878485.obra-bloc-panel-v878299>button svg:first-child{flex:none;width:20px!important;height:20px!important;color:#1D4ED8}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>.llista-v878485.obra-bloc-panel-v878299>button>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>.llista-v878485.obra-bloc-panel-v878299>button .chev{display:none!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>.llista-v878485.obra-bloc-panel-v878299>button.on{background:#EAF1FD!important;border-color:#1D4ED8!important;color:#1D4ED8!important}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>.llista-v878485.obra-bloc-panel-v878299>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+/* amb la llista oberta, la resta de l'obra no es veu */
+html.obra-llista-v878504 body .obra-page-v87105>.obra-tabs-bar-v878269~*:not(.modal-backdrop):not(.modal){display:none!important}
+/* la barra d'eines del pressupost passa de línia al mòbil (a l'Android, «Guardar canvis · Cancel·lar · Afegir · Eines» se sobreposaven) */
+@media (max-width:700px){
+  html body .budget-card-v878248 .card-head .budget-eines-v878320 .budget-botons-v878320.pres-accions-v878366:not(.no-v878504):has(>:nth-child(4)){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;overflow:visible!important}
+  html body .budget-card-v878248 .card-head .budget-eines-v878320 .budget-botons-v878320.pres-accions-v878366:not(.no-v878504):has(>:nth-child(4))>*{min-width:0!important;width:100%!important;max-width:100%!important;margin:0!important;box-sizing:border-box}
+  html body .budget-card-v878248 .card-head .budget-eines-v878320 .budget-botons-v878320.pres-accions-v878366:not(.no-v878504):has(>:nth-child(4))>button,html body .budget-card-v878248 .card-head .budget-eines-v878320 .budget-botons-v878320.pres-accions-v878366:not(.no-v878504):has(>:nth-child(4))>details>summary{width:100%!important;min-width:0!important;justify-content:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;padding-left:8px!important;padding-right:8px!important}
+  html body .budget-card-v878248 .card-head .budget-eines-v878320 .budget-botons-v878320.pres-accions-v878366:not(.no-v878504):has(>:nth-child(4))>details>summary>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+}
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button.on .t small.igual-v878504{display:none!important}
