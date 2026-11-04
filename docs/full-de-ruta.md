@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.487, 4/11/2026)
+## On som (V87.488, 4/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -71,6 +71,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.485 (4/11):** dins de l’obra (constructora, mòbil i iPad), quatre rajoles —Fitxa · Dia a dia · Pressupost i certificacions · Comptabilitat— amb la llista dels apartats a sota.
 - **V87.486 (4/11):** el pressupost buit en rajoles (Importar un arxiu · Amb IA · A mà) i, editant al mòbil, cada partida en una pantalla pròpia.
 - **V87.487 (4/11):** el fitxatge desa la ubicació de l'aparell (es pot treure) i l'oficina la veu al registre i a l'Excel.
+- **V87.488 (4/11):** a la pantalla de la partida (editant al mòbil), «Següent ›» porta a la partida següent, també del capítol següent.
 
 ## Blocs, per ordre
 

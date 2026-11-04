@@ -2806,6 +2806,13 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Es pot treure:** «Desar la ubicació en fitxar» a dalt del Registre (`aco_empresa_v878259.fitxGeo878487`; de sèrie, sí; `fitxGeoOn878487`).
     - És la ubicació de l'aparell on es fitxa (fase 1: un aparell de l'empresa a l'obra). L'empresa n'ha d'informar els treballadors (art. 90 de la LOPDGDD).
     - Estils `src/theme-v878487.css`. Prova: `v487test.mjs` (17). Adaptades `fitxatge357test` i `personal340test` (Hores té la pestanya «Calendari» des de la V87.484).
+  - **V87.488 · «Següent ›» a la pantalla de la partida** (editant al mòbil i l'iPad, V87.486): al costat de «Fet», «Següent ›» obre la partida que ve
+    després, en l'ordre en què es veuen (`seguent878488`, `vesSeguent878488` de `Pressupost`); a l'última d'un capítol, la primera del capítol següent (s'obre
+    el capítol i el seu grup). A l'última del pressupost no surt. En passar, la pantalla torna a dalt. Estils a `src/theme-v878486.css` (`.seg-v878488`).
+    Prova: el cas 6 de `v486test.mjs` (12).
+    - **Proves adaptades als canvis de les V87.484–486:** les que anaven a «Preus» del menú ara hi van per «Llibreria de preus» (7 proves i el menú de
+      `usuari480a` i `pol403test`); les que tocaven el bloc «Econòmic» trien el bloc per `data-apartats` (el que conté l'apartat: «Pressupost i
+      certificacions» o «Comptabilitat» a la constructora al mòbil i l'iPad; 15 llocs); `v451test` mira les rajoles i que la constructora no té el ＋.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3004,7 +3011,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.487 a Render):**
+**Estat (publicada la V87.488 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

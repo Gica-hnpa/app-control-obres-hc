@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.487";
+const APP_VERSION878264="87.488";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -15384,6 +15384,17 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const savedSelectedTotal878211=Number(totalActive)||0;
   const integrityDifference878211=total-savedSelectedTotal878211;
   const integrityOk878211=editBudget8760b||(!duplicateBudgetCodes878211.length&&Math.abs(integrityDifference878211)<0.01);
+  // V87.488 · «Següent ›» a la pantalla de la partida: la que ve després en l'ordre en què es veuen (al capítol següent, s'obre ell i el seu grup)
+  function seguent878488(cap,i){
+    const ents=budgetChapterEntries87226;const ci=ents.findIndex(([c])=>c===cap);if(ci<0)return null;
+    const ord=sortPartides8779(ents[ci][1]||[]);const r=(ents[ci][1]||[])[i];const p=ord.indexOf(r);
+    if(p>=0&&p<ord.length-1){const n=ord[p+1];return {cap,i:(ents[ci][1]||[]).indexOf(n),r:n}}
+    for(let k=ci+1;k<ents.length;k++){const [c2,it2]=ents[k];const o2=sortPartides8779(it2||[]);if(o2.length)return {cap:c2,i:(it2||[]).indexOf(o2[0]),r:o2[0],nouCap:true,main:`${String((it2||[]).find(x=>x.scopePrincipal)?.scopePrincipal||"")}__${String((it2||[]).find(x=>x.capPrincipal)?.capPrincipal||"")}`}}
+    return null}
+  function vesSeguent878488(cap,i){const n=seguent878488(cap,i);if(!n)return;
+    if(n.nouCap){setOpen(o=>({...o,[n.cap]:true}));setGrupObert878336(o=>({...o,[n.main]:true}))}
+    setOpenBudgetRow87173(budgetRowKey87173(n.cap,n.i));
+    setTimeout(()=>{try{document.querySelector(".partida-pantalla-v878486 .pp-cos")?.scrollTo(0,0)}catch{}},0)}
   const budgetChapterEntries87226=Object.entries(caps||{}).sort(([capA,itemsA],[capB,itemsB])=>{
     const scopeA=String((itemsA||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
     const scopeB=String((itemsB||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
@@ -15603,7 +15614,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                     {obert449&&(editBudget8760b&&pantalla878486?createPortal(<div className="partida-pantalla-v878486" role="dialog" aria-modal="true" aria-label={[r.codi,r.concepte].filter(Boolean).join(" · ")}>
                       <div className="pp-cap"><button type="button" className="tornar" onClick={()=>toggleBudgetRow87173(cap,i)}><ChevronLeft size={20} aria-hidden="true"/> {i18nT("Tornar al pressupost")}</button><span className="nom"><b>{r.codi||""}</b> {r.concepte||i18nT("Sense concepte")}</span></div>
                       <div className="pp-cos">{fitxaPartida426(cap,i)}</div>
-                      <div className="pp-peu"><button type="button" className="primary" onClick={()=>toggleBudgetRow87173(cap,i)}>{i18nT("Fet")}</button></div>
+                      <div className="pp-peu">{(()=>{const n=seguent878488(cap,i);return n?<button type="button" className="secondary seg-v878488" onClick={()=>vesSeguent878488(cap,i)} title={[n.r?.codi,n.r?.concepte].filter(Boolean).join(" · ")}>{i18nT("Següent")} <ChevronRight size={18} aria-hidden="true"/></button>:null})()}<button type="button" className="primary" onClick={()=>toggleBudgetRow87173(cap,i)}>{i18nT("Fet")}</button></div>
                     </div>,document.body):fitxaPartida426(cap,i))}
                   </div>;
                 }
@@ -19211,7 +19222,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.487",
+    app_version:"87.488",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

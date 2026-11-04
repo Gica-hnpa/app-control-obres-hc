@@ -20,3 +20,6 @@ html body .partida-pantalla-v878486 .pp-cos{flex:1;overflow:auto;-webkit-overflo
 html body .partida-pantalla-v878486 .pp-cos>*{margin:0!important;max-width:100%}
 html body .partida-pantalla-v878486 .pp-peu{flex:none;display:flex;justify-content:flex-end;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid #E2E8F0}
 html body .partida-pantalla-v878486 .pp-peu .primary{min-width:120px;min-height:46px;font-size:16px}
+/* V87.488 · «Següent ›» al costat de «Fet» */
+html body .partida-pantalla-v878486 .pp-peu{gap:10px}
+html body .partida-pantalla-v878486 .pp-peu .seg-v878488{display:inline-flex;align-items:center;gap:4px;min-height:46px;font-size:16px;margin-right:auto}
