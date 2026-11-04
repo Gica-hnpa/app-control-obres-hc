@@ -1,0 +1,13 @@
+/* V87.493 · A l'editor d'una despesa, el grup com les targetes de Despeses (Materials · Mà d'obra · Industrials · Altres · Despeses de
+   l'empresa) i, a sota, el tipus de dins (Albarà o factura; altres despeses o comissió) */
+html body .despesa-ed-v878311 .grup-desp-v878493{display:flex;flex-direction:column;gap:8px}
+html body .despesa-ed-v878311 .grups-v878493{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px}
+html body .despesa-ed-v878311 .grups-v878493 button{all:unset;box-sizing:border-box;text-align:center;cursor:pointer;min-height:44px;padding:10px 8px;border-radius:12px;border:1.5px solid var(--co-line-strong);background:var(--co-surface);font:700 14px var(--app-font);color:var(--co-ink);line-height:1.2;display:flex;align-items:center;justify-content:center}
+html body .despesa-ed-v878311 .grups-v878493 button:hover{border-color:var(--co-accent)}
+html body .despesa-ed-v878311 .grups-v878493 button.on{background:var(--co-accent);border-color:var(--co-accent);color:#fff;box-shadow:0 2px 6px rgba(29,78,216,.25)}
+html body .despesa-ed-v878311 .grups-v878493 button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+/* el tipus de dins del grup, més petit, com un interruptor */
+html body .despesa-ed-v878311 .grup-desp-v878493 .tipus-v878311{grid-template-columns:repeat(2,minmax(0,1fr));max-width:420px;padding:3px;border-radius:12px;background:var(--co-surface-2,#EEF2F6);gap:3px}
+html body .despesa-ed-v878311 .grup-desp-v878493 .tipus-v878311 button{border:0;background:transparent;padding:8px}
+html body .despesa-ed-v878311 .grup-desp-v878493 .tipus-v878311 button.on{background:var(--co-surface);color:var(--co-accent);box-shadow:0 1px 3px rgba(15,23,42,.15)}
+@media (max-width:520px){html body .despesa-ed-v878311 .grups-v878493{grid-template-columns:repeat(3,minmax(0,1fr))}}

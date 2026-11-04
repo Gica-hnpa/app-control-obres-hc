@@ -232,3 +232,34 @@ capítol) · Hores.
 6. **Dades de l’obra (constructora):** el codi llarg de carpeta no serveix: més curt i simple. «Núm. del client»: què vol dir?
 7. **Contactes:** fora l’avís dels agents posats a les obres; amb la llista llarga, poder plegar sense baixar fins al final (com al mòbil).
 8. **Remarcar més les targetes** i el que està destacat.
+9. **Agenda de l’obra:** «Cites i avisos» i els avisos poden ser el mateix. Proposta: una targeta d’Avisos (cobraments, data de facturació
+   o de certificació…) i l’agenda per a les visites d’obra, a l’agenda personal. (Plantejar-ho.)
+10. **Planning › Gràfic:** el selector «dies, setmanes…» surt al costat del títol: posar-lo en una altra línia.
+11. **Planning:** abans del detall dels capítols, una targeta de resum (inici i final de l’obra, durada prevista, recursos destinats) i
+    una de **Recursos**; en entrar a la partida, poder-hi posar els recursos propis (els industrials només les dates que donin). A la
+    taula, el capítol com una targeta que es desplega amb el resum del capítol (la suma de les seves partides) i, a dins, les partides.
+12. **Amidaments (constructora):** poc habitual que en facin; es manté adjuntar-los en els tres formats. Proposta per parlar-ne (no fer res):
+    amidaments llegint un plànol en PDF acotat i dictant què es vol (parets, acabats…). En passar-los a pressupost, **sense preus**
+    (encara no s’han posat). Si el pressupost ja està fet, s’adjunta directament al Pressupost, no als Amidaments.
+13. **El «⋯» de les opcions** (barra de fases) no es veu bé: una fletxa, la paraula «Opcions» o més marcat.
+14. **Pressupost › «Afegir» (Des de Preus · Pressupost amb IA):** què vol dir? Afegir una partida hauria de ser des d’«Editar»; un cop hi ha
+    pressupost, potser sobra.
+15. **Editant una partida:** «Fora de pressupost» només té sentit amb el pressupost tancat (i llavors totes les noves ja ho són) i «No
+    s’executarà tota» hauria de ser a la certificació. (Pensar-ho.)
+16. **Descompost de la partida:** molt més clar i simple: els grups Mà d’obra · Materials · Altres (desplegar el que calgui); en triar
+    «Oficial», el preu per hora que ja hi ha; material a mà però fàcil; o escriure una descripció i que la IA faci el descompost i el preu;
+    adjuntar un BC3 (per al tècnic). «Preu tancat» → «Preu d’industrial»; fora «Per lots». Fer-nos forts amb la IA aquí.
+17. **Pressupost › Eines** (Renumerar, Validar descompostos, Tornar a llegir els descompostos d’un Excel, Buidar): a un autònom o un
+    contractista li sobra.
+18. Després: el tema de la comptabilitat (l’Héctor ho explicarà).
+19. **Menús tapats:** a la certificació, el menú «Opcions» queda sota la capçalera blava (fixa) de la targeta de sota; passa en diverses pantalles.
+20. **Llistats per filtres, amb una pantalla pròpia en fer «Imprimir»** (el més gran possible): certificacions (totes en format resum, o la
+    triada; amb una columna «Facturada» i el número de factura), Facturació (la de Comptabilitat i la del menú: totes les obres i anys) i
+    Despeses, per data d’emissió o d’entrada, client, any, obra, número… triant els camps, com un llibre de comptabilitat; i el Rendiment
+    en PDF segons els filtres. Imprimir i **desar l’arxiu a l’aparell**. (Les factures d’una obra al client no cal: són bilaterals.)
+21. **Despeses › Despeses generals (DGE):** «Ingressos de l’obra» i «DGE %» no s’haurien de canviar aquí, sinó als ajustos de l’obra.
+22. **Proposta per més endavant (no fer res ara):** control de la caixa de l’empresa amb els bancs (sovint més d’un) i els apunts com un
+    programa de comptabilitat de gestoria; potser com a complement de pagament.
+23. **Obra tancada:** només consultar i fer llistats; si s’hi vol canviar alguna cosa, un avís que està tancada i, per continuar, canviar-ne
+    l’estat (reobrir-la).
+24. **Pendent de fer a la V87.500 (fet però tret per no allargar les proves):** «Afegir» fora d’«Editar» només amb el pressupost buit.

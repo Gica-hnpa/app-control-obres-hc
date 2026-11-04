@@ -1,0 +1,37 @@
+/* V87.501 · Llistats per filtres: una pantalla pròpia (a l'ordinador, gairebé tota la pantalla) amb els filtres a dalt, els camps i l'ordre
+   plegats, el llistat amb els totals i, a baix, Excel · Desar el PDF · Imprimir */
+@media (min-width:1101px) and (hover:hover) and (pointer:fine){
+  html body .pantalla-v878489.llistat-v878501{padding:20px}
+  html body .pantalla-v878489.llistat-v878501 .ps-caixa{flex:0 1 1500px;max-height:calc(100vh - 40px)}
+}
+html body .llistat-v878501 .ll-filtres-v878501{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;align-items:end;padding:12px;border:1.5px solid #C3CED6;border-radius:14px;background:#fff}
+html body .llistat-v878501 .ll-filtres-v878501 label{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .llistat-v878501 .ll-filtres-v878501 label>span{font-size:12.5px;font-weight:700;color:var(--co-ink-2,#334155)}
+html body .llistat-v878501 .ll-filtres-v878501 input,html body .llistat-v878501 .ll-filtres-v878501 select{box-sizing:border-box;width:100%;min-height:42px;padding:8px 10px;border:1.5px solid #C3CED6;border-radius:10px;background:#fff;font:500 15px var(--app-font)}
+html body .llistat-v878501 .ll-filtres-v878501 .cerca{grid-column:span 2}
+html body .llistat-v878501 .ll-filtres-v878501 .nums .dos{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+html body .llistat-v878501 .net-v878501{justify-self:start;align-self:center;font-weight:700}
+html body .llistat-v878501 .ll-camps-v878501{margin:10px 0;border:1.5px solid #C3CED6;border-radius:14px;background:#fff;overflow:clip}
+html body .llistat-v878501 .ll-camps-v878501>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 14px;font-weight:700}
+html body .llistat-v878501 .ll-camps-v878501>summary::-webkit-details-marker{display:none}
+html body .llistat-v878501 .ll-camps-v878501>summary small{margin-left:auto;color:var(--co-ink-3,#5F7075)}
+html body .llistat-v878501 .ll-camps-v878501[open]>summary{background:#1D4ED8;color:#fff}
+html body .llistat-v878501 .ll-camps-v878501[open]>summary small{color:#fff}
+html body .llistat-v878501 .ll-camps-v878501 .camps{display:flex;flex-wrap:wrap;gap:6px;padding:12px}
+html body .llistat-v878501 .ll-camps-v878501 .camps label{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 12px;border:1.5px solid #C3CED6;border-radius:999px;cursor:pointer;font-size:14px}
+html body .llistat-v878501 .ll-camps-v878501 .camps label.on{background:#EFF6FF;border-color:#1D4ED8;color:#1D4ED8;font-weight:700}
+html body .llistat-v878501 .ll-camps-v878501 .ordre{display:flex;align-items:end;gap:10px;flex-wrap:wrap;padding:0 12px 12px}
+html body .llistat-v878501 .ll-camps-v878501 .ordre label{display:flex;flex-direction:column;gap:4px}
+html body .llistat-v878501 .ll-camps-v878501 .ordre label span{font-size:12.5px;font-weight:700}
+html body .llistat-v878501 .ll-camps-v878501 .ordre select{min-height:40px}
+html body .llistat-v878501 .ll-buit-v878501{padding:24px;text-align:center;color:var(--co-ink-3,#5F7075)}
+html body .llistat-v878501 .ll-taula-v878501{overflow-x:auto;border:1.5px solid #C3CED6;border-radius:14px;background:#fff}
+html body .llistat-v878501 .ll-taula-v878501 table{width:100%;border-collapse:collapse;font-size:14px}
+html body .llistat-v878501 .ll-taula-v878501 th,html body .llistat-v878501 .ll-taula-v878501 td{padding:8px 10px;border-bottom:1px solid #E2E8F0;text-align:left;white-space:nowrap}
+html body .llistat-v878501 .ll-taula-v878501 th{position:sticky;top:0;background:#F1F5F9;z-index:1}
+html body .llistat-v878501 .ll-taula-v878501 th button{all:unset;cursor:pointer;font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:#334155}
+html body .llistat-v878501 .ll-taula-v878501 .n{text-align:right}
+html body .llistat-v878501 .ll-taula-v878501 tbody tr:nth-child(even){background:#F8FAFC}
+html body .llistat-v878501 .ll-taula-v878501 tfoot td{font-weight:800;background:#EFF6FF;border-top:2px solid #1D4ED8}
+html body .llistat-btn-v878501{display:inline-flex;align-items:center;gap:6px}
+@media (max-width:700px){html body .llistat-v878501 .ll-filtres-v878501{grid-template-columns:1fr 1fr}html body .llistat-v878501 .ll-filtres-v878501 .cerca{grid-column:1/-1}}

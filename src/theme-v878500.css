@@ -1,0 +1,9 @@
+/* V87.500 · Retocs del pressupost i del Planning (l'Héctor, 4/11/2026): les opcions de les fases amb la paraula, l'escala del gràfic en una
+   línia pròpia i els menús oberts sempre per sobre de la capçalera fixa de les altres targetes */
+html body .fases-v878342 .mes-v878342.opcions-v878500>summary{display:inline-flex;align-items:center;gap:6px;width:auto;height:40px;padding:0 12px 0 14px;border:1.5px solid #94A3B8;border-radius:12px;background:#fff;font:700 14px var(--app-font);color:var(--co-ink,#152328)}
+html body .fases-v878342 .mes-v878342.opcions-v878500>summary:hover{border-color:#1D4ED8;color:#1D4ED8}
+html body .fases-v878342 .mes-v878342.opcions-v878500[open]>summary{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
+html body .gantt-v878253 .gt-escala-v878500{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+html body .gantt-v878253 .gt-escala-v878500>small{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--co-ink-3,#5F7075)}
+/* un menú obert (Opcions, Imprimir…) passa per sobre de la capçalera fixa de la targeta de sota */
+html body .main .card:has(details.action-menu-v87213[open]),html body .main .card:has(details.mes-v878342[open]),html body .main .fases-v878342:has(details[open]){position:relative;z-index:70}

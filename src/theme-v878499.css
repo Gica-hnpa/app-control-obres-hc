@@ -1,0 +1,5 @@
+/* V87.499 · A les pantalles del menú (Contactes, Despeses, Facturació…), la capçalera d'una targeta oberta es queda a dalt en baixar: es
+   pot plegar sense haver d'anar fins al final (com al mòbil i dins de l'obra) */
+html body .main details.card.bloc-v878426[open]{overflow:clip}
+html body .main details.card.bloc-v878426[open]>summary{position:sticky;top:0;z-index:30}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){html body .main details.card.bloc-v878426[open]>summary{top:53px}}

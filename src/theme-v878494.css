@@ -1,0 +1,81 @@
+/* V87.494 · El parte a l'ordinador aprofita la pantalla; dins de «Feina feta», el Pressupost plegat (capítols → partides) i, a sota,
+   «Partida fora de pressupost», que s'obre a la seva pantalla (capítol automàtic, títol, descripció, unitat, quantitat o administració) */
+
+/* ordinador: les pantalles del parte, amples */
+@media (min-width:1101px) and (hover:hover) and (pointer:fine){
+  html body .pantalla-v878489.pe-pantalla-v878489 .ps-caixa{flex:0 1 1180px;max-height:calc(100vh - 48px)}
+  html body .pantalla-v878489.pe-pantalla-v878489{padding:24px}
+  html body .pantalla-v878489.pe-pantalla-v878489.personal .pe-hores-v878352{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;align-items:start}
+  html body .pantalla-v878489.pe-pantalla-v878489.personal .pe-hores-v878352>h4,
+  html body .pantalla-v878489.pe-pantalla-v878489.personal .pe-hores-v878352>.afegir,
+  html body .pantalla-v878489.pe-pantalla-v878489.personal .pe-hores-v878352>.tot{grid-column:1/-1}
+  html body .pantalla-v878489.fp-pantalla-v878494 .ps-caixa{flex:0 1 860px}
+  html body .parte-ed-v878349 .pe-md-v878365{grid-template-columns:340px minmax(0,1fr)}
+}
+
+/* el pressupost dins de la feina: una targeta plegada */
+html body .parte-ed-v878349 details.pe-pres-v878494{background:#fff;border:1.5px solid #C3CED6;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.06);overflow:clip}
+html body .parte-ed-v878349 details.pe-pres-v878494>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 14px;color:#1D4ED8}
+html body .parte-ed-v878349 details.pe-pres-v878494>summary::-webkit-details-marker{display:none}
+html body .parte-ed-v878349 details.pe-pres-v878494>summary .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .parte-ed-v878349 details.pe-pres-v878494>summary .t b{font-size:16.5px;color:var(--co-ink,#152328)}
+html body .parte-ed-v878349 details.pe-pres-v878494>summary .t small{font-size:13.5px;font-weight:600;color:var(--co-ink-3,#5F7075)}
+html body .parte-ed-v878349 details.pe-pres-v878494>summary .chev{color:#94A3B8;transition:transform .15s}
+html body .parte-ed-v878349 details.pe-pres-v878494[open]{border-color:#1D4ED8;border-width:2px}
+html body .parte-ed-v878349 details.pe-pres-v878494[open]>summary{background:#1D4ED8;color:#fff}
+html body .parte-ed-v878349 details.pe-pres-v878494[open]>summary .t b,
+html body .parte-ed-v878349 details.pe-pres-v878494[open]>summary .t small,
+html body .parte-ed-v878349 details.pe-pres-v878494[open]>summary .chev{color:#fff}
+html body .parte-ed-v878349 details.pe-pres-v878494[open]>summary .chev{transform:rotate(180deg)}
+html body .parte-ed-v878349 details.pe-pres-v878494>.cos{padding:12px;display:flex;flex-direction:column;gap:10px;background:#F8FAFC}
+
+/* «Partida fora de pressupost» i les que ja s'han fet */
+html body .parte-ed-v878349 .pe-fp-v878494{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+html body .parte-ed-v878349 .pe-nova-fp-v878494{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 16px;border:2px dashed #EA580C;border-radius:16px;background:#FFF7ED;color:#9A3412}
+html body .parte-ed-v878349 .pe-nova-fp-v878494 span{display:flex;flex-direction:column;gap:2px}
+html body .parte-ed-v878349 .pe-nova-fp-v878494 b{font-size:16px}
+html body .parte-ed-v878349 .pe-nova-fp-v878494 small{font-size:13px;font-weight:600;color:#9A3412;opacity:.85}
+html body .parte-ed-v878349 .pe-nova-fp-v878494:hover{background:#FFEDD5}
+html body .parte-ed-v878349 .pe-nova-fp-v878494:focus-visible{outline:2px solid #EA580C;outline-offset:2px}
+html body .parte-ed-v878349 .fp-carta-v878494{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:58px;padding:8px 14px;background:#fff;border:1.5px solid #FDBA74;border-left:5px solid #EA580C;border-radius:14px}
+html body .parte-ed-v878349 .fp-carta-v878494 .fp{flex:none;font-style:normal;font-size:12px;font-weight:800;color:#9A3412;background:#FFEDD5;border-radius:999px;padding:3px 8px}
+html body .parte-ed-v878349 .fp-carta-v878494 .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .parte-ed-v878349 .fp-carta-v878494 .t b{font-size:15px;color:var(--co-ink,#152328);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .parte-ed-v878349 .fp-carta-v878494 .t small{font-size:13px;font-weight:600;color:var(--co-ink-3,#5F7075)}
+html body .parte-ed-v878349 .fp-carta-v878494 .chev{flex:none;color:#94A3B8}
+html body .parte-ed-v878349 .fp-carta-v878494:focus-visible{outline:2px solid #EA580C;outline-offset:2px}
+@media (max-width:520px){html body .parte-ed-v878349 .fp-carta-v878494 .fp{display:none}}
+
+/* la pantalla de la partida fora de pressupost */
+html body .fp-ed-v878494{display:flex;flex-direction:column;gap:12px;border:0;padding:0;background:none}
+html body .fp-ed-v878494 label{display:flex;flex-direction:column;gap:5px}
+html body .fp-ed-v878494 label>span{font-size:13.5px;font-weight:700;color:var(--co-ink-2,#334155)}
+html body .fp-ed-v878494 input,html body .fp-ed-v878494 select,html body .fp-ed-v878494 textarea{box-sizing:border-box;width:100%;min-height:46px;padding:10px 12px;border:1.5px solid #C3CED6;border-radius:12px;background:#fff;font:500 16px var(--app-font);color:var(--co-ink,#152328)}
+html body .fp-ed-v878494 textarea{min-height:90px;resize:vertical}
+html body .fp-ed-v878494 .cap-fp-v878494{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:10px 12px;border-radius:12px;background:#FFF7ED;border:1.5px solid #FDBA74}
+html body .fp-ed-v878494 .cap-fp-v878494 span{font-size:13px;font-weight:700;color:#9A3412}
+html body .fp-ed-v878494 .cap-fp-v878494 b{font-size:15.5px;color:#7C2D12}
+html body .fp-ed-v878494 .modes-v878494{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+html body .fp-ed-v878494 .modes-v878494 button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:58px;padding:10px 12px;border:1.5px solid #C3CED6;border-radius:14px;background:#fff;text-align:center;justify-content:center}
+html body .fp-ed-v878494 .modes-v878494 button b{font-size:15.5px;color:var(--co-ink,#152328)}
+html body .fp-ed-v878494 .modes-v878494 button small{font-size:12.5px;font-weight:600;color:var(--co-ink-3,#5F7075)}
+html body .fp-ed-v878494 .modes-v878494 button.on{background:#1D4ED8;border-color:#1D4ED8}
+html body .fp-ed-v878494 .modes-v878494 button.on b,html body .fp-ed-v878494 .modes-v878494 button.on small{color:#fff}
+html body .fp-ed-v878494 .modes-v878494 button:focus-visible{outline:2px solid #1D4ED8;outline-offset:2px}
+html body .fp-ed-v878494 .qu{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:10px}
+html body .fp-ed-v878494 .hm{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:#F8FAFC;border:1px solid #E2E8F0}
+html body .fp-ed-v878494 .hm>b{font-size:14px;margin-top:4px}
+html body .fp-ed-v878494 .hm .lh{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center}
+html body .fp-ed-v878494 .hm .lh.mat{grid-template-columns:minmax(0,1fr) 110px auto}
+html body .fp-ed-v878494 .hm .lh .vh{font-size:12.5px;color:var(--co-ink-3,#5F7075);white-space:nowrap}
+html body .fp-ed-v878494 .hm .link{align-self:flex-start}
+html body .fp-ed-v878494 .quadre-v878494{margin:4px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+html body .fp-ed-v878494 .quadre-v878494 span{padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #C3CED6;font-size:13.5px}
+html body .fp-ed-v878494 .cost{margin:0;font-weight:700}
+html body .pantalla-v878489 .treu-fp-v878494{margin-right:auto;color:#B91C1C;font-weight:700}
+@media (max-width:520px){
+  html body .fp-ed-v878494 .qu{grid-template-columns:1fr}
+  html body .fp-ed-v878494 .hm .lh{grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"q q q" "h v x"}
+  html body .fp-ed-v878494 .hm .lh>select{grid-area:q}
+  html body .fp-ed-v878494 .hm .lh.mat{grid-template-columns:minmax(0,1fr) 96px auto;grid-template-areas:none}
+}

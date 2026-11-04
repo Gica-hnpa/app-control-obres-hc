@@ -2831,6 +2831,76 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       `v486test`, `partes350test`, `v449test`, `v447test` i `i18ntest`.
   - **V87.490 · A l’ordinador, els mateixos noms i el mateix funcionament que al mòbil** (constructora i gestió total; l’Héctor, 4/11/2026: «voldran veure-ho també a l’ordinador amb l’administrativa… les pantalles no són iguals, els textos tampoc»): l’Inici en rajoles (`IniciMenu878484`, ara sense la condició de la barra de baix; a l’ordinador «Rendiment» en lloc de «Més», `pc490`) i, dins de l’obra, les quatre rajoles Fitxa · Dia a dia · Pressupost i certificacions · Comptabilitat (`mo878485 = modeObra878484()`; a l’ordinador, `pc-v878490`: quatre en una fila i la llista dels apartats a sota en columnes, `fila490`). A l’iPad i l’ordinador, «Pendent» de l’Inici s’obre a sota de la primera fila. El tècnic i el compte de l’Héctor, com abans. **Següent (l’Héctor):** a l’ordinador, on la informació no hi cap, que s’obri una pantalla pròpia com la de les partides (`PantallaSencera878489`). Estils `src/theme-v878490.css`. Adaptades `v485test` (5) i `v484test` (11); passen `v489test`.
   - **V87.491 · El logo una mica més gran** (l’Héctor, 4/11/2026): a la capçalera del mòbil i l’iPad, 44 px (abans 36) i, amb el logo de l’empresa, fins a 46 × 136 px; al menú de l’ordinador, el quadre «CO» de 38 px i el logo fins a 50 × 132 px. Estils `src/theme-v878491.css`.
+  - **V87.492 · Les rajoles de l'obra també al tècnic i al compte de l'Héctor** (proposta acceptada per l'Héctor el 4/11/2026): **Fitxa · Dia a dia ·
+    El meu encàrrec · Pressupost i certificacions** (`OBRA_BLOCS_TEC878492`, `obraBlocsTec878492(all,pur)`, a `ObraBar878269` amb `tec492` = no és mode
+    obra ni només lectura; classe `tec-v878492`). «Pressupost i certificacions», només a les obres que en tenen (no als encàrrecs com el CEE). Als
+    encàrrecs tècnics (`pur`) les despeses són les meves i van a «El meu encàrrec»; a les obres, amb el pressupost. **Una rajola amb un sol apartat
+    l'obre directament** (fletxa cap a la dreta; també a la constructora). A les rajoles del tècnic, la línia de sota diu els apartats de debò
+    (`sub492`: no hi ha partes). Proves: `v492test.mjs` (26, amb el compte de l'Héctor a l'ordinador i al mòbil). L'ajuda `tab()` de 79 proves accepta
+    l'apartat d'una rajola d'un sol apartat (`.rajoles-v878485>button.on .t small`); `v444`–`v448test` obren les rajoles; adaptades `v485test`,
+    `menutecnictest`, `obratest` (les rajoles en lloc dels tres blocs) i `honoraris332test`.
+  - **Tanda 8** (l'Héctor, 4/11/2026 a la tarda, després d'una visita amb un client que «ha agradat molt»; llista a `docs/revisio-modul-constructor.md`).
+  - **V87.493 · Despeses: el grup pel proveïdor i el grup a l'editor** (una factura d'un industrial llegida per la IA va anar a Materials):
+    `tipusProveidor878493(prov, nif, tots)`: si el proveïdor és a Contactes com a industrial o constructora (`window.__acoContactes878406`, pel NIF o
+    pel nom sense «S.L.», accents ni puntuació, `nomProv878493`), «Subcontracta»; si no, el tipus més repetit de les seves despeses d'abans (Material,
+    Subcontracta o Altres): si se'n corregeix una, la següent ja va bé. S'aplica en llegir la factura amb la IA (no si és ISP). A l'editor, el **grup**
+    com les targetes (`grups-v878493`: Materials · Mà d'obra · Industrials · Altres · Despeses de l'empresa) i, a sota, el tipus de dins (Albarà ·
+    Factura de material; Altres despeses · Comissió). Estils `src/theme-v878493.css`. Prova: `v493test.mjs`. El Supabase de proves accepta `POST /__aco-ia
+    {despesa:{…}}`. Adaptades `despesestest` i `despesesrend338test`.
+  - **V87.494 · El parte: pantalles amples a l'ordinador i «Partida fora de pressupost»** (`src/theme-v878494.css`):
+    - A l'ordinador, les pantalles del parte fan fins a 1.180 px (Personal en dues columnes).
+    - «Feina feta»: el **Pressupost plegat** (`details.pe-pres-v878494`; obert si el parte ja té partides marcades) amb Per fer · Marcades avui · Totes,
+      els capítols i les partides; a sota, **«Partida fora de pressupost»** (`.pe-nova-fp-v878494`) i les ja fetes (`FPCarta878494`). La targeta de la
+      feina surt també sense pressupost («Feina fora de pressupost»).
+    - **La partida fora de pressupost** s'obre a la seva pantalla (`FPPantalla878494`, a sobre de la de la feina; Esc només tanca la de dalt): el capítol
+      «NN FORA DE PRESSUPOST» és automàtic (`capFP878494`: el número següent del pressupost o el que ja hi ha; `RE_CAP_FP878494`), títol, descripció
+      (amb dictat), **Per quantitat** (quantitat i unitat amb desplegable, `UNITATS878494`: «m2 · metres quadrats»…) o **Per administració** (hores per
+      treballador o per categoria —`cat:<categoria>`, el cost mitjà de la categoria— i material; el quadre diu les hores de cada categoria) i el preu per
+      al client. Dades: `noves:[{…, desc, mode:"q"|"adm"}]` (`ambHores` = administració). En certificar, la partida va al capítol fora de pressupost
+      numerada com el capítol (05.01, 05.02…) i amb la descripció (`desc`).
+    - Prova: `v494test.mjs`. Adaptades `partes350test`, `partes352test` i `signatura403test`.
+  - **V87.495 · Inici de la constructora i partes «per validar»:** «Pendent» s'obre sol (les altres rajoles s'amaguen) amb **«Inici»** per tornar
+    (`torna-inici-v878495`) i dues targetes, **Avisos** i **Feines**, que diuen «No hi ha…» si són buides (`pend-cartes-v878495`; a l'ordinador, l'una al
+    costat de l'altra). A l'ordinador, «Inici» a dalt de les pantalles (no a l'obra ni a la fitxa d'un client) per als perfils de mode obra; l'Inici
+    arriba fins a 1.400 px. «Per revisar» → **«Per validar»** als partes (avisos, llista, botons). `AvisosLlista878360` amb `nu` (sense targeta).
+    Estils `src/theme-v878495.css`.
+  - **V87.496 · Avís de cobrament de cada factura i avisos que es canvien:** mentre una factura (de l'obra, `facturesObra878297`, o d'honoraris,
+    `facturesTecnic`) no és cobrada, surt l'avís «Cobrament de la factura F…» a l'Inici i al Resum, amb la data de 10 dies després de la factura
+    (`AVIS_COBR_DIES878496`) i el color: verd, taronja (3 dies o menys) o vermell (passat) (`avisosCobr878496`). Cada avís té un **llapis**
+    (`ed-v878496`) que obre `AvisEditor878496`: «Recorda-m’ho el dia», «Ja està cobrada» (amb el dia) i «Treure l’avís». La data i el «tret» del
+    cobrament es desen a la factura (`avisCobr878496 = {data}|{off}`, pont `window.__acoPatchFactura878496`); els altres avisos, a `aco_avisos_v878496`
+    (`clauAvis878496` porta el nombre o el mes: si n'hi ha de nous, torna a sortir). Estils `src/theme-v878496.css`. Prova: `v496test.mjs` (també la V87.495).
+  - **V87.497 · Llista d'obres:** paquets molt més marcats (l'actiu, ple de blau) i, a la constructora, què hi ha a dins de cada un («3 en curs / actiu ·
+    1 pendent de resposta», `paqDet878497`); filtres amb **tots els estats** i el color de la llista (`estf-v878497`); a l'ordinador, el número i l'altre
+    número sencers; la columna de l'altre número, a la constructora, només si hi ha obres compartides i es diu **«Compartida per»** (el número de qui la
+    comparteix; el principal és sempre el del compte). Estils `src/theme-v878497.css`.
+  - **V87.498 · Dades de l'obra de la constructora** (`constructoraPropia878363`): sense «Codificació de l'expedient» ni el codi llarg de carpeta;
+    «Referència del client (el seu número d'obra o de comanda)» en lloc de «Núm. del client».
+  - **V87.499 · Contactes i targetes obertes:** fora l'avís «Agents posats a les obres»; a les pantalles del menú, la capçalera d'una targeta oberta
+    es queda a dalt en baixar (`src/theme-v878499.css`), com dins de l'obra.
+  - **V87.500 · Pressupost, Planning i descompost més nets:** a la constructora, «Eines» sense Renumerar, Validar descompostos ni Tornar a llegir
+    els descompostos (no els fa servir un contractista); a l'editor del descompost, «Preu tancat» → **«Preu d'industrial»** i fora «Per lots» (surt
+    només si la partida ja n'era); el «⋯» de les fases és **«Opcions»** amb la fletxa (`opcions-v878500`); al Planning, l'escala del gràfic en una fila
+    pròpia a sota del títol (`gt-escala-v878500`); el menú «Opcions» d'una targeta ja no queda sota la capçalera blava fixa (la targeta del menú obert
+    passa per sobre, capa 70). Estils `src/theme-v878500.css`. **No fet:** treure «Afegir» de fora d'«Editar» quan el pressupost ja té partides
+    (trencava 7 proves del pressupost; pendent).
+  - **V87.501 · Llistats amb filtres** (l'Héctor: «en una pantalla nova, com un llibre comptable… imprimir i desar l'arxiu»): `Llistat878501({titol,
+    files, cols, dates, filtres, close, nom})` a `PantallaSencera878489` (`.llistat-v878501`): data (d'emissió o d'entrada, segons `dates`), des de / fins
+    a, any, els filtres de cada llistat (desplegables), número des de / fins a i cercador (`ll-filtres-v878501`); «Camps i ordre» plegat (treure o posar
+    columnes, ordenar per una columna tocant-ne el títol); la taula amb els totals a baix (columnes `suma`); a baix **Excel · Desar el PDF · Imprimir**
+    (`htmlAPdf`; al mòbil, «Compartir»). Llistats: **Certificacions** («Llistat» a la targeta: número, data, import, a origen, facturada, factura,
+    cobrada), **Facturació** de l'empresa i del tècnic («Llistat»), **Despeses** (Opcions › «Llistat amb filtres…»: data d'emissió o d'entrada, client,
+    obra, grup, proveïdor; sense els albarans inclosos en una factura) i **Rendiment** de l'empresa (per obra i any: ingressos, facturat, costos, DGE,
+    benefici, %). Estils `src/theme-v878501.css`. Prova: `v501test.mjs`.
+  - **V87.502 · Obra tancada** (l'Héctor, 4/11/2026: «quan una obra ja la tenim tancada no ens hauria de deixar modificar res més que llistar i
+    consultar, i si volem fer algun canvi que surti un avís que està tancada… canviar-li de nou l'estat i reobrir-la»): a `Obra`, amb l'estat «Tancat»
+    (`tancada502`), els canvis que fa la persona no es desen: `setData` i les funcions de l'App que canvien l'obra (certificacions, hores, pressupostos i
+    factures d'honoraris, fitxa, importar) passen per `g502`, que, si el canvi ve d'un clic, un canvi o una tecla (`window.event`), obre l'avís
+    («Aquesta obra està tancada» / «Aquest expedient està tancat», «Només es pot consultar i fer llistats…», **Tancar · Reobrir l'obra**) i no desa res;
+    el que fa l'app sola (les dates d'obrir-la) sí. Els botons que comencen un canvi (`RE_CANVI878502`: Editar, Afegir, Nova, Importar, Apuntar, Fer
+    factura, Eliminar, Guardar, «+ Nota»…, en català i castellà) ja ho diuen abans d'obrir res (un `click` en captura a `.obra-page-v87105`); consultar,
+    imprimir, enviar, fer llistats i la barra de l'obra (on es canvia l'estat) no es toquen. «Reobrir» la passa a «En curs / Actiu» (constructora) o «En
+    procés» (tècnic). Estils `src/theme-v878502.css`. Prova: `v502test.mjs`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3029,7 +3099,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.491 a Render):**
+**Estat (publicada la V87.502 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

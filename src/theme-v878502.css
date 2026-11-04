@@ -1,0 +1,6 @@
+/* V87.502 · Obra tancada: l'avís quan s'hi vol canviar alguna cosa */
+.tancada-avis-v878502{display:grid;justify-items:center;gap:12px;text-align:center;padding:4px 0 2px}
+.tancada-avis-v878502>svg{color:var(--co-ink-2,#334155)}
+.tancada-avis-v878502 p{margin:0;max-width:44ch;font-size:15px;line-height:1.45;color:var(--co-ink-2,#334155)}
+.tancada-avis-v878502 .modal-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
+.tancada-avis-v878502 .modal-actions button{min-height:40px;display:inline-flex;align-items:center;gap:6px}

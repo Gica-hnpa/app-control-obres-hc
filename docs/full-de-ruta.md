@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.489, 4/11/2026)
+## On som (V87.502, 4/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -72,6 +72,18 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
 - **V87.486 (4/11):** el pressupost buit en rajoles (Importar un arxiu · Amb IA · A mà) i, editant al mòbil, cada partida en una pantalla pròpia.
 - **V87.487 (4/11):** el fitxatge desa la ubicació de l'aparell (es pot treure) i l'oficina la veu al registre i a l'Excel.
 - **V87.488 (4/11):** a la pantalla de la partida (editant al mòbil), «Següent ›» porta a la partida següent, també del capítol següent.
+- **V87.489–491 (4/11):** el parte en targetes a pantalla sencera, l'ordinador amb els mateixos noms que el mòbil (constructora) i el logo més gran.
+- **V87.492 (4/11):** les rajoles de l'obra també al tècnic i al compte de l'Héctor (Fitxa · Dia a dia · El meu encàrrec · Pressupost i certificacions).
+- **Tanda 8 (4/11 a la tarda, després de la visita amb un client; llista a `docs/revisio-modul-constructor.md`):**
+  - **V87.493:** el grup de la despesa pel proveïdor (un industrial de Contactes va a Industrials) i el grup a l'editor.
+  - **V87.494:** el parte a l'ordinador amb pantalles amples, el pressupost plegat i «Partida fora de pressupost» a la seva pantalla (capítol automàtic, unitats, per quantitat o per administració).
+  - **V87.495:** «Pendent» de l'Inici sol, amb «Inici» per tornar i les targetes Avisos i Feines; partes «per validar».
+  - **V87.496:** avís de cobrament de cada factura (10 dies, colors) i avisos que es poden canviar o treure.
+  - **V87.497–499:** la llista d'obres (paquets marcats, tots els estats als filtres, «Compartida per»), Dades de la constructora sense el codi llarg i Contactes sense l'avís dels agents.
+  - **V87.500:** Eines de la constructora més curtes, «Preu d'industrial», «Opcions» a les fases, l'escala del Planning en una fila i el menú «Opcions» que ja no queda tapat.
+  - **V87.501:** llistats amb filtres a la seva pantalla (Certificacions, Facturació, Despeses, Rendiment), amb Excel, PDF i Imprimir.
+  - **V87.502:** una obra tancada només es consulta i es llista; un canvi diu que està tancada i es pot reobrir.
+  - **Pendent de la tanda 8:** propostes (agenda: avisos i visites; amidaments amb PDF i dictat; marques de la partida; caixa i bancs), el descompost amb IA i BC3, el resum i els recursos del Planning, treure «Afegir» de fora d'«Editar» i la Comptabilitat (l'Héctor l'explicarà).
 
 ## Blocs, per ordre
 

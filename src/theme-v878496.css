@@ -1,0 +1,18 @@
+/* V87.496 · Avisos: el de cobrament de cada factura (verd, taronja o vermell segons la data) i un llapis a cada avís per canviar-lo
+   (un altre dia, cobrada, treure'l) */
+html body .avisos-v878360 .avis-fila-v878496{display:flex;align-items:stretch;border-top:1px solid var(--co-line,#E2E8F0)}
+html body .avisos-v878360 .avis-fila-v878496:first-child{border-top:0}
+html body .avisos-v878360 .avis-fila-v878496 .avis{border-top:0!important;flex:1;min-width:0}
+html body .avisos-v878360 .avis.ok>i{background:#16A34A}
+html body .avisos-v878360 .ed-v878496{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 48px;display:grid;place-items:center;color:var(--co-ink-3,#5F7075);border-left:1px solid var(--co-line,#E2E8F0)}
+html body .avisos-v878360 .ed-v878496:hover{background:#EFF6FF;color:#1D4ED8}
+html body .avisos-v878360 .ed-v878496:focus-visible{outline:2px solid #1D4ED8;outline-offset:-2px}
+html body .avis-ed-v878496{display:flex;flex-direction:column;gap:14px}
+html body .avis-ed-v878496 .sub{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .avis-ed-v878496 .fila{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+html body .avis-ed-v878496 .fila label{flex:1 1 200px;display:flex;flex-direction:column;gap:5px}
+html body .avis-ed-v878496 .fila label span{font-size:13.5px;font-weight:700}
+html body .avis-ed-v878496 .fila input{min-height:44px;font-size:16px}
+html body .avis-ed-v878496 .fila button{min-height:44px}
+html body .avis-ed-v878496 .cobrada{padding-top:12px;border-top:1px solid var(--co-line,#E2E8F0)}
+html body .avis-ed-v878496 .treu-v878496{align-self:flex-start;color:#B91C1C;font-weight:700}
