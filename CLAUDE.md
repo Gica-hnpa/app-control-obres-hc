@@ -2813,6 +2813,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Proves adaptades als canvis de les V87.484–486:** les que anaven a «Preus» del menú ara hi van per «Llibreria de preus» (7 proves i el menú de
       `usuari480a` i `pol403test`); les que tocaven el bloc «Econòmic» trien el bloc per `data-apartats` (el que conté l'apartat: «Pressupost i
       certificacions» o «Comptabilitat» a la constructora al mòbil i l'iPad; 15 llocs); `v451test` mira les rajoles i que la constructora no té el ＋.
+  - **V87.489 · El parte en targetes que s'obren a pantalla sencera, i la descripció de la partida amb «Veure descripció»** (l'Héctor, 4/11/2026, amb
+    una captura del parte al mòbil: «fes-la amb targetes desplegables… i en entrar a alguna d'elles, pantalla sencera i botó tornar»; «la descripció
+    d'una partida… una targeta amb botó veure descripció i que s'obri sencera»; «fes-me el mateix format a PC»):
+    - **`PantallaSencera878489`** (`.pantalla-v878489`, portal al `body`, capa 97): a dalt «‹ Tornar» i el títol (amb una xifra), el contingut i, a
+      baix, «Fet» (`senseFet` per treure'l). Al mòbil i l'iPad, tota la pantalla; a l'ordinador (≥1101 px amb ratolí), un plafó de 760 px al mig
+      amb el fons enfosquit; Esc i tocar fora la tanquen (Esc no fa res si hi ha una finestra oberta). És la peça per fer el mateix a les altres pantalles.
+    - **El parte** (`ParteEditor878349`): el dia i qui el fa a dalt i, a sota, quatre targetes iguals (`.pe-cartes-v878489`, una columna al mòbil i
+      al costat l'una de l'altra a l'ordinador): Personal (les hores), Material, Nota i fotos i Feina feta per partides (només amb pressupost), cada
+      una amb la seva xifra i plena de blau quan té alguna cosa. Tocar-ne una l'obre a pantalla sencera amb el mateix contingut d'abans
+      (`secPersonal`, `secMaterial`, `secNota`, `cosFeina`, dins de `.parte-ed-v878349.dins-v878489`). «Una part» i les mesures s'obren al
+      `body` (`createPortal`), per sobre de la pantalla sencera. «Desar el parte», a baix com abans.
+    - **La descripció de la partida** (`DescPartida878489`, a la fitxa fora d'edició): si és llarga (més de 140 lletres o més de 3 línies), les tres
+      primeres línies i «Veure descripció», que l'obre sencera (`.desc-pantalla-v878489`, lletra de 17 px). Editant, el quadre de text de sempre.
+    - **Proves:** la marca `parte-blocs-prova-v878489` (la posa l'harness, com `parte-feina-prova-v878483`) deixa els blocs d'abans per a les proves
+      que ja hi havia. Estils `src/theme-v878489.css`. Prova: `v489test.mjs` (29: mòbil i ordinador, desar el parte, la descripció). Passen `v483test`,
+      `v486test`, `partes350test`, `v449test`, `v447test` i `i18ntest`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3011,7 +3027,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.488 a Render):**
+**Estat (publicada la V87.489 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

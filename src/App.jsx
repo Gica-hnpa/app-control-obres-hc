@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.488";
+const APP_VERSION878264="87.489";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11775,6 +11775,32 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
   </div>;
 }
 // V87.483 · hores amb − i + (de mitja en mitja hora amb el teclat; els botons, d'hora en hora)
+// V87.489 · Una targeta que s'obre a pantalla sencera amb «Tornar» (al mòbil i l'iPad, tota la pantalla; a l'ordinador, un plafó al mig)
+function PantallaSencera878489({titol,sub,onTorna,children,peu=null,senseFet=false,className=""}){
+  const ref=useRef(onTorna);ref.current=onTorna;
+  useEffect(()=>{
+    const k=e=>{if(e.key==="Escape"&&!document.querySelector(".modal-backdrop")){e.stopImmediatePropagation();e.preventDefault();ref.current?.()}};
+    window.addEventListener("keydown",k,true);
+    return()=>window.removeEventListener("keydown",k,true)},[]);
+  return createPortal(<div className={"pantalla-v878489 "+className} role="dialog" aria-modal="true" aria-label={titol} onMouseDown={e=>{if(e.target===e.currentTarget)ref.current?.()}}>
+    <div className="ps-caixa">
+      <div className="ps-cap"><button type="button" className="tornar" onClick={()=>ref.current?.()}><ChevronLeft size={20} aria-hidden="true"/> {t("Tornar")}</button><span className="tt"><b>{titol}</b>{sub?<small>{sub}</small>:null}</span></div>
+      <div className="ps-cos">{children}</div>
+      {(!senseFet||peu)&&<div className="ps-peu">{peu}{!senseFet&&<button type="button" className="primary fet" onClick={()=>ref.current?.()}>{t("Fet")}</button>}</div>}
+    </div>
+  </div>,document.body);
+}
+// V87.489 · La descripció d'una partida: una targeta amb el començament i «Veure descripció», que l'obre sencera per llegir-la bé
+function DescPartida878489({text,titol}){
+  const[obert,setObert]=useState(false);
+  const txt=String(text||"");
+  const llarga=txt.length>140||txt.split("\n").length>3;
+  if(!llarga)return <p>{txt}</p>;
+  return <div className="desc-carta-v878489"><p className="prev">{txt}</p>
+    <button type="button" className="secondary veure" onClick={()=>setObert(true)}><FileText size={16} aria-hidden="true"/> {t("Veure descripció")}</button>
+    {obert&&<PantallaSencera878489 titol={t("Descripció")} sub={titol} senseFet onTorna={()=>setObert(false)} className="desc-pantalla-v878489"><div className="desc-text-v878489">{txt}</div></PantallaSencera878489>}
+  </div>;
+}
 function Pas878483({value,onChange,label}){
   const n=parseNum8770(value)||0;const fmt=v=>v>0?String(Math.round(v*100)/100).replace(".",","):"";
   // dos tocs seguits abans que es torni a dibuixar: compten tots dos
@@ -11861,13 +11887,12 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
     catch(e){console.warn(e)}finally{setLlegint483(false)}
   }
   const proveidors=useMemo(()=>[...new Set(readAlbarans878259().map(a=>String(a.proveidor||"").trim()).filter(Boolean))].slice(0,80),[]);
-  return <div className="parte-ed-v878349">
-    <div className="pe-cap"><button type="button" className="link tornar" onClick={onTanca}><ChevronLeft size={18} aria-hidden="true"/> {t("Partes d’obra")}</button>{certificat?<em className="estat ok">{t("Ja és a la certificació")}</em>:null}</div>
-    <div className="pe-dades">
-      <label><span>{t("Dia")}</span><input type="date" value={part.data||""} onChange={e=>setPart(p=>({...p,data:e.target.value}))}/></label>
-      <label><span>{t("Qui el fa")}</span><input list="partes-qui-v878349" value={part.qui||""} onChange={e=>setPart(p=>({...p,qui:e.target.value}))} placeholder={t("Encarregat")}/><datalist id="partes-qui-v878349">{treballadors.map(w=><option key={w.id} value={w.nom}/>)}</datalist></label>
-    </div>
-    <section className="pe-bloc-v878483 pe-hores-v878352"><h4><Users size={18} aria-hidden="true"/>{t("Personal")}{hTot>0?<small>{fhMa878348(hTot)}</small>:null}</h4>
+  // V87.489 · El parte en targetes (l'Héctor: «fes-la amb targetes desplegables… i en entrar a alguna d'elles, pantalla sencera i botó
+  // tornar»): Personal · Material · Nota i fotos · Feina per partides; cada una s'obre a pantalla sencera (a l'ordinador, un plafó al mig).
+  // Les proves d'abans posen «parte-blocs-prova-v878489» i hi troben els blocs de sempre.
+  const[obert489,setObert489]=useState(null);
+  const[blocs489]=useState(()=>{try{return lsVisual878400()?.getItem("parte-blocs-prova-v878489")==="1"}catch{return false}});
+  const secPersonal=<section className="pe-bloc-v878483 pe-hores-v878352"><h4><Users size={18} aria-hidden="true"/>{t("Personal")}{hTot>0?<small>{fhMa878348(hTot)}</small>:null}</h4>
       {treballadors.map(w=>{const h=horesDe(w);return <div key={w.id} className={`pe-h ${h?"on":""}`}><span className="qui"><b>{w.nom}</b><small>{w.ofici||""}</small></span><Pas878483 value={h?.hores||""} onChange={v=>posaHores(w,v)} label={t("Hores de {nom}",{nom:w.nom})}/></div>})}
       {(part.hores||[]).filter(h=>!h.treballadorId).map(h=><div key={h.id} className="pe-h altre on">
         <input className="nom" value={h.nom||""} onChange={e=>posaH(h.id,{nom:e.target.value})} placeholder={t("Nom")} aria-label={t("Nom")}/>
@@ -11876,8 +11901,8 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
         <button type="button" className="link x" onClick={()=>setPart(p=>({...p,hores:(p.hores||[]).filter(y=>y.id!==h.id)}))} aria-label={t("Treure")}>×</button></div>)}
       <button type="button" className="link afegir" onClick={()=>setPart(p=>({...p,hores:[...(p.hores||[]),{id:"h-"+Date.now(),treballadorId:"",nom:"",categoria:"",hores:""}]}))}><Plus size={16} aria-hidden="true"/> {treballadors.length?t("Una altra persona"):t("Una persona")}</button>
       {hTot>0&&!treb?<p className="tot"><span>{t("Cost: {c}",{c:money(costH)})}</span></p>:null}
-    </section>
-    <section className="pe-bloc-v878483 pe-mat-v878352"><h4><Package size={18} aria-hidden="true"/>{t("Material")}{nMat?<small>{nMat}</small>:null}</h4>
+    </section>;
+  const secMaterial=<section className="pe-bloc-v878483 pe-mat-v878352"><h4><Package size={18} aria-hidden="true"/>{t("Material")}{nMat?<small>{nMat}</small>:null}</h4>
       <datalist id="partes-prov-v878352">{proveidors.map(x=><option key={x} value={x}/>)}</datalist>
       {(part.material||[]).map(m=><div key={m.id} className="pe-m">
         <input className="conc" value={m.concepte||""} onChange={e=>posaM(m.id,{concepte:e.target.value})} placeholder={t("Material")} aria-label={t("Material")}/>
@@ -11893,14 +11918,14 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
         <label className="secondary foto-alb-v878483"><Camera size={16} aria-hidden="true"/> {t("Foto de l’albarà")}<input type="file" accept="image/*" capture="environment" hidden onChange={e=>{const f=e.target.files?.[0];e.target.value="";if(f)fotoAlbara483(f)}}/></label>
         <button type="button" className="secondary afegir" onClick={()=>setPart(p=>({...p,material:[...(p.material||[]),{id:"m-"+Date.now(),concepte:"",q:"",ut:"",proveidor:"",import:""}]}))}><Plus size={16} aria-hidden="true"/> {t("Material")}</button>
       </div>
-    </section>
-    <section className="pe-bloc-v878483 pe-nota-v878483"><h4><NotebookPen size={18} aria-hidden="true"/>{t("Nota i fotos")}</h4>
+    </section>;
+  const secNota=<section className="pe-bloc-v878483 pe-nota-v878483"><h4><NotebookPen size={18} aria-hidden="true"/>{t("Nota i fotos")}</h4>
       <textarea rows={3} value={part.nota||""} onChange={e=>setPart(p=>({...p,nota:e.target.value}))} placeholder={t("Què s’ha fet avui…")} aria-label={t("Nota del dia")}/>
       {!readOnly&&<DictatActa878263 value={part.nota||""} onChange={v=>setPart(p=>({...p,nota:v}))}/>}
       {(part.fotos||[]).length>0&&<div className="fotos-v878483">{(part.fotos||[]).map(f=><span key={f.id} className="foto">{f.src?<img src={f.src} alt={f.nom||t("Foto")}/>:<em>{t("Foto")}</em>}<button type="button" className="x" onClick={()=>setPart(p=>({...p,fotos:(p.fotos||[]).filter(y=>y.id!==f.id)}))} aria-label={t("Treure la foto")}>×</button></span>)}</div>}
       <label className="secondary fotos-btn-v878483"><ImagePlus size={16} aria-hidden="true"/> {t("Fotos")}<input type="file" accept="image/*" multiple hidden onChange={e=>{const fs0=[...(e.target.files||[])];e.target.value="";addNotePhotos878278(fs0,setPart)}}/></label>
-    </section>
-    {ps.length>0&&<details className="pe-feina-v878483" open={feinaOberta}><summary onClick={e=>{e.preventDefault();setFeinaOberta(v=>!v)}}><Calculator size={18} aria-hidden="true"/><span className="t"><b>{t("Feina feta per partides")}</b>{nMarcades+nNoves?<small>{nMarcades+nNoves===1?t("1 marcada avui"):t("{n} marcades avui",{n:nMarcades+nNoves})}</small>:<small>{t("Opcional: el que s’ha avançat del pressupost")}</small>}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    </section>;
+  const cosFeina=<>
     <div className="pe-filtre" role="group" aria-label={t("Partides")}>{[["perfer","Per fer"],["avui","Marcades avui"],["totes","Totes"]].map(([k,l])=><button type="button" key={k} aria-pressed={filtre===k} onClick={()=>setFiltre(k)}>{t(l)}{k==="avui"&&(nMarcades+nNoves)?` (${nMarcades+nNoves})`:""}</button>)}</div>
     <div className="pe-cerca"><Search size={16} aria-hidden="true"/><input type="search" value={cerca} onChange={e=>setCerca(e.target.value)} placeholder={t("Buscar partida")} aria-label={t("Buscar partida")}/></div>
     {!perFase.length&&<div className="partes-buit-v878349"><b>{filtre==="avui"?t("Encara no has marcat res."):t("No hi ha cap partida.")}</b></div>}
@@ -11943,7 +11968,24 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
       :<button type="button" className="secondary pe-nova" onClick={()=>setNovaCap("tria")}><Plus size={16} aria-hidden="true"/> {t("Feina fora de pressupost")}</button>}
       {(part.noves||[]).filter(n=>!n.pidCreat&&!ps.some(x=>x.bid===(n.bid||"principal")&&String(x.r.cap||"—")===n.cap&&passa(x))).map(n=><NovaFP878349 key={n.id} n={n} d={data} treb={treb} readOnly={false} treballadors={treballadors} posa={patch=>posaNova(n.id,patch)} treu={()=>treuNova(n.id)} onPreus={onPreus}/>)}
     </div>
-    </details>}
+  </>;
+  const cartes489=[
+    {k:"personal",tt:t("Personal"),ico:<Users size={22} aria-hidden="true"/>,xf:hTot>0?fhMa878348(hTot):"",cos:secPersonal},
+    {k:"material",tt:t("Material"),ico:<Package size={22} aria-hidden="true"/>,xf:nMat?(nMat===1?t("1 material"):t("{n} materials",{n:nMat})):"",cos:secMaterial},
+    {k:"nota",tt:t("Nota i fotos"),ico:<NotebookPen size={22} aria-hidden="true"/>,xf:[String(part.nota||"").trim()?t("nota"):"",nFotos?(nFotos===1?t("1 foto"):t("{n} fotos",{n:nFotos})):""].filter(Boolean).join(" · "),cos:secNota},
+    ...(ps.length>0?[{k:"feina",tt:t("Feina feta per partides"),ico:<Calculator size={22} aria-hidden="true"/>,xf:nMarcades+nNoves?(nMarcades+nNoves===1?t("1 marcada avui"):t("{n} marcades avui",{n:nMarcades+nNoves})):"",cos:cosFeina}]:[])
+  ];
+  const obertC489=!blocs489&&obert489?cartes489.find(c=>c.k===obert489):null;
+  return <div className="parte-ed-v878349">
+    <div className="pe-cap"><button type="button" className="link tornar" onClick={onTanca}><ChevronLeft size={18} aria-hidden="true"/> {t("Partes d’obra")}</button>{certificat?<em className="estat ok">{t("Ja és a la certificació")}</em>:null}</div>
+    <div className="pe-dades">
+      <label><span>{t("Dia")}</span><input type="date" value={part.data||""} onChange={e=>setPart(p=>({...p,data:e.target.value}))}/></label>
+      <label><span>{t("Qui el fa")}</span><input list="partes-qui-v878349" value={part.qui||""} onChange={e=>setPart(p=>({...p,qui:e.target.value}))} placeholder={t("Encarregat")}/><datalist id="partes-qui-v878349">{treballadors.map(w=><option key={w.id} value={w.nom}/>)}</datalist></label>
+    </div>
+    {blocs489?<>{secPersonal}{secMaterial}{secNota}    {ps.length>0&&<details className="pe-feina-v878483" open={feinaOberta}><summary onClick={e=>{e.preventDefault();setFeinaOberta(v=>!v)}}><Calculator size={18} aria-hidden="true"/><span className="t"><b>{t("Feina feta per partides")}</b>{nMarcades+nNoves?<small>{nMarcades+nNoves===1?t("1 marcada avui"):t("{n} marcades avui",{n:nMarcades+nNoves})}</small>:<small>{t("Opcional: el que s’ha avançat del pressupost")}</small>}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>{cosFeina}
+    </details>}</>
+    :<div className="pe-cartes-v878489">{cartes489.map(c=><button type="button" key={c.k} className={"pe-carta-v878489 "+c.k+(c.xf?" ple":"")} onClick={()=>setObert489(c.k)}><span className="ico">{c.ico}</span><span className="tt">{c.tt}</span>{c.xf?<span className="xf">{c.xf}</span>:null}<ChevronRight size={20} className="chev" aria-hidden="true"/></button>)}</div>}
+    {obertC489&&<PantallaSencera878489 titol={obertC489.tt} sub={obertC489.xf} onTorna={()=>setObert489(null)} className={"pe-pantalla-v878489 "+obertC489.k}><div className="parte-ed-v878349 dins-v878489">{obertC489.cos}</div></PantallaSencera878489>}
 
     <div className="pe-peu">
       <span className="resum">{res?<>{t("Avui:")} <b>{[nMarcades?(nMarcades===1?t("1 partida"):t("{n} partides",{n:nMarcades})):"",nNoves?t("{n} fora de pressupost",{n:nNoves}):"",hTot?fhMa878348(hTot):"",nMat?(nMat===1?t("1 material"):t("{n} materials",{n:nMat})):"",String(part.nota||"").trim()?t("nota"):"",nFotos?(nFotos===1?t("1 foto"):t("{n} fotos",{n:nFotos})):""].filter(Boolean).join(" · ")}</b>{!treb&&imp?<b> · {money(imp)}</b>:null}</>:t("Encara no has posat res.")}</span>
@@ -11954,8 +11996,8 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
         {!treb&&nMarcades+nNoves>0&&<button type="button" className="primary ok" onClick={onCertifica}><b>{t("Passar a la certificació")}</b><small>{t("Ja està revisat")}</small></button>}</>}
       </div>
     </div>
-    {sheet&&<PartSheet878349 x={sheet} prev={prev[sheet.pid]||0} lin={lin(sheet.pid)} treb={treb} onAplica={(mode,val)=>aplica(sheet,mode,val)} onTreu={()=>{posaLin(sheet.pid,null);setSheet(null)}} onMesures={()=>{setMesura({x:sheet});setSheet(null)}} close={()=>setSheet(null)}/>}
-    {mesura&&<MedicioModal8780 row={{...mesura.x.r,ut:mesura.x.r.ut||mesura.x.r.u}} contextLabel={t("FET AVUI")} initial={lin(mesura.x.pid)?.mode==="mes"?lin(mesura.x.pid).mesures:[]} close={()=>setMesura(null)} save={(lines,total)=>{aplica(mesura.x,"mes",String(total),{lines,total});setMesura(null)}}/>}
+    {sheet&&createPortal(<PartSheet878349 x={sheet} prev={prev[sheet.pid]||0} lin={lin(sheet.pid)} treb={treb} onAplica={(mode,val)=>aplica(sheet,mode,val)} onTreu={()=>{posaLin(sheet.pid,null);setSheet(null)}} onMesures={()=>{setMesura({x:sheet});setSheet(null)}} close={()=>setSheet(null)}/>,document.body)}
+    {mesura&&createPortal(<MedicioModal8780 row={{...mesura.x.r,ut:mesura.x.r.ut||mesura.x.r.u}} contextLabel={t("FET AVUI")} initial={lin(mesura.x.pid)?.mode==="mes"?lin(mesura.x.pid).mesures:[]} close={()=>setMesura(null)} save={(lines,total)=>{aplica(mesura.x,"mes",String(total),{lines,total});setMesura(null)}}/>,document.body)}
   </div>;
 }
 // una feina fora de pressupost: la descripció i la quantitat; si es vol, qui hi ha treballat i quantes hores, i el material. El preu per
@@ -13333,7 +13375,7 @@ function FitxaPartida878361({row={},editable=false,onChange,onSet,openBreakdown,
       <label><span>{t("Preu unitari")}</span><input className="budget-num-input-v878241" type="text" inputMode="decimal" value={row.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>onChange?.("pu",e.target.value)} onBlur={e=>onChange?.("pu",qty2(parseNum8770(e.target.value)||0))}/></label>
       <div className="imp"><span>{t("Import")}</span><b>{money(q*pu)}</b></div>
     </div>}
-    {(editable||libText87196(row.desc))&&<section className="desc"><h4>{t("Descripció")}</h4>{editable?<textarea value={row.desc||""} onChange={e=>onChange?.("desc",e.target.value)} placeholder={t("Descripció de la partida")}/>:<p>{row.desc}</p>}</section>}
+    {(editable||libText87196(row.desc))&&<section className="desc"><h4>{t("Descripció")}</h4>{editable?<textarea value={row.desc||""} onChange={e=>onChange?.("desc",e.target.value)} placeholder={t("Descripció de la partida")}/>:<DescPartida878489 text={row.desc} titol={[row.codi,row.concepte].filter(Boolean).join(" · ")}/>}</section>}
     <section className="preu">
       <h4>{t("Descompost")} <small>{t("per {ut}",{ut:row.ut||"ut"})}</small></h4>
       {mn&&<div className="minim-v878379"><span>{t("Mínim de mà d’obra: {m} h (la partida en necessita {h} h)",{m:fmtP878378(mn.minimH),h:fmtP878378(mn.h)})}</span>{(editable||onEditar)&&<button type="button" className="secondary" onClick={()=>{if(editable)treuMinim();else{onEditar("treure");setTreure(true)}}}>{t("Treure el mínim")}</button>}</div>}
@@ -19222,7 +19264,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.488",
+    app_version:"87.489",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
