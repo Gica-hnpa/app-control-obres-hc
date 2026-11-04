@@ -210,3 +210,25 @@ capítol) · Hores.
 6. **Icones:** opció B (icona i paraula) als botons.
 7. Les revisions automàtiques han de mirar també que les dades quadrin (certificació = partides, factura = certificació).
 8. Termini: tot tancat i provat a final de la setmana que ve (30/10/2026).
+
+### Tanda 8 · demanat el 4/11/2026 a la tarda (després d’una visita amb un client, compte de Socoterm, en castellà; «ha agradat molt»)
+
+1. **Despeses:** una factura d’un industrial llegida per la IA va anar a Materials. Si el proveïdor és a Contactes com a industrial, ha
+   d’anar sola al grup que toca; i a dins de la despesa s’ha de poder canviar el grup.
+2. **Parte a l’ordinador:** aprofitar la pantalla. A «Feina feta per partides»: Per fer · Marcades avui · Totes; a sota el Pressupost
+   plegat (en entrar, els capítols i després les partides) i a sota el botó **«Partida fora de pressupost»**: crea sol el capítol fora de
+   pressupost seguint la numeració, amb el nom i una descripció; en una pantalla pròpia, la unitat amb un desplegable (m2, ml, ut, pa,
+   kg…), el títol, la quantitat o, si és per administració, un quadre amb les hores (oficial, ajudant) i el material. (Fer proposta.)
+   El parte serveix per al rendiment de l’obra, per al seguiment diari del personal i, amb la feina feta, per a les certificacions.
+3. **Inici (PC):** aprofitar la pantalla. En tocar una rajola, les altres s’amaguen i surt un botó «Inici» per tornar (igual a totes les
+   rajoles: ara, per tornar, s’ha de tocar Inici al menú de l’esquerra). Pendent: una targeta d’Avisos i una de Feines (si no n’hi ha, dir-ho).
+   «Partes per revisar»: què vol dir? (validar el parte).
+4. **Avisos de factures:** en fer una factura (obres i expedients, constructora i tècnic), un avís de cobrament automàtic als 10 dies,
+   amb la data que es pugui canviar, i el color segons si s’acosta o s’ha passat. Els avisos, editables.
+5. **Llista d’obres:** remarcar molt més les targetes (que es vegi bé el canvi d’una a l’altra i el que hi ha a dins un cop obertes); a
+   «Obertes», un text petit com a les rajoles de l’obra (en procés, acceptades sense començar, pendents de resposta…); filtres amb tots els
+   estats i els seus colors; columnes senceres a l’ordinador (Número i Núm. client es partien); la columna de l’altre número només en obres
+   compartides amb un tècnic (no amb un treballador de l’empresa).
+6. **Dades de l’obra (constructora):** el codi llarg de carpeta no serveix: més curt i simple. «Núm. del client»: què vol dir?
+7. **Contactes:** fora l’avís dels agents posats a les obres; amb la llista llarga, poder plegar sense baixar fins al final (com al mòbil).
+8. **Remarcar més les targetes** i el que està destacat.

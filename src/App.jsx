@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.491";
+const APP_VERSION878264="87.492";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11429,8 +11429,18 @@ const OBRA_BLOCS878485=[
   {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Certificacions","Certificacions obra"]},
   {k:"Comptabilitat",tabs:["Facturació","Facturació obra","Factures","Albarans","Seguiment econòmic","Rendiment","Rendiments","Gestió temps","Honoraris","Pressupostos"]}
 ];
-const BLOC_ICON878485={"Fitxa":<FolderOpen/>,"Dia a dia":<ClipboardCheck/>,"Pressupost i certificacions":<Calculator/>,"Comptabilitat":<ReceiptText/>};
-const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes, visites, agenda","Pressupost i certificacions":"amidaments, pressupost, certificacions","Comptabilitat":"facturació, despeses, rendiment"};
+const BLOC_ICON878485={"Fitxa":<FolderOpen/>,"Dia a dia":<ClipboardCheck/>,"Pressupost i certificacions":<Calculator/>,"Comptabilitat":<ReceiptText/>,"El meu encàrrec":<Briefcase/>};
+const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes, visites, agenda","Pressupost i certificacions":"amidaments, pressupost, certificacions","Comptabilitat":"facturació, despeses, rendiment","El meu encàrrec":"hores, despeses, factures"};
+// V87.492 · el mateix per al tècnic i el compte de l'Héctor (proposta acceptada per l'Héctor el 4/11/2026): Fitxa · Dia a dia · El meu encàrrec ·
+// Pressupost i certificacions. L'últim, només a les obres que en tenen (als encàrrecs tècnics, com el CEE, no hi ha cap apartat i no surt).
+// Als encàrrecs tècnics les despeses són les meves (van a «El meu encàrrec»); a les obres, les de l'obra (van amb el pressupost).
+const OBRA_BLOCS_TEC878492=[
+  {k:"Fitxa",tabs:OBRA_BLOCS878299[0].tabs},
+  {k:"Dia a dia",tabs:OBRA_BLOCS878485[1].tabs},
+  {k:"El meu encàrrec",tabs:["Honoraris","Gestió temps","Rendiment","Pressupostos","Factures"]},
+  {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Certificacions","Certificacions obra","Facturació","Facturació obra","Albarans","Seguiment econòmic","Rendiments"]}
+];
+function obraBlocsTec878492(all=[],pur=false){const used=new Set();const defs=OBRA_BLOCS_TEC878492.map(b=>pur&&b.k==="El meu encàrrec"?{...b,tabs:[...b.tabs,"Albarans"]}:b);const blocs=defs.map(b=>({k:b.k,tabs:b.tabs.filter(x=>all.includes(x)&&!used.has(x)&&used.add(x))}));const rest=all.filter(x=>!used.has(x));if(rest.length)blocs[0].tabs.push(...rest);return blocs.filter(b=>b.tabs.length)}
 function obraBlocs878485(all=[]){const used=new Set();const blocs=OBRA_BLOCS878485.map(b=>({k:b.k,tabs:b.tabs.filter(x=>all.includes(x)&&!used.has(x)&&used.add(x))}));const rest=all.filter(x=>!used.has(x));if(rest.length)blocs[0].tabs.push(...rest);return blocs.filter(b=>b.tabs.length)}
 // V87.400 · «Visual nou» (l'Héctor, 26/10/2026: «accessos amb una icona i no tanta lletra… un pas endavant en la visual final, sobretot
 // al mòbil i l'iPad, que és el que faran servir a peu d'obra»). De moment és una opció de prova de cada aparell (Ajustos › Aspecte): les
@@ -12066,9 +12076,11 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   useEffect(()=>{if(!menu)return;const off=e=>{if(!e.target.closest?.(".obra-acc-v878269,.obra-tabs-bar-v878269"))setMenu("")};document.addEventListener("pointerdown",off);return()=>document.removeEventListener("pointerdown",off)},[menu]);
   const all=uniqueTabs8769(["Resum",...tabs]);
   const pick=x=>{setMenu("");setTab(x);try{window.scrollTo({top:0})}catch{}};
-  const barra878485=useBarraBaix878484();const mo878485=modeObra878484();const fila490=barra878485?2:4;
+  const barra878485=useBarraBaix878484();const mo878485=modeObra878484();const tec492=!mo878485&&!readOnly;const rj492=mo878485||tec492;
+  // a les rajoles del tècnic, la línia de sota diu els apartats que hi ha de debò (no hi ha partes, i els encàrrecs tècnics no tenen planning)
+  const sub492=b=>b.k==="El meu encàrrec"?t(pur?"honoraris, hores, factures":"hores, despeses, factures"):b.tabs.slice(0,3).map(x=>tabLabel878269(x,all,pur)).join(", ").toLowerCase();const fila490=barra878485?2:4;
   const[ob878485,setOb878485]=useState("");
-  const blocs=mo878485?obraBlocs878485(all):obraBlocs878299(all,pur);
+  const blocs=mo878485?obraBlocs878485(all):tec492?obraBlocsTec878492(all,pur):obraBlocs878299(all,pur);
   const blocActiu=blocs.find(b=>b.tabs.includes(active))||blocs[0]||{k:"",tabs:[]};
   const narrow=useNarrow878299();
   // l'últim apartat de cada bloc: en tornar a un bloc s'hi torna (a l'ordinador, el bloc obre directament un apartat)
@@ -12083,7 +12095,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   const obert=narrow&&menu.startsWith("b:")?blocs.find(b=>`b:${b.k}`===menu):null;
   const vis878400=visualNou878400();
   // V87.303 · alçada de la barra de l'obra (blocs i fila) perquè la capçalera fixa del pressupost es quedi just a sota
-  useEffect(()=>{const el=document.querySelector(".obra-tabs-bar-v878269");if(!el||typeof ResizeObserver==="undefined")return;const set=()=>{try{document.documentElement.style.setProperty("--obra-bar-h",el.classList.contains("obra-rajoles-v878485")?"0px":Math.round(el.getBoundingClientRect().height)+"px")}catch{}};set();const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect()},[mo878485]);
+  useEffect(()=>{const el=document.querySelector(".obra-tabs-bar-v878269");if(!el||typeof ResizeObserver==="undefined")return;const set=()=>{try{document.documentElement.style.setProperty("--obra-bar-h",el.classList.contains("obra-rajoles-v878485")?"0px":Math.round(el.getBoundingClientRect().height)+"px")}catch{}};set();const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect()},[rj492]);
   const base=codiCurt878270(obra),propE878347=expPropietari878347(obra);
   // V87.304 · si el promotor no és el client, el seu nom en negreta (encàrrec de l'Héctor: identificar bé l'obra)
   const prom878304=promotorDiferent878304(obra,client);
@@ -12106,10 +12118,10 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
         </div>}
       </div>
     </div>
-    {mo878485?<div className={"obra-tabs-bar-v878269 obra-rajoles-v878485"+(barra878485?"":" pc-v878490")}>
+    {rj492?<div className={"obra-tabs-bar-v878269 obra-rajoles-v878485"+(barra878485?"":" pc-v878490")+(tec492?" tec-v878492":"")}>
       <div className="obra-blocs-v878299 rajoles-v878485" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{(()=>{const obJ=blocs.findIndex(x=>x.k===ob878485);const out=[];
         blocs.forEach((b,j)=>{const on=b.k===blocActiu.k,open=ob878485===b.k;
-          out.push(<button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>setOb878485(o=>o===b.k?"":b.k)}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(b.k)}</b><small>{on?tabLabel878269(active,all,pur):t(BLOC_SUB878485[b.k])}</small></span><ChevronDown className="chev" aria-hidden="true"/></button>);
+          out.push(<button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>{if(b.tabs.length===1){setOb878485("");pick(b.tabs[0]);return}setOb878485(o=>o===b.k?"":b.k)}}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(b.k)}</b><small>{on?tabLabel878269(active,all,pur):tec492?sub492(b):t(BLOC_SUB878485[b.k])}</small></span>{b.tabs.length===1?<ChevronRight className="chev" aria-hidden="true"/>:<ChevronDown className="chev" aria-hidden="true"/>}</button>);
           // la llista va a sota de la fila on és la rajola oberta (dues per fila)
           if(obJ>=0&&(j%fila490===fila490-1||j===blocs.length-1)&&Math.floor(obJ/fila490)===Math.floor(j/fila490))out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485" role="menu" aria-label={t(blocs[obJ].k)}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)});
         return out})()}</div>
@@ -19265,7 +19277,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.491",
+    app_version:"87.492",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

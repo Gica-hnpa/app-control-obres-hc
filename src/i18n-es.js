@@ -5095,6 +5095,8 @@ export default {
 "dades, contactes, documents": "datos, contactos, documentos",
 "partes, visites, agenda": "partes, visitas, agenda",
 "amidaments, pressupost, certificacions": "mediciones, presupuesto, certificaciones",
+"hores, despeses, factures": "horas, gastos, facturas",
+"honoraris, hores, factures": "honorarios, horas, facturas",
 "facturació, despeses, rendiment": "facturación, gastos, rendimiento",
 "Des dels amidaments": "Desde las mediciones",
 "Importar un arxiu": "Importar un archivo",
