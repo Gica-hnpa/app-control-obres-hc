@@ -5182,4 +5182,8 @@ export default {
 "Reobrir l’obra": "Reabrir la obra",
 "Reobrir l’expedient": "Reabrir el expediente",
 "Només es pot consultar i fer llistats. Per fer-hi canvis, reobre-la.": "Solo se puede consultar y sacar listados. Para hacer cambios, reábrela.",
+"Durada prevista": "Duración prevista",
+"{n} dies lab.": "{n} días lab.",
+"Recursos": "Recursos",
+"Partides planificades": "Partidas planificadas",
 };

@@ -1,0 +1,24 @@
+/* V87.503 · Planning: el resum de l'obra (inici, final, durada i recursos), la targeta «Recursos» i el resum del capítol obert */
+html body .gantt-v878253 .gt-recursos-v878503{margin:0 0 12px}
+html body .gt-recursos-v878503 .cos{display:grid;gap:8px}
+html body .rec-v878503{display:grid;grid-template-columns:minmax(160px,240px) minmax(0,1fr);gap:4px 16px;padding:10px 12px;border:1px solid var(--co-line,#D5DEE6);border-radius:10px;background:#fff}
+html body .rec-v878503 .nom{display:grid;gap:2px;min-width:0}
+html body .rec-v878503 .nom b{font-size:15px;color:var(--co-ink,#0F172A)}
+html body .rec-v878503 .nom small{font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .rec-v878503 ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;min-width:0}
+html body .rec-v878503 li{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;min-width:0}
+html body .rec-v878503 li span{min-width:0;overflow-wrap:anywhere}
+html body .rec-v878503 li em{font-style:normal;color:var(--co-ink-3,#5F7075)}
+html body .rec-v878503 li small{flex:0 0 auto;font-size:12.5px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+html body .cap-resum-v878503{display:flex;flex-wrap:wrap;gap:6px 18px;padding:8px 12px;margin:0 0 4px;border-radius:8px;background:#EFF6FF}
+html body .cap-resum-v878503>span{display:grid;gap:1px;min-width:0}
+html body .cap-resum-v878503 small{font-size:12px;color:var(--co-ink-3,#5F7075)}
+html body .cap-resum-v878503 b{font-size:14px;color:var(--co-ink,#0F172A)}
+html body .cap-resum-v878503 .q{flex:1 1 220px}
+html body .cap-resum-v878503 .q b{font-weight:600;overflow-wrap:anywhere}
+/* al mòbil, les quatre xifres del resum en dues línies (la V87.453 n'amagava les dues primeres, que eren els imports) */
+@media (max-width:700px){
+  html body .gantt-sum-v878252.resum-v878503{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px}
+  html body .gantt-sum-v878252.resum-v878503>div:nth-child(-n+2){display:flex!important}
+  html body .rec-v878503{grid-template-columns:minmax(0,1fr)}
+}

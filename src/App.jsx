@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.502";
+const APP_VERSION878264="87.503";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12941,16 +12941,26 @@ function EditaCapitol878341({cap,ordre=[],plans,setPlan,treu,resolt,pot,close,am
     <div className="modal-actions">{(p.start||p.durationDays||p.dep)&&<button type="button" className="danger-text-v87229 link" onClick={()=>{treu(cap);close()}}>{i18nT("Treure del planning")}</button>}<button type="button" className="primary" onClick={close}>{i18nT("Fet")}</button></div>
   </div></Modal>;
 }
-function EditaPartida878377({part,plan,anchor,posa,treu,close}){
+function EditaPartida878377({part,plan,anchor,posa,treu,close,pot=null,qui=[],posaQui=null}){
   const[dia,setDia]=useState(plan?isoDate8776(plan.from):(anchor||todayISO8743()));
   const[dur,setDur]=useState(plan?String(plan.dur):"1");
   const desa=(d,n)=>{if(d&&parseNum8770(n)>0)posa({data:d,dur:n})};
+  // V87.503 · qui hi treballa a la partida (l'Héctor, 4/11/2026: «en entrar a la partida, poder-hi posar els recursos propis; els industrials
+  // només les dates que donin»)
+  const quiK=new Set((qui||[]).map(q=>q.k));
+  const togQui=x=>{if(!posaQui)return;if(!plan)desa(dia,dur);posaQui(quiK.has(x.k)?(qui||[]).filter(q=>q.k!==x.k):[...(qui||[]),{k:x.k,nom:x.nom}])};
+  const xip=x=><button key={x.k} type="button" className="xq" aria-pressed={quiK.has(x.k)} onClick={()=>togQui(x)}>{x.nom}</button>;
   return <Modal title={i18nT("Planificar «{cap}»",{cap:[part.r.codi,part.r.concepte].filter(Boolean).join(" ").slice(0,70)})} close={close}><div className="gt-ed-v878341 gt-ed-part-v878377">
     <div className="form-grid compact-v87151 no-pad">
       <label><span>{i18nT("Comença")}</span><input type="date" value={dia} onChange={e=>{setDia(e.target.value);desa(e.target.value,dur)}}/></label>
       <label><span>{i18nT("Durada (dies laborables)")}</span><input type="number" min="1" value={dur} onChange={e=>{setDur(e.target.value);desa(dia,e.target.value)}}/></label>
     </div>
     {plan&&<p className="gt-ed-res-v878341">{i18nT("Del {a} al {b}",{a:fmtAppDate8748(isoDate8776(plan.from)),b:fmtAppDate8748(isoDate8776(plan.to))})}</p>}
+    {pot&&posaQui&&(pot.colles.length>0||pot.treb.length>0||pot.ind.length>0)&&<><h4 className="sub-v878341">{i18nT("Qui hi treballa")}</h4><div className="gt-qui-v878341">
+      {pot.colles.length>0&&<div><small>{i18nT("Colles")}</small><div className="xs">{pot.colles.map(x=>xip(x))}</div></div>}
+      {pot.treb.length>0&&<div><small>{i18nT("Treballadors")}</small><div className="xs">{pot.treb.map(x=>xip(x))}</div></div>}
+      {pot.ind.length>0&&<div><small>{i18nT("Industrials")}</small><div className="xs">{pot.ind.map(x=>xip(x))}</div></div>}
+    </div></>}
     <div className="modal-actions">{plan&&<button type="button" className="danger-text-v87229 link" onClick={()=>{treu();close()}}>{i18nT("Treure del planning")}</button>}<button type="button" className="primary" onClick={()=>{desa(dia,dur);close()}}>{i18nT("Fet")}</button></div>
   </div></Modal>;
 }
@@ -12992,9 +13002,10 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
       let anchor=anchor0||cp.start||"";if(!anchor){anchor=iso;cp.start=iso}
       let off=diesLabEntre878377(anchor,iso);
       if(off<0){if(cp.dep)off=0;else{Object.keys(pps).forEach(k=>{if(pps[k]?.cap===cap)pps[k]={...pps[k],off:String((Math.round(parseNum8770(pps[k].off)||0))-off)}});cp.start=iso;off=0}}
-      cps[cap]=cp;pps[pid]={cap,off:String(off),dur:String(Math.max(1,Math.round(parseNum8770(dur)||1)))};
+      cps[cap]=cp;pps[pid]={...(pps[pid]||{}),cap,off:String(off),dur:String(Math.max(1,Math.round(parseNum8770(dur)||1)))};
       const ara=new Date().toISOString();return {...d,ganttConfig87217:{...g,capPlans:cps,partPlans:pps,updatedAt:ara},updatedAt:ara}})}
   function treuPartida878377(pid){const pp={...partPlans878377};delete pp[pid];savePlans(plans,{partPlans:pp})}
+  function quiPartida878503(pid,qui){if(!canEdit)return;setData(d=>{const g={...(d.ganttConfig87217||{})};const pps={...(g.partPlans||{})};if(!pps[pid])return d;pps[pid]={...pps[pid],qui};const ara=new Date().toISOString();return {...d,ganttConfig87217:{...g,partPlans:pps,updatedAt:ara},updatedAt:ara}})}
   // les partides del capítol una darrere l'altra, amb els dies del capítol repartits segons l'import
   function repartir878377(c){if(!canEdit)return;const r=resolt878341.plans[c.cap];
     const D=Math.max(c.rows.length,r?.dur||Math.round(parseNum8770(plans[c.cap]?.durationDays)||0)||c.rows.length);
@@ -13033,6 +13044,13 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
     const l=[];Object.entries(resolt878341.plans).forEach(([cap,r])=>{if(!r?.via)return;const p=resolt878341.plans[r.via];if(!p||y[cap]==null||y[r.via]==null)return;l.push({k:cap,x1:lw+geo878341.current.X(p.from)+geo878341.current.Wd(p.from,p.to),y1:Math.round(y[r.via]),x2:lw+geo878341.current.X(r.from),y2:Math.round(y[cap])})});
     const nou={w:el.scrollWidth,h:el.scrollHeight,l};if(JSON.stringify(nou)!==JSON.stringify(fletxes878341))setFletxes878341(nou)});
   const rows=s.caps.map(c=>({...c,real:realOf(c.byCert,c.budget),plan:planOf(c.cap)}));
+  // V87.503 · el resum de l'obra (inici, final, durada prevista i recursos) i qui hi treballa (l'Héctor, 4/11/2026: «abans del detall dels
+  // capítols, una targeta de resum… i una de Recursos»)
+  const resum503=(()=>{const ps=rows.map(r=>r.plan).filter(Boolean);if(!ps.length)return null;const from=new Date(Math.min(...ps.map(p=>+p.from))),to=new Date(Math.max(...ps.map(p=>+p.to)));return {from,to,dur:diesLabEntre878377(isoDate8776(from),isoDate8776(to))+1}})();
+  const recursos503=(()=>{const m=new Map();const posa=(q,cap,codi,pl)=>{const nom=nomQui878418(q);if(!nom||!pl)return;const k=q.k||nom;const e=m.get(k)||{k,nom,tipus:String(k).slice(0,1),llocs:[]};e.llocs.push({cap,codi,from:pl.from,to:pl.to});m.set(k,e)};
+    rows.forEach(c=>{(plans[c.cap]?.qui||[]).forEach(q=>posa(q,c.cap,"",c.plan));c.rows.forEach((r,i)=>{const pid=pidPlan878377(r,i);const pp=partPlans878377[pid];(pp?.qui||[]).forEach(q=>posa(q,c.cap,r.codi||r.concepte||"",partPlanOf878377(c.cap,pid)))})});
+    const ord={c:0,t:1,i:2};return [...m.values()].map(e=>({...e,llocs:e.llocs.sort((a,b)=>a.from-b.from),from:new Date(Math.min(...e.llocs.map(l=>+l.from))),to:new Date(Math.max(...e.llocs.map(l=>+l.to)))})).sort((a,b)=>(ord[a.tipus]??3)-(ord[b.tipus]??3)||a.nom.localeCompare(b.nom,"ca"))})();
+  const tipusRec503={c:"Colla",t:"Treballador",i:"Industrial"};
   if(!s.rows.length)return <Card title={i18nT("Planning de l’obra")}><Empty text="Aquest expedient encara no té pressupost. Quan n’hi hagi, el Gantt mostrarà cada capítol amb les certificacions fetes."/></Card>;
   const pts=[today,startCfg,...certDates,...rows.flatMap(r=>[r.plan?.from,r.plan?.to,r.real?.from,r.real?.to])].filter(Boolean).map(d=>d.getTime());
   // V87.377 · el capítol (taula): en tocar-lo, les seves partides
@@ -13086,12 +13104,16 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
       {canEdit&&<button type="button" className={editing?"primary":"secondary"} onClick={()=>setEditing(v=>!v)}>{editing?i18nT("Tancar planificació"):i18nT("Planificar")}</button>}
     </div>}>
       {vista878362!=="taula"&&<div className="gt-escala-v878500"><small>{i18nT("Escala")}</small><div className="seg" role="group" aria-label={i18nT("Escala")}>{Object.entries(GANTT_SCALES878253).map(([k,v])=><button type="button" key={k} aria-pressed={scale===k} onClick={()=>{setScale(k);try{localStorage.setItem("aco_gantt_scale_v878253",k)}catch{}}}>{i18nT(v.label)}</button>)}</div></div>}
-      <div className="gantt-sum-v878252">
-        <div><small>{i18nT("Pressupost")}</small><b>{eur0878252(s.budget)}</b></div>
-        <div><small>{i18nT("Certificat a origen")}</small><b>{eur0878252(s.certified)}</b></div>
-        <div><small>{i18nT("Executat")}</small><b>{pct878252(s.executed)}</b></div>
-        <div><small>{i18nT("Planificat")}</small><b>{Object.keys(plans).filter(k=>planOf(k)).length} {i18nT("de")} {s.caps.length} {i18nT("capítols")}</b></div>
+      <div className="gantt-sum-v878252 resum-v878503">
+        <div><small>{i18nT("Inici")}</small><b>{resum503?fmtD878377(resum503.from):"—"}</b></div>
+        <div><small>{i18nT("Final")}</small><b>{resum503?fmtD878377(resum503.to):"—"}</b></div>
+        <div><small>{i18nT("Durada prevista")}</small><b>{resum503?i18nT("{n} dies lab.",{n:resum503.dur}):"—"}</b></div>
+        <div><small>{i18nT("Recursos")}</small><b>{recursos503.length||"—"}</b></div>
       </div>
+      {recursos503.length>0&&<details className="card bloc-v878426 gt-recursos-v878503"><summary><Users size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Recursos")}</b></span><span className="xifra">{recursos503.length}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
+        {recursos503.map(e=><div key={e.k} className="rec-v878503"><div className="nom"><b>{e.nom}</b><small>{i18nT(tipusRec503[e.tipus]||"Altres")} · {fmtD878377(e.from)} – {fmtD878377(e.to)}</small></div>
+          <ul>{e.llocs.map((l,i)=><li key={i}><span>{l.cap}{l.codi?<em> · {l.codi}</em>:null}</span><small>{fmtD878377(l.from)} – {fmtD878377(l.to)}</small></li>)}</ul></div>)}
+      </div><Recollir878432/></details>}
       {editing&&<div className="gt-auto-v878253">
         <div><b>{i18nT("Planificació ràpida")}</b></div>
         <label><span>{i18nT("Inici d’obra")}</span><input type="date" value={auto.start} onChange={e=>setAuto(a=>({...a,start:e.target.value}))}/></label>
@@ -13114,6 +13136,8 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
             {(c.plan?.via||qui.length>0)&&<span className="extra">{c.plan?.via&&<em className="via">↳ {i18nT("Després de «{cap}»",{cap:c.plan.via})}{lag?" "+(lag>0?"+":"−")+Math.abs(lag)+" "+i18nT("dies"):""}</em>}{qui.length>0&&<em className="qui">{qui.join(" · ")}</em>}</span>}
           </button>
           {ob&&<div className="parts-v878377">
+            {(()=>{const pps=c.rows.map((r,i)=>partPlans878377[pidPlan878377(r,i)]).filter(x=>x&&parseNum8770(x.dur)>0);const q=new Set([...(pl.qui||[]),...pps.flatMap(x=>x.qui||[])].map(nomQui878418).filter(Boolean));
+              return <div className="cap-resum-v878503"><span><small>{i18nT("Partides planificades")}</small><b>{pps.length} {i18nT("de")} {c.rows.length}</b></span>{!treb&&<span><small>{i18nT("Pressupost")}</small><b>{eur0878252(c.budget)}</b></span>}<span><small>{i18nT("Dies")}</small><b>{c.plan?.dur||"—"}</b></span>{q.size>0&&<span className="q"><small>{i18nT("Qui hi treballa")}</small><b>{[...q].join(" · ")}</b></span>}</div>})()}
             {c.rows.map((r,i)=>{const pid=pidPlan878377(r,i);const pp=partPlanOf878377(c.cap,pid);const b=(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0);
               return <button type="button" key={pid} className={"part"+(pp?"":" sense")} disabled={!canEdit} onClick={()=>canEdit&&setEdPart878377({cap:c.cap,pid,r})}>
                 <span className="cap"><b>{r.codi?<code>{r.codi}</code>:null}{r.concepte||"—"}</b>{!treb&&<small>{eur0878252(b)}</small>}</span>
@@ -13121,6 +13145,7 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
                 <span className="d"><small>{i18nT("Final")}</small><b>{pp?fmtD878377(pp.to):"—"}</b></span>
                 <span className="d n"><small>{i18nT("Dies")}</small><b>{pp?.dur||"—"}</b></span>
                 {!pp&&<span className="sp-v878389">{i18nT("Sense planificar")}</span>}
+                {pp&&(partPlans878377[pid]?.qui||[]).length>0&&<span className="extra"><em className="qui">{(partPlans878377[pid].qui).map(nomQui878418).filter(Boolean).join(" · ")}</em></span>}
               </button>})}
             {canEdit&&<div className="parts-acc-v878377"><button type="button" className="link" onClick={()=>setEdCap878341(c.cap)}>{i18nT("Planificar el capítol")}</button>{c.rows.length>0&&<button type="button" className="link" onClick={()=>repartir878377(c)}>{i18nT("Repartir les partides en ordre")}</button>}</div>}
           </div>}</section>})}
@@ -13151,7 +13176,7 @@ function GanttObraVisual878253({data={},setData,industrials=[]}){
         {fletxes878341.l.length>0&&<svg className="gt-fletxes-v878341" width={fletxes878341.w} height={fletxes878341.h} aria-hidden="true"><defs><marker id="gt-fl-v878341" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>{fletxes878341.l.map(f=><path key={f.k} d={`M${f.x1},${f.y1} h6 V${f.y2} H${f.x2}`} markerEnd="url(#gt-fl-v878341)"/>)}</svg>}
       </div>}
       {edCap878341&&<EditaCapitol878341 cap={edCap878341} ordre={s.caps.map(c=>c.cap)} plans={plans} setPlan={setPlan} treu={treuPlan878341} resolt={resolt878341} pot={pot878341} close={()=>setEdCap878341("")} ambParts={!!partsByCap878377[edCap878341]?.length}/>}
-      {edPart878377&&<EditaPartida878377 part={edPart878377} plan={partPlanOf878377(edPart878377.cap,edPart878377.pid)} anchor={resolt878341.plans[edPart878377.cap]?.startIso||""} posa={x=>posaPartida878377(edPart878377.cap,edPart878377.pid,x)} treu={()=>treuPartida878377(edPart878377.pid)} close={()=>setEdPart878377(null)}/>}
+      {edPart878377&&<EditaPartida878377 part={edPart878377} plan={partPlanOf878377(edPart878377.cap,edPart878377.pid)} anchor={resolt878341.plans[edPart878377.cap]?.startIso||""} posa={x=>posaPartida878377(edPart878377.cap,edPart878377.pid,x)} treu={()=>treuPartida878377(edPart878377.pid)} close={()=>setEdPart878377(null)} pot={pot878341} qui={partPlans878377[edPart878377.pid]?.qui||[]} posaQui={q=>quiPartida878503(edPart878377.pid,q)}/>}
     </Card>
   </div>;
 }
@@ -19452,7 +19477,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.502",
+    app_version:"87.503",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -21571,17 +21596,21 @@ function equipSetmana878381(obres=[],odata={},dies=[]){
   treb.forEach(w=>files.set("t:"+w.id,{k:"t:"+w.id,nom:w.nom||"",sub:[w.ofici,w.colla].filter(Boolean).join(" · "),dies:{}}));
   (obres||[]).forEach(o=>{
     const cfg=odata?.[o.id]?.ganttConfig87217,plans=cfg?.capPlans||{};
-    if(!Object.values(plans).some(p=>(p?.qui||[]).length))return;
+    if(!Object.values(plans).some(p=>(p?.qui||[]).length)&&!Object.values(cfg?.partPlans||{}).some(p=>(p?.qui||[]).length))return;
     const parts={};Object.values(cfg.partPlans||{}).forEach(pp=>{if(pp&&pp.cap&&parseNum8770(pp.dur)>0)(parts[pp.cap]??=[]).push({off:Math.max(0,Math.round(parseNum8770(pp.off)||0)),dur:Math.max(1,Math.round(parseNum8770(pp.dur)))})});
     const res=resolPlans878341(plans,parts).plans;
-    Object.entries(plans).forEach(([cap,p])=>{const r=res[cap];if(!r||!(p?.qui||[]).length)return;
-      ds.forEach((d,i)=>{if(d<r.from||d>r.to)return;
-        (p.qui||[]).forEach(q=>{const k=String(q?.k||""),colla=k.startsWith("c:")?k.slice(2):"";
+    const posa=(cap,r,qui)=>ds.forEach((d,i)=>{if(d<r.from||d>r.to)return;
+        (qui||[]).forEach(q=>{const k=String(q?.k||""),colla=k.startsWith("c:")?k.slice(2):"";
           const ks=colla?treb.filter(w=>String(w.colla||"").trim()===colla).map(w=>"t:"+w.id):[k];
           ks.forEach(kk=>{
             if(!files.has(kk)){if(!kk.startsWith("i:"))return;files.set(kk,{k:kk,nom:q.nom||"",sub:t("Industrial"),dies:{},ind:true})}
             const l=(files.get(kk).dies[isos[i]]??=[]);if(!l.some(x=>x.obraId===o.id&&x.cap===cap))l.push({obraId:o.id,cap,colla});
-            if(!usades.includes(o.id))usades.push(o.id)})})})})});
+            if(!usades.includes(o.id))usades.push(o.id)})})});
+    Object.entries(plans).forEach(([cap,p])=>{const r=res[cap];if(!r||!(p?.qui||[]).length)return;posa(cap,r,p.qui)});
+    // V87.503 · i qui hi treballa a cada partida, els dies de la partida
+    Object.values(cfg?.partPlans||{}).forEach(pp=>{if(!(pp?.qui||[]).length)return;const r=res[pp.cap];if(!r?.startIso||!(parseNum8770(pp.dur)>0))return;const off=Math.max(0,Math.round(parseNum8770(pp.off)||0)),dur=Math.max(1,Math.round(parseNum8770(pp.dur)));
+      const a=parseDate8776(moureDiesLab878341(r.startIso,off)),b=parseDate8776(moureDiesLab878341(r.startIso,off+dur-1));if(!a||!b)return;posa(pp.cap,{from:new Date(a.getFullYear(),a.getMonth(),a.getDate()),to:new Date(b.getFullYear(),b.getMonth(),b.getDate())},pp.qui)});
+  });
   return {files:[...files.values()].sort((a,b)=>(a.ind?1:0)-(b.ind?1:0)),usades};
 }
 function EquipSetmana878381({dies=[],obres=[],odata={},openObraTab,todayIso=""}){

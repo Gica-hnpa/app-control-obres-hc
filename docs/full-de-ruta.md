@@ -32,7 +32,7 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   l’iPad, «Editar · Imprimir · Accions». Les eines per crear (Excel, PDF, IA) només quan el contingut és buit.
 - **Un sol nom per a una sola cosa:** el que s’afegeix a un pressupost tancat és «Fora de pressupost» (no «partides noves», «imprevistos»…).
 
-## On som (V87.502, 4/11/2026)
+## On som (V87.503, 4/11/2026)
 
 - Fet i publicat: tècnic (revisió per tandes), constructora (tandes 1–7), documents i signatures, previst i imprevistos, compartir amb
   el Martí, documents en fulls A4. Detall a `CLAUDE.md`.
@@ -83,7 +83,8 @@ som ni què ens queda… ara veig una liada en algunes pantalles que hem de posa
   - **V87.500:** Eines de la constructora més curtes, «Preu d'industrial», «Opcions» a les fases, l'escala del Planning en una fila i el menú «Opcions» que ja no queda tapat.
   - **V87.501:** llistats amb filtres a la seva pantalla (Certificacions, Facturació, Despeses, Rendiment), amb Excel, PDF i Imprimir.
   - **V87.502:** una obra tancada només es consulta i es llista; un canvi diu que està tancada i es pot reobrir.
-  - **Pendent de la tanda 8:** propostes (agenda: avisos i visites; amidaments amb PDF i dictat; marques de la partida; caixa i bancs), el descompost amb IA i BC3, el resum i els recursos del Planning, treure «Afegir» de fora d'«Editar» i la Comptabilitat (l'Héctor l'explicarà).
+  - **V87.503:** el Planning amb el resum (inici, final, durada, recursos), la targeta «Recursos» i qui treballa a cada partida.
+  - **Pendent de la tanda 8:** propostes (agenda: avisos i visites; amidaments amb PDF i dictat; marques de la partida; caixa i bancs; on es canvia la DGE de l’obra), el descompost amb IA i BC3, treure «Afegir» de fora d'«Editar» i la Comptabilitat (l'Héctor l'explicarà).
 
 ## Blocs, per ordre
 

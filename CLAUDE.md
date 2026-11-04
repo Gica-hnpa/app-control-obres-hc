@@ -2901,6 +2901,14 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     factura, Eliminar, Guardar, «+ Nota»…, en català i castellà) ja ho diuen abans d'obrir res (un `click` en captura a `.obra-page-v87105`); consultar,
     imprimir, enviar, fer llistats i la barra de l'obra (on es canvia l'estat) no es toquen. «Reobrir» la passa a «En curs / Actiu» (constructora) o «En
     procés» (tècnic). Estils `src/theme-v878502.css`. Prova: `v502test.mjs`.
+  - **V87.503 · Planning: resum, recursos i qui treballa a cada partida** (tanda 8, punt 11): a dalt, en lloc dels imports (que ja són a
+    l'Econòmic), **Inici · Final · Durada prevista · Recursos** (`resum503`, `gantt-sum-v878252.resum-v878503`; al mòbil, en dues línies). A sota,
+    la targeta plegada **«Recursos»** (`gt-recursos-v878503`, `recursos503`): cada colla, treballador o industrial amb les dates i els capítols (o
+    partides) on treballa. **A la finestra de la partida** (`EditaPartida878377` amb `pot`, `qui`, `posaQui`), «Qui hi treballa» com al capítol:
+    es desa a `partPlans[pid].qui` (`quiPartida878503`; `posaPartida878377` ja no el treu en canviar les dates) i la partida ho diu a la taula. El
+    capítol obert, a dalt de les partides, el seu resum (`cap-resum-v878503`: partides planificades, pressupost, dies i qui hi treballa, del
+    capítol i de les partides). **Agenda › Equip** (`equipSetmana878381`) també compta qui treballa a cada partida, els dies de la partida.
+    Estils `src/theme-v878503.css`. Prova: `v503test.mjs`. Adaptada `v453test` (les quatre xifres al mòbil).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3099,7 +3107,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.502 a Render):**
+**Estat (publicada la V87.503 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
