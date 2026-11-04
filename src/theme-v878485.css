@@ -1,0 +1,33 @@
+/* V87.485 · Dins de l'obra (constructora, mòbil i iPad): quatre rajoles i la llista dels apartats a sota */
+html body .obra-tabs-bar-v878269.obra-rajoles-v878485{position:static!important;top:auto!important;background:transparent!important;box-shadow:none!important;border:0!important;padding:4px 0 8px!important;margin:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body .obra-rajoles-v878485 .rajoles-v878485{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important;padding:0!important;margin:0!important;border:0!important;background:none!important}
+html body .obra-rajoles-v878485 .rajoles-v878485>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 12px;background:#fff;border:1.5px solid #C3CED6;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.06);min-width:0;color:var(--co-ink,#152328)}
+html body .obra-rajoles-v878485 .rajoles-v878485>button>svg:first-child{flex:none;width:36px;height:36px;padding:8px;box-sizing:border-box;border-radius:11px;background:#EAF1FD;color:#1D4ED8}
+html body .obra-rajoles-v878485 .rajoles-v878485>button .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+html body .obra-rajoles-v878485 .rajoles-v878485>button .t b{font-size:14.5px;line-height:1.2}
+html body .obra-rajoles-v878485 .rajoles-v878485>button .t small{font-size:12px;color:var(--co-ink-3,#5F7075);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .obra-rajoles-v878485 .rajoles-v878485>button .chev{flex:none;width:18px;height:18px;color:#94A3B8;transition:transform .15s}
+html body .obra-rajoles-v878485 .rajoles-v878485>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .obra-rajoles-v878485 .rajoles-v878485>button:active{transform:scale(.98)}
+/* la del lloc on som: plena de blau */
+html body .obra-rajoles-v878485 .rajoles-v878485>button.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
+html body .obra-rajoles-v878485 .rajoles-v878485>button.on>svg:first-child{background:rgba(255,255,255,.18);color:#fff}
+html body .obra-rajoles-v878485 .rajoles-v878485>button.on .t small,html body .obra-rajoles-v878485 .rajoles-v878485>button.on .chev{color:#DBEAFE}
+/* la oberta: la vora marcada i la fletxa amunt */
+html body .obra-rajoles-v878485 .rajoles-v878485>button.open{border:2px solid #1D4ED8}
+html body .obra-rajoles-v878485 .rajoles-v878485>button.open .chev{transform:rotate(180deg)}
+/* la llista: de punta a punta, un apartat per línia */
+html body .obra-rajoles-v878485 .llista-v878485{grid-column:1/-1!important;position:static!important;display:flex!important;flex-direction:column!important;gap:0!important;padding:4px!important;margin:0!important;background:#fff!important;border:2px solid #1D4ED8!important;border-radius:16px!important;box-shadow:0 4px 14px rgba(15,23,42,.08)!important;width:auto!important;max-height:none!important;overflow:visible!important}
+html body .obra-rajoles-v878485 .llista-v878485>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex!important;align-items:center;gap:12px;min-height:52px;padding:8px 12px;border-radius:12px;font-weight:600;font-size:15px;color:var(--co-ink,#152328)}
+html body .obra-rajoles-v878485 .llista-v878485>button+button{border-top:1px solid #E7EEF4;border-radius:0}
+html body .obra-rajoles-v878485 .llista-v878485>button .ic-v878400{width:20px;height:20px;color:#1D4ED8;flex:none}
+html body .obra-rajoles-v878485 .llista-v878485>button>span{flex:1;min-width:0}
+html body .obra-rajoles-v878485 .llista-v878485>button .chev{color:#94A3B8;flex:none}
+html body .obra-rajoles-v878485 .llista-v878485>button.on{background:#EFF6FF;color:#1D4ED8}
+html body .obra-rajoles-v878485 .llista-v878485>button:focus-visible{outline:2px solid var(--co-accent);outline-offset:-2px}
+/* el nom sencer en dues línies com a molt: la fletxa, petita a la cantonada; la icona, una mica més petita */
+html body .obra-rajoles-v878485 .rajoles-v878485>button{position:relative;padding:10px 26px 10px 10px;gap:8px;min-height:68px}
+html body .obra-rajoles-v878485 .rajoles-v878485>button>svg:first-child{width:32px;height:32px;padding:7px}
+html body .obra-rajoles-v878485 .rajoles-v878485>button .t b{font-size:14px;overflow-wrap:normal;word-break:normal;hyphens:none}
+html body .obra-rajoles-v878485 .rajoles-v878485>button .t small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:11.5px;line-height:1.25}
+html body .obra-rajoles-v878485 .rajoles-v878485>button .chev{position:absolute;top:8px;right:6px;width:16px;height:16px}

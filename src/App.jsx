@@ -37,7 +37,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.484";
+const APP_VERSION878264="87.485";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6649,7 +6649,7 @@ function BottomNav878268({screen,role,perfil,nav,onMore,onAccio}){
   if(modeObra878484(role,perfil)&&onAccio)return <nav className="bottom-nav-v878268 accions-v878484" aria-label={t("Navegació")}>
     <button type="button" className={screen==="Inici"?"on":""} aria-current={screen==="Inici"?"page":undefined} onClick={()=>nav("Inici")}><House/><span>{t("Inici")}</span></button>
     <button type="button" className="acc" onClick={()=>onAccio("parte")}><ClipboardCheck/><span>{t("Parte")}</span></button>
-    <label className="acc"><Camera/><span>{t("Despesa")}</span><input type="file" accept="image/*,application/pdf" hidden onChange={e=>{const f=[...(e.target.files||[])];e.target.value="";if(f.length)onAccio("despesa",f)}}/></label>
+    <button type="button" className="acc" onClick={e=>e.currentTarget.nextSibling?.click()}><Camera/><span>{t("Despesa")}</span></button><input type="file" accept="image/*,application/pdf" hidden onChange={e=>{const f=[...(e.target.files||[])];e.target.value="";if(f.length)onAccio("despesa",f)}}/>
     <button type="button" className="acc" onClick={()=>onAccio("nota")}><NotebookPen/><span>{t("Nota")}</span></button>
     <button type="button" onClick={onMore}><Ellipsis/><span>{t("Més")}</span></button>
   </nav>;
@@ -11419,6 +11419,18 @@ const OBRA_BLOCS878299=[
   {k:"Econòmic",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Pressupostos","Gestió obra","Certificacions","Certificacions obra","Facturació","Facturació obra","Factures","Albarans","Rendiment","Rendiments","Seguiment econòmic","Honoraris","Gestió temps"]}
 ];
 const BLOC_ICON878299={"Fitxa":<FolderOpen/>,"Seguiment":<ClipboardList/>,"Econòmic":<ReceiptText/>};
+// V87.485 · constructora al mòbil i l'iPad (l'Héctor, 3/11/2026: «les targetes de fitxa, seguiment i econòmic… és liat»; «seguiment es pot confondre amb
+// el control de pressupost»; «a obra on posa pressupost hauria d'afegir certificacions»; «econòmic dir comptabilitat amb facturació i despeses»):
+// quatre rajoles i, en tocar-ne una, la llista dels seus apartats a sota, un sota l'altre. Les claus dels apartats no canvien.
+const OBRA_BLOCS878485=[
+  {k:"Fitxa",tabs:OBRA_BLOCS878299[0].tabs},
+  {k:"Dia a dia",tabs:["Partes obra","Actes","Notes","Agenda / Avisos","Tasques","Gantt"]},
+  {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Certificacions","Certificacions obra"]},
+  {k:"Comptabilitat",tabs:["Facturació","Facturació obra","Factures","Albarans","Seguiment econòmic","Rendiment","Rendiments","Gestió temps","Honoraris","Pressupostos"]}
+];
+const BLOC_ICON878485={"Fitxa":<FolderOpen/>,"Dia a dia":<ClipboardCheck/>,"Pressupost i certificacions":<Calculator/>,"Comptabilitat":<ReceiptText/>};
+const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes, visites, agenda","Pressupost i certificacions":"amidaments, pressupost, certificacions","Comptabilitat":"facturació, despeses, rendiment"};
+function obraBlocs878485(all=[]){const used=new Set();const blocs=OBRA_BLOCS878485.map(b=>({k:b.k,tabs:b.tabs.filter(x=>all.includes(x)&&!used.has(x)&&used.add(x))}));const rest=all.filter(x=>!used.has(x));if(rest.length)blocs[0].tabs.push(...rest);return blocs.filter(b=>b.tabs.length)}
 // V87.400 · «Visual nou» (l'Héctor, 26/10/2026: «accessos amb una icona i no tanta lletra… un pas endavant en la visual final, sobretot
 // al mòbil i l'iPad, que és el que faran servir a peu d'obra»). De moment és una opció de prova de cada aparell (Ajustos › Aspecte): les
 // propostes es validen amb captures abans de posar-les per a tothom. La clau no comença per «aco_»: no va al núvol ni al DADES.
@@ -12011,7 +12023,9 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   useEffect(()=>{if(!menu)return;const off=e=>{if(!e.target.closest?.(".obra-acc-v878269,.obra-tabs-bar-v878269"))setMenu("")};document.addEventListener("pointerdown",off);return()=>document.removeEventListener("pointerdown",off)},[menu]);
   const all=uniqueTabs8769(["Resum",...tabs]);
   const pick=x=>{setMenu("");setTab(x);try{window.scrollTo({top:0})}catch{}};
-  const blocs=obraBlocs878299(all,pur);
+  const barra878485=useBarraBaix878484();const mo878485=barra878485&&modeObra878484();
+  const[ob878485,setOb878485]=useState("");
+  const blocs=mo878485?obraBlocs878485(all):obraBlocs878299(all,pur);
   const blocActiu=blocs.find(b=>b.tabs.includes(active))||blocs[0]||{k:"",tabs:[]};
   const narrow=useNarrow878299();
   // l'últim apartat de cada bloc: en tornar a un bloc s'hi torna (a l'ordinador, el bloc obre directament un apartat)
@@ -12026,7 +12040,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   const obert=narrow&&menu.startsWith("b:")?blocs.find(b=>`b:${b.k}`===menu):null;
   const vis878400=visualNou878400();
   // V87.303 · alçada de la barra de l'obra (blocs i fila) perquè la capçalera fixa del pressupost es quedi just a sota
-  useEffect(()=>{const el=document.querySelector(".obra-tabs-bar-v878269");if(!el||typeof ResizeObserver==="undefined")return;const set=()=>{try{document.documentElement.style.setProperty("--obra-bar-h",Math.round(el.getBoundingClientRect().height)+"px")}catch{}};set();const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect()},[]);
+  useEffect(()=>{const el=document.querySelector(".obra-tabs-bar-v878269");if(!el||typeof ResizeObserver==="undefined")return;const set=()=>{try{document.documentElement.style.setProperty("--obra-bar-h",el.classList.contains("obra-rajoles-v878485")?"0px":Math.round(el.getBoundingClientRect().height)+"px")}catch{}};set();const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect()},[mo878485]);
   const base=codiCurt878270(obra),propE878347=expPropietari878347(obra);
   // V87.304 · si el promotor no és el client, el seu nom en negreta (encàrrec de l'Héctor: identificar bé l'obra)
   const prom878304=promotorDiferent878304(obra,client);
@@ -12049,11 +12063,18 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
         </div>}
       </div>
     </div>
-    <div className={`obra-tabs-bar-v878269 obra-blocs-bar-v878299 ${narrow?"narrow":""}`}>
+    {mo878485?<div className="obra-tabs-bar-v878269 obra-rajoles-v878485">
+      <div className="obra-blocs-v878299 rajoles-v878485" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{(()=>{const obJ=blocs.findIndex(x=>x.k===ob878485);const out=[];
+        blocs.forEach((b,j)=>{const on=b.k===blocActiu.k,open=ob878485===b.k;
+          out.push(<button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>setOb878485(o=>o===b.k?"":b.k)}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(b.k)}</b><small>{on?tabLabel878269(active,all,pur):t(BLOC_SUB878485[b.k])}</small></span><ChevronDown className="chev" aria-hidden="true"/></button>);
+          // la llista va a sota de la fila on és la rajola oberta (dues per fila)
+          if(obJ>=0&&(j%2===1||j===blocs.length-1)&&Math.floor(obJ/2)===Math.floor(j/2))out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485" role="menu" aria-label={t(blocs[obJ].k)}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)});
+        return out})()}</div>
+    </div>:<div className={`obra-tabs-bar-v878269 obra-blocs-bar-v878299 ${narrow?"narrow":""}`}>
       <div className="obra-blocs-v878299" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{blocs.map(b=>{const on=b.k===blocActiu.k,open=obert?.k===b.k;return <button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={narrow&&b.tabs.length>1?open:undefined} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>clickBloc(b)}>{BLOC_ICON878299[b.k]}<span className="txt-v878451"><span className="nom">{t(b.k)}</span>{narrow&&on&&<small>{tabLabel878269(active,all,pur)}</small>}</span>{narrow&&on&&b.tabs.length>1&&<ChevronDown className="gira-v878451" aria-hidden="true"/>}</button>})}</div>
       {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(blocActiu.k)}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
       {obert&&<div className="obra-bloc-panel-v878299" role="menu" aria-label={t(obert.k)}>{obert.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="menuitem" className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
-    </div>
+    </div>}
   </>;
 }
 function ObraAgentsResum({data,openAgent}){
@@ -19160,7 +19181,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.484",
+    app_version:"87.485",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

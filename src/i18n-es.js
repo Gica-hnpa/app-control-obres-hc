@@ -5091,4 +5091,9 @@ export default {
 "factures i cobraments": "facturas y cobros",
 "clients i industrials": "clientes e industriales",
 "empresa, preus, ajustos": "empresa, precios, ajustes",
+"Dia a dia": "Día a día",
+"dades, contactes, documents": "datos, contactos, documentos",
+"partes, visites, agenda": "partes, visitas, agenda",
+"amidaments, pressupost, certificacions": "mediciones, presupuesto, certificaciones",
+"facturació, despeses, rendiment": "facturación, gastos, rendimiento",
 };

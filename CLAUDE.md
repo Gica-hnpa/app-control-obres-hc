@@ -2774,6 +2774,17 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Hores** (`HoresEmpresa878340`): Personal · Fitxatge · **Calendari** (el calendari laboral d'Empresa, `CalendariEmpresa878393`).
     - **«Preus» → «Llibreria de preus»** (menú, capçalera i títol).
     - Estils `src/theme-v878484.css`. Prova: `v484test.mjs` (19).
+  - **V87.485 · Dins de l'obra, quatre rajoles amb la llista a sota** (constructora i gestió total, mòbil i iPad; l'Héctor, 3/11/2026: «fitxa, seguiment i
+    econòmic… és liat; el desplegable pot ser lineal»; «seguiment es pot confondre amb el control de pressupost»; «a obra on posa pressupost hauria
+    d'afegir certificacions»; «econòmic dir comptabilitat amb facturació i despeses»):
+    - `ObraBar878269` amb `mo878485` (`modeObra878484` i `useBarraBaix878484`): **Fitxa · Dia a dia · Pressupost i certificacions · Comptabilitat**
+      (`OBRA_BLOCS878485`, `obraBlocs878485`; «Dia a dia»: Partes, Visites, Agenda, Planning; «Comptabilitat»: Facturació, Despeses, Rendiment, Hores).
+      Dues per fila; tocar-ne una obre a sota de la seva fila la llista dels apartats, un per línia (`.llista-v878485`, també amb la classe
+      `obra-bloc-panel-v878299`); la del lloc on som, plena de blau i amb l'apartat a sota del nom. La barra ja no es queda fixa (`--obra-bar-h` = 0).
+      Les claus dels apartats no canvien. A l'ordinador i al tècnic, els tres blocs de sempre.
+    - **La barra de baix:** «Despesa» passa a ser un botó que obre el selector d'arxius (abans una etiqueta amb una altra lletra).
+    - **Proves:** l'ajuda `apartat(b, bloc, apartat)` de 55 proves, si no troba l'apartat al bloc que diu, el busca als altres.
+    - Estils `src/theme-v878485.css`. Prova: `v485test.mjs` (22, mòbil i iPad).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -2972,7 +2983,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.484 a Render):**
+**Estat (publicada la V87.485 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
