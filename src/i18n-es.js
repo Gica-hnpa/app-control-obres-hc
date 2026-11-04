@@ -5103,4 +5103,12 @@ export default {
 "Digues o escriu què s’ha de fer, o adjunta plànols i fotos": "Di o escribe qué hay que hacer, o adjunta planos y fotos",
 "Escriu les partides tu mateix": "Escribe tú las partidas",
 "O tria-les de la Llibreria de preus": "O elígelas de la Biblioteca de precios",
+"Sense ubicació": "Sin ubicación",
+"No s’ha donat permís per a la ubicació": "No se ha dado permiso para la ubicación",
+"Veure on s’ha fitxat (±{m} m)": "Ver dónde se ha fichado (±{m} m)",
+"amb la ubicació": "con la ubicación",
+"sense ubicació": "sin ubicación",
+"Desar la ubicació en fitxar": "Guardar la ubicación al fichar",
+"Ubicació de l’entrada": "Ubicación de la entrada",
+"Ubicació de la sortida": "Ubicación de la salida",
 };

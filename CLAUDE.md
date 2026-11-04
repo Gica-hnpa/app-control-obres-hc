@@ -2797,6 +2797,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       «Fet» a baix. A l'ordinador, dins de la llista com abans.
     - Ajustos: la constructora ja no té «Accessos ràpids» (la seva barra és fixa des de la V87.484).
     - Estils `src/theme-v878486.css`. Prova: `v486test.mjs` (11). Adaptades `perfils326test` («Llibreria de preus»), `v366test` i `v455test` (barra i Inici de la constructora).
+  - **V87.487 · El fitxatge desa on es fa** (l'Héctor, 3/11/2026: «el fitxatge ha de tenir geolocalització»):
+    - **En marcar** (`FitxarKiosk878357`, `marca`): el marcatge es desa al moment amb l'hora del toc i la posició de l'aparell es demana dins del mateix toc
+      (`ubicacio878487`: precisió alta, com a molt 12 s); quan arriba, s'hi afegeix `geo = {lat, lng (6 decimals), prec (m), at}` (`posaGeoFitx878487`). Sense
+      permís, sense GPS o sense resposta: `geo = {err: "denegat" | "no" | "temps"}` i el marcatge val igual. L'avís diu «… · amb la ubicació» o «… · sense ubicació».
+    - **Oficina** (`RegistreFitx878357`): cada marcatge porta un punt (`GeoFitx878487`): verd, obre el lloc a Google Maps (±m); gris, sense ubicació. També a «Els meus
+      fitxatges del mes». L'Excel del mes, columnes «Ubicació de l'entrada» i «Ubicació de la sortida». El PDF per a la Inspecció no canvia.
+    - **Es pot treure:** «Desar la ubicació en fitxar» a dalt del Registre (`aco_empresa_v878259.fitxGeo878487`; de sèrie, sí; `fitxGeoOn878487`).
+    - És la ubicació de l'aparell on es fitxa (fase 1: un aparell de l'empresa a l'obra). L'empresa n'ha d'informar els treballadors (art. 90 de la LOPDGDD).
+    - Estils `src/theme-v878487.css`. Prova: `v487test.mjs` (17). Adaptades `fitxatge357test` i `personal340test` (Hores té la pestanya «Calendari» des de la V87.484).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -2995,7 +3004,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.486 a Render):**
+**Estat (publicada la V87.487 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

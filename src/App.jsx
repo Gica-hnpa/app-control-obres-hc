@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.486";
+const APP_VERSION878264="87.487";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -18285,6 +18285,24 @@ async function hashPin878357(wid,pin){const txt="aco-fitx|"+wid+"|"+pin;try{if(w
 async function verificaPin878357(w,pin){const h=String(w?.pinHash878357||"");if(!h)return false;const txt="aco-fitx|"+w.id+"|"+pin;
   if(h.startsWith("sum:"))return h==="sum:"+sumaPin878357(txt);
   if(!window.crypto?.subtle)return null;const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(txt));return h==="sha:"+[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+// V87.487 · el fitxatge desa on es fa (l'Héctor, 3/11/2026: «el fitxatge ha de tenir geolocalització»). En marcar, el marcatge es desa
+// al moment amb l'hora del toc i, quan l'aparell dona la posició (com a molt 12 s), s'hi afegeix `geo = {lat, lng, prec (m), at}`; si
+// la persona no ho deixa o l'aparell no en sap, `geo = {err: "denegat" | "no" | "temps"}` i el marcatge val igual. L'oficina ho veu al
+// registre (un punt que obre el mapa) i a l'Excel. Es pot treure a Hores › Fitxatge › Registre (`aco_empresa_v878259.fitxGeo878487`).
+function fitxGeoOn878487(){const e=empresaInfo878259()||{};return e.fitxGeo878487!==false}
+function posaFitxGeo878487(on){const e=lsJson8779("aco_empresa_v878259",{})||{};lsSet8779("aco_empresa_v878259",JSON.stringify({...e,fitxGeo878487:!!on}));try{window.dispatchEvent(new CustomEvent("aco-fitxatge-changed"))}catch{}}
+function ubicacio878487(ms=12000){return new Promise(res=>{let fet=false;const fi=g=>{if(!fet){fet=true;res(g)}};
+  try{const g=navigator.geolocation;if(!g||window.isSecureContext===false)return fi({err:"no"});
+    const tm=setTimeout(()=>fi({err:"temps"}),ms+1500);
+    g.getCurrentPosition(p=>{clearTimeout(tm);const c=p.coords||{};fi({lat:Math.round(c.latitude*1e6)/1e6,lng:Math.round(c.longitude*1e6)/1e6,prec:Math.round(c.accuracy||0),at:new Date(p.timestamp||Date.now()).toISOString()})},
+      e=>{clearTimeout(tm);fi({err:e&&e.code===1?"denegat":"no"})},{enableHighAccuracy:true,timeout:ms,maximumAge:60000})}catch{fi({err:"no"})}})}
+function posaGeoFitx878487(r,geo){const ym=String(r.dia).slice(0,7);desaFitx878357(ym,llegeixFitx878357(ym).map(x=>x.id===r.id?{...x,geo}:x))}
+const teGeo878487=r=>r&&r.geo&&Number.isFinite(r.geo.lat)&&Number.isFinite(r.geo.lng);
+const mapaGeo878487=g=>`https://www.google.com/maps?q=${g.lat},${g.lng}`;
+const textGeo878487=r=>teGeo878487(r)?`${r.geo.lat}, ${r.geo.lng} (±${r.geo.prec} m)`:r?.geo?.err?t("Sense ubicació"):"";
+function GeoFitx878487({r}){if(!r||!r.geo)return null;
+  if(!teGeo878487(r))return <span className="geo-v878487 no" title={r.geo.err==="denegat"?t("No s’ha donat permís per a la ubicació"):t("Sense ubicació")} aria-label={t("Sense ubicació")}><MapPin size={13} aria-hidden="true"/></span>;
+  return <a className="geo-v878487" href={mapaGeo878487(r.geo)} target="_blank" rel="noopener noreferrer" title={t("Veure on s’ha fitxat (±{m} m)",{m:r.geo.prec})} aria-label={t("Veure on s’ha fitxat (±{m} m)",{m:r.geo.prec})} onClick={e=>e.stopPropagation()}><MapPin size={13} aria-hidden="true"/></a>}
 function useTickFitx878357(viu){const[tick,setTick]=useState(0);useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-fitxatge-changed",h);const iv=viu?setInterval(h,30000):null;return()=>{window.removeEventListener("aco-fitxatge-changed",h);if(iv)clearInterval(iv)}},[viu]);return tick}
 function Fitxatge878357(){
   const[v,setV]=useState("fitxar");
@@ -18303,8 +18321,10 @@ function FitxarKiosk878357(){
   async function comprova(){if(!sel)return;if(!sel.pinHash878357){setErr(t("Encara no té PIN: posa-l’hi a Empresa › Treballadors."));return}
     const r=await verificaPin878357(sel,pin);if(r===null){setErr(t("Aquest aparell no pot comprovar el PIN (cal obrir l’app amb https)."));return}
     if(!r){setErr(t("PIN incorrecte."));setPin("");return}setOk(true);setErr("")}
-  function marca(tipus){const ara=new Date();afegeixFitx878357({id:"fx-"+ara.getTime()+"-"+Math.random().toString(36).slice(2,6),wid:sel.id,nom:sel.nom,tipus,dia:isoDay878255(ara),hora:hhmm878357(ara),at:ara.toISOString(),via:"pin",creat:ara.toISOString()});
-    setFet(t("{tipus} {hora} · {nom}",{tipus:t(TIPUS_FITX878357[tipus]),hora:hhmm878357(ara),nom:sel.nom}));tanca()}
+  function marca(tipus){const ara=new Date();const r={id:"fx-"+ara.getTime()+"-"+Math.random().toString(36).slice(2,6),wid:sel.id,nom:sel.nom,tipus,dia:isoDay878255(ara),hora:hhmm878357(ara),at:ara.toISOString(),via:"pin",creat:ara.toISOString()};
+    // es desa al moment; la ubicació (V87.487) s'hi afegeix quan arriba: la petició va dins del toc, perquè l'aparell la pugui preguntar
+    afegeixFitx878357(r);const msg=t("{tipus} {hora} · {nom}",{tipus:t(TIPUS_FITX878357[tipus]),hora:hhmm878357(ara),nom:sel.nom});setFet(msg);tanca();
+    if(fitxGeoOn878487())ubicacio878487().then(g=>{posaGeoFitx878487(r,g);setFet(f=>f===msg?msg+" · "+(teGeo878487({geo:g})?t("amb la ubicació"):t("sense ubicació")):f)})}
   if(!treb.length)return <div className="fe-buit"><b>{t("Primer posa els treballadors a Empresa › Treballadors.")}</b>{ambEmpresa878338()&&<button type="button" className="primary" onClick={anarTreballadors878353}><Plus size={16} aria-hidden="true"/> {t("Afegir treballadors")}</button>}</div>;
   const msSel=sel?marcatgesDia878357(avui,sel.id):[];const eSel=estatFitx878357(msSel);
   const mes=sel&&ok?llegeixFitx878357(avui.slice(0,7)).filter(r=>r.wid===sel.id).sort((a,b)=>String(b.at).localeCompare(String(a.at))):[];
@@ -18325,7 +18345,7 @@ function FitxarKiosk878357(){
           {eSel==="pausa"&&<button type="button" className="primary entrada" onClick={()=>marca("represa")}>{t("Tornar de la pausa")}</button>}
           {eSel!=="fora"&&<button type="button" className="primary sortida" onClick={()=>marca("sortida")}>{t("Sortida")}</button>}
         </div>
-        <details className="fitx-meus-v878357"><summary>{t("Els meus fitxatges del mes")}</summary>{!mes.length?<p>{t("Cap fitxatge aquest mes.")}</p>:<ul>{mes.map(r=><li key={r.id} className={r.anulat?"anulat":""}><span>{fmtAppDate8748(r.dia)} · {r.hora}</span><b>{t(TIPUS_FITX878357[r.tipus]||r.tipus)}</b>{r.correccio?<small>{t("Corregit")}</small>:null}{r.anulat?<small>{t("Anul·lat")}</small>:null}</li>)}</ul>}</details>
+        <details className="fitx-meus-v878357"><summary>{t("Els meus fitxatges del mes")}</summary>{!mes.length?<p>{t("Cap fitxatge aquest mes.")}</p>:<ul>{mes.map(r=><li key={r.id} className={r.anulat?"anulat":""}><span>{fmtAppDate8748(r.dia)} · {r.hora}</span><b>{t(TIPUS_FITX878357[r.tipus]||r.tipus)} <GeoFitx878487 r={r}/></b>{r.correccio?<small>{t("Corregit")}</small>:null}{r.anulat?<small>{t("Anul·lat")}</small>:null}</li>)}</ul>}</details>
       </>}
     </div></Modal>}
   </div>;
@@ -18346,12 +18366,12 @@ function RegistreFitx878357(){
   // el mes: un dia per fila
   const delMes=llegeixFitx878357(mes);
   const resumMes=wid=>{const dies=[...new Set(delMes.filter(r=>r.wid===wid).map(r=>r.dia))].sort();return dies.map(d=>{const ms=delMes.filter(r=>r.wid===wid&&r.dia===d).sort((a,b)=>String(a.at).localeCompare(String(b.at)));const v=ms.filter(r=>!r.anulat);
-    const ent=v.find(r=>r.tipus==="entrada")?.hora||"";const sor=[...v].reverse().find(r=>r.tipus==="sortida")?.hora||"";const pauses=v.filter(r=>r.tipus==="pausa").length;const pt=v.filter(r=>r.tipus==="pausa").map(pa=>{const tr=v.find(r=>r.tipus==="represa"&&String(r.at)>String(pa.at));return pa.hora+"–"+(tr?.hora||"")}).join(", ");
-    return {dia:d,ent,sor,pauses,pt,h:horesFitx878357(ms,null),corr:ms.filter(r=>r.correccio||r.anulat).map(r=>(r.anulat?r.anulat.motiu:r.correccio.motiu)).filter(Boolean)}})};
+    const rEnt=v.find(r=>r.tipus==="entrada");const rSor=[...v].reverse().find(r=>r.tipus==="sortida");const ent=rEnt?.hora||"";const sor=rSor?.hora||"";const pauses=v.filter(r=>r.tipus==="pausa").length;const pt=v.filter(r=>r.tipus==="pausa").map(pa=>{const tr=v.find(r=>r.tipus==="represa"&&String(r.at)>String(pa.at));return pa.hora+"–"+(tr?.hora||"")}).join(", ");
+    return {dia:d,ent,sor,gEnt:textGeo878487(rEnt),gSor:textGeo878487(rSor),pauses,pt,h:horesFitx878357(ms,null),corr:ms.filter(r=>r.correccio||r.anulat).map(r=>(r.anulat?r.anulat.motiu:r.correccio.motiu)).filter(Boolean)}})};
   const widsMes=wMes?[wMes]:[...new Set(delMes.map(r=>r.wid))];
-  function excel(){const rows=[[t("Treballador"),t("DNI / NIE"),t("Dia"),t("Entrada"),t("Sortida"),t("Pauses"),t("Hores"),t("Correccions")]];
-    widsMes.forEach(wid=>{const w=treb.find(x=>x.id===wid);resumMes(wid).forEach(x=>rows.push([w?.nom||nomW(wid),w?.dni||"",x.dia,x.ent,x.sor,x.pauses,Math.round(x.h*100)/100,x.corr.join(" · ")]))});
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:24},{wch:12},{wch:12},{wch:8},{wch:8},{wch:7},{wch:7},{wch:40}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Fitxatge"));XLSX.writeFile(wb,`${t("Fitxatge")} ${mes}.xlsx`)}
+  function excel(){const rows=[[t("Treballador"),t("DNI / NIE"),t("Dia"),t("Entrada"),t("Sortida"),t("Pauses"),t("Hores"),t("Correccions"),t("Ubicació de l’entrada"),t("Ubicació de la sortida")]];
+    widsMes.forEach(wid=>{const w=treb.find(x=>x.id===wid);resumMes(wid).forEach(x=>rows.push([w?.nom||nomW(wid),w?.dni||"",x.dia,x.ent,x.sor,x.pauses,Math.round(x.h*100)/100,x.corr.join(" · "),x.gEnt,x.gSor]))});
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:24},{wch:12},{wch:12},{wch:8},{wch:8},{wch:7},{wch:7},{wch:40},{wch:30},{wch:30}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Fitxatge"));XLSX.writeFile(wb,`${t("Fitxatge")} ${mes}.xlsx`)}
   // V87.390 · el registre en llista: una línia per treballador (com està el dia, hores del dia i del mes) que es desplega amb el dia, el mes
   // dia per dia i l'any mes per mes, cadascun amb el seu PDF (l'Héctor, 25/10/2026). El document segueix l'art. 34.9 de l'Estatut dels
   // Treballadors: empresa, treballador, període, cada dia amb l'entrada, la sortida i les pauses, el total i les signatures.
@@ -18379,11 +18399,12 @@ function RegistreFitx878357(){
       <div className="fitx-dia-v878357"><button type="button" className="secondary" onClick={()=>mou(-1)} aria-label={t("Dia anterior")}>‹</button><input type="date" value={dia} onChange={e=>{if(e.target.value){setDia(e.target.value);setMes(e.target.value.slice(0,7))}}}/><button type="button" className="secondary" onClick={()=>mou(1)} aria-label={t("Dia següent")}>›</button></div>
       <div className="fitx-mes-filtre-v878357"><input type="month" value={mes} onChange={e=>e.target.value&&setMes(e.target.value)} aria-label={t("Mes")}/>
         <ActionMenu87213 label={t("Tots")} titol={t("Tots els treballadors")}><button type="button" onClick={()=>imprimeixMes(widsMes)}><FileText size={15} aria-hidden="true"/> {t("PDF del mes")}</button><button type="button" onClick={excel}><Download size={15} aria-hidden="true"/> {t("Excel del mes")}</button></ActionMenu87213></div>
+      <label className="geo-op-v878487"><input type="checkbox" checked={fitxGeoOn878487()} onChange={e=>posaFitxGeo878487(e.target.checked)}/> <MapPin size={15} aria-hidden="true"/> {t("Desar la ubicació en fitxar")}</label>
     </div>
     <div className="fitx-llista-v878390">{widsLlista.map(wid=>{const ms=delDia.filter(r=>r.wid===wid);const h=horesFitx878357(ms,ara);const r=resumMes(wid);const totM=r.reduce((a,x)=>a+x.h,0);const ra=resumAny(wid);const totA=ra.reduce((a,x)=>a+x.h,0);
       return <details key={wid} className="fitx-w-v878390"><summary><span className="nm"><b>{nomW(wid)}</b><small className={ms.some(x=>!x.anulat)?"":"sense"}>{ultimEstat(ms)}</small></span><span className="h"><b>{fh878340(h)}</b><small>{t("Mes: {h}",{h:fh878340(totM)})}</small></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
         <div className="cos">
-          <div className="bloc dia-w"><h5>{new Date(dia+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"})}</h5><span className="ms">{ms.length?ms.map(m=><em key={m.id} className={`m ${m.tipus} ${m.anulat?"anulat":""} ${m.correccio?"corregit":""}`} title={m.anulat?t("Anul·lat: {m}",{m:m.anulat.motiu}):m.correccio?t("Afegit: {m}",{m:m.correccio.motiu}):""}>{m.hora} {t(TIPUS_FITX878357[m.tipus]||m.tipus)}</em>):<i>{t("Sense fitxar")}</i>}</span><button type="button" className="secondary small" onClick={()=>setCorr({wid,nom:nomW(wid),tipus:"entrada",hora:"",motiu:""})}>{t("Corregir")}</button></div>
+          <div className="bloc dia-w"><h5>{new Date(dia+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"})}</h5><span className="ms">{ms.length?ms.map(m=><em key={m.id} className={`m ${m.tipus} ${m.anulat?"anulat":""} ${m.correccio?"corregit":""}`} title={m.anulat?t("Anul·lat: {m}",{m:m.anulat.motiu}):m.correccio?t("Afegit: {m}",{m:m.correccio.motiu}):""}>{m.hora} {t(TIPUS_FITX878357[m.tipus]||m.tipus)} <GeoFitx878487 r={m}/></em>):<i>{t("Sense fitxar")}</i>}</span><button type="button" className="secondary small" onClick={()=>setCorr({wid,nom:nomW(wid),tipus:"entrada",hora:"",motiu:""})}>{t("Corregir")}</button></div>
           <div className="bloc mes-w"><h5>{nomMes(mes)} · <span>{fh878340(totM)}</span></h5>{r.length?<table><thead><tr><th>{t("Dia")}</th><th>{t("Entrada")}</th><th>{t("Sortida")}</th><th>{t("Pauses")}</th><th>{t("Hores")}</th></tr></thead><tbody>{r.map(x=><tr key={x.dia}><td>{fmtAppDate8748(x.dia)}</td><td>{x.ent}</td><td>{x.sor}</td><td>{x.pauses||""}</td><td>{fh878340(x.h)}{x.corr.length?<small title={x.corr.join(" · ")}> *</small>:null}</td></tr>)}</tbody></table>:<p className="buit">{t("Cap fitxatge aquest mes.")}</p>}<button type="button" className="secondary small" disabled={!r.length} onClick={()=>imprimeixMes([wid])}><FileText size={15} aria-hidden="true"/> {t("PDF del mes")}</button></div>
           <div className="bloc any-w"><h5>{t("Any {a}",{a:any})} · <span>{fh878340(totA)}</span></h5>{ra.length?<table><thead><tr><th>{t("Mes")}</th><th>{t("Dies")}</th><th>{t("Hores")}</th></tr></thead><tbody>{ra.map(x=><tr key={x.ym}><td>{nomMes(x.ym)}</td><td>{x.dies}</td><td>{fh878340(x.h)}</td></tr>)}</tbody></table>:<p className="buit">{t("Cap fitxatge aquest any.")}</p>}<button type="button" className="secondary small" disabled={!ra.length} onClick={()=>imprimeixAny(wid)}><FileText size={15} aria-hidden="true"/> {t("PDF de l’any")}</button></div>
         </div></details>})}</div>
@@ -19190,7 +19211,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.486",
+    app_version:"87.487",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
