@@ -2830,6 +2830,7 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       que ja hi havia. Estils `src/theme-v878489.css`. Prova: `v489test.mjs` (29: mòbil i ordinador, desar el parte, la descripció). Passen `v483test`,
       `v486test`, `partes350test`, `v449test`, `v447test` i `i18ntest`.
   - **V87.490 · A l’ordinador, els mateixos noms i el mateix funcionament que al mòbil** (constructora i gestió total; l’Héctor, 4/11/2026: «voldran veure-ho també a l’ordinador amb l’administrativa… les pantalles no són iguals, els textos tampoc»): l’Inici en rajoles (`IniciMenu878484`, ara sense la condició de la barra de baix; a l’ordinador «Rendiment» en lloc de «Més», `pc490`) i, dins de l’obra, les quatre rajoles Fitxa · Dia a dia · Pressupost i certificacions · Comptabilitat (`mo878485 = modeObra878484()`; a l’ordinador, `pc-v878490`: quatre en una fila i la llista dels apartats a sota en columnes, `fila490`). A l’iPad i l’ordinador, «Pendent» de l’Inici s’obre a sota de la primera fila. El tècnic i el compte de l’Héctor, com abans. **Següent (l’Héctor):** a l’ordinador, on la informació no hi cap, que s’obri una pantalla pròpia com la de les partides (`PantallaSencera878489`). Estils `src/theme-v878490.css`. Adaptades `v485test` (5) i `v484test` (11); passen `v489test`.
+  - **V87.491 · El logo una mica més gran** (l’Héctor, 4/11/2026): a la capçalera del mòbil i l’iPad, 44 px (abans 36) i, amb el logo de l’empresa, fins a 46 × 136 px; al menú de l’ordinador, el quadre «CO» de 38 px i el logo fins a 50 × 132 px. Estils `src/theme-v878491.css`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3028,7 +3029,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.490 a Render):**
+**Estat (publicada la V87.491 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

@@ -1,0 +1,7 @@
+/* V87.491 · El logo una mica més gran a tots els aparells, sobretot a la capçalera del mòbil i l'iPad */
+html body .app-head-v878268 .brand-v878268{width:44px;height:44px;border-radius:12px;font-size:15px}
+html body .app-head-v878268 .brand-v878268.amb-logo-v878351{width:auto;min-width:46px;max-width:136px;height:46px;padding:3px 6px}
+html body .app-head-v878268 .brand-v878268.amb-logo-v878351 img{width:auto;height:auto;max-height:40px;max-width:124px}
+/* menú de l'ordinador */
+html body .sidebar .brand::before{width:38px;height:38px;border-radius:10px;font-size:14px}
+html body .sidebar .brand .marca-logo-v878351{max-height:50px;max-width:132px}
