@@ -5096,4 +5096,11 @@ export default {
 "partes, visites, agenda": "partes, visitas, agenda",
 "amidaments, pressupost, certificacions": "mediciones, presupuesto, certificaciones",
 "facturació, despeses, rendiment": "facturación, gastos, rendimiento",
+"Des dels amidaments": "Desde las mediciones",
+"Importar un arxiu": "Importar un archivo",
+"PDF, Excel o BC3: l’app el reconeix": "PDF, Excel o BC3: la app lo reconoce",
+"Amb IA": "Con IA",
+"Digues o escriu què s’ha de fer, o adjunta plànols i fotos": "Di o escribe qué hay que hacer, o adjunta planos y fotos",
+"Escriu les partides tu mateix": "Escribe tú las partidas",
+"O tria-les de la Llibreria de preus": "O elígelas de la Biblioteca de precios",
 };

@@ -1,5 +1,6 @@
 
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from "react";
+import {createPortal} from "react-dom";
 import * as XLSX from "xlsx";
 import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
@@ -37,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.485";
+const APP_VERSION878264="87.486";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7283,23 +7284,22 @@ function presObertInici878427(){try{return lsVisual878400()?.getItem(PRES_OBERT8
 // V87.435 · el pressupost buit (l'Héctor, 29/10/2026: «quan poso primer els amidaments, en obrir el pressupost hauria de tenir l'opció
 // que tingués totes les partides per posar preus, i després la de crear o importar el pressupost si l'he fet a part… i en BC3»)
 function bc3Pres878435(file){if(!file)return;window.__acoAmid878435={file,passar:true};window.__acoObraTab878435?.("Amidaments obra")}
-function PresBuit878435({obra,onExcel,onPdf,onBuit,onPreus,onIa}){
+// V87.486 · el pressupost buit en rajoles iguals (l'Héctor, 3/11/2026: «una rajola com a tots i després, quan entres, altres rajoles amb els diferents tipus
+// d'entrada: importar arxius, ja sigui PDF, Excel o BC3; amb IA; i manual»). Un sol «Importar un arxiu»: l'app mira quin és pel nom.
+function PresBuit878435({obra,onExcel,onPdf,onBuit,onPreus,onIa,onArxiu}){
   const d=obra?.id?window.__acoDadesObra878412?.(obra.id):null;
   const fase=String(d?.activeBudgetIdObra||"principal");
   const n=d&&!obra?.compartida?(amidDe878342(d,fase).linies||[]).length:0;
   const pot=!obra?.compartida&&!!window.__acoObraTab878435;
-  return <div className="card pres-buit-v878435">
-    {n>0&&pot&&<button type="button" className="primary gran" onClick={()=>{window.__acoAmid878435={passar:true};window.__acoObraTab878435("Amidaments obra")}}><Ruler size={18} aria-hidden="true"/> {n===1?t("Portar la partida dels amidaments"):t("Portar les {n} partides dels amidaments",{n})}</button>}
-    {onIa&&<button type="button" className={`${n>0&&pot?"secondary":"primary"} gran`} onClick={onIa}><WandSparkles size={18} aria-hidden="true"/> {t("Fer el pressupost amb IA")}</button>}
-    <div className="fila"><span>{t("Importar un pressupost fet a part")}</span><div className="bt">
-      <button type="button" className="secondary" onClick={onExcel}><FileSpreadsheet size={15} aria-hidden="true"/> Excel</button>
-      {pot&&<label className="button secondary"><FileCode size={15} aria-hidden="true"/> BC3<input type="file" hidden accept=".bc3" onChange={e=>{const f=e.target.files?.[0];e.target.value="";bc3Pres878435(f)}}/></label>}
-      <button type="button" className="secondary" onClick={onPdf}><FileText size={15} aria-hidden="true"/> PDF</button>
-    </div></div>
-    <div className="fila"><span>{t("O fer-lo aquí")}</span><div className="bt">
-      <button type="button" className="secondary" onClick={onPreus}><BookOpen size={15} aria-hidden="true"/> {t("Des de Preus")}</button>
-      <button type="button" className="secondary" onClick={onBuit}><FilePlus size={15} aria-hidden="true"/> {t("Començar pressupost buit")}</button>
-    </div></div>
+  // es crida com a funció (no com a component): així el selector d'arxius no es perd si la pantalla es torna a dibuixar
+  const R486=({ic:Ic,tit,sub,on,children,cls=""})=>children?<label className={"r486 "+cls}><span className="ico" aria-hidden="true"><Ic size={24}/></span><span className="tt"><b>{tit}</b><small>{sub}</small></span><ChevronRight size={18} className="chev" aria-hidden="true"/>{children}</label>
+    :<button type="button" className={"r486 "+cls} onClick={on}><span className="ico" aria-hidden="true"><Ic size={24}/></span><span className="tt"><b>{tit}</b><small>{sub}</small></span><ChevronRight size={18} className="chev" aria-hidden="true"/></button>;
+  return <div className="pres-buit-v878435 raj-v878486">
+    {n>0&&pot&&R486({ic:Ruler,cls:"amid",tit:t("Des dels amidaments"),sub:n===1?t("Portar la partida dels amidaments"):t("Portar les {n} partides dels amidaments",{n}),on:()=>{window.__acoAmid878435={passar:true};window.__acoObraTab878435("Amidaments obra")}})}
+    {R486({ic:Upload,tit:t("Importar un arxiu"),sub:t("PDF, Excel o BC3: l’app el reconeix"),children:<input type="file" hidden accept=".pdf,.xlsx,.xls,.csv,.bc3,application/pdf" onChange={e=>{const f=e.target.files?.[0];e.target.value="";if(f)onArxiu?.(f)}}/>})}
+    {onIa&&R486({ic:WandSparkles,tit:t("Amb IA"),sub:t("Digues o escriu què s’ha de fer, o adjunta plànols i fotos"),on:onIa})}
+    {R486({ic:PenLine,tit:t("A mà"),sub:t("Escriu les partides tu mateix"),on:onBuit})}
+    <button type="button" className="link llib-v878486" onClick={onPreus}><BookOpen size={15} aria-hidden="true"/> {t("O tria-les de la Llibreria de preus")}</button>
   </div>;
 }
 function PresCard878427({pleg=true,titol,xifra=null,action,obert=false,editant=false,onToggle,tancat=false,children}){
@@ -14321,7 +14321,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
     </div>
   </Modal>;
 }
-function PdfPressupost878305({onImport,close}){
+function PdfPressupost878305({onImport,close,inicial=null}){
   const[estat,setEstat]=useState("tria");
   const[err,setErr]=useState("");
   const[res,setRes]=useState(null);
@@ -14334,6 +14334,8 @@ function PdfPressupost878305({onImport,close}){
   const iaRes=useMemo(()=>ia?.answer?parseAiBudget878256(ia.answer):null,[ia?.answer]);
   const nm=v=>typeof v==="number"?v:(numeroPdf878305(v)??0);
   const coma=v=>String(Number(v)||0).replace(".",",");
+  const inicial486=useRef(false);
+  useEffect(()=>{if(inicial&&!inicial486.current){inicial486.current=true;tria(inicial)}},[]);
   async function tria(f){
     if(!f)return;
     if(f.size>25*1024*1024){setErr(t("El PDF fa més de 25 MB."));return}
@@ -14439,6 +14441,9 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const[grupObert878336,setGrupObert878336]=useState({});
   const [descOpen875,setDescOpen875]=useState({});
   const[fitxa426,setFitxa426]=useState(null);
+  // V87.486 · editant al mòbil i l'iPad, la partida s'obre en una pantalla pròpia (l'Héctor: «si apretes editar i toques una partida, que s'obri una nova
+  // pantalla per partida, després tornar i per la segona»)
+  const pantalla878486=useBarraBaix878484();
   const[presObert427,setPresObert427]=useState(presObertInici878427);
   const giraPres427=o=>setPresObert427(o);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
@@ -15444,7 +15449,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!clientMode&&<button type="button" className="opcio" onClick={()=>{setImprimir426(false);exportBudgetExcel878180()}}><FileSpreadsheet size={20} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>}
       <button type="button" className="opcio" onClick={()=>{setImprimir426(false);saveBudgetDocument878179()}}><FolderDown size={20} aria-hidden="true"/> {i18nT("Guardar a Documents")}</button>
     </div></Modal>}
-    {pdf878305&&<PdfPressupost878305 close={()=>setPdf878305(false)} onImport={(rows,meta)=>window.__acoImportPdf878305?.(rows,meta,activeBudgetId)}/>}
+    {pdf878305&&<PdfPressupost878305 inicial={typeof pdf878305==="object"?pdf878305:null} close={()=>setPdf878305(false)} onImport={(rows,meta)=>window.__acoImportPdf878305?.(rows,meta,activeBudgetId)}/>}
     {inicial878412&&<TancarPressupost878428 data={data} setData={setData} bid={data?.activeBudgetIdObra||activeBudgetId||"principal"} obraId={obra?.id} altres={(window.__acoDadesObra878412?.(obra?.id)?.partides||[]).filter(r=>(r.budgetId||"principal")!==(data?.activeBudgetIdObra||activeBudgetId||"principal"))} close={()=>setInicial878412(false)}/>}
     {preus480&&<BuscarPreus878480 linies={preus480} partidaLibrary={partidaLibrary} data={data} obra={obra} obraId={obra?.id||""} onPosa={ls=>posaRef480.current?.(ls)} close={()=>setPreus480(null)}/>}
     {dictat401&&<DictarPartides878401 caps={editBudget8760b?(capsRef878247.current||caps):normalizeBudgetCaps878176(group(data.partides||[],"cap"))} partidaLibrary={partidaLibrary} data={data} obra={obra} obraId={obra?.id||""} onAfegir={afegeixLlibreria878361} close={()=>setDictat401(false)}/>}
@@ -15473,7 +15478,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {ajustos878426?.cos}
     </div><Recollir878432/></details>}
     {budgetWorkTab878180!=="Validar descompostos"&&avisos878320.length>0&&<details className="card bloc-v878426 avisos-v878426"><summary><AlertTriangle size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Avisos")}</b></span><span className="n">{avisos878320.length}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><AvisosPressupost878320 avisos={avisos878320} dins/></div><Recollir878432/></details>}
-    {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={startManualBudget87115} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null}/>}
+    {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={startManualBudget87115} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null} onArxiu={f=>{const nm=String(f.name||"").toLowerCase();if(/\.pdf$/.test(nm)||f.type==="application/pdf")setPdf878305(f);else if(/\.bc3$/.test(nm))bc3Pres878435(f);else importExcel?.({target:{files:[f],value:""}})}}/>}
     {nPreus480>0&&nRep879===0&&<div className="caps-rep-v878479 sense-preu-v878480"><span>{nPreus480===1?i18nT("1 partida sense preu"):i18nT("{n} partides sense preu",{n:nPreus480})}</span><button type="button" className="secondary" onClick={()=>setPreus480(sensePreu878480(caps))}><Search size={15} aria-hidden="true"/> {i18nT("Buscar preus")}</button></div>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} titol={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
@@ -15595,7 +15600,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                   return <div className={`budget-v25-line budget-row-collapsed-v87173${obert449?" fitxa-oberta-v878426":""}`} key={i}>
                     {sel449?<label className={`sel-fila-v878449${marcada449?" on":""}`}><input type="checkbox" checked={marcada449} onChange={()=>toggleBudgetSelection878229(cap,i)}/><b>{r.codi||""}</b><span>{r.concepte||i18nT("Sense concepte")}</span><strong>{money(t)}</strong></label>
                     :<button type="button" className={`budget-partida-mobile-summary-v87196${colorPartida878423(r)}`} aria-expanded={obert449} onClick={()=>editBudget8760b?toggleBudgetRow87173(cap,i):setFitxa426(k=>k===`${cap}__${i}`?null:`${cap}__${i}`)}><span><b>{r.codi||i18nT("Sense codi")}</b><strong>{r.concepte||i18nT("Sense concepte")}</strong>{esFora878410(r)&&<em className="fora-v878410">{etFora878410(r)}</em>}{mesQ878413(r)>0&&!esFora878410(r)&&<em className="fora-v878410 mes-v878411">+{qty2(mesQ878413(r))} {r.ut||""}</em>}{canviada878412(r)&&<em className="fora-v878410 canv-v878412" title={i18nT("Inicial: {q} × {p}",{q:qty2(r.ini878412.q),p:money(r.ini878412.pu)})}>{i18nT("Canviada")}</em>}{qFinal878423(r)!==null&&<em className="noexec-et-v878423">{etNoExec878423(r)}</em>}<small>{r.ut||i18nT("ut")} · {qty2(parseNum8770(r.q)||0)} × {money(parseNum8770(r.pu)||0)}</small></span><span><small className="q-v878449">{qty2(parseNum8770(r.q)||0)} {r.ut||""} × {money(parseNum8770(r.pu)||0)}</small><b>{money(t)}</b><ChevronRight size={18} className="chev" aria-hidden="true"/></span></button>}
-                    {obert449&&fitxaPartida426(cap,i)}
+                    {obert449&&(editBudget8760b&&pantalla878486?createPortal(<div className="partida-pantalla-v878486" role="dialog" aria-modal="true" aria-label={[r.codi,r.concepte].filter(Boolean).join(" · ")}>
+                      <div className="pp-cap"><button type="button" className="tornar" onClick={()=>toggleBudgetRow87173(cap,i)}><ChevronLeft size={20} aria-hidden="true"/> {i18nT("Tornar al pressupost")}</button><span className="nom"><b>{r.codi||""}</b> {r.concepte||i18nT("Sense concepte")}</span></div>
+                      <div className="pp-cos">{fitxaPartida426(cap,i)}</div>
+                      <div className="pp-peu"><button type="button" className="primary" onClick={()=>toggleBudgetRow87173(cap,i)}>{i18nT("Fet")}</button></div>
+                    </div>,document.body):fitxaPartida426(cap,i))}
                   </div>;
                 }
                 return <div className={`budget-v25-line ${rowDisplayOpenV87204?"budget-row-open-v87173":"budget-row-collapsed-v87173"}${!editBudget8760b&&fitxa426===`${cap}__${i}`?" fitxa-oberta-v878426":""}`} key={i}>
@@ -19181,7 +19190,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.485",
+    app_version:"87.486",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -19395,7 +19404,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {!esTreballador878326()&&bloc878366("enllacos",t("Enllaços de les obres"),<EnllacosAjustos878305/>)}
 {!esTreballador878326()&&teModul878326("tecnic")&&pcWindows878442()&&bloc878366("programes",t("Programes de l’ordinador"),<ProgramesPc878442/>)}
 {(!window.__acoEmpresa||/^demo-/.test(String(window.__acoEmpresa?.username||"")))&&bloc878366("aspecte",t("Aspecte"),<AspecteAjustos878400/>)}
-{role878366==="admin"&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
+{role878366==="admin"&&!modeObra878484(role878366,empresaInfo878259()?.perfil||"")&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
 {bloc878366("usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>)}
 {admin&&<details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 copies-v878354" data-k="copies"><summary>{icAj438("copies")}<span className="t"><b>{t("Còpies i núvol")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
 {!window.__acoEmpresa&&<EspaiNuvol878263/>}

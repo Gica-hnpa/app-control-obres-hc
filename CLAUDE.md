@@ -2785,6 +2785,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **La barra de baix:** «Despesa» passa a ser un botó que obre el selector d'arxius (abans una etiqueta amb una altra lletra).
     - **Proves:** l'ajuda `apartat(b, bloc, apartat)` de 55 proves, si no troba l'apartat al bloc que diu, el busca als altres.
     - Estils `src/theme-v878485.css`. Prova: `v485test.mjs` (22, mòbil i iPad).
+  - **V87.486 · El pressupost buit en rajoles i, editant al mòbil, la partida en una pantalla pròpia** (l'Héctor, 3/11/2026: «quan posem pressupost, una
+    rajola com a tots i després, quan entres, altres rajoles amb els diferents tipus d'entrada: importar arxius, ja sigui PDF, Excel o BC3, amb IA, i
+    manual»; «si apretes editar i toques una partida, que s'obri una nova pantalla per partida, després tornar i per la segona»):
+    - **Pressupost buit** (`PresBuit878435`, `.raj-v878486`): rajoles iguals **Importar un arxiu** (un sol selector: PDF → el lector de PDF, que comença
+      sol amb l'arxiu, `PdfPressupost878305 inicial`; BC3 → `bc3Pres878435`; Excel o CSV → `importExcel`), **Amb IA** i **A mà** (`startManualBudget87115`),
+      i a sota «O tria-les de la Llibreria de preus». Si la fase té amidaments, primer «Des dels amidaments». Les rajoles es criden com a funció (`R486`), no
+      com a component: si la pantalla es torna a dibuixar mentre el selector d'arxius és obert, l'arxiu no es perd.
+    - **Editant al mòbil i l'iPad** (`pantalla878486` = `useBarraBaix878484`): tocar una partida obre la seva fitxa en una **pantalla pròpia**
+      (`.partida-pantalla-v878486`, amb `createPortal` a `document.body`: dins de la llista quedava amb alçada zero) amb «‹ Tornar al pressupost» a dalt i
+      «Fet» a baix. A l'ordinador, dins de la llista com abans.
+    - Ajustos: la constructora ja no té «Accessos ràpids» (la seva barra és fixa des de la V87.484).
+    - Estils `src/theme-v878486.css`. Prova: `v486test.mjs` (11). Adaptades `perfils326test` («Llibreria de preus»), `v366test` i `v455test` (barra i Inici de la constructora).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -2983,7 +2995,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.485 a Render):**
+**Estat (publicada la V87.486 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

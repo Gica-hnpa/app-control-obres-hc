@@ -1,0 +1,22 @@
+/* V87.486 · El pressupost buit en rajoles i, editant al mòbil i l'iPad, la partida en una pantalla pròpia */
+html body .pres-buit-v878435.raj-v878486{display:flex;flex-direction:column;gap:10px;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+html body .raj-v878486 .r486{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:14px;min-height:92px;padding:12px 16px;background:#fff;border:1.5px solid #C3CED6;border-radius:18px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+html body .raj-v878486 .r486:active{transform:scale(.99);background:#F8FAFC}
+html body .raj-v878486 .r486:focus-visible,html body .raj-v878486 .r486:focus-within{outline:2px solid var(--co-accent);outline-offset:2px}
+html body .raj-v878486 .r486 .ico{width:46px;height:46px;border-radius:13px;background:#EAF1FD;color:#1D4ED8;display:grid;place-items:center;flex:none}
+html body .raj-v878486 .r486 .tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .raj-v878486 .r486 .tt b{font-size:16.5px;color:var(--co-ink,#152328)}
+html body .raj-v878486 .r486 .tt small{font-size:13px;color:var(--co-ink-3,#5F7075);line-height:1.3}
+html body .raj-v878486 .r486 .chev{color:#94A3B8;flex:none}
+html body .raj-v878486 .r486.amid{border-color:#1D4ED8;box-shadow:inset 0 0 0 1px #1D4ED8}
+html body .raj-v878486 .r486.amid .ico{background:#1D4ED8;color:#fff}
+html body .raj-v878486 .llib-v878486{all:unset;box-sizing:border-box;cursor:pointer;align-self:center;display:inline-flex;align-items:center;gap:6px;font-size:14px;padding:8px;color:#1D4ED8;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+/* la partida en una pantalla pròpia: per sobre de la barra de baix i de la capçalera, per sota de les finestres (100) */
+html body .partida-pantalla-v878486{position:fixed;inset:0;z-index:96;background:var(--co-bg,#F3F6F7);display:flex;flex-direction:column;overflow:hidden}
+html body .partida-pantalla-v878486 .pp-cap{flex:none;display:flex;flex-direction:column;gap:2px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:#fff;border-bottom:1px solid #E2E8F0}
+html body .partida-pantalla-v878486 .pp-cap .tornar{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:4px;min-height:40px;color:#1D4ED8;font-weight:600;font-size:15.5px;align-self:flex-start}
+html body .partida-pantalla-v878486 .pp-cap .nom{font-size:15px;color:var(--co-ink,#152328);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .partida-pantalla-v878486 .pp-cos{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 20px}
+html body .partida-pantalla-v878486 .pp-cos>*{margin:0!important;max-width:100%}
+html body .partida-pantalla-v878486 .pp-peu{flex:none;display:flex;justify-content:flex-end;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:#fff;border-top:1px solid #E2E8F0}
+html body .partida-pantalla-v878486 .pp-peu .primary{min-width:120px;min-height:46px;font-size:16px}
