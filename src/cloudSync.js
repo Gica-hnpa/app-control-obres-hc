@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.518";
+const VERSION = "V87.519";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -1050,6 +1050,31 @@ const bancComu = {
   posa: p => api(`/rest/v1/aco_banc_comu?id=eq.1`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: { ...p, updated_at: new Date().toISOString() } }),
   treu: () => api(`/rest/v1/aco_banc_comu?id=eq.1`, { method: "DELETE", headers: { Prefer: "return=minimal" } }),
 };
+// V87.519 · Comptes de prova amb data de fi (supabase/aco_proves_v878519.sql). «estat» el demana el compte de prova en arrencar;
+// la resta només el compte de l'Héctor (el servidor ho comprova).
+const proves = {
+  estat: () => rpc("aco_prova"),
+  llista: () => rpc("aco_proves_llista"),
+  posa: (email, fins) => rpc("aco_prova_posa", { p_email: email, p_fins: fins }),
+  client: email => rpc("aco_prova_client", { p_email: email }),
+  lectures: (email, n) => rpc("aco_prova_lectures", { p_email: email, p_n: n }),
+  config: async () => { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return (await api(`/rest/v1/aco_proves_config?id=eq.1&select=dies,lectures,contacte`))?.[0] || null; },
+  desaConfig: cfg => api(`/rest/v1/aco_proves_config?id=eq.1`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: cfg }),
+};
+// Un compte «prova-»: quants dies li queden i si s'ha acabat. Si el núvol no respon o l'SQL no hi és, l'app s'obre com sempre
+// (el servidor, si l'SQL hi és, igualment no li deixa llegir ni desar res passat el dia de fi).
+let provaAt = 0;
+async function comprovaProva() {
+  const u = String(companyOf(session?.email)?.username || "").toLowerCase();
+  if (!session || !/^prova[-_]/.test(u)) return null;
+  provaAt = Date.now();
+  try {
+    const r = await Promise.race([rpc("aco_prova"), new Promise((_, no) => setTimeout(() => no(new Error("temps")), 8000))]);
+    window.__acoProva878519 = r && typeof r === "object" ? r : null;
+    try { window.dispatchEvent(new Event("aco-prova-878519")); } catch {}
+    return window.__acoProva878519;
+  } catch { return null; }
+}
 async function switchTo(user, pass) {
   const was = active; active = false;
   try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
@@ -1080,7 +1105,7 @@ function hook() {
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => window.addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") { clearTimeout(timer); cycle(); }
-    else cycle({ returning: true });
+    else { cycle({ returning: true }); if (provaAt && Date.now() - provaAt > 3600e3) comprovaProva().then(r => { if (r?.acabada) location.reload(); }); }
   });
   window.addEventListener("online", () => cycle({ returning: true }));
   setInterval(() => { if (document.visibilityState === "visible") cycle(); }, 20000);
@@ -1090,7 +1115,7 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, bancComu, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
   session = readSession();
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
@@ -1099,6 +1124,8 @@ export async function startCloudSync() {
     if (r === "skip") { try { (isLocalServer() ? localStorage : sessionStorage).setItem(SKIP_KEY, "1"); } catch {} applyCompanyContext(); return; }
   }
   applyCompanyContext();
+  // V87.519 · la prova s'ha acabat: no es sincronitza res (main.jsx ensenya la pantalla de fi)
+  if ((await comprovaProva())?.acabada) return;
   // Estat de sincronització propi de cada compte (abans n'hi havia un de sol).
   meta = readJson(metaKey(), null);
   if (!meta) { const legacy = readJson(META_KEY, null); meta = legacy && legacy.userId === session.user_id ? legacy : { userId: "", cursor: "", known: {} }; }

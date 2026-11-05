@@ -32,7 +32,7 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
   `src/localDiskSync.js` → `..\DADES\app-control-obres-DADES-LOCALS.json`, còpia diària a
   `DADES\COPIES_AUTOMATIQUES`.
 - **Núvol: Supabase** (`src/cloudSync.js`, configuració a `src/cloudConfig.js`).
-  - Projecte: `https://bdjendguvbevyowghzfh.supabase.co` (projecte «app control de obras»; pla **Pro** des del 27/10/2026, Micro: ja no es pausa).
+  - Projecte: `https://bdjendguvbevyowghzfh.supabase.co` (projecte «app control de obras», regió **Frankfurt** `eu-central-1`; pla **Pro** des del 27/10/2026, Micro: ja no es pausa).
   - Auth amb correu i contrasenya. Els comptes d’empresa entren amb un usuari curt que es converteix en
     `<usuari>@usuaris.controlobres.app`.
   - Taula `aco_kv` (una fila per clau; `aco_odata` es parteix en una fila per obra) amb RLS per usuari.
@@ -3108,6 +3108,24 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       targetes principals («BARREJA») i subtargetes que es veuen com una principal («IGUALS»). Queden, a propòsit: xifres de dalt, filtres, el resum de l'obra, i
       **Honoraris de l'expedient i les Hores del tècnic, que són pantalles velles per refer** (full de ruta).
     - Les proves d'abans porten la marca `cartes-prova-v878518` (la posa l'ajuda de les proves: les targetes de les llistes, obertes). Prova: `v518test.mjs` (19).
+  - **V87.519 · Comptes de prova amb data de fi** (l'Héctor, 5/11/2026: «haurien d'estar capades a 2 setmanes o un mes màxim… i les lectures»; «sí, fes-ho
+    automàtic»; guia per a ell: `GUIES_USUARIS/Guia-comptes-de-prova.pdf`):
+    - **Comptes «prova-»** (`prova-garcia-constru@usuaris.controlobres.app`; els `demo-` de l'Héctor no caduquen): la primera vegada que entren, el servidor
+      els posa la data de fi (de sèrie 15 dies, avui inclòs) i 100 lectures d'IA al mes. La benvinguda proposa el perfil i les dades d'exemple com als `demo-`,
+      però el nom de l'empresa l'escriuen ells.
+    - **SQL** `supabase/aco_proves_v878519.sql` (**l'ha d'executar l'Héctor**; sense, l'app com abans): taules `aco_proves` (`fins`, `client`) i
+      `aco_proves_config` (dies, lectures, contacte); `aco_prova()` (l'estat del compte connectat, i la comença si cal), `aco_prova_activa()` i regles
+      **restrictive** a `aco_kv`, `aco_shared` i `storage.objects` (`aco-fitxers`): passat el dia de fi no llegeix ni desa res, **sense esborrar res**. Funcions de
+      l'Héctor (`aco_es_admin()`: el compte que no és @usuaris): `aco_proves_llista`, `aco_prova_posa`, `aco_prova_client`, `aco_prova_lectures`.
+    - **App:** `cloudSync.js` (`comprovaProva`, `__acoCloud.proves`) demana l'estat en arrencar (i en tornar a l'app passada una hora) i el deixa a
+      `window.__acoProva878519`; si s'ha acabat, no sincronitza i `main.jsx` ensenya `src/ProvaAcabada.jsx` («La prova s'ha acabat», el dia, el contacte i
+      «Sortir») en lloc de l'app. `ProvaDies878519` («Prova gratuïta · queden N dies», taronja els tres últims) a l'Inici i a Ajustos › Perfil i mòduls.
+    - **Ajustos › Comptes de prova** (només el compte de l'Héctor, `ProvesAjustos878519`): dies, lectures i el contacte de la pantalla de fi; la llista (sense
+      entrar · queden N dies · acabada · client, la darrera entrada i les lectures) amb «Allargar N dies», «Començar avui», «Tancar ara», «Passar a client» i les lectures.
+    - Estils `src/theme-v878519.css`. Proves: `proves519sqltest.mjs` (33, amb un Postgres de debò, PGlite) i `v519test.mjs` (23; `SENSE_PROVES=1`: sense
+      l'SQL). El Supabase de proves té els comptes `prova-garcia-constru` i `prova-puig-tecnic` (`prova2026`) i `GET`/`POST /__proves`.
+    - **El núvol és a Frankfurt** (`eu-central-1`, comprovat per l'Héctor el 5/11/2026). Ús el 5/11: 33 MB de dades i 80 MB d'arxius (pla Pro: 8 GB i 100 GB);
+      el «límit de despesa» és activat: si es passa d'un límit, Supabase bloqueja el que passa fins al mes següent.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3306,7 +3324,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.518 a Render):**
+**Estat (publicada la V87.519 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

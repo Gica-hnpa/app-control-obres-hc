@@ -210,6 +210,7 @@ import "./theme-v878515.css";
 import "./theme-v878516.css";
 import "./theme-v878517.css";
 import "./theme-v878518.css";
+import "./theme-v878519.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
@@ -227,6 +228,12 @@ if (signa878409) {
   // V87.258 · abans de tot, l'espai gran (IndexedDB) en lloc dels 5 MB del navegador.
   // V87.268 · i l'idioma de l'usuari (o de l'aparell), perquè les finestres del núvol ja surtin en el seu idioma.
   startBigStore().catch(() => false).then(() => { try { setLang(readLang(sessionStorage.getItem("aco_current_user8779") || "")); } catch {} }).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
+    // V87.519 · la prova d'un compte «prova-» s'ha acabat: en lloc de l'app, la pantalla de fi (les dades no s'esborren)
+    if (window.__acoProva878519?.acabada) {
+      const { default: ProvaAcabada } = await import("./ProvaAcabada.jsx");
+      createRoot(document.getElementById("root")).render(<React.StrictMode><ProvaAcabada p={window.__acoProva878519} /></React.StrictMode>);
+      return;
+    }
     const { default: App } = await import("./App.jsx");
     createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
     // V87.271 · App sense cobertura: a la versió publicada, l'app es guarda dins de l'aparell (sw.js) i s'obre encara

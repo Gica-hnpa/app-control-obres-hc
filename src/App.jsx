@@ -39,7 +39,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.518";
+const APP_VERSION878264="87.519";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1866,6 +1866,55 @@ function obraFotoKey878259(id){return `aco_obra_foto_v878259_${id}`}
 function obraFoto878259(o){if(!o)return "";if(o.imatge&&String(o.imatge).startsWith("data:"))return o.imatge;return o.id?lsGet8779(obraFotoKey878259(o.id),""):""}
 function f2u(file,cb){if(!file)return;let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
 
+// ── V87.519 · Comptes de prova amb data de fi (supabase/aco_proves_v878519.sql) ─────────────────────────────────────────────────
+// Un compte «prova-» comença la prova en entrar (dies i lectures de sèrie: 15 i 100). cloudSync en demana l'estat en arrencar
+// (window.__acoProva878519) i, si s'ha acabat, main.jsx ensenya ProvaAcabada en lloc de l'app. L'Héctor ho gestiona a Ajustos › Comptes de prova.
+function useProva878519(){const[p,setP]=useState(()=>window.__acoProva878519||null);useEffect(()=>{const f=()=>setP(window.__acoProva878519||null);window.addEventListener("aco-prova-878519",f);return()=>window.removeEventListener("aco-prova-878519",f)},[]);return p}
+function ProvaDies878519(){const p=useProva878519();if(!p?.prova||p.acabada)return null;const n=Math.max(0,+p.queden||0);
+  return <div className={"prova-dies-v878519"+(n<=3?" poc":"")} role="status"><CalendarCheck size={18} aria-hidden="true"/><span><b>{t("Prova gratuïta")}</b> · {n===1?t("queda 1 dia"):t("queden {n} dies",{n})}</span>{p.fins?<small>{t("fins al {d}",{d:fmtAppDate8748(p.fins)})}</small>:null}</div>}
+const suma878519=(d,n)=>{const x=new Date(String(d).slice(0,10)+"T12:00:00");x.setDate(x.getDate()+n);return isoDay878255(x)};
+function ProvesAjustos878519(){
+  const pr=window.__acoCloud?.proves;
+  const[st,setSt]=useState({c:null,l:null,falta:false,err:""});
+  const[cfg,setCfg]=useState(null);
+  const[lec,setLec]=useState({});
+  const[msg,setMsg]=useState("");
+  const avui=isoDay878255(new Date());
+  async function carrega(){if(!pr)return;try{const[c,l]=await Promise.all([pr.config(),pr.llista()]);setSt({c,l:Array.isArray(l)?l:[],falta:false,err:""});setCfg(x=>x||{dies:c?.dies??15,lectures:c?.lectures??100,contacte:c?.contacte||""})}
+    catch(e){const cod=String(e?.body?.code||"");setSt({c:null,l:null,falta:e?.status===404||/^PGRST20[25]$/.test(cod),err:String(e?.message||e)})}}
+  useEffect(()=>{carrega()},[]);
+  if(!pr)return <p className="buit">{t("Cal estar connectat al núvol.")}</p>;
+  if(st.falta)return <p className="err">{t("Falta executar supabase/aco_proves_v878519.sql a Supabase.")}</p>;
+  if(st.err)return <p className="err">{st.err}</p>;
+  if(!st.l)return <p className="buit">{t("Carregant…")}</p>;
+  const dies=Math.max(1,+(st.c?.dies||15));
+  async function fes(f,ok){setMsg("");try{const r=await f();if(r&&r.ok===false){setMsg(r.error==="usuari"?t("Aquest usuari no existeix a Supabase."):t("No s’ha pogut fer."));return}setMsg(ok);await carrega()}catch(e){setMsg(String(e?.message||e))}}
+  const desaCfg=()=>fes(()=>pr.desaConfig({dies:Math.min(120,Math.max(1,Math.round(+cfg.dies||15))),lectures:Math.min(5000,Math.max(0,Math.round(+cfg.lectures||0))),contacte:String(cfg.contacte||"").trim()}),t("Desat"));
+  return <div className="proves-v878519">
+    <div className="cfg">
+      <label><span>{t("Dies de prova")}</span><input type="number" min="1" max="120" value={cfg?.dies??""} onChange={e=>setCfg(x=>({...x,dies:e.target.value}))}/></label>
+      <label><span>{t("Lectures d’IA al mes")}</span><input type="number" min="0" max="5000" value={cfg?.lectures??""} onChange={e=>setCfg(x=>({...x,lectures:e.target.value}))}/></label>
+      <label className="c"><span>{t("Contacte quan s’acaba la prova")}</span><input value={cfg?.contacte||""} placeholder={t("Telèfon o correu")} onChange={e=>setCfg(x=>({...x,contacte:e.target.value}))}/></label>
+      <button type="button" className="primary" onClick={desaCfg}>{t("Desar")}</button>
+    </div>
+    {msg&&<p className="buit" role="status">{msg}</p>}
+    {!st.l.length?<p className="buit">{t("Encara no hi ha cap compte de prova.")}</p>:<div className="llista">{st.l.map(x=>{
+      const u=String(x.email||"").replace(/@usuaris\.controlobres\.app$/,"");const q=x.queden==null?null:+x.queden;
+      const [cl,et]=x.client?["client",t("Client")]:!x.fins?["nou",t("Sense entrar")]:q<=0?["acabada",t("Acabada")]:[q<=3?"poc":"",q===1?t("Queda 1 dia"):t("Queden {n} dies",{n:q})];
+      const info=[x.fins&&!x.client?t("Fins al {d}",{d:fmtAppDate8748(String(x.fins).slice(0,10))}):"",x.darrera?t("Darrera entrada: {d}",{d:fmtAppDate8748(String(x.darrera).slice(0,10))}):t("Encara no ha entrat"),x.limit_mes!=null?t("IA: {n} de {m} lectures",{n:x.lectures||0,m:x.limit_mes}):""].filter(Boolean).join(" · ");
+      const base=x.fins&&String(x.fins).slice(0,10)>=avui?String(x.fins).slice(0,10):suma878519(avui,-1);
+      return <div key={x.email} className="pv" data-u={u}><span className="nm"><b>{u}</b><small>{info}</small></span><em className={cl}>{et}</em>
+        {!x.client&&<div className="acc">
+          {x.fins?<button type="button" className="secondary small" onClick={()=>fes(()=>pr.posa(x.email,suma878519(base,dies)),t("Allargada fins al {d}",{d:fmtAppDate8748(suma878519(base,dies))}))}>{t("Allargar {n} dies",{n:dies})}</button>
+            :<button type="button" className="secondary small" onClick={()=>fes(()=>pr.posa(x.email,suma878519(avui,dies-1)),t("Començada"))}>{t("Començar avui")}</button>}
+          {x.fins&&q>0&&<button type="button" className="secondary small" onClick={()=>{if(confirm(t("Tancar ara la prova de {u}? Les dades no s’esborren.",{u})))fes(()=>pr.posa(x.email,suma878519(avui,-1)),t("Tancada"))}}>{t("Tancar ara")}</button>}
+          <button type="button" className="secondary small" onClick={()=>{if(confirm(t("Passar {u} a client? Ja no caducarà i tindrà les lectures del seu perfil.",{u})))fes(()=>pr.client(x.email),t("Ja és client"))}}>{t("Passar a client")}</button>
+          <input type="number" min="0" max="5000" value={lec[x.email]??(x.limit_mes??"")} onChange={e=>setLec(v=>({...v,[x.email]:e.target.value}))} aria-label={t("Lectures d’IA al mes")}/>
+          <button type="button" className="secondary small" disabled={lec[x.email]==null} onClick={()=>fes(()=>pr.lectures(x.email,Math.round(+lec[x.email]||0)),t("Lectures desades"))}>{t("Desar lectures")}</button>
+        </div>}
+      </div>})}</div>}
+  </div>;
+}
 function PerfilModuls878326(){
   const emp=typeof window!=="undefined"?window.__acoEmpresa:null;
   const[ia,setIa]=useState(null);
@@ -1876,6 +1925,7 @@ function PerfilModuls878326(){
   const MODS=[["tecnic","Tècnic","Expedients, actes, honoraris, cèdules, certificats i inspeccions"],["obra","Obra","Pressupostos, certificacions, facturació d’obra, planning i preus"],["empresa","Empresa","Despeses de totes les obres, hores de l’equip i rendiment"]];
   function canvia(k){if(!emp||k===perfil)return;if(!confirm(t("Canviar el perfil a «{p}»? L’app es tornarà a obrir amb els menús d’aquest perfil. Les dades no canvien.",{p:t(PERFILS878326[k].nom)})))return;lsSet8779("aco_empresa_v878259",JSON.stringify({...info,perfil:k,perfilAt:new Date().toISOString()}));try{window.__acoStore?.flush?.()}catch{}setTimeout(()=>location.reload(),300)}
   return <Card title={t("Perfil i mòduls")} className="perfil-moduls-v878326">
+    <ProvaDies878519/>
     <p className="actual"><span>{t("Perfil d’aquest compte")}</span><b>{emp?(perfil?t(PERFILS878326[perfil].nom):t("Sense triar")):t("Compte principal · tots els mòduls")}</b></p>
     {ia&&ia.limit>0&&!esTreballador878326()&&<p className="actual lectures-v878469"><span>{t("Lectures amb IA aquest mes")}</span><b>{t("{n} de {m}",{n:ia.usat,m:ia.limit})}</b></p>}
     {!esTreballador878326()&&<div className="mods">{MODS.map(([k,n,d])=><div key={k} className={m[k]?"on":"off"}><b>{t(n)}</b><span>{t(d)}</span><em>{m[k]?t("Inclòs"):t("No inclòs")}</em></div>)}</div>}
@@ -8311,6 +8361,7 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
   </div>;
   const R=({k,ic:Ic,tit,sub,num,cls="",on})=><button type="button" className={"raj-v878484 "+cls+(obert===k?" on":"")} aria-expanded={k==="pend"?obert==="pend":undefined} onClick={on}><span className="top"><span className="ico" aria-hidden="true"><Ic size={24}/></span>{num!=null&&num!==""?<span className={"num"+(typeof num==="string"?" txt":"")}>{num}</span>:null}</span><span className="tt"><b>{t(tit)}</b>{sub?<small>{t(sub)}</small>:null}</span></button>;
   return <div className="inici-menu-v878484">
+    <ProvaDies878519/>
     <div className="hola"><small>{todayLabel}</small><h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1></div>
     <div className="graella">{(()=>{
       const ob=diuObra878326(),emp=ambEmpresa878338(),nEnc=nEncarrecs878508(obres,odata);
@@ -20304,7 +20355,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.518",
+    app_version:"87.519",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -20504,7 +20555,7 @@ const ajRef878366=useRef(null);
 useEffect(()=>{const el=ajRef878366.current;if(!el)return;const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;el.querySelectorAll("details.ajustos-grup-v878354[open]").forEach(o=>{if(o!==d)o.open=false});const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};el.addEventListener("click",h,true);return()=>el.removeEventListener("click",h,true)},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
+const IC438={proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
 const bloc878366=(k,tit,cont)=><details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366" data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
 return <div className="stack ajustos-v878366" ref={ajRef878366}>
@@ -20520,6 +20571,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {(!window.__acoEmpresa||/^demo-/.test(String(window.__acoEmpresa?.username||"")))&&bloc878366("aspecte",t("Aspecte"),<AspecteAjustos878400/>)}
 {role878366==="admin"&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
 {bloc878366("usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>)}
+{!window.__acoEmpresa&&!!window.__acoCloud?.proves&&bloc878366("proves",t("Comptes de prova"),<ProvesAjustos878519/>)}
 {admin&&<details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 copies-v878354" data-k="copies"><summary>{icAj438("copies")}<span className="t"><b>{t("Còpies i núvol")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
 {!window.__acoEmpresa&&<EspaiNuvol878263/>}
 <VersionsGuardades878266/>
@@ -23197,9 +23249,10 @@ function omplenaDemoSiCal878328(){
 }
 function EmpresaSetup878259({onDone}){
   const emp=(typeof window!=="undefined"&&window.__acoEmpresa)||{};
-  const demo=/^demo[-_]/i.test(String(emp.username||""));
+  const demo=/^(demo|prova)[-_]/i.test(String(emp.username||""));
+  const prova519=/^prova[-_]/i.test(String(emp.username||""));
   const p0=perfilDemo878326(emp.username)||"constructor";
-  const nice=demo?NOMS_DEMO878328[p0]:String(emp.username||"").replace(/^\w/,c=>c.toUpperCase());
+  const nice=prova519?"":demo?NOMS_DEMO878328[p0]:String(emp.username||"").replace(/^\w/,c=>c.toUpperCase());
   const[f,setF]=useState({nom:nice,fiscal:"",perfil:p0,exemple:demo});
   const[omplint,setOmplint]=useState(false);
   function save(){

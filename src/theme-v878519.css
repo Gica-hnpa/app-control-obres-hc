@@ -1,0 +1,39 @@
+/* V87.519 · Comptes de prova amb data de fi: la pantalla de fi, els dies que queden i «Comptes de prova» d'Ajustos (només l'Héctor). */
+html body .prova-acabada-v878519{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px));background:#EEF3F9}
+html body .prova-acabada-v878519 .caixa{width:min(440px,100%);background:#fff;border:1.5px solid #8FA0B3;border-radius:18px;box-shadow:0 1px 2px rgba(15,23,42,.12),0 14px 32px -12px rgba(15,23,42,.35);padding:28px 24px 24px;display:flex;flex-direction:column;gap:12px;text-align:center}
+html body .prova-acabada-v878519 .marca{align-self:center;width:52px;height:52px;border-radius:14px;background:#1D4ED8;color:#fff;font-weight:800;font-size:18px;display:grid;place-items:center}
+html body .prova-acabada-v878519 h1{margin:4px 0 0;font-size:22px;color:#0B1F4B}
+html body .prova-acabada-v878519 p{margin:0;color:var(--co-ink-2,#334155);font-size:15px;line-height:1.45}
+html body .prova-acabada-v878519 .contacte{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:12px;background:#EFF6FF;border:1px solid #BFDBFE;user-select:text}
+html body .prova-acabada-v878519 .contacte small{color:#1D4ED8;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+html body .prova-acabada-v878519 .contacte b{font-size:17px;color:#0B1F4B;overflow-wrap:anywhere}
+html body .prova-acabada-v878519 button.primary{margin-top:6px;min-height:46px;border:0;border-radius:12px;background:#1D4ED8;color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+
+/* els dies que queden (Inici i Ajustos › Perfil i mòduls) */
+html body .prova-dies-v878519{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#EFF6FF;border:1.5px solid #BFDBFE;color:#0B1F4B;font-size:14.5px}
+html body .prova-dies-v878519 svg{flex:none;color:#1D4ED8}
+html body .prova-dies-v878519 b{font-weight:800}
+html body .prova-dies-v878519 small{margin-left:auto;color:var(--co-ink-3,#5F7075);font-size:13px;white-space:nowrap}
+html body .prova-dies-v878519.poc{background:#FFF7ED;border-color:#FDBA74}
+html body .prova-dies-v878519.poc svg{color:#C2410C}
+
+/* Ajustos › Comptes de prova */
+html body .proves-v878519{display:flex;flex-direction:column;gap:12px}
+html body .proves-v878519 .cfg{display:grid;grid-template-columns:repeat(2,minmax(0,140px)) minmax(0,1fr) auto;gap:10px;align-items:end}
+html body .proves-v878519 .cfg label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--co-ink-2,#334155);min-width:0}
+html body .proves-v878519 .cfg input{min-width:0}
+@media (max-width:700px){html body .proves-v878519 .cfg{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}html body .proves-v878519 .cfg label.c,html body .proves-v878519 .cfg button{grid-column:1/-1}}
+html body .proves-v878519 .llista{display:flex;flex-direction:column;gap:8px}
+html body .proves-v878519 .pv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:10px 12px;background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14)}
+html body .proves-v878519 .pv .nm{display:flex;flex-direction:column;min-width:0}
+html body .proves-v878519 .pv .nm b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .proves-v878519 .pv .nm small{font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .proves-v878519 .pv em{font-style:normal;font-weight:700;font-size:12.5px;padding:3px 9px;border-radius:999px;white-space:nowrap;background:#DCFCE7;color:#15803D}
+html body .proves-v878519 .pv em.poc{background:#FFEDD5;color:#C2410C}
+html body .proves-v878519 .pv em.acabada{background:#FEE2E2;color:#B91C1C}
+html body .proves-v878519 .pv em.client{background:#DBEAFE;color:#1D4ED8}
+html body .proves-v878519 .pv em.nou{background:#F1F5F9;color:#475569}
+html body .proves-v878519 .pv .acc{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+html body .proves-v878519 .pv .acc input{width:90px;min-width:0}
+html body .proves-v878519 .buit,html body .proves-v878519 .err{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .proves-v878519 .err{color:#B91C1C}
