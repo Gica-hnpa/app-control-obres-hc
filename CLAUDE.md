@@ -3237,7 +3237,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.516 a Render):**
+**Estat (publicada la V87.517 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -3536,6 +3536,16 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
       Els PDF del registre són funcions comunes (`pdfMesFitx878516`, `pdfAnyFitx878516`, `resumMesFitx878516`, `docFitx878516`).
     - Certificacions al mòbil: «Llistat» (V87.501) passa a dins de la targeta (`llistat-m-v878516`); a la línia, el títol quedava a sota de l'import.
     - Prova: `v516test.mjs` (23). Adaptades `fitxatge357test` i `v487test` (el registre i les correccions, des de la fitxa).
+  - **V87.517 · On van les hores i els llistats** ():
+    - **Hores per obra** (): a Personal, una targeta plegada a sota de «Setmana de tothom», i a la fitxa de cada treballador (només
+      les seves). Setmana · Mes · Any (de la setmana triada) i, a Personal, «Tots junts» o «Per treballador». Una barra repartida per obres (cada obra el seu
+      color, , per ordre alfabètic entre les que surten; de la vuitena en avall, «Altres» en gris) i la llista amb les hores i el %.
+    - **Llistats** (, a dalt a la dreta del Control horari, ): «Hores a les obres» (dia, treballador, obra, hores,
+      cost, validat; categoria, origen i mes, opcionals), «Registre de jornada» (els fitxatges dels últims 24 mesos: entrada, sortida, fitxat, a les obres,
+      diferència, correccions, validat) i «Vacances, baixes i permisos». Tots amb  (dates, any, treballador, obra, mes… i Excel, PDF,
+      imprimir).  admet  (: el total en hores).
+    - Les rajoles dels treballadors fan 310 px com a mínim (el nom es tallava).
+    - Prova:  (15).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3734,7 +3744,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.516 a Render):**
+**Estat (publicada la V87.517 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

@@ -39,7 +39,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.516";
+const APP_VERSION878264="87.517";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -19076,7 +19076,7 @@ function PartHores878340({obres=[],odata={},obraFixa=null,nomesW=null,diaInicial
         <section className="treb-raj-v878516" aria-label={t("Treballadors")}>{setmana.map(({w,h,c})=>{const ea=estatAbs878515(w.id,avui473);const hd=dies473.filter(x=>x.rs.some(r=>r.treballadorId===w.id)).length;const vd=dies473.filter(x=>x.rs.some(r=>r.treballadorId===w.id)&&(val516[w.id]||{})[x.k]).length;
           return <button key={w.id} type="button" className="raj-w-v878516" onClick={()=>setFitxa516({w,dia})}><span className="av" aria-hidden="true">{inicials878516(w.nom)}</span><span className="tt"><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></span><span className="h"><b>{fh878340(h)}</b>{hd>0?<small className={vd===hd?"vd tot":vd?"vd":""}>{vd===hd?<><CircleCheck size={13} aria-hidden="true"/> {t("Validada")}</>:t("{n} de {m} validats",{n:vd,m:hd})}</small>:c>0?<small>{money(c)}</small>:null}</span>{ea&&<em className={"est-w-v878516 a-"+ea.a.tipus}>{ea.txt}</em>}<ChevronRight size={18} className="chev" aria-hidden="true"/></button>})}</section>
         <CardOPlega878369 className="setm-card-v878516" icona={CalendarRange} title={t("Setmana de tothom")} xifra={fh878340(totS)} obertPC>{matriu}</CardOPlega878369>
-        {/*V87.517*/}
+        <CardOPlega878369 className="hpo-card-v878517" icona={BarChart3} title={t("Hores per obra")}><HoresPerObra878517 files={totes} obres={obres} treb={treb} dataRef={dia}/></CardOPlega878369>
       </>}
       {fitxa516&&<FitxaTreballador878516 w={fitxa516.w} obres={obres} odata={odata} diaInicial={fitxa516.dia} onTanca={()=>setFitxa516(null)}/>}
     </div>;
@@ -19384,6 +19384,7 @@ function FitxaTreballador878516({w,obres=[],odata={},onTanca,diaInicial=null}){
           <ChevronRight size={18} className="chev" aria-hidden="true"/></button></li>)}</ul>
         <div className="peu"><span>{t("Total")}: <b>{fh878340(hS)}</b></span>{perValidar.length>0?<button type="button" className="primary" onClick={()=>valida(perValidar)}><CircleCheck size={16} aria-hidden="true"/> {perValidar.length===1?t("Validar 1 dia"):t("Validar {n} dies",{n:perValidar.length})}</button>:dies.some(x=>x.v)?<span className="ok"><CircleCheck size={16} aria-hidden="true"/> {t("Setmana validada")}</span>:null}</div>
       </section>
+      <details className="card bloc-v878426 hpo-w-v878517"><summary><BarChart3 size={18} aria-hidden="true"/><span className="t"><b>{t("Hores per obra")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><HoresPerObra878517 files={totes} obres={obres} treb={[w]} dataRef={ref} wid={w.id}/></div><Recollir878432/></details>
       <details className="card bloc-v878426 abs-w-bloc-v878516"><summary><Palmtree size={18} aria-hidden="true"/><span className="t"><b>{t("Vacances, baixes i permisos")}</b></span><span className="xifra">{vac.tot?t("{n} de {m} d",{n:vac.fetes,m:vac.tot}):t("{n} d",{n:vac.fetes})}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
         <div className="acc"><button type="button" className="primary" onClick={()=>setFormAbs({wid:w.id})}><Plus size={16} aria-hidden="true"/> {t("Afegir")}</button></div>
         <LlistaAbs878515 treb={treb.length?treb:[w]} any={y} c={c} wid={w.id} onEdita={a=>setFormAbs(a)}/></div><Recollir878432/></details>
@@ -19419,6 +19420,80 @@ function FitxaTreballador878516({w,obres=[],odata={},onTanca,diaInicial=null}){
     {formAbs&&<FormAbs878515 inicial={formAbs} treb={treb.length?treb:[w]} close={()=>setFormAbs(null)} onDesa={a=>{desaAbs878515(a);setFormAbs(null)}} onTreu={a=>{if(treuAbs878515(a))setFormAbs(null)}}/>}
   </PantallaSencera878489>;
 }
+// ── V87.517 · Control horari: on van les hores i els llistats ─────────────────────────────────────────────────────────────────────────
+// L'Héctor (6/11/2026): «una part final gràfica que digui en colors en quines obres s'hi han dedicat més hores, no sé si en total dels
+// treballadors o pot haver una gràfica segons treballador»; «com a opcions generals poder fer llistats de tots els tipus que es necessitin
+// segons els filtres marcats (tots els treballadors, tota la setmana, un treballador, un dia, un mes, tot l'any…)».
+// La gràfica: una barra repartida per obres (cada obra el seu color, per ordre alfabètic entre les que surten; de la vuitena en avall,
+// «Altres») i, a sota, la llista amb les hores i el %; «Per treballador» fa una barra per persona amb els mateixos colors.
+function HoresPerObra878517({files=[],obres=[],treb=[],dataRef,wid=null}){
+  const[per,setPer]=useState("setmana");const[mode,setMode]=useState("tots");
+  const d=new Date((dataRef||isoDay878255(new Date()))+"T12:00:00");
+  const d0=new Date(d);d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const d6=new Date(d0);d6.setDate(d6.getDate()+6);
+  const ym=isoDay878255(d).slice(0,7),y=ym.slice(0,4);
+  const nomM=d.toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
+  const P={setmana:[isoDay878255(d0),isoDay878255(d6),t("Setmana {n}",{n:setmanaIso878473(d0)})],mes:[ym+"-01",ym+"-31",nomM.charAt(0).toUpperCase()+nomM.slice(1)],any:[y+"-01-01",y+"-12-31",y]};
+  const [des,fins]=P[per];
+  const rs=files.filter(r=>r.data>=des&&r.data<=fins&&(!wid||r.treballadorId===wid)&&(+r.hores||parseNum8770(r.hores)));
+  const hR=r=>parseNum8770(r.hores)||0;
+  const nomObra=id=>(obres||[]).find(o=>o.id===id)?.nom||t("Sense obra");
+  const perObra=new Map();rs.forEach(r=>perObra.set(r.obraId||"",(perObra.get(r.obraId||"")||0)+hR(r)));
+  const tot=[...perObra.values()].reduce((s,h)=>s+h,0);
+  const ordenades=[...perObra.entries()].sort((a,b)=>b[1]-a[1]);
+  const top=ordenades.slice(0,ordenades.length>8?7:8).map(x=>x[0]);const altres=ordenades.length>8;
+  const colorDe=new Map([...top].sort((a,b)=>nomObra(a).localeCompare(nomObra(b),"ca",{sensitivity:"base"})).map((id,i)=>[id,SERIES878343[i%SERIES878343.length]]));
+  const ALT="#94A3B8";const col=id=>colorDe.get(id)||ALT;const clau=id=>top.includes(id)?id:"__altres";
+  const segs=m=>{const g=new Map();m.forEach((h,id)=>{const k=clau(id);g.set(k,(g.get(k)||0)+h)});return [...g.entries()].sort((a,b)=>b[1]-a[1])};
+  const pct=h=>tot>0?Math.round(h/tot*100):0;
+  const nomK=k=>k==="__altres"?t("Altres"):nomObra(k);
+  const barra=(m,tt,max)=>{const ss=segs(m);const sum=ss.reduce((s,x)=>s+x[1],0);return <div className="barra-v878517" style={max?{width:Math.max(4,sum/max*100)+"%"}:undefined} role="img" aria-label={`${tt}: ${ss.map(([k,h])=>`${nomK(k)} ${fh878340(h)}`).join(", ")}`}>{ss.map(([k,h])=><span key={k} style={{flexGrow:h,background:k==="__altres"?ALT:col(k)}} title={`${nomK(k)} · ${fh878340(h)}`}/>)}</div>};
+  const ws=mode==="treb"&&!wid?(treb||[]).map(w=>{const m=new Map();rs.filter(r=>r.treballadorId===w.id).forEach(r=>m.set(r.obraId||"",(m.get(r.obraId||"")||0)+hR(r)));return {w,m,h:[...m.values()].reduce((s,x)=>s+x,0)}}).filter(x=>x.h>0).sort((a,b)=>b.h-a.h):[];
+  const maxW=Math.max(0,...ws.map(x=>x.h));
+  return <div className="hpo-v878517">
+    <div className="ctl">
+      <div className="seg-v878515" role="group" aria-label={t("Període")}>{[["setmana","Setmana"],["mes","Mes"],["any","Any"]].map(([k,l])=><button key={k} type="button" aria-pressed={per===k} onClick={()=>setPer(k)}>{t(l)}</button>)}</div>
+      {!wid&&<div className="seg-v878515" role="group" aria-label={t("Vista")}><button type="button" aria-pressed={mode==="tots"} onClick={()=>setMode("tots")}>{t("Tots junts")}</button><button type="button" aria-pressed={mode==="treb"} onClick={()=>setMode("treb")}>{t("Per treballador")}</button></div>}
+      <span className="per">{P[per][2]} · <b>{fh878340(tot)}</b></span>
+    </div>
+    {tot<=0?<p className="buit">{t("Encara no hi ha hores en aquest període.")}</p>:<>
+      {mode==="treb"&&!wid?<div className="per-w-v878517">{ws.map(x=><div key={x.w.id} className="fw"><span className="nm">{x.w.nom}</span>{barra(x.m,x.w.nom,maxW)}<b>{fh878340(x.h)}</b></div>)}</div>:barra(perObra,P[per][2],0)}
+      <ul className="lleg-v878517">{segs(perObra).map(([k,h])=><li key={k}><i style={{background:k==="__altres"?ALT:col(k)}} aria-hidden="true"/><span className="n">{nomK(k)}</span><b>{fh878340(h)}</b><span className="p">{pct(h)} %</span></li>)}</ul>
+    </>}
+  </div>;
+}
+// Llistats del control horari: les hores a les obres, el registre de jornada i les absències, amb els filtres del llistat (dates, treballador…)
+function LlistatsCH878517({obres=[]}){
+  const[obert,setObert]=useState("");
+  const tancar=()=>setObert("");
+  const treb=llegeixTreballadors878339();const nomW=id=>treb.find(w=>w.id===id)?.nom||"";
+  const ofici=id=>i18nT(treb.find(w=>w.id===id)?.ofici||"");
+  const nomObra=id=>(obres||[]).find(o=>o.id===id)?.nom||"";
+  const vals=validats878516();const siVal=(wid,d)=>(vals[wid]||{})[d]?t("Sí"):"";
+  let ll=null;
+  if(obert==="hores"){const files=horesTotes878516(obres).map(r=>{const w=treb.find(x=>x.id===r.treballadorId);const h=parseNum8770(r.hores)||0;return {_k:r.id,data:r.data,mes:String(r.data||"").slice(0,7),treballador:r.treballadorNom||w?.nom||"",categoria:i18nT(w?.ofici||""),obra:nomObra(r.obraId),hores:h,cost:Math.round(h*costHoraA878340(r.obraId,w,r)*100)/100,origen:r.parte?t("Parte"):t("Hores"),validat:siVal(r.treballadorId,r.data)}});
+    ll=<Llistat878501 titol={t("Hores a les obres")} nom={t("hores-obres")} close={tancar} files={files} dates={[{k:"data",l:t("Dia")}]}
+      cols={[{k:"data",l:t("Dia"),tipus:"data"},{k:"treballador",l:t("Treballador")},{k:"categoria",l:t("Categoria"),def:false},{k:"obra",l:t("Obra")},{k:"hores",l:t("Hores"),tipus:"hores",suma:true},{k:"cost",l:t("Cost"),tipus:"diners",suma:true},{k:"origen",l:t("Origen"),def:false},{k:"validat",l:t("Validat")},{k:"mes",l:t("Mes"),def:false}]}
+      filtres={[{k:"treballador",l:t("Treballador")},{k:"obra",l:t("Obra")},{k:"categoria",l:t("Categoria")},{k:"mes",l:t("Mes")},{k:"validat",l:t("Validat")}]}/>}
+  if(obert==="jornada"){const ara=new Date();const yms=Array.from({length:24},(_,i)=>{const d=new Date(ara.getFullYear(),ara.getMonth()-i,15);return isoDay878255(d).slice(0,7)});
+    const hO=horesTotes878516(obres);const files=[];
+    yms.forEach(ym=>{const l=llegeixFitx878357(ym);[...new Set(l.map(r=>r.wid))].forEach(wid=>resumMesFitx878516(wid,ym).forEach(x=>{const ho=hO.filter(r=>r.treballadorId===wid&&r.data===x.dia).reduce((s,r)=>s+(parseNum8770(r.hores)||0),0);
+      files.push({_k:wid+x.dia,data:x.dia,mes:ym,treballador:nomW(wid)||l.find(r=>r.wid===wid)?.nom||"",entrada:x.ent,sortida:x.sor,pauses:x.pt,hores:Math.round(x.h*100)/100,obres:Math.round(ho*100)/100,diferencia:Math.round((x.h-ho)*100)/100,correccions:x.corr.join(" · "),validat:siVal(wid,x.dia)})}))});
+    ll=<Llistat878501 titol={t("Registre de jornada")} nom={t("registre-jornada")} close={tancar} files={files} dates={[{k:"data",l:t("Dia")}]}
+      cols={[{k:"data",l:t("Dia"),tipus:"data"},{k:"treballador",l:t("Treballador")},{k:"entrada",l:t("Entrada")},{k:"sortida",l:t("Sortida")},{k:"pauses",l:t("Pauses"),def:false},{k:"hores",l:t("Fitxat"),tipus:"hores",suma:true},{k:"obres",l:t("A les obres"),tipus:"hores",suma:true},{k:"diferencia",l:t("Diferència"),tipus:"hores",def:false},{k:"correccions",l:t("Correccions"),def:false},{k:"validat",l:t("Validat")},{k:"mes",l:t("Mes"),def:false}]}
+      filtres={[{k:"treballador",l:t("Treballador")},{k:"mes",l:t("Mes")},{k:"validat",l:t("Validat")}]}/>}
+  if(obert==="abs"){const c=calendariEmpresa878393();const fm=festMap878515(c);const files=absencies878515(c).map(a=>({_k:a.id,des:a.des,fins:a.tipus==="baixa"&&!a.fins?"":finsAbs878515(a),treballador:a.nom||nomW(a.wid),categoria:ofici(a.wid),tipus:etAbs878515(a.tipus),dies:a.tipus==="baixa"&&!a.fins?"":diesLab878515(a.des,finsAbs878515(a),fm),nota:a.nota||""}));
+    ll=<Llistat878501 titol={t("Vacances, baixes i permisos")} nom={t("absencies")} close={tancar} files={files} dates={[{k:"des",l:t("Des de")}]}
+      cols={[{k:"des",l:t("Des de"),tipus:"data"},{k:"fins",l:t("Fins a"),tipus:"data"},{k:"treballador",l:t("Treballador")},{k:"categoria",l:t("Categoria"),def:false},{k:"tipus",l:t("Tipus")},{k:"dies",l:t("Dies laborables"),tipus:"num",suma:true},{k:"nota",l:t("Nota")}]}
+      filtres={[{k:"treballador",l:t("Treballador")},{k:"tipus",l:t("Tipus")}]}/>}
+  return <>
+    <ActionMenu87213 label={<><ListChecks size={16} aria-hidden="true"/> {t("Llistats")}</>} titol={t("Llistats")} className="llistats-ch-v878517">
+      <button type="button" onClick={()=>setObert("hores")}><HardHat size={15} aria-hidden="true"/> {t("Hores a les obres")}</button>
+      <button type="button" onClick={()=>setObert("jornada")}><Fingerprint size={15} aria-hidden="true"/> {t("Registre de jornada")}</button>
+      <button type="button" onClick={()=>setObert("abs")}><Palmtree size={15} aria-hidden="true"/> {t("Vacances, baixes i permisos")}</button>
+    </ActionMenu87213>
+    {ll}
+  </>;
+}
 // Hores (menú) de l'empresa: el personal, el fitxatge i, a la gestió total, les hores pròpies (d'honoraris)
 // V87.515 · «Control horari» (l'Héctor, 6/11/2026: «millorem tot això dins les hores o Control horari, potser seria el nom més adient»): als
 // comptes amb el mòdul Empresa el menú es diu així, i a dalt les pestanyes són rajoles que ja diuen com està cadascuna (les hores d'aquesta
@@ -19440,6 +19515,7 @@ function HoresEmpresa878340({obres,clients,odata,openObra,updateStatus,senseMeve
     ...(!senseMeves?[["meves",UserRound,"Les meves hores",t("D’honoraris")]]:[])];
   return <div className="hores-emp-v878340 ch-v878515">
     <div className="fe-vistes ch-rajoles-v878515" role="group" aria-label={t(etHores878515())}>{TILES.map(([k,Ic,l,sub])=><button type="button" key={k} aria-pressed={v===k} onClick={()=>setV(k)} data-sub={sub||undefined}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{t(l)}</b></button>)}</div>
+    <div className="ch-eines-v878517"><LlistatsCH878517 obres={obres}/></div>
     {v==="personal"?<PartHores878340 obres={obres} odata={odata}/>:v==="fitxatge"?<Fitxatge878357 obres={obres} odata={odata}/>:v==="calendari"?<CalendariEmpresa878393 obres={obres}/>:<GestioTemps878255 updateStatus={updateStatus} obres={obres} clients={clients} odata={odata} openObra={openObra}/>}
   </div>;
 }
@@ -20218,7 +20294,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.516",
+    app_version:"87.517",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -22085,7 +22161,8 @@ function ExcelDocumentPreview878245({doc}){
 // (el més gran possible): a dalt els filtres (la data, des de i fins a, l'any, els desplegables, el número i el cercador), els camps que
 // surten i l'ordre; a sota, el llistat amb els totals; a baix, Excel · Desar el PDF · Imprimir.
 // files: [{…}] amb les claus de cols; cols: [{k, l, tipus:"data"|"diners"|"num"|"text"|"pct", suma, def}]; dates: [{k,l}]; filtres: [{k,l}].
-function valLl878501(c,v){if(v==null||v==="")return "";if(c.tipus==="data")return fmtAppDate8748(v);if(c.tipus==="diners")return money(+v||0);if(c.tipus==="pct")return isFinite(+v)?pct(+v):"—";if(c.tipus==="num")return String(v);return String(v)}
+function sumLl878517(c,v){return c.tipus==="hores"?fh878340(v):c.tipus==="num"?String(Math.round(v*100)/100).replace(".",","):money(v)}
+function valLl878501(c,v){if(v==null||v==="")return "";if(c.tipus==="hores")return fh878340(+v||0);if(c.tipus==="data")return fmtAppDate8748(v);if(c.tipus==="diners")return money(+v||0);if(c.tipus==="pct")return isFinite(+v)?pct(+v):"—";if(c.tipus==="num")return String(v);return String(v)}
 // V87.505 · els llistats en PDF i per imprimir amb un format net (l'Héctor, 4/11/2026: «els llistats de factures rebudes han de ser un format més
 // maco»): a dalt, el logo, el nom i el NIF de l'empresa i, a la dreta, el títol amb el color de l'empresa, el període i els filtres; la taula
 // amb la capçalera del color, files alternes, números alineats, grups (p. ex. per mesos) amb el subtotal i el total ben marcat. Una cel·la buida,
@@ -22132,12 +22209,12 @@ function Llistat878501({titol,files=[],cols=[],dates=[],filtres=[],close,nom="ll
     if(ambNum&&(numDes||numFins)){const n=nn(r.num);if(numDes&&!(n>=+numDes))return false;if(numFins&&!(n<=+numFins))return false}
     return cercaOk878470(q,cols.map(c=>r[c.k]),d)};
   const colO=cols.find(c=>c.k===ordre.k);
-  const cmp=(a,b)=>{const x=a[ordre.k],y=b[ordre.k];let r=0;if(colO?.tipus==="diners"||colO?.tipus==="num"||colO?.tipus==="pct")r=(+x||0)-(+y||0);else if(colO?.tipus==="data"||dates.some(d=>d.k===ordre.k))r=String(dataIso878470(x)||"").localeCompare(String(dataIso878470(y)||""));else r=String(x??"").localeCompare(String(y??""),"ca",{numeric:true,sensitivity:"base"});return ordre.dir==="asc"?r:-r};
+  const cmp=(a,b)=>{const x=a[ordre.k],y=b[ordre.k];let r=0;if(colO?.tipus==="diners"||colO?.tipus==="num"||colO?.tipus==="pct"||colO?.tipus==="hores")r=(+x||0)-(+y||0);else if(colO?.tipus==="data"||dates.some(d=>d.k===ordre.k))r=String(dataIso878470(x)||"").localeCompare(String(dataIso878470(y)||""));else r=String(x??"").localeCompare(String(y??""),"ca",{numeric:true,sensitivity:"base"});return ordre.dir==="asc"?r:-r};
   const ll=files.filter(ok).sort(cmp);
   const cv=cols.filter(c=>vis.has(c.k));
   const tot=c=>ll.reduce((s,r)=>s+(+r[c.k]||0),0);
   const resumF=[campData&&(des||fins)?`${dates.find(d=>d.k===campData)?.l||""}: ${des?fmtAppDate8748(des):"…"} – ${fins?fmtAppDate8748(fins):"…"}`:"",any?t("Any {a}",{a:any}):"",...filtres.filter(f=>fv[f.k]).map(f=>`${f.l}: ${fv[f.k]}`),numDes||numFins?t("Números {a} – {b}",{a:numDes||"…",b:numFins||"…"}):"",q.trim()?`«${q.trim()}»`:""].filter(Boolean).join(" · ");
-  const html=()=>informeHtml878505({titol,sub:[resumF||t("Sense filtres"),ll.length===1?t("1 línia"):t("{n} línies",{n:ll.length})].join(" · "),horitzontal:cv.length>7,cols:cv.map(c=>({l:c.l,n:["diners","num","pct"].includes(c.tipus)})),files:ll.map(r=>cv.map(c=>{const v=valLl878501(c,r[c.k]);return v==null?"":String(v)})),peu:cv.map((c,i)=>c.suma?money(tot(c)):i===0?t("Total · {n}",{n:ll.length}):"")});
+  const html=()=>informeHtml878505({titol,sub:[resumF||t("Sense filtres"),ll.length===1?t("1 línia"):t("{n} línies",{n:ll.length})].join(" · "),horitzontal:cv.length>7,cols:cv.map(c=>({l:c.l,n:["diners","num","pct","hores"].includes(c.tipus)})),files:ll.map(r=>cv.map(c=>{const v=valLl878501(c,r[c.k]);return v==null?"":String(v)})),peu:cv.map((c,i)=>c.suma?sumLl878517(c,tot(c)):i===0?t("Total · {n}",{n:ll.length}):"")});
   const nomArx=`${nom}${any?"-"+any:""}`;
   async function pdf(){if(!ll.length||ocupat)return;setOcupat(true);
     try{const blob=await htmlAPdf(html(),{titol});const fitx=nomPdf(nomArx);let tactil=false;try{tactil=matchMedia("(hover:none)").matches}catch{}
@@ -22162,9 +22239,9 @@ function Llistat878501({titol,files=[],cols=[],dates=[],filtres=[],close,nom="ll
       <div className="camps">{cols.map(c=><label key={c.k} className={vis.has(c.k)?"on":""}><input type="checkbox" checked={vis.has(c.k)} onChange={()=>setVis(x=>{const n=new Set(x);if(n.has(c.k)){if(n.size>1)n.delete(c.k)}else n.add(c.k);return n})}/>{c.l}</label>)}</div>
       <div className="ordre"><label><span>{t("Ordenar per")}</span><select value={ordre.k} onChange={e=>setOrdre(o=>({...o,k:e.target.value}))}>{cols.map(c=><option key={c.k} value={c.k}>{c.l}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setOrdre(o=>({...o,dir:o.dir==="asc"?"desc":"asc"}))}>{ordre.dir==="asc"?t("Ascendent ▲"):t("Descendent ▼")}</button></div>
     </details>
-    {ll.length===0?<p className="ll-buit-v878501">{t("Cap línia amb aquests filtres.")}</p>:<div className="ll-taula-v878501"><table><thead><tr>{cv.map(c=><th key={c.k} className={["diners","num","pct"].includes(c.tipus)?"n":""}><button type="button" onClick={()=>setOrdre(o=>({k:c.k,dir:o.k===c.k&&o.dir==="asc"?"desc":"asc"}))}>{c.l}{ordre.k===c.k?(ordre.dir==="asc"?" ▲":" ▼"):""}</button></th>)}</tr></thead>
-      <tbody>{ll.map((r,i)=><tr key={r._k||i}>{cv.map(c=><td key={c.k} className={["diners","num","pct"].includes(c.tipus)?"n":""}>{valLl878501(c,r[c.k])}</td>)}</tr>)}</tbody>
-      <tfoot><tr>{cv.map((c,i)=><td key={c.k} className={c.suma?"n":""}>{c.suma?money(tot(c)):i===0?t("Total · {n}",{n:ll.length}):""}</td>)}</tr></tfoot></table></div>}
+    {ll.length===0?<p className="ll-buit-v878501">{t("Cap línia amb aquests filtres.")}</p>:<div className="ll-taula-v878501"><table><thead><tr>{cv.map(c=><th key={c.k} className={["diners","num","pct","hores"].includes(c.tipus)?"n":""}><button type="button" onClick={()=>setOrdre(o=>({k:c.k,dir:o.k===c.k&&o.dir==="asc"?"desc":"asc"}))}>{c.l}{ordre.k===c.k?(ordre.dir==="asc"?" ▲":" ▼"):""}</button></th>)}</tr></thead>
+      <tbody>{ll.map((r,i)=><tr key={r._k||i}>{cv.map(c=><td key={c.k} className={["diners","num","pct","hores"].includes(c.tipus)?"n":""}>{valLl878501(c,r[c.k])}</td>)}</tr>)}</tbody>
+      <tfoot><tr>{cv.map((c,i)=><td key={c.k} className={c.suma?"n":""}>{c.suma?sumLl878517(c,tot(c)):i===0?t("Total · {n}",{n:ll.length}):""}</td>)}</tr></tfoot></table></div>}
   </PantallaSencera878489>;
 }
 function BotonsDoc878412({html,titol,onEnviar,onImprimir,close,extra=null}){

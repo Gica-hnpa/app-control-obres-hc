@@ -1,0 +1,33 @@
+/* V87.517 · Control horari: on van les hores (una barra repartida per obres, de tots o per treballador) i els llistats. */
+html body .hpo-v878517{display:flex;flex-direction:column;gap:12px}
+html body .hpo-v878517 .ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+html body .hpo-v878517 .ctl .per{margin-left:auto;font-size:14px;color:var(--co-ink-2,#334155)}
+@media (max-width:700px){html body .hpo-v878517 .ctl .per{margin-left:0;flex:1 1 100%}}
+html body .barra-v878517{display:flex;gap:2px;height:30px;border-radius:8px;overflow:hidden;background:#fff;min-width:0}
+html body .barra-v878517>span{display:block;min-width:4px;height:100%}
+html body .barra-v878517>span:first-child{border-radius:6px 0 0 6px}
+html body .barra-v878517>span:last-child{border-radius:0 6px 6px 0}
+html body .barra-v878517>span:only-child{border-radius:6px}
+html body .per-w-v878517{display:flex;flex-direction:column;gap:8px}
+html body .per-w-v878517 .fw{display:grid;grid-template-columns:150px minmax(0,1fr) 64px;gap:10px;align-items:center}
+html body .per-w-v878517 .fw .nm{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .per-w-v878517 .fw b{text-align:right;font-size:14px;white-space:nowrap}
+html body .per-w-v878517 .barra-v878517{height:22px}
+@media (max-width:700px){html body .per-w-v878517 .fw{grid-template-columns:minmax(0,1fr) 58px;grid-template-areas:"nm b" "br br";row-gap:4px}html body .per-w-v878517 .fw .nm{grid-area:nm}html body .per-w-v878517 .fw b{grid-area:b}html body .per-w-v878517 .fw .barra-v878517{grid-area:br}}
+html body .lleg-v878517{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+html body .lleg-v878517 li{display:grid;grid-template-columns:14px minmax(0,1fr) auto 48px;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid #E2E8F0;font-size:14px}
+html body .lleg-v878517 li:last-child{border-bottom:0}
+html body .lleg-v878517 i{width:14px;height:14px;border-radius:4px}
+html body .lleg-v878517 .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .lleg-v878517 b{white-space:nowrap}
+html body .lleg-v878517 .p{text-align:right;color:var(--co-ink-3,#5F7075);font-size:13px}
+html body .hpo-v878517 .buit{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .hpo-card-v878517>.cos{padding:12px 14px 14px}
+html body .fitxa-treb-v878516 .hpo-w-v878517>.cos{padding:12px}
+/* el menú «Llistats», a dalt a la dreta */
+html body .ch-eines-v878517{display:flex;justify-content:flex-end;margin:-6px 0 10px}
+html body .ch-eines-v878517 .llistats-ch-v878517>summary{display:inline-flex;align-items:center;gap:6px;min-height:40px}
+html body .ch-eines-v878517 .llistats-ch-v878517 .action-menu-panel-v87213{right:0;left:auto;min-width:260px}
+/* les rajoles dels treballadors, una mica més amples: el nom no es talla al costat de «N de M validats» */
+html body .treb-raj-v878516{grid-template-columns:repeat(auto-fill,minmax(310px,1fr))}
+@media (max-width:700px){html body .treb-raj-v878516{grid-template-columns:minmax(0,1fr)}}
