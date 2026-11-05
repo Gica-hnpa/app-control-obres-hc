@@ -2984,6 +2984,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Fitxa de la partida del pressupost:** «Fora de pressupost» només amb el pressupost tancat (o si la partida ja ho és, per corregir-ho); «No s'executarà
       tota la quantitat» només si ja està marcada (per treure-ho): es marca a la fitxa de la partida de la certificació (`CertPartidaModal87216`), on hi és sempre.
     - Les proves d'abans porten la marca `pressupost-prova-v878509` (la posa l'ajuda de les proves; cap usuari no la té). Prova: `v509test.mjs` (9).
+  - **V87.510 · L'Agenda per a visites i reunions; els avisos automàtics, a Pendent i al Resum** (proposta 1; tanda 8, punt 9):
+    - Les factures sense cobrar ja no fan una cita automàtica «Factura pendent de cobrament» (`invoiceAlerts8776`) a l'Agenda ni a les cites de l'Inici: l'avís
+      de cobrament (V87.496) és a Pendent i al Resum de l'obra, com els altres avisos (certificació del mes, partes per validar, documents que caduquen).
+    - **Agenda de l'obra** (`AgendaExpedient8774`): la targeta es diu **«Visites i reunions»** (abans «Cites i avisos»), amb «Feines pendents» a sota.
+    - **Fora el tipus «Avís» / «Recordatori»** de les cites noves (un recordatori a mà és una feina amb data); les cites que ja ho eren es veuen igual.
+    - Prova: `v510test.mjs` (8). Adaptada `v464test`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3182,7 +3188,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.509 a Render):**
+**Estat (publicada la V87.510 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
