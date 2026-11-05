@@ -1,0 +1,95 @@
+/* V87.521 · Caixa i bancs: rajoles a dalt (Per cobrar · Per pagar · Previsió · Bancs), les llistes per dates i la previsió setmana a setmana */
+
+/* ── Rajoles de dalt (les mateixes que Control horari) ───────────────────────────────────────────────────── */
+html body .caixa-v878521{display:flex;flex-direction:column;gap:12px}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 4px;padding:0;background:none;border:0;border-radius:0;box-shadow:none;overflow:visible;flex-wrap:nowrap}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;row-gap:2px;align-items:center;min-height:74px;padding:12px 14px;background:#fff;border:1.5px solid #8FA0B3;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.08);min-width:0}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button .ico{grid-row:1/3;width:44px;height:44px;border-radius:12px;background:#EAF1FD;color:#1D4ED8;display:grid;place-items:center}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button b{grid-column:2;align-self:end;font-size:16px;font-weight:800;color:var(--co-ink,#152328);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button::after{content:attr(data-sub);grid-column:2;align-self:start;font-size:13px;font-weight:600;color:var(--co-ink-3,#5F7075);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"]{background:#1D4ED8;border-color:#1D4ED8;box-shadow:0 3px 10px rgba(29,78,216,.28)}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"] .ico{background:rgba(255,255,255,.2);color:#fff}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"] b,
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"]::after{color:#fff}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+@media (max-width:900px){
+  html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+}
+@media (max-width:700px){
+  html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button{grid-template-columns:36px minmax(0,1fr);min-height:68px;padding:10px;column-gap:8px}
+  html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button .ico{width:36px;height:36px;border-radius:10px}
+  html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button b{font-size:15px}
+  html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button::after{font-size:12px;white-space:normal;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+}
+
+/* ── Per cobrar i per pagar ─────────────────────────────────────────────────────────────────────────────── */
+html body .caixa-vista-v878521{display:flex;flex-direction:column;gap:10px;min-width:0}
+html body .mov-grup-v878521.vencut>summary .xifra{color:#B91C1C}
+html body .movs-v878521{display:flex;flex-direction:column;gap:8px}
+html body .mov-v878521{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px 10px 14px;background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08);position:relative;overflow:hidden;min-width:0}
+html body .mov-v878521::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#16A34A}
+html body .mov-v878521.warn::before{background:#D97706}
+html body .mov-v878521.bad::before{background:#DC2626}
+html body .mov-v878521:hover{border-color:#2563EB}
+html body .mov-v878521:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+html body .mov-v878521 .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .mov-v878521 .t b{font-size:15px;color:var(--co-ink,#152328);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .mov-v878521 .t small{font-size:13px;color:var(--co-ink-3,#5F7075);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .mov-v878521 .x{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+html body .mov-v878521 .x b{font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--co-ink,#152328)}
+html body .mov-v878521 .x small{font-size:12.5px;white-space:nowrap;color:#15803D;font-weight:600}
+html body .mov-v878521.warn .x small{color:#B45309}
+html body .mov-v878521.bad .x small{color:#B91C1C}
+html body .buit-v878521{margin:0;padding:12px 2px;color:var(--co-ink-3,#5F7075)}
+html body .dies-v878521{display:flex;align-items:center;gap:10px;justify-content:flex-end;font-size:13.5px;color:var(--co-ink-3,#5F7075)}
+html body .dies-v878521 input{width:76px;min-height:36px;padding:4px 8px;border:1px solid #AEBBCA;border-radius:8px;font:inherit;font-size:15px;text-align:center;color:var(--co-ink,#152328);background:#fff}
+
+/* finestra d'un cobrament o un pagament */
+html body .mov-ed-v878521{display:flex;flex-direction:column;gap:14px}
+html body .mov-ed-v878521 .sub{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .mov-ed-v878521 .fila{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+html body .mov-ed-v878521 .fila label{display:flex;flex-direction:column;gap:4px;flex:1 1 180px;min-width:0}
+html body .mov-ed-v878521 .fila label span{font-size:13px;font-weight:700;color:var(--co-ink-2,#334155)}
+html body .mov-ed-v878521 .fila button{min-height:42px;display:inline-flex;align-items:center;gap:6px}
+html body .mov-ed-v878521>.link{align-self:flex-start}
+
+/* ── Previsió ───────────────────────────────────────────────────────────────────────────────────────────── */
+html body .cx-xif-v878521{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+html body .cx-xif-v878521 .x.neg{--c:#DC2626;background:#FEF2F2}
+html body .cx-xif-v878521 .x.neg b{color:#B91C1C}
+html body .cx-xif-v878521 .x.fin{--c:#1D4ED8}
+html body .cx-xif-v878521 .x .link{align-self:flex-start;padding:0;font-size:13px}
+html body .cx-xif-v878521 .x.falta b{color:var(--co-ink-3,#5F7075)}
+@media (max-width:700px){html body .cx-xif-v878521{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}html body .cx-xif-v878521 .x b{font-size:18px}}
+html body .falta-v878521{display:flex;flex-direction:column;gap:10px;padding:14px 16px;background:#FFFBEB;border:1.5px solid #F59E0B;border-radius:14px}
+html body .falta-v878521 .bt{display:flex;flex-wrap:wrap;gap:8px}
+html body .falta-v878521 .bt button{display:inline-flex;align-items:center;gap:6px}
+html body .neg-v878521{display:flex;align-items:center;gap:8px;margin:0;padding:10px 14px;background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:12px;color:#991B1B;font-weight:700}
+html body .neg-v878521 svg{flex:none}
+html body .graf-caixa-v878521{margin:0;padding:12px 12px 6px;background:#fff;border:1.5px solid #8FA0B3;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+html body .graf-caixa-v878521 svg{display:block;width:100%;height:auto;max-width:100%}
+html body .graf-caixa-v878521 rect.pos{fill:#2563EB}
+html body .graf-caixa-v878521 rect.neg{fill:#DC2626}
+html body .graf-caixa-v878521 line.zero{stroke:#94A3B8;stroke-width:1}
+html body .graf-caixa-v878521 text.eix{font-size:12px;fill:var(--co-ink-3,#5F7075)}
+html body .graf-caixa-v878521 text.val{font-size:12.5px;font-weight:700;fill:var(--co-ink-2,#334155);font-variant-numeric:tabular-nums}
+html body .setm-v878521>summary .t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+html body .setm-v878521>summary .t small{font-size:12.5px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .setm-v878521>summary .xifra{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .setm-v878521>summary .xifra.neg{color:#B91C1C}
+html body .its-v878521{display:flex;flex-direction:column;gap:6px}
+html body .it-v878521{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid #E2E8F0;min-width:0}
+html body .it-v878521:last-child{border-bottom:0}
+html body button.it-v878521{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08);min-width:0}
+html body button.it-v878521:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+html body .it-v878521 .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .it-v878521 .t b{font-size:14.5px;color:var(--co-ink,#152328);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .it-v878521 .t small{font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .it-v878521 .x{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--co-ink,#152328)}
+html body .it-v878521.entrada .x{color:#15803D}
+html body .fix-nou-v878521{align-self:flex-start;margin-top:10px;display:inline-flex;align-items:center;gap:6px}
+html body .fixos-v878521 .cos{display:flex;flex-direction:column}
+html body .fix-ed-v878521 .full{grid-column:1/-1}
+html body .saldo-ed-v878521{display:flex;flex-direction:column;gap:14px}
+html body .saldo-ed-v878521 label{display:flex;flex-direction:column;gap:4px}
+html body .saldo-ed-v878521 label span{font-size:13px;font-weight:700;color:var(--co-ink-2,#334155)}

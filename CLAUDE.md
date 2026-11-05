@@ -3141,6 +3141,34 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       navegador, OPFS, amb `window.__acoTriaCarpeta878520` i `__acoCopiaEspera878520`). El Supabase de proves accepta `POST /__espai`.
     - **Fitxatge a les proves** (l'Héctor, 5/11/2026: «només fitxarà el propietari de la demo»): com sempre, Control horari › Fitxatge › Fitxar, posant-se ell a
       Empresa › Treballadors. Només als comptes de constructora o gestió total (al compte de l'Héctor i als tècnics no hi és). Captures: `capfitx.mjs`.
+  - **Tanda 12 · Caixa, gestoria i fitxatge** (l'Héctor, 5/11/2026 a la tarda: «d'acord a tot»; abans va preguntar si caixa i bancs no ho faria la gestoria:
+    la resposta va ser no fer una segona comptabilitat, només el que la gestoria no dona —qui ens deu, a qui devem i com anirem de diners— i el paquet per
+    a la gestoria; i, del fitxatge, què demana l'art. 34.9 ET i el VII Conveni de la Construcció, art. de la jornada, punts 8–11: registre diari amb
+    inici i final, un mitjà que «acrediti la conformitat» del treballador, tots els dies, consulta del treballador, 4 anys; el decret del registre
+    digital **no està aprovat** —Consell d'Estat en contra el 23/3/2026, aplaçat el 24/7—; l'app no pot dir «compleix la normativa»: no hi ha
+    homologació). **Norma de l'Héctor: el que es canvia per a la constructora i coincideix amb el tècnic, es fa als dos a la mateixa versió.**
+  - **V87.521 · Caixa i bancs** (`Caixa878521`, `src/caixa.js`, `src/theme-v878521.css`):
+    - **Menú «Caixa i bancs»** (abans «Bancs», només amb el mòdul Empresa) per a tots els comptes que administren menys el treballador: la constructora, la
+      gestió total, el tècnic i el compte de l'Héctor. La clau de pantalla continua sent `Bancs`; la rajola de l'Inici i l'opció de la barra, també.
+    - A dalt, quatre rajoles (les de Control horari): **Per cobrar · Per pagar · Previsió · Bancs** (la pantalla de la V87.514, sense canvis).
+    - **Per cobrar** (`cobrarItems878521`): les factures emeses sense cobrar (`facturesCobrar878496`). Les de l'obra (`facturesObra878297`) només als comptes
+      d'empresa (`esEmpresaFactura878337`): al compte de l'Héctor les fa en nom del client. Les d'honoraris (`facturesTecnic`), amb el mòdul tècnic i només de
+      les obres pròpies. La data prevista és la de l'avís de cobrament (`avisCobr878496.data`, V87.496) o la de la factura + els «Dies de cobrament de sèrie»
+      (de sèrie 10; ara també fa servir aquests dies l'avís, `diesCobrar878521`). Bancs aparella amb aquestes mateixes factures (`docsBanc878514`).
+    - **Per pagar** (`pagarItems878521`): les despeses sense pagar (`pagada878514`) ni incloses en una factura, que són factures (no albarans, mà d'obra, les
+      dels partes ni de les hores, les meves despeses ni les importades d'un Excel), des de 60 dies abans del primer dia que s'obre la pantalla
+      (`aco_caixa_v878521.inici`: les d'abans es donen per pagades). Amb data de pagament (`venciment878521`), qualsevol despesa. Data prevista = la factura
+      + «Dies de pagament de sèrie» (de sèrie 30).
+    - Cada llista, en targetes Vençudes / Aquesta setmana / Més endavant (`grupData`); tocar-ne una obre `MovCaixa878521`: canviar la data prevista, «Ja està
+      cobrada / pagada» (amb el dia) i obrir l'obra.
+    - **Previsió** (`previsio` de `src/caixa.js`: 13 setmanes de dilluns a diumenge; el que és vençut compta a la setmana d'ara): el saldo d'avui (dels
+      comptes del banc o, si no n'hi ha, escrit a mà: `saldoMa`), entrades, sortides i el saldo d'aquí a 13 setmanes; la gràfica de barres
+      (`GraficaCaixa878521`, vermelles en negatiu), «Setmana a setmana» i **«Pagaments fixos»** (nòmines, Seguretat Social, lloguer…: `fixos =
+      [{id, concepte, import, dia, cada (1, 3, 6, 12 mesos), des, fins}]`, `datesFix`; només compten des d'avui).
+    - **Avisos a l'Inici** (`avisosCaixa878521`, només quan ja s'ha obert la pantalla): pagaments vençuts, pagaments d'aquesta setmana i «La caixa queda en
+      negatiu la setmana del …»; tocant-los, la pantalla a la rajola que toca (`obreCaixa878521`).
+    - Es desa al compte: `aco_caixa_v878521 = {inici, cobrar, pagar, fixos, saldoMa:{import, data}}`.
+    - Proves: `caixa521unit.mjs` (15, sense navegador) i `v521test.mjs` (23: constructora, tècnic i mòbil). Adaptada `v514test` (Bancs és una rajola).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3339,7 +3367,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.520 a Render):**
+**Estat (publicada la V87.521 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
