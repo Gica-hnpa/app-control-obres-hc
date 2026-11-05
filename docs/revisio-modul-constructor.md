@@ -276,3 +276,24 @@ capítol) · Hores.
    cost de l’empresa més els % de DGE i BI.
 5. **Llistat de factures rebudes:** un format més maco.
 6. **Despeses amb el proveïdor equivocat** (provat per Socoterm): mirar per què (potser no l’han entrat bé).
+
+**Fet a les V87.504–506** (tanda 9, la nit del 4 al 5/11/2026).
+
+### Tanda 10 · 5/11/2026 al vespre: «sí a tot» a les set propostes i el que va veure a la 1:44 (captures del mòbil de Socoterm)
+
+1. **Targetes ben marcades** també amb el «Visual nou»; a Despeses, la capçalera oberta d’un grup no es llegia (fons clar i text blanc). **Fet a la V87.507.**
+2. **El nom de cada pantalla, destacat** (Contactes, Obres…). **Fet a la V87.507** (la icona i el nom en blanc sobre blau a la capçalera).
+3. **Dues «Opcions» juntes** (la de les fases i la de la pantalla): el menú de les fases es diu «Fases». **Fet a la V87.507.**
+4. **«Cuentas o Contabilidad (ha canviat)»:** la rajola de l’obra torna a dir «Comptabilitat». **Fet a la V87.507.**
+5. **Pendent:** els avisos sortien desplegats; ara Avisos i Feines són targetes plegades. **Fet a la V87.507.**
+6. **Ordre de les rajoles de l’Inici** (Contactes era a baix de tot) i **tornar a triar a Ajustos** les icones de la barra de baix i les rajoles de l’Inici;
+   **el mateix per als tècnics**. **Fet a les V87.507–508.**
+7. **El PIN del fitxatge, el tria el treballador.** **Fet a la V87.507.**
+8. Proposta 6, **«Afegir» només dins d’«Editar»**, i proposta 3, **les marques de la partida**. **Fet a la V87.509.**
+9. Proposta 1, **Agenda per a visites i reunions** (avisos automàtics a Pendent i al Resum; fora el tipus «Avís»). **Fet a la V87.510.**
+10. Proposta 5, **uns sols «Ajustos de l’obra»** (DGE, BI, dificultat, mínim d’hores). **Fet a la V87.511.**
+11. Proposta 4, **el descompost en tres targetes** (mà d’obra per categories amb el €/h de l’empresa, materials que es busquen, «Fes-ho amb IA», BC3 per al
+    tècnic). **Fet a la V87.512.**
+12. Proposta 2, **llegir un plànol amb IA als Amidaments** i, a la constructora, passar-ho a pressupost sense preus. **Fet a la V87.513.**
+13. Proposta 7, **Caixa i bancs** (comptes, extracte Norma 43 o CSV, aparellar amb factures i despeses, saldo previst). **Fet a la V87.514.**
+14. Pendent: la **comptabilitat** (l’Héctor ho explicarà).

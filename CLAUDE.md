@@ -3020,6 +3020,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Constructora** (`constructoraPropia878363`): «Passar-ho a pressupost» sense preus (pu 0, ni descompost ni marges; «Passaran sense preus.»).
       Les proves d'abans porten la marca `amid-prova-v878513`.
     - Prova: `v513test.mjs` (IA simulada).
+  - **V87.514 · Caixa i bancs** (proposta 7; tanda 8, punt 22; `src/bancs.js`, `src/theme-v878514.css`). Menú **«Bancs»** (comptes amb el mòdul Empresa;
+    també rajola de l'Inici i opció de la barra de baix). Es desa al compte: `aco_bancs_v878514 = {comptes:[{id, nom, entitat, iban, num43, saldoIni, dataIni}],
+    apunts:[{id, compte, data, valor, concepte, import, saldo, document, ref1, ref2, arxiu, aparellat?}]}`.
+    - **Importar l'extracte** (`Bancs878514`): **Norma 43** de l'AEB (`esNorma43`, `llegirNorma43`: registres 11, 22, 23 i 33; un o diversos comptes, que es
+      creen sols amb el saldo inicial i la data) o **CSV / Excel** (`llegirFilesBanc`: data, concepte, import —o càrrec i abonament— i saldo; números europeus o
+      anglesos, dates dd/mm/aaaa o de l'Excel); amb diversos comptes, pregunta a quin. Un apunt ja importat no es torna a posar (`clauApunt`).
+    - **Aparellar** (`candidats`, `aparellaSols`): un abonament amb el mateix import que una factura emesa sense cobrar (de l'obra o d'honoraris) i un càrrec amb
+      el d'una despesa sense pagar (no les incloses en una factura), amb la data que hi lliga (de 5 dies abans a 180 després). Cada apunt proposa els seus
+      documents («Cobrament de F2026-012», «Pagament de ALB 345»); **«Aparellar N apunts»** fa els que només tenen un document possible. Aparellar marca la
+      factura com a cobrada amb la data de l'apunt (`__acoPatchFactura878496`) i la despesa com a pagada (`pagada878514`); «Desfer» ho torna enrere;
+      «Sense document» (comissions, impostos…) el treu de per aparellar.
+    - A dalt: **Saldo** (de tots els comptes), **Per cobrar** (factures emeses pendents), **Saldo previst** (la suma) i **Per aparellar**. Cada compte, una targeta
+      amb el seu saldo, «Per aparellar · Tots» i els apunts (l'últim a dalt).
+    - Proves: `bancsunit.mjs` (16, sense navegador) i `v514test.mjs`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3218,7 +3232,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.513 a Render):**
+**Estat (publicada la V87.514 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

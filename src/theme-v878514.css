@@ -1,0 +1,42 @@
+/* V87.514 · Caixa i bancs: comptes, apunts de l'extracte i aparellar-los amb les factures i les despeses. */
+html body .bancs-v878514{display:flex;flex-direction:column;gap:12px;max-width:1100px}
+html body .bancs-xif-v878514{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:700px){html body .bancs-xif-v878514{grid-template-columns:repeat(2,minmax(0,1fr))}}
+html body .bancs-xif-v878514>div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1.5px solid #C3CED6;border-radius:12px;background:#fff}
+html body .bancs-xif-v878514>div small{font-size:12.5px;color:var(--co-ink-3,#5F7075);font-weight:600}
+html body .bancs-xif-v878514>div b{font-size:18px}
+html body .bancs-xif-v878514>div.tot{border-color:#1D4ED8;background:#EFF6FF}
+html body .bancs-bts-v878514{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+html body .bancs-bts-v878514 label.button{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+html body .bancs-bts-v878514 .auto-v878514{border-color:#15803D;color:#15803D}
+html body .msg-v878514{margin:0;padding:8px 12px;border-radius:10px;background:#F0FDF4;color:#166534;font-weight:600}
+html body .csv-v878514{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:12px;border:1.5px solid #1D4ED8;border-radius:12px;background:#fff}
+html body .csv-v878514 label{display:flex;flex-direction:column;gap:4px}
+html body .csv-v878514 .bt{display:flex;gap:8px;margin-left:auto}
+html body .compte-v878514 .cos{display:flex;flex-direction:column;gap:10px}
+html body .compte-v878514 .dades-v878514{margin:0;color:var(--co-ink-3,#5F7075);font-size:13.5px}
+html body .compte-v878514 .vista-v878514{align-self:flex-start}
+html body .aps-v878514{display:flex;flex-direction:column}
+html body .ap-v878514{display:grid;grid-template-columns:96px minmax(0,1fr) 120px;gap:4px 10px;align-items:center;padding:10px 4px;border-top:1px solid var(--co-line,#E2E8F0)}
+html body .ap-v878514:first-child{border-top:0}
+html body .ap-v878514 .d{font-size:13.5px;color:var(--co-ink-3,#5F7075)}
+html body .ap-v878514 .c{min-width:0;overflow-wrap:anywhere;font-size:14.5px}
+html body .ap-v878514 .i{text-align:right;white-space:nowrap}
+html body .ap-v878514 .i.pos{color:#15803D}
+html body .ap-v878514 .i.neg{color:#B42318}
+html body .ap-v878514 .m{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+html body .ap-v878514 .m .cand{display:inline-flex;flex-direction:column;align-items:flex-start;gap:0;min-height:38px;padding:4px 10px;line-height:1.2}
+html body .ap-v878514 .m .cand small{font-size:12px;color:var(--co-ink-3,#5F7075);font-weight:500}
+html body .ap-v878514 .m em{font-style:normal;font-size:13.5px;color:var(--co-ink-3,#5F7075)}
+html body .ap-v878514 .m em.ok{display:inline-flex;align-items:center;gap:4px;color:#166534;font-weight:600}
+html body .ap-v878514.fet .c{color:var(--co-ink-3,#5F7075)}
+@media (max-width:560px){html body .ap-v878514{grid-template-columns:minmax(0,1fr) auto}html body .ap-v878514 .d{grid-column:1/-1}html body .ap-v878514 .m{grid-column:1/-1}}
+html body .compte-v878514 .peu-v878514{display:flex;gap:14px;justify-content:flex-end}
+html body .compte-form-v878514 .modal-actions{grid-column:1/-1}
+html body .bancs-v878514 button.link{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;min-height:36px;padding:4px 6px;cursor:pointer;color:var(--co-accent-ink,#1D4ED8);font-weight:600;font-size:13.5px;text-decoration:underline;text-underline-offset:3px}
+html body .bancs-v878514 button.link.danger-text-v87229{color:#B42318}
+html body .bancs-v878514 button.link:focus-visible{outline:2px solid #1D4ED8;outline-offset:2px;border-radius:6px}
+html body .compte-v878514 .vista-v878514{display:inline-flex;gap:0;padding:3px;border:1.5px solid #C3CED6;border-radius:999px;background:#F8FAFC}
+html body .compte-v878514 .vista-v878514>button{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;min-height:36px;padding:4px 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:13.5px;color:var(--co-ink-2,#334155)}
+html body .compte-v878514 .vista-v878514>button[aria-pressed="true"]{background:#1D4ED8;color:#fff}
+html body .compte-v878514 .vista-v878514>button:focus-visible{outline:2px solid #1D4ED8;outline-offset:2px}
