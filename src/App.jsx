@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.523";
+const APP_VERSION878264="87.524";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12571,6 +12571,16 @@ function PantallaSencera878489({titol,sub,onTorna,children,peu=null,senseFet=fal
   </div>,document.body);
 }
 // V87.489 · La descripció d'una partida: una targeta amb el començament i «Veure descripció», que l'obre sencera per llegir-la bé
+// V87.524 · la partida en pantalla gran a tots els aparells (l'Héctor, 5/11/2026: «vull la partida en pantalla més gran perquè vull veure la
+// descripció completa… la pantalla el més gran possible a tots els dispositius»). El quadre de la descripció creix amb el text.
+function AutoArea878524({value,onChange,placeholder,minRows=4}){
+  const ref=useRef(null);
+  const ajusta=()=>{const el=ref.current;if(!el)return;el.style.height="auto";el.style.height=Math.max(el.scrollHeight+2,minRows*24)+"px"};
+  useLayoutEffect(ajusta,[value]);
+  useEffect(()=>{window.addEventListener("resize",ajusta);return()=>window.removeEventListener("resize",ajusta)},[]);
+  return <textarea ref={ref} className="auto-v878524" rows={minRows} value={value} placeholder={placeholder} onChange={e=>onChange(e.target.value)}/>;
+}
+function partidaInline878524(){try{return lsVisual878400()?.getItem("partida-inline-prova-v878524")==="1"}catch{return false}}
 function DescPartida878489({text,titol}){
   const[obert,setObert]=useState(false);
   const txt=String(text||"");
@@ -14302,7 +14312,7 @@ function EditorDescompost878450({row={},costMode="detallat",detected=0,closed={}
 }
 // V87.361 · V87.449 · la fitxa de la partida, una de sola per llegir-la i per editar-la (l'Héctor, 30/10/2026: «és un jeroglífic»): sense
 // repetir el que ja diu la línia de la partida, amb el descompost a la vista, les dues marques en una fila i un sol botó per a cada cosa.
-function FitxaPartida878361({row={},editable=false,onChange,onSet,openBreakdown,onEditar,onNova,onFinal,qc=0,defectes={},onAmid=null,eines=null}){
+function FitxaPartida878361({gran=false,row={},editable=false,onChange,onSet,openBreakdown,onEditar,onNova,onFinal,qc=0,defectes={},onAmid=null,eines=null}){
   const parts0=partsPartida878361(row);
   // un descompost sense cap línia de cost (partida «a preu tancat» a 0 €) no és un descompost
   const parts=parts0?.grups?.length?parts0:null;
@@ -14327,7 +14337,7 @@ function FitxaPartida878361({row={},editable=false,onChange,onSet,openBreakdown,
       <label><span>{t("Preu unitari")}</span><input className="budget-num-input-v878241" type="text" inputMode="decimal" value={row.pu??""} onFocus={e=>e.currentTarget.select()} onChange={e=>onChange?.("pu",e.target.value)} onBlur={e=>onChange?.("pu",qty2(parseNum8770(e.target.value)||0))}/></label>
       <div className="imp"><span>{t("Import")}</span><b>{money(q*pu)}</b></div>
     </div>}
-    {(editable||libText87196(row.desc))&&<section className="desc"><h4>{t("Descripció")}</h4>{editable?<textarea value={row.desc||""} onChange={e=>onChange?.("desc",e.target.value)} placeholder={t("Descripció de la partida")}/>:<DescPartida878489 text={row.desc} titol={[row.codi,row.concepte].filter(Boolean).join(" · ")}/>}</section>}
+    {(editable||libText87196(row.desc))&&<section className="desc"><h4>{t("Descripció")}</h4>{editable?<AutoArea878524 value={row.desc||""} onChange={v=>onChange?.("desc",v)} placeholder={t("Descripció de la partida")}/>:gran?<p className="desc-sencera-v878524">{row.desc}</p>:<DescPartida878489 text={row.desc} titol={[row.codi,row.concepte].filter(Boolean).join(" · ")}/>}</section>}
     <section className="preu">
       <h4>{t("Descompost")} <small>{t("per {ut}",{ut:row.ut||"ut"})}</small></h4>
       {mn&&<div className="minim-v878379"><span>{t("Mínim de mà d’obra: {m} h (la partida en necessita {h} h)",{m:fmtP878378(mn.minimH),h:fmtP878378(mn.h)})}</span>{(editable||onEditar)&&<button type="button" className="secondary" onClick={()=>{if(editable)treuMinim();else{onEditar("treure");setTreure(true)}}}>{t("Treure el mínim")}</button>}</div>}
@@ -15503,6 +15513,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   // V87.486 · editant al mòbil i l'iPad, la partida s'obre en una pantalla pròpia (l'Héctor: «si apretes editar i toques una partida, que s'obri una nova
   // pantalla per partida, després tornar i per la segona»)
   const pantalla878486=useBarraBaix878484();
+  const inline878524=partidaInline878524();const enPantalla878524=()=>inline878524?(editBudget8760b&&pantalla878486):true;
+  const tancaPartida878524=(cap,i)=>{if(editBudget8760b)toggleBudgetRow87173(cap,i);else setFitxa426(null)};
   const[presObert427,setPresObert427]=useState(presObertInici878427);
   const giraPres427=o=>setPresObert427(o);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
@@ -16511,7 +16523,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     return null}
   function vesSeguent878488(cap,i){const n=seguent878488(cap,i);if(!n)return;
     if(n.nouCap){setOpen(o=>({...o,[n.cap]:true}));setGrupObert878336(o=>({...o,[n.main]:true}))}
-    setOpenBudgetRow87173(budgetRowKey87173(n.cap,n.i));
+    if(editBudget8760b)setOpenBudgetRow87173(budgetRowKey87173(n.cap,n.i));else setFitxa426(`${n.cap}__${n.i}`);
     setTimeout(()=>{try{document.querySelector(".partida-pantalla-v878486 .pp-cos")?.scrollTo(0,0)}catch{}},0)}
   const budgetChapterEntries87226=Object.entries(caps||{}).sort(([capA,itemsA],[capB,itemsB])=>{
     const scopeA=String((itemsA||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
@@ -16548,7 +16560,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(editBudget8760b)setOpenBudgetRow87173(budgetRowKey87173(cap,i));else setFitxa426(cap+"__"+i);
     setTimeout(()=>{const el=document.querySelector(".pres-bloc-v878427 .fitxa-oberta-v878426, .pres-bloc-v878427 .budget-row-open-v87173");el?.scrollIntoView?.({block:"start",behavior:"smooth"})},250);
   };
-  const fitxaPartida426=(cap,index)=>{const row=(caps?.[cap]||[])[index];if(!row)return null;
+  const fitxaPartida426=(cap,index,gran=false)=>{const row=(caps?.[cap]||[])[index];if(!row)return null;
       // V87.413 / V87.423 · la marca de fora de pressupost i la quantitat que s'executarà: editant, a la partida; si no, es desa al moment
       const posa878423=patch=>{if(editBudget8760b){Object.entries(patch).forEach(([k,vv])=>upd(cap,index,k,vv));return}const next={...caps,[cap]:(caps[cap]||[]).map((r,j)=>j===index?{...r,...patch}:r)};setCaps(next);persistBudgetCaps878179(next)};
       // V87.449 · «Editar» des de la fitxa: el pressupost passa a edició amb aquesta mateixa partida oberta
@@ -16559,7 +16571,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         <button type="button" className="danger small" onClick={()=>deletePartida878125(cap,index)}>{i18nT("Eliminar")}</button>
         <button type="button" className="primary small fet-v878449" onClick={closeBudgetRow87173}>{i18nT("Fet")}</button>
       </>:null;
-      return <FitxaPartida878361 row={row} editable={editBudget8760b} defectes={defectesPreu878361(data)} onChange={(key,value)=>upd(cap,index,key,value)} onSet={patch=>Object.entries(patch).forEach(([k,v])=>upd(cap,index,k,v))} onNova={clientMode||!(vell509||tancat428||esFora878410(row))?null:v=>posa878423(marcaNova878413(v))} onFinal={clientMode||!(vell509||row.qFinal878423!=null)?null:q=>posa878423({qFinal878423:q===null?undefined:q})} qc={certQtyTotal8789(row)} onEditar={!clientMode&&!editBudget8760b?editar:null} onAmid={()=>setBudgetMeasureTarget878194({cap,i:index})} openBreakdown={clientMode?null:()=>openDescompostModal87173(cap,index)} eines={eines}/>};
+      return <FitxaPartida878361 gran={gran} row={row} editable={editBudget8760b} defectes={defectesPreu878361(data)} onChange={(key,value)=>upd(cap,index,key,value)} onSet={patch=>Object.entries(patch).forEach(([k,v])=>upd(cap,index,k,v))} onNova={clientMode||!(vell509||tancat428||esFora878410(row))?null:v=>posa878423(marcaNova878413(v))} onFinal={clientMode||!(vell509||row.qFinal878423!=null)?null:q=>posa878423({qFinal878423:q===null?undefined:q})} qc={certQtyTotal8789(row)} onEditar={!clientMode&&!editBudget8760b?editar:null} onAmid={()=>setBudgetMeasureTarget878194({cap,i:index})} openBreakdown={clientMode?null:()=>openDescompostModal87173(cap,index)} eines={eines}/>};
   // V87.449 · seleccionar partides: una casella a cada partida i a cada capítol, sense obrir res
   const selecciona449=()=>{setSeleccio878320(v=>!v);setBudgetSelectedRows878229({});setOpenBudgetRow87173(null)};
   return <div className={`stack ${clientMode?"client-budget-editor-v878242":""}`}>
@@ -16729,10 +16741,10 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                   return <div className={`budget-v25-line budget-row-collapsed-v87173${obert449?" fitxa-oberta-v878426":""}`} key={i}>
                     {sel449?<label className={`sel-fila-v878449${marcada449?" on":""}`}><input type="checkbox" checked={marcada449} onChange={()=>toggleBudgetSelection878229(cap,i)}/><b>{r.codi||""}</b><span>{r.concepte||i18nT("Sense concepte")}</span><strong>{money(t)}</strong></label>
                     :<button type="button" className={`budget-partida-mobile-summary-v87196${colorPartida878423(r)}`} aria-expanded={obert449} onClick={()=>editBudget8760b?toggleBudgetRow87173(cap,i):setFitxa426(k=>k===`${cap}__${i}`?null:`${cap}__${i}`)}><span><b>{r.codi||i18nT("Sense codi")}</b><strong>{r.concepte||i18nT("Sense concepte")}</strong>{esFora878410(r)&&<em className="fora-v878410">{etFora878410(r)}</em>}{mesQ878413(r)>0&&!esFora878410(r)&&<em className="fora-v878410 mes-v878411">+{qty2(mesQ878413(r))} {r.ut||""}</em>}{canviada878412(r)&&<em className="fora-v878410 canv-v878412" title={i18nT("Inicial: {q} × {p}",{q:qty2(r.ini878412.q),p:money(r.ini878412.pu)})}>{i18nT("Canviada")}</em>}{qFinal878423(r)!==null&&<em className="noexec-et-v878423">{etNoExec878423(r)}</em>}<small>{r.ut||i18nT("ut")} · {qty2(parseNum8770(r.q)||0)} × {money(parseNum8770(r.pu)||0)}</small></span><span><small className="q-v878449">{qty2(parseNum8770(r.q)||0)} {r.ut||""} × {money(parseNum8770(r.pu)||0)}</small><b>{money(t)}</b><ChevronRight size={18} className="chev" aria-hidden="true"/></span></button>}
-                    {obert449&&(editBudget8760b&&pantalla878486?createPortal(<div className="partida-pantalla-v878486" role="dialog" aria-modal="true" aria-label={[r.codi,r.concepte].filter(Boolean).join(" · ")}>
-                      <div className="pp-cap"><button type="button" className="tornar" onClick={()=>toggleBudgetRow87173(cap,i)}><ChevronLeft size={20} aria-hidden="true"/> {i18nT("Tornar al pressupost")}</button><span className="nom"><b>{r.codi||""}</b> {r.concepte||i18nT("Sense concepte")}</span></div>
-                      <div className="pp-cos">{fitxaPartida426(cap,i)}</div>
-                      <div className="pp-peu">{(()=>{const n=seguent878488(cap,i);return n?<button type="button" className="secondary seg-v878488" onClick={()=>vesSeguent878488(cap,i)} title={[n.r?.codi,n.r?.concepte].filter(Boolean).join(" · ")}>{i18nT("Següent")} <ChevronRight size={18} aria-hidden="true"/></button>:null})()}<button type="button" className="primary" onClick={()=>toggleBudgetRow87173(cap,i)}>{i18nT("Fet")}</button></div>
+                    {obert449&&(enPantalla878524()?createPortal(<div className={"partida-pantalla-v878486 "+(editBudget8760b?"edita-v878524":"llegeix-v878524")} role="dialog" aria-modal="true" aria-label={[r.codi,r.concepte].filter(Boolean).join(" · ")}>
+                      <div className="pp-cap"><button type="button" className="tornar" onClick={()=>tancaPartida878524(cap,i)}><ChevronLeft size={20} aria-hidden="true"/> {i18nT("Tornar al pressupost")}</button><span className="nom"><b>{r.codi||""}</b> {r.concepte||i18nT("Sense concepte")}</span></div>
+                      <div className="pp-cos">{fitxaPartida426(cap,i,true)}</div>
+                      <div className="pp-peu">{(()=>{const n=seguent878488(cap,i);return n?<button type="button" className="secondary seg-v878488" onClick={()=>vesSeguent878488(cap,i)} title={[n.r?.codi,n.r?.concepte].filter(Boolean).join(" · ")}>{i18nT("Següent")} <ChevronRight size={18} aria-hidden="true"/></button>:null})()}<button type="button" className="primary" onClick={()=>tancaPartida878524(cap,i)}>{i18nT("Fet")}</button></div>
                     </div>,document.body):fitxaPartida426(cap,i))}
                   </div>;
                 }
@@ -20816,7 +20828,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.523",
+    app_version:"87.524",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

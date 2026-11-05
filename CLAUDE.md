@@ -3205,6 +3205,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       es desa (amb la ubicació si està activada), per a què, correccions, conformitat, conservació (4 anys) i protecció de dades (art. 90 de la
       LOPDGDD), i «Rebut i informat: signatura del treballador/a».
     - Prova: `v523test.mjs` (14). Passen `fitxatge357test`, `v516test`, `v487test`, `v507test`, `avisos360test`, `v496test`, `v515test`, `v517test` i `v521test`.
+  - **V87.524 · La partida a pantalla gran a tots els aparells** (`src/theme-v878524.css`; l'Héctor, 5/11/2026, després d'entrar al descompost d'una
+    partida d'una obra de prova: «vull la partida en pantalla més gran perquè vull veure la descripció completa… el més gran possible dins de tots els
+    dispositius»):
+    - **Consultant i editant, a l'ordinador, l'iPad i el mòbil**, tocar una partida l'obre a la pantalla pròpia de la V87.486 (`.partida-pantalla-v878486`,
+      ara amb `llegeix-v878524` o `edita-v878524`): «‹ Tornar al pressupost» i el codi i el concepte a dalt (el concepte en dues línies), la fitxa al mig i
+      «Següent ›» · «Fet» a baix. Abans, consultant s'obria dins de la llista, i a l'ordinador també editant. `enPantalla878524`, `tancaPartida878524`
+      (consultant tanca `fitxa426`; editant, la fila); `vesSeguent878488` obre la següent en tots dos modes.
+    - **Consultant, la descripció sencera** (`FitxaPartida878361 gran`, `desc-sencera-v878524`), sense «Veure descripció». **Editant, el quadre de la
+      descripció creix amb el text** (`AutoArea878524`), sense barra de desplaçament a dins.
+    - **A l'ordinador** (≥1101 px): tota la finestra, amb el contingut fins a 1.280 px al mig. Amb la partida oberta, la pàgina de sota no es mou i no surten
+      els rètols del núvol ni de «Desat a l'ordinador» (tapaven «Següent»), ni el «Fet» de la fitxa (ja hi és a baix).
+    - Les proves d'abans porten la marca `partida-inline-prova-v878524` (la posa l'ajuda de les proves si la pàgina no té `sessionStorage.__partidaNoTocar`;
+      cap usuari no la té): la partida com fins ara. Prova: `partida523test.mjs` (24: ordinador, mòbil i iPad; consultant i editant).
+    - **La unitat «BASE: 22,…»** que l'Héctor va veure en una partida ve de l'arxiu importat (la columna que l'app ha llegit com a unitat): per mirar-ho, cal l'arxiu.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3403,7 +3417,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.523 a Render):**
+**Estat (publicada la V87.524 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

@@ -1,0 +1,18 @@
+/* V87.524 · la partida en pantalla gran a tots els aparells (consultant i editant), amb la descripció sencera */
+html body .partida-pantalla-v878486 .pp-cap .nom{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35}
+html body .partida-pantalla-v878486 .desc-sencera-v878524{margin:0;white-space:pre-wrap;font-size:16px;line-height:1.55;color:var(--co-ink,#152328)}
+html body .fitxa-v878449 .desc textarea.auto-v878524,html body .fitxa-partida-v878361 .desc textarea.auto-v878524{overflow:hidden;resize:none;font-size:16px;line-height:1.5;min-height:96px}
+@media (min-width:1101px){
+  /* a l'ordinador: tota la finestra, amb el contingut fins a 1.280 px al mig */
+  html body .partida-pantalla-v878486 .pp-cap,html body .partida-pantalla-v878486 .pp-peu{padding-left:max(24px,calc((100vw - 1280px)/2));padding-right:max(24px,calc((100vw - 1280px)/2))}
+  html body .partida-pantalla-v878486 .pp-cap{flex-direction:row;align-items:center;gap:18px;padding-top:12px;padding-bottom:12px}
+  html body .partida-pantalla-v878486 .pp-cap .nom{font-size:17px}
+  html body .partida-pantalla-v878486 .pp-cos{padding:20px max(24px,calc((100vw - 1280px)/2)) 28px}
+  html body .partida-pantalla-v878486 .fitxa-v878449{font-size:15.5px}
+}
+/* amb la partida oberta: sense el rètol del núvol ni el de desat a l'ordinador (tapaven «Següent»), i la pàgina de sota no es mou */
+html:has(.partida-pantalla-v878486),html:has(.partida-pantalla-v878486) body{overflow:hidden}
+html body:has(.partida-pantalla-v878486) .cloud-badge-v878257,html body:has(.partida-pantalla-v878486) .local-save-badge-v878252{display:none!important}
+html body .partida-pantalla-v878486 .pp-peu .primary{display:inline-flex;align-items:center;justify-content:center;text-align:center}
+/* a la pantalla de la partida, el «Fet» de la fitxa sobra: ja hi és a baix */
+html body .partida-pantalla-v878486 .fet-v878449{display:none!important}
