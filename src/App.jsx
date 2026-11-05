@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.512";
+const APP_VERSION878264="87.513";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -14564,7 +14564,58 @@ function PreusIa878368({obra={},cond={},linies=[],close,aplica}){
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Tancar")}</button><span className="sp"/>{off&&<button type="button" className="primary" disabled={!nLlegits} onClick={()=>aplica(lectura.preus,lectura.avisos)}>{t("Posar els preus")}{nLlegits?` (${nLlegits})`:""}</button>}</div>
   </div></Modal>;
 }
+// V87.513 · proposta 2 (l'Héctor, 5/11/2026: «sí a tot»; tanda 8, punt 12: «amidaments llegint un plànol en PDF acotat i dictant què es vol»):
+// s'adjunta el plànol (PDF o foto), es diu o s'escriu què s'ha d'amidar («enrajolat del bany fins al sostre») i la IA en treu les partides amb les
+// mides a la descripció. Es revisen (quantitat, unitat, treure-les) abans d'afegir-les als amidaments. Sense preus.
+function reglesAmid878513(){return [
+  "Ets un tècnic d'amidaments. Llegeix les cotes del plànol adjunt i amida NOMÉS el que es demana.",
+  "Per a cada partida: concepte curt, unitat (m2, m, m3, u, kg), la quantitat calculada amb les cotes del plànol i, a la descripció, el detall de les mides: cada parament o element amb les seves mides i el parcial (per exemple «Paret nord 3,20 × 2,60 = 8,32»), i els descomptes de portes i finestres si n'hi ha.",
+  "Si una cota no es llegeix o falta una dada (per exemple l'alçada), fes servir un valor raonable, digues quin a la descripció i avisa-ho a avisos.",
+  "No posis preus (pu 0). No afegeixis partides que no s'hagin demanat."].join("\n")}
+function PlanolIa878513({obra,onAfegeix,close}){
+  const[text,setText]=useState("");const[arxius,setArxius]=useState([]);const[fent,setFent]=useState("");const[err,setErr]=useState("");const[res,setRes]=useState(null);
+  async function afegeixArxius(ll){setErr("");const nous=[];
+    for(const a of [...ll].slice(0,4)){try{const ext=(a.name.split(".").pop()||"").toLowerCase();
+      if(/^image\//.test(a.type))nous.push({nom:a.name,...arxiuDeDataUrl(await compressImage878259(a))});
+      else if(/pdf$/i.test(a.type)||ext==="pdf"){if(a.size>14*1024*1024){setErr(t("«{n}» fa més de 14 MB.",{n:a.name}));continue}nous.push({...await arxiuDeFitxer(a),nom:a.name})}
+      else setErr(t("«{n}» ha de ser un PDF o una foto del plànol.",{n:a.name}))}catch(e){setErr(iaErr878458(e))}}
+    setArxius(x=>[...x,...nous].slice(0,4))}
+  async function llegeix(){
+    if(!arxius.length){setErr(t("Adjunta el plànol (PDF o foto)."));return}
+    if(!text.trim()){setErr(t("Digues què vols amidar."));return}
+    setErr("");setFent(t("La IA llegeix el plànol…"));const encesa=await pantallaEncesa878476();
+    try{const r=await iaCrida("partides",{text:[text.trim(),reglesAmid878513()].join("\n\n"),obra:[obra?.nom,obra?.adreca,obra?.poblacio].filter(Boolean).join(" · "),arxius:arxius.map(a=>({tipus:a.tipus,dades:a.dades})),idioma:getLang()});
+      const x=partidesDeIa(r);if(!x.partides.length)throw new Error(t("La IA no hi ha trobat res per amidar."));
+      setRes({avisos:x.avisos||[],files:x.partides.map((p,i)=>({k:"p"+i,on:true,codi:p.codi||"",concepte:p.concepte||"",ut:p.ut||"",q:String(p.q??"").replace(".",","),cap:p.cap||"01 Partides",desc:p.desc||""}))})}
+    catch(e){setErr(iaErr878458(e))}
+    try{encesa?.release?.()}catch{}setFent("")}
+  const set=(k,c,v)=>setRes(r=>({...r,files:r.files.map(f=>f.k===k?{...f,[c]:v}:f)}));
+  const triades=res?res.files.filter(f=>f.on):[];
+  return <Modal title={t("Llegir un plànol amb IA")} close={fent?()=>{}:close}><div className="planol-ia-v878513">
+    {!res?<>
+      <label className="arx button secondary"><FileText size={15} aria-hidden="true"/> {arxius.length?t("Afegir un altre plànol"):t("Adjuntar el plànol (PDF o foto)")}<input type="file" hidden accept="application/pdf,image/*" multiple onChange={e=>{const f=e.target.files;if(f?.length)afegeixArxius(f);e.target.value=""}}/></label>
+      {arxius.length>0&&<ul className="arxius">{arxius.map((a,i)=><li key={i}><FileText size={15} aria-hidden="true"/><span>{a.nom}</span><button type="button" className="link" onClick={()=>setArxius(x=>x.filter((_,j)=>j!==i))}>{t("Treure")}</button></li>)}</ul>}
+      <label className="que"><span>{t("Què vols amidar?")}</span><textarea rows={3} value={text} onChange={e=>setText(e.target.value)} placeholder={t("Per exemple: enrajolat del bany fins al sostre, i el paviment de la cuina")}/></label>
+      <DictatActa878263 value={text} onChange={setText}/>
+      {err&&<p className="err-v878305">{err}</p>}
+      <div className="modal-actions"><button type="button" className="secondary" disabled={!!fent} onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!!fent} onClick={llegeix}><WandSparkles size={15} aria-hidden="true"/> {fent||t("Llegir el plànol")}</button></div>
+    </>:<>
+      {res.avisos.length>0&&<p className="avis-ia-v878458">{res.avisos.join(" · ")}</p>}
+      <div className="files">{res.files.map(f=><div key={f.k} className={"fila"+(f.on?"":" off")}>
+        <label className="ck"><input type="checkbox" checked={f.on} aria-label={t("Afegir-la")} onChange={e=>set(f.k,"on",e.target.checked)}/></label>
+        <input className="c" aria-label={t("Concepte")} value={f.concepte} onChange={e=>set(f.k,"concepte",e.target.value)}/>
+        <input className="q" aria-label={t("Quantitat")} inputMode="decimal" value={f.q} onChange={e=>set(f.k,"q",e.target.value)}/>
+        <input className="u" aria-label={t("Unitat")} value={f.ut} onChange={e=>set(f.k,"ut",e.target.value)}/>
+        {f.desc&&<p className="desc">{f.desc}</p>}
+      </div>)}</div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>setRes(null)}>{t("Tornar")}</button><button type="button" className="primary" disabled={!triades.length} onClick={()=>onAfegeix(triades)}>{triades.length===1?t("Afegir-la als amidaments"):t("Afegir-ne {n} als amidaments",{n:triades.length})}</button></div>
+    </>}
+  </div></Modal>;
+}
 function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLibrary=[],goPressupost,readOnly=false}){
+  const[planol513,setPlanol513]=useState(false);
+  const[iaOn513,setIaOn513]=useState(()=>iaSabuda()===true);
+  useEffect(()=>{let v=true;iaActiva().then(x=>{if(v)setIaOn513(x)});return()=>{v=false}},[]);
   const am=amidDe878342(data,fase878342);
   const passarDespres878435=useRef(false);
   useEffect(()=>{const p=window.__acoAmid878435;if(!p||readOnly)return;delete window.__acoAmid878435;
@@ -14629,6 +14680,10 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
   }
   const canvia=(id,patch)=>desa(a=>({linies:(a.linies||[]).map(l=>l.id===id?{...l,...patch}:l),passat:null}));
   const treu=id=>desa(a=>({linies:(a.linies||[]).filter(l=>l.id!==id),passat:null}));
+  const aplicaPlanol513=fs=>{const st=Date.now().toString(36),now=new Date().toISOString();
+    desa(a=>({font:a.font||{nom:t("Plànol amb IA"),tipus:"IA",data:now},linies:[...(a.linies||[]),...fs.map((f,i)=>({id:`am-ia-${st}-${i}`,codi:f.codi||"",cap:f.cap||"01 Partides",capPrincipal:"",capPath:[],ut:f.ut||"",concepte:f.concepte||"",desc:f.desc||"",q:parseNum8770(f.q)||0,pu:null,mides:[],ia878513:true}))],passat:null}));
+    setPlanol513(false)};
+  const planolBtn513=!readOnly&&iaOn513?<button type="button" className="secondary planol-btn-v878513" onClick={()=>setPlanol513(true)}><WandSparkles size={15} aria-hidden="true"/> {t("Llegir un plànol amb IA")}</button>:null;
   const buida=()=>{if(confirm(t("Treure tots els amidaments d’aquesta obra? El pressupost no canvia.")))setData(d=>treuAmid878342(d,fase878342))};
   const fileInput878462=<input type="file" hidden accept=".pdf,.xlsx,.xls,.xlsm,.csv,.ods,.bc3" disabled={llegint} onChange={e=>{const f=e.target.files?.[0];e.target.value="";llegeix(f)}}/>;
   const tria=<label className="button primary tria-v878328"><Upload/>{llegint?t("Llegint…"):t("Llegir PDF, Excel o BC3")}{fileInput878462}</label>;
@@ -14654,7 +14709,8 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
   </details>
   </>;
   return <div className="amid-v878328 amid-v878435">
-    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{linies.length>0?<><span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span><ActionMenu87213 label={t("Opcions")}><label className="action-upload-v87213 tria-v878328"><Upload size={15} aria-hidden="true"/>{llegint?t("Llegint…"):t("Llegir un altre arxiu")}{fileInput878462}</label><button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213></>:tria}</div>}
+    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{linies.length>0?<><span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span><ActionMenu87213 label={t("Opcions")}><label className="action-upload-v87213 tria-v878328"><Upload size={15} aria-hidden="true"/>{llegint?t("Llegint…"):t("Llegir un altre arxiu")}{fileInput878462}</label>{iaOn513&&<button type="button" className="planol-btn-v878513" onClick={()=>setPlanol513(true)}><WandSparkles size={15} aria-hidden="true"/> {t("Llegir un plànol amb IA")}</button>}<button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213></>:<>{tria}{planolBtn513}</>}</div>}
+    {planol513&&<PlanolIa878513 obra={obra} close={()=>setPlanol513(false)} onAfegeix={aplicaPlanol513}/>}
       <div className="amid-cos-v878328">
       {err&&<p className="amid-err-v878328">{err}</p>}
       {pendent&&<div className="amid-pendent-v878328"><b>{t("{n} partides de «{nom}»",{n:pendent.r.partides.length,nom:pendent.file.name})}</b><div><button type="button" className="primary" onClick={()=>aplica(pendent.r,pendent.file,false)}>{t("Substituir les d’ara")}</button><button type="button" className="secondary" onClick={()=>aplica(pendent.r,pendent.file,true)}>{t("Afegir-les a les d’ara")}</button><button type="button" className="ghost" onClick={()=>setPendent(null)}>{t("Cancel·lar")}</button></div></div>}
@@ -14719,9 +14775,12 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
   const nMg878378=linies.filter(l=>Number(l.pu)>0&&FONTS_MARGES878378.includes(l.font878368)).length;
   const fanMg878378=!!(mg878378.pctDif||mg878378.ci||(mg878378.mode==="dins"&&(mg878378.dge||mg878378.bi))||(mg878378.minim&&mg878378.minimH));
   const nSemb878368=linies.filter(l=>Number(l.pu)>0&&l.semblant878368).length;
+  // V87.513 · a la constructora, sense preus (tanda 8, punt 12: «en passar-los a pressupost, sense preus: encara no s'han posat»). Les proves d'abans
+  // porten la marca «amid-prova-v878513» (cap usuari no la té).
+  const senseP513=constructoraPropia878363()&&(()=>{try{return lsVisual878400()?.getItem("amid-prova-v878513")!=="1"}catch{return true}})();
   async function passa(){
     setFent(true);
-    const rows=linies.map((l,j)=>{
+    const rows=senseP513?linies.map((l,j)=>{const q=Number(l.q)||0;return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu:0,pressupostMesures:midesFila878476(l,j,q)}}):linies.map((l,j)=>{
       const {tb,pu,notes,minim,mgRec}=margesLinia878378(l,{mg:mg878378,ambMg:ambMg878378,acc:pct878368,ambAcc:ambPct878368,preuLib:usaLib?preuLib:null});
       const q=Number(l.q)||0;
       return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu,pressupostMesures:midesFila878476(l,j,q),...(tb?{descompostTable:tb}:{}),...(minim?{minim878378:minim}:{}),...(mgRec?{mg878378:mgRec}:{}),...(l.font878368&&Number(l.pu)>0?{origenPreu878368:`${FONTS878368[l.font878368]||""}${l.semblant878368?" · semblant":""}${l.nota878368?" · "+l.nota878368:""}${notes.length?" · "+notes.join(" · "):""}`.slice(0,260)}:{})};
@@ -14739,7 +14798,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
         <label><input type="radio" name="desti878328" checked={desti==="nou"} onChange={()=>setDesti("nou")}/><span>{t("Un pressupost nou: «{nom}»",{nom:nomNou})}</span></label>
         <label><input type="radio" name="desti878328" checked={desti==="afegir"} onChange={()=>setDesti("afegir")}/><span>{t("Afegir-les a «{nom}»",{nom:nomActiu})}</span></label>
       </div>:<p>{t("Aniran a «{nom}», que ara és buit.",{nom:nomActiu})}</p>}
-      {eines}
+      {senseP513?<p className="sense-preus-v878513">{t("Passaran sense preus.")}</p>:<>{eines}
       <ul className="preus">
         {nArxiu>0&&<li>{t("{n} amb el preu de l’arxiu",{n:nArxiu})}</li>}
         {nLib>0&&<li><label><input type="checkbox" checked={usaLib} onChange={e=>setUsaLib(e.target.checked)}/> {t("{n} amb el preu de Preus (mateix codi o mateixa partida)",{n:nLib})}</label></li>}
@@ -14747,7 +14806,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
         {nSense>0&&<li className="sense">{t("{n} sense preu: l’hauràs de posar al pressupost",{n:nSense})}</li>}
         {nMg878378>0&&fanMg878378&&<li className="mg-v878378"><label><input type="checkbox" checked={ambMg878378} onChange={e=>setAmbMg878378(e.target.checked)}/> {t("Marges: {r} ({n} partides del banc, de l’arxiu o de la IA)",{r:resumMarges878378(mg878378),n:nMg878378})}</label></li>}
         {pct878368>0&&nDesc878368>0&&<li><label><input type="checkbox" checked={ambPct878368} onChange={e=>setAmbPct878368(e.target.checked)}/> {t("+{p} % de mà d’obra per l’accés ({n} partides amb descompost)",{p:pct878368,n:nDesc878368})}</label></li>}
-      </ul>
+      </ul></>}
       <div className="actions"><button type="button" className="ghost" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={fent} onClick={passa}>{fent?t("Passant…"):t("Passar-ho a pressupost")}</button></div>
     </div>
   </Modal>;
@@ -19769,7 +19828,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.512",
+    app_version:"87.513",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

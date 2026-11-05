@@ -3011,6 +3011,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       preus», 15 lectures com a mínim); s'hi posen els marges de l'obra i substitueix el descompost (pregunta si ja n'hi ha).
     - **«Adjuntar un BC3»** (mòdul tècnic; `bc3Desc878512`): llegeix el BC3 i hi posa el descompost de la partida pel codi o, si no, la més semblant.
     - Les proves d'abans porten la marca `desc-prova-v878512` (l'editor d'abans; la posa l'ajuda de les proves). Prova: `v512test.mjs` (12).
+  - **V87.513 · Amidaments: llegir un plànol amb IA i, a la constructora, passar-ho a pressupost sense preus** (proposta 2; tanda 8, punt 12;
+    `src/theme-v878513.css`):
+    - **«Llegir un plànol amb IA»** (si hi ha la funció `aco-ia`; a la barra dels Amidaments, o a «Opcions» si ja n'hi ha): `PlanolIa878513`. S'adjunta el
+      plànol acotat (PDF o foto, fins a 4) i es diu o s'escriu què s'ha d'amidar («enrajolat del bany fins al sostre»); `iaCrida("partides")` amb
+      `reglesAmid878513` (amidar només el que es demana, les mides de cada parament a la descripció, cap preu). Es revisen (casella, concepte, quantitat,
+      unitat i les mides) i «Afegir-ne N als amidaments» (`aplicaPlanol513`, línies `ia878513` sense preu). Gasta com a mínim 8 lectures.
+    - **Constructora** (`constructoraPropia878363`): «Passar-ho a pressupost» sense preus (pu 0, ni descompost ni marges; «Passaran sense preus.»).
+      Les proves d'abans porten la marca `amid-prova-v878513`.
+    - Prova: `v513test.mjs` (IA simulada).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3209,7 +3218,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.512 a Render):**
+**Estat (publicada la V87.513 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
