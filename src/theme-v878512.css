@@ -1,0 +1,28 @@
+/* V87.512 · el descompost en tres targetes (Mà d'obra · Materials · Altres), «Fes-ho amb IA» i el BC3 del tècnic. */
+html body .dn-tres-v878512{display:flex;flex-direction:column;gap:10px}
+html body .dn-tres-v878512 .dn-ia-v878512{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+html body .dn-tres-v878512 .dn-ia-v878512 button.ia{display:inline-flex;align-items:center;gap:6px;border-color:#7C3AED;color:#5B21B6}
+html body .dn-tres-v878512 .dn-ia-v878512 .upload-label{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border:1px solid #C3CED6;border-radius:10px;background:#fff;cursor:pointer;font-weight:600}
+html body .dn-tres-v878512 .dn-ia-v878512 .upload-label input{display:none}
+html body .dn-tres-v878512 details.dn-g-v878512{border-radius:12px;overflow:clip}
+html body .dn-tres-v878512 details.dn-g-v878512>summary{display:flex;align-items:center;gap:10px;min-height:50px;padding:6px 12px;cursor:pointer;list-style:none}
+html body .dn-tres-v878512 details.dn-g-v878512>summary::-webkit-details-marker{display:none}
+html body .dn-tres-v878512 details.dn-g-v878512>summary .t{flex:1;min-width:0}
+html body .dn-tres-v878512 details.dn-g-v878512>summary .xifra{font-weight:700;white-space:nowrap}
+html body .dn-tres-v878512 details.dn-g-v878512>summary .chev{transition:transform .15s}
+html body .dn-tres-v878512 details.dn-g-v878512[open]>summary .chev{transform:rotate(90deg)}
+html body .dn-tres-v878512 details.dn-g-v878512>.cos{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;background:#fff}
+html body .dn-cats-v878512{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+html body .dn-cats-v878512>button:not(.link){display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:48px;padding:6px 10px;border:1.5px solid #C3CED6;border-radius:10px;background:#fff;cursor:pointer;text-align:left}
+html body .dn-cats-v878512>button:not(.link):hover{border-color:#1D4ED8}
+html body .dn-cats-v878512>button small{color:var(--co-ink-3,#5F7075)}
+html body .dn-mat-bts-v878512{display:flex;flex-wrap:wrap;gap:8px}
+html body .dn-cerca-v878512{display:flex;flex-direction:column;gap:6px}
+html body .dn-cerca-v878512>input{min-height:42px;padding:0 12px;border:1.5px solid #94A3B8;border-radius:10px;font-size:16px}
+html body .dn-cerca-v878512 .res{display:flex;flex-direction:column;gap:4px;max-height:280px;overflow:auto}
+html body .dn-cerca-v878512 .res>button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:46px;padding:6px 10px;border:1px solid #DCE3E7;border-radius:10px;background:#fff;cursor:pointer;text-align:left}
+html body .dn-cerca-v878512 .res>button:hover{border-color:#1D4ED8;background:#F8FAFF}
+html body .dn-cerca-v878512 .res>button small{color:var(--co-ink-3,#5F7075)}
+html body .dn-cerca-v878512 .buit{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .dn-cerca-v878512>.link{align-self:flex-start}
+html body .dn-pcts-v878512{display:flex;flex-direction:column;gap:6px}

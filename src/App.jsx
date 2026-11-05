@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.511";
+const APP_VERSION878264="87.512";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13593,6 +13593,46 @@ function TaulaDescompost878449({parts,q=0}){
 // V87.450 · Editor del descompost (l'Héctor, 31/10/2026: «la primera meitat posa 3 vegades el mateix… els avisos ocupen massa… tot és mòbil»): el
 // preu a dalt una sola vegada, les tres maneres de fer-lo en una tira i les línies en fitxes curtes, a pantalla sencera al mòbil.
 const MODES878450=[["detallat","Descompost"],["subcontracta","Preu d’industrial"],["paquet","Per lots"]];
+// V87.512 · proposta 4 (l'Héctor, 5/11/2026: «sí a tot»; tanda 8, punt 16: «molt més clar i simple: Mà d'obra · Materials · Altres… en triar
+// "Oficial", el preu per hora que ja hi ha; material a mà però fàcil; o escriure una descripció i que la IA faci el descompost i el preu; adjuntar un
+// BC3 (per al tècnic)»). El descompost detallat en tres targetes; els percentatges (CI, DGE, BI…) a sota, com abans. Les proves d'abans porten la
+// marca «desc-prova-v878512» (cap usuari no la té).
+const GRUPS_DESC878512=[["MO","Mà d’obra"],["MAT","Materials"],["ALT","Altres"]];
+const NOM_GRUP878512={MO:"MÀ D’OBRA",MAT:"MATERIALS",ALT:"ALTRES"};
+function descVell878512(){try{return lsVisual878400()?.getItem("desc-prova-v878512")==="1"}catch{return false}}
+function grupsDesc878512(rows=[],kinds=[]){let sec=null;return rows.map((r,i)=>{
+  if(r.isSection){const n=String(r.concepte||"");const fills=[];for(let j=i+1;j<rows.length&&!rows[j].isSection;j++)fills.push(kinds[j]||"resource");
+    sec=fills.length&&fills.every(k=>k!=="resource")?"PCT":esMO878378(n)?"MO":/MATERIAL/i.test(n)?"MAT":/PERCENT|MARGES|COSTOS? INDIRECTES|DESPESES GENERALS|BENEFICI/i.test(n)?"PCT":"ALT";return sec}
+  const k=kinds[i]||"resource";if(k==="final")return "FI";if(k!=="resource")return "PCT";
+  if(sec&&sec!=="PCT")return sec;const c=String(r.concepte||"");return /^(oficial|pe[oó]\b|encarregat|aprenent|ajudant|manobre|m[àa] d.obra)/i.test(c)?"MO":/^material/i.test(c)?"MAT":"ALT"})}
+function materialsCerca878512(q,{lib=[],obraId="",data={}}={}){
+  const norm=x=>String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const ws=norm(q).split(/\s+/).filter(w=>w.length>1);if(!ws.length)return [];
+  const out=new Map();
+  const posa=(m,font)=>{if(!m.concepte||out.size>=25)return;const nc=norm(m.concepte);if(!ws.every(w=>nc.includes(w)))return;const k=nc+"|"+norm(m.ut);if(!out.has(k))out.set(k,{...m,font})};
+  const deTaula=(tb,font)=>{let sec="";for(const r of tb?.rows||[]){if(r.isSection){sec=String(r.concepte||"");continue}if(/MATERIAL/i.test(sec)&&!/%/.test(String(r.ut||"")))posa({codi:r.codi||"",concepte:r.concepte,ut:r.ut,pu:parseNum8770(r.pu)||0},font)}};
+  for(const p of data?.partides||[])deTaula(p.descompostTable,"Aquesta obra");
+  for(const p of lib||[])deTaula(p.descompostTable,"Llibreria de preus");
+  for(const p of bancPreus878368()?.partides||[])for(const x of p.descomp||[])if(x.tipus==="MAT")posa({codi:x.codi||"",concepte:x.concepte,ut:x.ut,pu:x.pu||0},"Banc de preus");
+  for(const p of partidesObres878372(obraId))deTaula(p.descompostTable,"Obres anteriors");
+  return [...out.values()];
+}
+function AfegirMO878512({onTria}){
+  const[obre,setObre]=useState(false);
+  const cats=[...new Set([...CATS_MA878348,...llegeixTreballadors878339().filter(w=>w.actiu!==false&&w.ofici).map(w=>String(w.ofici))])];
+  if(!obre)return <button type="button" className="dn-mes-v878450" onClick={()=>setObre(true)}><Plus size={15}/>{i18nT("Mà d’obra")}</button>;
+  return <div className="dn-cats-v878512" role="group" aria-label={i18nT("Categoria")}>{cats.map(c=>{const ch=costCat878352(c);return <button type="button" key={c} onClick={()=>{setObre(false);onTria({concepte:i18nT(c),ut:"h",q:"",pu:ch>0?qty2(ch):""})}}><b>{i18nT(c)}</b><small>{ch>0?money(ch)+"/h":"—"}</small></button>})}
+    <button type="button" className="link" onClick={()=>{setObre(false);onTria({concepte:"",ut:"h",q:"",pu:""})}}>{i18nT("Una altra")}</button></div>;
+}
+function AfegirMat878512({cerca,onTria}){
+  const[q,setQ]=useState(null);
+  const res=useMemo(()=>q&&q.trim().length>=2?cerca(q):[],[q]);
+  if(q===null)return <div className="dn-mat-bts-v878512"><button type="button" className="dn-mes-v878450" onClick={()=>setQ("")}><Search size={15}/>{i18nT("Buscar material")}</button><button type="button" className="dn-mes-v878450" onClick={()=>onTria({concepte:"",ut:"ut",q:"",pu:""})}><Plus size={15}/>{i18nT("Material a mà")}</button></div>;
+  return <div className="dn-cerca-v878512"><input autoFocus value={q} aria-label={i18nT("Buscar material")} placeholder={i18nT("Buscar a la llibreria, el banc de preus i les obres")} onChange={e=>setQ(e.target.value)}/>
+    <div className="res">{res.map((m,i)=><button type="button" key={i} onClick={()=>{setQ(null);onTria({codi:m.codi||"",concepte:m.concepte,ut:m.ut||"ut",q:"",pu:qty2(m.pu||0)})}}><b>{m.concepte}</b><small>{[m.ut,money(m.pu||0),i18nT(m.font)].filter(Boolean).join(" · ")}</small></button>)}</div>
+    {q.trim().length>=2&&!res.length&&<p className="buit">{i18nT("No s’ha trobat cap material.")}</p>}
+    <button type="button" className="link" onClick={()=>setQ(null)}>{i18nT("Tancar")}</button></div>;
+}
 function LiniaDesc878450({tr,idx,on,kind="resource"}){
   if(kind==="final")return null;
   if(kind==="subtotal")return <div className="dn-sub-v878450"><span>{tr.concepte}</span><b>{tr.total}</b></div>;
@@ -13606,7 +13646,7 @@ function LiniaDesc878450({tr,idx,on,kind="resource"}){
     <input className="n t" inputMode="decimal" aria-label={i18nT("Import")} value={tr.total||""} onChange={e=>on.cell(idx,"total",e.target.value)}/>
   </div>;
 }
-function EditorDescompost878450({row={},costMode="detallat",detected=0,closed={},pricing={},on}){
+function EditorDescompost878450({row={},costMode="detallat",detected=0,closed={},pricing={},on,x512=null}){
   const rows=row.descompostTable?.rows||[];
   // el tipus de cada línia surt del càlcul: les taules acabades d'importar encara no el porten
   const kinds=recalculateBreakdownTableV87232({rows}).table.rows.map(r=>r.calculatedKind878232||"resource");
@@ -13628,7 +13668,31 @@ function EditorDescompost878450({row={},costMode="detallat",detected=0,closed={}
       <div className="dn-modes-v878450" role="tablist">{MODES878450.filter(([k])=>k!=="paquet"||costMode==="paquet").map(([k,l])=><button type="button" key={k} role="tab" aria-selected={costMode===k} className={costMode===k?"on":""} onClick={()=>on.mode(k)}>{i18nT(l)}</button>)}</div>
     </div>
 
-    {costMode==="detallat"&&<div className="dn-cos-v878450">
+    {costMode==="detallat"&&x512&&!descVell878512()&&(()=>{
+      const g=grupsDesc878512(rows,kinds);
+      const ICG={MO:<HardHat size={16} aria-hidden="true"/>,MAT:<Package size={16} aria-hidden="true"/>,ALT:<Wrench size={16} aria-hidden="true"/>};
+      return <div className="dn-cos-v878450 dn-tres-v878512">
+        {(x512.ia||x512.tecnic)&&<div className="dn-ia-v878512">
+          {x512.ia&&<button type="button" className="secondary ia" disabled={!!x512.fent} onClick={on.ia}><WandSparkles size={15} aria-hidden="true"/> {x512.fent||i18nT("Fes-ho amb IA")}</button>}
+          {x512.tecnic&&<label className="upload-label"><FileCode size={15} aria-hidden="true"/>{i18nT("Adjuntar un BC3")}<input type="file" accept=".bc3,.BC3" onChange={e=>{const f=e.target.files?.[0];e.target.value="";if(f)on.bc3(f)}}/></label>}
+        </div>}
+        {x512.err&&<p className="err-v878305">{x512.err}</p>}
+        {GRUPS_DESC878512.map(([k,nom])=>{const idxs=rows.map((_,i)=>i).filter(i=>g[i]===k);const linies=idxs.filter(i=>!rows[i].isSection);const secs=idxs.filter(i=>rows[i].isSection);
+          const sub=linies.reduce((a,i)=>a+(parseNum8770(rows[i].total)||0),0);
+          return <details key={k} className={"sub-v878426 dn-g-v878512 g-"+k} open={linies.length>0||undefined}>
+            <summary>{ICG[k]}<span className="t"><b>{i18nT(nom)}</b></span><span className="xifra">{money(sub)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+            <div className="cos">
+              {linies.length>0&&titols}
+              {idxs.map(i=>rows[i].isSection?(secs.length>1?<div className="dn-grup-v878450" key={rows[i].id||i}><input aria-label={i18nT("Grup")} value={rows[i].concepte||""} onChange={e=>on.cell(i,"concepte",e.target.value)}/><button type="button" className="treu" aria-label={i18nT("Eliminar")} title={i18nT("Eliminar")} onClick={()=>on.del(i)}><X size={16}/></button></div>:null)
+                :<LiniaDesc878450 key={rows[i].id||i} tr={rows[i]} idx={i} on={on} kind={kinds[i]}/>)}
+              {k==="MO"?<AfegirMO878512 onTria={l=>on.afegeix("MO",l)}/>:k==="MAT"?<AfegirMat878512 cerca={x512.cerca} onTria={l=>on.afegeix("MAT",l)}/>:<button type="button" className="dn-mes-v878450" onClick={()=>on.afegeix("ALT",{concepte:"",ut:"ut",q:"",pu:""})}><Plus size={15}/>{i18nT("Línia")}</button>}
+            </div>
+          </details>})}
+        {rows.some((_,i)=>g[i]==="PCT"||g[i]==="FI")&&<div className="dn-pcts-v878512">{rows.map((tr,idx)=>g[idx]==="PCT"?<React.Fragment key={tr.id||idx}>{tr.isSection?<div className="dn-grup-v878450"><input aria-label={i18nT("Grup")} value={tr.concepte||""} onChange={e=>on.cell(idx,"concepte",e.target.value)}/><button type="button" className="treu" aria-label={i18nT("Eliminar")} title={i18nT("Eliminar")} onClick={()=>on.del(idx)}><X size={16}/></button></div>:<LiniaDesc878450 tr={tr} idx={idx} on={on} kind={kinds[idx]}/>}</React.Fragment>:null)}</div>}
+        <div className="dn-eines-v878450"><label className="upload-label"><Upload size={15}/>{i18nT("Importar Excel")}<input type="file" accept=".xlsx,.xls,.csv" onChange={e=>on.excel(e.target.files?.[0])}/></label></div>
+        {row.descompostSource&&<p className="dn-origen-v878450">{row.descompostSource}{row.descompostSheet?` · ${row.descompostSheet}`:""}</p>}
+      </div>})()}
+    {costMode==="detallat"&&!(x512&&!descVell878512())&&<div className="dn-cos-v878450">
       {rows.length?<>
         {senseGrup&&titols}
         {rows.map((tr,idx)=><React.Fragment key={tr.id||idx}>
@@ -15509,6 +15573,59 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       return {...prev,[cap]:arr};
     });
   }
+  // V87.512 · una línia nova al seu grup (Mà d'obra · Materials · Altres); si el grup no hi és, el grup i la línia, abans dels percentatges
+  function afegeixDesc878512(cap,i,grup,linia){
+    setCaps(prev=>{
+      const arr=[...(prev[cap]||[])];const cr={...(arr[i]||{})};
+      const tb=cr.descompostTable||{source:"Descompost manual",title:cr.concepte||"",rows:[]};const rows=[...(tb.rows||[])];
+      const kinds=recalculateBreakdownTableV87232({rows}).table.rows.map(r=>r.calculatedKind878232||"resource");const g=grupsDesc878512(rows,kinds);
+      const st=Date.now().toString(36);const nova={id:"lin-"+st,isSection:false,codi:linia.codi||"",concepte:linia.concepte||"",ut:linia.ut||"ut",q:linia.q??"",pu:linia.pu??"",total:""};
+      let pos=-1;g.forEach((x,k)=>{if(x===grup)pos=k});
+      if(pos>=0)rows.splice(pos+1,0,nova);
+      else{let ins=g.findIndex(x=>x==="PCT"||x==="FI");if(ins<0)ins=rows.length;
+        // els grups, en l'ordre Mà d'obra · Materials · Altres
+        const ord=["MO","MAT","ALT"],me=ord.indexOf(grup);const desp=g.findIndex(x=>ord.indexOf(x)>me);if(desp>=0&&desp<ins)ins=desp;
+        rows.splice(ins,0,{id:"sec-"+st,isSection:true,concepte:NOM_GRUP878512[grup]||grup,ut:"",q:"",pu:"",total:""},nova)}
+      const rc=recalculateBreakdownTableV87232({...tb,rows});
+      arr[i]={...cr,descompostTable:rc.table,descompost:descompostTableToText878174(rc.table),descompostValidatedPu:qty2(rc.total||0),descompostValidatedManual878232:false};
+      return {...prev,[cap]:arr};
+    });
+  }
+  function posaTaulaDesc878512(cap,i,tb,origen){
+    setCaps(prev=>{const arr=[...(prev[cap]||[])];const cr={...(arr[i]||{})};const rc=recalculateBreakdownTableV87232(tb);
+      arr[i]={...cr,costMode878229:"detallat",descompostTable:rc.table,descompost:descompostTableToText878174(rc.table),descompostValidatedPu:qty2(rc.total||0),descompostValidatedManual878232:false,...(origen?{origenPreu878368:origen}:{})};
+      return {...prev,[cap]:arr}});
+  }
+  async function iaDesc878512(cap,i){
+    const row=(caps?.[cap]||[])[i]||{};
+    if(!String(row.concepte||row.desc||"").trim()){setIa512({fent:"",err:t("Escriu primer què és la partida (el concepte o la descripció).")});return}
+    if((row.descompostTable?.rows||[]).some(r=>!r.isSection)&&!confirm(t("Substituir el descompost d’ara pel de la IA?")))return;
+    setIa512({fent:t("La IA prepara el descompost…"),err:""});const encesa=await pantallaEncesa878476();
+    try{
+      const p={codi:"P1",concepte:row.concepte||"",ut:row.ut||"ut",desc:row.desc||"",q:parseNum8770(row.q)||1};
+      const pr=await iaCrida("preus",{text:promptPreusIa({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:[p]})});
+      const lr=respostaIa(pr?.text||"",["P1"]);const x=lr.preus?.P1;
+      if(!x||!(x.pu>0)||!(x.descomp||[]).length)throw new Error(t("La IA no ha tornat cap descompost."));
+      const acc=pctAcces(data?.condicions878368||{});
+      const m=margesLinia878378({...p,pu:x.pu,font878368:"ia",descomp878368:x.descomp,taula878368:null},{mg:margesObra878378(data),ambMg:true,acc,ambAcc:acc>0});
+      const tb=m.tb||taulaDescomp(x.descomp,x.pu,row.concepte||"","IA");
+      posaTaulaDesc878512(cap,i,tb,["IA",x.nota||""].filter(Boolean).join(" · ").slice(0,260));
+      setIa512({fent:"",err:(lr.avisos||[]).join(" · ")});
+    }catch(e){setIa512({fent:"",err:t("No s’ha pogut fer: {e}",{e:iaErr878458(e)})})}
+    try{encesa?.release?.()}catch{}
+  }
+  async function bc3Desc878512(cap,i,f){
+    const row=(caps?.[cap]||[])[i]||{};setIa512({fent:"",err:""});
+    try{
+      const b=llegirBancBc3(textBc3(new Uint8Array(await f.arrayBuffer())));
+      const cn=x=>String(x||"").toUpperCase().replace(/[\s.\-_]/g,"");
+      let p=b.partides.find(x=>cn(x.codi)&&cn(x.codi)===cn(row.codi));
+      if(!p){const r=buscaPreu({codi:row.codi,concepte:row.concepte,ut:row.ut,desc:row.desc},fesIndex(b.partides),{minim:0.5});p=r?.item||null}
+      if(!p&&b.partides.length===1)p=b.partides[0];
+      if(!p||!(p.descomp||[]).length){setIa512({fent:"",err:t("Aquest BC3 no té el descompost d’aquesta partida.")});return}
+      posaTaulaDesc878512(cap,i,taulaDescomp(p.descomp,p.pu,p.concepte||"","BC3 · "+f.name),"BC3 · "+[p.codi,f.name].filter(Boolean).join(" · "));
+    }catch(e){setIa512({fent:"",err:t("No s’ha pogut llegir el BC3: {e}",{e:String(e?.message||e)})})}
+  }
   function addDetailedBreakdownRow878229(cap,i,isSection=false,pos=null){
     setCaps(prev=>{
       const arr=[...(prev[cap]||[])];
@@ -15624,6 +15741,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   // l'iPad, recollides a «Accions». Fer-lo des d'un Excel, un PDF o amb IA, només amb el pressupost buit. «Tancar el pressupost»: el que
   // s'hi afegeixi després va a «Fora de pressupost»; «Reobrir-lo», per si s'hi ha deixat alguna cosa.
   const pc428=usePC878428();
+  const[ia512,setIa512]=useState({fent:"",err:""});
   const tancat428=!!(pi878411.ini&&!pi878411.ini.obert);
   const buit428=()=>!Object.values(caps||{}).some(a=>(a||[]).length);
   // V87.509 · propostes 6 i 3 (l'Héctor, 5/11/2026: «sí a tot»): amb partides, «Afegir» només dins d'«Editar» (es desa amb «Guardar canvis»); fora
@@ -16057,7 +16175,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           });
         };
         return <Modal title={`${row.codi||""} ${row.concepte||""}`} close={cancelDescompostChanges878229}>
-          <EditorDescompost878450 row={row} costMode={costMode} detected={detected} closed={closedCalc} pricing={pricing} on={{
+          <EditorDescompost878450 row={row} costMode={costMode} detected={detected} closed={closedCalc} pricing={pricing} x512={clientMode?null:{ia:!quickMode&&iaOn459,tecnic:teModul878326("tecnic"),fent:ia512.fent,err:ia512.err,cerca:q=>materialsCerca878512(q,{lib:partidaLibrary,obraId:obra?.id||"",data})}} on={{
+            afegeix:(grup,l)=>afegeixDesc878512(cap,i,grup,l),ia:()=>iaDesc878512(cap,i),bc3:f=>bc3Desc878512(cap,i,f),
             cell:updateTableCell,mode:m=>changeCostMode878229(cap,i,m),preu:v=>updateDetailedValidatedPu878232(cap,i,v),preuAuto:()=>preuCalculat878450(cap,i),
             add:(sec,pos)=>addDetailedBreakdownRow878229(cap,i,sec,pos),del:idx=>removeDetailedBreakdownRow878229(cap,i,idx),excel:f=>importDescompostExcel878161(cap,i,f),text:v=>upd(cap,i,"descompost",v),
             pricing:(k,v)=>updateCostPricing878229(cap,i,k,v),pkg:(n,k,v)=>updatePackageCostRow878229(cap,i,n,k,v),pkgAdd:()=>addPackageCostRow878229(cap,i),pkgDel:n=>removePackageCostRow878229(cap,i,n),
@@ -19650,7 +19769,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.511",
+    app_version:"87.512",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

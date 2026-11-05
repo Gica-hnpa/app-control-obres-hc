@@ -2999,6 +2999,18 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       s'havien posat al Rendiment (`rendiment878342`) continuen valent i també els fan servir els preus (`margesObra878378`); en canviar-los als ajustos,
       passen a `marges878378`.
     - Prova: `v511test.mjs` (9). Adaptades `fases342test` (la DGE i el BI, als ajustos), `preus378test` i `v426test` (el nom del bloc).
+  - **V87.512 · El descompost en tres targetes: Mà d'obra · Materials · Altres** (proposta 4; tanda 8, punt 16; `src/theme-v878512.css`):
+    - **`EditorDescompost878450` amb `x512`** (mode «Descompost»): les línies van a la seva targeta segons el grup (`grupsDesc878512`: el nom de la secció —mà
+      d'obra, materials— o, sense secció, el concepte; la resta, «Altres»); els percentatges (CI, DGE, BI…) i el preu final, a sota com abans. Cada targeta
+      diu el seu import. Una línia nova va al seu grup (`afegeixDesc878512`; si el grup no hi és, es crea en l'ordre Mà d'obra · Materials · Altres).
+    - **Mà d'obra** (`AfegirMO878512`): es tria la categoria (Encarregat, Oficial 1a, Oficial 2a, Peó, Aprenent i els oficis dels treballadors) amb el €/h de
+      l'empresa (`costCat878352`, la mitjana dels treballadors d'aquella categoria); «Una altra», a mà.
+    - **Materials** (`AfegirMat878512`, `materialsCerca878512`): «Buscar material» als materials dels descompostos d'aquesta obra, de la Llibreria de preus, del
+      banc de preus i de les obres anteriors (concepte, unitat, preu i d'on surt); o «Material a mà».
+    - **«Fes-ho amb IA»** (si hi ha la funció `aco-ia`; `iaDesc878512`): amb el concepte i la descripció, la IA torna el descompost i el preu (com «Buscar
+      preus», 15 lectures com a mínim); s'hi posen els marges de l'obra i substitueix el descompost (pregunta si ja n'hi ha).
+    - **«Adjuntar un BC3»** (mòdul tècnic; `bc3Desc878512`): llegeix el BC3 i hi posa el descompost de la partida pel codi o, si no, la més semblant.
+    - Les proves d'abans porten la marca `desc-prova-v878512` (l'editor d'abans; la posa l'ajuda de les proves). Prova: `v512test.mjs` (12).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3197,7 +3209,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.511 a Render):**
+**Estat (publicada la V87.512 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
