@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.524";
+const APP_VERSION878264="87.525";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4695,9 +4695,19 @@ function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,factur
     tabs=horesPrimer?[...tabs0.filter(x=>x[0]==="Hores"),...tabs0.filter(x=>x[0]!=="Hores")]:tabs0}
   else tabs=[...(temps?[["Hores",t("Hores")]]:[]),...(despeses?[["Despeses",t("Despeses")]]:[]),["Factures",t("Factures")]];
   const s=tabs.some(x=>x[0]===sub)?sub:pur?(horesPrimer?"Hores":"Pressupostos"):tabs[0][0];
+  // V87.526 · les pestanyes, com les rajoles del Control horari (l'Héctor, 5/11/2026: les pantalles velles amb el patró de les altres): la icona,
+  // el nom i, a sota, com està (quants pressupostos, el facturat, les hores, les meves despeses o el resultat)
+  const sub526=useMemo(()=>{const o={};try{
+    const ps=data?.pressupostosTecnic||[];o.Pressupostos=ps.length===1?t("1 pressupost"):ps.length?t("{n} pressupostos",{n:ps.length}):t("Cap");
+    const fs=uniqueFactures8743(data?.facturesTecnic||[]).filter(x=>!/anul/i.test(String(x.estat||"")));o.Factures=fs.length?money(fs.reduce((a,x)=>a+totalFactura878120(x),0)):t("Cap");
+    const h=timeRowsForObra878120(obra?.id,data||{}).filter(isHoursRow878255).reduce((a,r)=>a+timeHours878120(r),0);o.Hores=fh878340(h);
+    const ds=readAlbarans878259().filter(a=>a.meva&&String(a.obraId||"")===String(obra?.id));o.Despeses=ds.length?money(ds.reduce((a,x)=>a+albaraBase878259(x),0)):t("Cap");
+    if(rendiment)o.Rendiment=money(rendEncarrec878410(data||{},obra||{}).resultat);
+  }catch{}return o},[data,obra,rendiment,s]);
+  const ICO526={Pressupostos:FileText,Factures:Receipt,Hores:Clock,Despeses:Wallet,Rendiment:TrendingUp};
   return <div className={`stack honoraris-exp-v8778${pur?"":" encarrec-v878431"}`}>
     {pur&&rendiment&&!quota&&<ResultatEncarrec878410 data={data} obra={obra} onClick={()=>setSub("Rendiment")}/>}
-    <div className="subtabs-v8746">{tabs.map(([k,l])=><button key={k} className={s===k?"active":""} onClick={()=>{setSub(k);if(k==="Pressupostos")setCalc(false)}}>{l}</button>)}</div>
+    <div className="subtabs-v8746 hon-raj-v878526">{tabs.map(([k,l])=>{const Ic=ICO526[k]||FileText;return <button key={k} type="button" className={s===k?"active":""} aria-pressed={s===k} data-sub={sub526[k]||""} onClick={()=>{setSub(k);if(k==="Pressupostos")setCalc(false)}}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{l}</b></button>})}</div>
     {s==="Pressupostos"&&(calc?<div className="calc-dins-v878410"><button type="button" className="link tornar" onClick={()=>setCalc(false)}>‹ {t("Tornar als pressupostos")}</button><HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} encarrecs={encarrecsDe(obra,data)} onCreatePressupost={p=>{addPressupost?.(p);setCalc(false)}}/></div>
       :<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupost} updatePressupost={updatePressupost} facturarPressupost={facturarPressupost} deletePressupost={deletePressupost} openEmail={openEmail} openDoc={openDoc} onCalcular={()=>setCalc(true)}/>)}
     {s==="Factures"&&(pur?<FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>
@@ -20828,7 +20838,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.524",
+    app_version:"87.525",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -21131,6 +21141,9 @@ function GestioTemps878255({obres=[],clients=[],odata={},openObra,updateStatus})
   const[despesa,setDespesa]=useState(null);
   const[rate,setRate]=useState(()=>String(defaultRate878255()));
   const[goal,setGoal]=useState(()=>lsGet8779("aco_daily_goal_v878255","8"));
+  // V87.525 · la pantalla d'Hores del tècnic amb el patró de les altres (l'Héctor, 5/11/2026: les targetes, tot recollit, res repetit)
+  const[fOb525,setFOb525]=useState(()=>{try{return window.innerWidth>1100}catch{return true}});
+  const[rep525,setRep525]=useState(false);
   const range=(()=>{
     if(period==="tot"){const ds=(obres||[]).flatMap(o=>readTimeRows878255(o.id).map(rowDate878255)).filter(Boolean);const min=ds.length?new Date(Math.min(...ds.map(d=>d.getTime()))):today;return [new Date(min.getFullYear(),min.getMonth(),min.getDate()),today]}
     if(period==="avui")return [today,today];
@@ -21192,15 +21205,17 @@ function GestioTemps878255({obres=[],clients=[],odata={},openObra,updateStatus})
       <div className="seg">{[["tot","Tot"],["avui","Avui"],["setmana","Setmana"],["mes","Mes"],["rang","Interval"]].map(([k,l])=><button type="button" key={k} aria-pressed={period===k} onClick={()=>{setPeriod(k);setDayF("")}}>{i18nT(l)}</button>)}</div>
       {period==="mes"&&<input type="month" value={month} onChange={e=>{setMonth(e.target.value);setDayF("")}} aria-label={i18nT("Mes")}/>}
       {period==="rang"&&<><input type="date" value={from} onChange={e=>setFrom(e.target.value)} aria-label={i18nT("Des de")}/><input type="date" value={to} onChange={e=>setTo(e.target.value)} aria-label={i18nT("Fins a")}/></>}
+      <details className="mes-v878525" open={fOb525||undefined} onToggle={e=>{const o=e.currentTarget.open;if(o!==fOb525)setFOb525(o)}}><summary><SlidersHorizontal size={16} aria-hidden="true"/> {i18nT("Filtres")}{(clientF?1:0)+(obraF?1:0)+(onlyPending?1:0)?` (${(clientF?1:0)+(obraF?1:0)+(onlyPending?1:0)})`:""}</summary><div className="cos">
       <select value={clientF} onChange={e=>{setClientF(e.target.value);setObraF("")}} aria-label={i18nT("Client")}><option value="">{t("Tots els clients")}</option>{(clients||[]).map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}</select>
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT(diuObra878326()?"Obra":"Expedient")}><option value="">{i18nT(etPaquet878327("Tots els expedients"))}</option>{obresVis.filter(o=>!clientF||o.client===clientF).map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={onlyPending} onChange={e=>setOnlyPending(e.target.checked)}/>{i18nT("Només pendent de facturar")}</label>
+      </div></details>
     </div>
     <div className="temps-kpis-v878255">
       <div><small>{i18nT("Hores")}</small><b>{fmtH(hours)}</b><span>{dayF?i18nT("el {data}",{data:new Date(dayF).toLocaleDateString(getLang()==="es"?"es-ES":loc878272())}):i18nT("{n} dies treballats",{n:worked})}</span></div>
       <div><small>{i18nT("Import a facturar")}</small><b>{money(value)}</b><span>{i18nT("{h} a facturar × preu + despeses",{h:fmtH(billH)})}</span></div>
       <div><small>{i18nT("Pendent de facturar")}</small><b className={pending>0.005?"warn":""}>{money(pending)}</b><span>{pendRows.length} {i18nT("registres")}</span></div>
-      <div><small>{i18nT("Mitjana per dia")}</small><b>{fmtH(worked?Object.values(dayMap).reduce((s,h)=>s+h,0)/worked:0)}</b><span>{i18nT("objectiu")} <input className="goal" value={goal} onChange={e=>saveGoal(e.target.value)} aria-label={i18nT("Objectiu diari d’hores")}/> h</span></div>
+      <div><small>{i18nT("Mitjana per dia")}</small><b>{fmtH(worked?Object.values(dayMap).reduce((s,h)=>s+h,0)/worked:0)}</b><span>{i18nT("objectiu {h}",{h:fmtH(goalN)})}</span></div>
     </div>
     {qSel>0&&<p className="temps-quota-v878291">{period==="mes"?i18nT("Quota fixa d’aquest client: {q} al mes. Les hores d’aquest mes valen {v} ({dif}).",{q:money(qSel),v:money(value),dif:value>qSel?i18nT("{x} més que la quota",{x:money(value-qSel)}):i18nT("{x} menys que la quota",{x:money(qSel-value)})}):i18nT("Quota fixa d’aquest client: {q} al mes. Les hores del període valen {v}.",{q:money(qSel),v:money(value)})}</p>}
     <CartaLlista878518 className="temps-card-v878518" icona={FolderOpen} title={i18nT("Per expedient")} xifra={groups.length?fmtH(groups.reduce((x,g)=>x+g.h,0)):null}><section className="temps-list-v878255">
@@ -21225,21 +21240,43 @@ function GestioTemps878255({obres=[],clients=[],odata={},openObra,updateStatus})
       </div>)}
     </section></CartaLlista878518>
     <details className="card bloc-v878426 informes-v878317 temps-informes-v878317" open={grafica} onToggle={e=>setGrafica(e.currentTarget.open)}>
-      <summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Gràfica i informes")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+      <summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{spanDays<=62?i18nT("Hores per dia"):i18nT("Hores per mes")}</b></span><span className="xifra">{fmtH(worked?Object.values(dayMap).reduce((x,h)=>x+h,0)/worked:0)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
       {grafica&&<div className="cos">
     <section className="temps-chart-v878255">
-      <div className="ch-head"><b>{spanDays<=62?i18nT("Hores per dia"):i18nT("Hores per mes")}</b><span>{dayF?<button type="button" className="link" onClick={()=>setDayF("")}>{i18nT("Treure el filtre de dia")}</button>:(spanDays<=62?"Clica un dia per veure’n el detall":"")}</span></div>
+      <div className="ch-head"><span className="goal-v878525">{i18nT("Objectiu diari")} <input className="goal" value={goal} onChange={e=>saveGoal(e.target.value)} aria-label={i18nT("Objectiu diari d’hores")}/> h</span><span>{dayF?<button type="button" className="link" onClick={()=>setDayF("")}>{i18nT("Treure el filtre de dia")}</button>:null}</span></div>
       <div className="bars" style={{"--n":bars.length}}>
         <i className="goal-line" style={{bottom:`${goalN/maxH*100}%`}} title={`Objectiu: ${goalN} h`}/>
         {bars.map((b,i)=><button type="button" key={i} className={`bar ${b.we?"we":""} ${dayF&&b.k===dayF?"sel":""} ${b.h>=goalN?"ok":b.h>0?"mid":""}`} title={`${b.title}: ${fmtH(b.h)}`} onClick={()=>b.k&&setDayF(dayF===b.k?"":b.k)} disabled={!b.k}><span className="col"><em style={{height:`${b.h/maxH*100}%`}}/></span><small>{b.label}</small></button>)}
       </div>
       <div className="legend"><span><i className="ok"/>{i18nT("Objectiu complert")}</span><span><i className="mid"/>{i18nT("Per sota de l’objectiu")}</span><span><i className="gl"/>{i18nT("Objectiu diari")}</span></div>
     </section>
-        <TracaGeneral obres={obres} odata={odata} openObra={openObra}/>
       </div>}
+    </details>
+    <details className="card bloc-v878426 rep-bloc-v878525" open={rep525||undefined} onToggle={e=>{const o=e.currentTarget.open;if(o!==rep525)setRep525(o)}}>
+      <summary><Clock size={18} aria-hidden="true"/><span className="t"><b>{i18nT("On van les hores")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+      {rep525&&<div className="cos"><RepartHores878525 rows={rows} cName={cName}/></div>}
     </details>
     {manual&&<ManualHours878256 obres={obres} clients={clients} initial={manual} close={()=>setManual(null)}/>}
     {despesa&&<AlbaraEditor878259 a={despesa} setA={setDespesa} obres={[...(obres||[])].sort((x,y)=>(isExpedientOpen878136(y.estat)?1:0)-(isExpedientOpen878136(x.estat)?1:0)||String(x.nom||"").localeCompare(String(y.nom||""),"ca"))} proveidors={[...new Set(readAlbarans878259().map(a=>a.proveidor).filter(Boolean))]} save={a=>{if(desaDespesa878318(a))setDespesa(null)}} remove={a=>{if(eliminaDespesa878318(a))setDespesa(null)}} close={()=>setDespesa(null)} openObra={openObra} tots={readAlbarans878259()}/>}
+  </div>;
+}
+// V87.525 · on van les hores del tècnic: per client, per expedient o per feina, amb una barra de colors i la llista (com «Hores per obra» del
+// Control horari). Cada nom manté el seu color (per ordre alfabètic entre els que surten); del vuitè en avall, «Altres».
+function RepartHores878525({rows=[],cName=()=>""}){
+  const[per,setPer]=useState("client");
+  const hs=rows.filter(r=>!r._alb&&isHoursRow878255(r));
+  const clau=r=>per==="client"?cName(r._obra?.client):per==="exp"?(r._obra?.nom||""):i18nT(r.tipusFeina||r.tipus||r.tasca||"Altres");
+  const m=new Map();hs.forEach(r=>{const k=clau(r)||t("Altres");const x=m.get(k)||{h:0,v:0};x.h+=timeHours878120(r);x.v+=r.noFactura?0:valApunt878317(r);m.set(k,x)});
+  const ord=[...m.entries()].filter(([,x])=>x.h>0).sort((a,b)=>b[1].h-a[1].h);const tot=ord.reduce((x,[,y])=>x+y.h,0);
+  const top=ord.slice(0,ord.length>8?7:8);const alt=ord.slice(top.length);
+  const colorDe=new Map(top.map(x=>x[0]).sort((a,b)=>a.localeCompare(b,"ca",{sensitivity:"base"})).map((k,i)=>[k,SERIES878343[i%SERIES878343.length]]));
+  const files=[...top.map(([k,x])=>({k,...x,c:colorDe.get(k)})),...(alt.length?[{k:t("Altres"),h:alt.reduce((x,[,y])=>x+y.h,0),v:alt.reduce((x,[,y])=>x+y.v,0),c:"#94A3B8"}]:[])];
+  return <div className="hpo-v878517 rep-v878525">
+    <div className="ctl"><div className="seg-v878515" role="group" aria-label={t("Vista")}>{[["client","Per client"],["exp",diuObra878326()?"Per obra":"Per expedient"],["feina","Per feina"]].map(([k,l])=><button key={k} type="button" aria-pressed={per===k} onClick={()=>setPer(k)}>{t(l)}</button>)}</div><span className="per"><b>{fh878340(tot)}</b></span></div>
+    {tot<=0?<p className="buit">{t("No hi ha hores en aquest període.")}</p>:<>
+      <div className="barra-v878517" role="img" aria-label={files.map(x=>`${x.k} ${fh878340(x.h)}`).join(", ")}>{files.map(x=><span key={x.k} style={{flexGrow:x.h,background:x.c}} title={`${x.k} · ${fh878340(x.h)}`}/>)}</div>
+      <ul className="lleg-v878517">{files.map(x=><li key={x.k}><i style={{background:x.c}} aria-hidden="true"/><span className="n">{x.k}</span><b>{fh878340(x.h)}</b><span className="p">{Math.round(x.h/tot*100)} %</span></li>)}</ul>
+    </>}
   </div>;
 }
 function TracaGeneral({obres,odata,openObra}){

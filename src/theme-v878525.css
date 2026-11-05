@@ -1,0 +1,42 @@
+/* V87.525 · Hores del tècnic amb el patró de les altres pantalles: filtres plegats al mòbil i l'iPad, cada expedient una subtargeta,
+   «Hores per dia» i «On van les hores» com a targetes */
+/* filtres: el període a la vista; client, expedient i «només pendent», darrere de «Filtres (n)» */
+html body .temps-filters-v878255 .mes-v878525{display:contents}
+html body .temps-filters-v878255 .mes-v878525>summary{display:none}
+html body .temps-filters-v878255 .mes-v878525>.cos{display:contents}
+@media (max-width:1100px){
+  html body .temps-filters-v878255 .mes-v878525{display:block;flex:1 1 100%}
+  html body .temps-filters-v878255 .mes-v878525>summary{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1.5px solid #AEBBCA;border-radius:10px;background:#fff;font:700 14px var(--app-font);color:var(--co-ink,#152328);cursor:pointer;list-style:none}
+  html body .temps-filters-v878255 .mes-v878525>summary::-webkit-details-marker{display:none}
+  html body .temps-filters-v878255 .mes-v878525[open]>summary{border-color:#2563EB;color:#1D4ED8}
+  html body .temps-filters-v878255 .mes-v878525>.cos{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  html body .temps-filters-v878255 .mes-v878525 select{width:100%}
+}
+/* capçalera al mòbil: sense l'etiqueta de dalt (ja hi és la capçalera fixa), «+ Afegir hores» primer */
+@media (max-width:700px){
+  html body .temps-head-v878255 .eyebrow{display:none}
+  html body .temps-head-v878255 h1{font-size:20px;margin:0}
+  html body .temps-head-v878255{align-items:center}
+  html body .temps-head-v878255 .actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  html body .temps-head-v878255 .actions .primary{grid-column:1/-1;order:-1;min-height:44px}
+  html body .temps-filters-v878255 .seg{max-width:100%;overflow-x:auto}
+  html body .temps-kpis-v878255>div{padding:10px 12px}
+  html body .temps-kpis-v878255 b{font-size:19px}
+}
+/* cada expedient, una subtargeta dins de «Per expedient» */
+html:root body .temps-list-v878255 .grp,html:root body .temps-list-v878255 .grp:first-of-type{border:1px solid #AEBBCA;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.06);margin:0 0 8px;padding:0 10px}
+html:root body .temps-list-v878255 .grp:has(>.grp-head[aria-expanded="true"]){border:2px solid #2563EB}
+html:root body .temps-list-v878255 .grp-head{min-height:52px;padding:8px 2px}
+html:root body .temps-list-v878255 .grp-head:hover{background:transparent}
+html:root body .temps-list-v878255 .grp>.entries{padding:0 0 10px}
+html:root body details.card.bloc-v878426.temps-card-v878518[open]:has(.temps-list-v878255 .grp){background:#E6EDF6!important}
+/* l'objectiu del dia, a la gràfica */
+html body .temps-chart-v878255 .goal-v878525{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--co-ink-2,#334155)}
+html body .temps-chart-v878255 .goal-v878525 input.goal{width:48px;padding:3px 6px!important;font-size:14px!important;border:1px solid #AEBBCA!important;border-radius:8px!important;min-height:0!important;height:auto!important;text-align:center}
+/* les targetes de baix, com les altres */
+html body .temps-v878255>.card.bloc-v878426{margin-top:12px}
+html body .temps-v878255 .rep-bloc-v878525>.cos{padding:4px 16px 16px}
+html body .temps-head-v878255 .actions button{justify-content:center;text-align:center}
+/* «Hores per dia»: el títol com les altres targetes (sense el triangle vell de la V87.317) */
+html:root body .temps-v878255 details.informes-v878317>summary{align-items:center;flex-wrap:nowrap}
+html:root body .temps-v878255 details.informes-v878317>summary span::before{content:none!important}

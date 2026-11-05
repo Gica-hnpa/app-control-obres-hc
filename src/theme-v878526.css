@@ -1,0 +1,24 @@
+/* V87.526 · Honoraris de l'expedient: les pestanyes, com les rajoles del Control horari (icona, nom i com està) */
+html:root body .subtabs-v8746.hon-raj-v878526{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;gap:10px!important;margin:0 0 4px!important;padding:0!important;background:none!important;border:0;border-radius:0;box-shadow:none;overflow:visible!important;white-space:normal!important;position:static!important;top:auto!important;z-index:auto!important;flex-wrap:nowrap}
+html:root body .subtabs-v8746.hon-raj-v878526>button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;row-gap:2px;align-items:center;min-height:74px!important;width:auto!important;padding:12px 14px!important;font-size:inherit!important;text-align:left!important;background:#fff;border:1.5px solid #AEBBCA;border-radius:14px!important;box-shadow:0 1px 2px rgba(15,23,42,.06)}
+html:root body .subtabs-v8746.hon-raj-v878526>button .ico{grid-row:1/3;width:44px;height:44px;border-radius:12px;background:#EAF1FD;color:#1D4ED8;display:grid;place-items:center}
+html:root body .subtabs-v8746.hon-raj-v878526>button b{grid-column:2;align-self:end;font-size:16px;font-weight:800;color:var(--co-ink,#152328);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:root body .subtabs-v8746.hon-raj-v878526>button::after{content:attr(data-sub);grid-column:2;align-self:start;font-size:13px;font-weight:600;color:var(--co-ink-3,#5F7075);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:root body .subtabs-v8746.hon-raj-v878526>button[aria-pressed="true"]{background:#1D4ED8;border-color:#1D4ED8;box-shadow:0 3px 10px rgba(29,78,216,.28)}
+html:root body .subtabs-v8746.hon-raj-v878526>button[aria-pressed="true"] .ico{background:rgba(255,255,255,.2);color:#fff}
+html:root body .subtabs-v8746.hon-raj-v878526>button[aria-pressed="true"] b,
+html:root body .subtabs-v8746.hon-raj-v878526>button[aria-pressed="true"]::after{color:#fff}
+html:root body .subtabs-v8746.hon-raj-v878526>button:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+@media (max-width:700px){
+  html:root body .subtabs-v8746.hon-raj-v878526{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  html:root body .subtabs-v8746.hon-raj-v878526>button{grid-template-columns:36px minmax(0,1fr);column-gap:8px;min-height:64px!important;padding:10px!important}
+  html:root body .subtabs-v8746.hon-raj-v878526>button .ico{width:36px;height:36px;border-radius:10px}
+  html:root body .subtabs-v8746.hon-raj-v878526>button b{font-size:15px}
+  html:root body .subtabs-v8746.hon-raj-v878526>button::after{font-size:12.5px}
+}
+/* guanya les regles d'abans de les pestanyes (V87.389 i V87.431, amb !important) */
+html:root body .honoraris-exp-v8778>.subtabs-v8746.hon-raj-v878526{grid-auto-flow:row!important;grid-auto-columns:auto!important;background:none!important;padding:0!important;gap:10px!important}
+html:root body .honoraris-exp-v8778>.subtabs-v8746.hon-raj-v878526>button{background:#fff!important;border:1.5px solid #AEBBCA!important;box-shadow:0 1px 2px rgba(15,23,42,.06)!important;border-radius:14px!important;color:var(--co-ink,#152328)!important;font:inherit!important}
+html:root body .honoraris-exp-v8778>.subtabs-v8746.hon-raj-v878526>button[aria-pressed="true"]{background:#1D4ED8!important;border-color:#1D4ED8!important;box-shadow:0 3px 10px rgba(29,78,216,.28)!important;color:#fff!important}
+@media (max-width:700px){html:root body .honoraris-exp-v8778>.subtabs-v8746.hon-raj-v878526{gap:8px!important}}
+html:root body .subtabs-v8746.hon-raj-v878526>button b{white-space:normal;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}

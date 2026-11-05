@@ -3219,6 +3219,19 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Les proves d'abans porten la marca `partida-inline-prova-v878524` (la posa l'ajuda de les proves si la pàgina no té `sessionStorage.__partidaNoTocar`;
       cap usuari no la té): la partida com fins ara. Prova: `partida523test.mjs` (24: ordinador, mòbil i iPad; consultant i editant).
     - **La unitat «BASE: 22,…»** que l'Héctor va veure en una partida ve de l'arxiu importat (la columna que l'app ha llegit com a unitat): per mirar-ho, cal l'arxiu.
+  - **V87.525 · Hores del tècnic i Honoraris de l'expedient amb el patró de les altres pantalles** (les dues «pantalles velles per refer» de la
+    V87.518; `src/theme-v878525.css`, `src/theme-v878526.css`):
+    - **Hores (menú, `GestioTemps878255`)**: el període (expedients oberts o tots; tot, avui, setmana, mes, interval) a la vista; el client, l'expedient i
+      «Només pendent de facturar», dins de `details.mes-v878525` («Filtres (n)», plegat al mòbil i l'iPad, a la vista a l'ordinador). Al mòbil, sense
+      l'etiqueta de dalt i «+ Afegir hores» de punta a punta. L'objectiu del dia ja no és un camp dins de les xifres («objectiu 8 h»): és a la gràfica.
+      Cada expedient de «Per expedient», una subtargeta (vora fina, blanca, sobre la safata blavosa). A baix, «Hores per dia» (o per mes; la gràfica
+      amb «Objectiu diari» i, a la línia, la mitjana) i **«On van les hores»** (`RepartHores878525`: Per client · Per expedient · Per feina, barra de
+      colors i llista amb les hores i el %, com «Hores per obra» del Control horari). **Fora el «Rendiment global d'honoraris» vell** (`TracaGeneral`,
+      ja no surt enlloc): repetia Facturació i Rendiment.
+    - **Honoraris de l'expedient (`HonorarisExpedient8778`)**: les pestanyes, com les rajoles del Control horari (`hon-raj-v878526`: icona, nom i com està,
+      `data-sub`): Pressupostos d'honoraris («1 pressupost»), Factures (el facturat o «Cap»), Hores («2,5 h»), Despeses (les meves) i Rendiment (el resultat).
+      Al mòbil, de dues en dues. Les regles d'abans de les pestanyes (V87.389, V87.431) portaven `!important`: les noves també.
+    - Prova: `v525test.mjs` (15, demo-tecnic: ordinador i mòbil).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3417,7 +3430,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.524 a Render):**
+**Estat (publicada la V87.525 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

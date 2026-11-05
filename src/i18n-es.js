@@ -5587,4 +5587,7 @@ export default {
 "Full d’informació per als treballadors": "Hoja de información para los trabajadores",
 "Segons el VII Conveni General del Sector de la Construcció.": "Según el VII Convenio General del Sector de la Construcción.",
 "Les correccions queden registrades amb la data i el motiu; no s’esborra cap marcatge.": "Las correcciones quedan registradas con la fecha y el motivo; no se borra ningún marcaje.",
+"objectiu {h}": "objetivo {h}",
+"On van les hores": "Dónde van las horas",
+"Per feina": "Por tarea",
 };
