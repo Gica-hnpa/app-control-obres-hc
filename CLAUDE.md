@@ -2990,6 +2990,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Agenda de l'obra** (`AgendaExpedient8774`): la targeta es diu **«Visites i reunions»** (abans «Cites i avisos»), amb «Feines pendents» a sota.
     - **Fora el tipus «Avís» / «Recordatori»** de les cites noves (un recordatori a mà és una feina amb data); les cites que ja ho eren es veuen igual.
     - Prova: `v510test.mjs` (8). Adaptada `v464test`.
+  - **V87.511 · Uns sols «Ajustos de l'obra»** (proposta 5; tanda 8, punt 21; `src/theme-v878511.css`):
+    - **`AjustosObra878511`** (dificultat, CI · DGE · BI, on van i el mínim d'hores; `MargesCamps878378` sobre `data.marges878378`): al Pressupost › Ajustos del
+      pressupost › «Ajustos de l'obra» (abans «Preus i marges»), i a pantalla sencera des del Rendiment › Compte de l'obra i de Despeses › DGE (botó
+      «Ajustos de l'obra», event `aco-ajustos-obra-511` que escolta l'`Obra`, `obreAjustosObra878511`).
+    - **El Rendiment ja no té els seus camps de DGE i BI:** diu «DGE x % · BI y %» i el botó. `cfgRend878342` fa servir els de l'obra (els mateixos que els
+      preus); si l'obra no en té, els d'Ajustos › Preus i marges o els de l'empresa; sense cap valor, el rendiment no compta DGE (com abans). Els que
+      s'havien posat al Rendiment (`rendiment878342`) continuen valent i també els fan servir els preus (`margesObra878378`); en canviar-los als ajustos,
+      passen a `marges878378`.
+    - Prova: `v511test.mjs` (9). Adaptades `fases342test` (la DGE i el BI, als ajustos), `preus378test` i `v426test` (el nom del bloc).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3188,7 +3197,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.510 a Render):**
+**Estat (publicada la V87.511 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

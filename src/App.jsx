@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.510";
+const APP_VERSION878264="87.511";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10620,9 +10620,13 @@ function treuAmid878342(d={},fase="principal"){if(!fase||fase==="principal"){con
 function teAmidaments878342(d={}){return !!(d.amidaments878328?.linies||[]).length||Object.values(d.amidamentsFases878342||{}).some(a=>(a?.linies||[]).length)}
 // DGE i BI previst (%): els de l'obra o, si no en té, els de l'empresa
 function cfgRend878342(d={}){
-  const e=empresaInfo878259()||{},c=d?.rendiment878342||{};
+  const e=empresaInfo878259()||{},c=d?.rendiment878342||{},o=d?.marges878378||{},a=lsJson8779("aco_marges_v878378",{})||{};
   const num=v=>v===""||v==null?null:parseNum8770(v);
-  return {dge:num(c.dge)??num(e.dge878342)??0,bi:num(c.bi)??num(e.bi878342),dgeEmp:num(e.dge878342),biEmp:num(e.bi878342),dgeObra:num(c.dge),biObra:num(c.bi)};
+  // V87.511 · proposta 5 (l'Héctor, 5/11/2026: «sí a tot»): uns sols «Ajustos de l'obra». La DGE i el BI del rendiment són els de l'obra, els
+  // mateixos que fan servir els preus (data.marges878378); si l'obra no en té, els d'Ajustos › Preus i marges o els de l'empresa. Sense cap
+  // valor posat, el rendiment no compta DGE (com abans). Els que s'havien posat al Rendiment (rendiment878342) continuen valent.
+  const dge=num(c.dge)??num(o.dge)??num(a.dge)??num(e.dge878342),bi=num(c.bi)??num(o.bi)??num(a.bi)??num(e.bi878342);
+  return {dge:dge??0,bi,dgeEmp:num(e.dge878342),biEmp:num(e.bi878342),dgeObra:num(c.dge)??num(o.dge),biObra:num(c.bi)??num(o.bi)};
 }
 // el rendiment d'una fase (o de tota l'obra si fase és ""): ingressos (certificat a origen o, si s'ha facturat més, el facturat) −
 // despeses directes (materials, industrials, albarans i personal propi) = marge; − DGE (% dels ingressos) = benefici
@@ -10746,10 +10750,7 @@ function RendimentFases878342({data={},setData,obraId="",fase="principal",tota=f
       {ambBenefici&&r.biPct!=null&&r.pct!=null&&<p className={`rf-bi-v878342 ${difBi>=0?"good":"bad"}`}>{t("Benefici industrial previst: {p}",{p:pct(r.biPct)})} · {difBi>=0?t("{d} punts per sobre",{d:(Math.round(difBi*10)/10).toLocaleString(loc878272())}):t("{d} punts per sota",{d:(Math.round(-difBi*10)/10).toLocaleString(loc878272())})}</p>}
       </>}
       {r.senseFase.n>0&&<p className="rf-avis-v878342">{t("{n} despeses o hores de l’obra no tenen fase ({x}): no compten aquí.",{n:r.senseFase.n,x:money(r.senseFase.imp)})} {goDespeses&&<button type="button" className="link" onClick={goDespeses}>{t("Assignar-les")}</button>}</p>}
-      {ambBenefici&&<div className="rf-cfg-v878342">
-        <label><span>{t("DGE (%)")}</span><input inputMode="decimal" disabled={readOnly} defaultValue={r.cfg.dgeObra!=null?String(r.cfg.dgeObra).replace(".",","):""} placeholder={r.cfg.dgeEmp!=null?String(r.cfg.dgeEmp).replace(".",","):"0"} onBlur={e=>desaCfg("dge",e.target.value)} key={"dge"+(r.cfg.dgeObra??"")}/></label>
-        <label><span>{t("BI previst (%)")}</span><input inputMode="decimal" disabled={readOnly} defaultValue={r.cfg.biObra!=null?String(r.cfg.biObra).replace(".",","):""} placeholder={r.cfg.biEmp!=null?String(r.cfg.biEmp).replace(".",","):"—"} onBlur={e=>desaCfg("bi",e.target.value)} key={"bi"+(r.cfg.biObra??"")}/></label>
-      </div>}
+      {ambBenefici&&<div className="rf-cfg-v878342 aj-v878511"><span>{t("DGE {g} % · BI {b} %",{g:fmtP878378(r.cfg.dge||0),b:r.cfg.bi!=null?fmtP878378(r.cfg.bi):"—"})}</span>{!readOnly&&<button type="button" className="secondary" onClick={obreAjustosObra878511}><SlidersHorizontal size={15} aria-hidden="true"/> {t("Ajustos de l’obra")}</button>}</div>}
     </CardOPlega878369>
     <PrevistImprevist878410 data={data} fase={f}/>
     {multi&&!f&&<ResumFases878342 data={data} despeses={despeses} personal={personal} obraId={obraId} ambBenefici={ambBenefici}/>}
@@ -11348,6 +11349,8 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
   const[rapidOpen878277,setRapidOpen878277]=useState(false);
   const[plus878302,setPlus878302]=useState(false);
   const[start878302,setStart878302]=useState(null);
+  const[aj511,setAj511]=useState(false);
+  useEffect(()=>{const h=()=>setAj511(true);window.addEventListener("aco-ajustos-obra-511",h);return()=>window.removeEventListener("aco-ajustos-obra-511",h)},[]);
   // V87.484 · la barra de baix de la constructora (Parte · Despesa · Nota), dins d'aquesta obra
   useEffect(()=>{const TAB={parte:"Partes obra",nota:"Notes",despesa:"Albarans",foto:"Notes",acta:"Actes",hores:"Gestió temps"};
     const fes=(k,files)=>{const tab=TAB[k];if(!tab)return;if(tancRef502.current){setAvisTancada502(true);return}setStart878302({tab,token:Date.now(),...(files?{files}:{})});setTab(tab);try{window.scrollTo({top:0})}catch{}};
@@ -11483,7 +11486,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
   const ajustos878426=()=>{const mg=!readOnly&&hasModule2Access8747(),nMg=mg?nForaMg878380(data):0;if(!mg&&!rapidMerged878277)return null;return {
     resum:mg?resumMarges878378(margesObra878378(data)):"",nMg,
     cos:<>
-      {mg&&<details className="sub-v878426 marges-pres-v878378"><summary><SlidersHorizontal size={16} aria-hidden="true"/><span className="t"><b>{i18nT("Preus i marges")}</b></span>{nMg?<em className="mg-n-v878380">{nMg===1?i18nT("1 partida per posar al dia"):i18nT("{n} partides per posar al dia",{n:nMg})}</em>:null}<ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos"><MargesObra878378 data={data} setData={setData}/><PosarMarges878380 data={data} setData={setData}/></div></details>}
+      {mg&&<details className="sub-v878426 marges-pres-v878378"><summary><SlidersHorizontal size={16} aria-hidden="true"/><span className="t"><b>{i18nT("Ajustos de l’obra")}</b></span>{nMg?<em className="mg-n-v878380">{nMg===1?i18nT("1 partida per posar al dia"):i18nT("{n} partides per posar al dia",{n:nMg})}</em>:null}<ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos"><AjustosObra878511 data={data} setData={setData}/><PosarMarges878380 data={data} setData={setData}/></div></details>}
       {mg&&<details className="sub-v878426 logis-v878426"><summary><Truck size={16} aria-hidden="true"/><span className="t"><b>{i18nT("Obra i logística")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos"><Logistica878368 obra={obra} cond={data.condicions878368||{}} setCond={c=>setData(d=>({...d,condicions878368:c}))}/></div></details>}
       {rapidMerged878277&&<details className="sub-v878426 rapid-in-budget-v878277" onToggle={e=>setRapidOpen878277(e.currentTarget.open)}><summary><FileText size={16} aria-hidden="true"/><span className="t"><b>{i18nT("Número i condicions per al client")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary>{rapidOpen878277&&<PressupostRapid878150 headerOnly data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary} clientMode={false} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>}</details>}
     </>}};
@@ -11547,6 +11550,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {editObra&&!readOnly&&<EditObraModal8725 obra={obra} clients={clients||[]} close={()=>setEditObra(false)} save={(patch)=>{updateObraFitxa8721?.(patch);setEditObra(false)}}/>}
     {data?.economicRecoveryV87214?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Dades econòmiques recuperades")}</b><span>{i18nT("S’han restaurat")} {data.economicRecoveryV87214.restored||0} {i18nT("preus i quantitats de la còpia estable, mantenint els amidaments i certificacions actuals.")}</span></div>}
     {data?.certificationRecoveryV87215?.applied&&<div className="economic-recovery-banner-v87214"><b>{i18nT("Certificacions recuperades")}</b><span>{i18nT("S’han reconstruït les certificacions")} {data.certificationRecoveryV87215.certifications?.join(", ")||"1–8"} {i18nT("sense substituir les línies de medició actuals de la certificació 8.")}</span></div>}
+    {aj511&&<PantallaSencera878489 titol={t("Ajustos de l’obra")} sub={obra?.nom} onTorna={()=>setAj511(false)} className="aj-pantalla-v878511"><AjustosObra878511 data={data} setData={readOnly?null:setData} readOnly={readOnly}/></PantallaSencera878489>}
     {!readOnly&&!partCompartida878424(obra)&&!iniciRajoles878508()&&<ObraPlus878302 open={plus878302} setOpen={setPlus878302} tabs={tabsAmbAlies878308.filter(x=>!(x==="Gestió temps"&&ALIAS878308["Gestió temps"]==="Albarans"))} go={(tab,extra={})=>{setStart878302({tab,token:Date.now(),...extra});setTab(tab);setPlus878302(false);try{window.scrollTo({top:0})}catch{}}}/>}
     <ObraBar878269 crono={crono878376} pur={esTecnicPur878332(obra)&&teModul878326("tecnic")} teAmid={teAmidaments878342(data)} obra={obra} client={client} tabs={navigationTabs} active={activeTab} setTab={next=>{setTab(next);setTabsOpen(false)}} estat={estatObra} onEstat={next=>{if(!potTancar878474(obra,data,next))return;setEstatObra(next);updateObraFitxa87210502?.({estat:next})}} readOnly={readOnly||esTreballador878326()} canBudget={(!readOnly||clientEditBudget)&&!!preferredBudgetTab878239} budgetTab={preferredBudgetTab878239} onEdit={()=>setEditObra(true)} onDelete={!readOnly&&!esTreballador878326()&&deleteObra?()=>deleteObra(obra.id):null} onBack={()=>setScreen("Treballs / Expedients")}/>
     <section className={`obra-layout obra-layout-v87105 ${tabsOpen?"tabs-open":"tabs-closed"}`}>
@@ -14042,8 +14046,8 @@ function margesDefecte878378(){
     dif:{nova:v(m.dif?.nova,"0"),reforma:v(m.dif?.reforma,"10"),exigent:v(m.dif?.exigent,"20")},minim:m.minim!==false,minimH:v(m.minimH,"4")};
 }
 function margesObra878378(d={}){
-  const def=margesDefecte878378(),o=d?.marges878378||{},n=x=>parseNum8770(x)||0;
-  const tria=k=>o[k]!==undefined&&o[k]!==""?o[k]:def[k];
+  const def=margesDefecte878378(),o=d?.marges878378||{},rl=d?.rendiment878342||{},n=x=>parseNum8770(x)||0;
+  const tria=k=>o[k]!==undefined&&o[k]!==""?o[k]:(k==="dge"||k==="bi")&&rl[k]!==undefined&&rl[k]!==""?rl[k]:def[k];
   const dificultat=DIF878378.some(x=>x[0]===o.dificultat)?o.dificultat:"nova";
   return {ci:n(tria("ci")),dge:n(tria("dge")),bi:n(tria("bi")),mode:(o.mode||def.mode)==="resum"?"resum":"dins",dificultat,pctDif:n(def.dif[dificultat]),
     minim:o.minim!==undefined?!!o.minim:def.minim,minimH:n(tria("minimH")),def};
@@ -14386,6 +14390,12 @@ function MargesObra878378({data={},setData,readOnly=false}){
   const def=margesDefecte878378();
   return <MargesCamps878378 v={data?.marges878378||{}} def={def} perObra readOnly={readOnly||!setData} set={x=>setData?.(d=>({...d,marges878378:{...(d.marges878378||{}),...x}}))}/>;
 }
+function AjustosObra878511({data={},setData,readOnly=false}){
+  const def=margesDefecte878378(),rl=data?.rendiment878342||{},v={...(data?.marges878378||{})};
+  for(const k of ["dge","bi"])if((v[k]===undefined||v[k]==="")&&rl[k]!==undefined&&rl[k]!=="")v[k]=rl[k];
+  return <div className="ajustos-obra-v878511"><MargesCamps878378 v={v} def={def} perObra readOnly={readOnly||!setData} set={x=>setData?.(d=>{const r={...(d.rendiment878342||{})};for(const k of ["dge","bi"])if(k in x)delete r[k];return {...d,marges878378:{...(d.marges878378||{}),...x},rendiment878342:r,updatedAt:new Date().toISOString()}})}/></div>;
+}
+function obreAjustosObra878511(){try{window.dispatchEvent(new Event("aco-ajustos-obra-511"))}catch{}}
 function MargesAjustos878378(){
   const[v,setV]=useState(()=>lsJson8779(MARGES_KEY878378,{})||{});
   const set=x=>setV(o=>{const n={...o,...x};lsSet8779(MARGES_KEY878378,JSON.stringify(n));return n});
@@ -14573,7 +14583,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
     <summary><Truck size={18} aria-hidden="true"/><span className="t"><b>{t("Obra, logística i marges")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
     <div className="cos">
       <p className="resum-v878435">{[resumMarges878378(margesObra878378(data)),nLogis878368?t("{n} partides de logística",{n:nLogis878368}):""].filter(Boolean).join(" · ")}</p>
-      <MargesObra878378 data={data} setData={readOnly?null:setData} readOnly={readOnly}/>
+      <AjustosObra878511 data={data} setData={readOnly?null:setData} readOnly={readOnly}/>
       <Logistica878368 obra={obra} cond={cond878368} readOnly={readOnly} setCond={c=>setData(d=>({...d,condicions878368:c}))}/>
       {!readOnly&&<div className="bt"><button type="button" className="primary" onClick={posaLogistica878368}><Plus size={15} aria-hidden="true"/> {nLogis878368?t("Tornar a fer les partides de logística"):t("Afegir les partides de logística")}</button></div>}
     </div>
@@ -19640,7 +19650,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.510",
+    app_version:"87.511",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23418,6 +23428,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
         </div><Recollir878432/></details>})}
         {r&&<details className="card bloc-v878426 desp-bloc-v878426 dge-v878426"><summary><Landmark size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Despeses generals (DGE)")}</b></span><span className="xifra">{money(r.dge)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
           <div className="imps-v878426"><div><small>{i18nT("Ingressos de l’obra")}</small><b>{money(r.ingressos)}</b></div><div><small>{i18nT("DGE")}</small><b>{String(Math.round((r.dgePct||0)*100)/100).replace(".",",")} %</b></div><div className="tot"><small>{i18nT("Cost")}</small><b>{money(r.dge)}</b></div></div>
+          <div className="aj-v878511"><button type="button" className="secondary" onClick={obreAjustosObra878511}><SlidersHorizontal size={15} aria-hidden="true"/> {i18nT("Ajustos de l’obra")}</button></div>
         </div><Recollir878432/></details>}
       </div>}
     // V87.438 · cada grup, una targeta principal com les de dins de l'obra (icona, nom, import i la fletxa)
