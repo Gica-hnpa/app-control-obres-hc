@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus} from "lucide-react";
+import {CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -39,7 +39,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.515";
+const APP_VERSION878264="87.516";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17286,7 +17286,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
 {llistat501&&(()=>{let ac=0;const fs=[...certs].sort((a,b)=>(+a.numero||0)-(+b.numero||0)).map(c=>{const fa=faDe878364(c),vf=vfDe878364(c);const imp=certListTotal878215(c);ac+=imp;const f=fa||vf;return {_k:c.id,num:String(c.numero),nom:i18nT("Certificació {n}",{n:c.numero}),data:dateVal8721(c)||toInputDate8743(c.data)||"",import:imp,origen:ac,facturada:f?i18nT("Sí"):i18nT("No"),factura:fa?.numero||vf?.numSerie||"",cobrada:f?((fa?.cobrada||vf?.cobrada)?i18nT("Sí"):i18nT("No")):""}});
   return <Llistat878501 titol={[i18nT("Certificacions"),obra?.nom].filter(Boolean).join(" · ")} nom="certificacions" close={()=>setLlistat501(false)} dates={[{k:"data",l:i18nT("Data de la certificació")}]} filtres={[{k:"facturada",l:i18nT("Facturada")},{k:"cobrada",l:i18nT("Cobrada")}]}
     cols={[{k:"num",l:i18nT("Núm."),tipus:"num"},{k:"nom",l:i18nT("Certificació")},{k:"data",l:i18nT("Data"),tipus:"data"},{k:"import",l:i18nT("Import"),tipus:"diners",suma:true},{k:"origen",l:i18nT("A origen"),tipus:"diners"},{k:"facturada",l:i18nT("Facturada")},{k:"factura",l:i18nT("Factura")},{k:"cobrada",l:i18nT("Cobrada"),def:false}]} files={fs}/>})()}
-{!(detall426&&cert)&&<details className="card bloc-v878426 cert-llista-v878426" open={llista426||certs.length===0} onToggle={e=>{const o=e.currentTarget.open;if(o!==llista426)setLlista426(o)}}><summary><FileCheck size={18} aria-hidden="true"/><span className="t"><b>{contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</b></span>{certs.length>0&&<span className="xifra">{money(certs.reduce((x,c)=>x+certListTotal878215(c),0))}</span>}{addCertificacio&&!readOnly&&<button type="button" className="primary nova-v878426" onClick={e=>{e.preventDefault();e.stopPropagation();addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}} aria-label={i18nT("Nova")}><Plus size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Nova")}</span></button>}{certs.length>0&&!contrast878424&&<button type="button" className="secondary llistat-btn-v878501" onClick={e=>{e.preventDefault();e.stopPropagation();setLlistat501(true)}} aria-label={i18nT("Llistat")}><Printer size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Llistat")}</span></button>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
+{!(detall426&&cert)&&<details className="card bloc-v878426 cert-llista-v878426" open={llista426||certs.length===0} onToggle={e=>{const o=e.currentTarget.open;if(o!==llista426)setLlista426(o)}}><summary><FileCheck size={18} aria-hidden="true"/><span className="t"><b>{contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</b></span>{certs.length>0&&<span className="xifra">{money(certs.reduce((x,c)=>x+certListTotal878215(c),0))}</span>}{addCertificacio&&!readOnly&&<button type="button" className="primary nova-v878426" onClick={e=>{e.preventDefault();e.stopPropagation();addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}} aria-label={i18nT("Nova")}><Plus size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Nova")}</span></button>}{certs.length>0&&!contrast878424&&<button type="button" className="secondary llistat-btn-v878501" onClick={e=>{e.preventDefault();e.stopPropagation();setLlistat501(true)}} aria-label={i18nT("Llistat")}><Printer size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Llistat")}</span></button>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{certs.length>0&&!contrast878424&&<div className="llistat-m-v878516"><button type="button" className="secondary" onClick={()=>setLlistat501(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Llistat")}</button></div>}
   {certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:<div className={"cert-list-v878273 cert-taula-v878364 cert-files-v878426"+(ambFact878364?" amb-fact":"")}>
     <div className="cap-t" aria-hidden="true"><span>{i18nT("Certificació")}</span><span>{i18nT("Data")}</span><span className="n">{i18nT("Import")}</span>{ambFact878364&&<span>{i18nT("Factura")}</span>}<span/></div>
     {certs.map(c=>{const imp=certListTotal878215(c);const fa=faDe878364(c),vf=vfDe878364(c);const difer=!!fa&&Math.abs((+fa.base||0)-imp)>0.01;const potF=potFactDe878364(c);const potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
@@ -18969,14 +18969,16 @@ function anarTreballadors878353(){window.__acoEmpresaVista878353="treb";try{wind
 // dia o «Emplenar hores» obre els treballadors d'aquell dia. Amb `obraFixa`, la mateixa pantalla només per a aquella obra (des de l'obra).
 function festiusCalendari878473(){const c=calendariEmpresa878393();const m={};Object.values(c.anys||{}).forEach(a=>(a?.festius||[]).forEach(f=>{if(f?.data)m[f.data]=f.motiu||""}));return m}
 function setmanaIso878473(d){const x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()+3-((x.getDay()+6)%7));const j=new Date(x.getFullYear(),0,4,12);return 1+Math.round(((x-j)/864e5-3+((j.getDay()+6)%7))/7)}
-function PartHores878340({obres=[],odata={},obraFixa=null}){
+// V87.516 · amb `nomesW`, el dia d'un sol treballador (des de la seva fitxa: «Corregir les hores»); en desar o tornar, `onTanca`
+function PartHores878340({obres=[],odata={},obraFixa=null,nomesW=null,diaInicial=null,onTanca=null}){
   const tick=useTickPersonal878340();
   const tauleta878390=useTauleta878387();
   const fixa=obraFixa?.id||"";
-  const[form473,setForm473]=useState(false);
+  const[form473,setForm473]=useState(!!nomesW);
+  const[fitxa516,setFitxa516]=useState(null);
   const fest473=useMemo(()=>festiusCalendari878473(),[tick]);
-  const[dia,setDia]=useState(()=>isoDay878255(new Date()));
-  const treb=useMemo(()=>llegeixTreballadors878339().filter(w=>w.actiu!==false),[tick]);
+  const[dia,setDia]=useState(()=>diaInicial||isoDay878255(new Date()));
+  const treb=useMemo(()=>llegeixTreballadors878339().filter(w=>nomesW?w.id===nomesW:w.actiu!==false),[tick,nomesW]);
   const obertes=useMemo(()=>(obres||[]).filter(o=>isExpedientOpen878136(o.estat)).sort((a,b)=>String(a.nom||"").localeCompare(String(b.nom||""),"ca",{sensitivity:"base"})),[obres]);
   const totes=useMemo(()=>[...(obres||[]).flatMap(o=>llegeixPersonal878340(o.id).map(r=>({...r,obraId:o.id}))),...horesDespeses878355().filter(r=>(obres||[]).some(o=>o.id===r.obraId))],[obres,tick]);
   const fixes=w=>totes.filter(r=>r.parte&&r.treballadorId===w.id&&r.data===dia);
@@ -18997,7 +18999,7 @@ function PartHores878340({obres=[],odata={},obraFixa=null}){
   const mou=n=>{if(!potSortir473())return;const d=new Date(dia+"T12:00:00");d.setDate(d.getDate()+n);setCanvi(false);setDia(isoDay878255(d))};
   const mouS473=n=>{const d=new Date(dia+"T12:00:00");d.setDate(d.getDate()+n);setDia(isoDay878255(d))};
   const obre473=k=>{setCanvi(false);setDia(k);setForm473(true)};
-  const tanca473=()=>{if(!potSortir473())return;setCanvi(false);setEsb(carrega(dia,totes));setPEd506({});setExt506(carregaExt506(dia));setForm473(false)};
+  const tanca473=()=>{if(!potSortir473())return;setCanvi(false);setEsb(carrega(dia,totes));setPEd506({});setExt506(carregaExt506(dia));setForm473(false);if(onTanca)onTanca()};
   const desfes473=()=>{setCanvi(false);setEsb(carrega(dia,totes));setPEd506({});setExt506(carregaExt506(dia))};
   const buida473=()=>{setEsb(m=>{const o={};treb.forEach(w=>{o[w.id]=[{...(m[w.id]?.[0]||{}),nota:undefined,hores:""}]});return o});setCanvi(true)};
   const setL=(wid,i,patch)=>{setCanvi(true);setEsb(m=>({...m,[wid]:(m[wid]||[]).map((l,j)=>j===i?{...l,...patch}:l)}))};
@@ -19036,7 +19038,7 @@ function PartHores878340({obres=[],odata={},obraFixa=null}){
       try{window.__acoSetD878506?.(obraId,d=>({...d,partes878349:(d.partes878349||[]).map(p=>p.id===pid?p1:p)}))}catch{}
       sincronitzaDespesesParte878352(obraId,dO,p1)});
     try{window.dispatchEvent(new CustomEvent("aco-personal-changed",{detail:{}}))}catch{}
-    setCanvi(false);setForm473(false);
+    setCanvi(false);setForm473(false);onTanca?.();
   }
   // la setmana del dia triat (de dilluns a diumenge)
   const d0=new Date(dia+"T12:00:00");d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const dl=isoDay878255(d0);const d6=new Date(d0);d6.setDate(d6.getDate()+6);const dg=isoDay878255(d6);
@@ -19051,25 +19053,37 @@ function PartHores878340({obres=[],odata={},obraFixa=null}){
   if(!form473){
     const files473=fixa?setmana.filter(x=>x.h>0):setmana;
     const totS=setmana.reduce((s,x)=>s+x.h,0),totCS=setmana.reduce((s,x)=>s+x.c,0);
-    return <div className="part-v878340 setm-vista-v878473" style={{"--n":dies473.length}}>
-      <div className="setm-nav-v878473">
+    // V87.516 · a les caselles, les vacances, baixes i permisos (V, B, P) i els dies validats; el nom obre la fitxa del treballador
+    const abs516=fixa?[]:absencies878515();const val516=fixa?{}:validats878516();
+    const absC=(wid,k)=>abs516.find(a=>a.wid===wid&&a.des<=k&&finsAbs878515(a)>=k);
+    const LL516={vacances:"V",baixa:"B",permis:"P"};
+    const cap473=<div className="setm-nav-v878473">
         {!fixa&&<h1>{t("Hores del personal")}</h1>}
         <div className="pas"><button type="button" className="secondary" onClick={()=>mouS473(-7)} aria-label={t("Setmana anterior")}>‹</button><div className="tit"><b>{t("Setmana {n}",{n:setmanaIso878473(d0)})}</b><small>{fmtAppDate8748(dl).slice(0,5)} – {fmtAppDate8748(dg).slice(0,5)}</small></div><button type="button" className="secondary" onClick={()=>mouS473(7)} aria-label={t("Setmana següent")}>›</button>{!(avui473>=dl&&avui473<=dg)&&<button type="button" className="link" onClick={()=>setDia(avui473)}>{t("Aquesta setmana")}</button>}</div>
         {treb.length>0&&<button type="button" className="primary emplena-v878473" onClick={()=>obre473(proposat473)}><Plus size={16} aria-hidden="true"/> {t("Emplenar hores")}</button>}
-      </div>
-      {!treb.length?trebBuit473:<>
-        <div className="dies-v878473">{dies473.map(x=><button key={x.k} type="button" className={"dia-t-v878473"+(x.k===avui473?" avui":"")+(x.h>0?" ple":"")+(x.festiu?" festiu":"")} title={x.motiu||undefined} onClick={()=>obre473(x.k)}><small>{etDia473(x)}</small><b>{x.x.getDate()}</b><span>{x.h>0?fh878340(x.h):x.festiu?t("Festiu"):t("Emplenar")}</span></button>)}</div>
-        {files473.length===0?<p className="buit-v878340">{t("Encara no hi ha hores aquesta setmana.")}</p>:<div className="matriu-v878473" role="table" aria-label={t("Setmana")}>
+      </div>;
+    const dies473v=<div className="dies-v878473">{dies473.map(x=><button key={x.k} type="button" className={"dia-t-v878473"+(x.k===avui473?" avui":"")+(x.h>0?" ple":"")+(x.festiu?" festiu":"")} title={x.motiu||undefined} onClick={()=>obre473(x.k)}><small>{etDia473(x)}</small><b>{x.x.getDate()}</b><span>{x.h>0?fh878340(x.h):x.festiu?t("Festiu"):t("Emplenar")}</span></button>)}</div>;
+    const matriu=files473.length===0?<p className="buit-v878340">{t("Encara no hi ha hores aquesta setmana.")}</p>:<div className="matriu-v878473" role="table" aria-label={t("Setmana")}>
           <div className="f cap" role="row"><span className="nom">{t("Treballador")}</span>{dies473.map(x=><span key={x.k} className="c" role="columnheader">{etDia473(x)} {x.x.getDate()}</span>)}<span className="t">{t("Total")}</span></div>
-          {files473.map(({w,h,c})=><div key={w.id} className="f" role="row"><span className="nom"><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></span>{dies473.map(x=>{const rs=x.rs.filter(r=>r.treballadorId===w.id),hd=rs.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0);return <button key={x.k} type="button" className={"c"+(hd>0?" ple":"")+(x.festiu?" festiu":"")} title={rs.map(r=>nomObra(r.obraId)).filter(Boolean).join(" · ")||undefined} aria-label={`${w.nom} · ${etDia473(x)} ${x.x.getDate()}: ${hd>0?fh878340(hd):"—"}`} onClick={()=>obre473(x.k)}>{hd>0?nH473(hd):"·"}</button>})}<span className="t"><b>{fh878340(h)}</b>{c>0&&<small>{money(c)}</small>}</span></div>)}
+          {files473.map(({w,h,c})=><div key={w.id} className="f" role="row"><span className="nom">{fixa?<><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></>:<button type="button" className="nom-bt-v878516" onClick={()=>setFitxa516({w,dia})}><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></button>}</span>{dies473.map(x=>{const rs=x.rs.filter(r=>r.treballadorId===w.id),hd=rs.reduce((s,r)=>s+(parseNum8770(r.hores)||0),0);const ab=!(hd>0)&&!x.festiu?absC(w.id,x.k):null;const vl=!!(val516[w.id]||{})[x.k];return <button key={x.k} type="button" className={"c"+(hd>0?" ple":"")+(x.festiu?" festiu":"")+(ab?" a-"+ab.tipus:"")+(vl?" val":"")} title={ab?etAbs878515(ab.tipus):(rs.map(r=>nomObra(r.obraId)).filter(Boolean).join(" · ")||undefined)} aria-label={`${w.nom} · ${etDia473(x)} ${x.x.getDate()}: ${hd>0?fh878340(hd):ab?etAbs878515(ab.tipus):"—"}${vl?" · "+t("Validat"):""}`} onClick={()=>obre473(x.k)}>{hd>0?nH473(hd):ab?LL516[ab.tipus]:"·"}</button>})}<span className="t"><b>{fh878340(h)}</b>{c>0&&<small>{money(c)}</small>}</span></div>)}
           <div className="f peu" role="row"><span className="nom"><b>{t("Total")}</b></span>{dies473.map(x=><span key={x.k} className="c">{x.h>0?nH473(x.h):"·"}</span>)}<span className="t"><b>{fh878340(totS)}</b>{totCS>0&&<small>{money(totCS)}</small>}</span></div>
-        </div>}
+        </div>;
+    if(fixa)return <div className="part-v878340 setm-vista-v878473" style={{"--n":dies473.length}}>{cap473}{!treb.length?trebBuit473:<>{dies473v}{matriu}</>}</div>;
+    return <div className="part-v878340 setm-vista-v878473 pers-v878516" style={{"--n":dies473.length}}>
+      {cap473}
+      {!treb.length?trebBuit473:<>
+        {dies473v}
+        <section className="treb-raj-v878516" aria-label={t("Treballadors")}>{setmana.map(({w,h,c})=>{const ea=estatAbs878515(w.id,avui473);const hd=dies473.filter(x=>x.rs.some(r=>r.treballadorId===w.id)).length;const vd=dies473.filter(x=>x.rs.some(r=>r.treballadorId===w.id)&&(val516[w.id]||{})[x.k]).length;
+          return <button key={w.id} type="button" className="raj-w-v878516" onClick={()=>setFitxa516({w,dia})}><span className="av" aria-hidden="true">{inicials878516(w.nom)}</span><span className="tt"><b>{w.nom}</b><small>{i18nT(w.ofici||"")}</small></span><span className="h"><b>{fh878340(h)}</b>{hd>0?<small className={vd===hd?"vd tot":vd?"vd":""}>{vd===hd?<><CircleCheck size={13} aria-hidden="true"/> {t("Validada")}</>:t("{n} de {m} validats",{n:vd,m:hd})}</small>:c>0?<small>{money(c)}</small>:null}</span>{ea&&<em className={"est-w-v878516 a-"+ea.a.tipus}>{ea.txt}</em>}<ChevronRight size={18} className="chev" aria-hidden="true"/></button>})}</section>
+        <CardOPlega878369 className="setm-card-v878516" icona={CalendarRange} title={t("Setmana de tothom")} xifra={fh878340(totS)} obertPC>{matriu}</CardOPlega878369>
+        {/*V87.517*/}
       </>}
+      {fitxa516&&<FitxaTreballador878516 w={fitxa516.w} obres={obres} odata={odata} diaInicial={fitxa516.dia} onTanca={()=>setFitxa516(null)}/>}
     </div>;
   }
   const teHores473=totes.some(r=>r.data===dia&&!r.parte);
   return <div className="part-v878340 form-v878473">
-    <div className="cap-v878340"><button type="button" className="secondary tornar-v878473" onClick={tanca473}>‹ {t("Setmana")}</button>
+    <div className="cap-v878340"><button type="button" className="secondary tornar-v878473" onClick={tanca473}>‹ {onTanca?t("Tornar"):t("Setmana")}</button>
       <div className="dia-v878340"><button type="button" className="secondary" onClick={()=>mou(-1)} aria-label={t("Dia anterior")}>‹</button><label><span className="nd">{nomDia}</span><input type="date" value={dia} onChange={e=>{if(e.target.value&&potSortir473()){setCanvi(false);setDia(e.target.value)}}}/></label><button type="button" className="secondary" onClick={()=>mou(1)} aria-label={t("Dia següent")}>›</button></div></div>
     {!treb.length?trebBuit473:<>
       <div className="actions-inline">{canvi?<button type="button" className="secondary small desfes-v878473" onClick={desfes473}><RotateCcw size={15} aria-hidden="true"/> {t("Desfer els canvis")}</button>:<>{anterior&&<button type="button" className="secondary small" onClick={comAnterior}>{t("Com el {d}",{d:fmtAppDate8748(anterior)})}</button>}{teHores473&&<button type="button" className="secondary small" onClick={buida473}>{t("Buidar el dia")}</button>}</>}</div>
@@ -19155,11 +19169,11 @@ function GeoFitx878487({r}){if(!r||!r.geo)return null;
   if(!teGeo878487(r))return <span className="geo-v878487 no" title={r.geo.err==="denegat"?t("No s’ha donat permís per a la ubicació"):t("Sense ubicació")} aria-label={t("Sense ubicació")}><MapPin size={13} aria-hidden="true"/></span>;
   return <a className="geo-v878487" href={mapaGeo878487(r.geo)} target="_blank" rel="noopener noreferrer" title={t("Veure on s’ha fitxat (±{m} m)",{m:r.geo.prec})} aria-label={t("Veure on s’ha fitxat (±{m} m)",{m:r.geo.prec})} onClick={e=>e.stopPropagation()}><MapPin size={13} aria-hidden="true"/></a>}
 function useTickFitx878357(viu){const[tick,setTick]=useState(0);useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-fitxatge-changed",h);const iv=viu?setInterval(h,30000):null;return()=>{window.removeEventListener("aco-fitxatge-changed",h);if(iv)clearInterval(iv)}},[viu]);return tick}
-function Fitxatge878357(){
+function Fitxatge878357({obres=[],odata={}}){
   const[v,setV]=useState("fitxar");
   return <div className="fitx-v878357">
     <div className="fe-vistes" role="group" aria-label={t("Fitxatge")}><button type="button" aria-pressed={v==="fitxar"} onClick={()=>setV("fitxar")}>{t("Fitxar")}</button><button type="button" aria-pressed={v==="registre"} onClick={()=>setV("registre")}>{t("Registre")}</button></div>
-    {v==="fitxar"?<FitxarKiosk878357/>:<RegistreFitx878357/>}
+    {v==="fitxar"?<FitxarKiosk878357/>:<RegistreFitx878357 obres={obres} odata={odata}/>}
   </div>;
 }
 // Fitxar: cada treballador, el seu nom i el seu PIN
@@ -19218,64 +19232,41 @@ function FitxarKiosk878357(){
   </div>;
 }
 // Registre (oficina): per dies, correccions amb el motiu i el mes de cada treballador per exportar o imprimir
-function RegistreFitx878357(){
-  const tick=useTickFitx878357(false);
+// V87.516 · una rajola per treballador (com està el dia triat, les hores del dia i del mes, i si està validat) que obre la seva fitxa: la setmana,
+// cada dia amb el fitxatge (Corregir) i les hores a les obres, i «Validar» (l'Héctor, 6/11/2026: «el mateix: un llistat setmanal, després al
+// entrar en un dia veure aquell dia i les opcions de corregir i validar per l'empresa»). Els PDF del mes i de l'any de cadascú, a la seva fitxa.
+function RegistreFitx878357({obres=[],odata={}}){
+  const tick=useTickFitx878357(false);const tickC=useTickCal878515();const tickV=useTickVal878516();
   const treb=useMemo(()=>llegeixTreballadors878339(),[tick]);
   const[dia,setDia]=useState(()=>isoDay878255(new Date()));
   const[mes,setMes]=useState(()=>isoDay878255(new Date()).slice(0,7));
-  const[wMes,setWMes]=useState("");
-  const[corr,setCorr]=useState(null);
+  const[fitxa,setFitxa]=useState(null);
   const mou=n=>{const d=new Date(dia+"T12:00:00");d.setDate(d.getDate()+n);setDia(isoDay878255(d))};
   const delDia=marcatgesDia878357(dia);
-  const wids=[...new Set([...treb.filter(w=>w.actiu!==false).map(w=>w.id),...delDia.map(r=>r.wid)])];
-  const nomW=id=>treb.find(w=>w.id===id)?.nom||delDia.find(r=>r.wid===id)?.nom||"";
-  const ara=dia===isoDay878255(new Date())?Date.now():null;
-  // el mes: un dia per fila
   const delMes=llegeixFitx878357(mes);
-  const resumMes=wid=>{const dies=[...new Set(delMes.filter(r=>r.wid===wid).map(r=>r.dia))].sort();return dies.map(d=>{const ms=delMes.filter(r=>r.wid===wid&&r.dia===d).sort((a,b)=>String(a.at).localeCompare(String(b.at)));const v=ms.filter(r=>!r.anulat);
-    const rEnt=v.find(r=>r.tipus==="entrada");const rSor=[...v].reverse().find(r=>r.tipus==="sortida");const ent=rEnt?.hora||"";const sor=rSor?.hora||"";const pauses=v.filter(r=>r.tipus==="pausa").length;const pt=v.filter(r=>r.tipus==="pausa").map(pa=>{const tr=v.find(r=>r.tipus==="represa"&&String(r.at)>String(pa.at));return pa.hora+"–"+(tr?.hora||"")}).join(", ");
-    return {dia:d,ent,sor,gEnt:textGeo878487(rEnt),gSor:textGeo878487(rSor),pauses,pt,h:horesFitx878357(ms,null),corr:ms.filter(r=>r.correccio||r.anulat).map(r=>(r.anulat?r.anulat.motiu:r.correccio.motiu)).filter(Boolean)}})};
-  const widsMes=wMes?[wMes]:[...new Set(delMes.map(r=>r.wid))];
-  function excel(){const rows=[[t("Treballador"),t("DNI / NIE"),t("Dia"),t("Entrada"),t("Sortida"),t("Pauses"),t("Hores"),t("Correccions"),t("Ubicació de l’entrada"),t("Ubicació de la sortida")]];
-    widsMes.forEach(wid=>{const w=treb.find(x=>x.id===wid);resumMes(wid).forEach(x=>rows.push([w?.nom||nomW(wid),w?.dni||"",x.dia,x.ent,x.sor,x.pauses,Math.round(x.h*100)/100,x.corr.join(" · "),x.gEnt,x.gSor]))});
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:24},{wch:12},{wch:12},{wch:8},{wch:8},{wch:7},{wch:7},{wch:40},{wch:30},{wch:30}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Fitxatge"));XLSX.writeFile(wb,`${t("Fitxatge")} ${mes}.xlsx`)}
-  // V87.390 · el registre en llista: una línia per treballador (com està el dia, hores del dia i del mes) que es desplega amb el dia, el mes
-  // dia per dia i l'any mes per mes, cadascun amb el seu PDF (l'Héctor, 25/10/2026). El document segueix l'art. 34.9 de l'Estatut dels
-  // Treballadors: empresa, treballador, període, cada dia amb l'entrada, la sortida i les pauses, el total i les signatures.
-  const any=mes.slice(0,4);
-  const nomMes=ym=>new Date(ym+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
-  const resumAny=wid=>Array.from({length:12},(_,i)=>{const ym=`${any}-${String(i+1).padStart(2,"0")}`;const l=llegeixFitx878357(ym).filter(r=>r.wid===wid);const dies=[...new Set(l.map(r=>r.dia))];
-    return {ym,dies:dies.length,h:dies.reduce((s,d)=>s+horesFitx878357(l.filter(r=>r.dia===d).sort((a,b)=>String(a.at).localeCompare(String(b.at))),null),0)}}).filter(x=>x.dies>0);
+  const nomW=id=>treb.find(w=>w.id===id)?.nom||delDia.find(r=>r.wid===id)?.nom||delMes.find(r=>r.wid===id)?.nom||"";
+  const ara=dia===isoDay878255(new Date())?Date.now():null;
+  const widsMes=[...new Set(delMes.map(r=>r.wid))];
+  function excel(){const rows=[[t("Treballador"),t("DNI / NIE"),t("Dia"),t("Entrada"),t("Sortida"),t("Pauses"),t("Hores"),t("Correccions"),t("Ubicació de l’entrada"),t("Ubicació de la sortida"),t("Validat")]];const vs=validats878516();
+    widsMes.forEach(wid=>{const w=treb.find(x=>x.id===wid);resumMesFitx878516(wid,mes).forEach(x=>rows.push([w?.nom||nomW(wid),w?.dni||"",x.dia,x.ent,x.sor,x.pauses,Math.round(x.h*100)/100,x.corr.join(" · "),x.gEnt,x.gSor,(vs[wid]||{})[x.dia]?t("Sí"):""]))});
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:24},{wch:12},{wch:12},{wch:8},{wch:8},{wch:7},{wch:7},{wch:40},{wch:30},{wch:30},{wch:8}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Fitxatge"));XLSX.writeFile(wb,`${t("Fitxatge")} ${mes}.xlsx`)}
   const widsLlista=[...new Set([...treb.filter(w=>w.actiu!==false).map(w=>w.id),...delDia.map(r=>r.wid),...delMes.map(r=>r.wid)])];
-  const dadesW=wid=>treb.find(x=>x.id===wid)||{id:wid,nom:nomW(wid)};
-  function docHtml(titol,periode,seccions){const emp=empresaInfo878259()||{};const esc=escHtmlV8772;
-    const adr=[emp.carrer,[emp.codiPostal,emp.poblacio].filter(Boolean).join(" ")].filter(Boolean).join(", ");
-    return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(titol)} · ${esc(periode)}</title><style>body{font-family:Arial,sans-serif;font-size:10.5px;color:#111;margin:12mm}section{break-after:page}section:last-child{break-after:auto}h1{font-size:15px;margin:0 0 8px;letter-spacing:.03em}table{width:100%;border-collapse:collapse}.cap td{border:0;padding:2px 0}.cap td:first-child{width:28mm;color:#555}.dies{margin-top:8px}.dies th,.dies td{border:1px solid #999;padding:3px 5px;text-align:left}.dies th{background:#eee}.dies td.n{text-align:right}.dies tr.fs td{color:#999;background:#fafafa}tfoot td{font-weight:bold}.signa{display:flex;gap:20mm;margin-top:14mm}.signa div{flex:1;border-top:1px solid #333;padding-top:4px}.peu{margin-top:8mm;font-size:9px;color:#555}</style></head><body>${seccions.map(s=>`<section><h1>${esc(titol)}</h1><table class="cap"><tr><td>${esc(t("Empresa"))}</td><td><b>${esc(emp.fiscal||emp.nom||"")}</b>${emp.nif?` · ${esc(t("NIF"))} ${esc(emp.nif)}`:""}</td></tr>${adr?`<tr><td>${esc(t("Domicili"))}</td><td>${esc(adr)}</td></tr>`:""}<tr><td>${esc(t("Treballador/a"))}</td><td><b>${esc(s.w.nom||"")}</b>${s.w.dni?` · ${esc(t("DNI / NIE"))} ${esc(s.w.dni)}`:""}${s.w.ofici?` · ${esc(i18nT(s.w.ofici))}`:""}</td></tr><tr><td>${esc(t("Període"))}</td><td>${esc(periode)}</td></tr></table>${s.taula}<div class="signa"><div>${esc(t("Signatura de l’empresa"))}</div><div>${esc(t("Signatura del treballador/a"))}</div></div><p class="peu">${esc(t("Registre diari de jornada (art. 34.9 de l’Estatut dels Treballadors). Es conserva quatre anys a disposició del treballador/a, dels seus representants legals i de la Inspecció de Treball i Seguretat Social."))}</p></section>`).join("")}</body></html>`}
-  function taulaMes(wid){const esc=escHtmlV8772;const r=resumMes(wid);const per={};r.forEach(x=>{per[x.dia]=x});const [y,m]=mes.split("-").map(Number);const n=new Date(y,m,0).getDate();const tot=r.reduce((a,x)=>a+x.h,0);
-    const files=Array.from({length:n},(_,i)=>{const d=`${mes}-${String(i+1).padStart(2,"0")}`;const x=per[d];const dt=new Date(d+"T12:00:00");const fs=dt.getDay()===0||dt.getDay()===6;
-      return `<tr class="${fs&&!x?"fs":""}"><td>${esc(dt.toLocaleDateString(loc878272(),{weekday:"short",day:"2-digit",month:"2-digit"}))}</td><td>${esc(x?.ent||"")}</td><td>${esc(x?.sor||"")}</td><td>${esc(x?.pt||"")}</td><td class="n">${x?esc(fh878340(x.h)):""}</td><td>${esc(x?x.corr.join(" · "):"")}</td></tr>`}).join("");
-    return `<table class="dies"><thead><tr><th>${esc(t("Dia"))}</th><th>${esc(t("Entrada"))}</th><th>${esc(t("Sortida"))}</th><th>${esc(t("Pauses"))}</th><th>${esc(t("Hores"))}</th><th>${esc(t("Observacions"))}</th></tr></thead><tbody>${files}</tbody><tfoot><tr><td colspan="4">${esc(t("Total del mes"))}</td><td class="n">${esc(fh878340(tot))}</td><td></td></tr></tfoot></table>`}
-  function imprimeixMes(wids){const ws=wids.filter(wid=>resumMes(wid).length);if(!ws.length){alert(t("Cap fitxatge aquest mes."));return}
-    printHtmlInPlace878112(docHtml(t("REGISTRE DIARI DE JORNADA"),nomMes(mes),ws.map(wid=>({w:dadesW(wid),taula:taulaMes(wid)}))),t("Registre de jornada"))}
-  function imprimeixAny(wid){const esc=escHtmlV8772;const r=resumAny(wid);if(!r.length){alert(t("Cap fitxatge aquest any."));return}const tot=r.reduce((a,x)=>a+x.h,0);
-    const taula=`<table class="dies"><thead><tr><th>${esc(t("Mes"))}</th><th>${esc(t("Dies treballats"))}</th><th>${esc(t("Hores"))}</th></tr></thead><tbody>${r.map(x=>`<tr><td>${esc(nomMes(x.ym))}</td><td class="n">${x.dies}</td><td class="n">${esc(fh878340(x.h))}</td></tr>`).join("")}</tbody><tfoot><tr><td>${esc(t("Total de l’any"))}</td><td class="n">${r.reduce((a,x)=>a+x.dies,0)}</td><td class="n">${esc(fh878340(tot))}</td></tr></tfoot></table>`;
-    printHtmlInPlace878112(docHtml(t("RESUM ANUAL DE JORNADA"),any,[{w:dadesW(wid),taula}]),t("Registre de jornada"))}
   const ultimEstat=ms=>{const v=ms.filter(r=>!r.anulat);if(!v.length)return t("Sense fitxar");const l=v[v.length-1];return `${t(TIPUS_FITX878357[l.tipus]||l.tipus)} ${l.hora}`};
+  const vals=validats878516();
   return <div className="fitx-reg-v878357">
     <div className="fitx-cap-v878390">
       <div className="fitx-dia-v878357"><button type="button" className="secondary" onClick={()=>mou(-1)} aria-label={t("Dia anterior")}>‹</button><input type="date" value={dia} onChange={e=>{if(e.target.value){setDia(e.target.value);setMes(e.target.value.slice(0,7))}}}/><button type="button" className="secondary" onClick={()=>mou(1)} aria-label={t("Dia següent")}>›</button></div>
       <div className="fitx-mes-filtre-v878357"><input type="month" value={mes} onChange={e=>e.target.value&&setMes(e.target.value)} aria-label={t("Mes")}/>
-        <ActionMenu87213 label={t("Tots")} titol={t("Tots els treballadors")}><button type="button" onClick={()=>imprimeixMes(widsMes)}><FileText size={15} aria-hidden="true"/> {t("PDF del mes")}</button><button type="button" onClick={excel}><Download size={15} aria-hidden="true"/> {t("Excel del mes")}</button></ActionMenu87213></div>
+        <ActionMenu87213 label={t("Tots")} titol={t("Tots els treballadors")}><button type="button" onClick={()=>pdfMesFitx878516(widsMes,mes)}><FileText size={15} aria-hidden="true"/> {t("PDF del mes")}</button><button type="button" onClick={excel}><Download size={15} aria-hidden="true"/> {t("Excel del mes")}</button></ActionMenu87213></div>
       <label className="geo-op-v878487"><input type="checkbox" checked={fitxGeoOn878487()} onChange={e=>posaFitxGeo878487(e.target.checked)}/> <MapPin size={15} aria-hidden="true"/> {t("Desar la ubicació en fitxar")}</label>
     </div>
-    <div className="fitx-llista-v878390">{widsLlista.map(wid=>{const ms=delDia.filter(r=>r.wid===wid);const h=horesFitx878357(ms,ara);const r=resumMes(wid);const totM=r.reduce((a,x)=>a+x.h,0);const ra=resumAny(wid);const totA=ra.reduce((a,x)=>a+x.h,0);
-      return <details key={wid} className="fitx-w-v878390"><summary><span className="nm"><b>{nomW(wid)}</b><small className={ms.some(x=>!x.anulat)?"":"sense"}>{ultimEstat(ms)}</small></span><span className="h"><b>{fh878340(h)}</b><small>{t("Mes: {h}",{h:fh878340(totM)})}</small></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
-        <div className="cos">
-          <div className="bloc dia-w"><h5>{new Date(dia+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"})}</h5><span className="ms">{ms.length?ms.map(m=><em key={m.id} className={`m ${m.tipus} ${m.anulat?"anulat":""} ${m.correccio?"corregit":""}`} title={m.anulat?t("Anul·lat: {m}",{m:m.anulat.motiu}):m.correccio?t("Afegit: {m}",{m:m.correccio.motiu}):""}>{m.hora} {t(TIPUS_FITX878357[m.tipus]||m.tipus)} <GeoFitx878487 r={m}/></em>):<i>{t("Sense fitxar")}</i>}</span><button type="button" className="secondary small" onClick={()=>setCorr({wid,nom:nomW(wid),tipus:"entrada",hora:"",motiu:""})}>{t("Corregir")}</button></div>
-          <div className="bloc mes-w"><h5>{nomMes(mes)} · <span>{fh878340(totM)}</span></h5>{r.length?<table><thead><tr><th>{t("Dia")}</th><th>{t("Entrada")}</th><th>{t("Sortida")}</th><th>{t("Pauses")}</th><th>{t("Hores")}</th></tr></thead><tbody>{r.map(x=><tr key={x.dia}><td>{fmtAppDate8748(x.dia)}</td><td>{x.ent}</td><td>{x.sor}</td><td>{x.pauses||""}</td><td>{fh878340(x.h)}{x.corr.length?<small title={x.corr.join(" · ")}> *</small>:null}</td></tr>)}</tbody></table>:<p className="buit">{t("Cap fitxatge aquest mes.")}</p>}<button type="button" className="secondary small" disabled={!r.length} onClick={()=>imprimeixMes([wid])}><FileText size={15} aria-hidden="true"/> {t("PDF del mes")}</button></div>
-          <div className="bloc any-w"><h5>{t("Any {a}",{a:any})} · <span>{fh878340(totA)}</span></h5>{ra.length?<table><thead><tr><th>{t("Mes")}</th><th>{t("Dies")}</th><th>{t("Hores")}</th></tr></thead><tbody>{ra.map(x=><tr key={x.ym}><td>{nomMes(x.ym)}</td><td>{x.dies}</td><td>{fh878340(x.h)}</td></tr>)}</tbody></table>:<p className="buit">{t("Cap fitxatge aquest any.")}</p>}<button type="button" className="secondary small" disabled={!ra.length} onClick={()=>imprimeixAny(wid)}><FileText size={15} aria-hidden="true"/> {t("PDF de l’any")}</button></div>
-        </div></details>})}</div>
-    {corr&&<CorregirFitx878357 dia={dia} corr={corr} setCorr={setCorr} ms={delDia.filter(r=>r.wid===corr.wid)}/>}
+    <div className="fitx-rajoles-v878516">{widsLlista.map(wid=>{const ms=delDia.filter(r=>r.wid===wid);const h=horesFitx878357(ms,ara);const fx=ms.some(x=>!x.anulat);const e=fx?estatFitx878357(ms):"sense";const totM=resumMesFitx878516(wid,mes).reduce((a,x)=>a+x.h,0);const ea=!fx?estatAbs878515(wid,dia):null;const v=(vals[wid]||{})[dia];
+      return <button key={wid} type="button" className={"fitx-rw-v878516 e-"+e+(ea?" a-"+ea.a.tipus:"")} onClick={()=>setFitxa(wid)}>
+        <span className="av" aria-hidden="true">{inicials878516(nomW(wid))}</span>
+        <span className="tt"><b>{nomW(wid)}</b><small>{ea?ea.txt:ultimEstat(ms)}</small></span>
+        <span className="h"><b>{fh878340(h)}</b><small>{t("Mes: {h}",{h:fh878340(totM)})}</small></span>
+        {v?<CircleCheck size={18} className="val" aria-label={t("Validat")}/>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></button>})}</div>
+    {fitxa&&<FitxaTreballador878516 w={treb.find(x=>x.id===fitxa)||{id:fitxa,nom:nomW(fitxa)}} obres={obres} odata={odata} diaInicial={dia} onTanca={()=>setFitxa(null)}/>}
   </div>;
 }
 function CorregirFitx878357({dia,corr,setCorr,ms}){
@@ -19295,6 +19286,138 @@ function CorregirFitx878357({dia,corr,setCorr,ms}){
     </div>
     <div className="modal-actions"><button type="button" className="secondary" onClick={tanca}>{t("Tancar")}</button><button type="button" className="primary" onClick={afegeix}>{t("Afegir")}</button></div>
   </div></Modal>;
+}
+// ── V87.516 · Control horari: la fitxa de cada treballador ────────────────────────────────────────────────────────────────────────────
+// L'Héctor (6/11/2026): «una altra targeta amb llistat per treballador on al entrar pugui veure les hores de cada dia i l'obra on s'han
+// assignat… dins de cada treballador el mateix: un llistat setmanal, després al entrar en un dia veure aquell dia i les opcions de corregir i
+// validar per l'empresa… subtargetes on hi hagin totes aquesta informació de cadascun d'ells: vacances, baixa quan sigui el cas, les hores
+// setmanals, mensuals…». La mateixa fitxa s'obre des de Personal i des de Fitxatge › Registre.
+// Validar un dia: l'empresa dona per bones les hores i el fitxatge d'aquell dia. Es desa al compte (`aco_validats_v878516` =
+// {[treballador]: {[dia]: {at, per, h, hf}}}); `h` i `hf` són les hores a les obres i les fitxades quan es va validar: si després canvien,
+// la fitxa ho diu («Ha canviat des que es va validar»).
+const VALID_KEY878516="aco_validats_v878516";
+function validats878516(){const m=lsJson8779(VALID_KEY878516,{});return m&&typeof m==="object"?m:{}}
+function validat878516(wid,dia){return (validats878516()[wid]||{})[dia]||null}
+function posaValidats878516(wid,dies,info){const m={...validats878516()};const w={...(m[wid]||{})};dies.forEach(d=>{if(info)w[d]=info(d);else delete w[d]});m[wid]=w;lsSet8779(VALID_KEY878516,JSON.stringify(m));try{window.dispatchEvent(new CustomEvent("aco-validats-changed"))}catch{}}
+function useTickVal878516(){const[tick,setTick]=useState(0);useEffect(()=>{const h=()=>setTick(x=>x+1);window.addEventListener("aco-validats-changed",h);return()=>window.removeEventListener("aco-validats-changed",h)},[]);return tick}
+const quiValida878516=()=>String(window.__acoEmpresa?.username||empresaInfo878259()?.nom||"").trim();
+// totes les hores del personal a les obres (les d'abans i les de Despeses)
+function horesTotes878516(obres=[]){let l=[];try{l=[...(obres||[]).flatMap(o=>llegeixPersonal878340(o.id).map(r=>({...r,obraId:o.id}))),...horesDespeses878355().filter(r=>(obres||[]).some(o=>o.id===r.obraId))]}catch{}return l}
+const inicials878516=nom=>String(nom||"").trim().split(/\s+/).slice(0,2).map(x=>x.charAt(0).toUpperCase()).join("")||"·";
+// el registre de jornada (fitxatge) d'un treballador: per mesos i per anys, i els seus PDF (abans, dins de Fitxatge › Registre)
+function resumMesFitx878516(wid,mes){const delMes=llegeixFitx878357(mes);const dies=[...new Set(delMes.filter(r=>r.wid===wid).map(r=>r.dia))].sort();
+  return dies.map(d=>{const ms=delMes.filter(r=>r.wid===wid&&r.dia===d).sort((a,b)=>String(a.at).localeCompare(String(b.at)));const v=ms.filter(r=>!r.anulat);
+    const rEnt=v.find(r=>r.tipus==="entrada");const rSor=[...v].reverse().find(r=>r.tipus==="sortida");const pt=v.filter(r=>r.tipus==="pausa").map(pa=>{const tr=v.find(r=>r.tipus==="represa"&&String(r.at)>String(pa.at));return pa.hora+"–"+(tr?.hora||"")}).join(", ");
+    return {dia:d,ent:rEnt?.hora||"",sor:rSor?.hora||"",gEnt:textGeo878487(rEnt),gSor:textGeo878487(rSor),pauses:v.filter(r=>r.tipus==="pausa").length,pt,h:horesFitx878357(ms,null),corr:ms.filter(r=>r.correccio||r.anulat).map(r=>(r.anulat?r.anulat.motiu:r.correccio.motiu)).filter(Boolean)}})}
+function resumAnyFitx878516(wid,any){return Array.from({length:12},(_,i)=>{const ym=`${any}-${String(i+1).padStart(2,"0")}`;const l=llegeixFitx878357(ym).filter(r=>r.wid===wid);const dies=[...new Set(l.map(r=>r.dia))];
+  return {ym,dies:dies.length,h:dies.reduce((s,d)=>s+horesFitx878357(l.filter(r=>r.dia===d).sort((a,b)=>String(a.at).localeCompare(String(b.at))),null),0)}}).filter(x=>x.dies>0)}
+const nomMesFitx878516=ym=>new Date(ym+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
+function dadesWFitx878516(wid,mes){const w=llegeixTreballadors878339().find(x=>x.id===wid);if(w)return w;const r=(mes?llegeixFitx878357(mes):[]).find(x=>x.wid===wid);return {id:wid,nom:r?.nom||""}}
+// V87.390 · el document segueix l'art. 34.9 de l'Estatut dels Treballadors: empresa, treballador, període, cada dia amb l'entrada, la sortida i les pauses, el total i les signatures
+function docFitx878516(titol,periode,seccions){const emp=empresaInfo878259()||{};const esc=escHtmlV8772;
+  const adr=[emp.carrer,[emp.codiPostal,emp.poblacio].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(titol)} · ${esc(periode)}</title><style>body{font-family:Arial,sans-serif;font-size:10.5px;color:#111;margin:12mm}section{break-after:page}section:last-child{break-after:auto}h1{font-size:15px;margin:0 0 8px;letter-spacing:.03em}table{width:100%;border-collapse:collapse}.cap td{border:0;padding:2px 0}.cap td:first-child{width:28mm;color:#555}.dies{margin-top:8px}.dies th,.dies td{border:1px solid #999;padding:3px 5px;text-align:left}.dies th{background:#eee}.dies td.n{text-align:right}.dies tr.fs td{color:#999;background:#fafafa}tfoot td{font-weight:bold}.signa{display:flex;gap:20mm;margin-top:14mm}.signa div{flex:1;border-top:1px solid #333;padding-top:4px}.peu{margin-top:8mm;font-size:9px;color:#555}</style></head><body>${seccions.map(s=>`<section><h1>${esc(titol)}</h1><table class="cap"><tr><td>${esc(t("Empresa"))}</td><td><b>${esc(emp.fiscal||emp.nom||"")}</b>${emp.nif?` · ${esc(t("NIF"))} ${esc(emp.nif)}`:""}</td></tr>${adr?`<tr><td>${esc(t("Domicili"))}</td><td>${esc(adr)}</td></tr>`:""}<tr><td>${esc(t("Treballador/a"))}</td><td><b>${esc(s.w.nom||"")}</b>${s.w.dni?` · ${esc(t("DNI / NIE"))} ${esc(s.w.dni)}`:""}${s.w.ofici?` · ${esc(i18nT(s.w.ofici))}`:""}</td></tr><tr><td>${esc(t("Període"))}</td><td>${esc(periode)}</td></tr></table>${s.taula}<div class="signa"><div>${esc(t("Signatura de l’empresa"))}</div><div>${esc(t("Signatura del treballador/a"))}</div></div><p class="peu">${esc(t("Registre diari de jornada (art. 34.9 de l’Estatut dels Treballadors). Es conserva quatre anys a disposició del treballador/a, dels seus representants legals i de la Inspecció de Treball i Seguretat Social."))}</p></section>`).join("")}</body></html>`}
+function taulaMesFitx878516(wid,mes){const esc=escHtmlV8772;const r=resumMesFitx878516(wid,mes);const per={};r.forEach(x=>{per[x.dia]=x});const [y,m]=mes.split("-").map(Number);const n=new Date(y,m,0).getDate();const tot=r.reduce((a,x)=>a+x.h,0);
+  const files=Array.from({length:n},(_,i)=>{const d=`${mes}-${String(i+1).padStart(2,"0")}`;const x=per[d];const dt=new Date(d+"T12:00:00");const fs=dt.getDay()===0||dt.getDay()===6;
+    return `<tr class="${fs&&!x?"fs":""}"><td>${esc(dt.toLocaleDateString(loc878272(),{weekday:"short",day:"2-digit",month:"2-digit"}))}</td><td>${esc(x?.ent||"")}</td><td>${esc(x?.sor||"")}</td><td>${esc(x?.pt||"")}</td><td class="n">${x?esc(fh878340(x.h)):""}</td><td>${esc(x?x.corr.join(" · "):"")}</td></tr>`}).join("");
+  return `<table class="dies"><thead><tr><th>${esc(t("Dia"))}</th><th>${esc(t("Entrada"))}</th><th>${esc(t("Sortida"))}</th><th>${esc(t("Pauses"))}</th><th>${esc(t("Hores"))}</th><th>${esc(t("Observacions"))}</th></tr></thead><tbody>${files}</tbody><tfoot><tr><td colspan="4">${esc(t("Total del mes"))}</td><td class="n">${esc(fh878340(tot))}</td><td></td></tr></tfoot></table>`}
+function pdfMesFitx878516(wids,mes){const ws=wids.filter(wid=>resumMesFitx878516(wid,mes).length);if(!ws.length){alert(t("Cap fitxatge aquest mes."));return}
+  printHtmlInPlace878112(docFitx878516(t("REGISTRE DIARI DE JORNADA"),nomMesFitx878516(mes),ws.map(wid=>({w:dadesWFitx878516(wid,mes),taula:taulaMesFitx878516(wid,mes)}))),t("Registre de jornada"))}
+function pdfAnyFitx878516(wid,any){const esc=escHtmlV8772;const r=resumAnyFitx878516(wid,any);if(!r.length){alert(t("Cap fitxatge aquest any."));return}const tot=r.reduce((a,x)=>a+x.h,0);
+  const taula=`<table class="dies"><thead><tr><th>${esc(t("Mes"))}</th><th>${esc(t("Dies treballats"))}</th><th>${esc(t("Hores"))}</th></tr></thead><tbody>${r.map(x=>`<tr><td>${esc(nomMesFitx878516(x.ym))}</td><td class="n">${x.dies}</td><td class="n">${esc(fh878340(x.h))}</td></tr>`).join("")}</tbody><tfoot><tr><td>${esc(t("Total de l’any"))}</td><td class="n">${r.reduce((a,x)=>a+x.dies,0)}</td><td class="n">${esc(fh878340(tot))}</td></tr></tfoot></table>`;
+  printHtmlInPlace878112(docFitx878516(t("RESUM ANUAL DE JORNADA"),any,[{w:dadesWFitx878516(wid,any+"-01"),taula}]),t("Registre de jornada"))}
+// la fitxa: a dalt les xifres, la setmana (un dia per línia), cada dia (hores a les obres, fitxatge, corregir i validar), les vacances i el registre de jornada
+function FitxaTreballador878516({w,obres=[],odata={},onTanca,diaInicial=null}){
+  const tickP=useTickPersonal878340();const tickF=useTickFitx878357(false);const tickC=useTickCal878515();const tickV=useTickVal878516();
+  const avui=isoDay878255(new Date());
+  const[ref,setRef]=useState(diaInicial||avui);
+  const[dia,setDia]=useState(null);
+  const[corrH,setCorrH]=useState(null);const[corrF,setCorrF]=useState(null);const[formAbs,setFormAbs]=useState(null);
+  const[mesR,setMesR]=useState((diaInicial||avui).slice(0,7));
+  const totes=useMemo(()=>horesTotes878516(obres).filter(r=>r.treballadorId===w.id),[obres,tickP,w.id]);
+  const nomObra=id=>(obres||[]).find(o=>o.id===id)?.nom||t("Obra");
+  const c=useMemo(()=>calendariEmpresa878393(),[tickC]);const fm=useMemo(()=>festMap878515(c),[c]);
+  const absW=useMemo(()=>absencies878515(c).filter(a=>a.wid===w.id),[c,w.id]);
+  const vals=useMemo(()=>validats878516()[w.id]||{},[tickV,w.id]);
+  const treb=useMemo(()=>llegeixTreballadors878339().filter(x=>x.actiu!==false),[tickC]);
+  const hR=r=>parseNum8770(r.hores)||0;
+  const costR=rs=>rs.reduce((s,r)=>s+hR(r)*costHoraA878340(r.obraId,w,r),0);
+  const infoDia=d=>{const rs=totes.filter(r=>r.data===d);const h=rs.reduce((s,r)=>s+hR(r),0);const ms=marcatgesDia878357(d,w.id);const hf=horesFitx878357(ms,d===avui?Date.now():null);
+    const ab=absW.find(a=>a.des<=d&&finsAbs878515(a)>=d)||null;const f=fm[d]||null;const v=vals[d]||null;const dt=new Date(d+"T12:00:00");const cs=[0,6].includes(dt.getDay());
+    const canviat=!!v&&(Math.abs((+v.h||0)-h)>0.01||Math.abs((+v.hf||0)-hf)>0.05);return {d,dt,rs,h,ms,hf,ab,f,v,cs,canviat,fitxat:ms.some(r=>!r.anulat)}};
+  const d0=new Date(ref+"T12:00:00");d0.setDate(d0.getDate()-((d0.getDay()+6)%7));const dl=isoDay878255(d0);const d6=new Date(d0);d6.setDate(d6.getDate()+6);const dg=isoDay878255(d6);
+  const dies=[0,1,2,3,4,5,6].map(i=>{const x=new Date(d0);x.setDate(x.getDate()+i);return infoDia(isoDay878255(x))}).filter(x=>!x.cs||x.h>0||x.fitxat||x.v);
+  const rsS=totes.filter(r=>r.data>=dl&&r.data<=dg);const hS=rsS.reduce((s,r)=>s+hR(r),0);
+  const ym=ref.slice(0,7),y=ref.slice(0,4);
+  const rsM=totes.filter(r=>String(r.data).startsWith(ym)),rsA=totes.filter(r=>String(r.data).startsWith(y));
+  const hM=rsM.reduce((s,r)=>s+hR(r),0),hA=rsA.reduce((s,r)=>s+hR(r),0);
+  const vac=vacancesAny878515(w.id,y,c);
+  const eAvui=estatAbs878515(w.id,avui);
+  const perValidar=dies.filter(x=>(x.h>0||x.fitxat)&&(!x.v||x.canviat));
+  const info=x=>({at:new Date().toISOString(),per:quiValida878516(),h:Math.round(x.h*100)/100,hf:Math.round(x.hf*100)/100});
+  const valida=xs=>posaValidats878516(w.id,xs.map(x=>x.d),d=>info(xs.find(x=>x.d===d)));
+  const mouS=n=>{const d=new Date(ref+"T12:00:00");d.setDate(d.getDate()+n);setRef(isoDay878255(d))};
+  const mouD=n=>{const d=new Date(dia+"T12:00:00");d.setDate(d.getDate()+n);const k=isoDay878255(d);setDia(k);if(k<dl||k>dg)setRef(k)};
+  const nomMesRef=new Date(ym+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long"});
+  const obresDia=rs=>{const m=new Map();rs.forEach(r=>{const k=r.obraId||"";const e=m.get(k)||{obraId:k,h:0,parte:false};e.h+=hR(r);if(r.parte)e.parte=true;m.set(k,e)});return [...m.values()]};
+  const xip=x=>x.f?<i className={"xip-v878516 f-"+x.f.tipus}>{x.f.motiu||etFest878515(x.f.tipus)}</i>:x.ab?<i className={"xip-v878516 a-"+x.ab.tipus}>{etAbs878515(x.ab.tipus)}</i>:null;
+  let cos;
+  if(!dia){
+    const regM=resumMesFitx878516(w.id,mesR);const totRM=regM.reduce((s,x)=>s+x.h,0);
+    const mouM=n=>{const d=new Date(mesR+"-15T12:00:00");d.setMonth(d.getMonth()+n);setMesR(isoDay878255(d).slice(0,7))};
+    cos=<>
+      <div className="xif-v878516">
+        <div><small>{t("Setmana {n}",{n:setmanaIso878473(d0)})}</small><b>{fh878340(hS)}</b>{costR(rsS)>0&&<em>{money(costR(rsS))}</em>}</div>
+        <div><small>{nomMesRef.charAt(0).toUpperCase()+nomMesRef.slice(1)}</small><b>{fh878340(hM)}</b>{costR(rsM)>0&&<em>{money(costR(rsM))}</em>}</div>
+        <div><small>{t("Any {a}",{a:y})}</small><b>{fh878340(hA)}</b>{costR(rsA)>0&&<em>{money(costR(rsA))}</em>}</div>
+        <div className="vac"><small>{t("Vacances {a}",{a:y})}</small><b>{vac.tot?t("{n} de {m} d",{n:vac.fetes,m:vac.tot}):t("{n} d",{n:vac.fetes})}</b>{vac.tot>0&&<span className="barra" aria-hidden="true"><i style={{width:Math.min(100,vac.fetes/vac.tot*100)+"%"}}/></span>}</div>
+      </div>
+      {eAvui&&<p className={"estat-v878516 a-"+eAvui.a.tipus}><Palmtree size={16} aria-hidden="true"/> {t("Avui")}: <b>{eAvui.txt}</b></p>}
+      <section className="setm-w-v878516" aria-label={t("Setmana")}>
+        <div className="nav"><button type="button" className="secondary" onClick={()=>mouS(-7)} aria-label={t("Setmana anterior")}>‹</button><div className="tit"><b>{t("Setmana {n}",{n:setmanaIso878473(d0)})}</b><small>{fmtAppDate8748(dl).slice(0,5)} – {fmtAppDate8748(dg).slice(0,5)}</small></div><button type="button" className="secondary" onClick={()=>mouS(7)} aria-label={t("Setmana següent")}>›</button>{!(avui>=dl&&avui<=dg)&&<button type="button" className="link" onClick={()=>setRef(avui)}>{t("Aquesta setmana")}</button>}</div>
+        <ul>{dies.map(x=><li key={x.d}><button type="button" className={"dia-l-v878516"+(x.d===avui?" avui":"")+(x.v?(x.canviat?" canviat":" validat"):"")} onClick={()=>setDia(x.d)}>
+          <span className="dd"><small>{x.dt.toLocaleDateString(loc878272(),{weekday:"short"}).replace(/\.$/,"")}</small><b>{x.dt.getDate()}</b></span>
+          <span className="ob">{xip(x)}{obresDia(x.rs).map(o=><span key={o.obraId} className="o"><span className="on">{nomObra(o.obraId)}</span> <b>{fh878340(o.h)}</b></span>)}{!x.rs.length&&!x.f&&!x.ab&&<span className="buit">{x.cs?t("Cap de setmana"):t("Sense hores")}</span>}</span>
+          <span className="fx">{x.fitxat?<><Fingerprint size={15} aria-hidden="true"/>{fh878340(x.hf)}</>:null}</span>
+          <span className="h"><b>{x.h>0?fh878340(x.h):"—"}</b></span>
+          <span className="val">{x.v?(x.canviat?<AlertTriangle size={18} aria-label={t("Ha canviat des que es va validar")}/>:<CircleCheck size={18} aria-label={t("Validat")}/>):null}</span>
+          <ChevronRight size={18} className="chev" aria-hidden="true"/></button></li>)}</ul>
+        <div className="peu"><span>{t("Total")}: <b>{fh878340(hS)}</b></span>{perValidar.length>0?<button type="button" className="primary" onClick={()=>valida(perValidar)}><CircleCheck size={16} aria-hidden="true"/> {perValidar.length===1?t("Validar 1 dia"):t("Validar {n} dies",{n:perValidar.length})}</button>:dies.some(x=>x.v)?<span className="ok"><CircleCheck size={16} aria-hidden="true"/> {t("Setmana validada")}</span>:null}</div>
+      </section>
+      <details className="card bloc-v878426 abs-w-bloc-v878516"><summary><Palmtree size={18} aria-hidden="true"/><span className="t"><b>{t("Vacances, baixes i permisos")}</b></span><span className="xifra">{vac.tot?t("{n} de {m} d",{n:vac.fetes,m:vac.tot}):t("{n} d",{n:vac.fetes})}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
+        <div className="acc"><button type="button" className="primary" onClick={()=>setFormAbs({wid:w.id})}><Plus size={16} aria-hidden="true"/> {t("Afegir")}</button></div>
+        <LlistaAbs878515 treb={treb.length?treb:[w]} any={y} c={c} wid={w.id} onEdita={a=>setFormAbs(a)}/></div><Recollir878432/></details>
+      <details className="card bloc-v878426 reg-w-bloc-v878516"><summary><Fingerprint size={18} aria-hidden="true"/><span className="t"><b>{t("Registre de jornada")}</b></span><span className="xifra">{fh878340(totRM)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
+        <div className="nav-m-v878516"><button type="button" className="secondary" onClick={()=>mouM(-1)} aria-label={t("Mes anterior")}>‹</button><b>{nomMesFitx878516(mesR)}</b><button type="button" className="secondary" onClick={()=>mouM(1)} aria-label={t("Mes següent")}>›</button></div>
+        <div className="mes-w">{regM.length?<table><thead><tr><th>{t("Dia")}</th><th>{t("Entrada")}</th><th>{t("Sortida")}</th><th>{t("Pauses")}</th><th>{t("Hores")}</th></tr></thead><tbody>{regM.map(x=><tr key={x.dia}><td>{fmtAppDate8748(x.dia)}</td><td>{x.ent}</td><td>{x.sor}</td><td>{x.pauses||""}</td><td>{fh878340(x.h)}{x.corr.length?<small title={x.corr.join(" · ")}> *</small>:null}</td></tr>)}</tbody></table>:<p className="buit">{t("Cap fitxatge aquest mes.")}</p>}</div>
+        <div className="acc"><button type="button" className="secondary" disabled={!regM.length} onClick={()=>pdfMesFitx878516([w.id],mesR)}><FileText size={15} aria-hidden="true"/> {t("PDF del mes")}</button><button type="button" className="secondary" onClick={()=>pdfAnyFitx878516(w.id,mesR.slice(0,4))}><FileText size={15} aria-hidden="true"/> {t("PDF de l’any")}</button></div>
+      </div><Recollir878432/></details>
+    </>;
+  }else{
+    const x=infoDia(dia);
+    cos=<div className="dia-w-v878516">
+      <div className="nav"><button type="button" className="secondary" onClick={()=>setDia(null)}>‹ {t("Setmana")}</button><div className="dn"><button type="button" className="secondary" onClick={()=>mouD(-1)} aria-label={t("Dia anterior")}>‹</button><b>{x.dt.toLocaleDateString(loc878272(),{weekday:"long",day:"numeric",month:"long"})}</b><button type="button" className="secondary" onClick={()=>mouD(1)} aria-label={t("Dia següent")}>›</button></div></div>
+      {(x.f||x.ab||x.cs)&&<div className="xips">{xip(x)}{x.ab&&<span className="per">{periodeAbs878515(x.ab)}</span>}{x.cs&&!x.f&&<i className="xip-v878516 cs">{t("Cap de setmana")}</i>}</div>}
+      <section className="bloc-v878516 obres"><h4><HardHat size={18} aria-hidden="true"/><span>{t("Hores a les obres")}</span><b className="hh">{fh878340(x.h)}</b></h4>
+        {x.rs.length?<ul>{x.rs.map(r=><li key={r.id}><span className="o">{nomObra(r.obraId)}</span>{r.parte&&<em>{t("Parte")}</em>}{r.hx>0&&<em className="ext">{t("{h} extres",{h:fh878340(r.hx)})}</em>}<b>{fh878340(hR(r))}</b></li>)}</ul>:<p className="buit">{t("Sense hores a cap obra.")}</p>}
+        <button type="button" className="secondary" onClick={()=>setCorrH(dia)}><PenLine size={16} aria-hidden="true"/> {x.rs.length?t("Corregir les hores"):t("Apuntar les hores")}</button></section>
+      <section className="bloc-v878516 fitx"><h4><Fingerprint size={18} aria-hidden="true"/><span>{t("Fitxatge")}</span><b className="hh">{x.fitxat?fh878340(x.hf):"—"}</b></h4>
+        {x.ms.length?<div className="ms">{x.ms.map(m=><em key={m.id} className={`m ${m.tipus} ${m.anulat?"anulat":""} ${m.correccio?"corregit":""}`} title={m.anulat?t("Anul·lat: {m}",{m:m.anulat.motiu}):m.correccio?t("Afegit: {m}",{m:m.correccio.motiu}):""}>{m.hora} {t(TIPUS_FITX878357[m.tipus]||m.tipus)} <GeoFitx878487 r={m}/></em>)}</div>:<p className="buit">{t("Sense fitxar")}</p>}
+        {x.fitxat&&x.h>0&&Math.abs(x.hf-x.h)>=0.25&&<p className="dif-v878516"><AlertTriangle size={15} aria-hidden="true"/> {t("Fitxat {a} i a les obres {b}",{a:fh878340(x.hf),b:fh878340(x.h)})}</p>}
+        <button type="button" className="secondary" onClick={()=>setCorrF({wid:w.id,nom:w.nom,tipus:"entrada",hora:"",motiu:""})}><PenLine size={16} aria-hidden="true"/> {t("Corregir el fitxatge")}</button></section>
+      {(x.h>0||x.fitxat||x.v)&&<section className={"valida-v878516"+(x.v?(x.canviat?" canviat":" fet"):"")}>{x.v?<>
+        <p><CircleCheck size={18} aria-hidden="true"/> <b>{t("Validat el {d}",{d:fmtAppDate8748(String(x.v.at).slice(0,10))})}</b>{x.v.per?<span> · {x.v.per}</span>:null}</p>
+        {x.canviat&&<p className="avis"><AlertTriangle size={16} aria-hidden="true"/> {t("Ha canviat des que es va validar")}</p>}
+        <div className="bt">{x.canviat&&<button type="button" className="primary" onClick={()=>valida([x])}>{t("Tornar a validar")}</button>}<button type="button" className="secondary" onClick={()=>posaValidats878516(w.id,[x.d],null)}>{t("Treure la validació")}</button></div>
+      </>:<button type="button" className="primary valida-bt-v878516" onClick={()=>valida([x])}><CircleCheck size={18} aria-hidden="true"/> {t("Validar el dia")}</button>}</section>}
+    </div>;
+  }
+  return <PantallaSencera878489 titol={w.nom} sub={[i18nT(w.ofici||""),costHora878339(w)?`${money(costHora878339(w))}/h`:""].filter(Boolean).join(" · ")} onTorna={()=>{if(dia)setDia(null);else onTanca?.()}} senseFet className="fitxa-treb-v878516">
+    {cos}
+    {corrH&&<PantallaSencera878489 titol={t("Hores de {nom}",{nom:w.nom})} sub={fmtAppDate8748(corrH)} onTorna={()=>setCorrH(null)} senseFet className="corr-h-v878516"><PartHores878340 obres={obres} odata={odata} nomesW={w.id} diaInicial={corrH} onTanca={()=>setCorrH(null)}/></PantallaSencera878489>}
+    {corrF&&<CorregirFitx878357 dia={dia} corr={corrF} setCorr={setCorrF} ms={marcatgesDia878357(dia,w.id)}/>}
+    {formAbs&&<FormAbs878515 inicial={formAbs} treb={treb.length?treb:[w]} close={()=>setFormAbs(null)} onDesa={a=>{desaAbs878515(a);setFormAbs(null)}} onTreu={a=>{if(treuAbs878515(a))setFormAbs(null)}}/>}
+  </PantallaSencera878489>;
 }
 // Hores (menú) de l'empresa: el personal, el fitxatge i, a la gestió total, les hores pròpies (d'honoraris)
 // V87.515 · «Control horari» (l'Héctor, 6/11/2026: «millorem tot això dins les hores o Control horari, potser seria el nom més adient»): als
@@ -19317,7 +19440,7 @@ function HoresEmpresa878340({obres,clients,odata,openObra,updateStatus,senseMeve
     ...(!senseMeves?[["meves",UserRound,"Les meves hores",t("D’honoraris")]]:[])];
   return <div className="hores-emp-v878340 ch-v878515">
     <div className="fe-vistes ch-rajoles-v878515" role="group" aria-label={t(etHores878515())}>{TILES.map(([k,Ic,l,sub])=><button type="button" key={k} aria-pressed={v===k} onClick={()=>setV(k)} data-sub={sub||undefined}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{t(l)}</b></button>)}</div>
-    {v==="personal"?<PartHores878340 obres={obres} odata={odata}/>:v==="fitxatge"?<Fitxatge878357/>:v==="calendari"?<CalendariEmpresa878393 obres={obres}/>:<GestioTemps878255 updateStatus={updateStatus} obres={obres} clients={clients} odata={odata} openObra={openObra}/>}
+    {v==="personal"?<PartHores878340 obres={obres} odata={odata}/>:v==="fitxatge"?<Fitxatge878357 obres={obres} odata={odata}/>:v==="calendari"?<CalendariEmpresa878393 obres={obres}/>:<GestioTemps878255 updateStatus={updateStatus} obres={obres} clients={clients} odata={odata} openObra={openObra}/>}
   </div>;
 }
 // V87.337 · Ajustos › Dades de l'empresa (comptes d'empresa): surten com a emissor a les factures, certificacions, proformes i
@@ -20095,7 +20218,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.515",
+    app_version:"87.516",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

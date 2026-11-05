@@ -1,0 +1,156 @@
+/* V87.516 · Control horari: la fitxa de cada treballador (la setmana, cada dia amb «Corregir» i «Validar», les vacances i el registre de
+   jornada) i les rajoles dels treballadors a Personal i a Fitxatge › Registre (l'Héctor, 6/11/2026: «els requadres de les targetes els vull
+   més marcats i diferenciats entre els subtemes que hi hagin a dins»). */
+
+/* ── Personal: una rajola per treballador ────────────────────────────────────────────────────────────────────── */
+html body .treb-raj-v878516,html body .fitx-rajoles-v878516{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin:12px 0}
+html body .raj-w-v878516,html body .fitx-rw-v878516{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:42px minmax(0,1fr) auto 18px;grid-template-areas:"av tt h chev" "av est est chev";column-gap:10px;row-gap:4px;align-items:center;min-height:70px;padding:12px;background:#fff;border:1.5px solid #8FA0B3;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.08);min-width:0}
+html body .raj-w-v878516:hover,html body .fitx-rw-v878516:hover{border-color:#1D4ED8}
+html body .raj-w-v878516:focus-visible,html body .fitx-rw-v878516:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .av{grid-area:av;width:42px;height:42px;border-radius:50%;background:#EAF1FD;color:#1D4ED8;display:grid;place-items:center;font-weight:800;font-size:15px}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .tt{grid-area:tt;display:flex;flex-direction:column;min-width:0}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .tt b{font-size:15.5px;color:var(--co-ink,#152328);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .tt small{font-size:13px;color:var(--co-ink-3,#5F7075);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .h{grid-area:h;display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .h b{font-size:16px;color:var(--co-ink,#152328);white-space:nowrap}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .h small{font-size:12.5px;color:var(--co-ink-3,#5F7075);white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+html body .raj-w-v878516 .h small.vd{color:#C2410C;font-weight:700}
+html body .raj-w-v878516 .h small.vd.tot{color:#15803D}
+html body :is(.raj-w-v878516,.fitx-rw-v878516) .chev{grid-area:chev;color:#94A3B8}
+html body .est-w-v878516{grid-area:est;justify-self:start;font-style:normal;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px}
+html body .est-w-v878516.a-vacances,html body .xip-v878516.a-vacances{background:#BBF7D0;color:#14532D;border:1.5px solid #15803D}
+html body .est-w-v878516.a-baixa,html body .xip-v878516.a-baixa{background:#EDE9FE;color:#3B0764;border:1.5px solid #6D28D9}
+html body .est-w-v878516.a-permis,html body .xip-v878516.a-permis{background:#FEF3C7;color:#78350F;border:1.5px solid #B45309}
+/* Fitxatge › Registre: el color de l'esquerra diu com està */
+html body .fitx-rw-v878516{grid-template-columns:42px minmax(0,1fr) auto 20px 18px;grid-template-areas:"av tt h val chev";border-left-width:6px}
+html body .fitx-rw-v878516.e-treballant{border-left-color:#15803D}
+html body .fitx-rw-v878516.e-pausa{border-left-color:#B45309}
+html body .fitx-rw-v878516.e-fora{border-left-color:#475569}
+html body .fitx-rw-v878516.e-sense{border-left-color:#CBD5E1}
+html body .fitx-rw-v878516.e-sense .tt small{font-style:italic}
+html body .fitx-rw-v878516.a-vacances{border-left-color:#15803D;background:#F0FDF4}
+html body .fitx-rw-v878516.a-baixa{border-left-color:#6D28D9;background:#F5F3FF}
+html body .fitx-rw-v878516.a-permis{border-left-color:#B45309;background:#FFFBEB}
+html body .fitx-rw-v878516 .val{grid-area:val;color:#15803D}
+@media (max-width:700px){html body .treb-raj-v878516,html body .fitx-rajoles-v878516{grid-template-columns:minmax(0,1fr);gap:8px}}
+
+/* ── La setmana de tothom (plegable): el nom obre la fitxa; vacances, baixes i validats a les caselles ─────────── */
+html body .setm-card-v878516>.cos{padding:10px 12px 12px}
+html body .matriu-v878473 .nom-bt-v878516{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;min-width:0;border-radius:8px;padding:2px 4px;margin:-2px -4px}
+html body .matriu-v878473 .nom-bt-v878516 b{color:#1D4ED8;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+html body .matriu-v878473 .nom-bt-v878516:focus-visible{outline:2px solid #1D4ED8}
+html body .matriu-v878473 .c.a-vacances{background:#BBF7D0;color:#14532D;font-weight:800}
+html body .matriu-v878473 .c.a-baixa{background:#EDE9FE;color:#3B0764;font-weight:800}
+html body .matriu-v878473 .c.a-permis{background:#FEF3C7;color:#78350F;font-weight:800}
+html body .matriu-v878473 .c.val{position:relative}
+html body .matriu-v878473 .c.val::after{content:"✓";position:absolute;top:2px;right:4px;font-size:11px;font-weight:900;color:#15803D;line-height:1}
+
+/* ── La fitxa del treballador ───────────────────────────────────────────────────────────────────────────────── */
+html body .fitxa-treb-v878516 .ps-cos{display:flex;flex-direction:column;gap:12px}
+html body .xif-v878516{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:700px){html body .xif-v878516{grid-template-columns:repeat(2,minmax(0,1fr))}}
+html body .xif-v878516>div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:#fff;border:1.5px solid #C3CED6;border-radius:12px;min-width:0}
+html body .xif-v878516>div small{font-size:12.5px;font-weight:700;color:var(--co-ink-3,#5F7075)}
+html body .xif-v878516>div b{font-size:19px;color:var(--co-ink,#152328)}
+html body .xif-v878516>div em{font-style:normal;font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .xif-v878516>div.vac{border-color:#86EFAC;background:#F0FDF4}
+html body .xif-v878516>div.vac b{color:#14532D}
+html body .xif-v878516 .barra{display:block;height:6px;border-radius:3px;background:#DCFCE7;overflow:hidden;margin-top:3px}
+html body .xif-v878516 .barra i{display:block;height:100%;background:#15803D}
+html body .estat-v878516{margin:0;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;font-size:14.5px}
+html body .estat-v878516.a-vacances{background:#DCFCE7;color:#14532D;border:1.5px solid #15803D}
+html body .estat-v878516.a-baixa{background:#EDE9FE;color:#3B0764;border:1.5px solid #6D28D9}
+html body .estat-v878516.a-permis{background:#FEF3C7;color:#78350F;border:1.5px solid #B45309}
+/* la setmana: una targeta ben marcada i, a dins, un requadre per dia */
+html body .setm-w-v878516{display:flex;flex-direction:column;gap:8px;padding:12px;background:#fff;border:2px solid #1D4ED8;border-radius:16px}
+html body .setm-w-v878516 .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html body .setm-w-v878516 .nav .tit{display:flex;flex-direction:column;align-items:center;min-width:110px}
+html body .setm-w-v878516 .nav .tit b{font-size:16px}
+html body .setm-w-v878516 .nav .tit small{font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .setm-w-v878516 ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+html body .dia-l-v878516{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:46px minmax(0,1fr) auto auto 20px 16px;grid-template-areas:"dd ob fx h val chev";column-gap:10px;align-items:center;width:100%;min-height:58px;padding:8px 10px;background:#F8FAFC;border:1.5px solid #CBD5E1;border-left-width:5px;border-radius:12px}
+html body .dia-l-v878516:hover{border-color:#1D4ED8}
+html body .dia-l-v878516:focus-visible{outline:3px solid #1D4ED8;outline-offset:1px}
+html body .dia-l-v878516.avui{background:#EFF6FF}
+html body .dia-l-v878516.validat{border-left-color:#15803D}
+html body .dia-l-v878516.canviat{border-left-color:#C2410C}
+html body .dia-l-v878516 .dd{grid-area:dd;display:flex;flex-direction:column;align-items:center;line-height:1.1}
+html body .dia-l-v878516 .dd small{font-size:12px;font-weight:700;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+html body .dia-l-v878516 .dd b{font-size:19px}
+html body .dia-l-v878516 .ob{grid-area:ob;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;min-width:0;font-size:14px}
+html body .dia-l-v878516 .ob .o{min-width:0;display:inline-flex;gap:4px;align-items:baseline}
+html body .dia-l-v878516 .ob .o .on{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+html body .dia-l-v878516 .ob .buit{color:var(--co-ink-3,#5F7075);font-style:italic}
+html body .dia-l-v878516 .fx{grid-area:fx;display:inline-flex;align-items:center;gap:3px;font-size:13px;color:var(--co-ink-3,#5F7075);white-space:nowrap}
+html body .dia-l-v878516 .h{grid-area:h;white-space:nowrap}
+html body .dia-l-v878516 .h b{font-size:15.5px}
+html body .dia-l-v878516 .val{grid-area:val;display:inline-flex}
+html body .dia-l-v878516.validat .val{color:#15803D}
+html body .dia-l-v878516.canviat .val{color:#C2410C}
+html body .dia-l-v878516 .chev{grid-area:chev;color:#94A3B8}
+@media (max-width:700px){
+  html body .dia-l-v878516{grid-template-columns:42px minmax(0,1fr) auto 16px;grid-template-areas:"dd ob h chev" "dd fx val chev";row-gap:2px}
+  html body .dia-l-v878516 .fx{justify-self:start}
+  html body .dia-l-v878516 .val{justify-self:end}
+  html body .dia-l-v878516 .ob .o .on{max-width:170px}
+}
+html body .xip-v878516{font-style:normal;font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+html body .xip-v878516.f-oficial{background:#B91C1C;color:#fff}
+html body .xip-v878516.f-local{background:#C2410C;color:#fff}
+html body .xip-v878516.f-conveni{background:#15803D;color:#fff}
+html body .xip-v878516.f-altre{background:#475569;color:#fff}
+html body .xip-v878516.cs{background:#E2E8F0;color:#475569}
+html body .setm-w-v878516 .peu{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:4px;border-top:1px solid #E2E8F0}
+html body .setm-w-v878516 .peu .ok{display:inline-flex;align-items:center;gap:5px;color:#15803D;font-weight:700}
+/* les targetes de sota */
+html body .fitxa-treb-v878516 details.card.bloc-v878426{margin:0;border:1.5px solid #8FA0B3}
+html body .fitxa-treb-v878516 details.card.bloc-v878426[open]{border:2px solid #1D4ED8}
+html body .fitxa-treb-v878516 details.card.bloc-v878426>.cos{display:flex;flex-direction:column;gap:10px;padding:12px}
+html body .fitxa-treb-v878516 details.card.bloc-v878426>.cos>.acc{display:flex;gap:8px;flex-wrap:wrap}
+html body .nav-m-v878516{display:flex;align-items:center;gap:10px}
+html body .nav-m-v878516 b{min-width:150px;text-align:center}
+html body .nav-m-v878516 b::first-letter{text-transform:uppercase}
+html body .fitxa-treb-v878516 .mes-w{overflow-x:auto}
+html body .fitxa-treb-v878516 .mes-w table{width:100%;border-collapse:collapse;font-size:14px}
+html body .fitxa-treb-v878516 .mes-w th,html body .fitxa-treb-v878516 .mes-w td{padding:6px 8px;border-bottom:1px solid #E2E8F0;text-align:left;white-space:nowrap}
+html body .fitxa-treb-v878516 .mes-w th{font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .fitxa-treb-v878516 .buit{margin:0;color:var(--co-ink-3,#5F7075)}
+/* un dia */
+html body .dia-w-v878516{display:flex;flex-direction:column;gap:12px}
+html body .dia-w-v878516 .nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+html body .dia-w-v878516 .nav .dn{display:flex;align-items:center;gap:8px}
+html body .dia-w-v878516 .nav .dn b{font-size:17px;min-width:180px;text-align:center}
+html body .dia-w-v878516 .nav .dn b::first-letter{text-transform:uppercase}
+html body .dia-w-v878516 .xips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+html body .dia-w-v878516 .xips .per{font-size:14px;color:var(--co-ink-2,#334155)}
+html body .bloc-v878516{display:flex;flex-direction:column;gap:8px;padding:12px;background:#fff;border:1.5px solid #8FA0B3;border-radius:14px}
+html body .bloc-v878516 h4{margin:0;display:flex;align-items:center;gap:8px;font-size:15.5px}
+html body .bloc-v878516 h4 svg{color:#1D4ED8}
+html body .bloc-v878516 h4 .hh{margin-left:auto;font-size:17px}
+html body .bloc-v878516 ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+html body .bloc-v878516 li{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px}
+html body .bloc-v878516 li .o{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+html body .bloc-v878516 li em{font-style:normal;font-size:12px;font-weight:700;padding:1px 7px;border-radius:999px;background:#E2E8F0;color:#334155}
+html body .bloc-v878516 li em.ext{background:#FEF3C7;color:#78350F}
+html body .bloc-v878516 .ms{display:flex;flex-wrap:wrap;gap:6px}
+html body .bloc-v878516 .ms em.m{font-style:normal;display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;background:#F1F5F9;border:1px solid #CBD5E1;font-size:13.5px;font-weight:600}
+html body .bloc-v878516 .ms em.m.entrada,html body .bloc-v878516 .ms em.m.represa{background:#DCFCE7;border-color:#86EFAC}
+html body .bloc-v878516 .ms em.m.pausa{background:#FEF3C7;border-color:#FCD34D}
+html body .bloc-v878516 .ms em.m.sortida{background:#E0E7FF;border-color:#A5B4FC}
+html body .bloc-v878516 .ms em.m.anulat{text-decoration:line-through;opacity:.6}
+html body .bloc-v878516 .ms em.m.corregit{border-style:dashed}
+html body .bloc-v878516>button{align-self:flex-start}
+html body .dif-v878516{margin:0;display:flex;align-items:center;gap:6px;font-size:13.5px;color:#9A3412}
+html body .valida-v878516{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;border:2px dashed #94A3B8;background:#fff}
+html body .valida-v878516 .valida-bt-v878516{align-self:stretch;justify-content:center;min-height:48px;font-size:16px}
+html body .valida-v878516.fet{border:2px solid #15803D;background:#F0FDF4}
+html body .valida-v878516.fet p{color:#14532D}
+html body .valida-v878516.canviat{border:2px solid #C2410C;background:#FFF7ED}
+html body .valida-v878516 p{margin:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14.5px}
+html body .valida-v878516 p.avis{color:#9A3412;font-weight:700}
+html body .valida-v878516 .bt{display:flex;gap:8px;flex-wrap:wrap}
+/* les hores d'un dia, a sobre de la fitxa */
+html body .corr-h-v878516 .ps-cos{padding-top:6px}
+/* Certificacions al mòbil: «Llistat» (V87.501) passa a dins de la targeta; a la línia no hi cabia i el títol quedava a sota de l'import */
+html body .llistat-m-v878516{display:none}
+@media (max-width:700px){html body details.card.bloc-v878426>summary .llistat-btn-v878501{display:none}html body .llistat-m-v878516{display:flex;justify-content:flex-end;margin:0 0 8px}}

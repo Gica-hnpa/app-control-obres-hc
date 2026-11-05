@@ -3237,7 +3237,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.515 a Render):**
+**Estat (publicada la V87.516 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -3515,6 +3515,27 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
       vacances · Full per penjar. El PDF per penjar pinta cada tipus del seu color amb la llegenda; les absències de cada treballador no hi surten.
     - Prova: `v515test.mjs` (28). Adaptades `calendari393test` (targetes noves) i, pel nom, les proves que anaven a «Hores» (19) i `v484test`,
       `v507test` i `v508test` (la rajola de l'Inici).
+  - **V87.516 · La fitxa de cada treballador: la setmana, cada dia amb «Corregir» i «Validar»** (`src/theme-v878516.css`):
+    - **Personal** (`PartHores878340`, només sense `obraFixa`): sota els dies, **una rajola per treballador** (`treb-raj-v878516`, `raj-w-v878516`:
+      inicials, nom, categoria, hores de la setmana, «N de M validats» o «Validada», i si és fora: «Vacances fins al …») i **«Setmana de tothom»**
+      (la graella de sempre en una targeta plegable, oberta a l'ordinador). A la graella, el nom obre la fitxa (`nom-bt-v878516`), les caselles
+      sense hores d'un dia de vacances, baixa o permís diuen V, B o P (`a-<tipus>`), i els dies validats porten una marca (`val`, CSS).
+      Des de l'obra (`obraFixa`), com abans.
+    - **La fitxa** (`FitxaTreballador878516`, `PantallaSencera878489`; s'obre des de Personal i des de Fitxatge › Registre): a dalt, les hores
+      de la setmana, el mes i l'any (amb el cost) i les vacances de l'any; si avui és fora, ho diu. **La setmana** (‹ ›): un requadre per dia amb
+      les obres i les hores, les hores fitxades, el total i si està validat (vora verda; taronja si ha canviat), i «Validar N dies».
+      **Un dia**: «Hores a les obres» amb «Corregir les hores» / «Apuntar les hores» (obre `PartHores878340` amb `nomesW`, `diaInicial` i
+      `onTanca`: el formulari de sempre només d'aquell treballador), «Fitxatge» amb els marcatges i «Corregir el fitxatge» (`CorregirFitx878357`),
+      la diferència si el fitxat i les obres no lliguen, i **«Validar el dia»**. A sota, «Vacances, baixes i permisos» (`LlistaAbs878515` i
+      «Afegir», amb el treballador ja triat) i **«Registre de jornada»** (el mes amb ‹ ›, «PDF del mes» i «PDF de l'any»).
+    - **Validar**: `aco_validats_v878516` = {[treballador]: {[dia]: {at, per, h, hf}}} (`posaValidats878516`, event `aco-validats-changed`);
+      `h` i `hf` són les hores a les obres i les fitxades en validar: si després canvien, «Ha canviat des que es va validar» i «Tornar a validar».
+    - **Fitxatge › Registre** (`RegistreFitx878357`, ara rep `obres` i `odata`): a dalt el dia, el mes amb «Tots» (PDF i Excel del mes,
+      amb la columna «Validat») i la ubicació; a sota, **una rajola per treballador** (`fitx-rw-v878516`: com està el dia triat, les hores del dia i
+      del mes, el color de l'esquerra segons si treballa, és en pausa o ha sortit, vacances o baixa, i la marca si està validat) que obre la fitxa.
+      Els PDF del registre són funcions comunes (`pdfMesFitx878516`, `pdfAnyFitx878516`, `resumMesFitx878516`, `docFitx878516`).
+    - Certificacions al mòbil: «Llistat» (V87.501) passa a dins de la targeta (`llistat-m-v878516`); a la línia, el títol quedava a sota de l'import.
+    - Prova: `v516test.mjs` (23). Adaptades `fitxatge357test` i `v487test` (el registre i les correccions, des de la fitxa).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3713,7 +3734,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.515 a Render):**
+**Estat (publicada la V87.516 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
