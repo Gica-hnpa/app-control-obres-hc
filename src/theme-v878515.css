@@ -1,0 +1,167 @@
+/* V87.515 · Control horari: les pestanyes de dalt com a rajoles i el calendari laboral amb colors (l'Héctor, 6/11/2026:
+   «un calendari mensual amb colors, sobretot en mòbil i iPad… en blanc només els laborables, marcar els festius, els festius nacionals,
+   les vacances en verd, les baixes…»; «els requadres de les targetes els vull més marcats i diferenciats»). */
+
+/* ── Pestanyes de dalt: rajoles amb la icona, el nom i com està cadascuna ─────────────────────────────────────── */
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0 0 16px;padding:0;background:none;border:0;border-radius:0;box-shadow:none;overflow:visible;flex-wrap:nowrap}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;row-gap:2px;align-items:center;min-height:74px;padding:12px 14px;background:#fff;border:1.5px solid #8FA0B3;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.08);min-width:0}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button .ico{grid-row:1/3;width:44px;height:44px;border-radius:12px;background:#EAF1FD;color:#1D4ED8;display:grid;place-items:center}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button b{grid-column:2;align-self:end;font-size:16px;font-weight:800;color:var(--co-ink,#152328);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button::after{content:attr(data-sub);grid-column:2;align-self:start;font-size:13px;font-weight:600;color:var(--co-ink-3,#5F7075);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"]{background:#1D4ED8;border-color:#1D4ED8;box-shadow:0 3px 10px rgba(29,78,216,.28)}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"] .ico{background:rgba(255,255,255,.2);color:#fff}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"] b,
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button[aria-pressed="true"]::after{color:#fff}
+html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+@media (max-width:700px){
+  html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515{grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin-bottom:12px}
+  html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;justify-items:start;min-height:96px;padding:10px;row-gap:3px}
+  html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button .ico{grid-row:auto;width:36px;height:36px;border-radius:10px}
+  html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button b{grid-column:1;font-size:15px;align-self:auto;max-width:100%}
+  html body .hores-emp-v878340.ch-v878515>.fe-vistes.ch-rajoles-v878515>button::after{grid-column:1;font-size:12px;white-space:normal;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-width:100%}
+}
+
+/* ── Calendari: la vista de colors ─────────────────────────────────────────────────────────────────────────── */
+html body .cal-v878515{display:flex;flex-direction:column;gap:12px;max-width:none}
+html body .cal-v878515>.any-v878393{display:flex;align-items:center;gap:10px}
+html body .cal-v878515>.any-v878393 b{font-size:20px;min-width:54px;text-align:center}
+html body .cal-vis-v878515{display:flex;flex-direction:column;gap:12px;padding:14px;background:#fff;border:1.5px solid #8FA0B3;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+html body .cal-barra-v878515{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+html body .seg-v878515{display:inline-flex;padding:3px;border:1.5px solid #C3CED6;border-radius:999px;background:#F8FAFC}
+html body .seg-v878515>button{all:unset;box-sizing:border-box;cursor:pointer;min-height:36px;padding:4px 16px;border-radius:999px;font-weight:700;font-size:14px;color:var(--co-ink-2,#334155);display:inline-flex;align-items:center}
+html body .seg-v878515>button[aria-pressed="true"]{background:#1D4ED8;color:#fff}
+html body .seg-v878515>button:focus-visible{outline:2px solid #1D4ED8;outline-offset:2px}
+html body .mes-nav-v878515{display:flex;align-items:center;gap:8px}
+html body .mes-nav-v878515 b{min-width:150px;text-align:center;font-size:17px}
+html body .cal-barra-v878515 .qui-v878515{margin-left:auto;min-height:38px;max-width:100%}
+@media (max-width:700px){html body .cal-barra-v878515 .qui-v878515{margin-left:0;flex:1 1 100%}html body .mes-nav-v878515{flex:1;justify-content:space-between}html body .mes-nav-v878515 b{min-width:0}}
+html body .cal-cos-v878515{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+@media (min-width:900px){html body .cal-cos-v878515.mes{grid-template-columns:minmax(0,1fr) 300px}}
+@media (min-width:1101px){html body .cal-cos-v878515.any{grid-template-columns:minmax(0,1fr) 290px}}
+/* la graella d'un mes */
+html body .mes-g-v878515{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+html body .mes-g-v878515 .cap{text-align:center;font-size:12.5px;font-weight:700;color:var(--co-ink-3,#5F7075);padding:2px 0;text-transform:uppercase}
+html body .mes-g-v878515 .cap.cs{color:#94A3B8}
+html body .dia-v878515{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-height:54px;padding:6px 2px 4px;border-radius:10px;border:1.5px solid #CBD5E1;background:#fff;color:#0F172A;min-width:0}
+html body .dia-v878515 .n{font-size:16px;font-weight:700;line-height:1.1}
+html body .dia-v878515.cs{background:#E2E8F0;border-color:#E2E8F0;color:#64748B}
+html body .dia-v878515.f-oficial{background:#B91C1C;border-color:#B91C1C;color:#fff}
+html body .dia-v878515.f-local{background:#C2410C;border-color:#C2410C;color:#fff}
+html body .dia-v878515.f-conveni{background:#15803D;border-color:#15803D;color:#fff}
+html body .dia-v878515.f-altre{background:#475569;border-color:#475569;color:#fff}
+html body .dia-v878515.a-vacances{background:#BBF7D0;border:2px solid #15803D;color:#14532D}
+html body .dia-v878515.a-baixa{background:#EDE9FE;border:2px solid #6D28D9;color:#3B0764}
+html body .dia-v878515.a-permis{background:#FEF3C7;border:2px solid #B45309;color:#78350F}
+html body .dia-v878515.avui{box-shadow:inset 0 0 0 2px #0F172A}
+html body .dia-v878515.avui .n{text-decoration:underline;text-underline-offset:3px}
+html body .dia-v878515.sel{outline:3px solid #1D4ED8;outline-offset:1px;z-index:1}
+html body .dia-v878515:focus-visible{outline:3px solid #1D4ED8;outline-offset:1px}
+html body .dia-v878515 .mk{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}
+html body .dia-v878515 .mk i{font-style:normal;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:12px;font-weight:800;line-height:18px;text-align:center;color:#fff}
+html body .mk i.m-vacances,html body i.pt.m-vacances{background:#15803D}
+html body .mk i.m-baixa,html body i.pt.m-baixa{background:#6D28D9}
+html body .mk i.m-permis,html body i.pt.m-permis{background:#B45309}
+@media (max-width:700px){html body .dia-v878515{min-height:48px;padding-top:5px}html body .dia-v878515 .n{font-size:15px}html body .dia-v878515 .mk i{min-width:16px;height:16px;line-height:16px;font-size:11.5px;padding:0 3px}}
+/* l'any sencer (a l'ordinador, de sèrie): 12 mesos petits */
+html body .any-g-v878515{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 16px}
+@media (max-width:1100px){html body .any-g-v878515{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:700px){html body .any-g-v878515{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+html body .mesm-v878515{display:flex;flex-direction:column;gap:4px;min-width:0}
+html body .mesm-v878515 .nm{all:unset;cursor:pointer;font-weight:800;font-size:14px;color:var(--co-ink,#152328);padding:2px 0}
+html body .mesm-v878515 .nm:hover{color:#1D4ED8;text-decoration:underline}
+html body .mes-g-v878515.mini{gap:2px}
+html body .mes-g-v878515.mini .cap{font-size:10.5px;padding:0}
+html body .mes-g-v878515.mini .dia-v878515{min-height:24px;padding:3px 0 2px;border-radius:5px;border-width:1px;gap:1px}
+html body .mes-g-v878515.mini .dia-v878515 .n{font-size:12px;font-weight:600}
+html body .mes-g-v878515.mini .dia-v878515.a-vacances,html body .mes-g-v878515.mini .dia-v878515.a-baixa,html body .mes-g-v878515.mini .dia-v878515.a-permis{border-width:1.5px}
+html body .mes-g-v878515.mini .dia-v878515.sel{outline-width:2px}
+html body .mes-g-v878515.mini .dia-v878515 .mk{position:absolute;left:0;right:0;bottom:1px;gap:1px}
+html body .mes-g-v878515.mini .dia-v878515 .mk i{min-width:5px;width:5px;height:5px;padding:0;border-radius:50%}
+html body .mes-g-v878515.mini .dia-v878515:has(.mk) .n{margin-top:-2px}
+/* el dia triat */
+html body .dia-info-v878515{display:flex;flex-direction:column;gap:8px;padding:12px;border:1.5px solid #C3CED6;border-radius:14px;background:#F8FAFC;min-width:0}
+html body .dia-info-v878515 h4{margin:0;font-size:16px}
+html body .dia-info-v878515 h4::first-letter{text-transform:uppercase}
+html body .est-v878515{align-self:flex-start;display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-weight:700;font-size:13.5px;background:#fff;border:1.5px solid #CBD5E1;color:#0F172A}
+html body .est-v878515.cs{background:#E2E8F0;border-color:#E2E8F0;color:#475569}
+html body .est-v878515.f-oficial{background:#B91C1C;border-color:#B91C1C;color:#fff}
+html body .est-v878515.f-local{background:#C2410C;border-color:#C2410C;color:#fff}
+html body .est-v878515.f-conveni{background:#15803D;border-color:#15803D;color:#fff}
+html body .est-v878515.f-altre{background:#475569;border-color:#475569;color:#fff}
+html body .dia-info-v878515 p{margin:0;font-size:14px}
+html body .abs-dia-v878515{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+html body .abs-dia-v878515 button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:12px minmax(0,1fr);column-gap:8px;align-items:center;width:100%;padding:7px 9px;border-radius:10px;background:#fff;border:1px solid #E2E8F0}
+html body .abs-dia-v878515 button b{font-size:14.5px}
+html body .abs-dia-v878515 button span{grid-column:2;font-size:13px;color:var(--co-ink-3,#5F7075)}
+html body .abs-dia-v878515 button:focus-visible{outline:2px solid #1D4ED8}
+html body i.pt{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none}
+html body i.pt.f-oficial{background:#B91C1C}html body i.pt.f-local{background:#C2410C}html body i.pt.f-conveni{background:#15803D}html body i.pt.f-altre{background:#475569}
+html body .acc-v878515{display:flex;flex-wrap:wrap;gap:8px}
+/* la llegenda */
+html body .llegenda-v878515{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--co-ink-2,#334155)}
+html body .llegenda-v878515 span{display:inline-flex;align-items:center;gap:6px}
+html body .llegenda-v878515 i{display:inline-block;width:16px;height:16px;border-radius:4px;border:1.5px solid #CBD5E1;background:#fff}
+html body .llegenda-v878515 i.cs{background:#E2E8F0;border-color:#E2E8F0}
+html body .llegenda-v878515 i.f-oficial{background:#B91C1C;border-color:#B91C1C}
+html body .llegenda-v878515 i.f-local{background:#C2410C;border-color:#C2410C}
+html body .llegenda-v878515 i.f-conveni{background:#15803D;border-color:#15803D}
+html body .llegenda-v878515 i.f-altre{background:#475569;border-color:#475569}
+html body .llegenda-v878515 i.a-vacances{background:#BBF7D0;border:2px solid #15803D}
+html body .llegenda-v878515 i.a-baixa{background:#EDE9FE;border:2px solid #6D28D9}
+html body .llegenda-v878515 i.a-permis{background:#FEF3C7;border:2px solid #B45309}
+
+/* ── Les targetes de sota (plegades): ben marcades, i el que hi ha a dins, separat ─────────────────────────── */
+html body .cal-v878515>details.card.bloc-v878426{margin:0;border:1.5px solid #8FA0B3}
+html body .cal-v878515>details.card.bloc-v878426[open]{border:2px solid #1D4ED8}
+html body .cal-v878515>details.card.bloc-v878426>.cos{display:flex;flex-direction:column;gap:10px;padding:12px 14px 14px}
+html body .cal-v878515>details.card.bloc-v878426>.cos>.acc{display:flex;flex-wrap:wrap;gap:8px}
+html body .cal-v878515 .fila-v878393{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border:1px solid #CBD5E1;border-radius:10px;background:#fff}
+html body .cal-v878515 .fila-v878393 input{min-height:38px}
+html body .cal-v878515 .fest-v878515 input[type=date]{width:150px}
+html body .cal-v878515 .fest-v878515 select{min-height:38px}
+html body .cal-v878515 .fest-v878515 input:not([type]){flex:1 1 180px;min-width:0}
+html body .cal-v878515 .fest-v878515 .treu{margin-left:auto}
+html body .cal-v878515 .fest-v878515.f-oficial{border-left:5px solid #B91C1C}
+html body .cal-v878515 .fest-v878515.f-local{border-left:5px solid #C2410C}
+html body .cal-v878515 .fest-v878515.f-conveni{border-left:5px solid #15803D}
+html body .cal-v878515 .fest-v878515.f-altre{border-left:5px solid #475569}
+html body .cal-v878515 .buit{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .jorn-v878515{display:flex;flex-wrap:wrap;gap:12px 24px}
+html body .jorn-v878515 .jornada-v878393{display:flex;flex-direction:column;gap:4px}
+html body .jorn-v878515 .jornada-v878393>span{font-size:13px;font-weight:700;color:var(--co-ink-2,#334155)}
+html body .jorn-v878515 .jornada-v878393 input{width:120px;min-height:40px}
+html body .jorn-v878515 .jornada-v878393 em{font-style:normal;font-size:13px;color:var(--co-ink-3,#5F7075)}
+html body .cal-v878515 .full-v878393{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+html body .cal-v878515 .full-v878393 select{flex:1 1 220px;min-height:40px;max-width:100%}
+/* les absències de cada treballador */
+html body .abs-llista-v878515{display:flex;flex-direction:column;gap:10px}
+html body .abs-w-v878515{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1.5px solid #C3CED6;border-radius:12px;background:#fff}
+html body .abs-w-v878515>.cap b{font-size:15.5px}
+html body .vac-v878515{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:14px;color:var(--co-ink-2,#334155)}
+html body .vac-v878515>svg{color:#15803D}
+html body .vac-v878515 b{color:#14532D}
+html body .vac-v878515 .barra{flex:1 1 120px;max-width:220px;height:8px;border-radius:4px;background:#DCFCE7;overflow:hidden}
+html body .vac-v878515 .barra i{display:block;height:100%;background:#15803D}
+html body .vac-v878515 small{color:var(--co-ink-3,#5F7075);font-size:12.5px}
+html body .abs-w-v878515 ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+html body .abs-w-v878515 li button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;width:100%;padding:7px 10px;border-radius:9px;background:#F8FAFC;border:1px solid #E2E8F0}
+html body .abs-w-v878515 li button .tp{font-weight:700;font-size:14px}
+html body .abs-w-v878515 li button .dt{font-size:14px}
+html body .abs-w-v878515 li button .n{margin-left:auto;font-weight:700;font-size:13.5px;color:var(--co-ink-2,#334155)}
+html body .abs-w-v878515 li button small{flex:1 1 100%;font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .abs-w-v878515 li button:focus-visible{outline:2px solid #1D4ED8}
+/* els formularis */
+html body .abs-form-v878515,html body .fest-form-v878515{display:flex;flex-direction:column;gap:12px}
+html body .abs-form-v878515 label,html body .fest-form-v878515 label{display:flex;flex-direction:column;gap:4px}
+html body .abs-form-v878515 label>span,html body .fest-form-v878515 label>span{font-size:13px;font-weight:700;color:var(--co-ink-2,#334155)}
+html body .dates-v878515{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html body .tipus-v878515{display:flex;flex-wrap:wrap;gap:6px}
+html body .tipus-v878515>button{all:unset;box-sizing:border-box;cursor:pointer;min-height:40px;padding:6px 14px;border-radius:999px;border:1.5px solid #C3CED6;background:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center}
+html body .tipus-v878515>button.t-vacances[aria-pressed="true"],html body .tipus-v878515>button.t-conveni[aria-pressed="true"]{background:#15803D;border-color:#15803D;color:#fff}
+html body .tipus-v878515>button.t-baixa[aria-pressed="true"]{background:#6D28D9;border-color:#6D28D9;color:#fff}
+html body .tipus-v878515>button.t-permis[aria-pressed="true"]{background:#B45309;border-color:#B45309;color:#fff}
+html body .tipus-v878515>button.t-oficial[aria-pressed="true"]{background:#B91C1C;border-color:#B91C1C;color:#fff}
+html body .tipus-v878515>button.t-local[aria-pressed="true"]{background:#C2410C;border-color:#C2410C;color:#fff}
+html body .tipus-v878515>button.t-altre[aria-pressed="true"]{background:#475569;border-color:#475569;color:#fff}
+html body .tipus-v878515>button:focus-visible{outline:2px solid #1D4ED8;outline-offset:2px}
+html body .n-v878515{margin:0;font-weight:700;color:#14532D}
