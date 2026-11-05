@@ -55,6 +55,13 @@ function eachFile(obra, fn) {
 
 // Abans de desar les obres: cada fitxer amb contingut va al seu lloc (només els que no hi són encara)
 // i a la cua per pujar al núvol.
+// V87.520 · «Còpia al meu ordinador»: cada fitxer d'un compte, un a un (sense carregar-los tots a la memòria). fn(id, {data, obraId, nom, type})
+export async function recorreArxius(space, fn) {
+  const pre = keyOf(space, "");
+  const keys = await tx("readonly", s => s.getAllKeys(IDBKeyRange.bound(pre, pre + "\uffff")));
+  for (const k of keys || []) { const v = await tx("readonly", s => s.get(k)); if (v && typeof v === "object" && isData(v.data)) await fn(String(k).slice(pre.length), v); }
+  return (keys || []).length;
+}
 export function persistObraFiles(odata, space) {
   if (!odata || typeof odata !== "object" || !space || typeof indexedDB === "undefined") return Promise.resolve(0);
   const jobs = [];

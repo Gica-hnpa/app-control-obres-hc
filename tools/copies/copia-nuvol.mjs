@@ -24,6 +24,8 @@ const DEFAULTS = {
   desti: [
     "D:\\00_CUBERO\\00_FEINA\\PROGRAMES\\APP GESTIO OBRES\\DADES\\COPIES_NUVOL",
     path.join(os.homedir(), "Documents", "COPIES_NUVOL"),
+    // V87.520 · una tercera còpia fora de l'ordinador: la carpeta del Google Drive de l'Héctor (si l'ordinador es fa malbé, les altres dues es perdrien alhora)
+    "G:\\Mi unidad\\COPIES_CONTROL_OBRES",
   ],
   diesDiaris: 30,
   mesosMensuals: 12,

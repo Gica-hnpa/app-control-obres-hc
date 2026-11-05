@@ -3,9 +3,11 @@
 Cada dia a les 13:00, `copia-nuvol.mjs`:
 1. entra al núvol amb el compte de còpies `copies@usuaris.controlobres.app`, que només pot **llegir**;
 2. baixa les dades de **tots** els comptes;
-3. desa una còpia a cada una d'aquestes dues carpetes:
+3. desa una còpia a cada una d'aquestes tres carpetes:
    - `D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\DADES\COPIES_NUVOL\AAAA-MM-DD\`
    - `C:\Users\Hector\Documents\COPIES_NUVOL\AAAA-MM-DD\`
+   - `G:\Mi unidad\COPIES_CONTROL_OBRES\AAAA-MM-DD\` (V87.520: el Google Drive, fora de l'ordinador; si el Google Drive no és obert,
+     aquesta no es fa i les altres dues sí, i el registre ho apunta)
 
 Dins de cada carpeta de dia hi ha:
 - un fitxer per compte: `hector.json.gz`, `brava.json.gz`, `oriol.json.gz`…;

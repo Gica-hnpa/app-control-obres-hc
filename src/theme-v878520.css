@@ -1,0 +1,12 @@
+/* V87.520 · Ajustos › «Còpia al meu ordinador» */
+html body .copia-v878520{display:flex;flex-direction:column;gap:10px}
+html body .copia-v878520 .estat{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08)}
+html body .copia-v878520 .estat svg{flex:none;color:#1D4ED8}
+html body .copia-v878520 .estat span{display:flex;flex-direction:column;min-width:0}
+html body .copia-v878520 .estat b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .copia-v878520 .estat small{color:var(--co-ink-3,#5F7075);font-size:13px}
+html body .copia-v878520 .botons{display:flex;flex-wrap:wrap;gap:8px}
+html body .copia-v878520 .msg{margin:0;font-size:14px;color:var(--co-ink-2,#334155)}
+html body .copia-buit-v878520{margin:0;color:var(--co-ink-3,#5F7075)}
+/* V87.519 · el botó «Sortir» de la pantalla de fi, amb el text centrat */
+html body .prova-acabada-v878519 button.primary{display:flex;align-items:center;justify-content:center;text-align:center;width:100%}

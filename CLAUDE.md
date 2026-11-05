@@ -3126,6 +3126,21 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       l'SQL). El Supabase de proves té els comptes `prova-garcia-constru` i `prova-puig-tecnic` (`prova2026`) i `GET`/`POST /__proves`.
     - **El núvol és a Frankfurt** (`eu-central-1`, comprovat per l'Héctor el 5/11/2026). Ús el 5/11: 33 MB de dades i 80 MB d'arxius (pla Pro: 8 GB i 100 GB);
       el «límit de despesa» és activat: si es passa d'un límit, Supabase bloqueja el que passa fins al mes següent.
+  - **V87.520 · L'espai del núvol a l'Inici, una tercera còpia al Google Drive i «Còpia al meu ordinador»** (l'Héctor, 5/11/2026: «si a tot»):
+    - **Espai** (`espaiAvisos878520`, `PLA878520` = 100 GB d'arxius i 8 GB de base de dades del pla Pro): a l'Inici del compte de l'Héctor (Pendent ›
+      Avisos), «Núvol: els arxius, al {p} %» o «…la base de dades…» a partir del 70 % (vermell al 90 %), amb els GB; tocant-lo, Ajustos. Es demana a
+      `aco_espai()` com a molt cada 6 h (`sessionStorage` `espai-v878520`). Ajustos › Espai al núvol diu els límits del pla Pro (abans, el gratuït).
+    - **Còpies del núvol** (`tools/copies/copia-nuvol.mjs`): una tercera carpeta, `G:\Mi unidad\COPIES_CONTROL_OBRES` (el Google Drive de l'Héctor, fora de
+      l'ordinador); si el Drive no és obert, aquesta no es fa i el registre ho apunta.
+    - **Ajustos › «Còpia al meu ordinador»** (`CopiaOrdinador878520`, tots els comptes menys el treballador; Chrome o Edge a l'ordinador, File System Access):
+      «Triar la carpeta» (es recorda a l'aparell, IndexedDB `aco_copia_ordinador`, per usuari) i, cada dia que s'obre l'app (`CopiaAuto878520`, 20 s després),
+      `ControlObres-<usuari>-<dia>.json` (el format d'«Exportar còpia JSON», es pot tornar a importar) i els arxius que encara no hi són a `arxius/<obra>/` i
+      `arxius/Albarans, fotos i logos/` (`recorreArxius` de `src/fileStore.js`). Es guarden 30 dies i el dia 1 de cada mes, 12 mesos. Si el navegador ha de
+      tornar a donar permís, l'Inici diu «Còpia al teu ordinador · Toca per fer la d'avui». «Fer la còpia ara», «Canviar de carpeta», «Deixar de fer-la».
+    - Traduccions al castellà de la V87.519 i la V87.520 (sortien en català). Estils `src/theme-v878520.css`. Prova: `v520test.mjs` (14; la carpeta és la del
+      navegador, OPFS, amb `window.__acoTriaCarpeta878520` i `__acoCopiaEspera878520`). El Supabase de proves accepta `POST /__espai`.
+    - **Fitxatge a les proves** (l'Héctor, 5/11/2026: «només fitxarà el propietari de la demo»): com sempre, Control horari › Fitxatge › Fitxar, posant-se ell a
+      Empresa › Treballadors. Només als comptes de constructora o gestió total (al compte de l'Héctor i als tècnics no hi és). Captures: `capfitx.mjs`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3324,7 +3339,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.519 a Render):**
+**Estat (publicada la V87.520 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

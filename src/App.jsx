@@ -35,11 +35,11 @@ import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
-import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile} from "./fileStore.js";
+import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile,recorreArxius} from "./fileStore.js";
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.519";
+const APP_VERSION878264="87.520";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3478,6 +3478,112 @@ function confirmBigDocument878263(file){
   if(size>10*1048576)return confirm(`«${nom}» ocupa ${MB878263(size)} MB. Els documents grans omplen ràpid l’espai del núvol (1 GB per a tots els comptes en el pla gratuït).\n\nVols pujar-lo igualment?`);
   return true;
 }
+// ── V87.520 · L'espai del núvol i la «Còpia al meu ordinador» ─────────────────────────────────────────────────────────────────────
+// Pla Pro de Supabase (des del 27/10/2026): 100 GB d'arxius i 8 GB de base de dades. Amb el «límit de despesa» activat, si es passa d'un
+// límit Supabase bloqueja el que passa fins al mes següent: per això l'Inici del compte de l'Héctor avisa a partir del 70 %.
+const PLA878520={arxius:100*1073741824,bd:8*1073741824};
+async function espaiAvisos878520(){
+  const c=window.__acoCloud;if(window.__acoEmpresa||!c?.espai||!c.status?.().email)return [];
+  let r=null;try{const k=JSON.parse(sessionStorage.getItem("espai-v878520")||"null");if(k&&Date.now()-k.at<6*3600e3)r=k.r}catch{}
+  if(!r){try{r=await c.espai();sessionStorage.setItem("espai-v878520",JSON.stringify({at:Date.now(),r}))}catch{return []}}
+  if(!r)return [];
+  const out=[];const mira=(ref,txt,used,lim)=>{const p=Math.round((+used||0)/lim*100);if(p>=70)out.push({k:"espai",ref,tone:p>=90?"bad":"warn",txt:t(txt,{p}),sub:t("{u} GB de {l} GB del pla Pro · Supabase › Usage",{u:((+used||0)/1073741824).toLocaleString("ca-ES",{maximumFractionDigits:1}),l:Math.round(lim/1073741824)})})};
+  mira("arxius","Núvol: els arxius, al {p} %",r.arxius,PLA878520.arxius);mira("bd","Núvol: la base de dades, al {p} %",r.base_dades,PLA878520.bd);
+  return out;
+}
+// «Còpia al meu ordinador» (Chrome o Edge a l'ordinador): una carpeta triada pel compte i, cada dia que s'obre l'app, una còpia de les
+// dades (el mateix format que «Exportar còpia JSON», es pot tornar a importar) i dels arxius que encara no hi són. La carpeta es recorda a
+// l'aparell (IndexedDB aco_copia_ordinador, per usuari). Es guarden 30 dies i el dia 1 de cada mes, 12 mesos.
+const potCopia878520=()=>typeof window!=="undefined"&&(typeof window.showDirectoryPicker==="function"||typeof window.__acoTriaCarpeta878520==="function");
+function copiaDb878520(){return new Promise((res,rej)=>{const r=indexedDB.open("aco_copia_ordinador",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("c"))r.result.createObjectStore("c")};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function copiaRec878520(u){const db=await copiaDb878520();return new Promise((res,rej)=>{const q=db.transaction("c","readonly").objectStore("c").get(u);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)})}
+async function desaCopiaRec878520(u,v){const db=await copiaDb878520();await new Promise((res,rej)=>{const tx=db.transaction("c","readwrite");if(v==null)tx.objectStore("c").delete(u);else tx.objectStore("c").put(v,u);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)});try{window.dispatchEvent(new Event("aco-copia-878520"))}catch{}}
+const nomFitxer878520=x=>String(x||"").normalize("NFC").replace(/[\\/:*?"<>|\u0000-\u001f]+/g," ").replace(/\s+/g," ").trim().slice(0,90)||"sense nom";
+const extDe878520=(type,nom)=>{const e=/\.([a-z0-9]{2,5})$/i.exec(String(nom||""));if(e)return "";const m={"image/jpeg":".jpg","image/png":".png","image/webp":".webp","application/pdf":".pdf","image/svg+xml":".svg"};return m[String(type||"").toLowerCase()]||""};
+async function existeix878520(dir,nom){try{await dir.getFileHandle(nom);return true}catch{return false}}
+async function escriu878520(dir,nom,dades){const fh=await dir.getFileHandle(nom,{create:true});const w=await fh.createWritable();await w.write(dades);await w.close()}
+function dadesCopia878520(user,{clients=[],obres=[],odata={}}={}){
+  const pref=`${STORAGE_NS8782}__${String(user||"").trim().toLowerCase()}__`;const storage={},simple={};
+  Object.keys(localStorage).forEach(k=>{if(!k.startsWith(pref))return;let v;try{v=localStorage.getItem(k)}catch{return}if(typeof v==="string"&&/^data:/i.test(v))return;storage[k]=v;simple[k.slice(pref.length)]=v});
+  return {version:"V87.520",user,exportedAt:new Date().toISOString(),mode:"COPIA_ORDINADOR_V878520",storage,localStorage:simple,appState:stripHeavy878185({clients,obres,odata})};
+}
+let copiantAra878520=false;
+async function ferCopia878520(st,{demana=false}={}){
+  const user=currentAppUser8779();if(!user)return {error:"usuari"};
+  const rec=await copiaRec878520(user);if(!rec?.dir)return {error:"carpeta"};
+  let perm="granted";try{perm=await rec.dir.queryPermission?.({mode:"readwrite"})||"granted"}catch{}
+  if(perm!=="granted"&&demana){try{perm=await rec.dir.requestPermission({mode:"readwrite"})}catch{}}
+  if(perm!=="granted")return {error:"permis"};
+  if(copiantAra878520)return {error:"ja"};copiantAra878520=true;
+  try{
+    const dir=rec.dir,dia=isoDay878255(new Date());
+    await escriu878520(dir,`ControlObres-${nomFitxer878520(user)}-${dia}.json`,new Blob([JSON.stringify(dadesCopia878520(user,st))],{type:"application/json"}));
+    const ax=await dir.getDirectoryHandle("arxius",{create:true});const nomObra=id=>nomFitxer878520((st.obres||[]).find(o=>o.id===id)?.nom||"Altres");
+    const carp=new Map();const sub=async n=>{if(!carp.has(n))carp.set(n,await ax.getDirectoryHandle(n,{create:true}));return carp.get(n)};
+    let nous=0,total=0;
+    const posa=async(d,nom,dataUrl)=>{total++;if(await existeix878520(d,nom))return;const b=await (await fetch(dataUrl)).blob();await escriu878520(d,nom,b);nous++};
+    await recorreArxius(user,async(id,v)=>{const d=await sub(nomObra(v.obraId));const base=nomFitxer878520(v.nom||id);await posa(d,`${nomFitxer878520(id).slice(0,40)} - ${base}${extDe878520(v.type,base)}`,v.data)});
+    const pref=`${STORAGE_NS8782}__${String(user).trim().toLowerCase()}__`;
+    for(const k of Object.keys(localStorage)){if(!k.startsWith(pref))continue;let v;try{v=localStorage.getItem(k)}catch{continue}if(typeof v!=="string"||!/^data:/i.test(v))continue;const tp=(/^data:([^;,]+)/i.exec(v)||[])[1];await posa(await sub("Albarans, fotos i logos"),nomFitxer878520(k.slice(pref.length))+extDe878520(tp,""),v)}
+    // es guarden 30 dies i el dia 1 de cada mes, 12 mesos
+    const limit30=isoDay878255(new Date(Date.now()-30*864e5)),limit365=isoDay878255(new Date(Date.now()-365*864e5));
+    for await (const [nom,h] of dir.entries()){const mm=/^ControlObres-.+-(\d{4}-\d{2}-\d{2})\.json$/.exec(nom);if(!mm||h.kind!=="file")continue;const d=mm[1];if(d>=limit30||(d.endsWith("-01")&&d>=limit365))continue;try{await dir.removeEntry(nom)}catch{}}
+    await desaCopiaRec878520(user,{...rec,ultima:dia,at:new Date().toISOString(),arxius:total,nous});
+    return {ok:true,nous,total};
+  }catch(e){return {error:"escriure",msg:String(e?.message||e)}}
+  finally{copiantAra878520=false}
+}
+async function triaCarpeta878520(st){
+  const user=currentAppUser8779();if(!user)return {error:"usuari"};
+  let dir;try{dir=await (window.__acoTriaCarpeta878520?window.__acoTriaCarpeta878520():window.showDirectoryPicker({mode:"readwrite",id:"aco-copies"}))}catch{return {error:"cancel"}}
+  const vell=await copiaRec878520(user);await desaCopiaRec878520(user,{dir,nom:dir.name||"",ultima:vell?.dir===dir?vell.ultima:"",at:""});
+  return ferCopia878520(st,{demana:true});
+}
+// l'avís de l'Inici: la còpia d'avui està pendent perquè el navegador ha de tornar a donar permís (cal un toc)
+function useCopiaPendent878520(){const[p,setP]=useState(!!window.__acoCopiaPendent878520);useEffect(()=>{const f=()=>setP(!!window.__acoCopiaPendent878520);window.addEventListener("aco-copia-878520",f);return()=>window.removeEventListener("aco-copia-878520",f)},[]);return p}
+function useAvisos878520(){
+  const[esp,setEsp]=useState([]);const pend=useCopiaPendent878520();
+  useEffect(()=>{let viu=true;const t0=setTimeout(()=>espaiAvisos878520().then(l=>{if(viu)setEsp(l)}),2500);return()=>{viu=false;clearTimeout(t0)}},[]);
+  return useMemo(()=>[...esp,...(pend?[{k:"copia",ref:"copia",tone:"info",txt:t("Còpia al teu ordinador"),sub:t("Toca per fer la d’avui")}]:[])],[esp,pend]);
+}
+function obreAvis878520(a,st){
+  if(a.k==="espai"){try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Configuració"}}))}catch{}return true}
+  if(a.k==="copia"){ferCopia878520(st||window.__acoEstatCopia878520?.()||{},{demana:true}).then(r=>{if(r?.ok){window.__acoCopiaPendent878520=false;try{window.dispatchEvent(new Event("aco-copia-878520"))}catch{}}});return true}
+  return false;
+}
+// cada dia que s'obre l'app, la còpia (sense preguntar res si el navegador ja té el permís)
+function CopiaAuto878520({clients,obres,odata}){
+  const ref=useRef({clients,obres,odata});ref.current={clients,obres,odata};
+  useEffect(()=>{window.__acoEstatCopia878520=()=>ref.current;let viu=true;
+    const t0=setTimeout(async()=>{if(!viu||!potCopia878520())return;const user=currentAppUser8779();if(!user)return;
+      let rec=null;try{rec=await copiaRec878520(user)}catch{return}
+      if(!rec?.dir||rec.ultima===isoDay878255(new Date()))return;
+      let perm="granted";try{perm=await rec.dir.queryPermission?.({mode:"readwrite"})||"granted"}catch{}
+      if(perm==="granted"){await ferCopia878520(ref.current)}else{window.__acoCopiaPendent878520=true;try{window.dispatchEvent(new Event("aco-copia-878520"))}catch{}}
+    },window.__acoCopiaEspera878520??20000);
+    return()=>{viu=false;clearTimeout(t0)}},[]);
+  return null;
+}
+function CopiaOrdinador878520({clients,obres,odata}){
+  const user=currentAppUser8779();
+  const[rec,setRec]=useState(undefined);const[msg,setMsg]=useState("");const[fent,setFent]=useState(false);
+  const llegeix=()=>copiaRec878520(user).then(r=>setRec(r||null)).catch(()=>setRec(null));
+  useEffect(()=>{llegeix();window.addEventListener("aco-copia-878520",llegeix);return()=>window.removeEventListener("aco-copia-878520",llegeix)},[]);
+  if(!potCopia878520())return <p className="copia-buit-v878520">{t("Es fa des de l’ordinador, amb Chrome o Edge.")}</p>;
+  const st={clients,obres,odata};
+  const diu=r=>r?.ok?t("Còpia feta: {n} arxius nous ({t} en total).",{n:r.nous,t:r.total}):r?.error==="permis"?t("El navegador no ha donat permís per escriure a la carpeta."):r?.error==="cancel"?"":r?.error==="escriure"?t("No s’ha pogut escriure a la carpeta: {m}",{m:r.msg||""}):"";
+  const fes=async f=>{setFent(true);setMsg("");try{const r=await f();setMsg(diu(r));if(r?.ok){window.__acoCopiaPendent878520=false;try{window.dispatchEvent(new Event("aco-copia-878520"))}catch{}}}finally{setFent(false);llegeix()}};
+  if(rec===undefined)return null;
+  return <div className="copia-v878520">
+    {rec?.dir?<div className="estat"><FolderDown size={20} aria-hidden="true"/><span><b>{rec.nom||t("Carpeta triada")}</b><small>{rec.ultima?t("Última còpia: {d}",{d:fmtAppDate8748(rec.ultima)})+(rec.arxius!=null?" · "+t("{n} arxius",{n:rec.arxius}):""):t("Encara no s’ha fet cap còpia")}</small></span></div>:null}
+    <div className="botons">
+      {rec?.dir?<button type="button" className="primary" disabled={fent} onClick={()=>fes(()=>ferCopia878520(st,{demana:true}))}>{fent?t("Copiant…"):t("Fer la còpia ara")}</button>:null}
+      <button type="button" className={rec?.dir?"secondary":"primary"} disabled={fent} onClick={()=>fes(()=>triaCarpeta878520(st))}>{rec?.dir?t("Canviar de carpeta"):t("Triar la carpeta")}</button>
+      {rec?.dir?<button type="button" className="secondary" disabled={fent} onClick={async()=>{if(!confirm(t("Deixar de fer la còpia en aquesta carpeta? Les còpies que ja hi ha no s’esborren.")))return;await desaCopiaRec878520(user,null);setMsg("")}}>{t("Deixar de fer-la")}</button>:null}
+    </div>
+    {msg&&<p className="msg" role="status">{msg}</p>}
+  </div>;
+}
 function EspaiNuvol878263(){
   const[st,setSt]=useState({estat:"carregant"});
   async function load(){
@@ -3489,13 +3595,13 @@ function EspaiNuvol878263(){
   }
   useEffect(()=>{load()},[]);
   if(st.estat==="amagat")return null;
-  const row=(label,used,limit)=>{const pct=Math.min(100,Math.round(used/limit*100));return <div className="espai-row-v878263"><div><b>{t(label)}</b><span>{MB878263(used)} {t("MB de")} {limit>=1073741824?t("1 GB"):MB878263(limit)+" MB"} · {pct} %</span></div><div className="espai-bar-v878263"><i style={{width:pct+"%"}} className={pct>=80?"alerta":""}/></div></div>};
+  const row=(label,used,limit)=>{const pct=Math.min(100,Math.round(used/limit*100));return <div className="espai-row-v878263"><div><b>{t(label)}</b><span>{MB878263(used)} {t("MB de")} {Math.round(limit/1073741824)} GB · {pct} %</span></div><div className="espai-bar-v878263"><i style={{width:pct+"%"}} className={pct>=80?"alerta":""}/></div></div>};
   return <Card title={t("Espai al núvol")} action={<button type="button" className="secondary" onClick={load}>{t("Actualitzar")}</button>}>
     {st.estat==="carregant"&&<div className="muted">{t("Calculant…")}</div>}
     {st.estat==="ok"&&<>
-      {row("Arxius (fotos, croquis, documents)",+st.arxius||0,1073741824)}
-      {row("Base de dades (obres, pressupostos…)",+st.base_dades||0,524288000)}
-      <small className="muted">{t("Pla gratuït de Supabase, per a tots els comptes junts (")}{+st.arxius_n||0} {t("arxius). Quan una barra passi del 80 %, és el moment de passar al pla Pro (100 GB d’arxius i 8 GB de base de dades).")}</small>
+      {row("Arxius (fotos, croquis, documents)",+st.arxius||0,PLA878520.arxius)}
+      {row("Base de dades (obres, pressupostos…)",+st.base_dades||0,PLA878520.bd)}
+      <small className="muted">{t("Pla Pro de Supabase, per a tots els comptes junts · {n} arxius",{n:+st.arxius_n||0})}</small>
     </>}
     {st.estat==="falta-sql"&&<div className="module-note-v8738"><span>{t("Per veure l’espai, cal executar una vegada")} <b>{t("supabase/aco_espai_v87263.sql")}</b> {t("a Supabase.")}</span></div>}
     {st.estat==="sense-connexio"&&<div className="muted">{t("Sense connexió amb el núvol.")}</div>}
@@ -6377,7 +6483,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
 {fiTemps878463&&<DesarTemps878463 fi={fiTemps878463} obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} close={()=>setFiTemps878463(null)} acaba={row=>acabaTemps878463(fiTemps878463,row)}/>}
-{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/></main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
+{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/></main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
   const meva508=k==="despesa"&&!modeObra878484(currentAccount878233.role,empresa878259?.perfil||"");
   if(screen==="Obra"&&obraId){if(meva508){window.__acoStartAlb878484={files,token:Date.now(),obraId};nav("Albarans");return}try{window.dispatchEvent(new CustomEvent("aco-accio-484",{detail:{k,files}}))}catch{}return}setAccio878484({k,files,meva508})}}/>{accio878484&&<TriaObraAccio878484 accio={accio878484} obres={viewObres878233} clients={viewClients878233} close={()=>setAccio878484(null)} tria={id=>{if(!id){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),senseObra:true};setAccio878484(null);nav("Albarans");return}
   if(accio878484.meva508){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),obraId:id};setAccio878484(null);nav("Albarans");return}window.__acoStart878484={obraId:id,k:accio878484.k,files:accio878484.files};setAccio878484(null);openObra(id)}}/>}</div></>
@@ -8333,7 +8439,8 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
   const[obert,setObert]=useState("");
   const pc490=!useBarraBaix878484();
   const tick=useAvisosTick878496();
-  const avisos=useMemo(()=>{const alb=readAlbarans878259();return ordenaAvisos878360(filtraAvisos878496([...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients)]))},[obres,odata,clients,tick]);
+  const av520=useAvisos878520();
+  const avisos=useMemo(()=>{const alb=readAlbarans878259();return ordenaAvisos878360(filtraAvisos878496([...av520,...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients)]))},[obres,odata,clients,tick,av520]);
   const feines=(tasks||[]).slice().sort((a,b)=>(taskDueTime878140(a.task)||9e15)-(taskDueTime878140(b.task)||9e15));
   const nPend=avisos.length+feines.length;
   const oberts=(obres||[]).filter(o=>isExpedientOpen878136(o.estat)).length;
@@ -8354,7 +8461,7 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
     {/* V87.507 · plegades d'entrada (l'Héctor, 5/11/2026: «a Pendent surten ja els avisos desplegats i no recollits») */}
     <div className="pend-cartes-v878495">
       <CardOPlega878369 bloc426 className="pend-carta-v878495 pend-c-v878507 avisos" title={t("Avisos")} icona={Bell} xifra={avisos.length}>
-        {avisos.length?<AvisosLlista878360 nu avisos={avisos} onObre={a=>a.obraId?openObraTab?.(a.obraId,a.tab):obreDoc878360(a)}/>:<p className="buit">{t("No hi ha avisos.")}</p>}</CardOPlega878369>
+        {avisos.length?<AvisosLlista878360 nu avisos={avisos} onObre={a=>a.obraId?openObraTab?.(a.obraId,a.tab):obreAvis878520(a)||obreDoc878360(a)}/>:<p className="buit">{t("No hi ha avisos.")}</p>}</CardOPlega878369>
       <CardOPlega878369 bloc426 className="pend-carta-v878495 pend-c-v878507 feines" title={t("Feines")} icona={ListChecks} xifra={feines.length}>
         {feines.length?<div className="feines">{feinesLl}</div>:<p className="buit">{t("No hi ha feines pendents.")}</p>}</CardOPlega878369>
     </div>
@@ -8583,9 +8690,10 @@ function AvisosLlista878360({avisos=[],onObre,max=6,className="",nu=false}){
 function obreDoc878360(a){window.__acoEmpresaVista878353=a.vista||"docs";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Empresa"}}))}catch{}}
 function AvisosInici878360({obres=[],odata={},clients=[],openObraTab}){
   const tick=useAvisosTick878496();
+  const av520=useAvisos878520();
   const avisos=useMemo(()=>{const alb=readAlbarans878259();
-    return ordenaAvisos878360(filtraAvisos878496([...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients)]))},[obres,odata,clients,tick]);
-  return <AvisosLlista878360 avisos={avisos} onObre={a=>a.obraId?openObraTab?.(a.obraId,a.tab):obreDoc878360(a)}/>;
+    return ordenaAvisos878360(filtraAvisos878496([...av520,...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients)]))},[obres,odata,clients,tick,av520]);
+  return <AvisosLlista878360 avisos={avisos} onObre={a=>a.obraId?openObraTab?.(a.obraId,a.tab):obreAvis878520(a)||obreDoc878360(a)}/>;
 }
 function AvisosObra878360({obra,data={},setTab}){
   useAvisosTick878496();
@@ -20355,7 +20463,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.519",
+    app_version:"87.520",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -20555,7 +20663,7 @@ const ajRef878366=useRef(null);
 useEffect(()=>{const el=ajRef878366.current;if(!el)return;const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;el.querySelectorAll("details.ajustos-grup-v878354[open]").forEach(o=>{if(o!==d)o.open=false});const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};el.addEventListener("click",h,true);return()=>el.removeEventListener("click",h,true)},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
+const IC438={copia:FolderDown,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
 const bloc878366=(k,tit,cont)=><details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366" data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
 return <div className="stack ajustos-v878366" ref={ajRef878366}>
@@ -20572,6 +20680,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {role878366==="admin"&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
 {bloc878366("usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>)}
 {!window.__acoEmpresa&&!!window.__acoCloud?.proves&&bloc878366("proves",t("Comptes de prova"),<ProvesAjustos878519/>)}
+{!esTreballador878326()&&bloc878366("copia",t("Còpia al meu ordinador"),<CopiaOrdinador878520 clients={clients} obres={obres} odata={odata}/>)}
 {admin&&<details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 copies-v878354" data-k="copies"><summary>{icAj438("copies")}<span className="t"><b>{t("Còpies i núvol")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
 {!window.__acoEmpresa&&<EspaiNuvol878263/>}
 <VersionsGuardades878266/>
