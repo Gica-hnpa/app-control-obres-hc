@@ -1,0 +1,92 @@
+/* V87.518 · Nivells de les targetes (l'Héctor, 5/11/2026, mirant Control horari al mòbil: «una targeta on estiguin tots els treballadors… i després setmana
+   i hores per obra com una targeta al mateix nivell… fes repàs a tota la app… amb el remarcat i les ombres de les targetes per veure les subtargetes molt clar»).
+   Nivell 1, targeta principal: vora marcada i una ombra que la separa del fons. Oberta, la capçalera blava (V87.451) i, si a dins hi ha subtargetes, el fons de
+   dins és blavós («safata»). Nivell 2, subtargeta: blanca, vora fina i una ombra petita, sobre la safata; així no es confon mai amb una principal.
+   `html:root` iguala la força de les regles del «Visual nou» (`html[data-visual]`), i aquest full va després. */
+
+/* ── Nivell 1: principal ─────────────────────────────────────────────────────────────────────────────────────────── */
+html:root body details.card.bloc-v878426,
+html:root body details.card.plega-v878369,
+html:root body details.ajustos-bloc-v878366{border:1.5px solid #8FA0B3!important;border-radius:16px!important;background:#fff;
+  box-shadow:0 1px 2px rgba(15,23,42,.12),0 8px 20px -8px rgba(15,23,42,.32)!important}
+html:root body details.card.bloc-v878426[open],
+html:root body details.card.plega-v878369[open],
+html:root body details.ajustos-bloc-v878366[open]{border:2px solid #1D4ED8!important;box-shadow:0 1px 3px rgba(15,23,42,.12),0 14px 30px -12px rgba(29,78,216,.5)!important}
+html:root body details.card.bloc-v878426.avisos-v878426[open]{border:2px solid #C2410C!important;box-shadow:0 1px 3px rgba(15,23,42,.12),0 14px 30px -12px rgba(194,65,12,.45)!important}
+
+/* ── La safata: la principal oberta que porta subtargetes a dins ──────────────────────────────────────────────────── */
+html:root body details.card.bloc-v878426[open]:has(:is(.sub-v878426,details.mes-v878430,details.plegat-v878366,details.enc-pas-v878333,.budget-v25-cap,.raj-w-v878516,.fila-v878426,.contacte-v878315,.fe-row.plegable-v878390,.fam-v878456)),
+html:root body details.ajustos-bloc-v878366[open]:has(.sub-v878426){background:#E6EDF6!important}
+html:root body details.card.bloc-v878426[open]:has(:is(.sub-v878426,details.mes-v878430,details.plegat-v878366,details.enc-pas-v878333,.budget-v25-cap,.raj-w-v878516,.fila-v878426,.contacte-v878315,.fe-row.plegable-v878390,.fam-v878456))>.cos,
+html:root body details.ajustos-bloc-v878366[open]:has(.sub-v878426)>.cos{background:transparent!important}
+
+/* ── Nivell 2: subtargeta, blanca sobre la safata ─────────────────────────────────────────────────────────────────── */
+html:root body .bloc-v878426 .sub-v878426,
+html:root body details.mes-v878430,
+html:root body details.plegat-v878366,
+html:root body details.enc-pas-v878333,
+html:root body .budget-card-v878248 .budget-v25-cap,
+html:root body .raj-w-v878516,
+html:root body .fitx-rw-v878516,
+html:root body .bloc-v878426 .fila-v878426,
+html:root body .fam-v878456{background:#fff!important;border:1px solid #AEBBCA!important;border-radius:12px!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14)!important}
+html:root body .fitx-rw-v878516{border-left-width:6px!important}
+html:root body .fitx-rw-v878516.e-treballant{border-left-color:#15803D!important}
+html:root body .fitx-rw-v878516.e-pausa{border-left-color:#B45309!important}
+html:root body .fitx-rw-v878516.e-fora{border-left-color:#475569!important}
+html:root body .fitx-rw-v878516.e-sense{border-left-color:#CBD5E1!important}
+html:root body .fitx-rw-v878516.a-vacances{border-left-color:#15803D!important;background:#F0FDF4!important}
+html:root body .fitx-rw-v878516.a-baixa{border-left-color:#6D28D9!important;background:#F5F3FF!important}
+html:root body .fitx-rw-v878516.a-permis{border-left-color:#B45309!important;background:#FFFBEB!important}
+html:root body :is(.raj-w-v878516,.fitx-rw-v878516):hover{border-color:#2563EB!important}
+html:root body .fitx-rw-v878516:is(.e-treballant,.e-pausa,.e-fora,.e-sense,.a-vacances,.a-baixa,.a-permis):hover{border-top-color:#2563EB!important;border-right-color:#2563EB!important;border-bottom-color:#2563EB!important}
+/* subtargeta oberta: perímetre blau (la capçalera, blau mitjà: V87.457) */
+html:root body .bloc-v878426 details.sub-v878426[open],
+html:root body details.mes-v878430[open],
+html:root body details.plegat-v878366[open],
+html:root body details.enc-pas-v878333[open],
+html:root body .budget-card-v878248 .budget-v25-cap:has(>.cap-carta-v878426.obert),
+html:root body .bloc-v878426 .fila-v878426:is([open],.obert),
+html:root body .fam-v878456[open]{border:2px solid #2563EB!important;box-shadow:0 2px 4px rgba(15,23,42,.08),0 8px 18px -8px rgba(37,99,235,.45)!important}
+/* la capçalera d'una subtargeta tancada: sense el gris d'abans, perquè sigui blanca sobre la safata */
+html:root body .bloc-v878426 details.sub-v878426:not([open])>summary,
+html:root body details.mes-v878430:not([open])>summary,
+html:root body details.plegat-v878366:not([open])>summary,
+html:root body details.enc-pas-v878333:not([open])>summary,
+html:root body .budget-card-v878248 .budget-v25-cap>.budget-v25-cap-head.cap-carta-v878426:not(.obert){background:#fff!important}
+
+/* ── Contactes: cada persona, una subtargeta com els treballadors ─────────────────────────────────────────────────── */
+html:root body .contactes-v878315 .llista-v878315{gap:8px;padding:2px 0}
+html:root body .contactes-v878315 .contacte-v878315{background:#fff;border:1px solid #AEBBCA!important;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14);padding:10px 12px}
+html:root body .contactes-v878315 .contacte-v878315:last-child{border-bottom:1px solid #AEBBCA!important}
+html:root body .contactes-v878315 .contacte-v878315:hover{background:#fff;border-color:#2563EB!important}
+
+/* ── Factures (Facturació): la llista, dins d'una targeta «Factures» ──────────────────────────────────────────────── */
+html:root body .fe-fact-v878518>.cos{padding:10px 12px 12px}
+html:root body .fe-fact-v878518 .fe-llista{margin:0;border:0!important;box-shadow:none!important;background:transparent!important}
+html:root body .fe-fact-v878518 .fe-total-v878390{margin:2px 0 0}
+@media (max-width:1100px){
+  html:root body .fe-fact-v878518 .fe-llista{display:flex;flex-direction:column;gap:8px;padding:0!important}
+  html:root body .fe-fact-v878518 .fe-row.plegable-v878390{background:#fff!important;border:1px solid #AEBBCA!important;border-radius:12px!important;
+    box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14)!important;margin:0!important}
+  html:root body .fe-fact-v878518 .fe-row.plegable-v878390.obert{border:2px solid #2563EB!important}
+}
+@media (min-width:1101px){
+  html:root body details.card.bloc-v878426.fe-fact-v878518.fe-fact-v878518.fe-fact-v878518[open]{background:#fff!important}
+}
+
+/* ── Control horari › Personal: els treballadors, dins de la targeta «Treballadors» ──────────────────────────────── */
+html:root body .treb-card-v878518 .treb-raj-v878516{margin:0}
+html:root body .treb-card-v878518>.cos{padding:10px 12px 12px}
+html:root body .pers-v878516 .dies-v878473{margin-bottom:12px}
+/* Contactes: les persones, separades de la vora de la targeta */
+html:root body .contactes-v878438 details.grup-v878438>.cos{padding:10px 12px 12px!important}
+/* Facturació del tècnic a l'ordinador: PDF · Enviar · ⋯ no hi cabien en 130 px i tapaven «Vençuda» */
+@media (min-width:1101px){
+  html:root body .fact-tec-v878373 .fe-row:not(.pf):not(.rend){grid-template-columns:minmax(110px,.9fr) minmax(0,2.2fr) minmax(90px,1fr) minmax(80px,.8fr) minmax(100px,1fr) 150px 220px}
+  html:root body .fe-fact-v878518>.cos{padding:8px 10px 12px}
+}
+/* Hores del tècnic: «Per expedient», dins d'una targeta com «Gràfica i informes» */
+html:root body .temps-card-v878518 .temps-list-v878255{border:0!important;box-shadow:none!important;background:transparent!important;padding:0!important;margin:0!important;border-radius:0!important}
+html:root body .temps-card-v878518 .temps-list-v878255>.ch-head{justify-content:flex-end;padding:0 0 8px;border:0}

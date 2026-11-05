@@ -3091,6 +3091,23 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       imprimir). `Llistat878501` admet `tipus:"hores"` (`sumLl878517`: el total en hores).
     - Les rajoles dels treballadors fan 310 px com a mínim (el nom es tallava).
     - Prova: `v517test.mjs` (15).
+  - **V87.518 · Nivells de les targetes: les llistes dins d'una targeta i les subtargetes ben clares** (l'Héctor, 5/11/2026 al migdia, amb una captura de
+    Control horari › Personal: «una targeta on estiguin tots els treballadors… i després setmana i hores per obra com una targeta al mateix nivell… fes repàs a
+    tota la app… amb el remarcat i les ombres de les targetes per veure les subtargetes molt clar»; `src/theme-v878518.css`):
+    - **Norma:** una llista d'elements (treballadors, factures, expedients…) no va mai solta al costat de les targetes principals: va dins d'una targeta principal
+      (`CartaLlista878518`: plegada al mòbil i oberta a l'ordinador, com «Setmana de tothom»; quan canvia `obrir` —un filtre, un estat tocat a dalt— s'obre).
+    - **Control horari › Personal:** «Treballadors» (amb quants n'hi ha) · «Setmana de tothom» · «Hores per obra», tres targetes al mateix nivell.
+    - **Facturació** de l'empresa i del tècnic: la llista i el total, dins de «Factures» (quantes · total amb IVA); tocar un estat de dalt l'obre. A l'ordinador,
+      oberta i en blanc (és una taula). **Hores del tècnic:** «Per expedient», dins d'una targeta com «Gràfica i informes».
+    - **Nivells:** principal (nivell 1) amb vora #8FA0B3, radi 16 px i una ombra que la separa del fons; oberta, vora blava de 2 px i, **si porta subtargetes, el fons
+      de dins blavós (#E6EDF6, la «safata»)**. Subtargeta (nivell 2: `sub-v878426`, mesos de les hores, passos de l'encàrrec, capítols del pressupost, treballadors,
+      fitxatge, files de factures i proformes, famílies de preus, **i ara cada contacte**): blanca, vora fina de 1 px #AEBBCA, radi 12 px i una ombra petita; oberta,
+      vora blava de 2 px. Les targetes amb formularis o text (Ajustos…) es queden blanques per dins. Les regles van amb `html:root` perquè guanyin les del «Visual nou».
+    - **De passada:** a la Facturació del tècnic a l'ordinador, «PDF · Enviar · ⋯» no hi cabien (130 px) i tapaven «Vençuda»: ara 220 px.
+    - Eina nova `tools/proves/nivells518.mjs` (`OUT=`, `W=`, `COMPTES=`, `WEBROOT=`): a cada pantalla, amb les principals obertes, diu on hi ha elements solts al costat de
+      targetes principals («BARREJA») i subtargetes que es veuen com una principal («IGUALS»). Queden, a propòsit: xifres de dalt, filtres, el resum de l'obra, i
+      **Honoraris de l'expedient i les Hores del tècnic, que són pantalles velles per refer** (full de ruta).
+    - Les proves d'abans porten la marca `cartes-prova-v878518` (la posa l'ajuda de les proves: les targetes de les llistes, obertes). Prova: `v518test.mjs` (19).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3289,7 +3306,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.517 a Render):**
+**Estat (publicada la V87.518 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

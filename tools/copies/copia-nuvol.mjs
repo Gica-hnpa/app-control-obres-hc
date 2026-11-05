@@ -228,7 +228,7 @@ async function copia() {
   try {
     const roots = cfg.desti.filter(root => fs.existsSync(root));
     const m = await mirrorFiles(cfg, token, roots);
-    for (const root of roots) log(root, `${stamp}  OK  arxius: ${m.total} al núvol (${mb(m.ocupat)} de 1 GB), ${m.nous} nous (${mb(m.mida)})`);
+    for (const root of roots) log(root, `${stamp}  OK  arxius: ${m.total} al núvol (${mb(m.ocupat)} de 100 GB del pla Pro), ${m.nous} nous (${mb(m.mida)})`);
     console.log(`Arxius: ${m.total} al núvol, ${m.nous} nous`);
   } catch (e) {
     for (const root of cfg.desti) log(root, `${stamp}  ERROR  arxius: ${e.message}`);
