@@ -1,0 +1,22 @@
+/* V87.523 · Fitxatge: el que veu el treballador després del PIN (correccions i conformitat del mes) i la conformitat a la fitxa */
+html body .fitx-treb-v878523{display:flex;flex-direction:column;gap:10px;margin:0 0 12px}
+html body .corr-v878523,html body .conf-v878523{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:12px}
+html body .corr-v878523{background:#FFFBEB;border:1.5px solid #F59E0B}
+html body .corr-v878523 ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+html body .corr-v878523 li{display:flex;flex-direction:column;gap:2px;padding:6px 0;border-bottom:1px solid #FDE68A}
+html body .corr-v878523 li:last-child{border-bottom:0}
+html body .corr-v878523 li small{color:#92400E}
+html body .conf-v878523{background:#EFF6FF;border:1.5px solid #93C5FD}
+html body .conf-v878523 p{margin:0;color:var(--co-ink-2,#334155);font-variant-numeric:tabular-nums}
+html body .conf-v878523 label{display:flex;flex-direction:column;gap:4px}
+html body .conf-v878523 label span{font-size:13px;font-weight:700;color:var(--co-ink-2,#334155)}
+html body .conf-v878523 textarea{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #AEBBCA;border-radius:10px;font:inherit;font-size:16px;resize:vertical}
+html body .corr-v878523 button,html body .conf-v878523 .bt button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+html body .corr-v878523>button{align-self:flex-start}
+html body .conf-v878523 .bt{display:flex;flex-wrap:wrap;gap:8px}
+html body .conf-v878523 .bt button{flex:1 1 150px}
+html body .fet-v878523{display:flex;align-items:center;gap:8px;margin:0;padding:8px 12px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;color:#166534;font-weight:700}
+html body .conf-w-v878523{margin:4px 0 8px;padding:6px 10px;border-radius:8px;font-size:13.5px;font-weight:700}
+html body .conf-w-v878523.ok{background:#F0FDF4;color:#166534}
+html body .conf-w-v878523.no{background:#FEF2F2;color:#B91C1C}
+html body .conf-w-v878523.pend,html body .conf-w-v878523.canviat{background:#FFFBEB;color:#92400E}

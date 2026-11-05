@@ -3186,6 +3186,25 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Es desa al compte: `aco_gestoria_v878522 = {nom, email, enviats:{[període]:{at, a, via: gmail|compartit|descarregat, n}}}`.
       `window.__acoUltimPaquet878522` (l'últim paquet) és per a les proves.
     - Prova: `v522test.mjs` (18: llegeix el ZIP i els Excel; Gmail simulat; tècnic; mòbil).
+  - **V87.523 · Fitxatge: la conformitat del treballador, les correccions que veu i el full d'informació** (`src/theme-v878523.css`; l'Héctor,
+    5/11/2026: «el tema del fitxatge és vàlid si hi ha una revisió? No s'ha de complir una normativa específica?»; l'art. 34.9 ET i el VII Conveni de
+    la Construcció demanen el registre diari, 4 anys, consultable pel treballador i un mitjà que «acrediti la conformitat»; **l'app no diu mai
+    «compleix la normativa»**: no hi ha homologació i el decret del registre digital no està aprovat):
+    - **A «Fitxar», després del PIN** (`AvisosTreb878523`): les correccions de l'oficina dels dos últims mesos que el treballador encara no ha vist
+      (dia, marcatge, «Afegit» o «Anul·lat» i el motiu; «Entesos», `marcaVistes878523`) i, si el mes passat té fitxatges, «El teu registre · {mes}»
+      (dies i hores) amb **«Hi estic d'acord»** o **«No hi estic d'acord»** (amb el que no és correcte, «Enviar a l'oficina»).
+    - **Dades:** `aco_fitx_conforme_v878523 = {[treballador]: {vist, mesos: {[AAAA-MM]: {at, ok, nota, h, dies, hash}}}}` (`posaConf878523`). El `hash`
+      (`hashMesFitx878523`) diu com era el registre en confirmar-lo: si després es corregeix, `confMes878523` dona «canviat» («Ha canviat des que el va
+      confirmar») i es torna a demanar. Event `aco-fitxatge-changed`.
+    - **Oficina:** a la fitxa del treballador, la conformitat del mes que es mira (`conf-w-v878523`); al PDF del mes, sota «Signatura del treballador/a»
+      («Conforme el …»), i al peu «Segons el VII Conveni…» (només amb el mòdul Obra) i «Les correccions queden registrades amb la data i el motiu; no
+      s'esborra cap marcatge»; a l'Excel del mes, la columna «Conformitat del treballador». A l'Inici (Pendent › Avisos), «{nom} no està d'acord amb el
+      seu registre · {mes}» amb el comentari (`avisosFitx878523`, `k:"fitx-no"`): tocant-lo, el Control horari s'obre al Fitxatge
+      (`window.__acoCHVista878523`).
+    - **Full d'informació per als treballadors** (Fitxatge › Registre › «Tots», `infoFitx878523`): una pàgina per treballador amb com es registra, què
+      es desa (amb la ubicació si està activada), per a què, correccions, conformitat, conservació (4 anys) i protecció de dades (art. 90 de la
+      LOPDGDD), i «Rebut i informat: signatura del treballador/a».
+    - Prova: `v523test.mjs` (14). Passen `fitxatge357test`, `v516test`, `v487test`, `v507test`, `avisos360test`, `v496test`, `v515test`, `v517test` i `v521test`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3384,7 +3403,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.522 a Render):**
+**Estat (publicada la V87.523 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
