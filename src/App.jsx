@@ -38,7 +38,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.508";
+const APP_VERSION878264="87.509";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -15616,6 +15616,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const pc428=usePC878428();
   const tancat428=!!(pi878411.ini&&!pi878411.ini.obert);
   const buit428=()=>!Object.values(caps||{}).some(a=>(a||[]).length);
+  // V87.509 · propostes 6 i 3 (l'Héctor, 5/11/2026: «sí a tot»): amb partides, «Afegir» només dins d'«Editar» (es desa amb «Guardar canvis»); fora
+  // d'«Editar», només amb el pressupost buit. I a la fitxa de la partida, «Fora de pressupost» només amb el pressupost tancat (o si ja ho és, per
+  // corregir-ho) i «No s'executarà tota la quantitat» a la fitxa de la certificació (aquí, només si ja hi és, per treure-ho).
+  const vell509=(()=>{try{return lsVisual878400()?.getItem("pressupost-prova-v878509")==="1"}catch{return false}})();
+  const afegirFora509=vell509||buit428();
   const afegir428=()=><>
     {(!clientMode||clientLibraryEnabled)&&<button type="button" className="llib-v878428" onClick={()=>openBudgetLibrary87218("","client")}><BookOpen size={15} aria-hidden="true"/> {i18nT("Des de Preus")}</button>}
     {!clientMode&&!quickMode&&<button type="button" className="dictar-v878401" onClick={()=>setDictat401(true)}>{iaOn459?<><WandSparkles size={15} aria-hidden="true"/> {i18nT("Pressupost amb IA")}</>:<><Mic size={15} aria-hidden="true"/> {i18nT("Dictar partides…")}</>}</button>}
@@ -15798,7 +15803,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         <button type="button" className="danger small" onClick={()=>deletePartida878125(cap,index)}>{i18nT("Eliminar")}</button>
         <button type="button" className="primary small fet-v878449" onClick={closeBudgetRow87173}>{i18nT("Fet")}</button>
       </>:null;
-      return <FitxaPartida878361 row={row} editable={editBudget8760b} defectes={defectesPreu878361(data)} onChange={(key,value)=>upd(cap,index,key,value)} onSet={patch=>Object.entries(patch).forEach(([k,v])=>upd(cap,index,k,v))} onNova={clientMode?null:v=>posa878423(marcaNova878413(v))} onFinal={clientMode?null:q=>posa878423({qFinal878423:q===null?undefined:q})} qc={certQtyTotal8789(row)} onEditar={!clientMode&&!editBudget8760b?editar:null} onAmid={()=>setBudgetMeasureTarget878194({cap,i:index})} openBreakdown={clientMode?null:()=>openDescompostModal87173(cap,index)} eines={eines}/>};
+      return <FitxaPartida878361 row={row} editable={editBudget8760b} defectes={defectesPreu878361(data)} onChange={(key,value)=>upd(cap,index,key,value)} onSet={patch=>Object.entries(patch).forEach(([k,v])=>upd(cap,index,k,v))} onNova={clientMode||!(vell509||tancat428||esFora878410(row))?null:v=>posa878423(marcaNova878413(v))} onFinal={clientMode||!(vell509||row.qFinal878423!=null)?null:q=>posa878423({qFinal878423:q===null?undefined:q})} qc={certQtyTotal8789(row)} onEditar={!clientMode&&!editBudget8760b?editar:null} onAmid={()=>setBudgetMeasureTarget878194({cap,i:index})} openBreakdown={clientMode?null:()=>openDescompostModal87173(cap,index)} eines={eines}/>};
   // V87.449 · seleccionar partides: una casella a cada partida i a cada capítol, sense obrir res
   const selecciona449=()=>{setSeleccio878320(v=>!v);setBudgetSelectedRows878229({});setOpenBudgetRow87173(null)};
   return <div className={`stack ${clientMode?"client-budget-editor-v878242":""}`}>
@@ -15864,10 +15869,10 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         const ren=!ambFases878426&&!clientMode&&renameBudget?<button type="button" onClick={()=>renameBudget(activeBudgetId)}>{i18nT("Canviar el nom")}</button>:null;
         const del=!ambFases878426&&!clientMode&&deleteBudget&&budgetGroups?.length>1?<button type="button" className="danger-text-v87229" onClick={()=>deleteBudget(activeBudgetId)}>{i18nT("Eliminar aquest pressupost")}</button>:null;
         const costat=alCostat428();
-        if(pc428)return <>{env}{sig}<ActionMenu87213 className="accions-v878366 afegir-v878428" fletxa={false} label={<><Plus size={16} aria-hidden="true"/> {i18nT("Afegir")}</>}>{afegir428()}</ActionMenu87213>{tanc}{(ren||del||costat)&&<ActionMenu87213 className="accions-v878366 mes-v878428" fletxa={false} titol={i18nT("Més")} label={<Ellipsis size={16} aria-hidden="true"/>}>{ren}{del}{costat}</ActionMenu87213>}</>;
+        if(pc428)return <>{env}{sig}{afegirFora509&&<ActionMenu87213 className="accions-v878366 afegir-v878428" fletxa={false} label={<><Plus size={16} aria-hidden="true"/> {i18nT("Afegir")}</>}>{afegir428()}</ActionMenu87213>}{tanc}{(ren||del||costat)&&<ActionMenu87213 className="accions-v878366 mes-v878428" fletxa={false} titol={i18nT("Més")} label={<Ellipsis size={16} aria-hidden="true"/>}>{ren}{del}{costat}</ActionMenu87213>}</>;
         return <ActionMenu87213 className="accions-v878366" label={i18nT("Opcions")}>
           {env}{sig}
-          <small className="amh-v878273">{i18nT("Afegir partides")}</small>{afegir428()}
+          {afegirFora509&&<><small className="amh-v878273">{i18nT("Afegir partides")}</small>{afegir428()}</>}
           {(tanc||ren||del)&&<><small className="amh-v878273">{i18nT("Aquest pressupost")}</small>{tanc}{ren}{del}</>}
           {costat}
         </ActionMenu87213>;
@@ -19634,7 +19639,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.508",
+    app_version:"87.509",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

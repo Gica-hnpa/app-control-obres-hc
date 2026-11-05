@@ -2978,6 +2978,12 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       rajoles de l'Inici amb ▲ ▼ ✕ i «+» per afegir-ne; «Tornar als de sèrie». El treballador, com abans (`AccessosRapids878366`).
     - Prova: `v508test.mjs` (26: tècnic al mòbil, Ajustos, constructora, tècnic a l'ordinador). Adaptada `v366test` (la constructora torna a tenir
       «Accessos ràpids»).
+  - **V87.509 · «Afegir» dins d'«Editar» i les marques de la partida** (propostes 6 i 3; tanda 8, punts 14, 15 i 24):
+    - **«Afegir» del pressupost** (`afegirFora509`): amb partides, fora d'«Editar» ja no hi és (ni el botó a l'ordinador ni «Afegir partides» a «Opcions» al
+      mòbil); s'afegeix des d'«Editar» › «Afegir» i es desa amb «Guardar canvis». Amb el pressupost buit, com abans.
+    - **Fitxa de la partida del pressupost:** «Fora de pressupost» només amb el pressupost tancat (o si la partida ja ho és, per corregir-ho); «No s'executarà
+      tota la quantitat» només si ja està marcada (per treure-ho): es marca a la fitxa de la partida de la certificació (`CertPartidaModal87216`), on hi és sempre.
+    - Les proves d'abans porten la marca `pressupost-prova-v878509` (la posa l'ajuda de les proves; cap usuari no la té). Prova: `v509test.mjs` (9).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3176,7 +3182,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.508 a Render):**
+**Estat (publicada la V87.509 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
