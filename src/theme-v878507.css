@@ -1,0 +1,46 @@
+/* V87.507 · el que va veure l'Héctor al mòbil el 5/11/2026 a la nit (amb el «Visual nou» activat):
+   «remarca més les targetes, ja ho vam dir»; a Despeses, la targeta oberta tenia el fons clar i el text blanc («no es veuen els imports»);
+   el nom de cada pantalla ha de destacar; dues «Opcions» juntes; «Comptabilitat» sencer. */
+
+/* ── Visual nou: les targetes, amb la vora marcada com a la resta de l'app (V87.457) ─────────────────────────── */
+html[data-visual="nou"] body .main .card{border:1px solid #C3CED6!important}
+html[data-visual="nou"] body details.card.bloc-v878426,
+html[data-visual="nou"] body details.card.plega-v878369,
+html[data-visual="nou"] body details.ajustos-bloc-v878366{border:1.5px solid #8FA0B3!important}
+html[data-visual="nou"] body details.card.bloc-v878426[open],
+html[data-visual="nou"] body details.card.plega-v878369[open],
+html[data-visual="nou"] body details.ajustos-bloc-v878366[open]{border:2px solid #1D4ED8!important}
+html[data-visual="nou"] body details.card.bloc-v878426.avisos-v878426[open]{border:2px solid #C2410C!important}
+
+/* ── Despeses: el grup obert, ple de blau (abans blau molt clar amb el text blanc) ─────────────────────────────── */
+html body details.card.bloc-v878426.grup-v878348[open]>summary.grup-cap-v878350{background:#1D4ED8}
+html body details.card.bloc-v878426.grup-v878348[open]>summary.grup-cap-v878350>svg:first-child{background:rgba(255,255,255,.18);color:#fff}
+html body details.card.bloc-v878426.grup-v878348[open]>summary.grup-cap-v878350 *{color:#fff}
+html body details.card.bloc-v878426.grup-v878348[open]>summary.grup-cap-v878350 .chev{background:rgba(255,255,255,.18);color:#fff}
+
+/* ── El nom de la pantalla, destacat a la capçalera del mòbil i l'iPad ──────────────────────────────────────── */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .app-head-v878268 .title-v878268.pant-v878507{flex:0 1 auto;display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:100%;
+    padding:5px 14px 5px 6px;border-radius:12px;background:#1D4ED8;color:#fff!important;font-size:17px!important;font-weight:800;line-height:1.2;box-shadow:0 2px 7px rgba(29,78,216,.32)}
+  html body .app-head-v878268 .title-v878268.pant-v878507 .ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.2)}
+  html body .app-head-v878268 .title-v878268.pant-v878507 .ic svg{width:18px;height:18px;color:#fff}
+  html body .app-head-v878268 .title-v878268.pant-v878507 .tx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
+}
+
+/* ── Fases: el menú es diu «Fases» i ja no cal el rètol del davant ──────────────────────────────────────────── */
+html body .fases-v878342>.tit{display:none}
+
+/* ── Rajoles de l'obra: «Comptabilitat» sencer, en dues línies si no hi cap ─────────────────────────────────── */
+html body .obra-rajoles-v878485:not(.pc-v878490) .rajoles-v878485>button .t .curt-v878504{white-space:normal;text-overflow:clip;hyphens:manual;-webkit-hyphens:manual;overflow-wrap:normal;line-height:1.12}
+
+/* ── Pendent: Avisos i Feines, targetes plegades com les altres ──────────────────────────────────────────────── */
+html body details.card.bloc-v878426.pend-c-v878507{margin:0;padding:0;border-radius:16px}
+html body details.card.bloc-v878426.pend-c-v878507>.cos{padding:0}
+html body details.card.bloc-v878426.pend-c-v878507 .xifra{min-width:30px;text-align:center}
+
+/* ── Fitxatge: el treballador tria el seu PIN ───────────────────────────────────────────────────────────────── */
+html body .fitx-pin-v878357.nou-v878507 .nou-tit-v878507{margin:0 0 4px;display:flex;flex-direction:column;gap:4px}
+html body .fitx-pin-v878357.nou-v878507 .nou-tit-v878507 b{font-size:17px}
+html body .fitx-pin-v878357.nou-v878507 .nou-tit-v878507 small{font-size:14px;color:var(--co-ink-3,#5F7075)}
+html body .fitx-pin-v878357 .fila-v878507{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+html body .fitx-modal-v878357 .canvia-pin-v878507{align-self:flex-start;margin-top:6px;font-size:14px}

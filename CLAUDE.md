@@ -2939,6 +2939,24 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       `horesDiaAltres878506`) i «Desar el parte» no deixa sense marcar-les; `h.extres878506 = {on, preu}` i `despesesParte878352` en calcula les
       hores extres.
     - Prova: `v506test.mjs` (també la V87.505).
+  - **Tanda 10** (l'Héctor, 5/11/2026 al vespre: «sí a tot» a les 7 propostes i «treballa al llarg de la nit»; a la 1:44, amb dues captures del mòbil de
+    Socoterm amb el «Visual nou»).
+  - **V87.507 · Targetes ben marcades, el nom de la pantalla destacat i el PIN que tria el treballador** (`src/theme-v878507.css`):
+    - **Visual nou:** les targetes tornen a tenir la vora marcada (la V87.467 les deixava sense vora: «remarca més les targetes, ja ho vam dir»).
+    - **Despeses (menú):** el grup obert (`grup-v878348`) tenia la capçalera blau clar (una regla de la V87.438) amb el text blanc de la V87.451: no es
+      llegia l'import. Ara blau ple, com les altres.
+    - **El nom de la pantalla, destacat** (mòbil i iPad, `AppHead878268` amb `icona`, `iconaPantalla878507`): a la capçalera, la icona i el nom en blanc
+      sobre blau (`pant-v878507`). Dins d'una obra, el seu nom com sempre.
+    - **Una sola «Opcions»:** el menú de les fases es diu **«Fases»** (V87.500: «Opcions», i a sota hi havia les «Opcions» de la pantalla). Fora el rètol
+      «Fases» del davant.
+    - **«Comptabilitat»** sencer a la rajola de l'obra (la V87.504 deia «Comptes»), partit amb un guionet si no hi cap (`guio878507`).
+    - **Pendent:** Avisos i Feines són targetes plegades d'entrada (`CardOPlega878369 bloc426`, `pend-c-v878507`), amb quants n'hi ha.
+    - **Inici de la constructora:** Contactes just després de l'Agenda (era a baix de tot).
+    - **Fitxatge: el PIN el tria el treballador** (`desaPinTreballador878507`): sense PIN, en tocar el seu nom, «Tria el teu PIN» (de 4 a 8 xifres, dues
+      vegades); després, «Canviar el meu PIN». Es desa xifrat com abans (`pinPropi878507` = quan). Si se n'oblida, l'oficina el treu a Empresa ›
+      Treballadors («Treure el PIN»). L'oficina també el pot posar, com abans.
+    - Prova: `v507test.mjs` (24; mira el contrast de totes les capçaleres obertes de Despeses, Pressupost, Rendiment i Contactes). Adaptades `v484test`
+      (l'ordre de les rajoles) i `v496test` (el títol de les targetes de Pendent).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3137,7 +3155,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.506 a Render):**
+**Estat (publicada la V87.507 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
