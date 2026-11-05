@@ -1,0 +1,15 @@
+/* V87.508 · Ajustos › Accessos ràpids: la barra de baix (per fer / per anar a) i les rajoles de l'Inici en l'ordre que es tria. */
+html body .accessos-v878366.nou-v878508 .grup-v878508{margin:10px 0 6px;font:700 12.5px var(--app-font);letter-spacing:.04em;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+html body .accessos-v878366.nou-v878508 h4+.grup-v878508{margin-top:2px}
+html body .raj-ord-v878508{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+html body .raj-ord-v878508>li{display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 6px 4px 10px;border:1.5px solid #C3CED6;border-radius:12px;background:#fff}
+html body .raj-ord-v878508>li .ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:#EFF6FF;color:#1D4ED8}
+html body .raj-ord-v878508>li b{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .raj-ord-v878508>li button{flex:none;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;padding:0;border:1px solid #C3CED6;border-radius:10px;background:#fff;color:#334155;cursor:pointer}
+html body .raj-ord-v878508>li button:hover:not(:disabled){border-color:#1D4ED8;color:#1D4ED8}
+html body .raj-ord-v878508>li button:disabled{opacity:.35;cursor:default}
+html body .raj-ord-v878508>li button.treu:hover:not(:disabled){border-color:#B42318;color:#B42318}
+html body .accessos-v878366 .afegir-v878508 button{gap:4px}
+/* Encàrrecs des de la rajola de l'Inici */
+html body .enc-sol-v878508 .buit-v878508{margin:0;padding:18px 4px;color:var(--co-ink-3,#5F7075);font-size:15px}
+html body .enc-sol-v878508 .encarrecs-inici-v878305{margin:0}

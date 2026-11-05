@@ -2957,6 +2957,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       Treballadors («Treure el PIN»). L'oficina també el pot posar, com abans.
     - Prova: `v507test.mjs` (24; mira el contrast de totes les capçaleres obertes de Despeses, Pressupost, Rendiment i Contactes). Adaptades `v484test`
       (l'ordre de les rajoles) i `v496test` (el títol de les targetes de Pendent).
+  - **V87.508 · L'Inici en rajoles i la barra per fer coses també per al tècnic; la barra i les rajoles es trien a Ajustos** (`src/theme-v878508.css`;
+    l'Héctor: «moltes d'aquestes noves pantalles són també equivalents per a tècnics»; «ha desaparegut posar les icones d'accés directe o inclús les
+    rajoles de l'Inici a Ajustos»):
+    - **Qui:** `iniciRajoles878508()` = qualsevol compte que administra, menys el treballador (la constructora i la gestió total, com fins ara, i ara també
+      el tècnic i el compte de l'Héctor). El ＋ de l'obra ja no surt per a aquests comptes (les accions són a la barra). Les proves d'abans del tècnic
+      porten la marca `inici-classic-prova-v878508` (la posa l'ajuda de les proves; cap usuari no la té).
+    - **Barra de baix** (`BottomNav878268`, `barra878508`, clau `aco_barra_v878508`): Inici i fins a 3 més, accions (`accionsBarra878508`: Parte —amb el
+      mòdul Obra—, Despesa, Nota, Foto, Acta, Apuntar hores —sense a la constructora—, Nota de veu) o pantalles; i «Més». De sèrie: constructora i
+      gestió total Inici · Parte · Despesa · Nota; tècnic Inici · Nota · Despesa · Apuntar hores. Si el tècnic s'havia triat una barra a la V87.366, es queda.
+    - **Accions:** fora d'una obra, «De quina obra?» / «De quin expedient?» (`TriaObraAccio878484`; al tècnic, a la despesa, «Sense expedient · Despesa
+      general»); dins, a l'obra (`TAB` de l'efecte `aco-accio-484`: Foto → nota amb la foto, Acta, Apuntar hores → «Gestió temps»). La despesa del tècnic
+      és de les seves: va a Despeses amb l'expedient triat (`__acoStartAlb878484.obraId`, `__exp`). La nota de veu obre l'Agenda amb el dictat.
+    - **Inici** (`IniciMenu878484`): les rajoles de `iniciTriat878508()` (clau `aco_inici_v878508`, en l'ordre triat; `rajolesDisp878508`: Pendent, Obres o
+      Expedients, Agenda, Contactes, Encàrrecs —tècnic—, Hores, Despeses, Facturació, Pressupostos —tècnic—, Rendiment, Llibreria de preus, Empresa,
+      Ajustos, Més). De sèrie: constructora Pendent · Obres · Agenda · Contactes · Hores · Despeses · Facturació · Més; tècnic Pendent · Expedients ·
+      Encàrrecs · Agenda · Contactes · Hores · Facturació · Més. A l'ordinador, «Més» és «Rendiment». **Encàrrecs** s'obre sol (com Pendent) amb els encàrrecs
+      tècnics oberts (`EncarrecsInici878305 obert`).
+    - **Ajustos › Accessos ràpids** (`AccessosNous878508`, a tots els comptes que administren): la barra («Per fer» · «Per anar a», 3 com a molt) i les
+      rajoles de l'Inici amb ▲ ▼ ✕ i «+» per afegir-ne; «Tornar als de sèrie». El treballador, com abans (`AccessosRapids878366`).
+    - Prova: `v508test.mjs` (26: tècnic al mòbil, Ajustos, constructora, tècnic a l'ordinador). Adaptada `v366test` (la constructora torna a tenir
+      «Accessos ràpids»).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3155,7 +3176,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.507 a Render):**
+**Estat (publicada la V87.508 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
