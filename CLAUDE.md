@@ -3169,6 +3169,23 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       negatiu la setmana del …»; tocant-los, la pantalla a la rajola que toca (`obreCaixa878521`).
     - Es desa al compte: `aco_caixa_v878521 = {inici, cobrar, pagar, fixos, saldoMa:{import, data}}`.
     - Proves: `caixa521unit.mjs` (15, sense navegador) i `v521test.mjs` (23: constructora, tècnic i mòbil). Adaptada `v514test` (Bancs és una rajola).
+  - **V87.522 · Paquet per a la gestoria** (`PaquetGestoria878522`, `src/zip.js`, `src/theme-v878522.css`):
+    - **On:** Facturació › Per a la gestoria (empresa i tècnic), Despeses › Opcions (empresa) i Despeses › Per a la gestoria (tècnic): «Paquet per a la
+      gestoria…» (`obrePaquetGestoria878522`, event `aco-gestoria-522`; la pantalla, `PaquetGestoriaGlobal878522`, és a l'App). No al treballador.
+    - **Pantalla** (`PantallaSencera878489`): el període (trimestres i anys amb factures; de sèrie, durant el primer mes d'un trimestre el d'abans i, si
+      no, el d'ara: `periodeDefecte878522`), quantes factures emeses i rebudes i el total, «El PDF de cada factura emesa», «La foto o el PDF de cada
+      factura rebuda», el nom i el correu de la gestoria, «Preparar el paquet» («Preparant 3 de 12…») i, a punt: «Enviar a la gestoria» (Gmail amb el
+      ZIP adjunt; si passa de 20 MB, demana descarregar-lo), «Compartir» (mòbil) i «Descarregar el ZIP». Si ja s'ha enviat: «Enviat el … a …».
+    - **Factures emeses** (`emesesGestoria878522`): les de l'obra als comptes d'empresa (`facturesObraValides878347`, també les importades, sense PDF) i
+      les d'honoraris de les obres pròpies (sense les anul·lades). **Rebudes** (`rebudesGestoria878522`): les despeses sense la mà d'obra, les dels partes i
+      de les hores ni els albarans inclosos en una factura (com el llistat de la V87.391), amb les meves despeses.
+    - **El ZIP** (`fesPaquet878522`, `fesZip` de `src/zip.js`: sense comprimir, noms en UTF-8, sense repetits): una carpeta «Gestoria {període} ·
+      {empresa}» amb «Factures emeses {període}.xlsx/.pdf», «Factures rebudes {període}.xlsx/.pdf» (`informeHtml878505`), «Factures emeses/{número} ·
+      {client}.pdf» (`htmlDoc878405` + `htmlAPdf`) i «Factures rebudes/{data} {proveïdor} {número}.jpg|.pdf» (la foto o el PDF desats a l'aparell). Cada
+      Excel diu el nom del document dins del ZIP.
+    - Es desa al compte: `aco_gestoria_v878522 = {nom, email, enviats:{[període]:{at, a, via: gmail|compartit|descarregat, n}}}`.
+      `window.__acoUltimPaquet878522` (l'últim paquet) és per a les proves.
+    - Prova: `v522test.mjs` (18: llegeix el ZIP i els Excel; Gmail simulat; tècnic; mòbil).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3367,7 +3384,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.521 a Render):**
+**Estat (publicada la V87.522 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

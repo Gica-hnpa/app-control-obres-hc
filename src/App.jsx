@@ -17,6 +17,7 @@ import {llegirDictat} from "./dictatPartides.js";
 import {cercaOk as cercaOk878470,dataIso as dataIso878470} from "./cercaLlistes.js";
 import {capsRepetits,ajuntaCaps} from "./capsRepetits.js";
 import {esNorma43,llegirNorma43,llegirFilesBanc,candidats as candidatsBanc,aparellaSols as aparellaSolsBanc,saldoCompte as saldoCompteBanc,clauApunt as clauApuntBanc} from "./bancs.js";
+import {fesZip,nomNet} from "./zip.js";
 import {previsio as previsioCaixa,grupData as grupDataCaixa,dilluns as dillunsCaixa} from "./caixa.js";
 import {iaCridable,iaActiva,iaSabuda,iaQuota,iaCrida,arxiuDeDataUrl,arxiuDeFitxer,partidesDeIa,pressupostDeIa,despesaDeIa,albaransDeFactura,reglesPartides} from "./iaObra.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
@@ -40,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.521";
+const APP_VERSION878264="87.522";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6485,7 +6486,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
 {fiTemps878463&&<DesarTemps878463 fi={fiTemps878463} obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} close={()=>setFiTemps878463(null)} acaba={row=>acabaTemps878463(fiTemps878463,row)}/>}
-{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/></main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
+{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/>{!esTreballador878326()&&<PaquetGestoriaGlobal878522 obres={viewObres878233} odata={viewOdata878233} clients={viewClients878233}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
   const meva508=k==="despesa"&&!modeObra878484(currentAccount878233.role,empresa878259?.perfil||"");
   if(screen==="Obra"&&obraId){if(meva508){window.__acoStartAlb878484={files,token:Date.now(),obraId};nav("Albarans");return}try{window.dispatchEvent(new CustomEvent("aco-accio-484",{detail:{k,files}}))}catch{}return}setAccio878484({k,files,meva508})}}/>{accio878484&&<TriaObraAccio878484 accio={accio878484} obres={viewObres878233} clients={viewClients878233} close={()=>setAccio878484(null)} tria={id=>{if(!id){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),senseObra:true};setAccio878484(null);nav("Albarans");return}
   if(accio878484.meva508){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),obraId:id};setAccio878484(null);nav("Albarans");return}window.__acoStart878484={obraId:id,k:accio878484.k,files:accio878484.files};setAccio878484(null);openObra(id)}}/>}</div></>
@@ -7181,6 +7182,126 @@ function Caixa878521({obres=[],odata={},clients=[],openObraTab}){
     {saldoEd&&<SaldoCaixa878521 c={c} close={()=>setSaldoEd(false)}/>}
   </div>;
 }
+// V87.522 · Paquet per a la gestoria (l'Héctor, 5/11/2026: «d'acord a tot»; la peça que lliga l'app amb la gestoria): un sol ZIP del trimestre
+// (o de l'any) amb les factures emeses i les rebudes, l'Excel i el llistat en PDF de cadascuna, i el PDF de cada factura emesa i la foto o el
+// PDF de cada factura rebuda. S'envia des del Gmail (amb el ZIP adjunt), es comparteix des del mòbil o es descarrega. S'obre des de
+// Facturació › Per a la gestoria i des de Despeses (Opcions o Per a la gestoria), a tots els perfils menys el treballador. Es desa al compte:
+// aco_gestoria_v878522 = {nom, email, enviats:{[període]:{at, a, via, n}}}.
+const GESTORIA_KEY878522="aco_gestoria_v878522";
+function llegeixGestoria878522(){const v=lsJson8779(GESTORIA_KEY878522,null)||{};return {...v,enviats:v.enviats&&typeof v.enviats==="object"?v.enviats:{}}}
+function desaGestoria878522(g){lsSet8779(GESTORIA_KEY878522,JSON.stringify(g))}
+function obrePaquetGestoria878522(){try{window.dispatchEvent(new Event("aco-gestoria-522"))}catch{}}
+// el trimestre: durant el primer mes d'un trimestre, el d'abans (el que s'ha de declarar); si no, el d'ara
+function periodeDefecte878522(ara=new Date()){const q=Math.floor(ara.getMonth()/3)+1;if(ara.getMonth()%3===0)return q===1?`${ara.getFullYear()-1}-T4`:`${ara.getFullYear()}-T${q-1}`;return `${ara.getFullYear()}-T${q}`}
+function nomPer878522(p){const m=/^(\d{4})-(T\d)$/.exec(p||"");return m?`${nomPeriode878390(m[2])} ${m[1]}`:/^\d{4}$/.test(p||"")?t("Tot l’any {a}",{a:p}):String(p||"")}
+function clientObra878522(o,clients){return (clients||[]).find(c=>String(c.id)===String(clientIdObra878347(o)))||{id:"",nom:nomClientObra878347(o,clients),rao:nomClientObra878347(o,clients)}}
+function emesesGestoria878522(obres=[],odata={},clients=[],per=""){
+  const emp=esEmpresaFactura878337(),tec=teModul878326("tecnic"),out=[],r2=r2c878521;
+  for(const o of obres||[]){if(!o?.id)continue;const d=odata?.[o.id]||{};const cl=clientObra878522(o,clients);
+    if(emp){const pfs=proformesObra878337(d);for(const fa of facturesObraValides878347(d)){if(!perOk878391(fa.data,per))continue;
+      out.push({k:"fo:"+o.id+":"+fa.id,obra:o,numero:fa.numero||"",data:isoData878292(toInputDate8743(fa.data)||fa.data),client:fa.destinatari?.nom||cl.nom||o.propietat||"",nif:fa.destinatari?.nif||cl.nif||"",concepte:fa.concepte||"",base:r2(fa.base),ivaPct:+fa.iva||0,iva:r2(fa.ivaImp),retPct:+fa.ret||0,ret:r2(fa.retImp),total:r2(fa.total),cobrada:!!fa.cobrada||!!fa.dataCobrament,dataCobrament:fa.dataCobrament||"",motiu:fa.motiu0==="isp"?"ISP":(fa.motiu0Text||""),
+        doc:fa.importada?null:()=>({doc:docFactura878337(fa,pfs.find(p=>p.certId===fa.certId),d),obra:o,client:cl})})}}
+    if(tec&&!o.compartida)uniqueFactures8743(d.facturesTecnic||[]).forEach((f,i)=>{if(/anul/i.test(String(f.estat||""))||!perOk878391(f.data,per))return;const num=displayDocNumber8745(f,"factura",o,i+1);
+      out.push({k:"ft:"+o.id+":"+f.id,obra:o,numero:num,data:isoData878292(toInputDate8743(f.data)||f.data),client:f.client||o.propietat||cl.nom||"",nif:cl.nif||o.nifPropietat||"",concepte:conceptTr878299(f.concepte||""),base:r2(invoiceNetBase8746(f)),ivaPct:+ivaRate878252(f)||0,iva:r2(invoiceIvaAmount8746(f)),retPct:+f.retencio||0,ret:r2(invoiceRetencioAmount8746(f)),total:r2(invoiceTotal8746(f)),cobrada:statusKeyFactura8776(f.estat)==="cobrades"||!!f.dataCobrament,dataCobrament:f.dataCobrament||"",motiu:"",
+        doc:()=>({doc:docQuote878407("factura",{...f,numero:num}),obra:o,client:cl})})});
+  }
+  return out.sort((a,b)=>String(a.numero).localeCompare(String(b.numero),"ca",{numeric:true})||String(a.data).localeCompare(String(b.data)));
+}
+// les rebudes: com el llistat per a la gestoria de Despeses (sense la mà d'obra, les dels partes i de les hores, ni els albarans d'una factura)
+function rebudesGestoria878522(obres=[],per=""){
+  const nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));const albs=readAlbarans878259(),cob=cobertsPer878311(albs),r2=r2c878521;
+  return albs.filter(a=>{const tp=tipusDespesa878311(a);return tp!=="MaObra"&&!a.parteId878352&&!a.deHores878355&&!cob[a.id]&&perOk878391(a.data||a.dataEntrada,per)&&(+a.total||+a.base)})
+    .map(a=>{const tp=tipusDespesa878311(a);return {a,k:"d:"+a.id,data:isoData878292(a.data)||isoData878292(String(a.dataEntrada||"").slice(0,10)),numero:a.numero||"",proveidor:a.proveidor||a.concepte||"",nif:a.nif||"",obra:tp==="Empresa"?i18nT(a.categoria||""):(nom.get(String(a.obraId))||""),tipus:a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),base:r2(albaraBase878259(a)),iva:a.isp?0:r2(despesaIva878311(a)),ivaPct:+a.iva||0,total:r2(despesaTotal878311(a)),isp:!!a.isp,pagada:!!a.pagada878514,foto:!!a.teFoto,pdf:!!a.tePdf}})
+    .sort((x,y)=>String(x.data).localeCompare(String(y.data))||String(x.proveidor).localeCompare(String(y.proveidor),"ca"));
+}
+function dataUrlBytes878522(u){try{const b64=String(u||"").split(",")[1]||"";const bin=atob(b64);const o=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)o[i]=bin.charCodeAt(i);return o}catch{return null}}
+function midaMb878522(n){return (n/1048576).toLocaleString(loc878272(),{maximumFractionDigits:1})+" MB"}
+// fa el ZIP. Torna {blob, nom, n (arxius), avisos}
+async function fesPaquet878522({emeses,rebudes,per,ambPdf=true,ambDocs=true,onPas}){
+  const emp=String(empresaInfo878259()?.nom||(getAppAccount878233(currentAppUser8779())||{}).displayName||"").replace(/[\\/:*?"<>|]+/g,"").trim();
+  const P=nomPer878522(per),arrel=`${t("Gestoria")} ${P}${emp?" · "+emp:""}`.trim(),fitx=[],avisos=[];const r2=r2c878521,sum=(l,k)=>r2(l.reduce((x,y)=>x+(+y[k]||0),0));
+  const pas=(n,m)=>{try{onPas?.(n,m)}catch{}};
+  const xlsx=(aoa,cols,full)=>{const ws=XLSX.utils.aoa_to_sheet(aoa);ws["!cols"]=cols.map(w=>({wch:w}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,full.slice(0,31));return new Uint8Array(XLSX.write(wb,{bookType:"xlsx",type:"array"}))};
+  const nomEm=r=>`${t("Factures emeses")}/${r.numero||t("Sense número")}${r.client?" · "+r.client:""}.pdf`;
+  const nomReb=r=>`${t("Factures rebudes")}/${r.data||t("Sense data")} ${r.proveidor||""}${r.numero?" "+r.numero:""}`.replace(/\s+/g," ").trim();
+  const total=(ambPdf?emeses.filter(r=>r.doc).length:0)+(ambDocs?rebudes.filter(r=>r.foto||r.pdf).length:0);let fet=0;
+  // les factures emeses en PDF (una a una: cada una es dibuixa en un marc amagat)
+  const docEm={};
+  if(ambPdf)for(const r of emeses){if(!r.doc)continue;pas(++fet,total);try{const {doc,obra,client}=r.doc();const h=htmlDoc878405(doc,obra,client);if(!h)throw new Error("");const b=await htmlAPdf(h,{titol:`${t("Factura")} ${r.numero}`});fitx.push({nom:`${arrel}/${nomEm(r)}`,dades:b});docEm[r.k]=nomEm(r)}catch{avisos.push(t("No s’ha pogut fer el PDF de la factura {n}.",{n:r.numero}))}}
+  const docReb={};
+  if(ambDocs)for(const r of rebudes){if(!r.foto&&!r.pdf)continue;pas(++fet,total);const u=r.foto?lsGet8779(albaraFotoKey878259(r.a.id),""):lsGet8779(albaraPdfKey878259(r.a.id),"");const by=u?dataUrlBytes878522(u):null;
+    if(!by||!by.length){avisos.push(t("La despesa {n} no té el document en aquest aparell.",{n:[r.proveidor,r.numero].filter(Boolean).join(" ")}));continue}
+    const ext=/^data:application\/pdf/.test(u)?".pdf":/^data:image\/png/.test(u)?".png":".jpg";const n=nomReb(r)+ext;fitx.push({nom:`${arrel}/${n}`,dades:by});docReb[r.k]=n}
+  // l'Excel i el llistat en PDF de cada una
+  const EM=[t("Número"),t("Data"),t("Client"),t("NIF"),t("Obra"),t("Concepte"),t("Base"),t("IVA %"),t("IVA"),t("Retenció %"),t("Retenció"),t("Total"),t("Cobrada"),t("Data de cobrament"),t("Motiu IVA 0 %"),t("Document")];
+  fitx.push({nom:`${arrel}/${t("Factures emeses")} ${P}.xlsx`,dades:xlsx([EM,...emeses.map(r=>[r.numero,fmtAppDate8748(r.data),r.client,r.nif,r.obra.nom,r.concepte,r.base,r.ivaPct,r.iva,r.retPct,r.ret,r.total,r.cobrada?t("Sí"):t("No"),r.dataCobrament?fmtAppDate8748(r.dataCobrament):"",r.motiu,docEm[r.k]||""]),[],["","","","","","",sum(emeses,"base"),"",sum(emeses,"iva"),"",sum(emeses,"ret"),sum(emeses,"total")]],[14,12,30,14,30,28,12,7,12,10,12,13,9,14,14,40],t("Factures emeses"))});
+  const RB=[t("Data"),t("Número"),t("Proveïdor"),t("NIF"),t("Tipus"),t("Obra"),t("Base"),t("IVA %"),t("IVA"),t("Total"),"ISP",t("Pagada"),t("Document")];
+  fitx.push({nom:`${arrel}/${t("Factures rebudes")} ${P}.xlsx`,dades:xlsx([RB,...rebudes.map(r=>[fmtAppDate8748(r.data),r.numero,r.proveidor,r.nif,r.tipus,r.obra,r.base,r.ivaPct,r.iva,r.total,r.isp?t("Sí"):"",r.pagada?t("Sí"):t("No"),docReb[r.k]||""]),[],["","","","","","",sum(rebudes,"base"),"",sum(rebudes,"iva"),sum(rebudes,"total")]],[12,14,30,14,22,28,12,7,12,13,6,8,44],t("Factures rebudes"))});
+  pas(total,total);
+  try{const h=informeHtml878505({titol:t("Factures emeses"),sub:[P,emeses.length===1?t("1 factura"):t("{n} factures",{n:emeses.length})].join(" · "),horitzontal:true,cols:[{l:t("Número")},{l:t("Data")},{l:t("Client")},{l:t("NIF")},{l:t("Obra")},{l:t("Base"),n:true},{l:t("IVA"),n:true},{l:t("Retenció"),n:true},{l:t("Total"),n:true}],files:emeses.map(r=>[r.numero,fmtAppDate8748(r.data),r.client,r.nif,r.obra.nom,money(r.base),r.motiu==="ISP"?"ISP":money(r.iva),r.ret?money(r.ret):"",money(r.total)]),peu:[t("Total"),"","","","",money(sum(emeses,"base")),money(sum(emeses,"iva")),money(sum(emeses,"ret")),money(sum(emeses,"total"))]});
+    fitx.push({nom:`${arrel}/${t("Factures emeses")} ${P}.pdf`,dades:await htmlAPdf(h,{titol:t("Factures emeses")})})}catch{avisos.push(t("No s’ha pogut fer el llistat en PDF de les factures emeses."))}
+  try{const h=informeHtml878505({titol:t("Factures rebudes"),sub:[P,rebudes.length===1?t("1 despesa"):t("{n} despeses",{n:rebudes.length})].join(" · "),horitzontal:true,cols:[{l:t("Data")},{l:t("Número")},{l:t("Proveïdor")},{l:t("NIF")},{l:t("Tipus")},{l:t("Obra")},{l:t("Base"),n:true},{l:t("IVA"),n:true},{l:t("Total"),n:true}],files:rebudes.map(r=>[fmtAppDate8748(r.data),r.numero,r.proveidor,r.nif,r.tipus,r.obra,money(r.base),r.isp?"ISP":money(r.iva),money(r.total)]),peu:[t("Total"),"","","","","",money(sum(rebudes,"base")),money(sum(rebudes,"iva")),money(sum(rebudes,"total"))]});
+    fitx.push({nom:`${arrel}/${t("Factures rebudes")} ${P}.pdf`,dades:await htmlAPdf(h,{titol:t("Factures rebudes")})})}catch{avisos.push(t("No s’ha pogut fer el llistat en PDF de les factures rebudes."))}
+  const blob=await fesZip(fitx);
+  return {blob,nom:nomNet(arrel)+".zip",n:fitx.length,avisos};
+}
+function PaquetGestoria878522({obres=[],odata={},clients=[],close}){
+  const[g,setG]=useState(llegeixGestoria878522);
+  const[per,setPer]=useState(periodeDefecte878522);
+  const[ambPdf,setAmbPdf]=useState(true);const[ambDocs,setAmbDocs]=useState(true);
+  const[pas,setPas]=useState(null);const[paq,setPaq]=useState(null);const[msg,setMsg]=useState("");const[envia,setEnvia]=useState(false);
+  const emeses=useMemo(()=>emesesGestoria878522(obres,odata,clients,per),[obres,odata,clients,per]);
+  const rebudes=useMemo(()=>rebudesGestoria878522(obres,per),[obres,per]);
+  useEffect(()=>{setPaq(null);setMsg("")},[per,ambPdf,ambDocs]);
+  const anys=useMemo(()=>{const s=new Set([String(new Date().getFullYear())]);emesesGestoria878522(obres,odata,clients,"").forEach(r=>r.data&&s.add(r.data.slice(0,4)));rebudesGestoria878522(obres,"").forEach(r=>r.data&&s.add(r.data.slice(0,4)));return [...s].sort((a,b)=>b.localeCompare(a))},[obres,odata,clients]);
+  const opcions=anys.flatMap(a=>["T4","T3","T2","T1"].map(q=>`${a}-${q}`).concat([a]));
+  const desaG=n=>{setG(n);desaGestoria878522(n)};
+  const env=g.enviats[per];
+  const sum=(l,k)=>l.reduce((x,y)=>x+(+y[k]||0),0);
+  const mobil=useMobil878363();
+  const potComp=useMemo(()=>{try{return !!navigator.canShare?.({files:[new File(["x"],"a.zip",{type:"application/zip"})]})}catch{return false}},[]);
+  const gmail=gmail878405.configurat();
+  const prepara=async()=>{setMsg("");setPaq(null);setPas([0,1]);try{const r=await fesPaquet878522({emeses,rebudes,per,ambPdf,ambDocs,onPas:(n,m)=>setPas([n,m])});setPaq(r);try{window.__acoUltimPaquet878522=r}catch{}}catch(e){setMsg(t("No s’ha pogut preparar el paquet: {e}",{e:String(e?.message||e)}))}setPas(null)};
+  const apunta=via=>desaG({...llegeixGestoria878522(),nom:g.nom,email:g.email,enviats:{...llegeixGestoria878522().enviats,[per]:{at:new Date().toISOString(),a:via==="gmail"?g.email:"",via,n:emeses.length+rebudes.length}}});
+  const descarrega=()=>{const u=URL.createObjectURL(paq.blob);const a=document.createElement("a");a.href=u;a.download=paq.nom;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);apunta("descarregat")};
+  const comparteix=async()=>{try{await navigator.share({files:[new File([paq.blob],paq.nom,{type:"application/zip"})],title:paq.nom});apunta("compartit")}catch(e){if(e?.name!=="AbortError")setMsg(t("No s’ha pogut compartir: {e}",{e:String(e?.message||e)}))}};
+  const text=()=>t("Hola,\n\nUs envio les factures del {p}: {n} emeses ({e}) i {m} rebudes ({r}).\n\nGràcies.",{p:nomPer878522(per),n:emeses.length,e:money(sum(emeses,"total")),m:rebudes.length,r:money(sum(rebudes,"total"))});
+  const enviaGmail=async()=>{const to=String(g.email||"").trim();if(!/\S+@\S+\.\S+/.test(to)){setMsg(t("Posa el correu de la gestoria."));return}
+    if(paq.blob.size>20*1048576){setMsg(t("El paquet fa {m}: massa gran per al correu. Descarrega’l i envia’l per un altre camí.",{m:midaMb878522(paq.blob.size)}));return}
+    setEnvia(true);setMsg("");try{if(!gmail878405.connectat())await gmail878405.connecta();await gmail878405.envia({to:[to],subject:`${t("Factures")} ${nomPer878522(per)}${empresaInfo878259()?.nom?" · "+empresaInfo878259().nom:""}`,text:text(),adjunts:[{nom:paq.nom,blob:paq.blob}]});apunta("gmail");setMsg(t("Enviat des del teu Gmail a {a}.",{a:to}))}
+    catch(e){setMsg(e?.noActiva?t("Falta activar la Gmail API al projecte de Google."):String(e?.message||e))}setEnvia(false)};
+  return <PantallaSencera878489 titol={t("Paquet per a la gestoria")} sub={nomPer878522(per)} onTorna={close} className="gestoria-v878522">
+    <div className="gest-v878522">
+      <label className="per"><span>{t("Període")}</span><select value={per} onChange={e=>setPer(e.target.value)}>{opcions.map(p=><option key={p} value={p}>{nomPer878522(p)}</option>)}</select></label>
+      {env&&<p className="env-v878522"><Check size={16} aria-hidden="true"/> {env.via==="gmail"?t("Enviat el {d} a {a}",{d:fmtAppDate8748(String(env.at).slice(0,10)),a:env.a}):env.via==="compartit"?t("Compartit el {d}",{d:fmtAppDate8748(String(env.at).slice(0,10))}):t("Descarregat el {d}",{d:fmtAppDate8748(String(env.at).slice(0,10))})}</p>}
+      <div className="xifres-v878426 gest-xif-v878522">
+        <div className="x act"><small>{t("Factures emeses")}</small><b>{emeses.length}</b><span>{money(sum(emeses,"total"))}</span></div>
+        <div className="x pen"><small>{t("Factures rebudes")}</small><b>{rebudes.length}</b><span>{money(sum(rebudes,"total"))}</span></div>
+      </div>
+      <div className="opc-v878522">
+        <label><input type="checkbox" checked={ambPdf} onChange={e=>setAmbPdf(e.target.checked)}/> {t("El PDF de cada factura emesa")}</label>
+        <label><input type="checkbox" checked={ambDocs} onChange={e=>setAmbDocs(e.target.checked)}/> {t("La foto o el PDF de cada factura rebuda")}</label>
+      </div>
+      <div className="gest-dades-v878522">
+        <label><span>{t("Gestoria")}</span><input value={g.nom||""} onChange={e=>desaG({...g,nom:e.target.value})}/></label>
+        <label><span>{t("Correu de la gestoria")}</span><input type="email" inputMode="email" value={g.email||""} onChange={e=>desaG({...g,email:e.target.value})}/></label>
+      </div>
+      {!paq?<button type="button" className="primary prep-v878522" disabled={!!pas||(!emeses.length&&!rebudes.length)} onClick={prepara}><FolderDown size={16} aria-hidden="true"/> {pas?t("Preparant {n} de {m}…",{n:pas[0],m:pas[1]}):t("Preparar el paquet")}</button>
+        :<div className="llest-v878522">
+          <p><b>{t("Paquet a punt")}</b> · {t("{n} arxius",{n:paq.n})} · {midaMb878522(paq.blob.size)}</p>
+          <div className="bt">
+            {gmail&&<button type="button" className="primary" disabled={envia} onClick={enviaGmail}><Send size={16} aria-hidden="true"/> {envia?t("Enviant…"):t("Enviar a la gestoria")}</button>}
+            {mobil&&potComp&&<button type="button" className={gmail?"secondary":"primary"} onClick={comparteix}><Share2 size={16} aria-hidden="true"/> {t("Compartir")}</button>}
+            <button type="button" className="secondary" onClick={descarrega}><Download size={16} aria-hidden="true"/> {t("Descarregar el ZIP")}</button>
+          </div>
+        </div>}
+      {!emeses.length&&!rebudes.length&&<p className="buit-v878521">{t("No hi ha factures en aquest període.")}</p>}
+      {paq?.avisos?.length>0&&<ul className="avisos-v878522">{paq.avisos.map((a,i)=><li key={i}>{a}</li>)}</ul>}
+      {msg&&<p className="msg-v878522" role="status">{msg}</p>}
+    </div>
+  </PantallaSencera878489>;
+}
+function PaquetGestoriaGlobal878522({obres,odata,clients}){const[o,setO]=useState(false);useEffect(()=>{const h=()=>setO(true);window.addEventListener("aco-gestoria-522",h);return()=>window.removeEventListener("aco-gestoria-522",h)},[]);return o?<PaquetGestoria878522 obres={obres} odata={odata} clients={clients} close={()=>setO(false)}/>:null}
 // V87.272 · format de dates i números segons l'idioma de l'usuari
 function loc878272(){return getLang()==="es"?"es-ES":"ca-ES"}
 function MobileBackBar878146({screen,goBack}){return <div className="screen-return-v87146"><button type="button" onClick={goBack}>← Tornar</button><span>{screen}</span></div>}
@@ -18758,7 +18879,7 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
     {llistat501&&<Llistat878501 titol={t("Factures emeses")} nom="factures-emeses" close={()=>setLlistat501(false)} dates={[{k:"data",l:t("Data de la factura")},{k:"dataCobrament",l:t("Data de cobrament")}]} filtres={[{k:"client",l:t("Client")},{k:"obra",l:t("Obra")},{k:"estat",l:t("Estat")}]}
       cols={[{k:"num",l:t("Número")},{k:"data",l:t("Data"),tipus:"data"},{k:"client",l:t("Client")},{k:"nif",l:t("NIF"),def:false},{k:"obra",l:t("Obra")},{k:"base",l:t("Base"),tipus:"diners",suma:true},{k:"iva",l:t("IVA"),tipus:"diners",suma:true},{k:"ret",l:t("Retenció"),tipus:"diners",suma:true,def:false},{k:"total",l:t("Total"),tipus:"diners",suma:true},{k:"estat",l:t("Estat")},{k:"dataCobrament",l:t("Cobrada el"),tipus:"data",def:false}]}
       files={factures.map(r=>({_k:r.k,num:r.numero,data:toInputDate8743(r.data)||"",client:r.client,nif:r.nif,obra:r.obra?.nom||"",base:r.base,iva:r.ivaImp,ret:r.retImp,total:r.total,estat:r.cobrada?t("Cobrada"):t("Pendent"),dataCobrament:toInputDate8743(r.dataCobrament)||""}))}/>}
-    <div className="fe-head"><h1>{t("Facturació")}</h1>{factures.length>0&&<button type="button" className="secondary llistat-btn-v878501" onClick={()=>setLlistat501(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>}{vista==="factures"&&rows.length>0&&<ActionMenu87213 className="gestoria-v878390" titol={t("Per a la gestoria")} label={<><Download size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Per a la gestoria")}</span></>}><button type="button" onClick={()=>exporta()}><Download size={15} aria-hidden="true"/> {t("Exportar Excel")}</button><button type="button" onClick={llistatPdf}><FileText size={15} aria-hidden="true"/> {t("Llistat en PDF")}</button>{potCompartir&&<button type="button" onClick={()=>exporta(true)}><Share2 size={15} aria-hidden="true"/> {t("Compartir l’Excel…")}</button>}</ActionMenu87213>}</div>
+    <div className="fe-head"><h1>{t("Facturació")}</h1>{factures.length>0&&<button type="button" className="secondary llistat-btn-v878501" onClick={()=>setLlistat501(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>}{vista==="factures"&&rows.length>0&&<ActionMenu87213 className="gestoria-v878390" titol={t("Per a la gestoria")} label={<><Download size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Per a la gestoria")}</span></>}><button type="button" className="paquet-v878522" onClick={obrePaquetGestoria878522}><FolderDown size={15} aria-hidden="true"/> {t("Paquet per a la gestoria…")}</button><button type="button" onClick={()=>exporta()}><Download size={15} aria-hidden="true"/> {t("Exportar Excel")}</button><button type="button" onClick={llistatPdf}><FileText size={15} aria-hidden="true"/> {t("Llistat en PDF")}</button>{potCompartir&&<button type="button" onClick={()=>exporta(true)}><Share2 size={15} aria-hidden="true"/> {t("Compartir l’Excel…")}</button>}</ActionMenu87213>}</div>
     <div className="fe-vistes" role="group" aria-label={t("Facturació")}>
       <button type="button" aria-pressed={vista==="factures"} onClick={()=>setVista("factures")}>{t("Factures")}<em>{factures.length}</em></button>
       <button type="button" aria-pressed={vista==="per"} onClick={()=>setVista("per")}>{t("Per facturar")}{perFacturar.length>0&&<em className="warn">{perFacturar.length}</em>}</button>
@@ -20634,7 +20755,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.521",
+    app_version:"87.522",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -21443,7 +21564,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
     {llistat501&&<Llistat878501 titol={i18nT("Factures emeses")} nom="factures-emeses" close={()=>setLlistat501(false)} dates={[{k:"data",l:i18nT("Data de la factura")},{k:"dataCobrament",l:i18nT("Data de cobrament")}]} filtres={[{k:"client",l:i18nT("Client")},{k:"obra",l:i18nT("Expedient")},{k:"estat",l:i18nT("Estat")}]}
       cols={[{k:"num",l:i18nT("Número")},{k:"data",l:i18nT("Data"),tipus:"data"},{k:"client",l:i18nT("Client")},{k:"nif",l:i18nT("NIF"),def:false},{k:"obra",l:i18nT("Expedient")},{k:"concepte",l:i18nT("Concepte"),def:false},{k:"base",l:i18nT("Base"),tipus:"diners",suma:true},{k:"iva",l:i18nT("IVA"),tipus:"diners",suma:true},{k:"ret",l:i18nT("Retenció"),tipus:"diners",suma:true},{k:"total",l:i18nT("Total"),tipus:"diners",suma:true},{k:"estat",l:i18nT("Estat")},{k:"dataCobrament",l:i18nT("Cobrada el"),tipus:"data",def:false}]}
       files={all.filter(vigent873).map((f,i)=>{const m=imps395(f);return {_k:(f.id||"")+":"+i,num:f.displayNumero,data:toInputDate8743(f.data)||"",client:i18nT(f.clientNom||""),nif:nifDe395(f),obra:f.obra?.nom||"",concepte:conceptTr878299(f.concepte||""),base:m.base,iva:m.iva,ret:m.ret,total:m.total,estat:estat395(f),dataCobrament:toInputDate8743(f.dataCobrament)||""}})}/>}
-    <div className="fe-head">{dins?<span/>:<h1>{i18nT("Facturació")}</h1>}<div className="fe-head-acc-v878395">{all.length>0&&<button type="button" className="secondary llistat-btn-v878501" onClick={()=>setLlistat501(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{i18nT("Llistat")}</span></button>}{base873.length>0&&<ActionMenu87213 className="gestoria-v878390" label={<><Download size={15} aria-hidden="true"/> {i18nT("Per a la gestoria")}</>}><button type="button" onClick={()=>exporta395()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button><button type="button" onClick={llistatPdf395}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>{potCompartir395&&<button type="button" onClick={()=>exporta395(true)}><Share2 size={15} aria-hidden="true"/> {i18nT("Compartir l’Excel…")}</button>}</ActionMenu87213>}<button type="button" className="primary" onClick={()=>setNewOpen(true)}><Plus size={16} aria-hidden="true"/> {i18nT("Nova factura")}</button></div></div>
+    <div className="fe-head">{dins?<span/>:<h1>{i18nT("Facturació")}</h1>}<div className="fe-head-acc-v878395">{all.length>0&&<button type="button" className="secondary llistat-btn-v878501" onClick={()=>setLlistat501(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{i18nT("Llistat")}</span></button>}{base873.length>0&&<ActionMenu87213 className="gestoria-v878390" label={<><Download size={15} aria-hidden="true"/> {i18nT("Per a la gestoria")}</>}><button type="button" className="paquet-v878522" onClick={obrePaquetGestoria878522}><FolderDown size={15} aria-hidden="true"/> {i18nT("Paquet per a la gestoria…")}</button><button type="button" onClick={()=>exporta395()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button><button type="button" onClick={llistatPdf395}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>{potCompartir395&&<button type="button" onClick={()=>exporta395(true)}><Share2 size={15} aria-hidden="true"/> {i18nT("Compartir l’Excel…")}</button>}</ActionMenu87213>}<button type="button" className="primary" onClick={()=>setNewOpen(true)}><Plus size={16} aria-hidden="true"/> {i18nT("Nova factura")}</button></div></div>
     <HoursToInvoice878256 obres={obres} clients={clientList} onCreate={createFacturaGlobal8778} odata={odata} openObraTab={openObraTab}/>
     <div className={`fe-filtres ${filtresM471?"obert-v878471":""}`}>
       <div className="anys" role="group" aria-label={i18nT("Any")}>{anys873.map(a=><button type="button" key={a} aria-pressed={!cercant470&&anyF873===a} onClick={()=>{setAnyF873(a);setCercaF470("")}}>{a}</button>)}<button type="button" aria-pressed={!cercant470&&anyF873==="tots"} onClick={()=>{setAnyF873("tots");setCercaF470("")}}>{i18nT("Tots")}</button></div>
@@ -24210,6 +24331,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
           <label className="action-upload-v87213 alb-cam alt"><input type="file" accept="application/pdf,.pdf,image/*" onChange={e=>{const f=e.target.files?.[0];e.target.value="";e.target.closest("details")?.removeAttribute("open");newFromPhoto(f)}}/><Paperclip size={15} aria-hidden="true"/> {i18nT("Adjuntar")}</label></>}
           <button type="button" className="entrar-ma-v878367" onClick={()=>newFromPhoto(null)}><PenLine size={15} aria-hidden="true"/> {i18nT("Entrar a mà")}</button>
           <button type="button" className="importar-v878367" onClick={()=>setImpX878344(true)}><Upload size={15} aria-hidden="true"/> {i18nT("Importar Excel")}</button>
+          {!fixedObra&&rows.length>0&&<button type="button" className="paquet-v878522" onClick={obrePaquetGestoria878522}><FolderDown size={15} aria-hidden="true"/> {i18nT("Paquet per a la gestoria…")}</button>}
           {!fixedObra&&rows.length>0&&<button type="button" className="exportar-v878367" onClick={()=>exporta878338()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>}
           {list.length>0&&<button type="button" className="llistat-filtres-v878501" onClick={()=>setLlistat501(true)}><Printer size={15} aria-hidden="true"/> {i18nT("Llistat amb filtres…")}</button>}
           {!fixedObra&&rows.length>0&&<button type="button" className="llistat-v878391" onClick={llistatPdf878391}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>}
@@ -24218,6 +24340,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
           {nObra878470<6&&<button type="button" className="filtres-btn-v878349" onClick={()=>setFiltresM878349(v=>!v)}><Search size={15} aria-hidden="true"/> {filtresM878349?i18nT("Amagar els filtres"):i18nT("Filtres")}</button>}</>}
         </ActionMenu87213>}
         {meves&&!fixedObra&&!treb&&rows.length>0&&<ActionMenu87213 className="gestoria-v878391" label={<><Download size={15} aria-hidden="true"/> {i18nT("Per a la gestoria")}</>}>
+          <button type="button" className="paquet-v878522" onClick={obrePaquetGestoria878522}><FolderDown size={15} aria-hidden="true"/> {i18nT("Paquet per a la gestoria…")}</button>
           <button type="button" className="exportar-v878367" onClick={()=>exporta878338()}><Download size={15} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>
           <button type="button" className="llistat-filtres-v878501" onClick={()=>setLlistat501(true)}><Printer size={15} aria-hidden="true"/> {i18nT("Llistat amb filtres…")}</button>
           <button type="button" className="llistat-v878391" onClick={llistatPdf878391}><FileText size={15} aria-hidden="true"/> {i18nT("Llistat en PDF")}</button>
