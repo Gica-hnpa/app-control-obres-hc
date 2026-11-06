@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.532";
+const VERSION = "V87.533";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -1043,10 +1043,26 @@ async function syncNow() { await cycle({ returning: true }); }
 async function rpc(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/rest/v1/rpc/${name}`, { method: "POST", body: body || {} }); }
 async function callFunction(name, body) { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return api(`/functions/v1/${name}`, { method: "POST", body }); }
 // V87.460 · Banc de preus comú (una sola fila, supabase/aco_banc_comu_v878460.sql). «cap» no porta les partides: només es baixen si ha canviat la versió.
+// V87.533 · les partides i els capítols van comprimits (gzip en base64, dades_gz): uns 2-3 MB en lloc d'11. «comptes» diu qui el veu
+// (null: tothom; ["demo-%@usuaris.controlobres.app"]: els comptes de demostració); ho fa complir el servidor (aco_banc_comu_v878533.sql).
+async function gz64(text) {
+  const st = new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"));
+  const u = new Uint8Array(await new Response(st).arrayBuffer());
+  let bin = ""; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+async function ungz64(b64) {
+  const bin = atob(b64); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+}
 const bancComu = {
-  cap: async () => { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return (await api(`/rest/v1/aco_banc_comu?id=eq.1&select=nom,any_preus,pct,n,versio`))?.[0] || null; },
-  baixa: async () => (await api(`/rest/v1/aco_banc_comu?id=eq.1&select=dades`))?.[0]?.dades || [],
-  puja: b => api(`/rest/v1/aco_banc_comu?on_conflict=id`, { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: [{ id: 1, nom: b.nom || "", any_preus: b.any || null, pct: Number(b.pct) || 0, n: b.partides.length, dades: b.partides, versio: b.data || new Date().toISOString(), updated_at: new Date().toISOString() }] }),
+  cap: async () => { if (!session) throw new Error(t("Cal estar connectat al núvol.")); return (await api(`/rest/v1/aco_banc_comu?id=eq.1&select=nom,any_preus,pct,n,versio,comptes`))?.[0] || null; },
+  baixa: async () => {
+    const f = (await api(`/rest/v1/aco_banc_comu?id=eq.1&select=dades_gz,dades`))?.[0];
+    if (f?.dades_gz) { const d = JSON.parse(await ungz64(f.dades_gz)); return { partides: d.partides || [], caps: d.caps || {} }; }
+    return { partides: f?.dades || [], caps: {} };
+  },
+  puja: async (b, comptes = null) => api(`/rest/v1/aco_banc_comu?on_conflict=id`, { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: [{ id: 1, nom: b.nom || "", any_preus: b.any || null, pct: Number(b.pct) || 0, n: b.partides.length, dades: [], dades_gz: await gz64(JSON.stringify({ partides: b.partides, caps: b.caps || {} })), comptes: comptes && comptes.length ? comptes : null, versio: b.data || new Date().toISOString(), updated_at: new Date().toISOString() }] }),
   posa: p => api(`/rest/v1/aco_banc_comu?id=eq.1`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: { ...p, updated_at: new Date().toISOString() } }),
   treu: () => api(`/rest/v1/aco_banc_comu?id=eq.1`, { method: "DELETE", headers: { Prefer: "return=minimal" } }),
 };

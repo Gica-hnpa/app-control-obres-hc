@@ -13,6 +13,7 @@ import {CP_CATALUNYA878304} from "./poblacions-cat.js";
 import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878305} from "./pressupostPdf.js";
 import {textBc3,llegirBc3,llegirExcelAmidaments,llegeixLlibre,fullsLlibre} from "./amidaments.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
+import {ipcPct} from "./ipc.js";
 import {llegirDictat} from "./dictatPartides.js";
 import {cercaOk as cercaOk878470,dataIso as dataIso878470} from "./cercaLlistes.js";
 import {capsRepetits,ajuntaCaps} from "./capsRepetits.js";
@@ -41,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.532";
+const APP_VERSION878264="87.533";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9896,7 +9897,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
           <ObraThumb878275 o={o} nom={clientNom(o)}/><span className="exp-card-body-v878275"><span className="l1"><b>{codiCurt878270(o)}</b>{o.compartida?<small className="exp-prop-v878347">{expPropietari878347(o)}</small>:null}<span>{clientNom(o)}</span></span>
           <strong>{o.nom}</strong>
           <span className="l3">{[t(moduleLabel8737(o)),lloc].filter(Boolean).join(" · ")}</span>
-          <span className="l4"><em className={`st ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}>{t(st)}</em><SharedBadge878259 o={o}/></span></span>
+          <span className="l4"><em className={`st ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}>{t(st)}</em><SharedBadge878259 o={o}/>{(()=>{const d=creationStamp878233(o);const x=d?fmtCreationDate878233(d):"";return x&&/\d/.test(x)?<small className="data-v878533" title={t("Data de creació")}>{x}</small>:null})()}</span></span>
         </button>})}
       </section>})}
     </div>
@@ -14727,9 +14728,22 @@ async function syncBancComu878460(){
   const mateixa=loc&&new Date(loc.versio).getTime()===new Date(cap.versio).getTime();
   if(mateixa){if(Number(loc.pct)!==Number(cap.pct)||loc.any!==cap.any_preus||loc.nom!==cap.nom){const{comu,...r}=loc;desaBancComu878460({...r,pct:Number(cap.pct)||0,any:cap.any_preus,nom:cap.nom})}return}
   if(bancPropi878460())return;
-  try{const partides=await nv.baixa();if(Array.isArray(partides)&&partides.length)desaBancComu878460({nom:cap.nom,any:cap.any_preus,pct:Number(cap.pct)||0,versio:cap.versio,partides})}catch{}
+  try{const r=await nv.baixa();const partides=Array.isArray(r)?r:r?.partides,caps=Array.isArray(r)?{}:(r?.caps||{});if(Array.isArray(partides)&&partides.length)desaBancComu878460({nom:cap.nom,any:cap.any_preus,pct:Number(cap.pct)||0,versio:cap.versio,partides,caps})}catch{}
 }
 function bancPreus878368(){return bancPropi878460()||bancComu878460()}
+// V87.533 · els preus del banc es posen al dia sols amb l'IPC de l'INE des de l'any del banc (src/ipc.js; l'Héctor, 6/11/2026: «són del 2023 i
+// s'han d'actualitzar automàticament a l'any vigent»). Si s'ha escrit un % a mà (pctMa; els bancs d'abans amb un % escrit, també), aquest.
+// Les proves d'abans porten la marca ipc-prova-v878533 (sense l'IPC sol: els seus preus esperats són els del banc).
+const MESOS_IPC878533=["gener","febrer","març","abril","maig","juny","juliol","agost","setembre","octubre","novembre","desembre"];
+function pctMaBanc878533(b){return b?.pctMa===true||(b?.pctMa===undefined&&Number(b?.pct)>0)}
+function ipcBanc878533(b){try{if(lsVisual878400()?.getItem("ipc-prova-v878533")==="1")return null}catch{}return b?.any?ipcPct(b.any):null}
+function pctBanc878533(b){if(!b)return 0;return pctMaBanc878533(b)?Number(b.pct)||0:ipcBanc878533(b)?.pct||0}
+function etBanc878533(b){const p=pctBanc878533(b),a=b?.any?`Banc ${b.any}`:"Banc",x=String(p).replace(".",",");return p>0?(pctMaBanc878533(b)?`${a} +${x} %`:`${a} + IPC ${x} %`):a}
+function textIpc878533(i){return i?t("IPC de {de} a {fins}: +{p} %",{de:`${t(MESOS_IPC878533[i.de.mes-1])} ${i.de.any}`,fins:`${t(MESOS_IPC878533[i.fins.mes-1])} ${i.fins.any}`,p:String(i.pct).replace(".",",")}):""}
+function textPctBanc878533(b){return pctMaBanc878533(b)?t("Els preus del {a} pugen un {p} %",{a:b.any||"banc",p:String(pctBanc878533(b)).replace(".",",")}):textIpc878533(ipcBanc878533(b))}
+// V87.533 · qui veu el banc comú: els comptes de demostració i els de prova dels clients (no paguen; l'Héctor, 6/11/2026: «també, que són demos»)
+// o tots
+const DEMO878533=["demo-%@usuaris.controlobres.app","prova-%@usuaris.controlobres.app"];
 // l'adreça de la calculadora de l'INE amb l'any del banc: de gener d'aquell any a l'últim mes publicat (surt cap al dia 15 del mes següent)
 function urlIpc878460(any){
   const a=parseInt(any,10);if(!(a>1990))return "https://www.ine.es/varipc/";
@@ -14744,18 +14758,23 @@ function CompartirBanc878460({b}){
   const[err,setErr]=useState("");
   useEffect(()=>{let viu=true;nv?.cap().then(c=>{if(viu)setCap(c)}).catch(()=>{if(viu)setCap(null)});return()=>{viu=false}},[]);
   // l'any i el % d'ara arriben a tothom sense tornar a pujar les partides
-  useEffect(()=>{if(b.comu||!cap)return;const pct=Number(b.pct)||0,any=b.any||null;if(Number(cap.pct)===pct&&cap.any_preus===any)return;nv.posa({pct,any_preus:any}).then(()=>nv.cap()).then(setCap).catch(()=>{})},[b.pct,b.any,cap?.versio]);
+  useEffect(()=>{if(b.comu||!cap)return;const pct=pctMaBanc878533(b)?Number(b.pct)||0:0,any=b.any||null;if(Number(cap.pct)===pct&&cap.any_preus===any)return;nv.posa({pct,any_preus:any}).then(()=>nv.cap()).then(setCap).catch(()=>{})},[b.pct,b.pctMa,b.any,cap?.versio]);
   const fes=async fn=>{setFent(true);setErr("");try{await fn()}catch(e){setErr(e?.status===404?t("Falta executar a Supabase l’SQL del banc comú."):String(e?.message||e))}setFent(false)};
-  const puja=()=>fes(async()=>{await nv.puja(b);setCap(await nv.cap())});
-  const comparteix=()=>{if(confirm(t("Tots els comptes faran servir els preus de «{n}». Compartir-lo?",{n:b.nom})))puja()};
+  const puja=(comptes=cap?.comptes||null)=>fes(async()=>{await nv.puja({...b,pct:pctMaBanc878533(b)?Number(b.pct)||0:0},comptes);setCap(await nv.cap())});
+  const comparteix=comptes=>{if(confirm(comptes?t("Els comptes de demostració i de prova (demo-…, prova-…) faran servir els preus de «{n}». Compartir-lo?",{n:b.nom}):t("Tots els comptes faran servir els preus de «{n}». Compartir-lo?",{n:b.nom})))puja(comptes)};
+  const qui=comptes=>{if(!comptes&&!confirm(t("Tots els comptes faran servir els preus de «{n}». Obrir-lo a tots?",{n:cap?.nom||b.nom})))return;fes(async()=>{await nv.posa({comptes});setCap(await nv.cap())})};
+  const nomesDemo=Array.isArray(cap?.comptes)&&cap.comptes.length>0;
   const deixa=()=>{if(confirm(t("Els comptes deixaran de veure aquest banc. Deixar de compartir-lo?")))fes(async()=>{await nv.treu();setCap(null);if(b.comu)desaBancComu878460(null)})};
   if(!nv||cap===undefined)return null;
   const vell=cap&&!b.comu&&new Date(cap.versio).getTime()!==new Date(b.data).getTime();
   return <div className="comu-v878460">
-    {cap?<><span className="ok"><Check size={15} aria-hidden="true"/> {t("Compartit amb tots els comptes")}</span>
-      {vell&&<button type="button" className="secondary" disabled={fent} onClick={puja}>{fent?t("Pujant…"):t("Actualitzar el banc comú")}</button>}
+    {cap?<><span className="ok"><Check size={15} aria-hidden="true"/> {nomesDemo?t("Compartit amb els comptes de demostració i de prova"):t("Compartit amb tots els comptes")}</span>
+      {vell&&<button type="button" className="secondary" disabled={fent} onClick={()=>puja()}>{fent?t("Pujant…"):t("Actualitzar el banc comú")}</button>}
+      {nomesDemo?<button type="button" className="secondary" disabled={fent} onClick={()=>qui(null)}>{t("Obrir-lo a tots els comptes")}</button>
+        :<button type="button" className="link" disabled={fent} onClick={()=>qui(DEMO878533)}>{t("Només als comptes de demostració i de prova")}</button>}
       <button type="button" className="link" disabled={fent} onClick={deixa}>{t("Deixar de compartir")}</button></>
-    :!b.comu&&<button type="button" className="secondary" disabled={fent} onClick={comparteix}><Share2 size={15} aria-hidden="true"/> {fent?t("Pujant…"):t("Compartir amb tots els comptes")}</button>}
+    :!b.comu&&<><button type="button" className="secondary" disabled={fent} onClick={()=>comparteix(DEMO878533)}><Share2 size={15} aria-hidden="true"/> {fent?t("Pujant…"):t("Compartir amb els comptes de demostració i de prova")}</button>
+      <button type="button" className="link" disabled={fent} onClick={()=>comparteix(null)}>{t("Compartir amb tots els comptes")}</button></>}
     {err&&<p className="err">{err}</p>}
   </div>;
 }
@@ -14764,6 +14783,47 @@ function BancBloc878465(){
   const[b,setB]=useState(()=>bancPreus878368());
   const n=b?.partides?.length||0;
   return <details className="card bloc-v878426 banc-bloc-v878465"><summary><BookOpen size={18} aria-hidden="true"/><span className="t"><b>{t("Banc de preus")}</b></span><span className="xifra">{n?t("{n} partides",{n:n.toLocaleString(loc878272())}):t("Cap")}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><BancPreus878368 onCanvi={x=>setB(x||bancPreus878368())}/></div><Recollir878432/></details>;
+}
+// V87.533 · la base per capítols i un cercador, amb el preu ja posat al dia (IPC); en tocar una partida, la descripció i el descompost
+const nrm878533=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function PartBanc878533({p,f}){
+  const[o,setO]=useState(false);const pu=Math.round((Number(p.pu)||0)*f*100)/100;
+  return <div className={`part-banc-v878533${o?" obert":""}`}>
+    <button type="button" className="fila" aria-expanded={o} onClick={()=>setO(!o)}><code>{p.codi}</code><span className="c">{p.concepte}</span><span className="u">{p.ut}</span><b>{money(pu)}</b></button>
+    {o&&<div className="det">
+      {f!==1&&<p className="ipc">{t("Preu del banc: {a} · posat al dia: {b}",{a:money(p.pu),b:money(pu)})}</p>}
+      {p.desc&&<p className="desc">{p.desc}</p>}
+      {Array.isArray(p.descomp)&&p.descomp.length>0&&<div className="taula"><table><thead><tr><th>{t("Concepte")}</th><th>{t("Ut")}</th><th>{t("Rend.")}</th><th>{t("Preu")}</th><th>{t("Import")}</th></tr></thead><tbody>
+        {p.descomp.map((x,i)=>{const pct=x.tipus==="%";const pu1=pct?null:Math.round((Number(x.pu)||0)*f*10000)/10000;return <tr key={i}><td>{x.concepte}</td><td>{x.ut}</td><td className="n">{String(x.rend).replace(".",",")}</td><td className="n">{pct?"%":money(pu1)}</td><td className="n">{pct?"":money(Math.round((Number(x.rend)||0)*pu1*100)/100)}</td></tr>})}
+      </tbody></table></div>}
+    </div>}
+  </div>;
+}
+function CapBanc878533({k,idx,f}){
+  const[o,setO]=useState(false);const c=idx.caps[k]||{nom:k};
+  return <details className="cap-banc-v878533" onToggle={e=>setO(e.currentTarget.open)}><summary><span className="t"><b>{c.nom}</b><small>{k}</small></span><span className="n">{(idx.n[k]||0).toLocaleString(loc878272())}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary>
+    {o&&<div className="dins">{(idx.fills[k]||[]).map(x=><CapBanc878533 key={x} k={x} idx={idx} f={f}/>)}{(idx.parts[k]||[]).map(p=><PartBanc878533 key={p.codi} p={p} f={f}/>)}</div>}
+  </details>;
+}
+function NavegaBanc878533({b}){
+  const[q,setQ]=useState("");
+  const f=1+pctBanc878533(b)/100;
+  const idx=useMemo(()=>{const caps=b.caps||{},fills={},parts={},n={};
+    for(const [k,c] of Object.entries(caps))(fills[c.pare&&caps[c.pare]?c.pare:""]=fills[c.pare&&caps[c.pare]?c.pare:""]||[]).push(k);
+    for(const p of b.partides||[]){const c=p.cap&&caps[p.cap]?p.cap:"";(parts[c]=parts[c]||[]).push(p)}
+    Object.values(fills).forEach(l=>l.sort((x,y)=>x.localeCompare(y,"ca",{numeric:true})));
+    const compta=k=>{if(n[k]!=null)return n[k];n[k]=0;let s=(parts[k]||[]).length;for(const x of fills[k]||[])s+=compta(x);return n[k]=s};
+    Object.keys(caps).forEach(compta);return {caps,fills,parts,n}},[b]);
+  const res=useMemo(()=>{const w=nrm878533(q).split(/\s+/).filter(x=>x.length>1);if(!w.length)return null;const out=[];
+    for(const p of b.partides||[]){const h=nrm878533(`${p.codi} ${p.concepte} ${p.desc}`);if(w.every(x=>h.includes(x))){out.push(p);if(out.length>=60)break}}return out},[q,b]);
+  const top=idx.fills[""]||[],solts=idx.parts[""]||[];
+  return <details className="sub-v878426 nav-banc-v878533"><summary><span className="t"><b>{t("La base per capítols")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary>
+    <div className="cos">
+      <input type="search" className="cerca-v878533" value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar al banc: codi o paraules…")} aria-label={t("Buscar al banc")}/>
+      {res?<div className="res-v878533">{res.length?res.map(p=><PartBanc878533 key={p.codi} p={p} f={f}/>):<p className="buit">{t("Cap partida")}</p>}{res.length>=60&&<p className="mes">{t("Només les 60 primeres: afina la cerca")}</p>}</div>
+        :<div className="caps-v878533">{top.map(k=><CapBanc878533 key={k} k={k} idx={idx} f={f}/>)}{solts.map(p=><PartBanc878533 key={p.codi} p={p} f={f}/>)}</div>}
+    </div>
+  </details>;
 }
 function BancPreus878368({compacte=false,onCanvi}){
   const[b,setB]=useState(()=>bancPreus878368());
@@ -14777,7 +14837,7 @@ function BancPreus878368({compacte=false,onCanvi}){
     try{
       const r=llegirBancBc3(textBc3(await file.arrayBuffer()));
       if(!r.partides.length){setErr(t("L’arxiu no té cap partida amb preu."));setLlegint(false);return}
-      const nou={nom:r.nom||file.name.replace(/\.bc3$/i,""),arxiu:file.name,data:new Date().toISOString(),any:r.any||null,pct:0,partides:r.partides.map(x=>({...x,desc:String(x.desc||"").slice(0,300)}))};
+      const nou={nom:r.nom||file.name.replace(/\.bc3$/i,""),arxiu:file.name,data:new Date().toISOString(),any:r.any||null,pct:0,pctMa:false,caps:r.caps||{},partides:r.partides.map(x=>({...x,desc:String(x.desc||"").slice(0,300)}))};
       const txt=JSON.stringify(nou);
       if(txt.length>12e6){setErr(t("El banc és massa gran ({mb} MB): exporta’n només els capítols que facis servir.",{mb:Math.round(txt.length/1e5)/10}));setLlegint(false);return}
       lsSet8779(BANC_KEY878368,txt);setB(nou);onCanvi?.(nou);
@@ -14791,14 +14851,14 @@ function BancPreus878368({compacte=false,onCanvi}){
   return <div className={`banc-v878368 ${compacte?"compacte":""}`}>
     <div className="txt"><b>{t("Banc de preus")}{b?.comu&&<em className="comu-et-v878460">{t("Banc comú")}</em>}</b>{b?<span>{b.nom} · {t("{n} partides",{n:b.partides.length.toLocaleString(loc878272())})}</span>:<span className="cap">{t("Cap banc de preus")}</span>}</div>
     <div className="bt"><label className="button secondary"><Upload size={15} aria-hidden="true"/> {llegint?t("Llegint…"):b&&!b.comu?t("Canviar"):t("Importar BC3")}<input type="file" hidden accept=".bc3" disabled={llegint} onChange={e=>{const f=e.target.files?.[0];e.target.value="";llegeix(f)}}/></label>{b&&!b.comu&&<button type="button" className="secondary" onClick={treu}>{t("Treure")}</button>}</div>
-    {b?.comu&&Number(b.pct)>0&&<div className="act-v878372"><em>{t("Els preus del {a} pugen un {p} %",{a:b.any||"banc",p:String(b.pct).replace(".",",")})}</em></div>}
+    {b?.comu&&pctBanc878533(b)>0&&<div className="act-v878372"><em>{textPctBanc878533(b)}</em></div>}
     {b&&!b.comu&&<div className="act-v878372">
       <label><span>{t("Preus de l’any")}</span><input type="number" inputMode="numeric" min="1990" max={anyAra878372} defaultValue={b.any||""} key={`any-${b.data}`} onBlur={e=>{const v=parseInt(e.target.value,10);posa878372({any:v>1990&&v<=anyAra878372?v:null})}}/></label>
-      <label><span>{t("Actualització (%)")}</span><input type="text" inputMode="decimal" defaultValue={b.pct?String(b.pct).replace(".",","):""} key={`pct-${b.data}`} placeholder="0" onBlur={e=>{const v=parseNum8770(e.target.value);posa878372({pct:Number.isFinite(v)?Math.round(v*100)/100:0})}}/></label>
-      <a className="button secondary" href={urlIpc878460(b.any)} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden="true"/> {t("Calcular l’IPC (INE)")}</a>
-      {Number(b.pct)>0&&<em>{t("Els preus del {a} pugen un {p} %",{a:b.any||"banc",p:String(b.pct).replace(".",",")})}</em>}
+      <label><span>{t("Actualització (%)")}</span><input type="text" inputMode="decimal" defaultValue={pctMaBanc878533(b)?String(b.pct).replace(".",","):""} key={`pct-${b.data}-${pctMaBanc878533(b)}`} placeholder={ipcBanc878533(b)?`${String(ipcBanc878533(b).pct).replace(".",",")} (${t("IPC")})`:"0"} onBlur={e=>{const x=e.target.value.trim();if(!x){posa878372({pct:0,pctMa:false});return}const v=parseNum8770(x);posa878372({pct:Number.isFinite(v)?Math.round(v*100)/100:0,pctMa:true})}}/></label>
+      {pctBanc878533(b)>0&&<em>{textPctBanc878533(b)}</em>}
     </div>}
     {b&&!window.__acoEmpresa&&<CompartirBanc878460 b={b}/>}
+    {b&&!compacte&&<NavegaBanc878533 b={b}/>}
     {err&&<p className="err">{err}</p>}
   </div>;
 }
@@ -14815,7 +14875,7 @@ const FONTS878368={arxiu:"Arxiu",llibreria:"Preus",banc:"Banc",obres:"Obres",ia:
 function preusAmidaments878368(linies=[],partidaLibrary=[],banc=null,obraId=""){
   const lib=(partidaLibrary||[]).map(x=>({codi:x.codi||x.codiPressupost||x.codiIntern||"",ut:x.ut,concepte:x.concepte||x.resum||"",desc:x.descripcio||x.desc||"",pu:parseNum8770(x.pu),descompostTable:x.descompostTable||null,font:"llibreria"}));
   // V87.372 · el banc, amb el % d'actualització; les obres anteriors (la mitjana de la mateixa partida)
-  const fB=1+(Number(banc?.pct)||0)/100,etB=`${banc?.any?`Banc ${banc.any}`:"Banc"}${Number(banc?.pct)>0?` +${String(banc.pct).replace(".",",")} %`:""}`;
+  const fB=1+pctBanc878533(banc)/100,etB=etBanc878533(banc);
   const iL=fesIndex(lib),iB=fesIndex((banc?.partides||[]).map(x=>({...x,pu:Math.round(x.pu*fB*100)/100,descomp:fB!==1?escalaDescomp(x.descomp,fB):x.descomp,font:"banc"})));
   const iO=fesIndex(partidesObres878372(obraId));
   const obres=l=>{const r=preuObres(l,iO,{minim:.6});if(!r)return null;const f=r.millor.pu>0?r.pu/r.millor.pu:1;
@@ -21098,7 +21158,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.532",
+    app_version:"87.533",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

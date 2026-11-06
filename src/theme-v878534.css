@@ -1,0 +1,49 @@
+/* V87.533 · Banc de preus: la base per capítols, l'IPC sol, compartir-lo amb els comptes de demostració; la data a les targetes d'obres del mòbil */
+
+/* la base per capítols */
+html body .nav-banc-v878533{margin-top:10px}
+html body .nav-banc-v878533>.cos{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px}
+html body .nav-banc-v878533 .cerca-v878533{width:100%;min-height:40px;padding:8px 12px;border:1.5px solid #94A3B8;border-radius:10px;font:inherit;font-size:15px;background:#fff;box-sizing:border-box}
+html body .caps-v878533,html body .res-v878533{display:flex;flex-direction:column;gap:6px}
+html body details.cap-banc-v878533{border:1px solid #AEBBCA;border-radius:10px;background:#fff}
+html body details.cap-banc-v878533>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 12px;min-height:40px}
+html body details.cap-banc-v878533>summary::-webkit-details-marker{display:none}
+html body details.cap-banc-v878533>summary .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+html body details.cap-banc-v878533>summary .t b{font-size:14px;line-height:1.3;color:var(--co-ink,#152328);overflow-wrap:anywhere}
+html body details.cap-banc-v878533>summary .t small{font-size:12px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+html body details.cap-banc-v878533>summary .n{font-size:12.5px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums;white-space:nowrap}
+html body details.cap-banc-v878533>summary .chev{flex:none;color:var(--co-ink-3,#5F7075);transition:transform .15s}
+html body details.cap-banc-v878533[open]>summary{border-bottom:1px solid #DCE3EA;background:#F1F5F9;border-radius:10px 10px 0 0}
+html body details.cap-banc-v878533[open]>summary .chev{transform:rotate(90deg)}
+html body details.cap-banc-v878533>.dins{display:flex;flex-direction:column;gap:6px;padding:8px 8px 8px 12px}
+html body .part-banc-v878533{border:1px solid #E2E8F0;border-radius:8px;background:#fff}
+html body .part-banc-v878533>.fila{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:baseline;gap:4px 10px;width:100%;padding:8px 10px;font-size:13.5px;color:var(--co-ink,#152328)}
+html body .part-banc-v878533>.fila:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:2px}
+html body .part-banc-v878533>.fila code{font-size:12px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+html body .part-banc-v878533>.fila .c{min-width:0;overflow-wrap:anywhere}
+html body .part-banc-v878533>.fila .u{font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .part-banc-v878533>.fila b{font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .part-banc-v878533.obert{border-color:#93C5FD}
+html body .part-banc-v878533>.det{padding:0 10px 10px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+html body .part-banc-v878533>.det p{margin:0}
+html body .part-banc-v878533>.det .ipc{color:#1D4ED8;font-weight:600}
+html body .part-banc-v878533>.det .desc{color:var(--co-ink-2,#334155);white-space:pre-wrap}
+html body .part-banc-v878533>.det .taula{overflow-x:auto}
+html body .part-banc-v878533>.det table{width:100%;border-collapse:collapse;font-size:12.5px}
+html body .part-banc-v878533>.det th,html body .part-banc-v878533>.det td{padding:4px 6px;border-bottom:1px solid #EEF2F6;text-align:left}
+html body .part-banc-v878533>.det td.n,html body .part-banc-v878533>.det th:nth-child(n+3){text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .res-v878533 .buit,html body .res-v878533 .mes{margin:4px 2px;color:var(--co-ink-3,#5F7075);font-size:13px}
+@media (max-width:700px){
+  html body .part-banc-v878533>.fila{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"co b" "c c"}
+  html body .part-banc-v878533>.fila code{grid-area:co}
+  html body .part-banc-v878533>.fila b{grid-area:b}
+  html body .part-banc-v878533>.fila .c{grid-area:c}
+  html body .part-banc-v878533>.fila .u{display:none}
+}
+
+/* compartir: els dos botons */
+html body .comu-v878460{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+
+/* llista d'obres al mòbil: la data de creació, petita i a la dreta de l'estat */
+html body .exp-card-v878270 .l4{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html body .exp-card-v878270 .l4 .data-v878533{margin-left:auto;font-size:12.5px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums;font-weight:400}

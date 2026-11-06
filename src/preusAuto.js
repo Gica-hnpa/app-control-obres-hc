@@ -50,6 +50,12 @@ export function llegirBancBc3(text) {
       D.set(sense(f[0]), out);
     } else if (tipus === "T") T.set(sense(f[0]), String(f[1] || "").trim());
   }
+  // V87.533 · els capítols: el ~D d'un capítol diu què hi ha a dins (subcapítols i partides); el capítol arrel («##») no compta
+  const pare = new Map(), arrel = k => /##$/.test(C.get(k)?.raw || "");
+  for (const [k, fills] of D) { if (!C.get(k)?.cap) continue; for (const fl of fills) if (!pare.has(fl.k)) pare.set(fl.k, k); }
+  const pareDe = k => { const p = pare.get(k); return p && !arrel(p) ? p : ""; };
+  const caps = {};
+  for (const [k, c] of C) if (c.cap && !arrel(k)) caps[k] = { nom: c.resum || k, pare: pareDe(k) };
   const partides = [];
   for (const [k, c] of C) {
     if (c.cap || k.startsWith("%")) continue;
@@ -64,10 +70,13 @@ export function llegirBancBc3(text) {
     });
     const directe = descomp.filter(x => x.tipus !== "%").reduce((s, x) => s + x.rend * (x.pu || 0), 0);
     const pu = c.pu != null ? c.pu : r2(directe);
-    partides.push({ codi: k, ut: c.ut, concepte: c.resum || k, desc: T.get(k) || "", pu: r2(pu), descomp });
+    partides.push({ codi: k, ut: c.ut, concepte: c.resum || k, desc: T.get(k) || "", pu: r2(pu), descomp, cap: pareDe(k) });
   }
-  const any = [...anys.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || anyV || null;
-  return { font: "BC3", nom, any, partides, avisos: partides.length ? [] : ["No s’hi ha trobat cap partida amb preu"] };
+  // l'any dels preus: el del nom del banc si en porta («… GIRONA 2023 v2»: les dates de l'arxiu són de quan es va editar), si no el més
+  // repetit a les dates dels conceptes, si no el del ~V
+  const anyNom = +(String(nom).match(/\b(199\d|20\d\d)\b/) || [])[1] || null;
+  const any = anyNom || [...anys.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || anyV || null;
+  return { font: "BC3", nom, any, partides, caps, avisos: partides.length ? [] : ["No s’hi ha trobat cap partida amb preu"] };
 }
 // V87.372 · actualitzar els preus d'un banc vell (l'Héctor: «els tinc del 2023: caldria un ajust de l'IPC»): tot el descompost × factor
 export const escalaDescomp = (descomp = [], f = 1) => descomp.map(x => x.tipus === "%" ? x : { ...x, pu: Math.round((Number(x.pu) || 0) * f * 10000) / 10000 });

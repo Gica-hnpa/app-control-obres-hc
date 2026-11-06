@@ -3329,6 +3329,32 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       (`sortir-v878484`); per sortir, el menú.
     - Adaptades `v484test` (sense «Sortir»), `v528test`, `pressuposttest` (el nom es canvia des del pressupost), `v437test`, `v531test`, `fases342test`, `pdfpressuposttest` i `v427test` (llegeixen
       `data-nom`).
+  - **V87.533 · El banc de preus: l'IPC sol, per capítols i al núvol per als comptes de demostració i de prova** (l'Héctor, 6/11/2026: la Base de preus de la
+    construcció Girona 2023 v2 del CATGI —a `D:\00_CUBERO\00_FEINA\08_BANC DE PREUS`; els tres arxius són la mateixa base, 13.228 partides, 11.133 amb
+    descompost, 1.899 capítols— «són del 2023 i s'han d'actualitzar automàticament a l'any vigent»; «si ocupa molt, l'app no la pot anar a buscar al
+    núvol?»; per a les demos, «que vegi tothom les possibilitats»; **llicència:** l'Héctor ha escrit al CATGI el 6/11/2026 per demanar permís i preu; fins
+    que respongui, la base només al seu compte i als comptes de demostració i de prova (l'Héctor: «també, que són demos… no paguen encara»; avisat que el client de prova la té ell sol) —repartir-la a les empreses, sencera, per capítols o sense dir d'on surt, no—;
+    `src/theme-v878534.css`):
+    - **IPC sol** (`src/ipc.js`: índex general nacional base 2021 de l'INE, sèrie IPC251852, del 2018 al 2025; el 2026 s'enllaça amb la variació anual
+      oficial de la base 2025, sèrie IPC290750: índex(2026-m) = índex(2025-m) × (1 + v/100); **cada mes cal afegir la variació nova a `VAR_2026`**;
+      `ipcPct(any, mes)`, `ULTIM_IPC`). Del gener de l'any del banc a l'últim mes publicat (gener 2023 → octubre 2026: +14,1 %). `pctBanc878533(b)`,
+      `etBanc878533(b)` («Banc 2023 + IPC 14,1 %» a l'origen del preu), `textPctBanc878533`. Si s'escriu un % a mà (`pctMa`; els bancs d'abans amb un %
+      escrit, també), mana aquest; buidar el camp torna a l'IPC. Fora l'enllaç «Calcular l'IPC (INE)».
+    - **L'any del banc**, el del nom si en porta («… GIRONA 2023 v2»: les dates de l'arxiu són de quan es va editar, 2025).
+    - **Per capítols** (`llegirBancBc3` torna `caps = {codi: {nom, pare}}` i cada partida porta `cap`; l'arrel «##» no compta): a la targeta del banc
+      (Llibreria de preus i Ajustos › Preus i marges), «La base per capítols» (`NavegaBanc878533`, `CapBanc878533`, `PartBanc878533`): els capítols
+      plegats amb quantes partides (es dibuixen en obrir-se), cada partida amb el preu posat al dia i, en tocar-la, el preu del banc i el posat al dia, la
+      descripció i el descompost; cercador sense accents (les 60 primeres).
+    - **Banc comú al núvol, comprimit i amb «Qui el veu»** (`supabase/aco_banc_comu_v878533.sql`, **l'ha d'executar l'Héctor**; substitueix el de la
+      V87.460): `dades_gz` (gzip en base64 de `{partides, caps}`, uns 2-3 MB; `gz64`/`ungz64` de `cloudSync.js` amb CompressionStream) i `comptes`
+      (patrons «like»: `DEMO878533` = `{'demo-%@…','prova-%@…'}` = els comptes de demostració i de prova; null = tots; el compte de l'Héctor el veu sempre; ho fa
+      complir la regla del servidor). Cada aparell el baixa un sol cop. A la targeta del banc del compte de l'Héctor: «Compartir amb els comptes de
+      demostració i de prova» i «Compartir amb tots els comptes»; un cop compartit, «Obrir-lo a tots els comptes» / «Només als comptes de demostració i de prova». La base arriba sola als comptes que comencen per «demo-» o «prova-» (els que crea l'Héctor per als clients són «demo-…»).
+    - **Llista d'obres al mòbil:** la data de creació, petita i a la dreta de l'estat (`data-v878533`; l'Héctor: «per veure l'ordre lògic… que no sigui el
+      més destacat»).
+    - **Proves:** les d'abans porten la marca `ipc-prova-v878533` (sense l'IPC sol: els seus preus esperats són els del banc; la posa l'ajuda de les proves si
+      la pàgina no té `sessionStorage.__ipcNoTocar`). `ipc533unit.mjs` (10, sense navegador) i `v533test.mjs` (15). El Supabase de proves fa complir
+      `comptes`. Adaptades `v460test` i `pressupost372test` (sense l'enllaç de l'INE; el banc comú comprimit) i `v459test`, `v476test` i `v478test` (des de la V87.486 el pressupost buit té la rajola «Amb IA», no «Fer el pressupost amb IA»).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3527,7 +3553,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.532 a Render):**
+**Estat (publicada la V87.533 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
