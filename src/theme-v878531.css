@@ -1,0 +1,34 @@
+/* V87.530 · La barra fixa de dalt: quan les rajoles de dalt surten de la pantalla en baixar (Caixa i bancs, Control horari, Honoraris,
+   l'obra), una barra petita amb les mateixes opcions es queda a dalt i marca on som. No ocupa lloc (alçada 0): la barra és a sobre. */
+html body .barra-fixa-v878530{position:sticky;top:var(--fixa-obra-v878530,0px);z-index:46;height:0;pointer-events:none}
+html body .barra-fixa-v878530.obra{top:0;z-index:47}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .barra-fixa-v878530{top:calc(53px + var(--fixa-obra-v878530,0px))}
+  html body .barra-fixa-v878530.obra{top:53px}
+}
+html body .barra-fixa-v878530>.in{position:absolute;left:0;right:0;top:0;pointer-events:auto;box-sizing:border-box;display:flex;gap:4px;padding:5px;background:#fff;border:1.5px solid #8FA0B3;border-top-width:0;border-radius:0 0 14px 14px;box-shadow:0 8px 18px rgba(15,23,42,.16);overflow-x:auto;scrollbar-width:none}
+html body .barra-fixa-v878530>.in::-webkit-scrollbar{display:none}
+html body .barra-fixa-v878530>.in>button{all:unset;box-sizing:border-box;cursor:pointer;flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:4px 10px;border-radius:10px;font:700 14px/1.15 var(--app-font,inherit);color:var(--co-ink-2,#334155);white-space:nowrap;overflow:hidden}
+html body .barra-fixa-v878530>.in>button svg{flex:none;width:17px;height:17px;color:#1D4ED8}
+html body .barra-fixa-v878530>.in>button .l{min-width:0;overflow:hidden;text-overflow:ellipsis}
+html body .barra-fixa-v878530>.in>button small{min-width:0;font-size:12.5px;font-weight:600;color:var(--co-ink-3,#5F7075);overflow:hidden;text-overflow:ellipsis}
+html body .barra-fixa-v878530>.in>button small::before{content:"› "}
+html body .barra-fixa-v878530>.in>button[aria-pressed="true"]{background:#1D4ED8;color:#fff}
+html body .barra-fixa-v878530>.in>button[aria-pressed="true"] svg,
+html body .barra-fixa-v878530>.in>button[aria-pressed="true"] small{color:#fff}
+html body .barra-fixa-v878530>.in>button:focus-visible{outline:2px solid #1D4ED8;outline-offset:-2px}
+@media (hover:hover){html body .barra-fixa-v878530>.in>button:not([aria-pressed="true"]):hover{background:#EFF6FF}}
+/* al mòbil: a la de l'obra, les rajoles que no són on som, només la icona; a les altres, la icona a sobre del nom */
+@media (max-width:700px){
+  html body .barra-fixa-v878530.obra>.in>button:not([aria-pressed="true"]){flex:0 0 44px;padding:4px}
+  html body .barra-fixa-v878530.obra>.in>button:not([aria-pressed="true"]) .l{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  html body .barra-fixa-v878530.obra>.in>button[aria-pressed="true"]{flex:1 1 auto;justify-content:flex-start}
+  html body .barra-fixa-v878530:not(.obra)>.in>button{flex-direction:column;gap:2px;min-height:46px;padding:4px 4px;font-size:12px}
+}
+/* les capçaleres de les targetes obertes que es queden a dalt, a sota de la barra */
+html body .main details.card.bloc-v878426[open]>summary{top:calc(var(--fixa-obra-v878530,0px) + var(--fixa-h-v878530,0px))}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){html body .main details.card.bloc-v878426[open]>summary{top:calc(53px + var(--fixa-obra-v878530,0px) + var(--fixa-h-v878530,0px))}}
+html body{--cap-obra-v878451:calc(var(--obra-bar-h,46px) + var(--fixa-h-v878530,0px))}
+@media (max-width:1280px),(hover:none) and (pointer:coarse){html body{--cap-obra-v878451:calc(53px + var(--obra-bar-h,46px) + var(--fixa-h-v878530,0px))}}
+html body .obra-page-v87105 details.card.bloc-v878426[open]>summary{top:var(--cap-obra-v878451)}
+@media print{html body .barra-fixa-v878530{display:none!important}}

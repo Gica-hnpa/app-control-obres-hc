@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.529";
+const APP_VERSION878264="87.530";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4708,6 +4708,7 @@ function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,factur
   return <div className={`stack honoraris-exp-v8778${pur?"":" encarrec-v878431"}`}>
     {pur&&rendiment&&!quota&&<ResultatEncarrec878410 data={data} obra={obra} onClick={()=>setSub("Rendiment")}/>}
     <div className="subtabs-v8746 hon-raj-v878526">{tabs.map(([k,l])=>{const Ic=ICO526[k]||FileText;return <button key={k} type="button" className={s===k?"active":""} aria-pressed={s===k} data-sub={sub526[k]||""} onClick={()=>{setSub(k);if(k==="Pressupostos")setCalc(false)}}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{l}</b></button>})}</div>
+    <BarraFixa878530 nom={t("Honoraris")} actiu={s} onTria={k=>{setSub(k);if(k==="Pressupostos")setCalc(false)}} items={tabs.map(([k,l])=>{const Ic=ICO526[k]||FileText;return [k,<Ic size={17} aria-hidden="true"/>,l]})}/>
     {s==="Pressupostos"&&(calc?<div className="calc-dins-v878410"><button type="button" className="link tornar" onClick={()=>setCalc(false)}>‹ {t("Tornar als pressupostos")}</button><HonorarisCalculator8790 obres={[obra]} defaultObraId={obra.id} encarrecs={encarrecsDe(obra,data)} onCreatePressupost={p=>{addPressupost?.(p);setCalc(false)}}/></div>
       :<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupost} updatePressupost={updatePressupost} facturarPressupost={facturarPressupost} deletePressupost={deletePressupost} openEmail={openEmail} openDoc={openDoc} onCalcular={()=>setCalc(true)}/>)}
     {s==="Factures"&&(pur?<FacturesTecniques8738 data={data} obra={obra} addFactura={addFactura} updateFactura={updateFactura} deleteFactura={deleteFactura} openEmail={openEmail} openDoc={openDoc}/>
@@ -6790,6 +6791,24 @@ const SCREEN_TITLE878268={"Inici":"Inici","Treballs / Expedients":"Obres","Traç
 function iconaPantalla878507(screen){const m={"Treballs / Expedients":diuObra878326()?<HardHat/>:<FolderOpen/>,"Traça":<Clock/>,"Agenda":<CalendarDays/>,"Fitxa client":<Users/>,
   "Pressupostos honoraris":<ClipboardList/>,"Pressupostos":<ClipboardList/>,"Factures":<ReceiptText/>,"Clients":<Users/>,"Agents":<Users/>,"Llibreria":<BookOpen/>,"Albarans":<Camera/>,
   "Configuració":<Settings/>,"Empresa":<Briefcase/>,"Bancs":<Wallet/>,"Rendiment empresa":<TrendingUp/>,"Rendiment tecnic":<TrendingUp/>,"Rendiments":<TrendingUp/>};return m[screen]||null}
+// V87.530 · Les rajoles de dalt (Caixa i bancs, Control horari, Honoraris, l’obra) es queden a la vista en baixar: quan surten de la
+// pantalla, a dalt surt una barra petita amb les mateixes opcions i la que és oberta, marcada. Va just després de les rajoles (les que
+// mira) i no ocupa lloc. La de l’obra posa la seva alçada a --obra-bar-h: les capçaleres fixes de dins de l’obra queden a sota.
+function topFixa878530(){try{return matchMedia("(max-width:1280px),(hover:none) and (pointer:coarse)").matches?53:0}catch{return 0}}
+function BarraFixa878530({items=[],actiu,onTria,nom,nivell=""}){
+  const ref=useRef(null);const [vist,setVist]=useState(false);const obra=nivell==="obra";
+  const dalt=()=>topFixa878530()+(obra?0:(parseFloat(document.documentElement.style.getPropertyValue("--fixa-obra-v878530"))||0));
+  useEffect(()=>{const me=ref.current,el=me?.previousElementSibling;if(!me||!el)return;
+    try{const g=parseFloat(getComputedStyle(me.parentElement).rowGap)||0;me.style.marginTop=g?`-${g}px`:""}catch{}
+    let raf=0;const mira=()=>{raf=0;try{setVist(el.isConnected&&el.getBoundingClientRect().bottom<dalt()+2)}catch{}};
+    const on=()=>{if(!raf)raf=requestAnimationFrame(mira)};mira();addEventListener("scroll",on,{passive:true});addEventListener("resize",on);
+    return()=>{cancelAnimationFrame(raf);removeEventListener("scroll",on);removeEventListener("resize",on)}},[]);
+  useEffect(()=>{const de=document.documentElement.style;const v=obra?"--fixa-obra-v878530":"--fixa-h-v878530";
+    const treu=()=>{de.removeProperty(v);if(obra)de.setProperty("--obra-bar-h","0px")};
+    if(!vist){treu();return}const h=(ref.current?.firstElementChild?.offsetHeight||0)+"px";de.setProperty(v,h);if(obra)de.setProperty("--obra-bar-h",h);return treu},[vist,obra]);
+  const tria=k=>{onTria?.(k);const el=ref.current?.previousElementSibling;if(!el)return;const y=Math.max(0,el.getBoundingClientRect().top+scrollY-dalt()-8);try{scrollTo({top:y,behavior:"smooth"})}catch{scrollTo(0,y)}};
+  return <div ref={ref} className={`barra-fixa-v878530${obra?" obra":""}${vist?" vist":""}`}>{vist&&<div className="in" role="group" aria-label={nom}>{items.map(([k,ic,l,sub])=><button key={k} type="button" aria-pressed={actiu===k} title={sub?`${l} › ${sub}`:l} onClick={()=>tria(k)}>{ic}<span className="l">{l}</span>{sub?<small>{sub}</small>:null}</button>)}</div>}</div>;
+}
 function AppHead878268({title,onBack,onMenu,icona=null}){
   return <div className="mobile-top app-head-v878268">
     {onBack?<button type="button" className="back-v878268" onClick={onBack} aria-label={t("Tornar")}><ChevronLeft/><span>{t("Tornar")}</span></button>:<MarcaMobil878351 onMenu={onMenu}/>}
@@ -7217,6 +7236,7 @@ function Caixa878521({obres=[],odata={},clients=[],openObraTab}){
   const treuFix=f=>{if(!confirm(t("Eliminar «{n}»?",{n:f.concepte})))return;const n=llegeixCaixa878521();desaCaixa878521({...n,fixos:n.fixos.filter(x=>x.id!==f.id)});setFix(null)};
   return <div className="caixa-v878521">
     <div className="fe-vistes ch-rajoles-v878515" role="group" aria-label={t("Caixa i bancs")}>{TILES.map(([k,Ic,l,sub,avis])=><button type="button" key={k} aria-pressed={v===k} onClick={()=>setV(k)} data-sub={sub||undefined}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{t(l)}</b>{avis?<em className="avis-v878529">{avis}</em>:null}</button>)}</div>
+    <BarraFixa878530 nom={t("Caixa i bancs")} actiu={v} onTria={setV} items={TILES.map(([k,Ic,l])=>[k,<Ic size={17} aria-hidden="true"/>,t(l)])}/>
     {v==="cobrar"&&<div className="caixa-vista-v878521 cobrar">{llistaMovs878521(cob,"cobrar",avui,x=>setEd({kind:"cobrar",x}))}<FetsCaixa878529 items={cobF} kind="cobrar" onDesfes={x=>desfes529("cobrar",x)}/>{ajustos529("cobrar")}</div>}
     {v==="pagar"&&<div className="caixa-vista-v878521 pagar">{llistaMovs878521(pag,"pagar",avui,x=>setEd({kind:"pagar",x}))}<FetsCaixa878529 items={pagF} kind="pagar" onDesfes={x=>desfes529("pagar",x)}/>{ajustos529("pagar")}</div>}
     {v==="previsio"&&<div className="caixa-vista-v878521 previsio">
@@ -13072,7 +13092,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   const obert=narrow&&menu.startsWith("b:")?blocs.find(b=>`b:${b.k}`===menu):null;
   const vis878400=visualNou878400();
   // V87.303 · alçada de la barra de l'obra (blocs i fila) perquè la capçalera fixa del pressupost es quedi just a sota
-  useEffect(()=>{const el=document.querySelector(".obra-tabs-bar-v878269");if(!el||typeof ResizeObserver==="undefined")return;const set=()=>{try{document.documentElement.style.setProperty("--obra-bar-h",el.classList.contains("obra-rajoles-v878485")?"0px":Math.round(el.getBoundingClientRect().height)+"px")}catch{}};set();const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect()},[rj492]);
+  useEffect(()=>{const el=document.querySelector(".obra-tabs-bar-v878269");if(!el||typeof ResizeObserver==="undefined")return;const set=()=>{try{document.documentElement.style.setProperty("--obra-bar-h",el.classList.contains("obra-rajoles-v878485")?(document.documentElement.style.getPropertyValue("--fixa-obra-v878530")||"0px"):Math.round(el.getBoundingClientRect().height)+"px")}catch{}};set();const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect()},[rj492]);
   const base=codiCurt878270(obra),propE878347=expPropietari878347(obra);
   // V87.304 · si el promotor no és el client, el seu nom en negreta (encàrrec de l'Héctor: identificar bé l'obra)
   const prom878304=promotorDiferent878304(obra,client);
@@ -13109,6 +13129,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
       {!narrow&&blocActiu.tabs.length>1&&<div className="obra-bloc-fila-v878299" role="tablist" aria-label={t(blocActiu.k)}>{blocActiu.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="tab" aria-selected={x===active} className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
       {obert&&<div className="obra-bloc-panel-v878299" role="menu" aria-label={t(obert.k)}>{obert.tabs.map((x,i,arr)=><React.Fragment key={x}>{esEncarrec878307(x,pur)&&i>0&&!esEncarrec878307(arr[i-1],pur)&&<span className="obra-bloc-sep-v878307">{t("El meu encàrrec")}</span>}<button type="button" role="menuitem" className={x===active?"on":""} onClick={()=>pick(x)}>{vis878400&&iconaTab878400(x)}{tabLabel878269(x,all,pur)}</button></React.Fragment>)}</div>}
     </div>}
+    {rj492&&<BarraFixa878530 nivell="obra" nom={t("Apartats de l’obra")} actiu={blocActiu.k} onTria={k=>{const bt=btn527.current[k];if(bt)requestAnimationFrame(()=>bt.click())}} items={blocs.map(b=>[b.k,BLOC_ICON878485[b.k],t(BLOC_CURT878504[b.k]||b.k),b.k===blocActiu.k&&tabLabel878269(active,all,pur)!==t(BLOC_CURT878504[b.k]||b.k)?tabLabel878269(active,all,pur):""])}/>}
   </>;
 }
 function ObraAgentsResum({data,openAgent}){
@@ -20267,6 +20288,7 @@ function HoresEmpresa878340({obres,clients,odata,openObra,updateStatus,senseMeve
     ...(!senseMeves?[["meves",UserRound,"Les meves hores",t("D’honoraris")]]:[])];
   return <div className="hores-emp-v878340 ch-v878515">
     <div className="fe-vistes ch-rajoles-v878515" role="group" aria-label={t(etHores878515())}>{TILES.map(([k,Ic,l,sub])=><button type="button" key={k} aria-pressed={v===k} onClick={()=>setV(k)} data-sub={sub||undefined}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{t(l)}</b></button>)}</div>
+    <BarraFixa878530 nom={t(etHores878515())} actiu={v} onTria={setV} items={TILES.map(([k,Ic,l])=>[k,<Ic size={17} aria-hidden="true"/>,t(l)])}/>
     <div className="ch-eines-v878517"><LlistatsCH878517 obres={obres}/></div>
     {v==="personal"?<PartHores878340 obres={obres} odata={odata}/>:v==="fitxatge"?<Fitxatge878357 obres={obres} odata={odata}/>:v==="calendari"?<CalendariEmpresa878393 obres={obres}/>:<GestioTemps878255 updateStatus={updateStatus} obres={obres} clients={clients} odata={odata} openObra={openObra}/>}
   </div>;
@@ -21046,7 +21068,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.529",
+    app_version:"87.530",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

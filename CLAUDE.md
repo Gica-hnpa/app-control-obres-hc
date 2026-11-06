@@ -3298,6 +3298,14 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       en lloc de «Rendiment»). Qui ja s'havia triat les rajoles a Ajustos, les manté.
     - Prova: `v529test.mjs` (18). Adaptades `v521test` (l'avís a part; «Per setmanes» per veure les 13 setmanes), `v484test`, `v507test` i `v508test` (la
       rajola «Caixa i bancs»; el «Més», a la barra de baix) i `v412test` (des de la V87.451 el total és a la línia de la targeta).
+  - **V87.530 · La barra fixa de dalt** (l'Héctor, 6/11/2026: «quan fas scroll abaix ja no saps en quina pestanya estàs… hauria de quedar fixe
+    a dalt»; `src/theme-v878531.css`): `BarraFixa878530({items:[[k, icona, nom, sub]], actiu, onTria, nom, nivell})`, just després de les rajoles
+    de Caixa i bancs, Control horari, Honoraris de l'expedient i l'obra (`nivell="obra"`). Mira les rajoles (l'element d'abans) en baixar i, quan
+    surten per dalt, ensenya una barra petita amb les mateixes opcions i la que és oberta, marcada; tocar-ne una la tria i torna a dalt (a l'obra, fa
+    el mateix que tocar la rajola: obre els seus apartats). No ocupa lloc (`height:0`, sticky; el `gap` del contenidor es compensa amb un marge
+    negatiu). Al mòbil, a 53 px; a l'ordinador, a 0. La de l'obra posa la seva alçada a `--obra-bar-h` i `--fixa-obra-v878530` (les capçaleres fixes de
+    dins de l'obra queden a sota; en sortir, `--obra-bar-h` torna a 0) i les altres a `--fixa-h-v878530` (i van a sota de la de l'obra). Al mòbil, a
+    la de l'obra les rajoles que no són on som només porten la icona; a les altres, la icona a sobre del nom. Prova: `v530test.mjs` (18). Adaptades `menustest` (a l'iPad, la capçalera del pressupost va a sota de la barra fixa de l'obra) i `v518test` (des de la V87.529 les targetes de les llistes surten plegades també a l'ordinador).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3496,7 +3504,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.529 a Render):**
+**Estat (publicada la V87.530 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
