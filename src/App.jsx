@@ -18,7 +18,7 @@ import {cercaOk as cercaOk878470,dataIso as dataIso878470} from "./cercaLlistes.
 import {capsRepetits,ajuntaCaps} from "./capsRepetits.js";
 import {esNorma43,llegirNorma43,llegirFilesBanc,candidats as candidatsBanc,aparellaSols as aparellaSolsBanc,saldoCompte as saldoCompteBanc,clauApunt as clauApuntBanc} from "./bancs.js";
 import {fesZip,nomNet} from "./zip.js";
-import {previsio as previsioCaixa,grupData as grupDataCaixa,dilluns as dillunsCaixa} from "./caixa.js";
+import {previsio as previsioCaixa,previsioMesos as previsioMesosCaixa,grupData as grupDataCaixa,dilluns as dillunsCaixa} from "./caixa.js";
 import {iaCridable,iaActiva,iaSabuda,iaQuota,iaCrida,arxiuDeDataUrl,arxiuDeFitxer,partidesDeIa,pressupostDeIa,despesaDeIa,albaransDeFactura,reglesPartides} from "./iaObra.js";
 import {compara as comparaInicial878412,importLinia} from "./pressupostInicial.js";
 import {perFamilies as perFamilies878456,perCategories as perCategories878456} from "./familiesRecursos.js";
@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.528";
+const APP_VERSION878264="87.529";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4766,7 +4766,7 @@ function FerFacturaEncarrec878431({obra,hores=[],despeses=[],quota=0,despIncl=qu
     if(!(base>0)){alert(t("Escriu l’import."));return}
     const id="ft-"+Date.now();
     const text=pres?(pres.p.text||""):[...chH.map(r=>`${timeRowLabel878256(r)} · ${money(timeBillImport878291(r))}`),...chD.map(a=>`${liniaDesp(a)} · ${money(albaraBase878259(a))}`)].join("\n");
-    addFactura?.({id,data:f.data,concepte:f.concepte,text,base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:"Pendent",pressupostId:pres?.p?.id||"",hoursRows:chH.map(r=>r.id),despeses:chD.map(a=>a.id)});
+    addFactura?.({id,data:f.data,avisCobr878496:{data:f.venc529||sumaDies878496(f.data,diesCobrar878521())},concepte:f.concepte,text,base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:"Pendent",pressupostId:pres?.p?.id||"",hoursRows:chH.map(r=>r.id),despeses:chD.map(a=>a.id)});
     const at=new Date().toISOString();
     if(chH.length){const ids=new Set(chH.map(r=>r.id));writeTimeRows878255(obra.id,readTimeRows878255(obra.id).map(x=>ids.has(x.id)?{...x,facturat:true,noFactura:false,foraQuota:true,facturatAt:at,facturaId:id}:x))}
     if(chD.length){const ids=new Set(chD.map(a=>a.id));writeAlbarans878259(readAlbarans878259().map(a=>ids.has(a.id)?{...a,facturatClient:true,facturaId:id,updatedAt:at}:a))}
@@ -4782,6 +4782,7 @@ function FerFacturaEncarrec878431({obra,hores=[],despeses=[],quota=0,despIncl=qu
     <div className="grid">
       <label className="wide"><span>{t("Concepte")}</span><input value={f.concepte} onChange={e=>setF(x=>({...x,concepte:e.target.value}))}/></label>
       <label><span>{t("Data")}</span><input type="date" value={f.data} onChange={e=>setF(x=>({...x,data:e.target.value}))}/></label>
+      <label><span>{t("Venciment (cobrament previst)")}</span><input type="date" value={f.venc529||sumaDies878496(f.data,diesCobrar878521())} onChange={e=>setF(x=>({...x,venc529:e.target.value}))}/></label>
       <label><span>{t("Base sense IVA (€)")}</span><input inputMode="decimal" value={f.base!==""?f.base:sum.toFixed(2).replace(".",",")} onChange={e=>setF(x=>({...x,base:e.target.value}))}/></label>
       <label><span>{t("IVA %")}</span><input inputMode="decimal" value={f.iva} onChange={e=>setF(x=>({...x,iva:e.target.value}))}/></label>
       <label><span>{t("Retenció %")}</span><input inputMode="decimal" value={f.retencio} onChange={e=>setF(x=>({...x,retencio:e.target.value}))}/></label>
@@ -6285,7 +6286,7 @@ function updateFacturaTecnica8743(id,patch){setD(obraId,d=>({...d,facturesTecnic
 function deletePressupostTecnic8744(id){if(confirm("Eliminar aquest pressupost?"))setD(obraId,d=>({...d,pressupostosTecnic:(d.pressupostosTecnic||[]).filter(p=>p.id!==id),facturesTecnic:(d.facturesTecnic||[]).filter(f=>f.pressupostId!==id)}))}
 function deleteFacturaTecnica8744(id){if(confirm("Eliminar aquesta factura?"))setD(obraId,d=>({...d,facturesTecnic:(d.facturesTecnic||[]).filter(f=>f.id!==id)}))}
 
-function addFacturaTecnica8742(f){const numero=f.numero||nextGlobalDocNumber8745(odata,"factura",obra?.any);setD(obraId,d=>{let rows=d.facturesTecnic||[];const id=f.id||"ft-"+Date.now();const now=new Date().toISOString();const doc={id,numero,data:f.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:f.concepte||"Factura tècnica",text:f.text||"",base:+f.base||0,iva:(f.iva===""||f.iva==null||isNaN(+f.iva))?21:+f.iva,retencio:+f.retencio||0,descompte:+f.descompte||0,estat:f.estat||"Esborrany",pressupostId:f.pressupostId||"",encarrec878477:f.encarrec878477||"",hoursRows:f.hoursRows||[],despeses:f.despeses||[]};return {...d,facturesTecnic:[...rows,doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}})}
+function addFacturaTecnica8742(f){const numero=f.numero||nextGlobalDocNumber8745(odata,"factura",obra?.any);setD(obraId,d=>{let rows=d.facturesTecnic||[];const id=f.id||"ft-"+Date.now();const now=new Date().toISOString();const doc={id,numero,data:f.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:f.concepte||"Factura tècnica",text:f.text||"",base:+f.base||0,iva:(f.iva===""||f.iva==null||isNaN(+f.iva))?21:+f.iva,retencio:+f.retencio||0,descompte:+f.descompte||0,estat:f.estat||"Esborrany",pressupostId:f.pressupostId||"",encarrec878477:f.encarrec878477||"",hoursRows:f.hoursRows||[],despeses:f.despeses||[],...(f.avisCobr878496?{avisCobr878496:f.avisCobr878496}:{})};return {...d,facturesTecnic:[...rows,doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}})}
 function addAgent(e){e.preventDefault();let f=new FormData(e.currentTarget);const now=new Date().toISOString();setD(obraId,d=>({...d,agents:[...d.agents,{id:"a"+Date.now(),nom:f.get("nom"),rol:f.get("rol"),empresa:f.get("empresa"),email:f.get("email"),telefon:f.get("telefon"),nif:f.get("nif"),adreca:f.get("adreca"),collegiat:f.get("collegiat"),createdAt:now,updatedAt:now}]}));setModal(null)}
 function addActa(e){e.preventDefault();let f=new FormData(e.currentTarget);
 let titol=String(f.get("titol")||"").trim(), dataActa=String(f.get("data")||"").trim(), text=String(f.get("text")||"").trim();
@@ -6885,7 +6886,7 @@ function barra878508(role,perfil){const k=lsJson8779("aco_barra_v878508",null);i
 // les rajoles de l'Inici: cada usuari les tria i les ordena a Ajustos › Accessos ràpids
 const RAJOLES878508=["pend","obres","agenda","cont","enc","hores","desp","fact","bancs","pres","rend","preus","emp","ajust","mes"];
 function rajolesDisp878508(){const tec=teModul878326("tecnic");return RAJOLES878508.filter(k=>k==="bancs"?true:k==="enc"||k==="pres"?tec:k==="preus"?(!!PERFIL878304&&teModul878326("obra")):k==="emp"?(!!PERFIL878304&&teModul878326("empresa")):k==="rend"?(ambEmpresa878338()||tec):true)}
-function iniciDefecte878508(){return modeObra878484()?["pend","obres","agenda","cont","hores","desp","fact","mes"]:["pend","obres","enc","agenda","cont","hores","fact","mes"]}
+function iniciDefecte878508(){return modeObra878484()?["pend","obres","agenda","cont","hores","desp","fact","bancs"]:["pend","obres","enc","agenda","cont","hores","fact","bancs"]}
 function iniciTriat878508(){const k=lsJson8779("aco_inici_v878508",null);const d=rajolesDisp878508();const r=(Array.isArray(k)&&k.length?k:iniciDefecte878508()).filter(x=>d.includes(x));return r.length?r:iniciDefecte878508().filter(x=>d.includes(x))}
 function infoRajola878508(k){const m={pend:[ListChecks,"Pendent"],obres:[diuObra878326()?HardHat:FolderOpen,diuObra878326()?"Obres":"Expedients"],agenda:[CalendarDays,"Agenda"],cont:[Users,"Contactes"],
   enc:[ClipboardCheck,"Encàrrecs"],hores:[Clock,etHores878515()],desp:[Camera,"Despeses"],fact:[ReceiptText,"Facturació"],bancs:[Wallet,"Caixa i bancs"],pres:[ClipboardList,"Pressupostos"],rend:[TrendingUp,"Rendiment"],
@@ -7011,10 +7012,11 @@ function Bancs878514({obres=[],odata={},openObraTab}){
       <button type="button" className="secondary" onClick={()=>setNou({nom:"",entitat:"",iban:"",saldoIni:"",dataIni:isoDay878255(new Date())})}><Plus size={15} aria-hidden="true"/> {t("Compte")}</button>
       {auto.length>0&&<button type="button" className="secondary auto-v878514" onClick={aparellaTots}><Check size={15} aria-hidden="true"/> {auto.length===1?t("Aparellar 1 apunt"):t("Aparellar {n} apunts",{n:auto.length})}</button>}
     </div>
+    <p className="formats-v878529">{t("Norma 43 (el fitxer de moviments de la banca en línia), Excel o CSV. Un compte per banc: s’hi importa el seu extracte.")}</p>
     {msg&&<p className="msg-v878514" role="status">{msg}</p>}
     {csv&&<div className="csv-v878514"><b>{t("{n} apunts de «{f}»",{n:csv.apunts.length,f:csv.nom})}</b><label><span>{t("Compte")}</span><select value={csv.compte} onChange={e=>setCsv(x=>({...x,compte:e.target.value}))}>{b.comptes.map(c=><option key={c.id} value={c.id}>{c.nom}</option>)}<option value="">{t("Un compte nou")}</option></select></label><div className="bt"><button type="button" className="secondary" onClick={()=>setCsv(null)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={importaCsv}>{t("Importar")}</button></div></div>}
     {!b.comptes.length&&!csv?<div className="fe-buit"><b>{t("Encara no hi ha cap compte.")}</b></div>:b.comptes.map((c,ci)=>{const ap=b.apunts.filter(a=>a.compte===c.id).sort((x,y)=>String(y.data).localeCompare(String(x.data)));const vis=(nomes==="per"?ap.filter(a=>!a.aparellat):ap);
-      return <details key={c.id} className="card bloc-v878426 compte-v878514" open={b.comptes.length===1||undefined}>
+      return <details key={c.id} className="card bloc-v878426 compte-v878514" open={(provaOberta878518()&&b.comptes.length===1)||undefined}>
         <summary><Landmark size={18} aria-hidden="true"/><span className="t"><b>{c.nom}</b></span><span className="xifra">{money(saldos[ci])}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
         <div className="cos">
           <p className="dades-v878514">{[c.entitat,c.iban,c.dataIni?t("Saldo inicial {s} el {d}",{s:money(+c.saldoIni||0),d:fmtAppDate8748(c.dataIni)}):""].filter(Boolean).join(" · ")}</p>
@@ -7071,10 +7073,31 @@ function pagarItems878521(obres=[]){
   }
   return out.sort((a,b)=>String(a.data).localeCompare(String(b.data)));
 }
+// V87.529 · les cobrades i les pagades dels últims 90 dies (l'Héctor: «quan ja estan cobrades o pagades, on surten?»)
+function cobradesItems878529(obres=[],odata={},clients=[],dies=90){
+  const emp=esEmpresaFactura878337(),tec=teModul878326("tecnic"),des=sumaDies878496(todayISO8743(),-dies),out=[];
+  for(const o of obres||[]){if(!o?.id)continue;const d=odata?.[o.id]||{};
+    if(emp)(d.facturesObra878297||[]).forEach(fa=>{if(fa.importada||!(fa.cobrada||fa.dataCobrament))return;const dc=isoData878292(fa.dataCobrament)||"";if(dc&&dc<des)return;out.push({clau:"fo:"+o.id+":"+fa.id,obraId:o.id,camp:"facturesObra878297",id:fa.id,numero:fa.numero||"",total:r2c878521(+fa.total||0),data:dc,obra:o.nom||"",qui:fa.destinatari?.nom||nomClientObra878347(o,clients)||""})});
+    if(tec&&!o.compartida)(d.facturesTecnic||[]).forEach(f=>{if(/anul/i.test(String(f.estat||"")))return;if(!(statusKeyFactura8776(f.estat)==="cobrades"||f.dataCobrament))return;const dc=isoData878292(f.dataCobrament)||"";if(dc&&dc<des)return;out.push({clau:"ft:"+o.id+":"+f.id,obraId:o.id,camp:"facturesTecnic",id:f.id,numero:f.numero||f.displayNumero||"",total:r2c878521(totalIva8743(f)),data:dc,obra:o.nom||"",qui:f.client||nomClientObra878347(o,clients)||""})});
+  }
+  return out.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+}
+function pagadesItems878529(obres=[],dies=90){
+  const des=sumaDies878496(todayISO8743(),-dies),nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));
+  return readAlbarans878259().filter(a=>a.pagada878514&&!(a.pagada878514.data&&a.pagada878514.data<des)).map(a=>({clau:"d:"+a.id,id:a.id,numero:a.numero||"",total:r2c878521(+a.total||+a.base||0),data:a.pagada878514.data||"",obra:nom.get(String(a.obraId))||"",qui:a.proveidor||a.concepte||""})).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+}
+function FetsCaixa878529({items,kind,onDesfes}){
+  return <CartaLlista878518 className="fets-v878529" icona={CircleCheck} title={kind==="cobrar"?t("Cobrades (últims 90 dies)"):t("Pagades (últims 90 dies)")} xifra={items.length?money(items.reduce((x,y)=>x+y.total,0)):null}>
+    {items.length?<div className="movs-v878521">{items.map(x=><button type="button" key={x.clau} className="mov-v878521 fet" onClick={()=>onDesfes(x)}>
+      <span className="t"><b>{[x.numero,x.qui].filter(Boolean).join(" · ")||t("Sense número")}</b><small>{x.obra}</small></span>
+      <span className="x"><b>{money(x.total)}</b><small>{x.data?(kind==="cobrar"?t("Cobrada el {d}",{d:fmtAppDate8748(x.data)}):t("Pagada el {d}",{d:fmtAppDate8748(x.data)})):""}</small></span></button>)}</div>
+      :<p className="buit-v878521">{kind==="cobrar"?t("Cap factura cobrada aquests dies."):t("Cap pagament aquests dies.")}</p>}
+  </CartaLlista878518>;
+}
 // el saldo d'avui: el dels comptes del banc (si n'hi ha) o el que s'hi ha escrit
 function saldoCaixa878521(c=llegeixCaixa878521()){
   const b=llegeixBancs878514();
-  if(b.comptes.length)return {ok:true,banc:true,saldo:r2c878521(b.comptes.reduce((x,k)=>x+saldoCompteBanc(k,b.apunts),0)),data:b.apunts.reduce((m,a)=>String(a.data||"")>m?String(a.data):m,"")};
+  if(b.comptes.length)return {ok:true,banc:true,saldo:r2c878521(b.comptes.filter(k=>!(c.fora529||[]).includes(k.id)).reduce((x,k)=>x+saldoCompteBanc(k,b.apunts),0)),data:b.apunts.reduce((m,a)=>String(a.data||"")>m?String(a.data):m,"")};
   const m=c.saldoMa;if(m&&m.import!==""&&m.import!=null&&!isNaN(+m.import))return {ok:true,banc:false,saldo:+m.import,data:m.data||""};
   return {ok:false,banc:false,saldo:0,data:""};
 }
@@ -7106,18 +7129,20 @@ function MovCaixa878521({kind,x,close,openObraTab}){
     {x.obraId&&openObraTab&&<button type="button" className="link" onClick={()=>{close();openObraTab(x.obraId,cob?x.tab:"Albarans")}}>{diuObra878326()?t("Obrir l’obra"):t("Obrir l’expedient")}</button>}
   </div></Modal>;
 }
-function GraficaCaixa878521({setmanes=[]}){
+function GraficaCaixa878521({setmanes=[],etq=w=>dm878521(w.ini),nom=w=>t("Setmana del {d}",{d:dm878521(w.ini)})}){
   const mob=useMobil878363(),W=mob?360:640,H=mob?170:190,P={l:6,r:6,t:22,b:24},n=setmanes.length||1,vals=setmanes.map(w=>w.saldo);
   const mx=Math.max(0,...vals),mn=Math.min(0,...vals),span=(mx-mn)||1,y=v=>P.t+(mx-v)/span*(H-P.t-P.b),bw=(W-P.l-P.r)/n,y0=y(0);
   const iMin=vals.indexOf(Math.min(...vals)),iUlt=vals.length-1;
   return <figure className="graf-caixa-v878521"><svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{aspectRatio:`${W}/${H}`}} role="img" aria-label={t("Saldo previst setmana a setmana")}>
     <line x1={P.l} x2={W-P.r} y1={y0} y2={y0} className="zero"/>
     {setmanes.map((w,i)=>{const x=P.l+i*bw+bw*.2,top=w.saldo>=0?y(w.saldo):y0,h=Math.max(1.5,Math.abs(y(w.saldo)-y0));
-      return <g key={w.ini}><rect x={x} y={top} width={bw*.6} height={h} rx="3" className={w.saldo<0?"neg":"pos"}><title>{t("Setmana del {d}",{d:dm878521(w.ini)})}: {money(w.saldo)}</title></rect>
+      return <g key={w.ini}><rect x={x} y={top} width={bw*.6} height={h} rx="3" className={w.saldo<0?"neg":"pos"}><title>{nom(w)}: {money(w.saldo)}</title></rect>
         {(i===iMin||i===iUlt)&&<text x={x+bw*.3} y={w.saldo>=0?top-6:top+h+13} textAnchor="middle" className="val">{money(w.saldo).replace(/,\d\d\s*€$/," €")}</text>}
-        {i%(mob?3:2)===0&&<text x={x+bw*.3} y={H-6} textAnchor="middle" className="eix">{dm878521(w.ini)}</text>}</g>})}
+        {(n<=8||i%(mob?3:2)===0)&&<text x={x+bw*.3} y={H-6} textAnchor="middle" className="eix">{etq(w)}</text>}</g>})}
   </svg></figure>;
 }
+function mesNom878529(ini){const d=new Date(String(ini).slice(0,10)+"T12:00:00");if(isNaN(d))return "";const s=d.toLocaleDateString(loc878272(),{month:"long",year:"numeric"});return s.charAt(0).toUpperCase()+s.slice(1)}
+function mesCurt878529(ini){const d=new Date(String(ini).slice(0,10)+"T12:00:00");return isNaN(d)?"":d.toLocaleDateString(loc878272(),{month:"short"}).replace(".","")}
 const SUG_FIX878521=["Nòmines","Seguretat Social","Lloguer","Assegurances","Quota d’autònom","Préstec","Leasing","Gestoria"];
 function txtFix878521(f){const d=+f.dia||1,c=+f.cada||1;return c===12?t("Cada any, el {d}/{m}",{d,m:+String(f.des||"").slice(5,7)||1}):c===1?t("Cada mes, el dia {d}",{d}):t("Cada {n} mesos, el dia {d}",{n:c,d})}
 function FixCaixa878521({f,close,onDesa,onTreu}){
@@ -7167,30 +7192,50 @@ function Caixa878521({obres=[],odata={},clients=[],openObraTab}){
   const bancs=useMemo(()=>llegeixBancs878514(),[tick]);
   const sum=l=>l.reduce((x,y)=>x+y.total,0),nV=l=>l.filter(x=>x.data<avui).length;
   const vc=nV(cob),vp=nV(pag);
-  const TILES=[["cobrar",HandCoins,"Per cobrar",money(sum(cob))+(vc?" · "+(vc===1?t("1 vençuda"):t("{n} vençudes",{n:vc})):"")],
-    ["pagar",Receipt,"Per pagar",money(sum(pag))+(vp?" · "+(vp===1?t("1 vençut"):t("{n} vençuts",{n:vp})):"")],
-    ["previsio",TrendingUp,"Previsió",!sb.ok?t("Falta el saldo d’avui"):p.negatiu?t("En negatiu el {d}",{d:dm878521(p.negatiu.ini)}):t("En 13 setmanes: {s}",{s:money(p.final)})],
-    ["bancs",Landmark,"Bancs",bancs.comptes.length?money(bancs.comptes.reduce((x,k)=>x+saldoCompteBanc(k,bancs.apunts),0)):t("Importar l’extracte")]];
+  // V87.529 · la previsió per mesos (de sèrie, 6) o per setmanes, i quins comptes del banc hi compten (l'Héctor: «la previsió és d'aquí a 13
+  // setmanes, on ho hem marcat i on ho canviem? potser haurien de ser mensuals»; «tinc diversos comptes i bancs… decideixo des d'on tira?»)
+  const pv529=c.prev529||{},per529=pv529.per==="setmana"?"setmana":"mes",n529=per529==="mes"?([3,6,12].includes(+pv529.n)?+pv529.n:6):([4,8,13,26].includes(+pv529.n)?+pv529.n:13);
+  const posaPrev529=x=>desaCaixa878521({...llegeixCaixa878521(),prev529:{...pv529,...x}});
+  const pp=useMemo(()=>{const a={saldo:sb.saldo,entrades:cob.map(x=>({...x,import:x.total})),sortides:pag.map(x=>({...x,import:x.total})),fixos:c.fixos,avui};return per529==="mes"?previsioMesosCaixa({...a,mesos:n529}):previsioCaixa({...a,setmanes:n529})},[sb,cob,pag,c,per529,n529,avui]);
+  const periodes=pp.mesos||pp.setmanes||[];
+  const etPer=w=>per529==="mes"?mesNom878529(w.ini):t("Setmana del {d}",{d:dm878521(w.ini)});
+  const fiTxt=per529==="mes"?(n529===1?t("D’aquí a 1 mes"):t("D’aquí a {n} mesos",{n:n529})):t("D’aquí a {n} setmanes",{n:n529});
+  const cobF=useMemo(()=>cobradesItems878529(obres,odata,clients),[obres,odata,clients,tick]);
+  const pagF=useMemo(()=>pagadesItems878529(obres),[obres,tick]);
+  const desfes529=(kind,x)=>{if(!confirm(kind==="cobrar"?t("Tornar a posar la factura {n} per cobrar?",{n:x.numero||""}):t("Tornar a posar «{n}» per pagar?",{n:x.numero||x.qui||""})))return;
+    if(kind==="cobrar")window.__acoPatchFactura878496?.(x.obraId,x.camp,x.id,x.camp==="facturesTecnic"?{estat:"Pendent",dataCobrament:""}:{cobrada:false,dataCobrament:""});
+    else writeAlbarans878259(readAlbarans878259().map(a=>a.id===x.id?(({pagada878514,...r})=>r)(a):a));
+    try{window.dispatchEvent(new Event("aco-caixa-changed"));window.dispatchEvent(new Event("aco-avisos-changed"))}catch{}};
+  const ajustos529=k=><details className="card bloc-v878426 aj-caixa-v878529"><summary><Settings size={18} aria-hidden="true"/><span className="t"><b>{t("Ajustos")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{dies(k)}</div></details>;
+  const TILES=[["cobrar",HandCoins,"Per cobrar",money(sum(cob)),vc?(vc===1?t("1 vençuda"):t("{n} vençudes",{n:vc})):""],
+    ["pagar",Receipt,"Per pagar",money(sum(pag)),vp?(vp===1?t("1 vençut"):t("{n} vençuts",{n:vp})):""],
+    ["previsio",TrendingUp,"Previsió",!sb.ok?t("Falta el saldo d’avui"):pp.negatiu?t("En negatiu: {d}",{d:per529==="mes"?mesNom878529(pp.negatiu.ini):dm878521(pp.negatiu.ini)}):money(pp.final),""],
+    ["bancs",Landmark,"Bancs",bancs.comptes.length?money(bancs.comptes.reduce((x,k)=>x+saldoCompteBanc(k,bancs.apunts),0)):t("Importar l’extracte"),""]];
   const dies=k=><label className="dies-v878521"><span>{k==="cobrar"?t("Dies de cobrament de sèrie"):t("Dies de pagament de sèrie")}</span><input type="number" min="0" max="365" inputMode="numeric" value={c[k]??(k==="cobrar"?AVIS_COBR_DIES878496:30)} onChange={e=>desaCaixa878521({...llegeixCaixa878521(),[k]:e.target.value})}/></label>;
   const perMes=c.fixos.reduce((x,f)=>x+(+f.import||0)/(+f.cada||1),0);
   const desaFix=f=>{const n=llegeixCaixa878521();desaCaixa878521({...n,fixos:n.fixos.some(x=>x.id===f.id)?n.fixos.map(x=>x.id===f.id?f:x):[...n.fixos,f]});setFix(null)};
   const treuFix=f=>{if(!confirm(t("Eliminar «{n}»?",{n:f.concepte})))return;const n=llegeixCaixa878521();desaCaixa878521({...n,fixos:n.fixos.filter(x=>x.id!==f.id)});setFix(null)};
   return <div className="caixa-v878521">
-    <div className="fe-vistes ch-rajoles-v878515" role="group" aria-label={t("Caixa i bancs")}>{TILES.map(([k,Ic,l,sub])=><button type="button" key={k} aria-pressed={v===k} onClick={()=>setV(k)} data-sub={sub||undefined}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{t(l)}</b></button>)}</div>
-    {v==="cobrar"&&<div className="caixa-vista-v878521 cobrar">{llistaMovs878521(cob,"cobrar",avui,x=>setEd({kind:"cobrar",x}))}{dies("cobrar")}</div>}
-    {v==="pagar"&&<div className="caixa-vista-v878521 pagar">{llistaMovs878521(pag,"pagar",avui,x=>setEd({kind:"pagar",x}))}{dies("pagar")}</div>}
+    <div className="fe-vistes ch-rajoles-v878515" role="group" aria-label={t("Caixa i bancs")}>{TILES.map(([k,Ic,l,sub,avis])=><button type="button" key={k} aria-pressed={v===k} onClick={()=>setV(k)} data-sub={sub||undefined}><span className="ico" aria-hidden="true"><Ic size={20}/></span><b>{t(l)}</b>{avis?<em className="avis-v878529">{avis}</em>:null}</button>)}</div>
+    {v==="cobrar"&&<div className="caixa-vista-v878521 cobrar">{llistaMovs878521(cob,"cobrar",avui,x=>setEd({kind:"cobrar",x}))}<FetsCaixa878529 items={cobF} kind="cobrar" onDesfes={x=>desfes529("cobrar",x)}/>{ajustos529("cobrar")}</div>}
+    {v==="pagar"&&<div className="caixa-vista-v878521 pagar">{llistaMovs878521(pag,"pagar",avui,x=>setEd({kind:"pagar",x}))}<FetsCaixa878529 items={pagF} kind="pagar" onDesfes={x=>desfes529("pagar",x)}/>{ajustos529("pagar")}</div>}
     {v==="previsio"&&<div className="caixa-vista-v878521 previsio">
+      <div className="prev-tria-v878529" role="group" aria-label={t("Previsió")}>
+        <div className="seg">{[["mes","Per mesos"],["setmana","Per setmanes"]].map(([k,l])=><button type="button" key={k} className={per529===k?"on":""} aria-pressed={per529===k} onClick={()=>posaPrev529({per:k,n:k==="mes"?6:13})}>{t(l)}</button>)}</div>
+        <label><span className="sr-only-v878269">{t("Termini")}</span><select value={n529} onChange={e=>posaPrev529({per:per529,n:+e.target.value})}>{(per529==="mes"?[3,6,12]:[4,8,13,26]).map(x=><option key={x} value={x}>{per529==="mes"?t("{n} mesos",{n:x}):t("{n} setmanes",{n:x})}</option>)}</select></label>
+      </div>
       <div className="xifres-v878426 cx-xif-v878521">
         <div className={"x act"+(!sb.ok?" falta":"")}><small>{t("Saldo d’avui")}</small><b>{sb.ok?money(sb.saldo):"—"}</b>{!sb.banc&&<button type="button" className="link" onClick={()=>setSaldoEd(true)}>{sb.ok?t("Canviar"):t("Posar-lo")}</button>}</div>
-        <div className="x exe"><small>{t("Entrades")}</small><b>{money(p.entrades)}</b></div>
-        <div className="x pen"><small>{t("Sortides")}</small><b>{money(p.sortides)}</b></div>
-        <div className={"x "+(p.final<0?"neg":"fin")}><small>{t("D’aquí a 13 setmanes")}</small><b>{money(p.final)}</b></div>
+        <div className="x exe"><small>{t("Entrades")}</small><b>{money(pp.entrades)}</b></div>
+        <div className="x pen"><small>{t("Sortides")}</small><b>{money(pp.sortides)}</b></div>
+        <div className={"x "+(pp.final<0?"neg":"fin")}><small>{fiTxt}</small><b>{money(pp.final)}</b></div>
       </div>
-      {!sb.ok&&<div className="falta-v878521"><b>{t("Falta el saldo d’avui")}</b><div className="bt"><button type="button" className="primary" onClick={()=>setSaldoEd(true)}>{t("Posar el saldo d’avui")}</button><button type="button" className="secondary" onClick={()=>setV("bancs")}><Landmark size={15} aria-hidden="true"/> {t("Importar l’extracte del banc")}</button></div></div>}
-      {sb.ok&&p.negatiu&&<p className="neg-v878521" role="status"><AlertTriangle size={16} aria-hidden="true"/> {t("La caixa queda en negatiu la setmana del {d}",{d:fmtAppDate8748(p.negatiu.ini)})} · {money(p.min.saldo)}</p>}
-      <GraficaCaixa878521 setmanes={p.setmanes}/>
-      <CartaLlista878518 className="setmanes-v878521" icona={CalendarRange} title={t("Setmana a setmana")} xifra={money(p.final)}>
-        {p.setmanes.map(w=><details key={w.ini} className="sub-v878426 setm-v878521"><summary><span className="t"><b>{t("Setmana del {d}",{d:dm878521(w.ini)})}</b><small>{"+"+money(w.entrades)} · {"−"+money(w.sortides)}</small></span><span className={"xifra"+(w.saldo<0?" neg":"")}>{money(w.saldo)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+      {bancs.comptes.length>1&&<div className="comptes-v878529"><span>{t("Compten per a la previsió:")}</span>{bancs.comptes.map(k=>{const on=!(c.fora529||[]).includes(k.id);return <label key={k.id} className={on?"on":""}><input type="checkbox" checked={on} onChange={()=>{const n=llegeixCaixa878521(),fo=new Set(n.fora529||[]);if(on)fo.add(k.id);else fo.delete(k.id);desaCaixa878521({...n,fora529:[...fo]})}}/> {k.nom||k.entitat||t("Compte")} <small>{money(saldoCompteBanc(k,bancs.apunts))}</small></label>})}</div>}
+      {!sb.ok&&<div className="falta-v878521"><b>{t("Falta el saldo d’avui")}</b><div className="bt"><button type="button" className="primary" onClick={()=>setSaldoEd(true)}>{t("Posar el saldo d’avui")}</button></div></div>}
+      {sb.ok&&pp.negatiu&&<p className="neg-v878521" role="status"><AlertTriangle size={16} aria-hidden="true"/> {per529==="mes"?t("La caixa queda en negatiu el {d}",{d:mesNom878529(pp.negatiu.ini)}):t("La caixa queda en negatiu la setmana del {d}",{d:fmtAppDate8748(pp.negatiu.ini)})} · {money(pp.min.saldo)}</p>}
+      <GraficaCaixa878521 setmanes={periodes} etq={w=>per529==="mes"?mesCurt878529(w.ini):dm878521(w.ini)} nom={etPer}/>
+      <CartaLlista878518 className="setmanes-v878521" icona={CalendarRange} title={per529==="mes"?t("Mes a mes"):t("Setmana a setmana")} xifra={money(pp.final)}>
+        {periodes.map(w=><details key={w.ini} className="sub-v878426 setm-v878521"><summary><span className="t"><b>{etPer(w)}</b><small>{"+"+money(w.entrades)} · {"−"+money(w.sortides)}</small></span><span className={"xifra"+(w.saldo<0?" neg":"")}>{money(w.saldo)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
           <div className="cos">{w.items.length?<div className="its-v878521">{w.items.map((it,i)=><div key={i} className={"it-v878521 "+it.tipus}><span className="t"><b>{it.tipus==="fix"?it.concepte:[it.numero,it.qui].filter(Boolean).join(" · ")}</b><small>{[fmtAppDate8748(it.data),it.vencut?(it.tipus==="entrada"?t("vençuda"):t("vençut")):"",it.obra].filter(Boolean).join(" · ")}</small></span><b className="x">{(it.tipus==="entrada"?"+":"−")+money(it.import)}</b></div>)}</div>:<p className="buit-v878521">{t("Sense moviments.")}</p>}</div></details>)}
       </CartaLlista878518>
       <CartaLlista878518 className="fixos-v878521" icona={Repeat} title={t("Pagaments fixos")} xifra={c.fixos.length?t("{s} al mes",{s:money(perMes)}):null}>
@@ -7926,7 +7971,7 @@ function CardOPlega878369({title,resum,action,className="",children,obert=false,
 function provaOberta878518(){try{return lsVisual878400()?.getItem("cartes-prova-v878518")==="1"}catch{return false}}
 function CartaLlista878518({className="",icona:Ic=null,title,xifra=null,obrir="",children}){
   const mobil=useMobil878363();
-  const[ob,setOb]=useState(()=>provaOberta878518()||!mobil);
+  const[ob,setOb]=useState(()=>provaOberta878518());
   const pr=useRef(obrir);useEffect(()=>{if(pr.current!==obrir){pr.current=obrir;setOb(true)}},[obrir]);
   return <details className={`card bloc-v878426 ${className}`.trim()} open={ob||undefined} onToggle={e=>{const o=e.currentTarget.open;if(o!==ob)setOb(o)}}><summary>{Ic?<Ic size={18} aria-hidden="true"/>:null}<span className="t"><b>{title}</b></span>{xifra!=null&&xifra!==""?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{children}</div><Recollir878432/></details>;
 }
@@ -18866,6 +18911,7 @@ function CobramentFactura878472({numero,total,dia,close,onDesa,onPendent}){
   </div></Modal>;
 }
 function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
+  const[venc529,setVenc529]=useState("");
   const emp=esEmpresaFactura878337();
   const sc=client?.facturacio878297||{};
   const noSerie=!emp&&!sc.actiu;
@@ -18903,7 +18949,7 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
     if(faltaIban&&netV878304(compte.iban)){const cur=empresaInfo878259()||{};lsSet8779("aco_empresa_v878259",JSON.stringify({...cur,iban:netV878304(compte.iban).toUpperCase(),banc:netV878304(compte.banc)}))}
     const k=f.certId||f.pfId;
     const m0=motiuPf878472(iva,motiu0,netV878304(motiuTx));
-    const fa={id:"fo-"+Date.now(),certId:k,budgetId:f.budgetId||"principal",pfNumero:f.numero,certNum:f.numeroCert,numero,num:+num,...(emp?{serieEmpresa:true,prefix}:{serieClient:client?.id||""}),data:dataF,base,ded:c0.ded,iva,ivaImp,ret,retImp,total,...m0,destinatari:dest,createdAt:new Date().toISOString()};
+    const fa={id:"fo-"+Date.now(),certId:k,budgetId:f.budgetId||"principal",pfNumero:f.numero,certNum:f.numeroCert,numero,num:+num,...(emp?{serieEmpresa:true,prefix}:{serieClient:client?.id||""}),data:dataF,base,ded:c0.ded,iva,ivaImp,ret,retImp,total,...m0,destinatari:dest,avisCobr878496:{data:venc529||sumaDies878496(dataF,diesCobrar878521())},createdAt:new Date().toISOString()};
     setData(d=>({...d,factParams:{...(d.factParams||{}),[k]:{...((d.factParams||{})[k]||{}),iva,ret,ded:c0.ded,...m0}},facturesObra878297:[...(d.facturesObra878297||[]),fa],updatedAt:new Date().toISOString()}));
     if(emp)desaSerieEmpresa878337(prefix,+num>=(+se.propers[prefix]||1)?+num+1:null);
     else if(noSerie)updateClient878297(client,{facturacio878297:{digits:3,...sc,actiu:true,prefix,proper:+num+1}},setClients);
@@ -18915,6 +18961,7 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
     <div className="form-grid compact-v87151 no-pad">
       <label><span>{t("Número de factura")}</span><div className="num-v878297">{emp||noSerie?<input className="pref-v878337" value={prefix} aria-label={t("Sèrie")} onChange={e=>{const p=e.target.value.replace(/\s/g,"");setPrefix(p);setNum(proposa(p))}}/>:<b>{prefix}</b>}<input inputMode="numeric" value={num} onChange={e=>setNum(e.target.value.replace(/\D/g,""))}/></div><small>{numero}{jaHiEs?` · ${t("ja existeix")}`:""}</small></label>
       <label><span>{t("Data de la factura")}</span><input type="date" value={dataF} onChange={e=>setDataF(e.target.value)}/></label>
+      <label><span>{t("Venciment (cobrament previst)")}</span><input type="date" value={venc529||sumaDies878496(dataF,diesCobrar878521())} onChange={e=>setVenc529(e.target.value)}/></label>
       <label><span>{t("IVA")}</span><select value={iva} onChange={e=>setIva(+e.target.value)}>{[21,10,4,0].map(x=><option key={x} value={x}>{x} %</option>)}</select></label>
       <label><span>{t("Retenció")}</span><select value={ret} onChange={e=>setRet(+e.target.value)}>{[0,1,7,15,19].map(x=><option key={x} value={x}>{x} %</option>)}</select></label>
       {iva===0&&<label className="span-all motiu-v878472"><span>{t("Motiu de l’IVA 0 %")}</span><select value={motiu0} onChange={e=>setMotiu0(e.target.value)}><option value="isp">{t("Inversió del subjecte passiu")}</option><option value="altre">{t("Un altre motiu")}</option></select></label>}
@@ -20999,7 +21046,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.528",
+    app_version:"87.529",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -21761,7 +21808,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
   function createFacturaGlobal8778(payload){
     if(!setOdata)return;
     const o=obres.find(x=>x.id===payload.obraId);if(!o)return;
-    setOdata(prev=>{const d=prev[o.id]||empty();const id=payload.id||("ft-"+Date.now());const numero=nextGlobalDocNumber8745(prev,"factura",o.any);const now=new Date().toISOString();const doc={id,numero,data:payload.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:payload.concepte||"Factura tècnica",text:payload.text||"",base:+payload.base||0,iva:payload.iva===""||payload.iva==null?21:+payload.iva,retencio:+payload.retencio||0,descompte:+payload.descompte||0,estat:payload.estat||"Pendent",hoursRows:payload.hoursRows||[],...(payload.quota878434?{quota878434:payload.quota878434}:{})};return {...prev,[o.id]:{...d,facturesTecnic:[...(d.facturesTecnic||[]),doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}}});
+    setOdata(prev=>{const d=prev[o.id]||empty();const id=payload.id||("ft-"+Date.now());const numero=nextGlobalDocNumber8745(prev,"factura",o.any);const now=new Date().toISOString();const doc={id,numero,data:payload.data||todayISO8743(),createdAt:now,updatedAt:now,concepte:payload.concepte||"Factura tècnica",text:payload.text||"",base:+payload.base||0,iva:payload.iva===""||payload.iva==null?21:+payload.iva,retencio:+payload.retencio||0,descompte:+payload.descompte||0,estat:payload.estat||"Pendent",hoursRows:payload.hoursRows||[],...(payload.quota878434?{quota878434:payload.quota878434}:{}),...(payload.avisCobr878496?{avisCobr878496:payload.avisCobr878496}:{})};return {...prev,[o.id]:{...d,facturesTecnic:[...(d.facturesTecnic||[]),doc],documents:[...(d.documents||[]),{id:"doc-"+id,nom:`Factura honoraris ${numero}`,tipus:"FACTURA",folder:"00_DESPATX_TECNIC",data:fmtAppDate8748(doc.data),createdAt:now,updatedAt:now,storage:"registre",hasFile:false,linkedType:"factura",linkedId:id}]}}});
   }
   function updateFacturaGlobal87109(row,patch){
     if(!setOdata||!row?.obra?.id)return;
@@ -23686,7 +23733,7 @@ function InvoiceFromHours878256({group,clientName,acord=null,onCreate,close}){
     if(!chosen.length){alert(t("Tria almenys un registre."));return}
     const id="ft-"+Date.now();
     const text=chosen.map(r=>`${timeRowLabel878256(r)} · ${money(timeBillImport878291(r))}`).join("\n");
-    onCreate?.({id,obraId:group.o.id,data:f.data,concepte:f.concepte,text,base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:f.estat,hoursRows:chosen.map(r=>r.id)});
+    onCreate?.({id,obraId:group.o.id,data:f.data,avisCobr878496:{data:f.venc529||sumaDies878496(f.data,diesCobrar878521())},concepte:f.concepte,text,base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:f.estat,hoursRows:chosen.map(r=>r.id)});
     const ids=new Set(chosen.map(r=>r.id));const at=new Date().toISOString();
     writeTimeRows878255(group.o.id,readTimeRows878255(group.o.id).map(x=>ids.has(x.id)?{...x,facturat:true,facturatAt:at,facturaId:id}:x));
     close();
@@ -23697,6 +23744,7 @@ function InvoiceFromHours878256({group,clientName,acord=null,onCreate,close}){
     <div className="grid">
       <label className="wide"><span>{t("Concepte")}</span><input value={f.concepte} onChange={e=>setF(x=>({...x,concepte:e.target.value}))}/></label>
       <label><span>{t("Data")}</span><input type="date" value={f.data} onChange={e=>setF(x=>({...x,data:e.target.value}))}/></label>
+      <label><span>{t("Venciment (cobrament previst)")}</span><input type="date" value={f.venc529||sumaDies878496(f.data,diesCobrar878521())} onChange={e=>setF(x=>({...x,venc529:e.target.value}))}/></label>
       <label><span>{t("Base sense IVA (€)")}</span><input inputMode="decimal" value={f.base!==""?f.base:sum.toFixed(2).replace(".",",")} onChange={e=>setF(x=>({...x,base:e.target.value}))}/></label>
       <label><span>{t("IVA %")}</span><input inputMode="decimal" value={f.iva} onChange={e=>setF(x=>({...x,iva:e.target.value}))}/></label>
       <label><span>{t("Retenció %")}</span><input inputMode="decimal" value={f.retencio} onChange={e=>setF(x=>({...x,retencio:e.target.value}))}/></label>

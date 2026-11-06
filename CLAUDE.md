@@ -3278,6 +3278,26 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **«Editar aquest capítol»** a dins de cada capítol obert (`editaCap528`, `capEdit528`): entra a editar i només es veu aquell capítol, amb
       «Edites només «…» · Veure tots els capítols» (`cap-sol-v878528`); en guardar o cancel·lar, tots. «Editar» de dalt, tots com sempre.
     - Prova: `v528test.mjs` (número sol, canviar el nom i el número, la barra de fases, el PDF, editar un capítol, recarregar, mòbil).
+  - **V87.529 · Caixa i bancs, segona volta** (l'Héctor, 6/11/2026: «les coses d'informació, entre parèntesi o amb lletra menor… està molt a prop
+    l'import de l'avís de 1 per cobrar»; «les dates dels venciments, on les hem posat a les factures en el moment de fer-les?»; «quan ja estan cobrades
+    o pagades, on surten?»; «continuava estant targetes desplegades per defecte»; «la previsió és d'aquí a 13 setmanes, on ho canviem? potser haurien
+    de ser mensuals»; «importar l'extracte només des de Banc… quin format?»; «puc tenir tants comptes com vulgui… decideixo des d'on tira?»; «a l'Inici
+    posa Bancs o Caixa perquè el Més també està a baix»; `src/theme-v878530.css`):
+    - **Rajoles:** a sota del nom, l'import; l'avís («1 vençuda») a part, petit, a la dreta (al mòbil, a sota de l'import; `avis-v878529`).
+    - **Targetes de les llistes plegades d'entrada a tots els aparells** (`CartaLlista878518`: abans, obertes a l'ordinador; també Facturació › Factures,
+      Control horari…) i els comptes de Bancs (abans, obert si n'hi havia un). Les proves d'abans continuen amb la marca `cartes-prova-v878518`.
+    - **Cobrades i Pagades (últims 90 dies)** (`cobradesItems878529`, `pagadesItems878529`, `FetsCaixa878529`): una targeta plegada a Per cobrar i a Per
+      pagar; tocar-ne una la torna a pendent (pregunta). **«Ajustos»** (plegat): els dies de cobrament o de pagament de sèrie (abans, solts a baix).
+    - **Previsió per mesos** (`previsioMesos` de `src/caixa.js`; de sèrie 6 mesos; també 3 o 12, o «Per setmanes» 4, 8, 13 o 26): es desa a
+      `aco_caixa_v878521.prev529 = {per, n}`; «D'aquí a 6 mesos», «Mes a mes» i la gràfica amb el mes. Els avisos de l'Inici continuen per setmanes.
+    - **Quins comptes compten** (amb 2 o més comptes del banc): xips amb casella a la previsió (`aco_caixa_v878521.fora529`, els que no compten).
+    - **Previsió sense «Importar l'extracte del banc»** (només a Bancs). A **Bancs**, la línia dels formats: Norma 43, Excel o CSV (el PDF no).
+    - **Venciment a «Fer factura»** (factura de l'obra, `FerFactura878297`, i d'honoraris de l'encàrrec i des de les hores): «Venciment (cobrament
+      previst)», de sèrie la data + els dies de cobrament; es desa com a `avisCobr878496.data` (l'avís de cobrament i Per cobrar el fan servir).
+    - **Inici:** la rajola «Més» de sèrie passa a ser **«Caixa i bancs»** (`iniciDefecte878508`; el «Més» ja és a la barra de baix; a l'ordinador, també
+      en lloc de «Rendiment»). Qui ja s'havia triat les rajoles a Ajustos, les manté.
+    - Prova: `v529test.mjs` (18). Adaptades `v521test` (l'avís a part; «Per setmanes» per veure les 13 setmanes), `v484test`, `v507test` i `v508test` (la
+      rajola «Caixa i bancs»; el «Més», a la barra de baix) i `v412test` (des de la V87.451 el total és a la línia de la targeta).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3476,7 +3496,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.528 a Render):**
+**Estat (publicada la V87.529 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
