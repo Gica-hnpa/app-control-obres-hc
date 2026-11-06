@@ -1,0 +1,29 @@
+/* V87.526 · Certificacions: totes les accions en un sol menú (a la fila i a dins), amb els PDF a dalt */
+html body .action-menu-v87213.tot-v878527>.action-menu-panel-v87213{min-width:260px}
+html body .action-menu-v87213.tot-v878527>.action-menu-panel-v87213>small.amh-v878273:first-child{margin-top:0;border-top:0}
+html body .action-menu-v87213.tot-v878527 .dues-v878527{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25;text-align:left}
+html body .action-menu-v87213.tot-v878527 .dues-v878527>small{font-size:12px;font-weight:500;color:var(--co-ink-3,#5F7075)}
+html body .action-menu-v87213.tot-v878527 .chk-v878527{display:flex;align-items:center;gap:10px;min-height:38px;padding:4px 10px;font-size:14px;color:var(--co-ink-2,#334155)}
+html body .action-menu-v87213.tot-v878527 .chk-v878527>input{width:18px;height:18px;margin:0;flex:0 0 auto;accent-color:#1D4ED8}
+html body .action-menu-v87213.tot-v878527 .chk-v878527>span{cursor:pointer;flex:1}
+/* una sola columna a tots els aparells (al mòbil, una regla general dels menús en feia dues) */
+html body .action-menu-v87213.tot-v878527>.action-menu-panel-v87213{display:flex!important;flex-direction:column;align-items:stretch;gap:2px;grid-template-columns:none!important}
+html body .action-menu-v87213.tot-v878527>.action-menu-panel-v87213>*{width:100%!important;max-width:none!important;white-space:normal;grid-column:auto!important}
+@media (max-width:700px){
+  html body .action-menu-v87213.tot-v878527>.action-menu-panel-v87213{min-width:0;width:min(300px,calc(100vw - 32px))!important}
+}
+/* la fila amb el menú obert, per sobre de les de sota (cada menú té capa 40 i el «⋯» de la fila següent tapava el menú) */
+html body .cert-files-v878426 .cert-row-v878273:has(.acc-v878364 details[open]){position:relative;z-index:60}
+/* a dins de «Fer la certificació»: Editar (o Cancel·lar i Guardar) i el que és d'omplir-la */
+html body .cert-partides-v878426 .cert-eines-v878527{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px;background:#fff;border-bottom:1px solid #E2E8F0}
+html body .cert-eines-v878527 .excel-v878527{display:inline-flex;align-items:center;gap:6px;cursor:pointer;position:relative}
+html body .cert-eines-v878527 .excel-v878527>input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+html body .cert-eines-v878527 .excel-v878527.disabled{opacity:.6;pointer-events:none}
+@media (max-width:700px){
+  html body .cert-partides-v878426 .cert-eines-v878527{padding:10px 12px}
+  html body .cert-eines-v878527>.editar-v878364{flex:1 1 100%;justify-content:center;min-height:44px}
+  html body .cert-eines-v878527>.secondary{flex:1 1 calc(50% - 4px);justify-content:center}
+}
+/* a dalt de la certificació, els botons en fila (com al pressupost) */
+html body .cert-cap-v878426 .cert-barra-v878364{flex-wrap:wrap;justify-content:flex-end}
+html body .cert-cap-v878426 .cert-barra-v878364>.mes-v878527>summary{min-width:42px;justify-content:center}

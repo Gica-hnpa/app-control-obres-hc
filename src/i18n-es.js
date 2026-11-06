@@ -5590,4 +5590,12 @@ export default {
 "objectiu {h}": "objetivo {h}",
 "On van les hores": "Dónde van las horas",
 "Per feina": "Por tarea",
+"Veure i imprimir": "Ver e imprimir",
+"amb el quadre resum": "con el cuadro resumen",
+"Amb les línies d’amidament": "Con las líneas de medición",
+"Editar, enviar i signar": "Editar, enviar y firmar",
+"Enviar i signar": "Enviar y firmar",
+"Fer la certificació": "Hacer la certificación",
+"Omplir-la des d’un Excel": "Rellenarla desde un Excel",
+"Llegeix les quantitats d’aquesta certificació d’un Excel": "Lee las cantidades de esta certificación de un Excel",
 };

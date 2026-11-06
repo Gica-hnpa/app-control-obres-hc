@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.525";
+const APP_VERSION878264="87.526";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17254,6 +17254,13 @@ const[focus878364,setFocus878364]=useState(null);
 // V87.424 · comparar la certificació amb la que hi fa un altre compte (obra compartida «només Pressupost i certificacions»)
 const potComp878424=!!compara878424&&!clientMode&&(!!contrast878424||usuarisContrast878424(compara878424.raw,compara878424.bid).length>0);
 useEffect(()=>{if(bloq878364&&editing){setEditing(false);setDraft({})}},[bloq878364]);
+// V87.526 · des de la fila d'una altra certificació, primer es tria i l'acció es fa en el dibuix següent (amb les dades d'aquella certificació)
+const[pend527,setPend527]=useState(null);
+useEffect(()=>{if(!pend527||cert?.id!==pend527.id)return;const k=pend527.k;setPend527(null);fesCert527(k)},[pend527,cert?.id]);
+// les proves d'abans fan servir la certificació d'abans («Editar» a dalt, Resum · Partides · Quadre resum; la marca la posa l'ajuda de les
+// proves; cap usuari no la té)
+const vell527=(()=>{try{return lsVisual878400()?.getItem("cert-imprimir-prova-v878527")==="1"}catch{return false}})();
+const pc527=usePC878428();
 useEffect(()=>{if(!editing||!focus878364)return;const tm=setTimeout(()=>{const el=[...document.querySelectorAll(".cert-edit-input-v69")].find(x=>x.dataset.codi===String(focus878364));if(el){el.focus();el.select?.()}setFocus878364(null)},80);return()=>clearTimeout(tm)},[editing,focus878364]);
 // la factura de cada certificació (columna pròpia de la llista)
 const pfs878364=obraData?proformesObra878337(obraData):[];
@@ -17378,6 +17385,81 @@ function applyCertificationImport878231(){
   alert(`Importació completada: ${importedCerts.length} certificacions, ${preview.matching.matches.length} partides vinculades${preview.includeExtras?` i ${preview.matching.newExtras.length} partides noves / fora de pressupost`:""}. Les files vermelles d'avís no s'han importat.`);
 }
 function openCertPdf87216(mode="origen"){openDoc(certPdfDoc878407(mode))}
+// V87.526 · el «⋯» de cada fila de la llista amb totes les accions d'aquella certificació (l'Héctor, 6/11/2026: «a banda de fer factura i
+// eliminar pot estar també la de vista preliminar o veure PDF?… les accions haurien d'estar juntes»): primer els PDF (s'obren a la vista prèvia
+// en fulls A4: la certificació en vertical i el general a origen amb el quadre resum en horitzontal), després editar, enviar i signar, la factura
+// i eliminar. Abans només hi havia «Fer factura» i «Eliminar». Des de la fila d'una altra certificació, primer la tria i l'acció es fa al dibuix
+// següent (pend527), amb les dades d'aquella certificació.
+function fesCert527(k){
+  if(k==="pdf-actual")openCertPdf87216("actual");
+  else if(k==="pdf-origen")openCertPdf87216("origen");
+  else if(k==="enviar"){if(!contrast878424&&obra?.id&&cert)setEnviar440(true);else enviaCert878440()}
+}
+function accio527(c,k){if(cert?.id===c.id)fesCert527(k);else{setSelected(c.id);setPend527({id:c.id,k})}}
+function opcionsCert527(c){
+  if(!c)return null;
+  const n=+c.numero||0,sel=cert?.id===c.id;
+  const fa=faDe878364(c),vf=vfDe878364(c),pf=pfs878364.find(x=>x.certId===c.id),bloq=!!(fa||vf);
+  const potF=potFactDe878364(c),potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
+  const teMes=(data.partides||[]).some(r=>(((r.certMesuresByNum||{})[String(n)])||[]).length>0);
+  const env=!clientMode&&!!openEmail,sig=!clientMode&&!contrast878424&&!!obra?.id;
+  const proforma=!clientMode&&!contrast878424&&!!pf&&!fa;
+  const tria=()=>{if(!sel)setSelected(c.id)};
+  return <>
+    <small className="amh-v878273">{i18nT("Veure i imprimir")}</small>
+    <button type="button" className="pdf-c-v878527" onClick={()=>accio527(c,"pdf-actual")}><FileText size={15} aria-hidden="true"/> {i18nT("PDF · Certificació {n}",{n})}</button>
+    <button type="button" className="pdf-o-v878527" onClick={()=>accio527(c,"pdf-origen")}><Layers size={15} aria-hidden="true"/> <span className="dues-v878527">{i18nT("PDF · General a origen")}<small>{i18nT("amb el quadre resum")}</small></span></button>
+    {teMes&&<div className="chk-v878527"><input type="checkbox" aria-label={i18nT("Amb les línies d’amidament")} checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/><span onClick={()=>setIncludeMesures8780(v=>!v)}>{i18nT("Amb les línies d’amidament")}</span></div>}
+    {(!bloq||env||sig)&&<small className="amh-v878273">{i18nT("Editar, enviar i signar")}</small>}
+    {!bloq&&<button type="button" className="editar-v878527" onClick={()=>{tria();setDetall426(true);setEditing(true);setCertMode8711("emplenar");window.scrollTo?.(0,0)}}><PenLine size={15} aria-hidden="true"/> {i18nT("Editar")}</button>}
+    {env&&<button type="button" className="cert-enviar-v878337" onClick={()=>accio527(c,"enviar")}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+    {sig&&<button type="button" className="sigcert-btn-v878408" onClick={()=>{tria();setSigCert408(true)}}><Signature size={15} aria-hidden="true"/> {sel&&sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
+    {(proforma||!!fa||potF)&&<small className="amh-v878273">{i18nT("Factura")}</small>}
+    {proforma&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pf,obraData,client))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
+    {fa?<button type="button" onClick={()=>openDoc?.(docFactura878337(fa,pf,obraData))}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>
+      :potF&&<button type="button" className="cert-fer-v878337" onClick={()=>{tria();setFerFactura878337(true)}}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Fer factura")}</button>}
+    {potDel&&<><small className="amh-v878273">{i18nT("Més")}</small><button type="button" className="cert-del-v878273 perill" aria-label={i18nT("Eliminar la certificació {n}",{n})} onClick={()=>deleteCertificacio8721(c.id)}><Trash2 size={15} aria-hidden="true"/> {i18nT("Eliminar")}</button></>}
+  </>;
+}
+// V87.526 · a dalt de la certificació, com al pressupost (l'Héctor, 6/11/2026: «a pressupost hi ha editar, imprimir, enviar, signar… doncs a
+// certificacions igual»): Imprimir · Enviar · Signar · la factura, i «⋯» amb la proforma i eliminar. «Editar» i el que és d'omplir les partides
+// (afegir feina, omplir-la des d'un Excel, les partides retirades) van a dins de la targeta «Fer la certificació». Al mòbil i l'iPad: Imprimir ·
+// Enviar · Opcions.
+function botonsCap527(){
+  const env=!clientMode&&!!openEmail,sig=!clientMode&&!contrast878424&&!!obra?.id&&!!cert;
+  const pf=!clientMode&&!contrast878424&&!!pfCert878337&&!faCert878337,fer=potFacturar878337&&!contrast878424;
+  const del=!!deleteCertificacio8721&&!readOnly&&!faCert878337&&!vfCert878337&&!contrast878424&&!!cert;
+  const bImp=<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>;
+  const bEnv=env?<button type="button" className="secondary cert-enviar-v878337" onClick={()=>fesCert527("enviar")}><Mail size={16} aria-hidden="true"/> {i18nT("Enviar")}</button>:null;
+  const iPf=pf?<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData,client))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>:null;
+  const iDel=del?<button type="button" className="cert-del-v878273 perill" onClick={()=>deleteCertificacio8721(cert.id)}><Trash2 size={15} aria-hidden="true"/> {i18nT("Eliminar la certificació")}</button>:null;
+  if(pc527)return <>{bImp}{bEnv}
+    {sig&&<button type="button" className="secondary sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={16} aria-hidden="true"/> {i18nT("Signar")}</button>}
+    {faCert878337?<button type="button" className="secondary fa-btn-v878527" onClick={()=>openDoc?.(docFactura878337(faCert878337,pfCert878337,obraData))}><ReceiptText size={16} aria-hidden="true"/> {i18nT("Factura {n}",{n:faCert878337.numero})}</button>
+      :fer?<button type="button" className="secondary cert-fer-v878337" onClick={()=>setFerFactura878337(true)}><ReceiptText size={16} aria-hidden="true"/> {i18nT("Fer factura")}</button>:null}
+    {(iPf||iDel)&&<ActionMenu87213 className="accions-v878364 mes-v878527" fletxa={false} titol={i18nT("Més opcions")} label={<Ellipsis size={18} aria-hidden="true"/>}>{iPf}{iDel}</ActionMenu87213>}
+  </>;
+  return <>{bImp}{bEnv}
+    {(sig||pf||!!faCert878337||fer||del)&&<ActionMenu87213 className="accions-v878364 tot-v878527" label={i18nT("Opcions")}>
+      {sig&&<button type="button" className="sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
+      {iPf}
+      {faCert878337?<button type="button" onClick={()=>openDoc?.(docFactura878337(faCert878337,pfCert878337,obraData))}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>
+        :fer?<button type="button" className="cert-fer-v878337" onClick={()=>setFerFactura878337(true)}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Fer factura")}</button>:null}
+      {iDel}
+    </ActionMenu87213>}
+  </>;
+}
+// V87.526 · a dins de «Fer la certificació» (abans «Partides»): «Editar» (o, editant, «Cancel·lar» i «Guardar canvis») i el que és d'omplir-la
+function einesCert527(){
+  const pot=!readOnly&&!contrast878424;
+  return <div className="cert-eines-v878527">
+    {!editing?<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>
+      :<div className="edita-fix-v878452"><span className="tot-m-v878452"><small>{i18nT("Certificació {n}",{n:certNum})}</small><b>{money(certTotal(certNum))}</b></span><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button></div>}
+    {pot&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}
+    {pot&&!clientMode&&<label className={`secondary excel-v878527${certImportBusy878231?" disabled":""}`} title={i18nT("Llegeix les quantitats d’aquesta certificació d’un Excel")}><Upload size={15} aria-hidden="true"/> {certImportBusy878231?i18nT("Llegint Excel..."):i18nT("Omplir-la des d’un Excel")}<input type="file" accept=".xlsx,.xls" disabled={certImportBusy878231} onChange={e=>{const file=e.target.files?.[0];readCertificationExcel878231(file);e.target.value=""}}/></label>}
+    {hiddenCount878132>0&&<button type="button" className="secondary" onClick={()=>setShowHiddenCert878132(v=>!v)}>{showHiddenCert878132?i18nT("Amagar partides retirades"):i18nT("Mostrar partides retirades")} ({hiddenCount878132})</button>}
+  </div>;
+}
 // V87.407 · el document de la certificació, per obrir-lo o per adjuntar-lo en enviar-la
 // V87.413 / V87.423 · marques de la partida oberta (nova, quantitat que s'executarà), desades al moment
 function posaPartida878423(patch){const row=partidaPanel87216;if(!row)return;setData(d=>({...d,partides:(d.partides||[]).map(r=>(row.id?r.id===row.id:(r.codi===row.codi&&r.concepte===row.concepte))?{...r,...patch}:r)}));setPartidaPanel87216({...row,...patch})}
@@ -17779,11 +17861,9 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
         <input type="date" className="cert-date-input-v8721" aria-label={i18nT("Data de la certificació {n}",{n:c.numero})} value={dateVal8721(c)||""} disabled={!!fa||!!vf} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()} onChange={e=>{const value=e.target.value;setDateDraft8721(d=>({...d,[c.id]:value}));updateCertDate8721?.(c.id,value)}}/>
         <strong>{money(imp)}</strong>
         {ambFact878364&&<span className="fact-v878364">{fa?<button type="button" className={"cert-fa-v878337"+(difer?" mal":"")} title={difer?i18nT("La factura ({f}) no coincideix amb la certificació ({c})",{f:money(fa.base),c:money(imp)}):i18nT("Veure la factura")} onClick={e=>{e.stopPropagation();openDoc?.(docFactura878337(fa,pfs878364.find(x=>x.certId===c.id),obraData))}}>{difer&&<AlertTriangle size={14} aria-hidden="true"/>}{fa.numero}</button>:vf?<span className="cert-fa-v878337">{vf.numSerie}</span>:<span className="pend">{i18nT("Pendent")}</span>}</span>}
-        <span className="acc-v878364" onClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}>{(potF||fa||potDel)&&<ActionMenu87213 className="fila-v878364" fletxa={false} titol={i18nT("Opcions de la certificació {n}",{n:c.numero})} label={<Ellipsis size={18} aria-hidden="true"/>}>
-          {potF&&<button type="button" className="cert-fer-v878337" onClick={()=>{setSelected(c.id);setFerFactura878337(true)}}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Fer factura")}</button>}
-          {fa&&<button type="button" onClick={()=>openDoc?.(docFactura878337(fa,pfs878364.find(x=>x.certId===c.id),obraData))}><FileText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>}
-          {potDel&&<button type="button" className="cert-del-v878273 perill" aria-label={i18nT("Eliminar la certificació {n}",{n:c.numero})} onClick={()=>deleteCertificacio8721(c.id)}><Trash2 size={15} aria-hidden="true"/> {i18nT("Eliminar")}</button>}
-        </ActionMenu87213>}</span>
+        <span className="acc-v878364" onClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}><ActionMenu87213 className="fila-v878364 tot-v878527" fletxa={false} titol={i18nT("Opcions de la certificació {n}",{n:c.numero})} label={<Ellipsis size={18} aria-hidden="true"/>}>
+          {opcionsCert527(c)}
+        </ActionMenu87213></span>
       </div>})}</div>}
 </div><Recollir878432/></details>}
 <>
@@ -17794,6 +17874,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     <b className="tot">{money(editing?certTotal(certNum):certListTotal878215(cert))}</b>
     <div className="botons cert-barra-v878364">
     {sigs408.length>0&&<button type="button" className="sigcert-xip-v878408" onClick={()=>setSigCert408(true)} title={sigs408.map(x=>x.nom||x.org).join(" · ")}><Signature size={15} aria-hidden="true"/> {sigs408.length===1?i18nT("1 signatura"):i18nT("{n} signatures",{n:sigs408.length})}</button>}
+    {vell527?<>
     {bloq878364?<span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>
       :!editing?<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>
       :<><div className="edita-fix-v878452"><span className="tot-m-v878452"><small>{i18nT("Certificació {n}",{n:certNum})}</small><b>{money(certTotal(certNum))}</b></span><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button></div>{!readOnly&&!contrast878424&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}</>}
@@ -17809,6 +17890,10 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       {!clientMode&&!readOnly&&!contrast878424&&<label className={`action-upload-v87213 ${certImportBusy878231?"disabled":""}`}><Upload size={15} aria-hidden="true"/> {certImportBusy878231?i18nT("Llegint Excel..."):i18nT("Importar Excel de certificacions")}<input type="file" accept=".xlsx,.xls" disabled={certImportBusy878231} onChange={e=>{const file=e.target.files?.[0];readCertificationExcel878231(file);e.target.value=""}}/></label>}
       {!!deleteCertificacio8721&&!readOnly&&!faCert878337&&!vfCert878337&&!contrast878424&&!!cert&&<button type="button" className="cert-del-v878273 perill" onClick={()=>deleteCertificacio8721(cert.id)}><Trash2 size={15} aria-hidden="true"/> {i18nT("Eliminar la certificació")}</button>}
     </ActionMenu87213>}
+    </>:<>
+    {bloq878364&&<span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>}
+    {!editing&&botonsCap527()}
+    </>}
     </div>
   </div>
   </div>}
@@ -17825,16 +17910,14 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     <button type="button" className="opcio" onClick={()=>{setEnviar440(false);setSigCert408("envia")}}><Signature size={20} aria-hidden="true"/> {i18nT("Enviar-la perquè la tornin signada")}</button>
   </div></Modal>}
   {sigCert408&&<SignaturaCert878408 autoEnvia={sigCert408==="envia"} obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
-  {detall426&&cert&&<details className="card bloc-v878426 cert-resum-v878426"><summary><LayoutDashboard size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Resum")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
-    {readOnly?<ClientCertSummaryV87235 data={data}/>:<ResumCert878426 data={data} imp={editing?certTotal(certNum):certListTotal878215(cert)} num={certNum}/>}
-  </div><Recollir878432/></details>}
   {extraOpen878125&&<Modal title={i18nT("Afegir feina · Certificació {n}",{n:certNum})} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p className="cert-add-intro-v878255">{i18nT("Què vols afegir a la Certificació")} {certNum}?</p>
   <div className="cert-add-kinds-v878255" role="radiogroup" aria-label={i18nT("Tipus de feina")}>
     {[["modificacio","Feina nova o extra","Una feina que no era al pressupost, o un canvi. Hi poses la quantitat i el preu, i queda afegida al pressupost."],["provisio","Partida a compte","Un import provisional que només surt en aquesta certificació (provisió de fons)."],["administracio","Hores i materials","Feina pagada per hores. Apuntes les hores d’oficial i de peó i els materials, i l’import se suma sol."]].map(([k,t,d])=><button type="button" key={k} role="radio" aria-checked={extraDraft878125.tipus===k} className={extraDraft878125.tipus===k?"on":""} onClick={()=>{const tipus=k;setExtraDraft878125(x=>({...x,tipus,cap:tipus==="administracio"?(x.cap||"C98 FEINES PER ADMINISTRACIÓ"):(x.cap==="C98 FEINES PER ADMINISTRACIÓ"?"":x.cap),ut:tipus==="administracio"?"€":(x.ut==="€"?"ut":x.ut),q:tipus==="administracio"?"":(x.q||"1"),pu:tipus==="administracio"?"":(x.pu||"0")}))}}><b>{t}</b><span>{d}</span></button>)}
   </div>
   {extraDraft878125.tipus==="administracio"&&<p className="cert-add-alt-v878255">{i18nT("Si les hores són d’una partida que ja existeix,")} <button type="button" className="link" onClick={()=>{setExtraOpen878125(false);openAdminMonthlyNew878133()}}>{i18nT("apunta-les directament a aquella partida")}</button>.</p>}
   <div className="cert-extra-form-v878125"><label><span>{i18nT("A quin capítol va?")}</span><select value={extraDraft878125.cap} onChange={e=>setExtraDraft878125(x=>({...x,cap:e.target.value}))}><option value="">{extraDraft878125.tipus==="administracio"?i18nT("Capítol propi de feines per administració (C98)"):i18nT("Capítol d’extres i modificacions (C99)")}</option>{capNames878125().map(c=><option key={c} value={c}>{i18nT(c)}</option>)}{!capNames878125().includes("C98 FEINES PER ADMINISTRACIÓ")&&<option value="C98 FEINES PER ADMINISTRACIÓ">{i18nT("C98 FEINES PER ADMINISTRACIÓ")}</option>}<option value="C99 EXTRES / MODIFICACIONS">{i18nT("C99 EXTRES / MODIFICACIONS")}</option></select></label><label><span>{i18nT("Codi")}</span><input value={extraDraft878125.codi} onChange={e=>setExtraDraft878125(x=>({...x,codi:e.target.value}))} placeholder={i18nT("Automàtic")}/></label>{extraDraft878125.tipus!=="administracio"&&<label><span>{i18nT("Unitat")}</span><input value={extraDraft878125.ut} onChange={e=>setExtraDraft878125(x=>({...x,ut:e.target.value}))}/></label>}<label className="wide"><span>{i18nT("Què s’ha fet?")}</span><input value={extraDraft878125.concepte} onChange={e=>setExtraDraft878125(x=>({...x,concepte:e.target.value}))} placeholder={extraDraft878125.tipus==="administracio"?"Ex: Feines per administració juliol":"Ex: Reforç extra / provisió de fons"}/></label>{extraDraft878125.tipus==="administracio"?<div className="module-note-v8738 cert-admin-auto-price-v87220 wide"><b>{i18nT("Preu calculat automàticament")}</b><span>{i18nT("A continuació introduiràs totes les feines, hores i materials. La suma de les línies serà l’import certificat de la partida.")}</span></div>:<><label><span>{i18nT("Quantitat feta")}</span><input inputMode="decimal" value={extraDraft878125.q} onChange={e=>setExtraDraft878125(x=>({...x,q:e.target.value}))}/></label><label><span>{i18nT("Preu per unitat (€)")}</span><input inputMode="decimal" value={extraDraft878125.pu} onChange={e=>setExtraDraft878125(x=>({...x,pu:e.target.value}))}/></label></>}<label className="wide"><span>{i18nT("Descripció")} <em>{i18nT("opcional")}</em></span><input value={extraDraft878125.desc} onChange={e=>setExtraDraft878125(x=>({...x,desc:e.target.value}))}/></label></div></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setExtraOpen878125(false)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={addExtraCertLine878125}>{extraDraft878125.tipus==="administracio"?i18nT("Continuar i apuntar hores"):i18nT("Afegir a la certificació")}</button></div></Modal>}
-  {detall426&&cert&&!bloq878364&&<details className="card bloc-v878426 cert-partides-v878426" open={certMode8711==="emplenar"} onToggle={e=>{const o=e.currentTarget.open;if(o&&certMode8711!=="emplenar")setCertMode8711("emplenar");else if(!o&&certMode8711==="emplenar"&&!editing)setCertMode8711("")}}><summary><ListChecks size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Partides")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+  {detall426&&cert&&!bloq878364&&<details className="card bloc-v878426 cert-partides-v878426" open={certMode8711==="emplenar"} onToggle={e=>{const o=e.currentTarget.open;if(o&&certMode8711!=="emplenar")setCertMode8711("emplenar");else if(!o&&certMode8711==="emplenar"&&!editing)setCertMode8711("")}}><summary onClick={e=>{if(editing&&!vell527)e.preventDefault()}}><ListChecks size={18} aria-hidden="true"/><span className="t"><b>{vell527?i18nT("Partides"):i18nT("Fer la certificació")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+  {certMode8711==="emplenar"&&!vell527&&einesCert527()}
   {certMode8711==="emplenar"&&<div className="cert-grid-wrap-v69">
     <div className="cert-grid-v69 group">
       <div className="g pressupost">{i18nT("PRESSUPOST")}</div>
@@ -17885,7 +17968,11 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     </div>
   </div>}
   <Recollir878432/></details>}
-  {detall426&&cert&&!readOnly&&<details className="card bloc-v878426 quadre-v878425 quadre-bloc-v878426"><summary><Layers size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Quadre resum")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><CertResumV69 data={data}/></div><Recollir878432/></details>}
+  {detall426&&cert&&<details className="card bloc-v878426 cert-resum-v878426"><summary><LayoutDashboard size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Resum")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
+    {readOnly?<ClientCertSummaryV87235 data={data}/>:<ResumCert878426 data={data} imp={editing?certTotal(certNum):certListTotal878215(cert)} num={certNum}/>}
+    {!vell527&&!readOnly&&<details className="sub-v878426 quadre-v878425 quadre-sub-v878527"><summary><Layers size={16} aria-hidden="true"/><span className="t"><b>{i18nT("Quadre resum")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos"><CertResumV69 data={data}/></div></details>}
+  </div><Recollir878432/></details>}
+  {detall426&&cert&&!readOnly&&vell527&&<details className="card bloc-v878426 quadre-v878425 quadre-bloc-v878426"><summary><Layers size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Quadre resum")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><CertResumV69 data={data}/></div><Recollir878432/></details>}
   {detall426&&cert&&potComp878424&&<details className="card bloc-v878426 compara-bloc-v878426"><summary><Scale size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Comparar")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><ComparaCert878424 raw={compara878424.raw} bid={compara878424.bid} num={certNum} obra={obra} openDoc={openDoc} guest={contrast878424}/></div><Recollir878432/></details>}
 </>
 </div>
@@ -20838,7 +20925,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.525",
+    app_version:"87.526",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

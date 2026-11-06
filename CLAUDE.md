@@ -3232,6 +3232,27 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       `data-sub`): Pressupostos d'honoraris («1 pressupost»), Factures (el facturat o «Cap»), Hores («2,5 h»), Despeses (les meves) i Rendiment (el resultat).
       Al mòbil, de dues en dues. Les regles d'abans de les pestanyes (V87.389, V87.431) portaven `!important`: les noves també.
     - Prova: `v525test.mjs` (15, demo-tecnic: ordinador i mòbil).
+  - **V87.526 · La certificació: cada cosa a la seva targeta, els botons de dalt com al pressupost i el «⋯» de la fila amb tot** (l'Héctor,
+    6/11/2026: «a banda de fer factura i eliminar pot estar també la de vista preliminar o veure PDF?»; «primer hauria d'estar Partides… una
+    paraula com fer certificació… el resum i el quadre resum no han d'anar juntes?… l'editar, si és de les partides, a la targeta que li toca…
+    les opcions sempre a dins de la targeta corresponent… a fora, com a pressupost, editar, imprimir, enviar, signar»; `src/theme-v878527.css`):
+    - **A dins d'una certificació**, primer **«Fer la certificació»** (abans «Partides», `cert-partides-v878426`) amb, a dins (`einesCert527`),
+      **Editar** (editant, Cancel·lar · Guardar canvis; al mòbil, la barra fixa a baix de la V87.452), Afegir feina, **«Omplir-la des d'un Excel»**
+      (abans «Importar Excel de certificacions») i les partides retirades; després **«Resum»** amb el **Quadre resum** a dins (subtargeta
+      `quadre-sub-v878527`). Tot tancat en entrar. Mentre s'edita, «Fer la certificació» no es plega.
+    - **A dalt** (`botonsCap527`), sense «Editar»: a l'ordinador **Imprimir · Enviar · Signar · Fer factura** (o «Factura F…») i «⋯» (Proforma,
+      Eliminar la certificació); al mòbil i l'iPad, **Imprimir · Enviar · Opcions** (Signar, Proforma, la factura, Eliminar). «Imprimir» obre les
+      opcions de sempre (PDF de la certificació en A4 vertical, PDF a origen amb el quadre resum en horitzontal, administració, línies d'amidament).
+    - **El «⋯» de cada fila de la llista** (`opcionsCert527(c)`), per grups: **Veure i imprimir** (`PDF · Certificació N` i `PDF · General a origen`
+      «amb el quadre resum»; amb línies d'amidament, la casella «Amb les línies d'amidament») · **Editar, enviar i signar** (Editar obre la certificació
+      amb «Fer la certificació» en edició) · **Factura** (Proforma, Fer factura / Veure la factura) · Eliminar. Des de la fila d'una altra certificació,
+      primer es tria (`setSelected`) i l'acció es fa al dibuix següent (`pend527`, `fesCert527`): els PDF i «Enviar». La fila amb el menú obert va per
+      sobre de les de sota (cada menú té capa 40).
+    - **Les proves d'abans** continuen amb la certificació d'abans («Editar» a dalt, Resum · Partides · Quadre resum) amb la marca
+      `cert-imprimir-prova-v878527` (`vell527`; la posa l'ajuda de les proves si la pàgina no té `sessionStorage.__certNoTocar`; cap usuari no la té).
+    - Prova: `v526test.mjs` (20: menú de la fila, PDF de la certificació 1 des de la seva fila, a origen vertical + horitzontal, en entrar tot tancat i
+      el quadre dins del Resum, els botons de dalt, «Imprimir», «Fer la certificació» amb Editar a dins, «Editar» des de la fila, «Enviar» des d'una
+      altra fila, mòbil).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3430,7 +3451,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.525 a Render):**
+**Estat (publicada la V87.526 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
