@@ -3355,6 +3355,35 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Proves:** les d'abans porten la marca `ipc-prova-v878533` (sense l'IPC sol: els seus preus esperats són els del banc; la posa l'ajuda de les proves si
       la pàgina no té `sessionStorage.__ipcNoTocar`). `ipc533unit.mjs` (10, sense navegador) i `v533test.mjs` (15). El Supabase de proves fa complir
       `comptes`. Adaptades `v460test` i `pressupost372test` (sense l'enllaç de l'INE; el banc comú comprimit) i `v459test`, `v476test` i `v478test` (des de la V87.486 el pressupost buit té la rajola «Amb IA», no «Fer el pressupost amb IA»).
+  - **V87.534 · «Des de Preus» i «A mà» amb el banc de preus, el capítol en un desplegable que es filtra, un sol «Opcions» editant, «El meu
+    encàrrec» amb desplegable i el nom del menú** (l'Héctor, 6/11/2026, amb captures: «la base de preus… són preus que ha trobat d'altres partides
+    més usades, però no del banc de preus»; «els capítols així no és pràctic amb el cursor… un desplegable o que pugui posar alguna lletra i filtri»;
+    «simplifiquem conceptes… afegir i eines no poden estar englobats en opcions?»; «el meu encàrrec no ho fa»; «posa APP CONTROL D'OBRES i no puc
+    canviar el nom al del meu despatx»; `src/theme-v878535.css`):
+    - **«Des de Preus»** (`AfegirLlibreria878361`): dues fonts, **Preus** (la llibreria i els habituals del client) i **Banc de preus** (`fonts-v878534`;
+      amb la llibreria buida s'obre al banc). Al banc: cercador per paraules sense accents (`nrm878533`), el capítol triat inclou els de dins, i cada
+      partida amb el preu posat al dia (IPC) i els marges de l'obra (`partidaBanc878534(p, banc, mg, q)`: `margesLinia878378` amb la font «banc»; la
+      crida passa `marges={margesObra878378(data)}`). Triada, si la quantitat fa saltar el mínim de mà d'obra, ho diu («Amb 1 m²: … · mínim 4 h»,
+      `preu-q-v878534`). En afegir-la: descompost, `origenPreu878368` «Banc 2023 + IPC 14,1 % · codi · …», `tipus:"Banc"`, `bancCodi878534` (per a «Ja
+      hi és») i sense `libraryItemId`. Buscant a Preus sense resultats: «N’hi ha N al banc de preus · Veure-les».
+    - **El capítol, en un desplegable que es filtra** (`TriaCap878534`, també a Preus): un botó «Capítol: …» que obre a sota el cercador i la llista;
+      sense escriure, un nivell amb › per entrar-hi i «‹» per tornar, «Tot «…»» i quantes partides; escrivint, tots els que hi coincideixen amb el camí.
+      Esc o tocar fora el tanquen. L'arbre del banc, `idxBanc878534` (també el fa servir «La base per capítols»).
+    - **«A mà»** del pressupost buit: comença el pressupost i obre el cercador («Busca a la base de preus o escriu-les tu mateix»).
+    - **Editant el pressupost, un sol «Opcions»** (`opcions-edita-v878534`): Afegir (Des de Preus, Pressupost amb IA…) · Partides (Seleccionar partides) ·
+      Eines (`eines534`). Les proves d'abans porten la marca `opcions-edita-prova-v878534` (els tres botons d'abans; la posa l'ajuda de les proves si
+      la pàgina no té `sessionStorage.__opcionsNoTocar`).
+    - **«El meu encàrrec» a l'ordinador** (obres que no són un encàrrec tècnic, on només té Honoraris): en passar-hi el ratolí, desplegable amb Hores ·
+      Despeses · Factures (`subs534`, `pickSub534`); cadascuna obre Honoraris a la seva pestanya (`window.__acoHonSub878410` i l'event
+      `aco-hon-sub-534`). Al mòbil, com abans.
+    - **El banc comú també als comptes de tècnic** (`syncBancComu878460` ja no demana el mòdul d'obra).
+    - **Nom del menú** (`nomMenu878534`): Ajustos › Imatge de l'empresa › «Nom que surt al menú» (`aco_marca_v878351.nom`); si és buit i hi ha logo, el
+      de l'empresa o, al compte de l'Héctor, el de l'emissor dels documents (Ajustos › Documents).
+    - **Pendent (V87.535, l'Héctor):** el banc de preus propi, que comença buit i s'omple amb les partides que es canvien en un pressupost (descripció,
+      preu, rendiments): en desar-les, l'app pregunta si es guarden al banc propi, al capítol que tenien a la base general; a «Des de Preus», la base
+      general i la pròpia.
+    - Prova: `v534test.mjs`. Adaptades `v486test` («A mà» obre el cercador), `v492test` («El meu encàrrec» a l'ordinador) i `habitualstest` (el
+      desplegable de capítols). Eina nova `guia534.mjs` (captures de la guia pràctica, `D:/aco-tmp/guia534`).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3553,7 +3582,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.533 a Render):**
+**Estat (publicada la V87.534 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
