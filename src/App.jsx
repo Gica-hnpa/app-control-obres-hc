@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.526";
+const APP_VERSION878264="87.527";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12947,6 +12947,15 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   // a les rajoles del tècnic, la línia de sota diu els apartats que hi ha de debò (no hi ha partes, i els encàrrecs tècnics no tenen planning)
   const sub492=b=>b.k==="El meu encàrrec"?t(pur?"honoraris, hores, factures":"hores, despeses, factures"):b.tabs.slice(0,3).map(x=>tabLabel878269(x,all,pur)).join(", ").toLowerCase();const fila490=4;
   const[ob878485,setOb878485]=useState("");
+  // V87.527 · a l'ordinador, la llista de cada rajola s'obre en passar-hi el ratolí, enganxada a sota de la rajola (l'Héctor, 6/11/2026: «com
+  // altres apps, que quan passes el ratolí per sobre ja es despleguen les opcions per triar»); en marxar-ne es plega. Tocar-la també l'obre.
+  const drop527=rj492&&!barra878485;
+  const tm527=useRef(null),hoverAt527=useRef(0),btn527=useRef({}),graella527=useRef(null);
+  const obreHover527=k=>{clearTimeout(tm527.current);if(ob878485===k)return;const fes=()=>{hoverAt527.current=Date.now();setOb878485(k)};if(ob878485)fes();else tm527.current=setTimeout(fes,140)};
+  const tancaHover527=()=>{clearTimeout(tm527.current);tm527.current=setTimeout(()=>setOb878485(""),320)};
+  const queda527=()=>clearTimeout(tm527.current);
+  useEffect(()=>()=>clearTimeout(tm527.current),[]);
+  useEffect(()=>{if(!drop527||!ob878485)return;const off=e=>{if(!e.target.closest?.(".rajoles-v878485"))setOb878485("")};const esc=e=>{if(e.key==="Escape")setOb878485("")};document.addEventListener("pointerdown",off);document.addEventListener("keydown",esc);return()=>{document.removeEventListener("pointerdown",off);document.removeEventListener("keydown",esc)}},[drop527,ob878485]);
   // V87.504 · amb la llista d'una rajola oberta (mòbil i iPad), el que hi ha a sota no es veu (l'Héctor, 4/11/2026: «quan entres en una
   // pestanya com Dia a dia no s'han de veure a sota les altres perquè distorsiona»)
   useEffect(()=>{const on=!!ob878485&&barra878485;try{document.documentElement.classList.toggle("obra-llista-v878504",on)}catch{}return()=>{try{document.documentElement.classList.remove("obra-llista-v878504")}catch{}}},[ob878485,barra878485]);
@@ -12991,9 +13000,11 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
     {rj492?<div className={"obra-tabs-bar-v878269 obra-rajoles-v878485"+(barra878485?"":" pc-v878490")+(tec492?" tec-v878492":"")}>
       <div className="obra-blocs-v878299 rajoles-v878485" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{(()=>{const obJ=blocs.findIndex(x=>x.k===ob878485);const out=[];
         blocs.forEach((b,j)=>{const on=b.k===blocActiu.k,open=ob878485===b.k;
-          out.push(<button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>{if(b.tabs.length===1){setOb878485("");pick(b.tabs[0]);return}setOb878485(o=>o===b.k?"":b.k)}}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(b.k)}</b><i className="curt-v878504">{guio878507(t(BLOC_CURT878504[b.k]||b.k))}</i><small className={on&&tabLabel878269(active,all,pur)===t(BLOC_CURT878504[b.k]||b.k)?"igual-v878504":undefined}>{on?tabLabel878269(active,all,pur):tec492?sub492(b):t(BLOC_SUB878485[b.k])}</small></span>{b.tabs.length===1?<ChevronRight className="chev" aria-hidden="true"/>:<ChevronDown className="chev" aria-hidden="true"/>}</button>);
+          out.push(<button type="button" role="tab" key={b.k} ref={el=>{if(el)btn527.current[b.k]=el}} aria-selected={on} aria-expanded={open} className={`${on?"on":""} ${open?"open":""}`} onMouseEnter={drop527?()=>{if(b.tabs.length>1)obreHover527(b.k);else tancaHover527()}:undefined} onMouseLeave={drop527?tancaHover527:undefined} onClick={()=>{clearTimeout(tm527.current);if(b.tabs.length===1){setOb878485("");pick(b.tabs[0]);return}if(drop527&&ob878485===b.k&&Date.now()-hoverAt527.current<700)return;setOb878485(o=>o===b.k?"":b.k)}}>{BLOC_ICON878485[b.k]}<span className="t"><b>{t(b.k)}</b><i className="curt-v878504">{guio878507(t(BLOC_CURT878504[b.k]||b.k))}</i><small className={on&&tabLabel878269(active,all,pur)===t(BLOC_CURT878504[b.k]||b.k)?"igual-v878504":undefined}>{on?tabLabel878269(active,all,pur):tec492?sub492(b):t(BLOC_SUB878485[b.k])}</small></span>{b.tabs.length===1?<ChevronRight className="chev" aria-hidden="true"/>:<ChevronDown className="chev" aria-hidden="true"/>}</button>);
           // la llista va a sota de la fila on és la rajola oberta (dues per fila)
-          if(obJ>=0&&(j%fila490===fila490-1||j===blocs.length-1)&&Math.floor(obJ/fila490)===Math.floor(j/fila490))out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485" role="menu" aria-label={t(blocs[obJ].k)}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)});
+          if(!drop527&&obJ>=0&&(j%fila490===fila490-1||j===blocs.length-1)&&Math.floor(obJ/fila490)===Math.floor(j/fila490))out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485" role="menu" aria-label={t(blocs[obJ].k)}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)});
+        if(drop527&&obJ>=0){const bt=btn527.current[blocs[obJ].k];const pos=bt?{left:bt.offsetLeft,top:bt.offsetTop+bt.offsetHeight+6,minWidth:bt.offsetWidth}:{};
+          out.push(<div key="llista" className="obra-bloc-panel-v878299 llista-v878485 drop-v878527" role="menu" aria-label={t(blocs[obJ].k)} style={pos} onMouseEnter={queda527} onMouseLeave={tancaHover527}>{blocs[obJ].tabs.map(x=><button type="button" role="menuitem" key={x} className={x===active?"on":""} onClick={()=>{setOb878485("");pick(x)}}>{iconaTab878400(x)}<span>{tabLabel878269(x,all,pur)}</span><ChevronRight className="chev" size={18} aria-hidden="true"/></button>)}</div>)}
         return out})()}</div>
     </div>:<div className={`obra-tabs-bar-v878269 obra-blocs-bar-v878299 ${narrow?"narrow":""}`}>
       <div className="obra-blocs-v878299" role="tablist" aria-label={t("Apartats de l’obra")} data-apartats={JSON.stringify(Object.fromEntries(blocs.map(b=>[b.k,b.tabs.map(x=>tabLabel878269(x,all,pur))])))}>{blocs.map(b=>{const on=b.k===blocActiu.k,open=obert?.k===b.k;return <button type="button" role="tab" key={b.k} aria-selected={on} aria-expanded={narrow&&b.tabs.length>1?open:undefined} className={`${on?"on":""} ${open?"open":""}`} onClick={()=>clickBloc(b)}>{BLOC_ICON878299[b.k]}<span className="txt-v878451"><span className="nom">{t(b.k)}</span>{narrow&&on&&<small>{tabLabel878269(active,all,pur)}</small>}</span>{narrow&&on&&b.tabs.length>1&&<ChevronDown className="gira-v878451" aria-hidden="true"/>}</button>})}</div>
@@ -20925,7 +20936,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.526",
+    app_version:"87.527",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

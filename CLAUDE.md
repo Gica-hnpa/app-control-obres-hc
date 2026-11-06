@@ -3253,6 +3253,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Prova: `v526test.mjs` (20: menú de la fila, PDF de la certificació 1 des de la seva fila, a origen vertical + horitzontal, en entrar tot tancat i
       el quadre dins del Resum, els botons de dalt, «Imprimir», «Fer la certificació» amb Editar a dins, «Editar» des de la fila, «Enviar» des d'una
       altra fila, mòbil).
+  - **V87.527 · Les rajoles de l'obra: a l'ordinador s'obren en passar-hi el ratolí, i la rajola oberta és la marcada** (l'Héctor, 6/11/2026:
+    «com altres apps, que quan passes el dit o el ratolí per sobre ja es despleguen les opcions per triar… hi ha marcada la de Comptabilitat i en
+    canvi he apretat Pressupost i certificacions: dona possibilitat a confusió»; `src/theme-v878528.css`):
+    - **Ordinador** (`drop527` = rajoles sense la barra de baix): passar el ratolí per sobre d'una rajola amb més d'un apartat obre la seva llista
+      en un menú enganxat a sota de la rajola (`.llista-v878485.drop-v878527`, posició amb `offsetLeft`/`offsetTop` de la rajola dins de la graella,
+      `position:relative`); en marxar-ne es plega (320 ms; `obreHover527`, `tancaHover527`, `queda527`); d'una rajola a l'altra canvia al moment.
+      Tocar-la també l'obre (si s'acaba d'obrir amb el ratolí, no la tanca); Esc o tocar fora la tanquen. La llista ja no va a sota de la fila.
+    - **Tots els aparells:** mentre una rajola té la llista oberta, és ella la plena de blau i la de l'apartat on ets queda suau (blau clar).
+    - Prova: `v527test.mjs` (14, amb el ratolí simulat: obrir, canviar de rajola, baixar a la llista, marxar, triar, tocar, Esc, tocar fora, mòbil).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3451,7 +3460,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.526 a Render):**
+**Estat (publicada la V87.527 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

@@ -1,0 +1,14 @@
+/* V87.527 · Rajoles de l'obra: a l'ordinador, la llista s'obre en passar-hi el ratolí, enganxada a sota de la rajola; a tots els aparells,
+   la rajola oberta és la marcada (la de l'apartat on ets, més suau mentre n'hi ha una altra d'oberta) */
+html body .obra-rajoles-v878485 .rajoles-v878485{position:relative!important}
+html body .obra-rajoles-v878485.pc-v878490 .llista-v878485.drop-v878527{grid-column:auto!important;position:absolute!important;z-index:90;display:flex!important;flex-direction:column!important;gap:2px!important;padding:6px!important;margin:0!important;max-width:min(440px,calc(100vw - 32px));background:#fff!important;border:1.5px solid #AEBBCA!important;border-radius:14px!important;box-shadow:0 14px 34px rgba(15,23,42,.18)!important}
+html body .obra-rajoles-v878485.pc-v878490 .llista-v878485.drop-v878527>button{min-height:44px;border-radius:10px!important;border:0!important;white-space:nowrap}
+html body .obra-rajoles-v878485.pc-v878490 .llista-v878485.drop-v878527>button+button{border-top:0!important}
+/* la rajola amb la llista oberta, plena; la del lloc on som, més suau mentre n'hi ha una altra d'oberta */
+html body .obra-rajoles-v878485 .rajoles-v878485>button.open:not(.on){background:#1D4ED8;border:2px solid #1D4ED8;color:#fff}
+html body .obra-rajoles-v878485 .rajoles-v878485>button.open:not(.on)>svg:first-child{background:rgba(255,255,255,.18);color:#fff}
+html body .obra-rajoles-v878485 .rajoles-v878485>button.open:not(.on) .t small,html body .obra-rajoles-v878485 .rajoles-v878485>button.open:not(.on) .chev{color:#DBEAFE}
+html body .obra-rajoles-v878485 .rajoles-v878485:has(>button.open)>button.on:not(.open){background:#EFF6FF;border-color:#93C5FD;color:#1D4ED8}
+html body .obra-rajoles-v878485 .rajoles-v878485:has(>button.open)>button.on:not(.open)>svg:first-child{background:#DBEAFE;color:#1D4ED8}
+html body .obra-rajoles-v878485 .rajoles-v878485:has(>button.open)>button.on:not(.open) .t small{color:#1D4ED8!important}
+html body .obra-rajoles-v878485 .rajoles-v878485:has(>button.open)>button.on:not(.open) .chev{color:#60A5FA}
