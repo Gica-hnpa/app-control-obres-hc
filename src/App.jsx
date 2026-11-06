@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.530";
+const APP_VERSION878264="87.531";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11276,7 +11276,9 @@ function RendimentEmpresa878343({obres=[],odata={},openObraTab}){
 // d'abans, la de la seva partida o capítol, i amb una sola fase, aquella. DGE i BI previst: `data.rendiment878342 = {dge, bi}` (%), i
 // els de l'empresa per defecte (`aco_empresa_v878259.dge878342` / `bi878342`).
 const ECON_FASES878342=["Amidaments obra","Pressupost","Certificacions","Facturació","Seguiment econòmic","Albarans"];
-function fasesObra878342(d={}){return ensureBudgetGroups8786(d||{}).groups}
+// V87.531 · les fases arxivades (un pressupost sobrant desat a Documents) no surten enlloc ni sumen; es recuperen des de «Fases»
+function arxIds878531(d={}){return new Set((d?.budgetGroups||[]).filter(g=>g&&g.arxivat878531&&g.id!=="principal").map(g=>g.id))}
+function fasesObra878342(d={}){const ax=arxIds878531(d);return ensureBudgetGroups8786(d||{}).groups.filter(g=>!ax.has(g.id))}
 // la fase d'una despesa o d'unes hores: la desada; si no, la de la seva partida o capítol; amb una sola fase, aquella; si no, cap ("")
 function faseDe878342(x,d={}){
   const gs=fasesObra878342(d);
@@ -11291,7 +11293,7 @@ function faseDe878342(x,d={}){
 }
 // V87.437 · fases alternatives (l'Héctor, 29/10/2026: dues opcions d'execució en un expedient): es marquen a la barra de fases i no sumen a
 // «Tota l'obra» (pressupost, certificat, despeses, hores, rendiment de l'obra i de l'empresa). La principal no pot ser alternativa.
-function altIds878437(d={}){return new Set((d?.budgetGroups||[]).filter(g=>g&&g.alternativa878437&&g.id!=="principal").map(g=>g.id))}
+function altIds878437(d={}){return new Set((d?.budgetGroups||[]).filter(g=>g&&(g.alternativa878437||g.arxivat878531)&&g.id!=="principal").map(g=>g.id))}
 function esAlt878437(d={},bid){return !!bid&&bid!=="principal"&&altIds878437(d).has(bid)}
 // una fase (o tota l'obra, "") hi compta: amb una fase, només aquella; a tota l'obra, totes menys les alternatives
 function okFase878437(d,bid,fase,alt){const b=bid||"";return fase?b===fase:!(alt||altIds878437(d)).has(b)}
@@ -11362,7 +11364,7 @@ function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId="",opts
     pct:ingressos>0.005?benefici/ingressos*100:null,margePct:ingressos>0.005?marge/ingressos*100:null,senseFase,cfg};
 }
 // Barra de fases (a dalt de l'Econòmic)
-function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova,onRenom,onElimina,onAlt,readOnly=false}){
+function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova,onRenom,onElimina,onAlt,onArxiva,onRecupera,readOnly=false}){
   const gs=fasesObra878342(data);
   const act=ensureBudgetGroups8786(data).active;
   const pfs=proformesObra878337(data);
@@ -11383,7 +11385,9 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
       <button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onNova?.()}}>{t("+ Nova fase")}</button>
       {!tota&&<button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onRenom?.(act)}}>{t("Canviar el nom de «{fase}»",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
       {!tota&&onAlt&&act!=="principal"&&gs.length>1&&<button type="button" className="alt-btn-v878437" onClick={e=>{e.currentTarget.closest("details").open=false;onAlt(act,!actAlt)}}>{actAlt?t("«{fase}» ja no és una alternativa",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})}):t("Marcar «{fase}» com a alternativa",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
+      {!tota&&onArxiva&&act!=="principal"&&gs.length>1&&<button type="button" className="arx-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onArxiva(act)}}>{t("Arxivar «{fase}» a Documents",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
       {!tota&&gs.length>1&&<button type="button" className="danger-text-v87229" onClick={e=>{e.currentTarget.closest("details").open=false;onElimina?.(act)}}>{t("Eliminar «{fase}»",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
+      {onRecupera&&(data.budgetGroups||[]).some(g=>g?.arxivat878531&&g.id!=="principal")&&<><span className="sep-v878531">{t("Arxivats")}</span>{(data.budgetGroups||[]).filter(g=>g?.arxivat878531&&g.id!=="principal").map(g=><button type="button" key={g.id} className="rec-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onRecupera(g.id)}}>{t("Recuperar «{fase}»",{fase:budgetName878273(g)})}</button>)}</>}
     </div></details>}
   </div>;
 }
@@ -12133,6 +12137,25 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
       const nou=gs.some(g=>g.id===bid)?gs.map(g=>g.id===bid?{...g,alternativa878437:on?true:undefined}:g):[...gs,{...(cur||{}),id:bid,alternativa878437:on?true:undefined}];
       return {...d,budgetGroups:nou,updatedAt:now}});
   }
+  // V87.531 · Arxivar un pressupost sobrant: el document del pressupost (com «Guardar a Documents») va a Documents › pressupost d’obra i la
+  // fase deixa de sortir a les fases i als totals (les partides no s’esborren). El document el fa el Pressupost (és qui té les partides
+  // a punt): si no s’hi és, s’hi va i ho fa en obrir-se.
+  function arxivaDirectBudget878531(id){
+    const bid=id||"";if(!bid||bid==="principal")return;const nom=budgetLabel8786(data,bid);
+    if((data?.certificacions||[]).some(c=>(c.budgetId||"principal")===bid)){alert(t("«{fase}» té certificacions: no es pot arxivar.",{fase:nom}));return}
+    if(!confirm(t("Arxivar «{fase}»? Es desa a Documents i deixa de sortir a les fases i als totals. Es pot recuperar des de «Fases».",{fase:nom})))return;
+    const r=window.__acoDocPres878531?.();
+    if(r&&r.bid===bid){fiArxiva878531(bid,r.doc);return}
+    window.__acoArxivaPend878531=bid;if(preferredBudgetTab878239&&activeTab!==preferredBudgetTab878239)setTab(preferredBudgetTab878239);
+  }
+  function fiArxiva878531(bid,doc){
+    const now=new Date().toISOString();const nom=budgetLabel8786(data,bid);
+    const rec={id:"doc-pres-arxiu-"+Date.now(),nom:`Pressupost arxivat · ${[doc?.numeroPressupost,nom].filter(Boolean).join(" · ")}`,tipus:"PRESSUPOST",folder:carpetaDe878408(obra,data,"03_AMIDAMENTS_PRESSUPOST_OBRA"),data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:0,storage:"generat",hasFile:false,import:doc?.total,origen:"Pressupost arxivat",observacions:doc?.observacions,formaPagament:doc?.formaPagament,docData:doc,arxiu878531:bid};
+    setEconomicData878242?.(d=>{const gs=d.budgetGroups||[];const cur=ensureBudgetGroups8786(d).groups.find(g=>g.id===bid)||{id:bid,nom};const ax={at:now,doc:rec.id};
+      return {...d,documents:[rec,...(d.documents||[])],budgetGroups:gs.some(g=>g.id===bid)?gs.map(g=>g.id===bid?{...g,arxivat878531:ax}:g):[...gs,{...cur,arxivat878531:ax}],activeBudgetIdObra:(d.activeBudgetIdObra||"principal")===bid?"principal":d.activeBudgetIdObra,updatedAt:now}});
+  }
+  window.__acoArxivaFi878531=fiArxiva878531;
+  function recuperaDirectBudget878531(id){setEconomicData878242?.(d=>({...d,budgetGroups:(d.budgetGroups||[]).map(g=>g.id===id?{...g,arxivat878531:undefined}:g),activeBudgetIdObra:id,updatedAt:new Date().toISOString()}))}
   function renameDirectBudget878305(id){
     const bid=id||"principal",cur=directBudgetInfo878214.groups.find(g=>g.id===bid);
     const nom=prompt(i18nT("Nom del pressupost:"),cur?.nom||i18nT("Pressupost"));
@@ -12205,7 +12228,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
     {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} quota={parseNum8770(client?.quotaFixa)||0} acord={acordClient878434(client)} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc} inici={tab==="Gestió temps"?"Hores":tab==="Rendiment"?"Rendiment":tab==="Factures"?"Factures":tab==="Pressupostos"?"Pressupostos":""} despeses={<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves setObraData={readOnly?null:(id,up)=>setData(up)}/>} rendiment={ALIAS878308["Rendiment"]==="Honoraris"} temps={ALIAS878308["Gestió temps"]==="Honoraris"&&!esTreballador878326()&&!senseHoresPropies878342()?<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} acord={acordClient878434(client)} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>:null}/>} 
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
-    {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} onAlt={altDirectBudget878437} readOnly={readOnly||partCompartida878424(obra)}/>}
+    {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} onAlt={altDirectBudget878437} onArxiva={arxivaDirectBudget878531} onRecupera={recuperaDirectBudget878531} readOnly={readOnly||partCompartida878424(obra)}/>}
     {activeTab==="Pressupost obra"&&!readOnly&&<BudgetBar878273 data={data} groups={directBudgetInfo878214.groups} active={directBudgetId878214} select={selectDirectBudget878214}/>}
     {activeTab==="Pressupost obra"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<Pressupost data={directBudgetData878214} setData={setDirectBudgetData878214} importExcel={(e)=>importExcel?.(e,directBudgetId878214)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={directBudgetInfo878214.groups} activeBudgetId={directBudgetId878214} selectBudget={selectDirectBudget878214} addBudget={readOnly?undefined:addDirectBudget878305} renameBudget={readOnly?undefined:renameDirectBudget878305} deleteBudget={readOnly?undefined:deleteDirectBudget878305} totalActive={directBudgetTotal878214} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
     {activeTab==="Pressupost ràpid"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<PressupostRapid878150 data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
@@ -16600,6 +16623,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setData?.(d=>({...d,documents:[{id:"doc-pres-obra-"+Date.now(),nom:`Pressupost obra · ${doc.numeroPressupost||doc.versioPressupost||new Date().toLocaleDateString("ca-ES")}`,tipus:"PRESSUPOST",folder:"03_AMIDAMENTS_PRESSUPOST_OBRA",data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:0,storage:"generat",hasFile:false,import:doc.total,origen:"Pressupost obra",observacions:doc.observacions,formaPagament:doc.formaPagament,docData:doc},...(d.documents||[])],updatedAt:now}));
     alert(i18nT("Pressupost guardat a Documents amb format de pressupost."));
   }
+  const bid531=activeBudgetId||data?.activeBudgetIdObra||"principal";
+  if(!quickMode&&!clientMode)window.__acoDocPres878531=()=>({bid:bid531,doc:budgetPrintDoc878179()});
+  useEffect(()=>()=>{try{delete window.__acoDocPres878531}catch{}},[]);
+  // el pendent només es buida quan s'arxiva: en obrir-se, la fase pot canviar un moment i el temporitzador es torna a posar
+  useEffect(()=>{const p=window.__acoArxivaPend878531;if(!p||p!==bid531||quickMode||clientMode)return;const tm=setTimeout(()=>{if(window.__acoArxivaPend878531!==p)return;window.__acoArxivaPend878531=null;try{window.__acoArxivaFi878531?.(p,budgetPrintDoc878179())}catch{}},400);return()=>clearTimeout(tm)},[bid531]);
   const descompostValidationRows878180=useMemo(()=>{
     const out=[];
     Object.entries(caps||{}).forEach(([cap,items])=>(items||[]).forEach((r,i)=>{
@@ -21068,7 +21096,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.530",
+    app_version:"87.531",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -3306,6 +3306,15 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     negatiu). Al mòbil, a 53 px; a l'ordinador, a 0. La de l'obra posa la seva alçada a `--obra-bar-h` i `--fixa-obra-v878530` (les capçaleres fixes de
     dins de l'obra queden a sota; en sortir, `--obra-bar-h` torna a 0) i les altres a `--fixa-h-v878530` (i van a sota de la de l'obra). Al mòbil, a
     la de l'obra les rajoles que no són on som només porten la icona; a les altres, la icona a sobre del nom. Prova: `v530test.mjs` (18). Adaptades `menustest` (a l'iPad, la capçalera del pressupost va a sota de la barra fixa de l'obra) i `v518test` (des de la V87.529 les targetes de les llistes surten plegades també a l'ordinador).
+  - **V87.531 · Arxivar un pressupost sobrant a Documents** (l'Héctor, 6/11/2026: els pressupostos que sobren, «arxivar-los a Documents ›
+    Pressupostos»; `src/theme-v878532.css`): a la barra de fases, «Fases» › **«Arxivar «{fase}» a Documents»** (no el principal; només amb més d'una
+    fase). Pregunta abans; si la fase té certificacions, no es pot. El document del pressupost (`budgetPrintDoc878179`, com «Guardar a Documents»)
+    va a Documents › pressupost d'obra (`carpetaDe878408(…, "03_AMIDAMENTS_PRESSUPOST_OBRA")`) amb el nom «Pressupost arxivat · número · nom»
+    (`arxiu878531` = la fase), la fase porta `budgetGroups[].arxivat878531 = {at, doc}` i el pressupost actiu passa al principal. **Les partides no
+    s'esborren.** Una fase arxivada no surt a la barra (`fasesObra878342`, `arxIds878531`) ni suma (`altIds878437`, com les alternatives). El document el fa
+    el Pressupost (`window.__acoDocPres878531`); si s'arxiva des d'un altre apartat, l'Obra va al Pressupost i l'arxiva en obrir-se
+    (`__acoArxivaPend878531`, `__acoArxivaFi878531`). A sota del menú, **«Arxivats»** amb «Recuperar «{fase}»» (la torna a les fases i la deixa triada).
+    Prova: `v531test.mjs` (14).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3504,7 +3513,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.530 a Render):**
+**Estat (publicada la V87.531 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

@@ -5623,4 +5623,9 @@ export default {
 "Compten per a la previsió:": "Cuentan para la previsión:",
 "La caixa queda en negatiu el {d}": "La caja queda en negativo en {d}",
 "Venciment (cobrament previst)": "Vencimiento (cobro previsto)",
+"Arxivar «{fase}» a Documents": "Archivar «{fase}» en Documentos",
+"Recuperar «{fase}»": "Recuperar «{fase}»",
+"Arxivats": "Archivados",
+"«{fase}» té certificacions: no es pot arxivar.": "«{fase}» tiene certificaciones: no se puede archivar.",
+"Arxivar «{fase}»? Es desa a Documents i deixa de sortir a les fases i als totals. Es pot recuperar des de «Fases».": "¿Archivar «{fase}»? Se guarda en Documentos y deja de salir en las fases y en los totales. Se puede recuperar desde «Fases».",
 };
