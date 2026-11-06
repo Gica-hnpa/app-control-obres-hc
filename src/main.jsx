@@ -220,6 +220,7 @@ import "./theme-v878525.css";
 import "./theme-v878526.css";
 import "./theme-v878527.css";
 import "./theme-v878528.css";
+import "./theme-v878529.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";

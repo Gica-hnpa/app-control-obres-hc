@@ -5598,4 +5598,9 @@ export default {
 "Fer la certificació": "Hacer la certificación",
 "Omplir-la des d’un Excel": "Rellenarla desde un Excel",
 "Llegeix les quantitats d’aquesta certificació d’un Excel": "Lee las cantidades de esta certificación de un Excel",
+"Canviar el nom o el número": "Cambiar el nombre o el número",
+"Edites només «{cap}»": "Editas solo «{cap}»",
+"Veure tots els capítols": "Ver todos los capítulos",
+"Editar aquest capítol": "Editar este capítulo",
+"Nom i número del pressupost": "Nombre y número del presupuesto",
 };

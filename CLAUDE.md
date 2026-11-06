@@ -3262,6 +3262,22 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       Tocar-la també l'obre (si s'acaba d'obrir amb el ratolí, no la tanca); Esc o tocar fora la tanquen. La llista ja no va a sota de la fila.
     - **Tots els aparells:** mentre una rajola té la llista oberta, és ella la plena de blau i la de l'apartat on ets queda suau (blau clar).
     - Prova: `v527test.mjs` (14, amb el ratolí simulat: obrir, canviar de rajola, baixar a la llista, marxar, triar, tocar, Esc, tocar fora, mòbil).
+  - **V87.528 · El pressupost: número automàtic amb versions, el nom i el número a la vista, i «Editar aquest capítol»** (l'Héctor, 6/11/2026:
+    «me les vaig veure negres per canviar el nom del pressupost o posar la numeració que toca… això no hauria de ser automatitzat? … any_número amb
+    quatre xifres (2026_0056) i, dins del mateix expedient, una altra fase o una altra opció de pressupost ja seran versions (2026_0056_V02, i l'altre
+    la V01)… per canviar el nom està dins de Fases i em va costar trobar-ho»; «a dins de cada capítol, directe l'opció editar, però només aquell
+    capítol; i a fora, editar, que seria tots els capítols»; `src/theme-v878529.css`):
+    - **Número** (`numPres878528(d, bid)`): cada obra té `numPres878528` («2026_0056») i cada pressupost o fase la seva versió (`versio878528` a
+      `budgetGroups`; el principal, `versioPrincipal878528`; sense, l'ordre de la barra de fases, `versioPres878528`). Un pressupost o una fase
+      nova pren la versió següent (`seguentVersio878528`). L'App posa el número a les obres pròpies amb partides que no en tenen
+      (`numeraPressupostos878528`: per ordre de creació, seguit per any —el de l'obra— entre totes les obres pròpies; quan el núvol és al dia).
+      **El número d'abans per client** (`pressupostRapidNumero`, «2026-BRA-001») ja no es fa servir als documents si l'obra té el nou.
+    - **A la targeta del pressupost**, a dins, a dalt (la línia de la targeta tancada només diu el nom i l'import), el número, el nom i **«Canviar el nom o el número»**
+      (`NomNum878528`: nom, número i versió; `nomNum528` de `GestioObra8746`). La barra de fases diu la versió de cada fase.
+    - **Documents** (PDF, Excel): el número nou, «2026_0056_V01».
+    - **«Editar aquest capítol»** a dins de cada capítol obert (`editaCap528`, `capEdit528`): entra a editar i només es veu aquell capítol, amb
+      «Edites només «…» · Veure tots els capítols» (`cap-sol-v878528`); en guardar o cancel·lar, tots. «Editar» de dalt, tots com sempre.
+    - Prova: `v528test.mjs` (número sol, canviar el nom i el número, la barra de fases, el PDF, editar un capítol, recarregar, mòbil).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3460,7 +3476,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.527 a Render):**
+**Estat (publicada la V87.528 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

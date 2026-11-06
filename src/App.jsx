@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.527";
+const APP_VERSION878264="87.528";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5173,6 +5173,17 @@ useEffect(()=>{if(!obraId||!authUser8779||dataLoadedUser8781!==authUser8779)retu
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_clients",JSON.stringify(stripHeavy878185(clients)),dataOwnerUser878233)},[clients,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_obres",JSON.stringify(stripHeavy878185(obres)),dataOwnerUser878233)},[obres,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)saveOdata878104(odata,dataOwnerUser878233)},[odata,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
+// V87.528 · el número de pressupost de les obres que encara no en tenen (2026_0056), quan les dades són quietes i el núvol és al dia
+const[num528Tick,setNum528Tick]=useState(0);
+useEffect(()=>{
+  if(!authUser8779||dataLoadedUser8781!==authUser8779||currentAccount878233.readOnly)return;
+  const t0=setTimeout(()=>{
+    if(!numeraPressupostos878528(obres,odata))return;
+    if(window.__acoCloud&&!window.__acoCloud.status?.()?.lastOk){setNum528Tick(x=>x+1);return}
+    setOdata(p=>{const nous=numeraPressupostos878528(obres,p);if(!nous)return p;const q={...p};Object.entries(nous).forEach(([id,n])=>{if(q[id])q[id]={...q[id],numPres878528:n}});return q});
+  },num528Tick?6000:3000);
+  return ()=>clearTimeout(t0);
+},[obres,odata,authUser8779,dataLoadedUser8781,num528Tick]);// eslint-disable-line react-hooks/exhaustive-deps
 // V87.415 · un cop per sessió i usuari: les fitxes de client de farciment, amb les dades de Contactes (la d'abans es guarda a part)
 const repCli878415=useRef("");
 useEffect(()=>{
@@ -7945,10 +7956,22 @@ function PresBuit878435({obra,onExcel,onPdf,onBuit,onPreus,onIa,onArxiu}){
     <button type="button" className="link llib-v878486" onClick={onPreus}><BookOpen size={15} aria-hidden="true"/> {t("O tria-les de la Llibreria de preus")}</button>
   </div>;
 }
-function PresCard878427({pleg=true,titol,xifra=null,action,obert=false,editant=false,onToggle,tancat=false,children}){
+// V87.528 · nom, número i versió del pressupost
+function NomNum878528({nom="",base="",versio=1,close,desa}){
+  const[n,setN]=useState(nom),[b,setB]=useState(base),[v,setV]=useState(String(versio||1));
+  const vv=Math.max(1,Math.min(99,parseInt(v,10)||1));
+  return <Modal title={t("Nom i número del pressupost")} close={close}><div className="nomnum-v878528">
+    <label><span>{t("Nom")}</span><input value={n} onChange={e=>setN(e.target.value)} autoFocus/></label>
+    <div className="fila"><label><span>{t("Número")}</span><input value={b} onChange={e=>setB(e.target.value)} placeholder="2026_0001"/></label><label className="v"><span>{t("Versió")}</span><input type="number" inputMode="numeric" min="1" max="99" value={v} onChange={e=>setV(e.target.value)}/></label></div>
+    {b.trim()&&<p className="previ"><b>{`${b.trim()}_V${String(vv).padStart(2,"0")}`}</b></p>}
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!n.trim()} onClick={()=>{desa({nom:n,base:b,versio:vv});close()}}>{t("Desar")}</button></div>
+  </div></Modal>;
+}
+function PresCard878427({pleg=true,titol,num=null,ident=null,xifra=null,action,obert=false,editant=false,onToggle,tancat=false,children}){
   if(!pleg)return <Card className="budget-card-v878248" title={titol} action={action}>{children}</Card>;
   return <details className="card bloc-v878426 budget-card-v878248 pres-bloc-v878427" open={obert} onToggle={e=>{const o=e.currentTarget.open;if(o!==obert)onToggle?.(o)}}>
     <summary onClick={e=>{if(editant)e.preventDefault()}}>{tancat?<Lock size={18} className="tancat-v878428" aria-label={t("Pressupost tancat")}/>:<Calculator size={18} aria-hidden="true"/>}<span className="t"><b>{titol}</b></span>{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    {ident}
     <div className="card-head">{action}</div>
     <div className="pres-cos-v878427">{children}</div>
   <Recollir878432/></details>;
@@ -10609,6 +10632,24 @@ function treuPressupost878305(d,bid){
   }
   return next;
 }
+// V87.528 · número del pressupost (l'Héctor, 6/11/2026: «això no hauria de ser automatitzat? … any_número amb quatre xifres (2026_0056) i,
+// dins del mateix expedient, una altra fase o una altra opció de pressupost ja seran versions: 2026_0056_V02, i l'altre la V01»). Cada obra
+// té el seu número (numPres878528, seguit per any entre les obres pròpies del compte) i cada pressupost o fase la seva versió (versio878528 a
+// budgetGroups; el principal, versioPrincipal878528; si no en té, l'ordre de la barra de fases).
+const RE_NUM878528=/^(\d{4})_(\d{4})$/;
+function versioPres878528(d={},bid="principal"){const id=bid||"principal";const gs=ensureBudgetGroups8786(d||{}).groups;const g=gs.find(x=>x.id===id);if(id==="principal"&&+d?.versioPrincipal878528>0)return +d.versioPrincipal878528;if(g&&id!=="principal"&&+g.versio878528>0)return +g.versio878528;const i=gs.findIndex(x=>x.id===id);return i>=0?i+1:1}
+function numPres878528(d={},bid){const base=String(d?.numPres878528||"").trim();return base?`${base}_V${String(versioPres878528(d,bid)).padStart(2,"0")}`:""}
+function seguentVersio878528(d={}){const gs=ensureBudgetGroups8786(d||{}).groups;return gs.reduce((m,g)=>Math.max(m,versioPres878528(d,g.id)),0)+1}
+function seguentNumPres878528(nums=[],any){const max=(nums||[]).reduce((m,n)=>{const x=String(n||"").match(RE_NUM878528);return x&&x[1]===String(any)?Math.max(m,+x[2]):m},0);return `${any}_${String(max+1).padStart(4,"0")}`}
+// les obres pròpies amb partides que encara no tenen número, per ordre de creació
+function numeraPressupostos878528(obres=[],odata={}){
+  const propies=(obres||[]).filter(o=>o&&o.id&&!o.compartida);
+  const falten=propies.filter(o=>{const d=odata?.[o.id];return d&&(d.partides||[]).length>0&&!String(d.numPres878528||"").trim()});
+  if(!falten.length)return null;
+  const usats=propies.map(o=>odata?.[o.id]?.numPres878528).filter(Boolean);const nous={};
+  falten.slice().sort((a,b)=>expedientCreatedTime878191(a)-expedientCreatedTime878191(b)).forEach(o=>{const any=String(expedientYear878191(o)||"").match(/^\d{4}$/)?String(expedientYear878191(o)):String(new Date().getFullYear());nous[o.id]=seguentNumPres878528([...usats,...Object.values(nous)],any)});
+  return nous;
+}
 function budgetLabel8786(data,bid){return ensureBudgetGroups8786(data).groups.find(g=>g.id===(bid||"principal"))?.nom||"Pressupost principal"}
 function filterBudgetData8786(data,bid){
   const id=bid||"principal";
@@ -11270,7 +11311,7 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
     <span className="tit">{t("Fases")}</span>
     <div className="llista" ref={llista451}>
       {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id)}}>
-        <em>{al?"A":i+1}</em><b>{budgetName878273(g)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
+        <em>{al?"A":versioPres878528(data,g.id)}</em><b>{budgetName878273(g)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
     </div>
     {!readOnly&&<details className="mes-v878342 opcions-v878500"><summary aria-label={t("Més opcions de les fases")}>{t("Fases")}<ChevronDown size={16} aria-hidden="true"/></summary><div className="menu">
@@ -11636,7 +11677,7 @@ function GestioObra8746({data:data0,setData:setData0,importExcel,deletePressupos
     if(!nom)return;
     const id="bg-"+Date.now();
     const now=new Date().toISOString();
-    setData(d=>({...d,activeBudgetIdObra:id,updatedAt:now,budgetGroups:[...(d.budgetGroups||[]),{id,nom,tipus,createdAt:now}],pressupostos:[...(d.pressupostos||[]),{id:"budget-marker-"+id,budgetId:id,versio:"Annex",data:todayShort8713(),nom,estat:`${tipus} · creat · 0 partides`,import:0,createdAt:now,updatedAt:now}]}));
+    setData(d=>({...d,activeBudgetIdObra:id,updatedAt:now,budgetGroups:[...(d.budgetGroups||[]),{id,nom,tipus,createdAt:now,versio878528:seguentVersio878528(d)}],pressupostos:[...(d.pressupostos||[]),{id:"budget-marker-"+id,budgetId:id,versio:"Annex",data:todayShort8713(),nom,estat:`${tipus} · creat · 0 partides`,import:0,createdAt:now,updatedAt:now}]}));
     setActiveBudgetId(id);
     setSub("Pressupost obra");
   }
@@ -11679,6 +11720,18 @@ function GestioObra8746({data:data0,setData:setData0,importExcel,deletePressupos
     const nom=prompt(i18nT("Nom del pressupost:"),current?.nom||renameDraft878123||i18nT("Pressupost"));
     if(!nom||!String(nom).trim())return;
     commitRenameBudget878123(bid,nom,"prompt");
+  }
+  // V87.528 · el nom, el número i la versió, des del mateix pressupost (l'Héctor: «per canviar el nom està dins de Fases i em va costar trobar-ho»)
+  function nomNum528(id,{nom,base,versio}={}){
+    const bid=id||"principal";
+    const n=String(nom||"").trim();
+    if(n&&n!==budgetLabel8786(data,bid))commitRenameBudget878123(bid,n,"manual");
+    setData(d=>{const now=new Date().toISOString();const x={...d,updatedAt:now};
+      if(base!=null)x.numPres878528=String(base).trim();
+      if(versio!=null){const v=Math.max(1,Math.min(99,parseInt(versio,10)||1));
+        if(bid==="principal")x.versioPrincipal878528=v;
+        else{const gs=d.budgetGroups||[];const cur=ensureBudgetGroups8786(d).groups.find(g=>g.id===bid)||{id:bid};x.budgetGroups=gs.some(g=>g.id===bid)?gs.map(g=>g.id===bid?{...g,versio878528:v}:g):[...gs,{...cur,id:bid,versio878528:v}]}}
+      return x});
   }
   function deleteBudget(id){
     const bid=id||"principal";
@@ -11723,7 +11776,7 @@ function GestioObra8746({data:data0,setData:setData0,importExcel,deletePressupos
   return <div className="stack gestio-obra-v8746 gestio-obra-v8786">
     {!senseBarra878342&&<BudgetBar878273 data={data} groups={groups} active={activeBudgetId} select={selectBudget8788}/>}
     {!fixedSub&&<div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>{t("Pressupost obra")}</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>{t("Certificacions obra")}</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>{t("Facturació obra")}</button><button className={sub==="Gantt"?"active":""} onClick={()=>setSub("Gantt")}>{t("Gantt")}</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>{t("Seguiment econòmic")}</button></div>}
-    {sub==="Pressupost obra"&&contrast878424&&<PressupostCompartit878424 data={filterBudgetData8786(data0,activeBudgetId)} obra={obra} client={client} openDoc={openDoc}/>}{sub==="Pressupost obra"&&!contrast878424&&<Pressupost ajustos878426={ajustos878426} ambFases878426={senseBarra878342} data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} renameBudget={renameBudget} deleteBudget={deleteBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
+    {sub==="Pressupost obra"&&contrast878424&&<PressupostCompartit878424 data={filterBudgetData8786(data0,activeBudgetId)} obra={obra} client={client} openDoc={openDoc}/>}{sub==="Pressupost obra"&&!contrast878424&&<Pressupost ajustos878426={ajustos878426} ambFases878426={senseBarra878342} data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} renameBudget={renameBudget} nomNum528={readOnly878342||contrast878424?undefined:nomNum528} deleteBudget={deleteBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {sub==="Certificacions obra"&&<BudgetWarnings878253 rows={activeData.partides||[]}/>}
     {sub==="Certificacions obra"&&<Cert contrast878424={contrast878424} compara878424={{raw:data0,bid:activeBudgetId}} data={activeData} setData={setScopedData} obra={obra} client={client} setClients={setClients} obraData={data} setObraData={setData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Facturació obra"&&<Fact data={activeData} setData={setData} obra={obra} client={client} setClients={setClients} openEmail={openEmail} openDoc={openDoc}/>} 
@@ -11774,7 +11827,7 @@ function PressupostRapid878150(props){
   const clientDefaults=useMemo(()=>lsJson8779(clientBudgetDefaultsKey878160(props.client),{}),[props.client?.id,props.client?.nom,props.client?.rao]);
   const observacions=props.data?.pressupostRapidObservacions!=null?props.data.pressupostRapidObservacions:(clientDefaults.observacions||props.client?.pressupostObservacions||"");
   const formaPagament=props.data?.pressupostRapidFormaPagament!=null?props.data.pressupostRapidFormaPagament:(clientDefaults.formaPagament||props.client?.pressupostFormaPagament||"");
-  const numeroPressupost=props.data?.pressupostRapidNumero||"";
+  const numeroPressupost=numPres878528(props.data||{},props.data?.activeBudgetIdObra)||props.data?.pressupostRapidNumero||"";
   const referencia=props.data?.pressupostRapidReferencia||props.obra?.subtitol||props.obra?.nom||"";
   const dataPressupost=props.data?.pressupostRapidData||todayISO8743();
   const versioPressupost=props.data?.pressupostRapidVersio||"v01";
@@ -12006,7 +12059,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     const nom=fase878342?prompt(i18nT("Nom de la fase nova:"),i18nT("Fase {n}",{n:directBudgetInfo878214.groups.length+1})):prompt(i18nT("Nom del nou pressupost:"),tipus.includes("Imprevist")?i18nT("Imprevistos 01"):i18nT("Nou pressupost 01"));
     if(!nom||!String(nom).trim())return;
     const id="bg-"+Date.now(),now=new Date().toISOString(),n=String(nom).trim();
-    setEconomicData878242?.(d=>({...d,activeBudgetIdObra:id,updatedAt:now,budgetGroups:[...(d.budgetGroups||[]),{id,nom:n,tipus,createdAt:now}],pressupostos:[...(d.pressupostos||[]),{id:"budget-marker-"+id,budgetId:id,versio:"Annex",data:todayShort8713(),nom:n,estat:`${tipus} · creat · 0 partides`,import:0,createdAt:now,updatedAt:now}]}));
+    setEconomicData878242?.(d=>({...d,activeBudgetIdObra:id,updatedAt:now,budgetGroups:[...(d.budgetGroups||[]),{id,nom:n,tipus,createdAt:now,versio878528:seguentVersio878528(d)}],pressupostos:[...(d.pressupostos||[]),{id:"budget-marker-"+id,budgetId:id,versio:"Annex",data:todayShort8713(),nom:n,estat:`${tipus} · creat · 0 partides`,import:0,createdAt:now,updatedAt:now}]}));
   }
   function altDirectBudget878437(id,on){
     const bid=id||"";if(!bid||bid==="principal")return;
@@ -15514,7 +15567,7 @@ function PdfPressupost878305({onImport,close,inicial=null}){
     </>}
   </div></Modal>;
 }
-function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,client,obra,clientHistoricalPartides=[],budgetGroups=[],activeBudgetId="principal",selectBudget,addBudget,renameBudget,deleteBudget,totalGlobal=0,totalActive=0,partidaLibrary=[],setPartidaLibrary,quickMode=false,clientMode=false,clientLibraryEnabled=true,clientLibraryMaxPerChapter=3,ajustos878426=null,ambFases878426=false}){
+function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicatePressupostVersion,openPartida,openEmail,openDoc,client,obra,clientHistoricalPartides=[],budgetGroups=[],activeBudgetId="principal",selectBudget,addBudget,renameBudget,nomNum528,deleteBudget,totalGlobal=0,totalActive=0,partidaLibrary=[],setPartidaLibrary,quickMode=false,clientMode=false,clientLibraryEnabled=true,clientLibraryMaxPerChapter=3,ajustos878426=null,ambFases878426=false}){
   const [caps,setCapsState]=useState(()=>group(data.partides||[],"cap"));
   const[excelHelp878273,setExcelHelp878273]=useState(false);
   const[pdf878305,setPdf878305]=useState(false);
@@ -15759,6 +15812,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setLibrarySelected87218({});
     setLibraryOpen87115(false);
   }
+  // V87.528 · «Editar aquest capítol» dins de cada capítol: només es veu i s'edita aquell (l'Héctor: «dins de cada subtargeta de cada capítol,
+  // directe l'opció editar, però només aquell capítol; i a fora, editar, que seria tots els capítols»)
+  const[capEdit528,setCapEdit528]=useState(null);
+  const[nomNumObert528,setNomNumObert528]=useState(false);
+  function editaCap528(cap){setCapEdit528(cap);beginBudgetEdit878176();setOpen(o=>({...o,[cap]:true}))}
   function beginBudgetEdit878176(){
     if(com878346.on&&!clientMode){if(!confirm(i18nT("Per editar, el pressupost torna als preus sense comissió. En guardar o cancel·lar es torna a aplicar.")))return;setReaplica878346(com878346.pct);treuComissio878346();setPendentEditar878346(true);return}
     const syncCaps=normalizeBudgetCaps878176(group(data.partides||[],"cap"));
@@ -15770,6 +15828,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setEditBudget8760b(true);
   }
   function saveBudget8760b(){
+    setCapEdit528(null);
     const normalized=normalizeBudgetCaps878176(capsRef878247.current||caps);
     setCaps(normalized);
     persistBudgetCaps878179(normalized);
@@ -15780,6 +15839,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(reaplica878346!=null){aplicaComissio878346(reaplica878346);setReaplica878346(null)}
   }
   function cancelBudget8760b(){
+    setCapEdit528(null);
     const syncCaps=editSnapshot878176?cloneJson878176(editSnapshot878176):normalizeBudgetCaps878176(group(data.partides||[],"cap"));
     setCaps(syncCaps);
     setOpen(Object.fromEntries(Object.keys(syncCaps).map(k=>[k,!!open[k]])));
@@ -16448,7 +16508,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),
       certSig878408:(obra?.id?signatDe878408(obra.id,"pressupost",data?.activeBudgetIdObra||"principal")?.signat878408?.signatures:null)||[],
       title:"PRESSUPOST D’OBRA",
-      numeroPressupost:data?.pressupostRapidNumero||budgetLabel8786(data,data.activeBudgetIdObra||activeBudgetId||"principal"),
+      numeroPressupost:numPres878528(data,data.activeBudgetIdObra||activeBudgetId||"principal")||data?.pressupostRapidNumero||budgetLabel8786(data,data.activeBudgetIdObra||activeBudgetId||"principal"),
       referencia:data?.pressupostRapidReferencia||"",
       dataPressupost:data?.pressupostRapidData||todayISO8743(),
       versioPressupost:data?.pressupostRapidVersio||"v01",
@@ -16643,7 +16703,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={startManualBudget87115} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null} onArxiu={f=>{const nm=String(f.name||"").toLowerCase();if(/\.pdf$/.test(nm)||f.type==="application/pdf")setPdf878305(f);else if(/\.bc3$/.test(nm))bc3Pres878435(f);else importExcel?.({target:{files:[f],value:""}})}}/>}
     {nPreus480>0&&nRep879===0&&<div className="caps-rep-v878479 sense-preu-v878480"><span>{nPreus480===1?i18nT("1 partida sense preu"):i18nT("{n} partides sense preu",{n:nPreus480})}</span><button type="button" className="secondary" onClick={()=>setPreus480(sensePreu878480(caps))}><Search size={15} aria-hidden="true"/> {i18nT("Buscar preus")}</button></div>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
-    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} titol={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
+    {nomNumObert528&&nomNum528&&<NomNum878528 nom={budgetLabel8786(data,activeBudgetId)} base={String(data?.numPres878528||"")} versio={versioPres878528(data,activeBudgetId)} close={()=>setNomNumObert528(false)} desa={v=>nomNum528(activeBudgetId,v)}/>}
+    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={!quickMode&&!clientMode?<div className="id-pres-v878528"><span className="num">{numPres878528(data,activeBudgetId)||i18nT("Sense número")}</span><b>{budgetName878273((budgetGroups||[]).find(g=>g.id===activeBudgetId)||{id:activeBudgetId})}</b>{nomNum528&&!editBudget8760b&&<button type="button" className="secondary" onClick={()=>setNomNumObert528(true)}><PenLine size={15} aria-hidden="true"/> {i18nT("Canviar el nom o el número")}</button>}</div>:null} titol={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
       <div className="budget-botons-v878320 pres-accions-v878366">
       {/* V87.426 · l'Héctor (29/10/2026): «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les
           opcions… les eines dins d'editar… canviar el nom i eliminar ja surten a les fases». «Editar» · «Imprimir» · «Accions» curt;
@@ -16714,7 +16775,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     </Modal>}
     {budgetWorkTab878180==="Validar descompostos"?<div className="descompost-validator-v878180"><div className="validator-head-v878180"><div><b>{i18nT("Validació de descompostos")}</b><span>{descompostValidationRows878180.length} {i18nT("partida/es amb descomposat carregat")}</span></div><div className="actions-inline"><button type="button" className="secondary" onClick={fillDetectedDescompostos878180}>{i18nT("Carregar preus detectats")}</button><button type="button" className="primary" onClick={applyAllValidatedDescompostos878180}>{i18nT("Aplicar i guardar")}</button></div></div>{descompostValidationRows878180.length===0?<Empty text="No hi ha descompostos carregats. Importa un Excel complet o, en mode edició, obre Més accions i selecciona Adjuntar / actualitzar descompostos."/>:<div className="descompost-validator-table-wrap-v878180"><table className="descompost-validator-table-v878180"><thead><tr><th>{i18nT("Capítol")}</th><th>{i18nT("Codi")}</th><th>{i18nT("Concepte")}</th><th>{i18nT("Total detectat")}</th><th>{i18nT("PU actual")}</th><th>{i18nT("PU validat")}</th><th>{i18nT("Estat")}</th><th>{i18nT("Acció")}</th></tr></thead><tbody>{descompostValidationRows878180.map(x=><tr key={`${x.cap}-${x.i}`}><td>{x.cap}</td><td><b>{x.row.codi||"—"}</b></td><td className="text-left"><span>{x.row.concepte}</span><small>{[x.row.descompostSource,x.row.descompostSheet].filter(Boolean).join(" · ")}</small></td><td>{money(x.detected)}</td><td>{money(x.current)}</td><td><input inputMode="decimal" value={x.row.descompostValidatedPu||qty2(x.detected||0)} onChange={e=>setValidatedPu878180(x.cap,x.i,e.target.value)} onBlur={e=>normalizeValidatedPu878180(x.cap,x.i,e.target.value)}/></td><td>{x.row.puFromDescompost?<b className="good-text">{i18nT("Aplicat")}</b>:<b className="warn-text">{i18nT("Pendent")}</b>}</td><td><button type="button" className="secondary small" onClick={()=>openDescompostModal87173(x.cap,x.i)}>{i18nT("Obrir")}</button></td></tr>)}</tbody></table></div>}</div>:<div className={editBudget8760b?"budget-v25":"budget-v25 pressupost-readonly-v8760b"}>
         {Object.entries(caps).length===0&&<Empty text="Sense capítols. Crea un capítol o importa un Excel."/>}
-        {budgetChapterEntries87226.map(([cap,items])=>{
+        {editBudget8760b&&capEdit528&&<div className="cap-sol-v878528"><span>{i18nT("Edites només «{cap}»",{cap:capEdit528})}</span><button type="button" className="link" onClick={()=>setCapEdit528(null)}>{i18nT("Veure tots els capítols")}</button></div>}
+        {(editBudget8760b&&capEdit528&&caps?.[capEdit528]?budgetChapterEntries87226.filter(([c])=>c===capEdit528):budgetChapterEntries87226).map(([cap,items])=>{
           const capTotal=items.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
           const scopeChapter87227=String((items||[]).find(row=>row.scopePrincipal)?.scopePrincipal||"");
           const mainChapter87226=String((items||[]).find(row=>row.capPrincipal)?.capPrincipal||"");
@@ -16723,7 +16785,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
           const showMainChapter87226=!!mainChapter87226&&mainChapterKey87227!==lastBudgetMain87226&&(nCapsMain878320[mainChapterKey87227]||0)>1;
           const mainAmagat878320=!!mainChapter87226&&(nCapsMain878320[mainChapterKey87227]||0)<=1&&nomCap878320(mainChapter87226)!==nomCap878320(cap);
           const grup878336=!!mainChapter87226&&(nCapsMain878320[mainChapterKey87227]||0)>1;
-          const grupTancat878336=grup878336&&!grupObert878336[mainChapterKey87227];
+          const grupTancat878336=grup878336&&!grupObert878336[mainChapterKey87227]&&!(editBudget8760b&&capEdit528);
           const giraGrup878336=()=>setGrupObert878336(o=>({...o,[mainChapterKey87227]:!o[mainChapterKey87227]}));
           if(scopeChapter87227)lastBudgetScope87227=scopeChapter87227;
           if(mainChapter87226)lastBudgetMain87226=mainChapterKey87227;
@@ -16746,6 +16808,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
             </div>
 
             {open[cap]&&<div className={`budget-v25-lines${editBudget8760b&&quickMode?"":" cartes-v878426"}`}>
+              {!editBudget8760b&&!quickMode&&!clientMode&&!!setData&&<div className="cap-edita-v878528"><button type="button" className="secondary" onClick={e=>{e.stopPropagation();editaCap528(cap)}}><PenLine size={15} aria-hidden="true"/> {i18nT("Editar aquest capítol")}</button></div>}
               <div className="budget-v25-line head"><span>{i18nT("Codi")}</span><span>{i18nT("Ut")}</span><span>{i18nT("Concepte")}</span><span>{i18nT("Amid.")}</span><span>{i18nT("Preu/ut")}</span><span>{i18nT("Total")}</span><span>{editBudget8760b?i18nT("Selecció / accions"):""}</span></div>
               {sortPartides8779(items).map((r)=>{
                 const i=(items||[]).findIndex(x=>x===r);
@@ -18418,7 +18481,7 @@ function docPresOriginal878411(data={},obra,client,fase=""){
   const rows=[...(data.partides||[]).filter(r=>(!fase||(r.budgetId||"principal")===fase)&&!esFora878410(r)).map(r=>({...r,q:r.ini878412?(+r.ini878412.q||0):(parseNum8770(r.q)||0),pu:r.ini878412?(+r.ini878412.pu||0):(parseNum8770(r.pu)||0)})),...(ini?.tretes||[]).map((i,k)=>({...i,id:"ini-treta-"+k,q:+i.q||0,pu:+i.pu||0}))];
   const total=rows.reduce((s,r)=>s+r.q*r.pu,0);
   return {type:"pressupostobra",original878411:true,marges878378:margesDoc878378(data),title:"PRESSUPOST ORIGINAL",
-    numeroPressupost:data?.pressupostRapidNumero||budgetLabel8786(data,bid),referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",
+    numeroPressupost:numPres878528(data,bid)||data?.pressupostRapidNumero||budgetLabel8786(data,bid),referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",
     obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),
     tercerNom:data?.pressupostRapidTercerNom||client?.nom||client?.rao||"",tercerNif:data?.pressupostRapidTercerNif||client?.nif||"",tercerAdreca:data?.pressupostRapidTercerAdreca||client?.adreca||"",tercerEmail:data?.pressupostRapidTercerEmail||client?.email||"",
     realitzadorPressupost:issuerFiscalName87100(client),clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",
@@ -20613,7 +20676,7 @@ async function add(e,fld=folder){let f=e.target.files?.[0];if(!f)return;if(!conf
 function budgetDocFromCurrent878189(d){
   const rows=Array.isArray(data?.partides)?data.partides:[];
   const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);
-  return {type:"pressupostobra",marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),title:"PRESSUPOST D’OBRA",numeroPressupost:data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||obra?.adrecaPropietat||"",tercerEmail:data?.pressupostRapidTercerEmail||obra?.emailPropietat||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
+  return {type:"pressupostobra",marges878378:margesDoc878378(data),signatura878403:sigPres878403(data,data?.activeBudgetIdObra),title:"PRESSUPOST D’OBRA",numeroPressupost:numPres878528(data,data?.activeBudgetIdObra)||data?.pressupostRapidNumero||d?.nom||"",referencia:data?.pressupostRapidReferencia||obra?.nom||"",dataPressupost:data?.pressupostRapidData||todayISO8743(),versioPressupost:data?.pressupostRapidVersio||"v01",obraAdreca:data?.pressupostRapidObraAdreca||[obra?.adreca,obra?.codiPostal,obra?.poblacio].filter(Boolean).join(" · "),tercerNom:data?.pressupostRapidTercerNom||obra?.propietat||"",tercerNif:data?.pressupostRapidTercerNif||obra?.nifPropietat||"",tercerAdreca:data?.pressupostRapidTercerAdreca||obra?.adrecaPropietat||"",tercerEmail:data?.pressupostRapidTercerEmail||obra?.emailPropietat||"",realitzadorPressupost:"",clientFinalPressupost:data?.pressupostRapidTercerNom||obra?.propietat||"Client",subtitle:`${rows.length} partides · ${money(total)}`,rows,total,data:d?.data||new Date().toLocaleDateString("ca-ES"),observacions:d?.observacions||data?.pressupostRapidObservacions||"",formaPagament:d?.formaPagament||data?.pressupostRapidFormaPagament||""};
 }
 function linkedDocumentData878193(d){
   const linkedId=d?.linkedId||String(d?.id||"").replace(/^doc-/,"");
@@ -20936,7 +20999,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.527",
+    app_version:"87.528",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
