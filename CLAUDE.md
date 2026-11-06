@@ -3315,6 +3315,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     el Pressupost (`window.__acoDocPres878531`); si s'arxiva des d'un altre apartat, l'Obra va al Pressupost i l'arxiva en obrir-se
     (`__acoArxivaPend878531`, `__acoArxivaFi878531`). A sota del menú, **«Arxivats»** amb «Recuperar «{fase}»» (la torna a les fases i la deixa triada).
     Prova: `v531test.mjs` (14).
+  - **V87.532 · El pressupost es diu pel seu número** (l'Héctor, 6/11/2026, amb captures del mòbil: «el número l'has de posar directe on posa pressupost
+    principal, no només en entrar a dins… és el nom del pressupost, el vull així directe, i per canviar-lo no pot estar a Fases perquè no s'entén que estigui
+    allà»; `src/theme-v878533.css`):
+    - **El nom que es veu** (`nomPres878532(d, bid)`, `nomPresDe878532(num, g)`): a la barra de fases i a la línia de la targeta del pressupost, el número
+      (2026_0003_V01); si el pressupost té un nom propi, «2026_0003_V02 · Opció B»; sense número, el nom com abans. Els menús de «Fases» (alternativa,
+      arxivar, eliminar, recuperar) també. El nom de sempre va a `data-nom` (botons de la barra i `.t` de la línia de la targeta) per a les proves.
+    - **Canviar el nom**, només des del pressupost («Canviar el nom o el número», a dins de la targeta): fora «Canviar el nom de «…»» del menú «Fases». A
+      dins de la targeta ja no es repeteixen el número i el nom (`id-pres-v878528.sol-v878532`).
+    - **Amb el color de l'empresa** (la marca torna a escriure els blaus): el botó «Fases» obert quedava tot del color, sense text (el «:hover» que es queda
+      enganxat al mòbil li posava el text del mateix color), i la fletxa i la icona de la targeta oberta no es veien (la marca torna a escriure els blaus amb «!important» al final: les regles noves hi guanyen per especificitat). Ara el text, la fletxa i la icona, sempre blancs. Eina `cap532.mjs` (captures amb el vermell i el «Visual nou»).
+    - **Inici en rajoles sense «Sortir»** (l'Héctor: «la gent es confon i surt de l'app… ja hi és al menú general»): fora el botó petit de baix
+      (`sortir-v878484`); per sortir, el menú.
+    - Adaptades `v484test` (sense «Sortir»), `v528test`, `pressuposttest` (el nom es canvia des del pressupost), `v437test`, `v531test`, `fases342test`, `pdfpressuposttest` i `v427test` (llegeixen
+      `data-nom`).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3513,7 +3527,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.531 a Render):**
+**Estat (publicada la V87.532 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

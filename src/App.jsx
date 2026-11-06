@@ -41,7 +41,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.531";
+const APP_VERSION878264="87.532";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8032,10 +8032,10 @@ function NomNum878528({nom="",base="",versio=1,close,desa}){
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!n.trim()} onClick={()=>{desa({nom:n,base:b,versio:vv});close()}}>{t("Desar")}</button></div>
   </div></Modal>;
 }
-function PresCard878427({pleg=true,titol,num=null,ident=null,xifra=null,action,obert=false,editant=false,onToggle,tancat=false,children}){
+function PresCard878427({pleg=true,titol,nom=null,num=null,ident=null,xifra=null,action,obert=false,editant=false,onToggle,tancat=false,children}){
   if(!pleg)return <Card className="budget-card-v878248" title={titol} action={action}>{children}</Card>;
   return <details className="card bloc-v878426 budget-card-v878248 pres-bloc-v878427" open={obert} onToggle={e=>{const o=e.currentTarget.open;if(o!==obert)onToggle?.(o)}}>
-    <summary onClick={e=>{if(editant)e.preventDefault()}}>{tancat?<Lock size={18} className="tancat-v878428" aria-label={t("Pressupost tancat")}/>:<Calculator size={18} aria-hidden="true"/>}<span className="t"><b>{titol}</b></span>{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    <summary onClick={e=>{if(editant)e.preventDefault()}}>{tancat?<Lock size={18} className="tancat-v878428" aria-label={t("Pressupost tancat")}/>:<Calculator size={18} aria-hidden="true"/>}<span className="t" data-nom={nom||undefined}><b>{titol}</b></span>{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
     {ident}
     <div className="card-head">{action}</div>
     <div className="pres-cos-v878427">{children}</div>
@@ -8884,7 +8884,6 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
       return ks.map(k=>DEF[k]?<R key={k} k={k} {...DEF[k]}/>:null)})()}
     </div>
     {newObra&&<button type="button" className="nova-obra-v878484" onClick={newObra}><Plus size={18} aria-hidden="true"/> {t(etNovaObra878304())}</button>}
-    <button type="button" className="link sortir-v878484" onClick={()=>document.querySelector(".logout-mini-v8778")?.click()}>{t("Sortir")}</button>
   </div>;
 }
 // V87.400 · Visual nou: a l'Inici, sis accessos en icona (el que es fa més a peu d'obra), segons el perfil
@@ -10703,6 +10702,10 @@ function treuPressupost878305(d,bid){
 // budgetGroups; el principal, versioPrincipal878528; si no en té, l'ordre de la barra de fases).
 const RE_NUM878528=/^(\d{4})_(\d{4})$/;
 function versioPres878528(d={},bid="principal"){const id=bid||"principal";const gs=ensureBudgetGroups8786(d||{}).groups;const g=gs.find(x=>x.id===id);if(id==="principal"&&+d?.versioPrincipal878528>0)return +d.versioPrincipal878528;if(g&&id!=="principal"&&+g.versio878528>0)return +g.versio878528;const i=gs.findIndex(x=>x.id===id);return i>=0?i+1:1}
+// V87.532 · el pressupost es diu pel seu número (l'Héctor, 6/11/2026: «el número l'has de posar directe on posa pressupost principal… és el nom del
+// pressupost»): el principal amb el nom de sèrie, només el número; amb un nom propi, «número · nom»; sense número, el nom com abans
+function nomPresDe878532(num="",g={}){const nom=budgetName878273(g);if(!num)return nom;return g.id==="principal"&&(!g.nom||g.nom==="Pressupost principal")?num:`${num} · ${nom}`}
+function nomPres878532(d={},bid="principal"){const id=bid||"principal";return nomPresDe878532(numPres878528(d,id),ensureBudgetGroups8786(d||{}).groups.find(g=>g.id===id)||{id})}
 function numPres878528(d={},bid){const base=String(d?.numPres878528||"").trim();return base?`${base}_V${String(versioPres878528(d,bid)).padStart(2,"0")}`:""}
 function seguentVersio878528(d={}){const gs=ensureBudgetGroups8786(d||{}).groups;return gs.reduce((m,g)=>Math.max(m,versioPres878528(d,g.id)),0)+1}
 function seguentNumPres878528(nums=[],any){const max=(nums||[]).reduce((m,n)=>{const x=String(n||"").match(RE_NUM878528);return x&&x[1]===String(any)?Math.max(m,+x[2]):m},0);return `${any}_${String(max+1).padStart(4,"0")}`}
@@ -11377,17 +11380,16 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
   return <div className="fases-v878342" role="group" aria-label={t("Fases de l’obra")}>
     <span className="tit">{t("Fases")}</span>
     <div className="llista" ref={llista451}>
-      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id)}}>
-        <em>{al?"A":versioPres878528(data,g.id)}</em><b>{budgetName878273(g)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
+      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id)}}>
+        <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
     </div>
     {!readOnly&&<details className="mes-v878342 opcions-v878500"><summary aria-label={t("Més opcions de les fases")}>{t("Fases")}<ChevronDown size={16} aria-hidden="true"/></summary><div className="menu">
       <button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onNova?.()}}>{t("+ Nova fase")}</button>
-      {!tota&&<button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onRenom?.(act)}}>{t("Canviar el nom de «{fase}»",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
-      {!tota&&onAlt&&act!=="principal"&&gs.length>1&&<button type="button" className="alt-btn-v878437" onClick={e=>{e.currentTarget.closest("details").open=false;onAlt(act,!actAlt)}}>{actAlt?t("«{fase}» ja no és una alternativa",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})}):t("Marcar «{fase}» com a alternativa",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
-      {!tota&&onArxiva&&act!=="principal"&&gs.length>1&&<button type="button" className="arx-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onArxiva(act)}}>{t("Arxivar «{fase}» a Documents",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
-      {!tota&&gs.length>1&&<button type="button" className="danger-text-v87229" onClick={e=>{e.currentTarget.closest("details").open=false;onElimina?.(act)}}>{t("Eliminar «{fase}»",{fase:budgetName878273(gs.find(g=>g.id===act)||{id:act})})}</button>}
-      {onRecupera&&(data.budgetGroups||[]).some(g=>g?.arxivat878531&&g.id!=="principal")&&<><span className="sep-v878531">{t("Arxivats")}</span>{(data.budgetGroups||[]).filter(g=>g?.arxivat878531&&g.id!=="principal").map(g=><button type="button" key={g.id} className="rec-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onRecupera(g.id)}}>{t("Recuperar «{fase}»",{fase:budgetName878273(g)})}</button>)}</>}
+      {!tota&&onAlt&&act!=="principal"&&gs.length>1&&<button type="button" className="alt-btn-v878437" onClick={e=>{e.currentTarget.closest("details").open=false;onAlt(act,!actAlt)}}>{actAlt?t("«{fase}» ja no és una alternativa",{fase:nomPres878532(data,act)}):t("Marcar «{fase}» com a alternativa",{fase:nomPres878532(data,act)})}</button>}
+      {!tota&&onArxiva&&act!=="principal"&&gs.length>1&&<button type="button" className="arx-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onArxiva(act)}}>{t("Arxivar «{fase}» a Documents",{fase:nomPres878532(data,act)})}</button>}
+      {!tota&&gs.length>1&&<button type="button" className="danger-text-v87229" onClick={e=>{e.currentTarget.closest("details").open=false;onElimina?.(act)}}>{t("Eliminar «{fase}»",{fase:nomPres878532(data,act)})}</button>}
+      {onRecupera&&(data.budgetGroups||[]).some(g=>g?.arxivat878531&&g.id!=="principal")&&<><span className="sep-v878531">{t("Arxivats")}</span>{(data.budgetGroups||[]).filter(g=>g?.arxivat878531&&g.id!=="principal").map(g=><button type="button" key={g.id} className="rec-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onRecupera(g.id)}}>{t("Recuperar «{fase}»",{fase:nomPres878532(data,g.id)})}</button>)}</>}
     </div></details>}
   </div>;
 }
@@ -16798,7 +16800,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     {nPreus480>0&&nRep879===0&&<div className="caps-rep-v878479 sense-preu-v878480"><span>{nPreus480===1?i18nT("1 partida sense preu"):i18nT("{n} partides sense preu",{n:nPreus480})}</span><button type="button" className="secondary" onClick={()=>setPreus480(sensePreu878480(caps))}><Search size={15} aria-hidden="true"/> {i18nT("Buscar preus")}</button></div>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     {nomNumObert528&&nomNum528&&<NomNum878528 nom={budgetLabel8786(data,activeBudgetId)} base={String(data?.numPres878528||"")} versio={versioPres878528(data,activeBudgetId)} close={()=>setNomNumObert528(false)} desa={v=>nomNum528(activeBudgetId,v)}/>}
-    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={!quickMode&&!clientMode?<div className="id-pres-v878528"><span className="num">{numPres878528(data,activeBudgetId)||i18nT("Sense número")}</span><b>{budgetName878273((budgetGroups||[]).find(g=>g.id===activeBudgetId)||{id:activeBudgetId})}</b>{nomNum528&&!editBudget8760b&&<button type="button" className="secondary" onClick={()=>setNomNumObert528(true)}><PenLine size={15} aria-hidden="true"/> {i18nT("Canviar el nom o el número")}</button>}</div>:null} titol={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
+    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={!quickMode&&!clientMode&&nomNum528&&!editBudget8760b?<div className="id-pres-v878528 sol-v878532"><button type="button" className="secondary" onClick={()=>setNomNumObert528(true)}><PenLine size={15} aria-hidden="true"/> {i18nT("Canviar el nom o el número")}</button></div>:null} nom={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):null} titol={!quickMode&&budgetGroups?.length?nomPresDe878532(clientMode?"":numPres878528(data,activeBudgetId),budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
       <div className="budget-botons-v878320 pres-accions-v878366">
       {/* V87.426 · l'Héctor (29/10/2026): «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les
           opcions… les eines dins d'editar… canviar el nom i eliminar ja surten a les fases». «Editar» · «Imprimir» · «Accions» curt;
@@ -21096,7 +21098,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.531",
+    app_version:"87.532",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

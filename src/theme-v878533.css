@@ -1,0 +1,20 @@
+/* V87.532 · El pressupost es diu pel seu número; el botó «Fases» obert i la fletxa de la targeta oberta, sempre llegibles */
+
+/* el número a la barra de fases i a la línia de la targeta: xifres de la mateixa amplada */
+html body .fases-v878342 .llista>button b,
+html body .pres-bloc-v878427>summary .t b{font-variant-numeric:tabular-nums}
+
+/* a dins de la targeta, només «Canviar el nom o el número» (el número i el nom ja són a la línia) */
+html body .pres-bloc-v878427 .id-pres-v878528.sol-v878532{justify-content:flex-end;padding:10px 16px 2px}
+
+/* Amb el color de l'empresa: la marca torna a escriure els blaus amb «!important» al final de tot (aplicaMarca878351), i el «:hover»
+   que es queda enganxat al mòbil pintava el text del color del fons. Aquestes regles hi guanyen per especificitat (html:root, classe doblada). */
+html:root body .fases-v878342 .mes-v878342.opcions-v878500.opcions-v878500[open]>summary,
+html:root body .fases-v878342 .mes-v878342.opcions-v878500.opcions-v878500[open]>summary svg{color:#fff!important}
+@media (hover:none){
+  html:root body .fases-v878342 .mes-v878342.opcions-v878500.opcions-v878500:not([open])>summary:hover{border-color:#94A3B8!important;color:var(--co-ink,#152328)!important}
+}
+html:root body details.card.bloc-v878426.bloc-v878426[open]>summary .chev,
+html:root body details.card.plega-v878369.plega-v878369[open]>summary .chev,
+html:root body details.ajustos-bloc-v878366.ajustos-bloc-v878366[open]>summary .chev,
+html:root body details.card.bloc-v878426.bloc-v878426[open]>summary>svg:first-child{background:rgba(255,255,255,.18)!important;color:#fff!important}
