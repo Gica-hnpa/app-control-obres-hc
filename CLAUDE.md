@@ -3384,6 +3384,31 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
       general i la pròpia.
     - Prova: `v534test.mjs`. Adaptades `v486test` («A mà» obre el cercador), `v492test` («El meu encàrrec» a l'ordinador) i `habitualstest` (el
       desplegable de capítols). Eina nova `guia534.mjs` (captures de la guia pràctica, `D:/aco-tmp/guia534`).
+  - **V87.535 · El banc de preus com al Presto i el material del parte amb el preu per unitat** (l'Héctor, 7/11/2026: «el banc de preus funciona
+    fatal… no surten tots els capítols, quan he triat… no puc tirar enrere… no trobava la manera de retornar a les simples… quan està creat i vull
+    modificar la partida m'hauria de deixar anar a buscar el banc, i quan afegeixo capítols i noves partides igual… hi havia ancorat un text al mig de
+    la pantalla»; «la idea és que funcioni com un Presto: tu crees capítol i vas escollint partides que les vas important al teu pressupost… i després
+    dins cada partida l'has de poder editar»; del material del parte: «no et deixa posar tantes unitats a tant el preu ut»; `src/theme-v878536.css`):
+    - **El desplegable de capítols** (`TriaCap878534`): els capítols sense cap partida no surten (a la base de Girona, 668, i tota la branca «Preus
+      simples», que són recursos i no partides); en tornar-lo a obrir, a dalt el camí («‹ Tots els capítols › PARTIDES COMPLEXES › …», `cami-v878535`)
+      per pujar a qualsevol nivell; una creu al botó (`treu-v878535`) per treure el capítol triat; el botó diu el camí del capítol; els noms llargs
+      passen a la línia de sota (es trepitjaven amb el número); buscant, fins a 150 i «N’hi ha N més».
+    - **El text enganxat al mig de la pantalla** era la barra «1 triades · … · Afegir 1 partida» de «Des de Preus»: al mòbil i l'iPad cada finestra
+      deixa 110 px a baix i la barra fixa s'hi aturava, amb la llista passant-hi per sota. En aquesta finestra ja no hi ha aquell marge.
+    - **Com al Presto:** editant el pressupost, cada capítol té **«Del banc o de Preus»** (`obreLib535`: la finestra s'obre amb el capítol de destí ja
+      triat, `desti`, i les partides hi van sense triar-lo per partida; el títol diu «Afegir partides a «…»») i **«Partida en blanc»**; el «⋯» del capítol
+      també té «Afegir del banc o de Preus». **«Nou capítol»** (`NouCapitol535`, `creaCap535`): el número següent, el nom (o el d'un capítol del banc, que
+      l'omple sol) i **«Crear i afegir-hi partides»**, que obre el banc ja en aquell capítol (`capBanc0`), o «Crear-lo buit». Al portal de client, com abans.
+    - **Canviar una partida per una del banc** (`canviaBanc535`, `posaCanvi535`): a la fitxa de la partida, editant, «Canviar per una del banc» (no a les
+      partides certificades): la finestra en mode `una` (es tria una sola partida, «Posar aquesta partida» i el preu nou) canvia el concepte, la descripció,
+      la unitat, el preu, el descompost i d'on surt el preu; la quantitat, el codi i el capítol es queden. Es desa amb «Guardar canvis».
+    - **Material del parte** (`posaM`): cada línia amb Quantitat · Unitat · **Preu per unitat** · Proveïdor · Import sense IVA, amb el nom a sobre de cada
+      camp; amb el preu per unitat, l'import es calcula (q × preu); si s'escriu l'import directament, el preu per unitat es treu. A Despeses, la nota diu
+      «1000 Ud × 4,20 €».
+    - Al nom del banc, fora el «- (Codi Estructur» que porta l'arxiu de Girona.
+    - Prova: `v535test.mjs` (ordinador i mòbil: nou capítol amb el nom del banc, banc al capítol de destí, la barra arran de baix, la creu, de les complexes
+      a les simples, el botó del capítol, canviar una partida i desar). Eina `cap535.mjs` (captures amb la base de Girona de debò, llegida de la seva carpeta).
+      Adaptades `v534test` (el camí en lloc de «‹»), `pressupost320test` (el «⋯» del capítol) i `v489test` (el camp de l'import).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3582,7 +3607,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.534 a Render):**
+**Estat (publicada la V87.535 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

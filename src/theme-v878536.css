@@ -1,0 +1,67 @@
+/* V87.535 · El banc de preus com al Presto: capítols amb el camí per tornar enrere, cada capítol del pressupost amb «Del banc o de Preus»,
+   «Nou capítol» que pot agafar el nom del banc, i canviar una partida per una del banc */
+
+/* el desplegable de capítols: la creu per treure el capítol triat i el camí per pujar a qualsevol nivell */
+.tria-cap-v878534.amb-v878535>.btn{padding-right:58px}
+.tria-cap-v878534>.treu-v878535{position:absolute;top:6px;right:40px;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:0;border-radius:10px;background:none;box-shadow:none;color:var(--co-ink-2)}
+@media (hover:hover){.tria-cap-v878534>.treu-v878535:hover{background:#F1F5F9;color:#B91C1C}}
+.tria-cap-v878534>.btn small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tria-cap-v878534 .cerca-cap .esborra-v878535{display:flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:0;border-radius:8px;background:none;box-shadow:none;color:var(--co-ink-3)}
+.tria-cap-v878534 .cami-v878535{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;margin:8px 2px 2px;font-size:13.5px;color:var(--co-ink-3)}
+.tria-cap-v878534 .cami-v878535 button{display:inline-flex;align-items:center;gap:3px;min-height:34px;padding:2px 8px;border:1px solid #BFDBFE;border-radius:999px;background:#EFF6FF;box-shadow:none;color:#1D4ED8;font-weight:700;font-size:13.5px;text-align:left}
+.tria-cap-v878534 .cami-v878535 b{padding:2px 4px;color:var(--co-ink-1,#0F172A);font-size:13.5px}
+.tria-cap-v878534 .mes-v878535{margin:6px 4px;font-size:12.5px;color:var(--co-ink-3)}
+@media (max-width:1100px){.tria-cap-v878534 .ll{max-height:min(480px,58vh)}}
+
+/* «Des de Preus» amb el capítol de destí ja triat, i «Canviar per una del banc» */
+html body .lib-afegir-v878361 .desti-v878535{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #BFDBFE;border-radius:12px;background:#EFF6FF;color:#1E3A8A;font-size:14px}
+html body .lib-afegir-v878361 .desti-v878535 b{font-weight:800}
+html body .lib-afegir-v878361 .desti-v878535 svg{flex:0 0 auto;color:#1D4ED8}
+html body .lib-afegir-v878361 .opc.sols-q-v878535{grid-template-columns:minmax(0,180px)}
+
+/* al pressupost, cada capítol editant: «Del banc o de Preus» i «Partida en blanc» */
+.budget-v25-lines .afegir-cap-v878535{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 2px}
+.budget-v25-lines .afegir-cap-v878535 button{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;font-weight:700}
+@media (max-width:700px){.budget-v25-lines .afegir-cap-v878535 button{flex:1 1 100%;justify-content:center}}
+
+/* «Nou capítol» */
+.nou-cap-v878535{display:flex;flex-direction:column;gap:14px}
+.nou-cap-v878535 label.nm{display:flex;flex-direction:column;gap:6px}
+.nou-cap-v878535 label.nm span{font-weight:700;font-size:14px}
+.nou-cap-v878535 label.nm .fila{display:flex;align-items:center;gap:8px}
+.nou-cap-v878535 label.nm .fila code{flex:0 0 auto;min-width:44px;padding:10px 8px;border:1px solid var(--co-line);border-radius:10px;background:#F8FAFC;font:700 15px/1 inherit;text-align:center;color:var(--co-ink-2)}
+.nou-cap-v878535 label.nm .fila input{flex:1;min-width:0;min-height:46px;font-size:16px}
+.nou-cap-v878535 .del-banc>small{display:block;margin:0 0 6px;font-weight:700;font-size:14px;color:var(--co-ink-1,#0F172A)}
+.nou-cap-v878535 .bts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.nou-cap-v878535 .bts button{min-height:46px;padding:0 18px}
+@media (max-width:700px){.nou-cap-v878535 .bts button{flex:1 1 100%}}
+
+/* la fitxa de la partida editant: «Canviar per una del banc» */
+.fitxa-v878449 .eines-v878449 .canvia-v878535{display:inline-flex;align-items:center;gap:6px}
+
+/* la barra de baix de «Des de Preus» quedava al mig de la pantalla (el mòbil deixa 110 px a baix de cada finestra i la barra s'hi aturava):
+   en aquesta finestra la barra va arran de baix */
+html body .modal:has(>.lib-afegir-v878361){padding-bottom:0!important}
+html body .lib-afegir-v878361 .peu{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+/* els noms de capítol llargs passen a la línia de sota (es trepitjaven amb el número de partides) */
+.tria-cap-v878534 .fila-cap .op .nm{flex:1 1 0}
+.tria-cap-v878534 .fila-cap .op .nm>span{white-space:normal;overflow-wrap:anywhere}
+.tria-cap-v878534 .fila-cap .op .n{margin-left:8px}
+
+/* el material del parte: quantitat × preu per unitat = import, cada camp amb el seu nom */
+html body .pe-mat-v878352 .pe-m{grid-template-columns:minmax(0,1fr) 90px 70px 110px minmax(0,.8fr) 120px auto;align-items:end}
+html body .pe-mat-v878352 .pe-m>label{display:flex;flex-direction:column;gap:3px;min-width:0;margin:0}
+html body .pe-mat-v878352 .pe-m>label small{font-size:12px;font-weight:700;color:var(--co-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .pe-mat-v878352 .pe-m>label input{width:100%}
+html body .pe-mat-v878352 .pe-m .pu{text-align:right;font-variant-numeric:tabular-nums}
+html body .pe-mat-v878352 .pe-m .imp input{font-weight:700}
+@media (max-width:700px){
+  html body .pe-mat-v878352 .pe-m{grid-template-columns:minmax(0,1fr) minmax(0,.8fr) minmax(0,1.2fr) auto}
+  html body .pe-mat-v878352 .pe-m .conc{grid-column:1/4;grid-row:1}
+  html body .pe-mat-v878352 .pe-m .x{grid-column:4;grid-row:1}
+  html body .pe-mat-v878352 .pe-m .q{grid-column:1;grid-row:2}
+  html body .pe-mat-v878352 .pe-m .ut{grid-column:2;grid-row:2}
+  html body .pe-mat-v878352 .pe-m .pu{grid-column:3/5;grid-row:2}
+  html body .pe-mat-v878352 .pe-m .prov{grid-column:1/3;grid-row:3}
+  html body .pe-mat-v878352 .pe-m .imp{grid-column:3/5;grid-row:3}
+}
