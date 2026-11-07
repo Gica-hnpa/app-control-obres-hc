@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.535";
+const APP_VERSION878264="87.536";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8831,6 +8831,8 @@ function useBarraBaix878484(){const q="(max-width:1280px),(hover:none) and (poin
 function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setScreen,obrirPaquet,openObraTab,obreMenu,newObra,todayLabel=""}){
   const[obert,setObert]=useState("");
   const pc490=!useBarraBaix878484();
+  const ample536=useAmple878536();
+  const rajoles0536=(()=>{try{return lsVisual878400()?.getItem("inici-rajoles-prova-v878536")==="1"}catch{return false}})();
   const tick=useAvisosTick878496();
   const av520=useAvisos878520();
   const avisos=useMemo(()=>{const alb=readAlbarans878259();return ordenaAvisos878360(filtraAvisos878496([...av520,...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients),...avisosCaixa878521(obres,odata,clients),...avisosFitx878523()]))},[obres,odata,clients,tick,av520]);
@@ -8860,10 +8862,7 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
     </div>
   </div>;
   const R=({k,ic:Ic,tit,sub,num,cls="",on})=><button type="button" className={"raj-v878484 "+cls+(obert===k?" on":"")} aria-expanded={k==="pend"?obert==="pend":undefined} onClick={on}><span className="top"><span className="ico" aria-hidden="true"><Ic size={24}/></span>{num!=null&&num!==""?<span className={"num"+(typeof num==="string"?" txt":"")}>{num}</span>:null}</span><span className="tt"><b>{t(tit)}</b>{sub?<small>{t(sub)}</small>:null}</span></button>;
-  return <div className="inici-menu-v878484">
-    <ProvaDies878519/>
-    <div className="hola"><small>{todayLabel}</small><h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1></div>
-    <div className="graella">{(()=>{
+  const rajoles536=(treu=[])=>{
       const ob=diuObra878326(),emp=ambEmpresa878338(),nEnc=nEncarrecs878508(obres,odata);
       const DEF={pend:{ic:ListChecks,tit:"Pendent",sub:"avisos i feines",num:nPend||t("Res"),cls:nPend?"avis":"",on:()=>setObert(o=>o==="pend"?"":"pend")},
         obres:{ic:ob?HardHat:FolderOpen,tit:ob?"Obres":"Expedients",sub:ob?"obertes":"oberts",num:oberts,on:()=>obrirPaquet?obrirPaquet("oberts"):setScreen("Treballs / Expedients")},
@@ -8883,9 +8882,76 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
       let ks=iniciTriat878508();
       // a l'ordinador el menú ja és a la vista: «Més» passa a ser «Rendiment» (si no hi és)
       if(pc490&&ks.includes("mes"))ks=rajolesDisp878508().includes("rend")&&!ks.includes("rend")?ks.map(k=>k==="mes"?"rend":k):ks.filter(k=>k!=="mes");
-      return ks.map(k=>DEF[k]?<R key={k} k={k} {...DEF[k]}/>:null)})()}
-    </div>
+      return ks.filter(k=>!treu.includes(k)).map(k=>DEF[k]?<R key={k} k={k} {...DEF[k]}/>:null)};
+  // V87.536 · l'Inici B a l'ordinador i l'iPad (proposta del 6/11/2026; l'Héctor, 7/11/2026: «fes-me la versió nova amb la pantalla d'inici
+  // modificada, l'opció B… a veure com queda, si no ja tirarem enrere»): el dia en una frase, els avisos amb el seu botó, «Avui» al costat, les
+  // obres en curs i les rajoles a sota, més petites. Al mòbil, les rajoles de sempre. Les proves d'abans porten la marca inici-rajoles-prova-v878536.
+  if(ample536&&!rajoles0536)return <IniciB878536 name={name} todayLabel={todayLabel} avisos={avisos} feines={feines} properes={properes} obres={obres} odata={odata} clients={clients}
+    openObraTab={openObraTab} obrirPaquet={obrirPaquet} setScreen={setScreen} newObra={newObra} veureTot={()=>setObert("pend")} rajoles={rajoles536(["pend"])}/>;
+  return <div className="inici-menu-v878484">
+    <ProvaDies878519/>
+    <div className="hola"><small>{todayLabel}</small><h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1></div>
+    <div className="graella">{rajoles536()}</div>
     {newObra&&<button type="button" className="nova-obra-v878484" onClick={newObra}><Plus size={18} aria-hidden="true"/> {t(etNovaObra878304())}</button>}
+  </div>;
+}
+function useAmple878536(){const q="(min-width:768px)";const[v,setV]=useState(()=>{try{return matchMedia(q).matches}catch{return false}});
+  useEffect(()=>{let m;try{m=matchMedia(q)}catch{return}const f=()=>setV(m.matches);m.addEventListener?.("change",f);return()=>m.removeEventListener?.("change",f)},[]);return v}
+const ICONA_AVIS878536={partes:ClipboardCheck,desp:Camera,cert:FileText,cobr:ReceiptText,tancar:CircleCheck,enviat:Send,fitx:Fingerprint,"fitx-no":Fingerprint,caixa:Wallet,feina:ListChecks};
+function IniciB878536({name="",todayLabel="",avisos=[],feines=[],properes=[],obres=[],odata={},clients=[],openObraTab,obrirPaquet,setScreen,newObra,veureTot,rajoles=null}){
+  const ob=diuObra878326();
+  const t0=todayStartMs878136();
+  const avui=(properes||[]).filter(e=>{const x=eventTime8783(e);return x>=t0&&x<t0+864e5});
+  const despres=(properes||[]).filter(e=>eventTime8783(e)>=t0+864e5).slice(0,3);
+  const venc=(feines||[]).filter(x=>taskDeadlineTone878140(x.task)==="overdue");
+  const urg=avisos.filter(a=>a.tone==="bad").length,rev=avisos.length-urg;
+  // la frase del dia
+  const parts=[avui.length?(avui.length===1?t("1 cita"):t("{n} cites",{n:avui.length})):null,urg?(urg===1?t("1 avís urgent"):t("{n} avisos urgents",{n:urg})):null,
+    rev?(rev===1?t("1 cosa per revisar"):t("{n} coses per revisar",{n:rev})):null,venc.length?(venc.length===1?t("1 feina vençuda"):t("{n} feines vençudes",{n:venc.length})):null].filter(Boolean);
+  const frase=parts.length?<>{t("Avui tens")} <span className="acc">{parts[0]}</span>{parts.slice(1).map((p,i,a)=><React.Fragment key={i}>{i===a.length-1?t(" i "):", "}{p}</React.Fragment>)}.</>:t("Avui no tens res pendent.");
+  // els avisos (i les feines vençudes) en targetes amb el seu botó
+  const obreA=a=>a.obraId?openObraTab?.(a.obraId,a.tab):(obreAvis878520(a)||obreDoc878360(a));
+  const boto=a=>({partes:t("Validar"),cert:t("Fer-la"),desp:t("Revisar"),cobr:t("Veure"),feina:t("Veure"),tancar:t("Veure")})[a.k]||t("Obrir");
+  const llista=[...avisos,...venc.map(({obra:o,task:x})=>({k:"feina",tone:"bad",txt:x.text||t("Feina pendent"),sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · "),extra:diesTasca878314(x),obraId:o.id,tab:"Agenda / Avisos"}))];
+  const mostra=llista.slice(0,5);
+  // les obres en curs: les de la constructora amb el % certificat; els expedients del tècnic, els oberts treballats fa menys
+  const enCurs=(ob?(obres||[]).filter(o=>paquetOk878314("execucio",o.estat)):(obres||[]).filter(o=>isExpedientOpen878136(o.estat)))
+    .map(o=>({o,...certObra878336((odata||{})[o.id]||{}),w:String(o.lastWorkedAt||o.updatedAt||o.lastOpenedAt||"")}))
+    .sort((a,b)=>b.w.localeCompare(a.w)).slice(0,4);
+  const nEnCurs=ob?(obres||[]).filter(o=>paquetOk878314("execucio",o.estat)).length:(obres||[]).filter(o=>isExpedientOpen878136(o.estat)).length;
+  const cita=e=><button type="button" key={eventKey878137(e)} className="cita-b" onClick={()=>e.obraId?openObraTab?.(e.obraId,"Agenda / Avisos"):setScreen?.("Agenda")}>
+    <span className="h">{e.hora||"—"}</span><span className="tx"><b>{e.title||e.titol||i18nT(e.tipus||"Cita")}</b>{e.obra?<small>{e.obra}</small>:null}</span></button>;
+  return <div className="inici-b-v878536">
+    <ProvaDies878519/>
+    <div className="cap-b">
+      <div className="hola-b"><small><Sun size={16} aria-hidden="true"/> {name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")} · {todayLabel}</small><h1>{frase}</h1></div>
+      {newObra&&<button type="button" className="primary nova-b" onClick={newObra}><Plus size={18} aria-hidden="true"/> {t(etNovaObra878304())}</button>}
+    </div>
+    <div className="cos-b">
+      <div className="esq-b">
+        {mostra.length?<div className="avisos-b">{mostra.map((a,i)=>{const Ic=ICONA_AVIS878536[a.k]||AlertTriangle;return <div key={a.k+":"+(a.obraId||"")+":"+(a.ref||"")+":"+i} className={"avis-b "+(a.tone||"info")}>
+            <span className="ic" aria-hidden="true"><Ic size={20}/></span>
+            <span className="tx"><b>{a.txt}</b>{a.sub||a.extra?<small>{[a.sub,a.extra].filter(Boolean).join(" · ")}</small>:null}</span>
+            <button type="button" className="secondary" onClick={()=>obreA(a)}>{boto(a)}</button></div>})}
+          {llista.length>mostra.length&&<button type="button" className="link tots-b" onClick={veureTot}>{t("Veure-ho tot ({n})",{n:llista.length+(feines.length-venc.length)})}</button>}
+        </div>:<div className="res-b"><CircleCheck size={20} aria-hidden="true"/> {t("Tot al dia: no hi ha cap avís.")}{feines.length?<button type="button" className="link" onClick={veureTot}>{feines.length===1?t("1 feina pendent"):t("{n} feines pendents",{n:feines.length})}</button>:null}</div>}
+        <section className="obres-b">
+          <div className="tit-b"><h2>{ob?t("Obres en curs"):t("Expedients en curs")}</h2>{nEnCurs>enCurs.length&&<button type="button" className="link" onClick={()=>obrirPaquet?obrirPaquet("oberts"):setScreen?.("Treballs / Expedients")}>{t("Veure-les totes ({n})",{n:nEnCurs})}</button>}</div>
+          {enCurs.length?<div className="graella-b">{enCurs.map(({o,pct})=><button type="button" key={o.id} className="obra-b" onClick={()=>openObraTab?.(o.id,"Resum")}>
+            <ObraThumb878275 o={o} nom={quiObra878336(o,clients)||o.nom}/>
+            <span className="tx"><b>{o.nom}</b><small>{[codiCurt878270(o),quiObra878336(o,clients)].filter(Boolean).join(" · ")}</small></span>
+            {ob?<span className="pc"><span className="bar" aria-hidden="true"><i style={{width:`${Math.max(0,Math.min(100,pct||0))}%`}}/></span><small>{pct==null?t("Sense certificacions"):t("{p} % certificat",{p:Math.round(pct)})}</small></span>
+              :<span className={"est est-v878299 est-"+estatTone878299(o.estat)}>{i18nT(normalizeExpedientStatus878136(o.estat))}</span>}
+          </button>)}</div>:<p className="buit-b">{ob?t("No hi ha obres en execució."):t("No hi ha expedients oberts.")}</p>}
+        </section>
+        {rajoles&&<div className="rajoles-b">{rajoles}</div>}
+      </div>
+      <aside className="avui-b">
+        <div className="tit-b"><h2><CalendarDays size={18} aria-hidden="true"/> {t("Avui")}</h2><button type="button" className="link" onClick={()=>setScreen?.("Agenda")}>{t("Agenda")}</button></div>
+        {avui.length?<div className="cites-b">{avui.map(cita)}</div>:<p className="buit-b">{t("Avui no hi ha cap cita.")}</p>}
+        {despres.length>0&&<><h3>{t("Pròximes cites")}</h3><div className="cites-b propers">{despres.map(e=><React.Fragment key={eventKey878137(e)}>{cita({...e,hora:[fmtEventDate878136(e),e.hora].filter(Boolean).join(" · ")})}</React.Fragment>)}</div></>}
+      </aside>
+    </div>
   </div>;
 }
 // V87.400 · Visual nou: a l'Inici, sis accessos en icona (el que es fa més a peu d'obra), segons el perfil
@@ -21345,7 +21411,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.535",
+    app_version:"87.536",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

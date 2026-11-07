@@ -3409,6 +3409,20 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Prova: `v535test.mjs` (ordinador i mòbil: nou capítol amb el nom del banc, banc al capítol de destí, la barra arran de baix, la creu, de les complexes
       a les simples, el botó del capítol, canviar una partida i desar). Eina `cap535.mjs` (captures amb la base de Girona de debò, llegida de la seva carpeta).
       Adaptades `v534test` (el camí en lloc de «‹»), `pressupost320test` (el «⋯» del capítol) i `v489test` (el camp de l'import).
+  - **V87.536 · L'Inici B a l'ordinador i l'iPad** (proposta del 6/11/2026, maquetes a `D:/aco-tmp/inici534`; l'Héctor, 7/11/2026: «fes-me la versió nova
+    amb la pantalla d'inici modificada, l'opció B… a veure com queda, si no ja tirarem enrere»; `src/theme-v878537.css`):
+    - **On:** als comptes amb l'Inici en rajoles (`iniciRajoles878508`), a partir de 768 px (`useAmple878536`): l'ordinador i l'iPad. Al mòbil, les rajoles de sempre.
+      `IniciMenu878484` fa servir `IniciB878536`; les rajoles es fan amb `rajoles536(treu)` (les dues pantalles).
+    - **A dalt:** «Bon dia, {nom} · el dia» i **el dia en una frase** («Avui tens 1 cita i 1 feina vençuda.»: les cites d'avui, els avisos urgents —`tone:"bad"`—,
+      la resta d'avisos com a «coses per revisar» i les feines vençudes; sense res, «Avui no tens res pendent.»), amb «Nova obra / Nou expedient».
+    - **Els avisos en targetes** (els mateixos de Pendent i les feines vençudes; com a molt 5): la icona del tipus (`ICONA_AVIS878536`), el color, el text i un botó
+      (Validar, Fer-la, Revisar, Veure, Obrir) que porta a l'apartat; «Veure-ho tot (N)» obre Pendent. Sense res: «Tot al dia».
+    - **Obres en curs** (constructora i gestió total: les obres en execució amb la foto o les inicials i el % certificat; tècnic: «Expedients en curs», els oberts
+      treballats fa menys, amb l'estat), com a molt 4, i «Veure-les totes (N)».
+    - **«Avui»** al costat (a l'iPad, just després dels avisos): les cites d'avui i les tres pròximes, i «Agenda».
+    - **Les rajoles** de sempre a sota, en una línia cada una (icona · nom · número), sense «Pendent» (ja hi és a dalt). Es trien a Ajustos › Accessos ràpids.
+    - **Per tornar enrere** n'hi ha prou de desfer aquesta versió. Les proves d'abans porten la marca `inici-rajoles-prova-v878536` (l'Inici en rajoles).
+    - Prova: `v536test.mjs` (12: constructora a l'ordinador, iPad i mòbil, tècnic). Passen `v508test` i `v484test`.
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3607,7 +3621,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.535 a Render):**
+**Estat (publicada la V87.536 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
