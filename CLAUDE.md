@@ -3423,6 +3423,25 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - **Les rajoles** de sempre a sota, en una línia cada una (icona · nom · número), sense «Pendent» (ja hi és a dalt). Es trien a Ajustos › Accessos ràpids.
     - **Per tornar enrere** n'hi ha prou de desfer aquesta versió. Les proves d'abans porten la marca `inici-rajoles-prova-v878536` (l'Inici en rajoles).
     - Prova: `v536test.mjs` (12: constructora a l'ordinador, iPad i mòbil, tècnic). Passen `v508test` i `v484test`.
+  - **V87.537 · «La meva base»: el banc de preus propi** (l'Héctor, 6/11/2026: «la base pròpia la vull a 0 i l'aniré creant a mesura que guardi partides
+    modificades… si modifico alguna cosa de la partida (descripció, preu o rendiments) que en guardar els canvis em posi un avís per desar-la al banc de
+    preus propi… amb el capítol original de la base general, però només amb aquelles que jo vagi incorporant»; `src/theme-v878538.css`):
+    - **On es desa:** al compte, `aco_meva_base_v878537 = {partides:[{codi, cap, concepte, desc, ut, pu, descompost, descompostTable, banc, at}], caps:{codi:{nom,
+      pare}}}` (`mevaBase878537`, `desaMevaBase878537`, event `aco-meva-base`). Comença buida. Els preus són de venda, com els de Preus: no s'hi torna a posar
+      ni l'IPC ni els marges.
+    - **En guardar el pressupost** («Guardar canvis», `guarda537`): si hi ha partides canviades (concepte, descripció, unitat, preu o descompost) des que es
+      va obrir l'edició, o noves tocades des que es van afegir (del banc, de Preus o de la meva base; `orig878537` = com eren en afegir-les, `ambOrig878537`),
+      o fetes a mà amb preu, surt **«Desar a la meva base?»** (`DesarMeva878537`, `perDesar878537`) amb cada una marcada: «Desar-ne N i guardar» o «Guardar
+      sense desar-les». No pregunta per les que ja són iguals a la meva base, ni al portal de client, al pressupost ràpid o al treballador.
+    - **El capítol** (`desaAMeva878537`): les del banc, amb el seu codi i el capítol original del banc (i els de sobre); les fetes a mà, amb un codi P0001… i
+      el nom del capítol del pressupost. La partida del pressupost queda lligada (`mevaCodi878537`): la propera vegada s'actualitza la mateixa.
+    - **«Des de Preus»:** una tercera font, **«La meva base»** (amb quantes n'hi ha; només si n'hi ha alguna), amb el desplegable dels seus capítols; la
+      partida entra al preu desat (`itemMeva878537`, `tipus:"La meva base"`). També per «Canviar per una del banc». Amb Preus buit, s'obre a la meva base.
+    - **Preus automàtics** (`preusAmidaments878368`: amidaments, dictat, «Buscar preus»): la meva base va per davant de Preus i del banc (font «La meva base»).
+    - **La targeta «La meva base»** (`MevaBaseBloc878537`) a Llibreria de preus i a Ajustos › Preus i marges: per capítols, amb un cercador i «Treure».
+    - Prova: `v537test.mjs` (17: partida del banc sense tocar, canviar-ne el preu i desar-la, sense canvis, feta a mà, la font a «Des de Preus», la targeta i
+      «Treure», mòbil amb «Guardar sense desar-les»).
+      Les proves d'abans porten la marca `meva-base-prova-v878537` (guarden sense la pregunta).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3621,7 +3640,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.536 a Render):**
+**Estat (publicada la V87.537 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

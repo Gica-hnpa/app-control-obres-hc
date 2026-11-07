@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.536";
+const APP_VERSION878264="87.537";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7869,6 +7869,7 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     {libraryItemModal87208&&(()=>{const item=rows.find(entry=>String(entry.id)===String(libraryItemModal87208));return item?renderLibraryItemModal87208(item):null})()}
     {draft&&<Modal title={`Nova partida${draft.cap?` · ${draft.cap}`:""}`} close={()=>setDraft(null)}><div className="library-new-modal-v87208"><div className="library-new-code-note-v87199">{t("Codi curt editable: prefix del capítol + paraula clau + número correlatiu. Exemple:")} <b>{t("MA_BAST_001")}</b>.</div><div className="library-editor-grid-v87196"><label><span>{t("Concepte *")}</span><input autoFocus value={draft.concepte} onChange={e=>setDraft({...draft,concepte:e.target.value})}/></label><label><span>{t("Unitat")}</span><input value={draft.ut} onChange={e=>setDraft({...draft,ut:e.target.value})}/></label><label><span>{t("Capítol de la llibreria")}</span><select value={draft.cap} onChange={e=>changeDraftChapter87201(e.target.value)}><option value="">{t("Selecciona un capítol...")}</option>{caps.map(cap=><option key={cap} value={cap}>{i18nT(cap)}</option>)}<option value="__new__">{t("+ Crear capítol nou")}</option></select></label><label><span>{t("Prefix del codi")}</span><input maxLength="4" value={draft.codiPrefix} onChange={e=>setDraft({...draft,codiPrefix:e.target.value})} placeholder={libChapterInitials87199(draft.cap)}/></label><label><span>{t("Paraula clau del codi")}</span><input maxLength="6" value={draft.codiParaula} onChange={e=>setDraft({...draft,codiParaula:e.target.value})} placeholder={libConceptKeyword87199(draft.concepte)}/></label><label><span>{t("Preu unitari")}</span><input inputMode="decimal" value={draft.pu} onChange={e=>setDraft({...draft,pu:e.target.value})}/></label><label><span>{t("Tipologia de feina")}</span><select value={draft.tipologia||""} onChange={e=>setDraft({...draft,tipologia:e.target.value})}><option value="">{t("Sense tipologia")}</option>{LIBRARY_WORK_CATEGORIES878240.map(type=><option key={type} value={type}>{i18nT(type)}</option>)}</select></label><label className="span-all"><span>{t("Paraules clau / sinònims")}</span><input value={draft.paraulesClau||""} onChange={e=>setDraft({...draft,paraulesClau:e.target.value})} placeholder={t("Ex.: antifissures, reparació esquerdes")}/></label><label className="span-all"><span>{t("Descripció llarga")}</span><textarea value={draft.desc} onChange={e=>setDraft({...draft,desc:e.target.value})}/></label>{clients.length>0&&<label><span>{t("Client relacionat (opcional)")}</span><select value={draft.clientIds?.[0]||""} onChange={e=>setDraft({...draft,clientIds:e.target.value?[e.target.value]:[]})}><option value="">{t("Sense client concret")}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao}</option>)}</select></label>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setDraft(null)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={saveNew}>{t("Guardar a la llibreria")}</button></div></div></Modal>}
     <section className="library-hero-v87196 lib-cap-v878465"><div><h2>{t("Llibreria de preus")}</h2></div><div className="actions-inline"><button type="button" className="primary" onClick={()=>startNew()}><Plus/> {t("Nova partida")}</button><ActionMenu87213 label="⋯" fletxa={false} titol={t("Més opcions")}><button type="button" onClick={createStandaloneChapter87201}><Plus size={15} aria-hidden="true"/> {t("Nou capítol")}</button></ActionMenu87213></div></section>
+    {!readOnly&&<MevaBaseBloc878537/>}
     {!readOnly&&<BancBloc878465/>}
     {(rows.length>0||caps.length>0)&&<div className="library-primary-filters-v87230 library-primary-filters-v878240"><label><span>{t("Quines partides vols veure?")}</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([]);setOpenLibraryChapter("")}}><option value="">{t("Tota la llibreria validada (")}{rows.length})</option><option value="__none__">{t("Ús general / sense client (")}{unlinkedCount})</option>{clients.map(client=><option key={client.id} value={client.id}>{t("Habituals de")} {client.nom||client.rao}</option>)}</select></label><label><span>{t("Cercar")}</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder={t("Concepte, descripció, codi o unitat...")}/></label><label><span>{t("Tipologia de feina")}</span><select value={tipologiaFilter878240} onChange={e=>{setTipologiaFilter878240(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les tipologies")}</option>{libraryTypologies878240.map(type=><option key={type} value={type}>{i18nT(type)}</option>)}</select></label><label><span>{t("Paraula clau")}</span><select value={keywordFilter878246} onChange={e=>{setKeywordFilter878246(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les paraules clau")}</option>{libraryKeywordOptions878246.map(keyword=><option key={keyword} value={keyword}>{i18nT(keyword)}</option>)}</select></label><label><span>{t("Agrupar la llibreria per")}</span><select value={groupBy878240} onChange={e=>{setGroupBy878240(e.target.value);setOpenLibraryChapter("")}}><option value="capitol">{t("Capítol")}</option><option value="tipologia">{t("Tipologia de feina")}</option></select></label><div><small>{t("Resultats")}</small><b>{visibleCuratedRows878230.length} {t("partides")}</b></div></div>}
     {(rows.length>0||caps.length>0)&&<div className="library-stats-v87196 library-stats-v87201"><div><small>{t("Partides validades")}</small><b>{rows.length}</b></div><div><small>{t("Capítols")}</small><b>{caps.length}</b></div><div><small>{t("Relacionades amb clients")}</small><b>{linkedCount}</b></div><div><small>{t("Ús general")}</small><b>{unlinkedCount}</b></div><button type="button" className="secondary" onClick={()=>setShowLibraryTools878230(value=>!value)}>{showLibraryTools878230?t("Tancar eines"):t("Eines opcionals")}</button></div>}
@@ -14696,7 +14697,10 @@ function NouCapitol535({num="01",onCrea,close}){
 function AfegirLlibreria878361({items=[],caps={},clientId="",clientNom="",usage,jaHi,onAfegir,close,marges=null,desti="",capBanc0="",una=null}){
   const banc=useMemo(()=>bancPreus878368(),[]);
   const nB=banc?.partides?.length||0;
-  const[font,setFont]=useState(()=>(!items.length||una||capBanc0)&&nB?"banc":"preus");
+  const meva=useMemo(()=>mevaBase878537(),[]);
+  const nM=meva.partides.length;
+  const[font,setFont]=useState(()=>capBanc0&&nB?"banc":una?(nB?"banc":nM?"meva":"preus"):!items.length?(nM?"meva":nB?"banc":"preus"):"preus");
+  const[capM,setCapM]=useState("");
   const[q,setQ]=useState("");
   const[cap,setCap]=useState("");
   const[capB,setCapB]=useState(capBanc0||"");
@@ -14720,6 +14724,9 @@ function AfegirLlibreria878361({items=[],caps={},clientId="",clientNom="",usage,
   const cercaB=(ambCap,max=Infinity)=>{const out=[];const ps=banc?.partides||[];for(let i=0;i<ps.length&&out.length<max;i++){const p=ps[i];if(ambCap&&descB&&!descB.has(p.cap))continue;if(wb.length&&!wb.every(w=>txtB[i].includes(w)))continue;out.push(p)}return out};
   const llistaB=useMemo(()=>font==="banc"?cercaB(true):[],[font,banc,descB,q,txtB]);// eslint-disable-line react-hooks/exhaustive-deps
   const alBanc=useMemo(()=>font==="preus"&&wb.length&&nB&&!llista.length?cercaB(false,200).length:0,[font,q,nB,llista.length]);// eslint-disable-line react-hooks/exhaustive-deps
+  const idxM=useMemo(()=>idxBanc878534(meva),[meva]);
+  const descM=useMemo(()=>{if(!capM)return null;const st=new Set();const va=k=>{if(st.has(k))return;st.add(k);(idxM.fills[k]||[]).forEach(va)};va(capM);return st},[capM,idxM]);
+  const llistaM=font==="meva"?meva.partides.filter(p=>(!descM||descM.has(p.cap))&&(!wb.length||wb.every(w=>nrm878533(p.codi+" "+p.concepte+" "+(p.desc||"")).includes(w)))):[];
   const preuB=useRef(new Map());
   const puB=p=>{const c=preuB.current;if(!c.has(p.codi))c.set(p.codi,partidaBanc878534(p,banc,marges,0).pu);return c.get(p.codi)};
   const desti0B=p=>{const nc=idxB?.caps[p.cap]?.nom||"";const s=capStd878280({concepte:p.concepte,cap:nc});
@@ -14728,27 +14735,45 @@ function AfegirLlibreria878361({items=[],caps={},clientId="",clientNom="",usage,
     return "nou:"+(s!=="25"?t((CAPS_STD878280.find(x=>x[0]===s)||[])[1]||"Altres"):nc||t("Partides noves")).toUpperCase()};
   const nSel=Object.keys(sel).length;
   const ambQ=x=>partidaBanc878534(x.p,banc,marges,x.q);
-  const total=Object.entries(sel).reduce((s,[id,x])=>s+(parseNum8770(x.q)||0)*(x.p?ambQ(x).pu:(parseNum8770(items.find(it=>String(it.id)===id)?.pu)||0)),0);
+  const total=Object.entries(sel).reduce((s,[id,x])=>s+(parseNum8770(x.q)||0)*(x.p?ambQ(x).pu:x.m?(Number(x.m.pu)||0):(parseNum8770(items.find(it=>String(it.id)===id)?.pu)||0)),0);
   const toca=it=>setSel(o=>{const n=una?{}:{...o};if(o[it.id])delete n[it.id];else n[it.id]={q:qU,dest:desti||desti0(it)};return n});
+  const desti0M=p=>{const nc=idxM.caps[p.cap]?.nom||"";const st=capStd878280({concepte:p.concepte,cap:nc});
+    const ja=st!=="25"&&capsPres.find(k=>capStd878280({concepte:"",cap:k})===st);if(ja)return ja;
+    const m=nc&&capsPres.find(c=>nomSenseNum878361(c)===nomSenseNum878361(nc));if(m)return m;
+    return "nou:"+(st!=="25"?t((CAPS_STD878280.find(x=>x[0]===st)||[])[1]||"Altres"):nc||t("Partides noves")).toUpperCase()};
+  const tocaM=p=>setSel(o=>{const k="meva:"+p.codi,n=una?{}:{...o};if(o[k])delete n[k];else n[k]={q:qU,dest:desti||desti0M(p),m:p};return n});
   const tocaB=p=>setSel(o=>{const k="banc:"+p.codi,n=una?{}:{...o};if(o[k])delete n[k];else n[k]={q:qU,dest:desti||desti0B(p),p};return n});
   const posa=(id,k,v)=>setSel(o=>({...o,[id]:{...o[id],[k]:v}}));
   const nHab=items.filter(habitual).length;
-  const triats=()=>Object.entries(sel).map(([id,s])=>s.p?{item:partidaBanc878534(s.p,banc,marges,s.q),q:s.q,dest:s.dest}:{item:items.find(it=>String(it.id)===id),q:s.q,dest:s.dest}).filter(x=>x.item);
+  const triats=()=>Object.entries(sel).map(([id,s])=>s.p?{item:partidaBanc878534(s.p,banc,marges,s.q),q:s.q,dest:s.dest}:s.m?{item:itemMeva878537(s.m),q:s.q,dest:s.dest}:{item:items.find(it=>String(it.id)===id),q:s.q,dest:s.dest}).filter(x=>x.item);
   const afegeix=()=>{if(una){const x=triats()[0];if(x)una.onTria?.(x.item);return}onAfegir?.(triats())};
   const opcCap=(id,s,d0)=><label className="cc"><span>{t("Capítol")}</span><select value={s.dest} onChange={e=>posa(id,"dest",e.target.value)}>{String(s.dest).startsWith("nou:")&&<option value={s.dest}>{t("Capítol nou: {c}",{c:s.dest.slice(4)})}</option>}{!String(d0).startsWith("nou:")||String(s.dest).startsWith("nou:")?null:<option value={d0}>{t("Capítol nou: {c}",{c:d0.slice(4)})}</option>}{capsPres.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select></label>;
   const opc=(id,s,d0)=>una?null:<div className={"opc"+(desti?" sols-q-v878535":"")}><label className="qq"><span>{t("Quantitat")}</span><input inputMode="decimal" value={s.q} onChange={e=>posa(id,"q",e.target.value)} onFocus={e=>e.target.select()}/></label>{desti?null:opcCap(id,s,d0)}</div>;
   const nf=x=>(x||0).toLocaleString(loc878272());
-  const fontB=font==="banc"&&nB>0;
+  const fontV=font==="banc"&&nB?"banc":font==="meva"&&nM?"meva":"preus";
+  const fontB=fontV==="banc";
   const nomBanc=String(banc?.nom||"").replace(/\s*-\s*\([^)]*$/,"").trim();
   return <Modal title={una?t("Canviar per una partida del banc o de Preus"):desti?t("Afegir partides a «{c}»",{c:nomDesti}):t("Afegir de la llibreria")} close={close}><div className="lib-afegir-v878361 v878534">
     {desti&&<p className="desti-v878535"><FolderPlus size={18} aria-hidden="true"/><span>{t("Les partides que triïs van al capítol")} <b>{nomDesti}</b></span></p>}
     {una&&<p className="desti-v878535"><RotateCcw size={18} aria-hidden="true"/><span>{t("Es canvien el concepte, la descripció, la unitat, el preu i el descompost de")} <b>{[una.row?.codi,una.row?.concepte].filter(Boolean).join(" · ")}</b>{t(". La quantitat i el codi es queden.")}</span></p>}
-    {nB>0&&<div className="fonts-v878534" role="group" aria-label={t("D’on surten les partides")}>
-      <button type="button" aria-pressed={!fontB} onClick={()=>{setFont("preus");setLim(60)}}><BookOpen size={16} aria-hidden="true"/> {t("Preus")} <small>{nf(items.length)}</small></button>
-      <button type="button" aria-pressed={fontB} onClick={()=>{setFont("banc");setLim(60)}}><Library size={16} aria-hidden="true"/> {t("Banc de preus")} <small>{nf(nB)}</small></button>
+    {(nB>0||nM>0)&&<div className={"fonts-v878534"+(nB>0&&nM>0?" tres-v878537":"")} role="group" aria-label={t("D’on surten les partides")}>
+      <button type="button" aria-pressed={fontV==="preus"} onClick={()=>{setFont("preus");setLim(60)}}><BookOpen size={16} aria-hidden="true"/> {t("Preus")} <small>{nf(items.length)}</small></button>
+      {nM>0&&<button type="button" aria-pressed={fontV==="meva"} onClick={()=>{setFont("meva");setLim(60)}}><Star size={16} aria-hidden="true"/> {t("La meva base")} <small>{nf(nM)}</small></button>}
+      {nB>0&&<button type="button" aria-pressed={fontB} onClick={()=>{setFont("banc");setLim(60)}}><Library size={16} aria-hidden="true"/> {t("Banc de preus")} <small>{nf(nB)}</small></button>}
     </div>}
-    <div className="cerca"><Search size={16} aria-hidden="true"/><input autoFocus value={q} onChange={e=>{setQ(e.target.value);setLim(60)}} placeholder={fontB?t("Buscar al banc: codi o paraules…"):t("Buscar a Preus: nom, codi o descripció")} aria-label={t("Buscar")}/></div>
-    {fontB?<>
+    <div className="cerca"><Search size={16} aria-hidden="true"/><input autoFocus value={q} onChange={e=>{setQ(e.target.value);setLim(60)}} placeholder={fontV==="meva"?t("Buscar a la meva base…"):fontB?t("Buscar al banc: codi o paraules…"):t("Buscar a Preus: nom, codi o descripció")} aria-label={t("Buscar")}/></div>
+    {fontV==="meva"?<>
+      {Object.keys(meva.caps).length>0&&<div className="caps"><TriaCap878534 arbre={idxM} valor={capM} onTria={k=>{setCapM(k);setLim(60)}} total={nM}/></div>}
+      {!llistaM.length?<div className="buit"><b>{t("Cap partida amb aquest nom.")}</b></div>:
+      <div className="llista">{llistaM.slice(0,lim).map(p=>{const id="meva:"+p.codi,s=sel[id],ja=jaHi?.({mevaCodi878537:p.codi});const nc=idxM.caps[p.cap]?.nom||"";
+        return <div key={id} className={"fila meva-v878537"+(s?" on":"")}>
+          <button type="button" className="tria" aria-pressed={!!s} onClick={()=>tocaM(p)}><span className="chk" aria-hidden="true">{s?<Check size={16}/>:null}</span>
+            <span className="txt"><b>{p.concepte||t("Sense concepte")}</b><small>{[p.codi,nc].filter(Boolean).join(" · ")}{ja?<em className="ja">{t("Ja hi és")}</em>:null}</small></span>
+            <span className="preu"><b>{money(Number(p.pu)||0)}</b><small>/{p.ut||"ut"}</small></span></button>
+          {s&&opc(id,s,desti0M(p))}
+        </div>})}</div>}
+      {llistaM.length>lim&&<button type="button" className="secondary mes" onClick={()=>setLim(n=>n+60)}>{t("Mostrar-ne més ({n})",{n:nf(llistaM.length-lim)})}</button>}
+</>:fontB?<>
       <div className="caps"><TriaCap878534 arbre={idxB} valor={capB} onTria={k=>{setCapB(k);setLim(60)}} total={nB} ambCodi/></div>
       <p className="banc-nota-v878534">{nomBanc}{pctBanc878533(banc)>0?" · "+textPctBanc878533(banc):""}{marges?" · "+t("amb els marges de l’obra"):""}</p>
       {!llistaB.length?<div className="buit"><b>{t("Cap partida amb aquest nom.")}</b></div>:
@@ -14951,6 +14976,93 @@ async function syncBancComu878460(){
   try{const r=await nv.baixa();const partides=Array.isArray(r)?r:r?.partides,caps=Array.isArray(r)?{}:(r?.caps||{});if(Array.isArray(partides)&&partides.length)desaBancComu878460({nom:cap.nom,any:cap.any_preus,pct:Number(cap.pct)||0,versio:cap.versio,partides,caps})}catch{}
 }
 function bancPreus878368(){return bancPropi878460()||bancComu878460()}
+// V87.537 · «La meva base» (l'Héctor, 6/11/2026: «la base pròpia la vull a 0 i l'aniré creant a mesura que guardi partides… si modifico alguna cosa
+// de la partida (descripció, preu o rendiments) que en guardar els canvis em posi un avís per desar-la al banc de preus propi… amb el capítol original
+// de la base general, però només amb les que jo vagi incorporant»). Es desa al compte: aco_meva_base_v878537 = {partides:[{codi, cap, concepte, desc,
+// ut, pu, descompost, descompostTable, banc, at}], caps:{codi:{nom, pare}}}. Els preus són de venda, com els de Preus: no s'hi torna a posar ni l'IPC ni
+// els marges. A l'hora de posar preus sols, passa per davant del banc.
+const MEVA878537="aco_meva_base_v878537";
+function mevaBase878537(){const b=lsJson8779(MEVA878537,null);return {partides:Array.isArray(b?.partides)?b.partides:[],caps:b?.caps&&typeof b.caps==="object"?b.caps:{}}}
+function desaMevaBase878537(b){lsSet8779(MEVA878537,JSON.stringify(b));try{window.dispatchEvent(new Event("aco-meva-base"))}catch{}}
+function sigPartida878537(r={}){return JSON.stringify([String(r.concepte||"").trim(),String(r.desc||"").trim(),String(r.ut||"").trim(),Math.round((parseNum8770(r.pu)||0)*100),String(r.descompost||"").trim()])}
+const clauP878537=(cap,r)=>r?.id?"id:"+r.id:`${cap}|${r?.codi||""}|${r?.concepte||""}`;
+// les partides que val la pena proposar: canviades des que es va obrir l'edició; les noves, si s'han tocat des que es van afegir (del banc, de Preus o
+// de la meva base) o si s'han fet a mà; sempre amb concepte i preu, i que no siguin ja iguals a la meva base
+function perDesar878537(caps,snap){
+  const abans=new Map();Object.entries(snap||{}).forEach(([cap,rows])=>(rows||[]).forEach(r=>{if(r)abans.set(clauP878537(cap,r),sigPartida878537(r))}));
+  const meva=new Map(mevaBase878537().partides.map(p=>[String(p.codi),sigPartida878537(p)]));
+  const out=[];
+  Object.entries(caps||{}).forEach(([cap,rows])=>(rows||[]).forEach((r,i)=>{
+    const conc=String(r?.concepte||"").trim();
+    if(!r||!conc||conc==="Nova partida"||!(parseNum8770(r.pu)>0))return;
+    const s=sigPartida878537(r),a=abans.get(clauP878537(cap,r));
+    const canviada=a!==undefined?a!==s:(r.orig878537?r.orig878537!==s:true);
+    if(!canviada)return;
+    const k=r.mevaCodi878537||r.bancCodi878534||"";
+    if(k&&meva.get(String(k))===s)return;
+    out.push({cap,i,r});
+  }));
+  return out;
+}
+// desa les partides a la meva base: les del banc, amb el seu codi i el capítol del banc (i els capítols de sobre); les altres, amb un codi P0001… i el
+// nom del capítol del pressupost. Torna el codi de cada una.
+function desaAMeva878537(items=[],banc=null){
+  const b=mevaBase878537();const ps=[...b.partides];const caps={...b.caps};
+  let n=ps.reduce((m,p)=>Math.max(m,parseInt(String(p.codi).match(/^P(\d+)$/)?.[1]||"0",10)),0);
+  const bc=banc?.caps||{};const pB=new Map((banc?.partides||[]).map(p=>[p.codi,p]));
+  const ara=new Date().toISOString();
+  return {codis:items.map(({cap:capP,r})=>{
+    let codi=r.mevaCodi878537||r.bancCodi878534||"";
+    if(!codi){const ja=ps.find(p=>!p.banc&&nrm878533(p.concepte)===nrm878533(r.concepte)&&String(p.ut||"")===String(r.ut||""));codi=ja?ja.codi:"P"+String(++n).padStart(4,"0")}
+    let cap=(r.bancCodi878534&&pB.get(r.bancCodi878534)?.cap)||"";
+    if(cap&&bc[cap]){let k=cap,g=0;while(k&&bc[k]&&g++<12){if(!caps[k])caps[k]={nom:bc[k].nom,pare:bc[k].pare&&bc[bc[k].pare]?bc[k].pare:""};k=bc[k].pare}}
+    else{const nom=(nomSenseNum878361(capP)||t("PARTIDES PRÒPIES")).toUpperCase();cap="PR-"+nrm878533(nom).replace(/[^a-z0-9]+/g,"-").slice(0,40);if(!caps[cap])caps[cap]={nom,pare:""}}
+    const e={codi,cap,concepte:String(r.concepte||"").trim(),desc:r.desc||"",ut:r.ut||"u",pu:Math.round((parseNum8770(r.pu)||0)*100)/100,descompost:r.descompost||"",descompostTable:r.descompostTable||null,banc:r.bancCodi878534||"",at:ara};
+    const j=ps.findIndex(p=>String(p.codi)===String(codi));if(j>=0)ps[j]={...ps[j],...e};else ps.push(e);
+    return codi;
+  }),desa:()=>desaMevaBase878537({partides:ps,caps})};
+}
+// una partida de la meva base com a partida del pressupost (el preu tal com es va desar)
+function itemMeva878537(p){return {id:"meva:"+p.codi,mevaCodi878537:p.codi,codiIntern:p.codi,codi:p.codi,concepte:p.concepte||"",desc:p.desc||"",ut:p.ut||"u",pu:Number(p.pu)||0,descompost:p.descompost||"",
+  ...(p.descompostTable?{descompostTable:p.descompostTable}:{}),...(p.banc?{bancCodi878534:p.banc}:{}),tipus:"La meva base",origenPreu878368:[t("La meva base"),p.codi,p.concepte].filter(Boolean).join(" · ").slice(0,260)}}
+// Llibreria de preus i Ajustos › Preus i marges: la meva base, per capítols, amb un cercador i «Treure»
+function MevaBaseBloc878537(){
+  const[b,setB]=useState(()=>mevaBase878537());
+  const[q,setQ]=useState("");
+  useEffect(()=>{const f=()=>setB(mevaBase878537());window.addEventListener("aco-meva-base",f);return()=>window.removeEventListener("aco-meva-base",f)},[]);
+  const idx=useMemo(()=>idxBanc878534(b),[b]);
+  const n=b.partides.length;
+  const w=nrm878533(q).split(/\s+/).filter(Boolean);
+  const treu=p=>{if(!confirm(t("Treure «{c}» de la meva base?",{c:p.concepte})))return;desaMevaBase878537({...b,partides:b.partides.filter(x=>x.codi!==p.codi)})};
+  const fila=p=><div key={p.codi} className="mb-fila-v878537"><code>{p.codi}</code><span className="c">{p.concepte}</span><span className="u">{p.ut}</span><b>{money(p.pu)}</b><button type="button" className="link" onClick={()=>treu(p)} aria-label={t("Treure")} title={t("Treure de la meva base")}><X size={16} aria-hidden="true"/></button></div>;
+  const res=w.length?b.partides.filter(p=>w.every(x=>nrm878533(`${p.codi} ${p.concepte} ${p.desc||""}`).includes(x))):null;
+  const capsAmb=k=>(idx.fills[k]||[]).filter(x=>(idx.n[x]||0)>0);
+  const cap=k=><details key={k} className="sub-v878426 mb-cap-v878537"><summary><span className="t"><b>{idx.caps[k]?.nom||k}</b></span><span className="n">{idx.n[k]||0}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary>
+    <div className="dins">{capsAmb(k).map(cap)}{(idx.parts[k]||[]).map(fila)}</div></details>;
+  return <details className="card bloc-v878426 meva-base-v878537"><summary><Star size={18} aria-hidden="true"/><span className="t"><b>{t("La meva base")}</b></span><span className="xifra">{n?t("{n} partides",{n:n.toLocaleString(loc878272())}):t("Buida")}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    <div className="cos">
+      {!n?<p className="buit-v878537">{t("Quan canviïs una partida en un pressupost i el guardis, l’app et proposarà desar-la aquí, al capítol que tenia al banc de preus.")}</p>:<>
+        {n>8&&<input type="search" className="cerca-v878533" value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar a la meva base…")} aria-label={t("Buscar a la meva base")}/>}
+        {res?<div className="mb-res-v878537">{res.length?res.map(fila):<p className="buit-v878537">{t("Cap partida")}</p>}</div>
+          :<div className="mb-caps-v878537">{capsAmb("").map(cap)}{(idx.parts[""]||[]).map(fila)}</div>}
+      </>}
+    </div><Recollir878432/></details>;
+}
+// en guardar el pressupost: les partides canviades, per desar-les a la meva base
+function DesarMeva878537({llista=[],onDesa,onNo,close}){
+  const[sel,setSel]=useState(()=>Object.fromEntries(llista.map((x,j)=>[j,true])));
+  const n=Object.values(sel).filter(Boolean).length;
+  return <Modal title={t("Desar a la meva base?")} close={close}><div className="desar-meva-v878537">
+    <p>{llista.length===1?t("Has canviat aquesta partida. La vols desar a la teva base de preus per fer-la servir en altres pressupostos?"):t("Has canviat aquestes partides. Les vols desar a la teva base de preus per fer-les servir en altres pressupostos?")}</p>
+    <div className="ll">{llista.map((x,j)=><label key={j} className={sel[j]?"on":""}><input type="checkbox" checked={!!sel[j]} onChange={()=>setSel(s=>({...s,[j]:!s[j]}))}/>
+      <span className="tx"><b>{x.r.concepte}</b><small>{[x.r.codi,String(x.cap||"").replace(/^[A-Z]{0,3}\d+(\.\d+)*[\s.\-·]*/i,""),x.r.bancCodi878534?t("del banc {c}",{c:x.r.bancCodi878534}):""].filter(Boolean).join(" · ")}</small></span>
+      <span className="p">{money(parseNum8770(x.r.pu)||0)}<small>/{x.r.ut||"u"}</small></span></label>)}</div>
+    <div className="bts"><button type="button" className="secondary" onClick={onNo}>{t("Guardar sense desar-les")}</button>
+      <button type="button" className="primary" disabled={!n} onClick={()=>onDesa(llista.filter((x,j)=>sel[j]))}>{n===1?t("Desar-la i guardar"):t("Desar-ne {n} i guardar",{n})}</button></div>
+  </div></Modal>;
+}
+function ambOrig878537(r){return {...r,orig878537:sigPartida878537(r)}}
+
 // V87.533 · els preus del banc es posen al dia sols amb l'IPC de l'INE des de l'any del banc (src/ipc.js; l'Héctor, 6/11/2026: «són del 2023 i
 // s'han d'actualitzar automàticament a l'any vigent»). Si s'ha escrit un % a mà (pctMa; els bancs d'abans amb un % escrit, també), aquest.
 // Les proves d'abans porten la marca ipc-prova-v878533 (sense l'IPC sol: els seus preus esperats són els del banc).
@@ -15086,12 +15198,14 @@ function partidesObres878372(obraId){
   return out;
 }
 // les fonts del preu de cada línia dels amidaments (font878368): arxiu · llibreria (Preus) · banc · ia · ma (escrit a mà)
-const FONTS878368={arxiu:"Arxiu",llibreria:"Preus",banc:"Banc",obres:"Obres",ia:"IA",ma:"A mà"};
+const FONTS878368={arxiu:"Arxiu",meva:"La meva base",llibreria:"Preus",banc:"Banc",obres:"Obres",ia:"IA",ma:"A mà"};
 function preusAmidaments878368(linies=[],partidaLibrary=[],banc=null,obraId=""){
   const lib=(partidaLibrary||[]).map(x=>({codi:x.codi||x.codiPressupost||x.codiIntern||"",ut:x.ut,concepte:x.concepte||x.resum||"",desc:x.descripcio||x.desc||"",pu:parseNum8770(x.pu),descompostTable:x.descompostTable||null,font:"llibreria"}));
   // V87.372 · el banc, amb el % d'actualització; les obres anteriors (la mitjana de la mateixa partida)
   const fB=1+pctBanc878533(banc)/100,etB=etBanc878533(banc);
-  const iL=fesIndex(lib),iB=fesIndex((banc?.partides||[]).map(x=>({...x,pu:Math.round(x.pu*fB*100)/100,descomp:fB!==1?escalaDescomp(x.descomp,fB):x.descomp,font:"banc"})));
+  // V87.537 · la meva base passa per davant de Preus i del banc
+  const mevaL=mevaBase878537().partides.map(x=>({codi:x.codi,ut:x.ut,concepte:x.concepte,desc:x.desc||"",pu:Number(x.pu)||0,descompostTable:x.descompostTable||null,font:"meva"}));
+  const iL=fesIndex([...mevaL,...lib]),iB=fesIndex((banc?.partides||[]).map(x=>({...x,pu:Math.round(x.pu*fB*100)/100,descomp:fB!==1?escalaDescomp(x.descomp,fB):x.descomp,font:"banc"})));
   const iO=fesIndex(partidesObres878372(obraId));
   const obres=l=>{const r=preuObres(l,iO,{minim:.6});if(!r)return null;const f=r.millor.pu>0?r.pu/r.millor.pu:1;
     return {...l,pu:r.pu,font878368:"obres",semblant878368:r.items[0].puntuacio<0.85,nota878368:(r.n>1?`Mitjana de ${r.n} obres: ${money(r.pu)} (${money(r.min)} – ${money(r.max)})`:`${r.millor.obraNom||"Una obra anterior"}: ${money(r.pu)}`).slice(0,160),descomp878368:null,taula878368:r.millor.descompostTable?escalaTaula878372(r.millor.descompostTable,f):null}};
@@ -15483,7 +15597,7 @@ function MargesAjustos878378(){
   const[v,setV]=useState(()=>lsJson8779(MARGES_KEY878378,{})||{});
   const set=x=>setV(o=>{const n={...o,...x};lsSet8779(MARGES_KEY878378,JSON.stringify(n));return n});
   // el compte de l'Héctor no té «Preus» al menú: el banc de preus és aquí
-  return <>{!PERFIL878304&&<div className="banc-ajustos-v878460"><BancPreus878368/></div>}<MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/></>;
+  return <>{!PERFIL878304&&<div className="banc-ajustos-v878460"><BancPreus878368/></div>}{!esTreballador878326()&&<div className="meva-ajustos-v878537"><MevaBaseBloc878537/></div>}<MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/></>;
 }
 function Logistica878368({obra={},cond={},setCond,readOnly}){
   const k={...COND_DEFECTE,...cond};
@@ -16142,7 +16256,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       const num=(String(cap).match(/(\d+)/)?.[1]||"").padStart(2,"0");const used=new Set(arr.map(r=>String(r.codi||"")));let n=arr.length+1;
       let codi=num?num+"."+String(n).padStart(2,"0"):(item.codiPressupost||item.codi||"");while(num&&used.has(codi))codi=num+"."+String(++n).padStart(2,"0");
       const {id:_i,clientIds:_c,priceHistory:_h,global:_g,...it}=item;
-      arr.push({...it,...(String(item.id||"").startsWith("banc:")?{}:{libraryItemId:item.id}),codiIntern:item.codiIntern,cap,subcap:cap,capPrincipal:main,scopePrincipal:scope,excelScope:scope,capPath:[scope,main,cap].filter(Boolean),codi,codiPressupost:codi,q:String(parseNum8770(q)||1),pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única",createdAt:now,updatedAt:now});
+      arr.push(ambOrig878537({...it,...(/^(banc|meva):/.test(String(item.id||""))?{}:{libraryItemId:item.id}),codiIntern:item.codiIntern,cap,subcap:cap,capPrincipal:main,scopePrincipal:scope,excelScope:scope,capPath:[scope,main,cap].filter(Boolean),codi,codiPressupost:codi,q:String(parseNum8770(q)||1),pu:parseNum8770(item.pu),descompost:item.descompost||"",tipus:item.tipus||"Llibreria única",createdAt:now,updatedAt:now}));
       next[cap]=arr;oberts[cap]=true;
     });
     if(currentClientId87196){const ids=new Set(sel.map(x=>String(x.item.id)));setPartidaLibrary?.(prev=>dedupePartidaLibrary87196((prev||[]).map(item=>ids.has(String(item.id))?{...item,clientIds:[...new Set([...(item.clientIds||[]),currentClientId87196])],updatedAt:now}:item)))}
@@ -16207,6 +16321,22 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setSeleccio878320(false);
     setEditBudget8760b(false);
     if(reaplica878346!=null){aplicaComissio878346(reaplica878346);setReaplica878346(null)}
+  }
+  // V87.537 · en guardar el pressupost, les partides canviades es proposen per desar-les a la meva base
+  const[meva537,setMeva537]=useState(null);
+  function guarda537(){
+    // les proves d'abans porten la marca meva-base-prova-v878537 (guarden sense la pregunta)
+    const vell537=(()=>{try{return lsVisual878400()?.getItem("meva-base-prova-v878537")==="1"}catch{return false}})();
+    if(clientMode||quickMode||esTreballador878326()||vell537){saveBudget8760b();return}
+    const ll=perDesar878537(capsRef878247.current||caps,editSnapshot878176);
+    if(!ll.length){saveBudget8760b();return}
+    setMeva537(ll);
+  }
+  function desaMeva537(sel){
+    const {codis,desa}=desaAMeva878537(sel,bancPreus878368());desa();
+    const next={...(capsRef878247.current||caps)};
+    sel.forEach((x,j)=>{const arr=[...(next[x.cap]||[])];const r=arr[x.i];if(!r)return;arr[x.i]=ambOrig878537({...r,mevaCodi878537:codis[j]});next[x.cap]=arr});
+    setCaps(next);setMeva537(null);saveBudget8760b();
   }
   function cancelBudget8760b(){
     setCapEdit528(null);
@@ -16554,8 +16684,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     const row=(caps?.[cap]||[])[i];if(!row||!item)return;
     const patch={concepte:item.concepte||row.concepte||"",desc:item.desc||"",ut:item.ut||row.ut||"ut",pu:String(parseNum8770(item.pu)||0),descompost:item.descompost||"",descompostTable:item.descompostTable||null,
       origenPreu878368:item.origenPreu878368||"",bancCodi878534:item.bancCodi878534||null,codiIntern:item.codiIntern||item.codi||"",tipus:item.tipus||row.tipus,mg878378:item.mg878378||null,minim878378:item.minim878378||null,
-      libraryItemId:String(item.id||"").startsWith("banc:")?null:(item.id||null),updatedAt:new Date().toISOString()};
-    setCaps(p=>{const n={...p};n[cap]=[...(n[cap]||[])];n[cap][i]={...n[cap][i],...patch};return n});
+      libraryItemId:/^(banc|meva):/.test(String(item.id||""))?null:(item.id||null),mevaCodi878537:item.mevaCodi878537||null,updatedAt:new Date().toISOString()};
+    setCaps(p=>{const n={...p};n[cap]=[...(n[cap]||[])];n[cap][i]=ambOrig878537({...n[cap][i],...patch});return n});
     setLibraryOpen87115(false);setLib535(null);
   }
   function seguentCap535(){const ks=Object.keys(caps||{});const nums=ks.map(capOrder8779).filter(n=>n<9999);const pre=(ks.map(k=>String(k).match(/^([A-Z]{0,3})\d/)).find(Boolean)||[])[1]||"";return pre+String((nums.length?Math.max(...nums):0)+1).padStart(2,"0")}
@@ -17114,7 +17244,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {/* V87.426 · l'Héctor (29/10/2026): «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les
           opcions… les eines dins d'editar… canviar el nom i eliminar ja surten a les fases». «Editar» · «Imprimir» · «Accions» curt;
           editant, «Afegir» i «Eines» (renumerar, validar i tornar a llegir els descompostos, buidar) */}
-      {!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>:<><button type="button" className="primary" onClick={saveBudget8760b}>{i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={cancelBudget8760b}>{i18nT("Cancel·lar")}</button></>}
+      {!editBudget8760b?<button type="button" className="primary" onClick={beginBudgetEdit878176}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>:<><button type="button" className="primary" onClick={guarda537}>{i18nT("Guardar canvis")}</button><button type="button" className="secondary" onClick={cancelBudget8760b}>{i18nT("Cancel·lar")}</button></>}
       {!editBudget8760b&&!quickMode&&<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimir426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>}
       {!editBudget8760b&&(()=>{
         const cl=pc428?"secondary ":"";
@@ -17166,8 +17296,9 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     {budgetSummaryModal878229&&<Modal title={i18nT("Crear una partida resum")} close={()=>setBudgetSummaryModal878229(false)}><div className="budget-summary-modal-v87229"><div className="module-note-v8738"><b>{selectedBudgetRefs878229().length} {i18nT("partides seleccionades ·")} {money(selectedBudgetRefs878229().reduce((sum,ref)=>sum+(parseNum8770(ref.row.q)||0)*(parseNum8770(ref.row.pu)||0),0))}</b><span>{i18nT("Les partides originals quedaran guardades dins la nova partida com a detall d'origen, però desapareixeran del llistat principal.")}</span></div><div className="form-grid"><label><span>{i18nT("Codi nou")}</span><input value={budgetSummaryForm878229.codi} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,codi:e.target.value}))}/></label><label className="span-2"><span>{i18nT("Concepte")}</span><input value={budgetSummaryForm878229.concepte} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,concepte:e.target.value}))} placeholder={i18nT("Ex.: Instal·lació elèctrica · preu global")}/></label><label><span>{i18nT("Unitat")}</span><select value={budgetSummaryForm878229.ut} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,ut:e.target.value}))}><option>p.a.</option><option value="ut">{i18nT("ut")}</option><option value="lot">{i18nT("lot")}</option></select></label><label className="span-2"><span>{i18nT("Capítol de destí")}</span><select value={budgetSummaryForm878229.cap} onChange={e=>setBudgetSummaryForm878229(prev=>({...prev,cap:e.target.value}))}>{sortedCapEntries8779(caps).map(([cap])=><option key={cap} value={cap}>{i18nT(cap)}</option>)}</select></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setBudgetSummaryModal878229(false)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={createBudgetSummary878229}>{i18nT("Crear partida resum")}</button></div></div></Modal>}
     {bulkRenumberModal878231&&<Modal title={i18nT("Renumerar totes les partides")} close={()=>setBulkRenumberModal878231(null)}><div className="budget-renumber-modal-v87231"><div className="module-note-v8738"><b>{i18nT("Numeració curta i correlativa per capítol")}</b><span>{i18nT("Només canvia el codi imprès. Manté intactes quantitats, preus, descomposats, amidaments i totes les certificacions ja guardades.")}</span></div><div className="form-grid"><label><span>{i18nT("Primer número")}</span><input type="number" min="0" value={bulkRenumberModal878231.start} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,start:e.target.value}))}/></label><label><span>{i18nT("Nombre de dígits")}</span><select value={bulkRenumberModal878231.digits} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,digits:e.target.value}))}><option value="2">{i18nT("2 dígits · 01, 02...")}</option><option value="3">{i18nT("3 dígits · 001, 002...")}</option></select></label><label><span>{i18nT("Separador")}</span><select value={bulkRenumberModal878231.separator} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,separator:e.target.value}))}><option value=".">{i18nT("Punt · 01.01")}</option><option value="-">{i18nT("Guió · 01-01")}</option></select></label><label className="span-all budget-renumber-check-v87230"><input type="checkbox" checked={!!bulkRenumberModal878231.restartByChapter} onChange={e=>setBulkRenumberModal878231(prev=>({...prev,restartByChapter:e.target.checked}))}/><span>{i18nT("Recomençar la seqüència a cada capítol")}</span></label></div><div className="budget-renumber-preview-v87231"><div><b>{i18nT("Vista prèvia")}</b><span>{bulkRenumberPlan878231().length} {i18nT("partides")}</span></div>{bulkRenumberPlan878231().slice(0,24).map((entry,index)=><p key={`${entry.cap}-${index}`}><small>{entry.cap}</small><span>{entry.oldCode||i18nT("Sense codi")}</span><b>→ {entry.newCode}</b></p>)}{bulkRenumberPlan878231().length>24&&<em>… i {bulkRenumberPlan878231().length-24} {i18nT("partides més")}</em>}</div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setBulkRenumberModal878231(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={applyBulkRenumber878231}>{i18nT("Aplicar la renumeració")}</button></div></div></Modal>}
     {chapterEditModal878230&&<Modal title={chapterEditModal878230.kind==="main"?i18nT("Editar número i nom · capítol principal"):i18nT("Editar número i nom · capítol")} close={()=>setChapterEditModal878230(null)}><div className="budget-chapter-modal-v87230"><div className="module-note-v8738"><b>{chapterEditModal878230.original}</b><span>{i18nT("El canvi ordenarà el capítol per la numeració nova. Pots decidir si també vols canviar automàticament el prefix dels codis de les partides.")}</span></div><div className="form-grid"><label><span>{i18nT("Número del capítol")}</span><input autoFocus value={chapterEditModal878230.numero} onChange={e=>setChapterEditModal878230(prev=>({...prev,numero:e.target.value}))} placeholder={i18nT("Ex.: 03")}/></label><label className="span-2"><span>{i18nT("Nom del capítol")}</span><input value={chapterEditModal878230.nom} onChange={e=>setChapterEditModal878230(prev=>({...prev,nom:e.target.value}))} placeholder={i18nT("Ex.: REVESTIMENTS")}/></label><label className="span-2 budget-renumber-check-v87230"><input type="checkbox" checked={!!chapterEditModal878230.renumberItems} onChange={e=>setChapterEditModal878230(prev=>({...prev,renumberItems:e.target.checked}))}/><span>{i18nT("Canviar també el prefix de les partides del capítol (per exemple, 02.01 → 03.01)")}</span></label></div><div className="modal-actions"><button type="button" className="secondary" onClick={()=>setChapterEditModal878230(null)}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={saveChapterEditor878230}>{i18nT("Guardar capítol")}</button></div></div></Modal>}
+    {meva537&&<DesarMeva878537 llista={meva537} onDesa={desaMeva537} onNo={()=>{setMeva537(null);saveBudget8760b()}} close={()=>setMeva537(null)}/>}
     {nouCap535&&!clientMode&&<NouCapitol535 num={seguentCap535()} onCrea={creaCap535} close={()=>setNouCap535(false)}/>}
-    {libraryOpen87115&&!clientMode&&<AfegirLlibreria878361 desti={lib535?.desti||""} capBanc0={lib535?.capBanc||""} una={lib535?.una&&(caps?.[lib535.una.cap]||[])[lib535.una.i]?{row:(caps[lib535.una.cap]||[])[lib535.una.i],onTria:item=>posaCanvi535(lib535.una.cap,lib535.una.i,item)}:null} marges={margesObra878378(data)} items={centralLibrary87196} caps={editBudget8760b?caps:normalizeBudgetCaps878176(group(data.partides||[],"cap"))} clientId={currentClientId87196} clientNom={client?.nom||client?.rao||""} usage={libraryUsageCount878234} jaHi={it=>it.bancCodi878534&&!it.id?(data.partides||[]).some(r=>r.bancCodi878534===it.bancCodi878534):(data.partides||[]).some(r=>String(r.libraryItemId||"")===String(it.id)||(librarySimilarityKey878234(r)&&librarySimilarityKey878234(r)===librarySimilarityKey878234(it)))} onAfegir={sel=>{afegeixLlibreria878361(sel);setLib535(null)}} close={()=>{setLibraryOpen87115(false);setLib535(null)}}/>}
+    {libraryOpen87115&&!clientMode&&<AfegirLlibreria878361 desti={lib535?.desti||""} capBanc0={lib535?.capBanc||""} una={lib535?.una&&(caps?.[lib535.una.cap]||[])[lib535.una.i]?{row:(caps[lib535.una.cap]||[])[lib535.una.i],onTria:item=>posaCanvi535(lib535.una.cap,lib535.una.i,item)}:null} marges={margesObra878378(data)} items={centralLibrary87196} caps={editBudget8760b?caps:normalizeBudgetCaps878176(group(data.partides||[],"cap"))} clientId={currentClientId87196} clientNom={client?.nom||client?.rao||""} usage={libraryUsageCount878234} jaHi={it=>it.mevaCodi878537&&!it.id?(data.partides||[]).some(r=>r.mevaCodi878537===it.mevaCodi878537):it.bancCodi878534&&!it.id?(data.partides||[]).some(r=>r.bancCodi878534===it.bancCodi878534):(data.partides||[]).some(r=>String(r.libraryItemId||"")===String(it.id)||(librarySimilarityKey878234(r)&&librarySimilarityKey878234(r)===librarySimilarityKey878234(it)))} onAfegir={sel=>{afegeixLlibreria878361(sel);setLib535(null)}} close={()=>{setLibraryOpen87115(false);setLib535(null)}}/>}
     {libraryOpen87115&&clientMode&&<Modal title={i18nT("Afegir partides al pressupost")} close={()=>setLibraryOpen87115(false)}>
       <div className="budget-library-modal-v87218">
         <div className="budget-library-steps-v87218"><span className="done">{i18nT("1 · Client")}</span><span className="active">{i18nT("2 · Buscar i seleccionar")}</span><span>{i18nT("3 · Afegir al capítol")}</span></div>
@@ -21411,7 +21542,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.536",
+    app_version:"87.537",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

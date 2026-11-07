@@ -1,0 +1,34 @@
+/* V87.537 · «La meva base»: la font a «Des de Preus», la targeta a Llibreria de preus i Ajustos, i la pregunta en guardar el pressupost */
+html body .lib-afegir-v878361 .fonts-v878534.tres-v878537{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:560px){html body .lib-afegir-v878361 .fonts-v878534.tres-v878537 button{flex-direction:column;gap:2px;min-height:54px;font-size:13.5px}}
+
+.meva-base-v878537 .cos{display:flex;flex-direction:column;gap:8px}
+.meva-base-v878537 .buit-v878537{margin:4px 2px;color:var(--co-ink-2);font-size:14px}
+.meva-base-v878537 .mb-caps-v878537,.meva-base-v878537 .mb-res-v878537{display:flex;flex-direction:column;gap:6px}
+.meva-base-v878537 .mb-cap-v878537>summary{display:flex;align-items:center;gap:10px}
+.meva-base-v878537 .mb-cap-v878537>summary .t{flex:1;min-width:0}
+.meva-base-v878537 .mb-cap-v878537>summary .n{font-size:13px;color:var(--co-ink-3);font-variant-numeric:tabular-nums}
+.meva-base-v878537 .mb-cap-v878537 .dins{display:flex;flex-direction:column;gap:4px;padding:6px 0 4px 10px}
+.meva-base-v878537 .mb-fila-v878537{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--co-line);border-radius:10px;background:#fff}
+.meva-base-v878537 .mb-fila-v878537 code{font:600 12px/1.2 inherit;color:var(--co-ink-3)}
+.meva-base-v878537 .mb-fila-v878537 .c{font-size:14px;overflow-wrap:anywhere}
+.meva-base-v878537 .mb-fila-v878537 .u{font-size:12.5px;color:var(--co-ink-3)}
+.meva-base-v878537 .mb-fila-v878537 b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.meva-base-v878537 .mb-fila-v878537 .link{display:flex;align-items:center;justify-content:center;min-width:36px;min-height:36px;padding:0;color:var(--co-ink-3)}
+@media (max-width:560px){.meva-base-v878537 .mb-fila-v878537{grid-template-columns:minmax(0,1fr) auto auto}.meva-base-v878537 .mb-fila-v878537 code,.meva-base-v878537 .mb-fila-v878537 .u{display:none}}
+.meva-ajustos-v878537{margin-top:12px}
+
+.desar-meva-v878537{display:flex;flex-direction:column;gap:14px;padding:4px 20px 0;max-width:640px}
+.desar-meva-v878537>p{margin:0;font-size:15px;line-height:1.45}
+.desar-meva-v878537 .ll{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto}
+.desar-meva-v878537 .ll label{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--co-line);border-radius:12px;background:#fff;cursor:pointer}
+.desar-meva-v878537 .ll label.on{border-color:var(--co-accent,#2563EB);background:#EFF6FF}
+.desar-meva-v878537 .ll input{width:20px;height:20px;flex:0 0 auto}
+.desar-meva-v878537 .ll .tx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.desar-meva-v878537 .ll .tx b{font-size:14.5px;overflow-wrap:anywhere}
+.desar-meva-v878537 .ll .tx small{font-size:12.5px;color:var(--co-ink-3)}
+.desar-meva-v878537 .ll .p{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.desar-meva-v878537 .ll .p small{font-weight:500;color:var(--co-ink-3)}
+.desar-meva-v878537 .bts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding-bottom:16px}
+.desar-meva-v878537 .bts button{min-height:46px;padding:0 18px}
+@media (max-width:700px){.desar-meva-v878537{padding-inline:14px}.desar-meva-v878537 .bts button{flex:1 1 100%}}
