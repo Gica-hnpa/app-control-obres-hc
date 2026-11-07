@@ -1,0 +1,82 @@
+/* V87.538 · la partida a pantalla gran, més compacta a l'ordinador (l'Héctor, 7/11/2026: «pot ser més compacte per no haver de fer scroll… es pot
+   optimitzar més la pantalla»): dues columnes (a l'esquerra els camps i la descripció; a la dreta el descompost), els camps en dues files i cada línia
+   del descompost en una sola línia, amb el codi davant del concepte */
+@media (min-width:1100px) and (hover:hover) and (pointer:fine){
+  html body .partida-pantalla-v878486 .pp-cap,html body .partida-pantalla-v878486 .pp-peu{padding-left:max(20px,calc((100vw - 1600px)/2));padding-right:max(20px,calc((100vw - 1600px)/2))}
+  html body .partida-pantalla-v878486 .pp-cos{padding:14px max(20px,calc((100vw - 1600px)/2)) 20px}
+  html body .partida-pantalla-v878486 .fitxa-v878449{display:grid;grid-template-columns:minmax(400px,.8fr) minmax(0,1.2fr);gap:14px 24px;align-items:start;font-size:15px}
+  html body .partida-pantalla-v878486 .fitxa-v878449>*{grid-column:1;min-width:0;margin:0}
+  html body .partida-pantalla-v878486 .fitxa-v878449>section.preu{grid-column:2;grid-row:1/span 8}
+  /* els camps: el concepte a dalt i la resta en una fila */
+  html body .partida-pantalla-v878486 .camps-v878449{grid-template-columns:76px 66px minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:8px 10px}
+  html body .partida-pantalla-v878486 .camps-v878449 input,html body .partida-pantalla-v878486 .camps-v878449 .imp b{min-height:38px}
+  html body .partida-pantalla-v878486 .camps-v878449 .amb button{width:38px;min-height:38px}
+  html body .partida-pantalla-v878486 .camps-v878449 label>span:first-child,html body .partida-pantalla-v878486 .camps-v878449 .imp>span{font-size:12px}
+  html body .partida-pantalla-v878486 .fitxa-v878449 h4{margin-bottom:6px}
+  html body .partida-pantalla-v878486 .fitxa-v878449 .desc textarea.auto-v878524{font-size:15px;line-height:1.45;min-height:80px}
+  html body .partida-pantalla-v878486 .fitxa-v878449 .desc-sencera-v878524{font-size:15px;line-height:1.5}
+  /* el descompost: cada línia en una sola línia i més ajustada */
+  html body .partida-pantalla-v878486 .dt-v878449{--col-v878449:minmax(0,1fr) 86px 76px 80px 104px 92px;font-size:13px}
+  html body .partida-pantalla-v878486 .dt-v878449.sense-t{--col-v878449:minmax(0,1fr) 86px 76px 80px}
+  html body .partida-pantalla-v878486 .dt-v878449>div{padding:5px 10px;align-items:center}
+  html body .partida-pantalla-v878486 .dt-v878449 .c{line-height:1.3}
+  html body .partida-pantalla-v878486 .dt-v878449 .c small{display:inline;margin-right:6px;font-size:11px}
+  html body .partida-pantalla-v878486 .fitxa-v878449>section.preu .origen-v878368{margin-top:6px;font-size:12.5px}
+}
+
+/* V87.538 · l'Inici B, segona volta: les obres en curs a dalt i més grans, avisos i feines en targetes plegables, a la dreta «Avui» i el temps */
+html body .inici-b-v878536.v878538 .hola-b h1{font-size:clamp(21px,2.1vw,27px);max-width:40ch}
+html body .inici-b-v878536.v878538 .cos-b{grid-template-columns:minmax(0,1fr) 360px}
+@media (max-width:1100px){html body .inici-b-v878536.v878538 .cos-b{display:flex;flex-direction:column}html body .inici-b-v878536.v878538 .esq-b{display:contents}
+  html body .inici-b-v878536.v878538 .obres-b{order:1}html body .inici-b-v878536.v878538 .pend-b{order:2}html body .inici-b-v878536.v878538 .dreta-b{order:3}html body .inici-b-v878536.v878538 .rajoles-b{order:4}}
+html body .inici-b-v878536.v878538 .graella-b{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+html body .inici-b-v878536.v878538 .obra-b{position:relative;padding:12px;gap:10px;border-width:1.5px}
+html body .inici-b-v878536.v878538 .obra-b .obra-thumb-v878275{height:128px;font-size:30px}
+html body .inici-b-v878536.v878538 .obra-b .tx b{font-size:16px}
+html body .inici-b-v878536.v878538 .obra-b .av-b{position:absolute;top:20px;right:20px;padding:4px 10px;border-radius:999px;background:#FFF7ED;border:1px solid #FDBA74;color:#9A3412;font-size:12.5px;font-weight:700;box-shadow:0 1px 3px rgba(15,23,42,.15)}
+html body .inici-b-v878536.v878538 .pend-b{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;align-items:start}
+html body .inici-b-v878536.v878538 .pend-b>details{margin:0}
+html body .inici-b-v878536.v878538 .feines-b{display:flex;flex-direction:column;gap:6px}
+html body .inici-b-v878536.v878538 .feina-b{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #AEBBCA;border-radius:12px;background:#fff;text-align:left;color:inherit;box-shadow:none}
+html body .inici-b-v878536.v878538 .feina-b .t{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .inici-b-v878536.v878538 .feina-b .t b{font-size:14.5px}
+html body .inici-b-v878536.v878538 .feina-b .t small{font-size:12.5px;color:var(--co-ink-3)}
+html body .inici-b-v878536.v878538 .dreta-b{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (min-width:1101px){html body .inici-b-v878536.v878538 .dreta-b{position:sticky;top:12px}html body .inici-b-v878536.v878538 .avui-b{position:static}}
+/* el temps a les obres */
+html body .temps-b-v878538{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid #AEBBCA;border-radius:18px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+html body .temps-b-v878538 .tit-b{margin:0}
+html body .temps-b-v878538 .tit-b h2 svg{color:#D97706}
+html body .temps-b-v878538 .pluja-b{margin:0;padding:8px 10px;border-radius:10px;background:#EFF6FF;color:#1E3A8A;font-size:13.5px;font-weight:700}
+html body .temps-b-v878538 .poble-b{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px solid var(--co-line)}
+html body .temps-b-v878538 .poble-b:first-of-type{border-top:0;padding-top:0}
+html body .temps-b-v878538 .poble-b .nom{display:flex;align-items:baseline;gap:8px;min-width:0}
+html body .temps-b-v878538 .poble-b .nom b{font-size:14.5px}
+html body .temps-b-v878538 .poble-b .nom small{font-size:12px;color:var(--co-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .temps-b-v878538 .dies{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+html body .temps-b-v878538 .dia{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;font-variant-numeric:tabular-nums}
+html body .temps-b-v878538 .dia small{font-size:11.5px;font-weight:700;color:var(--co-ink-3);text-transform:capitalize}
+html body .temps-b-v878538 .dia svg{color:#D97706}
+html body .temps-b-v878538 .dia b{font-size:14px}
+html body .temps-b-v878538 .dia em{min-height:14px;font-style:normal;font-size:11px;color:#1D4ED8;font-weight:700}
+html body .temps-b-v878538 .dia.pluja{background:#DBEAFE}
+html body .temps-b-v878538 .dia.pluja svg{color:#1D4ED8}
+html body .temps-b-v878538 .carregant{margin:0;font-size:13px;color:var(--co-ink-3)}
+@media (max-width:1100px){html body .inici-b-v878536.v878538 .dreta-b>*{order:0}}
+/* V87.538 · la rajola «El temps» del mòbil (tota l'amplada) i la pantalla del temps */
+html body .inici-menu-v878484 .raj-v878484.ample-v878538{grid-column:1/-1;min-height:0;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 12px;padding:12px 14px}
+html body .raj-v878484.ample-v878538 .top{display:contents}
+html body .raj-v878484.ample-v878538 .ico{grid-column:1;grid-row:1;background:#FEF3C7;color:#B45309}
+html body .raj-v878484.ample-v878538 .tt{grid-column:2;grid-row:1}
+html body .raj-v878484.ample-v878538 .dies{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+html body .raj-v878484.ample-v878538 .dia{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;border-radius:10px;background:#F8FAFC;font-variant-numeric:tabular-nums}
+html body .raj-v878484.ample-v878538 .dia small{font-size:11.5px;font-weight:700;color:var(--co-ink-3);text-transform:capitalize}
+html body .raj-v878484.ample-v878538 .dia svg{color:#D97706}
+html body .raj-v878484.ample-v878538 .dia b{font-size:13.5px;color:var(--co-ink,#152328)}
+html body .raj-v878484.ample-v878538 .dia.pluja{background:#DBEAFE}
+html body .raj-v878484.ample-v878538 .dia.pluja svg{color:#1D4ED8}
+html body .temps-b-v878538 .poble-b .nom .windy-v878538{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:#1D4ED8;text-decoration:none;padding:4px 8px;border-radius:8px;background:#EFF6FF}
+html body .temps-b-v878538 .poble-b .nom .windy-v878538:hover{text-decoration:underline}
+html body .temps-b-v878538 .font-v878538{margin:4px 0 0;font-size:12px;color:var(--co-ink-3)}
+html body .temps-sol-v878538 .temps-b-v878538.sol-v878538{padding:14px}
+html body .temps-sol-v878538 .buit-b{margin:0;color:var(--co-ink-3)}

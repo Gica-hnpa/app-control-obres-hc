@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.537";
+const APP_VERSION878264="87.538";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6905,13 +6905,13 @@ function barraDefecte878508(role,perfil){return modeObra878484(role,perfil)?["In
 function barra878508(role,perfil){const k=lsJson8779("aco_barra_v878508",null);if(Array.isArray(k)&&k.length)return k;
   const v=lsJson8779("aco_barra_v878366",null);if(!modeObra878484(role,perfil)&&Array.isArray(v)&&v.length)return v;return barraDefecte878508(role,perfil)}
 // les rajoles de l'Inici: cada usuari les tria i les ordena a Ajustos › Accessos ràpids
-const RAJOLES878508=["pend","obres","agenda","cont","enc","hores","desp","fact","bancs","pres","rend","preus","emp","ajust","mes"];
+const RAJOLES878508=["pend","obres","agenda","temps","cont","enc","hores","desp","fact","bancs","pres","rend","preus","emp","ajust","mes"];
 function rajolesDisp878508(){const tec=teModul878326("tecnic");return RAJOLES878508.filter(k=>k==="bancs"?true:k==="enc"||k==="pres"?tec:k==="preus"?(!!PERFIL878304&&teModul878326("obra")):k==="emp"?(!!PERFIL878304&&teModul878326("empresa")):k==="rend"?(ambEmpresa878338()||tec):true)}
-function iniciDefecte878508(){return modeObra878484()?["pend","obres","agenda","cont","hores","desp","fact","bancs"]:["pend","obres","enc","agenda","cont","hores","fact","bancs"]}
+function iniciDefecte878508(){return modeObra878484()?["pend","obres","agenda","cont","hores","desp","fact","bancs","temps"]:["pend","obres","enc","agenda","cont","hores","fact","bancs","temps"]}
 function iniciTriat878508(){const k=lsJson8779("aco_inici_v878508",null);const d=rajolesDisp878508();const r=(Array.isArray(k)&&k.length?k:iniciDefecte878508()).filter(x=>d.includes(x));return r.length?r:iniciDefecte878508().filter(x=>d.includes(x))}
 function infoRajola878508(k){const m={pend:[ListChecks,"Pendent"],obres:[diuObra878326()?HardHat:FolderOpen,diuObra878326()?"Obres":"Expedients"],agenda:[CalendarDays,"Agenda"],cont:[Users,"Contactes"],
   enc:[ClipboardCheck,"Encàrrecs"],hores:[Clock,etHores878515()],desp:[Camera,"Despeses"],fact:[ReceiptText,"Facturació"],bancs:[Wallet,"Caixa i bancs"],pres:[ClipboardList,"Pressupostos"],rend:[TrendingUp,"Rendiment"],
-  preus:[BookOpen,"Llibreria de preus"],emp:[Briefcase,"Empresa"],ajust:[Settings,"Ajustos"],mes:[Ellipsis,"Més"]};return m[k]||[Ellipsis,k]}
+  preus:[BookOpen,"Llibreria de preus"],emp:[Briefcase,"Empresa"],ajust:[Settings,"Ajustos"],mes:[Ellipsis,"Més"],temps:[CloudSun,"El temps"]};return m[k]||[Ellipsis,k]}
 function nEncarrecs878508(obres=[],odata={}){let n=0;for(const o of obres||[]){if(/tancat|anul|no acceptat/i.test(String(o.estat||"")))continue;const d=odata?.[o.id]||{};for(const e of encarrecsDe(o,d))if(resumDe(o,d,null,e)?.dd)n++}return n}
 function BottomNav878268({screen,role,perfil,nav,onMore,onAccio}){
   useAccessos878366();
@@ -8848,6 +8848,11 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
   // botó de tornar a Inici»): s'obre sol, amb «Inici» per tornar, i dues targetes, Avisos i Feines, que diuen si no n'hi ha
   const feinesLl=feines.slice(0,30).map(({obra:o,task:x})=>{const tone=taskDeadlineTone878140(x);return <button type="button" key={o.id+"-"+x.id} className={"feina "+tone} onClick={()=>openObraTab?.(o.id,"Agenda / Avisos")}><span className="t"><b>{x.text||t("Feina pendent")}</b><small>{o.nom}</small></span><em className={"dies-v878314 "+tone}>{diesTasca878314(x)}</em><ChevronRight size={18} className="chev" aria-hidden="true"/></button>});
   useAccessos878366();
+  // V87.538 · la rajola «El temps» (l'Héctor, 7/11/2026: «al mòbil hi ha alguna manera de posar el temps a les obres en execució? en una rajola…»)
+  if(obert==="temps")return <div className="inici-menu-v878484 pend-sol-v878495 temps-sol-v878538">
+    <div className="torna-v878495"><button type="button" className="torna-inici-v878495" onClick={()=>setObert("")}><ChevronLeft size={20} aria-hidden="true"/> {t("Inici")}</button><h1>{t("El temps a les obres")}</h1></div>
+    <TempsObres878538 obres={obresEnCurs878538(obres)} sol/>
+  </div>;
   if(obert==="enc")return <div className="inici-menu-v878484 pend-sol-v878495 enc-sol-v878508">
     <div className="torna-v878495"><button type="button" className="torna-inici-v878495" onClick={()=>setObert("")}><ChevronLeft size={20} aria-hidden="true"/> {t("Inici")}</button><h1>{t("Encàrrecs tècnics")}</h1></div>
     {nEncarrecs878508(obres,odata)?<EncarrecsInici878305 obres={obres} odata={odata} openObra={id=>openObraTab?.(id,"Resum")} obert/>:<p className="buit-v878508">{t("No hi ha encàrrecs oberts.")}</p>}
@@ -8883,12 +8888,12 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
       let ks=iniciTriat878508();
       // a l'ordinador el menú ja és a la vista: «Més» passa a ser «Rendiment» (si no hi és)
       if(pc490&&ks.includes("mes"))ks=rajolesDisp878508().includes("rend")&&!ks.includes("rend")?ks.map(k=>k==="mes"?"rend":k):ks.filter(k=>k!=="mes");
-      return ks.filter(k=>!treu.includes(k)).map(k=>DEF[k]?<R key={k} k={k} {...DEF[k]}/>:null)};
+      return ks.filter(k=>!treu.includes(k)).map(k=>k==="temps"?<RajolaTemps878538 key={k} obres={obresEnCurs878538(obres)} on={()=>setObert("temps")}/>:DEF[k]?<R key={k} k={k} {...DEF[k]}/>:null)};
   // V87.536 · l'Inici B a l'ordinador i l'iPad (proposta del 6/11/2026; l'Héctor, 7/11/2026: «fes-me la versió nova amb la pantalla d'inici
   // modificada, l'opció B… a veure com queda, si no ja tirarem enrere»): el dia en una frase, els avisos amb el seu botó, «Avui» al costat, les
   // obres en curs i les rajoles a sota, més petites. Al mòbil, les rajoles de sempre. Les proves d'abans porten la marca inici-rajoles-prova-v878536.
   if(ample536&&!rajoles0536)return <IniciB878536 name={name} todayLabel={todayLabel} avisos={avisos} feines={feines} properes={properes} obres={obres} odata={odata} clients={clients}
-    openObraTab={openObraTab} obrirPaquet={obrirPaquet} setScreen={setScreen} newObra={newObra} veureTot={()=>setObert("pend")} rajoles={rajoles536(["pend"])}/>;
+    openObraTab={openObraTab} obrirPaquet={obrirPaquet} setScreen={setScreen} newObra={newObra} veureTot={()=>setObert("pend")} rajoles={rajoles536(["pend","temps"])}/>;
   return <div className="inici-menu-v878484">
     <ProvaDies878519/>
     <div className="hola"><small>{todayLabel}</small><h1>{name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")}</h1></div>
@@ -8899,30 +8904,88 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
 function useAmple878536(){const q="(min-width:768px)";const[v,setV]=useState(()=>{try{return matchMedia(q).matches}catch{return false}});
   useEffect(()=>{let m;try{m=matchMedia(q)}catch{return}const f=()=>setV(m.matches);m.addEventListener?.("change",f);return()=>m.removeEventListener?.("change",f)},[]);return v}
 const ICONA_AVIS878536={partes:ClipboardCheck,desp:Camera,cert:FileText,cobr:ReceiptText,tancar:CircleCheck,enviat:Send,fitx:Fingerprint,"fitx-no":Fingerprint,caixa:Wallet,feina:ListChecks};
+// V87.538 · el temps a les obres (l'Héctor, 7/11/2026: «una rajola on puguis mirar de les obres que estan en procés el temps que farà i la previsió de la
+// setmana… d'aquells llocs on estàs treballant»). Open-Meteo (gratuït per a ús no comercial; abans de vendre l'app, el pla de pagament o l'AEMET): només
+// s'hi envia el nom de la població. Es guarda a l'aparell 3 hores (temps-v878538, no es puja). window.__acoTempsMock878538 = les dades, a les proves.
+const TEMPS878538="temps-v878538";
+function iconaTemps878538(c){c=Number(c);if(c===0)return Sun;if(c<=2)return CloudSun;if(c===3)return Cloud;if(c===45||c===48)return CloudFog;if(c>=51&&c<=57)return CloudDrizzle;if((c>=61&&c<=67)||(c>=80&&c<=82))return CloudRain;if((c>=71&&c<=77)||c===85||c===86)return CloudSnow;if(c>=95)return CloudLightning;return Cloud}
+async function tempsPoblacio878538(nom){
+  const mock=window.__acoTempsMock878538;if(mock)return typeof mock==="function"?mock(nom):mock[nom]||null;
+  const st=(()=>{try{return window.__acoStore?.real||localStorage}catch{return null}})();
+  let cache={};try{cache=JSON.parse(st?.getItem(TEMPS878538)||"{}")||{}}catch{}
+  const k=nrm878533(nom),c=cache[k];
+  if(c?.daily&&Date.now()-c.at<3*3600e3)return c;
+  let lat=c?.lat,lon=c?.lon;
+  if(lat==null){const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(nom)}&count=1&language=ca&format=json&countryCode=ES`).then(r=>r.json());const x=g?.results?.[0];if(!x)return null;lat=x.latitude;lon=x.longitude}
+  const f=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FMadrid&forecast_days=5`).then(r=>r.json());
+  if(!f?.daily?.time)return null;
+  const d={lat,lon,at:Date.now(),daily:f.daily};cache[k]=d;try{st?.setItem(TEMPS878538,JSON.stringify(cache))}catch{}
+  return d;
+}
+// les poblacions de les obres en curs (com a molt 4) i el seu temps; ho fan servir la targeta de l'Inici B i la rajola «El temps» del mòbil
+function obresEnCurs878538(obres=[]){const ob=diuObra878326();return (obres||[]).filter(o=>ob?paquetOk878314("execucio",o.estat):isExpedientOpen878136(o.estat)).sort((a,b)=>String(b.lastWorkedAt||b.updatedAt||"").localeCompare(String(a.lastWorkedAt||a.updatedAt||"")))}
+function useTempsObres878538(obres=[]){
+  const pobles=useMemo(()=>{const m=new Map();(obres||[]).forEach(o=>{const p=String(o.poblacio||"").trim();if(!p)return;const k=nrm878533(p);if(!m.has(k))m.set(k,{nom:p,obres:[]});m.get(k).obres.push(o)});return [...m.values()].slice(0,4)},[obres]);
+  const[dades,setDades]=useState({});const[err,setErr]=useState(false);
+  const clau=pobles.map(p=>p.nom).join("|");
+  useEffect(()=>{let viu=true;pobles.forEach(p=>tempsPoblacio878538(p.nom).then(d=>{if(viu&&d)setDades(x=>({...x,[p.nom]:d}))}).catch(()=>{if(viu)setErr(true)}));return()=>{viu=false}},[clau]);// eslint-disable-line react-hooks/exhaustive-deps
+  const diaLlarg=s=>{const x=new Date(s+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"long"});return x.charAt(0).toUpperCase()+x.slice(1)};
+  const pluja=[];
+  pobles.forEach(p=>{const dd=dades[p.nom]?.daily;if(!dd)return;dd.time.slice(0,3).forEach((s,i)=>{if((dd.precipitation_probability_max?.[i]||0)>=60)pluja.push({p:p.nom,dia:i===0?t("Avui"):i===1?t("Demà"):diaLlarg(s),pr:dd.precipitation_probability_max[i]})})});
+  return {pobles,dades,err,pluja};
+}
+function DiesTemps878538({dd,compacte=false}){
+  const dia=s=>new Date(s+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"short"}).replace(".","");
+  return <div className={"dies"+(compacte?" mini":"")}>{dd.time.map((s,i)=>{const Ic=iconaTemps878538(dd.weather_code?.[i]);const pr=dd.precipitation_probability_max?.[i]||0;
+    return <div key={s} className={"dia"+(pr>=50?" pluja":"")}><small>{i===0?t("Avui"):dia(s)}</small><Ic size={compacte?17:20} aria-hidden="true"/><b>{Math.round(dd.temperature_2m_max?.[i])}°</b>{!compacte&&<em>{pr?pr+" %":""}</em>}</div>})}</div>;
+}
+function TempsObres878538({obres=[],sol=false}){
+  const{pobles,dades,err,pluja}=useTempsObres878538(obres);
+  if(!pobles.length)return sol?<p className="buit-b">{t("Cap obra en curs té la població posada (Dades de l’obra).")}</p>:null;
+  return <section className={"temps-b-v878538"+(sol?" sol-v878538":"")}>
+    {!sol&&<div className="tit-b"><h2><CloudSun size={18} aria-hidden="true"/> {t("El temps a les obres")}</h2></div>}
+    {pluja.length>0&&<p className="pluja-b">{t("{dia} plourà a {p} ({pr} %)",{dia:pluja[0].dia,p:pluja[0].p,pr:pluja[0].pr})}{pluja.length>1?" · "+t("i {n} més",{n:pluja.length-1}):""}</p>}
+    {pobles.map(p=>{const d=dades[p.nom],dd=d?.daily;return <div key={p.nom} className="poble-b">
+      <div className="nom"><b>{p.nom}</b><small>{p.obres.length===1?p.obres[0].nom:t("{n} obres",{n:p.obres.length})}</small>
+        {d?.lat!=null&&<a className="windy-v878538" href={`https://www.windy.com/${d.lat}/${d.lon}?${d.lat},${d.lon},11`} target="_blank" rel="noopener noreferrer">{t("Windy")} <ExternalLink size={13} aria-hidden="true"/></a>}</div>
+      {dd?<DiesTemps878538 dd={dd}/>:<p className="carregant">{err?t("No s’ha pogut carregar"):t("Carregant…")}</p>}
+    </div>})}
+    {sol&&<p className="font-v878538">{t("Previsió d’Open-Meteo per a la població de cada obra.")}</p>}
+  </section>;
+}
+// la rajola «El temps» del mòbil (ocupa tota l'amplada): el primer poble amb els 5 dies; en tocar-la, el temps de totes les obres en curs
+function RajolaTemps878538({obres=[],on}){
+  const{pobles,dades,pluja}=useTempsObres878538(obres);
+  const p=pobles[0],dd=p?dades[p.nom]?.daily:null;
+  return <button type="button" className="raj-v878484 ample-v878538 temps-raj-v878538" onClick={on}>
+    <span className="top"><span className="ico" aria-hidden="true"><CloudSun size={24}/></span></span>
+    <span className="tt"><b>{t("El temps")}</b><small>{pluja.length?t("{dia} plourà a {p}",{dia:pluja[0].dia,p:pluja[0].p}):p?(pobles.length>1?t("{p} i {n} més",{p:p.nom,n:pobles.length-1}):p.nom):t("obres en curs")}</small></span>
+    {dd&&<DiesTemps878538 dd={dd} compacte/>}
+  </button>;
+}
+// V87.536 · l'Inici B; V87.538 (l'Héctor, 7/11/2026: «a la versió pc i ipad val la pena tenir menú a l'esquerra i les rajoles?… donaria més rellevància a
+// les obres / expedients en curs… avisos i feines pendents amb targetes desplegables, l'agenda al costat»): a dalt les obres en curs (fins a 6, amb quants
+// avisos té cada una), a sota els avisos i les feines en targetes plegades, a la dreta «Avui» i el temps, i les rajoles només a l'iPad (a l'ordinador hi ha el menú)
 function IniciB878536({name="",todayLabel="",avisos=[],feines=[],properes=[],obres=[],odata={},clients=[],openObraTab,obrirPaquet,setScreen,newObra,veureTot,rajoles=null}){
   const ob=diuObra878326();
+  const pc=!useBarraBaix878484();
   const t0=todayStartMs878136();
   const avui=(properes||[]).filter(e=>{const x=eventTime8783(e);return x>=t0&&x<t0+864e5});
   const despres=(properes||[]).filter(e=>eventTime8783(e)>=t0+864e5).slice(0,3);
   const venc=(feines||[]).filter(x=>taskDeadlineTone878140(x.task)==="overdue");
   const urg=avisos.filter(a=>a.tone==="bad").length,rev=avisos.length-urg;
-  // la frase del dia
   const parts=[avui.length?(avui.length===1?t("1 cita"):t("{n} cites",{n:avui.length})):null,urg?(urg===1?t("1 avís urgent"):t("{n} avisos urgents",{n:urg})):null,
     rev?(rev===1?t("1 cosa per revisar"):t("{n} coses per revisar",{n:rev})):null,venc.length?(venc.length===1?t("1 feina vençuda"):t("{n} feines vençudes",{n:venc.length})):null].filter(Boolean);
   const frase=parts.length?<>{t("Avui tens")} <span className="acc">{parts[0]}</span>{parts.slice(1).map((p,i,a)=><React.Fragment key={i}>{i===a.length-1?t(" i "):", "}{p}</React.Fragment>)}.</>:t("Avui no tens res pendent.");
-  // els avisos (i les feines vençudes) en targetes amb el seu botó
   const obreA=a=>a.obraId?openObraTab?.(a.obraId,a.tab):(obreAvis878520(a)||obreDoc878360(a));
-  const boto=a=>({partes:t("Validar"),cert:t("Fer-la"),desp:t("Revisar"),cobr:t("Veure"),feina:t("Veure"),tancar:t("Veure")})[a.k]||t("Obrir");
-  const llista=[...avisos,...venc.map(({obra:o,task:x})=>({k:"feina",tone:"bad",txt:x.text||t("Feina pendent"),sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · "),extra:diesTasca878314(x),obraId:o.id,tab:"Agenda / Avisos"}))];
-  const mostra=llista.slice(0,5);
-  // les obres en curs: les de la constructora amb el % certificat; els expedients del tècnic, els oberts treballats fa menys
-  const enCurs=(ob?(obres||[]).filter(o=>paquetOk878314("execucio",o.estat)):(obres||[]).filter(o=>isExpedientOpen878136(o.estat)))
-    .map(o=>({o,...certObra878336((odata||{})[o.id]||{}),w:String(o.lastWorkedAt||o.updatedAt||o.lastOpenedAt||"")}))
-    .sort((a,b)=>b.w.localeCompare(a.w)).slice(0,4);
-  const nEnCurs=ob?(obres||[]).filter(o=>paquetOk878314("execucio",o.estat)).length:(obres||[]).filter(o=>isExpedientOpen878136(o.estat)).length;
+  const enCursT=(ob?(obres||[]).filter(o=>paquetOk878314("execucio",o.estat)):(obres||[]).filter(o=>isExpedientOpen878136(o.estat)))
+    .map(o=>({o,...certObra878336((odata||{})[o.id]||{}),w:String(o.lastWorkedAt||o.updatedAt||o.lastOpenedAt||"")})).sort((a,b)=>b.w.localeCompare(a.w));
+  const enCurs=enCursT.slice(0,6);
+  const nAv=id=>avisos.filter(a=>a.obraId===id).length+(feines||[]).filter(x=>x.obra?.id===id&&taskDeadlineTone878140(x.task)==="overdue").length;
   const cita=e=><button type="button" key={eventKey878137(e)} className="cita-b" onClick={()=>e.obraId?openObraTab?.(e.obraId,"Agenda / Avisos"):setScreen?.("Agenda")}>
     <span className="h">{e.hora||"—"}</span><span className="tx"><b>{e.title||e.titol||i18nT(e.tipus||"Cita")}</b>{e.obra?<small>{e.obra}</small>:null}</span></button>;
-  return <div className="inici-b-v878536">
+  const feinesLl=(feines||[]).slice(0,30).map(({obra:o,task:x})=>{const tone=taskDeadlineTone878140(x);return <button type="button" key={o.id+"-"+x.id} className={"feina-b "+tone} onClick={()=>openObraTab?.(o.id,"Agenda / Avisos")}><span className="t"><b>{x.text||t("Feina pendent")}</b><small>{[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}</small></span><em className={"dies-v878314 "+tone}>{diesTasca878314(x)}</em><ChevronRight size={16} aria-hidden="true"/></button>});
+  return <div className={"inici-b-v878536 v878538"+(pc?" pc-v878538":"")}>
     <ProvaDies878519/>
     <div className="cap-b">
       <div className="hola-b"><small><Sun size={16} aria-hidden="true"/> {name?t("Bon dia, {nom}",{nom:name}):t("Bon dia")} · {todayLabel}</small><h1>{frase}</h1></div>
@@ -8930,27 +8993,31 @@ function IniciB878536({name="",todayLabel="",avisos=[],feines=[],properes=[],obr
     </div>
     <div className="cos-b">
       <div className="esq-b">
-        {mostra.length?<div className="avisos-b">{mostra.map((a,i)=>{const Ic=ICONA_AVIS878536[a.k]||AlertTriangle;return <div key={a.k+":"+(a.obraId||"")+":"+(a.ref||"")+":"+i} className={"avis-b "+(a.tone||"info")}>
-            <span className="ic" aria-hidden="true"><Ic size={20}/></span>
-            <span className="tx"><b>{a.txt}</b>{a.sub||a.extra?<small>{[a.sub,a.extra].filter(Boolean).join(" · ")}</small>:null}</span>
-            <button type="button" className="secondary" onClick={()=>obreA(a)}>{boto(a)}</button></div>})}
-          {llista.length>mostra.length&&<button type="button" className="link tots-b" onClick={veureTot}>{t("Veure-ho tot ({n})",{n:llista.length+(feines.length-venc.length)})}</button>}
-        </div>:<div className="res-b"><CircleCheck size={20} aria-hidden="true"/> {t("Tot al dia: no hi ha cap avís.")}{feines.length?<button type="button" className="link" onClick={veureTot}>{feines.length===1?t("1 feina pendent"):t("{n} feines pendents",{n:feines.length})}</button>:null}</div>}
         <section className="obres-b">
-          <div className="tit-b"><h2>{ob?t("Obres en curs"):t("Expedients en curs")}</h2>{nEnCurs>enCurs.length&&<button type="button" className="link" onClick={()=>obrirPaquet?obrirPaquet("oberts"):setScreen?.("Treballs / Expedients")}>{t("Veure-les totes ({n})",{n:nEnCurs})}</button>}</div>
-          {enCurs.length?<div className="graella-b">{enCurs.map(({o,pct})=><button type="button" key={o.id} className="obra-b" onClick={()=>openObraTab?.(o.id,"Resum")}>
+          <div className="tit-b"><h2>{ob?t("Obres en curs"):t("Expedients en curs")}</h2>{enCursT.length>enCurs.length&&<button type="button" className="link" onClick={()=>obrirPaquet?obrirPaquet("oberts"):setScreen?.("Treballs / Expedients")}>{t("Veure-les totes ({n})",{n:enCursT.length})}</button>}</div>
+          {enCurs.length?<div className="graella-b">{enCurs.map(({o,pct})=>{const na=nAv(o.id);return <button type="button" key={o.id} className="obra-b" onClick={()=>openObraTab?.(o.id,"Resum")}>
             <ObraThumb878275 o={o} nom={quiObra878336(o,clients)||o.nom}/>
-            <span className="tx"><b>{o.nom}</b><small>{[codiCurt878270(o),quiObra878336(o,clients)].filter(Boolean).join(" · ")}</small></span>
+            {na>0&&<span className="av-b">{na===1?t("1 pendent"):t("{n} pendents",{n:na})}</span>}
+            <span className="tx"><b>{o.nom}</b><small>{[codiCurt878270(o),quiObra878336(o,clients),o.poblacio].filter(Boolean).join(" · ")}</small></span>
             {ob?<span className="pc"><span className="bar" aria-hidden="true"><i style={{width:`${Math.max(0,Math.min(100,pct||0))}%`}}/></span><small>{pct==null?t("Sense certificacions"):t("{p} % certificat",{p:Math.round(pct)})}</small></span>
               :<span className={"est est-v878299 est-"+estatTone878299(o.estat)}>{i18nT(normalizeExpedientStatus878136(o.estat))}</span>}
-          </button>)}</div>:<p className="buit-b">{ob?t("No hi ha obres en execució."):t("No hi ha expedients oberts.")}</p>}
+          </button>})}</div>:<p className="buit-b">{ob?t("No hi ha obres en execució."):t("No hi ha expedients oberts.")}</p>}
         </section>
-        {rajoles&&<div className="rajoles-b">{rajoles}</div>}
+        <div className="pend-b">
+          <CardOPlega878369 bloc426 className="avisos-c-b" title={t("Avisos")} icona={Bell} xifra={avisos.length||t("Cap")}>
+            {avisos.length?<AvisosLlista878360 nu avisos={avisos} onObre={obreA}/>:<p className="buit-b">{t("No hi ha avisos.")}</p>}</CardOPlega878369>
+          <CardOPlega878369 bloc426 className="feines-c-b" title={t("Feines pendents")} icona={ListChecks} xifra={feines.length?(venc.length?t("{n} · {v} vençudes",{n:feines.length,v:venc.length}):feines.length):t("Cap")}>
+            {feines.length?<div className="feines-b">{feinesLl}</div>:<p className="buit-b">{t("No hi ha feines pendents.")}</p>}</CardOPlega878369>
+        </div>
+        {!pc&&rajoles&&<div className="rajoles-b">{rajoles}</div>}
       </div>
-      <aside className="avui-b">
-        <div className="tit-b"><h2><CalendarDays size={18} aria-hidden="true"/> {t("Avui")}</h2><button type="button" className="link" onClick={()=>setScreen?.("Agenda")}>{t("Agenda")}</button></div>
-        {avui.length?<div className="cites-b">{avui.map(cita)}</div>:<p className="buit-b">{t("Avui no hi ha cap cita.")}</p>}
-        {despres.length>0&&<><h3>{t("Pròximes cites")}</h3><div className="cites-b propers">{despres.map(e=><React.Fragment key={eventKey878137(e)}>{cita({...e,hora:[fmtEventDate878136(e),e.hora].filter(Boolean).join(" · ")})}</React.Fragment>)}</div></>}
+      <aside className="dreta-b">
+        <section className="avui-b">
+          <div className="tit-b"><h2><CalendarDays size={18} aria-hidden="true"/> {t("Avui")}</h2><button type="button" className="link" onClick={()=>setScreen?.("Agenda")}>{t("Agenda")}</button></div>
+          {avui.length?<div className="cites-b">{avui.map(cita)}</div>:<p className="buit-b">{t("Avui no hi ha cap cita.")}</p>}
+          {despres.length>0&&<><h3>{t("Pròximes cites")}</h3><div className="cites-b propers">{despres.map(e=><React.Fragment key={eventKey878137(e)}>{cita({...e,hora:[fmtEventDate878136(e),e.hora].filter(Boolean).join(" · ")})}</React.Fragment>)}</div></>}
+        </section>
+        <TempsObres878538 obres={enCursT.map(x=>x.o)}/>
       </aside>
     </div>
   </div>;
@@ -21542,7 +21609,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.537",
+    app_version:"87.538",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

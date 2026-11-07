@@ -3442,6 +3442,26 @@ D:\00_CUBERO\00_FEINA\PROGRAMES\APP GESTIO OBRES\
     - Prova: `v537test.mjs` (17: partida del banc sense tocar, canviar-ne el preu i desar-la, sense canvis, feta a mà, la font a «Des de Preus», la targeta i
       «Treure», mòbil amb «Guardar sense desar-les»).
       Les proves d'abans porten la marca `meva-base-prova-v878537` (guarden sense la pregunta).
+  - **V87.538 · L'Inici B, segona volta, el temps a les obres i la partida sense lliscar** (l'Héctor, 7/11/2026, amb una captura de l'Inici B a
+    l'ordinador: «val la pena tenir menú a l'esquerra i les rajoles?… donaria més rellevància a les obres en curs… avisos i feines pendents amb targetes
+    desplegables, l'agenda al costat… i el temps que farà a les obres on estàs treballant»; «el desplegable de la partida pot ser més compacte per no tenir de
+    fer scroll»; «i al mòbil… el temps a les obres en execució en una rajola? un enllaç podria ser Windguru»; `src/theme-v878539.css`):
+    - **Inici a l'ordinador i l'iPad** (`IniciB878536`, classe `v878538`): la frase del dia; a dalt, **«Obres en curs»** (o «Expedients en curs» amb l'estat al
+      tècnic; com a molt 6, la treballada fa menys primer, amb el % certificat i una xapa «N pendents»); a sota, **Avisos** i **Feines pendents** en targetes
+      plegables (`CardOPlega878369 bloc426`, amb quants n'hi ha); a la dreta, **«Avui»** (les cites) i **«El temps a les obres»**. **A l'ordinador, sense
+      rajoles** (el menú de l'esquerra ja hi és); a l'iPad, tot en una columna i les rajoles a baix (sense Pendent ni El temps, que ja hi són).
+    - **El temps** (`tempsPoblacio878538`, `useTempsObres878538`, `TempsObres878538`, `DiesTemps878538`): les poblacions de les obres en curs
+      (`obresEnCurs878538`, com a molt 4) amb 5 dies (icona del codi WMO, `iconaTemps878538`; màxima; probabilitat de pluja; els dies amb ≥50 % en blau) i
+      «Dilluns plourà a Palamós (80 %)» si plou en els 3 primers dies (≥60 %). Dades d'**Open-Meteo** (cercador de poblacions + previsió, sense clau), desades
+      a l'aparell 3 hores (`temps-v878538` al localStorage de debò). **Compte: Open-Meteo és gratuït per a ús no comercial;** abans de vendre l'app, el seu pla de
+      pagament o l'AEMET. Cada població porta **«Windy»** (`a.windy-v878538`, `https://www.windy.com/<lat>/<lon>?<lat>,<lon>,11`, en una pestanya nova):
+      Windguru no té enllaç obert per coordenades i Meteocat demana el codi de municipi, que l'app no té. Proves: `window.__acoTempsMock878538`.
+    - **Al mòbil, la rajola «El temps»** (`RajolaTemps878538`, `temps` a `RAJOLES878508` i al final d'`iniciDefecte878508`; a tota l'amplada, `ample-v878538`):
+      el primer poble amb els 5 dies i, si en plourà, on; en tocar-la, la pantalla «El temps a les obres» (`obert==="temps"`) amb totes les poblacions i Windy.
+      Qui ja s'havia triat les rajoles a Ajustos, la pot afegir des d'Accessos ràpids.
+    - **La partida a pantalla gran a l'ordinador** (≥1100 px amb ratolí): en dues columnes, els camps i la descripció a l'esquerra i el descompost a la dreta,
+      sense haver de lliscar.
+    - Prova: `v538test.mjs` (17; substitueix `v536test`). Adaptades `v508test`, `v484test`, `v507test` i `v455test` (la rajola «El temps» a la llista).
   - **Proposta de la constructora al mòbil, per validar** (l'Héctor, 3/11/2026 a la nit, després d'estar amb un constructor: «un que no domini les apps
     és complex fer el seu dia a dia»; maquetes enviades al xat, `scratchpad/inici482/v2`): 1) l'Inici com a menú en rajoles iguals (Pendent = avisos i
     feines junts, Obres, Agenda, Hores, Despeses, Facturació) i la barra de baix per fer coses (Inici · Parte · Foto · Nota · Més; fora de l'obra pregunta
@@ -3640,7 +3660,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.537 a Render):**
+**Estat (publicada la V87.538 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
