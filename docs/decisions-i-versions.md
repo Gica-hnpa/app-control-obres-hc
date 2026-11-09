@@ -3555,3 +3555,10 @@
   pressupost ràpid) es queden i dins d'Accions no es repeteixen; fora la franja de xifres. `Empty` tradueix el text.
 
 ## Versions noves (des de la V87.539)
+- **V87.539 · El pressupost només amb descripcions i el total** (encàrrec de l'Héctor del 6/11/2026: presentar el pressupost només
+  amb les descripcions i el preu total, per a empreses petites). A «Imprimir» del pressupost, «PDF només amb descripcions i total»
+  (`.pdf-desc-v878539`; no surt al portal del client): el mateix document (`budgetPrintDoc878179` amb `nomesDesc878539:true`, que
+  `pressupostObraPrintHtml878153` llegeix com a `nd539`) amb una taula de dues columnes (Part. i Concepte / descripció, amb la
+  descripció llarga i l'etiqueta de fora de pressupost), els capítols sense import i a l'esquerra, sense el resum per capítols i amb un
+  sol «TOTAL PRESSUPOST» (amb les DG i el BI sumats si els marges van al resum). Des del visor s'envia, es descarrega i s'imprimeix com
+  qualsevol PDF. Prova: `v539test.mjs` (ordinador i mòbil; el total és el mateix que el del PDF sencer).

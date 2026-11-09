@@ -5746,4 +5746,5 @@ export default {
 "{dia} plourà a {p}": "{dia} lloverá en {p}",
 "{p} i {n} més": "{p} y {n} más",
 "obres en curs": "obras en curso",
+"PDF només amb descripcions i total": "PDF solo con descripciones y total",
 };
