@@ -5749,4 +5749,8 @@ export default {
 "PDF només amb descripcions i total": "PDF solo con descripciones y total",
 "Afegir de Contactes": "Añadir de Contactos",
 "Fet ({n})": "Hecho ({n})",
+"Els comptes de demostració (demo-…, prova-…) i els de la prova pilot (Brava, Socoterm, Oriol i Martí) faran servir els preus de «{n}». Compartir-lo?": "Las cuentas de demostración (demo-…, prova-…) y las de la prueba piloto (Brava, Socoterm, Oriol y Martí) usarán los precios de «{n}». ¿Compartirlo?",
+"Compartit amb els comptes de demostració i de la prova pilot": "Compartido con las cuentas de demostración y de la prueba piloto",
+"Només als comptes de demostració i de la prova pilot": "Solo a las cuentas de demostración y de la prueba piloto",
+"Compartir amb els comptes de demostració i de la prova pilot": "Compartir con las cuentas de demostración y de la prueba piloto",
 };

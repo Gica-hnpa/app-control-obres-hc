@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.542";
+const APP_VERSION878264="87.543";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -15147,7 +15147,10 @@ function textIpc878533(i){return i?t("IPC de {de} a {fins}: +{p} %",{de:`${t(MES
 function textPctBanc878533(b){return pctMaBanc878533(b)?t("Els preus del {a} pugen un {p} %",{a:b.any||"banc",p:String(pctBanc878533(b)).replace(".",",")}):textIpc878533(ipcBanc878533(b))}
 // V87.533 · qui veu el banc comú: els comptes de demostració i els de prova dels clients (no paguen; l'Héctor, 6/11/2026: «també, que són demos»)
 // o tots
-const DEMO878533=["demo-%@usuaris.controlobres.app","prova-%@usuaris.controlobres.app"];
+// V87.543 · i els comptes de la prova pilot, que també són de prova (l'Héctor, 9/11/2026: «Brava i Socoterm així com Oriol i Martí també són demos…
+// són les primeres versions que vaig ensenyar de prova… he de poder tenir-la»)
+const PILOT878543=["brava@usuaris.controlobres.app","socoterm@usuaris.controlobres.app","oriol@usuaris.controlobres.app","marti@usuaris.controlobres.app"];
+const DEMO878533=["demo-%@usuaris.controlobres.app","prova-%@usuaris.controlobres.app",...PILOT878543];
 // l'adreça de la calculadora de l'INE amb l'any del banc: de gener d'aquell any a l'últim mes publicat (surt cap al dia 15 del mes següent)
 function urlIpc878460(any){
   const a=parseInt(any,10);if(!(a>1990))return "https://www.ine.es/varipc/";
@@ -15163,21 +15166,24 @@ function CompartirBanc878460({b}){
   useEffect(()=>{let viu=true;nv?.cap().then(c=>{if(viu)setCap(c)}).catch(()=>{if(viu)setCap(null)});return()=>{viu=false}},[]);
   // l'any i el % d'ara arriben a tothom sense tornar a pujar les partides
   useEffect(()=>{if(b.comu||!cap)return;const pct=pctMaBanc878533(b)?Number(b.pct)||0:0,any=b.any||null;if(Number(cap.pct)===pct&&cap.any_preus===any)return;nv.posa({pct,any_preus:any}).then(()=>nv.cap()).then(setCap).catch(()=>{})},[b.pct,b.pctMa,b.any,cap?.versio]);
+  // V87.543 · si ja estava compartit amb la llista d'abans (només demo- i prova-), hi afegeix sola els comptes de la prova pilot
+  useEffect(()=>{if(b.comu||!cap||!Array.isArray(cap.comptes)||!cap.comptes.length)return;if(!cap.comptes.every(p=>DEMO878533.includes(p))||DEMO878533.every(p=>cap.comptes.includes(p)))return;
+    nv.posa({comptes:DEMO878533}).then(()=>nv.cap()).then(setCap).catch(()=>{})},[cap?.versio,(cap?.comptes||[]).join("|")]);
   const fes=async fn=>{setFent(true);setErr("");try{await fn()}catch(e){setErr(e?.status===404?t("Falta executar a Supabase l’SQL del banc comú."):String(e?.message||e))}setFent(false)};
   const puja=(comptes=cap?.comptes||null)=>fes(async()=>{await nv.puja({...b,pct:pctMaBanc878533(b)?Number(b.pct)||0:0},comptes);setCap(await nv.cap())});
-  const comparteix=comptes=>{if(confirm(comptes?t("Els comptes de demostració i de prova (demo-…, prova-…) faran servir els preus de «{n}». Compartir-lo?",{n:b.nom}):t("Tots els comptes faran servir els preus de «{n}». Compartir-lo?",{n:b.nom})))puja(comptes)};
+  const comparteix=comptes=>{if(confirm(comptes?t("Els comptes de demostració (demo-…, prova-…) i els de la prova pilot (Brava, Socoterm, Oriol i Martí) faran servir els preus de «{n}». Compartir-lo?",{n:b.nom}):t("Tots els comptes faran servir els preus de «{n}». Compartir-lo?",{n:b.nom})))puja(comptes)};
   const qui=comptes=>{if(!comptes&&!confirm(t("Tots els comptes faran servir els preus de «{n}». Obrir-lo a tots?",{n:cap?.nom||b.nom})))return;fes(async()=>{await nv.posa({comptes});setCap(await nv.cap())})};
   const nomesDemo=Array.isArray(cap?.comptes)&&cap.comptes.length>0;
   const deixa=()=>{if(confirm(t("Els comptes deixaran de veure aquest banc. Deixar de compartir-lo?")))fes(async()=>{await nv.treu();setCap(null);if(b.comu)desaBancComu878460(null)})};
   if(!nv||cap===undefined)return null;
   const vell=cap&&!b.comu&&new Date(cap.versio).getTime()!==new Date(b.data).getTime();
   return <div className="comu-v878460">
-    {cap?<><span className="ok"><Check size={15} aria-hidden="true"/> {nomesDemo?t("Compartit amb els comptes de demostració i de prova"):t("Compartit amb tots els comptes")}</span>
+    {cap?<><span className="ok"><Check size={15} aria-hidden="true"/> {nomesDemo?t("Compartit amb els comptes de demostració i de la prova pilot"):t("Compartit amb tots els comptes")}</span>
       {vell&&<button type="button" className="secondary" disabled={fent} onClick={()=>puja()}>{fent?t("Pujant…"):t("Actualitzar el banc comú")}</button>}
       {nomesDemo?<button type="button" className="secondary" disabled={fent} onClick={()=>qui(null)}>{t("Obrir-lo a tots els comptes")}</button>
-        :<button type="button" className="link" disabled={fent} onClick={()=>qui(DEMO878533)}>{t("Només als comptes de demostració i de prova")}</button>}
+        :<button type="button" className="link" disabled={fent} onClick={()=>qui(DEMO878533)}>{t("Només als comptes de demostració i de la prova pilot")}</button>}
       <button type="button" className="link" disabled={fent} onClick={deixa}>{t("Deixar de compartir")}</button></>
-    :!b.comu&&<><button type="button" className="secondary" disabled={fent} onClick={()=>comparteix(DEMO878533)}><Share2 size={15} aria-hidden="true"/> {fent?t("Pujant…"):t("Compartir amb els comptes de demostració i de prova")}</button>
+    :!b.comu&&<><button type="button" className="secondary" disabled={fent} onClick={()=>comparteix(DEMO878533)}><Share2 size={15} aria-hidden="true"/> {fent?t("Pujant…"):t("Compartir amb els comptes de demostració i de la prova pilot")}</button>
       <button type="button" className="link" disabled={fent} onClick={()=>comparteix(null)}>{t("Compartir amb tots els comptes")}</button></>}
     {err&&<p className="err">{err}</p>}
   </div>;
@@ -21615,7 +21621,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.542",
+    app_version:"87.543",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

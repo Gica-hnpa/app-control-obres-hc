@@ -3579,3 +3579,9 @@
   el blau clar de `.dia.pluja` (de la 539) tornava a sortir en el gris de Brava i guanyava a la regla de la 541. Ara: fora els fons de la pluja de
   `theme-v878539.css`, i `NO_MARCA878351` deixa la pluja sempre en blau (`pluja`, el % de `.temps-b-v878538 .dia em`). `v541test.mjs` té una passada
   amb el color d'empresa gris.
+- **V87.543 · La base de preus del CATGI també als comptes de la prova pilot** (l'Héctor, 9/11/2026: «Brava i Socoterm així com Oriol i Martí també
+  són demos… són les primeres versions que vaig ensenyar de prova… he de poder tenir-la»). `DEMO878533` ara porta `PILOT878543` (brava, socoterm,
+  oriol i marti @usuaris.controlobres.app) a més de demo-% i prova-%. Si ja estava compartit amb la llista d'abans, en obrir la targeta del banc al
+  compte de l'Héctor la llista passa sola a la nova (`nv.posa({comptes})`, sense tornar a pujar el banc). Els textos diuen «de demostració i de la
+  prova pilot». La regla del servidor no canvia (`like any (comptes)`). Adaptada `v533test.mjs` (Brava la llegeix; el compte de còpies, no; la llista
+  vella passa sola a la nova).
