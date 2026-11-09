@@ -3592,3 +3592,8 @@
   base imposable = la de la certificació − l'acord. La factura desa `baseCert544` i `acord544 = {imp, motiu}`; el PDF (`proformaPrintHtml8783`) porta
   «Import certificat», la línia del motiu en negatiu i la base. La certificació compta com a facturada (per existència), i el que s'acorda no queda
   pendent. `src/theme-v878544.css`. Prova: `v544test.mjs` (mòbil i ordinador); `facturacio337test` 32/32.
+- **V87.545 · «Partides sense preu» dins d'«Avisos»** (l'Héctor, 9/11/2026, amb la captura del pressupost de David Fuster: «per què surt lo de 4
+  partides sense preu aquí i no a dins d'Avisos?»). Fora la barra `.sense-preu-v878480` (V87.480); `AvisosPressupost878320` accepta `accions` (un
+  element per `k` d'avís, dins del `summary`) i cada avís porta la classe `av-<k>`: l'avís «N partides sense preu» (`av-preu`) porta «Buscar preus»
+  (`.buscar-av-v878545`, amb `preventDefault` perquè no plegui l'avís) quan hi ha partides per buscar (`sensePreu878480`). `src/theme-v878545.css`.
+  Prova: `v545test.mjs` (ordinador i mòbil). Adaptada `v480test` (la línia és l'avís).
