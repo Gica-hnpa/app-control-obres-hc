@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.541";
+const APP_VERSION878264="87.542";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9310,7 +9310,8 @@ function blauAMarca878351(r,g,b,marca){
   const tl=l<LA?lb*(.45+.55*l/LA):lb+(1-lb)*((l-LA)/(1-LA));
   return deHsl878351(hb,Math.min(1,sb*Math.min(1,s/SA)),Math.max(0,Math.min(1,tl)));
 }
-const NO_MARCA878351=/est-v878299|obra-estat-v878269|\.est-|marca-v878351/;
+// V87.542 · la pluja del temps es queda sempre en blau (és el color de la pluja, no el de l'empresa)
+const NO_MARCA878351=/est-v878299|obra-estat-v878269|\.est-|marca-v878351|pluja|temps-b-v878538 \.dia em/;
 function reglesMarca878351(rules,marca){
   const out=[];
   for(const r of Array.from(rules||[])){
@@ -21614,7 +21615,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.541",
+    app_version:"87.542",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

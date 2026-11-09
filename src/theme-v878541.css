@@ -1,5 +1,5 @@
 /* V87.541 · El temps: la pluja ja no porta fons (semblava el dia triat); el fons és per a «Avui», i cada dia porta el seu número */
-html body .temps-b-v878538 .dia.pluja,html body .raj-v878484.ample-v878538 .dia,html body .raj-v878484.ample-v878538 .dia.pluja{background:transparent}
+html body .raj-v878484.ample-v878538 .dia{background:transparent}
 html body .temps-b-v878538 .dia.avui-v878541,html body .raj-v878484.ample-v878538 .dia.avui-v878541{background:#F1F5F9;box-shadow:inset 0 0 0 1px #E2E8F0}
 html body .temps-b-v878538 .dia.avui-v878541 small,html body .raj-v878484.ample-v878538 .dia.avui-v878541 small{color:var(--co-ink,#152328)}
 html body .temps-b-v878538 .dia small,html body .raj-v878484.ample-v878538 .dia small{white-space:nowrap}

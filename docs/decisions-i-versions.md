@@ -3574,3 +3574,8 @@
   (`.avui-v878541`, comparat amb la data de debò: la previsió es desa 3 h i el primer dia podia ser ahir, que ara no surt); la pluja,
   només la icona i el % en blau. Igual a l'Inici de l'ordinador i l'iPad, a la rajola del mòbil i a «El temps a les obres». Prova:
   `v541test.mjs`.
+- **V87.542 · El dia de pluja sense fons, també amb el color de l'empresa** (l'Héctor, 9/11/2026, amb la captura de Brava després de la 541: el dijous
+  encara tenia fons). Amb un color d'empresa (`aplicaMarca878351`), cada regla amb un blau es repeteix amb `!important` en el color de l'empresa:
+  el blau clar de `.dia.pluja` (de la 539) tornava a sortir en el gris de Brava i guanyava a la regla de la 541. Ara: fora els fons de la pluja de
+  `theme-v878539.css`, i `NO_MARCA878351` deixa la pluja sempre en blau (`pluja`, el % de `.temps-b-v878538 .dia em`). `v541test.mjs` té una passada
+  amb el color d'empresa gris.
