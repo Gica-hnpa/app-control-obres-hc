@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.549";
+const APP_VERSION878264="87.550";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -14675,7 +14675,10 @@ function EditorDescompost878450({row={},costMode="detallat",detected=0,closed={}
 }
 // V87.361 · V87.449 · la fitxa de la partida, una de sola per llegir-la i per editar-la (l'Héctor, 30/10/2026: «és un jeroglífic»): sense
 // repetir el que ja diu la línia de la partida, amb el descompost a la vista, les dues marques en una fila i un sol botó per a cada cosa.
-function FitxaPartida878361({gran=false,row={},editable=false,onChange,onSet,openBreakdown,onEditar,onNova,onFinal,qc=0,defectes={},onAmid=null,eines=null}){
+function FitxaPartida878361({gran=false,row={},editable=false,onChange,onSet,openBreakdown,onEditar,onNova,onFinal,qc=0,defectes={},onAmid=null,eines=null,onPreuIA=null}){
+  // V87.550 · «Buscar el preu amb IA» d'aquesta partida (l'Héctor, 9/11/2026: «com poso preu a una partida que no en tinc? on és l'opció d'una
+  // partida de buscar el preu i el seu descompost estil BC3 amb IA»): primer la base pròpia i el banc, i si no, la IA (BC3 amb el descompost)
+  const ia550=onPreuIA?<button type="button" className="secondary ia-preu-v878550" onClick={onPreuIA}><WandSparkles size={15} aria-hidden="true"/> {t("Buscar el preu amb IA")}</button>:null;
   const parts0=partsPartida878361(row);
   // un descompost sense cap línia de cost (partida «a preu tancat» a 0 €) no és un descompost
   const parts=parts0?.grups?.length?parts0:null;
@@ -14705,7 +14708,7 @@ function FitxaPartida878361({gran=false,row={},editable=false,onChange,onSet,ope
       <h4>{t("Descompost")} <small>{t("per {ut}",{ut:row.ut||"ut"})}</small></h4>
       {mn&&<div className="minim-v878379"><span>{t("Mínim de mà d’obra: {m} h (la partida en necessita {h} h)",{m:fmtP878378(mn.minimH),h:fmtP878378(mn.h)})}</span>{(editable||onEditar)&&<button type="button" className="secondary" onClick={()=>{if(editable)treuMinim();else{onEditar("treure");setTreure(true)}}}>{t("Treure el mínim")}</button>}</div>}
       {parts?<TaulaDescompost878449 parts={parts} q={q}/>:<div className="sense"><b>{pu>0?t("Sense descompost"):t("Sense descompost · preu a confirmar")}</b>
-        {!senzill&&(editable?(openBreakdown&&<span className="bts"><button type="button" className="secondary" onClick={openBreakdown}>{t("Fer el descompost")}</button><button type="button" className="secondary" onClick={()=>setSenzill(true)}>{t("Fer un descompost senzill")}</button></span>):onEditar?<span className="bts"><button type="button" className="secondary" onClick={()=>onEditar("linies")}>{t("Fer el descompost")}</button><button type="button" className="secondary" onClick={()=>{onEditar("senzill");setSenzill(true)}}>{t("Fer un descompost senzill")}</button></span>:null)}
+        {!senzill&&(editable?(openBreakdown&&<span className="bts">{ia550}<button type="button" className="secondary" onClick={openBreakdown}>{t("Fer el descompost")}</button><button type="button" className="secondary" onClick={()=>setSenzill(true)}>{t("Fer un descompost senzill")}</button></span>):onEditar?<span className="bts">{ia550}<button type="button" className="secondary" onClick={()=>onEditar("linies")}>{t("Fer el descompost")}</button><button type="button" className="secondary" onClick={()=>{onEditar("senzill");setSenzill(true)}}>{t("Fer un descompost senzill")}</button></span>:null)}
       </div>}
       {origen&&<p className="origen-v878368">{origen}</p>}
       {difer&&<div className="difer"><span>{t("El preu de la partida és {p}.",{p:money(pu)})}</span>{editable&&<button type="button" className="secondary" onClick={()=>onChange?.("pu",String(Math.round(parts.preu*100)/100))}>{t("Posar el preu del descompost")}</button>}</div>}
@@ -17300,7 +17303,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         <button type="button" className="danger small" onClick={()=>deletePartida878125(cap,index)}>{i18nT("Eliminar")}</button>
         <button type="button" className="primary small fet-v878449" onClick={closeBudgetRow87173}>{i18nT("Fet")}</button>
       </>:null;
-      return <FitxaPartida878361 gran={gran} row={row} editable={editBudget8760b} defectes={defectesPreu878361(data)} onChange={(key,value)=>upd(cap,index,key,value)} onSet={patch=>Object.entries(patch).forEach(([k,v])=>upd(cap,index,k,v))} onNova={clientMode||!(vell509||tancat428||esFora878410(row))?null:v=>posa878423(marcaNova878413(v))} onFinal={clientMode||!(vell509||row.qFinal878423!=null)?null:q=>posa878423({qFinal878423:q===null?undefined:q})} qc={certQtyTotal8789(row)} onEditar={!clientMode&&!editBudget8760b?editar:null} onAmid={()=>setBudgetMeasureTarget878194({cap,i:index})} openBreakdown={clientMode?null:()=>openDescompostModal87173(cap,index)} eines={eines}/>};
+      return <FitxaPartida878361 gran={gran} row={row} editable={editBudget8760b} defectes={defectesPreu878361(data)} onChange={(key,value)=>upd(cap,index,key,value)} onSet={patch=>Object.entries(patch).forEach(([k,v])=>upd(cap,index,k,v))} onNova={clientMode||!(vell509||tancat428||esFora878410(row))?null:v=>posa878423(marcaNova878413(v))} onFinal={clientMode||!(vell509||row.qFinal878423!=null)?null:q=>posa878423({qFinal878423:q===null?undefined:q})} qc={certQtyTotal8789(row)} onEditar={!clientMode&&!editBudget8760b?editar:null} onAmid={()=>setBudgetMeasureTarget878194({cap,i:index})} openBreakdown={clientMode?null:()=>openDescompostModal87173(cap,index)} eines={eines} onPreuIA={clientMode||quickMode||tancat428||!setData?null:()=>{const ls=sensePreu878480({[cap]:[{...row,pu:0,q:(parseNum8770(row.q)||0)>0?row.q:1}]});if(!ls.length){alert(i18nT("Aquesta partida ja té certificacions: el preu no es pot canviar."));return}setPreus480(ls)}}/>};
   // V87.449 · seleccionar partides: una casella a cada partida i a cada capítol, sense obrir res
   // V87.534 · editant, un sol «Opcions» amb Afegir, Seleccionar partides i Eines (l'Héctor, 6/11/2026: «simplifiquem conceptes… afegir i eines
   // no poden estar englobats en opcions?»). Les proves d'abans porten la marca opcions-edita-prova-v878534 (els tres botons d'abans).
@@ -21697,7 +21700,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.549",
+    app_version:"87.550",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

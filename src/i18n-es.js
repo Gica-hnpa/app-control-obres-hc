@@ -5785,4 +5785,6 @@ export default {
 "Tornar a l’obra": "Volver a la obra",
 "Avisos del pressupost: {n}": "Avisos del presupuesto: {n}",
 "Mà d’obra i materials": "Mano de obra y materiales",
+"Buscar el preu amb IA": "Buscar el precio con IA",
+"Aquesta partida ja té certificacions: el preu no es pot canviar.": "Esta partida ya tiene certificaciones: el precio no se puede cambiar.",
 };

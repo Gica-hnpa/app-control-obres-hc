@@ -3621,3 +3621,11 @@
   «Descompost del pressupost» → **«Mà d'obra i materials»**. La foto de l'obra al costat del nom a la capçalera de l'obra (`.foto-obra-v878549`, ≥768 px).
   `src/theme-v878549.css`. Prova: `v549test.mjs` (13). Adaptades `v545test` i `v411test` (el pressupost entra tancat a l'ordinador).
   **Queda:** Ajustos com a botó petit i el mateix patró a Certificacions, Factures i Despeses.
+- **V87.550 · Arreglaments per a les demos** (l'Héctor, 9/11/2026, amb captures de Socoterm: «al tanto com estan les pantalles que les targetes surten
+  de l'espai… no es veuen les fletxes dels desplegables… la pantalla de la modificació de la partida és molt trista… com poso preu a una partida que no
+  en tinc… buscar el preu i el seu descompost estil BC3 amb IA»; «mira quina pantalla surt des d'avisos»). `src/theme-v878550.css`:
+  «Buscar preus» (`.buscar-v878480 .caps label`): la casella amb la seva mida (un estil general la feia tan ampla com la fila i el nom del capítol sortia
+  lletra per lletra); els filtres de la Llibreria (`.library-primary-filters-v878240`) en columnes que s'ajusten (`auto-fit`), sense sortir de la targeta ni
+  tapar fletxes; la fitxa de la partida (`.fitxa-partida-v878361.fitxa-v878449`) en un requadre amb vora, radi i ombra. `FitxaPartida878361` accepta
+  `onPreuIA`: «Buscar el preu amb IA» (al costat de «Fer el descompost») obre `BuscarPreus878480` amb aquella sola partida (base pròpia, banc i IA amb
+  el descompost BC3; si la partida té certificacions, avisa). Prova: `v550test.mjs` (8).
