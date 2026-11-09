@@ -3568,3 +3568,9 @@
   grups, el correu i el mòbil de cada un). Cada contacte tocat s'afegeix a «Per a» marcat; si ja hi era (pel nom o el correu), es
   desmarca; la llista es queda oberta fins a «Fet (N)». **Arreglat:** «Enviar» des del visor d'un document obria la finestra a sota del
   visor i no es veia (`.modal-backdrop:has(.correu-v878405){z-index:110}`). Prova: `v540test.mjs` (ordinador i mòbil).
+- **V87.541 · El temps amb el número del dia** (l'Héctor, 9/11/2026, amb la captura de l'Inici de Brava: «per què marca el dijous si avui
+  som dilluns i per què no surt el número del dia del mes»). El dijous era el dia de pluja (fons blau `.dia.pluja`), que semblava el dia
+  triat. Ara (`DiesTemps878538`, `src/theme-v878541.css`): cada dia porta el número («Avui 9», «Dt 10»…); el fons és per al dia d'avui
+  (`.avui-v878541`, comparat amb la data de debò: la previsió es desa 3 h i el primer dia podia ser ahir, que ara no surt); la pluja,
+  només la icona i el % en blau. Igual a l'Inici de l'ordinador i l'iPad, a la rajola del mòbil i a «El temps a les obres». Prova:
+  `v541test.mjs`.

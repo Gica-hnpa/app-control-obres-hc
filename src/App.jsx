@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.540";
+const APP_VERSION878264="87.541";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8936,8 +8936,11 @@ function useTempsObres878538(obres=[]){
 }
 function DiesTemps878538({dd,compacte=false}){
   const dia=s=>new Date(s+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"short"}).replace(".","");
-  return <div className={"dies"+(compacte?" mini":"")}>{dd.time.map((s,i)=>{const Ic=iconaTemps878538(dd.weather_code?.[i]);const pr=dd.precipitation_probability_max?.[i]||0;
-    return <div key={s} className={"dia"+(pr>=50?" pluja":"")}><small>{i===0?t("Avui"):dia(s)}</small><Ic size={compacte?17:20} aria-hidden="true"/><b>{Math.round(dd.temperature_2m_max?.[i])}°</b>{!compacte&&<em>{pr?pr+" %":""}</em>}</div>})}</div>;
+  // V87.541 · cada dia amb el seu número («Dt 10») i «Avui» per al dia d'avui de debò (la previsió es desa 3 h: el primer pot ser ahir)
+  const d0=new Date(),avui=`${d0.getFullYear()}-${String(d0.getMonth()+1).padStart(2,"0")}-${String(d0.getDate()).padStart(2,"0")}`;
+  const ix0=dd.time.map((s,i)=>i).filter(i=>dd.time[i]>=avui),ix=(ix0.length?ix0:dd.time.map((s,i)=>i)).slice(0,5);
+  return <div className={"dies"+(compacte?" mini":"")}>{ix.map(i=>{const s=dd.time[i];const Ic=iconaTemps878538(dd.weather_code?.[i]);const pr=dd.precipitation_probability_max?.[i]||0;
+    return <div key={s} className={"dia"+(pr>=50?" pluja":"")+(s===avui?" avui-v878541":"")}><small>{s===avui?t("Avui"):dia(s)} <span className="n-v878541">{+s.slice(8,10)}</span></small><Ic size={compacte?17:20} aria-hidden="true"/><b>{Math.round(dd.temperature_2m_max?.[i])}°</b>{!compacte&&<em>{pr?pr+" %":""}</em>}</div>})}</div>;
 }
 function TempsObres878538({obres=[],sol=false}){
   const{pobles,dades,err,pluja}=useTempsObres878538(obres);
@@ -21611,7 +21614,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.540",
+    app_version:"87.541",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
