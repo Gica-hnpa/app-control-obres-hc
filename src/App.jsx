@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.546";
+const APP_VERSION878264="87.547";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17912,6 +17912,22 @@ const[showHiddenCert878132,setShowHiddenCert878132]=useState(false);
 const[extraOpen878125,setExtraOpen878125]=useState(false);
 const[extraDraft878125,setExtraDraft878125]=useState({tipus:"modificacio",cap:"",codi:"",ut:"ut",concepte:"",q:"1",pu:"0",desc:""});
 const[dateDraft8721,setDateDraft8721]=useState({});
+// V87.547 · «Certificar el 100 %» (el client de Socoterm, 9/11/2026: passar un pressupost directament a factura, «que s'entengui que s'ha executat
+// el 100 % del pressupost»): la certificació següent amb tot el que queda per certificar de cada partida amb preu (les d'administració no); després,
+// «Fer factura» com sempre. Un pressupost amb només el total és una partida amb aquest preu: també queda al 100 %.
+function certificaTot878547(){
+  const bid=data.activeBudgetIdObra||"principal";
+  const next=((data.certificacions||[]).filter(c=>(c.budgetId||"principal")===bid).reduce((m,c)=>Math.max(m,+c.numero||0),0)||0)+1;
+  const pend=r=>{if(esAdminRow878439(r))return 0;const q=parseNum8770(r.q)||0,pu=parseNum8770(r.pu)||0;if(!(q>0&&pu>0))return 0;const fet=certNumsOfRow878253(r).filter(n=>n<next).reduce((x,n)=>x+(certAmount878223(r,n)||0),0);return Math.max(0,Math.round((q-fet/pu)*10000)/10000)};
+  const imp=(data.partides||[]).filter(r=>(r.budgetId||"principal")===bid).reduce((x,r)=>x+pend(r)*(parseNum8770(r.pu)||0),0);
+  if(!(imp>0.005)){alert(i18nT("No queda res per certificar d’aquest pressupost."));return}
+  if(!confirm(i18nT("Fer la certificació {n} amb tot el que queda per certificar ({imp})? El pressupost quedarà al 100 %. Després, «Fer factura».",{n:next,imp:money(imp)})))return;
+  const now=new Date().toISOString();
+  setData(d=>{const b=d.activeBudgetIdObra||"principal";return {...d,
+    certificacions:[...(d.certificacions||[]),{id:"c"+Date.now(),budgetId:b,numero:String(next),data:todayISO8743(),certificationDateSetAt:now,createdAt:now,updatedAt:now,estat:"Pendent",import:0,tot878547:true}],
+    partides:(d.partides||[]).map(r=>{if((r.budgetId||"principal")!==b)return r;const p=pend(r);return p>0?{...posaQCert878439(r,"cert_"+next,p),updatedAt:now}:r}),updatedAt:now}});
+  setCertMode8711("");setDetall426(true);
+}
 const[dateDraftSafe8720,setDateDraftSafe8720]=useState({});
 const[certImportPreview878231,setCertImportPreview878231]=useState(null);
 const[certImportBusy878231,setCertImportBusy878231]=useState(false);
@@ -18545,7 +18561,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
 {llistat501&&(()=>{let ac=0;const fs=[...certs].sort((a,b)=>(+a.numero||0)-(+b.numero||0)).map(c=>{const fa=faDe878364(c),vf=vfDe878364(c);const imp=certListTotal878215(c);ac+=imp;const f=fa||vf;return {_k:c.id,num:String(c.numero),nom:i18nT("Certificació {n}",{n:c.numero}),data:dateVal8721(c)||toInputDate8743(c.data)||"",import:imp,origen:ac,facturada:f?i18nT("Sí"):i18nT("No"),factura:fa?.numero||vf?.numSerie||"",cobrada:f?((fa?.cobrada||vf?.cobrada)?i18nT("Sí"):i18nT("No")):""}});
   return <Llistat878501 titol={[i18nT("Certificacions"),obra?.nom].filter(Boolean).join(" · ")} nom="certificacions" close={()=>setLlistat501(false)} dates={[{k:"data",l:i18nT("Data de la certificació")}]} filtres={[{k:"facturada",l:i18nT("Facturada")},{k:"cobrada",l:i18nT("Cobrada")}]}
     cols={[{k:"num",l:i18nT("Núm."),tipus:"num"},{k:"nom",l:i18nT("Certificació")},{k:"data",l:i18nT("Data"),tipus:"data"},{k:"import",l:i18nT("Import"),tipus:"diners",suma:true},{k:"origen",l:i18nT("A origen"),tipus:"diners"},{k:"facturada",l:i18nT("Facturada")},{k:"factura",l:i18nT("Factura")},{k:"cobrada",l:i18nT("Cobrada"),def:false}]} files={fs}/>})()}
-{!(detall426&&cert)&&<details className="card bloc-v878426 cert-llista-v878426" open={llista426||certs.length===0} onToggle={e=>{const o=e.currentTarget.open;if(o!==llista426)setLlista426(o)}}><summary><FileCheck size={18} aria-hidden="true"/><span className="t"><b>{contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</b></span>{certs.length>0&&<span className="xifra">{money(certs.reduce((x,c)=>x+certListTotal878215(c),0))}</span>}{addCertificacio&&!readOnly&&<button type="button" className="primary nova-v878426" onClick={e=>{e.preventDefault();e.stopPropagation();addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}} aria-label={i18nT("Nova")}><Plus size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Nova")}</span></button>}{certs.length>0&&!contrast878424&&<button type="button" className="secondary llistat-btn-v878501" onClick={e=>{e.preventDefault();e.stopPropagation();setLlistat501(true)}} aria-label={i18nT("Llistat")}><Printer size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Llistat")}</span></button>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{certs.length>0&&!contrast878424&&<div className="llistat-m-v878516"><button type="button" className="secondary" onClick={()=>setLlistat501(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Llistat")}</button></div>}
+{!(detall426&&cert)&&<details className="card bloc-v878426 cert-llista-v878426" open={llista426||certs.length===0} onToggle={e=>{const o=e.currentTarget.open;if(o!==llista426)setLlista426(o)}}><summary><FileCheck size={18} aria-hidden="true"/><span className="t"><b>{contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</b></span>{certs.length>0&&<span className="xifra">{money(certs.reduce((x,c)=>x+certListTotal878215(c),0))}</span>}{addCertificacio&&!readOnly&&<button type="button" className="primary nova-v878426" onClick={e=>{e.preventDefault();e.stopPropagation();addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}} aria-label={i18nT("Nova")}><Plus size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Nova")}</span></button>}{addCertificacio&&!readOnly&&!contrast878424&&<button type="button" className="secondary tot-v878547" onClick={e=>{e.preventDefault();e.stopPropagation();certificaTot878547()}} title={i18nT("Certificar el 100 %")} aria-label={i18nT("Certificar el 100 %")}><CheckCheck size={16} aria-hidden="true"/> <span className="tx-v878445">100 %</span></button>}{certs.length>0&&!contrast878424&&<button type="button" className="secondary llistat-btn-v878501" onClick={e=>{e.preventDefault();e.stopPropagation();setLlistat501(true)}} aria-label={i18nT("Llistat")}><Printer size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Llistat")}</span></button>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{certs.length>0&&!contrast878424&&<div className="llistat-m-v878516"><button type="button" className="secondary" onClick={()=>setLlistat501(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Llistat")}</button></div>}
   {certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:<div className={"cert-list-v878273 cert-taula-v878364 cert-files-v878426"+(ambFact878364?" amb-fact":"")}>
     <div className="cap-t" aria-hidden="true"><span>{i18nT("Certificació")}</span><span>{i18nT("Data")}</span><span className="n">{i18nT("Import")}</span>{ambFact878364&&<span>{i18nT("Factura")}</span>}<span/></div>
     {certs.map(c=>{const imp=certListTotal878215(c);const fa=faDe878364(c),vf=vfDe878364(c);const difer=!!fa&&Math.abs((+fa.baseCert544||+fa.base||0)-imp)>0.01;const potF=potFactDe878364(c);const potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
@@ -18558,6 +18574,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
           {opcionsCert527(c)}
         </ActionMenu87213></span>
       </div>})}</div>}
+{addCertificacio&&!readOnly&&!contrast878424&&certs.length>0&&<div className="tot-cos-v878547"><button type="button" className="secondary" onClick={certificaTot878547}><CheckCheck size={16} aria-hidden="true"/> {i18nT("Certificar el 100 %")}</button></div>}
 </div><Recollir878432/></details>}
 <>
   {detall426&&cert&&<div className="cert-detall-v878426">
@@ -21636,7 +21653,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.546",
+    app_version:"87.547",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

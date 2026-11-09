@@ -1,0 +1,8 @@
+/* V87.547 · «Certificar el 100 %»: a la capçalera de Certificacions; al mòbil no hi cap i va a baix de la llista */
+html body .tot-v878547{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+html body .tot-cos-v878547{display:none}
+@media (max-width:700px){
+  html body summary .tot-v878547{display:none}
+  html body .tot-cos-v878547{display:flex;justify-content:flex-end;padding:10px 12px 4px}
+  html body .tot-cos-v878547 button{display:inline-flex;align-items:center;gap:6px;min-height:40px}
+}

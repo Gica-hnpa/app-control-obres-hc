@@ -5763,4 +5763,7 @@ export default {
 "p. ex. Descompte acordat amb la propietat": "p. ej. Descuento acordado con la propiedad",
 "Import certificat": "Importe certificado",
 "No facturat per acord": "No facturado por acuerdo",
+"No queda res per certificar d’aquest pressupost.": "No queda nada por certificar de este presupuesto.",
+"Fer la certificació {n} amb tot el que queda per certificar ({imp})? El pressupost quedarà al 100 %. Després, «Fer factura».": "¿Hacer la certificación {n} con todo lo que queda por certificar ({imp})? El presupuesto quedará al 100 %. Después, «Hacer factura».",
+"Certificar el 100 %": "Certificar el 100 %",
 };

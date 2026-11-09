@@ -3601,3 +3601,10 @@
   la llista de certificacions, `cert-fa-v878337 mal` («La factura no coincideix amb la certificació») comparava la base de la factura, ja rebaixada,
   amb l'import certificat; ara compara `baseCert544` quan n'hi ha. `v544test` 11/11. **No fet (i dit a l'Héctor):** amagar de la factura un import
   cobrat en efectiu i repartir-lo a les partides «sense cap rastre» — la factura ha de recollir l'import real cobrat; queda el descompte pactat visible.
+- **V87.547 · «Certificar el 100 %»** (el client de Socoterm, 9/11/2026, via l'Héctor: «passar un pressupost directament a factura sense fer la
+  certificació… que s'entengui que llavors s'ha executat el 100 % del pressupost»). A `Cert`, `certificaTot878547`: la certificació següent del pressupost
+  actiu amb tot el que queda per certificar de cada partida amb quantitat i preu (`q − certificat/pu`, amb `posaQCert878439`; les d'administració no);
+  pregunta amb l'import, la marca `tot878547`, l'obre i després «Fer factura» com sempre. Un pressupost amb només el total és una partida amb aquest preu.
+  Botó «100 %» a la capçalera de Certificacions (`.tot-v878547`); al mòbil no hi cap i va a baix de la llista (`.tot-cos-v878547`, ≤700 px).
+  `src/theme-v878547.css`. Prova: `v547test.mjs` (8). **Pendent de parlar** (l'Héctor amb el client): «editar una factura» (ara es canvien número,
+  data, IVA i client abans de crear-la; un cop feta, eliminar-la o rectificativa) i la factura directa sense obra des de Facturació.
