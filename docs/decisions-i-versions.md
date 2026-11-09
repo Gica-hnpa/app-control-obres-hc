@@ -3612,3 +3612,12 @@
   en algun moment es perd el rastre»). `.acord-fila-v878548` («acord −X €», el motiu al `title`) al costat del número de factura a la llista de
   certificacions i a la fila de la factura de Facturació de l'obra; `.acord-barra-v878548` («Factura F… amb acord: −X € · motiu») a la barra de la
   certificació facturada. `src/theme-v878548.css`. `v544test` 14/14.
+- **V87.549 · Proposta B2: el resum del pressupost a l'ordinador** (l'Héctor, 9/11/2026, triada entre les propostes A, B i B2 amb captures a
+  `CAPTURES\propostes-pressupost-9-11`). `ResumPres878549` (≥1281 px), abans de la targeta del pressupost: cinc xifres de `previst878410` (preu tancat
+  `previst`, partides noves i imprevistos `imprevistos`, no es faran `imNoExec`, total previst `previsio`, certificat a origen `executat` amb el % i el que
+  queda) i la cascada en SVG «De pressupost a obra acabada»; «Obrir el pressupost». A l'ordinador, la targeta del pressupost oberta és **a pantalla
+  sencera** (`details.pres-bloc-v878427[open]` fixa) amb «Tornar a l'obra» (`.torna-v878549`) i s'hi entra sempre tancada (`presObertInici878427`). Els
+  avisos ja no són una targeta a part: dins del pressupost (`.avisos-dins-v878549`) i el número a la capçalera (`.n-av-v878549`, també al mòbil).
+  «Descompost del pressupost» → **«Mà d'obra i materials»**. La foto de l'obra al costat del nom a la capçalera de l'obra (`.foto-obra-v878549`, ≥768 px).
+  `src/theme-v878549.css`. Prova: `v549test.mjs` (13). Adaptades `v545test` i `v411test` (el pressupost entra tancat a l'ordinador).
+  **Queda:** Ajustos com a botó petit i el mateix patró a Certificacions, Factures i Despeses.

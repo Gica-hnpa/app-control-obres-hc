@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.548";
+const APP_VERSION878264="87.549";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8002,7 +8002,8 @@ function CartaLlista878518({className="",icona:Ic=null,title,xifra=null,obrir=""
 // resta»). La capçalera (Editar · Imprimir · Accions) i les partides hi són a dins; mentre s'edita, no es plega. V87.462: surt sempre plegat (abans es recordava
 // a l'aparell i l'Héctor el trobava desplegat en entrar); aquesta marca només la posen les proves.
 const PRES_OBERT878427="pres-prova-obert-v878462";
-function presObertInici878427(){try{return lsVisual878400()?.getItem(PRES_OBERT878427)==="1"}catch{return false}}
+// V87.549 · a l'ordinador, obert vol dir a pantalla sencera: s'hi entra sempre pel resum (el pressupost, tancat)
+function presObertInici878427(){try{if(window.matchMedia?.("(min-width:1281px)").matches)return false;return lsVisual878400()?.getItem(PRES_OBERT878427)==="1"}catch{return false}}
 // V87.435 · el pressupost buit (l'Héctor, 29/10/2026: «quan poso primer els amidaments, en obrir el pressupost hauria de tenir l'opció
 // que tingués totes les partides per posar preus, i després la de crear o importar el pressupost si l'he fet a part… i en BC3»)
 function bc3Pres878435(file){if(!file)return;window.__acoAmid878435={file,passar:true};window.__acoObraTab878435?.("Amidaments obra")}
@@ -8035,10 +8036,52 @@ function NomNum878528({nom="",base="",versio=1,close,desa}){
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!n.trim()} onClick={()=>{desa({nom:n,base:b,versio:vv});close()}}>{t("Desar")}</button></div>
   </div></Modal>;
 }
-function PresCard878427({pleg=true,titol,nom=null,num=null,ident=null,xifra=null,action,obert=false,editant=false,onToggle,tancat=false,children}){
+// V87.549 · Resum del pressupost a l'ordinador (Proposta B2, l'Héctor 9/11/2026: «la targeta del pressupost hauria de predominar… el número, l'import del
+// preu tancat, el sumatori de partides fora de pressupost i el total certificat… una gràfica per veure dades més directes»; «no surt el total del
+// pressupost tancat més noves partides ni les que no s'executaran»). Cinc xifres i la cascada de pressupost a obra acabada, amb `previst878410`.
+function ResumPres878549({pi,onObre}){
+  if(!pi)return null;
+  const P=Math.max(0,+pi.previst||0),N=Math.max(0,+pi.imprevistos||0),X=Math.max(0,+pi.imNoExec||0),T=Math.max(0,+pi.previsio||0),C=Math.max(0,+pi.executat||0),Q=Math.max(0,T-C);
+  const pct=T>0?Math.round(C/T*1000)/10:0;
+  const mx=Math.max(P+N,T,C,1),H=165,y0=212,h=v=>v/mx*H,k=v=>Math.round(v).toLocaleString("ca-ES");
+  const xs=[20,100,180,260,340],w=58;
+  const nNo=(pi.noExec||[]).length+(pi.tretes||[]).length,nNoves=(pi.noves||[]).length;
+  const noms=["Preu tancat","Partides noves","No es faran","Total previst","Certificat a origen"].map(x=>{const p=t(x).split(" ");return [p[0],p.slice(1).join(" ")]});
+  return <section className="resum-v878549" aria-label={t("Resum del pressupost")}>
+    <div className="xifres">
+      <div className="k"><span>{t("Preu tancat")}</span><b>{money(P)}</b><small>{t("el pressupost acceptat")}</small></div>
+      <div className="k noves"><span>{t("Partides noves i imprevistos")}</span><b>+ {money(N)}</b><small>{nNoves===1?t("1 partida nova"):t("{n} partides noves",{n:nNoves})}{(pi.mes||[]).length?" · "+t("i més amidament"):""}</small></div>
+      <div className="k noexec"><span>{t("No es faran")}</span><b>− {money(X)}</b><small>{nNo===1?t("1 partida, tota o en part"):t("{n} partides, totes o en part",{n:nNo})}</small></div>
+      <div className="k tot"><span>{t("Total previst")}</span><b>{money(T)}</b><small>{t("preu tancat + noves − no es faran")}</small></div>
+      <div className="k cert"><span>{t("Certificat a origen")}</span><b>{money(C)}</b><small>{t("{p} % del total previst · queden {q}",{p:String(pct).replace(".",","),q:money(Q)})}</small><i className="barra"><i style={{width:Math.min(100,pct)+"%"}}/></i></div>
+      {onObre&&<button type="button" className="primary obre-v878549" onClick={onObre}>{t("Obrir el pressupost")} <ChevronRight size={16} aria-hidden="true"/></button>}
+    </div>
+    <figure className="cascada-v878549"><figcaption><b>{t("De pressupost a obra acabada")}</b><small>{t("El preu tancat, el que s’hi afegeix i el que no es farà; al costat, el que ja s’ha certificat")}</small></figcaption>
+      <svg viewBox="0 0 420 262" role="img" aria-label={t("De pressupost a obra acabada")}>
+        <line x1="8" y1={y0} x2="412" y2={y0} className="eix"/>
+        <g className="guia"><line x1={xs[0]+w} y1={y0-h(P)} x2={xs[1]} y2={y0-h(P)}/><line x1={xs[1]+w} y1={y0-h(P+N)} x2={xs[2]} y2={y0-h(P+N)}/><line x1={xs[2]+w} y1={y0-h(T)} x2={xs[3]} y2={y0-h(T)}/></g>
+        <rect className="b-p" x={xs[0]} y={y0-h(P)} width={w} height={h(P)} rx="4"/>
+        <rect className="b-n" x={xs[1]} y={y0-h(P+N)} width={w} height={N>0?Math.max(h(N),1.5):0} rx="4"/>
+        <rect className="b-x" x={xs[2]} y={y0-h(P+N)} width={w} height={X>0?Math.max(h(X),1.5):0} rx="3"/>
+        <rect className="b-t" x={xs[3]} y={y0-h(T)} width={w} height={h(T)} rx="4"/>
+        <rect className="b-q" x={xs[4]} y={y0-h(T)} width={w} height={h(T)} rx="4"/>
+        <rect className="b-c" x={xs[4]} y={y0-h(C)} width={w} height={h(C)} rx="4"/>
+        <g className="val">
+          <text x={xs[0]+w/2} y={y0-h(P)-6}>{k(P)}</text>
+          <text x={xs[1]+w/2} y={y0-h(P+N)-6}>+ {k(N)}</text>
+          <text x={xs[2]+w/2} y={y0-h(P+N)+h(X)+13} className="neg">− {k(X)}</text>
+          <text x={xs[3]+w/2} y={y0-h(T)-6}>{k(T)}</text>
+          <text x={xs[4]+w/2} y={y0-h(Math.max(T,C))-6} className="ok">{k(C)}</text>
+        </g>
+        <g className="nom">{noms.map(([a,b],i)=><text key={i} x={xs[i]+w/2} y={y0+18}><tspan x={xs[i]+w/2}>{a}</tspan><tspan x={xs[i]+w/2} dy="13">{b}</tspan></text>)}</g>
+      </svg>
+    </figure>
+  </section>;
+}
+function PresCard878427({pleg=true,titol,nom=null,num=null,ident=null,xifra=null,action,obert=false,editant=false,onToggle,tancat=false,nAvisos=0,children}){
   if(!pleg)return <Card className="budget-card-v878248" title={titol} action={action}>{children}</Card>;
   return <details className="card bloc-v878426 budget-card-v878248 pres-bloc-v878427" open={obert} onToggle={e=>{const o=e.currentTarget.open;if(o!==obert)onToggle?.(o)}}>
-    <summary onClick={e=>{if(editant)e.preventDefault()}}>{tancat?<Lock size={18} className="tancat-v878428" aria-label={t("Pressupost tancat")}/>:<Calculator size={18} aria-hidden="true"/>}<span className="t" data-nom={nom||undefined}><b>{titol}</b></span>{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+    <summary onClick={e=>{if(editant)e.preventDefault()}}>{!editant&&<span className="torna-v878549"><ChevronLeft size={16} aria-hidden="true"/> {t("Tornar a l’obra")}</span>}{tancat?<Lock size={18} className="tancat-v878428" aria-label={t("Pressupost tancat")}/>:<Calculator size={18} aria-hidden="true"/>}<span className="t" data-nom={nom||undefined}><b>{titol}</b></span>{nAvisos>0&&<span className="n-av-v878549" title={t("Avisos del pressupost: {n}",{n:nAvisos})}><AlertTriangle size={14} aria-hidden="true"/> {nAvisos}</span>}{xifra!=null?<span className="xifra">{xifra}</span>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
     {ident}
     <div className="card-head">{action}</div>
     <div className="pres-cos-v878427">{children}</div>
@@ -13280,7 +13323,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   return <>
     <div className="obra-bar-info-v878269">
       <button type="button" className="obra-back-v878269" onClick={onBack}><ChevronLeft/><span>{t(etObres878304())}</span></button>
-      <div className="obra-bar-txt-v878269"><h2>{obra.nom}</h2><small>{info}</small></div>
+      {(()=>{const fo=obraFoto878259(obra);return fo?<img className="foto-obra-v878549" src={fo} alt=""/>:null})()}<div className="obra-bar-txt-v878269"><h2>{obra.nom}</h2><small>{info}</small></div>
       <div className="obra-bar-right-v878269">
         {crono&&<button type="button" className={`crono-v878376 ${crono.on?"on":""}`} onClick={crono.on?crono.stop:crono.start} title={crono.on?t("Aturar el comptador i desar el temps"):t("Engegar el comptador de temps")} aria-label={crono.on?t("Aturar el comptador i desar el temps"):t("Engegar el comptador de temps")}><Clock size={16} aria-hidden="true"/>{crono.on?<b><TimerClock878304 start={crono.since}/></b>:null}</button>}
         {readOnly?<span className={`obra-estat-ro-v878269 ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}>{t(st)}</span>:<label className={`obra-estat-v878269 ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}><span className="sr-only-v878269">{t("Estat")}</span><select value={st} onChange={e=>onEstat?.(e.target.value)} aria-label={t("Estat")}>{EXPEDIENT_STATUS878136.map(x=><option key={x} value={x}>{t(x)}</option>)}</select></label>}
@@ -14957,7 +15000,7 @@ function ResumPressupost878362({partides=[],nom="",obraId="",fase=""}){
   const fq=v=>(Math.round(v*100)/100).toLocaleString(loc878272(),{minimumFractionDigits:2,maximumFractionDigits:2});
   const files=[["ma","Mà d’obra",r.G.ma],["mat","Materials",r.G.mat],["alt","Maquinària i altres",r.G.alt],["ind","Industrials (preu tancat)",r.G.ind],
     ...Object.entries(r.P).map(([k,v])=>["pct",k,v]),["sense","Sense descompost",r.sense],["ajust","Altres diferències de preu",r.ajust]].filter(f=>Math.abs(f[2])>0.5);
-  return <details className="card bloc-v878426 resum-pres-v878362"><summary><Layers size={18} aria-hidden="true"/><span className="t"><b>{t("Descompost del pressupost")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+  return <details className="card bloc-v878426 resum-pres-v878362"><summary><Layers size={18} aria-hidden="true"/><span className="t"><b>{t("Mà d’obra i materials")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
     <div className="cos">
       <span className="barra" aria-hidden="true">{files.filter(f=>f[2]>0).map((f,i)=><i key={i} style={{width:pc(f[2])+"%",background:COLORS_RESUM878362[f[0]]}}/>)}</span>
       <table className="taula"><thead><tr><th>{t("Concepte")}</th><th>{t("Import")}</th><th>%</th></tr></thead>
@@ -17314,11 +17357,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!clientMode&&!obra?.compartida&&setData&&!quickMode&&<button type="button" className="sub-v878426 com-fila-v878426" disabled={editBudget8760b} aria-pressed={com878346.on} onClick={()=>{setComPct878346(com878346.on?com878346.pct:lsGet8779("aco_comissio_pct_v878346",""));setComObert878346(true)}}><span className={`com-espia-v878346 ${com878346.on?"on":""}`} aria-hidden="true"><Percent size={15}/><i/></span><span className="t"><b>{i18nT("Marge d’intermediari")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></button>}
       {ajustos878426?.cos}
     </div><Recollir878432/></details>}
-    {budgetWorkTab878180!=="Validar descompostos"&&avisos878320.length>0&&<details className="card bloc-v878426 avisos-v878426"><summary><AlertTriangle size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Avisos")}</b></span><span className="n">{avisos878320.length}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><AvisosPressupost878320 avisos={avisos878320} dins accions={nPreus480>0?{preu:<button type="button" className="secondary buscar-av-v878545" onClick={e=>{e.preventDefault();e.stopPropagation();setPreus480(sensePreu878480(caps))}}><Search size={15} aria-hidden="true"/> {i18nT("Buscar preus")}</button>}:null}/></div><Recollir878432/></details>}
+    {!quickMode&&!clientMode&&!buit428()&&budgetWorkTab878180!=="Validar descompostos"&&!editBudget8760b&&<ResumPres878549 pi={pi878411} onObre={()=>giraPres427(true)}/>}
     {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={()=>{startManualBudget87115();openBudgetLibrary87218("C01 NOU CAPÍTOL","client")}} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null} onArxiu={f=>{const nm=String(f.name||"").toLowerCase();if(/\.pdf$/.test(nm)||f.type==="application/pdf")setPdf878305(f);else if(/\.bc3$/.test(nm))bc3Pres878435(f);else importExcel?.({target:{files:[f],value:""}})}}/>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     {nomNumObert528&&nomNum528&&<NomNum878528 nom={budgetLabel8786(data,activeBudgetId)} base={String(data?.numPres878528||"")} versio={versioPres878528(data,activeBudgetId)} close={()=>setNomNumObert528(false)} desa={v=>nomNum528(activeBudgetId,v)}/>}
-    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={!quickMode&&!clientMode&&nomNum528&&!editBudget8760b?<div className="id-pres-v878528 sol-v878532"><button type="button" className="secondary" onClick={()=>setNomNumObert528(true)}><PenLine size={15} aria-hidden="true"/> {i18nT("Canviar el nom o el número")}</button></div>:null} nom={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):null} titol={!quickMode&&budgetGroups?.length?nomPresDe878532(clientMode?"":numPres878528(data,activeBudgetId),budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
+    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} nAvisos={budgetWorkTab878180!=="Validar descompostos"?avisos878320.length:0} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={!quickMode&&!clientMode&&nomNum528&&!editBudget8760b?<div className="id-pres-v878528 sol-v878532"><button type="button" className="secondary" onClick={()=>setNomNumObert528(true)}><PenLine size={15} aria-hidden="true"/> {i18nT("Canviar el nom o el número")}</button></div>:null} nom={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):null} titol={!quickMode&&budgetGroups?.length?nomPresDe878532(clientMode?"":numPres878528(data,activeBudgetId),budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
+      {budgetWorkTab878180!=="Validar descompostos"&&avisos878320.length>0&&<div className="avisos-dins-v878549"><AvisosPressupost878320 avisos={avisos878320} dins accions={nPreus480>0?{preu:<button type="button" className="secondary buscar-av-v878545" onClick={e=>{e.preventDefault();e.stopPropagation();setPreus480(sensePreu878480(caps))}}><Search size={15} aria-hidden="true"/> {i18nT("Buscar preus")}</button>}:null}/></div>}
       <div className="budget-botons-v878320 pres-accions-v878366">
       {/* V87.426 · l'Héctor (29/10/2026): «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les
           opcions… les eines dins d'editar… canviar el nom i eliminar ja surten a les fases». «Editar» · «Imprimir» · «Accions» curt;
@@ -21653,7 +21697,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.548",
+    app_version:"87.549",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
