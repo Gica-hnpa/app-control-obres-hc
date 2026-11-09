@@ -5747,4 +5747,6 @@ export default {
 "{p} i {n} més": "{p} y {n} más",
 "obres en curs": "obras en curso",
 "PDF només amb descripcions i total": "PDF solo con descripciones y total",
+"Afegir de Contactes": "Añadir de Contactos",
+"Fet ({n})": "Hecho ({n})",
 };

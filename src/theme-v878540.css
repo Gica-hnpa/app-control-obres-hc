@@ -1,0 +1,8 @@
+/* V87.540 · «Afegir de Contactes» a la finestra «Enviar» i «Fet» a la llista de Contactes */
+html body .correu-v878405 .afegeix-ct-v878540{all:unset;box-sizing:border-box;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 2px;cursor:pointer;color:var(--co-accent-ink,var(--co-accent,#2563EB));font-weight:600;font-size:14px}
+html body .correu-v878405 .afegeix-ct-v878540:hover{text-decoration:underline}
+html body .correu-v878405 .afegeix-ct-v878540:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:2px;border-radius:6px}
+.tc-fet-v878540{display:flex;justify-content:flex-end;padding:10px 14px;border-top:1px solid var(--co-line,#E2E8F0);background:var(--co-surface,#fff)}
+.tc-fet-v878540 .primary{min-height:42px;padding:0 22px}
+/* «Enviar» des del visor d'un document: la finestra va per sobre del visor (abans quedava a sota i no es veia) */
+.modal-backdrop:has(.correu-v878405){z-index:110}

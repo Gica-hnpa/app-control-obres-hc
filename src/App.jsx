@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.539";
+const APP_VERSION878264="87.540";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10238,7 +10238,7 @@ function TriaContacte878413({grups=null,valor="",onTria,onCap,onNou,etiqueta="",
       onTria={x=>{setObert(false);onTria?.(dadesContacte878413(x),x)}} onCap={onCap?()=>{setObert(false);onCap()}:null} onNou={onNou?q=>{setObert(false);onNou(q)}:null} close={()=>setObert(false)}/>}
   </div>;
 }
-function FinestraContactes878436({titol,grups=null,valor="",q="",setQ,nouText="",onTria,onCap,onNou,close}){
+function FinestraContactes878436({titol,grups=null,valor="",q="",setQ,nouText="",onTria,onCap,onNou,close,triats=null,multi=false}){
   useHoldSync878266();
   const finRef=useRef(null);
   // tocar fora de la finestra la tanca (el fons, amb el clic: així el toc no arriba al que hi ha a sota)
@@ -10253,7 +10253,7 @@ function FinestraContactes878436({titol,grups=null,valor="",q="",setQ,nouText=""
   const n=k=>vis.filter(x=>x.g===k).length;
   const grupsAmb=GRUPS_CONTACTE878315.filter(([k])=>files.some(x=>x.g===k));
   const sel=normalizeSearch878191(valor);
-  const fila=x=>{const a=agentDeContacte878406(x);const on=!!sel&&normalizeSearch878191(a.nom)===sel;return <button type="button" role="option" aria-selected={on} key={x.ag._persona878301||x.ag.id||a.nom} className="tc-fila" onClick={()=>onTria(x)}><b>{a.nom}</b><small>{[a.empresa&&normalizeSearch878191(a.empresa)!==normalizeSearch878191(a.nom)?a.empresa:"",a.nif,a.mobil||a.telefon].filter(Boolean).join(" · ")}</small>{on&&<Check size={16} className="ok" aria-hidden="true"/>}</button>};
+  const fila=x=>{const a=agentDeContacte878406(x);const on=(!!sel&&normalizeSearch878191(a.nom)===sel)||!!triats?.has(normalizeSearch878191(a.nom));const emp=a.empresa&&normalizeSearch878191(a.empresa)!==normalizeSearch878191(a.nom)?a.empresa:"";return <button type="button" role="option" aria-selected={on} key={x.ag._persona878301||x.ag.id||a.nom} className="tc-fila" onClick={()=>onTria(x)}><b>{a.nom}</b><small>{(multi?[a.email,a.mobil||a.telefon,emp]:[emp,a.nif,a.mobil||a.telefon]).filter(Boolean).join(" · ")}</small>{on&&<Check size={16} className="ok" aria-hidden="true"/>}</button>};
   const delG=g?vis.filter(x=>x.g===g):vis;
   const altres=g&&cercant?vis.filter(x=>x.g!==g):[];
   const nomG=k=>i18nT((GRUPS_CONTACTE878315.find(([x])=>x===k)||[k,k])[1]);
@@ -10281,6 +10281,7 @@ function FinestraContactes878436({titol,grups=null,valor="",q="",setQ,nouText=""
         {altres.length>0&&<div className="tc-grup altres"><h5>{t("Altres contactes")}</h5>{altres.map(fila)}</div>}
         {g&&!cercant&&<p className="tc-peu-v878436">{t("Busques algú d’un altre grup?")} <button type="button" className="link" onClick={()=>setG("")}>{t("Veure tots els contactes")}</button></p>}
       </div>
+      {multi&&<div className="tc-fet-v878540"><button type="button" className="primary" onClick={close}>{triats?.size?t("Fet ({n})",{n:triats.size}):t("Fet")}</button></div>}
     </div>
   </div>;
 }
@@ -21610,7 +21611,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.539",
+    app_version:"87.540",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23303,6 +23304,15 @@ function EmailModal({draft,setDraft,close}){
   const altres=String(draft.altres||"").split(/[,;\s]+/).map(x=>x.trim()).filter(x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
   const tos=[...new Set([...sel.map(a=>a.email).filter(Boolean),...altres])];
   const toggle=id=>setDraft({...draft,selected:selIds.includes(id)?selIds.filter(x=>x!==id):[...selIds,id]});
+  // V87.540 · «Afegir de Contactes» (l'Héctor, 6/11/2026): se'n poden triar diversos; cada un s'afegeix marcat i, si ja hi era, es desmarca
+  const [ct540,setCt540]=useState(false),[q540,setQ540]=useState("");
+  const triats540=new Set(sel.map(a=>normalizeSearch878191(a.nom)).filter(Boolean));
+  const afegeix540=x=>{const a=agentDeContacte878406(x);const k=normalizeSearch878191(a.nom);if(!k)return;
+    const em=String(a.email||"").toLowerCase();
+    const ja=ag.find(e=>normalizeSearch878191(e.nom)===k||(em&&String(e.email||"").toLowerCase()===em));
+    if(ja){toggle(ja.id);return}
+    const id="ct540-"+(x?.ag?._persona878301||k);
+    setDraft({...draft,agents:[...ag,{id,nom:a.nom,rol:a.rol,email:a.email,tel:a.mobil||a.telefon}],selected:[...selIds,id]})};
   const [via,setVia0]=useState(viaCorreu878405);
   const setVia=v=>{setVia0(v);lsSet8779(VIA_KEY878405,JSON.stringify({via:v}))};
   const [canviar,setCanviar]=useState(false);
@@ -23382,6 +23392,7 @@ function EmailModal({draft,setDraft,close}){
   return <Modal title={t("Enviar")} close={close}><div className="correu-v878337 correu-v878405">
     <div className="dest"><b>{t("Per a")}</b>
       {ag.length>0&&<div className="llista">{ag.map(a=><label key={a.id} className={`d ${selIds.includes(a.id)?"on":""}`}><input type="checkbox" checked={selIds.includes(a.id)} onChange={()=>toggle(a.id)}/><span><b>{a.nom}</b><small>{[a.rol?i18nT(a.rol):"",a.email,a.tel].filter(Boolean).join(" · ")}</small></span></label>)}</div>}
+      <button type="button" className="link afegeix-ct-v878540" onClick={()=>{setQ540("");setCt540(true)}}><Users size={16} aria-hidden="true"/> {t("Afegir de Contactes")}</button>
       <label className="altres"><span>{ag.length?t("Una altra adreça"):t("Adreça de correu")}</span><input type="email" inputMode="email" autoComplete="email" value={draft.altres||""} onChange={e=>setDraft({...draft,altres:e.target.value})} placeholder="nom@exemple.cat"/></label>
     </div>
     <label className="camp"><span>{t("Assumpte")}</span><input value={draft.title||""} onChange={e=>setDraft({...draft,title:e.target.value})}/></label>
@@ -23399,6 +23410,7 @@ function EmailModal({draft,setDraft,close}){
       <button type="button" className="secondary wa-v878402" disabled={!pdfLlest&&ambPdf&&tactil878405()} onClick={whatsapp}><MessageCircle size={16} aria-hidden="true"/> WhatsApp</button>
       <button type="button" className="primary envia-v878405" disabled={!tos.length||estat==="enviant"||(via==="aparell"&&!pdfLlest)} onClick={enviar}><Send size={16} aria-hidden="true"/> {estat==="enviant"?t("Enviant…"):t("Enviar")}</button></>}
     </div>
+    {ct540&&<div className="tc-v878413"><FinestraContactes878436 titol={t("Afegir de Contactes")} q={q540} setQ={setQ540} triats={triats540} multi onTria={afegeix540} close={()=>setCt540(false)}/></div>}
   </div></Modal>}
 function proformaPrintHtml8783(doc,obra,client){
   const D=(s,v)=>tl(docLang878283(obra),s,v);

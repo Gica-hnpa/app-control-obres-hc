@@ -3562,3 +3562,9 @@
   descripció llarga i l'etiqueta de fora de pressupost), els capítols sense import i a l'esquerra, sense el resum per capítols i amb un
   sol «TOTAL PRESSUPOST» (amb les DG i el BI sumats si els marges van al resum). Des del visor s'envia, es descarrega i s'imprimeix com
   qualsevol PDF. Prova: `v539test.mjs` (ordinador i mòbil; el total és el mateix que el del PDF sencer).
+- **V87.540 · Enviar a diversos contactes** (encàrrec de l'Héctor del 6/11/2026: «enviar qualsevol PDF per correu i WhatsApp amb un
+  desplegable de Contactes per triar-ne diversos»). A la finestra «Enviar» (`EmailModal`, la de tots els documents i PDF), sota «Per a»,
+  «Afegir de Contactes» (`.afegeix-ct-v878540`) obre la llista de Contactes (`FinestraContactes878436` amb `multi` i `triats`: cercador,
+  grups, el correu i el mòbil de cada un). Cada contacte tocat s'afegeix a «Per a» marcat; si ja hi era (pel nom o el correu), es
+  desmarca; la llista es queda oberta fins a «Fet (N)». **Arreglat:** «Enviar» des del visor d'un document obria la finestra a sota del
+  visor i no es veia (`.modal-backdrop:has(.correu-v878405){z-index:110}`). Prova: `v540test.mjs` (ordinador i mòbil).
