@@ -3597,3 +3597,7 @@
   element per `k` d'avís, dins del `summary`) i cada avís porta la classe `av-<k>`: l'avís «N partides sense preu» (`av-preu`) porta «Buscar preus»
   (`.buscar-av-v878545`, amb `preventDefault` perquè no plegui l'avís) quan hi ha partides per buscar (`sensePreu878480`). `src/theme-v878545.css`.
   Prova: `v545test.mjs` (ordinador i mòbil). Adaptada `v480test` (la línia és l'avís).
+- **V87.546 · La factura amb acord ja no surt en vermell** (l'Héctor, 9/11/2026: «per què surt en vermell quan he posat lo de descompte acordat?»). A
+  la llista de certificacions, `cert-fa-v878337 mal` («La factura no coincideix amb la certificació») comparava la base de la factura, ja rebaixada,
+  amb l'import certificat; ara compara `baseCert544` quan n'hi ha. `v544test` 11/11. **No fet (i dit a l'Héctor):** amagar de la factura un import
+  cobrat en efectiu i repartir-lo a les partides «sense cap rastre» — la factura ha de recollir l'import real cobrat; queda el descompte pactat visible.

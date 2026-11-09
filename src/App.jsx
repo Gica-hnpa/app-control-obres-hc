@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.545";
+const APP_VERSION878264="87.546";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -18548,7 +18548,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
 {!(detall426&&cert)&&<details className="card bloc-v878426 cert-llista-v878426" open={llista426||certs.length===0} onToggle={e=>{const o=e.currentTarget.open;if(o!==llista426)setLlista426(o)}}><summary><FileCheck size={18} aria-hidden="true"/><span className="t"><b>{contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</b></span>{certs.length>0&&<span className="xifra">{money(certs.reduce((x,c)=>x+certListTotal878215(c),0))}</span>}{addCertificacio&&!readOnly&&<button type="button" className="primary nova-v878426" onClick={e=>{e.preventDefault();e.stopPropagation();addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}} aria-label={i18nT("Nova")}><Plus size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Nova")}</span></button>}{certs.length>0&&!contrast878424&&<button type="button" className="secondary llistat-btn-v878501" onClick={e=>{e.preventDefault();e.stopPropagation();setLlistat501(true)}} aria-label={i18nT("Llistat")}><Printer size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Llistat")}</span></button>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{certs.length>0&&!contrast878424&&<div className="llistat-m-v878516"><button type="button" className="secondary" onClick={()=>setLlistat501(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Llistat")}</button></div>}
   {certs.length===0?<Empty text="Aquesta obra encara no té certificacions guardades."/>:<div className={"cert-list-v878273 cert-taula-v878364 cert-files-v878426"+(ambFact878364?" amb-fact":"")}>
     <div className="cap-t" aria-hidden="true"><span>{i18nT("Certificació")}</span><span>{i18nT("Data")}</span><span className="n">{i18nT("Import")}</span>{ambFact878364&&<span>{i18nT("Factura")}</span>}<span/></div>
-    {certs.map(c=>{const imp=certListTotal878215(c);const fa=faDe878364(c),vf=vfDe878364(c);const difer=!!fa&&Math.abs((+fa.base||0)-imp)>0.01;const potF=potFactDe878364(c);const potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
+    {certs.map(c=>{const imp=certListTotal878215(c);const fa=faDe878364(c),vf=vfDe878364(c);const difer=!!fa&&Math.abs((+fa.baseCert544||+fa.base||0)-imp)>0.01;const potF=potFactDe878364(c);const potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
       return <div className={`cert-row-v878273 ${selected===c.id?"on":""}`} key={c.id} role="button" tabIndex={0} aria-pressed={selected===c.id} title={i18nT("Creada el {data}",{data:fmtCreationDate878233(c.createdAt)})} onClick={()=>{setSelected(c.id);setCertMode8711("");setDetall426(true);window.scrollTo?.(0,0)}} onKeyDown={e=>{if(e.target===e.currentTarget&&(e.key==="Enter"||e.key===" ")){e.preventDefault();setSelected(c.id);setCertMode8711("");setDetall426(true)}}}>
         <b>{i18nT("Certificació {n}",{n:c.numero})}</b>
         <input type="date" className="cert-date-input-v8721" aria-label={i18nT("Data de la certificació {n}",{n:c.numero})} value={dateVal8721(c)||""} disabled={!!fa||!!vf} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()} onChange={e=>{const value=e.target.value;setDateDraft8721(d=>({...d,[c.id]:value}));updateCertDate8721?.(c.id,value)}}/>
@@ -21636,7 +21636,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.545",
+    app_version:"87.546",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
