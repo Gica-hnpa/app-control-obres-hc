@@ -1,0 +1,9 @@
+/* V87.544 · «Fer factura»: import que no es factura per acord amb el client */
+html body .fer-factura-v878337 .acord-v878544{margin:12px 0;padding:12px;border:1px solid var(--co-line,#DCE3E7);border-radius:12px;background:#F8FAFC;display:flex;flex-direction:column;gap:10px}
+html body .fer-factura-v878337 .acord-v878544.on{background:#FFFBEB;border-color:#FCD34D}
+html body .fer-factura-v878337 .acord-v878544 .si{display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+html body .fer-factura-v878337 .acord-v878544 .si input{width:20px;height:20px;margin:2px 0 0;flex:0 0 auto}
+html body .fer-factura-v878337 .acord-v878544 .si span{display:flex;flex-direction:column;gap:2px}
+html body .fer-factura-v878337 .acord-v878544 .si b{font:700 14px var(--app-font);color:#0f172a}
+html body .fer-factura-v878337 .acord-v878544 .si small{font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+html body .fer-factura-v878337 .vf-totals-v878285 .acord{color:#92400E}

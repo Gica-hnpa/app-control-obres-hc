@@ -3585,3 +3585,10 @@
   compte de l'Héctor la llista passa sola a la nova (`nv.posa({comptes})`, sense tornar a pujar el banc). Els textos diuen «de demostració i de la
   prova pilot». La regla del servidor no canvia (`like any (comptes)`). Adaptada `v533test.mjs` (Brava la llegeix; el compte de còpies, no; la llista
   vella passa sola a la nova).
+- **V87.544 · Import que no es factura per acord amb el client** (l'Héctor, 9/11/2026, amb la captura de «Fer factura · Certificació 2»: «una targeta
+  on pugui marcar una quantitat que no sigui facturada… el client o tècnic que ho comprova ha de veure-ho tot el realitzat però després si s'arriba a un
+  acord com ho fem constar»). Decidit: **a la factura, no a la certificació** (la certificació es queda amb tot el que s'ha fet). A `FerFactura878297`,
+  la targeta `.acord-v878544` («Import que no es factura (acord amb el client)»: casella, import sense IVA i motiu, obligatori i menor que la base); la
+  base imposable = la de la certificació − l'acord. La factura desa `baseCert544` i `acord544 = {imp, motiu}`; el PDF (`proformaPrintHtml8783`) porta
+  «Import certificat», la línia del motiu en negatiu i la base. La certificació compta com a facturada (per existència), i el que s'acorda no queda
+  pendent. `src/theme-v878544.css`. Prova: `v544test.mjs` (mòbil i ordinador); `facturacio337test` 32/32.
