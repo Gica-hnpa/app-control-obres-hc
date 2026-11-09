@@ -5766,4 +5766,7 @@ export default {
 "No queda res per certificar d’aquest pressupost.": "No queda nada por certificar de este presupuesto.",
 "Fer la certificació {n} amb tot el que queda per certificar ({imp})? El pressupost quedarà al 100 %. Després, «Fer factura».": "¿Hacer la certificación {n} con todo lo que queda por certificar ({imp})? El presupuesto quedará al 100 %. Después, «Hacer factura».",
 "Certificar el 100 %": "Certificar el 100 %",
+"Acord amb el client: {m}": "Acuerdo con el cliente: {m}",
+"acord −{imp}": "acuerdo −{imp}",
+"Factura {n} amb acord: −{imp}": "Factura {n} con acuerdo: −{imp}",
 };

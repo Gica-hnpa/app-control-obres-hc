@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.547";
+const APP_VERSION878264="87.548";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -18569,7 +18569,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
         <b>{i18nT("Certificació {n}",{n:c.numero})}</b>
         <input type="date" className="cert-date-input-v8721" aria-label={i18nT("Data de la certificació {n}",{n:c.numero})} value={dateVal8721(c)||""} disabled={!!fa||!!vf} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()} onChange={e=>{const value=e.target.value;setDateDraft8721(d=>({...d,[c.id]:value}));updateCertDate8721?.(c.id,value)}}/>
         <strong>{money(imp)}</strong>
-        {ambFact878364&&<span className="fact-v878364">{fa?<button type="button" className={"cert-fa-v878337"+(difer?" mal":"")} title={difer?i18nT("La factura ({f}) no coincideix amb la certificació ({c})",{f:money(fa.base),c:money(imp)}):i18nT("Veure la factura")} onClick={e=>{e.stopPropagation();openDoc?.(docFactura878337(fa,pfs878364.find(x=>x.certId===c.id),obraData))}}>{difer&&<AlertTriangle size={14} aria-hidden="true"/>}{fa.numero}</button>:vf?<span className="cert-fa-v878337">{vf.numSerie}</span>:<span className="pend">{i18nT("Pendent")}</span>}</span>}
+        {ambFact878364&&<span className="fact-v878364">{fa?<><button type="button" className={"cert-fa-v878337"+(difer?" mal":"")} title={difer?i18nT("La factura ({f}) no coincideix amb la certificació ({c})",{f:money(fa.base),c:money(imp)}):i18nT("Veure la factura")} onClick={e=>{e.stopPropagation();openDoc?.(docFactura878337(fa,pfs878364.find(x=>x.certId===c.id),obraData))}}>{difer&&<AlertTriangle size={14} aria-hidden="true"/>}{fa.numero}</button>{fa.acord544&&+fa.acord544.imp>0&&<small className="acord-fila-v878548" title={i18nT("Acord amb el client: {m}",{m:fa.acord544.motiu||""})}>{i18nT("acord −{imp}",{imp:money(fa.acord544.imp)})}</small>}</>:vf?<span className="cert-fa-v878337">{vf.numSerie}</span>:<span className="pend">{i18nT("Pendent")}</span>}</span>}
         <span className="acc-v878364" onClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}><ActionMenu87213 className="fila-v878364 tot-v878527" fletxa={false} titol={i18nT("Opcions de la certificació {n}",{n:c.numero})} label={<Ellipsis size={18} aria-hidden="true"/>}>
           {opcionsCert527(c)}
         </ActionMenu87213></span>
@@ -18585,7 +18585,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     <div className="botons cert-barra-v878364">
     {sigs408.length>0&&<button type="button" className="sigcert-xip-v878408" onClick={()=>setSigCert408(true)} title={sigs408.map(x=>x.nom||x.org).join(" · ")}><Signature size={15} aria-hidden="true"/> {sigs408.length===1?i18nT("1 signatura"):i18nT("{n} signatures",{n:sigs408.length})}</button>}
     {vell527?<>
-    {bloq878364?<span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>
+    {bloq878364?<><span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>{(()=>{const fx=cert&&faDe878364(cert);return fx?.acord544&&+fx.acord544.imp>0?<span className="acord-barra-v878548" title={fx.acord544.motiu||""}>{i18nT("Factura {n} amb acord: −{imp}",{n:fx.numero,imp:money(fx.acord544.imp)})}{fx.acord544.motiu?` · ${fx.acord544.motiu}`:""}</span>:null})()}</>
       :!editing?<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>
       :<><div className="edita-fix-v878452"><span className="tot-m-v878452"><small>{i18nT("Certificació {n}",{n:certNum})}</small><b>{money(certTotal(certNum))}</b></span><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button></div>{!readOnly&&!contrast878424&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}</>}
     {!editing&&<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>}
@@ -18601,7 +18601,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       {!!deleteCertificacio8721&&!readOnly&&!faCert878337&&!vfCert878337&&!contrast878424&&!!cert&&<button type="button" className="cert-del-v878273 perill" onClick={()=>deleteCertificacio8721(cert.id)}><Trash2 size={15} aria-hidden="true"/> {i18nT("Eliminar la certificació")}</button>}
     </ActionMenu87213>}
     </>:<>
-    {bloq878364&&<span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>}
+    {bloq878364&&<><span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>{(()=>{const fx=cert&&faDe878364(cert);return fx?.acord544&&+fx.acord544.imp>0?<span className="acord-barra-v878548" title={fx.acord544.motiu||""}>{i18nT("Factura {n} amb acord: −{imp}",{n:fx.numero,imp:money(fx.acord544.imp)})}{fx.acord544.motiu?` · ${fx.acord544.motiu}`:""}</span>:null})()}</>}
     {!editing&&botonsCap527()}
     </>}
     </div>
@@ -19324,7 +19324,7 @@ return <div className={`fact-layout-v61 fact-layout-v87101 fact-v878426 ${readOn
 </div><Recollir878432/></details>
 <details className="card bloc-v878426 fact-fa-v878426"><summary><ReceiptText size={18} aria-hidden="true"/><span className="t"><b>{t("Factures")}</b></span>{facturades426.length>0&&<span className="xifra">{money(totFact426)}</span>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
   {facturades426.length===0?<Empty text="Encara no hi ha factures."/>:facturades426.map(({f,fa,em})=>{const c=em?{iva:em.iva,ret:em.ret,ded:em.ded,base:em.base,ivaImp:em.ivaImp,retImp:em.retImp,total:em.totalCobrar??em.total}:fa?{iva:fa.iva,ret:fa.ret,ded:fa.ded,base:fa.base,ivaImp:fa.ivaImp,retImp:fa.retImp,total:fa.total}:calc(f);const signada=fa&&sigFa426(fa);
-    return <details key={f.pfId} className="fila-v878426 fa-fila-v878426"><summary><span className="num">{em?em.numSerie:fa.numero}</span><span className="t">{fmtAppDate8748(em?em.data:fa.data)} · {t("Certificació {n}",{n:f.numeroCert})}</span>{em?<span className={`vf-badge-v878285 vf-${vfEstat878285(em.estat).cls}`}><small>{t(vfEstat878285(em.estat).txt)}</small></span>:signada?<span className="signada-v878426"><Signature size={14} aria-hidden="true"/> {t("Signada")}</span>:null}<b className="xifra">{money(c.total)}</b><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos">
+    return <details key={f.pfId} className="fila-v878426 fa-fila-v878426"><summary><span className="num">{em?em.numSerie:fa.numero}</span><span className="t">{fmtAppDate8748(em?em.data:fa.data)} · {t("Certificació {n}",{n:f.numeroCert})}</span>{!em&&fa?.acord544&&+fa.acord544.imp>0&&<span className="acord-fila-v878548" title={t("Acord amb el client: {m}",{m:fa.acord544.motiu||""})}>{t("acord −{imp}",{imp:money(fa.acord544.imp)})}</span>}{em?<span className={`vf-badge-v878285 vf-${vfEstat878285(em.estat).cls}`}><small>{t(vfEstat878285(em.estat).txt)}</small></span>:signada?<span className="signada-v878426"><Signature size={14} aria-hidden="true"/> {t("Signada")}</span>:null}<b className="xifra">{money(c.total)}</b><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos">
     {imports426(c)}
     <div className="botons-v878426">
       {em?<>
@@ -21653,7 +21653,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.547",
+    app_version:"87.548",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -3608,3 +3608,7 @@
   Botó «100 %» a la capçalera de Certificacions (`.tot-v878547`); al mòbil no hi cap i va a baix de la llista (`.tot-cos-v878547`, ≤700 px).
   `src/theme-v878547.css`. Prova: `v547test.mjs` (8). **Pendent de parlar** (l'Héctor amb el client): «editar una factura» (ara es canvien número,
   data, IVA i client abans de crear-la; un cop feta, eliminar-la o rectificativa) i la factura directa sense obra des de Facturació.
+- **V87.548 · L'acord de la factura a la vista** (l'Héctor, 9/11/2026: «la certificació 1 de David Fuster puja un import però hem facturat un altre…
+  en algun moment es perd el rastre»). `.acord-fila-v878548` («acord −X €», el motiu al `title`) al costat del número de factura a la llista de
+  certificacions i a la fila de la factura de Facturació de l'obra; `.acord-barra-v878548` («Factura F… amb acord: −X € · motiu») a la barra de la
+  certificació facturada. `src/theme-v878548.css`. `v544test` 14/14.
