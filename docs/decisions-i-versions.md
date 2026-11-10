@@ -3669,3 +3669,7 @@
   s'ha de tancar… algun que està fent proves m'ha dit que llavors no sap si s'ha guardat o no»). A Dades de l'obra (`FitxaDadesTab8769`), després de
   `saveAll`: `toast878557` («✓ Dades guardades», a baix de la pantalla, 2,5 s) i la targeta es plega. Les altres finestres de guardar ja es tanquen
   soles. `src/theme-v878557.css`. Prova: `v557test.mjs` (7); `dadestest` 8/8.
+- **V87.558 · «Pressupost» / «Pressupostos» a la banda de les fases** (l'Héctor, 10/11/2026: «a sobre on està la targeta del número del pressupost no
+  pot haver dins la targeta el text Pressupost o pressupostos en cas que hi hagi més d'un?», vist amb captures abans). `FasesObra878342` amb `obre`: la
+  `.tit` diu «Pressupost» o «Pressupostos» (abans «Fases», amagat) i la banda és una graella amb el títol i «Fases ▾» a dalt i les rajoles a sota, a
+  tots els aparells. `src/theme-v878558.css`. `v556test` 6/6.

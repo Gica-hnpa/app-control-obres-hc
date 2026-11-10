@@ -1,0 +1,5 @@
+/* V87.558 · títol «Pressupost» / «Pressupostos» a la banda de les fases en rajoles */
+html body .fases-v878342.rajoles-v878551{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"t m" "l l"!important;align-items:center;row-gap:10px}
+html body .fases-v878342.rajoles-v878551>.tit{display:block!important;grid-area:t;font:800 16px var(--app-font,inherit);color:var(--co-ink,#152328);padding-left:4px}
+html body .fases-v878342.rajoles-v878551>.mes-v878342{grid-area:m;justify-self:end;margin:0}
+html body .fases-v878342.rajoles-v878551>.llista{grid-area:l}

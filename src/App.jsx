@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.557";
+const APP_VERSION878264="87.558";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11664,7 +11664,7 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
   const llista451=useRef(null);
   useEffect(()=>{const c=llista451.current,o=c?.querySelector("button.on");if(c&&o&&c.scrollWidth>c.clientWidth)c.scrollLeft=Math.max(0,o.offsetLeft-c.offsetLeft-8)},[act,tota]);
   return <div className={"fases-v878342"+(obre?" rajoles-v878551":"")} role="group" aria-label={t("Fases de l’obra")}>
-    <span className="tit">{t("Fases")}</span>
+    <span className="tit">{obre?(gs.length>1?t("Pressupostos"):t("Pressupost")):t("Fases")}</span>
     <div className="llista" ref={llista451}>
       {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id);if(obre)setTimeout(()=>window.dispatchEvent(new Event("aco-obre-pres878551")),80)}}>
         <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}{x.av>0&&<i className="av-rajola-v878552" title={t("Avisos del pressupost: {n}",{n:x.av})}><AlertTriangle size={12} aria-hidden="true"/> {x.av}</i>}</span></button>})}
@@ -21820,7 +21820,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.557",
+    app_version:"87.558",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

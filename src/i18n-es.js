@@ -5814,4 +5814,5 @@ export default {
 "Peatges i aparcament": "Peajes y aparcamiento",
 "Transport": "Transporte",
 "Dades guardades": "Datos guardados",
+
 };
