@@ -3694,3 +3694,8 @@
   de la factura (`serieEmpresa878337(any)`, i `FerFactura878297` / `FacturaDirecta878559` el segueixen si es canvia la data). El comptador va per
   prefix: cada any torna a començar (F2027-001). La sèrie per client de l'Héctor no canvia. Els pressupostos ja eren per any (2026_0001, 2027_0001).
   Pendent: `pressupost361test` «Tornar-la a obrir» ja fallava a la V87.559 (la prova no torna a obrir la fitxa després de desar).
+- **V87.561 · L'any a la llista d'obres, destacat** (l'Héctor, 10/11/2026: «remarca'm més els anys… la línia de l'any es veu sense cap ressalt
+  respecte als expedients… amb un reborde o amb un color»). A la taula d'Obres/Expedients (`.year-row-v8742.any-v878561`) i a les targetes del mòbil
+  (`.exp-year-v878270.any-v878561 h3`): franja amb el color de l'empresa (`--co-accent` a l'11 %), vora de 6 px a l'esquerra, ratlla de 2 px a dalt,
+  l'any a 17 px i, amb més d'un any, el nombre d'obres al costat. `etNExp878327` diu «1 obra» / «1 expedient» (abans «1 obres»).
+  `src/theme-v878561.css`. Prova: `v561test` 6/6; `expedientstest` 21/21.

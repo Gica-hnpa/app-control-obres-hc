@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.560";
+const APP_VERSION878264="87.561";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -561,7 +561,7 @@ function normalizeExpedientStatus878136(v){
 // d'Expedients. «Oberts» = tot menys tancats, anul·lats i no acceptats.
 // V87.327 · a la constructora i al treballador, «obres» en lloc d'«expedients»
 function etPaquet878327(l){if(!diuObra878326())return l;return l==="Tancats"?"Tancades":l==="Expedients oberts"?"Obres obertes":l==="Total expedients"?"Total d’obres":l==="Tots els expedients"?"Totes les obres":l}
-function etNExp878327(n){return diuObra878326()?t("{n} obres",{n}):t("{n} expedients",{n})}
+function etNExp878327(n){if(+n===1)return diuObra878326()?t("1 obra"):t("1 expedient");return diuObra878326()?t("{n} obres",{n}):t("{n} expedients",{n})}
 const PAQUETS878314=[{k:"oberts",l:"Expedients oberts"},{k:"execucio",l:"En execució"},{k:"espera",l:"Esperant resposta"},{k:"tancats",l:"Tancats"},{k:"tots",l:"Total expedients"}];
 // V87.482 · a la constructora, només Totes · Obertes · Tancades (l'Héctor, 3/11/2026: «el constructora no distingeix entre obertes i en
 // execució i va a buscar sempre obert»). «En execució» i «Esperant resposta», si hi arriben d'abans, són «Obertes».
@@ -10170,7 +10170,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     <ExpFilters878275 all={allObres} clients={clients} f={f}/>
     <div className="exp-list-header-v8741"><span>{etNExp878327(total)}</span><div className="actions-inline exp-sort-controls-v878192"><label><span>{t("Ordenar per")}</span><select value={sort878192.key} onChange={e=>setSort878192({key:e.target.value,dir:e.target.value==="numero"?"desc":"asc"})}>{SORT_OPTIONS878192.map(o=><option key={o.key} value={o.key}>{t(o.label)}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setSort878192(s=>({...s,dir:s.dir==="asc"?"desc":"asc"}))}>{sort878192.dir==="asc"?t("Ascendent ▲"):t("Descendent ▼")}</button><button className="secondary" onClick={clearAll}>{t("Netejar filtres")}</button>{f.ot&&<button className="secondary" onClick={()=>f.setOt("")}>{t("Tornar a tots els tipus")}</button>}</div></div>
     <div className="exp-mobile-tree-v87119 exp-cards-v878270">
-      {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));return <section key={any} className="exp-year-v878270">
+      {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));return <section key={any} className="exp-year-v878270 any-v878561">
         <h3><span>{any}</span>{anys.length>1&&<small>{etNExp878327(items.length)}</small>}</h3>
         {items.map(o=>{const st=normalizeExpedientStatus878136(o.estat);const lloc=[o.poblacio,o.adreca].find(x=>x&&x!=="Pendent")||"";return <button type="button" key={o.id} className="exp-card-v878270 exp-card-foto-v878275" onClick={()=>openObra(o.id)}>
           <ObraThumb878275 o={o} nom={clientNom(o)}/><span className="exp-card-body-v878275"><span className="l1"><b>{codiCurt878270(o)}</b>{o.compartida?<small className="exp-prop-v878347">{expPropietari878347(o)}</small>:null}<span>{clientNom(o)}</span></span>
@@ -10184,7 +10184,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
       <table className={"exp-table-v8741 exp-table-v8742 exp-table-v878289"+(refCol878497?"":" sense-ref-v878497")}>
         <thead><tr><th>{sortHead878192("numero","Número")}</th><th>{diuObra878326()?t("Compartida per"):t("Núm. client")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("promotor","Promotor")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
         <tbody>{flat.length===0&&<tr><td colSpan="8"><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
-          <tr className="year-row-v8742"><td colSpan="8">{any}</td></tr>
+          <tr className="year-row-v8742 any-v878561"><td colSpan="8"><span className="a">{any}</span>{anys.length>1&&<>{" "}<small>{etNExp878327(flat.filter(o=>String(yearLabel878192(o))===String(any)).length)}</small></>}</td></tr>
           {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td><td>{o.compartida?<><b className="ref-prop-v878360">{codiCurtBase878347(o)}</b><small>{o.compartida.ownerNom||o.compartida.ownerUsuari||""}</small></>:o.refClient?<b className="ref-client-v878314">{o.refClient}</b>:diuObra878326()?<span className="cap-ref-v878497">—</span>:<b>{clientProjectLabel878233(o)}</b>}</td><td>{clientNom(o)}</td><td className="exp-prom-v878289">{promotorNom878289(o)||"—"}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{o.poblacio}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select className={`est-v878299 est-${estatTone878299(o.estat)}`} aria-label={i18nT("Estat")} value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}
         </React.Fragment>)}</tbody>
       </table>
@@ -21907,7 +21907,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.560",
+    app_version:"87.561",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

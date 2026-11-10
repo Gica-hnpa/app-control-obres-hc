@@ -1,0 +1,9 @@
+/* V87.561 · l'any a la llista d'obres, destacat: franja amb el color de l'empresa, vora a l'esquerra i el nombre d'obres */
+html body table.exp-table-v8742 tr.any-v878561 td{background:color-mix(in srgb,var(--co-accent,#1D4ED8) 11%,#fff)!important;color:var(--co-accent,#1D4ED8)!important;border-top:2px solid var(--co-accent,#1D4ED8)!important;border-bottom:1px solid color-mix(in srgb,var(--co-accent,#1D4ED8) 30%,#fff)!important;box-shadow:inset 6px 0 0 var(--co-accent,#1D4ED8)!important;padding:11px 16px 11px 20px!important;text-transform:none!important;letter-spacing:0!important}
+html body table.exp-table-v8742 tr.any-v878561 td .a{font-size:17px;font-weight:900;letter-spacing:.02em}
+html body table.exp-table-v8742 tr.any-v878561 td .a,html body table.exp-table-v8742 tr.any-v878561 td small{display:inline!important}
+html body table.exp-table-v8742 tr.any-v878561 td small{margin-left:12px;font-size:12.5px;font-weight:600;color:var(--co-ink-3,#5F7075)}
+html body table.exp-table-v8742 tbody tr.any-v878561:hover td{background:color-mix(in srgb,var(--co-accent,#1D4ED8) 11%,#fff)!important;cursor:default}
+html body .exp-year-v878270.any-v878561>h3{margin:14px 0 10px!important;padding:10px 14px 10px 16px;border-radius:12px;background:color-mix(in srgb,var(--co-accent,#1D4ED8) 11%,#fff);border:1px solid color-mix(in srgb,var(--co-accent,#1D4ED8) 30%,#fff);box-shadow:inset 6px 0 0 var(--co-accent,#1D4ED8);align-items:center}
+html body .exp-year-v878270.any-v878561>h3>span{font-size:17px;font-weight:900;color:var(--co-accent,#1D4ED8)}
+html body .exp-year-v878270.any-v878561:first-child>h3{margin-top:4px!important}
