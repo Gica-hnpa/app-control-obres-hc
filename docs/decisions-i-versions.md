@@ -3665,3 +3665,7 @@
   `src/theme-v878556.css` (≤1280 px): al telèfon, una rajola per fila a tota l'amplada (el nom en dues línies, l'import i el %), «Fases ▾» a dalt; a
   la tauleta, en columnes. Tocar una fase la tria, obre el seu pressupost i hi baixa (`aco-obre-pres878551` també fora de l'ordinador, amb
   `scrollIntoView`). Els avisos a la rajola, a tots els aparells. Prova: `v556test.mjs` (6, amb dues fases); `v551test` 11/11.
+- **V87.557 · «Guardar dades» diu que s'ha guardat i plega la targeta** (l'Héctor, 10/11/2026: «si a qualsevol pantalla com aquesta apreto guardar dades
+  s'ha de tancar… algun que està fent proves m'ha dit que llavors no sap si s'ha guardat o no»). A Dades de l'obra (`FitxaDadesTab8769`), després de
+  `saveAll`: `toast878557` («✓ Dades guardades», a baix de la pantalla, 2,5 s) i la targeta es plega. Les altres finestres de guardar ja es tanquen
+  soles. `src/theme-v878557.css`. Prova: `v557test.mjs` (7); `dadestest` 8/8.

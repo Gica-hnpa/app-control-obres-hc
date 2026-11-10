@@ -1,0 +1,4 @@
+/* V87.557 · avís curt «Dades guardades» */
+.toast-v878557{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:12000;background:#14532D;color:#fff;font-weight:700;font-size:15px;padding:12px 20px;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.25);transition:opacity .4s,transform .4s;max-width:calc(100vw - 32px)}
+.toast-v878557.fora{opacity:0;transform:translate(-50%,8px)}
+@media (max-width:1280px){.toast-v878557{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}

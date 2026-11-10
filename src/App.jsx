@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.556";
+const APP_VERSION878264="87.557";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10594,6 +10594,8 @@ function useTauleta878387(){const q="(max-width: 1100px)";const[m,setM]=useState
 function usePC878428(){const q="(min-width: 1101px) and (hover: hover) and (pointer: fine)";const[m,setM]=useState(()=>{try{return window.matchMedia(q).matches}catch{return false}});
   useEffect(()=>{let mm;try{mm=window.matchMedia(q)}catch{return}const h=e=>setM(e.matches);mm.addEventListener?.("change",h);return()=>mm.removeEventListener?.("change",h)},[]);return m}
 function constructoraPropia878363(){return !!PERFIL878304&&!teModul878326("tecnic")}
+// V87.557 · un avís curt a baix de la pantalla («Dades guardades»), que se'n va sol
+function toast878557(msg){try{document.querySelectorAll(".toast-v878557").forEach(x=>x.remove());const d=document.createElement("div");d.className="toast-v878557";d.setAttribute("role","status");d.textContent="✓ "+msg;document.body.appendChild(d);setTimeout(()=>d.classList.add("fora"),2400);setTimeout(()=>d.remove(),2900)}catch{}}
 function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAgents=[],setData,openAgent,keepAgent878303=null,agentsLib878301=null}){
   const [form,setForm0]=useState(()=>({...obra,codiPostal:obra.codiPostal||""}));
   const [clientChoice,setClientChoice0]=useState(()=>obra.compartida?(clientIdObra878347(obra)||"__prom__"):(obra.client||client?.id||""));
@@ -10892,7 +10894,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
     {mobil878363?<div className="dades-acc-v878363">{tabsVisibles878304.map(([k,l])=><React.Fragment key={k}><button type="button" className={`acc-cap ${acc878363===k?"on":""} ${ple878304(k)?"ple":""}`} aria-expanded={acc878363===k} onClick={e=>{const el=e.currentTarget;if(acc878363===k)setAcc878363("");else{setAcc878363(k);triaSub878304(k);setTimeout(()=>{try{el.scrollIntoView({block:"start",behavior:"smooth"})}catch{}},60)}}}><span>{l}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></button>{acc878363===k&&cos878363}</React.Fragment>)}{simple878304&&!pur878441&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>:
     <div className="dades-tabs-v878304" role="tablist">{tabsVisibles878304.map(([k,l])=><button type="button" role="tab" key={k} aria-selected={sub878304===k} className={`${sub878304===k?"on":""} ${ple878304(k)?"ple":""}`} onClick={()=>triaSub878304(k)}>{l}</button>)}{simple878304&&!pur878441&&!totes878304&&tabsVisibles878304.length<TABS878304.length-(propia878363?1:0)&&<button type="button" className="mes-v878304" onClick={()=>setTotes878304(true)}>{t("+ Altres agents")}</button>}</div>}
     {mobil878363?null:cos878363}
-    <div className="dades-desar-v878304"><button className="primary" onClick={saveAll}>{i18nT("Guardar dades")}</button></div>
+    <div className="dades-desar-v878304"><button className="primary" onClick={e=>{const det=e.currentTarget.closest("details");saveAll();toast878557(i18nT("Dades guardades"));if(det)setTimeout(()=>{det.open=false;try{det.scrollIntoView({block:"nearest",behavior:"smooth"})}catch{}},350)}}>{i18nT("Guardar dades")}</button></div>
   </div><Recollir878432/></details>
   </div>
 }
@@ -21818,7 +21820,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.556",
+    app_version:"87.557",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

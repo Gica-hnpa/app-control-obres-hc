@@ -5813,4 +5813,5 @@ export default {
 "Lloguer de maquinària": "Alquiler de maquinaria",
 "Peatges i aparcament": "Peajes y aparcamiento",
 "Transport": "Transporte",
+"Dades guardades": "Datos guardados",
 };
