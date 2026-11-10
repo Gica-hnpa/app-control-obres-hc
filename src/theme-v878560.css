@@ -1,0 +1,6 @@
+/* V87.560 · la unitat al títol de la partida */
+html body .ut-v878560{display:inline-block;margin:0 6px;padding:1px 8px;border-radius:99px;background:#E0F2FE;color:#075985;font-style:normal;font-weight:800;font-size:.85em;vertical-align:1px}
+/* V87.560 · la multiplicació (quantitat × preu) separada del total: el total en una columna pròpia, amb una ratlla al davant */
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child>small.q-v878449{margin-right:18px}
+html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child>b.tot-v878560{display:inline-block;min-width:104px;text-align:right;padding-left:16px;border-left:1px solid var(--co-line,#D5DEE0);font-variant-numeric:tabular-nums}
+@media (max-width:1100px){html body .budget-card-v878248 .cartes-v878426 .budget-partida-mobile-summary-v87196>span:last-child>b.tot-v878560{min-width:0;padding-left:0;border-left:0}}

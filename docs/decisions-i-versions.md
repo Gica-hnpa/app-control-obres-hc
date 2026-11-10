@@ -3680,3 +3680,17 @@
   (`extra878559`: `directa878559`, `linies`, per cobrar): sense obra, a «Factures {any} · client» (tancada, `importat878358:"factura-directa"`). El PDF
   (`facturaDirectaHtml878559`, tipus `facturadirecta878559` a `htmlDoc878405`; `docDe878407` el tria) s'envia i s'imprimeix com les altres.
   `src/theme-v878559.css`. Prova: `v559test.mjs` (11). `facturacio337test` 32/32 («Exportar Excel» és dins de «Llistat» des de la V87.501).
+- **V87.560 · El descompost de la partida, com cal** (l'Héctor, 10/11/2026: «barreja… mà d'obra amb altres o maquinària, que serien el martell,
+  l'aspirador», «la unitat s'ha de veure bé abans de la descripció», «el descompost és el preu/ut de la partida; el total ja el poses després» i «separa
+  més la multiplicació del resultat total»). `partsPartida878361`: l'apartat «ALTRES RECURSOS» / «Otros» / mitjans auxiliars va a «Maquinària i
+  altres», i una màquina (`MAQ878560`: martell, aspirador, compressor, radial, formigonera, bastida…) també, encara que vagi per hores o sigui dins de
+  la mà d'obra (les seves hores ja no sumen a la mà d'obra). `TaulaDescompost878449`: només per unitat (fora «Quantitat total» i «Total») i acaba amb
+  «Preu per m2» (`ut`). La unitat en una pastilla entre el codi i la descripció (`.ut-v878560`) a la fila de la partida i al títol de la partida a
+  tota la pantalla; a la fila, el total en una columna pròpia amb una ratlla al davant (`.tot-v878560`). `src/theme-v878560.css`. Prova: `v560test`
+  17/17; adaptades `v449test`, `pressupost361test` i `preus378test` («Preu per …»).
+  **Facturació** (l'Héctor, 10/11/2026): la pestanya «Factures» de dalt sense número (barrejava anys) i la targeta «Factures (2)» amb l'import tot
+  sol a la dreta (constructora i tècnic; `facturacio337test` i `v518test` adaptades). **La sèrie segueix l'any**: la sèrie de l'empresa es quedava amb
+  l'últim prefix fet servir (a Socoterm, «F2025-» → proposava F2025-027); ara `prefixAny878560` posa a qualsevol 20XX del prefix l'any de la data
+  de la factura (`serieEmpresa878337(any)`, i `FerFactura878297` / `FacturaDirecta878559` el segueixen si es canvia la data). El comptador va per
+  prefix: cada any torna a començar (F2027-001). La sèrie per client de l'Héctor no canvia. Els pressupostos ja eren per any (2026_0001, 2027_0001).
+  Pendent: `pressupost361test` «Tornar-la a obrir» ja fallava a la V87.559 (la prova no torna a obrir la fitxa després de desar).
