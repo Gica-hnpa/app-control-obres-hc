@@ -5788,4 +5788,17 @@ export default {
 "Buscar el preu amb IA": "Buscar el precio con IA",
 "Aquesta partida ja té certificacions: el preu no es pot canviar.": "Esta partida ya tiene certificaciones: el precio no se puede cambiar.",
 
+"No s’hi ha trobat cap contacte (cal, com a mínim, el nom i un telèfon, un correu o el NIF).": "No se ha encontrado ningún contacto (hace falta, como mínimo, el nombre y un teléfono, un correo o el NIF).",
+"No s’ha pogut llegir l’arxiu.": "No se ha podido leer el archivo.",
+"Importar contactes": "Importar contactos",
+"S’ha afegit 1 contacte a Contactes.": "Se ha añadido 1 contacto a Contactos.",
+"S’han afegit {n} contactes a Contactes.": "Se han añadido {n} contactos a Contactos.",
+"Tria un Excel, un CSV o un PDF amb la llista de contactes. Abans d’afegir-los, els podràs revisar.": "Elige un Excel, un CSV o un PDF con la lista de contactos. Antes de añadirlos, podrás revisarlos.",
+"Triar l’arxiu": "Elegir el archivo",
+"{n} contactes trobats": "{n} contactos encontrados",
+"{n} ja hi són": "{n} ya están",
+"Grup dels contactes nous": "Grupo de los contactos nuevos",
+"Un altre arxiu": "Otro archivo",
+"Afegir 1 contacte": "Añadir 1 contacto",
+"Afegir {n} contactes": "Añadir {n} contactos",
 };

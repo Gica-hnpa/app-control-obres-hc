@@ -3644,3 +3644,10 @@
   (`body:has(.rajoles-v878551) details.pres-bloc-v878427:not([open])`) i cada rajola porta els seus avisos (`.av-rajola-v878552`). «Canviar el nom o el
   número» surt de la targeta i és a «Ajustos del pressupost» com a «Nom i número del pressupost» (`.nom-fila-v878552`, obre `NomNum878528`). `BancBloc878465`
   escolta `aco-banc-comu` (el banc comú arriba després d'obrir la pantalla). `src/theme-v878552.css`. `v551test` 11/11.
+- **V87.553 · Importar contactes d'un Excel, un CSV o un PDF** (el client de Socoterm, via l'Héctor, 9-10/11/2026: «importar excel o pdf de llistat de
+  contactes i que ho llegeixi per adjuntar-ho als contactes de l'app»). A Contactes, «Importar» (`.importa-ct-v878553`) obre `ImportaContactes878553`:
+  `llegeixContactes878553` llegeix l'Excel (la fila de títols, entre les 6 primeres, pels noms en català o castellà de `CAMPS_IMP878553`; sense títols, pel
+  contingut amb `filaContacte878553`), el CSV (separador «;», «,» o tabulador; UTF-8 o Windows-1252) i el PDF (línia per línia amb `liniesPdf` i
+  `liniaPdf878553`: només les línies amb correu, telèfon o NIF). La llista es revisa abans: els que ja hi són (NIF, correu o nom) o repetits a l'arxiu,
+  desmarcats amb «Ja hi és»; el grup dels nous (o el de la columna «Tipus»). S'afegeixen amb `clientNou878406` (`importat878553`). `src/theme-v878553.css`.
+  Prova: `v553test.mjs` (9: Excel amb títols, CSV amb «;», PDF, tornar a importar sense repetir, mòbil).

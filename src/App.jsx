@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.552";
+const APP_VERSION878264="87.553";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9515,7 +9515,83 @@ function clientNou878406(v={}){
   const id="client-"+safeSlug8768(v.nom,"contacte")+"-"+Date.now().toString(36);
   return {id,nom:v.nom,rao:netV878304(v.rao)||v.nom,tipus:v.tipus||"Altres",nif:netV878304(v.nif),email:netV878304(v.email),telefon:netV878304(v.telefon),mobil:netV878304(v.mobil),adreca:netV878304(v.carrer),codiPostal:netV878304(v.codiPostal),poblacio:netV878304(v.poblacio),provincia:netV878304(v.provincia)||provinciaForCp8773(v.codiPostal)||"",contactes:cont,contacte:cont[0]?.nom||"",contacteMobil:cont[0]?.mobil||"",observacions:netV878304(v.observacions),color:"blue",createdAt:ara,updatedAt:ara,collegiat:netV878304(v.collegiat),titulacio:netV878304(v.titulacio)};
 }
+// V87.553 · Importar contactes d'un Excel, un CSV o un PDF (el client de Socoterm, via l'Héctor, 9/11/2026: «importar un excel o pdf de contactes ja
+// existents… que ho llegeixi per adjuntar-ho als contactes de l'app»). Les columnes es reconeixen pel títol (català o castellà) o, sense títols, pel
+// contingut (correu, telèfon, NIF, CP); al PDF, línia per línia. Es revisen abans d'afegir-los: els que ja hi són (NIF, correu o nom) surten desmarcats.
+const CAMPS_IMP878553=[["persona",/^(persona de contact[eo]|persona contact[eo])/i],["nom",/^(nom|nombre|name|ra[oó]n? social|raó|empresa|client[e]?|prove[ïi]dor|proveedor|denominaci[oó])/i],["nif",/(^|\b)(nif|cif|dni|nie|vat)\b/i],["email",/(e-?mail|correu|correo)/i],["mobil",/(m[oò]bil|m[oó]vil|cel)/i],["telefon",/(tel[eèé]?f|phone|^tel\b|tlf)/i],["codiPostal",/(^c\.?p\.?$|codi postal|c[oó]digo postal|postal|zip)/i],["poblacio",/(poblaci[oó]|municipi|ciutat|ciudad|localitat|localidad|city)/i],["provincia",/prov[ií]ncia/i],["carrer",/(adre[çc]a|direcci[oó]n|domicili|address|carrer|calle)/i],["tipus",/^(tipus|tipo|grup|grupo|categor)/i],["persona",/^(contacte|contacto)$/i]];
+const RE_MAIL878553=/[^\s@,;<>()]+@[^\s@,;<>()]+\.[a-z]{2,}/i,RE_NIF878553=/\b([XYZ]?\d{7,8}[A-Z]|[A-HJNP-SUVW][-\s]?\d{7}[0-9A-J])\b/i,RE_TEL878553=/(?:\+?34[\s.-]?)?(?:[6789]\d{2}[\s.-]?\d{2,3}[\s.-]?\d{2,3}[\s.-]?\d{0,3})/g,RE_CP878553=/\b(0[1-9]|[1-4]\d|5[0-2])\d{3}\b/;
+function telsDe878553(x){return (String(x||"").match(RE_TEL878553)||[]).map(v=>v.trim()).filter(v=>v.replace(/\D/g,"").length>=9)}
+function filaContacte878553(cells){
+  const o={};const resta=[];
+  cells.map(c=>String(c??"").trim()).filter(Boolean).forEach(c=>{
+    const m=c.match(RE_MAIL878553);if(m&&!o.email){o.email=m[0];return}
+    if(RE_NIF878553.test(c)&&c.replace(/[\s.-]/g,"").length<=10&&!o.nif){o.nif=c.replace(/[\s.-]/g,"").toUpperCase();return}
+    const ts=telsDe878553(c);if(ts.length&&c.replace(/[\d\s.+()-]/g,"").length<=2){ts.forEach(tl=>{if(/^(\+?34)?[67]/.test(tl.replace(/\D/g,"").replace(/^34/,""))&&!o.mobil)o.mobil=tl;else if(!o.telefon)o.telefon=tl;else if(!o.mobil)o.mobil=tl});return}
+    if(/^\d{5}$/.test(c)&&!o.codiPostal){o.codiPostal=c;return}
+    resta.push(c)});
+  if(resta.length){o.nom=resta.reduce((a,b)=>b.length>a.length?b:a,"");const altres=resta.filter(x=>x!==o.nom);if(altres.length)o.carrer=altres.join(", ")}
+  return o;
+}
+function liniaPdf878553(txt){
+  const s=String(txt||"");const o={};
+  const m=s.match(RE_MAIL878553);if(m)o.email=m[0];
+  const n=s.match(RE_NIF878553);if(n)o.nif=n[0].replace(/[\s.-]/g,"").toUpperCase();
+  const ts=telsDe878553(s.replace(m?.[0]||"",""));ts.forEach(tl=>{if(/^[67]/.test(tl.replace(/\D/g,"").replace(/^34/,""))&&!o.mobil)o.mobil=tl;else if(!o.telefon)o.telefon=tl});
+  const cp=s.match(RE_CP878553);if(cp)o.codiPostal=cp[0];
+  if(!o.email&&!o.nif&&!o.telefon&&!o.mobil)return null;
+  let nom=s;[o.email,n?.[0],...ts,cp?.[0]].filter(Boolean).forEach(x=>{nom=nom.replace(x," ")});
+  const parts=nom.split(/\s{2,}|\t|;|\|/).map(x=>x.replace(/^[\s,.:·-]+|[\s,.:·-]+$/g,"")).filter(x=>x&&/[a-zà-ÿ]/i.test(x));
+  if(!parts.length)return null;o.nom=parts[0];if(parts.length>1)o.carrer=parts.slice(1).join(", ");
+  return o;
+}
+async function llegeixContactes878553(file){
+  const ext=String(file?.name||"").split(".").pop().toLowerCase();const buf=await file.arrayBuffer();
+  if(ext==="pdf"){const {linies}=await liniesPdf(pdfjsLib,buf,60);return linies.map(l=>liniaPdf878553(l.text)).filter(Boolean)}
+  // un CSV de l'Excel en castellà o català separa amb «;»
+  let wb;if(ext==="csv"){let tx=new TextDecoder("utf-8").decode(buf);if(tx.includes("\uFFFD"))tx=new TextDecoder("windows-1252").decode(buf);const l0=tx.split(/\r?\n/)[0]||"";const sep=(l0.split(";").length>l0.split(",").length)?";":(l0.includes("\t")?"\t":",");wb=XLSX.read(tx,{type:"string",FS:sep})}else wb=XLSX.read(buf,{type:"array"});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:""}).filter(r=>r.some(c=>String(c).trim()));
+  // la fila de títols: la primera (de les 6 primeres) amb 2 o més títols coneguts
+  let hi=-1,mapa=null;
+  for(let i=0;i<Math.min(6,rows.length);i++){const m={};rows[i].forEach((c,j)=>{const tx=String(c||"").trim();if(!tx||tx.length>40)return;const k=CAMPS_IMP878553.find(([,re])=>re.test(tx));if(k&&m[k[0]]===undefined)m[k[0]]=j});if(Object.keys(m).length>=2&&m.nom!==undefined){hi=i;mapa=m;break}}
+  if(!mapa)return rows.map(filaContacte878553).filter(o=>o.nom);
+  return rows.slice(hi+1).map(r=>{const o={};Object.entries(mapa).forEach(([k,j])=>{const v=String(r[j]??"").trim();if(v)o[k]=v});if(o.nif)o.nif=o.nif.replace(/[\s.-]/g,"").toUpperCase();return o}).filter(o=>o.nom);
+}
+const TIPUS_IMP878553=TIPUS_CLIENT878315.flatMap(([,l])=>l);
+function ImportaContactes878553({clients=[],files=[],onImporta,close}){
+  const [llista,setLlista]=useState(null);
+  const [err,setErr]=useState("");
+  const [llegint,setLlegint]=useState(false);
+  const [tipus,setTipus]=useState("Altres");
+  const [fet,setFet]=useState(0);
+  const nn=x=>String(x||"").replace(/[\s.-]/g,"").toUpperCase();
+  const jaHi=o=>{const nf=nn(o.nif),em=String(o.email||"").toLowerCase(),nm=normalizeSearch878191(o.nom);
+    return (clients||[]).some(c=>(nf&&nn(c.nif)===nf)||(em&&String(c.email||"").toLowerCase()===em)||(nm&&normalizeSearch878191(c.nom)===nm))||(files||[]).some(x=>{const a=agentDeContacte878406(x);return (nf&&nn(a.nif)===nf)||(em&&String(a.email||"").toLowerCase()===em)||(nm&&normalizeSearch878191(a.nom)===nm)})};
+  async function tria(file){if(!file)return;setErr("");setLlegint(true);setFet(0);
+    try{const ls=await llegeixContactes878553(file);const vistos=new Set();
+      const out=ls.map((o,i)=>{const k=nn(o.nif)||String(o.email||"").toLowerCase()||normalizeSearch878191(o.nom);const rep=vistos.has(k);vistos.add(k);const ja=jaHi(o);return {...o,i,ja:ja||rep,on:!(ja||rep)}});
+      if(!out.length)setErr(t("No s’hi ha trobat cap contacte (cal, com a mínim, el nom i un telèfon, un correu o el NIF)."));setLlista(out)}
+    catch(e){console.warn(e);setErr(t("No s’ha pogut llegir l’arxiu."))}
+    setLlegint(false)}
+  const marcats=(llista||[]).filter(x=>x.on);
+  function importa(){if(!marcats.length)return;const base=Date.now().toString(36);
+    const nous=marcats.map((o,i)=>{const tp=o.tipus&&TIPUS_IMP878553.find(x=>normalizeSearch878191(x)===normalizeSearch878191(o.tipus))||tipus;const c=clientNou878406({nom:o.nom,nif:o.nif,email:o.email,telefon:o.telefon,mobil:o.mobil,carrer:o.carrer,codiPostal:o.codiPostal,poblacio:o.poblacio,provincia:o.provincia,tipus:tp,contactes:o.persona?[{nom:o.persona,mobil:"",email:""}]:[]});return {...c,id:c.id+"-"+base+i,importat878553:true}});
+    onImporta?.(nous);setFet(nous.length);setLlista(null)}
+  return <Modal title={t("Importar contactes")} close={close}><div className="imp-contactes-v878553">
+    {fet>0&&<p className="ok" role="status"><Check size={16} aria-hidden="true"/> {fet===1?t("S’ha afegit 1 contacte a Contactes."):t("S’han afegit {n} contactes a Contactes.",{n:fet})}</p>}
+    {!llista&&<><p className="ajuda">{t("Tria un Excel, un CSV o un PDF amb la llista de contactes. Abans d’afegir-los, els podràs revisar.")}</p>
+      <label className="primary fitxer"><Upload size={16} aria-hidden="true"/> {llegint?t("Llegint…"):t("Triar l’arxiu")}<input type="file" accept=".xlsx,.xls,.csv,.pdf" hidden onChange={e=>{tria(e.target.files?.[0]);e.target.value=""}}/></label></>}
+    {err&&<p className="err">{err}</p>}
+    {llista&&llista.length>0&&<>
+      <p className="n"><b>{t("{n} contactes trobats",{n:llista.length})}</b>{llista.some(x=>x.ja)&&<span> · {t("{n} ja hi són",{n:llista.filter(x=>x.ja).length})}</span>}</p>
+      <label className="tipus"><span>{t("Grup dels contactes nous")}</span><select value={tipus} onChange={e=>setTipus(e.target.value)}>{TIPUS_IMP878553.map(x=><option key={x} value={x}>{i18nT(x)}</option>)}</select></label>
+      <div className="taula" role="list">{llista.map(o=><label key={o.i} className={"fila"+(o.ja?" ja":"")} role="listitem"><input type="checkbox" checked={o.on} onChange={e=>setLlista(l=>l.map(x=>x.i===o.i?{...x,on:e.target.checked}:x))}/><span className="nom"><b>{o.nom}</b>{o.ja&&<em>{t("Ja hi és")}</em>}<small>{[o.nif,o.mobil||o.telefon,o.email,[o.codiPostal,o.poblacio].filter(Boolean).join(" ")].filter(Boolean).join(" · ")}</small></span></label>)}</div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={()=>setLlista(null)}>{t("Un altre arxiu")}</button><button type="button" className="primary" disabled={!marcats.length} onClick={importa}>{marcats.length===1?t("Afegir 1 contacte"):t("Afegir {n} contactes",{n:marcats.length})}</button></div>
+    </>}
+  </div></Modal>;
+}
 function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openClient}){
+  const [imp553,setImp553]=useState(false);
   const [q,setQ]=useState("");
   const [obert,setObert]=useState("");
   const [edit,setEdit]=useState(null);
@@ -9582,7 +9658,7 @@ function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openC
   // V87.438 · com les pantalles de dins de l'obra (l'Héctor, 30/10/2026: «els contactes no són iguals que les de dins d'una obra»): a dalt el
   // títol i «Nou contacte», el cercador i cada grup una targeta principal plegada (icona, nom i quants n'hi ha); un d'obert alhora
   return <div className="contactes-v878315 contactes-v878438">
-    <div className="fe-head pant-cap-v878438"><h1>{t("Contactes")}</h1><button className="primary" onClick={nou}><Plus size={16} aria-hidden="true"/> {t("Nou contacte")}</button></div>
+    <div className="fe-head pant-cap-v878438"><h1>{t("Contactes")}</h1><span className="botons-v878553"><button type="button" className="secondary importa-ct-v878553" onClick={()=>setImp553(true)}><Upload size={16} aria-hidden="true"/> {t("Importar")}</button><button className="primary" onClick={nou}><Plus size={16} aria-hidden="true"/> {t("Nou contacte")}</button></span></div>
     <div className="contactes-cos-v878438">
       <div className="search-field cerca-v878315"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar per nom, persona de contacte, NIF o telèfon")} aria-label={t("Buscar")}/>{q&&<button type="button" className="link" onClick={()=>setQ("")}>{t("Netejar")}</button>}</div>
       {/* V87.499 · fora l’avís dels agents posats a les obres (l’Héctor, 4/11/2026: «en contactes no cal») */false&&neteja.obres>0&&neteja.vells&&<div className="agents-buidar-v878303"><span><b>{t("Agents posats a les obres")}</b>{t("{n} obres tenen agents posats ({m} en total).",{n:neteja.obres,m:neteja.agents})}</span><button type="button" className="secondary" onClick={buidar}>{t("Treure els agents de totes les obres")}</button></div>}
@@ -9593,7 +9669,7 @@ function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openC
         <Recollir878432/>
       </details>})}</div>}
     </div>
-    {edit&&<EditorContacte878315 inicial={edit.inicial} nou={!!edit.nou} esAgent={!edit.nou} onSave={desa} onDelete={edit.nou?null:elimina} close={()=>setEdit(null)}/>}
+    {imp553&&<ImportaContactes878553 clients={clients} files={files} onImporta={ns=>setClients?.(p=>[...(p||[]),...ns])} close={()=>setImp553(false)}/>}{edit&&<EditorContacte878315 inicial={edit.inicial} nou={!!edit.nou} esAgent={!edit.nou} onSave={desa} onDelete={edit.nou?null:elimina} close={()=>setEdit(null)}/>}
   </div>;
 }
 
@@ -21710,7 +21786,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.552",
+    app_version:"87.553",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -1,0 +1,18 @@
+/* V87.553 · Importar contactes */
+html body .botons-v878553{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+html body .imp-contactes-v878553{display:flex;flex-direction:column;gap:12px}
+html body .imp-contactes-v878553 .ajuda{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .imp-contactes-v878553 .fitxer{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;cursor:pointer;min-height:42px;padding:0 16px;border-radius:10px}
+html body .imp-contactes-v878553 .ok{display:flex;align-items:center;gap:6px;margin:0;padding:10px 12px;border-radius:10px;background:#DCFCE7;color:#166534;font-weight:700}
+html body .imp-contactes-v878553 .err{margin:0;color:#B91C1C;font-weight:600}
+html body .imp-contactes-v878553 .n{margin:0}
+html body .imp-contactes-v878553 .tipus{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+html body .imp-contactes-v878553 .tipus select{min-height:40px;width:auto}
+html body .imp-contactes-v878553 .taula{border:1px solid var(--co-line,#E2E8F0);border-radius:12px;max-height:min(50vh,420px);overflow:auto}
+html body .imp-contactes-v878553 .fila{display:flex!important;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid #EEF2F5;cursor:pointer}
+html body .imp-contactes-v878553 .fila:last-child{border-bottom:0}
+html body .imp-contactes-v878553 .fila input[type=checkbox]{flex:0 0 auto!important;width:18px!important;min-width:18px!important;height:18px!important;margin:2px 0 0!important}
+html body .imp-contactes-v878553 .fila .nom{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+html body .imp-contactes-v878553 .fila .nom small{color:var(--co-ink-3,#5F7075);font-size:12.5px;overflow-wrap:anywhere}
+html body .imp-contactes-v878553 .fila .nom em{align-self:flex-start;font-style:normal;font-size:11.5px;font-weight:800;padding:1px 8px;border-radius:99px;background:#F1F5F9;color:#475569}
+html body .imp-contactes-v878553 .fila.ja{opacity:.7}
