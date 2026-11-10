@@ -3699,3 +3699,17 @@
   (`.exp-year-v878270.any-v878561 h3`): franja amb el color de l'empresa (`--co-accent` a l'11 %), vora de 6 px a l'esquerra, ratlla de 2 px a dalt,
   l'any a 17 px i, amb més d'un any, el nombre d'obres al costat. `etNExp878327` diu «1 obra» / «1 expedient» (abans «1 obres»).
   `src/theme-v878561.css`. Prova: `v561test` 6/6; `expedientstest` 21/21.
+- **V87.562 · Pressupostos de la constructora al menú, i la Llibreria de preus fora del menú** (l'Héctor, 10/11/2026: «un llistat de pressupostos
+  general… perquè no sé si segueixes correctament l'ordre i la numeració… una pestanya al menú principal abans de Facturació, amb el llistat i l'estat
+  de cadascun (acceptat, no acceptat, en elaboració)» i «la pestanya de Llibreria de preus al menú principal, la veus lògica?… només ens interessa quan
+  estem creant un pressupost»; proposta acceptada: «Sí, fes-ho»). Pantalla «Pressupostos obra» (`PressupostosObra878562`; per als comptes d'empresa
+  amb el mòdul Obra; amb el mòdul Tècnic també, es diu «Pressupostos d’obra»): una fila per pressupost/fase de les obres pròpies (`filesPres878562`),
+  ordenada pel número (2026_0001_V01), amb l'obra, el client, l'import (partides sense les «fora de pressupost»), l'estat i «Obrir» (entra a l'obra amb el
+  pressupost obert: `window.__acoObrePres878562`). Estats (`estatPres878562`): En elaboració · Enviat · Acceptat · No acceptat; el del principal surt de
+  l'estat de l'obra (i de la signatura i l'enviament) i canviar-lo a la llista canvia l'obra (`OBRA_ESTAT878562`; una obra ja en marxa no torna a
+  «Acceptat»); el de les altres fases es desa a `data.estatsPres878562[bid]`. A dalt, els quatre estats amb l'import i quants (filtren); per any; els
+  números que falten de l'any («Números sense pressupost: …»). Menú: «Pressupostos» just abans de Facturació; rajola d'Inici `preso` (amb els enviats
+  esperant resposta). La Llibreria de preus surt del menú i de les rajoles: s'hi entra des del pressupost i des d'Ajustos › Preus i marges («Llibreria
+  de preus · Obrir», `.obre-llib-v878562`), i «‹ Ajustos» hi torna (`tornaA878562`). `src/theme-v878562.css`. Prova: `v562test` 18/18. Adaptades
+  (entren a la Llibreria per Ajustos, `llib562`): neteja353, pressupost368, pressupost372, preus378, simple354, v460, v465, v533, v537, v550, v554;
+  menús i rajoles: perfils326, pol403, v484, v508. `v536test` (Inici B) ja no correspon a l'Inici v2 de la V87.538: s'ha de jubilar o refer.
