@@ -11,3 +11,5 @@ html body .desp-ct-v878566 .tots-v878566 input{width:18px;height:18px;margin:0}
 }
 /* la finestra d'«Importar» i la de «Des de les despeses», amb marge (abans el text anava enganxat a la vora) */
 html body .modal>.imp-contactes-v878553{padding:14px 18px 18px;min-width:0}
+/* V87.568 · «Sumat des de gener» es llegeix també amb la subtargeta oberta (fons fosc) */
+html body .dge-mesos-v878564[open]>summary .t small{color:inherit;opacity:.82}

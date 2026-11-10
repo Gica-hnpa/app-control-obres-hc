@@ -3765,3 +3765,10 @@
   de 12, i són de més d'un mes: un apartat per mes («Setembre del 2026 · 12 dies · 192 h · 4.800 €»), el més nou obert i els altres plegats
   (`perMes567` a `llista878348`). Dins de l'obra, a Despeses i a «Per obra» / «Per any». Prova: `v567test` 5/5; `despeses348test` adaptada a «Per
   obra» / «Per any» de la V87.564 (22/22); despeses345 i 329 en verd.
+- **V87.568 · La mà d'obra sense preu agafa el cost per hora quan es posa** (l'Héctor, 10/11/2026, a Brava: «he entrat el cost/hora… i no
+  s'actualitza automàticament tots aquells partes antics que no tenien preu… hauria de ser automàtic»). Els partes i les hores del personal desen el
+  cost per hora del treballador d'aquell dia; si no en tenia, la despesa quedava a 0 € i «per revisar». `preuMaSensePreu878568`: les despeses de mà
+  d'obra (de partes o d'hores) sense preu agafen el cost del treballador (o el de l'obra, o el mitjà de la seva categoria si no hi ha treballador),
+  amb les hores extres, i deixen d'estar per revisar; les que ja tenien preu no canvien. En desar els treballadors (`desaTreballadors878339`) i en
+  obrir l'app (4 s després de carregar les dades). Rendiment › «DGE mes a mes»: «Sumat des de gener» es llegeix amb la subtargeta oberta. Prova:
+  `v568test` 5/5; personal340, partes359 i v555 en verd.

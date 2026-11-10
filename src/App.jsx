@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.567";
+const APP_VERSION878264="87.568";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5276,6 +5276,8 @@ useEffect(()=>{
   document.addEventListener("toggle",f,true);window.addEventListener("scroll",sc,{passive:true,capture:true});
   return()=>{document.removeEventListener("toggle",f,true);window.removeEventListener("scroll",sc,{capture:true})};
 },[]);
+// V87.568 · en obrir l'app, la mà d'obra sense preu agafa el cost per hora dels treballadors (si ja el tenen)
+useEffect(()=>{if(!authUser8779||dataLoadedUser8781!==authUser8779)return;const id=setTimeout(()=>{try{preuMaSensePreu878568()}catch(e){console.warn(e)}},4000);return()=>clearTimeout(id)},[authUser8779,dataLoadedUser8781]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_partides_library_v87196",JSON.stringify(stripHeavy878185(dedupePartidaLibrary87196(partidaLibrary))),dataOwnerUser878233)},[partidaLibrary,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{
   if(!authUser8779||dataLoadedUser8781!==authUser8779)return;
@@ -20384,7 +20386,7 @@ const DOCS_EMPRESA878339=["REA (Registre d’Empreses Acreditades)","Asseguranç
 const DOCS_TREBALLADOR878339=["Formació en prevenció (PRL)","Revisió mèdica (apte)","Lliurament dels EPI","Alta a la Seguretat Social"];
 const DOCS_INDUSTRIAL878339=["REA (Registre d’Empreses Acreditades)","Assegurança de responsabilitat civil","Certificat d’estar al corrent amb la Seguretat Social","Certificat d’estar al corrent amb Hisenda","Treballadors (TC2 / RNT)","Formació en prevenció dels treballadors"];
 function llegeixTreballadors878339(){const l=lsJson8779(TREB_KEY878339,[]);return Array.isArray(l)?l.filter(x=>x&&x.id):[]}
-function desaTreballadors878339(l){lsSet8779(TREB_KEY878339,JSON.stringify(l))}
+function desaTreballadors878339(l){lsSet8779(TREB_KEY878339,JSON.stringify(l));/* V87.568 · la mà d'obra que no tenia preu */try{preuMaSensePreu878568()}catch(e){console.warn(e)}}
 // cost per hora d'un treballador (de l'empresa); a l'obra es podrà canviar (V87.340)
 function costHora878339(t){return parseNum8770(t?.costHora)||0}
 const arxiuKey878339=id=>"aco_empresa_arxiu_v878339_"+id;
@@ -20778,6 +20780,19 @@ function recalculaCostHores878355(obraId,wid){
     const c=Math.round(costHoraA878340(obraId,w,null)*100)/100;const b=Math.round((parseNum8770(a.hores)||0)*c*100)/100;canvi=true;const {perRevisar:_pr,...r}=a;
     return {...r,preuHora:String(c).replace(".",","),base:String(b),total:String(b),...(c>0?{}:{perRevisar:true}),updatedAt:new Date().toISOString()}});
   if(canvi)writeAlbarans878259(l);
+}
+// V87.568 · la mà d'obra sense preu (partes i hores apuntats abans de posar el cost per hora del treballador) l'agafa sola quan es posa (l'Héctor,
+// 10/11/2026, a Brava: «he entrat el cost/hora… i no s'actualitza automàticament tots aquells partes antics que no tenien preu… hauria de ser
+// automàtic»). En desar els treballadors i en obrir l'app. Les que ja tenien preu no es toquen (era el cost d'aquell dia). Sense treballador triat,
+// el cost mitjà de la seva categoria.
+function preuMaSensePreu878568(){
+  if(esTreballador878326())return 0;
+  const l=readAlbarans878259();if(!l.length)return 0;const treb=llegeixTreballadors878339();if(!treb.some(w=>costHora878339(w)>0))return 0;let n=0;const ara=new Date().toISOString();
+  const nous=l.map(a=>{if(a.meva||tipusDespesa878311(a)!=="MaObra"||!(a.parteId878352||a.deHores878355))return a;if((parseNum8770(a.preuHora)||0)>0)return a;const hh=parseNum8770(a.hores)||0;if(!(hh>0))return a;
+    const w=a.treballadorId?treb.find(x=>x.id===a.treballadorId):null;const c=Math.round((costHoraA878340(a.obraId,w,null)||(!w?costCat878352(a.categoria||""):0))*100)/100;if(!(c>0))return a;
+    const hx=Math.min(hh,parseNum8770(a.horesExtres)||0),px=(parseNum8770(a.preuExtra)||0)>0?parseNum8770(a.preuExtra):c;const imp=Math.round(((hh-hx)*c+hx*px)*100)/100;n++;
+    const {perRevisar:_pr,...r}=a;return {...r,preuHora:String(c).replace(".",","),...(hx>0?{preuExtra:String(px).replace(".",",")}:{}),base:String(imp),total:String(imp),updatedAt:ara}});
+  if(n)writeAlbarans878259(nous);return n;
 }
 const fh878340=h=>`${(Math.round((+h||0)*100)/100).toLocaleString(loc878272(),{maximumFractionDigits:2})} h`;
 // Part d'hores (menú Hores de la constructora): un dia, cada treballador amb l'obra o les obres i les hores
@@ -22175,7 +22190,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.567",
+    app_version:"87.568",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
