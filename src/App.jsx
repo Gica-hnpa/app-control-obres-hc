@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.563";
+const APP_VERSION878264="87.564";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3552,6 +3552,7 @@ function useAvisos878520(){
 function obreAvis878520(a,st){
   if(a.k==="espai"){try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Configuració"}}))}catch{}return true}
   if(a.k==="pagar"||a.k==="pagar-set"||a.k==="caixa"){obreCaixa878521(a.vista);return true}
+  if(a.k==="dge"){window.__acoRendDGE878564=true;try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Rendiment empresa"}}))}catch{}return true}
   if(a.k==="fitx-no"){window.__acoCHVista878523="fitxatge";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Traça"}}))}catch{}return true}
   if(a.k==="copia"){ferCopia878520(st||window.__acoEstatCopia878520?.()||{},{demana:true}).then(r=>{if(r?.ok){window.__acoCopiaPendent878520=false;try{window.dispatchEvent(new Event("aco-copia-878520"))}catch{}}});return true}
   return false;
@@ -5226,6 +5227,7 @@ useEffect(()=>{
   const f=e=>{const d=e.target;if(!(d instanceof HTMLDetailsElement)||!d.open)return;const p=[...d.children].find(c=>c.tagName!=="SUMMARY");if(!p)return;const cs=getComputedStyle(p);if(cs.position!=="absolute"&&cs.position!=="fixed")return;
     const ajusta=()=>{try{if(!d.open)return;
       p.style.removeProperty("max-height");p.style.removeProperty("top");p.style.removeProperty("bottom");
+      if(d.__fix878564){p.style.removeProperty("position");p.style.removeProperty("overflow-y");d.__fix878564=0}
       // V87.435 · també pels costats (l'Héctor: «Afegir» del pressupost buit sortia tallat per l'esquerra)
       p.style.removeProperty("left");p.style.removeProperty("right");
       {let a=8,b=innerWidth-8,e=d.parentElement;while(e&&e!==document.documentElement){if(getComputedStyle(e).overflowX!=="visible"){const er=e.getBoundingClientRect();if(er.width>0){a=Math.max(a,er.left+2);b=Math.min(b,er.right-2)}}e=e.parentElement}
@@ -5234,6 +5236,25 @@ useEffect(()=>{
         if(rr.right>b+1){p.style.setProperty("left","auto","important");p.style.setProperty("right",Math.max(0,Math.round(c1-b))+"px","important")}}
       const lim=()=>{let l=innerHeight-8;const r=p.getBoundingClientRect();for(const o of document.querySelectorAll(OBST)){if(!o.getClientRects().length||d.contains(o))continue;const ro=o.getBoundingClientRect();if(ro.right>r.left&&ro.left<r.right&&ro.top>r.top)l=Math.min(l,ro.top-8)}return l};
       let r=p.getBoundingClientRect(),l=lim();if(r.bottom<=l)return;
+      // V87.564 · el menú s'obre sencer, sense llisca si no cal (l'Héctor, 10/11/2026: «quan desplegui els 3 punts, sobretot al PC però si es pot a
+      // tots els dispositius, s'ha d'obrir tot el desplegable… i no tirar d'scroll si no cal»; abans s'escurçava a l'espai de sota): a sota; si no
+      // hi cap, a sobre; si tampoc, es baixa la pàgina el just; i si la pantalla és massa baixa, el menú es queda fix a la pantalla i només llisca
+      // si no hi cap de cap manera. Els menús de baix del mòbil (fixos) segueixen com abans.
+      if(cs.position==="absolute"){
+        const sr=()=>d.querySelector(":scope>summary")?.getBoundingClientRect();
+        const minT=()=>{let m=8;const s=sr();for(const h of document.querySelectorAll(".app-head-v878268,.obra-tabs-bar-v878269")){if(!h.getClientRects().length)continue;const hb=h.getBoundingClientRect().bottom;if(!s||hb<s.top)m=Math.max(m,hb+8)}return m};
+        const nat=p.scrollHeight;let s=sr();if(!s)return;let mt=minT();
+        if(nat<=s.top-6-mt){p.style.setProperty("top","auto","important");p.style.setProperty("bottom","calc(100% + 6px)","important");return}
+        const cal=Math.ceil(r.top+nat-l),pot=Math.max(0,Math.floor(s.top-mt));
+        if(cal>0&&pot>0){window.scrollBy({top:Math.min(cal,pot),behavior:"instant"});r=p.getBoundingClientRect();l=lim();if(r.bottom<=l+1)return;s=sr();mt=minT()}
+        const alt=Math.max(120,Math.min(nat,l-mt)),T=Math.round(Math.max(mt,Math.min(s.bottom+6,l-alt)));
+        p.style.setProperty("position","fixed","important");p.style.setProperty("top",T+"px","important");p.style.setProperty("bottom","auto","important");p.style.setProperty("right","auto","important");
+        const w=p.getBoundingClientRect().width,L=Math.round(Math.max(8,Math.min(s.right-w,innerWidth-8-w)));p.style.setProperty("left",L+"px","important");
+        if(nat>alt+1){p.style.setProperty("max-height",alt+"px","important");p.style.setProperty("overflow-y","auto","important")}
+        // (si algun contenidor té «transform», el «fixed» és respecte d'ell: es corregeix el que s'ha mogut)
+        const q=p.getBoundingClientRect();if(Math.abs(q.top-T)>1)p.style.setProperty("top",Math.round(2*T-q.top)+"px","important");if(Math.abs(q.left-L)>1)p.style.setProperty("left",Math.round(2*L-q.left)+"px","important");
+        d.__fix878564=Date.now();return;
+      }
       let disp=l-r.top;
       // Poc espai: primer s'escurça el menú (així la pàgina no depèn del menú) i després es puja una mica la pàgina
       if(disp<240){
@@ -5250,7 +5271,10 @@ useEffect(()=>{
     }catch{}};
     // es mesura de seguida i un quart de segon després (el menú pot estar encara obrint-se)
     setTimeout(ajusta,30);setTimeout(ajusta,260)};
-  document.addEventListener("toggle",f,true);return()=>document.removeEventListener("toggle",f,true);
+  // V87.564 · un menú que ha quedat fix a la pantalla es tanca si es llisca la pàgina (si no, quedaria lluny del seu botó)
+  const sc=e=>{for(const d of document.querySelectorAll("details[open]")){if(!d.__fix878564||Date.now()-d.__fix878564<500)continue;if(e.target instanceof Node&&e.target!==document&&d.contains(e.target))continue;d.open=false}};
+  document.addEventListener("toggle",f,true);window.addEventListener("scroll",sc,{passive:true,capture:true});
+  return()=>{document.removeEventListener("toggle",f,true);window.removeEventListener("scroll",sc,{capture:true})};
 },[]);
 useEffect(()=>{if(authUser8779&&dataLoadedUser8781===authUser8779)lsSet8779("aco_partides_library_v87196",JSON.stringify(stripHeavy878185(dedupePartidaLibrary87196(partidaLibrary))),dataOwnerUser878233)},[partidaLibrary,authUser8779,dataLoadedUser8781,dataOwnerUser878233]);
 useEffect(()=>{
@@ -6216,6 +6240,8 @@ window.__acoEnviar878407=enviaDoc878407;
 window.__acoObreDoc878411=mk=>setDoc(typeof mk==="function"?mk(obra,client):mk);
 // V87.412 · les dades senceres d'una obra (el pressupost en veu només el seu: per a «Pressupost inicial», els dels altres pressupostos)
 window.__acoDadesObra878412=id=>viewOdata878233?.[id]||null;
+// V87.564 · totes les obres (la targeta DGE de dins d'una obra es compara amb les despeses reals de tota l'empresa)
+window.__acoTotes878564=()=>({obres:viewObres878233||[],odata:viewOdata878233||{}});
 // V87.408 · els PDF signats amb certificat són documents de l'obra (Documents), amb `linkedType:"signat878408"`
 window.__acoSignats878408=id=>((viewOdata878233?.[id]?.documents)||[]).filter(x=>x?.linkedType==="signat878408");
 window.__acoSetD878506=(id,up)=>{if(id&&typeof up==="function")setD(id,up)};
@@ -8903,7 +8929,7 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
   const rajoles0536=(()=>{try{return lsVisual878400()?.getItem("inici-rajoles-prova-v878536")==="1"}catch{return false}})();
   const tick=useAvisosTick878496();
   const av520=useAvisos878520();
-  const avisos=useMemo(()=>{const alb=readAlbarans878259();return ordenaAvisos878360(filtraAvisos878496([...av520,...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients),...avisosCaixa878521(obres,odata,clients),...avisosFitx878523()]))},[obres,odata,clients,tick,av520]);
+  const avisos=useMemo(()=>{const alb=readAlbarans878259();return ordenaAvisos878360(filtraAvisos878496([...av520,...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients),...avisosCaixa878521(obres,odata,clients),...avisosFitx878523(),...avisosDGE878564(obres,odata)]))},[obres,odata,clients,tick,av520]);
   const feines=(tasks||[]).slice().sort((a,b)=>(taskDueTime878140(a.task)||9e15)-(taskDueTime878140(b.task)||9e15));
   const nPend=avisos.length+feines.length;
   const oberts=(obres||[]).filter(o=>isExpedientOpen878136(o.estat)).length;
@@ -9289,7 +9315,7 @@ function AvisosInici878360({obres=[],odata={},clients=[],openObraTab}){
   const tick=useAvisosTick878496();
   const av520=useAvisos878520();
   const avisos=useMemo(()=>{const alb=readAlbarans878259();
-    return ordenaAvisos878360(filtraAvisos878496([...av520,...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients),...avisosCaixa878521(obres,odata,clients),...avisosFitx878523()]))},[obres,odata,clients,tick,av520]);
+    return ordenaAvisos878360(filtraAvisos878496([...av520,...(obres||[]).flatMap(o=>avisosObra878360(o,odata?.[o.id]||{},alb).map(a=>({...a,sub:[codiCurt878270(o),o.nom].filter(Boolean).join(" · ")}))),...avisosDocs878360(odata,clients),...avisosCaixa878521(obres,odata,clients),...avisosFitx878523(),...avisosDGE878564(obres,odata)]))},[obres,odata,clients,tick,av520]);
   return <AvisosLlista878360 avisos={avisos} onObre={a=>a.obraId?openObraTab?.(a.obraId,a.tab):obreAvis878520(a)||obreDoc878360(a)}/>;
 }
 function AvisosObra878360({obra,data={},setTab}){
@@ -11342,6 +11368,69 @@ function rendAny878343(x,y,finsMes=11){
 function mesos878343(x,y){
   return Array.from({length:12},(_,m)=>{const ing=(x.cert[y]||[])[m]||0,dir=((x.dir[y]||[])[m]||0)+((x.pers[y]||[])[m]||0),dge=ing*x.dge/100;return {ing,cost:dir+dge,ben:ing-dir-dge}});
 }
+// V87.564 · DGE previst i real (l'Héctor, 10/11/2026: «com podré veure que després realment em quadri la previsió del % de DGE previst d'una obra amb
+// el real?… si tinc dues obres en curs i en les dues li aplico el 10 %… i les despeses reals d'empresa entrades segons factures reals són menors, m'ha
+// d'avisar per poder-ho ajustar»). D'un any, sumat des de gener mes a mes: el DGE previst a les obres (el % de cada obra pels seus ingressos: el
+// certificat o, si s'ha facturat més, el facturat) i les despeses reals de l'empresa (Despeses › de l'empresa). % real = despeses de l'empresa ÷
+// ingressos de les obres. Avisa si el % de les obres s'aparta més de 2 punts del real, amb 3 mesos o més amb ingressos (al gener, un mes sol enganya).
+const DGE_MARGE878564=2,DGE_MESOS878564=3;
+function dgeCompara878564(D,y){
+  const avui=new Date(),fins=y===avui.getFullYear()?avui.getMonth():y>avui.getFullYear()?-1:11;
+  const per=D?.per||[],emp=D?.emp?.[y]||[];const mesos=[];let ambIng=0;
+  for(let m=0;m<=fins;m++){let ing=0,prev=0;per.forEach(x=>{const r=rendAny878343(x,y,m);ing+=r.ing;prev+=r.dge});
+    if(per.some(x=>((x.cert[y]||[])[m]||0)>0.005||((x.fact[y]||[])[m]||0)>0.005))ambIng++;
+    mesos.push({m,ing,prev,real:emp.slice(0,m+1).reduce((a,b)=>a+(+b||0),0)})}
+  const u=mesos[mesos.length-1]||{ing:0,prev:0,real:0};
+  const pctPrev=u.ing>0.005?u.prev/u.ing*100:null,pctReal=u.ing>0.005?u.real/u.ing*100:null;
+  const dif=pctPrev!=null&&pctReal!=null?pctPrev-pctReal:null;
+  const avisa=dif!=null&&ambIng>=DGE_MESOS878564&&u.real>0.005&&u.prev>0.005&&Math.abs(dif)>DGE_MARGE878564;
+  return {any:y,fins,mesos,ing:u.ing,prev:u.prev,real:u.real,pctPrev,pctReal,dif,ambIng,avisa};
+}
+// el d'aquest any per a l'avís de l'Inici i la targeta DGE de l'obra (totes les obres; es refà si canvien les dades o cada 5 s)
+let dgeCache878564={};
+try{["aco-albarans-changed","aco-personal-changed"].forEach(e=>window.addEventListener(e,()=>{dgeCache878564={}}))}catch{}
+function dgeEmpresaAra878564(obres,odata){
+  if(!ambEmpresa878338()||esTreballador878326())return null;
+  const g=obres&&odata?{obres,odata}:window.__acoTotes878564?.();if(!g)return null;
+  const ara=Date.now(),c=dgeCache878564;
+  if(c.v!==undefined&&c.o===g.obres&&c.d===g.odata&&ara-c.t<5000)return c.v;
+  let v=null;try{v=dgeCompara878564(dadesRendEmpresa878343(g.obres,g.odata),new Date().getFullYear())}catch{v=null}
+  dgeCache878564={o:g.obres,d:g.odata,t:ara,v};return v;
+}
+function avisosDGE878564(obres,odata){
+  const r=dgeEmpresaAra878564(obres,odata);if(!r?.avisa)return [];const alt=r.dif>0;
+  return [{k:"dge",vista:"dge",ref:r.any+":"+(alt?"alt":"curt"),tone:"warn",txt:alt?t("El % de DGE de les obres és alt"):t("El % de DGE de les obres és curt"),
+    sub:t("A les obres, {p}; real de l’empresa, {r}",{p:pct(r.pctPrev),r:pct(r.pctReal)})}];
+}
+function obreAjustosMarges878564(){window.__acoAjustosMarges878564=true;try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Configuració"}}))}catch{}}
+function DgePrevistReal878564({D,any}){
+  const r=useMemo(()=>dgeCompara878564(D,any),[D,any]);
+  const ref=useRef(null);const mobil=useMobil878363();
+  // des de l'avís de l'Inici: oberta i a la vista
+  useEffect(()=>{if(!window.__acoRendDGE878564)return;const id=setTimeout(()=>{window.__acoRendDGE878564=false;const d=ref.current?.querySelector("details");if(d&&!d.open)d.open=true;ref.current?.scrollIntoView({block:"start",behavior:"smooth"})},350);return()=>clearTimeout(id)},[]);
+  if(r.prev<0.005&&r.real<0.005)return null;
+  const pc=v=>v==null?"—":pct(v);
+  const dif=r.prev-r.real;
+  const compara=r.ambIng>=DGE_MESOS878564&&r.real>0.005;
+  const est=!compara?"info":r.avisa?"bad":"good";
+  const txt=r.real<0.005?t("Encara no hi ha despeses de l’empresa aquest any."):!compara?t("Amb menys de 3 mesos amb ingressos encara no es pot comparar."):
+    r.avisa?(r.dif>0?t("Les despeses de l’empresa són el {r} dels ingressos de les obres i a les obres hi poses el {p}: el % de DGE és alt.",{r:pc(r.pctReal),p:pc(r.pctPrev)})
+      :t("Les despeses de l’empresa són el {r} dels ingressos de les obres i a les obres hi poses el {p}: el % de DGE és curt.",{r:pc(r.pctReal),p:pc(r.pctPrev)}))
+    :t("El % de DGE de les obres ({p}) s’ajusta al real de l’empresa ({r}).",{p:pc(r.pctPrev),r:pc(r.pctReal)});
+  const nomMes=i=>new Date(any,i,1).toLocaleDateString(loc878272(),{month:"long"});
+  return <div ref={ref} className="dge-pr-v878564"><CardOPlega878369 icona={Landmark} obertPC={r.avisa} title={t("DGE: previst i real")} xifra={r.pctReal!=null?t("{p} real",{p:pct(r.pctReal)}):"—"} className={"dge-card-v878564 "+est}>
+    <div className="imps-v878426 dge-imps-v878564">
+      <div><small>{t("DGE previst a les obres")}</small><b>{money(r.prev)}</b><span>{t("{p} dels ingressos",{p:pc(r.pctPrev)})}</span></div>
+      <div><small>{t("Despeses reals de l’empresa")}</small><b>{money(r.real)}</b><span>{t("{p} dels ingressos",{p:pc(r.pctReal)})}</span></div>
+      <div className={"tot "+(dif>=0?"good":"bad")}><small>{t("Diferència")}</small><b>{dif>0?"+":""}{money(dif)}</b><span>{dif>=0?t("previst de més"):t("sense cobrir")}</span></div>
+    </div>
+    <p className={"dge-est-v878564 "+est}>{txt}</p>
+    {r.avisa&&<div className="dge-acc-v878564"><button type="button" className="secondary" onClick={obreAjustosMarges878564}><SlidersHorizontal size={15} aria-hidden="true"/> {t("Canviar el % de DGE")}</button></div>}
+    {r.mesos.length>0&&<details className="sub-v878426 dge-mesos-v878564" open={!mobil||undefined}><summary><CalendarDays size={16} aria-hidden="true"/><span className="t"><b>{t("DGE mes a mes")}</b><small>{t("Sumat des de gener")}</small></span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary>
+      <div className="rf-taula-wrap-v878342"><table className="rf-taula-v878342 dge-taula-v878564"><thead><tr><th>{t("Fins a")}</th><th>{t("Ingressos")}</th><th>{t("DGE previst")}</th><th>{t("Despeses reals")}</th><th>{t("Diferència")}</th><th>{t("% real")}</th></tr></thead>
+      <tbody>{r.mesos.map(m=>{const d=m.prev-m.real;return <tr key={m.m}><td><b>{nomMes(m.m)}</b></td><td data-l={t("Ingressos")}>{money(m.ing)}</td><td data-l={t("DGE previst")}>{money(m.prev)}</td><td data-l={t("Despeses reals")}>{money(m.real)}</td><td data-l={t("Diferència")}><b className={d>=0?"good":"bad"}>{d>0?"+":""}{money(d)}</b></td><td data-l={t("% real")}>{m.ing>0.005?pct(m.real/m.ing*100):"—"}</td></tr>})}</tbody></table></div></details>}
+  </CardOPlega878369></div>;
+}
 // Gràfica de línies (un sol eix en €): creu i requadre en passar-hi per sobre, etiquetes al final de cada línia (fins a 4) i llegenda
 function LiniesChart878343({labels=[],series=[],titol="",tipLabel}){
   const ref=useRef(null),wrap=useRef(null);
@@ -11542,7 +11631,8 @@ function RendimentEmpresa878343({obres=[],odata={},openObraTab}){
       <div className={tot.ben>=0?"good":"bad"}><small>{t("Benefici de les obres")}</small><b>{money(tot.ben)}</b><span>{t("{p} · després de DGE ({d})",{p:pc(tot.ben,tot.ing),d:money(tot.dge)})}</span></div>
       {totes&&<div className={`res ${resultat>=0?"good":"bad"}`}><small>{t("Resultat de l’empresa")}</small><b>{money(resultat)}</b><span>{t("Marge − despeses reals de l’empresa ({x})",{x:money(empAny)})}</span></div>}
     </div>
-    {totes&&(empAny>0.005||tot.dge>0.005)&&<p className={`rc-dge-v878343 ${empAny>tot.dge+0.005?"bad":"good"}`}>{empAny>tot.dge+0.005?t("Les despeses reals de l’empresa ({r}) passen del DGE previst a les obres ({p}): el % de DGE és curt.",{r:money(empAny),p:money(tot.dge)}):t("El DGE previst a les obres ({p}) cobreix les despeses reals de l’empresa ({r}).",{r:money(empAny),p:money(tot.dge)})}</p>}
+    {/* V87.564 · en lloc de la frase d'abans, la targeta «DGE: previst i real» (sumat des de gener, mes a mes, i avís) */}
+    {totes&&<DgePrevistReal878564 D={D} any={any}/>}
     <CardOPlega878369 title={vista==="mesos"?t("Mes a mes · {any}",{any}):vista==="anys"?t("{nom} · comparació entre anys",{nom:mesuraNom}):t("{nom} · comparació entre obres · {any}",{nom:mesuraNom,any})} icona={TrendingUp} obertPC xifra={money(tot.ing)} className="rc-card-v878343" action={<div className="rc-vistes-v878343">
       <div className="seg" role="group" aria-label={t("Comparar")}>{[["mesos",t("Mes a mes")],["anys",t("Entre anys")],["obres",t("Entre obres")]].map(([k,l])=><button type="button" key={k} aria-pressed={vista===k} onClick={()=>setVista(k)}>{l}</button>)}</div>
       {vista!=="mesos"?<div className="seg" role="group" aria-label={t("Què")}>{MES.map(([k,l])=><button type="button" key={k} aria-pressed={mesura===k} onClick={()=>setMesura(k)}>{l}</button>)}</div>
@@ -15849,6 +15939,9 @@ function obreAjustosObra878511(){try{window.dispatchEvent(new Event("aco-ajustos
 function MargesAjustos878378(){
   const[v,setV]=useState(()=>lsJson8779(MARGES_KEY878378,{})||{});
   const set=x=>setV(o=>{const n={...o,...x};lsSet8779(MARGES_KEY878378,JSON.stringify(n));return n});
+  // V87.564 · des de «Canviar el % de DGE» (Rendiment): «Preus i marges» obert, a la vista i amb el % de DGE triat
+  useEffect(()=>{if(!window.__acoAjustosMarges878564)return;const id=setTimeout(()=>{window.__acoAjustosMarges878564=false;const d=document.querySelector('details.ajustos-bloc-v878366[data-k="marges"]');if(!d)return;d.open=true;
+    const i=[...d.querySelectorAll("label")].find(l=>l.querySelector("span")?.textContent.trim()==="DGE")?.querySelector("input");(i||d).scrollIntoView({block:"center"});try{i?.focus({preventScroll:true});i?.select?.()}catch{}},300);return()=>clearTimeout(id)},[]);
   // el compte de l'Héctor no té «Preus» al menú: el banc de preus és aquí
   return <>{!!PERFIL878304&&teModul878326("obra")&&!esTreballador878326()&&<div className="llib-ajustos-v878562"><span><BookOpen size={18} aria-hidden="true"/><b>{t("Llibreria de preus")}</b></span><button type="button" className="secondary obre-llib-v878562" onClick={()=>{window.__acoLlibDe878562="Configuració";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Llibreria"}}))}catch{}}}>{t("Obrir")} <ChevronRight size={16} aria-hidden="true"/></button></div>}{!PERFIL878304&&<div className="banc-ajustos-v878460"><BancPreus878368/></div>}{!esTreballador878326()&&<div className="meva-ajustos-v878537"><MevaBaseBloc878537/></div>}<MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/></>;
 }
@@ -22006,7 +22099,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.563",
+    app_version:"87.564",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -25830,10 +25923,23 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
           {rs.length?nivell(g,rs):<div className="buit-v878426">{i18nT("Encara no n’hi ha.")}</div>}
         </div><Recollir878432/></details>})}
         {r&&<details className="card bloc-v878426 desp-bloc-v878426 dge-v878426"><summary><Landmark size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Despeses generals (DGE)")}</b></span><span className="xifra">{money(r.dge)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
-          <div className="imps-v878426"><div><small>{i18nT("Ingressos de l’obra")}</small><b>{money(r.ingressos)}</b></div><div><small>{i18nT("DGE")}</small><b>{String(Math.round((r.dgePct||0)*100)/100).replace(".",",")} %</b></div><div className="tot"><small>{i18nT("Cost")}</small><b>{money(r.dge)}</b></div></div>
+          <div className="imps-v878426"><div><small>{i18nT("Ingressos de l’obra")}</small><b>{money(r.ingressos)}</b></div><div><small>{i18nT("DGE")}</small><b>{String(Math.round((r.dgePct||0)*100)/100).replace(".",",")} %</b></div>{(()=>{/* V87.564 · el % real de l'empresa aquest any (despeses de l'empresa ÷ ingressos de les obres) */const e=dgeEmpresaAra878564();if(!e||e.pctReal==null||e.real<0.005)return null;
+            return <div className={"emp-v878564"+(e.avisa?" avis":"")}><small>{i18nT("Real de l’empresa ({any})",{any:e.any})}</small><b>{String(Math.round(e.pctReal*100)/100).replace(".",",")} %</b></div>})()}<div className="tot"><small>{i18nT("Cost")}</small><b>{money(r.dge)}</b></div></div>
           <div className="aj-v878511"><button type="button" className="secondary" onClick={obreAjustosObra878511}><SlidersHorizontal size={15} aria-hidden="true"/> {i18nT("Ajustos de l’obra")}</button></div>
         </div><Recollir878432/></details>}
       </div>}
+    // V87.564 · «Per obra» i «Per any» (l'Héctor, 10/11/2026: «aquests filtres no funcionen a despeses d'una empresa»: agrupaven dins de cada
+    // grup plegat i no es veia cap canvi): a dalt, una targeta per obra (o per any) amb quantes despeses i el total; a dins, els grups
+    // (Materials, Industrials, Mà d'obra…) oberts. Per any: l'any i, a dins, cada obra.
+    if(!fixedObra&&(vistaD878348==="obra"||vistaD878348==="any")){
+      const cerc=!!cerca878348.trim();
+      const grupsDe=(rs,clau)=>GRUPS_DESP878344.filter(g=>rs.some(a=>grupDespesa878344(a)===g.k)).map(g=>{const r2=rs.filter(a=>grupDespesa878344(a)===g.k);return paquet(clau+"|g:"+g.k,<b>{i18nT(g.label)}</b>,r2,()=>cos(g,r2,clau+"|g:"+g.k),true)});
+      const carta=(k,cap,rs,cosF,Ic)=>{const ob=grupsOberts878350.has(k)||cerc;return <details key={k} className={`card bloc-v878426 grup-v878348 per-v878564${ob?" obert":""}`} open={ob} onToggle={e=>{const o=e.currentTarget.open;if(o!==grupsOberts878350.has(k))setGrupsOberts878350(x=>{const n=new Set(x);if(o)n.add(k);else n.delete(k);return n})}}>
+        <summary className="grup-cap-v878350" aria-expanded={ob}><Ic size={18} aria-hidden="true"/><span className="t">{cap}</span><span className="n-v878564">{nD(nOk(rs))}</span><span className="xifra">{money(sumB(rs))}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>
+        <div className="cos">{ob&&cosF()}</div><Recollir878432/></details>};
+      if(vistaD878348==="obra")return <div className="desp-llista-v878348 desp-cartes-v878438 per-obra-v878564">{perObra(rows).map(o=>carta("po:"+o.k,nomObra(o),o.rows,()=>grupsDe(o.rows,"po:"+o.k),o.obra?HardHat:Building2))}</div>;
+      return <div className="desp-llista-v878348 desp-cartes-v878438 per-any-v878564">{perAny(rows).map(y=>carta("pa:"+y.y,<b>{y.y}</b>,y.rows,()=>perObra(y.rows).map(o=>paquet("pa:"+y.y+"|o:"+o.k,nomObra(o),o.rows,()=>grupsDe(o.rows,"pa:"+y.y+"|o:"+o.k))),CalendarDays))}</div>;
+    }
     // V87.438 · cada grup, una targeta principal com les de dins de l'obra (icona, nom, import i la fletxa)
     return <div className="desp-llista-v878348 desp-cartes-v878438">{grups.map(g=>{const rs=rows.filter(a=>grupDespesa878344(a)===g.k),ob=obG(g);return <details key={g.k} className={`card bloc-v878426 grup-v878348 g-${g.c}${ob?" obert":""}`} open={ob} onToggle={e=>togGrup438(g,e.currentTarget.open,ob)}>
       <summary className="grup-cap-v878350" aria-expanded={ob}>{ICONA_GRUP878400[g.k]||<Receipt/>}<span className="t"><b>{i18nT(g.label)}</b></span><span className="xifra">{money(sumB(rs))}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>

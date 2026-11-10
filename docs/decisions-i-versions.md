@@ -3721,3 +3721,26 @@
   compartida per editar; `enviatPressupost878402`), i una fase «Enviat» o «En elaboració» que ja té certificacions surt «Acceptat». La data «Enviat el
   / Signat el» de la llista ja no surt amb l'hora (`diaLocal878437`). Prova: `v563test` 13/13 (el núvol de proves amb tres obres de l'Héctor: dues
   per editar i una per consultar); `v562test` 18/18.
+- **V87.564 · DGE: previst i real, amb avís; i el número de factura a Despeses en una línia** (l'Héctor, 10/11/2026: «com podré veure que després
+  realment em quadri la previsió del % de DGE previst d'una obra amb el real?… si tinc dues obres en curs i en les dues li aplico el 10 %… i les despeses
+  reals d'empresa entrades segons factures reals són menors, m'ha d'avisar per poder-ho ajustar»; proposta acceptada: «Sí, fes-la»). Dues obres al
+  10 % no fan un 20 %: cada obra porta el 10 % dels seus ingressos (el certificat o, si s'ha facturat més, el facturat). `dgeCompara878564(D,any)`
+  (amb `dadesRendEmpresa878343`): sumat des de gener mes a mes, el DGE previst a les obres (Σ % de cada obra × ingressos) i les despeses reals de
+  l'empresa (despeses de tipus «Empresa»); % real = despeses de l'empresa ÷ ingressos de les obres. Avisa (`avisa`) si el % de les obres (mitjana)
+  s'aparta més de 2 punts del real (`DGE_MARGE878564`), amb 3 mesos o més amb ingressos (`DGE_MESOS878564`) i alguna despesa de l'empresa.
+  Rendiment de l'empresa: la frase d'abans (`.rc-dge-v878343`) passa a la targeta «DGE: previst i real» (`DgePrevistReal878564`; caselles DGE previst ·
+  despeses reals · diferència, la frase d'estat, «Canviar el % de DGE» si avisa → Ajustos › Preus i marges obert amb el camp DGE triat,
+  `__acoAjustosMarges878564`, i «DGE mes a mes», plegada al mòbil). Inici › Pendent: l'avís «El % de DGE de les obres és alt/curt» (`avisosDGE878564`,
+  k "dge"; tocar-lo porta a la targeta, `__acoRendDGE878564`). Targeta DGE de dins de l'obra: la casella «Real de l’empresa (any)» (taronja si avisa;
+  `dgeEmpresaAra878564`, totes les obres per `window.__acoTotes878564`, memòria de 5 s). Les obres en curs no canvien soles: el % es canvia a mà
+  (Ajustos de l'obra o Ajustos › Preus i marges). Despeses (taula de factures, ordinador): el número en una línia (mínim 140 px i part de l'espai que
+  sobra) i el proveïdor més estret (l'Héctor: «es veu el número en dues línies i no queda bé»). `src/theme-v878564.css`. Prova: `v564test` 18/18
+  (obra de prova amb certificacions al gener, març i maig, 10 % de DGE i despeses de l'empresa del 3 %, 15 % i 9 %); `rendiment343test` adaptada.
+  També a la V87.564: **Despeses › «Per obra» / «Per any»** (l'Héctor: «aquests filtres no funcionen a despeses d'una empresa»: agrupaven dins de
+  cada grup plegat i no es veia cap canvi): ara, a dalt, una targeta per obra (o per any) amb quantes despeses i el total, i a dins els grups oberts
+  (`per-v878564`). **Menús desplegables sencers** (l'Héctor: «quan desplegui els 3 punts… s'ha d'obrir tot el desplegable… i no tirar d'scroll si
+  no cal»): l'ajust general dels menús (V87.303/364) ja no els escurça a l'espai de sota: a sota; si no hi caben, a sobre; si tampoc, es baixa la
+  pàgina el just; i si no, el menú queda fix a la pantalla (es tanca si es llisca la pàgina). Fora el límit de 520 px / 70 % (`styles.css`): ara
+  `calc(100dvh - 16px)`. Provat amb el menú d'una certificació a 1440×900, 1440×700, 1024×768, 390×844 i 375×667: sencer, sense llisca.
+  Proves que ja fallaven a la V87.563 (no són d'aquesta versió): rendiment376 (ordre del menú), v455, albarans, despesestest, v438 (1 i 11),
+  v461 (12-14), menustest (Opcions del pressupost), v435 (3).

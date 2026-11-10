@@ -1,0 +1,41 @@
+/* V87.564 · DGE previst i real: la targeta de Rendiment (caselles, frase, «Canviar el % de DGE», mes a mes) i la casella de la targeta DGE de l'obra */
+html body .dge-pr-v878564{scroll-margin-top:90px}
+html body .dge-imps-v878564>div span{font-size:12.5px;color:var(--co-ink-3,#5F7075);font-variant-numeric:tabular-nums}
+html body .dge-imps-v878564>div.tot.good{background:#F0FDF8;border-color:#A7F3D0}
+html body .dge-imps-v878564>div.tot.bad{background:#FFFBEB;border-color:#FCD34D}
+html body .dge-est-v878564{margin:10px 0 0;padding:9px 14px;border-radius:12px;font-size:13.5px;line-height:1.45}
+html body .dge-est-v878564.good{background:#F0FDF8;color:#065F46;border:1px solid #A7F3D0}
+html body .dge-est-v878564.bad{background:#FFFBEB;color:#92400E;border:1px solid #FCD34D}
+html body .dge-est-v878564.info{background:var(--co-bg,#F4F7F8);color:var(--co-ink-2,#334155);border:1px solid var(--co-line,#E2E8F0)}
+html body .dge-acc-v878564{display:flex;justify-content:flex-end;margin-top:8px}
+html body .dge-acc-v878564 button{display:inline-flex;align-items:center;gap:6px}
+html body .dge-taula-v878564{margin-top:6px}
+html body .bloc-v878426 .dge-mesos-v878564{margin-top:12px!important}
+html body .dge-mesos-v878564>summary .t{display:flex;flex-direction:column;gap:1px;min-width:0}
+html body .dge-mesos-v878564>summary .t small{font-size:12px;font-weight:500;color:var(--co-ink-3,#5F7075)}
+html body .dge-mesos-v878564 .rf-taula-wrap-v878342{padding:0 10px 10px}
+@media (max-width:820px){html body .dge-imps-v878564>div.tot{grid-column:1/-1}}
+html body .dge-taula-v878564 td:first-child b{text-transform:capitalize}
+html body .dge-taula-v878564 b.good{color:#047857}
+html body .dge-taula-v878564 b.bad{color:#B45309}
+html body .dge-card-v878564.bad>summary .xifra{color:#B45309}
+/* a la targeta DGE de l'obra: el % real de l'empresa (taronja si s'aparta del de les obres) */
+html body .imps-v878426>div.emp-v878564.avis{background:#FFFBEB;border-color:#FCD34D}
+html body .imps-v878426>div.emp-v878564.avis b{color:#92400E}
+/* V87.564 · Despeses (taula de factures, ordinador): el número de la factura en una sola línia i més ample; el proveïdor, més estret (l'Héctor,
+   10/11/2026: «es veu el número en dues línies i no queda bé»). L'espai que sobra es reparteix entre el número, el proveïdor i els imports. */
+@media (min-width:761px){
+  html body .cap-v878348,html body .fila-v878348>.l{grid-template-columns:28px minmax(140px,.5fr) 90px 90px minmax(0,1.6fr) minmax(104px,.35fr) minmax(92px,.3fr) minmax(110px,.35fr) 36px}
+  html body .fila-v878348>.l>.num{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+}
+@media (min-width:761px) and (max-width:1023px){
+  html body .cap-v878348,html body .fila-v878348>.l{grid-template-columns:28px minmax(140px,.5fr) 84px 84px minmax(0,1.6fr) minmax(96px,.35fr) minmax(80px,.3fr) minmax(100px,.35fr) 32px}
+}
+/* V87.564 · Despeses «Per obra» / «Per any»: una targeta per obra o per any (el nom i, a sota, el codi i el client; quantes despeses; el total) */
+html body .per-v878564>summary .t{display:flex;flex-direction:column;gap:1px;min-width:0}
+html body .per-v878564>summary .t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .per-v878564>summary .t small{font-size:12px;font-weight:500;color:var(--co-ink-3,#5F7075);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .per-v878564>summary .n-v878564{flex:0 0 auto;font-size:12.5px;font-weight:600;color:var(--co-ink-3,#5F7075);white-space:nowrap}
+@media (max-width:760px){html body .per-v878564>summary .n-v878564{display:none}}
+/* V87.564 · els menús (Accions, ⋯) es veuen sencers si hi caben (abans, com a molt 520 px o el 70 % de la pantalla, i llisca) */
+html body .action-menu-panel-v87213{max-height:calc(100dvh - 16px)!important}
