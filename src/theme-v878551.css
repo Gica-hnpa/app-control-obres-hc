@@ -1,0 +1,11 @@
+/* V87.551 · les fases del pressupost, en rajoles a l'ordinador (tocar-ne una obre el seu pressupost a pantalla sencera) */
+@media (min-width:1281px){
+  html body .fases-v878342.rajoles-v878551{align-items:flex-start}
+  html body .fases-v878342.rajoles-v878551 .llista{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;overflow:visible!important;flex:1;min-width:0}
+  html body .fases-v878342.rajoles-v878551 .llista>button{display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"n t" "n s";align-items:center;column-gap:10px;row-gap:2px;min-height:64px;padding:12px 14px!important;border:1px solid var(--co-line,#E2E8F0)!important;border-radius:14px!important;background:var(--co-surface,#fff)!important;box-shadow:0 1px 3px rgba(15,23,42,.06);text-align:left;max-width:none!important;cursor:pointer}
+  html body .fases-v878342.rajoles-v878551 .llista>button:hover{border-color:var(--co-accent,#2563EB)!important;box-shadow:0 4px 14px rgba(15,23,42,.10)}
+  html body .fases-v878342.rajoles-v878551 .llista>button.on{border-color:var(--co-accent,#2563EB)!important;box-shadow:inset 0 0 0 1px var(--co-accent,#2563EB)}
+  html body .fases-v878342.rajoles-v878551 .llista>button em{grid-area:n}
+  html body .fases-v878342.rajoles-v878551 .llista>button b{grid-area:t;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:14.5px;line-height:1.25}
+  html body .fases-v878342.rajoles-v878551 .llista>button span{grid-area:s;white-space:normal!important;font-size:12.5px}
+}

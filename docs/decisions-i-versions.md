@@ -3629,3 +3629,12 @@
   tapar fletxes; la fitxa de la partida (`.fitxa-partida-v878361.fitxa-v878449`) en un requadre amb vora, radi i ombra. `FitxaPartida878361` accepta
   `onPreuIA`: «Buscar el preu amb IA» (al costat de «Fer el descompost») obre `BuscarPreus878480` amb aquella sola partida (base pròpia, banc i IA amb
   el descompost BC3; si la partida té certificacions, avisa). Prova: `v550test.mjs` (8).
+- **V87.551 · Fora el resum de la V87.549; les fases en rajoles; el banc comú arriba a Socoterm** (l'Héctor, 10/11/2026: «no m'agrada gens aquesta pàgina
+  i fins i tot jo mateix em vaig liar ahir amb un client… el gràfic no m'agrada gens… les opcions de les fases a dalt podrien ser rajoles… on apreto a una
+  de les fases… s'obren totes les opcions… hem de simplificar processos… hi ha obrir el pressupost i a sota torno a tenir obrir el pressupost»; «surt
+  Ninguno» a la Biblioteca de Socoterm). Ja no es mostra `ResumPres878549` (el codi es queda). `FasesObra878342` amb `obre` (a la pestanya Pressupost):
+  a l'ordinador, rajoles (`.rajoles-v878551`, el nom sencer, l'import i el %) i tocar-ne una obre el seu pressupost a pantalla sencera (esdeveniment
+  `aco-obre-pres878551`), amb totes les opcions a dins. `syncBancComu878460`: el compte de l'Héctor (no `@usuaris.controlobres.app`) posa al dia sol
+  `comptes` amb la prova pilot en obrir l'app (abans només obrint la targeta del banc). `src/theme-v878551.css`. Prova: `v551test.mjs` (9; substitueix
+  v549test). **Pendent (dit el 10/11):** el mateix a Certificacions, Factures i Despeses («si vull veure o fer alguna acció he de poder clicar i entrar a
+  dins»); al parte del dia, altres despeses (combustible…); fases en rajoles també al mòbil.

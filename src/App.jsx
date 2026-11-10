@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.550";
+const APP_VERSION878264="87.551";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11555,7 +11555,7 @@ function rendimentFase878342(d={},fase="",despeses=[],personal=[],obraId="",opts
     pct:ingressos>0.005?benefici/ingressos*100:null,margePct:ingressos>0.005?marge/ingressos*100:null,senseFase,cfg};
 }
 // Barra de fases (a dalt de l'Econòmic)
-function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova,onRenom,onElimina,onAlt,onArxiva,onRecupera,readOnly=false}){
+function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova,onRenom,onElimina,onAlt,onArxiva,onRecupera,readOnly=false,obre=false}){
   const gs=fasesObra878342(data);
   const act=ensureBudgetGroups8786(data).active;
   const pfs=proformesObra878337(data);
@@ -11565,10 +11565,10 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
   const actAlt=alt437.has(act);
   const llista451=useRef(null);
   useEffect(()=>{const c=llista451.current,o=c?.querySelector("button.on");if(c&&o&&c.scrollWidth>c.clientWidth)c.scrollLeft=Math.max(0,o.offsetLeft-c.offsetLeft-8)},[act,tota]);
-  return <div className="fases-v878342" role="group" aria-label={t("Fases de l’obra")}>
+  return <div className={"fases-v878342"+(obre?" rajoles-v878551":"")} role="group" aria-label={t("Fases de l’obra")}>
     <span className="tit">{t("Fases")}</span>
     <div className="llista" ref={llista451}>
-      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id)}}>
+      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id);if(obre){try{if(window.matchMedia?.("(min-width:1281px)").matches)setTimeout(()=>window.dispatchEvent(new Event("aco-obre-pres878551")),80)}catch{}}}}>
         <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
     </div>
@@ -12418,7 +12418,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {activeTab==="Tasques"&&<TasquesTab8769 data={data} setData={setData}/>} 
     {activeTab==="Honoraris"&&<HonorarisExpedient8778 data={data} obra={obra} quota={parseNum8770(client?.quotaFixa)||0} acord={acordClient878434(client)} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} addFactura={addFacturaTecnica} updateFactura={updateFacturaTecnica} deleteFactura={deleteFacturaTecnica} openEmail={openEmail} openDoc={openDoc} inici={tab==="Gestió temps"?"Hores":tab==="Rendiment"?"Rendiment":tab==="Factures"?"Factures":tab==="Pressupostos"?"Pressupostos":""} despeses={<Albarans878259 obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves setObraData={readOnly?null:(id,up)=>setData(up)}/>} rendiment={ALIAS878308["Rendiment"]==="Honoraris"} temps={ALIAS878308["Gestió temps"]==="Honoraris"&&!esTreballador878326()&&!senseHoresPropies878342()?<HonorarisTemps obraId={obra.id} obra={obra} preuClient={client?.preuHoraQuota} acord={acordClient878434(client)} crono={crono878376} data={data} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} quota={parseNum8770(client?.quotaFixa)||0}/>:null}/>} 
     {activeTab==="Pressupostos"&&<PressupostTecnic8738 data={data} obra={obra} addPressupost={addPressupostTecnic} updatePressupost={updatePressupostTecnic} facturarPressupost={facturarPressupostTecnic} deletePressupost={deletePressupostTecnic} openEmail={openEmail} openDoc={openDoc}/>} 
-    {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} onAlt={altDirectBudget878437} onArxiva={arxivaDirectBudget878531} onRecupera={recuperaDirectBudget878531} readOnly={readOnly||partCompartida878424(obra)}/>}
+    {ECON_FASES878342.includes(activeTab)&&navigationTabs.includes("Pressupost")&&<FasesObra878342 obre={activeTab==="Pressupost"} data={data} ambTota={activeTab==="Seguiment econòmic"||activeTab==="Albarans"} tota={totaObra878342&&(activeTab==="Seguiment econòmic"||activeTab==="Albarans")} setTota={setTotaObra878342} select={selectDirectBudget878214} onNova={()=>{setTotaObra878342(false);addDirectBudget878305("Fase",true)}} onRenom={renameDirectBudget878305} onElimina={deleteDirectBudget878305} onAlt={altDirectBudget878437} onArxiva={arxivaDirectBudget878531} onRecupera={recuperaDirectBudget878531} readOnly={readOnly||partCompartida878424(obra)}/>}
     {activeTab==="Pressupost obra"&&!readOnly&&<BudgetBar878273 data={data} groups={directBudgetInfo878214.groups} active={directBudgetId878214} select={selectDirectBudget878214}/>}
     {activeTab==="Pressupost obra"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<Pressupost data={directBudgetData878214} setData={setDirectBudgetData878214} importExcel={(e)=>importExcel?.(e,directBudgetId878214)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={directBudgetInfo878214.groups} activeBudgetId={directBudgetId878214} selectBudget={selectDirectBudget878214} addBudget={readOnly?undefined:addDirectBudget878305} renameBudget={readOnly?undefined:renameDirectBudget878305} deleteBudget={readOnly?undefined:deleteDirectBudget878305} totalActive={directBudgetTotal878214} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
     {activeTab==="Pressupost ràpid"&&(readOnly&&!clientEditBudget?<ClientBudgetReadOnlyV87235 data={directBudgetData878214} obra={obra} client={client} openDoc={openDoc}/>:<PressupostRapid878150 data={data} setData={setEconomicData878242} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientBudgetNumbers878194={clientBudgetNumbers878194} clientHistoricalPartides={clientHistoricalPartides} partidaLibrary={partidaLibrary} setPartidaLibrary={readOnly?undefined:setPartidaLibrary} clientMode={readOnly} clientLibraryEnabled={clientLibraryEnabled} clientLibraryMaxPerChapter={clientLibraryMaxPerChapter}/>) } 
@@ -15087,6 +15087,8 @@ function bancPropi878460(){const b=lsJson8779(BANC_KEY878368,null);return b&&Arr
 async function syncBancComu878460(){
   const nv=window.__acoCloud?.bancComu;if(!nv||esTreballador878326())return;
   let cap;try{cap=await nv.cap()}catch{return}
+  // V87.551 · Socoterm continuava sense banc: la llista de qui el veu només es posava al dia obrint la targeta del banc al compte de l'Héctor
+  try{const em=String(window.__acoCloud?.myEmail?.()||"");if(cap&&em&&!/@usuaris\.controlobres\.app$/i.test(em)&&Array.isArray(cap.comptes)&&cap.comptes.length&&cap.comptes.every(p=>DEMO878533.includes(p))&&!DEMO878533.every(p=>cap.comptes.includes(p))){await nv.posa({comptes:DEMO878533});cap={...cap,comptes:DEMO878533}}}catch{}
   const loc=bancComu878460();
   if(!cap){if(loc)desaBancComu878460(null);return}
   const mateixa=loc&&new Date(loc.versio).getTime()===new Date(cap.versio).getTime();
@@ -16196,6 +16198,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const tancaPartida878524=(cap,i)=>{if(editBudget8760b)toggleBudgetRow87173(cap,i);else setFitxa426(null)};
   const[presObert427,setPresObert427]=useState(presObertInici878427);
   const giraPres427=o=>setPresObert427(o);
+  // V87.551 · tocar una fase a l'ordinador obre el seu pressupost (a pantalla sencera), amb totes les opcions a dins
+  useEffect(()=>{const fo=()=>setPresObert427(true);window.addEventListener("aco-obre-pres878551",fo);return()=>window.removeEventListener("aco-obre-pres878551",fo)},[]);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
   useEffect(()=>{const av=v=>{window.__acoEditPres878380=v;window.dispatchEvent(new Event("aco-edit-pres-878380"))};av(!!editBudget8760b);return ()=>{if(editBudget8760b)av(false)}},[editBudget8760b]);
   // V87.346 · comissió amagada (l'Héctor, 22/10/2026: «un clic amb un espia per posar el %… que em refaci el pressupost aplicant a
@@ -17360,7 +17364,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!clientMode&&!obra?.compartida&&setData&&!quickMode&&<button type="button" className="sub-v878426 com-fila-v878426" disabled={editBudget8760b} aria-pressed={com878346.on} onClick={()=>{setComPct878346(com878346.on?com878346.pct:lsGet8779("aco_comissio_pct_v878346",""));setComObert878346(true)}}><span className={`com-espia-v878346 ${com878346.on?"on":""}`} aria-hidden="true"><Percent size={15}/><i/></span><span className="t"><b>{i18nT("Marge d’intermediari")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></button>}
       {ajustos878426?.cos}
     </div><Recollir878432/></details>}
-    {!quickMode&&!clientMode&&!buit428()&&budgetWorkTab878180!=="Validar descompostos"&&!editBudget8760b&&<ResumPres878549 pi={pi878411} onObre={()=>giraPres427(true)}/>}
+
     {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={()=>{startManualBudget87115();openBudgetLibrary87218("C01 NOU CAPÍTOL","client")}} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null} onArxiu={f=>{const nm=String(f.name||"").toLowerCase();if(/\.pdf$/.test(nm)||f.type==="application/pdf")setPdf878305(f);else if(/\.bc3$/.test(nm))bc3Pres878435(f);else importExcel?.({target:{files:[f],value:""}})}}/>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     {nomNumObert528&&nomNum528&&<NomNum878528 nom={budgetLabel8786(data,activeBudgetId)} base={String(data?.numPres878528||"")} versio={versioPres878528(data,activeBudgetId)} close={()=>setNomNumObert528(false)} desa={v=>nomNum528(activeBudgetId,v)}/>}
@@ -21700,7 +21704,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.550",
+    app_version:"87.551",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
