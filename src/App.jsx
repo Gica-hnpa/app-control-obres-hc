@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.568";
+const APP_VERSION878264="87.569";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9682,6 +9682,10 @@ function ImportaContactes878553({clients=[],files=[],onImporta,close}){
 // tots a Contactes en el seu respectiu grup?»). Els proveïdors de les despeses (albarans i factures de material → «Magatzem de materials»;
 // factures d'industrials → «Industrial»; el que en tingui més), un per NIF o pel nom, sense la mateixa empresa ni els que ja són a Contactes.
 // Es revisen (grup de cadascun, triar-los) abans d'afegir-los.
+// V87.569 · amb el NIF, l'adreça fiscal, el telèfon i el correu (l'Héctor: «falten dades que segur a les despeses hi són, com el NIF i l'adreça
+// fiscal»): els de la despesa si la IA els ha llegit (des de la V87.569) i, si no, es llegeixen del PDF desat de les seves factures (a l'aparell,
+// sense IA; les que són foto no tenen text). Mai els de la mateixa empresa (que també surten a la factura, com a client). Els contactes que ja hi
+// són i no tenen aquestes dades es poden completar.
 function candidatsDespeses878566(files=[]){
   const llista=[];
   for(const a of readAlbarans878259()){
@@ -9689,33 +9693,108 @@ function candidatsDespeses878566(files=[]){
     const nom=String(a.proveidor||"").trim();if(!nom||/^prove[ïi]dor pendent$/i.test(nom)||esMevaEmpresa878505(nom,a.nif))continue;
     const p=nomProv878493(nom),f=nifProv878493(a.nif);if(p.length<3&&f.length<8)continue;
     let e=llista.find(x=>(f.length>=8&&x.f===f)||mateixProv878493(p,x.p));
-    if(!e){e={k:"c"+llista.length,p,f:f.length>=8?f:"",nif:f.length>=8?String(a.nif||"").trim():"",noms:{},ind:0,mat:0,n:0,base:0};llista.push(e)}
+    if(!e){e={k:"c"+llista.length,p,f:f.length>=8?f:"",nif:f.length>=8?String(a.nif||"").trim():"",noms:{},ind:0,mat:0,n:0,base:0,pdfs:[],ia:{}};llista.push(e)}
     if(!e.f&&f.length>=8){e.f=f;e.nif=String(a.nif||"").trim()}
+    const pv=a.prov878569||{};for(const k of ["carrer","codiPostal","poblacio","telefon","email"])if(!e.ia[k]&&String(pv[k]||"").trim())e.ia[k]=String(pv[k]).trim();
+    if(a.tePdf&&e.pdfs.length<4)e.pdfs.push(a.id);
     e.noms[nom]=(e.noms[nom]||0)+1;if(tp==="Subcontracta")e.ind++;else e.mat++;e.n++;e.base+=albaraBase878259(a);
   }
   return llista.map(e=>{const nom=Object.entries(e.noms).sort((x,y)=>y[1]-x[1]||y[0].length-x[0].length)[0][0];const ja=contacteProv878566(nom,e.nif,files);
-    return {k:e.k,nom,nif:e.nif,n:e.n,base:e.base,grup:e.ind>e.mat?"Industrial":"Magatzem de materials",ja:!!ja,jaNom:ja?(ja.c?.nom||ja.ag?.nom||""):"",jaG:ja?.g||""}})
+    return {k:e.k,nom,nif:e.nif,n:e.n,base:e.base,pdfs:e.pdfs,ia:e.ia,grup:e.ind>e.mat?"Industrial":"Magatzem de materials",ja:!!ja,jaNom:ja?(ja.c?.nom||ja.ag?.nom||""):"",jaG:ja?.g||"",jaC:ja?.c||null}})
     .sort((a,b)=>(a.ja?1:0)-(b.ja?1:0)||b.base-a.base);
 }
-function ContactesDespeses878566({files=[],onImporta,close}){
-  const [llista,setLlista]=useState(()=>candidatsDespeses878566(files).map(x=>({...x,on:!x.ja})));
-  const [fet,setFet]=useState(0);
-  const nous=llista.filter(x=>!x.ja),marcats=nous.filter(x=>x.on);
+// el text d'un PDF desat (data:…), per files i trossos (cada tros amb la seva x: les capçaleres de dues columnes, proveïdor i client, van per separat)
+async function filesPdf878569(dataUrl){
+  const b64=String(dataUrl||"").split(",")[1]||"";if(!b64)return [];
+  const bin=atob(b64);const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+  const pdf=await pdfjsLib.getDocument({data:u8}).promise;const out=[];
+  for(let i=1;i<=Math.min(pdf.numPages,2);i++){
+    const pg=await pdf.getPage(i);const tc=await pg.getTextContent();const rows=[];
+    tc.items.filter(x=>String(x.str||"").trim()).forEach(x=>{const y=x.transform[5],xx=x.transform[4],w=x.width||String(x.str).length*5;let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r){r={y,items:[]};rows.push(r)}r.items.push({x:xx,x2:xx+w,s:String(x.str).trim()})});
+    rows.sort((a,b)=>b.y-a.y).forEach(r=>{const it=r.items.sort((a,b)=>a.x-b.x);const segs=[];it.forEach(t=>{const l=segs[segs.length-1];if(l&&t.x-l.x2<22){l.s+=" "+t.s;l.x2=Math.max(l.x2,t.x2)}else segs.push({x:t.x,x2:t.x2,s:t.s})});out.push(segs)});
+  }
+  return out;
+}
+const RE_CP878569=/(?:^|[^\d])((?:0[1-9]|[1-4]\d|5[0-2])\d{3})(?!\d)/;
+const RE_CARRER878569=/^(c\/|c\.\s|cl\.?\s|carrer|calle|av\.?|avda|avinguda|avenida|pl\.?\s|pla[çc]a|plaza|ctra|carretera|pol\.?\s|pol[ií]gon|pol[ií]gono|cam[ií]|camino|pg\.?|passeig|paseo|ronda|rambla|travessera|urb\.?|parc|nau|ap\.? correus)/i;
+const nifsText878569=s=>{const t=String(s||"").toUpperCase().replace(/(\d)[.\s-](?=\d)/g,"$1").replace(/\b([A-HJNP-SUVWXYZ])[\s.-](?=\d{7})/g,"$1").replace(/(\d{7,8})[\s.-](?=[A-Z0-9]\b)/g,"$1");
+  return [...t.matchAll(/(?:^|[^A-Z0-9])(?:ES)?([A-HJNP-SUVW]\d{7}[0-9A-J]|\d{8}[A-Z]|[XYZ]\d{7}[A-Z])(?![A-Z0-9])/g)].map(m=>m[1])};
+const telsText878569=s=>[...String(s||"").matchAll(/(?:\+34[\s.]?)?([6789](?:[\s.]?\d){8})(?!\d)/g)].map(m=>m[1].replace(/\D/g,""));
+const emailsText878569=s=>[...String(s||"").matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)].map(m=>m[0].toLowerCase());
+function adrecaText878569(s,ant=""){
+  const m=String(s||"").match(RE_CP878569);if(!m)return null;const cp=m[1];const i=String(s).indexOf(cp,m.index);
+  const abans=String(s).slice(0,i).replace(/[\s,;-]+$/,"").trim(),despres=String(s).slice(i+5);
+  let pob=despres.replace(/^[\s,;.\-–]+/,"").split(/[,;|]|\s{2,}|\btel|\bt\.|\bnif|\bcif|\be-?mail|\bwww/i)[0].trim();let prov="";
+  const pm=pob.match(/\(([^)]+)\)/);if(pm){prov=pm[1].trim();pob=pob.replace(pm[0],"").trim()}pob=pob.replace(/[\s\-–.]+$/,"").replace(/\s*-\s*[A-ZÀ-Ú][a-zà-ú]+$/,m2=>{prov=prov||m2.replace(/^\s*-\s*/,"");return ""}).trim();
+  if(!/[a-zà-ú]/i.test(pob)||pob.length>40)pob="";
+  let carrer=/[a-zà-ú]/i.test(abans)&&abans.length>=5?abans:(RE_CARRER878569.test(String(ant).trim())||(/\d/.test(ant)&&/[a-z]/i.test(ant)&&String(ant).length<70)?String(ant).trim():"");
+  carrer=carrer.replace(/^(adre[çc]a|direcci[oó]n|domicili|domicilio)\s*:?\s*/i,"").replace(/[\s,;-]+$/,"");if(carrer.length>70)carrer="";
+  return {carrer,codiPostal:cp,poblacio:pob,provincia:prov};
+}
+// les dades del proveïdor en un PDF: el bloc del seu nom (la seva columna, les files de sota) i, si no s'hi troba, el que no és de la mateixa empresa
+function dadesProvFiles878569(rows,nom){
+  const e=empresaInfo878259()||{};let em={};try{em=emissorTecnic878396()||{}}catch{}
+  const meus=new Set([e.nif,em.nif].map(nifProv878493).filter(x=>x.length>=8));const meusTel=new Set([e.telefon,e.mobil,em.telefon].map(x=>String(x||"").replace(/\D/g,"").slice(-9)).filter(x=>x.length===9));
+  const meusMail=new Set([e.email,em.email].map(x=>String(x||"").toLowerCase()).filter(Boolean));const meuCp=String(e.codiPostal||em.codiPostal||"").trim();
+  const p=nomProv878493(nom);let ar=-1,ax=0;
+  rows.forEach((segs,ri)=>{if(ar>=0)return;segs.forEach(sg=>{if(ar>=0)return;const n=nomProv878493(sg.s);if(p.length>=5&&n.length>=5&&(n.includes(p)||p.includes(n))){ar=ri;ax=sg.x}})});
+  const bloc=[];if(ar>=0){for(let r=ar;r<Math.min(rows.length,ar+9);r++)rows[r].forEach(sg=>{if(Math.abs(sg.x-ax)<90||(sg.x>=ax-10&&r===ar))bloc.push({r,s:sg.s})})}
+  const tots=rows.flatMap((segs,r)=>segs.map(sg=>({r,s:sg.s})));
+  const busca=llista=>{const d={};let ant="";for(const {s} of llista){
+      if(!d.nif){const n=nifsText878569(s).find(x=>!meus.has(x));if(n)d.nif=n}
+      if(!d.codiPostal){const a=adrecaText878569(s,ant);if(a&&!(meuCp&&a.codiPostal===meuCp&&!llista.some(x=>nomProv878493(x.s).includes(p))))Object.assign(d,a)}
+      if(!d.telefon){const t=telsText878569(s).find(x=>!meusTel.has(x));if(t)d.telefon=t}
+      if(!d.email){const m=emailsText878569(s).find(x=>!meusMail.has(x));if(m)d.email=m}
+      ant=s}return d};
+  const d=bloc.length?busca(bloc):{};
+  if(!d.nif){const ns=[...new Set(tots.flatMap(x=>nifsText878569(x.s)).filter(x=>!meus.has(x)))];if(ns.length===1)d.nif=ns[0]}
+  if(!d.codiPostal&&!bloc.length){const as=[];let ant="";for(const {s} of tots){const a=adrecaText878569(s,ant);if(a&&a.codiPostal!==meuCp)as.push(a);ant=s}if(as.length===1)Object.assign(d,as[0])}
+  for(const k of Object.keys(d))if(!d[k])delete d[k];
+  if(d.codiPostal&&!d.provincia)d.provincia=provinciaForCp8773(d.codiPostal)||"";
+  return d;
+}
+async function dadesProveidor878569(c){
+  const d={...(c.nif?{nif:c.nif}:{}),...c.ia};
+  for(const id of c.pdfs||[]){if(d.nif&&d.codiPostal&&d.carrer)break;
+    try{const url=lsGet8779(albaraPdfKey878259(id),"");if(!url)continue;const rows=await filesPdf878569(url);const x=dadesProvFiles878569(rows,c.nom);for(const k of Object.keys(x))if(!d[k])d[k]=x[k]}catch(e){console.warn("PDF",id,e)}}
+  return d;
+}
+const CAMPS878569=[["nif","NIF"],["carrer","Adreça"],["codiPostal","CP"],["poblacio","Població"],["telefon","Telèfon"],["email","Correu"]];
+function ContactesDespeses878566({files=[],onImporta,onCompleta,close}){
+  const [llista,setLlista]=useState(()=>candidatsDespeses878566(files).map(x=>({...x,on:!x.ja,dades:null,comp:true})));
+  const [fet,setFet]=useState(null);const [llegint,setLlegint]=useState(0);
+  // es llegeixen els PDF d'un proveïdor rere l'altre (sense IA)
+  useEffect(()=>{let viu=true;(async()=>{const ls=candidatsDespeses878566(files);setLlegint(ls.length);for(const c of ls){if(!viu)return;const d=await dadesProveidor878569(c);if(!viu)return;setLlista(l=>l.map(x=>x.k===c.k?{...x,dades:d}:x));setLlegint(n=>Math.max(0,n-1))}})();return()=>{viu=false}},[]);
+  const falta=x=>{if(!x.jaC||!x.dades)return [];const c=x.jaC;const cur={nif:c.nif,carrer:c.adreca||c.carrer,codiPostal:c.codiPostal,poblacio:c.poblacio,telefon:c.telefon||c.mobil,email:c.email};return CAMPS878569.filter(([k])=>x.dades[k]&&!String(cur[k]||"").trim()).map(([k])=>k)};
+  const nous=llista.filter(x=>!x.ja),marcats=nous.filter(x=>x.on),aCompletar=llista.filter(x=>x.ja&&x.comp&&falta(x).length);
   const GR=[["Magatzem de materials","Magatzems de materials"],["Industrial","Industrials"],["Altres","Altres"]];
   const posa=(k,v)=>setLlista(l=>l.map(x=>x.k===k?{...x,...v}:x));
-  function afegeix(){if(!marcats.length)return;const ns=marcats.map(x=>clientNou878406({nom:x.nom,nif:x.nif,tipus:x.grup}));onImporta?.(ns);setFet(ns.length);setLlista(l=>l.map(x=>x.on&&!x.ja?{...x,ja:true,on:false,jaNom:x.nom,jaG:x.grup==="Industrial"?"industrial":x.grup==="Altres"?"altres":"proveidor"}:x))}
+  function desa(){
+    const ns=marcats.map(x=>{const d=x.dades||{};return clientNou878406({nom:x.nom,nif:d.nif||x.nif,tipus:x.grup,carrer:d.carrer,codiPostal:d.codiPostal,poblacio:d.poblacio,provincia:d.provincia,telefon:d.telefon,email:d.email})});
+    if(ns.length)onImporta?.(ns);
+    const ups={};aCompletar.forEach(x=>{const d=x.dades;const u={};falta(x).forEach(k=>{if(k==="carrer")u.adreca=d.carrer;else u[k]=d[k]});if(u.codiPostal&&!x.jaC.provincia)u.provincia=d.provincia||provinciaForCp8773(u.codiPostal)||"";ups[x.jaC.id]=u});
+    if(Object.keys(ups).length)onCompleta?.(ups);
+    setFet({n:ns.length,m:Object.keys(ups).length});
+    setLlista(l=>l.map(x=>x.on&&!x.ja?{...x,ja:true,on:false,jaNom:x.nom,jaG:x.grup==="Industrial"?"industrial":x.grup==="Altres"?"altres":"proveidor",jaC:null}:ups[x.jaC?.id]?{...x,jaC:{...x.jaC,...ups[x.jaC.id]}}:x));
+  }
   const nomG=g=>i18nT((GRUPS_CONTACTE878315.find(([k])=>k===g)||[g,g])[1]);
+  const txtDades=d=>{if(!d)return "";const adr=[d.carrer,[d.codiPostal,d.poblacio].filter(Boolean).join(" ")].filter(Boolean).join(", ");return [adr,d.telefon,d.email].filter(Boolean).join(" · ")};
+  const nomsFalta=x=>falta(x).map(k=>t(CAMPS878569.find(c=>c[0]===k)[1])).join(", ");
+  const boto=marcats.length&&aCompletar.length?t("Afegir {n} i completar {m}",{n:marcats.length,m:aCompletar.length}):marcats.length?(marcats.length===1?t("Afegir 1 contacte"):t("Afegir {n} contactes",{n:marcats.length})):aCompletar.length===1?t("Completar 1 contacte"):t("Completar {n} contactes",{n:aCompletar.length});
   return <Modal title={t("Contactes des de les despeses")} close={close}><div className="imp-contactes-v878553 desp-ct-v878566">
-    {fet>0&&<p className="ok" role="status"><Check size={16} aria-hidden="true"/> {fet===1?t("S’ha afegit 1 contacte a Contactes."):t("S’han afegit {n} contactes a Contactes.",{n:fet})}</p>}
+    {fet&&(fet.n>0||fet.m>0)&&<p className="ok" role="status"><Check size={16} aria-hidden="true"/> {[fet.n?(fet.n===1?t("S’ha afegit 1 contacte a Contactes."):t("S’han afegit {n} contactes a Contactes.",{n:fet.n})):"",fet.m?(fet.m===1?t("S’ha completat 1 contacte."):t("S’han completat {n} contactes.",{n:fet.m})):""].filter(Boolean).join(" ")}</p>}
     {!llista.length?<p className="ajuda">{t("Encara no hi ha despeses amb proveïdor.")}</p>:<>
-      <p className="n"><b>{nous.length===1?t("1 proveïdor nou"):t("{n} proveïdors nous",{n:nous.length})}</b>{llista.length>nous.length&&<span> · {t("{n} ja hi són",{n:llista.length-nous.length})}</span>}</p>
+      <p className="n"><b>{nous.length===1?t("1 proveïdor nou"):t("{n} proveïdors nous",{n:nous.length})}</b>{llista.length>nous.length&&<span> · {t("{n} ja hi són",{n:llista.length-nous.length})}</span>}{llegint>0&&<span className="llegint-v878569"> · {t("Llegint les factures… ({n})",{n:llegint})}</span>}</p>
       {nous.length>1&&<label className="tots-v878566"><input type="checkbox" checked={marcats.length===nous.length} onChange={e=>setLlista(l=>l.map(x=>x.ja?x:{...x,on:e.target.checked}))}/> {t("Tots")}</label>}
-      <div className="taula" role="list">{llista.map(x=><div key={x.k} className={"fila fila-v878566"+(x.ja?" ja":"")} role="listitem">
-        <input type="checkbox" checked={x.on} disabled={x.ja} onChange={e=>posa(x.k,{on:e.target.checked})} aria-label={t("Afegir {n}",{n:x.nom})}/>
-        <span className="nom"><b>{x.nom}</b>{x.ja&&<em>{t("Ja hi és")}{x.jaG?" · "+nomG(x.jaG):""}</em>}<small>{[x.nif,x.n===1?t("1 despesa"):t("{n} despeses",{n:x.n}),money(x.base)].filter(Boolean).join(" · ")}</small></span>
+      <div className="taula" role="list">{llista.map(x=>{const f=falta(x);const dd=x.dades;return <div key={x.k} className={"fila fila-v878566"+(x.ja?" ja":"")} role="listitem">
+        <input type="checkbox" checked={x.ja?(f.length>0&&x.comp):x.on} disabled={x.ja&&!f.length} onChange={e=>x.ja?posa(x.k,{comp:e.target.checked}):posa(x.k,{on:e.target.checked})} aria-label={x.ja?t("Completar {n}",{n:x.nom}):t("Afegir {n}",{n:x.nom})}/>
+        <span className="nom"><b>{x.nom}</b>{x.ja&&<em>{t("Ja hi és")}{x.jaG?" · "+nomG(x.jaG):""}</em>}
+          <small>{[(dd?.nif||x.nif),x.n===1?t("1 despesa"):t("{n} despeses",{n:x.n}),money(x.base)].filter(Boolean).join(" · ")}</small>
+          {dd&&txtDades(dd)?<small className="dades-v878569">{txtDades(dd)}</small>:!dd&&x.pdfs.length?<small className="dades-v878569 ll">{t("Llegint la factura…")}</small>:null}
+          {x.ja&&f.length>0&&<small className="comp-v878569">{t("Li falta: {c}",{c:nomsFalta(x)})}</small>}</span>
         {!x.ja&&<select value={x.grup} onChange={e=>posa(x.k,{grup:e.target.value})} aria-label={t("Grup de {n}",{n:x.nom})}>{GR.map(([v,l])=><option key={v} value={v}>{t(l)}</option>)}</select>}
-      </div>)}</div>
-      <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Tancar")}</button><button type="button" className="primary" disabled={!marcats.length} onClick={afegeix}>{marcats.length===1?t("Afegir 1 contacte"):t("Afegir {n} contactes",{n:marcats.length})}</button></div>
+      </div>})}</div>
+      <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Tancar")}</button><button type="button" className="primary" disabled={!marcats.length&&!aCompletar.length} onClick={desa}>{boto}</button></div>
     </>}
   </div></Modal>;
 }
@@ -9798,7 +9877,7 @@ function Contactes878315({clients=[],setClients,obres=[],odata={},setOdata,openC
         <Recollir878432/>
       </details>})}</div>}
     </div>
-    {imp553&&<ImportaContactes878553 clients={clients} files={files} onImporta={ns=>setClients?.(p=>[...(p||[]),...ns])} close={()=>setImp553(false)}/>}{desp566&&<ContactesDespeses878566 files={files} onImporta={ns=>setClients?.(p=>[...(p||[]),...ns])} close={()=>setDesp566(false)}/>}{edit&&<EditorContacte878315 inicial={edit.inicial} nou={!!edit.nou} esAgent={!edit.nou} onSave={desa} onDelete={edit.nou?null:elimina} close={()=>setEdit(null)}/>}
+    {imp553&&<ImportaContactes878553 clients={clients} files={files} onImporta={ns=>setClients?.(p=>[...(p||[]),...ns])} close={()=>setImp553(false)}/>}{desp566&&<ContactesDespeses878566 files={files} onImporta={ns=>setClients?.(p=>[...(p||[]),...ns])} onCompleta={ups=>{const ara=new Date().toISOString();setClients?.(p=>(p||[]).map(c=>ups[c.id]?{...c,...ups[c.id],updatedAt:ara}:c))}} close={()=>setDesp566(false)}/>}{edit&&<EditorContacte878315 inicial={edit.inicial} nou={!!edit.nou} esAgent={!edit.nou} onSave={desa} onDelete={edit.nou?null:elimina} close={()=>setEdit(null)}/>}
   </div>;
 }
 
@@ -22190,7 +22269,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.568",
+    app_version:"87.569",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -25285,6 +25364,9 @@ function fillAlbara878259(x,p){
   return {...x,
     proveidor:p.proveidor&&p.proveidor!=="?"?p.proveidor:x.proveidor,
     numero:p.numero&&p.numero!=="?"?p.numero:x.numero,
+    // V87.569 · el NIF i les dades del proveïdor (si la IA les llegeix): per als contactes que es fan des de les despeses
+    nif:p.nif&&p.nif!=="?"?String(p.nif).trim():x.nif,
+    ...(()=>{const pv={carrer:p.adreca,codiPostal:p.cp,poblacio:p.poblacio,telefon:p.telefon,email:p.email};const ok=Object.fromEntries(Object.entries(pv).filter(([,v])=>String(v||"").trim()&&String(v).trim()!=="?").map(([k,v])=>[k,String(v).trim()]));return Object.keys(ok).length?{prov878569:{...(x.prov878569||{}),...ok}}:{}})(),
     data:albaraDate878259(p.data)||p.data||x.data,
     base:p.base?fmt(+p.base||aiNum878256(p.base)):x.base,
     iva:p.iva?String(+p.iva||aiNum878256(p.iva)):x.iva,
@@ -26148,7 +26230,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
       const ai=await readAlbaraAI878259(cur);
       const meu505=!!ai&&esMevaEmpresa878505(ai.proveidor,ai.nif);
       if(ai){setA(x=>{
-        const y0=fillAlbara878259(x,ai);const y=meu505?{...y0,proveidor:x.proveidor||"",perRevisar:true}:y0;if(!x.isNew||x.meva)return y;
+        const y0=fillAlbara878259(x,ai);const y=meu505?{...y0,proveidor:x.proveidor||"",nif:x.nif||"",prov878569:x.prov878569,perRevisar:true}:y0;if(!x.isNew||x.meva)return y;
         // la IA diu si és albarà o factura; si és una factura, també quins albarans inclou
         let tipus=ai.isp?"Subcontracta":["Albarà","Material"].includes(tipusDespesa878311(x))&&ai.tipusApp?ai.tipusApp:tipusDespesa878311(x);
         if(!ai.isp&&["Albarà","Material"].includes(tipus)){const tp=tipusProveidor878493(y.proveidor,ai.nif,tots);if(tp==="Subcontracta"||(tp==="Altres"&&tipus==="Material"))tipus=tp}

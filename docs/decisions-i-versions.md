@@ -3772,3 +3772,13 @@
   amb les hores extres, i deixen d'estar per revisar; les que ja tenien preu no canvien. En desar els treballadors (`desaTreballadors878339`) i en
   obrir l'app (4 s després de carregar les dades). Rendiment › «DGE mes a mes»: «Sumat des de gener» es llegeix amb la subtargeta oberta. Prova:
   `v568test` 5/5; personal340, partes359 i v555 en verd.
+- **V87.569 · Contactes des de les despeses amb el NIF i l'adreça fiscal** (l'Héctor, 10/11/2026: «els contactes de les despeses sí que han entrat
+  però falten dades que segur a les despeses hi són, com el NIF i l'adreça fiscal»). La IA no les llegia (l'esquema de `aco-ia` només demanava
+  proveïdor, número, data, imports i línies). Ara, a «Des de les despeses»: es llegeix el text dels PDF desats de les factures de cada proveïdor (a
+  l'aparell, sense IA, fins a 4 PDF: `filesPdf878569`, `dadesProvFiles878569`): el bloc del seu nom (la seva columna i les files de sota) dona el
+  NIF/CIF, l'adreça (carrer, CP, població, província pel CP), el telèfon i el correu; mai els de la mateixa empresa (NIF, CP, telèfon i correu
+  d'`aco_empresa_v878259`, que surten com a client). Les factures que són foto no tenen text. Els contactes que ja hi són i no tenen aquestes dades es
+  completen («Li falta: NIF, Adreça…», marcat; només s'omplen els camps buits). **Funció `aco-ia` (cal tornar-la a desplegar):** també llegeix el
+  NIF, l'adreça, el CP, la població, el telèfon i el correu del proveïdor, i l'app els desa a la despesa (`nif`, `prov878569`); fins que no es
+  desplegui, l'app fa com abans. Desplegar: Supabase › Edge Functions › aco-ia › Code › enganxar `supabase/functions/aco-ia/index.ts` › Deploy.
+  Prova: `v569test` 8/8 (PDF fet a la prova amb el proveïdor a l'esquerra i l'empresa a la dreta); v566, v553 i v493 en verd.

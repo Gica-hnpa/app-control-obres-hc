@@ -5877,4 +5877,13 @@ export default {
 "Des de les despeses": "Desde los gastos",
 "Magatzems de materials": "Almacenes de materiales",
 "Magatzem de materials": "Almacén de materiales",
+"Afegir {n} i completar {m}": "Añadir {n} y completar {m}",
+"Completar 1 contacte": "Completar 1 contacto",
+"Completar {n} contactes": "Completar {n} contactos",
+"S’ha completat 1 contacte.": "Se ha completado 1 contacto.",
+"S’han completat {n} contactes.": "Se han completado {n} contactos.",
+"Llegint les factures… ({n})": "Leyendo las facturas… ({n})",
+"Completar {n}": "Completar {n}",
+"Llegint la factura…": "Leyendo la factura…",
+"Li falta: {c}": "Le falta: {c}",
 };
