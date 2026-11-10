@@ -1,0 +1,17 @@
+/* V87.554 · «A la base de preus» a la Llibreria */
+html body .base-cerca-v878554{margin:12px 0;padding:14px 16px;border:1px solid var(--co-line,#E2E8F0);border-radius:14px;background:var(--co-surface,#fff)}
+html body .base-cerca-v878554 header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+html body .base-cerca-v878554 header b{font-size:15px}
+html body .base-cerca-v878554 header small{color:var(--co-ink-3,#5F7075);font-size:12.5px}
+html body .base-cerca-v878554 .llista{display:flex;flex-direction:column;border:1px solid #EEF2F5;border-radius:10px;max-height:min(55vh,520px);overflow:auto}
+html body .base-cerca-v878554 .fila{display:grid;grid-template-columns:90px minmax(0,1fr) 44px 120px;gap:10px;align-items:start;padding:9px 12px;border-bottom:1px solid #EEF2F5}
+html body .base-cerca-v878554 .fila:last-child{border-bottom:0}
+html body .base-cerca-v878554 .fila code{font-size:12px;color:#475569;overflow-wrap:anywhere}
+html body .base-cerca-v878554 .fila .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .base-cerca-v878554 .fila .t b{font-size:13.5px;overflow-wrap:anywhere}
+html body .base-cerca-v878554 .fila .t small{font-size:12px;color:var(--co-ink-3,#5F7075);overflow-wrap:anywhere}
+html body .base-cerca-v878554 .fila .ut{font-size:12.5px;color:#475569}
+html body .base-cerca-v878554 .fila .pu{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+html body .base-cerca-v878554 .fila .pu small{font-size:11px;color:var(--co-ink-3,#5F7075)}
+html body .base-cerca-v878554 .mes,html body .base-cerca-v878554 .nota{margin:8px 2px 0;font-size:12.5px;color:var(--co-ink-3,#5F7075)}
+@media (max-width:700px){html body .base-cerca-v878554 .fila{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t pu" "c ut"}html body .base-cerca-v878554 .fila code{grid-area:c}html body .base-cerca-v878554 .fila .t{grid-area:t}html body .base-cerca-v878554 .fila .ut{grid-area:ut;text-align:right}html body .base-cerca-v878554 .fila .pu{grid-area:pu}}

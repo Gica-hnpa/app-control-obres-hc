@@ -5801,4 +5801,11 @@ export default {
 "Un altre arxiu": "Otro archivo",
 "Afegir 1 contacte": "Añadir 1 contacto",
 "Afegir {n} contactes": "Añadir {n} contactos",
+"A la base de preus": "En la base de precios",
+"Més de 200 partides amb «{q}»": "Más de 200 partidas con «{q}»",
+"{n} partides amb «{q}»": "{n} partidas con «{q}»",
+"Cap partida de la base amb «{q}»": "Ninguna partida de la base con «{q}»",
+"Banc + IPC {p} %": "Banco + IPC {p} %",
+"I {n} més: afina la cerca.": "Y {n} más: afina la búsqueda.",
+"Per posar-ne una en un pressupost, fes servir «Des de Preus» quan l’editis.": "Para ponerla en un presupuesto, usa «Desde Precios» al editarlo.",
 };

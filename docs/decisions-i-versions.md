@@ -3651,3 +3651,7 @@
   `liniaPdf878553`: només les línies amb correu, telèfon o NIF). La llista es revisa abans: els que ja hi són (NIF, correu o nom) o repetits a l'arxiu,
   desmarcats amb «Ja hi és»; el grup dels nous (o el de la columna «Tipus»). S'afegeixen amb `clientNou878406` (`importat878553`). `src/theme-v878553.css`.
   Prova: `v553test.mjs` (9: Excel amb títols, CSV amb «;», PDF, tornar a importar sense repetir, mòbil).
+- **V87.554 · El cercador de la Llibreria busca també a la base de preus** (l'Héctor, 10/11/2026: «aquí el filtre només fa referència a la base de
+  Socoterm? no puc buscar a la general?»). `BaseCerca878554`: el que s'escriu a «Cercar» (2 lletres o més) es busca també a «La meva base» i al banc
+  (propi o comú, `bancPreus878368`), amb el preu posat al dia (`pctBanc878533`), el codi, la unitat i d'on surt; 40 a la vista (fins a 200). Només per
+  consultar: al pressupost, «Des de Preus». Els filtres surten també amb la llibreria buida si hi ha base. `src/theme-v878554.css`. Prova: `v554test.mjs` (8).

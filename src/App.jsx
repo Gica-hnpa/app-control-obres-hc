@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.553";
+const APP_VERSION878264="87.554";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7394,6 +7394,22 @@ function PaquetGestoriaGlobal878522({obres,odata,clients}){const[o,setO]=useStat
 // V87.272 · format de dates i números segons l'idioma de l'usuari
 function loc878272(){return getLang()==="es"?"es-ES":"ca-ES"}
 function MobileBackBar878146({screen,goBack}){return <div className="screen-return-v87146"><button type="button" onClick={goBack}>← Tornar</button><span>{screen}</span></div>}
+// V87.554 · «A la base de preus»: el que s'escriu a «Cercar» de la Llibreria es busca també a «La meva base» i al banc de preus (el propi o el comú),
+// amb el preu posat al dia amb l'IPC; només per consultar (al pressupost, «Des de Preus»)
+function BaseCerca878554({q=""}){
+  const b=bancPreus878368(),mb=mevaBase878537();
+  const words=normalizeSearch878191(q).split(/\s+/).filter(w=>w.length>=2);
+  const res=useMemo(()=>{if(!words.length)return [];const out=[];
+    const mira=(ps,font,pct)=>{for(const p of ps||[]){if(out.length>=200)break;const tx=normalizeSearch878191([p.codi,p.concepte,p.desc,p.ut].filter(Boolean).join(" "));if(words.every(w=>tx.includes(w)))out.push({p,font,pct})}};
+    mira(mb.partides,"meva",0);mira(b?.partides,"banc",pctBanc878533(b));return out},[q,b?.partides?.length,mb.partides.length]);
+  if(!words.length||(!b&&!mb.partides.length))return null;
+  const n=res.length;
+  return <section className="card base-cerca-v878554" aria-label={t("A la base de preus")}><header><b>{t("A la base de preus")}</b><small>{n?(n>=200?t("Més de 200 partides amb «{q}»",{q:q.trim()}):t("{n} partides amb «{q}»",{n,q:q.trim()})):t("Cap partida de la base amb «{q}»",{q:q.trim()})}</small></header>
+    {n>0&&<div className="llista">{res.slice(0,40).map(({p,font,pct},i)=><div key={font+(p.codi||"")+i} className="fila"><code>{p.codi||"—"}</code><span className="t"><b>{p.concepte||String(p.desc||"").slice(0,90)}</b>{p.desc&&p.concepte&&<small>{String(p.desc).slice(0,180)}{String(p.desc).length>180?"…":""}</small>}</span><span className="ut">{p.ut||""}</span><span className="pu"><b>{money((parseNum8770(p.pu)||0)*(1+pct/100))}</b><small>{font==="meva"?t("La meva base"):(pct?t("Banc + IPC {p} %",{p:String(Math.round(pct*10)/10).replace(".",",")}):t("Banc de preus"))}</small></span></div>)}
+      {n>40&&<p className="mes">{t("I {n} més: afina la cerca.",{n:n-40})}</p>}</div>}
+    <p className="nota">{t("Per posar-ne una en un pressupost, fes servir «Des de Preus» quan l’editis.")}</p>
+  </section>;
+}
 function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odata={},readOnly=false}){
   const[clientFilter,setClientFilter]=useState("");
   const[search,setSearch]=useState("");
@@ -7871,7 +7887,8 @@ function PartidesLibraryGeneral87196({items=[],setItems,clients=[],obres=[],odat
     <section className="library-hero-v87196 lib-cap-v878465"><div><h2>{t("Llibreria de preus")}</h2></div><div className="actions-inline"><button type="button" className="primary" onClick={()=>startNew()}><Plus/> {t("Nova partida")}</button><ActionMenu87213 label="⋯" fletxa={false} titol={t("Més opcions")}><button type="button" onClick={createStandaloneChapter87201}><Plus size={15} aria-hidden="true"/> {t("Nou capítol")}</button></ActionMenu87213></div></section>
     {!readOnly&&<MevaBaseBloc878537/>}
     {!readOnly&&<BancBloc878465/>}
-    {(rows.length>0||caps.length>0)&&<div className="library-primary-filters-v87230 library-primary-filters-v878240"><label><span>{t("Quines partides vols veure?")}</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([]);setOpenLibraryChapter("")}}><option value="">{t("Tota la llibreria validada (")}{rows.length})</option><option value="__none__">{t("Ús general / sense client (")}{unlinkedCount})</option>{clients.map(client=><option key={client.id} value={client.id}>{t("Habituals de")} {client.nom||client.rao}</option>)}</select></label><label><span>{t("Cercar")}</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder={t("Concepte, descripció, codi o unitat...")}/></label><label><span>{t("Tipologia de feina")}</span><select value={tipologiaFilter878240} onChange={e=>{setTipologiaFilter878240(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les tipologies")}</option>{libraryTypologies878240.map(type=><option key={type} value={type}>{i18nT(type)}</option>)}</select></label><label><span>{t("Paraula clau")}</span><select value={keywordFilter878246} onChange={e=>{setKeywordFilter878246(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les paraules clau")}</option>{libraryKeywordOptions878246.map(keyword=><option key={keyword} value={keyword}>{i18nT(keyword)}</option>)}</select></label><label><span>{t("Agrupar la llibreria per")}</span><select value={groupBy878240} onChange={e=>{setGroupBy878240(e.target.value);setOpenLibraryChapter("")}}><option value="capitol">{t("Capítol")}</option><option value="tipologia">{t("Tipologia de feina")}</option></select></label><div><small>{t("Resultats")}</small><b>{visibleCuratedRows878230.length} {t("partides")}</b></div></div>}
+    {(rows.length>0||caps.length>0||!!bancPreus878368()||mevaBase878537().partides.length>0)&&<div className="library-primary-filters-v87230 library-primary-filters-v878240"><label><span>{t("Quines partides vols veure?")}</span><select value={clientFilter} onChange={e=>{setClientFilter(e.target.value);setSelectedIds([]);setOpenLibraryChapter("")}}><option value="">{t("Tota la llibreria validada (")}{rows.length})</option><option value="__none__">{t("Ús general / sense client (")}{unlinkedCount})</option>{clients.map(client=><option key={client.id} value={client.id}>{t("Habituals de")} {client.nom||client.rao}</option>)}</select></label><label><span>{t("Cercar")}</span><input value={managerSearch} onChange={e=>setManagerSearch(e.target.value)} placeholder={t("Concepte, descripció, codi o unitat...")}/></label><label><span>{t("Tipologia de feina")}</span><select value={tipologiaFilter878240} onChange={e=>{setTipologiaFilter878240(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les tipologies")}</option>{libraryTypologies878240.map(type=><option key={type} value={type}>{i18nT(type)}</option>)}</select></label><label><span>{t("Paraula clau")}</span><select value={keywordFilter878246} onChange={e=>{setKeywordFilter878246(e.target.value);setOpenLibraryChapter("")}}><option value="">{t("Totes les paraules clau")}</option>{libraryKeywordOptions878246.map(keyword=><option key={keyword} value={keyword}>{i18nT(keyword)}</option>)}</select></label><label><span>{t("Agrupar la llibreria per")}</span><select value={groupBy878240} onChange={e=>{setGroupBy878240(e.target.value);setOpenLibraryChapter("")}}><option value="capitol">{t("Capítol")}</option><option value="tipologia">{t("Tipologia de feina")}</option></select></label><div><small>{t("Resultats")}</small><b>{visibleCuratedRows878230.length} {t("partides")}</b></div></div>}
+    {String(managerSearch||"").trim().length>=2&&<BaseCerca878554 q={managerSearch}/>}
     {(rows.length>0||caps.length>0)&&<div className="library-stats-v87196 library-stats-v87201"><div><small>{t("Partides validades")}</small><b>{rows.length}</b></div><div><small>{t("Capítols")}</small><b>{caps.length}</b></div><div><small>{t("Relacionades amb clients")}</small><b>{linkedCount}</b></div><div><small>{t("Ús general")}</small><b>{unlinkedCount}</b></div><button type="button" className="secondary" onClick={()=>setShowLibraryTools878230(value=>!value)}>{showLibraryTools878230?t("Tancar eines"):t("Eines opcionals")}</button></div>}
     {showLibraryTools878230&&(rows.length>0||chapterCatalog.length>0)&&<div className="library-clean-start-v87231"><div><b>{t("Vols començar la teva llibreria des de zero?")}</b><span>{t("Aquesta acció només neteja la llibreria. No elimina ni modifica cap partida dels expedients, pressupostos o certificacions.")}</span></div><button type="button" className="danger" onClick={clearCuratedLibrary878230}>{t("Començar amb una llibreria neta")}</button></div>}
     {rows.length===0&&caps.length===0&&<div className="library-empty-start-v87231"><div><h3>{t("La llibreria és buida.")}</h3></div></div>}
@@ -21786,7 +21803,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.553",
+    app_version:"87.554",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
