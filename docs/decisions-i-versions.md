@@ -3750,3 +3750,13 @@
   (`AvisosLlista878360`, a Pendent i a la targeta d'Avisos), «Seleccionar»: una casella a cada avís, «Tots», «N triats», «Canviar els triats» i «Fet».
   La finestra de diversos (`AvisosMulti878565`): la llista, «Recorda-m’ho el dia» (tots), «Ja estan cobrades» (només les factures) i «Treure els
   avisos» (amb confirmació). `src/theme-v878565.css`. Prova: `v565test` 12/12; v496, avisos360 i v521 en verd.
+- **V87.566 · Contactes «Des de les despeses» i el grup d'una despesa segons el contacte** (l'Héctor, 10/11/2026: «quan entro una despesa, si és un
+  industrial que ja tenim en contactes… directament el poses en el grup d'industrials… igual amb els magatzems de materials… i ara a Brava, que ja
+  tinc moltes despeses… podria directament crear i posar-se tots a Contactes en el seu respectiu grup?»). Grup nou de Contactes «Magatzems de
+  materials» (`proveidor`, tipus «Magatzem de materials»; `canonicalClientType878191` hi porta magatzem, almacén, subministraments…). El grup d'una
+  despesa segons el contacte del proveïdor (`contacteProv878566`, `grupContacteProv878566`, pel NIF o pel nom): industrial o constructora →
+  Industrials; magatzem → Materials. S'aplica en llegir-la amb IA (també passa a Materials una «Subcontracta» d'un magatzem) i en escriure el
+  proveïdor a mà en una despesa nova (en sortir del camp). A Contactes, «Des de les despeses» (`ContactesDespeses878566`): els proveïdors de les
+  despeses (albarans i factures), un per NIF o pel nom, amb el grup que toca (el que tingui més factures), sense la mateixa empresa ni els que ja hi
+  són («Ja hi és · grup»); es poden canviar de grup o desmarcar abans d'afegir-los. La finestra d'«Importar» i aquesta, amb marge. Prova: `v566test`
+  10/10; v553, v493, v414 i agents en verd (`agents303test` ja fallava a la 563: l'avís «Agents posats a les obres»).

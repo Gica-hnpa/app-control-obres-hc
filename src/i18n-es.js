@@ -5868,4 +5868,13 @@ export default {
 "1 triat": "1 elegido",
 "{n} triats": "{n} elegidos",
 "Canviar els triats": "Cambiar los elegidos",
+"Contactes des de les despeses": "Contactos desde los gastos",
+"Encara no hi ha despeses amb proveïdor.": "Todavía no hay gastos con proveedor.",
+"1 proveïdor nou": "1 proveedor nuevo",
+"{n} proveïdors nous": "{n} proveedores nuevos",
+"Afegir {n}": "Añadir {n}",
+"Grup de {n}": "Grupo de {n}",
+"Des de les despeses": "Desde los gastos",
+"Magatzems de materials": "Almacenes de materiales",
+"Magatzem de materials": "Almacén de materiales",
 };
