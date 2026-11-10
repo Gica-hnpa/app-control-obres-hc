@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.555";
+const APP_VERSION878264="87.556";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11664,7 +11664,7 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
   return <div className={"fases-v878342"+(obre?" rajoles-v878551":"")} role="group" aria-label={t("Fases de l’obra")}>
     <span className="tit">{t("Fases")}</span>
     <div className="llista" ref={llista451}>
-      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id);if(obre){try{if(window.matchMedia?.("(min-width:1281px)").matches)setTimeout(()=>window.dispatchEvent(new Event("aco-obre-pres878551")),80)}catch{}}}}>
+      {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id);if(obre)setTimeout(()=>window.dispatchEvent(new Event("aco-obre-pres878551")),80)}}>
         <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}{x.av>0&&<i className="av-rajola-v878552" title={t("Avisos del pressupost: {n}",{n:x.av})}><AlertTriangle size={12} aria-hidden="true"/> {x.av}</i>}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
     </div>
@@ -16312,7 +16312,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   const[presObert427,setPresObert427]=useState(presObertInici878427);
   const giraPres427=o=>setPresObert427(o);
   // V87.551 · tocar una fase a l'ordinador obre el seu pressupost (a pantalla sencera), amb totes les opcions a dins
-  useEffect(()=>{const fo=()=>setPresObert427(true);window.addEventListener("aco-obre-pres878551",fo);return()=>window.removeEventListener("aco-obre-pres878551",fo)},[]);
+  useEffect(()=>{const fo=()=>{setPresObert427(true);try{if(!window.matchMedia?.("(min-width:1281px)").matches)setTimeout(()=>document.querySelector("details.pres-bloc-v878427")?.scrollIntoView({behavior:"smooth",block:"start"}),160)}catch{}};window.addEventListener("aco-obre-pres878551",fo);return()=>window.removeEventListener("aco-obre-pres878551",fo)},[]);
   const [editBudget8760b,setEditBudget8760b]=useState(false);
   useEffect(()=>{const av=v=>{window.__acoEditPres878380=v;window.dispatchEvent(new Event("aco-edit-pres-878380"))};av(!!editBudget8760b);return ()=>{if(editBudget8760b)av(false)}},[editBudget8760b]);
   // V87.346 · comissió amagada (l'Héctor, 22/10/2026: «un clic amb un espia per posar el %… que em refaci el pressupost aplicant a
@@ -21818,7 +21818,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.555",
+    app_version:"87.556",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

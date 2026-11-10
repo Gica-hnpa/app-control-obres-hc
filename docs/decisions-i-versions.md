@@ -3661,3 +3661,7 @@
   l'import. Es desen a `part.material` amb `altra878555`/`cat878555` i, en desar el parte, `despesesParte878352` en fa despeses de tipus «Altres» amb
   «Combustible: …» al concepte; el resum del dia les ensenya igual. `src/theme-v878555.css`. Prova: `v555test.mjs` (12). `partes352test`: el bloc nou
   i el camí «Dia a dia» (abans «Seguiment»); hi queden 2 comprovacions velles del ciment (posa l'import a l'etiqueta i no a la casella, des de la V87.535).
+- **V87.556 · Les fases en rajoles també al mòbil i l'iPad** (l'Héctor, 10/11/2026: «les fases… rajoles en pc com a mínim i en el mòbil potser també»).
+  `src/theme-v878556.css` (≤1280 px): al telèfon, una rajola per fila a tota l'amplada (el nom en dues línies, l'import i el %), «Fases ▾» a dalt; a
+  la tauleta, en columnes. Tocar una fase la tria, obre el seu pressupost i hi baixa (`aco-obre-pres878551` també fora de l'ordinador, amb
+  `scrollIntoView`). Els avisos a la rajola, a tots els aparells. Prova: `v556test.mjs` (6, amb dues fases); `v551test` 11/11.
