@@ -3744,3 +3744,9 @@
   `calc(100dvh - 16px)`. Provat amb el menú d'una certificació a 1440×900, 1440×700, 1024×768, 390×844 i 375×667: sencer, sense llisca.
   Proves que ja fallaven a la V87.563 (no són d'aquesta versió): rendiment376 (ordre del menú), v455, albarans, despesestest, v438 (1 i 11),
   v461 (12-14), menustest (Opcions del pressupost), v435 (3).
+- **V87.565 · Avisos: la finestra amb marge i seleccionar-ne diversos de cop** (l'Héctor, 10/11/2026: la finestra d'un avís «queda tallat» i
+  «seleccionar tot o més d'una de cop»). La finestra d'un avís (i la de Caixa, `MovCaixa878521`) no tenia marge: «Desar» quedava tallat i «Treure
+  l'avís» sortia com un botó sense estil; ara marge de 14×18 px i els enllaços («Treure l’avís», «Veure’ls tots») com a enllaç. A la llista d'avisos
+  (`AvisosLlista878360`, a Pendent i a la targeta d'Avisos), «Seleccionar»: una casella a cada avís, «Tots», «N triats», «Canviar els triats» i «Fet».
+  La finestra de diversos (`AvisosMulti878565`): la llista, «Recorda-m’ho el dia» (tots), «Ja estan cobrades» (només les factures) i «Treure els
+  avisos» (amb confirmació). `src/theme-v878565.css`. Prova: `v565test` 12/12; v496, avisos360 i v521 en verd.

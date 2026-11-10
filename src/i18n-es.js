@@ -5859,4 +5859,13 @@ export default {
 "Real de l’empresa ({any})": "Real de la empresa ({any})",
 "DGE: previst i real": "GGE: previsto y real",
 "DGE mes a mes": "GGE mes a mes",
+"Treure aquests {n} avisos?": "¿Quitar estos {n} avisos?",
+"Cobrades el": "Cobradas el",
+"Les {n} factures, cobrades el": "Las {n} facturas, cobradas el",
+"Ja estan cobrades": "Ya están cobradas",
+"Treure els avisos": "Quitar los avisos",
+"Triar «{t}»": "Elegir «{t}»",
+"1 triat": "1 elegido",
+"{n} triats": "{n} elegidos",
+"Canviar els triats": "Cambiar los elegidos",
 };

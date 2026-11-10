@@ -1,0 +1,18 @@
+/* V87.565 · la finestra d'un avís (i la de Caixa) amb marge (l'Héctor: «queda tallat»); «Treure l'avís» i «Veure'ls tots» com a enllaç;
+   seleccionar diversos avisos de cop i canviar-los alhora */
+html body .modal>.avis-ed-v878496,html body .modal>.mov-ed-v878521{padding:14px 18px 18px;min-width:0}
+html body .avis-ed-v878496 .treu-v878496,html body .avisos-v878360 .link.mes{background:none;border:0;box-shadow:none;padding:8px 2px;min-height:36px;cursor:pointer;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+html body .avisos-v878360 .link.mes{color:var(--co-accent,#1D4ED8);margin:6px 12px 2px}
+html body .sel-avisos-v878565{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid var(--co-line,#E2E8F0)}
+html body .sel-avisos-v878565:not(.on){justify-content:flex-end}
+html body .sel-avisos-v878565 button{display:inline-flex;align-items:center;gap:6px}
+html body .sel-avisos-v878565 .tots{display:inline-flex;align-items:center;gap:8px;font-weight:700;cursor:pointer}
+html body .sel-avisos-v878565 input,html body .avisos-v878360 .avis-fila-v878496 .chk-v878565{width:20px;height:20px;margin:0;accent-color:#1D4ED8;flex:0 0 auto;cursor:pointer}
+html body .sel-avisos-v878565 .n{color:var(--co-ink-3,#5F7075);font-size:13px;margin-right:auto}
+html body .avisos-v878360 .avis-fila-v878496.sm-v878565{align-items:center;padding-left:12px}
+html body .avisos-v878360 .avis-fila-v878496.on-v878565{background:#EFF6FF}
+html body .multi-v878565 .llista-v878565{margin:0;padding:0;list-style:none;max-height:220px;overflow:auto;border:1px solid var(--co-line,#E2E8F0);border-radius:10px}
+html body .multi-v878565 .llista-v878565 li{display:flex;flex-direction:column;gap:1px;padding:7px 12px;border-bottom:1px solid #EEF2F5;font-size:13.5px}
+html body .multi-v878565 .llista-v878565 li:last-child{border-bottom:0}
+html body .multi-v878565 .llista-v878565 small{color:var(--co-ink-3,#5F7075);font-size:12px}
+html body .multi-v878565 .llista-v878565 li.mes{color:var(--co-ink-3,#5F7075)}

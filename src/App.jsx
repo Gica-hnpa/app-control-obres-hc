@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.564";
+const APP_VERSION878264="87.565";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9252,6 +9252,24 @@ function AvisEditor878496({a,close}){
     <button type="button" className="link treu-v878496" onClick={()=>{if(cobr)factura({avisCobr878496:{off:true}});else posaAvis878496(a,{fora:true});close()}}>{t("Treure l’avís")}</button>
   </div></Modal>;
 }
+// V87.565 · diversos avisos alhora: recordar-los un dia, les factures cobrades i treure'ls
+function AvisosMulti878565({avisos=[],close}){
+  const[dia,setDia]=useState("");const[cobrat,setCobrat]=useState(todayISO8743());
+  const cobrs=avisos.filter(a=>a.k==="cobr");
+  const factura=(a,patch)=>window.__acoPatchFactura878496?.(a.obraId,a.camp,a.ref,patch);
+  const avisa=()=>{try{window.dispatchEvent(new Event("aco-avisos-changed"))}catch{}};
+  const recorda=()=>{avisos.forEach(a=>{if(a.k==="cobr")factura(a,{avisCobr878496:{data:dia}});else posaAvis878496(a,{fins:dia})});avisa();close(true)};
+  const cobrades=()=>{cobrs.forEach(a=>factura(a,a.camp==="facturesTecnic"?{estat:"Cobrada",dataCobrament:cobrat}:{cobrada:true,dataCobrament:cobrat}));avisa();close(true)};
+  const treu=()=>{if(avisos.length>1&&!confirm(t("Treure aquests {n} avisos?",{n:avisos.length})))return;avisos.forEach(a=>{if(a.k==="cobr")factura(a,{avisCobr878496:{off:true}});else posaAvis878496(a,{fora:true})});avisa();close(true)};
+  return <Modal title={avisos.length===1?t("1 avís"):t("{n} avisos",{n:avisos.length})} close={()=>close(false)}><div className="avis-ed-v878496 multi-v878565">
+    <ul className="llista-v878565">{avisos.slice(0,8).map((a,i)=><li key={i}><b>{a.txt}</b>{a.sub||a.extra?<small>{[a.sub,a.extra].filter(Boolean).join(" · ")}</small>:null}</li>)}{avisos.length>8&&<li className="mes">{t("i {n} més",{n:avisos.length-8})}</li>}</ul>
+    <div className="fila"><label><span>{t("Recorda-m’ho el dia")}</span><input type="date" value={dia} onChange={e=>setDia(e.target.value)}/></label>
+      <button type="button" className="primary" disabled={!dia} onClick={recorda}>{t("Desar")}</button></div>
+    {cobrs.length>0&&<div className="fila cobrada"><label><span>{cobrs.length===avisos.length?t("Cobrades el"):t("Les {n} factures, cobrades el",{n:cobrs.length})}</span><input type="date" value={cobrat} onChange={e=>setCobrat(e.target.value)}/></label>
+      <button type="button" className="secondary" disabled={!cobrat} onClick={cobrades}><Check size={16} aria-hidden="true"/> {cobrs.length===1?t("Ja està cobrada"):t("Ja estan cobrades")}</button></div>}
+    <button type="button" className="link treu-v878496" onClick={treu}>{avisos.length===1?t("Treure l’avís"):t("Treure els avisos")}</button>
+  </div></Modal>;
+}
 function mesLocal878360(dt=new Date()){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")}
 // V87.474 · «Pendent de tancar» (l'Héctor, 2/11/2026, amb el CEE de Cornellà: la feina és acabada, però falta l'etiqueta, la factura i el
 // cobrament): l'expedient continua obert i el que falta surt als avisos de l'Inici i del Resum. En tancar-lo amb coses pendents, l'app ho diu.
@@ -9300,14 +9318,29 @@ function ordenaAvisos878360(l){return [...l].sort((a,b)=>(TONS878360[a.tone]??3)
 function AvisosLlista878360({avisos=[],onObre,max=6,className="",nu=false}){
   const[tots,setTots]=useState(false);
   const[ed,setEd]=useState(null);
-  const fila=(a,i)=><div key={a.k+":"+(a.obraId||a.vista||"")+":"+(a.ref||"")+":"+i} className={"avis-fila-v878496 "+a.tone}><button type="button" className={"avis "+a.tone} onClick={()=>onObre?.(a)}><i aria-hidden="true"/><span><b>{a.txt}</b>{a.sub||a.extra?<small>{[a.sub,a.extra].filter(Boolean).join(" · ")}</small>:null}</span><ChevronRight size={16} aria-hidden="true"/></button><button type="button" className="ed-v878496" onClick={()=>setEd(a)} aria-label={t("Canviar l’avís")} title={t("Canviar l’avís")}><PenLine size={17} aria-hidden="true"/></button></div>;
+  // V87.565 · seleccionar-ne tots o diversos de cop (l'Héctor, 10/11/2026: «seleccionar tot o més d'una de cop») i canviar-los alhora
+  const[sm,setSm]=useState(false);const[sel,setSel]=useState(()=>new Set());const[multi,setMulti]=useState(null);
+  const clau=a=>clauAvis878496(a);
+  const togS=a=>setSel(s=>{const n=new Set(s);const k=clau(a);if(n.has(k))n.delete(k);else n.add(k);return n});
+  const fila=(a,i)=>{const on=sm&&sel.has(clau(a));return <div key={a.k+":"+(a.obraId||a.vista||"")+":"+(a.ref||"")+":"+i} className={"avis-fila-v878496 "+a.tone+(sm?" sm-v878565":"")+(on?" on-v878565":"")}>
+    {sm&&<input type="checkbox" className="chk-v878565" checked={on} onChange={()=>togS(a)} aria-label={t("Triar «{t}»",{t:a.txt})}/>}
+    <button type="button" className={"avis "+a.tone} aria-pressed={sm?on:undefined} onClick={()=>sm?togS(a):onObre?.(a)}><i aria-hidden="true"/><span><b>{a.txt}</b>{a.sub||a.extra?<small>{[a.sub,a.extra].filter(Boolean).join(" · ")}</small>:null}</span>{!sm&&<ChevronRight size={16} aria-hidden="true"/>}</button>
+    {!sm&&<button type="button" className="ed-v878496" onClick={()=>setEd(a)} aria-label={t("Canviar l’avís")} title={t("Canviar l’avís")}><PenLine size={17} aria-hidden="true"/></button>}</div>};
   const edM=ed&&<AvisEditor878496 a={ed} close={()=>setEd(null)}/>;
-  if(nu)return <div className={"avisos-v878360 nu-v878495 "+className}><div className="llista">{avisos.map(fila)}</div>{edM}</div>;
+  const triats=avisos.filter(a=>sel.has(clau(a)));
+  const surt=()=>{setSm(false);setSel(new Set())};
+  const multiM=multi&&<AvisosMulti878565 avisos={multi} close={fet=>{setMulti(null);if(fet)surt()}}/>;
+  const barra=avisos.length>1&&<div className={"sel-avisos-v878565"+(sm?" on":"")}>{!sm?<button type="button" className="secondary small" onClick={()=>{setSm(true);setSel(new Set());setTots(true)}}><ListChecks size={15} aria-hidden="true"/> {t("Seleccionar")}</button>
+    :<><label className="tots"><input type="checkbox" checked={triats.length===avisos.length} onChange={e=>setSel(e.target.checked?new Set(avisos.map(clau)):new Set())}/> {t("Tots")}</label>
+      <span className="n">{triats.length===1?t("1 triat"):t("{n} triats",{n:triats.length})}</span>
+      <button type="button" className="primary small" disabled={!triats.length} onClick={()=>setMulti(triats)}>{t("Canviar els triats")}</button>
+      <button type="button" className="secondary small" onClick={surt}>{t("Fet")}</button></>}</div>;
+  if(nu)return <div className={"avisos-v878360 nu-v878495 "+className}>{barra}<div className="llista">{avisos.map(fila)}</div>{edM}{multiM}</div>;
   if(!avisos.length)return null;
-  const vis=tots?avisos:avisos.slice(0,max);
+  const vis=tots||sm?avisos:avisos.slice(0,max);
   return <Card title={t("Avisos")} className={"avisos-v878360 "+className} action={<span className="n-avisos">{avisos.length}</span>}>
-    <div className="llista">{vis.map(fila)}</div>{edM}
-    {avisos.length>max&&<button type="button" className="link mes" onClick={()=>setTots(v=>!v)}>{tots?t("Veure’n menys"):t("Veure’ls tots ({n})",{n:avisos.length})}</button>}
+    {barra}<div className="llista">{vis.map(fila)}</div>{edM}{multiM}
+    {avisos.length>max&&!sm&&<button type="button" className="link mes" onClick={()=>setTots(v=>!v)}>{tots?t("Veure’n menys"):t("Veure’ls tots ({n})",{n:avisos.length})}</button>}
   </Card>;
 }
 function obreDoc878360(a){window.__acoEmpresaVista878353=a.vista||"docs";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Empresa"}}))}catch{}}
@@ -22099,7 +22132,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.564",
+    app_version:"87.565",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
