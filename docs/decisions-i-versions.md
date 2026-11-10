@@ -3673,3 +3673,10 @@
   pot haver dins la targeta el text Pressupost o pressupostos en cas que hi hagi més d'un?», vist amb captures abans). `FasesObra878342` amb `obre`: la
   `.tit` diu «Pressupost» o «Pressupostos» (abans «Fases», amagat) i la banda és una graella amb el títol i «Fases ▾» a dalt i les rajoles a sota, a
   tots els aparells. `src/theme-v878558.css`. `v556test` 6/6.
+- **V87.559 · Factura directa des de Facturació** (el client de Socoterm, via l'Héctor, 9/11/2026: «facturar obres o feines petites per administració
+  sense pressupost previ… hauríem d'obrir nou expedient tot i així per seguir numeracions?»). A Facturació de l'empresa, «Factura directa»
+  (`FacturaDirecta878559`): client (de la llista o nou), obra opcional, número de la sèrie de l'empresa (`serieEmpresa878337`, `facturesEmpresa878337`,
+  `desaSerieEmpresa878337`), data, venciment, línies (concepte, quantitat, unitat, preu), IVA i retenció. Es desa amb `importaObresAnteriors878358`
+  (`extra878559`: `directa878559`, `linies`, per cobrar): sense obra, a «Factures {any} · client» (tancada, `importat878358:"factura-directa"`). El PDF
+  (`facturaDirectaHtml878559`, tipus `facturadirecta878559` a `htmlDoc878405`; `docDe878407` el tria) s'envia i s'imprimeix com les altres.
+  `src/theme-v878559.css`. Prova: `v559test.mjs` (11). `facturacio337test` 32/32 («Exportar Excel» és dins de «Llistat» des de la V87.501).

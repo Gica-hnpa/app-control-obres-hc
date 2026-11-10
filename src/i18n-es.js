@@ -5815,4 +5815,14 @@ export default {
 "Transport": "Transporte",
 "Dades guardades": "Datos guardados",
 
+"Tria el client o escriu-ne el nom.": "Elige el cliente o escribe su nombre.",
+"Posa com a mínim una línia amb el concepte i l’import.": "Pon como mínimo una línea con el concepto y el importe.",
+"Factura directa": "Factura directa",
+"Factura {n} creada": "Factura {n} creada",
+"Per a feines petites o per administració, sense pressupost ni certificació. El número és el següent de la sèrie de l’empresa.": "Para trabajos pequeños o por administración, sin presupuesto ni certificación. El número es el siguiente de la serie de la empresa.",
+"— Un client nou —": "— Un cliente nuevo —",
+"Obra (opcional)": "Obra (opcional)",
+"La factura es guarda en aquesta obra.": "La factura se guarda en esta obra.",
+"Es guarda a «Factures {any} · client», a part de les obres en curs.": "Se guarda en «Facturas {any} · cliente», aparte de las obras en curso.",
+"p. ex. Reparació per administració": "p. ej. Reparación por administración",
 };

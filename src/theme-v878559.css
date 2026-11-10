@@ -1,0 +1,12 @@
+/* V87.559 · Factura directa */
+html body .fdir-btn-v878559{display:inline-flex;align-items:center;gap:6px}
+html body .fdir-v878559{display:flex;flex-direction:column;gap:12px}
+html body .fdir-v878559 .ajuda{margin:0;color:var(--co-ink-3,#5F7075)}
+html body .fdir-v878559 label small{font-size:12px;color:var(--co-ink-3,#5F7075)}
+html body .linies-v878559{display:flex;flex-direction:column;gap:6px;border:1px solid var(--co-line,#E2E8F0);border-radius:12px;padding:10px}
+html body .linies-v878559 .cap,html body .linies-v878559 .fila{display:grid;grid-template-columns:minmax(0,1fr) 70px 60px 90px 96px 28px;gap:6px;align-items:center}
+html body .linies-v878559 .cap span{font-size:11.5px;font-weight:800;text-transform:uppercase;color:var(--co-ink-3,#5F7075)}
+html body .linies-v878559 input{min-height:38px;width:100%;min-width:0;box-sizing:border-box}
+html body .linies-v878559 .imp{text-align:right;font-variant-numeric:tabular-nums}
+html body .linies-v878559 .afegir{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;margin-top:4px}
+@media (max-width:700px){html body .linies-v878559 .cap{display:none}html body .linies-v878559 .fila{grid-template-columns:1fr 1fr 1fr 28px;grid-template-areas:"c c c x" "q u p p" "i i i i";padding-bottom:8px;border-bottom:1px solid #EEF2F5}html body .linies-v878559 .conc{grid-area:c}html body .linies-v878559 .q{grid-area:q}html body .linies-v878559 .ut{grid-area:u}html body .linies-v878559 .pu{grid-area:p}html body .linies-v878559 .imp{grid-area:i}html body .linies-v878559 .x{grid-area:x}}
