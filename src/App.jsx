@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.566";
+const APP_VERSION878264="87.567";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -22175,7 +22175,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.566",
+    app_version:"87.567",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -25990,7 +25990,14 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
           </div>}
         </section>})}</div>;
     }
-    const cos=(g,rs,clau)=>g.k==="ma"?dies(rs):factures(rs,clau);
+    const cos0=(g,rs,clau)=>g.k==="ma"?dies(rs):factures(rs,clau);
+    // V87.567 · per mesos quan n'hi ha molts (l'Héctor, 10/11/2026: «quan en una obra estic molts mesos… podem fer subcapítols per mesos… sinó
+    // l'scroll és interminable»): la mà d'obra amb més de 10 dies o les factures si n'hi ha més de 12, de més d'un mes. El mes més recent, obert.
+    const perMes567=rs=>{const m=new Map();rs.forEach(a=>{const k=String(dataIso878470(a.data)||a.data||"").slice(0,7)||"—";if(!m.has(k))m.set(k,[]);m.get(k).push(a)});return [...m.entries()].map(([k,l])=>({k,rows:l})).sort((a,b)=>String(b.k).localeCompare(String(a.k)))};
+    const nomMes567=k=>{const [y,mm]=String(k).split("-");if(!y||!mm)return k;const s=new Date(+y,+mm-1,1).toLocaleDateString(loc878272(),{month:"long",year:"numeric"});return s.charAt(0).toUpperCase()+s.slice(1)};
+    const cos=(g,rs,clau)=>{const ms=perMes567(rs);const ma=g.k==="ma";const molts=ma?new Set(rs.map(a=>a.data)).size>10:rs.length>12;if(ms.length<2||!molts)return cos0(g,rs,clau);
+      return <div className="mesos-v878567">{ms.map((x,i)=>{let nTxt="";if(ma){const d=new Set(x.rows.map(a=>a.data)).size,h=x.rows.reduce((s,a)=>s+(maDe878348(a).hores||0),0);nTxt=[d===1?i18nT("1 dia"):i18nT("{n} dies",{n:d}),h>0?fhMa878348(h):""].filter(Boolean).join(" · ")}
+        return paquet(clau+"|m:"+x.k,<b>{nomMes567(x.k)}</b>,x.rows,()=>cos0(g,x.rows,clau+"|m:"+x.k),i===0,nTxt)})}</div>};
     const nivell=(g,rs)=>vistaD878348==="obra"&&!fixedObra?perObra(rs).map((o,i,arr)=>paquet(g.k+"|o:"+o.k,nomObra(o),o.rows,()=>cos(g,o.rows,g.k+"|o:"+o.k),arr.length===1))
       :vistaD878348==="any"&&!fixedObra?perAny(rs).map((y,i,arr0)=>paquet(g.k+"|y:"+y.y,<b>{y.y}</b>,y.rows,()=>perObra(y.rows).map((o,j,arr)=>paquet(g.k+"|y:"+y.y+"|o:"+o.k,nomObra(o),o.rows,()=>cos(g,o.rows,g.k+"|y:"+y.y+"|o:"+o.k),arr.length===1)),arr0.length===1))
       :cos(g,rs,g.k);

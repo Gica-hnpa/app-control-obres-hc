@@ -3760,3 +3760,8 @@
   despeses (albarans i factures), un per NIF o pel nom, amb el grup que toca (el que tingui més factures), sense la mateixa empresa ni els que ja hi
   són («Ja hi és · grup»); es poden canviar de grup o desmarcar abans d'afegir-los. La finestra d'«Importar» i aquesta, amb marge. Prova: `v566test`
   10/10; v553, v493, v414 i agents en verd (`agents303test` ja fallava a la 563: l'avís «Agents posats a les obres»).
+- **V87.567 · Despeses per mesos quan n'hi ha moltes** (l'Héctor, 10/11/2026: «quan en una obra estic molts mesos… podem fer subcapítols per mesos…
+  sinó l'scroll és interminable»). Dins de cada grup (Mà d'obra, Materials, Industrials…), si la mà d'obra té més de 10 dies o les factures són més
+  de 12, i són de més d'un mes: un apartat per mes («Setembre del 2026 · 12 dies · 192 h · 4.800 €»), el més nou obert i els altres plegats
+  (`perMes567` a `llista878348`). Dins de l'obra, a Despeses i a «Per obra» / «Per any». Prova: `v567test` 5/5; `despeses348test` adaptada a «Per
+  obra» / «Per any» de la V87.564 (22/22); despeses345 i 329 en verd.
