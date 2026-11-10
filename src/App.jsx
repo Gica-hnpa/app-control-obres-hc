@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.551";
+const APP_VERSION878264="87.552";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -11559,7 +11559,10 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
   const gs=fasesObra878342(data);
   const act=ensureBudgetGroups8786(data).active;
   const pfs=proformesObra878337(data);
-  const info=g=>{const rows=(data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id&&!esFora878410(r));const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);const cert=pfs.filter(f=>(f.budgetId||"principal")===g.id).reduce((s,f)=>s+(+f.base||0),0);return {n:rows.length,total,pc:total>0.005?cert/total*100:null}};
+  const info=g=>{const rows=(data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id&&!esFora878410(r));const total=rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0);const cert=pfs.filter(f=>(f.budgetId||"principal")===g.id).reduce((s,f)=>s+(+f.base||0),0);
+    // V87.552 · amb les rajoles, els avisos de cada fase (la targeta del pressupost ja no es veu fins que s'obre)
+    const av=obre?avisosPressupost878320((data.partides||[]).filter(r=>(r.budgetId||"principal")===g.id)).length:0;
+    return {n:rows.length,total,pc:total>0.005?cert/total*100:null,av}};
   const alt437=altIds878437(data);
   const totalObra=gs.filter(g=>!alt437.has(g.id)).reduce((s,g)=>s+info(g).total,0);
   const actAlt=alt437.has(act);
@@ -11569,7 +11572,7 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
     <span className="tit">{t("Fases")}</span>
     <div className="llista" ref={llista451}>
       {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id);if(obre){try{if(window.matchMedia?.("(min-width:1281px)").matches)setTimeout(()=>window.dispatchEvent(new Event("aco-obre-pres878551")),80)}catch{}}}}>
-        <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}</span></button>})}
+        <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}{x.av>0&&<i className="av-rajola-v878552" title={t("Avisos del pressupost: {n}",{n:x.av})}><AlertTriangle size={12} aria-hidden="true"/> {x.av}</i>}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
     </div>
     {!readOnly&&<details className="mes-v878342 opcions-v878500"><summary aria-label={t("Més opcions de les fases")}>{t("Fases")}<ChevronDown size={16} aria-hidden="true"/></summary><div className="menu">
@@ -15240,6 +15243,8 @@ function CompartirBanc878460({b}){
 // V87.465 · a Preus, el banc és una targeta plegada com les altres
 function BancBloc878465(){
   const[b,setB]=useState(()=>bancPreus878368());
+  // V87.552 · el banc comú arriba després d'obrir la pantalla: la xifra de dalt deia «Cap» mentre a dins ja hi era (Socoterm, 10/11/2026)
+  useEffect(()=>{const f=()=>setB(bancPreus878368());window.addEventListener("aco-banc-comu",f);f();return()=>window.removeEventListener("aco-banc-comu",f)},[]);
   const n=b?.partides?.length||0;
   return <details className="card bloc-v878426 banc-bloc-v878465"><summary><BookOpen size={18} aria-hidden="true"/><span className="t"><b>{t("Banc de preus")}</b></span><span className="xifra">{n?t("{n} partides",{n:n.toLocaleString(loc878272())}):t("Cap")}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos"><BancPreus878368 onCanvi={x=>setB(x||bancPreus878368())}/></div><Recollir878432/></details>;
 }
@@ -17361,6 +17366,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     {/* V87.426 · a sobre del pressupost, plegats: «Ajustos» (el %, els preus i marges, l'obra i la logística i el número per al client) i
         els avisos (l'Héctor: «els avisos per sobre inclús que editar, en un paquet amb desplegable a dins») */}
     {budgetWorkTab878180!=="Validar descompostos"&&(ajustos878426||(!clientMode&&!obra?.compartida&&setData&&!quickMode))&&<details className="card bloc-v878426 ajustos-v878426"><summary><SlidersHorizontal size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Ajustos del pressupost")}</b></span>{ajustos878426?.nMg?<em className="mg-n-v878380">{ajustos878426.nMg===1?i18nT("1 partida per posar al dia"):i18nT("{n} partides per posar al dia",{n:ajustos878426.nMg})}</em>:null}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
+      {!clientMode&&!quickMode&&nomNum528&&<button type="button" className="sub-v878426 nom-fila-v878552" disabled={editBudget8760b} onClick={()=>setNomNumObert528(true)}><span className="com-espia-v878346" aria-hidden="true"><PenLine size={15}/></span><span className="t"><b>{i18nT("Nom i número del pressupost")}</b><small>{nomPresDe878532(numPres878528(data,activeBudgetId),budgetGroups?.find(g=>g.id===activeBudgetId)||{id:activeBudgetId})}</small></span><ChevronRight size={16} className="chev" aria-hidden="true"/></button>}
       {!clientMode&&!obra?.compartida&&setData&&!quickMode&&<button type="button" className="sub-v878426 com-fila-v878426" disabled={editBudget8760b} aria-pressed={com878346.on} onClick={()=>{setComPct878346(com878346.on?com878346.pct:lsGet8779("aco_comissio_pct_v878346",""));setComObert878346(true)}}><span className={`com-espia-v878346 ${com878346.on?"on":""}`} aria-hidden="true"><Percent size={15}/><i/></span><span className="t"><b>{i18nT("Marge d’intermediari")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></button>}
       {ajustos878426?.cos}
     </div><Recollir878432/></details>}
@@ -17368,7 +17374,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={()=>{startManualBudget87115();openBudgetLibrary87218("C01 NOU CAPÍTOL","client")}} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null} onArxiu={f=>{const nm=String(f.name||"").toLowerCase();if(/\.pdf$/.test(nm)||f.type==="application/pdf")setPdf878305(f);else if(/\.bc3$/.test(nm))bc3Pres878435(f);else importExcel?.({target:{files:[f],value:""}})}}/>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     {nomNumObert528&&nomNum528&&<NomNum878528 nom={budgetLabel8786(data,activeBudgetId)} base={String(data?.numPres878528||"")} versio={versioPres878528(data,activeBudgetId)} close={()=>setNomNumObert528(false)} desa={v=>nomNum528(activeBudgetId,v)}/>}
-    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} nAvisos={budgetWorkTab878180!=="Validar descompostos"?avisos878320.length:0} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={!quickMode&&!clientMode&&nomNum528&&!editBudget8760b?<div className="id-pres-v878528 sol-v878532"><button type="button" className="secondary" onClick={()=>setNomNumObert528(true)}><PenLine size={15} aria-hidden="true"/> {i18nT("Canviar el nom o el número")}</button></div>:null} nom={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):null} titol={!quickMode&&budgetGroups?.length?nomPresDe878532(clientMode?"":numPres878528(data,activeBudgetId),budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
+    <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} nAvisos={budgetWorkTab878180!=="Validar descompostos"?avisos878320.length:0} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={null} nom={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):null} titol={!quickMode&&budgetGroups?.length?nomPresDe878532(clientMode?"":numPres878528(data,activeBudgetId),budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
       {budgetWorkTab878180!=="Validar descompostos"&&avisos878320.length>0&&<div className="avisos-dins-v878549"><AvisosPressupost878320 avisos={avisos878320} dins accions={nPreus480>0?{preu:<button type="button" className="secondary buscar-av-v878545" onClick={e=>{e.preventDefault();e.stopPropagation();setPreus480(sensePreu878480(caps))}}><Search size={15} aria-hidden="true"/> {i18nT("Buscar preus")}</button>}:null}/></div>}
       <div className="budget-botons-v878320 pres-accions-v878366">
       {/* V87.426 · l'Héctor (29/10/2026): «la targeta d'accions és interminable… els PDF, una d'imprimir que obri una pantalla amb les
@@ -21704,7 +21710,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.551",
+    app_version:"87.552",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

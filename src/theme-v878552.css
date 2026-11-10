@@ -1,0 +1,9 @@
+/* V87.552 · a l'ordinador, amb les fases en rajoles, s'entra al pressupost per la rajola: la targeta tancada no es mostra */
+html body .av-rajola-v878552{display:none}
+@media (min-width:1281px){
+  html body:has(.fases-v878342.rajoles-v878551) details.pres-bloc-v878427:not([open]){display:none!important}
+  html body .fases-v878342.rajoles-v878551 .av-rajola-v878552{display:inline-flex;align-items:center;gap:3px;margin-left:8px;padding:1px 7px;border-radius:99px;background:#FFEDD5;color:#9A3412;font-style:normal;font-weight:800;font-size:11.5px;vertical-align:1px}
+}
+/* «Nom i número del pressupost» a Ajustos */
+html body .nom-fila-v878552 .t{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+html body .nom-fila-v878552 .t small{font-size:12.5px;color:var(--co-ink-3,#5F7075);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}

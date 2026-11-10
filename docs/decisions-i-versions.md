@@ -3638,3 +3638,9 @@
   `comptes` amb la prova pilot en obrir l'app (abans només obrint la targeta del banc). `src/theme-v878551.css`. Prova: `v551test.mjs` (9; substitueix
   v549test). **Pendent (dit el 10/11):** el mateix a Certificacions, Factures i Despeses («si vull veure o fer alguna acció he de poder clicar i entrar a
   dins»); al parte del dia, altres despeses (combustible…); fases en rajoles també al mòbil.
+- **V87.552 · Un sol accés al pressupost; el nom a Ajustos; la xifra del banc** (l'Héctor, 10/11/2026: «continua sobrant-me un accés al pressupost… puc
+  entrar per la rajola i per la targeta»; «el nom del pressupost no és més normal poder-lo canviar a ajustos del pressupost?»; a la Biblioteca de Socoterm,
+  «posa Ninguno a dalt i a dins de la targeta surt la base»). A l'ordinador, amb les fases en rajoles, la targeta tancada del pressupost no es mostra
+  (`body:has(.rajoles-v878551) details.pres-bloc-v878427:not([open])`) i cada rajola porta els seus avisos (`.av-rajola-v878552`). «Canviar el nom o el
+  número» surt de la targeta i és a «Ajustos del pressupost» com a «Nom i número del pressupost» (`.nom-fila-v878552`, obre `NomNum878528`). `BancBloc878465`
+  escolta `aco-banc-comu` (el banc comú arriba després d'obrir la pantalla). `src/theme-v878552.css`. `v551test` 11/11.
