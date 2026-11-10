@@ -3655,3 +3655,9 @@
   Socoterm? no puc buscar a la general?»). `BaseCerca878554`: el que s'escriu a «Cercar» (2 lletres o més) es busca també a «La meva base» i al banc
   (propi o comú, `bancPreus878368`), amb el preu posat al dia (`pctBanc878533`), el codi, la unitat i d'on surt; 40 a la vista (fins a 200). Només per
   consultar: al pressupost, «Des de Preus». Els filtres surten també amb la llibreria buida si hi ha base. `src/theme-v878554.css`. Prova: `v554test.mjs` (8).
+- **V87.555 · «Altres despeses» al parte del dia** (l'Héctor, 10/11/2026: «al parte del dia no hi ha opció per posar altres despeses com el combustible…
+  hi ha mà d'obra i material, o marcar partides, però falten coses»). Bloc nou a `ParteEditor878349` (`secAltres`, després de Material): cada línia
+  amb el tipus (`CATS_ALTRES878555`: Combustible, Lloguer de maquinària, Peatges i aparcament, Transport, Dietes, Altres), el detall, el proveïdor i
+  l'import. Es desen a `part.material` amb `altra878555`/`cat878555` i, en desar el parte, `despesesParte878352` en fa despeses de tipus «Altres» amb
+  «Combustible: …» al concepte; el resum del dia les ensenya igual. `src/theme-v878555.css`. Prova: `v555test.mjs` (12). `partes352test`: el bloc nou
+  i el camí «Dia a dia» (abans «Seguiment»); hi queden 2 comprovacions velles del ciment (posa l'import a l'etiqueta i no a la casella, des de la V87.535).

@@ -1,0 +1,5 @@
+/* V87.555 · «Altres despeses» al parte del dia */
+html body .pe-altres-v878555 .pe-a-v878555{display:grid;grid-template-columns:minmax(150px,200px) minmax(0,1fr) minmax(120px,180px) minmax(100px,140px) auto;gap:8px;align-items:end}
+html body .pe-altres-v878555 .pe-a-v878555 label{display:flex;flex-direction:column;gap:3px;min-width:0}
+html body .pe-altres-v878555 .pe-a-v878555 select,html body .pe-altres-v878555 .pe-a-v878555 input{width:100%;min-width:0;box-sizing:border-box;min-height:40px}
+@media (max-width:760px){html body .pe-altres-v878555 .pe-a-v878555{grid-template-columns:1fr 1fr auto;grid-template-areas:"cat imp x" "conc conc conc" "prov prov prov"}html body .pe-altres-v878555 .pe-a-v878555 .cat{grid-area:cat}html body .pe-altres-v878555 .pe-a-v878555 .imp{grid-area:imp}html body .pe-altres-v878555 .pe-a-v878555 .x{grid-area:x}html body .pe-altres-v878555 .pe-a-v878555 .conc{grid-area:conc}html body .pe-altres-v878555 .pe-a-v878555 .prov{grid-area:prov}}

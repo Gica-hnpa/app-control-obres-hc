@@ -5808,4 +5808,9 @@ export default {
 "Banc + IPC {p} %": "Banco + IPC {p} %",
 "I {n} més: afina la cerca.": "Y {n} más: afina la búsqueda.",
 "Per posar-ne una en un pressupost, fes servir «Des de Preus» quan l’editis.": "Para ponerla en un presupuesto, usa «Desde Precios» al editarlo.",
+"Detall (p. ex. gasoil de la furgoneta)": "Detalle (p. ej. gasoil de la furgoneta)",
+"Combustible": "Combustible",
+"Lloguer de maquinària": "Alquiler de maquinaria",
+"Peatges i aparcament": "Peajes y aparcamiento",
+"Transport": "Transporte",
 };

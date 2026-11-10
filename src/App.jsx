@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.554";
+const APP_VERSION878264="87.555";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12735,6 +12735,7 @@ function preuFP878352(d={},n={}){
 }
 function preuEf878352(d,n){const p=parseNum8770(n?.preu)||0;return p>0?p:preuFP878352(d,n).auto}
 // les despeses que fa un parte (mà d'obra i material; també les de la feina fora de pressupost)
+const CATS_ALTRES878555=["Combustible","Lloguer de maquinària","Peatges i aparcament","Transport","Dietes","Altres"];
 function despesesParte878352(obraId,d={},part={}){
   const treb=llegeixTreballadors878339();const out=[];const ara=new Date().toISOString();
   const dia=part.data||todayISO8743();const nomDia=new Date(dia+"T12:00:00").toLocaleDateString("ca-ES");
@@ -12747,6 +12748,8 @@ function despesesParte878352(obraId,d={},part={}){
     const hx=Math.min(hh,Math.round(extres506(h)*100)/100),px=Math.round((parseNum8770(h.extres878506?.preu)||c)*100)/100;const imp=Math.round(((hh-hx)*c+hx*px)*100)/100;
     out.push({...base,id:"dp-"+part.id+"-"+k,tipus:"MaObra",proveidor:w?.nom||h.nom||h.categoria||"",treballador:w?.nom||h.nom||h.categoria||"",...(w?{treballadorId:w.id}:{}),categoria:catDe878352(h,treb),hores:String(hh).replace(".",","),preuHora:String(c).replace(".",","),...(hx>0?{horesExtres:String(hx).replace(".",","),preuExtra:String(px).replace(".",",")}:{}),base:String(imp),iva:"0",total:String(imp),notes:[concepte,`Parte del ${nomDia}`,hx>0?`${String(hx).replace(".",",")} h extres`:""].filter(Boolean).join(" · "),...(c>0?{}:{perRevisar:true})})};
   const mat=(m,k,concepte)=>{if(!String(m.concepte||"").trim()&&!(parseNum8770(m.import)>0))return;const b=Math.round((parseNum8770(m.import)||0)*100)/100;const q=parseNum8770(m.q)||0;
+    // V87.555 · «Altres despeses» (combustible, lloguers…): el seu tipus davant del detall
+    if(m.altra878555)m={...m,tipus:"Altres",concepte:[i18nT(m.cat878555||"Altres"),String(m.concepte||"").trim()].filter(Boolean).join(": ")};
     out.push({...base,id:"dp-"+part.id+"-"+k,tipus:m.tipus||"Material",...(m.ambFoto?{teFoto:true}:{}),...(m.numero?{numero:m.numero}:{}),proveidor:String(m.proveidor||"").trim(),base:String(b),iva:"21",total:String(Math.round(b*121)/100),notes:[m.concepte,q?`${fq878349(q)} ${m.ut||""}`.trim()+(parseNum8770(m.pu)>0?` × ${money(parseNum8770(m.pu))}`:""):"",concepte,`Parte del ${nomDia}`].filter(Boolean).join(" · "),...(b>0?{}:{perRevisar:true})})};
   (part.hores||[]).forEach(h=>ma(h,h.id));
   (part.material||[]).forEach(m=>mat(m,m.id));
@@ -12977,7 +12980,7 @@ function ParteResum878349({data={},obraId,part,treb,readOnly,avis,treuAvis,nomCe
     {signa&&onSigna&&<SignaturaPad878403 titol={t("Conforme del client")} sub={[t("Feina fora de pressupost"),part.data?new Date(part.data+"T12:00:00").toLocaleDateString(loc878272()):""].filter(Boolean).join(" · ")} nom={String(data?.obra?.propietat||"").replace(/^pendent$/i,"")} onDesa={onSigna} close={()=>setSigna(false)}/>}
     {!treb&&(fets.length>0||(part.noves||[]).length>0)&&<div className="pr-total"><span>{t("Feina feta del dia")}</span><b>{money(imp)}</b></div>}
     {hores.length>0&&<section className="pr-cap pr-hores"><h4>{t("Hores")} · {fhMa878348(hores.reduce((s,h)=>s+(parseNum8770(h.hores)||0),0))}</h4>{hores.map(h=><div key={h.id} className="pr-p"><span className="txt"><b>{h.nom||t("Sense nom")}</b><small>{catDe878352(h,treballadors)||"—"}</small></span><span className="avui"><b>{fhMa878348(parseNum8770(h.hores))}</b>{!treb?<small>{money(costH(h))}</small>:null}</span></div>)}</section>}
-    {material.length>0&&<section className="pr-cap pr-mat"><h4>{t("Material")}</h4>{material.map(m=><div key={m.id} className="pr-p"><span className="txt"><b>{m.concepte||t("Material")}</b><small>{[parseNum8770(m.q)?`${fq878349(parseNum8770(m.q))} ${m.ut||""}`.trim():"",m.proveidor].filter(Boolean).join(" · ")}</small></span><span className="avui">{!treb?<b>{parseNum8770(m.import)>0?money(parseNum8770(m.import)):t("Sense import")}</b>:null}</span></div>)}</section>}
+    {material.length>0&&<section className="pr-cap pr-mat"><h4>{t("Material")}</h4>{material.map(m=><div key={m.id} className="pr-p"><span className="txt"><b>{m.altra878555?[i18nT(m.cat878555||"Altres"),m.concepte].filter(Boolean).join(": "):(m.concepte||t("Material"))}</b><small>{[parseNum8770(m.q)?`${fq878349(parseNum8770(m.q))} ${m.ut||""}`.trim():"",m.proveidor].filter(Boolean).join(" · ")}</small></span><span className="avui">{!treb?<b>{parseNum8770(m.import)>0?money(parseNum8770(m.import)):t("Sense import")}</b>:null}</span></div>)}</section>}
     {!treb&&cost>0.004&&<div className="pr-total cost"><span>{t("Cost del dia (a Despeses)")}</span><b>{money(cost)}</b></div>}
     {bloquejat&&<p className="pr-bloq">{t("La certificació ja té factura: aquest parte ja no es pot canviar.")}</p>}
     <div className="pe-peu">
@@ -13150,7 +13153,7 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
     </section>;
   const secMaterial=<section className="pe-bloc-v878483 pe-mat-v878352"><h4><Package size={18} aria-hidden="true"/>{t("Material")}{nMat?<small>{nMat}</small>:null}</h4>
       <datalist id="partes-prov-v878352">{proveidors.map(x=><option key={x} value={x}/>)}</datalist>
-      {(part.material||[]).map(m=><div key={m.id} className="pe-m">
+      {(part.material||[]).filter(m=>!m.altra878555).map(m=><div key={m.id} className="pe-m">
         <input className="conc" value={m.concepte||""} onChange={e=>posaM(m.id,{concepte:e.target.value})} placeholder={t("Material")} aria-label={t("Material")}/>
         <label className="q"><small>{t("Quantitat")}</small><input inputMode="decimal" value={m.q||""} onChange={e=>posaM(m.id,{q:e.target.value})} placeholder="0" aria-label={t("Quantitat")}/></label>
         <label className="ut"><small>{t("Unitat")}</small><input value={m.ut||""} onChange={e=>posaM(m.id,{ut:e.target.value})} placeholder={t("u")} aria-label={t("Unitat")} list="partes-ut-v878349"/></label>
@@ -13165,6 +13168,18 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
         <label className="secondary foto-alb-v878483"><Camera size={16} aria-hidden="true"/> {t("Foto de l’albarà")}<input type="file" accept="image/*" capture="environment" hidden onChange={e=>{const f=e.target.files?.[0];e.target.value="";if(f)fotoAlbara483(f)}}/></label>
         <button type="button" className="secondary afegir" onClick={()=>setPart(p=>({...p,material:[...(p.material||[]),{id:"m-"+Date.now(),concepte:"",q:"",ut:"",proveidor:"",import:""}]}))}><Plus size={16} aria-hidden="true"/> {t("Material")}</button>
       </div>
+    </section>;
+  // V87.555 · «Altres despeses» del dia: combustible, lloguer de maquinària, peatges i aparcament, transport, dietes…
+  const altres555=(part.material||[]).filter(m=>m.altra878555);
+  const secAltres=<section className="pe-bloc-v878483 pe-altres-v878555"><h4><Receipt size={18} aria-hidden="true"/>{t("Altres despeses")}{altres555.length?<small>{altres555.length}</small>:null}</h4>
+      {altres555.map(m=><div key={m.id} className="pe-m pe-a-v878555">
+        <label className="cat"><small>{t("Tipus")}</small><select value={m.cat878555||"Combustible"} onChange={e=>posaM(m.id,{cat878555:e.target.value})} aria-label={t("Tipus de despesa")}>{CATS_ALTRES878555.map(c=><option key={c} value={c}>{i18nT(c)}</option>)}</select></label>
+        <input className="conc" value={m.concepte||""} onChange={e=>posaM(m.id,{concepte:e.target.value})} placeholder={t("Detall (p. ex. gasoil de la furgoneta)")} aria-label={t("Detall")}/>
+        <label className="prov"><small>{t("Proveïdor")}</small><input value={m.proveidor||""} onChange={e=>posaM(m.id,{proveidor:e.target.value})} placeholder={t("Proveïdor")} aria-label={t("Proveïdor")} list="partes-prov-v878352"/></label>
+        {!treb&&<label className="imp"><small>{t("Import sense IVA")}</small><input inputMode="decimal" value={m.import||""} onChange={e=>posaM(m.id,{import:e.target.value})} placeholder="0,00 €" aria-label={t("Import sense IVA")}/></label>}
+        <button type="button" className="link x" onClick={()=>setPart(p=>({...p,material:(p.material||[]).filter(y=>y.id!==m.id)}))} aria-label={t("Treure")}>×</button>
+      </div>)}
+      <div className="bts-v878483"><button type="button" className="secondary afegir afegir-altres-v878555" onClick={()=>setPart(p=>({...p,material:[...(p.material||[]),{id:"m-"+Date.now(),altra878555:true,tipus:"Altres",cat878555:"Combustible",concepte:"",proveidor:"",import:""}]}))}><Plus size={16} aria-hidden="true"/> {t("Altres despeses")}</button></div>
     </section>;
   const secNota=<section className="pe-bloc-v878483 pe-nota-v878483"><h4><NotebookPen size={18} aria-hidden="true"/>{t("Nota i fotos")}</h4>
       <textarea rows={3} value={part.nota||""} onChange={e=>setPart(p=>({...p,nota:e.target.value}))} placeholder={t("Què s’ha fet avui…")} aria-label={t("Nota del dia")}/>
@@ -13233,7 +13248,7 @@ function ParteEditor878349({data={},obraId,part,setPart,treb,readOnly,onDesar,on
       <label><span>{t("Dia")}</span><input type="date" value={part.data||""} onChange={e=>setPart(p=>({...p,data:e.target.value}))}/></label>
       <label><span>{t("Qui el fa")}</span><input list="partes-qui-v878349" value={part.qui||""} onChange={e=>setPart(p=>({...p,qui:e.target.value}))} placeholder={t("Encarregat")}/><datalist id="partes-qui-v878349">{treballadors.map(w=><option key={w.id} value={w.nom}/>)}</datalist></label>
     </div>
-    {blocs489?<>{secPersonal}{secMaterial}{secNota}    {<details className="pe-feina-v878483" open={feinaOberta}><summary onClick={e=>{e.preventDefault();setFeinaOberta(v=>!v)}}><Calculator size={18} aria-hidden="true"/><span className="t"><b>{t("Feina feta per partides")}</b>{nMarcades+nNoves?<small>{nMarcades+nNoves===1?t("1 marcada avui"):t("{n} marcades avui",{n:nMarcades+nNoves})}</small>:<small>{t("Opcional: el que s’ha avançat del pressupost")}</small>}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>{cosFeina}
+    {blocs489?<>{secPersonal}{secMaterial}{secAltres}{secNota}    {<details className="pe-feina-v878483" open={feinaOberta}><summary onClick={e=>{e.preventDefault();setFeinaOberta(v=>!v)}}><Calculator size={18} aria-hidden="true"/><span className="t"><b>{t("Feina feta per partides")}</b>{nMarcades+nNoves?<small>{nMarcades+nNoves===1?t("1 marcada avui"):t("{n} marcades avui",{n:nMarcades+nNoves})}</small>:<small>{t("Opcional: el que s’ha avançat del pressupost")}</small>}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary>{cosFeina}
     </details>}</>
     :<div className="pe-cartes-v878489">{cartes489.map(c=><button type="button" key={c.k} className={"pe-carta-v878489 "+c.k+(c.xf?" ple":"")} onClick={()=>setObert489(c.k)}><span className="ico">{c.ico}</span><span className="tt">{c.tt}</span>{c.xf?<span className="xf">{c.xf}</span>:null}<ChevronRight size={20} className="chev" aria-hidden="true"/></button>)}</div>}
     {obertC489&&<PantallaSencera878489 titol={obertC489.tt} sub={obertC489.xf} onTorna={()=>setObert489(null)} className={"pe-pantalla-v878489 "+obertC489.k}><div className="parte-ed-v878349 dins-v878489">{obertC489.cos}</div></PantallaSencera878489>}
@@ -21803,7 +21818,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.554",
+    app_version:"87.555",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
