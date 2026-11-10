@@ -18,3 +18,8 @@ html body .desp-ct-v878566 .fila-v878566 .nom .dades-v878569{color:var(--co-ink-
 html body .desp-ct-v878566 .fila-v878566 .nom .dades-v878569.ll,html body .desp-ct-v878566 .llegint-v878569{color:var(--co-ink-3,#5F7075);font-style:italic}
 html body .desp-ct-v878566 .fila-v878566 .nom .comp-v878569{color:#92400E;font-weight:600}
 html body .desp-ct-v878566 .fila-v878566.ja:has(input:not(:disabled)){opacity:1}
+/* V87.570 · «Llegir amb IA les que falten» */
+html body .desp-ct-v878566 .ia-v878570{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid #DBEAFE;background:#F5F9FF;border-radius:10px;font-size:13.5px;color:var(--co-ink-2,#334155)}
+html body .desp-ct-v878566 .ia-v878570 button{display:inline-flex;align-items:center;gap:6px}
+html body .desp-ct-v878566 .ia-v878570 .err{color:#92400E;font-weight:600}
+html body .desp-ct-v878566 .ia-v878570 .ok-ia{color:#166534;font-weight:700}

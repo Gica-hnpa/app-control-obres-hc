@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.569";
+const APP_VERSION878264="87.570";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9693,14 +9693,14 @@ function candidatsDespeses878566(files=[]){
     const nom=String(a.proveidor||"").trim();if(!nom||/^prove[ïi]dor pendent$/i.test(nom)||esMevaEmpresa878505(nom,a.nif))continue;
     const p=nomProv878493(nom),f=nifProv878493(a.nif);if(p.length<3&&f.length<8)continue;
     let e=llista.find(x=>(f.length>=8&&x.f===f)||mateixProv878493(p,x.p));
-    if(!e){e={k:"c"+llista.length,p,f:f.length>=8?f:"",nif:f.length>=8?String(a.nif||"").trim():"",noms:{},ind:0,mat:0,n:0,base:0,pdfs:[],ia:{}};llista.push(e)}
+    if(!e){e={k:"c"+llista.length,p,f:f.length>=8?f:"",nif:f.length>=8?String(a.nif||"").trim():"",noms:{},ind:0,mat:0,n:0,base:0,pdfs:[],fotos:[],ia:{}};llista.push(e)}
     if(!e.f&&f.length>=8){e.f=f;e.nif=String(a.nif||"").trim()}
     const pv=a.prov878569||{};for(const k of ["carrer","codiPostal","poblacio","telefon","email"])if(!e.ia[k]&&String(pv[k]||"").trim())e.ia[k]=String(pv[k]).trim();
-    if(a.tePdf&&e.pdfs.length<4)e.pdfs.push(a.id);
+    if(a.tePdf&&e.pdfs.length<4)e.pdfs.push(a.id);else if(a.teFoto&&!a.tePdf&&e.fotos.length<2)e.fotos.push(a.id);
     e.noms[nom]=(e.noms[nom]||0)+1;if(tp==="Subcontracta")e.ind++;else e.mat++;e.n++;e.base+=albaraBase878259(a);
   }
   return llista.map(e=>{const nom=Object.entries(e.noms).sort((x,y)=>y[1]-x[1]||y[0].length-x[0].length)[0][0];const ja=contacteProv878566(nom,e.nif,files);
-    return {k:e.k,nom,nif:e.nif,n:e.n,base:e.base,pdfs:e.pdfs,ia:e.ia,grup:e.ind>e.mat?"Industrial":"Magatzem de materials",ja:!!ja,jaNom:ja?(ja.c?.nom||ja.ag?.nom||""):"",jaG:ja?.g||"",jaC:ja?.c||null}})
+    return {k:e.k,nom,nif:e.nif,n:e.n,base:e.base,pdfs:e.pdfs,fotos:e.fotos,ia:e.ia,grup:e.ind>e.mat?"Industrial":"Magatzem de materials",ja:!!ja,jaNom:ja?(ja.c?.nom||ja.ag?.nom||""):"",jaG:ja?.g||"",jaC:ja?.c||null}})
     .sort((a,b)=>(a.ja?1:0)-(b.ja?1:0)||b.base-a.base);
 }
 // el text d'un PDF desat (data:…), per files i trossos (cada tros amb la seva x: les capçaleres de dues columnes, proveïdor i client, van per separat)
@@ -9715,40 +9715,78 @@ async function filesPdf878569(dataUrl){
   }
   return out;
 }
-const RE_CP878569=/(?:^|[^\d])((?:0[1-9]|[1-4]\d|5[0-2])\d{3})(?!\d)/;
-const RE_CARRER878569=/^(c\/|c\.\s|cl\.?\s|carrer|calle|av\.?|avda|avinguda|avenida|pl\.?\s|pla[çc]a|plaza|ctra|carretera|pol\.?\s|pol[ií]gon|pol[ií]gono|cam[ií]|camino|pg\.?|passeig|paseo|ronda|rambla|travessera|urb\.?|parc|nau|ap\.? correus)/i;
-const nifsText878569=s=>{const t=String(s||"").toUpperCase().replace(/(\d)[.\s-](?=\d)/g,"$1").replace(/\b([A-HJNP-SUVWXYZ])[\s.-](?=\d{7})/g,"$1").replace(/(\d{7,8})[\s.-](?=[A-Z0-9]\b)/g,"$1");
-  return [...t.matchAll(/(?:^|[^A-Z0-9])(?:ES)?([A-HJNP-SUVW]\d{7}[0-9A-J]|\d{8}[A-Z]|[XYZ]\d{7}[A-Z])(?![A-Z0-9])/g)].map(m=>m[1])};
-const telsText878569=s=>[...String(s||"").matchAll(/(?:\+34[\s.]?)?([6789](?:[\s.]?\d){8})(?!\d)/g)].map(m=>m[1].replace(/\D/g,""));
+// V87.570 · la lectura de les dades del proveïdor, afinada amb les factures reals de Brava (l'Héctor, 11/11/2026: «no està arreglat perquè no hi ha
+// les dades que falten als contactes trets de despeses»). Moltes factures porten el nom del proveïdor dins del logotip (una imatge): no es busca
+// només el bloc del nom, sinó tot el document en ordre (o pel costat del nom, si hi és), fora del bloc del client (la mateixa empresa: el seu NIF,
+// nom, CP o carrer i les files del costat a la mateixa columna). El NIF/CIF es comprova amb la lletra o el dígit de control (fora números de factura
+// o de pressupost) i es prefereix el que va amb «NIF/CIF» o al peu del Registre Mercantil. El telèfon no surt de la línia del compte bancari ni del fax.
+const LLETRES_NIF878570="TRWAGMYFPDXBNJZSQVHLCKE";
+function nifValid878570(n){
+  const s=String(n||"").toUpperCase();
+  if(/^\d{8}[A-Z]$/.test(s))return LLETRES_NIF878570[+s.slice(0,8)%23]===s[8];
+  if(/^[XYZ]\d{7}[A-Z]$/.test(s))return LLETRES_NIF878570[+("XYZ".indexOf(s[0])+s.slice(1,8))%23]===s[8];
+  if(/^[ABCDEFGHJNUVW]\d{7}[0-9A-J]$/.test(s)){const d=s.slice(1,8);let a=0,b=0;for(let i=0;i<7;i++){const x=+d[i];if(i%2===1)a+=x;else{const y=x*2;b+=Math.floor(y/10)+(y%10)}}const c=(10-((a+b)%10))%10;return s[8]===String(c)||s[8]==="JABCDEFGHI"[c]}
+  return false;
+}
+const nifsText878569=s=>{const t=String(s||"").toUpperCase().replace(/\b([A-HJNUVWXYZ])\s*[-.]\s*(?=\d)/g,"$1").replace(/(\d)[.\s-](?=\d)/g,"$1").replace(/(\d{7,8})[\s.-](?=[A-Z0-9]\b)/g,"$1");
+  return [...t.matchAll(/(?:^|[^A-Z0-9])(?:ES)?([A-HJNUVW]\d{7}[0-9A-J]|\d{8}[A-Z]|[XYZ]\d{7}[A-Z])(?![A-Z0-9])/g)].map(m=>m[1]).filter(nifValid878570)};
+const telsText878569=s=>{const t=String(s||"").split(/\bfax\b|\bf\.\s*\d/i)[0];if(/\bES\d{2}\b|iban|c\/c|\bccc\b|compte|cuenta|swift|\bbic\b|n[ºo°]\s*cc/i.test(t))return [];
+  return [...t.matchAll(/(?:\+34[\s.]?)?(?<!\d)([6789](?:[\s.]?\d){8})(?!\d)/g)].map(m=>m[1].replace(/\D/g,""))};
 const emailsText878569=s=>[...String(s||"").matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)].map(m=>m[0].toLowerCase());
+const RE_CP878569=/(?:^|[^\d])((?:0[1-9]|[1-4]\d|5[0-2])\d{3})(?!\d)/;
+const RE_CARRER878569=/^(c\s*\/|c\.\s|cl\.?\s|carrer|calle|av\.?|avda|avgda|avinguda|avenida|pl\.?\s|pla[çc]a|plaza|ctra|crta|carretera|pol\.?\s|p\.?\s?i\.?\s|pol[ií]gon|pol[ií]gono|cam[ií]|camino|pg\.?|passeig|paseo|ronda|rambla|travessera|urb\.?|zona|parc|nau|ap\.? correus|apartat)/i;
+const PROV878570=/\b(girona|gerona|barcelona|tarragona|lleida|l[ée]rida|madrid|val[eè]ncia|alacant|alicante|castell[oó]|murcia|m[uú]rcia|zaragoza|saragossa|osca|huesca|terol|teruel|navarra|balears|baleares)\b/i;
+const BRUT878570=/inscri|registr|\btom\b|\btomo\b|\bfoli|\bfull\b|\bhoja\b|secci|llibre|\blibro\b|\btel|\bfax|\bnif|\bcif|@|www|factur|client|data\b|fecha|p[àa]gina|import|total/i;
+const netCarrer878570=s=>{let t=String(s||"");const k=t.search(/(^|[\s|,;])(c\s*\/|carrer\b|calle\b|av\.|avda\b|avgda\b|avinguda\b|avenida\b|pl\.|pla[çc]a\b|plaza\b|ctra\b|crta\b|carretera\b|pol\.|p\.?\s?i\.|pol[ií]gon|passeig\b|paseo\b|ronda\b|rambla\b|zona\b)/i);if(k>0)t=t.slice(k).replace(/^[\s|,;]+/,"");return t}
+const netCarrer0878570=s=>netCarrer878570(s).replace(/^(adre[çc]a|direcci[oó]n|domicili|domicilio|dir\.)\s*:?\s*/i,"").split(/\s[-–]\s*(?=tel|t\.|fax|telf|tlf|e-?mail|www)|\btel[.:\s]|\bfax\b|\btelf\b|\btlf\b|@|\bnif\b|\bcif\b|\bn\.i\.f|\bc\.i\.f/i)[0].replace(/[\s,;.\-–(]+$/,"").trim();
+const carrerOk878570=s=>{const c=netCarrer0878570(s);return c.length>=5&&c.length<=80&&/[a-zà-ú]{3,}/i.test(c)&&/\s/.test(c)&&!/factur|albar|n[ºo°]\s*\d{5,}|\d{6,}/i.test(c)&&(RE_CARRER878569.test(c)||/\d|s\/n/i.test(c))&&!/registr|inscri|\btom\b|\bfoli/i.test(c)};
 function adrecaText878569(s,ant=""){
-  const m=String(s||"").match(RE_CP878569);if(!m)return null;const cp=m[1];const i=String(s).indexOf(cp,m.index);
-  const abans=String(s).slice(0,i).replace(/[\s,;-]+$/,"").trim(),despres=String(s).slice(i+5);
-  let pob=despres.replace(/^[\s,;.\-–]+/,"").split(/[,;|]|\s{2,}|\btel|\bt\.|\bnif|\bcif|\be-?mail|\bwww/i)[0].trim();let prov="";
-  const pm=pob.match(/\(([^)]+)\)/);if(pm){prov=pm[1].trim();pob=pob.replace(pm[0],"").trim()}pob=pob.replace(/[\s\-–.]+$/,"").replace(/\s*-\s*[A-ZÀ-Ú][a-zà-ú]+$/,m2=>{prov=prov||m2.replace(/^\s*-\s*/,"");return ""}).trim();
-  if(!/[a-zà-ú]/i.test(pob)||pob.length>40)pob="";
-  let carrer=/[a-zà-ú]/i.test(abans)&&abans.length>=5?abans:(RE_CARRER878569.test(String(ant).trim())||(/\d/.test(ant)&&/[a-z]/i.test(ant)&&String(ant).length<70)?String(ant).trim():"");
-  carrer=carrer.replace(/^(adre[çc]a|direcci[oó]n|domicili|domicilio)\s*:?\s*/i,"").replace(/[\s,;-]+$/,"");if(carrer.length>70)carrer="";
+  const txt=String(s||"");const m=txt.match(RE_CP878569);if(!m)return null;const cp=m[1];const i=txt.indexOf(cp,m.index);
+  if(/\d[.,]\d/.test(txt.slice(Math.max(0,i-2),i+7)))return null; // un import (12.345,00), no un CP
+  if(/[A-Za-z]-?$/.test(txt.slice(0,i)))return null; // una referència («FEI-25086»), no un CP
+  let abans=txt.slice(0,i).replace(/(cp|c\.p\.|codi postal|c[oó]digo postal)\s*[.:]*\s*$/i,"").replace(/[\s,;(\-–]+$/,"").trim(),despres=txt.slice(i+5).replace(/^[\s)]*[,;.\-–]*\s*/,"");
+  let pob="",prov="",carrer="";
+  // «PALAMÓS (17230), GIRONA»: la població abans del CP
+  if(abans&&!/\d/.test(abans)&&abans.length<=30&&!RE_CARRER878569.test(abans)&&!/[,]/.test(abans)){pob=abans;abans="";const pm=despres.match(PROV878570);if(pm)prov=pm[0]}
+  else{pob=despres.split(/[,;|]|\s{2,}|\btel|\bt\.|\bnif|\bcif|\be-?mail|\bwww|\bespa[ñn]a\b|\bspain\b/i)[0].trim();
+    const pm=pob.match(/\(([^)]+)\)/);if(pm){prov=pm[1].trim();pob=pob.replace(pm[0],"").trim()}
+    const pv=pob.match(PROV878570);if(pv&&pob.replace(pv[0],"").trim().length>=3&&pob.toLowerCase()!==pv[0].toLowerCase()){prov=prov||pv[0];pob=pob.replace(pv[0],"").replace(/[\s,\-–]+$/,"").trim()}
+    pob=pob.replace(/^de\s+/i,"").replace(/[\s\-–.,]+$/,"").trim()}
+  if(!/[a-zà-ú]/i.test(pob)||pob.length>35||BRUT878570.test(pob))pob="";
+  pob=pob.replace(/["'”».;:]+$/,"").trim();
+  if(abans&&carrerOk878570(abans))carrer=netCarrer0878570(abans);else if(carrerOk878570(ant))carrer=netCarrer0878570(ant);
+  // «CTRA. DE L'ESTARTIT 100 TORROELLA DE MONTGRI / 17257-GIRONA»: si després del CP només hi ha la província, la població és al final del carrer
+  const nomesProv=pob&&PROV878570.test(pob)&&pob.replace(PROV878570,"").replace(/[\s.,\-–]/g,"")==="";
+  if((!pob||nomesProv)&&carrer){const mm=carrer.match(/^(.*?\d+\s*(?:bis|[a-z])?)[\s,]+([A-ZÀ-Ú][A-ZÀ-Ú'’·.\- ]{3,34})$/);if(mm&&!RE_CARRER878569.test(mm[2])&&!/^(bis|baixos|bxs|pis|porta|local|nau|esc|escala|planta|bajos)$/i.test(mm[2].trim())){carrer=mm[1].trim();if(nomesProv)prov=prov||pob;pob=mm[2].trim()}}
+  if(!pob&&!carrer)return null;
   return {carrer,codiPostal:cp,poblacio:pob,provincia:prov};
 }
-// les dades del proveïdor en un PDF: el bloc del seu nom (la seva columna, les files de sota) i, si no s'hi troba, el que no és de la mateixa empresa
 function dadesProvFiles878569(rows,nom){
   const e=empresaInfo878259()||{};let em={};try{em=emissorTecnic878396()||{}}catch{}
   const meus=new Set([e.nif,em.nif].map(nifProv878493).filter(x=>x.length>=8));const meusTel=new Set([e.telefon,e.mobil,em.telefon].map(x=>String(x||"").replace(/\D/g,"").slice(-9)).filter(x=>x.length===9));
-  const meusMail=new Set([e.email,em.email].map(x=>String(x||"").toLowerCase()).filter(Boolean));const meuCp=String(e.codiPostal||em.codiPostal||"").trim();
-  const p=nomProv878493(nom);let ar=-1,ax=0;
-  rows.forEach((segs,ri)=>{if(ar>=0)return;segs.forEach(sg=>{if(ar>=0)return;const n=nomProv878493(sg.s);if(p.length>=5&&n.length>=5&&(n.includes(p)||p.includes(n))){ar=ri;ax=sg.x}})});
-  const bloc=[];if(ar>=0){for(let r=ar;r<Math.min(rows.length,ar+9);r++)rows[r].forEach(sg=>{if(Math.abs(sg.x-ax)<90||(sg.x>=ax-10&&r===ar))bloc.push({r,s:sg.s})})}
-  const tots=rows.flatMap((segs,r)=>segs.map(sg=>({r,s:sg.s})));
-  const busca=llista=>{const d={};let ant="";for(const {s} of llista){
-      if(!d.nif){const n=nifsText878569(s).find(x=>!meus.has(x));if(n)d.nif=n}
-      if(!d.codiPostal){const a=adrecaText878569(s,ant);if(a&&!(meuCp&&a.codiPostal===meuCp&&!llista.some(x=>nomProv878493(x.s).includes(p))))Object.assign(d,a)}
-      if(!d.telefon){const t=telsText878569(s).find(x=>!meusTel.has(x));if(t)d.telefon=t}
-      if(!d.email){const m=emailsText878569(s).find(x=>!meusMail.has(x));if(m)d.email=m}
-      ant=s}return d};
-  const d=bloc.length?busca(bloc):{};
-  if(!d.nif){const ns=[...new Set(tots.flatMap(x=>nifsText878569(x.s)).filter(x=>!meus.has(x)))];if(ns.length===1)d.nif=ns[0]}
-  if(!d.codiPostal&&!bloc.length){const as=[];let ant="";for(const {s} of tots){const a=adrecaText878569(s,ant);if(a&&a.codiPostal!==meuCp)as.push(a);ant=s}if(as.length===1)Object.assign(d,as[0])}
+  const meusMail=new Set([e.email,em.email].map(x=>String(x||"").toLowerCase()).filter(Boolean));const meusCp=new Set([e.codiPostal,em.codiPostal].map(x=>String(x||"").trim()).filter(Boolean));
+  const meusNoms=[e.nom,e.fiscal,e.rao,em.nom].map(nomProv878493).filter(x=>x&&x.length>=6);
+  const meuCarrer=normalizeSearch878191(e.adreca||e.carrer||"").replace(/^(avinguda|avgda|avda|av|carrer|calle|c\/|pl|placa|passeig)\.?\s*/,"").split(/[\s,]+/).filter(w=>w.length>=5)[0]||"";
+  const segs=[];rows.forEach((ss,r)=>ss.forEach(sg=>segs.push({r,x:sg.x,s:sg.s})));
+  // el bloc del client (la mateixa empresa)
+  const etiq=sg=>/^(client|cliente|dades client|datos cliente)\b/i.test(sg.s.trim());
+  const esMeu=sg=>{const n=nomProv878493(sg.s);const t=normalizeSearch878191(sg.s);return nifsText878569(sg.s).some(x=>meus.has(x))||[...meus].some(x=>sg.s.toUpperCase().replace(/[^A-Z0-9]/g,"").includes(x))||meusNoms.some(x=>n.includes(x))||(meuCarrer&&t.includes(meuCarrer))||etiq(sg)};
+  const meusSeg=segs.filter(esMeu);
+  // les files del costat a la mateixa columna (2 amunt i avall; sota l'etiqueta «Client», només avall)
+  const fora=sg=>meusSeg.some(o=>o===sg||(Math.abs(o.x-sg.x)<70&&(etiq(o)?sg.r>=o.r&&sg.r-o.r<=4:Math.abs(o.r-sg.r)<=1)));
+  const net=segs.filter(sg=>!fora(sg));
+  // el nom del proveïdor (si hi és com a text, no dins d'un correu, una web o el peu legal): s'ordena pel costat d'ell
+  const nPg1=Math.max(12,Math.round(rows.length*0.4));
+  const p=nomProv878493(nom);const anc=p.length>=5?net.find(sg=>{if(sg.r>nPg1||/@|www|registr|inscri|protecci|lopd/i.test(sg.s))return false;const n=nomProv878493(sg.s);return n.startsWith(p)||(n.includes(p)&&n.length<=p.length+40)}):null;
+  const ord=anc?[...net].sort((a,b)=>(Math.abs(a.r-anc.r)+(Math.abs(a.x-anc.x)>120?3:0))-(Math.abs(b.r-anc.r)+(Math.abs(b.x-anc.x)>120?3:0))||a.r-b.r):net;
+  const d={};
+  const nifs=[];net.forEach(sg=>nifsText878569(sg.s).forEach(n=>{if(!meus.has(n))nifs.push({n,et:/n\.?\s?i\.?\s?f|c\.?\s?i\.?\s?f|registr|inscri|dni/i.test(sg.s)})}));
+  const nf=nifs.find(x=>x.et)||nifs[0];if(nf)d.nif=nf.n;
+  // el carrer: a la mateixa línia del CP o una o dues files amunt a la mateixa columna (entre mig hi pot haver el telèfon)
+  for(const sg of ord){const amunt=k=>net.find(o=>o.r===sg.r-k&&Math.abs(o.x-sg.x)<60)?.s||"";const ant=carrerOk878570(amunt(1))?amunt(1):carrerOk878570(amunt(2))?amunt(2):amunt(1);const a=adrecaText878569(sg.s,ant);if(a&&!(meusCp.has(a.codiPostal)&&(!a.carrer||(meuCarrer&&normalizeSearch878191(a.carrer).includes(meuCarrer))))){Object.assign(d,a);break}}
+  const RE_TEL878570=/(^|[\s|,;(-])(t|tel|telf|tlf|tel[eè]fon|tel[eé]fono|phone)\s*[.:]?\s*\d/i;
+  for(const sg of [...ord.filter(x=>RE_TEL878570.test(x.s)),...ord]){const t=telsText878569(sg.s).find(x=>!meusTel.has(x));if(t){d.telefon=t;break}}
+  const mails=ord.flatMap(sg=>emailsText878569(sg.s)).filter(x=>!meusMail.has(x)&&!/protecci|lopd|rgpd/i.test(x));d.email=mails.find(x=>/^(info|administracio|administracion|admin|comercial|oficina|facturacio|facturacion)@/.test(x))||mails[0]||"";
   for(const k of Object.keys(d))if(!d[k])delete d[k];
   if(d.codiPostal&&!d.provincia)d.provincia=provinciaForCp8773(d.codiPostal)||"";
   return d;
@@ -9763,6 +9801,9 @@ const CAMPS878569=[["nif","NIF"],["carrer","Adreça"],["codiPostal","CP"],["pobl
 function ContactesDespeses878566({files=[],onImporta,onCompleta,close}){
   const [llista,setLlista]=useState(()=>candidatsDespeses878566(files).map(x=>({...x,on:!x.ja,dades:null,comp:true})));
   const [fet,setFet]=useState(null);const [llegint,setLlegint]=useState(0);
+  // V87.570 · les que el text de la factura no dona (el CIF dins del logotip, factures fetes amb foto): llegir-ne una de cada amb la IA
+  const [iaOn,setIaOn]=useState(false);const [iaEst,setIaEst]=useState("");const [iaN,setIaN]=useState(0);
+  useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setIaOn(!!x)}).catch(()=>{});return()=>{viu=false}},[]);
   // es llegeixen els PDF d'un proveïdor rere l'altre (sense IA)
   useEffect(()=>{let viu=true;(async()=>{const ls=candidatsDespeses878566(files);setLlegint(ls.length);for(const c of ls){if(!viu)return;const d=await dadesProveidor878569(c);if(!viu)return;setLlista(l=>l.map(x=>x.k===c.k?{...x,dades:d}:x));setLlegint(n=>Math.max(0,n-1))}})();return()=>{viu=false}},[]);
   const falta=x=>{if(!x.jaC||!x.dades)return [];const c=x.jaC;const cur={nif:c.nif,carrer:c.adreca||c.carrer,codiPostal:c.codiPostal,poblacio:c.poblacio,telefon:c.telefon||c.mobil,email:c.email};return CAMPS878569.filter(([k])=>x.dades[k]&&!String(cur[k]||"").trim()).map(([k])=>k)};
@@ -9777,6 +9818,30 @@ function ContactesDespeses878566({files=[],onImporta,onCompleta,close}){
     setFet({n:ns.length,m:Object.keys(ups).length});
     setLlista(l=>l.map(x=>x.on&&!x.ja?{...x,ja:true,on:false,jaNom:x.nom,jaG:x.grup==="Industrial"?"industrial":x.grup==="Altres"?"altres":"proveidor",jaC:null}:ups[x.jaC?.id]?{...x,jaC:{...x.jaC,...ups[x.jaC.id]}}:x));
   }
+  // els que encara no tenen NIF o adreça (ni a les dades llegides ni, si ja hi és, al contacte) i tenen una factura desada (PDF o foto)
+  const teC=(x,k)=>{const c=x.jaC;if(!c)return false;return k==="carrer"?!!String(c.adreca||c.carrer||"").trim():!!String(c[k]||"").trim()};
+  const calIa=x=>!!x.dades&&!x.ia570&&(x.pdfs.length||x.fotos.length)&&(x.ja?!!x.jaC:true)&&["nif","codiPostal"].some(k=>!x.dades[k]&&!teC(x,k));
+  const perIa=llista.filter(calIa);
+  async function llegeixIa(){
+    if(!perIa.length||!confirm(perIa.length===1?t("Es llegirà una factura amb la IA (1 lectura). Continuar?"):t("Es llegirà una factura de cada proveïdor amb la IA ({n} lectures). Continuar?",{n:perIa.length})))return;
+    setIaEst("llegint");setIaN(perIa.length);
+    for(const x of perIa){
+      const id=x.pdfs[0]||x.fotos[0];let r=null;
+      try{r=await readAlbaraAI878259({pdf:lsGet8779(albaraPdfKey878259(id),"")||"",foto:x.pdfs[0]?"":(lsGet8779(albaraFotoKey878259(id),"")||""),pdfText:""})}
+      catch(e){setIaEst(String(e?.message||e));return}
+      if(!r){setIaEst("no");return}
+      // la funció d'abans no llegeix el NIF: cal tornar-la a desplegar
+      if(!("nif" in r)){setIaEst("vella");return}
+      const nifOk=r.nif&&!esMevaEmpresa878505("",r.nif)?String(r.nif).replace(/[^A-Za-z0-9]/g,"").toUpperCase():"";
+      const nou=Object.fromEntries(Object.entries({nif:nifOk,carrer:r.adreca,codiPostal:r.cp,poblacio:r.poblacio,telefon:String(r.telefon||"").replace(/\D/g,"").slice(-9),email:r.email}).filter(([,v])=>String(v||"").trim()).map(([k,v])=>[k,String(v).trim()]));
+      if(nou.codiPostal&&!nou.provincia)nou.provincia=provinciaForCp8773(nou.codiPostal)||"";
+      setLlista(l=>l.map(y=>y.k===x.k?{...y,ia570:true,dades:{...nou,...Object.fromEntries(Object.entries(y.dades||{}).filter(([,v])=>v))}}:y));
+      // a la despesa, perquè no s'hagi de tornar a llegir
+      try{const {provincia:_p,nif:nn,...pv}=nou;writeAlbarans878259(readAlbarans878259().map(a=>a.id===id?{...a,...(nn&&!a.nif?{nif:nn}:{}),prov878569:{...pv,...(a.prov878569||{})}}:a))}catch(e){console.warn(e)}
+      setIaN(n=>Math.max(0,n-1));
+    }
+    setIaEst("fet");
+  }
   const nomG=g=>i18nT((GRUPS_CONTACTE878315.find(([k])=>k===g)||[g,g])[1]);
   const txtDades=d=>{if(!d)return "";const adr=[d.carrer,[d.codiPostal,d.poblacio].filter(Boolean).join(" ")].filter(Boolean).join(", ");return [adr,d.telefon,d.email].filter(Boolean).join(" · ")};
   const nomsFalta=x=>falta(x).map(k=>t(CAMPS878569.find(c=>c[0]===k)[1])).join(", ");
@@ -9785,6 +9850,13 @@ function ContactesDespeses878566({files=[],onImporta,onCompleta,close}){
     {fet&&(fet.n>0||fet.m>0)&&<p className="ok" role="status"><Check size={16} aria-hidden="true"/> {[fet.n?(fet.n===1?t("S’ha afegit 1 contacte a Contactes."):t("S’han afegit {n} contactes a Contactes.",{n:fet.n})):"",fet.m?(fet.m===1?t("S’ha completat 1 contacte."):t("S’han completat {n} contactes.",{n:fet.m})):""].filter(Boolean).join(" ")}</p>}
     {!llista.length?<p className="ajuda">{t("Encara no hi ha despeses amb proveïdor.")}</p>:<>
       <p className="n"><b>{nous.length===1?t("1 proveïdor nou"):t("{n} proveïdors nous",{n:nous.length})}</b>{llista.length>nous.length&&<span> · {t("{n} ja hi són",{n:llista.length-nous.length})}</span>}{llegint>0&&<span className="llegint-v878569"> · {t("Llegint les factures… ({n})",{n:llegint})}</span>}</p>
+      {!llegint&&(perIa.length>0||iaEst)&&<div className="ia-v878570">{iaEst==="llegint"?<span>{t("Llegint amb IA… ({n})",{n:iaN})}</span>
+        :iaEst==="vella"?<span className="err">{t("La IA encara no llegeix el NIF ni l’adreça: cal tornar a instal·lar la funció «aco-ia» a Supabase.")}</span>
+        :iaEst==="no"?<span className="err">{t("La IA no està disponible en aquest compte.")}</span>
+        :iaEst==="fet"?<span className="ok-ia">{t("Llegit amb IA.")}</span>
+        :iaEst?<span className="err">{iaEst}</span>
+        :iaOn?<><span>{perIa.length===1?t("A 1 proveïdor li falta el NIF o l’adreça."):t("A {n} proveïdors els falta el NIF o l’adreça.",{n:perIa.length})}</span><button type="button" className="secondary" onClick={llegeixIa}><WandSparkles size={15} aria-hidden="true"/> {t("Llegir amb IA les que falten")}</button></>
+        :<span>{perIa.length===1?t("A 1 proveïdor li falta el NIF o l’adreça (no surten com a text a la factura)."):t("A {n} proveïdors els falta el NIF o l’adreça (no surten com a text a les factures).",{n:perIa.length})}</span>}</div>}
       {nous.length>1&&<label className="tots-v878566"><input type="checkbox" checked={marcats.length===nous.length} onChange={e=>setLlista(l=>l.map(x=>x.ja?x:{...x,on:e.target.checked}))}/> {t("Tots")}</label>}
       <div className="taula" role="list">{llista.map(x=>{const f=falta(x);const dd=x.dades;return <div key={x.k} className={"fila fila-v878566"+(x.ja?" ja":"")} role="listitem">
         <input type="checkbox" checked={x.ja?(f.length>0&&x.comp):x.on} disabled={x.ja&&!f.length} onChange={e=>x.ja?posa(x.k,{comp:e.target.checked}):posa(x.k,{on:e.target.checked})} aria-label={x.ja?t("Completar {n}",{n:x.nom}):t("Afegir {n}",{n:x.nom})}/>
@@ -22269,7 +22341,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.569",
+    app_version:"87.570",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

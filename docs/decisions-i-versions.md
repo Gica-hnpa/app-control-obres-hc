@@ -3782,3 +3782,18 @@
   NIF, l'adreça, el CP, la població, el telèfon i el correu del proveïdor, i l'app els desa a la despesa (`nif`, `prov878569`); fins que no es
   desplegui, l'app fa com abans. Desplegar: Supabase › Edge Functions › aco-ia › Code › enganxar `supabase/functions/aco-ia/index.ts` › Deploy.
   Prova: `v569test` 8/8 (PDF fet a la prova amb el proveïdor a l'esquerra i l'empresa a la dreta); v566, v553 i v493 en verd.
+- **V87.570 · Les dades dels proveïdors, llegides de debò de les factures de Brava, i «Llegir amb IA les que falten»** (l'Héctor, 11/11/2026: «no
+  està arreglat perquè no hi ha les dades que falten als contactes trets de despeses», amb la fitxa de FRANCISCO ROCAS, S.A. buida). Revisat amb la
+  còpia del núvol d'avui (només lectura): Brava té 1.531 despeses, 160 amb PDF desat (20 proveïdors). La lectura de la V87.569 buscava el bloc del nom
+  del proveïdor, però molts el porten dins del logotip (una imatge). Ara (`dadesProvFiles878569`): tot el document en ordre (o pel costat del nom si
+  és a la capçalera, no en un correu ni al peu legal), fora del bloc del client (el seu NIF, nom o carrer i la fila del costat a la mateixa columna; sota
+  l'etiqueta «Client», només avall); el NIF/CIF es comprova amb la lletra o el dígit de control (`nifValid878570`; fora números de pressupost com
+  P26000042) i es prefereix el que va amb «NIF/CIF» o al peu del Registre Mercantil; el carrer, a la línia del CP o una o dues files amunt (entre mig
+  hi pot haver el telèfon), net del que porta darrere (tel., fax, correu) i sense números de factura; «PALAMÓS (17230), GIRONA» i «…100 TORROELLA DE
+  MONTGRI / 17257-GIRONA» (la població abans del CP o al final del carrer); el telèfon amb «T./Tel.» primer, mai el fax ni el compte bancari; el
+  correu «info@…» primer. Un proveïdor del mateix poble que l'empresa ja no perd l'adreça (només es descarta l'adreça de l'empresa mateixa). Amb les
+  20 factures reals: NIF de 14 i adreça de 15 (abans 14 i 8, amb errors). Francisco Rocas: el carrer, el CP, la població, el telèfon i el correu; el
+  CIF no hi és com a text (és al logotip). **«Llegir amb IA les que falten»** (a la mateixa finestra, si la IA és activa): una factura per proveïdor
+  (PDF o foto) als que encara no tenen NIF o adreça; una lectura cadascun; desa el resultat a la despesa (`nif`, `prov878569`) perquè no s'hagi de
+  tornar a llegir. Amb la funció `aco-ia` d'ara (sense NIF) avisa que s'ha de tornar a instal·lar. Prova: `v570test` 8/8 (factures com les de Rocas
+  i Bofill, i la IA de proves sense i amb NIF); `v569test` adaptada a CIF vàlids (8/8); v566 en verd.
