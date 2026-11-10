@@ -3713,3 +3713,11 @@
   de preus · Obrir», `.obre-llib-v878562`), i «‹ Ajustos» hi torna (`tornaA878562`). `src/theme-v878562.css`. Prova: `v562test` 18/18. Adaptades
   (entren a la Llibreria per Ajustos, `llib562`): neteja353, pressupost368, pressupost372, preus378, simple354, v460, v465, v533, v537, v550, v554;
   menús i rajoles: perfils326, pol403, v484, v508. `v536test` (Inici B) ja no correspon a l'Inici v2 de la V87.538: s'ha de jubilar o refer.
+- **V87.563 · Al llistat de Pressupostos, també les obres compartides per editar** (l'Héctor, 10/11/2026: «no és real a Brava, per exemple, ja que
+  també hi ha un pressupost pendent de resposta a l'obra de Verbania segona fase i a Passeig Mundet»: són obres de l'Héctor compartides amb Brava
+  com a editora, i `filesPres878562` només comptava les pròpies). Ara hi surten les compartides amb permís d'edició (`compartida.perm==="edicio"`; les
+  de només consulta, no), amb «Compartida per …» sota l'obra; els números que falten es calculen només amb les obres pròpies (les compartides porten
+  la numeració del propietari). En enviar el pressupost d'una fase (no la principal), la fase queda «Enviat» (`estatsPres878562[bid]`, també en una obra
+  compartida per editar; `enviatPressupost878402`), i una fase «Enviat» o «En elaboració» que ja té certificacions surt «Acceptat». La data «Enviat el
+  / Signat el» de la llista ja no surt amb l'hora (`diaLocal878437`). Prova: `v563test` 13/13 (el núvol de proves amb tres obres de l'Héctor: dues
+  per editar i una per consultar); `v562test` 18/18.

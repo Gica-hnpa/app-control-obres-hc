@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.562";
+const APP_VERSION878264="87.563";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6193,7 +6193,13 @@ window.__acoPatchObra878424=(id,patch)=>{
   setOdata(prev=>{if(!prev[id]?.obra)return prev;const next={...prev,[id]:{...prev[id],obra:{...prev[id].obra,...patch}}};try{saveOdata878104(next,authUser8779)}catch(e){}return next});
 };
 function enviatPressupost878402(id,via,a=[]){
-  const ob=(obres||[]).find(o=>o.id===id);if(!ob||ob.compartida)return;
+  const ob=(obres||[]).find(o=>o.id===id);if(!ob)return;
+  // V87.563 · el d'una fase (no la principal) queda «Enviat» al llistat de Pressupostos, també en una obra compartida per editar
+  const bid563=(odata?.[id]||{}).activeBudgetIdObra||"principal";
+  if(bid563!=="principal"&&(!ob.compartida||ob.compartida.perm==="edicio")){const ara563=new Date().toISOString();
+    setOdata(prev=>{const d=prev[id];if(!d||!(d.budgetGroups||[]).some(g=>g?.id===bid563))return prev;const e=d.estatsPres878562?.[bid563]?.e;if(e==="acc"||e==="noacc")return prev;
+      const next={...prev,[id]:{...d,estatsPres878562:{...(d.estatsPres878562||{}),[bid563]:{e:"env",at:ara563}},updatedAt:ara563}};try{saveOdata878104(next,authUser8779)}catch(e){}return next})}
+  if(ob.compartida)return;
   const now=new Date().toISOString(),st=normalizeExpedientStatus878136(ob.estat);
   const env={at:now,via,a:(a||[]).slice(0,6)};
   setObres(prev=>{const next=prev.map(o=>o.id===id?{...o,enviatPres878402:env,updatedAt:now}:o);try{lsSet8779("aco_obres",JSON.stringify(next),authUser8779)}catch(e){}return next});
@@ -19900,7 +19906,9 @@ function estatPres878562(o={},d={},bid="principal"){
   const sig=sigPres878403(d,bid);
   const certs=(d?.certificacions||[]).some(c=>(c.budgetId||"principal")===bid);
   const env=(d?.obra?.enviatPres878402||o?.enviatPres878402)?.at;
-  if(bid!=="principal"){const e=d?.estatsPres878562?.[bid];if(sig&&(!e||String(sig.at||"")>String(e.at||"")))return "acc";if(e?.e)return e.e;return certs||sig?"acc":"elab"}
+  if(bid!=="principal"){const e=d?.estatsPres878562?.[bid];if(sig&&(!e||String(sig.at||"")>String(e.at||"")))return "acc";
+    // V87.563 · una fase enviada que ja té certificacions és acceptada
+    if(e?.e&&!(certs&&(e.e==="env"||e.e==="elab")))return e.e;return certs||sig?"acc":"elab"}
   const st=normalizeExpedientStatus878136(d?.obra?.estat||o?.estat);
   if(st==="No acceptat"||st==="Anul·lat")return "noacc";
   if(sig)return "acc";
@@ -19912,7 +19920,9 @@ function estatPres878562(o={},d={},bid="principal"){
 function filesPres878562(obres=[],odata={},clients=[]){
   const out=[];
   for(const o of obres||[]){
-    if(!o||!o.id||o.compartida)continue;const d=odata?.[o.id];if(!d)continue;
+    // V87.563 · també les obres que un altre compte ens comparteix per editar (l'Héctor, 10/11/2026: a Brava hi faltaven Verbania i Passeig Mundet,
+    // obres seves compartides amb Brava, que hi fa el pressupost); les de només consulta, no
+    if(!o||!o.id||(o.compartida&&o.compartida.perm!=="edicio"))continue;const d=odata?.[o.id];if(!d)continue;
     const base=String(d.numPres878528||"").trim(),m=base.match(RE_NUM878528),alt=altIds878437(d);
     for(const g of fasesObra878342(d)){
       const rows=(d.partides||[]).filter(r=>(r.budgetId||"principal")===g.id&&!esFora878410(r));
@@ -19920,7 +19930,8 @@ function filesPres878562(obres=[],odata={},clients=[]){
       const sig=sigPres878403(d,g.id),env=(d?.obra?.enviatPres878402||o.enviatPres878402)?.at||"";
       out.push({k:o.id+"|"+g.id,obra:o,d,bid:g.id,num:numPres878528(d,g.id),any:m?m[1]:String(expedientYear878191(o)||""),n:m?+m[2]:0,v:versioPres878528(d,g.id),
         nom:g.id==="principal"?"":budgetName878273(g),alt:alt.has(g.id),np:rows.length,total:rows.reduce((s,r)=>s+(parseNum8770(r.q)||0)*(parseNum8770(r.pu)||0),0),
-        client:nomClientObra878347(o,clients)||o.client||"",estat:estatPres878562(o,d,g.id),sig:sig?.at||"",env:g.id==="principal"?env:""});
+        client:nomClientObra878347(o,clients)||o.client||"",estat:estatPres878562(o,d,g.id),sig:sig?.at||"",env:g.id==="principal"?env:(d.estatsPres878562?.[g.id]?.e==="env"?d.estatsPres878562[g.id].at||"":""),
+        comp:o.compartida?(o.compartida.ownerNom||o.compartida.ownerUsuari||t("un altre compte")):""});
     }
   }
   return out.sort((a,b)=>String(b.any).localeCompare(String(a.any))||b.n-a.n||a.v-b.v||String(a.obra.nom||"").localeCompare(String(b.obra.nom||"")));
@@ -19938,7 +19949,8 @@ function PressupostosObra878562({obres=[],odata={},setOdata,clients=[],openObraT
   const delE=k=>delAny.filter(f=>f.estat===k);
   const suma=l=>l.filter(f=>!f.alt).reduce((s,f)=>s+f.total,0);
   // els números que falten de cada any (una obra eliminada o que ja no té número)
-  const forats=(anyOk==="tots"?anys:[anyOk]).flatMap(a=>{const ns=new Set(files.filter(f=>f.any===a&&f.n).map(f=>f.n));const mx=Math.max(0,...ns);const l=[];for(let i=1;i<=mx;i++)if(!ns.has(i))l.push(`${a}_${String(i).padStart(4,"0")}`);return l});
+  // (només de les obres pròpies: les compartides porten la numeració del seu propietari)
+  const forats=(anyOk==="tots"?anys:[anyOk]).flatMap(a=>{const ns=new Set(files.filter(f=>f.any===a&&f.n&&!f.comp).map(f=>f.n));const mx=Math.max(0,...ns);const l=[];for(let i=1;i<=mx;i++)if(!ns.has(i))l.push(`${a}_${String(i).padStart(4,"0")}`);return l});
   const canvia=(f,e)=>{
     if(f.bid==="principal"){
       const st=normalizeExpedientStatus878136(f.d?.obra?.estat||f.obra.estat);
@@ -19963,7 +19975,7 @@ function PressupostosObra878562({obres=[],odata={},setOdata,clients=[],openObraT
       <div className="pl-row-v878562 cap" aria-hidden="true"><span>{t("Número")}</span><span>{t("Obra i client")}</span><span>{t("Import")}</span><span>{t("Estat")}</span><span/></div>
       {rows.map(f=><div key={f.k} className={"pl-row-v878562 e-"+f.estat+(f.alt?" alt":"")}>
         <span className="num"><b>{f.num||t("Sense número")}</b>{f.nom?<small>{f.nom}</small>:null}</span>
-        <span className="qui"><b>{f.obra.nom||t("Sense nom")}</b><small>{[f.client,f.sig?t("Signat el {d}",{d:fmtAppDate8748(f.sig)}):f.env?t("Enviat el {d}",{d:fmtAppDate8748(f.env)}):""].filter(Boolean).join(" · ")}</small></span>
+        <span className="qui"><b>{f.obra.nom||t("Sense nom")}</b><small>{[f.client,f.comp?t("Compartida per")+" "+f.comp:"",f.sig?t("Signat el {d}",{d:fmtAppDate8748(diaLocal878437(f.sig))}):f.env?t("Enviat el {d}",{d:fmtAppDate8748(diaLocal878437(f.env))}):""].filter(Boolean).join(" · ")}</small></span>
         <span className="imp"><b>{money(f.total)}</b><small>{f.np===1?t("1 partida"):t("{n} partides",{n:f.np})}</small></span>
         <select className={"est e-"+f.estat} value={f.estat} onChange={e=>canvia(f,e.target.value)} aria-label={t("Estat de {n}",{n:f.num||f.obra.nom||""})}>{ESTATS_PRES878562.map(([k,l])=><option key={k} value={k}>{t(l)}</option>)}</select>
         <button type="button" className="secondary obre" onClick={()=>obre(f)}>{t("Obrir")} <ChevronRight size={16} aria-hidden="true"/></button>
@@ -21994,7 +22006,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.562",
+    app_version:"87.563",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
