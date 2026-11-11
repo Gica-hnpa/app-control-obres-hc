@@ -5973,4 +5973,10 @@ export default {
   "Total de l’obra": "Total de la obra",
   "Descripcions llargues": "Descripciones largas",
   "Només les noves": "Solo las nuevas",
+  "Apuntar el cobrament": "Apuntar el cobro",
+  "Encara no hi ha cap certificació.": "Todavía no hay ninguna certificación.",
+  "Fer la certificació 1": "Hacer la certificación 1",
+  "Escriure la partida a mà": "Escribir la partida a mano",
+  "Ex. Enderroc de rajola de parets": "Ej. Derribo de alicatado de paredes",
+  "Escriure-la a mà": "Escribirla a mano",
 };

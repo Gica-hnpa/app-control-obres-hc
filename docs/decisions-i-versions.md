@@ -3992,3 +3992,27 @@
   baix que la finestra. També es torna a mirar en tornar a l'app (`pageshow`, `visibilitychange`) i després de cada clic.
   Prova: `v587test` 10/10 (+ l'app instal·lada amb la pantalla encallada 210 px: una cura sense moure's del lloc i les barres a baix; en tornar a
   l'alçada bona, res; a Safari amb la barra de l'adreça, res); navtest 32/32, plustest 18/18, v583 13/13. **Falta veure-ho a l'iPhone de l'Héctor.**
+- **V87.589 · Repàs de la nit amb una constructora nova al mòbil** (l'Héctor, 11-12/11/2026: «repassa tot al llarg de la nit amb usuaris de prova de
+  cada perfil… crear obres, pressupostos, certificacions, imprimir i PDF, factures, ingressos, caixa… pantalles amb accés difícil en comptes de posar les
+  opcions juntes»). Primer el repàs automàtic (`repas411`: 8 comptes i mides, 356 pantalles, cap error de JavaScript ni «Mode segur») i els clients
+  inventats; després, a mà amb el navegador, el compte `prova-garcia-constru` (buit) al mòbil de 375 px: obra nova → pressupost a mà → certificació →
+  factura → cobrament → Caixa. Tot funciona; s'arreglen les falles d'ús que hi ha sortit:
+  - **Resum d'una obra sense pressupost:** «Fer el pressupost» al costat de «Aquesta obra encara no té pressupost.» (abans, només el text).
+  - **Pressupost «A mà» i «Del banc o de Preus» sense res a la llibreria** (un client nou no té Preus, ni «La meva base» ni el banc comú si no l'hi
+    han donat): la finestra deia «Encara no hi ha partides a Preus» i no hi havia sortida. Ara «Escriure la partida a mà» (si és buida) i, sempre, al
+    peu, «Escriure-la a mà» (`onBlanc`): tanca la finestra i obre la partida en blanc al capítol triat.
+  - **La partida en blanc** ja no porta «Nova partida» escrit (s'havia d'esborrar): el concepte és buit amb l'exemple en gris.
+  - **Un sol pressupost:** la rajola «1 · Pressupost principal 222,00 €» repetia la targeta de sota; ara només hi és si n'hi ha més d'un (o té avisos).
+  - **Certificacions buides:** «Fer la certificació 1» (abans només el «+» de la capçalera); en editar, si l'obra només té un capítol, ja surt obert
+    també al mòbil.
+  - **La factura dins de l'obra (Comptabilitat › Facturació):** ara diu «Pendent de cobrar» o «Cobrada dd/mm/aaaa» i té «Apuntar el cobrament» /
+    «Cobrament» (la mateixa finestra que a Facturació). Abans només es podia fer des de la Facturació general.
+  - **PDF de les factures, certificacions i pressupostos:** a la línia de l'obra, el número (2026-004) i no el codi de la carpeta
+    («2026-004-ALT-PE-SO-REFORMACUINA», `codiDoc878589`); a la factura i la proforma ja no surten les línies a 0 («Retenció 0 % −0,00 €», «Deducció 0 %»).
+  - **Al mòbil:** a Facturació, les pestanyes «Factures · Per facturar» quedaven a sobre de «+ Factura directa» (ara a sota); els imports de la factura
+    oberta no es parteixen («148,00» i «€»); a Caixa, «Cobrades (últims 90 dies) 179,0…» sortia tallat (l'import de les targetes plegables ja no es talla
+    mai: el nom passa a dues línies); la certificació facturada amb «Facturada» a la seva línia i Imprimir · Enviar · Opcions a sota; la línia de la
+    factura de l'obra en dues línies; a Ajustos › Programes, la ruta del .exe quedava d'amplada 0.
+  Prova: `v589test` 11/11 (nova, compte `prova-garcia-constru` al mòbil); v410 25/25, v486 12/12, v465 10/10, v528 13/13 i fases342 27/27
+  (adaptades: amb un sol pressupost, el número i el nom són al títol de la targeta), v440 23/23 (adaptada: el desplegable de les descripcions no és
+  una opció d’enviar). Ja fallaven a la V87.581: v426 #5/#7, v531 (9) i v437 (4), que esperen el nom de la fase sense el número.
