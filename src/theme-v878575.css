@@ -1,0 +1,17 @@
+/* V87.575 · Pagament de les despeses: «Per pagar» (groc), «Vençuda» (vermell), «Pagada» (verd), a la fila i al detall; la targeta «Per pagar»
+   de Despeses (la mateixa llista que Caixa i bancs). */
+html body .fila-v878348 .pr em.pag-v878575{align-self:flex-start;display:inline-block;margin:2px 0 1px;padding:1px 8px;border-radius:999px;font-style:normal;font-size:11.5px;font-weight:700;line-height:1.5;white-space:nowrap;background:#FEF3C7;color:#92400E}
+html body .fila-v878348 .pr em.pag-v878575.venc{background:#FEE2E2;color:#991B1B}
+html body .fila-v878348 .pr em.pag-v878575.pag{background:#DCFCE7;color:#166534}
+html body .pag-bt-v878575{display:inline-flex;align-items:center;gap:6px}
+html body .pag-bt-v878575.per{color:#92400E;border-color:#FCD34D}
+html body .pag-bt-v878575.venc{color:#991B1B;border-color:#FCA5A5}
+html body .pag-bt-v878575.pag{color:#166534;border-color:#86EFAC}
+html body .pag-multi-v878575{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 8px}
+html body .perpagar-v878575{margin-bottom:12px}
+html body .perpagar-v878575.venc>summary .xifra{color:#B91C1C!important}
+html body .perpagar-v878575 .peu-v878575{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 4px 2px}
+html body .perpagar-v878575 .peu-v878575 .link{font-weight:700}
+@media (max-width:760px){
+  html body .fila-v878348 .pr em.pag-v878575{font-size:11px}
+}

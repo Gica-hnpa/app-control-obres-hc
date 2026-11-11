@@ -3832,3 +3832,16 @@
   una línia (acumulada o mes a mes), a dalt «2026 fins avui» sense l'any passat ni la diferència, i les xifres amb el mes, l'any i l'acumulat. La
   comparació entre anys queda a «Comparar anys» (sense canvis). La línia del bloc plegat continua dient la diferència amb l'any passat. Prova:
   fact397test 30/30 (adaptada); graficatest 12/13 (el Rendiment de l'obra ja fallava a la V87.563).
+- **V87.575 · Pagament de les despeses: «Per pagar», «Vençuda» i «Pagada», lligat amb Caixa i bancs** (l'Héctor, 11/11/2026, a Brava: «per què no hi
+  ha, com a factures, per poder editar l'estat de si està pendent de pagar o pagada, i que si està pendent m'avisi a Inici o a targeta nova dins Despeses
+  d'avisos o ambdós llocs… i això a previsions de caixa i bancs ja està tot relacionat i lligat?»). Ja hi havia la base a Caixa i bancs (V87.514/521):
+  la marca `pagada878514` (a mà o en aparellar un apunt del banc), el venciment `venciment878521` i la llista «Per pagar» (`pagarItems878521`: la data
+  + els dies de pagar, de sèrie 30; sense les de mà d'obra, albarans, importades ni d'abans de la data d'inici), però a Despeses no es veia. Ara, a
+  Despeses (`Albarans878259`, constructora i dins de l'obra; no a «Les meves despeses»): a cada fila, l'etiqueta «Per pagar · d/m» (groc), «Vençuda ·
+  d/m» (vermell) o «Pagada» (verd); al detall, «Per pagar el …» / «Vençuda el …» / «Pagament…» obre la mateixa finestra de Caixa (`MovCaixa878521`:
+  pagament previst o «Ja està pagada») i «Pagada el …» la torna a «Per pagar» (amb venciment, i treu l'apunt del banc si n'hi havia); les factures de
+  diverses línies, tota la factura de cop. Filtre «Pagament» (per pagar, vençudes, pagades) i, en seleccionar, «Pagament…» → «Pagades avui», «Pagades
+  el dia de cada factura» o «Per pagar». A dalt, la targeta plegable «Per pagar · N vençudes» amb la llista de Caixa (vençuts, aquesta setmana, més
+  endavant), «Veure-les a la llista» i «Caixa i bancs». En obrir Despeses es posa la data d'inici de Caixa si no n'hi havia (avui − 60 dies, com en
+  obrir Caixa): així els avisos de l'Inici («N pagaments vençuts», «N pagaments aquesta setmana») surten sense haver obert Caixa. `theme-v878575.css`.
+  Prova: `v575test` 21/21 (ordinador i mòbil); despeses348, v521, v529, v514, v564, v566, v567, v572 en verd.
