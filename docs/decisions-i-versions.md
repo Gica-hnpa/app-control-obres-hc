@@ -3924,3 +3924,11 @@
   primera només «Següent» i a l'última només «Anterior». Prova: `v583test` 13/13 (nova; v486 12/12, v450 33/33, v512 12/12, v550 8/8, v560 17/17, partida523 24/24; a la V87.581 el quadre del descompost quedava al darrere a
   l'ordinador i no hi havia «Anterior»). Les proves obren la partida dins de la llista a l'ordinador (`partida-inline-prova-v878524`): per veure-la
   com l'Héctor, posar la marca a "0".
+- **V87.584 · Els camps de números en format 7,00 · 8,80 · 10.650,00** (l'Héctor, 11/11/2026: «els números a tots els camps numèrics els vull en format
+  7,00 per exemple i no 7, o 8,80 i no 8.8, o 10.650 i no 10650… a tots els camps on hi hagin números»). Component `NumIn878584` (amb `fmtNum878584`):
+  quan no s'hi escriu, el camp mostra el número amb coma, dos decimals (o els que tingui, fins a 6: un rendiment de 4,4000 surt «4,40», un de 0,3333
+  surt «0,3333») i el punt dels milers; en tocar-lo surt tal com és per escriure-hi, i el que es desa és el mateix d'abans (només canvia com es veu).
+  142 camps: tots els `inputMode="decimal"` amb `value` i els `type="number"` que són imports, quantitats, preus, hores o km (passen a text amb teclat
+  numèric i el que s'hi escriu arriba amb punt, com abans). No hi entren els que són dies, setmanes, anys, codis o comptadors (`inputMode="numeric"`,
+  dies laborables, planta, setmanes…) ni els que no tenen `value` (`defaultValue`). Si la finestra no té el focus (proves sense pantalla), el camp
+  també es considera actiu si és el `document.activeElement`. Prova: `v584test` 10/10 (nova: partida del pressupost, certificació i despesa).
