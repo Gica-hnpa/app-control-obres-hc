@@ -3826,3 +3826,9 @@
   (`de-sec-v878386`), el valor va a sota del nom, més petit i tallat amb «…» si no hi cap; a la resta de targetes plegables, el valor ocupa com a molt
   mitja línia i el nom no queda mai tapat. Als mòbils estrets (≤ 340 px), el botó de tornar de la capçalera només amb la fletxa (el títol sortia
   «Empre…»). Prova: `v573test` 8/8 (375 i 320 px en català, 375 px en castellà amb el botó d'Ajustos; a la V87.563 en falla 3); navtest 32/32, v564 22/22.
+- **V87.574 · «Evolució» de la Facturació, només l'any triat** (l'Héctor, 11/11/2026, captura de Gràfics i informes: «si poso Evolució al 2026, per què
+  em surten les mateixes dades que comparant amb el 2025, si no és això el que demano ara?»). La vista «Evolució» (V87.397) posava l'any passat al costat
+  (línia discontínua, la xifra de dalt i la taula amb tots els anys), igual que «Comparar anys». Ara `GraficaFact878397` a «Evolució» només té l'any triat:
+  una línia (acumulada o mes a mes), a dalt «2026 fins avui» sense l'any passat ni la diferència, i les xifres amb el mes, l'any i l'acumulat. La
+  comparació entre anys queda a «Comparar anys» (sense canvis). La línia del bloc plegat continua dient la diferència amb l'any passat. Prova:
+  fact397test 30/30 (adaptada); graficatest 12/13 (el Rendiment de l'obra ja fallava a la V87.563).

@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.573";
+const APP_VERSION878264="87.574";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -22408,7 +22408,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.573",
+    app_version:"87.574",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23105,7 +23105,9 @@ function GraficaFact878397({items=[],any:anyTriat=null}){
   const mesos12=Array.from({length:12},(_,i)=>mesNom878343(i));
   let cos,titolG;
   if(vista==="evol"){
-    const ser=[any,any-1].filter(y=>y===any||teAny(y)).map(y=>{const v=Array.from({length:12},(_,m)=>valMes(y,m));let s=0;return {k:String(y),nom:String(y),color:colorAny(y),dash:y!==any,vals:acum?v.map(x=>x==null?null:(s+=x)):v}});
+    // V87.574 · només l'any triat (l'Héctor, 11/11/2026: «si poso Evolució 2026, per què em surten les mateixes dades que comparant amb el
+    // 2025?»): la comparació entre anys és a «Comparar anys»
+    const ser=[any].map(y=>{const v=Array.from({length:12},(_,m)=>valMes(y,m));let s=0;return {k:String(y),nom:String(y),color:colorAny(y),dash:y!==any,vals:acum?v.map(x=>x==null?null:(s+=x)):v}});
     titolG=t("Evolució {any}",{any});
     cos=<LiniesChart878343 labels={mesos12} series={ser} titol={titolG} tipLabel={i=>acum?t("Acumulat fins a {mes}",{mes:mesLl(i)}):mesLl(i)}/>;
   }else if(perOk==="mesos"){
@@ -23125,7 +23127,7 @@ function GraficaFact878397({items=[],any:anyTriat=null}){
   const msH=vista==="comparar"&&perOk!=="mesos"?mesosPer878397(perOk,ara.m):[...Array(12).keys()];
   const parcial=actual&&msH.some(m=>m>=ara.m);
   const hA=comencat(any,msH)?sumaFact878397(pts,any,msH,parcial?ara:null):null;
-  const hB=teAny(any-1)?sumaFact878397(pts,any-1,msH,parcial?ara:null):null;
+  const hB=vista!=="evol"&&teAny(any-1)?sumaFact878397(pts,any-1,msH,parcial?ara:null):null;
   const pre=unPer?nomPer(perOk)+" ":"";
   const ysT=anys.slice().sort((a,b)=>a-b),amb1=ysT.includes(any-1),tots=[...Array(12).keys()],ytd=[...Array(ara.m+1).keys()];
   const fila=(nom,f,cls="",senseDif=false)=><tr className={cls}><td>{nom}</td>{ysT.map(y=>{const v=f(y);return <td key={y} className={v!=null&&Math.abs(v)<0.005?"zero":""}>{v==null?"—":money(v)}</td>})}{amb1&&<td className="dif">{senseDif?"—":difTxt878397(difFact878397(f(any),f(any-1)))||"—"}</td>}</tr>;
@@ -23148,11 +23150,17 @@ function GraficaFact878397({items=[],any:anyTriat=null}){
     </p>
     {cos}
     <details className="gf-xifres-v878397"><summary>{t("Xifres")}</summary>
-      <div className="gf-taula-wrap-v878397"><table className="gf-taula-v878397">
+      {vista==="evol"?(()=>{let s=0;const ac=tots.map(m=>{const v=valMes(any,m);if(v!=null)s+=v;return v==null?null:s});
+        return <div className="gf-taula-wrap-v878397"><table className="gf-taula-v878397 evol-v878574">
+          <thead><tr><th>{t("Mes")}</th><th><i style={{background:colorAny(any)}} aria-hidden="true"/>{any}</th><th>{t("Acumulat")}</th></tr></thead>
+          <tbody>{tots.map(m=>{const v=valMes(any,m);return <tr key={m}><td>{mesLl(m)}</td><td className={v!=null&&Math.abs(v)<0.005?"zero":""}>{v==null?"—":money(v)}</td><td>{ac[m]==null?"—":money(ac[m])}</td></tr>})}</tbody>
+          <tfoot><tr><td>{actual?t("De l’1 de gener a avui"):t("Total de l’any")}</td><td>{money(actual?sumaFact878397(pts,any,ytd,ara):sumaFact878397(pts,any,tots))}</td><td/></tr></tfoot>
+        </table></div>})()
+      :<div className="gf-taula-wrap-v878397"><table className="gf-taula-v878397">
         <thead><tr><th>{t("Mes")}</th>{ysT.map(y=><th key={y}><i style={{background:colorAny(y)}} aria-hidden="true"/>{y}</th>)}{amb1&&<th>{t("Diferència")}<small>{any} / {any-1}</small></th>}</tr></thead>
         <tbody>{tots.map(m=><React.Fragment key={m}>{fila(mesLl(m),y=>valMes(y,m))}</React.Fragment>)}</tbody>
         <tfoot>{actual&&fila(t("De l’1 de gener a avui"),y=>sumaFact878397(pts,y,ytd,ara),"ytd")}{fila(t("Total de l’any"),y=>sumaFact878397(pts,y,tots),"",actual)}</tfoot>
-      </table></div>
+      </table></div>}
     </details>
   </Card>;
 }
