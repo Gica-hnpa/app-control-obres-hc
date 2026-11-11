@@ -5954,4 +5954,11 @@ export default {
   "Descompte pactat": "Descuento pactado",
   "TOTAL AMB EL DESCOMPTE": "TOTAL CON EL DESCUENTO",
   "TOTAL AMB IVA": "TOTAL CON IVA",
+  // V87.581 · vençudes de cop i despeses buides
+  "Marcar-la com a pagada": "Marcarla como pagada",
+  "Marcar-les totes com a pagades ({n})": "Marcarlas todas como pagadas ({n})",
+  "Pagades:": "Pagadas:",
+  "El dia de cada factura": "El día de cada factura",
+  "Es desarà quan acabi de llegir l’arxiu…": "Se guardará cuando acabe de leer el archivo…",
+  "Aquesta despesa no té proveïdor ni import. Desar-la igualment?": "Este gasto no tiene proveedor ni importe. ¿Guardarlo igualmente?",
 };

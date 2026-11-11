@@ -3887,3 +3887,11 @@
   forma de pagament d'un pressupost sense text propi ni del client són les de l'empresa (Ajustos › Documents), i el que s'hi escriu passa a ser el de
   l'empresa (les darreres, per als pressupostos nous); «Guardar com a defecte del client» continua. Prova: `v580test` 10/10 (nova: comptes del PDF, sense
   IVA com abans, recarregar); v528 13/13, v539 11/11.
+- **V87.581 · Vençudes de cop i no més despeses buides** (l'Héctor, 11/11/2026: «per què surten despeses sense proveïdor si jo no ho he entrat així… crec
+  que es crea per error quan la tanco abans que la IA llegeixi l'arxiu»; amb 151 vençudes a Brava després de la V87.578: «com puc seleccionar això tot de
+  cop per tancar l'avís?»). A Brava hi havia 4 despeses del 10/11 només amb el PDF (sense proveïdor, número ni import): la fitxa desava sense mirar res,
+  també mentre la IA llegia. Ara (`AlbaraEditor878259`): «Desar» mentre llegeix → «Es desarà quan acabi de llegir l'arxiu…» i es desa sola amb el que ha
+  llegit; si es tanca abans, no es desa res (i la lectura que acaba després ja no toca res: abans intentava omplir una fitxa que ja no hi era); una
+  despesa sense proveïdor ni import només es desa si es confirma. A la llista «Vençuts» de Caixa › Per pagar i de Despeses › Per pagar
+  (`TotesPagades878581`): «Marcar-les totes com a pagades (N)» → «El dia de cada factura» o «Avui». El Supabase de proves té `retard` per a la lectura
+  d'una despesa (`POST /__aco-ia {retard:ms}`). Prova: `v581test` 10/10 (nova); v458, v575, v521 en verd.

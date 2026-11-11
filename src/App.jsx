@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.580";
+const APP_VERSION878264="87.581";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7237,7 +7237,19 @@ function llistaMovs878521(items,kind,avui,onTria){
       <div className="movs-v878521">{l.map(x=>{const n=diesA878496(x.data);return <button type="button" key={x.clau} className={"mov-v878521 "+(n<0?"bad":n<=3?"warn":"ok")} onClick={()=>onTria(x)}>
         <span className="t"><b>{[x.numero,x.qui].filter(Boolean).join(" · ")||t("Sense número")}</b><small>{x.obra||(kind==="pagar"?sens:"")}</small></span>
         <span className="x"><b>{money(x.total)}</b><small>{fmtAppDate8748(x.data)} · {txtDies878496(n)}</small></span></button>})}</div>
+      {kind==="pagar"&&g==="vencut"&&<TotesPagades878581 items={l}/>}
     </CartaLlista878518>});
+}
+// V87.581 · totes les d'un grup (p. ex. les vençudes) com a pagades d'un cop (l'Héctor, 11/11/2026, amb 151 vençudes a Brava: «com puc seleccionar
+// això tot de cop per tancar l'avís?»): el dia de cada factura o avui
+function TotesPagades878581({items=[]}){
+  const[ob,setOb]=useState(false);
+  if(!items.length)return null;
+  const marca=quan=>{const ids=new Set(items.map(x=>x.id)),avui=todayISO8743(),ara=new Date().toISOString();
+    writeAlbarans878259(readAlbarans878259().map(a=>!ids.has(a.id)||a.pagada878514?a:{...a,pagada878514:{data:quan==="data"?(isoData878292(a.data)||avui):avui,manual:true},updatedAt:ara}));
+    try{window.dispatchEvent(new Event("aco-caixa-changed"));window.dispatchEvent(new Event("aco-avisos-changed"))}catch{};setOb(false)};
+  return <div className="totes-pag-v878581">{!ob?<button type="button" className="secondary" onClick={()=>setOb(true)}><CheckCheck size={15} aria-hidden="true"/> {items.length===1?t("Marcar-la com a pagada"):t("Marcar-les totes com a pagades ({n})",{n:items.length})}</button>
+    :<><span>{t("Pagades:")}</span><button type="button" className="primary" onClick={()=>marca("data")}>{t("El dia de cada factura")}</button><button type="button" className="secondary" onClick={()=>marca("avui")}>{t("Avui")}</button><button type="button" className="link" onClick={()=>setOb(false)}>{t("Cancel·lar")}</button></>}</div>;
 }
 function Caixa878521({obres=[],odata={},clients=[],openObraTab}){
   const[v,setV]=useState(()=>{const x=window.__acoCaixaVista878521;window.__acoCaixaVista878521="";return x||"cobrar"});
@@ -22419,7 +22431,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.580",
+    app_version:"87.581",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -26445,11 +26457,12 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
   async function autoRead(cur){
     setLlegint(true);setMsg(i18nT("Llegint l’albarà…"));
     // una factura (i no un albarà) es marca sola com a «Factura de material»; es pot canviar
-    if(cur.isNew&&!cur.meva&&tipusDespesa878311(cur)==="Albarà"&&/\bfactura\b/i.test(cur.pdfText||"")&&!/\balbar[àaá]n?\b/i.test(cur.pdfText||""))setA(x=>({...x,tipus:"Material"}));
+    if(cur.isNew&&!cur.meva&&tipusDespesa878311(cur)==="Albarà"&&/\bfactura\b/i.test(cur.pdfText||"")&&!/\balbar[àaá]n?\b/i.test(cur.pdfText||""))setA(x=>x?{...x,tipus:"Material"}:x);
     try{
       const ai=await readAlbaraAI878259(cur);
       const meu505=!!ai&&esMevaEmpresa878505(ai.proveidor,ai.nif);
-      if(ai){setA(x=>{
+      // V87.581 · si s'ha tancat la fitxa mentre llegia, no es fa res (abans petava en omplir una fitxa que ja no hi era)
+      if(ai){setA(x=>{if(!x||x.id!==cur.id)return x;
         const y0=fillAlbara878259(x,ai);const y=meu505?{...y0,proveidor:x.proveidor||"",nif:x.nif||"",prov878569:x.prov878569,perRevisar:true}:y0;if(!x.isNew||x.meva)return y;
         // la IA diu si és albarà o factura; si és una factura, també quins albarans inclou
         let tipus=ai.isp?"Subcontracta":["Albarà","Material"].includes(tipusDespesa878311(x))&&ai.tipusApp?ai.tipusApp:tipusDespesa878311(x);
@@ -26458,7 +26471,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
         const cob=tipus!=="Albarà"&&x.obraId?albaransDeFactura(ai.albarans,tots.filter(z=>z.id!==x.id&&!z.meva&&tipusDespesa878311(z)==="Albarà"&&z.obraId===x.obraId)):[];
         return {...y,tipus,...(ai.isp?{isp:true}:{}),...(cob.length?{cobreix:cob}:{})};
       });setMsg(i18nT("Llegit amb IA: {n} línies{total}. Revisa-ho abans de desar.",{n:(ai.linies||[]).length,total:ai.total?` · ${i18nT("total")} ${money(+ai.total||0)}`:""})+(meu505?" "+i18nT("El proveïdor que ha llegit era la teva empresa: posa’l a mà."):""));return}
-      if(String(cur.pdfText||"").length>40){const p=readAlbaraText878259(cur.pdfText);if(p.total||p.base||p.linies.length){setA(x=>fillAlbara878259(x,p));setMsg(i18nT("Llegit del PDF: {n} línies{total}. Revisa-ho abans de desar.",{n:p.linies.length,total:p.total?` · ${i18nT("total")} ${money(p.total)}`:""}));return}}
+      if(String(cur.pdfText||"").length>40){const p=readAlbaraText878259(cur.pdfText);if(p.total||p.base||p.linies.length){setA(x=>x&&x.id===cur.id?fillAlbara878259(x,p):x);setMsg(i18nT("Llegit del PDF: {n} línies{total}. Revisa-ho abans de desar.",{n:p.linies.length,total:p.total?` · ${i18nT("total")} ${money(p.total)}`:""}));return}}
       setMsg(cur.pdf||cur.foto?(iaSabuda()===true?i18nT("No l’he pogut llegir: posa les dades a mà."):i18nT("No l’he pogut llegir sol: posa el total a mà o fes servir «Llegir amb ChatGPT».")):"");
     }catch(e){setMsg(i18nT("No s’ha pogut llegir: {error}. Posa les dades a mà.",{error:iaErr878458(e).replace(/\.$/,"")}))}
     finally{setLlegint(false)}
@@ -26471,7 +26484,14 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
   function applyAnswer(){const p=parseAlbara878259(answer);if(!p.total&&!p.linies.length&&!p.proveidor){setMsg(i18nT("No hi he trobat les dades. Comprova que la resposta tingui «Proveïdor:», «Total:» i la taula."));return}
     setA(x=>fillAlbara878259(x,p));
     setAi(false);setAnswer("");setMsg(i18nT("Dades omplertes: {n} línies{total}. Revisa-les abans de desar.",{n:p.linies.length,total:p.total?` · ${i18nT("total")} ${money(p.total)}`:""}))}
+  // V87.581 · despeses buides (l'Héctor, 11/11/2026: «per què surten despeses sense proveïdor si jo no ho he entrat així… crec que es crea per error
+  // quan la tanco abans que la IA llegeixi l'arxiu»; a Brava, 4 del 10/11 només amb el PDF). «Desar» mentre llegeix: es desa quan acaba, amb el
+  // que ha llegit (si es tanca abans, no es desa res); i una despesa sense proveïdor ni import, només si es confirma.
+  const desaQuanLlegeixi=useRef(false);
+  useEffect(()=>{if(!llegint&&desaQuanLlegeixi.current){desaQuanLlegeixi.current=false;desar()}},[llegint]);
   function desar(){
+    if(llegint){desaQuanLlegeixi.current=true;setMsg(i18nT("Es desarà quan acabi de llegir l’arxiu…"));return}
+    if(!String(a.proveidor||"").trim()&&!parseNum8770(a.total)&&!parseNum8770(a.base)&&!sumLines&&!(a.meva&&a.km)&&!confirm(i18nT("Aquesta despesa no té proveïdor ni import. Desar-la igualment?")))return;
     const out={...a,base:a.base||(sumLines?fmt2878311(sumLines):"")};
     if(out.isp||(out.meva&&SENSE_IVA878329.includes(out.tipusMeva))){out.iva="0";out.total=out.base||out.total}
     else if(!String(out.total||"").trim()&&parseNum8770(out.base))out.total=fmt2878311(parseNum8770(out.base)*(1+ivaNum/100));
