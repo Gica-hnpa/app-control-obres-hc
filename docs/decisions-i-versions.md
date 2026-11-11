@@ -3941,3 +3941,7 @@
   Buscar el preu amb IA, Fes-ho amb IA del descompost, pressupost automàtic) diuen a la IA que faci servir aquest cost (sou i Seguretat Social inclosos,
   sense despeses generals ni benefici) i els oficis especialitzats a preu de mercat. Els descompostos que ja hi ha no canvien. Prova: `v585test` 6/6
   (nova: la instrucció sense navegador i, amb el Supabase de proves, el que rep la IA).
+  Tanda de les V87.584–585 (camps de números): v582 21/21, v581 10/10, v578 13/13, v575 22/22, v580 10/10, v528 13/13, v521 23/23, v539 11/11,
+  partida523 24/24, v560 17/17, v544 14/14, factclient 18/18, proformes 11/11, v458 9/9, cert364 22/22, v450 33/33, v413 24/24, v583 13/13, preus378
+  24/24 (adaptada: els dos camps nous), tempstest 12/14 (les 2 ja fallaven a la V87.581). Si una prova del mig de la tanda falla sencera (la v521 al
+  mòbil, la tempstest), tornar-la a passar sola: és el primer navegador amb el CSS nou.
