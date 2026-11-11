@@ -3968,3 +3968,14 @@
   Prova: `v586test` 20/20 (nova: Verbania amb una còpia de DADES, el mòbil i el demo-tecnic amb l’obra compartida); adaptades `v423test` 26/26 (el gràfic i
   el resum nous) i `v582test` 21/21 (la tria al visor); v424 18/18, v425 14/14, v410 25/25, v411 28/28; v412 21/23 i docmobiltest 12/15 (les
   de l’acta, que ja fallaven a la V87.581).
+- **V87.587 · Mòbil: les barres fixes de baix tornen a baix en tancar el teclat** (l'Héctor, 11/11/2026, omplint la certificació 2 a l'iPhone: la barra
+  «Certificació 2 · Cancel·lar · Guardar canvis» i la de navegació «queda fix però pel mig de la pantalla… en tot cas a baix»). Estaven pujades just
+  l'alçada del teclat: a l'iPhone, en tancar el teclat, el que és fix a baix de vegades es queda on era fins que es torna a dalt de tot. Nou
+  `src/barresFixes.js` (s'engega a `main.jsx` després de l'app) + `theme-v878587.css`, només als aparells tàctils:
+  - mentre s'escriu en un camp amb el teclat obert (`visualViewport` més baix que l'alçada de la pantalla i un camp amb el focus) les barres de baix
+    (navegació, «Guardar canvis» i el botó ＋) s'amaguen (`html.teclat-v878587`), perquè no surin pel mig de la pantalla;
+  - amb el teclat tancat es mesura on ha quedat la barra de navegació respecte de la part de baix del que es veu (`visualViewport.offsetTop + height`)
+    i, si no hi és, totes tres es mouen el que falta (`--fix-dy`, CSS `translate`); en tancar-se el teclat també es fa un moviment d'un píxel perquè
+    l'iPhone ho torni a col·locar. Si ho fa bé, la diferència és 0 i no es mou res; amb la pantalla ampliada amb dos dits no es toca.
+  Prova: `v587test` 7/7 (nova; com que el navegador de les proves no és un iPhone, el teclat i l'error es fan veure amb un `visualViewport` fals i la
+  pantalla més baixa); navtest 32/32, plustest 18/18, v583 13/13, v521 23/23, v486 12/12. **Falta veure-ho a l'iPhone de l'Héctor.**

@@ -265,10 +265,12 @@ import "./theme-v878582.css";
 import "./theme-v878583.css";
 import "./theme-v878585.css";
 import "./theme-v878586.css";
+import "./theme-v878587.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
 import { setLang, readLang } from "./i18n.js";
+import { startBarresFixes } from "./barresFixes.js";
 
 // V87.409 · L'enllaç per signar a distància («…/#signa=<clau>»): només la pàgina per signar, sense arrencar l'app (ni les dades
 // de l'aparell ni el núvol del compte que hi pugui haver en aquest navegador).
@@ -290,6 +292,8 @@ if (signa878409) {
     }
     const { default: App } = await import("./App.jsx");
     createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
+    // V87.587 · les barres fixes de baix al mòbil, amb el teclat obert i en tancar-lo
+    try { startBarresFixes(); } catch {}
     // V87.271 · App sense cobertura: a la versió publicada, l'app es guarda dins de l'aparell (sw.js) i s'obre encara
     // que no hi hagi cobertura. No a OBRIR_APP.bat (allà sempre hi ha el servidor de l'ordinador).
     if (import.meta.env.PROD && "serviceWorker" in navigator && !window.__acoLocalDisk) {

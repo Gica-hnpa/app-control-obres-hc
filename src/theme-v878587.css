@@ -1,0 +1,10 @@
+/* V87.587 · Mòbil: les barres fixes de baix (navegació, «Guardar canvis» i ＋) tornen a baix quan es tanca el teclat (src/barresFixes.js)
+   i, mentre s'escriu, s'amaguen (no suren pel mig de la pantalla) */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .bottom-nav-v878268,
+  html body .edita-fix-v878452,
+  html body .obra-plus-v878302{translate:0 var(--fix-dy,0px)}
+  html.teclat-v878587 body .bottom-nav-v878268,
+  html.teclat-v878587 body .edita-fix-v878452,
+  html.teclat-v878587 body .obra-plus-v878302{visibility:hidden}
+}
