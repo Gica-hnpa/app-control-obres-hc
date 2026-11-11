@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.570";
+const APP_VERSION878264="87.571";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3090,7 +3090,8 @@ function fmtDate8761(v){
   if(m2)return `${String(m2[1]).padStart(2,"0")}/${String(m2[2]).padStart(2,"0")}/${m2[3]}`;
   return s;
 }
-function todayISO8761(){return new Date().toISOString().slice(0,10)}
+// V87.571 · el dia d’avui en hora d’aquí (abans en hora universal: entre les 00:00 i la 01:00 —les 02:00 a l’estiu— una acta nova sortia amb el dia d’abans)
+function todayISO8761(){return todayISO8743()}
 // V87.263 · «info.notReduced» indica que el navegador no l'ha pogut reduir (p. ex. HEIC a Chrome d'ordinador).
 function resizeImageDataUrl8779(file,maxSide=1600,quality=0.82,info=null){
   return new Promise((resolve,reject)=>{
@@ -3748,7 +3749,6 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
   </Card>;
   if(nomesFitxa)return null;
   return <Card className="notes-v878278" title={t("Notes")} action={!readOnly&&<button type="button" className="primary" onClick={nova}><Plus size={16}/> {t("Nova nota")}</button>}>
-    <p className="notes-help-v878278">{t("Per a visites prèvies o per anar a mirar una feina: escriu o dicta, fes fotos i adjunta documents. Cada nota es numera sola i porta la data del dia.")}</p>
     {notes.length===0?<Empty text="Encara no hi ha notes en aquesta obra."/>:<div className="notes-list-v878278">{notes.map(n=><button type="button" key={n.id} className="notes-row-v878278" onClick={()=>obrir(n)}>
       <span className="notes-num-v878278">{t("Nota {n}",{n:n.numero})}</span>
       <span className="notes-day-v878278">{fmtDate8761(n.data)}</span>
@@ -3763,7 +3763,8 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
 // V87.475 · l'Héctor, 2/11/2026: «surt aquesta del 22/10 sense res i no es pot ni eliminar». Fins ara, «+ Acta» la desava abans d'escriure-hi res i
 // «Cancel·lar» la deixava buida. Les que van quedar així (mai desades, sense res) es treuen en obrir Visites.
 function actaBuida878475(a){return !!a&&!a.updatedAt&&(a.estat||"Esborrany")==="Esborrany"&&!String(a.text||"").trim()&&!(a.fotoIds||[]).length&&!(a.agentIds||[]).length&&!(a.docs||[]).length&&!(a.croquis||[]).length&&!(a.signatures878403||[]).length}
-function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDoc,allAgents=[],start=null}){
+// V87.571 · «nomes»: la mateixa llista a la pestanya «Actes» (només actes) i a «Notes» (només notes), cadascuna amb el seu botó
+function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDoc,allAgents=[],start=null,nomes=""}){
   const[obert,setObert]=useState(null);// {tipus:"acta"|"nota", token, obrir, files}
   const fet=useRef(0);
   useEffect(()=>{if(readOnly||!(data.actes||[]).some(actaBuida878475))return;setData(d=>({...d,actes:(d.actes||[]).filter(a=>!actaBuida878475(a))}))},[]);
@@ -3772,12 +3773,13 @@ function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDo
   if(obert?.tipus==="nota")return <Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} nomesFitxa onTancar={tanca} start={{tab:"Notes",token:obert.token,obrir:obert.obrir,files:obert.files}}/>;
   if(obert?.tipus==="acta")return <Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} nomesFitxa onTancar={tanca} start={{tab:"Actes",token:obert.token,obrir:obert.obrir}}/>;
   const items=[
-    ...(data.actes||[]).map(a=>({tipus:"acta",id:a.id,num:a.numero,data:a.data,text:a.titol||"",fotos:(a.fotoIds||[]).length,docs:(a.docs||[]).length,agents:(a.agentIds||a.agents||[]).length})),
-    ...(data.notes||[]).map(n=>({tipus:"nota",id:n.id,num:n.numero,data:n.data,text:String(n.text||"").trim().split(/\n/)[0],fotos:(n.fotos||[]).length,docs:(n.docs||[]).length}))
+    ...(nomes==="nota"?[]:data.actes||[]).map(a=>({tipus:"acta",id:a.id,num:a.numero,data:a.data,text:a.titol||"",fotos:(a.fotoIds||[]).length,docs:(a.docs||[]).length,agents:(a.agentIds||a.agents||[]).length})),
+    ...(nomes==="acta"?[]:data.notes||[]).map(n=>({tipus:"nota",id:n.id,num:n.numero,data:n.data,text:String(n.text||"").trim().split(/\n/)[0],fotos:(n.fotos||[]).length,docs:(n.docs||[]).length}))
   ].sort((a,b)=>String(b.data||"").localeCompare(String(a.data||""))||(+b.num||0)-(+a.num||0));
   const nou=tipus=>setObert({tipus,token:Date.now()});
-  return <Card className="visites-v878309" title={t("Visites")} action={!readOnly&&<div className="visites-nou-v878309"><button type="button" className="secondary" onClick={()=>nou("nota")}><Plus size={16}/> {t("Nota")}</button><button type="button" className="primary" onClick={()=>nou("acta")}><Plus size={16}/> {t("Acta")}</button></div>}>
-    {items.length===0?<Empty text={diuObra878326()?"Encara no hi ha cap visita en aquesta obra.":"Encara no hi ha cap visita en aquest expedient."}/>:<div className="visites-llista-v878309">{items.map(x=><button type="button" key={x.tipus+x.id} className={`visita-v878309 ${x.tipus}`} onClick={()=>setObert({tipus:x.tipus,token:Date.now(),obrir:x.id})}>
+  const buit=nomes==="acta"?(diuObra878326()?"Encara no hi ha cap acta en aquesta obra.":"Encara no hi ha cap acta en aquest expedient."):nomes==="nota"?(diuObra878326()?"Encara no hi ha notes en aquesta obra.":"Encara no hi ha notes en aquest expedient."):(diuObra878326()?"Encara no hi ha cap visita en aquesta obra.":"Encara no hi ha cap visita en aquest expedient.");
+  return <Card className={"visites-v878309"+(nomes?" nomes-"+nomes+"-v878571":"")} title={nomes==="acta"?t("Actes"):nomes==="nota"?t("Notes"):t("Visites")} action={!readOnly&&<div className="visites-nou-v878309">{nomes!=="acta"&&<button type="button" className={nomes?"primary":"secondary"} onClick={()=>nou("nota")}><Plus size={16}/> {nomes?t("Nova nota"):t("Nota")}</button>}{nomes!=="nota"&&<button type="button" className="primary" onClick={()=>nou("acta")}><Plus size={16}/> {nomes?t("Nova acta"):t("Acta")}</button>}</div>}>
+    {items.length===0?<Empty text={buit}/>:<div className="visites-llista-v878309">{items.map(x=><button type="button" key={x.tipus+x.id} className={`visita-v878309 ${x.tipus}`} onClick={()=>setObert({tipus:x.tipus,token:Date.now(),obrir:x.id})}>
       <b className="tipus">{x.tipus==="acta"?t("Acta {n}",{n:x.num||"—"}):t("Nota {n}",{n:x.num||"—"})}</b>
       <span className="dia">{fmtDate8761(x.data)}</span>
       <span className="txt">{x.text?(x.text.length>140?x.text.slice(0,140)+"…":x.text):<em>{t("Sense text")}</em>}</span>
@@ -12699,8 +12701,9 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     const hi=x=>tabs.includes(x),tecnic=teModul878326("tecnic");
     if(hi("Agents")&&hi("Dades"))ALIAS878308["Agents"]="Dades";
     if(hi("Tasques")&&hi("Agenda / Avisos"))ALIAS878308["Tasques"]="Agenda / Avisos";
-    // V87.309 · Actes + Notes = «Visites» (la clau és «Actes»)
-    if(hi("Notes")&&hi("Actes"))ALIAS878308["Notes"]="Actes";
+    // V87.309 · Actes + Notes = «Visites» (la clau és «Actes»). V87.571 · tornen a anar per separat (l'Héctor, 11/11/2026: a Brava «li costava
+    // trobar les notes desades en una obra… estan a dins de Visites i és més pràctic que estigui amb el nom que toca»): a «Dia a dia», Partes ·
+    // Notes · Actes · Agenda · Planning.
     // V87.319 · «Entrega» sobra (l'Héctor, 20/10/2026): és el paquet «08 · Final d'obra» de Documents
     const entregaUsada878319=((data?.sectionDocs||{}).tancament||[]).length>0||!!String((data?.sectionNotes||{}).tancament||"").trim();
     if(hi("Tancament / Entrega")&&hi("Documents")&&!entregaUsada878319)ALIAS878308["Tancament / Entrega"]="Documents";
@@ -12860,10 +12863,14 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     {/* V87.365 · a la constructora, «Hores» de l'obra passa a Despeses: les hores del personal (amb el cost per hora de cada treballador
         en aquesta obra, per dies i «+ Afegir hores»), plegades a dalt */}
     {activeTab==="Albarans"&&esTecnicPur878332(obra)&&teModul878326("tecnic")&&<HoresDespesa878410 data={data} obra={obra} onVeure={ALIAS878308["Gestió temps"]==="Honoraris"?()=>{window.__acoHonSub878410="Hores";setTab?.("Honoraris")}:navigationTabs.includes("Gestió temps")?()=>setTab?.("Gestió temps"):null}/>}{activeTab==="Albarans"&&<Albarans878259 start={start878302?.tab==="Albarans"?start878302:null} personal426={ALIAS878308["Gestió temps"]==="Albarans"?<details className="sub-v878426 pers-obra-plegat-v878365"><summary><Clock size={16} aria-hidden="true"/><span className="t"><b>{t("Hores del personal")}</b></span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos"><PersonalObra878340 obra={obra} data={data}/></div></details>:null} obres={[obra]} clients={client?[client]:[]} odata={{[obra.id]:data}} obraId={obra.id} meves={esTecnicPur878332(obra)&&teModul878326("tecnic")} fase878342={navigationTabs.includes("Pressupost")&&!totaObra878342?directBudgetId878214:""} setObraData={readOnly?null:(id,up)=>setData(up)}/>}
-    {activeTab==="Notes"&&<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>}
+    {/* V87.571 · «Notes» i «Actes», cadascuna a la seva pestanya amb la llista de Visites (només notes / només actes): la nota o l'acta nova no
+        es desa fins a guardar-la i les actes buides d'abans es treuen (V87.475). Al portal de client, com abans. */}
+    {activeTab==="Notes"&&(readOnly?<Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} start={start878302?.tab==="Notes"?start878302:null}/>
+      :<Visites878309 nomes="nota" obra={obra} client={client} data={data} setData={setData} readOnly={readOnly} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Notes"?start878302:null}/>)}
     {activeTab==="Actes"&&(ALIAS878308["Notes"]
       ?<Visites878309 obra={obra} client={client} data={data} setData={setData} readOnly={readOnly} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={["Actes","Notes"].includes(start878302?.tab)?start878302:null}/>
-      :<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Actes"?start878302:null}/>)} 
+      :readOnly?<Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Actes"?start878302:null}/>
+      :<Visites878309 nomes="acta" obra={obra} client={client} data={data} setData={setData} readOnly={readOnly} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} start={start878302?.tab==="Actes"?start878302:null}/>)} 
     {activeTab==="Fotografies"&&<Fotografies8761 data={data} setData={setData}/>} 
     {activeTab==="Documents"&&<Documents obra={obra} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc}/>} 
     {esTreballador878326()&&activeTab==="Gestió temps"&&<HoresTreballador878327 obres={[obra]} obraFixa={obra.id}/>}
@@ -12935,7 +12942,7 @@ function tabLabel878269(tab,all=[],pur=false){
 // quadre i es tanca en triar. Ja no hi ha tira que es llisca ni «Més». Un apartat que no és a cap bloc va a Fitxa.
 const OBRA_BLOCS878299=[
   {k:"Fitxa",tabs:["Resum","Dades","Agents","Documents","Plànols","Amidaments","Memòria / Informe / Certificat","Tràmits","Seguretat i salut","Industrials / Comparatius","Fotografies","Renders / Presentació","Tancament / Entrega"]},
-  {k:"Seguiment",tabs:["Actes","Notes","Partes obra","Agenda / Avisos","Tasques","Gantt"]},
+  {k:"Seguiment",tabs:["Partes obra","Notes","Actes","Agenda / Avisos","Tasques","Gantt"]},
   {k:"Econòmic",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Pressupostos","Gestió obra","Certificacions","Certificacions obra","Facturació","Facturació obra","Factures","Albarans","Rendiment","Rendiments","Seguiment econòmic","Honoraris","Gestió temps"]}
 ];
 const BLOC_ICON878299={"Fitxa":<FolderOpen/>,"Seguiment":<ClipboardList/>,"Econòmic":<ReceiptText/>};
@@ -12944,7 +12951,7 @@ const BLOC_ICON878299={"Fitxa":<FolderOpen/>,"Seguiment":<ClipboardList/>,"Econ�
 // quatre rajoles i, en tocar-ne una, la llista dels seus apartats a sota, un sota l'altre. Les claus dels apartats no canvien.
 const OBRA_BLOCS878485=[
   {k:"Fitxa",tabs:OBRA_BLOCS878299[0].tabs},
-  {k:"Dia a dia",tabs:["Partes obra","Actes","Notes","Agenda / Avisos","Tasques","Gantt"]},
+  {k:"Dia a dia",tabs:["Partes obra","Notes","Actes","Agenda / Avisos","Tasques","Gantt"]},
   {k:"Pressupost i certificacions",tabs:["Amidaments obra","Pressupost","Pressupost ràpid","Pressupost obra","Gestió obra","Certificacions","Certificacions obra"]},
   {k:"Comptabilitat",tabs:["Facturació","Facturació obra","Factures","Albarans","Seguiment econòmic","Rendiment","Rendiments","Gestió temps","Honoraris","Pressupostos"]}
 ];
@@ -12953,7 +12960,7 @@ const BLOC_ICON878485={"Fitxa":<FolderOpen/>,"Dia a dia":<ClipboardCheck/>,"Pres
 const BLOC_CURT878504={"Pressupost i certificacions":"Pressupost","El meu encàrrec":"Encàrrec"};
 // V87.507 · l'Héctor (5/11/2026): «Cuentas o Contabilidad (ha canviat)»: torna a dir «Comptabilitat», amb un guionet on es pot partir
 const guio878507=s=>String(s).replace(/^Comptabilitat$/,"Compta\u00ADbilitat").replace(/^Contabilidad$/,"Conta\u00ADbilidad");
-const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes, visites, agenda","Pressupost i certificacions":"amidaments, pressupost, certificacions","Comptabilitat":"facturació, despeses, rendiment","El meu encàrrec":"hores, despeses, factures"};
+const BLOC_SUB878485={"Fitxa":"dades, contactes, documents","Dia a dia":"partes, notes, actes, agenda","Pressupost i certificacions":"amidaments, pressupost, certificacions","Comptabilitat":"facturació, despeses, rendiment","El meu encàrrec":"hores, despeses, factures"};
 // V87.492 · el mateix per al tècnic i el compte de l'Héctor (proposta acceptada per l'Héctor el 4/11/2026): Fitxa · Dia a dia · El meu encàrrec ·
 // Pressupost i certificacions. L'últim, només a les obres que en tenen (als encàrrecs tècnics, com el CEE, no hi ha cap apartat i no surt).
 // Als encàrrecs tècnics les despeses són les meves (van a «El meu encàrrec»); a les obres, les de l'obra (van amb el pressupost).
@@ -12973,7 +12980,7 @@ const VISUAL_KEY878400="visual-nou-878400";
 const lsVisual878400=()=>{try{return window.__acoStore?.real||localStorage}catch{return null}};
 function visualNou878400(){try{return lsVisual878400()?.getItem(VISUAL_KEY878400)==="1"}catch{return false}}
 try{if(visualNou878400())document.documentElement.dataset.visual="nou"}catch{}
-const TAB_ICON878400={"Resum":LayoutDashboard,"Dades":IdCard,"Agents":Users,"Documents":FolderOpen,"Tancament / Entrega":Package,"Actes":NotebookPen,"Notes":NotebookPen,
+const TAB_ICON878400={"Resum":LayoutDashboard,"Dades":IdCard,"Agents":Users,"Documents":FolderOpen,"Tancament / Entrega":Package,"Actes":FileText,"Notes":NotebookPen,
   "Partes obra":ClipboardCheck,"Agenda / Avisos":CalendarDays,"Tasques":ClipboardList,"Gantt":ChartGantt,"Amidaments":Ruler,"Amidaments obra":Ruler,"Pressupost":Calculator,
   "Pressupost ràpid":Calculator,"Pressupost obra":Calculator,"Gestió obra":Calculator,"Pressupostos":FileText,"Certificacions":FileCheck,"Certificacions obra":FileCheck,
   "Facturació":ReceiptText,"Facturació obra":ReceiptText,"Factures":ReceiptText,"Albarans":Receipt,"Rendiment":TrendingUp,"Rendiments":TrendingUp,"Seguiment econòmic":TrendingUp,
@@ -20291,7 +20298,8 @@ function PressupostosObra878562({obres=[],odata={},setOdata,clients=[],openObraT
       {files.length>=6&&<input type="search" className="cerca-v878470" value={cerca} onChange={e=>setCerca(e.target.value)} placeholder={t("Buscar número, obra o client…")} aria-label={t("Buscar")}/>}
     </div>
     <div className="fe-estats-v878373 est-v878562" role="group" aria-label={t("Estat")}>{ESTATS_PRES878562.map(([k,l])=>{const ls=delE(k);return <button type="button" key={k} className={"e-"+k} aria-pressed={estF===k} onClick={()=>setEstF(x=>x===k?"":k)}><small>{t(l)}</small><b>{money(suma(ls))}</b><em>{ls.length===1?t("1 pressupost"):t("{n} pressupostos",{n:ls.length})}</em></button>})}</div>
-    {forats.length>0&&<p className="forats-v878562">{t("Números sense pressupost: {l}",{l:forats.join(", ")})}</p>}
+    {/* V87.571 · plegat dins d'una targeta petita (l'Héctor, 11/11/2026: a Socoterm, amb números posats a mà, «un avís grandíssim… en groc… com a molt recollit dins una targeta») */}
+    {forats.length>0&&<details className="forats-v878571"><summary><ClipboardList size={15} aria-hidden="true"/><span>{forats.length===1?t("1 número sense pressupost"):t("{n} números sense pressupost",{n:forats.length})}</span><ChevronRight size={15} className="chev" aria-hidden="true"/></summary><p>{forats.join(", ")}</p></details>}
     {!rows.length?<div className="fe-buit"><b>{t("Cap pressupost amb aquests filtres.")}</b></div>
     :<CartaLlista878518 className="pl-v878562" icona={ClipboardList} title={`${t(etPresObra878562())} (${rows.length})`} xifra={money(suma(rows))} obrir={[anyOk,estF,cerca].join("|")}><div className="pl-llista-v878562">
       <div className="pl-row-v878562 cap" aria-hidden="true"><span>{t("Número")}</span><span>{t("Obra i client")}</span><span>{t("Import")}</span><span>{t("Estat")}</span><span/></div>
@@ -22341,7 +22349,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.570",
+    app_version:"87.571",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

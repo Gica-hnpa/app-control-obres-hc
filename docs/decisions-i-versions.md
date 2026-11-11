@@ -3797,3 +3797,16 @@
   (PDF o foto) als que encara no tenen NIF o adreça; una lectura cadascun; desa el resultat a la despesa (`nif`, `prov878569`) perquè no s'hagi de
   tornar a llegir. Amb la funció `aco-ia` d'ara (sense NIF) avisa que s'ha de tornar a instal·lar. Prova: `v570test` 8/8 (factures com les de Rocas
   i Bofill, i la IA de proves sense i amb NIF); `v569test` adaptada a CIF vàlids (8/8); v566 en verd.
+- **V87.571 · «Dia a dia»: Partes · Notes · Actes · Agenda · Planning; els números que falten, plegats** (l'Héctor, 11/11/2026: a Brava «li costava
+  trobar les notes desades en una obra i és perquè estan a dins de Visites… és més pràctic que estigui amb el nom que toca… a Dia a dia hauríem de
+  tenir els partes, les notes, les actes, agenda i planning» —el Planning, el pensa—; «els que tenen obres seves barrejades amb d'altres… els hi surt
+  un avís grandíssim de pressupostos que falten en groc, que hauria de ser com a molt recollit dins una targeta»). Les notes i les actes tornen a anar
+  per separat (fora l'àlies «Notes → Actes» de la V87.309), cadascuna amb la llista de Visites filtrada (`Visites878309` amb `nomes="nota"|"acta"`:
+  títol «Notes» / «Actes», «Nova nota» / «Nova acta», la nota o l'acta nova no es desa fins a guardar-la i les actes buides d'abans es treuen, com a la
+  V87.475); al portal de client, com abans. Ordre a «Dia a dia» (i a «Seguiment»): Partes · Notes · Actes · Agenda · Planning; la rajola diu «partes,
+  notes, actes, agenda»; Actes amb una icona pròpia. Fora el text d'ajuda fix de Notes. Constructora i tècnic. Pressupostos: els números que falten,
+  en una targeta petita i grisa plegada («N números sense pressupost», `forats-v878571`; a Socoterm, 0001–0003 i 0065–0066 posats a mà en donaven
+  61). **Arreglat també:** el dia d'avui de les actes (`todayISO8761`) era en hora universal: entre les 00:00 i la 01:00 una acta nova sortia amb el dia
+  d'abans. Prova: `v571test` 9/9; adaptades notestest (16/16), plustest (18/18), v475 (10/10), v485 (22/22), v492 (27/27), v504 (17/17), v562
+  (18/18) i pestanyestest (11/12: la de les columnes d'Expedients ja fallava a la 563); `visitestest` (la llista conjunta de la V87.309) passa a
+  `visites309-obsoleta.mjs`.

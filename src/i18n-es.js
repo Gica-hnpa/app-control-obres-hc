@@ -5897,4 +5897,11 @@ export default {
 "Llegir amb IA les que falten": "Leer con IA las que faltan",
 "A 1 proveïdor li falta el NIF o l’adreça (no surten com a text a la factura).": "A 1 proveedor le falta el NIF o la dirección (no salen como texto en la factura).",
 "A {n} proveïdors els falta el NIF o l’adreça (no surten com a text a les factures).": "A {n} proveedores les falta el NIF o la dirección (no salen como texto en las facturas).",
+"partes, notes, actes, agenda": "partes, notas, actas, agenda",
+"1 número sense pressupost": "1 número sin presupuesto",
+"{n} números sense pressupost": "{n} números sin presupuesto",
+"Nova acta": "Nueva acta",
+"Encara no hi ha cap acta en aquesta obra.": "Todavía no hay ninguna acta en esta obra.",
+"Encara no hi ha cap acta en aquest expedient.": "Todavía no hay ninguna acta en este expediente.",
+"Encara no hi ha notes en aquest expedient.": "Todavía no hay notas en este expediente.",
 };
