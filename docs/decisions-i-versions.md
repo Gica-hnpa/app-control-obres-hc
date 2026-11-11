@@ -3853,3 +3853,8 @@
   `rebudesGestoria878522` i el detall de Despeses fan servir `despesaTotal878311` (el mateix total que la llista). A Brava, d'11 factures des del 10/9
   (data d'inici de Caixa) n'hi haurà 10 de vençudes (18.781 €); les 141 d'abans del 10/9 (475.499 €) continuen fora de «Per pagar» fins que l'Héctor
   decideixi com han de quedar. Prova: `v575test` 22/22 (una factura amb «845,81»); v521, v522 en verd.
+- **V87.577 · Els grups plegables oberts es distingeixen** (l'Héctor, 11/11/2026, captura dels mesos d'«Industrials»: «quan obri els desplegables, en
+  aquest cas dels mesos, que es distingeixi bé… amb negreta, en un color tota la fila del mes i l'altre a sota… en tot, repassa-ho»). `theme-v878577.css`:
+  la capçalera oberta dels grups de Despeses (mesos, obres, albarans sense factura: `paq-v878348`) i dels mesos dels Partes (`partes-mes-v878349`), fila
+  sencera de color blau clar, franja blava a l'esquerra, nom i import en negreta blava; el que hi ha a dins, amb una vora blava clara a l'esquerra i una
+  ratlla al final, fins al grup següent; un grup dins d'un altre, més clar. Prova: v567 5/5 (captures), partes359 20/20.

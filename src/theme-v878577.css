@@ -1,0 +1,16 @@
+/* V87.577 · Grups plegables (mesos, obres, albarans sense factura de Despeses; mesos dels Partes): el que s'obre es distingeix bé
+   (l'Héctor, 11/11/2026: «quan obri els desplegables, en aquest cas dels mesos, que es distingeixi bé… amb negreta, en un color tota la fila del mes
+   i l'altre a sota… en tot, repassa-ho»). La capçalera oberta: fila sencera de color, franja blava a l'esquerra i en negreta; a sota, el que hi ha
+   a dins amb la mateixa franja (més clara) i una ratlla al final, fins al grup següent. */
+html body .paq-v878348.obert>.paq-cap,
+html body .partes-mes-v878349.obert>.mes-cap{background:var(--co-accent-soft,#EAF1FD)!important;box-shadow:inset 4px 0 0 var(--co-accent,#2563EB)}
+html body .paq-v878348.obert>.paq-cap .nm,html body .paq-v878348.obert>.paq-cap .nm b,html body .paq-v878348.obert>.paq-cap .imp,
+html body .partes-mes-v878349.obert>.mes-cap b{font-weight:800!important;color:var(--co-accent-ink,#1D4ED8)!important}
+html body .paq-v878348.obert>.paq-cap .n,html body .partes-mes-v878349.obert>.mes-cap small{color:var(--co-accent-ink,#1D4ED8)!important;opacity:.85}
+html body .paq-v878348.obert>.paq-cap .chev,html body .partes-mes-v878349.obert>.mes-cap .chev{color:var(--co-accent,#2563EB)!important}
+html body .paq-v878348.obert>.paq-cos,
+html body .partes-mes-v878349.obert>.partes-llista-v878349{border-left:4px solid #BFD3F6;border-bottom:2px solid #BFD3F6;padding-bottom:6px}
+/* un grup dins d'un altre (p. ex. l'obra i, a dins, els mesos): més clar */
+html body .paq-v878348 .paq-v878348.obert>.paq-cap{background:#F3F7FE!important;box-shadow:inset 3px 0 0 #93B4EE}
+html body .paq-v878348 .paq-v878348.obert>.paq-cos{border-left:3px solid #DCE7FA;border-bottom-color:#DCE7FA}
+html body .paq-v878348:not(.obert)>.paq-cap:hover,html body .partes-mes-v878349:not(.obert)>.mes-cap:hover{background:var(--co-surface-2,#F4F6F8)}
