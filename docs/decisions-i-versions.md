@@ -3979,3 +3979,16 @@
     l'iPhone ho torni a col·locar. Si ho fa bé, la diferència és 0 i no es mou res; amb la pantalla ampliada amb dos dits no es toca.
   Prova: `v587test` 7/7 (nova; com que el navegador de les proves no és un iPhone, el teclat i l'error es fan veure amb un `visualViewport` fals i la
   pantalla més baixa); navtest 32/32, plustest 18/18, v583 13/13, v521 23/23, v486 12/12. **Falta veure-ho a l'iPhone de l'Héctor.**
+- **V87.588 · iPhone: la barra de baix encallada a mitja pantalla a moltes pantalles** (l'Héctor, 11/11/2026, captura de l'Inici a les 22:57, amb la
+  V87.586: «es queda clavat en moltes pantalles els accessos ràpids»). És l'error de l'iOS 26 (WebKit 297779, fòrums d'Apple 800125): després
+  d'obrir i tancar el teclat, l'iPhone es queda amb la pantalla «més baixa» (`innerHeight` i també el `visualViewport`) i tot el que és fix a baix
+  queda enlairat a totes les pantalles fins que es tanca l'app; a l'app instal·lada a la pantalla d'inici és on passa més. La V87.587 només mirava el
+  `visualViewport`, que en aquest cas també diu la mida dolenta. Ara `src/barresFixes.js` recorda l'alçada bona (la més gran vista amb aquella amplada;
+  en girar l'aparell torna a començar) i, sense teclat, si la pantalla queda més baixa més de mig segon:
+  1. la «cura»: amaga i torna a mostrar `#root` en el mateix instant (sense pintar res entremig) perquè l'iPhone torni a mesurar, i torna al mateix
+     lloc de la pàgina (com a molt una cada 2 s i 3 seguides);
+  2. si no se cura, a l'app instal·lada (`navigator.standalone` / `display-mode: standalone`) les barres de baix es mouen fins a l'alçada bona.
+  A Safari (no instal·lada) la pantalla canvia de debò quan surt o s'amaga la barra de l'adreça: allà només es corregeix si el `visualViewport` és més
+  baix que la finestra. També es torna a mirar en tornar a l'app (`pageshow`, `visibilitychange`) i després de cada clic.
+  Prova: `v587test` 10/10 (+ l'app instal·lada amb la pantalla encallada 210 px: una cura sense moure's del lloc i les barres a baix; en tornar a
+  l'alçada bona, res; a Safari amb la barra de l'adreça, res); navtest 32/32, plustest 18/18, v583 13/13. **Falta veure-ho a l'iPhone de l'Héctor.**
