@@ -1,0 +1,23 @@
+/* V87.573 · Al mòbil, el nom i el valor de les targetes ja no es trepitgen (l'Héctor, 11/11/2026, captura del client de Socoterm a Empresa › Datos:
+   «EmpresaSOCOTERM · B09716945», «Contacto y dirección» en tres línies; «no pot ser aquests errors»). El valor no s'encongia mai (flex:none,
+   nowrap): amb un valor llarg, el nom es quedava sense lloc. */
+@media (max-width:760px){
+  /* Empresa › Dades i les seccions iguals d'Ajustos: el valor a sota del nom, més petit, tallat amb «…» si no hi cap */
+  html body details.de-sec-v878386>summary{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"ic t ch" "ic x ch";column-gap:12px;row-gap:1px;align-items:center}
+  html body details.de-sec-v878386>summary>svg:first-child{grid-area:ic}
+  html body details.de-sec-v878386>summary>.t{grid-area:t;min-width:0}
+  html body details.de-sec-v878386>summary>.t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html body details.de-sec-v878386>summary>.xifra{grid-area:x;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font-size:13px!important;font-weight:600;color:var(--co-ink-3,#5F7075)!important}
+  html body details.de-sec-v878386>summary>.chev{grid-area:ch}
+  html body details.sub-v878426.de-sec-v878386>summary{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"t ch" "x ch"}
+  /* totes les targetes plegables: el valor pot ocupar com a molt mitja línia i es talla amb «…»; el nom no queda mai tapat */
+  html body details.card.bloc-v878426>summary>.t{flex:1 1 auto;min-width:0}
+  html body details.card.bloc-v878426>summary>.xifra{flex:0 1 auto;min-width:0;max-width:55%;overflow:hidden;text-overflow:ellipsis}
+  /* (a les d’Empresa i Ajustos, el valor va a sota: pot ocupar tota la línia) */
+  html body details.card.bloc-v878426.de-sec-v878386>summary>.xifra,html body details.sub-v878426.de-sec-v878386>summary>.xifra{max-width:none}
+}
+/* als mòbils estrets (320 px), el títol de la capçalera sortia «Empre…»: el botó de tornar només amb la fletxa */
+@media (max-width:340px){
+  html body .app-head-v878268 .back-v878268>span{display:none}
+  html body .app-head-v878268 .back-v878268{padding:0 6px 0 2px}
+}

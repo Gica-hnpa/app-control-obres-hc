@@ -3820,3 +3820,9 @@
   (N)», «Passar a la certificació» (amb confirmació; avisa de les partides fora de pressupost sense preu) i «Fet». Els partes que només porten hores ja
   no diuen «0 partides». Prova: `v572test` 14/14 (una setmana del novembre del 2025: 5 dies, 3 treballadors, 15 despeses; la mateixa setmana un altre
   cop, cap dia; validar-los tots); partes359, v555 en verd; partes352 (2 del ciment) i v483 («Altres despeses», de la V87.555) ja fallaven.
+- **V87.573 · Al mòbil, el nom i el valor de les targetes ja no es trepitgen** (l'Héctor, 11/11/2026, captura del client de Socoterm a Empresa › Datos
+  en castellà: «EmpresaSOCOTERM · B09716945», «Contacto y dirección» en tres línies; «no pot ser aquests errors»). El valor de les targetes plegables
+  no s'encongia mai (`flex:none`, `nowrap`) i el nom es quedava sense lloc. `theme-v878573.css`: a Empresa › Dades i les seccions iguals d'Ajustos
+  (`de-sec-v878386`), el valor va a sota del nom, més petit i tallat amb «…» si no hi cap; a la resta de targetes plegables, el valor ocupa com a molt
+  mitja línia i el nom no queda mai tapat. Als mòbils estrets (≤ 340 px), el botó de tornar de la capçalera només amb la fletxa (el títol sortia
+  «Empre…»). Prova: `v573test` 8/8 (375 i 320 px en català, 375 px en castellà amb el botó d'Ajustos; a la V87.563 en falla 3); navtest 32/32, v564 22/22.
