@@ -3932,3 +3932,12 @@
   numèric i el que s'hi escriu arriba amb punt, com abans). No hi entren els que són dies, setmanes, anys, codis o comptadors (`inputMode="numeric"`,
   dies laborables, planta, setmanes…) ni els que no tenen `value` (`defaultValue`). Si la finestra no té el focus (proves sense pantalla), el camp
   també es considera actiu si és el `document.activeElement`. Prova: `v584test` 10/10 (nova: partida del pressupost, certificació i despesa).
+- **V87.585 · La mà d'obra de l'empresa per als preus de la IA** (l'Héctor, 11/11/2026: «els preus en els descompostos de la mà d'obra, per exemple,
+  com és que surt oficial a 31 i ajudant a 28 i després apliquem el % de DGE i BI? No surten excessius? Els preus aquí no són els que té de cost
+  l'empresa amb totes les despeses incloses… uns 28 l'oficial i uns 24 els ajudants?»). La IA posava preus de mercat de la mà d'obra (BEDEC / CYPE:
+  cost directe per hora amb la Seguretat Social), i al damunt la DGE i el BI, com qualsevol banc de preus; l'empresa no tenia on dir el seu cost real.
+  Ara, a Ajustos › Preus i marges: «Mà d'obra de l'empresa (€/h, cost amb tot inclòs)», Oficial 1a i Ajudant / peó (en blanc, «Mercat»; es desa a
+  `aco_marges_v878378` com `moOf` / `moAj`; no surt als ajustos de cada obra). Totes les crides de preus de la IA (`promptPreusIa878585`: Buscar preus,
+  Buscar el preu amb IA, Fes-ho amb IA del descompost, pressupost automàtic) diuen a la IA que faci servir aquest cost (sou i Seguretat Social inclosos,
+  sense despeses generals ni benefici) i els oficis especialitzats a preu de mercat. Els descompostos que ja hi ha no canvien. Prova: `v585test` 6/6
+  (nova: la instrucció sense navegador i, amb el Supabase de proves, el que rep la IA).

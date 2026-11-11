@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.584";
+const APP_VERSION878264="87.585";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -15920,11 +15920,14 @@ const MARGES_KEY878378="aco_marges_v878378";
 const DIF878378=[["nova","Obra nova"],["reforma","Reforma"],["exigent","Reforma exigent"]];
 const FONTS_MARGES878378=["banc","ia","arxiu"];
 const fmtP878378=x=>(Math.round((+x||0)*100)/100).toLocaleString(loc878272());
+// V87.585 · els preus de la IA amb la mà d'obra de l'empresa (l'Héctor, 11/11/2026: «oficial a 31 i ajudant a 28 i després apliquem el % de DGE i BI…
+// no surten excessius? Els preus aquí no són els que té de cost l'empresa amb totes les despeses incloses?»)
+function promptPreusIa878585(o={}){const d=margesDefecte878378();return promptPreusIa({...o,mo:{of:d.moOf,aj:d.moAj}})}
 function margesDefecte878378(){
   const e=empresaInfo878259()||{},m=lsJson8779(MARGES_KEY878378,{})||{};
   const v=(x,d)=>x===""||x==null?d:String(x);
   return {ci:v(m.ci,"0"),dge:v(m.dge,v(e.dge878342,"13")),bi:v(m.bi,v(e.bi878342,"6")),mode:m.mode==="resum"?"resum":"dins",
-    dif:{nova:v(m.dif?.nova,"0"),reforma:v(m.dif?.reforma,"10"),exigent:v(m.dif?.exigent,"20")},minim:m.minim!==false,minimH:v(m.minimH,"4")};
+    dif:{nova:v(m.dif?.nova,"0"),reforma:v(m.dif?.reforma,"10"),exigent:v(m.dif?.exigent,"20")},minim:m.minim!==false,minimH:v(m.minimH,"4"),moOf:v(m.moOf,""),moAj:v(m.moAj,"")};
 }
 function margesObra878378(d={}){
   const def=margesDefecte878378(),o=d?.marges878378||{},rl=d?.rendiment878342||{},n=x=>parseNum8770(x)||0;
@@ -16041,7 +16044,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
         for(let i=0;i<sense.length;i+=15){
           const tros=sense.slice(i,i+15);
           setFent(t("Preus de les partides {a} a {b} de {n}…",{a:i+1,b:i+tros.length,n:sense.length}));
-          const pr=await iaCrida("preus",{text:promptPreusIa({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:tros})});
+          const pr=await iaCrida("preus",{text:promptPreusIa878585({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:tros})});
           const lr=respostaIa(pr?.text||"",tros.map(l=>l.codi));Object.assign(preus,lr.preus);av.push(...lr.avisos);
         }
       }catch(e){av.push(t("No s’han pogut fer tots els preus: {e}",{e:iaErr878458(e)}))}
@@ -16139,7 +16142,7 @@ function BuscarPreus878480({linies=[],partidaLibrary=[],data={},obra=null,obraId
       if(ambIa)for(let i=0;i<perIa.length;i+=15){
         const tros=perIa.slice(i,i+15);
         setFent(t("Preus de les partides {a} a {b} de {n}…",{a:i+1,b:i+tros.length,n:perIa.length}));
-        const pr=await iaCrida("preus",{text:promptPreusIa({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:tros.map(l=>({...l,codi:l.codiIa}))})});
+        const pr=await iaCrida("preus",{text:promptPreusIa878585({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:tros.map(l=>({...l,codi:l.codiIa}))})});
         const lr=respostaIa(pr?.text||"",tros.map(l=>l.codiIa));avisos.push(...lr.avisos);
         const fets=tros.map(l=>{const x=lr.preus[l.codiIa];return x&&x.pu>0?{...l,pu:x.pu,font878368:"ia",semblant878368:false,nota878368:x.nota||"",descomp878368:x.descomp||null,taula878368:null}:null}).filter(Boolean);
         if(fets.length){onPosa(fets.map(patch));nIa+=fets.length}
@@ -16263,6 +16266,7 @@ function MargesCamps878378({v={},def,set,readOnly=false,perObra=false}){
     {perObra?<div className="fila"><span className="l">{t("Dificultat de l’obra")}</span><div className="seg" role="group" aria-label={t("Dificultat de l’obra")}>{DIF878378.map(([k,l])=><button type="button" key={k} disabled={readOnly} aria-pressed={(v.dificultat||"nova")===k} onClick={()=>set({dificultat:k})}>{t(l)}<small>+{fmtP878378(parseNum8770(def.dif[k])||0)} %</small></button>)}</div></div>
     :<div className="fila"><span className="l">{t("Mà d’obra de més segons la dificultat (%)")}</span><div className="tres">{DIF878378.map(([k,l])=><label key={k}><span>{t(l)}</span><NumIn878584 inputMode="decimal" value={v.dif?.[k]??""} placeholder={{nova:"0",reforma:"10",exigent:"20"}[k]} onChange={e=>set({dif:{...(v.dif||{}),[k]:e.target.value}})}/></label>)}</div></div>}
     <div className="fila"><span className="l">{t("Marges (%)")}</span><div className="tres"><label><span>CI</span>{inp("ci",perObra?def.ci:"0")}</label><label><span>DGE</span>{inp("dge",perObra?def.dge:"13")}</label><label><span>BI</span>{inp("bi",perObra?def.bi:"6")}</label></div></div>
+    {!perObra&&<div className="fila mo-v878585"><span className="l">{t("Mà d’obra de l’empresa (€/h, cost amb tot inclòs)")}<small>{t("La IA la fa servir als descompostos. En blanc, preus de mercat.")}</small></span><div className="tres"><label><span>{t("Oficial 1a")}</span>{inp("moOf",t("Mercat"))}</label><label><span>{t("Ajudant / peó")}</span>{inp("moAj",t("Mercat"))}</label></div></div>}
     <div className="fila"><span className="l">{t("On van la DGE i el BI")}</span><div className="seg" role="group" aria-label={t("On van la DGE i el BI")}><button type="button" disabled={readOnly} aria-pressed={mode==="dins"} onClick={()=>set({mode:"dins"})}>{t("Dins del preu de cada partida")}</button><button type="button" disabled={readOnly} aria-pressed={mode==="resum"} onClick={()=>set({mode:"resum"})}>{t("A part, al resum")}</button></div></div>
     <label className="chk"><input type="checkbox" checked={minim} disabled={readOnly} onChange={e=>set({minim:e.target.checked})}/><span>{t("Mínim de mà d’obra per partida")}</span><NumIn878584 className="h" inputMode="decimal" value={v.minimH??""} placeholder={perObra?def.minimH:"4"} disabled={readOnly||!minim} onChange={e=>set({minimH:e.target.value})}/><span>h</span></label>
   </div>;
@@ -16330,7 +16334,7 @@ function PreusIa878368({obra={},cond={},linies=[],close,aplica}){
   useEffect(()=>{let viu=true;iaActiva().then(x=>{if(viu)setOff(!x)});return()=>{viu=false}},[]);
   const llista=ambSemblants?[...sense,...semblants]:sense;
   const ctx={obra:{nom:obra.nom,adreca:obra.adreca,poblacio:obra.poblacio,tipus:obra.tipus},cond};
-  const prompt=planolsSi=>promptPreusIa({...ctx,partides:llista,ambPlanols:planolsSi});
+  const prompt=planolsSi=>promptPreusIa878585({...ctx,partides:llista,ambPlanols:planolsSi});
   const lectura=resposta.trim()?respostaIa(resposta,llista.map(l=>l.codi)):null;
   const nLlegits=lectura?Object.keys(lectura.preus).length:0;
   async function afegeixPlanols(files){
@@ -16348,7 +16352,7 @@ function PreusIa878368({obra={},cond={},linies=[],close,aplica}){
       for(let i=0;i<llista.length;i+=15){
         const tros=llista.slice(i,i+15);
         setMsg(t("Preus de les partides {a} a {b} de {n}…",{a:i+1,b:i+tros.length,n:llista.length}));
-        const r=await iaCrida("preus",{text:promptPreusIa({...ctx,partides:tros,ambPlanols:planols.length>0}),arxius:planols.map(x=>({tipus:x.tipus,dades:x.dades}))});
+        const r=await iaCrida("preus",{text:promptPreusIa878585({...ctx,partides:tros,ambPlanols:planols.length>0}),arxius:planols.map(x=>({tipus:x.tipus,dades:x.dades}))});
         const lr=respostaIa(r?.text||"",tros.map(l=>l.codi));Object.assign(preus,lr.preus);avisos.push(...lr.avisos);
       }
       setEstat("");setMsg("");aplica(preus,avisos);
@@ -17533,7 +17537,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     setIa512({fent:t("La IA prepara el descompost…"),err:""});const encesa=await pantallaEncesa878476();
     try{
       const p={codi:"P1",concepte:row.concepte||"",ut:row.ut||"ut",desc:row.desc||"",q:parseNum8770(row.q)||1};
-      const pr=await iaCrida("preus",{text:promptPreusIa({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:[p]})});
+      const pr=await iaCrida("preus",{text:promptPreusIa878585({obra:{nom:obra?.nom,adreca:obra?.adreca,poblacio:obra?.poblacio,tipus:obra?.tipus},cond:data?.condicions878368||{},partides:[p]})});
       const lr=respostaIa(pr?.text||"",["P1"]);const x=lr.preus?.P1;
       if(!x||!(x.pu>0)||!(x.descomp||[]).length)throw new Error(t("La IA no ha tornat cap descompost."));
       const acc=pctAcces(data?.condicions878368||{});
@@ -22487,7 +22491,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.584",
+    app_version:"87.585",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

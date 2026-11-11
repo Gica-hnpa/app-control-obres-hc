@@ -5964,4 +5964,8 @@ export default {
   "Descripcions llargues de les partides": "Descripciones largas de las partidas",
   "Només les partides noves": "Solo las partidas nuevas",
   "Afegir feina en aquest capítol": "Añadir trabajo en este capítulo",
+  "Mà d’obra de l’empresa (€/h, cost amb tot inclòs)": "Mano de obra de la empresa (€/h, coste con todo incluido)",
+  "La IA la fa servir als descompostos. En blanc, preus de mercat.": "La IA la usa en los descompuestos. En blanco, precios de mercado.",
+  "Mercat": "Mercado",
+  "Ajudant / peó": "Ayudante / peón",
 };

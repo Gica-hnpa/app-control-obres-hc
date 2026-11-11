@@ -234,7 +234,9 @@ export function resumCondicions(cond = {}, obra = {}) {
 
 // ───────────── IA: instruccions i resposta ─────────────
 // La IA respon en BC3 (FIEBDC-3) perquè l'app ja el sap llegir i el descompost queda igual que el d'un banc de preus.
-export function promptPreusIa({ obra = {}, cond = {}, partides = [], provincia = "Girona", any = new Date().getFullYear(), ambPlanols = false } = {}) {
+const num = v => { const n = Number(String(v ?? "").replace(/\s/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".")); return Number.isFinite(n) && n > 0 ? n : 0; };
+export function promptPreusIa({ obra = {}, cond = {}, partides = [], provincia = "Girona", any = new Date().getFullYear(), ambPlanols = false, mo = {} } = {}) {
+  const of = num(mo.of), aj = num(mo.aj);
   const ctx = resumCondicions(cond, obra), pct = pctAcces(cond);
   const linies = partides.map(p => `${p.codi} | ${p.ut || "?"} | ${net(p.concepte)}${p.desc ? " — " + net(p.desc).slice(0, 400) : ""} | quantitat ${fmt(p.q, 2)}`);
   return [
@@ -243,6 +245,7 @@ export function promptPreusIa({ obra = {}, cond = {}, partides = [], provincia =
     `OBRA: ${net(obra.nom || "")}${obra.tipus ? " · " + obra.tipus : ""}`,
     ...ctx.map(x => "- " + x),
     pct ? `- Per l’accés i la logística, la mà d’obra rendeix menys: compta-hi un ${pct} % de temps de més.` : "",
+    (of || aj) ? `- Mà d’obra: fes servir el cost real de l’empresa (per hora, amb el sou i la Seguretat Social inclosos, sense despeses generals ni benefici)${of ? `: oficial 1a ${fmt(of, 2)} €/h` : ""}${aj ? `${of ? "," : ":"} ajudant o peó ${fmt(aj, 2)} €/h` : ""}. Els oficis especialitzats (lampista, electricista…), si no són de l’empresa, a preu de mercat.` : "",
     ambPlanols ? `- Et passo els plànols de l’obra: fes-los servir per entendre com és i per revisar les quantitats.` : "",
     ``,
     `PARTIDES (codi | unitat | descripció | quantitat):`,
