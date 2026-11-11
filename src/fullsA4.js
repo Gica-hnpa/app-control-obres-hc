@@ -71,7 +71,8 @@ function horitzontal(r, root) {
 }
 
 function cssFulls(pdf) {
-  return `html{background:${pdf ? "#fff" : FONS}!important;min-height:0!important}
+  // V87.586 · sense «text-size-adjust», a l'iPhone el text dels requadres amples es feia més gran i el dels estrets no (lletres de mides diferents)
+  return `html{background:${pdf ? "#fff" : FONS}!important;min-height:0!important;-webkit-text-size-adjust:100%!important;text-size-adjust:100%!important}
 html body:not([data-a4]){margin:0!important;padding:${pdf ? 0 : GAP}px 0 ${pdf ? 0 : 2}px!important;background:transparent!important;width:auto!important;min-width:0!important;max-width:none!important;min-height:0!important;box-shadow:none!important;border:0!important}
 html [data-a4][data-a4]{box-sizing:border-box!important;margin:0 auto ${pdf ? 0 : GAP}px!important;background:${pdf ? "#fff" : "transparent"}!important;position:relative!important;z-index:0;isolation:isolate;max-width:none!important;min-width:0!important;min-height:0!important;height:auto!important;float:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important;transform:none!important;zoom:1!important}
 html body[data-a4][data-a4]{margin:${pdf ? 0 : GAP}px auto!important}

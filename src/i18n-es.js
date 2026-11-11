@@ -5968,4 +5968,9 @@ export default {
   "La IA la fa servir als descompostos. En blanc, preus de mercat.": "La IA la usa en los descompuestos. En blanco, precios de mercado.",
   "Mercat": "Mercado",
   "Ajudant / peó": "Ayudante / peón",
+  "Què s’ha fet i què falta": "Qué se ha hecho y qué falta",
+  "Fet (certificat a origen)": "Hecho (certificado a origen)",
+  "Total de l’obra": "Total de la obra",
+  "Descripcions llargues": "Descripciones largas",
+  "Només les noves": "Solo las nuevas",
 };

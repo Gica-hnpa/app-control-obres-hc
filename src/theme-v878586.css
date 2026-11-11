@@ -1,0 +1,35 @@
+/* V87.586 · Rendiment › Previsió final: el gràfic «Què s'ha fet i què falta» (el mateix que surt al final dels PDF de les certificacions):
+   una barra per grup a la mateixa escala, el que s'ha fet en verd i el que falta en gris */
+html body .ff-v878586{margin:14px 0 6px;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;background:#fff}
+html body .ff-v878586 .tit{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 16px;margin-bottom:4px}
+html body .ff-v878586 .tit>b{font-size:14px;color:#0F2D5C}
+html body .ff-v878586 .lleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:#5F7075}
+html body .ff-v878586 .lleg i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+html body .ff-v878586 i.fet{background:#16A34A}
+html body .ff-v878586 i.falta{background:#E2E8F0}
+html body .ff-v878586 .f{display:grid;grid-template-columns:minmax(150px,190px) minmax(0,1fr) auto;align-items:center;gap:6px 14px;padding:9px 0;border-top:1px solid #EEF2F6}
+html body .ff-v878586 .et{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#0F172A;min-width:0}
+html body .ff-v878586 .et i{display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 10px}
+html body .ff-v878586 .barra{display:flex;height:16px;background:#F8FAFC;border-radius:4px;overflow:hidden}
+html body .ff-v878586 .barra i{display:block;height:100%;flex:0 0 auto}
+html body .ff-v878586 .v{display:grid;grid-template-columns:auto auto;gap:16px;font-size:13px;color:#334155;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body .ff-v878586 .v b{color:#0F172A}
+html body .ff-v878586 .v .fet b{color:#166534}
+html body .ff-v878586 .v em{font-style:normal;color:#5F7075;margin-left:4px}
+html body .ff-v878586 .f.fin .et{font-weight:800}
+
+/* El visor del document: «Descripcions llargues» de les partides a la certificació (la tria es veu al moment al PDF) */
+html body .doc-opc-v878586{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:0 0 10px;padding:8px 10px;border:1px solid #E2E8F0;border-radius:10px;background:#F8FAFC}
+html body .doc-opc-v878586>span{font-size:13px;font-weight:700;color:#334155}
+html body .doc-opc-v878586 .seg{display:inline-flex;border:1px solid #CBD5E1;border-radius:8px;overflow:hidden;background:#fff}
+html body .doc-opc-v878586 .seg button{min-height:36px;padding:4px 12px;border:0;border-left:1px solid #CBD5E1;border-radius:0;background:#fff;color:#334155;font-size:13px;font-weight:600;box-shadow:none}
+html body .doc-opc-v878586 .seg button:first-child{border-left:0}
+html body .doc-opc-v878586 .seg button[aria-pressed="true"]{background:#0F2D5C;color:#fff}
+
+@media (max-width:760px){
+  html body .ff-v878586{padding:10px 12px}
+  html body .ff-v878586 .f{grid-template-columns:1fr;gap:6px}
+  html body .ff-v878586 .v{grid-template-columns:1fr 1fr;text-align:left}
+  html body .doc-opc-v878586 .seg{width:100%}
+  html body .doc-opc-v878586 .seg button{flex:1;padding:4px 6px}
+}

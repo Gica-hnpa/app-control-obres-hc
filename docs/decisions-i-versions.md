@@ -3945,3 +3945,26 @@
   partida523 24/24, v560 17/17, v544 14/14, factclient 18/18, proformes 11/11, v458 9/9, cert364 22/22, v450 33/33, v413 24/24, v583 13/13, preus378
   24/24 (adaptada: els dos camps nous), tempstest 12/14 (les 2 ja fallaven a la V87.581). Si una prova del mig de la tanda falla sencera (la v521 al
   mòbil, la tempstest), tornar-la a passar sola: és el primer navegador amb el CSS nou.
+- **V87.586 · El resum de l'obra dels PDF de les certificacions en rajoles i «Què s'ha fet i què falta»; les descripcions llargues al visor del PDF;
+  les lletres iguals a l'iPhone** (l'Héctor, 11/11/2026, mirant el PDF de la certificació 2 a l'iPhone: «per què hi ha diferents mides de lletres…?»,
+  «veure el text complet d'una partida nova o totes l'he de poder fer jo com a tècnic o la mateixa constructora» i «el quadre del final de la cert 2
+  no és molt i molt liós?… el pressupost original, el no executat, fora de pressupost, pendent d'un lloc i de l'altre… buf, costa fins i tot mirar-lo…
+  potser en rajoles diferents per grups combinat amb un gràfic de barres»).
+  - **Lletres:** l'iPhone «engrandeix» sol el text dels requadres amples dels documents (text autosizing) i no el dels estrets: per això les
+    etiquetes sortien grans i els imports petits. `src/fullsA4.js` (`cssFulls`, el fan servir la vista prèvia i el PDF) posa
+    `-webkit-text-size-adjust:100%` al document: ara la vista prèvia és igual que el PDF, a tots els documents.
+  - **Resum de l'obra** (`resumFinalHtml878423`, al PDF de la certificació i al general a origen): quatre rajoles amb el color del grup (Pressupost
+    original amb les partides i, si n'hi ha, «No s'executaran» en vermell · Fora de pressupost amb les noves i el més amidament · Previsió final de
+    l'obra amb el % de l'original · Certificació N amb el que és del pressupost original i el que és de fora) i, a sota, «Què s'ha fet i què falta»
+    (`filesFetFalta878586`): una barra per grup (pressupost original, fora de pressupost, total de l'obra) a la mateixa escala, el fet (certificat a
+    origen) en verd i el que falta en gris, i a la dreta «Fet X € · %» i «Falta Y €». Una sola família de lletra i tres mides (10, 13 i 15 px).
+    Abans: una taula de sis files, el requadre de la certificació i dues barres amb sis colors i llegenda.
+  - **Rendiment › Previsió final:** la llista de xifres no canvia; el gràfic és el mateix «Què s'ha fet i què falta» del PDF (`GraficaFinal878423`).
+  - **Descripcions llargues:** al visor del PDF de la certificació (`DocViewer`), a dalt, «Descripcions llargues: No · Només les noves · Totes»; el
+    PDF es torna a fer al moment i, si es pot, la tria queda desada a l'obra (`triaDesc878586` del document). Hi és per a tothom que obre el PDF:
+    la constructora, el tècnic amb l'obra compartida («La meva certificació») i qui la té en consulta. A «Enviar», el tècnic que compara també té la
+    finestra amb la tria (sense «Enviar-la perquè la tornin signada», que no li toca); si la certificació ja és signada s'envia el PDF signat i no
+    es pregunta. Ja no és a la finestra d'«Imprimir» (era repetit: ara es tria mirant el PDF).
+  Prova: `v586test` 20/20 (nova: Verbania amb una còpia de DADES, el mòbil i el demo-tecnic amb l’obra compartida); adaptades `v423test` 26/26 (el gràfic i
+  el resum nous) i `v582test` 21/21 (la tria al visor); v424 18/18, v425 14/14, v410 25/25, v411 28/28; v412 21/23 i docmobiltest 12/15 (les
+  de l’acta, que ja fallaven a la V87.581).

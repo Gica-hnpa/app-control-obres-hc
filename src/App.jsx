@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.585";
+const APP_VERSION878264="87.586";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -18531,6 +18531,7 @@ const[imprimirC426,setImprimirC426]=useState(false);
 // sobretot les que són noves i vull que vegi què s'ha fet»): no / només les noves / totes. Es desa a l'obra.
 const[descCert878582,setDescCert878582]=useState(()=>String(obraData?.certDesc878582||data?.certDesc878582||""));
 function triaDesc878582(v){setDescCert878582(v);if(!readOnly&&!clientMode&&!contrast878424)(setObraData||setData)?.(d=>({...d,certDesc878582:v||undefined}))}
+const hiHaDesc878586=()=>(rows||[]).some(r=>!esDescAuto878582(r.desc));
 function selDesc878582(){
   if(!(rows||[]).some(r=>!esDescAuto878582(r.desc)))return null;
   return <label className="opcio desc-sel-v878582"><span>{i18nT("Descripcions llargues de les partides")}</span><select value={descCert878582} onChange={e=>triaDesc878582(e.target.value)}><option value="">{i18nT("No")}</option><option value="noves">{i18nT("Només les partides noves")}</option><option value="totes">{i18nT("Totes")}</option></select></label>;
@@ -18744,7 +18745,7 @@ function openCertPdf87216(mode="origen"){openDoc(certPdfDoc878407(mode))}
 function fesCert527(k){
   if(k==="pdf-actual")openCertPdf87216("actual");
   else if(k==="pdf-origen")openCertPdf87216("origen");
-  else if(k==="enviar"){if(!contrast878424&&obra?.id&&cert)setEnviar440(true);else enviaCert878440()}
+  else if(k==="enviar"){if((!contrast878424&&obra?.id&&cert)||(!rec408&&hiHaDesc878586()))setEnviar440(true);else enviaCert878440()}
 }
 function accio527(c,k){if(cert?.id===c.id)fesCert527(k);else{setSelected(c.id);setPend527({id:c.id,k})}}
 function opcionsCert527(c){
@@ -18819,7 +18820,7 @@ function certPdfDoc878407(mode="origen"){
   const allPrintRows=sortPartides878132(rows).map(r=>({...r,qPrev:qFor(r,prevNum),qAct:qDraft(r),qOrigen:qOrigin(r),impPrev:certAmount878223(r,prevNum),impActual:certAmount878223(r,certNum,qDraft(r)),impOrigen:certOriginAmount878223(r,certNum,qDraft(r)),pctOrigen:pc(qOrigin(r),r),mesures:(r.certMesuresByNum||{})[String(certNum)]||[]}));
   const printRows=printMode==="actual"?allPrintRows.filter(r=>Math.abs(+r.impActual||0)>0.000001):allPrintRows;
   const fin423=previsio878423(allPrintRows.map(r=>({r,qc:+r.qOrigen||0,cert:+r.impOrigen||0,qAct:+r.qAct||0,impAct:+r.impActual||0})),iniPres878412(data));
-  return ({type:"certificacio",autoPrint:false,printMode,fin423,certSig878408:printMode==="origen"?sigs408:[],title:printMode==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum} · GENERAL A ORIGEN`,subtitle:printMode==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Acumulat fins a la Certificació ${certNum} · ${money(totalOrigin())}`,certNum,prevNum,includeMesures:includeMesures8780,descPartides878582:descCert878582,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
+  return ({type:"certificacio",autoPrint:false,printMode,fin423,certSig878408:printMode==="origen"?sigs408:[],title:printMode==="actual"?`CERTIFICACIÓ ${certNum} · PARTIDES ACTUALS`:`CERTIFICACIÓ ${certNum} · GENERAL A ORIGEN`,subtitle:printMode==="actual"?`Només partides certificades en aquesta certificació · ${money(certTotal(certNum))}`:`Acumulat fins a la Certificació ${certNum} · ${money(totalOrigin())}`,certNum,prevNum,includeMesures:includeMesures8780,descPartides878582:descCert878582,triaDesc878586:triaDesc878582,agents:data.agents||[],rows:printRows,totalActual:certTotal(certNum),totalOrigen:totalOrigin(),data:fmtDate8714(cert?.data)});
 }
 function commitOne(codi,v){let val=parseNum8770(v);if(!Number.isFinite(val))val=0;updateCert?.(codi,fieldFor(certNum),val)}
 function guardarAmidaments(){Object.entries(draft).forEach(([codi,v])=>commitOne(codi,v));setDraft({});setEditing(false)}
@@ -19232,7 +19233,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       :<><div className="edita-fix-v878452"><span className="tot-m-v878452"><small>{i18nT("Certificació {n}",{n:certNum})}</small><b>{money(certTotal(certNum))}</b></span><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button></div>{!readOnly&&!contrast878424&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}</>}
     {!editing&&<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>}
     {!editing&&<ActionMenu87213 className="accions-v878364" label={i18nT("Opcions")}>
-      {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>{if(!contrast878424&&obra?.id&&cert)setEnviar440(true);else enviaCert878440()}}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
+      {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>{if((!contrast878424&&obra?.id&&cert)||(!rec408&&hiHaDesc878586()))setEnviar440(true);else enviaCert878440()}}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
       {!clientMode&&!contrast878424&&obra?.id&&cert&&<button type="button" className="sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
       {!clientMode&&!contrast878424&&pfCert878337&&!faCert878337&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData,client))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
       {faCert878337?<button type="button" onClick={()=>openDoc?.(docFactura878337(faCert878337,pfCert878337,obraData))}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>
@@ -19256,12 +19257,11 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
       <button type="button" className="opcio" onClick={()=>{setImprimirC426(false);printAdminCombined87222()}}><Printer size={20} aria-hidden="true"/> {i18nT("Document únic")}</button>
       <button type="button" className="opcio" onClick={()=>{setImprimirC426(false);setAdminPrintOpen87221(true)}}><Printer size={20} aria-hidden="true"/> {i18nT("Escollir una partida")}</button></>}
     <label className="opcio chk-v878426"><input type="checkbox" checked={includeMesures8780} onChange={e=>setIncludeMesures8780(e.target.checked)}/> {i18nT("Incloure línies d’amidament a la certificació")}</label>
-    {selDesc878582()}
   </div></Modal>}
   {enviar440&&<Modal title={i18nT("Enviar la certificació {n}",{n:certNum})} close={()=>setEnviar440(false)}><div className="imprimir-modal-v878426">
     <button type="button" className="opcio" onClick={()=>{setEnviar440(false);enviaCert878440()}}><Mail size={20} aria-hidden="true"/> {i18nT("Enviar la certificació")}</button>
-    <button type="button" className="opcio" onClick={()=>{setEnviar440(false);setSigCert408("envia")}}><Signature size={20} aria-hidden="true"/> {i18nT("Enviar-la perquè la tornin signada")}</button>
-    {selDesc878582()}
+    {!contrast878424&&obra?.id&&cert&&<button type="button" className="opcio" onClick={()=>{setEnviar440(false);setSigCert408("envia")}}><Signature size={20} aria-hidden="true"/> {i18nT("Enviar-la perquè la tornin signada")}</button>}
+    {!rec408&&selDesc878582()}
   </div></Modal>}
   {sigCert408&&<SignaturaCert878408 autoEnvia={sigCert408==="envia"} obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
   {extraOpen878125&&<Modal title={i18nT("Afegir feina · Certificació {n}",{n:certNum})} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p className="cert-add-intro-v878255">{i18nT("Què vols afegir a la Certificació")} {certNum}?</p>
@@ -19700,19 +19700,31 @@ function PressupostInicial878412({data={},setData,bid="principal",obraId,altres=
   </div></Modal>;
 }
 
-// V87.423 · les dues barres del gràfic (pressupost original i previsió final) a la mateixa escala, i la llegenda
-function barresFinal878423(p,tr=t){
-  const ex=Math.max(0,p.previst-p.imNoExec),max=Math.max(p.previst,p.previsio,p.executat,0.01);
-  const seg=(k,v,c,et)=>({k,v:Math.max(0,v),c,et,w:Math.max(0,v)/max*100});
-  const b1=[seg("ex",ex,"#3B82F6",tr("Pressupost original que s’executarà")),seg("no",p.imNoExec,"#DC2626",tr("No s’executaran"))];
-  const b2=[seg("eo",p.exeOrig,"#16A34A",tr("Executat del pressupost original")),seg("po",p.pendOrig,"#BFDBFE",tr("Pendent del pressupost original")),seg("ei",p.exeImp,"#EA580C",tr("Fora de pressupost executat")),seg("pi",p.pendImp,"#FED7AA",tr("Fora de pressupost pendent"))];
-  return {barres:[{k:"orig",et:tr("Pressupost original"),total:p.previst,segs:b1},{k:"fin",et:tr("Previsió final"),total:p.previsio,segs:b2}],llegenda:[...b1,...b2].filter(x=>x.v>0.005)};
+// V87.586 · el gràfic «fet i falta» (l'Héctor, 11/11/2026: «el quadre del final de la cert 2 no és molt i molt liós?… el pressupost original, el no
+// executat, fora de pressupost, pendent d'un lloc i de l'altre… buf, costa fins i tot mirar-lo»): una barra per grup (pressupost original, fora de
+// pressupost i el total), totes a la mateixa escala, amb el que s'ha fet en verd i el que falta en gris. Abans: dues barres amb sis colors i una llegenda.
+const COLORS_RO878586={orig:"#2563EB",fora:"#EA580C",fin:"#0F2D5C",cert:"#16A34A",fet:"#16A34A",falta:"#E2E8F0"};
+function filesFetFalta878586(p,tr=t){
+  const fila=(k,et,fet,falta)=>({k,et,fet:Math.max(0,fet||0),falta:Math.max(0,falta||0),c:COLORS_RO878586[k]});
+  const fora=p.imprevistos>0.005||p.exeImp>0.005||p.pendImp>0.005;
+  const files=[];
+  if(p.nOrig)files.push(fila("orig",tr("Pressupost original"),p.exeOrig,p.pendOrig));
+  if(fora)files.push(fila("fora",tr("Fora de pressupost"),p.exeImp,p.pendImp));
+  if(files.length!==1)files.push(fila("fin",tr("Total de l’obra"),p.executat,p.pendent));
+  const max=Math.max(...files.map(f=>f.fet+f.falta),0.01);
+  for(const f of files){const tot=f.fet+f.falta;f.wFet=f.fet/max*100;f.wFalta=f.falta/max*100;f.pc=tot>0.005?f.fet/tot*100:0}
+  return files;
 }
 function GraficaFinal878423({p}){
-  const g=barresFinal878423(p);
-  return <div className="fin-graf-v878423" role="img" aria-label={g.llegenda.map(x=>`${x.et}: ${money(x.v)}`).join(" · ")}>
-    {g.barres.map(b=><div key={b.k} className="fila"><div className="et"><span>{b.et}</span><b>{money(b.total)}</b></div><div className="barra">{b.segs.filter(x=>x.w>0.05).map(x=><i key={x.k} style={{width:`${x.w}%`,background:x.c}} title={`${x.et}: ${money(x.v)}`}/>)}</div></div>)}
-    <ul className="lleg">{g.llegenda.map(x=><li key={x.k}><i style={{background:x.c}}/><span>{x.et}</span><b>{money(x.v)}</b></li>)}</ul>
+  const files=filesFetFalta878586(p);
+  if(!files.length)return null;
+  return <div className="ff-v878586" role="img" aria-label={files.map(f=>`${f.et}: ${t("Fet")} ${money(f.fet)} (${pct(f.pc)}), ${t("Falta")} ${money(f.falta)}`).join(" · ")}>
+    <div className="tit"><b>{t("Què s’ha fet i què falta")}</b><span className="lleg"><span><i className="fet"/>{t("Fet (certificat a origen)")}</span><span><i className="falta"/>{t("Falta")}</span></span></div>
+    {files.map(f=><div key={f.k} className={`f ${f.k}`}>
+      <span className="et"><i style={{background:f.c}}/>{f.et}</span>
+      <span className="barra">{f.wFet>0.05&&<i className="fet" style={{width:`${f.wFet}%`}}/>}{f.wFalta>0.05&&<i className="falta" style={{width:`${f.wFalta}%`}}/>}</span>
+      <span className="v"><span className="fet">{t("Fet")} <b>{money(f.fet)}</b> <em>{pct(f.pc)}</em></span><span className="falta">{t("Falta")} <b>{money(f.falta)}</b></span></span>
+    </div>)}
   </div>;
 }
 // V87.426 · el resum de la certificació (l'Héctor: «el resum pot ser més currat… en una línia més maca i adornada»): tres xifres a dalt
@@ -22491,7 +22503,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.585",
+    app_version:"87.586",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23930,18 +23942,45 @@ function estilConcepte878423(r,qc){return qFinal878423(r)!==null?' style="color:
 function etiquetesDoc878423(r,D){const st="display:inline-block;margin-left:4px;padding:0 4px;border-radius:3px;font-size:8px;font-weight:700;white-space:nowrap;vertical-align:1px";return (esFora878410(r)?`<span class="fora-et-v878411" style="${st};background:#FFEDD5;color:#9A3412">${escHtmlV8772(etFora878410(r,D))}</span>`:"")+(qFinal878423(r)!==null?`<span class="noexec-et-v878423" style="${st};background:#FEE2E2;color:#B91C1C">${escHtmlV8772(etNoExec878423(r,D))}</span>`:"")}
 // V87.423 · el resum de l'obra al final dels PDF de les certificacions (l'Héctor, 28/10/2026: «pressupost original, que no s'executarà,
 // imprevistos o noves i pendent segons el pressupost original… i del certificat, el que hi ha del pressupost original i dels imprevistos»)
-const CSS_FIN878423=`.fin-v878423{margin-top:6mm;break-inside:avoid;page-break-inside:avoid}.fin-v878423 h3{font-size:13px;color:#0f2d5c;margin:0 0 3mm;text-align:left}.fin-g-v878423{display:grid;grid-template-columns:1fr;gap:5mm}.fin-v878423.ample .fin-g-v878423{grid-template-columns:125mm 1fr;align-items:start}.fin-t-v878423{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9.5px}.fin-t-v878423 td{border:1px solid #cbd5e1;padding:4px 6px;text-align:left!important;white-space:normal!important;overflow:visible!important;vertical-align:top;line-height:1.25}.fin-t-v878423 td.num{text-align:right!important;width:31mm;font-weight:700;white-space:nowrap!important}.fin-t-v878423 td small{display:block;color:#475569;font-size:8px;font-weight:400;margin-top:1px}.fin-t-v878423 tr.r td{color:#B91C1C;background:#FEF2F2}.fin-t-v878423 tr.o td{color:#9A3412;background:#FFF7ED}.fin-t-v878423 tr.b td{font-weight:900;background:#EFF6FF;border-top:2px solid #0f2d5c}.fin-t-v878423 tr.g td{color:#166534;background:#F0FDF4}.fin-t-v878423 tr.p td{font-weight:900}.fin-c-v878423{margin-top:3mm;border:1.5px solid #0f2d5c;border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;font-size:9.5px}.fin-c-v878423 b{color:#0f2d5c;font-size:11px}.fin-c-v878423 .o{color:#9A3412}.fin-graf-v878423 .fila{margin-bottom:3mm}.fin-graf-v878423 .et{display:flex;justify-content:space-between;gap:6px;font-size:9px;margin-bottom:1mm}.fin-graf-v878423 .barra{display:flex;gap:2px;height:7mm;background:#f1f5f9;border-radius:4px;overflow:hidden}.fin-graf-v878423 .barra i{display:block;height:100%;flex:0 0 auto}.fin-g-v878423>div{min-width:0}.fin-graf-v878423 .lleg{list-style:none;margin:2mm 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5mm 5mm;font-size:8.5px}.fin-graf-v878423 .lleg li{display:flex;align-items:center;gap:4px}.fin-graf-v878423 .lleg i{display:block;width:9px;height:9px;border-radius:2px;flex:0 0 9px}.fin-graf-v878423 .lleg span{flex:1;min-width:0}.fin-graf-v878423 .lleg b{white-space:nowrap}`;
+// V87.586 · el resum de l'obra en rajoles per grups (pressupost original, fora de pressupost, previsió final i aquesta certificació) i, a sota, el
+// gràfic «fet i falta» de cada grup. Totes les lletres de la mateixa família i només dues mides (el text i l'import de cada rajola).
+const CSS_FIN878423=`.ro-v878586{margin-top:6mm;break-inside:avoid;page-break-inside:avoid;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.3;color:#0f172a;text-align:left}
+.ro-v878586 h3{font-size:13px;color:#0f2d5c;margin:0 0 3mm;text-align:left}
+.ro-v878586 .rj{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:3mm}
+.ro-v878586 .rj>div{border:1px solid #cbd5e1;border-top:3px solid var(--c);border-radius:5px;padding:2.5mm 3mm;display:flex;flex-direction:column;gap:1px;min-width:0;background:#fff;break-inside:avoid}
+.ro-v878586 .rj small{font-size:10px;font-weight:700;color:#334155}
+.ro-v878586 .rj b{font-size:15px;font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;white-space:nowrap;margin:1px 0 2px}
+.ro-v878586 .rj span{font-size:10px;color:#475569}
+.ro-v878586 .rj span.r{color:#B91C1C}
+.ro-v878586 .ff-v878586{margin-top:3mm;border:1px solid #cbd5e1;border-radius:5px;padding:2.5mm 3mm}
+.ro-v878586 .ff-v878586 .tit{display:flex;justify-content:space-between;align-items:center;gap:4mm;margin-bottom:1.5mm}
+.ro-v878586 .ff-v878586 .tit b{font-size:10px;color:#0f2d5c}
+.ro-v878586 .ff-v878586 .lleg{display:flex;gap:4mm;color:#475569}
+.ro-v878586 .ff-v878586 .lleg i{display:inline-block;width:3mm;height:3mm;border-radius:1px;vertical-align:-0.5mm;margin-right:1mm}
+.ro-v878586 .ff-v878586 i.fet{background:#16A34A}.ro-v878586 .ff-v878586 i.falta{background:#E2E8F0}
+.ro-v878586 .ff-v878586 .f{display:grid;grid-template-columns:36mm minmax(0,1fr) 72mm;align-items:center;gap:3mm;padding:1.5mm 0;border-top:1px solid #e2e8f0}
+.ro-v878586 .ff-v878586 .et{font-weight:700;display:flex;align-items:center;gap:1.5mm;min-width:0}
+.ro-v878586 .ff-v878586 .et i{display:inline-block;width:2.5mm;height:2.5mm;border-radius:50%;flex:0 0 2.5mm}
+.ro-v878586 .ff-v878586 .barra{display:flex;height:5mm;background:#f8fafc;border-radius:2px;overflow:hidden}
+.ro-v878586 .ff-v878586 .barra i{display:block;height:100%;flex:0 0 auto}
+.ro-v878586 .ff-v878586 .v{display:grid;grid-template-columns:40mm 30mm;gap:2mm;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ro-v878586 .ff-v878586 .v .fet b{color:#166534}.ro-v878586 .ff-v878586 .v em{font-style:normal;color:#475569}
+.ro-v878586 .ff-v878586 .f.fin .et,.ro-v878586 .ff-v878586 .f.fin .v b{font-weight:800}
+.ro-v878586.ample .rj{max-width:none}`;
 function resumFinalHtml878423(D,p,certNum,ample){
   if(!p||(!p.nOrig&&!p.noves.length))return "";
-  const esc=escHtmlV8772,pc=(a,b)=>b>0.005?pct(a/b*100):"—",nP=n=>n===1?D("1 partida"):D("{n} partides",{n});
-  const nNo=p.noExec.length+p.tretes.length;
-  const fila=(cls,et,val,sub)=>`<tr class="${cls}"><td>${esc(et)}${sub?`<small>${esc(sub)}</small>`:""}</td><td class="num">${val}</td></tr>`;
-  const desg=[Math.abs(p.imNoves)>0.005?`${D("Partides noves")} ${money(p.imNoves)}`:"",Math.abs(p.imMes)>0.005?`${D("Més amidament")} ${money(p.imMes)}`:"",p.canv.length?`${D("Més quantitat o preu que al pressupost")} ${money(p.imCanv)}`:""].filter(Boolean).join(" · ");
-  const taula=`<table class="fin-t-v878423"><tbody>${fila("",D("Pressupost original"),money(p.previst),nP(p.nOrig))}${fila("r",D("No s’executaran"),(p.imNoExec>0.005?"− ":"")+money(p.imNoExec),nNo?nP(nNo):D("Cap"))}${fila("o",D("Fora de pressupost"),(p.imprevistos>0.005?"+ ":"")+money(p.imprevistos),desg||D("Cap"))}${fila("b",D("Previsió final de l’obra"),money(p.previsio),D("{p} del pressupost original",{p:pc(p.previsio,p.previst)}))}${fila("g",D("Executat (certificat a origen)"),money(p.executat),[`${D("Del pressupost original")} ${money(p.exeOrig)}`,p.exeImp>0.005?`${D("De fora de pressupost")} ${money(p.exeImp)}`:"",D("{p} de la previsió",{p:pc(p.executat,p.previsio)})].filter(Boolean).join(" · "))}${fila("p",D("Pendent d’executar"),money(p.pendent),[`${D("Del pressupost original")} ${money(p.pendOrig)}`,p.pendImp>0.005?`${D("De fora de pressupost")} ${money(p.pendImp)}`:""].filter(Boolean).join(" · "))}</tbody></table>`;
-  const cert=p.act&&Math.abs(p.act.total)>0.005?`<div class="fin-c-v878423"><b>${esc(D("Certificació {n}",{n:certNum}))}: ${money(p.act.total)}</b><span>${esc(D("Del pressupost original"))}: ${money(p.act.orig)}</span><span class="o">${esc(D("De fora de pressupost"))}: ${money(p.act.imp)}</span></div>`:"";
-  const g=barresFinal878423(p,D);
-  const graf=`<div class="fin-graf-v878423">${g.barres.map(b=>`<div class="fila"><div class="et"><span>${esc(b.et)}</span><b>${money(b.total)}</b></div><div class="barra">${b.segs.filter(x=>x.w>0.05).map(x=>`<i style="width:${x.w.toFixed(2)}%;background:${x.c}"></i>`).join("")}</div></div>`).join("")}<ul class="lleg">${g.llegenda.map(x=>`<li><i style="background:${x.c}"></i><span>${esc(x.et)}</span><b>${money(x.v)}</b></li>`).join("")}</ul></div>`;
-  return `<section class="fin-v878423${ample?" ample":""}"><h3>${esc(D("Resum de l’obra"))}</h3><div class="fin-g-v878423"><div>${taula}${cert}</div><div>${graf}</div></div></section>`;
+  const esc=escHtmlV8772,C=COLORS_RO878586,nP=n=>n===1?D("1 partida"):D("{n} partides",{n});
+  const nNo=p.noExec.length+p.tretes.length,fora=p.imprevistos>0.005||p.exeImp>0.005||p.pendImp>0.005;
+  const rj=(k,et,val,linies)=>`<div class="${k}" style="--c:${C[k]}"><small>${esc(et)}</small><b>${val}</b>${linies.filter(Boolean).map(([cls,txt])=>`<span${cls?` class="${cls}"`:""}>${esc(txt)}</span>`).join("")}</div>`;
+  const rajoles=[
+    rj("orig",D("Pressupost original"),money(p.previst),[["",nP(p.nOrig)],p.imNoExec>0.005&&["r",`${D("No s’executaran")}: − ${money(p.imNoExec)}${nNo?` (${nP(nNo)})`:""}`]]),
+    rj("fora",D("Fora de pressupost"),fora?`+ ${money(p.imprevistos)}`:money(0),fora?[Math.abs(p.imNoves)>0.005&&["",`${D("Partides noves")} ${money(p.imNoves)}`],Math.abs(p.imMes)>0.005&&["",`${D("Més amidament")} ${money(p.imMes)}`],p.canv.length>0&&["",`${D("Més quantitat o preu que al pressupost")} ${money(p.imCanv)}`]]:[["",D("Cap")]]),
+    rj("fin",D("Previsió final de l’obra"),money(p.previsio),[["",D("{p} del pressupost original",{p:p.previst>0.005?pct(p.previsio/p.previst*100):"—"})]]),
+    p.act&&Math.abs(p.act.total)>0.005?rj("cert",D("Certificació {n}",{n:certNum}),money(p.act.total),fora?[["",`${D("Del pressupost original")} ${money(p.act.orig)}`],["",`${D("De fora de pressupost")} ${money(p.act.imp)}`]]:[]):""
+  ].filter(Boolean);
+  const files=filesFetFalta878586(p,D);
+  const graf=files.length?`<div class="ff-v878586"><div class="tit"><b>${esc(D("Què s’ha fet i què falta"))}</b><span class="lleg"><span><i class="fet"></i>${esc(D("Fet (certificat a origen)"))}</span><span><i class="falta"></i>${esc(D("Falta"))}</span></span></div>${files.map(f=>`<div class="f ${f.k}"><span class="et"><i style="background:${f.c}"></i>${esc(f.et)}</span><span class="barra">${f.wFet>0.05?`<i class="fet" style="width:${f.wFet.toFixed(2)}%;background:${C.fet}"></i>`:""}${f.wFalta>0.05?`<i class="falta" style="width:${f.wFalta.toFixed(2)}%;background:${C.falta}"></i>`:""}</span><span class="v"><span class="fet">${esc(D("Fet"))} <b>${money(f.fet)}</b> <em>${pct(f.pc)}</em></span><span class="falta">${esc(D("Falta"))} <b>${money(f.falta)}</b></span></span></div>`).join("")}</div>`:"";
+  return `<section class="ro-v878586${ample?" ample":""}"><h3>${esc(D("Resum de l’obra"))}</h3><div class="rj" style="--n:${rajoles.length}">${rajoles.join("")}</div>${graf}</section>`;
 }
 function certCurrentPrintHtml87216(doc,obra,client,rows){
   const D=(s,v)=>tl(docLang878283(obra),s,v);
@@ -24519,7 +24558,14 @@ function BotonsDoc878412({html,titol,onEnviar,onImprimir,close,extra=null}){
     <button type="button" className="primary" onClick={onImprimir}><Printer size={15} aria-hidden="true"/> {t("Imprimir")}</button>
   </div>;
 }
-function DocViewer({doc,obra,client,close,email}){
+function DocViewer({doc:doc0,obra,client,close,email}){
+  // V87.586 · al visor de la certificació, «Descripcions llargues» de les partides (l'Héctor, 11/11/2026: «veure el text complet d'una partida nova
+  // o totes l'he de poder fer jo com a tècnic o la mateixa constructora»): la tria es veu al moment al PDF, també a qui té l'obra compartida, i
+  // si es pot, queda desada a l'obra (com a Enviar). Abans només hi era a les finestres d'Imprimir i Enviar de la certificació.
+  const hiHaDesc586=doc0?.type==="certificacio"&&(doc0.rows||[]).some(r=>!esDescAuto878582(r?.desc));
+  const[desc586,setDesc586]=useState(()=>String(doc0?.descPartides878582||""));
+  const doc=useMemo(()=>hiHaDesc586&&desc586!==String(doc0?.descPartides878582||"")?{...doc0,descPartides878582:desc586}:doc0,[doc0,desc586,hiHaDesc586]);
+  const triaDesc586=v=>{setDesc586(v);try{doc0?.triaDesc878586?.(v)}catch{}};
   const pf=doc.proforma;
   const agents=doc.agents||[];
   const acta=doc.acta?normalizeActa8768(doc.acta,agents):null;
@@ -24584,6 +24630,7 @@ function DocViewer({doc,obra,client,close,email}){
   useEffect(()=>{if(doc?.autoPrint){const t=setTimeout(()=>{printIsolated();close?.();},120);return()=>clearTimeout(t)}},[doc?.autoPrint]);
   if(doc?.autoPrint)return null;
   return <Modal title={doc.title} close={close}>
+    {hiHaDesc586&&<div className="doc-opc-v878586 no-print"><span>{i18nT("Descripcions llargues")}</span><div className="seg" role="group" aria-label={i18nT("Descripcions llargues de les partides")}>{[["",i18nT("No")],["noves",i18nT("Només les noves")],["totes",i18nT("Totes")]].map(([k,et])=><button key={k||"no"} type="button" aria-pressed={desc586===k} onClick={()=>triaDesc586(k)}>{et}</button>)}</div></div>}
     <div ref={printRef} className={`document-preview print-area clean-doc-preview-v8799 ${doc.type==="certificacio"?"cert-doc-v8718":"portrait-doc"}`}>
       {doc.type==="excel"&&doc.excelSheets?<ExcelDocumentPreview878245 doc={doc}/>:exactHtml878193?<ExactHtmlPreview878193 html={exactHtml878193} title={doc.title||"Document"}/>:<div className="document-page modern-acta-page">
         {doc.type!=="acta"&&doc.type!=="certificacio"&&doc.type!=="proforma"&&<div className="cert-header-pro">
