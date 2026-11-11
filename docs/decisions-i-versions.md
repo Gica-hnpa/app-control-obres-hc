@@ -3845,3 +3845,11 @@
   endavant), «Veure-les a la llista» i «Caixa i bancs». En obrir Despeses es posa la data d'inici de Caixa si no n'hi havia (avui − 60 dies, com en
   obrir Caixa): així els avisos de l'Inici («N pagaments vençuts», «N pagaments aquesta setmana») surten sense haver obert Caixa. `theme-v878575.css`.
   Prova: `v575test` 21/21 (ordinador i mòbil); despeses348, v521, v529, v514, v564, v566, v567, v572 en verd.
+- **V87.576 · Els imports escrits amb coma ja compten a Caixa, al banc i al paquet de la gestoria** (l'Héctor, 11/11/2026: «les moltíssimes factures
+  entrades a despeses de Brava, qui li ha dit que estan pagades i en quin moment? Jo no… només surten 2 vençudes»). Ningú les havia marcat: a la còpia
+  del núvol de Brava, 0 de 159 factures pagades. Però 119 tenien l'import desat com a text amb coma («845,81»: les de l'Excel i les llegides dels PDF) i
+  Caixa el llegia amb `+a.total` (= 0 €): no sortien a «Per pagar», ni a la previsió, ni per aparellar amb el banc, ni a les pagades; i el «Paquet per
+  a la gestoria» (`rebudesGestoria878522`) també les deixava fora. Ara `docsBanc878514`, `pagarItems878521`, `pagadesItems878529`,
+  `rebudesGestoria878522` i el detall de Despeses fan servir `despesaTotal878311` (el mateix total que la llista). A Brava, d'11 factures des del 10/9
+  (data d'inici de Caixa) n'hi haurà 10 de vençudes (18.781 €); les 141 d'abans del 10/9 (475.499 €) continuen fora de «Per pagar» fins que l'Héctor
+  decideixi com han de quedar. Prova: `v575test` 22/22 (una factura amb «845,81»); v521, v522 en verd.

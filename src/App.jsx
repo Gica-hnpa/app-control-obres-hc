@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.575";
+const APP_VERSION878264="87.576";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7001,7 +7001,7 @@ function docsBanc878514(obres=[],odata={}){
   // V87.521 · les mateixes factures que «Per cobrar» (al compte de l'Héctor, les de l'obra són del client)
   for(const x of cobrarItems878521(obres,odata,[]))factures.push({...x,data:x.dataF});
   const albs=readAlbarans878259(),coberts=cobertsPer878311(albs);
-  for(const a of albs){if(a.pagada878514||coberts[a.id])continue;const tot=+a.total||+a.base||0;if(!(tot>0))continue;despeses.push({clau:`d:${a.id}`,id:a.id,numero:a.numero||"",data:isoData878292(a.data),total:tot,obra:nom.get(String(a.obraId))||"",qui:a.proveidor||""})}
+  for(const a of albs){if(a.pagada878514||coberts[a.id])continue;const tot=despesaTotal878311(a);if(!(tot>0))continue;despeses.push({clau:`d:${a.id}`,id:a.id,numero:a.numero||"",data:isoData878292(a.data),total:tot,obra:nom.get(String(a.obraId))||"",qui:a.proveidor||""})}
   return {factures,despeses};
 }
 function Bancs878514({obres=[],odata={},openObraTab}){
@@ -7124,7 +7124,7 @@ function cobrarItems878521(obres=[],odata={},clients=[]){
 function pagarItems878521(obres=[]){
   const c=llegeixCaixa878521(),inici=c.inici||sumaDies878496(todayISO8743(),-60),dies=diesCaixa878521("pagar",30);
   const nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));const albs=readAlbarans878259(),cob=cobertsPer878311(albs),out=[];
-  for(const a of albs){if(a.pagada878514||cob[a.id])continue;const tot=+a.total||+a.base||0;if(!(tot>0))continue;
+  for(const a of albs){if(a.pagada878514||cob[a.id])continue;const tot=despesaTotal878311(a);if(!(tot>0))continue;
     const df=isoData878292(a.data)||isoData878292(String(a.dataEntrada||"").slice(0,10));
     if(!a.venciment878521){const tp=tipusDespesa878311(a);if(a.meva||tp==="Albarà"||tp==="MaObra"||a.importat||a.parteId878352||a.deHores878355)continue;if(!df||df<inici)continue}
     out.push({clau:`d:${a.id}`,id:a.id,numero:a.numero||"",dataF:df,data:a.venciment878521||sumaDies878496(df,dies)||df,total:r2c878521(tot),obra:nom.get(String(a.obraId))||"",obraId:a.obraId||"",qui:a.proveidor||a.concepte||""});
@@ -7142,7 +7142,7 @@ function cobradesItems878529(obres=[],odata={},clients=[],dies=90){
 }
 function pagadesItems878529(obres=[],dies=90){
   const des=sumaDies878496(todayISO8743(),-dies),nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));
-  return readAlbarans878259().filter(a=>a.pagada878514&&!(a.pagada878514.data&&a.pagada878514.data<des)).map(a=>({clau:"d:"+a.id,id:a.id,numero:a.numero||"",total:r2c878521(+a.total||+a.base||0),data:a.pagada878514.data||"",obra:nom.get(String(a.obraId))||"",qui:a.proveidor||a.concepte||""})).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+  return readAlbarans878259().filter(a=>a.pagada878514&&!(a.pagada878514.data&&a.pagada878514.data<des)).map(a=>({clau:"d:"+a.id,id:a.id,numero:a.numero||"",total:r2c878521(despesaTotal878311(a)),data:a.pagada878514.data||"",obra:nom.get(String(a.obraId))||"",qui:a.proveidor||a.concepte||""})).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
 }
 function FetsCaixa878529({items,kind,onDesfes}){
   return <CartaLlista878518 className="fets-v878529" icona={CircleCheck} title={kind==="cobrar"?t("Cobrades (últims 90 dies)"):t("Pagades (últims 90 dies)")} xifra={items.length?money(items.reduce((x,y)=>x+y.total,0)):null}>
@@ -7336,7 +7336,7 @@ function emesesGestoria878522(obres=[],odata={},clients=[],per=""){
 // les rebudes: com el llistat per a la gestoria de Despeses (sense la mà d'obra, les dels partes i de les hores, ni els albarans d'una factura)
 function rebudesGestoria878522(obres=[],per=""){
   const nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));const albs=readAlbarans878259(),cob=cobertsPer878311(albs),r2=r2c878521;
-  return albs.filter(a=>{const tp=tipusDespesa878311(a);return tp!=="MaObra"&&!a.parteId878352&&!a.deHores878355&&!cob[a.id]&&perOk878391(a.data||a.dataEntrada,per)&&(+a.total||+a.base)})
+  return albs.filter(a=>{const tp=tipusDespesa878311(a);return tp!=="MaObra"&&!a.parteId878352&&!a.deHores878355&&!cob[a.id]&&perOk878391(a.data||a.dataEntrada,per)&&despesaTotal878311(a)})
     .map(a=>{const tp=tipusDespesa878311(a);return {a,k:"d:"+a.id,data:isoData878292(a.data)||isoData878292(String(a.dataEntrada||"").slice(0,10)),numero:a.numero||"",proveidor:a.proveidor||a.concepte||"",nif:a.nif||"",obra:tp==="Empresa"?i18nT(a.categoria||""):(nom.get(String(a.obraId))||""),tipus:a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),base:r2(albaraBase878259(a)),iva:a.isp?0:r2(despesaIva878311(a)),ivaPct:+a.iva||0,total:r2(despesaTotal878311(a)),isp:!!a.isp,pagada:!!a.pagada878514,foto:!!a.teFoto,pdf:!!a.tePdf}})
     .sort((x,y)=>String(x.data).localeCompare(String(y.data))||String(x.proveidor).localeCompare(String(y.proveidor),"ca"));
 }
@@ -22408,7 +22408,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.575",
+    app_version:"87.576",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -25915,7 +25915,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   const estatPagN575=rs=>{const es=rs.map(estatPag575);if(es.every(e=>e?.k==="pag"))return es[0];const p=es.filter(e=>e&&e.k!=="pag").sort((x,y)=>String(x.d).localeCompare(String(y.d)));return p[0]||null};
   const pagOk575=a=>{if(!pagF575)return true;const e=estatPag575(a);return pagF575==="pag"?e?.k==="pag":pagF575==="venc"?e?.k==="venc":(e?.k==="per"||e?.k==="venc")};
   const potPag575=a=>!meves&&!a.meva&&!coberts[a.id]&&!["MaObra","Albarà"].includes(tipusDespesa878311(a))&&!a.parteId878352&&!a.deHores878355;
-  const itemPag575=a=>perPagarMap575.get(a.id)||{clau:"d:"+a.id,id:a.id,numero:a.numero||"",dataF:isoData878292(a.data),data:a.venciment878521||sumaDies878496(isoData878292(a.data)||avui575,diesCaixa878521("pagar",30))||avui575,total:r2c878521(+a.total||+a.base||0),obra:(obres||[]).find(o=>String(o.id)===String(a.obraId))?.nom||"",obraId:a.obraId||"",qui:a.proveidor||a.concepte||""};
+  const itemPag575=a=>perPagarMap575.get(a.id)||{clau:"d:"+a.id,id:a.id,numero:a.numero||"",dataF:isoData878292(a.data),data:a.venciment878521||sumaDies878496(isoData878292(a.data)||avui575,diesCaixa878521("pagar",30))||avui575,total:r2c878521(despesaTotal878311(a)),obra:(obres||[]).find(o=>String(o.id)===String(a.obraId))?.nom||"",obraId:a.obraId||"",qui:a.proveidor||a.concepte||""};
   const avisaPag575=()=>{try{window.dispatchEvent(new Event("aco-caixa-changed"));window.dispatchEvent(new Event("aco-avisos-changed"))}catch{}};
   const pill575=e=>!e?null:<em className={`pag-v878575 ${e.k}`}>{e.k==="pag"?i18nT("Pagada"):e.k==="venc"?i18nT("Vençuda"):i18nT("Per pagar")}{e.k!=="pag"&&e.d?` · ${dm878521(e.d)}`:""}</em>;
   const botoPag575=a=>{const e=estatPag575(a);if(!e&&!potPag575(a))return null;
