@@ -3878,3 +3878,12 @@
   a «Nom i número del pressupost», es treu en desar (no surt «PP»). Els pressupostos d'honoraris del tècnic ja eren «P2026-001». Prova: v528 13/13
   (adaptada: la fila «Nom i número» és a «Ajustos del pressupost» des de la V87.552 i la targeta s'obre tancada des de la V87.544; abans en fallaven 8),
   v562 18/18 i v563 13/13 (adaptades), v571 9/9.
+- **V87.580 · IVA i descompte pactat del pressupost, i observacions i forma de pagament per defecte** (l'Héctor, 11/11/2026: «algun client em demana
+  tenir l'opció, a l'hora d'enviar el pressupost, dins dels ajustos de l'obra, d'afegir el % d'IVA… o el % de descompte pactat… i que les observacions
+  i formes de pagament surtin dins de cada empresa per defecte les darreres fetes… o no sé on posar-ho»). A «Ajustos del pressupost» › «Número i
+  condicions per al client», l'apartat «IVA, descompte, observacions i forma de pagament»: «IVA del pressupost» (sense IVA de sèrie, 10, 21, 4 o 0 %:
+  `ivaPres878580`) i «Descompte pactat (%)» (`dtePres878580`), a l'obra. Al PDF (`totalsIvaDte878580`, després del total o del PEC): «Descompte pactat
+  (5 %)», «Base imposable» (o «TOTAL AMB EL DESCOMPTE» sense IVA), «IVA (10 %)» i «TOTAL AMB IVA»; sense res triat, com abans. Les observacions i la
+  forma de pagament d'un pressupost sense text propi ni del client són les de l'empresa (Ajustos › Documents), i el que s'hi escriu passa a ser el de
+  l'empresa (les darreres, per als pressupostos nous); «Guardar com a defecte del client» continua. Prova: `v580test` 10/10 (nova: comptes del PDF, sense
+  IVA com abans, recarregar); v528 13/13, v539 11/11.

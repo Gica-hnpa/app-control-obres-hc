@@ -5945,4 +5945,13 @@ export default {
   "{n} despeses marcades com a pagades.": "{n} gastos marcados como pagados.",
   "Veure-les a la llista": "Verlas en la lista",
   "Data de pagament": "Fecha de pago",
+  // V87.580 · IVA i descompte del pressupost
+  "IVA, descompte, observacions i forma de pagament": "IVA, descuento, observaciones y forma de pago",
+  "Les darreres que escriguis surten als pressupostos nous": "Las últimas que escribas salen en los presupuestos nuevos",
+  "IVA del pressupost": "IVA del presupuesto",
+  "Sense IVA (només el total)": "Sin IVA (solo el total)",
+  "Descompte pactat (%)": "Descuento pactado (%)",
+  "Descompte pactat": "Descuento pactado",
+  "TOTAL AMB EL DESCOMPTE": "TOTAL CON EL DESCUENTO",
+  "TOTAL AMB IVA": "TOTAL CON IVA",
 };
