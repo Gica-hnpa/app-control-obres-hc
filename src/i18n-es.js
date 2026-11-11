@@ -5944,4 +5944,5 @@ export default {
   "1 despesa marcada com a pagada.": "1 gasto marcado como pagado.",
   "{n} despeses marcades com a pagades.": "{n} gastos marcados como pagados.",
   "Veure-les a la llista": "Verlas en la lista",
+  "Data de pagament": "Fecha de pago",
 };

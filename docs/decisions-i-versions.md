@@ -3858,3 +3858,17 @@
   la capçalera oberta dels grups de Despeses (mesos, obres, albarans sense factura: `paq-v878348`) i dels mesos dels Partes (`partes-mes-v878349`), fila
   sencera de color blau clar, franja blava a l'esquerra, nom i import en negreta blava; el que hi ha a dins, amb una vora blava clara a l'esquerra i una
   ratlla al final, fins al grup següent; un grup dins d'un altre, més clar. Prova: v567 5/5 (captures), partes359 20/20.
+- **V87.578 · Pagament a tots els llistats, en verd i vermell, i totes les factures no pagades són pendents** (l'Héctor, 11/11/2026: «les moltíssimes
+  factures de Brava, qui li ha dit que estan pagades i en quin moment? Jo no»; «he de veure en qualsevol dels llistats, ja sigui en previsualització com
+  en pantalla, les que tinc pagades i les pendents, en color verd pagades i vermell pendents… i les dates de pagament… i a bancs i caixes la previsió de
+  pagament si li posem una data o ens la posen els proveïdors»). `pagarItems878521`: sense la data d'inici de Caixa ni l'excepció de les importades
+  d'Excel: tota factura o tiquet sense «Pagada» és per pagar (encara fora: mà d'obra, albarans sense factura, les meves despeses, partes i hores; a
+  Brava, 141 factures d'abans del 10/9 passen a vençudes fins que es marquin com a pagades: «Seleccionar» → «Pagament…» → «Pagades el dia de cada
+  factura»). Colors (`theme-v878578.css`): «Per pagar» en vermell clar, «Vençuda» en vermell, «Pagada» en verd, ara també amb la data. «Llistat amb
+  filtres» de Despeses: columna «Pagament» («Pagada · 08/11/2026», «Per pagar · 06/12/2026», «Vençuda · 25/05/2026») amb el color a la pantalla, a la
+  vista prèvia, al PDF i a l'Excel, i filtre «Pagament»; l'informe imprès (`informeHtml878505`) accepta cel·les amb color ({t,c}). «Llistat en PDF»
+  (factures rebudes): columna «Pagament» (horitzontal). Excel de Despeses: «Pagament» i «Data de pagament». A la fitxa de la despesa, el requadre
+  «Pagament» amb l'estat, «Pagament previst el» (el venciment, que Caixa fa servir per a la previsió) i «Pagada el». El venciment del proveïdor es llegeix
+  sol del text de la factura («Vencimiento», «Venciment», «Vto.») i la IA també el demana (`aco-ia`: `venciment`; **cal tornar-la a desplegar**). El
+  botó «Treure els filtres» del llistat, amb estil d'enllaç. Prova: `v578test` 13/13 (nova), v575 22/22, v521 23/23 (adaptada: la de fa 200 dies i la
+  importada ja hi surten), v522, v529, v514 en verd; v501 1 de 14 ja fallava a la V87.563 (filtre de dates de les certificacions).

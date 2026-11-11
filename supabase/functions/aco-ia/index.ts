@@ -47,6 +47,7 @@ const SYS_DESPESA = `Llegeixes albarans, factures i tiquets de compra d'empreses
   poblacio: la seva població. telefon i email: els del proveïdor. Si no hi surten, buits.
 - numero: el número del document.
 - data: la data del document en format AAAA-MM-DD.
+- venciment: la data de venciment o de pagament que diu la factura, en format AAAA-MM-DD; si no n'hi ha, buit.
 - base: import sense IVA. iva: el percentatge d'IVA (el principal, si n'hi ha més d'un). total: import amb IVA.
 - isp: true si diu inversió del subjecte passiu.
 - albarans: en una factura, els números dels albarans que inclou.
@@ -76,7 +77,7 @@ No t'inventis preus: si no en trobes cap de raonable, posa 0 i «A CONFIRMAR». 
 const obj = (properties: Record<string, unknown>) => ({ type: "object", additionalProperties: false, required: Object.keys(properties), properties });
 const S = { type: "string" }, N = { type: "number" }, B = { type: "boolean" };
 const ESQ_DESPESA = obj({
-  tipus: { type: "string", enum: ["albara", "factura", "tiquet"] }, proveidor: S, nif: S, adreca: S, cp: S, poblacio: S, telefon: S, email: S, numero: S, data: S, base: N, iva: N, total: N, isp: B,
+  tipus: { type: "string", enum: ["albara", "factura", "tiquet"] }, proveidor: S, nif: S, adreca: S, cp: S, poblacio: S, telefon: S, email: S, numero: S, data: S, venciment: S, base: N, iva: N, total: N, isp: B,
   albarans: { type: "array", items: S },
   linies: { type: "array", items: obj({ concepte: S, quantitat: N, unitat: S, preu: N, import: N }) },
 });

@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.577";
+const APP_VERSION878264="87.578";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7122,11 +7122,13 @@ function cobrarItems878521(obres=[],odata={},clients=[]){
   return out.sort((a,b)=>String(a.data).localeCompare(String(b.data)));
 }
 function pagarItems878521(obres=[]){
-  const c=llegeixCaixa878521(),inici=c.inici||sumaDies878496(todayISO8743(),-60),dies=diesCaixa878521("pagar",30);
+  // V87.578 · totes les factures que no s'han marcat com a pagades són per pagar, siguin de quan siguin (l'Héctor, 11/11/2026: «qui li ha dit que
+  // estan pagades i en quin moment? Jo no»); abans, només des de la data d'inici de Caixa i sense les importades
+  const dies=diesCaixa878521("pagar",30);
   const nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));const albs=readAlbarans878259(),cob=cobertsPer878311(albs),out=[];
   for(const a of albs){if(a.pagada878514||cob[a.id])continue;const tot=despesaTotal878311(a);if(!(tot>0))continue;
     const df=isoData878292(a.data)||isoData878292(String(a.dataEntrada||"").slice(0,10));
-    if(!a.venciment878521){const tp=tipusDespesa878311(a);if(a.meva||tp==="Albarà"||tp==="MaObra"||a.importat||a.parteId878352||a.deHores878355)continue;if(!df||df<inici)continue}
+    if(!a.venciment878521){const tp=tipusDespesa878311(a);if(a.meva||tp==="Albarà"||tp==="MaObra"||a.parteId878352||a.deHores878355)continue;if(!df)continue}
     out.push({clau:`d:${a.id}`,id:a.id,numero:a.numero||"",dataF:df,data:a.venciment878521||sumaDies878496(df,dies)||df,total:r2c878521(tot),obra:nom.get(String(a.obraId))||"",obraId:a.obraId||"",qui:a.proveidor||a.concepte||""});
   }
   return out.sort((a,b)=>String(a.data).localeCompare(String(b.data)));
@@ -22408,7 +22410,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.577",
+    app_version:"87.578",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -24337,7 +24339,8 @@ function informeHtml878505({titol="",sub="",cols=[],files=[],peu=null,horitzonta
   const emp=empresaInfo878259()||{};const nom=em.nom||emp.fiscal||emp.nom||(getAppAccount878233(currentAppUser8779())||{}).displayName||"";const nif=em.nif||emp.nif||"";
   const logo=em.logo?`<img src="${esc(em.logo)}" alt="">`:"";
   const cl=i=>cols[i]?.n?' class="n"':"";
-  const cel=(v,i)=>`<td${cl(i)}>${v===""||v==null?'<span class="buit">—</span>':esc(v)}</td>`;
+  // V87.578 · una cel·la pot portar el seu color ({t,c}: p. ex. el pagament, verd pagada i vermell pendent)
+  const cel=(v,i)=>v&&typeof v==="object"?`<td class="${esc(v.c||"")}${cols[i]?.n?" n":""}">${esc(v.t??"")}</td>`:`<td${cl(i)}>${v===""||v==null?'<span class="buit">—</span>':esc(v)}</td>`;
   const cos=files.map(f=>f&&f.grup!=null?`<tr class="g"><td colspan="${cols.length}">${esc(f.grup)}</td></tr>`:f&&f.subtotal?`<tr class="st">${f.subtotal.map((v,i)=>`<td${cl(i)}>${esc(v??"")}</td>`).join("")}</tr>`:`<tr>${(f||[]).map(cel).join("")}</tr>`).join("");
   const css=`@page{size:A4 ${horitzontal?"landscape":"portrait"};margin:12mm 11mm 14mm}body{font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#0F172A;margin:0}
 .cap{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:8px;border-bottom:3px solid ${C};margin-bottom:10px}
@@ -24347,7 +24350,7 @@ table{width:100%;border-collapse:collapse}thead{display:table-header-group}thead
 td{padding:4px 6px;border-bottom:1px solid #E2E8F0;vertical-align:top}tbody tr:nth-child(even) td{background:#F8FAFC}tr{break-inside:avoid}
 .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}tr.g td{background:#EEF2F7!important;font-weight:700;color:${C};padding-top:7px;border-bottom:1px solid #CBD5E1}
 tr.st td{font-weight:700;background:#fff!important;border-bottom:1.5px solid #CBD5E1}tfoot td{font-weight:700;font-size:10.5px;border-top:2px solid ${C};border-bottom:0;padding-top:6px;background:#fff}
-.buit{color:#94A3B8}.peu{margin-top:10px;color:#64748B;font-size:8.5px;display:flex;justify-content:space-between;gap:12px}`;
+.buit{color:#94A3B8}td.pag-pag{color:#15803D;font-weight:700}td.pag-per{color:#B91C1C;font-weight:700}td.pag-venc{color:#991B1B;font-weight:800}.peu{margin-top:10px;color:#64748B;font-size:8.5px;display:flex;justify-content:space-between;gap:12px}`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(titol)}</title><style>${css}</style></head><body><div class="cap"><div class="emp">${logo}<div>${nom?`<b>${esc(nom)}</b>`:""}${nif?`<span>${esc(t("NIF"))} ${esc(nif)}</span>`:""}</div></div><div class="tit"><h1>${esc(titol)}</h1>${sub?`<div class="sub">${esc(sub)}</div>`:""}</div></div>
 <table><thead><tr>${cols.map((c,i)=>`<th${cl(i)}>${esc(c.l)}</th>`).join("")}</tr></thead><tbody>${cos}</tbody>${peu?`<tfoot><tr>${peu.map((v,i)=>`<td${cl(i)}>${esc(v??"")}</td>`).join("")}</tr></tfoot>`:""}</table>
 <div class="peu"><span>${esc(nom)}</span><span>${esc(t("Fet el {d}",{d:fmtAppDate8748(todayISO8743())}))}</span></div></body></html>`;
@@ -24373,12 +24376,12 @@ function Llistat878501({titol,files=[],cols=[],dates=[],filtres=[],close,nom="ll
     if(ambNum&&(numDes||numFins)){const n=nn(r.num);if(numDes&&!(n>=+numDes))return false;if(numFins&&!(n<=+numFins))return false}
     return cercaOk878470(q,cols.map(c=>r[c.k]),d)};
   const colO=cols.find(c=>c.k===ordre.k);
-  const cmp=(a,b)=>{const x=a[ordre.k],y=b[ordre.k];let r=0;if(colO?.tipus==="diners"||colO?.tipus==="num"||colO?.tipus==="pct"||colO?.tipus==="hores")r=(+x||0)-(+y||0);else if(colO?.tipus==="data"||dates.some(d=>d.k===ordre.k))r=String(dataIso878470(x)||"").localeCompare(String(dataIso878470(y)||""));else r=String(x??"").localeCompare(String(y??""),"ca",{numeric:true,sensitivity:"base"});return ordre.dir==="asc"?r:-r};
+  const cmp=(a,b)=>{const x=a[ordre.k],y=b[ordre.k];let r=0;if(colO?.tipus==="pag")r=String(a._pag||"~").localeCompare(String(b._pag||"~"))||String(a._pagD||"").localeCompare(String(b._pagD||""));else if(colO?.tipus==="diners"||colO?.tipus==="num"||colO?.tipus==="pct"||colO?.tipus==="hores")r=(+x||0)-(+y||0);else if(colO?.tipus==="data"||dates.some(d=>d.k===ordre.k))r=String(dataIso878470(x)||"").localeCompare(String(dataIso878470(y)||""));else r=String(x??"").localeCompare(String(y??""),"ca",{numeric:true,sensitivity:"base"});return ordre.dir==="asc"?r:-r};
   const ll=files.filter(ok).sort(cmp);
   const cv=cols.filter(c=>vis.has(c.k));
   const tot=c=>ll.reduce((s,r)=>s+(+r[c.k]||0),0);
   const resumF=[campData&&(des||fins)?`${dates.find(d=>d.k===campData)?.l||""}: ${des?fmtAppDate8748(des):"…"} – ${fins?fmtAppDate8748(fins):"…"}`:"",any?t("Any {a}",{a:any}):"",...filtres.filter(f=>fv[f.k]).map(f=>`${f.l}: ${fv[f.k]}`),numDes||numFins?t("Números {a} – {b}",{a:numDes||"…",b:numFins||"…"}):"",q.trim()?`«${q.trim()}»`:""].filter(Boolean).join(" · ");
-  const html=()=>informeHtml878505({titol,sub:[resumF||t("Sense filtres"),ll.length===1?t("1 línia"):t("{n} línies",{n:ll.length})].join(" · "),horitzontal:cv.length>7,cols:cv.map(c=>({l:c.l,n:["diners","num","pct","hores"].includes(c.tipus)})),files:ll.map(r=>cv.map(c=>{const v=valLl878501(c,r[c.k]);return v==null?"":String(v)})),peu:cv.map((c,i)=>c.suma?sumLl878517(c,tot(c)):i===0?t("Total · {n}",{n:ll.length}):"")});
+  const html=()=>informeHtml878505({titol,sub:[resumF||t("Sense filtres"),ll.length===1?t("1 línia"):t("{n} línies",{n:ll.length})].join(" · "),horitzontal:cv.length>7,cols:cv.map(c=>({l:c.l,n:["diners","num","pct","hores"].includes(c.tipus)})),files:ll.map(r=>cv.map(c=>{const v=valLl878501(c,r[c.k]);const s=v==null?"":String(v);return c.tipus==="pag"&&s?{t:s,c:"pag-"+(r._pag||"")}:s})),peu:cv.map((c,i)=>c.suma?sumLl878517(c,tot(c)):i===0?t("Total · {n}",{n:ll.length}):"")});
   const nomArx=`${nom}${any?"-"+any:""}`;
   async function pdf(){if(!ll.length||ocupat)return;setOcupat(true);
     try{const blob=await htmlAPdf(html(),{titol});const fitx=nomPdf(nomArx);let tactil=false;try{tactil=matchMedia("(hover:none)").matches}catch{}
@@ -24404,7 +24407,7 @@ function Llistat878501({titol,files=[],cols=[],dates=[],filtres=[],close,nom="ll
       <div className="ordre"><label><span>{t("Ordenar per")}</span><select value={ordre.k} onChange={e=>setOrdre(o=>({...o,k:e.target.value}))}>{cols.map(c=><option key={c.k} value={c.k}>{c.l}</option>)}</select></label><button type="button" className="secondary" onClick={()=>setOrdre(o=>({...o,dir:o.dir==="asc"?"desc":"asc"}))}>{ordre.dir==="asc"?t("Ascendent ▲"):t("Descendent ▼")}</button></div>
     </details>
     {ll.length===0?<p className="ll-buit-v878501">{t("Cap línia amb aquests filtres.")}</p>:<div className="ll-taula-v878501"><table><thead><tr>{cv.map(c=><th key={c.k} className={["diners","num","pct","hores"].includes(c.tipus)?"n":""}><button type="button" onClick={()=>setOrdre(o=>({k:c.k,dir:o.k===c.k&&o.dir==="asc"?"desc":"asc"}))}>{c.l}{ordre.k===c.k?(ordre.dir==="asc"?" ▲":" ▼"):""}</button></th>)}</tr></thead>
-      <tbody>{ll.map((r,i)=><tr key={r._k||i}>{cv.map(c=><td key={c.k} className={["diners","num","pct","hores"].includes(c.tipus)?"n":""}>{valLl878501(c,r[c.k])}</td>)}</tr>)}</tbody>
+      <tbody>{ll.map((r,i)=><tr key={r._k||i}>{cv.map(c=><td key={c.k} className={["diners","num","pct","hores"].includes(c.tipus)?"n":c.tipus==="pag"&&r._pag?`pag-ll-v878578 ${r._pag}`:""}>{valLl878501(c,r[c.k])}</td>)}</tr>)}</tbody>
       <tfoot><tr>{cv.map((c,i)=><td key={c.k} className={c.suma?"n":""}>{c.suma?sumLl878517(c,tot(c)):i===0?t("Total · {n}",{n:ll.length}):""}</td>)}</tr></tfoot></table></div>}
   </PantallaSencera878489>;
 }
@@ -25490,6 +25493,8 @@ function readAlbaraText878259(text){
   const ivaPct=parseFloat(pick("(?:iva|i\\.v\\.a\\.)[^0-9\\n%]{0,10}(\\d{1,2})(?:[.,]\\d+)?\\s*%"))||0;
   const numero=pick("(?:albar[àa]n?|n[ºo°]\\.?|n[úu]m\\.?|n[úu]mero|document)\\s*(?:n[ºo°úu]m?\\.?|n[úu]mero)?\\s*[:#.]?\\s*([A-Z]{0,4}[-/]?\\d[\\w\\-/]{2,})");
   const data=albaraDate878259(pick("(\\d{1,2}[\\/.-]\\d{1,2}[\\/.-]\\d{2,4})"));
+  // V87.578 · el venciment que posa el proveïdor («Vencimiento», «Venciment», «Vto.»): el pagament previst
+  const venciment=albaraDate878259(pick("(?:venciment|vencimiento|vencimientos|vto\\.?|venc\\.)[^0-9\\n]{0,30}(\\d{1,2}[\\/.-]\\d{1,2}[\\/.-]\\d{2,4})"));
   const prov=lines.find(l=>/\b(s\.?\s?l\.?u?|s\.?\s?a\.?u?|s\.?\s?c\.?p?)\b\.?$|\b(sl|slu|sa|sau|scp)\b/i.test(l)&&!/client|destinatari|cliente/i.test(l))||lines[0]||"";
   const linies=[];
   lines.forEach(l=>{
@@ -25497,7 +25502,7 @@ function readAlbaraText878259(text){
     if(!m)return;const q=amt(m[2]),p=amt(m[4]),imp=amt(m[5]);
     if(q&&p&&imp&&Math.abs(q*p-imp)<=Math.max(0.05,imp*0.03))linies.push({concepte:m[1].trim(),quantitat:q,unitat:m[3]||"ut",preu:p,import:imp});
   });
-  return {proveidor:prov.replace(/\s{2,}.*/,"").slice(0,80),numero,data,base:base||(total&&ivaPct?total/(1+ivaPct/100):0),iva:ivaPct||(base&&total?Math.round((total/base-1)*100):0),total,linies};
+  return {proveidor:prov.replace(/\s{2,}.*/,"").slice(0,80),numero,data,venciment,base:base||(total&&ivaPct?total/(1+ivaPct/100):0),iva:ivaPct||(base&&total?Math.round((total/base-1)*100):0),total,linies};
 }
 // V87.458 · Lectura directa amb IA (funció «aco-ia» de Supabase). Si no està instal·lada, retorna null.
 async function readAlbaraAI878259(a){
@@ -25515,6 +25520,8 @@ function fillAlbara878259(x,p){
     nif:p.nif&&p.nif!=="?"?String(p.nif).trim():x.nif,
     ...(()=>{const pv={carrer:p.adreca,codiPostal:p.cp,poblacio:p.poblacio,telefon:p.telefon,email:p.email};const ok=Object.fromEntries(Object.entries(pv).filter(([,v])=>String(v||"").trim()&&String(v).trim()!=="?").map(([k,v])=>[k,String(v).trim()]));return Object.keys(ok).length?{prov878569:{...(x.prov878569||{}),...ok}}:{}})(),
     data:albaraDate878259(p.data)||p.data||x.data,
+    // V87.578 · el venciment de la factura (text o IA), si és posterior a la data: el pagament previst
+    ...(()=>{const v=albaraDate878259(p.venciment||"");const d=albaraDate878259(p.data)||x.data||"";return v&&(!d||v>=String(d).slice(0,10))&&!x.venciment878521?{venciment878521:v}:{}})(),
     base:p.base?fmt(+p.base||aiNum878256(p.base)):x.base,
     iva:p.iva?String(+p.iva||aiNum878256(p.iva)):x.iva,
     total:p.total?fmt(+p.total||aiNum878256(p.total)):x.total,
@@ -25917,7 +25924,9 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   const potPag575=a=>!meves&&!a.meva&&!coberts[a.id]&&!["MaObra","Albarà"].includes(tipusDespesa878311(a))&&!a.parteId878352&&!a.deHores878355;
   const itemPag575=a=>perPagarMap575.get(a.id)||{clau:"d:"+a.id,id:a.id,numero:a.numero||"",dataF:isoData878292(a.data),data:a.venciment878521||sumaDies878496(isoData878292(a.data)||avui575,diesCaixa878521("pagar",30))||avui575,total:r2c878521(despesaTotal878311(a)),obra:(obres||[]).find(o=>String(o.id)===String(a.obraId))?.nom||"",obraId:a.obraId||"",qui:a.proveidor||a.concepte||""};
   const avisaPag575=()=>{try{window.dispatchEvent(new Event("aco-caixa-changed"));window.dispatchEvent(new Event("aco-avisos-changed"))}catch{}};
-  const pill575=e=>!e?null:<em className={`pag-v878575 ${e.k}`}>{e.k==="pag"?i18nT("Pagada"):e.k==="venc"?i18nT("Vençuda"):i18nT("Per pagar")}{e.k!=="pag"&&e.d?` · ${dm878521(e.d)}`:""}</em>;
+  const pill575=e=>!e?null:<em className={`pag-v878575 ${e.k}`}>{e.k==="pag"?i18nT("Pagada"):e.k==="venc"?i18nT("Vençuda"):i18nT("Per pagar")}{e.d?` · ${dm878521(e.d)}`:""}</em>;
+  // V87.578 · als llistats (pantalla, vista prèvia, PDF i Excel): l'estat i la data (pagada el dia…, o el pagament previst)
+  const txtPag578=a=>{const e=estatPag575(a);if(!e)return {k:"",l:"",txt:"",d:""};const l=e.k==="pag"?i18nT("Pagada"):e.k==="venc"?i18nT("Vençuda"):i18nT("Per pagar");return {k:e.k,l,d:e.d||"",txt:e.d?`${l} · ${fmtAppDate8748(e.d)}`:l}};
   const botoPag575=a=>{const e=estatPag575(a);if(!e&&!potPag575(a))return null;
     if(e?.k==="pag")return <button type="button" className="secondary pag-bt-v878575 pag" onClick={()=>perPagarDe575([a])}><Check size={15} aria-hidden="true"/> {e.d?i18nT("Pagada el {d}",{d:fmtAppDate8748(e.d)}):i18nT("Pagada")}</button>;
     return <button type="button" className={`secondary pag-bt-v878575 ${e?.k||""}`} onClick={()=>setMov575(itemPag575(a))}><Wallet size={15} aria-hidden="true"/> {e?.k==="venc"?i18nT("Vençuda el {d}",{d:fmtAppDate8748(e.d)}):e?.k==="per"?i18nT("Per pagar el {d}",{d:fmtAppDate8748(e.d)}):i18nT("Pagament…")}</button>};
@@ -25974,9 +25983,9 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
    const[llistat501,setLlistat501]=useState(false);
    const llistatDesp501=()=>{const nomO=id=>obres.find(o=>o.id===id)?.nom||"";
      return <Llistat878501 titol={fixedObra?i18nT("Despeses de {o}",{o:nomO(fixedObra)}):i18nT("Despeses")} nom="despeses" close={()=>setLlistat501(false)} dates={[{k:"data",l:i18nT("Data d’emissió")},{k:"dataEntrada",l:i18nT("Data d’entrada")}]}
-       filtres={[{k:"grup",l:i18nT("Grup")},{k:"proveidor",l:i18nT("Proveïdor")},...(fixedObra?[]:[{k:"obra",l:i18nT(diuObra878326()?"Obra":"Expedient")}])]}
-       cols={[{k:"num",l:i18nT("Número")},{k:"data",l:i18nT("Data"),tipus:"data"},{k:"dataEntrada",l:i18nT("Entrada"),tipus:"data",def:false},{k:"proveidor",l:i18nT("Proveïdor")},{k:"concepte",l:i18nT("Concepte"),def:false},{k:"grup",l:i18nT("Grup")},...(fixedObra?[]:[{k:"obra",l:i18nT(diuObra878326()?"Obra":"Expedient")}]),{k:"base",l:i18nT("Base"),tipus:"diners",suma:true},{k:"iva",l:i18nT("IVA"),tipus:"diners",suma:true},{k:"total",l:i18nT("Total"),tipus:"diners",suma:true}]}
-       files={list.filter(a=>!coberts[a.id]).map(a=>{const g=a.meva?etiquetaMeva878323(a.tipusMeva||""):i18nT(GRUPS_DESP878344.find(x=>x.k===grupDespesa878344(a))?.label||"");return {_k:a.id,num:a.numero||"",data:toInputDate8743(a.data)||"",dataEntrada:dataEntrada878348(a)||"",proveidor:a.proveidor||"",concepte:a.notes||"",grup:g,obra:nomO(a.obraId),base:albaraBase878259(a),iva:a.isp?0:despesaIva878311(a),total:despesaTotal878311(a)}})}/>};
+       filtres={[{k:"grup",l:i18nT("Grup")},{k:"proveidor",l:i18nT("Proveïdor")},...(fixedObra?[]:[{k:"obra",l:i18nT(diuObra878326()?"Obra":"Expedient")}]),...(meves?[]:[{k:"pagEst",l:i18nT("Pagament")}])]}
+       cols={[{k:"num",l:i18nT("Número")},{k:"data",l:i18nT("Data"),tipus:"data"},{k:"dataEntrada",l:i18nT("Entrada"),tipus:"data",def:false},{k:"proveidor",l:i18nT("Proveïdor")},{k:"concepte",l:i18nT("Concepte"),def:false},{k:"grup",l:i18nT("Grup")},...(fixedObra?[]:[{k:"obra",l:i18nT(diuObra878326()?"Obra":"Expedient")}]),{k:"base",l:i18nT("Base"),tipus:"diners",suma:true},{k:"iva",l:i18nT("IVA"),tipus:"diners",suma:true},{k:"total",l:i18nT("Total"),tipus:"diners",suma:true},...(meves?[]:[{k:"pag",l:i18nT("Pagament"),tipus:"pag"}])]}
+       files={list.filter(a=>!coberts[a.id]).map(a=>{const g=a.meva?etiquetaMeva878323(a.tipusMeva||""):i18nT(GRUPS_DESP878344.find(x=>x.k===grupDespesa878344(a))?.label||"");const p=txtPag578(a);return {_k:a.id,num:a.numero||"",data:toInputDate8743(a.data)||"",dataEntrada:dataEntrada878348(a)||"",proveidor:a.proveidor||"",concepte:a.notes||"",grup:g,obra:nomO(a.obraId),base:albaraBase878259(a),iva:a.isp?0:despesaIva878311(a),total:despesaTotal878311(a),pag:p.txt,pagEst:p.l,_pag:p.k,_pagD:p.d}})}/>};
   const[avis878347,setAvis878347]=useState("");
   const[sel878345,setSel878345]=useState(()=>new Set());
   // V87.329 · els requadres dels apartats (tècnic) compten sense el filtre de tipus: en tocar-ne un, la llista només en mostra aquell
@@ -26017,8 +26026,8 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   function save(a){if(desaDespesa878318(a))setEdit(null)}
   function exporta878338(compartir=false){
     const r2=x=>Math.round((+x||0)*100)/100;
-    const aoa=[[t("Data"),t("Data d’entrada"),t("Tipus"),t("Proveïdor o treballador"),t("Número"),t("Obra o categoria"),t("Capítol o partida"),t("Categoria"),t("Hores"),t("Base"),t("IVA"),t("Total"),t("Inclòs a la factura"),t("Repercutida al client")],
-      ...[...rows].sort((x,y)=>String(x.data||"").localeCompare(String(y.data||""))).map(a=>{const o=obres.find(x=>x.id===a.obraId);const tp=tipusDespesa878311(a);const cob=coberts[a.id];const md=tp==="MaObra"?maDe878348(a):null;return [fmtAppDate8748(a.data),dataEntrada878348(a)?fmtAppDate8748(dataEntrada878348(a)):"",a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),a.proveidor||"",a.numero||"",tp==="Empresa"?i18nT(a.categoria||""):(o?.nom||""),imputacio878311(a),md?.cat||"",md?.hores??"",r2(albaraBase878259(a)),r2(a.isp?0:despesaIva878311(a)),r2(despesaTotal878311(a)),cob?[cob.proveidor,cob.numero].filter(Boolean).join(" · "):"",tp==="Empresa"?"":(a.facturatClient?t("Sí"):t("No"))]})];
+    const aoa=[[t("Data"),t("Data d’entrada"),t("Tipus"),t("Proveïdor o treballador"),t("Número"),t("Obra o categoria"),t("Capítol o partida"),t("Categoria"),t("Hores"),t("Base"),t("IVA"),t("Total"),t("Inclòs a la factura"),t("Repercutida al client"),...(meves?[]:[t("Pagament"),t("Data de pagament")])],
+      ...[...rows].sort((x,y)=>String(x.data||"").localeCompare(String(y.data||""))).map(a=>{const o=obres.find(x=>x.id===a.obraId);const tp=tipusDespesa878311(a);const cob=coberts[a.id];const md=tp==="MaObra"?maDe878348(a):null;return [fmtAppDate8748(a.data),dataEntrada878348(a)?fmtAppDate8748(dataEntrada878348(a)):"",a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),a.proveidor||"",a.numero||"",tp==="Empresa"?i18nT(a.categoria||""):(o?.nom||""),imputacio878311(a),md?.cat||"",md?.hores??"",r2(albaraBase878259(a)),r2(a.isp?0:despesaIva878311(a)),r2(despesaTotal878311(a)),cob?[cob.proveidor,cob.numero].filter(Boolean).join(" · "):"",tp==="Empresa"?"":(a.facturatClient?t("Sí"):t("No")),...(meves?[]:(p=>[p.l,p.d?fmtAppDate8748(p.d):""])(txtPag578(a)))]})];
     const ws=XLSX.utils.aoa_to_sheet(aoa);ws["!cols"]=[{wch:11},{wch:20},{wch:28},{wch:14},{wch:32},{wch:28},{wch:12},{wch:11},{wch:12},{wch:22},{wch:12}];
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Despeses"));
     const nom=String(empresaInfo878259()?.nom||"").replace(/[\\/:*?"<>|]+/g,"").trim();
@@ -26036,11 +26045,14 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
     const per=[month?nomPer878391(month):t("Tot el període"),obraF?obres.find(o=>o.id===obraF)?.nom:"",provF].filter(Boolean).join(" · ");
     const sb=ls.reduce((x,a)=>x+albaraBase878259(a),0),si=ls.reduce((x,a)=>x+(a.isp?0:despesaIva878311(a)),0),st=ls.reduce((x,a)=>x+despesaTotal878311(a),0);
     const mesDe=a=>{const d=parseDate8776(a.data);return d?d.toLocaleDateString(loc878272(),{month:"long",year:"numeric"}):t("Sense data")};const fs505=[];let mesA=null,acc=null;
-    const tanca=()=>{if(acc&&acc.n>1)fs505.push({subtotal:[t("Subtotal"),"","","","",money(acc.b),money(acc.i),money(acc.t)]})};
+    // V87.578 · amb la columna del pagament (verd pagada, vermell pendent, amb la data), menys a «Les meves despeses»
+    const ambP=!meves,ex=ambP?[""]:[];
+    const tanca=()=>{if(acc&&acc.n>1)fs505.push({subtotal:[t("Subtotal"),"","","","",money(acc.b),money(acc.i),money(acc.t),...ex]})};
     ls.forEach(a=>{const m=mesDe(a);if(m!==mesA){tanca();mesA=m;acc={n:0,b:0,i:0,t:0};fs505.push({grup:m.charAt(0).toUpperCase()+m.slice(1)})}
       const o=obres.find(x=>x.id===a.obraId);const tp=tipusDespesa878311(a);acc.n++;acc.b+=albaraBase878259(a);acc.i+=a.isp?0:despesaIva878311(a);acc.t+=despesaTotal878311(a);
-      fs505.push([fmtAppDate8748(a.data),a.numero||"",a.proveidor||"",a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),tp==="Empresa"?i18nT(a.categoria||""):(o?.nom||""),money(albaraBase878259(a)),a.isp?"ISP":money(despesaIva878311(a)),money(despesaTotal878311(a))])});tanca();
-    const html=informeHtml878505({titol:t("Factures rebudes"),sub:[per,ls.length===1?t("1 despesa"):t("{n} despeses",{n:ls.length})].join(" · "),cols:[{l:t("Data")},{l:t("Número")},{l:t("Proveïdor")},{l:t("Tipus")},{l:t(etExp==="obra"?"Obra":"Expedient")},{l:t("Base"),n:true},{l:t("IVA"),n:true},{l:t("Total"),n:true}],files:fs505,peu:[t("Total"),"","","","",money(sb),money(si),money(st)]});
+      const p=ambP?txtPag578(a):null;
+      fs505.push([fmtAppDate8748(a.data),a.numero||"",a.proveidor||"",a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),tp==="Empresa"?i18nT(a.categoria||""):(o?.nom||""),money(albaraBase878259(a)),a.isp?"ISP":money(despesaIva878311(a)),money(despesaTotal878311(a)),...(ambP?[p.txt?{t:p.txt,c:"pag-"+p.k}:""]:[])])});tanca();
+    const html=informeHtml878505({titol:t("Factures rebudes"),sub:[per,ls.length===1?t("1 despesa"):t("{n} despeses",{n:ls.length})].join(" · "),horitzontal:ambP,cols:[{l:t("Data")},{l:t("Número")},{l:t("Proveïdor")},{l:t("Tipus")},{l:t(etExp==="obra"?"Obra":"Expedient")},{l:t("Base"),n:true},{l:t("IVA"),n:true},{l:t("Total"),n:true},...(ambP?[{l:t("Pagament")}]:[])],files:fs505,peu:[t("Total"),"","","","",money(sb),money(si),money(st),...ex]});
     printHtmlInPlace878112(html,t("Factures rebudes"));
   }
   function remove(a){if(eliminaDespesa878318(a))setEdit(null)}
@@ -26521,6 +26533,13 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
       <label><span>{t("Total amb IVA (€)")}</span><input inputMode="decimal" value={a.isp?(a.base||a.total||""):(a.total||"")} disabled={!!a.isp} onChange={e=>set("total",e.target.value)} placeholder={totalAuto?fmt2878311(totalAuto):""}/></label></>}
       {tipus==="Subcontracta"&&<label className="wide chk-v878311"><input type="checkbox" checked={!!a.isp} onChange={e=>set("isp",e.target.checked)}/><span>{t("Inversió del subjecte passiu (ISP)")}</span></label>}
     </div>
+    {/* V87.578 · el pagament a la fitxa: el previst (el que hi posem o el venciment del proveïdor) i el dia que s'ha pagat; és el mateix de Caixa i bancs */}
+    {!a.meva&&tipus!=="MaObra"&&tipus!=="Albarà"&&(()=>{const pd=a.pagada878514?.data||"",avui=todayISO8743();const due=a.venciment878521||sumaDies878496(isoData878292(a.data)||avui,diesCaixa878521("pagar",30));const k=pd?"pag":due<avui?"venc":"per";
+      return <div className="pag-ed-v878578">
+        <span className="tit"><Wallet size={16} aria-hidden="true"/>{t("Pagament")}<em className={k}>{k==="pag"?`${t("Pagada")} · ${fmtAppDate8748(pd)}`:`${k==="venc"?t("Vençuda"):t("Per pagar")} · ${fmtAppDate8748(due)}`}</em></span>
+        <label><span>{t("Pagament previst el")}</span><input type="date" value={a.venciment878521||""} onChange={e=>set("venciment878521",e.target.value)}/></label>
+        <label><span>{t("Pagada el")}</span><input type="date" value={pd} onChange={e=>{const v=e.target.value;setA(x=>{if(!v){const {pagada878514,...r}=x;return r}return {...x,pagada878514:{...(x.pagada878514||{}),data:v,...(x.pagada878514?.apunt?{}:{manual:true})}}})}}/></label>
+      </div>})()}
     {factura&&candidats.length>0&&<div className="cob-v878311"><b>{t("Albarans que inclou aquesta factura")}</b>
       {candidats.map(x=><label key={x.id} className="chk-v878311"><input type="checkbox" checked={cobreix.includes(x.id)} onChange={()=>toggleCob(x.id)}/><span>{x.proveidor||t("Proveïdor pendent")}{x.numero?` · ${x.numero}`:""} · {fmtAppDate8748(x.data)}</span><b>{money(albaraBase878259(x))}</b></label>)}
       {sumCob>0&&<p className="sum">{t("Albarans marcats:")} <b>{money(sumCob)}</b></p>}</div>}

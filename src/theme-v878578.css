@@ -1,0 +1,22 @@
+/* V87.578 · Pagament de les despeses, en verd les pagades i en vermell les pendents (l'Héctor, 11/11/2026: «he de veure en qualsevol dels llistats,
+   ja sigui en previsualització com en pantalla, les que tinc pagades i les pendents, en color verd pagades i vermell pendents… i les dates»). */
+html body .fila-v878348 .pr em.pag-v878575.per{background:#FEE2E2;color:#B91C1C}
+html body .fila-v878348 .pr em.pag-v878575.venc{background:#B91C1C;color:#fff}
+html body .fila-v878348 .pr em.pag-v878575.pag{background:#DCFCE7;color:#15803D}
+html body .pag-bt-v878575.per{color:#B91C1C;border-color:#FCA5A5}
+html body .pag-bt-v878575.venc{color:#fff;background:#B91C1C;border-color:#B91C1C}
+html body .pag-bt-v878575.pag{color:#15803D;border-color:#86EFAC}
+/* «Llistat amb filtres»: la columna «Pagament» */
+html body .llistat-v878501 td.pag-ll-v878578{font-weight:700;white-space:nowrap}
+html body .llistat-v878501 td.pag-ll-v878578.pag{color:#15803D}
+html body .llistat-v878501 td.pag-ll-v878578.per{color:#B91C1C}
+html body .llistat-v878501 td.pag-ll-v878578.venc{color:#991B1B;font-weight:800}
+/* la fitxa de la despesa: el pagament */
+html body .pag-ed-v878578{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;padding:10px 12px;border-radius:12px;border:1px solid var(--co-line,#E2E8F0);background:var(--co-surface-2,#F8FAFC)}
+html body .pag-ed-v878578 .tit{grid-column:1/-1;font-weight:700;display:flex;align-items:center;gap:8px}
+html body .pag-ed-v878578 .tit em{font-style:normal;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px}
+html body .pag-ed-v878578 .tit em.per{background:#FEE2E2;color:#B91C1C}
+html body .pag-ed-v878578 .tit em.venc{background:#B91C1C;color:#fff}
+html body .pag-ed-v878578 .tit em.pag{background:#DCFCE7;color:#15803D}
+/* el botó «Treure els filtres» del llistat sortia sense estil */
+html body .llistat-v878501 .net-v878501{all:unset;box-sizing:border-box;cursor:pointer;align-self:end;padding:10px 6px;color:var(--co-accent,#2563EB);font-weight:700;font-size:13.5px;text-decoration:underline}
