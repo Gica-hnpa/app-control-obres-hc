@@ -3895,3 +3895,22 @@
   despesa sense proveïdor ni import només es desa si es confirma. A la llista «Vençuts» de Caixa › Per pagar i de Despeses › Per pagar
   (`TotesPagades878581`): «Marcar-les totes com a pagades (N)» → «El dia de cada factura» o «Avui». El Supabase de proves té `retard` per a la lectura
   d'una despesa (`POST /__aco-ia {retard:ms}`). Prova: `v581test` 10/10 (nova); v458, v575, v521 en verd.
+- **V87.582 · «Fer la certificació» mentre s'omple, «Afegir feina» a cada capítol, descripcions al PDF i el quadre resum** (l'Héctor, 11/11/2026, amb
+  Verbania: «per què queda així mentre la faig?», «mira com queda la línia dels capítols», «he de pujar fins a dalt de tot per crear una partida nova… no
+  pot estar a sota de cada capítol?», «no em deixa fer una descripció llarga», «per ensenyar-li al tècnic per validar-ho… adjuntar les descripcions
+  llargues, sobretot de les noves», i del «Resum»: «m'interessa molt més el que hi ha al quadre resum… les impressions en PDF del pressupost original aquí
+  no pinten res i les gràfiques de barres i dades molt lioses»). A l'ordinador: les línies gruixudes de la fila del capítol (nom en 5 columnes) queden a
+  la mateixa columna que a les partides (abans, una més a la dreta: els `nth-child(6/9/12)` de les partides); els títols de les columnes (bloc i
+  columna) queden fixos just sota la barra «Fer la certificació» (`.cert-cols-v878582`, `--sum-h-v878582` amb l'alçada de la barra); «Fitxa /
+  accions» és un botó petit (24 px) al costat del concepte i, si la columna del concepte fa menys de 340 px (consulta de contenidor `concepte582`),
+  només «⋯». A sota de cada capítol obert (també al mòbil): «Afegir feina en aquest capítol», que obre «Afegir feina» amb el capítol triat (C98 →
+  «Hores i materials»). La descripció en crear-la és un quadre gran («Descripció completa»). Les partides d'«Hores i materials» ja no perden la
+  descripció escrita: abans, cada desat de les hores hi tornava a posar «Partida alçada d'administració. Total…» (`descAdmin878582`: guanya la
+  descripció escrita a la fitxa, després la de la creació i, si no n'hi ha cap, el text automàtic). A «Imprimir» i «Enviar» de la certificació:
+  «Descripcions llargues de les partides» No / Només les partides noves (`esFora878410`) / Totes, desat a l'obra (`certDesc878582`), i al PDF (la
+  certificació sola i la general a origen, llista i quadre) la descripció surt sota el concepte (`descDoc878582`). La targeta «Resum» de sota «Fer la
+  certificació» ara és el «Quadre resum» (Capítols / Totes les partides); les xifres grans, la previsió, les barres i els PDF del pressupost original ja
+  no surten aquí (la xifra de la certificació ja és a la targeta de dalt; el portal del client continua amb el seu resum). Prova: `v582test` 21/21
+  (nova, còpia de DADES amb Verbania). Adaptades al quadre resum (la previsió es mira al Rendiment): v410 25/25, v411 28/28, v412, v413 24/24, v423 26/26,
+  v425 14/14, v426, v526 20/20, pressuposttest; cert364 22/22, v424 18/18. Ja fallaven a la V87.581 (comprovat amb un worktree): v452 (6), v426 #5 i #7,
+  pressuposttest (nom del pressupost, 3), v412 #9 (l'acta: «Visites» ja no existeix des de la V87.571), v428 (un menú surt per la dreta), v454.

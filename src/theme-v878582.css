@@ -1,0 +1,37 @@
+/* V87.582 · «Fer la certificació» mentre s'omple (l'Héctor, 11/11/2026: «per què queda així mentre la faig?», «mira com queda la línia dels capítols») */
+
+/* La fila del capítol té el nom ocupant 5 columnes: les línies gruixudes van a l'import del pressupost, d'abans i d'aquesta certificació,
+   a la mateixa columna que a les partides (abans sortien una columna més a la dreta) */
+html body .cert-grid-v69.cap-fila-v878429>div:nth-child(6),
+html body .cert-grid-v69.cap-fila-v878429>div:nth-child(9){border-right:1px solid #b9c7d8!important}
+html body .cert-grid-v69.cap-fila-v878429>div:nth-child(2),
+html body .cert-grid-v69.cap-fila-v878429>div:nth-child(5),
+html body .cert-grid-v69.cap-fila-v878429>div:nth-child(8){border-right:3px solid #0f172a!important}
+
+/* «Afegir feina» a sota de cada capítol */
+html body .cert-cap-afegir-v878582{display:flex;padding:6px 10px 10px;background:#fff;border-bottom:1px solid #b9c7d8}
+html body .cert-cap-afegir-v878582>button{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px!important;font-size:13px!important;font-weight:600!important}
+
+@media (min-width:1101px){
+  /* els títols de les columnes, fixos sota la barra «Fer la certificació» */
+  html body .cert-grid-wrap-v69>.cert-cols-v878582{position:sticky;top:calc(var(--cap-obra-v878451,0px) + var(--sum-h-v878582,60px));z-index:36;background:#fff;box-shadow:0 3px 6px -3px rgba(15,23,42,.18)}
+  /* el botó de la fitxa, petit i al costat del concepte: les files ja no fan el doble d'alt */
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row>.cert-concept-v87216{container:concepte582/inline-size}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .concept-line-v877{display:flex!important;flex-wrap:nowrap!important;align-items:flex-start!important;justify-content:space-between!important;gap:6px!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .concept-line-v877>span{flex:1 1 auto!important;min-width:0}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-actions-btn-v878133{flex:0 0 auto;height:24px!important;min-height:24px!important;padding:0 8px!important;margin:0!important;font-size:11.5px!important;line-height:22px!important;border-radius:7px!important;white-space:nowrap}
+}
+/* si la columna del concepte és estreta, només «⋯» (com al mòbil) */
+@container concepte582 (max-width:340px){
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-actions-btn-v878133{width:28px!important;padding:0!important;font-size:0!important}
+  html body .cert-grid-wrap-v69 .cert-grid-v69.row .cert-actions-btn-v878133::after{content:"⋯";font-size:17px;line-height:22px;font-weight:700;color:var(--co-ink-2,#334155)}
+}
+
+/* la descripció llarga en crear la partida */
+html body .cert-extra-form-v878125 label.wide:has(>.desc-llarga-v878582){grid-column:1/-1}
+html body .cert-extra-form-v878125 .desc-llarga-v878582{display:block;width:100%;min-height:110px;resize:vertical;border:1px solid #cbd5e1;border-radius:11px;padding:10px 11px;background:#fff;font:inherit;line-height:1.4}
+
+/* «Descripcions llargues de les partides» a Imprimir i Enviar */
+html body .imprimir-modal-v878426 .desc-sel-v878582{flex-wrap:wrap;justify-content:space-between;font-weight:500!important;cursor:default}
+html body .imprimir-modal-v878426 .desc-sel-v878582:hover{border-color:var(--co-line)!important;background:var(--co-surface,#fff)!important}
+html body .imprimir-modal-v878426 .desc-sel-v878582 select{flex:0 1 auto;min-height:36px;padding:4px 8px;border:1px solid var(--co-line,#CBD5E1);border-radius:8px;background:#fff;font:inherit;font-size:14px}

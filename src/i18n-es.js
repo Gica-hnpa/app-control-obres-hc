@@ -5961,4 +5961,7 @@ export default {
   "El dia de cada factura": "El día de cada factura",
   "Es desarà quan acabi de llegir l’arxiu…": "Se guardará cuando acabe de leer el archivo…",
   "Aquesta despesa no té proveïdor ni import. Desar-la igualment?": "Este gasto no tiene proveedor ni importe. ¿Guardarlo igualmente?",
+  "Descripcions llargues de les partides": "Descripciones largas de las partidas",
+  "Només les partides noves": "Solo las partidas nuevas",
+  "Afegir feina en aquest capítol": "Añadir trabajo en este capítulo",
 };
