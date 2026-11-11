@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.582";
+const APP_VERSION878264="87.583";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17799,7 +17799,16 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     if(p>=0&&p<ord.length-1){const n=ord[p+1];return {cap,i:(ents[ci][1]||[]).indexOf(n),r:n}}
     for(let k=ci+1;k<ents.length;k++){const [c2,it2]=ents[k];const o2=sortPartides8779(it2||[]);if(o2.length)return {cap:c2,i:(it2||[]).indexOf(o2[0]),r:o2[0],nouCap:true,main:`${String((it2||[]).find(x=>x.scopePrincipal)?.scopePrincipal||"")}__${String((it2||[]).find(x=>x.capPrincipal)?.capPrincipal||"")}`}}
     return null}
-  function vesSeguent878488(cap,i){const n=seguent878488(cap,i);if(!n)return;
+  // V87.583 · «‹ Anterior» (l'Héctor, 11/11/2026: «només Següent a la primera… la resta ha d'haver les dues opcions»), també cap al capítol d'abans
+  function anterior878583(cap,i){
+    const ents=budgetChapterEntries87226;const ci=ents.findIndex(([c])=>c===cap);if(ci<0)return null;
+    const ord=sortPartides8779(ents[ci][1]||[]);const r=(ents[ci][1]||[])[i];const p=ord.indexOf(r);
+    if(p>0){const n=ord[p-1];return {cap,i:(ents[ci][1]||[]).indexOf(n),r:n}}
+    for(let k=ci-1;k>=0;k--){const [c2,it2]=ents[k];const o2=sortPartides8779(it2||[]);if(o2.length){const n=o2[o2.length-1];return {cap:c2,i:(it2||[]).indexOf(n),r:n,nouCap:true,main:`${String((it2||[]).find(x=>x.scopePrincipal)?.scopePrincipal||"")}__${String((it2||[]).find(x=>x.capPrincipal)?.capPrincipal||"")}`}}}
+    return null}
+  function vesAnterior878583(cap,i){vesA878583(anterior878583(cap,i))}
+  function vesSeguent878488(cap,i){vesA878583(seguent878488(cap,i))}
+  function vesA878583(n){if(!n)return;
     if(n.nouCap){setOpen(o=>({...o,[n.cap]:true}));setGrupObert878336(o=>({...o,[n.main]:true}))}
     if(editBudget8760b)setOpenBudgetRow87173(budgetRowKey87173(n.cap,n.i));else setFitxa426(`${n.cap}__${n.i}`);
     setTimeout(()=>{try{document.querySelector(".partida-pantalla-v878486 .pp-cos")?.scrollTo(0,0)}catch{}},0)}
@@ -18041,7 +18050,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
                     {obert449&&(enPantalla878524()?createPortal(<div className={"partida-pantalla-v878486 "+(editBudget8760b?"edita-v878524":"llegeix-v878524")} role="dialog" aria-modal="true" aria-label={[r.codi,r.concepte].filter(Boolean).join(" · ")}>
                       <div className="pp-cap"><button type="button" className="tornar" onClick={()=>tancaPartida878524(cap,i)}><ChevronLeft size={20} aria-hidden="true"/> {i18nT("Tornar al pressupost")}</button><span className="nom"><b>{r.codi||""}</b>{r.ut?<em className="ut-v878560">{r.ut}</em>:null} {r.concepte||i18nT("Sense concepte")}</span></div>
                       <div className="pp-cos">{fitxaPartida426(cap,i,true)}</div>
-                      <div className="pp-peu">{(()=>{const n=seguent878488(cap,i);return n?<button type="button" className="secondary seg-v878488" onClick={()=>vesSeguent878488(cap,i)} title={[n.r?.codi,n.r?.concepte].filter(Boolean).join(" · ")}>{i18nT("Següent")} <ChevronRight size={18} aria-hidden="true"/></button>:null})()}<button type="button" className="primary" onClick={()=>tancaPartida878524(cap,i)}>{i18nT("Fet")}</button></div>
+                      <div className="pp-peu">{(()=>{const a=anterior878583(cap,i);return a?<button type="button" className="secondary ant-v878583" onClick={()=>vesAnterior878583(cap,i)} title={[a.r?.codi,a.r?.concepte].filter(Boolean).join(" · ")}><ChevronLeft size={18} aria-hidden="true"/> {i18nT("Anterior")}</button>:null})()}{(()=>{const n=seguent878488(cap,i);return n?<button type="button" className="secondary seg-v878488" onClick={()=>vesSeguent878488(cap,i)} title={[n.r?.codi,n.r?.concepte].filter(Boolean).join(" · ")}>{i18nT("Següent")} <ChevronRight size={18} aria-hidden="true"/></button>:null})()}<button type="button" className="primary" onClick={()=>tancaPartida878524(cap,i)}>{i18nT("Fet")}</button></div>
                     </div>,document.body):fitxaPartida426(cap,i))}
                   </div>;
                 }
@@ -22461,7 +22470,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.582",
+    app_version:"87.583",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23711,7 +23720,11 @@ return <Card title="Avisos i notes de l’obra" action={<button className="prima
 </Card>}
 // V87.266 · mentre hi ha una finestra oberta, la sincronització no recarrega l'app (es perdria el que no s'ha desat).
 function useHoldSync878266(on=true){useEffect(()=>{if(!on)return;const c=window.__acoCloud;c?.hold?.(true);return()=>c?.hold?.(false)},[on])}
-function Modal({title,children,close}){useHoldSync878266();return <div className="modal-backdrop"><div className="modal"><button type="button" className="modal-back-mobile-v87146" onClick={close}>← {t("Tancar / tornar")}</button><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>}
+// V87.583 · si hi ha una partida oberta en una pantalla pròpia, el quadre es posa a sobre de tot (l'Héctor, 11/11/2026: «on posa editar el
+// descompost no em deixa fer res… sortia en una pantalla que hi havia al darrere»): abans quedava sota la pantalla de la partida (z-index 96).
+function Modal({title,children,close}){useHoldSync878266();const[sobre878583]=useState(()=>{try{return !!document.querySelector(".partida-pantalla-v878486")}catch{return false}});
+  const el=<div className="modal-backdrop"><div className="modal"><button type="button" className="modal-back-mobile-v87146" onClick={close}>← {t("Tancar / tornar")}</button><div className="modal-head"><h2>{title}</h2><button onClick={close}><X/></button></div>{children}</div></div>;
+  return sobre878583?createPortal(el,document.body):el}
 
 function CertPrintV79({doc}){
   const rows=doc.rows||[];

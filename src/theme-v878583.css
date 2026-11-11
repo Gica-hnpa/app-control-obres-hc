@@ -1,0 +1,8 @@
+/* V87.583 · «‹ Anterior» a la partida oberta en una pantalla pròpia (a la primera només «Següent», a l'última només «Anterior») */
+html body .partida-pantalla-v878486 .pp-peu .ant-v878583{display:inline-flex;align-items:center;gap:4px;min-height:46px;font-size:16px}
+html body .partida-pantalla-v878486 .pp-peu .ant-v878583+.primary{margin-left:auto}
+@media (max-width:420px){
+  html body .partida-pantalla-v878486 .pp-peu{gap:8px;padding-left:12px;padding-right:12px}
+  html body .partida-pantalla-v878486 .pp-peu .ant-v878583,html body .partida-pantalla-v878486 .pp-peu .seg-v878488{padding-left:10px!important;padding-right:10px!important}
+  html body .partida-pantalla-v878486 .pp-peu .primary{min-width:88px}
+}

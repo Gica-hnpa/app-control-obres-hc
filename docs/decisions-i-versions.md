@@ -3914,3 +3914,13 @@
   (nova, còpia de DADES amb Verbania). Adaptades al quadre resum (la previsió es mira al Rendiment): v410 25/25, v411 28/28, v412, v413 24/24, v423 26/26,
   v425 14/14, v426, v526 20/20, pressuposttest; cert364 22/22, v424 18/18. Ja fallaven a la V87.581 (comprovat amb un worktree): v452 (6), v426 #5 i #7,
   pressuposttest (nom del pressupost, 3), v412 #9 (l'acta: «Visites» ja no existeix des de la V87.571), v428 (un menú surt per la dreta), v454.
+- **V87.583 · Els quadres, al davant de la partida oberta a pantalla sencera, i «‹ Anterior»** (l'Héctor, 11/11/2026, al pressupost de Front de Mar
+  de Socoterm: «on posa editar el descompost no em deixa fer res… quan he sortit sí que puc editar el descompost però sortia en una pantalla que hi
+  havia al darrere: hauria de sortir al davant»; i «el botó de Següent està molt bé, però també hauria de posar Anterior… només Següent a la primera,
+  la resta les dues opcions»). A l'ordinador i al mòbil, la partida oberta és una capa fixa (`.partida-pantalla-v878486`, z-index 96, a `document.body`)
+  i els quadres (`Modal`) es dibuixaven dins de la pàgina, on a l'ordinador quedaven sota aquella capa (al mòbil no). Ara `Modal`, si en obrir-se hi
+  ha una partida a pantalla sencera, es posa a `document.body` (`createPortal`) i surt al davant: «Editar el descompost», «Fer el descompost», ∑,
+  «Buscar el preu amb IA», etc. A baix de la partida: «‹ Anterior» (`anterior878583`, també cap a l'última del capítol d'abans) i «Següent ›»; a la
+  primera només «Següent» i a l'última només «Anterior». Prova: `v583test` 13/13 (nova; v486 12/12, v450 33/33, v512 12/12, v550 8/8, v560 17/17, partida523 24/24; a la V87.581 el quadre del descompost quedava al darrere a
+  l'ordinador i no hi havia «Anterior»). Les proves obren la partida dins de la llista a l'ordinador (`partida-inline-prova-v878524`): per veure-la
+  com l'Héctor, posar la marca a "0".
