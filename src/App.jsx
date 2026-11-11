@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.571";
+const APP_VERSION878264="87.572";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13208,6 +13208,41 @@ function certificaParte878349(d={},partId){
 // plegat… en tocar el dia, només per visualitzar, només les coses que hàgim fet»). La llista va per mesos (plegats, menys l'últim); un
 // parte desat s'obre en un resum del dia (només el que s'ha fet) amb «Editar» i «Passar a la certificació»; «Una part» obre una finestra
 // amb dues preguntes («Com està ara?» en % · «Quant s'ha fet avui?»); a l'editor, de sèrie només les partides per fer.
+// V87.572 · Partes de diversos dies de cop (l'Héctor, 10/11/2026: «entrar molts dies seleccionats de cop i les hores del personal de cop… si en una
+// setmana s'oblida i el divendres es fa tota la setmana, o ara que estic entrant hores de Brava de finals del 2025 i del 2026… per veure la
+// rendibilitat d'una obra»): del dia tal al dia tal (de sèrie, sense caps de setmana ni els festius del calendari de l'empresa, i saltant els dies
+// que ja tenen parte), els treballadors amb les seves hores; es fa un parte per dia, per validar.
+function PartesDies878572({data={},onCrea,close}){
+  const treb=llegeixTreballadors878339().filter(w=>w.actiu!==false);
+  const avui=todayISO8743();
+  const dilluns=(()=>{const d=new Date(avui+"T12:00:00");d.setDate(d.getDate()-((d.getDay()+6)%7));return isoDate8776(d)})();
+  const[de,setDe]=useState(dilluns);const[fins,setFins]=useState(avui);const[lab,setLab]=useState(true);const[salta,setSalta]=useState(true);
+  const[nota,setNota]=useState("");const[qui,setQui]=useState(()=>lsGet8779("aco_parte_qui_v878349",""));
+  const[hores,setHores]=useState({});
+  const festius=useMemo(()=>{const s=new Set();try{const c=calendariEmpresa878393();Object.values(c.anys||{}).forEach(a=>(a?.festius||[]).forEach(f=>{if(f?.data)s.add(f.data)}))}catch{}return s},[]);
+  const jaParte=useMemo(()=>new Set((data.partes878349||[]).map(p=>p.data).filter(Boolean)),[data]);
+  const dies=useMemo(()=>{const out=[];if(!de||!fins||fins<de)return out;const d=new Date(de+"T12:00:00"),f=new Date(fins+"T12:00:00");let n=0;
+    while(d<=f&&n<400){const iso=isoDate8776(d),dw=d.getDay();if(!(lab&&(dw===0||dw===6||festius.has(iso)))&&!(salta&&jaParte.has(iso)))out.push(iso);d.setDate(d.getDate()+1);n++}return out},[de,fins,lab,salta,festius,jaParte]);
+  const triats=treb.filter(w=>(parseNum8770(hores[w.id])||0)>0);
+  const jorn=(()=>{try{return jornadaDia878506(de)}catch{return 8}})();
+  const fmtD=iso=>new Date(iso+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"short",day:"numeric",month:"short"});
+  function crea(){if(!dies.length||!triats.length)return;if(qui.trim())lsSet8779("aco_parte_qui_v878349",qui.trim());const ara=Date.now();
+    onCrea(dies.map((dia,i)=>({id:"parte-"+ara+"-"+i,data:dia,qui:qui.trim(),nota:nota.trim(),linies:[],noves:[],material:[],estat:"revisar",multi878572:true,createdAt:new Date(ara+i).toISOString(),
+      hores:triats.map(w=>({id:"h-"+w.id,treballadorId:w.id,nom:w.nom,categoria:w.ofici||"",hores:String(hores[w.id]).replace(".",",")}))})))}
+  return <Modal title={t("Partes de diversos dies")} close={close}><div className="partes-dies-v878572">
+    <div className="fila dates"><label><span>{t("Del")}</span><input type="date" value={de} onChange={e=>setDe(e.target.value)}/></label><label><span>{t("Al")}</span><input type="date" value={fins} onChange={e=>setFins(e.target.value)}/></label></div>
+    <label className="chk"><input type="checkbox" checked={lab} onChange={e=>setLab(e.target.checked)}/> {t("Només els dies laborables (sense caps de setmana ni festius)")}</label>
+    <label className="chk"><input type="checkbox" checked={salta} onChange={e=>setSalta(e.target.checked)}/> {t("Saltar els dies que ja tenen parte")}</label>
+    <p className="dies">{!dies.length?t("Cap dia amb aquestes dates."):<><b>{dies.length===1?t("1 dia"):t("{n} dies",{n:dies.length})}</b>{": "+dies.slice(0,6).map(fmtD).join(", ")+(dies.length>6?" … "+fmtD(dies[dies.length-1]):"")}</>}</p>
+    <div className="treb">
+      <div className="treb-cap"><b>{t("Treballadors i hores de cada dia")}</b>{treb.length>0&&<button type="button" className="secondary small" onClick={()=>setHores(Object.fromEntries(treb.map(w=>[w.id,String(jorn).replace(".",",")])))}>{t("{h} h a tothom",{h:String(jorn).replace(".",",")})}</button>}</div>
+      {!treb.length?<p className="buit">{t("Primer entra els treballadors a Empresa › Treballadors.")}</p>:treb.map(w=><div key={w.id} className={"w"+((parseNum8770(hores[w.id])||0)>0?" on":"")}><span className="nm"><b>{w.nom}</b>{w.ofici?<small>{i18nT(w.ofici)}</small>:null}</span><Pas878483 value={hores[w.id]||""} onChange={v=>setHores(h=>({...h,[w.id]:v}))} label={t("Hores de {n}",{n:w.nom})}/></div>)}
+    </div>
+    <label className="txt"><span>{t("Qui fa el parte")}</span><input value={qui} onChange={e=>setQui(e.target.value)}/></label>
+    <label className="txt"><span>{t("Nota (a tots els partes)")}</span><input value={nota} onChange={e=>setNota(e.target.value)}/></label>
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!dies.length||!triats.length} onClick={crea}>{dies.length===1?t("Fer 1 parte"):t("Fer {n} partes",{n:dies.length})}</button></div>
+  </div></Modal>;
+}
 function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const treb=esTreballador878326();
   const[esb,setEsb]=useState(null);
@@ -13215,6 +13250,8 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const[avis,setAvis]=useState("");
   const[preus,setPreus]=useState(false);
   const[mesosOberts,setMesosOberts]=useState(()=>new Set());
+  // V87.572 · diversos dies de cop i validar de cop
+  const[dies572,setDies572]=useState(false);const[sel572,setSel572]=useState(null);
   const ps=pidsObra878349(data);
   const ara=fetaAra878349(data);
   const totalPres=ps.reduce((s,x)=>s+(parseNum8770(x.r.q)||0)*(parseNum8770(x.r.pu)||0),0);
@@ -13251,6 +13288,20 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   }
   function elimina(p){const cert=p.estat==="certificat";if(!confirm(cert?t("Eliminar aquest parte? També se’n treu la feina de la certificació {n}.",{n:nomCerts(p.cert)}):t("Eliminar aquest parte?")))return;
     setData?.(d=>cert?desfesParte878359(d,p.id,true):({...d,partes878349:(d.partes878349||[]).filter(x=>x.id!==p.id),updatedAt:new Date().toISOString()}));despeses(p,true);setEsb(null);setVistaId("");setAvis("")}
+  // les despeses de diversos partes d'un sol cop (les de cada parte es tornen a fer)
+  const despesesDeCop=llista=>{if(!fanDespeses878359(obra)||!llista.length)return;try{const ids=new Set(llista.map(p=>p.id));const cur=readAlbarans878259().filter(a=>!ids.has(a.parteId878352));
+    writeAlbarans878259([...llista.flatMap(p=>despesesParte878352(obra.id,data,p)),...cur]);llista.forEach(p=>marcaParteFet878359(p.id))}catch(e){console.warn(e)}};
+  function creaDies(nous){const ara=new Date().toISOString();setData?.(d=>({...d,partes878349:[...(d.partes878349||[]),...nous],updatedAt:ara}));despesesDeCop(nous);setDies572(false);setVistaId("");
+    setAvis(nous.length===1?t("S’ha fet 1 parte, per validar."):t("S’han fet {n} partes, per validar.",{n:nous.length}))}
+  function validaTriats(){
+    const triats=(data.partes878349||[]).filter(p=>sel572?.has(p.id)&&p.estat!=="certificat");if(!triats.length)return;
+    const sensePreu=triats.flatMap(p=>(p.noves||[]).filter(n=>!n.pidCreat&&!(preuEf878352(data,n)>0)));
+    if(sensePreu.length&&!confirm(t("{n} partides fora de pressupost encara no tenen preu: entraran a la certificació a 0 €. Continuar?",{n:sensePreu.length})))return;
+    if(!confirm(triats.length===1?t("Passar 1 parte a la certificació?"):t("Passar {n} partes a la certificació?",{n:triats.length})))return;
+    let res={};setData?.(d=>{let x=d;triats.forEach(p=>{if(!(x.partes878349||[]).some(q=>q.id===p.id&&q.estat!=="certificat"))return;const r=certificaParte878349(x,p.id);x=r.d;Object.assign(res,r.certs||{})});return x});
+    despesesDeCop(triats);setSel572(null);
+    setTimeout(()=>{const ks=Object.keys(res||{});setAvis((triats.length===1?t("1 parte validat."):t("{n} partes validats.",{n:triats.length}))+(ks.length?" "+t("A la certificació {n}.",{n:nomCerts(res)}):""))},0);
+  }
   function desfes(p){if(!confirm(t("Treure aquest parte de la certificació {n}? Tornarà a «Per validar».",{n:nomCerts(p.cert)})))return;setData?.(d=>desfesParte878359(d,p.id,false));setAvis(t("Tret de la certificació: torna a estar per validar."))}
   const modalPreus=preus?<PreusObra878352 data={data} setData={setData} close={()=>setPreus(false)}/>:null;
   const potPreus=!treb&&!readOnly&&!obra?.compartida;
@@ -13264,16 +13315,23 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const mesos=[];partes.forEach(p=>{const k=String(p.data||"").slice(0,7)||"—";let m=mesos.find(x=>x.k===k);if(!m){m={k,partes:[]};mesos.push(m)}m.partes.push(p)});
   const nomMes=k=>k==="—"?"—":new Date(k+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
   return <div className="partes-v878349">
-    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}</div></div>
+    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}{!readOnly&&!treb&&<button type="button" className="secondary dies-v878572" onClick={()=>{setSel572(null);setDies572(true)}}><CalendarRange size={16} aria-hidden="true"/> {t("Diversos dies")}</button>}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}</div></div>
+    {!readOnly&&!treb&&partes.filter(p=>p.estat!=="certificat").length>1&&<div className={"valida-v878572"+(sel572?" on":"")}>{!sel572?<button type="button" className="secondary small" onClick={()=>setSel572(new Set())}><ListChecks size={15} aria-hidden="true"/> {t("Validar de cop")}</button>
+      :(()=>{const pend=partes.filter(p=>p.estat!=="certificat");return <><label className="tots"><input type="checkbox" checked={pend.length>0&&pend.every(p=>sel572.has(p.id))} onChange={e=>setSel572(e.target.checked?new Set(pend.map(p=>p.id)):new Set())}/> {t("Tots els per validar ({n})",{n:pend.length})}</label>
+        <span className="n">{sel572.size===1?t("1 triat"):t("{n} triats",{n:sel572.size})}</span>
+        <button type="button" className="primary small" disabled={!sel572.size} onClick={validaTriats}><CheckCheck size={15} aria-hidden="true"/> {t("Passar a la certificació")}</button>
+        <button type="button" className="secondary small" onClick={()=>setSel572(null)}>{t("Fet")}</button></>})()}</div>}
     {avis&&<div className="partes-avis-v878349" role="status"><span>{avis}</span><button type="button" className="link" onClick={()=>setAvis("")}>{t("D’acord")}</button></div>}
     {!treb&&totalPres>0.005&&<div className="partes-total-v878349"><div><small>{t("Feina feta")}</small><b>{money(totalFet)}</b><span>{t("de {total} · {p}",{total:money(totalPres),p:pct(totalFet/totalPres*100)})}</span></div><div className="barra"><i style={{width:Math.min(100,totalFet/totalPres*100)+"%"}}/></div></div>}
     {!partes.length&&<div className="partes-buit-v878349"><b>{t("Encara no hi ha cap parte.")}</b></div>}
-    {mesos.map((m,i)=>{const ob=i===0?!mesosOberts.has(m.k):mesosOberts.has(m.k);const pend=m.partes.filter(p=>p.estat!=="certificat").length;
+    {mesos.map((m,i)=>{const ob=sel572?m.partes.some(p=>p.estat!=="certificat"):(i===0?!mesosOberts.has(m.k):mesosOberts.has(m.k));const pend=m.partes.filter(p=>p.estat!=="certificat").length;
       return <section key={m.k} className={`partes-mes-v878349 ${ob?"obert":""}`}>
         <button type="button" className="mes-cap" aria-expanded={ob} onClick={()=>setMesosOberts(s=>{const n=new Set(s);if(n.has(m.k))n.delete(m.k);else n.add(m.k);return n})}><ChevronRight size={18} className="chev" aria-hidden="true"/><b>{nomMes(m.k)}</b><span>{m.partes.length===1?t("1 parte"):t("{n} partes",{n:m.partes.length})}{pend?<em>{t("{n} per validar",{n:pend})}</em>:null}</span></button>
         {ob&&<div className="partes-llista-v878349">{m.partes.map(p=>{const nL=(p.linies||[]).filter(l=>!(p.noves||[]).some(n=>n.pidCreat===l.pid)).length,nN=(p.noves||[]).length,imp=importParte878349(data,p),hh=horesParte878352(p);
-          const que=[nL||!nN?(nL===1?t("1 partida"):t("{n} partides",{n:nL})):"",nN?(nN===1?t("1 fora de pressupost"):t("{n} fora de pressupost",{n:nN})):"",hh?fhMa878348(hh):"",(p.material||[]).length?((p.material||[]).length===1?t("1 material"):t("{n} materials",{n:(p.material||[]).length})):""].filter(Boolean).join(" · ");
-          return <button type="button" key={p.id} className="parte-v878349" onClick={()=>{setAvis("");setVistaId(p.id)}}>
+          const que=[nL||(!nN&&!hh&&!(p.material||[]).length)?(nL===1?t("1 partida"):t("{n} partides",{n:nL})):"",nN?(nN===1?t("1 fora de pressupost"):t("{n} fora de pressupost",{n:nN})):"",hh?fhMa878348(hh):"",(p.material||[]).length?((p.material||[]).length===1?t("1 material"):t("{n} materials",{n:(p.material||[]).length})):""].filter(Boolean).join(" · ");
+          const potSel=!!sel572&&p.estat!=="certificat",on=potSel&&sel572.has(p.id);
+          return <button type="button" key={p.id} className={"parte-v878349"+(potSel?" sel-v878572":"")+(on?" on-v878572":"")} aria-pressed={potSel?on:undefined} onClick={()=>{if(sel572){if(!potSel)return;setSel572(x=>{const n=new Set(x);if(n.has(p.id))n.delete(p.id);else n.add(p.id);return n});return}setAvis("");setVistaId(p.id)}}>
+            {potSel&&<input type="checkbox" className="chk-v878572" checked={on} readOnly tabIndex={-1} aria-hidden="true"/>}
             <span className="dia"><b>{p.data?new Date(p.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"short",day:"numeric",month:"short"}):"—"}</b><small>{p.qui||""}</small></span>
             <span className="que">{que}</span>
             {!treb&&<b className="imp">{money(imp)}</b>}
@@ -13281,6 +13339,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
           </button>})}</div>}
       </section>})}
     {modalPreus}
+    {dies572&&<PartesDies878572 data={data} onCrea={creaDies} close={()=>setDies572(false)}/>}
   </div>;
 }
 function horesParte878352(p={}){return (p.hores||[]).reduce((s,h)=>s+(parseNum8770(h.hores)||0),0)+(p.noves||[]).reduce((s,n)=>s+(n.ambHores?(n.hores||[]).reduce((a,h)=>a+(parseNum8770(h.hores)||0),0):0),0)}
@@ -22349,7 +22408,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.571",
+    app_version:"87.572",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

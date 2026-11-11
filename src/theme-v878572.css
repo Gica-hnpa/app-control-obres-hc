@@ -1,0 +1,27 @@
+/* V87.572 · Partes: «Diversos dies» (la finestra) i «Validar de cop» (la barra i les caselles) */
+html body .modal>.partes-dies-v878572{padding:14px 18px 18px;min-width:0;display:flex;flex-direction:column;gap:12px}
+html body .partes-dies-v878572 .fila.dates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+html body .partes-dies-v878572 .fila.dates label,html body .partes-dies-v878572 label.txt{display:flex;flex-direction:column;gap:5px}
+html body .partes-dies-v878572 label span{font-size:13px;font-weight:700}
+html body .partes-dies-v878572 input[type=date],html body .partes-dies-v878572 label.txt input{min-height:42px}
+html body .partes-dies-v878572 .chk{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+html body .partes-dies-v878572 .chk input{width:18px;height:18px;margin:0}
+html body .partes-dies-v878572 .dies{margin:0;padding:8px 12px;border-radius:10px;background:var(--co-bg,#F4F7F8);font-size:13.5px;color:var(--co-ink-2,#334155)}
+html body .partes-dies-v878572 .treb{border:1px solid var(--co-line,#E2E8F0);border-radius:12px;overflow:hidden}
+html body .partes-dies-v878572 .treb-cap{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;background:var(--co-bg,#F4F7F8);font-size:13.5px}
+html body .partes-dies-v878572 .treb .w{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 12px;border-top:1px solid #EEF2F5}
+html body .partes-dies-v878572 .treb .w.on{background:#F5F9FF}
+html body .partes-dies-v878572 .treb .w .nm{display:flex;flex-direction:column;min-width:0}
+html body .partes-dies-v878572 .treb .w .nm small{font-size:12px;color:var(--co-ink-3,#5F7075)}
+html body .partes-dies-v878572 .treb .buit{margin:0;padding:10px 12px;color:var(--co-ink-3,#5F7075)}
+html body .partes-v878349 .valida-v878572{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 4px}
+html body .partes-v878349 .valida-v878572:not(.on){justify-content:flex-end}
+html body .partes-v878349 .valida-v878572.on{padding:8px 12px;border:1px solid #DBEAFE;background:#F5F9FF;border-radius:12px}
+html body .partes-v878349 .valida-v878572 button{display:inline-flex;align-items:center;gap:6px}
+html body .partes-v878349 .valida-v878572 .tots{display:inline-flex;align-items:center;gap:8px;font-weight:700;cursor:pointer}
+html body .partes-v878349 .valida-v878572 .tots input{width:18px;height:18px;margin:0}
+html body .partes-v878349 .valida-v878572 .n{color:var(--co-ink-3,#5F7075);font-size:13px;margin-right:auto}
+html body .partes-v878349 .parte-v878349.sel-v878572{position:relative;padding-left:44px}
+html body .partes-v878349 .parte-v878349 .chk-v878572{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;margin:0;pointer-events:none}
+html body .partes-v878349 .parte-v878349.on-v878572{background:#EFF6FF;border-color:#93C5FD}
+@media (max-width:620px){html body .partes-dies-v878572 .fila.dates{grid-template-columns:1fr}}

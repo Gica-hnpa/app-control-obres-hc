@@ -3810,3 +3810,13 @@
   d'abans. Prova: `v571test` 9/9; adaptades notestest (16/16), plustest (18/18), v475 (10/10), v485 (22/22), v492 (27/27), v504 (17/17), v562
   (18/18) i pestanyestest (11/12: la de les columnes d'Expedients ja fallava a la 563); `visitestest` (la llista conjunta de la V87.309) passa a
   `visites309-obsoleta.mjs`.
+- **V87.572 · Partes de diversos dies de cop i «Validar de cop»** (l'Héctor, 10/11/2026: «entrar molts dies seleccionats de cop i les hores del
+  personal de cop… si en una setmana s'oblida i el divendres es fa tota la setmana, o ara que estic entrant hores de Brava de finals del 2025 i del
+  2026… i quan ho faci, que pugui validar-los de cop seleccionant els que vull o tots»). A Partes d'obra, «Diversos dies» (`PartesDies878572`): del dia
+  tal al dia tal (de sèrie, la setmana d'avui), «Només els dies laborables» (sense caps de setmana ni els festius del calendari de l'empresa) i «Saltar
+  els dies que ja tenen parte» (marcats), quants dies i quins; els treballadors amb les hores de cada dia (± d'hora en hora, o «N h a tothom» amb la
+  jornada del calendari); qui fa el parte i una nota per a tots. «Fer N partes»: un parte per dia, per validar (`multi878572`), i les seves hores a
+  Despeses d'un sol cop (`despesesDeCop`). «Validar de cop» (amb 2 o més per validar): una casella a cada parte per validar, «Tots els per validar
+  (N)», «Passar a la certificació» (amb confirmació; avisa de les partides fora de pressupost sense preu) i «Fet». Els partes que només porten hores ja
+  no diuen «0 partides». Prova: `v572test` 14/14 (una setmana del novembre del 2025: 5 dies, 3 treballadors, 15 despeses; la mateixa setmana un altre
+  cop, cap dia; validar-los tots); partes359, v555 en verd; partes352 (2 del ciment) i v483 («Altres despeses», de la V87.555) ja fallaven.
