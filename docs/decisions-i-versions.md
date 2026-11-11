@@ -3872,3 +3872,9 @@
   sol del text de la factura («Vencimiento», «Venciment», «Vto.») i la IA també el demana (`aco-ia`: `venciment`; **cal tornar-la a desplegar**). El
   botó «Treure els filtres» del llistat, amb estil d'enllaç. Prova: `v578test` 13/13 (nova), v575 22/22, v521 23/23 (adaptada: la de fa 200 dies i la
   importada ja hi surten), v522, v529, v514 en verd; v501 1 de 14 ja fallava a la V87.563 (filtre de dates de les certificacions).
+- **V87.579 · El número del pressupost d'obra amb una P al davant** (l'Héctor, 11/11/2026: «en els números dels pressupostos que surti, igual que fem
+  amb les factures, una P al principi del codi»). `numPres878528` → `P2026_0001_V01` (a la targeta, la llista de Pressupostos, el PDF, el correu i els
+  números que falten: «P2026_0065»). Es desa sense la P (`numPres878528` de l'obra continua «2026_0001», el comptador no canvia); si s'escriu amb la P
+  a «Nom i número del pressupost», es treu en desar (no surt «PP»). Els pressupostos d'honoraris del tècnic ja eren «P2026-001». Prova: v528 13/13
+  (adaptada: la fila «Nom i número» és a «Ajustos del pressupost» des de la V87.552 i la targeta s'obre tancada des de la V87.544; abans en fallaven 8),
+  v562 18/18 i v563 13/13 (adaptades), v571 9/9.

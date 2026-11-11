@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.578";
+const APP_VERSION878264="87.579";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -8088,8 +8088,8 @@ function NomNum878528({nom="",base="",versio=1,close,desa}){
   return <Modal title={t("Nom i número del pressupost")} close={close}><div className="nomnum-v878528">
     <label><span>{t("Nom")}</span><input value={n} onChange={e=>setN(e.target.value)} autoFocus/></label>
     <div className="fila"><label><span>{t("Número")}</span><input value={b} onChange={e=>setB(e.target.value)} placeholder="2026_0001"/></label><label className="v"><span>{t("Versió")}</span><input type="number" inputMode="numeric" min="1" max="99" value={v} onChange={e=>setV(e.target.value)}/></label></div>
-    {b.trim()&&<p className="previ"><b>{`${b.trim()}_V${String(vv).padStart(2,"0")}`}</b></p>}
-    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!n.trim()} onClick={()=>{desa({nom:n,base:b,versio:vv});close()}}>{t("Desar")}</button></div>
+    {b.trim()&&<p className="previ"><b>{`${ambP878579(b)}_V${String(vv).padStart(2,"0")}`}</b></p>}
+    <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!n.trim()} onClick={()=>{desa({nom:n,base:b.trim().replace(/^P(?=\d)/i,""),versio:vv});close()}}>{t("Desar")}</button></div>
   </div></Modal>;
 }
 // V87.549 · Resum del pressupost a l'ordinador (Proposta B2, l'Héctor 9/11/2026: «la targeta del pressupost hauria de predominar… el número, l'import del
@@ -11256,7 +11256,9 @@ function versioPres878528(d={},bid="principal"){const id=bid||"principal";const 
 // pressupost»): el principal amb el nom de sèrie, només el número; amb un nom propi, «número · nom»; sense número, el nom com abans
 function nomPresDe878532(num="",g={}){const nom=budgetName878273(g);if(!num)return nom;return g.id==="principal"&&(!g.nom||g.nom==="Pressupost principal")?num:`${num} · ${nom}`}
 function nomPres878532(d={},bid="principal"){const id=bid||"principal";return nomPresDe878532(numPres878528(d,id),ensureBudgetGroups8786(d||{}).groups.find(g=>g.id===id)||{id})}
-function numPres878528(d={},bid){const base=String(d?.numPres878528||"").trim();return base?`${base}_V${String(versioPres878528(d,bid)).padStart(2,"0")}`:""}
+// V87.579 · amb una P al davant, com la F de les factures (l'Héctor, 11/11/2026): P2026_0001_V01. Es desa sense la P (el comptador no canvia)
+function ambP878579(base){const s=String(base||"").trim();return s?(/^P/i.test(s)?"P"+s.slice(1):"P"+s):""}
+function numPres878528(d={},bid){const base=String(d?.numPres878528||"").trim();return base?`${ambP878579(base)}_V${String(versioPres878528(d,bid)).padStart(2,"0")}`:""}
 function seguentVersio878528(d={}){const gs=ensureBudgetGroups8786(d||{}).groups;return gs.reduce((m,g)=>Math.max(m,versioPres878528(d,g.id)),0)+1}
 function seguentNumPres878528(nums=[],any){const max=(nums||[]).reduce((m,n)=>{const x=String(n||"").match(RE_NUM878528);return x&&x[1]===String(any)?Math.max(m,+x[2]):m},0);return `${any}_${String(max+1).padStart(4,"0")}`}
 // les obres pròpies amb partides que encara no tenen número, per ordre de creació
@@ -20340,7 +20342,7 @@ function PressupostosObra878562({obres=[],odata={},setOdata,clients=[],openObraT
   const suma=l=>l.filter(f=>!f.alt).reduce((s,f)=>s+f.total,0);
   // els números que falten de cada any (una obra eliminada o que ja no té número)
   // (només de les obres pròpies: les compartides porten la numeració del seu propietari)
-  const forats=(anyOk==="tots"?anys:[anyOk]).flatMap(a=>{const ns=new Set(files.filter(f=>f.any===a&&f.n&&!f.comp).map(f=>f.n));const mx=Math.max(0,...ns);const l=[];for(let i=1;i<=mx;i++)if(!ns.has(i))l.push(`${a}_${String(i).padStart(4,"0")}`);return l});
+  const forats=(anyOk==="tots"?anys:[anyOk]).flatMap(a=>{const ns=new Set(files.filter(f=>f.any===a&&f.n&&!f.comp).map(f=>f.n));const mx=Math.max(0,...ns);const l=[];for(let i=1;i<=mx;i++)if(!ns.has(i))l.push(`P${a}_${String(i).padStart(4,"0")}`);return l});
   const canvia=(f,e)=>{
     if(f.bid==="principal"){
       const st=normalizeExpedientStatus878136(f.d?.obra?.estat||f.obra.estat);
@@ -22410,7 +22412,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.578",
+    app_version:"87.579",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
