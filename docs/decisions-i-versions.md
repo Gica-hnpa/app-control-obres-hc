@@ -4141,3 +4141,14 @@
   Prova: `v602test` 10/10 (nova: demo-constructor, Reforma integral pis C/ Nou 5 › Despeses amb la IA de proves; ordinador i mòbil). v581 10/10,
   v569 8/8, despeses345 28/28, i18ntest tot traduït. Ja fallaven igual a la V87.600: v458 6/9 (pressupost amb IA), albaranstest 5/10,
   despesestest 1/5, despeses344 14/15.
+- **V87.603 · Al PDF del pressupost, triar si surt el «Resum econòmic per capítols»** (l'Héctor, 12/11/2026, amb el pressupost d'una sola partida
+  de Socoterm: «a imprimir pressupost, escollir si al final surt el resum per capítols, perquè si només hi ha una partida es veu molt repetitiu i
+  carregat»):
+  - Al visor del PDF del pressupost (no al de «només descripcions i total», que ja no en porta), a dalt: «Resum per capítols» **No · Sí**. Es veu
+    al moment i val per a «Enviar», «Descarregar el PDF» i «Imprimir» (`resumCapsDe878603`).
+  - La tria es desa a l'obra (`resumCapsPres878603`, via `triaResum878603` des de l'editor del pressupost i des de Documents). Sense triar, el resum
+    només surt amb dos capítols o més. `mergeBudgetData8786` ara la conserva (abans, el que es desava des del pressupost només portava partides,
+    pressupostos, certificacions…, i la clau nova es perdia).
+  Prova: `v603test` 8/8 (nova: demo-constructor; Reforma integral amb 4 capítols de sèrie «Sí», «No» desat i també al mòbil; Coberta Mas Roca
+  buidada amb un BC3 d'una partida, de sèrie «No»). v601 10/10, v600 5/5, v580 10/10, v528 13/13, v539 11/11, v586 20/20, v582 21/21, v411 28/28,
+  i18ntest tot traduït; documentstest 23/25 (l'acta en castellà, com a la V87.600).

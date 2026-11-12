@@ -5987,4 +5987,5 @@ export default {
   "núm. {n}": "núm. {n}",
   "No es pot entrar dues vegades.": "No se puede registrar dos veces.",
   "Obrir la que ja hi és": "Abrir la que ya está",
+  "Resum per capítols": "Resumen por capítulos",
 };
