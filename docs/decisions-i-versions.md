@@ -4086,3 +4086,12 @@
   capçalera i la rajola «NO ACCEPTA…» sortia tallada; ara, per sota de 1281 px, sense el títol i el nom de la rajola en dues línies si cal. (A Ajustos
   › Documents, la vista prèvia en A4 és més ampla que la pantalla però retallada dins del seu requadre: no fa desplaçar la pantalla.)
   Prova: revisio1 28/28, revisio2 26/26.
+- **V87.600 · Editant el pressupost a l'ordinador, «Opcions» ja no fa saltar la pantalla; buidar-lo i tornar a posar el BC3** (l'Héctor, 12/11/2026:
+  «toco Opcions i fa el boig… d'una pantalla a l'altra» i «com buido un pressupost sencer per tornar a posar l'arxiu BC3?»):
+  - A l'ordinador, el pressupost obert és a pantalla sencera (`position:fixed`, V87.549). En obrir un menú a dins, la regla de la V87.500 que posa al
+    davant la targeta amb un menú obert (`.main .card:has(details.action-menu-v87213[open]){position:relative}`) guanyava per especificitat i el pressupost
+    tornava a la pàgina de l'obra mentre el menú era obert. `theme-v878600.css` el manté fix (≥1281 px).
+  - Buidar-lo: «Editar» › «Opcions» › «Buidar tot el pressupost» (només si aquell pressupost o fase no té certificacions ni factures). Aleshores a
+    «Opcions» surt «Llegir un pressupost en BC3…»: ara, si s'hi tria el BC3 encara editant, primer es desa el pressupost buit (abans, en anar als
+    Amidaments sense desar, el BC3 s'hauria afegit a les partides d'abans) i després «Passar-ho a pressupost» deixa només les partides del BC3.
+  Prova: `v600test` 5/5 (nova: ordinador, Coberta magatzem Mas Roca de demo-constructor); v534 29/29, v591 6/6, v435 14/15 (el #3 ja fallava).

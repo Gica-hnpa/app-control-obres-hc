@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.599";
+const APP_VERSION878264="87.600";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17715,7 +17715,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     {(!clientMode||clientLibraryEnabled)&&<button type="button" className="llib-v878428" onClick={()=>openBudgetLibrary87218("","client")}><BookOpen size={15} aria-hidden="true"/> {i18nT("Des de Preus")}</button>}
     {!clientMode&&!quickMode&&<button type="button" className="dictar-v878401" onClick={()=>setDictat401(true)}>{iaOn459?<><WandSparkles size={15} aria-hidden="true"/> {i18nT("Pressupost amb IA")}</>:<><Mic size={15} aria-hidden="true"/> {i18nT("Dictar partides…")}</>}</button>}
     {(clientMode||buit428())&&<button type="button" onClick={startManualBudget87115}><FilePlus size={15} aria-hidden="true"/> {i18nT("Començar pressupost buit")}</button>}
-    {!clientMode&&!quickMode&&buit428()&&<><button type="button" onClick={()=>setExcelHelp878273(true)}><FileSpreadsheet size={15} aria-hidden="true"/> {i18nT("Importar Excel…")}</button><button type="button" onClick={()=>setPdf878305(true)}><FileText size={15} aria-hidden="true"/> {i18nT("Llegir un pressupost en PDF…")}</button>{obra?.id&&!obra?.compartida&&<label className="action-upload-v87213 bc3-v878435"><FileCode size={15} aria-hidden="true"/> {i18nT("Llegir un pressupost en BC3…")}<input type="file" hidden accept=".bc3" onChange={e=>{const f=e.target.files?.[0];e.target.value="";bc3Pres878435(f)}}/></label>}{!iaOn459&&<button type="button" onClick={()=>openAiBudget878256({obra,client,data,importExcel})}><WandSparkles size={15} aria-hidden="true"/> {i18nT("Pressupost amb IA")}</button>}</>}
+    {!clientMode&&!quickMode&&buit428()&&<><button type="button" onClick={()=>setExcelHelp878273(true)}><FileSpreadsheet size={15} aria-hidden="true"/> {i18nT("Importar Excel…")}</button><button type="button" onClick={()=>setPdf878305(true)}><FileText size={15} aria-hidden="true"/> {i18nT("Llegir un pressupost en PDF…")}</button>{obra?.id&&!obra?.compartida&&<label className="action-upload-v87213 bc3-v878435"><FileCode size={15} aria-hidden="true"/> {i18nT("Llegir un pressupost en BC3…")}<input type="file" hidden accept=".bc3" onChange={e=>{const f=e.target.files?.[0];e.target.value="";if(!f)return;/* V87.600 · si s'ha buidat el pressupost editant, primer es desa buit (si no, el BC3 s'afegiria a les partides d'abans) */if(editBudget8760b&&!clientMode)saveBudget8760b();bc3Pres878435(f)}}/></label>}{!iaOn459&&<button type="button" onClick={()=>openAiBudget878256({obra,client,data,importExcel})}><WandSparkles size={15} aria-hidden="true"/> {i18nT("Pressupost amb IA")}</button>}</>}
   </>;
   const alCostat428=()=>!ambFases878426&&!clientMode&&addBudget&&budgetGroups?.length>0?<><small className="amh-v878273">{i18nT("Un pressupost nou al costat")}</small><button type="button" onClick={()=>addBudget("Pressupost manual des de 0")}>{i18nT("Pressupost nou des de zero")}</button><button type="button" onClick={()=>addBudget("Imprevist / sobrecost")}>{i18nT("Imprevist / sobrecost")}</button><button type="button" onClick={()=>addBudget("Modificat aprovat")}>{i18nT("Modificat / annex")}</button></>:null;
   const tancarBtn428=(cl="")=>!clientMode&&!quickMode&&setData&&!buit428()?<button type="button" className={cl+"inicial-btn-v878412 tancar-v878428"} onClick={()=>setInicial878412(true)}>{tancat428?<><LockOpen size={15} aria-hidden="true"/> {i18nT("Reobrir el pressupost")}</>:<><Lock size={15} aria-hidden="true"/> {i18nT("Tancar el pressupost")}</>}</button>:null;
@@ -22539,7 +22539,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.599",
+    app_version:"87.600",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

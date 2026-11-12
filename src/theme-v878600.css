@@ -1,0 +1,7 @@
+/* V87.600 · L'Héctor, 12/11/2026: «toco Opcions i fa el boig… d'una pantalla a l'altra». A l'ordinador, el pressupost obert és a pantalla sencera
+   (position:fixed, V87.549); en obrir un menú a dins («Opcions», «Fases», «⋯» d'un capítol…), la regla de la V87.500 que posa al davant la targeta amb
+   un menú obert (position:relative) guanyava i el pressupost tornava a la pàgina de l'obra mentre el menú era obert. Ara es queda a pantalla sencera. */
+@media (min-width:1281px){
+  html body .main details.card.bloc-v878426.pres-bloc-v878427[open],
+  html body .main details.card.bloc-v878426.pres-bloc-v878427[open]:has(details[open]){position:fixed!important;inset:0!important;z-index:70!important;overflow:auto!important;margin:0!important}
+}
