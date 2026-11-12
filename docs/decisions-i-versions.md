@@ -4069,3 +4069,7 @@
   ni el banc), s'obre «Nou capítol» (el nom, p. ex. ENDERROCS) i després el cercador, amb «Escriure-la a mà»: el capítol queda «01 ENDERROCS». Amb el
   banc o partides pròpies, com abans (V87.534): el cercador directament i cada partida al seu capítol. `startManualBudget87115({senseCap:true})`.
   Prova: v589 13/13 (2a i 3 noves), v486 12/12 (adaptada), v534 29/29; v435 #3 ja fallava a la V87.581.
+- **V87.596 · «Les meves hores» del treballador: «Treure» amb estil** (repàs de la nit, 12/11/2026, amb demo-treballador al mòbil): el botó «Treure» de
+  cada dia sortia com un botó sense estil del navegador (vora i fons grisos); ara és un enllaç vermell, de 36 px d'alt per al dit (`theme-v878594.css`).
+  Repassats també, sense falles: la feina d'avui del treballador, el «Parte» de la constructora (obra → Personal amb − i + → 8 h, 200,00 € de cost del
+  dia → «Passar a la certificació»), i sortir i tornar a entrar (obres, factura i cobrament hi són i no torna a sortir la benvinguda).
