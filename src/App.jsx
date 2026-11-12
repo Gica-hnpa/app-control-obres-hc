@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.592";
+const APP_VERSION878264="87.593";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6992,7 +6992,7 @@ function BottomNav878268({screen,role,perfil,nav,onMore,onAccio}){
       {items.flatMap(([k,ic,l])=>!k.startsWith("a:")?[<button type="button" key={k} className={on(k)?"on":""} aria-current={on(k)?"page":undefined} onClick={()=>nav(k)}>{ic}<span>{t(l)}</span></button>]
         :k==="a:despesa"||k==="a:foto"?[<button type="button" key={k} className="acc" onClick={e=>e.currentTarget.nextSibling?.click()}>{ic}<span>{t(l)}</span></button>,
           <input key={k+"-f"} type="file" accept={k==="a:foto"?"image/*":"image/*,application/pdf"} {...(k==="a:foto"?{capture:"environment"}:{})} hidden onChange={e=>{const f=[...(e.target.files||[])];e.target.value="";if(f.length)onAccio(k.slice(2),f)}}/>]
-        :[<button type="button" key={k} className="acc" onClick={()=>onAccio(k.slice(2))}>{ic}<span>{t(l)}</span></button>])}
+        :[<button type="button" key={k} className="acc" aria-label={t(l)} onClick={()=>onAccio(k.slice(2))}>{ic}<span>{t(k==="a:hores"?"Hores":l)}</span></button>])}
       <button type="button" onClick={onMore}><Ellipsis/><span>{t("Més")}</span></button>
     </nav>}
   let items=[["Inici",<House/>,"Inici"],["Treballs / Expedients",<FolderOpen/>,etObres878304()]];
@@ -19231,7 +19231,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
   return <Llistat878501 titol={[i18nT("Certificacions"),obra?.nom].filter(Boolean).join(" · ")} nom="certificacions" close={()=>setLlistat501(false)} dates={[{k:"data",l:i18nT("Data de la certificació")}]} filtres={[{k:"facturada",l:i18nT("Facturada")},{k:"cobrada",l:i18nT("Cobrada")}]}
     cols={[{k:"num",l:i18nT("Núm."),tipus:"num"},{k:"nom",l:i18nT("Certificació")},{k:"data",l:i18nT("Data"),tipus:"data"},{k:"import",l:i18nT("Import"),tipus:"diners",suma:true},{k:"origen",l:i18nT("A origen"),tipus:"diners"},{k:"facturada",l:i18nT("Facturada")},{k:"factura",l:i18nT("Factura")},{k:"cobrada",l:i18nT("Cobrada"),def:false}]} files={fs}/>})()}
 {!(detall426&&cert)&&<details className="card bloc-v878426 cert-llista-v878426" open={llista426||certs.length===0} onToggle={e=>{const o=e.currentTarget.open;if(o!==llista426)setLlista426(o)}}><summary><FileCheck size={18} aria-hidden="true"/><span className="t"><b>{contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</b></span>{certs.length>0&&<span className="xifra">{money(certs.reduce((x,c)=>x+certListTotal878215(c),0))}</span>}{addCertificacio&&!readOnly&&<button type="button" className="primary nova-v878426" onClick={e=>{e.preventDefault();e.stopPropagation();addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}} aria-label={i18nT("Nova")}><Plus size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Nova")}</span></button>}{addCertificacio&&!readOnly&&!contrast878424&&<button type="button" className="secondary tot-v878547" onClick={e=>{e.preventDefault();e.stopPropagation();certificaTot878547()}} title={i18nT("Certificar el 100 %")} aria-label={i18nT("Certificar el 100 %")}><CheckCheck size={16} aria-hidden="true"/> <span className="tx-v878445">100 %</span></button>}{certs.length>0&&!contrast878424&&<button type="button" className="secondary llistat-btn-v878501" onClick={e=>{e.preventDefault();e.stopPropagation();setLlistat501(true)}} aria-label={i18nT("Llistat")}><Printer size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Llistat")}</span></button>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{certs.length>0&&!contrast878424&&<div className="llistat-m-v878516"><button type="button" className="secondary" onClick={()=>setLlistat501(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Llistat")}</button></div>}
-  {certs.length===0?(addCertificacio&&!readOnly?<div className="cert-buida-v878589"><span>{i18nT("Encara no hi ha cap certificació.")}</span><button type="button" className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}}><Plus size={16} aria-hidden="true"/> {i18nT("Fer la certificació 1")}</button></div>:<Empty text="Aquesta obra encara no té certificacions guardades."/>):<div className={"cert-list-v878273 cert-taula-v878364 cert-files-v878426"+(ambFact878364?" amb-fact":"")}>
+  {certs.length===0?(addCertificacio&&!readOnly?<div className="cert-buida-v878589"><span>{i18nT("Encara no hi ha cap certificació.")}</span><button type="button" className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar");setDetall426(true);setTimeout(()=>setEditing(true),80)}}><Plus size={16} aria-hidden="true"/> {i18nT("Fer la certificació 1")}</button></div>:<Empty text="Aquesta obra encara no té certificacions guardades."/>):<div className={"cert-list-v878273 cert-taula-v878364 cert-files-v878426"+(ambFact878364?" amb-fact":"")}>
     <div className="cap-t" aria-hidden="true"><span>{i18nT("Certificació")}</span><span>{i18nT("Data")}</span><span className="n">{i18nT("Import")}</span>{ambFact878364&&<span>{i18nT("Factura")}</span>}<span/></div>
     {certs.map(c=>{const imp=certListTotal878215(c);const fa=faDe878364(c),vf=vfDe878364(c);const difer=!!fa&&Math.abs((+fa.baseCert544||+fa.base||0)-imp)>0.01;const potF=potFactDe878364(c);const potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
       return <div className={`cert-row-v878273 ${selected===c.id?"on":""}`} key={c.id} role="button" tabIndex={0} aria-pressed={selected===c.id} title={i18nT("Creada el {data}",{data:fmtCreationDate878233(c.createdAt)})} onClick={()=>{setSelected(c.id);setCertMode8711("");setDetall426(true);window.scrollTo?.(0,0)}} onKeyDown={e=>{if(e.target===e.currentTarget&&(e.key==="Enter"||e.key===" ")){e.preventDefault();setSelected(c.id);setCertMode8711("");setDetall426(true)}}}>
@@ -22535,7 +22535,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.592",
+    app_version:"87.593",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

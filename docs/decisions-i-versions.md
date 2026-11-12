@@ -4054,3 +4054,9 @@
   difícil»): a Pressupostos no hi havia cap manera de començar-ne un (calia saber que primer es fa l'obra a «Obres»): ara «+ Nou pressupost» obre l'obra
   nova (`setModal("obra")`). A Despeses, a l'ordinador, «Entrar a mà» era dins d'«Opcions» (i «Fer foto», la principal): ara també a la vista; al mòbil
   continua a «Opcions». Prova: `v592test` 6/6 (nova, ordinador i mòbil).
+- **V87.593 · «Fer la certificació 1» ja obre la certificació per omplir-la; «Hores» a la barra de baix del tècnic** (repàs de la nit, 12/11/2026):
+  la certificació nova d'una obra sense cap certificació s'obria i calia tocar «Editar»; ara ja s'edita. A la barra de baix del tècnic al mòbil, el botó
+  per apuntar hores deia «Apuntar h…» (tallat a 375 px): ara «Hores» (l'`aria-label` continua sent «Apuntar hores»; a Ajustos, la llista de botons
+  continua dient «Apuntar hores»). El repàs automàtic (`repas411`) ara tria la primera opció d'«Enviar» (enviar-lo / enviar-lo perquè el tornin
+  signat) i mira el PDF adjunt: 0 problemes a demo-constructor i a la còpia de l'Héctor (abans sortien 8 «enviar sense PDF» perquè no la triava).
+  Prova: v589 11/11 (ara també mira que ja s'edita), v508 26/26 (adaptada: «Hores»), v410 25/25.
