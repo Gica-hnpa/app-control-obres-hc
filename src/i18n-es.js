@@ -5988,4 +5988,10 @@ export default {
   "No es pot entrar dues vegades.": "No se puede registrar dos veces.",
   "Obrir la que ja hi és": "Abrir la que ya está",
   "Resum per capítols": "Resumen por capítulos",
+  "Treure els {n} exemples? El que ja teniu no es toca.": "¿Quitar los {n} ejemplos? Lo que ya tenéis no se toca.",
+  "Treure els exemples ({n})": "Quitar los ejemplos ({n})",
+  "Afegir els exemples (inventats)? El que ja teniu no es toca.": "¿Añadir los ejemplos (inventados)? Lo que ya tenéis no se toca.",
+  "Afegir els exemples": "Añadir los ejemplos",
+  "Començar amb uns exemples (inventats)": "Empezar con unos ejemplos (inventados)",
+  "Exemples per començar": "Ejemplos para empezar",
 };

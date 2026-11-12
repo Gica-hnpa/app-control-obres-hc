@@ -4162,3 +4162,24 @@
   Prova: `v604test` 8/8 (nova: demo-constructor; 11 línies d'observacions senceres, escriure'n més sense que la pàgina salti, recarregar i
   tornar a obrir la targeta, mòbil). v580 10/10, docs396 14/14, honoraris332 20/20, v477 27/27; pressuposttest 24/27 (els mateixos 3 que a la
   V87.600: nom de les fases i capçalera en castellà).
+  - **V87.605 · Exemples per començar als comptes de debò** (l'Héctor, 12/11/2026: «demà ensenyo l'app al Martí Sais… un expedient de control
+    d'obra d'una casa unifamiliar inventada amb gestió total (control de certificacions i factures), un altre que només faci de tècnic per
+    control de la direcció i les visites i algun petit treball d'aixecament, cèdula o CEE»; i «el mateix amb els diferents perfils… és un punt
+    de partida per ensenyar-ho, i al final de cada xerrada entrar algun expedient seu com a cas real»).
+    - `src/dadesDemo.js`: `dadesDemo(perfil, {inici})`. Amb `inici` (comptes que no són `demo-`/`prova-`), pocs i variats: **Gestió total** =
+      Casa unifamiliar C/ dels Pins 14 (Gestió integral d'obra: 20 partides, 206.003 €; 4 certificacions, 109.164 € a origen; 3 factures de la
+      sèrie de l'empresa amb IVA 10 %, 2 cobrades i la 3a vençuda; 4 actes de visita; honoraris de direcció i gestió amb 2 factures; planning,
+      tasques, cites, hores i un desplaçament) + Reforma habitatge C/ Nou 5 (direcció d'obra, ara amb agents i 2 actes) + Aixecament pis
+      C/ Ample 3 + cèdula + CEE; **Tècnic** = el mateix sense la casa (sense el mòdul d'obra no hi ha certificacions); **Constructora** = les
+      3 obres de sempre. Les actes porten la data de la visita com a `createdAt` (l'«Última acta» del resum és la darrera).
+    - `omplenaDemo878328(perfil, {inici, afegir})`: amb `inici` o `afegir` **s'afegeixen** (no es trepitja res del compte: clients, obres,
+      dades, despeses; numeració d'expedient a continuació) i la direcció d'execució «Despatx Tècnic Prova» passa a ser el nom del compte.
+      Els comptes `demo-` continuen igual (benvinguda que omple el compte de zero).
+    - Benvinguda (`EmpresaSetup878259`): la casella surt a tots els comptes; als de debò, «Començar amb uns exemples (inventats)», sense marcar.
+    - Ajustos › **«Exemples per començar»** (`ExemplesAjustos878605`, comptes d'empresa menys el treballador): «Afegir els exemples» o «Treure
+      els exemples (N)». Com la benvinguda, posa una marca a l'empresa (`exempleAfegir605` / `exempleTreure605`) i recarrega: es fa abans que
+      l'app llegeixi res (`omplenaDemoSiCal878328`). `treuExemples878605` treu les obres `demo878328` (avisant el núvol, `esborrada`, perquè
+      el fre de seguretat no s'aturi), les seves hores, els clients `client-demo-` sense cap altra obra, les despeses `alb-demo-` i els
+      treballadors `treb-demo-`.
+  Prova: `v605test` 14/14 (nova: compte «oriol» del Supabase de proves amb «Gestió total» i els exemples; casa, certificacions, factures i
+  actes; treure'ls i tornar-los a posar sense tocar una obra de debò; mòbil des del núvol). perfils326 36/36, dades363 13/13, i18ntest tot traduït.

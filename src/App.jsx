@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {GraduationCap,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.604";
+const APP_VERSION878264="87.605";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -22605,7 +22605,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.604",
+    app_version:"87.605",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -22805,7 +22805,7 @@ const ajRef878366=useRef(null);
 useEffect(()=>{const el=ajRef878366.current;if(!el)return;const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;el.querySelectorAll("details.ajustos-grup-v878354[open]").forEach(o=>{if(o!==d)o.open=false});const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};el.addEventListener("click",h,true);return()=>el.removeEventListener("click",h,true)},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={copia:FolderDown,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
+const IC438={exemples:GraduationCap,copia:FolderDown,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
 const bloc878366=(k,tit,cont)=><details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366" data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
 return <div className="stack ajustos-v878366" ref={ajRef878366}>
@@ -22816,6 +22816,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {!esTreballador878326()&&bloc878366("verifactu",t("Factures amb VERI*FACTU"),<VerifactuCompte878286 admin={admin}/>)}
 {!esTreballador878326()&&teModul878326("obra")&&bloc878366("marges",t("Preus i marges"),<MargesAjustos878378/>)}
 {bloc878366("idioma",t("Idioma"),<IdiomaUsuari878268 user={authUser}/>)}
+{!!window.__acoEmpresa&&!esTreballador878326()&&bloc878366("exemples",t("Exemples per començar"),<ExemplesAjustos878605/>)}
 {!esTreballador878326()&&bloc878366("enllacos",t("Enllaços de les obres"),<EnllacosAjustos878305/>)}
 {!esTreballador878326()&&teModul878326("tecnic")&&pcWindows878442()&&bloc878366("programes",t("Programes de l’ordinador"),<ProgramesPc878442/>)}
 {(!window.__acoEmpresa||/^demo-/.test(String(window.__acoEmpresa?.username||"")))&&bloc878366("aspecte",t("Aspecte"),<AspecteAjustos878400/>)}
@@ -25571,12 +25572,21 @@ function empresaInfo878259(){return lsJson8779("aco_empresa_v878259",null)}
 // V87.328 · omple un compte de prova amb les dades d'exemple del seu perfil (obres amb codi i plantilla, clients, cites, tasques,
 // notes, pressupostos i certificacions, honoraris, hores i despeses)
 const NOMS_DEMO878328={tecnic:"Despatx Tècnic Prova",constructor:"Construccions Prova",complet:"Gestió Integral Prova",treballador:"Pere Prova · Construccions Prova"};
-function omplenaDemo878328(perfil){
-  const {clients,obres,despeses,treballadors,ajudes}=dadesDemo(perfil);
+// V87.605 · també als comptes de debò («Exemples per començar», l'Héctor, 12/11/2026: «per començar a ensenyar-ho… i al final de cada xerrada
+// entrar algun expedient seu com a cas real»): `inici` tria els exemples curts del perfil i `afegir` (o `inici`) els afegeix sense trepitjar res
+// del compte; la direcció d'execució dels exemples és el mateix despatx. Es treuen a Ajustos (`treuExemples878605`).
+function omplenaDemo878328(perfil,{inici=false,afegir=false}={}){
+  const {clients,obres,despeses,treballadors,ajudes}=dadesDemo(perfil,{inici});
   const any=new Date().getFullYear(),createdAt=new Date().toISOString();
   const llista=[],odata={};
-  obres.forEach(({obra,dades},i)=>{
-    const client=obra.client,tipus=obra.tipus,number=i+1;
+  const suma=inici||afegir;
+  const ob0=lsJson8779("aco_obres",[]),ja=suma&&Array.isArray(ob0)?ob0:[];
+  const nomEmp=String(empresaInfo878259()?.nom||"").trim();
+  const fix=x=>inici&&nomEmp?JSON.parse(JSON.stringify(x).split("Despatx Tècnic Prova").join(JSON.stringify(nomEmp).slice(1,-1))):x;
+  const num0=ja.filter(o=>+o?.any===any).reduce((m,o)=>Math.max(m,+o?.numExpedient||0),0);
+  obres.filter(x=>!ja.some(o=>o?.id===x.obra.id)).forEach(({obra:obra0,dades:dades0},i)=>{
+    const obra=fix(obra0),dades=fix(dades0);
+    const client=obra.client,tipus=obra.tipus,number=num0+i+1;
     const built=buildExpedientCode8739({year:any,number,tipus,client,clientNom:client.nom,keyword:"",nom:obra.nom,subtitol:obra.subtitol,poblacio:obra.poblacio});
     let o={id:obra.id,client:client.id,any,nom:obra.nom,subtitol:obra.subtitol||tipus,tipologia:tipus,tipusTreball:tipus,estat:obra.estat,pressupost:0,certificacio:0,...promotorObra878304("","",client),constructor:obra.constructor,do:obra.do,deo:obra.deo,css:"Pendent",adreca:obra.adreca,codiPostal:obra.codiPostal,poblacio:obra.poblacio,rc:obra.rc||"",paraulaClau:"",...built,codiExpedient:built.codi,numExpedient:number,createdAt,updatedAt:createdAt,demo878328:true};
     o={...o,...applyWorkTemplate878121(o,tipus,false),tipusTreball:tipus,tipologia:tipus};
@@ -25586,6 +25596,16 @@ function omplenaDemo878328(perfil){
     llista.push(o);odata[o.id]=d;
     if(horesK.length)writeTimeRows878255(o.id,horesK.map(([k,dd,h,feina,extra])=>ajudes.hora(k,dd,h,feina,{obraId:o.id,...(extra||{})})));
   });
+  if(suma){
+    const c0=lsJson8779("aco_clients",[]),cl=Array.isArray(c0)?c0:[];
+    lsSet8779("aco_clients",JSON.stringify([...cl,...clients.filter(c=>!cl.some(x=>x?.id===c.id))]));
+    lsSet8779("aco_obres",JSON.stringify([...llista,...ja]));
+    lsSet8779("aco_odata",JSON.stringify({...(lsJson8779("aco_odata",{})||{}),...odata}));
+    const al=readAlbarans878259();writeAlbarans878259([...al,...despeses.filter(a=>!al.some(x=>x?.id===a.id))]);
+    if(treballadors?.length&&!lsJson8779("aco_treballadors_v878339",[]).length)lsSet8779("aco_treballadors_v878339",JSON.stringify(treballadors));
+    lsSet8779("aco_demo_v878328",JSON.stringify({perfil,at:createdAt,inici}));
+    return;
+  }
   lsSet8779("aco_clients",JSON.stringify(clients));
   // V87.336 · les obres que ja li han compartit altres comptes es queden (abans s'esborraven i el núvol creia que ja les tenia)
   const abans=lsJson8779("aco_obres",[]),odAbans=lsJson8779("aco_odata",{})||{};
@@ -25599,7 +25619,33 @@ function omplenaDemo878328(perfil){
 let demoMirat878328=false;
 function omplenaDemoSiCal878328(){
   if(demoMirat878328||typeof window==="undefined"||!window.__acoEmpresa)return;demoMirat878328=true;
-  try{const e=empresaInfo878259();if(e?.exemplePendent&&!lsGet8779("aco_demo_v878328")){omplenaDemo878328(e.perfil);const{exemplePendent,...resta}=e;lsSet8779("aco_empresa_v878259",JSON.stringify(resta))}}catch(err){console.error("Dades d'exemple",err)}
+  const demo=/^(demo|prova)[-_]/i.test(String(window.__acoEmpresa?.username||""));
+  try{const e=empresaInfo878259();
+    if(e?.exempleTreure605){treuExemples878605();const{exempleTreure605,...resta}=e;lsSet8779("aco_empresa_v878259",JSON.stringify(resta))}
+    else if(e?.exempleAfegir605){omplenaDemo878328(e.perfil,{inici:!demo,afegir:true});const{exempleAfegir605,...resta}=e;lsSet8779("aco_empresa_v878259",JSON.stringify(resta))}
+    else if(e?.exemplePendent&&!lsGet8779("aco_demo_v878328")){omplenaDemo878328(e.perfil,{inici:!demo});const{exemplePendent,...resta}=e;lsSet8779("aco_empresa_v878259",JSON.stringify(resta))}}catch(err){console.error("Dades d'exemple",err)}
+}
+// V87.605 · treure els exemples (obres marcades `demo878328`, i els seus clients, despeses, hores i treballadors inventats). El núvol sap que
+// s'han esborrat expressament (el fre de seguretat no s'atura)
+const esExemple878605=o=>!!o?.demo878328||/^obra-demo-/.test(String(o?.id||""));
+function treuExemples878605(){
+  const ob=lsJson8779("aco_obres",[]),llista=Array.isArray(ob)?ob:[],fora=llista.filter(esExemple878605),resta=llista.filter(o=>!esExemple878605(o));
+  fora.forEach(o=>{try{window.__acoCloud?.esborrada?.(o.id)}catch{};try{localStorage.removeItem(timeRowsKey878255(o.id))}catch{}});
+  lsSet8779("aco_obres",JSON.stringify(resta));
+  const od=lsJson8779("aco_odata",{})||{};fora.forEach(o=>{delete od[o.id]});lsSet8779("aco_odata",JSON.stringify(od));
+  const cl=lsJson8779("aco_clients",[]);if(Array.isArray(cl))lsSet8779("aco_clients",JSON.stringify(cl.filter(c=>!/^client-demo-/.test(String(c?.id||""))||resta.some(o=>o?.client===c.id))));
+  writeAlbarans878259(readAlbarans878259().filter(a=>!/^alb-demo-/.test(String(a?.id||""))));
+  const tr=lsJson8779("aco_treballadors_v878339",[]);if(Array.isArray(tr)&&tr.some(x=>/^treb-demo-/.test(String(x?.id||""))))lsSet8779("aco_treballadors_v878339",JSON.stringify(tr.filter(x=>!/^treb-demo-/.test(String(x?.id||"")))));
+  lsSet8779("aco_demo_v878328","");
+}
+function ExemplesAjustos878605(){
+  const[n]=useState(()=>{const ob=lsJson8779("aco_obres",[]);return (Array.isArray(ob)?ob:[]).filter(esExemple878605).length});
+  const[fent,setFent]=useState(false);
+  const fes=async(clau,pregunta)=>{if(!confirm(pregunta))return;setFent(true);const e=empresaInfo878259()||{};lsSet8779("aco_empresa_v878259",JSON.stringify({...e,[clau]:true}));try{await window.__acoStore?.flush?.()}catch{};setTimeout(()=>location.reload(),300)};
+  return <div className="exemples-v878605">
+    {n>0?<button type="button" className="secondary" disabled={fent} onClick={()=>fes("exempleTreure605",t("Treure els {n} exemples? El que ja teniu no es toca.",{n}))}><Trash2 size={16} aria-hidden="true"/> {t("Treure els exemples ({n})",{n})}</button>
+    :<button type="button" className="secondary" disabled={fent} onClick={()=>fes("exempleAfegir605",t("Afegir els exemples (inventats)? El que ja teniu no es toca."))}><Plus size={16} aria-hidden="true"/> {t("Afegir els exemples")}</button>}
+  </div>;
 }
 function EmpresaSetup878259({onDone}){
   const emp=(typeof window!=="undefined"&&window.__acoEmpresa)||{};
@@ -25614,7 +25660,7 @@ function EmpresaSetup878259({onDone}){
     const {exemple,...info}=f;
     lsSet8779("aco_empresa_v878259",JSON.stringify({...info,nom:f.nom.trim(),fiscal:f.fiscal.trim(),createdAt:new Date().toISOString()}));
     // les dades d'exemple s'omplen en tornar a obrir l'app, abans que l'app llegeixi res (si s'omplissin ara, l'app les podria trepitjar)
-    if(demo&&exemple){setOmplint(true);lsSet8779("aco_empresa_v878259",JSON.stringify({...info,nom:f.nom.trim(),fiscal:f.fiscal.trim(),exemplePendent:true,createdAt:new Date().toISOString()}));(async()=>{try{await window.__acoStore?.flush?.()}catch{};setTimeout(()=>location.reload(),300)})();return}
+    if(exemple){setOmplint(true);lsSet8779("aco_empresa_v878259",JSON.stringify({...info,nom:f.nom.trim(),fiscal:f.fiscal.trim(),exemplePendent:true,createdAt:new Date().toISOString()}));(async()=>{try{await window.__acoStore?.flush?.()}catch{};setTimeout(()=>location.reload(),300)})();return}
     onDone?.();
   }
   return <div className="empresa-setup-v878259"><div className="box">
@@ -25626,7 +25672,8 @@ function EmpresaSetup878259({onDone}){
     <div className="perfils perfils-v878326">
       {Object.entries(PERFILS878326).map(([k,p])=><button type="button" key={k} aria-pressed={f.perfil===k} onClick={()=>setF(x=>({...x,perfil:k}))}><b>{t(p.nom)}</b><span>{t(p.desc)}</span></button>)}
     </div>
-    {demo&&<label className="exemple-v878328"><input type="checkbox" checked={!!f.exemple} onChange={e=>setF(x=>({...x,exemple:e.target.checked}))}/><span>{t("Omplir-lo amb dades d’exemple (obres, clients, hores i despeses inventats)")}</span></label>}
+    {/* V87.605 · també als comptes de debò: uns quants expedients d'exemple per començar (es treuen a Ajustos) */}
+    <label className="exemple-v878328"><input type="checkbox" checked={!!f.exemple} onChange={e=>setF(x=>({...x,exemple:e.target.checked}))}/><span>{demo?t("Omplir-lo amb dades d’exemple (obres, clients, hores i despeses inventats)"):t("Començar amb uns exemples (inventats)")}</span></label>
     <button type="button" className="primary" disabled={omplint} onClick={save}>{omplint?t("Preparant…"):t("Començar")}</button>
   </div></div>;
 }
