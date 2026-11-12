@@ -4095,3 +4095,36 @@
     «Opcions» surt «Llegir un pressupost en BC3…»: ara, si s'hi tria el BC3 encara editant, primer es desa el pressupost buit (abans, en anar als
     Amidaments sense desar, el BC3 s'hauria afegit a les partides d'abans) i després «Passar-ho a pressupost» deixa només les partides del BC3.
   Prova: `v600test` 5/5 (nova: ordinador, Coberta magatzem Mas Roca de demo-constructor); v534 29/29, v591 6/6, v435 14/15 (el #3 ja fallava).
+- **V87.601 · Als documents hi va el promotor (no el client), l'obra en dues línies, el número del pressupost sense «_V01» i la primera targeta
+  d'Ajustos alineada** (l'Héctor, 12/11/2026: «en un pressupost em surten les dades del meu client quan haurien de sortir sempre les del promotor…
+  quan hi hagi un client que pot ser el despatx d'un tècnic que m'encarrega la feina però la propietat és un altre, és aquest el que ha de figurar
+  als documents de pressupost, factures, etc. Mira la darrera obra de Socoterm, que surt Iberfinques»; «el requadre d'obra: el carrer i el codi
+  postal amb el municipi en dues línies»; «no pot sortir P2026-0067_V01 i al costat versió v01… quan fem un 2n pressupost ja és una segona versió»;
+  «per què surt sense icona i desalineada la primera targeta d'Ajustos?»):
+  - **A qui va el document** (`promDoc878601`): el promotor / la propietat de l'obra (Dades › Promotor: `propietat`, `nifPropietat`,
+    `adrecaPropietat`, o l'agent promotor); el client de l'obra només si l'obra no en té. El NIF i l'adreça que faltin surten de la fitxa de
+    Contactes de la mateixa persona. A Socoterm, l'obra 2026-037 té el client IBERFINQUES (l'administrador) i la propietat CP TORRE MARINA: el
+    pressupost hi posava IBERFINQUES amb «NIF/CIF: Pendent».
+    - Pressupost (`tercerPres878601`: el PDF de l'editor, el pressupost original, el del portal i el de Documents, i l'Excel): el «Tercer /
+      promotor» escrit a mà a «Número i condicions per al client» i, si no n'hi ha, el promotor (abans, el client).
+    - Certificacions, proformes i comparacions (`fiscalClientBlock878134`): ja eren del promotor; ara també completen el NIF i l'adreça des de
+      Contactes i no hi surt «Empresa: …» de l'agent enllaçat si és una altra persona.
+    - «Fer factura» als comptes d'empresa (`destFactura878472`): el promotor (abans, el client de l'obra; al compte de l'Héctor ja era el promotor).
+      La darrera factura de l'obra encara mana si s'hi va escriure un altre nom a mà, però no si era el client posat de sèrie. Les factures ja
+      fetes no canvien.
+    - `primaryPromotorAgent878134`: si a Dades la propietat és una altra (CP LLEVANTÍ) i l'agent enllaçat és el client (FINQUES RIART, creat sol en
+      fer l'obra), ja no s'agafa l'empresa, el correu ni el telèfon d'aquell agent.
+  - **Requadre «Obra» del pressupost** (`adrObraDoc878601`): el carrer en una línia i, a sota, el codi postal amb el municipi (també si l'adreça
+    s'havia escrit a mà amb « · »).
+  - **Número del pressupost sense la versió**: `numPres878528` torna «P2026_0067» (abans «P2026_0067_V01»); la versió va a part
+    (`versioDoc878601`: la del pressupost o fase, v01, v02…) a la casella «Versió» del PDF. Amb el número automàtic, a «Número i condicions per al
+    client» el número i la versió només es veuen (es canvien a «Nom i número del pressupost»). A Facturació › Pressupostos, si l'obra té més d'un
+    pressupost, la versió surt al costat del número («P2026_0041 · v02») perquè no hi hagi dues files iguals.
+  - **Ajustos del pressupost**: «Nom i número del pressupost» era un botó sense l'estil de fila (el llapis sortia a dalt al mig i la fletxa a
+    baix); ara icona · títol amb el número a sota · fletxa, com les altres (`theme-v878601.css`).
+  - La vista del PDF «tallada» no s'ha pogut veure a 1600 ni a 1366 px (la pàgina A4 surt sencera i centrada).
+  Prova: `v601test` 10/10 (nova: demo-constructor, Reforma integral pis C/ Nou 5 amb el promotor CP TORRE PROVA; ordinador i mòbil: PDF del
+  pressupost, PDF de la certificació, «Fer factura», Ajustos). v528 13/13 i v563 13/13 (adaptades al número sense «_V01»), v600 5/5, v580 10/10,
+  v589 13/13, v590 7/7, factclienttest 18/18, fact397 30/30, facturacio337 32/32, v472 31/31, v470 37/37, v440 23/23, v522 18/18, cert364 22/22,
+  v582 21/21, v586 20/20. Ja fallaven igual a la V87.600: documentstest 23/25 (acta en castellà), v471 28/29 (pestanyes i gestoria en una línia),
+  clientsvirtuals 26/32 (navegació de Visites i pestanyes al mòbil).

@@ -1,0 +1,8 @@
+/* V87.601 · Ajustos del pressupost: la primera targeta («Nom i número del pressupost») com les altres (l'Héctor, 12/11/2026: «per què surt
+   sense icona i desalineada la primera targeta d'ajustos? … mira on és el llapis i la fletxa»). Era un botó sense l'estil de fila: el llapis
+   sortia a dalt al mig i la fletxa a baix. Ara: icona · títol amb el número a sota · fletxa a la dreta. */
+html body .bloc-v878426 button.sub-v878426.nom-fila-v878552{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:10px!important;width:100%;min-height:50px;padding:8px 12px!important;text-align:left!important;color:var(--co-ink,#0f172a)!important;font:inherit;cursor:pointer;box-shadow:none!important}
+html body .bloc-v878426 button.sub-v878426.nom-fila-v878552>svg:first-child{flex:none;color:var(--co-ink-2,#334155)}
+html body .bloc-v878426 button.sub-v878426.nom-fila-v878552>.t{flex:1;min-width:0}
+html body .bloc-v878426 button.sub-v878426.nom-fila-v878552>.chev{flex:none;margin-left:auto;color:var(--co-ink-3,#5F7075)}
+html body .bloc-v878426 button.sub-v878426.nom-fila-v878552:disabled{opacity:.55;cursor:not-allowed}
