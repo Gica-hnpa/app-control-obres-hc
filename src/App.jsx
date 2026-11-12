@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.601";
+const APP_VERSION878264="87.602";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -22585,7 +22585,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.601",
+    app_version:"87.602",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -26078,8 +26078,35 @@ function imputacio878311(a){return a?.partidaId?[a.partidaCodi,a.partidaNom].fil
 const fmt2878311=v=>(Math.round((+v||0)*100)/100).toFixed(2).replace(".",",");
 
 // V87.318 · desar una despesa des de qualsevol pantalla (Despeses, Hores i despeses). Torna false si falta l'obra.
+// V87.602 · L'Héctor, 12/11/2026: «en adjuntar una factura perquè la llegeixi, si l'entres per error dues o més vegades es van sumant les línies
+// d'aquella factura i proveïdor. Hauria de sortir un avís de factura entrada i que no et deixi entrar-la de nou». És la mateixa si és del mateix
+// proveïdor (el NIF o el nom, sense «S.L.», punts ni accents) amb el mateix número (sense espais, guions, barres ni zeros al davant) i totes dues
+// són albarans, o factures, o despeses pròpies. Sense número no es compara.
+function nrmNumDesp878602(n){const s=String(n??"").trim();if(!s||s==="?")return "";return s.toUpperCase().replace(/[\s\-\/._·]/g,"").replace(/^0+(?=\d)/,"")}
+function nrmProvDesp878602(p){return normalizeSearch878191(p).replace(/[.,;:'’"()]/g," ").replace(/\b(s\s?l\s?u?|s\s?a\s?u?|s\s?c\s?p|sccl|slp|sl\s?l)\b/g," ").replace(/\s+/g," ").trim()}
+function nrmNifDesp878602(n){const s=String(n??"").toUpperCase().replace(/[\s.\-]/g,"").replace(/^ES(?=[A-Z0-9]{9}$)/,"");return /^[A-Z0-9]{8,9}$/.test(s)?s:""}
+function despesaRepetida878602(a,tots=[]){
+  const num=nrmNumDesp878602(a?.numero);if(!num)return null;
+  const nif=nrmNifDesp878602(a?.nif),prov=nrmProvDesp878602(a?.proveidor);if(!nif&&!prov)return null;
+  const cls=x=>x?.meva?"m":tipusDespesa878311(x)==="Albarà"?"a":"f";
+  return (tots||[]).find(x=>x&&x.id!==a.id&&cls(x)===cls(a)&&nrmNumDesp878602(x.numero)===num&&((nif&&nrmNifDesp878602(x.nif)===nif)||(prov&&nrmProvDesp878602(x.proveidor)===prov)))||null;
+}
+// es bloqueja una despesa nova repetida, o una de desada a la qual s'ha canviat el proveïdor o el número i ha quedat repetida
+// (les repetides d'abans es poden obrir, canviar i eliminar)
+function repBloqueja878602(a,tots=[]){
+  const rep=despesaRepetida878602(a,tots);if(!rep)return null;
+  const prev=(tots||[]).find(x=>x&&x.id===a.id);
+  if(prev&&nrmNumDesp878602(prev.numero)===nrmNumDesp878602(a.numero)&&nrmProvDesp878602(prev.proveidor)===nrmProvDesp878602(a.proveidor)&&nrmNifDesp878602(prev.nif)===nrmNifDesp878602(a.nif))return null;
+  return rep;
+}
+function textRep878602(a,rep){
+  const fac=!a?.meva&&tipusDespesa878311(a)!=="Albarà";
+  return {tit:a?.meva?i18nT("Aquesta despesa ja està entrada"):fac?i18nT("Aquesta factura ja està entrada"):i18nT("Aquest albarà ja està entrat"),
+    det:[String(rep.proveidor||"").trim(),i18nT("núm. {n}",{n:String(rep.numero||"").trim()}),fmtAppDate8748(rep.data)||rep.data||"",money(parseNum8770(rep.total)||albaraBase878259(rep)).replace(/\s(?=€)/g," ")].filter(Boolean).join(" · ")};
+}
 function desaDespesa878318(a){
   if(!a.obraId&&!a.meva&&a.tipus!=="Empresa"){alert(diuObra878326()?i18nT("Tria l’obra on s’imputa la despesa."):i18nT("Tria l’expedient on s’imputa la despesa."));return false}
+  {const rep=repBloqueja878602({...a,tipus:a.meva?a.tipus:tipusDespesa878311(a)},readAlbarans878259());if(rep){const x=textRep878602(a,rep);alert(x.tit+": "+x.det+". "+i18nT("No es pot entrar dues vegades."));return false}}
   const {foto,pdf,pdfText,isNew,__llegit,__exp,...rest}=a;
   if(foto)lsSet8779(albaraFotoKey878259(a.id),foto);
   if(pdf)lsSet8779(albaraPdfKey878259(a.id),pdf);
@@ -26685,7 +26712,11 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
   // que ha llegit (si es tanca abans, no es desa res); i una despesa sense proveïdor ni import, només si es confirma.
   const desaQuanLlegeixi=useRef(false);
   useEffect(()=>{if(!llegint&&desaQuanLlegeixi.current){desaQuanLlegeixi.current=false;desar()}},[llegint]);
+  // V87.602 · la mateixa factura (o albarà) ja entrada: avís a dalt i «Desar» bloquejat
+  const tots602=useMemo(()=>(tots&&tots.length?tots:readAlbarans878259()),[tots]);
+  const rep602=repBloqueja878602(a,tots602);
   function desar(){
+    if(rep602&&!llegint){const x=textRep878602(a,rep602);setMsg(x.tit+": "+x.det+".");return}
     if(llegint){desaQuanLlegeixi.current=true;setMsg(i18nT("Es desarà quan acabi de llegir l’arxiu…"));return}
     if(!String(a.proveidor||"").trim()&&!parseNum8770(a.total)&&!parseNum8770(a.base)&&!sumLines&&!(a.meva&&a.km)&&!confirm(i18nT("Aquesta despesa no té proveïdor ni import. Desar-la igualment?")))return;
     const out={...a,base:a.base||(sumLines?fmt2878311(sumLines):"")};
@@ -26717,6 +26748,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
     </div>}
   </>;
   return <Modal title={a.isNew?t("Nova despesa"):t("Despesa")} close={close}><div className={`alb-editor-v878259 despesa-ed-v878311 ${a.meva?"meva-v878329":""}`}>
+    {rep602&&(x=><div className="rep-v878602" role="alert"><b>{x.tit}</b><span>{x.det}</span><span className="peu"><small>{t("No es pot entrar dues vegades.")}</small><button type="button" className="secondary small" onClick={()=>{setMsg("");setA({...rep602})}}>{t("Obrir la que ja hi és")}</button></span></div>)(textRep878602(a,rep602))}
     {a.meva&&pas==="exp"&&<div className="pas-v878329">
       <p className="pas-t-v878329">{constructor?t("1 · Obra"):t("1 · Expedient")}</p>
       <input type="search" className="cerca-v878329" value={cerca} onChange={e=>setCerca(e.target.value)} placeholder={constructor?t("Buscar l’obra…"):t("Buscar l’expedient…")} aria-label={constructor?t("Buscar l’obra…"):t("Buscar l’expedient…")}/>
@@ -26791,7 +26823,7 @@ function AlbaraEditor878259({a,setA,obres,proveidors,save,remove,close,openObra,
     <label className="notes"><span>{t("Notes")}</span><input value={a.notes||""} onChange={e=>set("notes",e.target.value)}/></label>
     {!(a.meva&&!a.obraId)&&!(PERFIL878304&&teModul878326("obra"))&&<label className="alb-fact"><input type="checkbox" checked={!!a.facturatClient} onChange={e=>set("facturatClient",e.target.checked)}/><span><b>{t("Repercutida al client")}</b></span></label>}
     </>}
-    <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>{t("Eliminar")}</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>{constructor?t("Obrir l’obra"):t("Obrir l’expedient")}</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button>{(!a.meva||pas==="dades")&&<button type="button" className="primary" onClick={desar}>{t("Desar")}</button>}</div>
+    <div className="modal-actions">{!a.isNew&&<button type="button" className="danger" onClick={()=>remove(a)}>{t("Eliminar")}</button>}{a.obraId&&openObra&&!a.isNew&&<button type="button" className="secondary" onClick={()=>{close();openObra(a.obraId)}}>{constructor?t("Obrir l’obra"):t("Obrir l’expedient")}</button>}<span className="sp"/><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button>{(!a.meva||pas==="dades")&&<button type="button" className="primary" disabled={!!rep602&&!llegint} onClick={desar}>{t("Desar")}</button>}</div>
   </div></Modal>;
 }
 // =====================================================================

@@ -5981,4 +5981,10 @@ export default {
   "Escriure-la a mà": "Escribirla a mano",
   "Sense dades": "Sin datos",
   "Cal per fer la factura.": "Hace falta para hacer la factura.",
+  "Aquesta despesa ja està entrada": "Este gasto ya está registrado",
+  "Aquesta factura ja està entrada": "Esta factura ya está registrada",
+  "Aquest albarà ja està entrat": "Este albarán ya está registrado",
+  "núm. {n}": "núm. {n}",
+  "No es pot entrar dues vegades.": "No se puede registrar dos veces.",
+  "Obrir la que ja hi és": "Abrir la que ya está",
 };

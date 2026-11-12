@@ -4128,3 +4128,16 @@
   v589 13/13, v590 7/7, factclienttest 18/18, fact397 30/30, facturacio337 32/32, v472 31/31, v470 37/37, v440 23/23, v522 18/18, cert364 22/22,
   v582 21/21, v586 20/20. Ja fallaven igual a la V87.600: documentstest 23/25 (acta en castellà), v471 28/29 (pestanyes i gestoria en una línia),
   clientsvirtuals 26/32 (navegació de Visites i pestanyes al mòbil).
+- **V87.602 · La mateixa factura (o albarà) no es pot entrar dues vegades** (l'Héctor, 12/11/2026: «en adjuntar una factura perquè la llegeixi, si
+  l'entres per error dues o més vegades es van sumant les línies d'aquella factura i proveïdor. Hauria de sortir un avís de factura entrada i que no
+  et deixi entrar-la de nou. Ara havia d'entrar per eliminar-la»):
+  - `despesaRepetida878602`: és la mateixa si és del mateix proveïdor (el NIF o el nom, sense «S.L.», punts, comes ni accents) i té el mateix número
+    (sense espais, guions, barres, punts ni zeros al davant: «IA-77» = «ia 77») i totes dues són albarans, o factures, o despeses pròpies. Sense
+    número no es compara.
+  - A la fitxa de la despesa, quan la IA (o tu) hi posa el proveïdor i el número d'una que ja hi és: avís vermell a dalt («Aquesta factura ja està
+    entrada» / «Aquest albarà ja està entrat», amb el proveïdor, el número, la data i el total), «Desar» bloquejat i «Obrir la que ja hi és».
+    `desaDespesa878318` també ho bloqueja (`repBloqueja878602`). Les repetides d'abans es poden obrir, canviar i eliminar (només es bloqueja una
+    despesa nova repetida o una de desada a la qual s'ha canviat el proveïdor o el número i ha quedat repetida).
+  Prova: `v602test` 10/10 (nova: demo-constructor, Reforma integral pis C/ Nou 5 › Despeses amb la IA de proves; ordinador i mòbil). v581 10/10,
+  v569 8/8, despeses345 28/28, i18ntest tot traduït. Ja fallaven igual a la V87.600: v458 6/9 (pressupost amb IA), albaranstest 5/10,
+  despesestest 1/5, despeses344 14/15.
