@@ -1,0 +1,21 @@
+/* V87.591 · Les rosquilles (Donut8776) en barres horitzontals: el nom sencer, el valor i el %, i la barra a sota */
+html body .dash-donut-card-v8776.barres-v878591{display:flex;flex-direction:column;gap:8px;min-width:0}
+html body .dash-donut-card-v8776.barres-v878591>h3{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0;font-size:15px}
+html body .dash-donut-card-v8776.barres-v878591>h3>b{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--co-ink,#0f172a)}
+html body .dash-donut-card-v8776.barres-v878591>ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+html body .dash-donut-card-v8776.barres-v878591 li{display:grid;grid-template-columns:minmax(0,1fr) auto 42px;align-items:baseline;gap:2px 8px}
+html body .dash-donut-card-v8776.barres-v878591 li .et{font-size:13px;color:var(--co-ink-2,#334155);min-width:0;overflow-wrap:anywhere}
+html body .dash-donut-card-v8776.barres-v878591 li>b{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .dash-donut-card-v8776.barres-v878591 li>small{font-size:12px;color:var(--co-ink-3,#5F7075);text-align:right;font-variant-numeric:tabular-nums}
+html body .dash-donut-card-v8776.barres-v878591 li .barra{grid-column:1/-1;display:block;height:8px;border-radius:4px;background:#EEF2F6;overflow:hidden}
+html body .dash-donut-card-v8776.barres-v878591 li .barra i{display:block;height:100%;border-radius:4px}
+html body .dash-donut-card-v8776.barres-v878591 .buit{margin:0;font-size:13px;color:var(--co-ink-3,#5F7075)}
+
+/* Caixa i bancs: a les rajoles de dalt, l'avís («2 vençudes») sota el nom, també a l'ordinador (al costat tallava «Per c…» i «369,2…») */
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button{grid-template-columns:44px minmax(0,1fr)}
+html body .caixa-v878521>.fe-vistes.ch-rajoles-v878515>button .avis-v878529{grid-column:2;grid-row:auto;justify-self:start;margin-top:2px}
+
+/* V87.591 · un sol pressupost: la rajola de la fase s'amaga només al mòbil i l'iPad (la targeta de sota ja ho diu); a l'ordinador és l'entrada al pressupost */
+@media (max-width:1280px){
+  html body .fases-v878342.rajoles-v878551.un-v878589>.llista{display:none!important}
+}

@@ -5979,4 +5979,5 @@ export default {
   "Escriure la partida a mà": "Escribir la partida a mano",
   "Ex. Enderroc de rajola de parets": "Ej. Derribo de alicatado de paredes",
   "Escriure-la a mà": "Escribirla a mano",
+  "Sense dades": "Sin datos",
 };

@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.590";
+const APP_VERSION878264="87.591";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -670,7 +670,18 @@ function invoiceAlertsForExpedient8776(data={},obra={},client={}){
 }
 function aggregate8776(rows,keyFn,valueFn){const map={};rows.forEach(r=>{const k=keyFn(r)||"Sense classificar";map[k]=(map[k]||0)+(valueFn?valueFn(r):1)});return Object.entries(map).map(([k,v])=>({k,v,label:k,value:v})).sort((a,b)=>b.v-a.v)}
 function donutStyle8776(parts,colors=["#2563eb","#22c55e","#f59e0b","#ef4444","#8b5cf6","#06b6d4"]){const total=parts.reduce((s,p)=>s+(+p.v||0),0);if(!total)return{background:"#e5e7eb"};let acc=0;return{background:`conic-gradient(${parts.map((p,i)=>{const start=acc,deg=(p.v/total)*360;acc+=deg;return `${colors[i%colors.length]} ${start}deg ${acc}deg`}).join(",")})`}}
-function Donut8776({title,parts,total,kind="money"}){const palette={"acceptats":"#22c55e","cobrades":"#22c55e","pendents":"#f59e0b","no cobrades":"#f59e0b","no acceptats":"#ef4444","fets":"#2563eb","fetes":"#2563eb","facturat":"#22c55e","no facturat":"#f59e0b"};const fallback=["#2563eb","#22c55e","#f59e0b","#ef4444","#8b5cf6","#06b6d4"];const colors=(parts||[]).map((p,i)=>palette[String(p.k||"").toLowerCase()]||fallback[i%fallback.length]);return <div className="dash-donut-card-v8776"><h3>{title}</h3><div className="dash-donut-v8776" style={donutStyle8776(parts,colors)}><span>{kind==="count"?total:money(total)}</span></div><div className="dash-donut-legend-v8776">{(parts||[]).map((p,i)=><div key={p.k}><i style={{background:colors[i%colors.length]}}></i><b>{i18nT(p.k)}</b><span>{kind==="count"?p.v:money(p.v)}</span></div>)}</div></div>}
+// V87.591 · Les «rosquilles» (donuts) passen a ser barres horitzontals (l'Héctor, 12/11/2026: «gràfiques complexes»): amb un donut i la llegenda al
+// costat, els noms quedaven tallats («no c…», «CP A…», «SOC…») i costava comparar. Ara cada línia diu el nom sencer, el valor i el %, amb una barra.
+// Com a molt 6 línies; la resta, a «Altres». La funció es diu igual perquè la fan servir Facturació, Pressupostos, Hores i Rendiment.
+function Donut8776({title,parts,total,kind="money"}){const palette={"acceptats":"#16a34a","cobrades":"#16a34a","pendents":"#f59e0b","no cobrades":"#f59e0b","no acceptats":"#dc2626","fets":"#2563eb","fetes":"#2563eb","facturat":"#16a34a","no facturat":"#f59e0b"};const fallback=["#2563eb","#16a34a","#f59e0b","#dc2626","#8b5cf6","#0891b2"];
+  const fmt=v=>kind==="count"?String(Math.round(+v||0)):money(v);
+  let ps=(parts||[]).filter(p=>Math.abs(+p.v||0)>0.0001).sort((a,b)=>(+b.v||0)-(+a.v||0));
+  if(ps.length>6){const resta=ps.slice(5);ps=[...ps.slice(0,5),{k:"__altres",v:resta.reduce((x,p)=>x+(+p.v||0),0),n:resta.length}]}
+  const tot=ps.reduce((x,p)=>x+(+p.v||0),0);
+  return <div className="dash-donut-card-v8776 barres-v878591"><h3><span>{title}</span>{total!=null&&<b>{fmt(total)}</b>}</h3>
+    {!ps.length?<p className="buit">{i18nT("Sense dades")}</p>:<ul>{ps.map((p,i)=>{const c=palette[String(p.k||"").toLowerCase()]||fallback[i%fallback.length];const pc=tot>0?(+p.v||0)/tot*100:0;
+      return <li key={p.k}><span className="et">{p.k==="__altres"?i18nT("Altres ({n})",{n:p.n}):(x=>x.charAt(0).toUpperCase()+x.slice(1))(String(i18nT(p.k)))}</span><b>{fmt(p.v)}</b><small>{Math.round(pc)} %</small><span className="barra" aria-hidden="true"><i style={{width:pc+"%",background:c}}/></span></li>})}</ul>}
+  </div>}
 function countBy87109(rows,fn){return rows.reduce((a,r)=>{const k=fn(r);a[k]=(a[k]||0)+1;return a},{})}
 function FinanceStatusCards87109({items=[]}){return <div className="finance-status-cards-v87109">{items.map(it=><div key={it.label} className={`finance-status-card-v87109 ${it.kind||""}`}><span>{it.label}</span><b>{it.count}</b>{it.amount!=null&&<em>{money(it.amount)}</em>}</div>)}</div>}
 
@@ -7319,7 +7330,7 @@ function Caixa878521({obres=[],odata={},clients=[],openObraTab}){
         <label><span className="sr-only-v878269">{t("Termini")}</span><select value={n529} onChange={e=>posaPrev529({per:per529,n:+e.target.value})}>{(per529==="mes"?[3,6,12]:[4,8,13,26]).map(x=><option key={x} value={x}>{per529==="mes"?t("{n} mesos",{n:x}):t("{n} setmanes",{n:x})}</option>)}</select></label>
       </div>
       <div className="xifres-v878426 cx-xif-v878521">
-        <div className={"x act"+(!sb.ok?" falta":"")}><small>{t("Saldo d’avui")}</small><b>{sb.ok?money(sb.saldo):"—"}</b>{!sb.banc&&<button type="button" className="link" onClick={()=>setSaldoEd(true)}>{sb.ok?t("Canviar"):t("Posar-lo")}</button>}</div>
+        <div className={"x act"+(!sb.ok?" falta":"")}><small>{t("Saldo d’avui")}</small><b>{sb.ok?money(sb.saldo):"—"}</b>{!sb.banc&&sb.ok&&<button type="button" className="link" onClick={()=>setSaldoEd(true)}>{t("Canviar")}</button>}</div>
         <div className="x exe"><small>{t("Entrades")}</small><b>{money(pp.entrades)}</b></div>
         <div className="x pen"><small>{t("Sortides")}</small><b>{money(pp.sortides)}</b></div>
         <div className={"x "+(pp.final<0?"neg":"fin")}><small>{fiTxt}</small><b>{money(pp.final)}</b></div>
@@ -11903,9 +11914,10 @@ function RendimentEmpresa878343({obres=[],odata={},openObraTab}){
     <div className="rc-kpis-v878343">
       <div><small>{t("Ingressos")}</small><b>{money(tot.ing)}</b><span>{t("Facturat: {x}",{x:money(tot.fact)})}</span></div>
       <div><small>{t("Costos directes")}</small><b>{money(tot.dir)}</b><span>{t("Materials, mà d’obra, industrials i altres")}</span></div>
-      <div><small>{t("Marge de les obres")}</small><b>{money(tot.marge)}</b><span>{pc(tot.marge,tot.ing)}</span></div>
-      <div className={tot.ben>=0?"good":"bad"}><small>{t("Benefici de les obres")}</small><b>{money(tot.ben)}</b><span>{t("{p} · després de DGE ({d})",{p:pc(tot.ben,tot.ing),d:money(tot.dge)})}</span></div>
-      {totes&&<div className={`res ${resultat>=0?"good":"bad"}`}><small>{t("Resultat de l’empresa")}</small><b>{money(resultat)}</b><span>{t("Marge − despeses reals de l’empresa ({x})",{x:money(empAny)})}</span></div>}
+      {/* V87.591 · només les xifres que diuen alguna cosa nova: sense DGE ni despeses de l'empresa, el marge, el benefici i el resultat eren el mateix número tres vegades */}
+      <div className={Math.abs(tot.dge)<0.005&&!(totes&&Math.abs(empAny)>0.005)?(tot.marge>=0?"good":"bad"):""}><small>{t("Marge de les obres")}</small><b>{money(tot.marge)}</b><span>{pc(tot.marge,tot.ing)}</span></div>
+      {Math.abs(tot.dge)>0.005&&<div className={tot.ben>=0?"good":"bad"}><small>{t("Benefici de les obres")}</small><b>{money(tot.ben)}</b><span>{t("{p} · després de DGE ({d})",{p:pc(tot.ben,tot.ing),d:money(tot.dge)})}</span></div>}
+      {totes&&Math.abs(empAny)>0.005&&<div className={`res ${resultat>=0?"good":"bad"}`}><small>{t("Resultat de l’empresa")}</small><b>{money(resultat)}</b><span>{t("Marge − despeses reals de l’empresa ({x})",{x:money(empAny)})}</span></div>}
     </div>
     {/* V87.564 · en lloc de la frase d'abans, la targeta «DGE: previst i real» (sumat des de gener, mes a mes, i avís) */}
     {totes&&<DgePrevistReal878564 D={D} any={any}/>}
@@ -12037,14 +12049,16 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
   const actAlt=alt437.has(act);
   const llista451=useRef(null);
   useEffect(()=>{const c=llista451.current,o=c?.querySelector("button.on");if(c&&o&&c.scrollWidth>c.clientWidth)c.scrollLeft=Math.max(0,o.offsetLeft-c.offsetLeft-8)},[act,tota]);
-  return <div className={"fases-v878342"+(obre?" rajoles-v878551":"")} role="group" aria-label={t("Fases de l’obra")}>
+  return <div className={"fases-v878342"+(obre?" rajoles-v878551":"")+(obre&&gs.length===1&&!(info(gs[0]).av>0)?" un-v878589":"")} role="group" aria-label={t("Fases de l’obra")}>
     <span className="tit">{obre?(gs.length>1?t("Pressupostos"):t("Pressupost")):t("Fases")}</span>
-    {/* V87.589 · amb un sol pressupost, la rajola repetia la targeta de sota («Pressupost principal 222,00 €» dues vegades): només si té avisos */}
-    {(!obre||gs.length>1||info(gs[0]).av>0)&&<div className="llista" ref={llista451}>
+    {/* V87.589 · amb un sol pressupost, al mòbil i l'iPad la rajola repetia la targeta de sota («Pressupost principal 222,00 €» dues vegades): s'amaga
+        amb CSS (classe un-v878589) només per sota de 1281 px. V87.591: a l'ordinador la rajola és l'única entrada al pressupost (la targeta tancada no
+        es mostra, V87.552): a la V87.589 també s'hi amagava i el pressupost no s'hi podia obrir */}
+    <div className="llista" ref={llista451}>
       {gs.map((g,i)=>{const x=info(g),on=!tota&&act===g.id,al=alt437.has(g.id);return <button type="button" key={g.id} className={`${on?"on":""}${al?" alt-v878437":""}`} aria-pressed={on} data-nom={budgetName878273(g)} onClick={()=>{setTota?.(false);if(act!==g.id)select?.(g.id);if(obre)setTimeout(()=>window.dispatchEvent(new Event("aco-obre-pres878551")),80)}}>
         <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}{x.av>0&&<i className="av-rajola-v878552" title={t("Avisos del pressupost: {n}",{n:x.av})}><AlertTriangle size={12} aria-hidden="true"/> {x.av}</i>}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
-    </div>}
+    </div>
     {!readOnly&&<details className="mes-v878342 opcions-v878500"><summary aria-label={t("Més opcions de les fases")}>{t("Fases")}<ChevronDown size={16} aria-hidden="true"/></summary><div className="menu">
       <button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onNova?.()}}>{t("+ Nova fase")}</button>
       {!tota&&onAlt&&act!=="principal"&&gs.length>1&&<button type="button" className="alt-btn-v878437" onClick={e=>{e.currentTarget.closest("details").open=false;onAlt(act,!actAlt)}}>{actAlt?t("«{fase}» ja no és una alternativa",{fase:nomPres878532(data,act)}):t("Marcar «{fase}» com a alternativa",{fase:nomPres878532(data,act)})}</button>}
@@ -22520,7 +22534,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.590",
+    app_version:"87.591",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23393,7 +23407,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
     {files873.some(vigent873)&&(()=>{const v=files873.filter(vigent873),bs=v.reduce((x,f)=>x+baseIva8743(f),0),iv=v.reduce((x,f)=>x+baseIva8743(f)*ivaRate878252(f)/100,0),tt=v.reduce((x,f)=>x+totalIva8743(f),0),pd=v.filter(f=>!cobrada873(f)).reduce((x,f)=>x+totalIva8743(f),0);
       const per=[anyF873==="tots"?i18nT("Tots els anys"):(mesOk390?nomMes390(mesOk390)+" "+anyF873:anyF873),client?i18nT(client):"",obra?obres873.find(o=>o.id===obra)?.nom:""].filter(Boolean).join(" · ");
       return <div className="fe-total-v878390"><div className="tit"><b>{i18nT("Total")}</b><small>{per} · {v.length===1?i18nT("1 factura"):i18nT("{n} factures",{n:v.length})}</small></div><div className="fe-kpis"><div><small>{i18nT("Base")}</small><b>{money(bs)}</b></div><div><small>{i18nT("IVA")}</small><b>{money(iv)}</b></div>{bs+iv-tt>0.005&&<div><small>{i18nT("Retenció")}</small><b>{money(-(bs+iv-tt))}</b></div>}<div><small>{i18nT("Total")}</small><b>{money(tt)}</b></div><div className={pd>0.005?"warn":""}><small>{i18nT("Pendent de cobrar")}</small><b>{money(pd)}</b></div></div></div>})()}</CartaLlista878518>}
-    {all.length>0&&<details className="card bloc-v878426 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Gràfics i informes")}</b></span><span className="xifra" title={resumFact878397(graf397,anyF873==="tots"?null:+anyF873)}>{resumFact878397(graf397,anyF873==="tots"?null:+anyF873,true)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{inf397&&<><GraficaFact878397 items={graf397} any={anyF873==="tots"?null:+anyF873}/><div className="finance-charts-v8776"><Donut8776 title={i18nT("Estat de facturació")} parts={aggregate8776(rows,f=>statusKeyFactura8776(f.estat),()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",()=>1)} total={rows.length} kind="count"/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",()=>1)} total={rows.length} kind="count"/></div></>}</div><Recollir878432/></details>}
+    {all.length>0&&<details className="card bloc-v878426 fe-informes-v878373" onToggle={e=>setInf397(e.currentTarget.open)}><summary><TrendingUp size={18} aria-hidden="true"/><span className="t"><b>{i18nT("Gràfics i informes")}</b></span><span className="xifra" title={resumFact878397(graf397,anyF873==="tots"?null:+anyF873)}>{resumFact878397(graf397,anyF873==="tots"?null:+anyF873,true)}</span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{inf397&&<><GraficaFact878397 items={graf397} any={anyF873==="tots"?null:+anyF873}/><div className="finance-charts-v8776">{(()=>{const bs=f=>baseIva8743(f);const tb=rows.reduce((x,f)=>x+bs(f),0);return <><Donut8776 title={i18nT("Estat de facturació")} parts={aggregate8776(rows,f=>statusKeyFactura8776(f.estat),bs)} total={tb}/><Donut8776 title={i18nT("Per client")} parts={aggregate8776(rows,f=>f.clientNom||"Sense client",bs)} total={tb}/><Donut8776 title={i18nT("Per tipologia")} parts={aggregate8776(rows,f=>f.tipologia||"Sense tipologia",bs)} total={tb}/></>})()}</div></>}</div><Recollir878432/></details>}
   </div>;
 }
 function HonorarisGeneral({obres,odata,setOdata,openObra,openObraTab,clientsList=[]}){

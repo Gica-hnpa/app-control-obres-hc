@@ -4036,3 +4036,17 @@
   que creen una obra sense triar client (recorden el primer client abans). Ja fallaven a la V87.581: v431 (10 de 20), documentstest «Acta en
   castellà» (2), fitxestest (1) i v441 #7. Tornades a passar: documentstest 23/25, honoraris332 20/20, v477 27/27, v441 18/19, encarrec333 19/19,
   v589 11/11 (adaptada: escriu el client nou).
+- **V87.591 · A l'ordinador, el pressupost d'una obra amb un sol pressupost no s'obria (error de la V87.589); gràfiques més clares** (repàs de la nit,
+  12/11/2026, a l'ordinador amb una còpia de les dades de l'Héctor i amb demo-constructor):
+  - **Error de la V87.589:** a l'ordinador, la targeta del pressupost tancada no es mostra i s'hi entra per la rajola de la fase (V87.552); la V87.589
+    amagava aquesta rajola quan hi ha un sol pressupost i el pressupost no es podia obrir. Ara la rajola s'amaga només per sota de 1281 px (mòbil i
+    iPad, on hi ha la targeta) amb la classe `un-v878589`.
+  - **Les «rosquilles» (`Donut8776`) en barres:** a Facturació › Gràfics i informes, Pressupostos, Hores i Rendiment, el nom sortia tallat a la
+    llegenda («no c…», «CP A…», «SOC…») i costava comparar. Ara cada línia: el nom sencer (amb majúscula), el valor, el % i una barra; com a molt 6
+    línies (la resta, «Altres (n)»). A Facturació (tècnic), en euros sense IVA i no en nombre de factures.
+  - **Rendiment de l'empresa:** sense DGE ni despeses de l'empresa, «Marge», «Benefici» i «Resultat» eren el mateix número tres vegades; ara
+    «Benefici de les obres» surt només amb DGE i «Resultat de l'empresa» només amb despeses de l'empresa.
+  - **Caixa i bancs a l'ordinador:** «Per c… 369,2…» (l'avís «2 vençudes» al costat tallava el nom i l'import): ara l'avís va a sota del nom. Sense
+    saldo d'avui, el «Posar-lo» de la xifra ja no repeteix el requadre «Falta el saldo d'avui · Posar el saldo d'avui».
+  Prova: `v591test` 6/6 (nova: ordinador i mòbil), v589 11/11 (adaptada: la rajola amagada per CSS), fases342 27/27, v528 13/13, despesesrend338
+  26/26, rendiment343 17/18 (adaptada: el resultat sense despeses de l'empresa; el #1, l'ordre del menú, ja fallava des que hi ha «Caixa i bancs»).
