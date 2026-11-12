@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.593";
+const APP_VERSION878264="87.594";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -20196,6 +20196,7 @@ function CobramentFactura878472({numero,total,dia,close,onDesa,onPendent}){
 }
 function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
   const[venc529,setVenc529]=useState("");
+  const[faltaCif594,setFaltaCif594]=useState(false);
   const emp=esEmpresaFactura878337();
   const sc=client?.facturacio878297||{};
   const noSerie=!emp&&!sc.actiu;
@@ -20235,7 +20236,8 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
     if(acord544.on&&acordImp>=baseCert){alert(t("L’import que no es factura ha de ser menor que el de la certificació."));return}
     if(acord544.on&&!netV878304(acord544.motiu)){alert(t("Escriu el motiu de l’acord: surt a la factura."));return}
     if(falten){
-      if(!netV878304(emp878337.nif)){alert(t("Posa el CIF de l’empresa."));return}
+      // V87.594 · el camp del CIF es marca en vermell i s'hi va (abans, un missatge i s'havia de buscar el camp)
+      if(!netV878304(emp878337.nif)){setFaltaCif594(true);setTimeout(()=>{const i=document.querySelector(".cif-emp-v878594");if(i){i.scrollIntoView({block:"center",behavior:"smooth"});i.focus()}else alert(t("Posa el CIF de l’empresa."))},30);return}
       const cur=empresaInfo878259()||{};
       lsSet8779("aco_empresa_v878259",JSON.stringify({...cur,fiscal:netV878304(emp878337.fiscal)||cur.fiscal||"",nif:netV878304(emp878337.nif).toUpperCase(),carrer:netV878304(emp878337.carrer),codiPostal:netV878304(emp878337.codiPostal),poblacio:netV878304(emp878337.poblacio),provincia:emp878337.provincia||provinciaForCp8773(emp878337.codiPostal)||""}));
     }
@@ -20266,7 +20268,7 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
     {falten&&<div className="emp-falten-v878337"><b>{t("Dades de l’empresa per a la factura")}</b>
       <div className="form-grid compact-v87151 no-pad">
         <label><span>{t("Nom fiscal (raó social)")}</span><input value={emp878337.fiscal} onChange={e=>setEmp878337(x=>({...x,fiscal:e.target.value}))}/></label>
-        <label><span>{t("CIF / NIF")}</span><input value={emp878337.nif} onChange={e=>setEmp878337(x=>({...x,nif:e.target.value}))}/></label>
+        <label className={faltaCif594?"falta-v878594":""}><span>{t("CIF / NIF")}</span><input className="cif-emp-v878594" value={emp878337.nif} onChange={e=>{setFaltaCif594(false);setEmp878337(x=>({...x,nif:e.target.value}))}}/>{faltaCif594&&<small className="err-v878594">{t("Cal per fer la factura.")}</small>}</label>
         <div className="span-all"><CampsAdreca878304 v={emp878337} onChange={p=>setEmp878337(x=>({...x,...p}))}/></div>
       </div></div>}
     {faltaIban&&<div className="compte-v878472"><b>{t("Compte per cobrar")}</b>
@@ -22535,7 +22537,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.593",
+    app_version:"87.594",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

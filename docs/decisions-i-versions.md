@@ -4060,3 +4060,7 @@
   continua dient «Apuntar hores»). El repàs automàtic (`repas411`) ara tria la primera opció d'«Enviar» (enviar-lo / enviar-lo perquè el tornin
   signat) i mira el PDF adjunt: 0 problemes a demo-constructor i a la còpia de l'Héctor (abans sortien 8 «enviar sense PDF» perquè no la triava).
   Prova: v589 11/11 (ara també mira que ja s'edita), v508 26/26 (adaptada: «Hores»), v410 25/25.
+- **V87.594 · «Fer factura» sense el CIF de l'empresa: el camp en vermell i el cursor a dins** (repàs de la nit, 12/11/2026, amb una constructora nova):
+  la primera factura d'una empresa sense dades fiscals deia «Posa el CIF de l'empresa.» en un missatge i s'havia de buscar el camp al final de la
+  finestra; ara el camp «CIF / NIF» es marca en vermell, amb «Cal per fer la factura.», i s'hi va. Prova: v589 12/12 (5a nova), factclient 18/18,
+  v472 31/31.

@@ -5980,4 +5980,5 @@ export default {
   "Ex. Enderroc de rajola de parets": "Ej. Derribo de alicatado de paredes",
   "Escriure-la a mà": "Escribirla a mano",
   "Sense dades": "Sin datos",
+  "Cal per fer la factura.": "Hace falta para hacer la factura.",
 };
