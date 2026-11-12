@@ -4152,3 +4152,13 @@
   Prova: `v603test` 8/8 (nova: demo-constructor; Reforma integral amb 4 capítols de sèrie «Sí», «No» desat i també al mòbil; Coberta Mas Roca
   buidada amb un BC3 d'una partida, de sèrie «No»). v601 10/10, v600 5/5, v580 10/10, v528 13/13, v539 11/11, v586 20/20, v582 21/21, v411 28/28,
   i18ntest tot traduït; documentstest 23/25 (l'acta en castellà, com a la V87.600).
+  - **V87.604 · Observacions i forma de pagament senceres** (l'Héctor, 12/11/2026: «per posar les observacions i forma de pagament he de poder
+    veure la targeta sencera o més gran, no tirar d'scroll»). `TextCreix878604` (just abans de `partidaInline878524`): el quadre creix amb el
+    text (alçada = `scrollHeight`, segons el `box-sizing`), es torna a mesurar quan canvia l'amplada (`ResizeObserver`: obrir una targeta
+    plegada, girar el mòbil) i desa i torna la posició de la pàgina i dels contenidors en mesurar (no salta mentre s'escriu). Es fa servir a:
+    Pressupost › Ajustos › «Número i condicions per al client» (Observacions i Forma de pagament), Ajustos › Documents (Forma de pagament,
+    Condicions i el Peu) i, al tècnic, el text i les observacions dels pressupostos i les factures d'honoraris. Estils `src/theme-v878604.css`
+    (`textarea.creix-v878604`: sense nansa ni barra a dins).
+  Prova: `v604test` 8/8 (nova: demo-constructor; 11 línies d'observacions senceres, escriure'n més sense que la pàgina salti, recarregar i
+  tornar a obrir la targeta, mòbil). v580 10/10, docs396 14/14, honoraris332 20/20, v477 27/27; pressuposttest 24/27 (els mateixos 3 que a la
+  V87.600: nom de les fases i capçalera en castellà).
