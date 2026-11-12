@@ -4016,3 +4016,23 @@
   Prova: `v589test` 11/11 (nova, compte `prova-garcia-constru` al mòbil); v410 25/25, v486 12/12, v465 10/10, v528 13/13 i fases342 27/27
   (adaptades: amb un sol pressupost, el número i el nom són al títol de la targeta), v440 23/23 (adaptada: el desplegable de les descripcions no és
   una opció d’enviar). Ja fallaven a la V87.581: v426 #5/#7, v531 (9) i v437 (4), que esperen el nom de la fase sense el número.
+- **V87.590 · Repàs de la nit amb un tècnic nou al mòbil** (compte `prova-puig-tecnic`, 375 px): expedient nou (cèdula) → honoraris → acceptar →
+  factura → cobrament → acta → hores. Tot funciona; s'arreglen:
+  - **Obra / expedient nou:** sense un client recordat, el client és «+ Client nou…» (abans, el primer de la llista: «Marta Puig Serra» a un
+    expedient d'una altra persona sense adonar-se'n). Amb un client recordat (l'últim que s'ha fet servir), com abans.
+  - **La factura d'honoraris dins de l'expedient** (Encàrrec › Factures honoraris): «Pendent de cobrar» / «Cobrada dd/mm/aaaa» i «Apuntar el
+    cobrament» (botó a l'ordinador i opció al mòbil), com a la constructora (V87.589). Abans només des de Facturació general.
+  - **Pressupost d'honoraris acceptat:** «Acceptar» ja no surt a les opcions.
+  - **PDF de la factura d'honoraris:** el títol és «FACTURA» (no «FACTURA / PROFORMA»); el client sense «NIF/CIF: Pendent» ni «Adreça pendent» quan
+    no se saben (`netDoc878590`, a tots els documents amb el bloc del client); el número de l'expedient (2026-006) i no el codi de la carpeta (també a
+    l'acta, a la factura VeriFactu i a la de l'empresa).
+  - **PDF de l'acta:** la línia de l'expedient sense «Pendent, Pendent» (adreça i població buides).
+  - **L'acta al mòbil:** els set apartats (Dades · Agents · Observacions · Fotos · Documents · Plànols · Signatures) en dues columnes; abans, un sota
+    l'altre, ocupaven tota la pantalla i el text quedava a sota.
+  - **La deducció (provisió / descompte) a la proforma i la factura:** amb un 5 %, la línia sempre deia «−0,00 €» (es restava la base que ja tenia el
+    descompte aplicat): ara és la base certificada menys la base imposable. Ho va trobar `documentstest`. A la vista prèvia de dins de l'app, igual, i la
+    retenció a 0 tampoc no hi surt.
+  Prova: `v590test` 7/7 (nova, compte `prova-puig-tecnic` al mòbil); v475 10/10, v415 18/18; adaptades (el client per defecte): v477 i 11 proves més
+  que creen una obra sense triar client (recorden el primer client abans). Ja fallaven a la V87.581: v431 (10 de 20), documentstest «Acta en
+  castellà» (2), fitxestest (1) i v441 #7. Tornades a passar: documentstest 23/25, honoraris332 20/20, v477 27/27, v441 18/19, encarrec333 19/19,
+  v589 11/11 (adaptada: escriu el client nou).

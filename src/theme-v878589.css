@@ -47,3 +47,10 @@ html body .cert-buida-v878589>button{display:inline-flex;align-items:center;gap:
 /* La llibreria buida: «Escriure la partida a mà» */
 html body .lib-afegir-v878361 .buit .blanc-v878589{display:inline-flex;align-items:center;gap:6px;margin-top:10px;min-height:40px}
 html body .lib-afegir-v878361 .peu .blanc-peu-v878589{display:inline-flex;align-items:center;gap:6px;margin-right:auto;min-height:40px}
+
+/* V87.590 · L'acta al mòbil: els set apartats (Dades · Agents · Observacions · Fotos · Documents · Plànols · Signatures) en una graella de dues
+   columnes, més baixos: abans un sota l'altre ocupaven tota la pantalla i el text de l'acta quedava a baix de tot */
+@media (max-width:640px){
+  html body .acta-editor-v8761 .acta-panel-tabs-v8799{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  html body .acta-editor-v8761 .acta-panel-tabs-v8799>button{min-height:38px!important;padding:6px 8px!important;font-size:14px}
+}
