@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.594";
+const APP_VERSION878264="87.595";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -16860,10 +16860,12 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     });
     alert(i18nT("Partida desada a la llibreria validada i vinculada amb aquest client."));
   }
-  function startManualBudget87115(){
+  // V87.595 · amb {senseCap:true}, sense el capítol «C01 NOU CAPÍTOL» (el pressupost «A mà» pregunta primer el nom del capítol)
+  function startManualBudget87115(o={}){
     const hasRows=Object.values(caps||{}).some(arr=>(arr||[]).length);
-    if(hasRows&&!confirm(i18nT("Aquest pressupost ja té partides. Vols substituir la vista d'edició per un pressupost manual buit? Primer guarda o crea un annex si vols conservar l'actual.")))return;
+    if(hasRows&&!confirm(i18nT("Aquest pressupost ja té partides. Vols substituir la vista d'edició per un pressupost manual buit? Primer guarda o crea un annex si vols conservar l'actual.")))return false;
     const nom="C01 NOU CAPÍTOL";
+    if(o.senseCap){setCaps({});setOpen({});setEditBudget8760b(true);setLibraryOpen87115(false);setLibraryScope87160("client");setLibrarySelected87218({});return true}
     setCaps({[nom]:[]});setOpen({[nom]:true});setEditBudget8760b(true);setLibraryOpen87115(false);setLibraryScope87160("client");setLibrarySelected87218({});setLibraryTargetCap87115(nom);
   }
   function addLibraryPartidaToBudget87115(item){
@@ -17965,7 +17967,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {ajustos878426?.cos}
     </div><Recollir878432/></details>}
 
-    {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={()=>{startManualBudget87115();openBudgetLibrary87218("C01 NOU CAPÍTOL","client")}} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null} onArxiu={f=>{const nm=String(f.name||"").toLowerCase();if(/\.pdf$/.test(nm)||f.type==="application/pdf")setPdf878305(f);else if(/\.bc3$/.test(nm))bc3Pres878435(f);else importExcel?.({target:{files:[f],value:""}})}}/>}
+    {buit428()&&!clientMode&&!quickMode&&setData&&obra?.id&&!editBudget8760b&&<PresBuit878435 obra={obra} onExcel={()=>setExcelHelp878273(true)} onPdf={()=>setPdf878305(true)} onBuit={()=>{/* V87.595 · sense res per buscar (ni Preus, ni la meva base, ni el banc), primer el nom del capítol; amb el banc, el cercador (V87.534) */const res=(centralLibrary87196||[]).length||bancPreus878368()||mevaBase878537().partides.length;if(!res){if(startManualBudget87115({senseCap:true})!==false)setNouCap535(true)}else{startManualBudget87115();openBudgetLibrary87218("C01 NOU CAPÍTOL","client")}}} onPreus={()=>openBudgetLibrary87218("","client")} onIa={iaOn459?()=>setDictat401(true):null} onArxiu={f=>{const nm=String(f.name||"").toLowerCase();if(/\.pdf$/.test(nm)||f.type==="application/pdf")setPdf878305(f);else if(/\.bc3$/.test(nm))bc3Pres878435(f);else importExcel?.({target:{files:[f],value:""}})}}/>}
     {nRep879>0&&<div className="caps-rep-v878479"><span>{nRep879===1?i18nT("1 capítol repetit"):i18nT("{n} capítols repetits",{n:nRep879})}</span><button type="button" className="secondary" onClick={ajunta879}>{i18nT("Ajuntar-los")}</button></div>}
     {nomNumObert528&&nomNum528&&<NomNum878528 nom={budgetLabel8786(data,activeBudgetId)} base={String(data?.numPres878528||"")} versio={versioPres878528(data,activeBudgetId)} close={()=>setNomNumObert528(false)} desa={v=>nomNum528(activeBudgetId,v)}/>}
     <PresCard878427 pleg={!quickMode&&!clientMode} tancat={tancat428} nAvisos={budgetWorkTab878180!=="Validar descompostos"?avisos878320.length:0} num={!quickMode&&!clientMode?numPres878528(data,activeBudgetId):null} ident={null} nom={!quickMode&&budgetGroups?.length?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):null} titol={!quickMode&&budgetGroups?.length?nomPresDe878532(clientMode?"":numPres878528(data,activeBudgetId),budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):i18nT("Pressupost obra per capítols")} xifra={money(fora878410>0.005||pi878411.imNoExec>0.005?pi878411.previst:total)} obert={presObert427||editBudget8760b} editant={editBudget8760b} onToggle={giraPres427} action={<div className="actions-inline budget-direct-edit-v87211 budget-eines-v878320"><span className={"budget-grand-total budget-total-right-v87196"+(fora878410>0.005||pi878411.imNoExec>0.005||tancat428?"":" sol-v878427")+(tancat428?" tancat-v878451":"")}>{fora878410>0.005||pi878411.imNoExec>0.005||tancat428?<><small>{tancat428?i18nT("Pressupost tancat el {d}",{d:fmtAppDate8748(diaLocal878437(pi878411.ini.at))}):i18nT("Pressupost original")}</small><b>{money(pi878411.previst)}</b>{fora878410>0.005&&<em className="fora-tot-v878410">+ {money(fora878410)} {i18nT("fora de pressupost")}</em>}{pi878411.imNoExec>0.005&&<em className="fora-tot-v878410 noexec-tot-v878423">− {money(pi878411.imNoExec)} {i18nT("no s’executarà")}</em>}</>:<><small>{i18nT("Total")}</small><b>{money(total)}</b></>}</span>
@@ -22537,7 +22539,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.594",
+    app_version:"87.595",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

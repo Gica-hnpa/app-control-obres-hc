@@ -4064,3 +4064,8 @@
   la primera factura d'una empresa sense dades fiscals deia «Posa el CIF de l'empresa.» en un missatge i s'havia de buscar el camp al final de la
   finestra; ara el camp «CIF / NIF» es marca en vermell, amb «Cal per fer la factura.», i s'hi va. Prova: v589 12/12 (5a nova), factclient 18/18,
   v472 31/31.
+- **V87.595 · Pressupost «A mà» sense res per buscar: primer el nom del capítol** (repàs de la nit, 12/11/2026, amb una constructora nova): «A mà» creava
+  el capítol «C01 NOU CAPÍTOL», que acabava sortint així a la certificació i a la factura. Ara, si no hi ha res per buscar (ni Preus, ni «La meva base»,
+  ni el banc), s'obre «Nou capítol» (el nom, p. ex. ENDERROCS) i després el cercador, amb «Escriure-la a mà»: el capítol queda «01 ENDERROCS». Amb el
+  banc o partides pròpies, com abans (V87.534): el cercador directament i cada partida al seu capítol. `startManualBudget87115({senseCap:true})`.
+  Prova: v589 13/13 (2a i 3 noves), v486 12/12 (adaptada), v534 29/29; v435 #3 ja fallava a la V87.581.
