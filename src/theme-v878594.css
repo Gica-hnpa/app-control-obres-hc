@@ -15,3 +15,9 @@ html body .agenda-v878256 .ag-sub .gc-con-v878597{display:inline-flex;align-item
   html body .contactes-v878438 .pant-cap-v878438 .botons-v878553{display:flex;flex-wrap:wrap;gap:8px}
   html body .contactes-v878438 .pant-cap-v878438 .botons-v878553>.primary{order:-1}
 }
+
+/* V87.599 · Pressupostos del tècnic al mòbil: el títol de la targeta repetia la capçalera («Pressupostos») i «NO ACCEPTA…» sortia tallat */
+@media (max-width:1280px),(hover:none) and (pointer:coarse){
+  html body .pres-llista-v878316>.card-head>h2{display:none}
+  html body .pres-estats-v878317>button small{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2}
+}

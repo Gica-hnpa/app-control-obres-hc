@@ -4081,3 +4081,8 @@
   a sota, i el botó principal quedava darrere d'«Importar» i «Des de les despeses». Ara, per sota de 1281 px, el títol només a la capçalera (com la resta de
   pantalles; repassades totes les del menú de la constructora al mòbil: cap més repetit) i «+ Nou contacte» primer. Prova: v553 10/10, v566 10/10;
   v438 15/17 (les 2 ja fallaven a la V87.581).
+- **V87.599 · Pressupostos del tècnic al mòbil: sense el títol repetit i «No acceptats» sencer** (repàs de la nit, 12/11/2026, amb `prova-puig-tecnic`:
+  totes les pantalles del menú al mòbil, mirant títols repetits, coses per la dreta i textos tallats): el títol de la targeta «Pressupostos» repetia la
+  capçalera i la rajola «NO ACCEPTA…» sortia tallada; ara, per sota de 1281 px, sense el títol i el nom de la rajola en dues línies si cal. (A Ajustos
+  › Documents, la vista prèvia en A4 és més ampla que la pantalla però retallada dins del seu requadre: no fa desplaçar la pantalla.)
+  Prova: revisio1 28/28, revisio2 26/26.
