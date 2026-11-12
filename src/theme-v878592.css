@@ -1,0 +1,7 @@
+/* V87.592 · Repàs de la nit a l'ordinador */
+
+/* Despeses: «Entrar a mà» a la vista a l'ordinador (al mòbil, a «Opcions») */
+html body .albarans-v878259 .alb-head .entrar-ma-pc-v878592{display:none}
+@media (min-width:1281px) and (hover:hover){
+  html body .albarans-v878259 .alb-head .entrar-ma-pc-v878592{display:inline-flex;align-items:center;gap:6px}
+}

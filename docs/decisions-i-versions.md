@@ -4050,3 +4050,7 @@
     saldo d'avui, el «Posar-lo» de la xifra ja no repeteix el requadre «Falta el saldo d'avui · Posar el saldo d'avui».
   Prova: `v591test` 6/6 (nova: ordinador i mòbil), v589 11/11 (adaptada: la rajola amagada per CSS), fases342 27/27, v528 13/13, despesesrend338
   26/26, rendiment343 17/18 (adaptada: el resultat sense despeses de l'empresa; el #1, l'ordre del menú, ja fallava des que hi ha «Caixa i bancs»).
+- **V87.592 · «Nou pressupost» a Pressupostos i «Entrar a mà» a la vista a Despeses (ordinador)** (repàs de la nit, 12/11/2026, «pantalles amb accés
+  difícil»): a Pressupostos no hi havia cap manera de començar-ne un (calia saber que primer es fa l'obra a «Obres»): ara «+ Nou pressupost» obre l'obra
+  nova (`setModal("obra")`). A Despeses, a l'ordinador, «Entrar a mà» era dins d'«Opcions» (i «Fer foto», la principal): ara també a la vista; al mòbil
+  continua a «Opcions». Prova: `v592test` 6/6 (nova, ordinador i mòbil).
