@@ -4077,3 +4077,7 @@
   pantalla de controls i una targeta fixa «Connectar amb Google Calendar» (és d'un sol cop i es quedava sempre). Ara el botó és dins de «Filtres» (obert a
   l'ordinador, plegat al mòbil) i la línia de Google Calendar només surt quan ja està connectat (amb l'hora de la sincronització) o si hi ha un error.
   Prova: gcaltest 20/20 (adaptada: el botó és a `.gc-con-v878597`), pantallestest 13/13.
+- **V87.598 · Contactes al mòbil: sense el títol repetit i «+ Nou contacte» primer** (repàs de la nit, 12/11/2026): «Contactes» sortia a la capçalera i
+  a sota, i el botó principal quedava darrere d'«Importar» i «Des de les despeses». Ara, per sota de 1281 px, el títol només a la capçalera (com la resta de
+  pantalles; repassades totes les del menú de la constructora al mòbil: cap més repetit) i «+ Nou contacte» primer. Prova: v553 10/10, v566 10/10;
+  v438 15/17 (les 2 ja fallaven a la V87.581).
