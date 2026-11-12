@@ -42,7 +42,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.596";
+const APP_VERSION878264="87.597";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -22539,7 +22539,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.596",
+    app_version:"87.597",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -25059,9 +25059,9 @@ function Agenda878256({events=[],clients=[],obres=[],odata={},openObra,openObraT
     {view!=="equip"&&<details className="ag-filtres-v878465" open={!tauleta878465||undefined}><summary><SlidersHorizontal size={15} aria-hidden="true"/> {i18nT("Filtres")}{obraF?" · 1":""}</summary><div className="ag-sub">
       <select value={obraF} onChange={e=>setObraF(e.target.value)} aria-label={i18nT("Filtrar per expedient")}><option value="">{i18nT(etPaquet878327("Tots els expedients"))}</option>{obresSorted.map(o=><option key={o.id} value={o.id}>{o.nom}</option>)}</select>
       <label className="chk"><input type="checkbox" checked={showTasks} onChange={e=>{setShowTasks(e.target.checked);lsSet8779("aco_agenda_tasks_v878256",e.target.checked?"1":"0")}}/>{i18nT("Mostrar les feines")}</label>
-      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres"&&t.k!=="Recordatori").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Feina")}</span>{gc.primary?.length?<span className="t-google"><i/>{i18nT("Google (calendari principal)")}</span>:null}</div>
+      <div className="ag-legend">{AGENDA_TYPES878256.filter(t=>t.c!=="altres"&&t.k!=="Recordatori").map(t=><span key={t.c} className={`t-${t.c}`}><i/>{i18nT(t.k)}</span>)}<span className="t-tasca"><i/>{i18nT("Feina")}</span>{gc.primary?.length?<span className="t-google"><i/>{i18nT("Google (calendari principal)")}</span>:null}</div>{/* V87.597 · «Connectar amb Google Calendar» és d'un sol cop: aquí, i no en una targeta fixa a sobre de les cites */}{gcalConfigured()&&!readOnly&&!gc.on&&<button type="button" className="secondary small gc-con-v878597" onClick={gcConnect}>{i18nT("Connectar amb Google Calendar")}</button>}
     </div></details>}
-    {gcalConfigured()&&!readOnly&&view!=="equip"&&<div className="ag-google-v878295">
+    {gcalConfigured()&&!readOnly&&view!=="equip"&&(gc.on||gc.err)&&<div className="ag-google-v878295">
       {gc.on?<><span>{gc.busy?i18nT("Sincronitzant amb Google Calendar…"):gc.last?i18nT("Google Calendar · sincronitzat a les {h}",{h:new Date(gc.last).toLocaleTimeString(loc878272(),{hour:"2-digit",minute:"2-digit"})}):i18nT("Google Calendar · connectat")}</span><button type="button" className="secondary" disabled={gc.busy} onClick={gcSync}>{i18nT("Sincronitzar")}</button></>
       :<button type="button" className="secondary" onClick={gcConnect}>{i18nT("Connectar amb Google Calendar")}</button>}
       {gc.err?<small className="err">{i18nT(gc.err)}</small>:null}

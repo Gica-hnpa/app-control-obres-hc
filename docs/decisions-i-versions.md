@@ -4073,3 +4073,7 @@
   cada dia sortia com un botó sense estil del navegador (vora i fons grisos); ara és un enllaç vermell, de 36 px d'alt per al dit (`theme-v878594.css`).
   Repassats també, sense falles: la feina d'avui del treballador, el «Parte» de la constructora (obra → Personal amb − i + → 8 h, 200,00 € de cost del
   dia → «Passar a la certificació»), i sortir i tornar a entrar (obres, factura i cobrament hi són i no torna a sortir la benvinguda).
+- **V87.597 · Agenda: «Connectar amb Google Calendar» dins de «Filtres»** (repàs de la nit, 12/11/2026, al mòbil): abans de les cites hi havia mitja
+  pantalla de controls i una targeta fixa «Connectar amb Google Calendar» (és d'un sol cop i es quedava sempre). Ara el botó és dins de «Filtres» (obert a
+  l'ordinador, plegat al mòbil) i la línia de Google Calendar només surt quan ja està connectat (amb l'hora de la sincronització) o si hi ha un error.
+  Prova: gcaltest 20/20 (adaptada: el botó és a `.gc-con-v878597`), pantallestest 13/13.

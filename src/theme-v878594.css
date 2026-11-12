@@ -5,3 +5,6 @@ html body label .err-v878594{display:block;margin-top:4px;font-size:12.5px;font-
 
 /* V87.596 · «Les meves hores» del treballador: «Treure» sortia com un botó sense estil del navegador; ara un enllaç vermell, prou gran per al dit */
 html body .hores-treb-v878327 .fila>button.link{border:0!important;background:none!important;box-shadow:none!important;color:#B91C1C;font-weight:600;font-size:13px;min-height:36px;padding:6px 8px;cursor:pointer}
+
+/* V87.597 · Agenda: «Connectar amb Google Calendar» dins de «Filtres» */
+html body .agenda-v878256 .ag-sub .gc-con-v878597{display:inline-flex;align-items:center;min-height:36px;margin-top:4px}
