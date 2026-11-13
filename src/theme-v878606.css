@@ -1,0 +1,12 @@
+/* V87.606 · Línies de medició (certificació, pressupost i parte) i costos per administració: a l'ordinador, la finestra prou ampla perquè
+   la taula hi càpiga sencera (abans feia 980 px, com la taula, i calia desplaçar-se a la dreta per veure «Eliminar») */
+@media (min-width:1100px){
+  html body .modal:has(.medicio-modal-v8780),html body .modal:has(.admin-table-v878126){max-width:min(1120px,96vw)!important;width:min(1120px,96vw)!important}
+}
+/* V87.606 · «Hores · Despeses · Factures» de l'encàrrec (i les pestanyes dels encàrrecs tècnics) com les altres targetes plegables: una sota
+   l'altra, cada una al seu contenidor, el contingut just a sota de la seva targeta i una fletxa que gira; tornar-la a tocar la recull */
+html:root body .honoraris-exp-v8778>.subtabs-v8746.hon-raj-v878526.plega-v878606{grid-template-columns:minmax(0,1fr)!important;grid-auto-flow:row!important;grid-auto-columns:auto!important;margin:0!important;overflow:visible!important}
+html:root body .subtabs-v8746.hon-raj-v878526.plega-v878606>button{position:relative;padding-right:52px!important}
+html:root body .subtabs-v8746.hon-raj-v878526.plega-v878606>button .chev{position:absolute;right:18px;top:50%;margin-top:-9px;color:#64748B;transition:transform .15s}
+html:root body .subtabs-v8746.hon-raj-v878526.plega-v878606>button[aria-expanded="true"] .chev{transform:rotate(180deg);color:#fff}
+html:root body .honoraris-exp-v8778>.cos-v878606{min-width:0;display:flex;flex-direction:column;gap:12px;margin:0 0 6px}

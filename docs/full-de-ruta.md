@@ -137,3 +137,12 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
 - **Idees de Motor de Presupuestos i Pillar** (mirats l’1/11/2026, a partir de pàgines públiques): abans de generar amb IA, ensenyar com s’ha entès l’encàrrec i preguntar el que falta; canviar el pressupost amb paraules normals, veient què canvia; rapportini per WhatsApp o veu; conciliació bancària.
 - Afegir una partida amb IA dins d’un capítol que ja existeix (l’Héctor, 29/10/2026: «en tot cas seria afegir partida amb IA dins d’un
   capítol ja existent»; cal la IA directa, clau d’Anthropic).
+- **Compartir amb el client de l'obra, només per mirar** (l'Héctor, 13/11/2026: «compartir els plànols d'obra, el planning, el pressupost,
+  la certificació un cop validada o per validar, les factures de la constructora o industrials, per no treballar amb correus creuats… només
+  en un sentit, sense possibilitat de tocar ni entrar res, només visualització»; ho veu com a argument de venda). Proposta: a cada obra
+  «Compartir amb el client», triar què veu; enllaç privat (i QR) que s'obre sense compte; només mirar i baixar el PDF; el que es comparteix es
+  copia a part al servidor (mai la resta de l'obra: costos, marges, notes); treure l'enllaç o caducitat; veure quan l'ha obert. Base: l'enllaç
+  per signar (V87.409). Per decidir: només enllaç o també usuari amb contrasenya; si la certificació «per validar» porta «Conforme»; d'on
+  surten les factures de la constructora al compte d'un tècnic. 2-3 versions, després dels vídeos i dels CI.
+- **CI (costos indirectes) al preu de les partides** (l'Héctor, 12/11/2026): esperant les respostes (Front de Mar amb DG i BI dues vegades a
+  8 partides, BC3 de sortida, com es trien les partides del 35 % de mitjans auxiliars, comparar descompostos semblants).

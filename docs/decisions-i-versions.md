@@ -4183,3 +4183,19 @@
       treballadors `treb-demo-`.
   Prova: `v605test` 14/14 (nova: compte «oriol» del Supabase de proves amb «Gestió total» i els exemples; casa, certificacions, factures i
   actes; treure'ls i tornar-los a posar sense tocar una obra de debò; mòbil des del núvol). perfils326 36/36, dades363 13/13, i18ntest tot traduït.
+  - **V87.606 · Línies de medició senceres, targetes de l'encàrrec plegables i Gestió total sense «Pressupostos d'obra» al menú** (l'Héctor,
+    13/11/2026, provant el compte del Martí):
+    - «Línies de medició» (certificació, pressupost i parte) i costos per administració: a l'ordinador (≥1100 px) la finestra fa fins a
+      1120 px (`.modal:has(.medicio-modal-v8780)`), i la taula de 980 px hi cap sencera (abans calia desplaçar-se per veure «Eliminar»).
+    - Honoraris / «El meu encàrrec» (`HonorarisExpedient8778`): «Hores · Despeses · Factures» (i Pressupostos · Factures · Rendiment dels
+      encàrrecs tècnics) són targetes plegables com les altres («apreto despeses i surt a sota factures i quan torno a apretar no recull»): cada
+      targeta al seu contenidor `.subtabs-v8746.plega-v878606`, el contingut (`.cos-v878606`) just a sota, fletxa que gira i tornar-la a tocar
+      la recull (`sub="-"`). Fora la barra fixa de pestanyes d'aquí (`BarraFixa878530`). El contingut no va dins del contenidor de les
+      pestanyes: n'heretava els estils dels botons («Fer factura» sortia blanc sobre blanc).
+    - **Gestió total**: «Pressupostos d'obra» ja no surt al menú, a la barra ni a les rajoles de l'Inici (`menuPresObra878606`): els pressupostos
+      d'obra són dins de cada expedient / obra («el perfil tècnic gestió total… un tècnic que pot treballar per tercers o dins d'un despatx, però
+      que també pot portar el project manager total d'una constructora»). La constructora el continua tenint.
+    - Ajustos: «Exemples per començar» just a sota de «Perfil i mòduls» (l'Héctor no el trobava).
+  Prova: `v606test` 12/12 (nova: medició a 1440 i 1280 px, ordre d'Ajustos, menú i Inici de Gestió total, targetes plegables a l'ordinador i
+  al mòbil, botons de dins llegibles). perfils326 36/36 (adaptada: Gestió total sense «Pressupostos d’obra»), v525 15/15 (adaptada:
+  les targetes, una sota l’altra), honoraris332 20/20, v410 25/25; v431 10/20 i tempstest 12/14, igual que a la V87.600.
