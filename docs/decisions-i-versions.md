@@ -4218,3 +4218,28 @@
   CP26-004 a nom de la promotora, barra del mòbil, la constructora igual). Adaptades al perfil nou: perfils326, v605, v606, dades363 (la casa),
   simple354 14/14 (la direcció d’obra), neteja353 14/14 i personal340 27/28 (sense el personal; «Empresa» al menú; la de «l’endemà»
   falla igual a la V87.600, per la data), dades363 13/13, perfils326 36/36, v605 14/14, v606 12/12, i18ntest tot traduït.
+  - **V87.608 · Industrials: ofertes, comparatiu, adjudicar al pressupost i seguiment** (l'Héctor, 13/11/2026: «dins del pressupost… unes
+    targetes de pressupostos d'industrials, una de comparatiu d'ofertes i, un cop adjudicades, automàticament a pressupost… i el seguiment del
+    pressupostat amb el certificat… adjuntar el PDF, llegir-lo i fer comparatius entre ofertes del mateix capítol, o entre dues constructores
+    que s'encarregaran de tot»; «el tècnic normal pot fer feines de project manager… comparatius de pressupostos d'industrials o constructores
+    abans d'adjudicar»).
+    - Apartat nou **«Industrials»** a «Pressupost i certificacions», entre el Pressupost i les Certificacions (`Industrials878608`). L'apartat
+      vell «Industrials / Comparatius» (notes i documents) només surt si ja hi havia alguna cosa.
+    - Ofertes a l'obra (`data.industrials878608`): industrial, capítol (o tota l'obra), data, import o partides, notes i el PDF. «Llegir
+      l'oferta d'un PDF» fa servir el lector de pressupostos (`PdfPressupost878305` amb `onLlegit`/`titol`; la IA si cal) i en fa la fitxa;
+      «Oferta a mà» per a un preu tancat.
+    - Per capítols, la més baixa marcada i la diferència amb el pressupost. **Comparatiu** (`ComparaOfertes878608`): partida per partida
+      (aparellades per codi o concepte) contra el pressupost, amb la millor de cada una en verd i els totals.
+    - **Adjudicar** (`AdjudicaOferta878608`): les partides del capítol agafen el preu de l'oferta (la quantitat de l'obra), les que falten
+      s'afegeixen al capítol i, sense partides, una partida a preu tancat; les ja certificades no canvien de preu; les altres ofertes del
+      capítol, descartades. Les partides queden lligades a l'oferta (`industrial878608`).
+    - **Seguiment dels industrials**: pressupostat, certificat a origen (%), facturat (despeses de l'obra del mateix proveïdor) i pendent.
+    - El **tècnic** també té Pressupost, Industrials i Certificacions (i el planning) a les obres que dirigeix; no la facturació ni les despeses
+      de l'obra (`tabsPerfil878326`, `hasModule2Access8747`).
+    - Lògica a `src/industrials.js` (prova sense navegador `industrialsunit.mjs`, 9/9); estils `src/theme-v878608.css`.
+    - Exemples: la casa té dues ofertes de fusteria (16.300 i 16.625 € contra 17.460 € del pressupost) i una d'urbanització a preu tancat.
+  Prova: `v608test` 14/14 (nova: socoterm amb els exemples: l'apartat entre Pressupost i Certificacions, ofertes per capítol amb la més baixa,
+  comparatiu, adjudicar des del comparatiu (06.01 a 905 €, 06.02 a 330 €, l'altra descartada), seguiment, oferta a mà, el lector de PDF amb el
+  títol nou, mòbil sense desbordar i el tècnic amb Pressupost · Industrials · Certificacions sense facturació). `industrialsunit` 9/9.
+  perfils326 36/36 (adaptada: el tècnic ja té pressupost i certificacions), v607 15/15, i18ntest tot traduït; pdfpressupost 26/29,
+  pestanyes 10/12 i obratest 30/34, igual que a la V87.600.

@@ -156,6 +156,12 @@ function obres(perfil, inici = false) {
   const certsC = certsCasa();
   const casa = o("casa", "Casa unifamiliar C/ dels Pins 14", "Gestió integral d’obra", CLIENTS.constr, "En curs / Actiu", "C/ dels Pins, 14", "Calonge", "17251", { subtitol: "Habitatge unifamiliar aïllat de nova construcció", promotor: CLIENTS.casa, constructor: "Construccions Prova SL", do: "Anna Prova, arquitecta", deo: "Despatx Tècnic Prova", dades: {
     partides: partides(CASA), certificacions: certsC, facturesObra878297: facturesCasa(certsC, CLIENTS.casa, CLIENTS.constr),
+    // V87.608 · les ofertes dels industrials (Pressupost i certificacions › Industrials): dues de fusteria per comparar i una d'urbanització
+    industrials878608: [
+      { id: "of-demo-fust1", industrial: "Fusteria i Alumini Prova", capitol: "06 FUSTERIA I VIDRES", import: "", data: iso(-9), estat: "rebuda", notes: "Termini: 5 setmanes des de la comanda. Inclou la col·locació.", fitxer: { nom: "Oferta fusteria i alumini.pdf" }, linies: [{ codi: "06.01", cap: "06 FUSTERIA I VIDRES", ut: "ut", concepte: "Finestra d’alumini RPT amb doble vidre", q: 14, pu: 905 }, { codi: "06.02", cap: "06 FUSTERIA I VIDRES", ut: "ut", concepte: "Porta interior lacada", q: 11, pu: 330 }], createdAt: ara(), updatedAt: ara() },
+      { id: "of-demo-fust2", industrial: "Tancaments Costa Prova", capitol: "06 FUSTERIA I VIDRES", import: "", data: iso(-5), estat: "rebuda", notes: "Termini: 7 setmanes. Les portes, de fusta massissa.", fitxer: { nom: "Pressupost tancaments.pdf" }, linies: [{ codi: "06.01", cap: "06 FUSTERIA I VIDRES", ut: "ut", concepte: "Finestra d’alumini amb trencament de pont tèrmic", q: 14, pu: 940 }, { codi: "06.02", cap: "06 FUSTERIA I VIDRES", ut: "ut", concepte: "Porta interior lacada", q: 11, pu: 315 }], createdAt: ara(), updatedAt: ara() },
+      { id: "of-demo-urb1", industrial: "Jardins Prova", capitol: "08 URBANITZACIÓ", import: "13100", data: iso(-3), estat: "rebuda", notes: "Tanca, porta d’accés, paviment exterior i jardineria. Preu tancat.", linies: [], createdAt: ara(), updatedAt: ara() },
+    ],
     ganttConfig87217: planning(CASA, -125, [8, 30, 12, 25, 30, 10, 20, 12]),
     agents: [agent("casa-constr", "Xavier Prova", "Constructora / contractista", "Construccions Prova SL"), agent("casa-do", "Anna Prova", "Direcció d’obra", "Anna Prova, arquitecta"), agent("casa-css", "Marc Prova Puig", "Coordinació S+S", "Seguretat Prova SL")],
     actes: [
