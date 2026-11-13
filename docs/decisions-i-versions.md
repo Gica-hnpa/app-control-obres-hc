@@ -4243,3 +4243,10 @@
   títol nou, mòbil sense desbordar i el tècnic amb Pressupost · Industrials · Certificacions sense facturació). `industrialsunit` 9/9.
   perfils326 36/36 (adaptada: el tècnic ja té pressupost i certificacions), v607 15/15, i18ntest tot traduït; pdfpressupost 26/29,
   pestanyes 10/12 i obratest 30/34, igual que a la V87.600.
+  - **V87.609 · Enllaç per entrar amb un compte concret (el QR de les guies de benvinguda)** (l'Héctor, 13/11/2026: «a la guia del Martí hi ha
+    un QR, però hauria d'anar directe a posar el seu usuari i contrasenya; jo entro amb el meu mòbil i s'obre el de Brava»). `…/?entra=marti`
+    (`startCloudSync`, `src/cloudSync.js`): si l'aparell té oberta la sessió d'un altre compte, es tanca (les dades d'aquell compte es queden a
+    l'aparell) i surt la pantalla d'entrar amb l'usuari ja posat; l'adreça queda neta. Si ja és el mateix compte, entra directament. Les guies
+    (`tools/proves/guies.js`) posen aquest enllaç al QR.
+  Prova: `v609test` 6/6 (nova: mòbil amb Brava oberta → «?entra=oriol» → entrar → compte de l'Oriol; sense l'enllaç, l'últim compte; el mateix
+  compte, directe).

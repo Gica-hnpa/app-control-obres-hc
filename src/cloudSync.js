@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.608";
+const VERSION = "V87.609";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -1133,6 +1133,19 @@ export async function startCloudSync() {
   loadDeliberate();
   window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
   session = readSession();
+  // V87.609 · enllaç per entrar amb un compte concret (el QR de la guia de benvinguda: «…/?entra=marti»; l'Héctor, 13/11/2026: «hauria d'anar
+  // directe a posar el seu usuari i contrasenya; jo entro amb el meu mòbil i s'obre el de Brava»). Si l'aparell té oberta la sessió d'un altre
+  // compte, es tanca (les dades d'aquell compte es queden a l'aparell) i surt la pantalla d'entrar amb l'usuari ja posat.
+  const entra = (() => { try { return String(new URLSearchParams(location.search).get("entra") || "").trim().toLowerCase(); } catch { return ""; } })();
+  if (entra) {
+    try { const u = new URL(location.href); u.searchParams.delete("entra"); history.replaceState(null, "", u.pathname + u.search + u.hash); } catch {}
+    try { localStorage.setItem("nuvol-aco-correu", entra); localStorage.removeItem(SKIP_KEY); sessionStorage.removeItem(SKIP_KEY); } catch {}
+    const actual = session ? String(companyOf(session.email)?.username || session.email || "").toLowerCase() : "";
+    if (session && actual !== entra && String(session.email || "").toLowerCase() !== entra) {
+      writeSession(null); session = null;
+      try { sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } catch {}
+    }
+  }
   const skipped = (() => { try { return localStorage.getItem(SKIP_KEY) === "1" || sessionStorage.getItem(SKIP_KEY) === "1"; } catch { return false; } })();
   if (!session) {
     if (skipped) { applyCompanyContext(); return; }
