@@ -4199,3 +4199,22 @@
   Prova: `v606test` 12/12 (nova: medició a 1440 i 1280 px, ordre d'Ajustos, menú i Inici de Gestió total, targetes plegables a l'ordinador i
   al mòbil, botons de dins llegibles). perfils326 36/36 (adaptada: Gestió total sense «Pressupostos d’obra»), v525 15/15 (adaptada:
   les targetes, una sota l’altra), honoraris332 20/20, v410 25/25; v431 10/20 i tempstest 12/14, igual que a la V87.600.
+  - **V87.607 · «Tècnic amb gestió» (abans «Gestió total»): el menú del tècnic i la comptabilitat dins de cada obra** (l'Héctor, 13/11/2026:
+    «barreges conceptes d'empresa amb els de tècnic… els menús són tots del tècnic, inclús la facturació, les despeses i la caixa i bancs… i dins
+    de les obres que gestioni per una constructora hi haurà la comptabilitat que tingui accés: factures realitzades, despeses… no bancs ni caixa»;
+    els perfils com els veu: Tècnic · Tècnic amb gestió (project manager) · Constructora · Treballador · i els convidats que vindran).
+    - `PERFILS878326.complet`: «Tècnic amb gestió» (project manager), mòduls `tecnic` i `obra` (sense `empresa`: fora Control horari, el
+      personal, les despeses de totes les obres i el rendiment d'empresa del menú). La clau continua sent `complet` (el compte del Martí).
+    - Com el compte de l'Héctor: les factures de l'obra van amb la **sèrie del client** (la constructora) i no la de l'empresa
+      (`esEmpresaFactura878337` només per a la constructora); el menú Facturació, Despeses i Caixa i bancs són els del tècnic (honoraris, les
+      meves despeses); «Expedients» en lloc d'«Obres» (`diuObra878326`); Inici amb encàrrecs i pressupostos d'honoraris i la barra de baix del
+      tècnic (Nota · Despesa · Hores). «Empresa» es queda al menú per als despatxos amb treballadors (`menuEmpresa878607`).
+    - Dins de cada obra, igual: Pressupost i certificacions, i Comptabilitat (facturació, despeses i rendiment de l'obra, i els honoraris).
+    - Exemples (`src/dadesDemo.js`): la casa té de **client la constructora** («Construccions Prova SL», amb la seva numeració `CP26-`) i de
+      **promotora la propietària** (Laura Roca); les factures CP26-001 a 003 van a nom de la promotora i «Fer factura» proposa la CP26-004. Els
+      comptes `demo-gestio` tenen els mateixos exemples que els comptes de debò (fora la reforma, la façana i la coberta de la constructora).
+    - **Comptes que ja tenien els exemples** (el del Martí): Ajustos › «Exemples per començar» › Treure i tornar-los a afegir.
+  Prova: `v607test` 15/15 (nova: benvinguda, menú, Facturació, Despeses, Caixa i bancs, Empresa, la casa amb les factures CP26 i «Fer factura»
+  CP26-004 a nom de la promotora, barra del mòbil, la constructora igual). Adaptades al perfil nou: perfils326, v605, v606, dades363 (la casa),
+  simple354 14/14 (la direcció d’obra), neteja353 14/14 i personal340 27/28 (sense el personal; «Empresa» al menú; la de «l’endemà»
+  falla igual a la V87.600, per la data), dades363 13/13, perfils326 36/36, v605 14/14, v606 12/12, i18ntest tot traduït.

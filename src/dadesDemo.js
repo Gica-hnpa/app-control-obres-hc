@@ -15,6 +15,8 @@ const CLIENTS = {
   promo: { id: "client-demo-promo", nom: "Promocions Empordà Prova", rao: "Promocions Empordà Prova SL", tipus: "Promotor", contacte: "Xavier Pons", telefon: "600 000 005", email: "xavier.pons@exemple.test", adreca: "C/ de la Riera, 20", codiPostal: "17001", poblacio: "Girona", nif: "B00000005", color: "teal", logo: "" },
   // V87.605 · la casa unifamiliar (gestió total) i l'aixecament dels exemples per començar
   casa: { id: "client-demo-casa", nom: "Laura Roca Prova", rao: "", tipus: "Particular", contacte: "Laura Roca", telefon: "600 000 006", email: "laura.roca@exemple.test", adreca: "C/ dels Pins, 14", codiPostal: "17251", poblacio: "Calonge", nif: "00000006Y" },
+  // V87.607 · la constructora per a qui el tècnic amb gestió porta la casa: és el client de l'obra i les factures van amb la seva sèrie
+  constr: { id: "client-demo-constr", nom: "Construccions Prova SL", rao: "Construccions Prova SL", tipus: "Constructora", contacte: "Xavier Prova", telefon: "600 000 008", email: "obres@construccionsprova.exemple.test", adreca: "Pol. Ind. Prova, nau 3", codiPostal: "17251", poblacio: "Calonge", nif: "B00000008", facturacio878297: { actiu: true, prefix: `CP${String(new Date().getFullYear()).slice(2)}-`, digits: 3, proper: 4 } },
   aixeca: { id: "client-demo-aixeca", nom: "Joan Prova Bosch", rao: "", tipus: "Particular", contacte: "Joan Prova", telefon: "600 000 007", email: "joan.prova@exemple.test", adreca: "C/ Ample, 3, 1r", codiPostal: "17200", poblacio: "Palafrugell", nif: "00000007F" },
 };
 
@@ -100,14 +102,14 @@ function certsCasa() {
   const rows = partides(CASA);
   return [-110, -80, -50, -20].map((d, i) => ({ id: `cert-demo-casa-${i + 1}`, numero: String(i + 1), data: iso(d), estat: i < 2 ? "Cobrada" : "Pendent", budgetId: "principal", import: Math.round(rows.reduce((s, r) => s + (r.certsByNum[String(i + 1)] || 0) * r.pu, 0) * 100) / 100, createdAt: ara(), updatedAt: ara() }));
 }
-// les 3 primeres certificacions, facturades a la promotora (sèrie de l'empresa, IVA 10 % d'habitatge); les dues primeres, cobrades
-function facturesCasa(certs, client) {
+// les 3 primeres certificacions, facturades a la promotora amb la sèrie de la constructora (IVA 10 % d'habitatge); les dues primeres, cobrades
+function facturesCasa(certs, client, constr) {
   const r2 = x => Math.round(x * 100) / 100, perAny = {};
   const destinatari = { nom: client.nom, nif: client.nif, adreca: `${client.adreca}, ${client.codiPostal} ${client.poblacio}` };
   return certs.slice(0, 3).map((c, i) => {
-    const df = -108 + 30 * i, any = dia(df).getFullYear(), prefix = `F${any}-`, num = (perAny[any] = (perAny[any] || 0) + 1);
+    const df = -108 + 30 * i, any = dia(df).getFullYear(), prefix = `CP${String(any).slice(2)}-`, num = (perAny[any] = (perAny[any] || 0) + 1);
     const base = c.import, iva = 10, ivaImp = r2(base * iva / 100);
-    return { id: `fo-demo-casa-${i + 1}`, certId: c.id, budgetId: "principal", pfNumero: `PF-${String(c.numero).padStart(3, "0")}`, certNum: c.numero, numero: `${prefix}${String(num).padStart(3, "0")}`, num, serieEmpresa: true, prefix,
+    return { id: `fo-demo-casa-${i + 1}`, certId: c.id, budgetId: "principal", pfNumero: `PF-${String(c.numero).padStart(3, "0")}`, certNum: c.numero, numero: `${prefix}${String(num).padStart(3, "0")}`, num, serieClient: constr.id, prefix,
       data: iso(df), base, ded: 0, iva, ivaImp, ret: 0, retImp: 0, total: r2(base + ivaImp), destinatari, avisCobr878496: { data: iso(df + 30) },
       ...(i < 2 ? { cobrada: true, dataCobrament: iso(df + 20) } : {}), createdAt: ara() };
   });
@@ -117,7 +119,7 @@ const hora = (k, d, hores, feina, extra = {}) => ({ id: `h-demo-${k}`, data: iso
 // Cada obra: dades bàsiques (l'App hi posa el codi i la plantilla) i el que porta dins
 const COLLA = { k: "c:Colla 1", nom: "Colla 1" }, MARC = { k: "t:treb-demo-marc", nom: "Marc Prova" };
 function obres(perfil, inici = false) {
-  const o = (k, nom, tipus, client, estat, adreca, poblacio, codiPostal, extra = {}) => ({ k, obra: { id: `obra-demo-${k}`, nom, tipus, client, estat, adreca, poblacio, codiPostal, rc: extra.rc || "", subtitol: extra.subtitol || "", constructor: extra.constructor || "Pendent", deo: extra.deo || "Pendent", do: extra.do || "Pendent" }, dades: extra.dades || {} });
+  const o = (k, nom, tipus, client, estat, adreca, poblacio, codiPostal, extra = {}) => ({ k, obra: { id: `obra-demo-${k}`, nom, tipus, client, estat, adreca, poblacio, codiPostal, rc: extra.rc || "", subtitol: extra.subtitol || "", constructor: extra.constructor || "Pendent", deo: extra.deo || "Pendent", do: extra.do || "Pendent", ...(extra.promotor ? { promotor: extra.promotor } : {}) }, dades: extra.dades || {} });
   const tecnic = [
     o("cedula", "Cèdula pis C/ de la Riera 8, 2n 1a", "Cèdula d’habitabilitat", CLIENTS.immo, "En procés", "C/ de la Riera, 8, 2n 1a", "Palamós", "17230", { rc: "0000001AB0000A0001AA", dades: {
       tasques: [tasca("ced1", -1, "Demanar la nota simple a la propietat", "Alta"), tasca("ced2", 1, "Visita per prendre mides (MagicPlan)")],
@@ -152,8 +154,8 @@ function obres(perfil, inici = false) {
   // de les visites, honoraris, hores, planning, tasques i cites
   const rolsCasa = { promotor: "Laura Roca Prova", constructor: "Construccions Prova SL", do: "Anna Prova, arquitecta", deo: "Despatx Tècnic Prova", css: "Seguretat Prova SL" };
   const certsC = certsCasa();
-  const casa = o("casa", "Casa unifamiliar C/ dels Pins 14", "Gestió integral d’obra", CLIENTS.casa, "En curs / Actiu", "C/ dels Pins, 14", "Calonge", "17251", { subtitol: "Habitatge unifamiliar aïllat de nova construcció", constructor: "Construccions Prova SL", do: "Anna Prova, arquitecta", deo: "Despatx Tècnic Prova", dades: {
-    partides: partides(CASA), certificacions: certsC, facturesObra878297: facturesCasa(certsC, CLIENTS.casa),
+  const casa = o("casa", "Casa unifamiliar C/ dels Pins 14", "Gestió integral d’obra", CLIENTS.constr, "En curs / Actiu", "C/ dels Pins, 14", "Calonge", "17251", { subtitol: "Habitatge unifamiliar aïllat de nova construcció", promotor: CLIENTS.casa, constructor: "Construccions Prova SL", do: "Anna Prova, arquitecta", deo: "Despatx Tècnic Prova", dades: {
+    partides: partides(CASA), certificacions: certsC, facturesObra878297: facturesCasa(certsC, CLIENTS.casa, CLIENTS.constr),
     ganttConfig87217: planning(CASA, -125, [8, 30, 12, 25, 30, 10, 20, 12]),
     agents: [agent("casa-constr", "Xavier Prova", "Constructora / contractista", "Construccions Prova SL"), agent("casa-do", "Anna Prova", "Direcció d’obra", "Anna Prova, arquitecta"), agent("casa-css", "Marc Prova Puig", "Coordinació S+S", "Seguretat Prova SL")],
     actes: [
@@ -168,7 +170,7 @@ function obres(perfil, inici = false) {
       { id: "ft-demo-casa-2", numero: "F-DEMO-04", data: iso(-16), concepte: "Honoraris: coberta i tancaments (25 %)", text: "", base: 2100, iva: 21, retencio: 15, descompte: 0, estat: "Pendent", pressupostId: "pt-demo-casa", createdAt: ara(), updatedAt: ara() },
     ],
     notes: [nota(1, -18, "Certificació 4 de la constructora revisada: s’ha tret 1 m² de façana que encara no estava acabat. Imports correctes.")],
-    tasques: [tasca("casa1", 1, "Revisar els amidaments de la certificació 5", "Alta"), tasca("casa2", 3, "Demanar el preu contradictori del parquet"), tasca("casa3", -2, "Reclamar la factura F-003 a la promotora (vençuda)", "Urgent")],
+    tasques: [tasca("casa1", 1, "Revisar els amidaments de la certificació 5", "Alta"), tasca("casa2", 3, "Demanar el preu contradictori del parquet"), tasca("casa3", -2, "Reclamar a la promotora la factura de la certificació 3 (vençuda)", "Urgent")],
     citaK: [["casa", 2, "09:00", "Visita d’obra casa C/ dels Pins 14", "Visita d’obra"], ["casa2", 6, "18:00", "Reunió amb la promotora: paviment del menjador", "Visita"]],
     horesK: [["c1", -112, 2, "Visita d’obra"], ["c2", -84, 1.5, "Visita d’obra"], ["c3", -45, 1.5, "Visita d’obra"], ["c4", -18, 3, "Oficina", { observacions: "Revisió de la certificació 4" }], ["c5", -6, 2, "Visita d’obra"]] } });
   // V87.605 · un encàrrec petit: aixecament planimètric
@@ -198,14 +200,14 @@ function obres(perfil, inici = false) {
   if (inici && perfil === "complet") return [casa, direccio, aixecament, tecnic[0], tecnic[1]];
   if (perfil === "tecnic") return [...tecnic, direccio];
   if (perfil === "constructor") return constructora;
-  if (perfil === "complet") return [...tecnic.slice(0, 2), direccio, ...constructora];
+  if (perfil === "complet") return [casa, direccio, aixecament, tecnic[0], tecnic[1]];
   if (perfil === "treballador") return constructora.slice(0, 2);
   return [];
 }
 
 // Despeses: les de l'obra (albarans, factura que els inclou, subcontracta) i les pròpies del tècnic
 function despeses(perfil, inici = false) {
-  const obra = perfil === "tecnic" || (inici && perfil === "complet") ? "" : "obra-demo-reforma";
+  const obra = perfil === "tecnic" || perfil === "complet" ? "" : "obra-demo-reforma";
   const out = [];
   if (obra && perfil !== "treballador") {
     out.push({ id: "alb-demo-1", data: iso(-35), obraId: obra, tipus: "Albarà", proveidor: "Materials Costa Prova", numero: "A-1021", base: "186.40", iva: "21", total: "225.54", linies: [{ concepte: "Ciment gris (sacs de 25 kg)", quantitat: "12", unitat: "ut", preu: "8.20", import: 98.4 }, { concepte: "Sorra rentada (big bag)", quantitat: "2", unitat: "ut", preu: "44", import: 88 }], notes: "", facturatClient: false, capitol: "02 PALETERIA", createdAt: ara(), updatedAt: ara() });
@@ -217,20 +219,20 @@ function despeses(perfil, inici = false) {
     out.push({ id: "alb-demo-m1", meva: true, tipusMeva: "Desplaçament (km)", data: iso(-4), obraId: "obra-demo-reforma-do", proveidor: "Girona → Palamós i tornada", km: "84", preuKm: "0,26", base: "21,84", iva: "0", total: "21,84", linies: [], notes: "", facturatClient: false, createdAt: ara(), updatedAt: ara() });
     out.push({ id: "alb-demo-m2", meva: true, tipusMeva: "Taxes de visat", data: iso(-25), obraId: "obra-demo-reforma-do", proveidor: "Col·legi (visat)", base: "85", iva: "0", total: "85", linies: [], notes: "", facturatClient: false, createdAt: ara(), updatedAt: ara() });
     out.push({ id: "alb-demo-m3", meva: true, tipusMeva: "Material", data: iso(-9), obraId: "", proveidor: "Papereria Prova", numero: "T-551", base: "12.40", iva: "21", total: "15.00", linies: [], notes: "Cinta mètrica i retoladors", facturatClient: false, createdAt: ara(), updatedAt: ara() });
-    if (inici && perfil === "complet") out.push({ id: "alb-demo-m4", meva: true, tipusMeva: "Desplaçament (km)", data: iso(-6), obraId: "obra-demo-casa", proveidor: "Girona → Calonge i tornada", km: "96", preuKm: "0,26", base: "24,96", iva: "0", total: "24,96", linies: [], notes: "", facturatClient: false, createdAt: ara(), updatedAt: ara() });
+    if (perfil === "complet") out.push({ id: "alb-demo-m4", meva: true, tipusMeva: "Desplaçament (km)", data: iso(-6), obraId: "obra-demo-casa", proveidor: "Girona → Calonge i tornada", km: "96", preuKm: "0,26", base: "24,96", iva: "0", total: "24,96", linies: [], notes: "", facturatClient: false, createdAt: ara(), updatedAt: ara() });
   }
   return out;
 }
 
 // 26/10/2026 · treballadors inventats per a les constructores (partes, hores, fitxatge, Agenda › Equip)
 function treballadors(perfil, inici = false) {
-  if (perfil !== "constructor" && (perfil !== "complet" || inici)) return [];
+  if (perfil !== "constructor") return [];
   const w = (k, nom, ofici, costHora, colla) => ({ id: `treb-demo-${k}`, nom, ofici, costHora, dni: "", mobil: "", alta: iso(-400), actiu: true, docs: [], colla });
   return [w("pere", "Pere Prova", "Oficial 1a", "25", "Colla 1"), w("joan", "Joan Prova", "Peó", "18", "Colla 1"), w("marc", "Marc Prova", "Encarregat", "28", "")];
 }
 export function dadesDemo(perfil, { inici = false } = {}) {
   const llista = obres(perfil, inici);
-  const usats = new Set(llista.map(x => x.obra.client.id));
+  const usats = new Set(llista.flatMap(x => [x.obra.client.id, x.obra.promotor?.id].filter(Boolean)));
   return {
     clients: Object.values(CLIENTS).filter(c => usats.has(c.id)),
     obres: llista,

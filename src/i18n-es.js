@@ -5994,4 +5994,6 @@ export default {
   "Afegir els exemples": "Añadir los ejemplos",
   "Començar amb uns exemples (inventats)": "Empezar con unos ejemplos (inventados)",
   "Exemples per començar": "Ejemplos para empezar",
+  "Tècnic amb gestió": "Técnico con gestión",
+  "Project manager: el del tècnic i, a més, la gestió de les obres que porta per una constructora (pressupost, certificacions, facturació i despeses de cada obra).": "Project manager: lo del técnico y, además, la gestión de las obras que lleva para una constructora (presupuesto, certificaciones, facturación y gastos de cada obra).",
 };
