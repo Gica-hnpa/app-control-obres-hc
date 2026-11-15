@@ -4684,6 +4684,7 @@ export default {
   "Dins de la quota": "Dentro de la cuota",
   "Escriu les hores.": "Escribe las horas.",
   "Sense data": "Sin fecha",
+  "Sense factura": "Sin factura",
   "despeses {d}": "gastos {d}",
   "Import de les hores": "Importe de las horas",
   "Quota fixa del client: {q} al mes": "Cuota fija del cliente: {q} al mes",

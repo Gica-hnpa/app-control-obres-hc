@@ -4250,3 +4250,14 @@
     (`tools/proves/guies.js`) posen aquest enllaç al QR.
   Prova: `v609test` 6/6 (nova: mòbil amb Brava oberta → «?entra=oriol» → entrar → compte de l'Oriol; sense l'enllaç, l'últim compte; el mateix
   compte, directe).
+  - **V87.610 · Llistat en PDF de les factures i les despeses de dins de l'expedient i de l'obra** (l'Héctor, 15/11/2026: «millora llistat de
+    pdf en factures i despeses dins de tècnics ja que no n'hi han»). Botó «Llistat» (el de Facturació: filtres, camps, «Desar el PDF» i Excel):
+    - a les **factures de l'expedient** del tècnic (`FacturesTecniques8738`, també dins de «El meu encàrrec › Factures»), component nou
+      `LlistatFactures878610`;
+    - a les **meves despeses de l'expedient** (tècnic i tècnic amb gestió: abans no hi havia cap llistat);
+    - a la **facturació de l'obra** (`Fact`: constructora i tècnic amb gestió): les factures (sèrie del client, de l'empresa o VeriFactu) i les
+      proformes que encara no en tenen, amb la certificació.
+    - **Errada arreglada:** dins d'una obra, el «Llistat amb filtres…» de les despeses sortia amb les de totes les obres (`llistatDesp501`).
+  Prova: `v610test` 11/11 (nova: socoterm, ordinador i mòbil: facturació de l'obra amb 3 factures i la proforma pendent, factures i despeses de
+  l'encàrrec només d'aquell expedient; oriol: factures i despeses de l'encàrrec). v606 12/12, v607 15/15, despeses348 22/22,
+  factclient 13/13, v578 13/13, i18ntest tot traduït; v501 13/14, despesestest 1/5 i albaranstest 5/10, igual que a la V87.609 (proves velles).
