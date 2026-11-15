@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {GraduationCap,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.612";
+const APP_VERSION878264="87.613";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1905,6 +1905,70 @@ function useProva878519(){const[p,setP]=useState(()=>window.__acoProva878519||nu
 function ProvaDies878519(){const p=useProva878519();if(!p?.prova||p.acabada)return null;const n=Math.max(0,+p.queden||0);
   return <div className={"prova-dies-v878519"+(n<=3?" poc":"")} role="status"><CalendarCheck size={18} aria-hidden="true"/><span><b>{t("Prova gratuïta")}</b> · {n===1?t("queda 1 dia"):t("queden {n} dies",{n})}</span>{p.fins?<small>{t("fins al {d}",{d:fmtAppDate8748(p.fins)})}</small>:null}</div>}
 const suma878519=(d,n)=>{const x=new Date(String(d).slice(0,10)+"T12:00:00");x.setDate(x.getDate()+n);return isoDay878255(x)};
+// V87.613 · Comptes del núvol des de l'app, només per a l'Héctor (l'Héctor, 15/11/2026: «prepara-ho»; abans, una contrasenya oblidada només es
+// podia canviar amb SQL i els comptes nous es feien al panell de Supabase). Funció del servidor «aco-comptes» (supabase/functions/aco-comptes,
+// instal·lació a docs/comptes-nuvol.md): crear un compte d'empresa i posar-ne una contrasenya nova. L'app no guarda mai cap contrasenya:
+// es veu un sol cop, per copiar-la o compartir-la amb l'enllaç d'entrar (…/?entra=usuari, V87.609). Mai s'esborra cap compte.
+function contrasenya878613(){const A="abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";const r=new Uint32Array(12);crypto.getRandomValues(r);const c=[...r].map(x=>A[x%A.length]).join("");return /\d/.test(c)?`${c.slice(0,4)}-${c.slice(4,8)}-${c.slice(8)}`:contrasenya878613()}
+const netUsuari878613=v=>String(v||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9-]+/g,"-").replace(/^-+/,"").slice(0,40);
+function ComptesNuvol878613(){
+  const crida=(accio,extra={})=>window.__acoCloud.callFunction("aco-comptes",{accio,...extra});
+  const[st,setSt]=useState({ll:null,estat:"carrega",err:""});
+  const[nou,setNou]=useState(()=>({usuari:"",pw:contrasenya878613(),prova:false}));
+  const[canvi,setCanvi]=useState(null);   // {usuari, pw}
+  const[fet,setFet]=useState(null);       // {usuari, pw, nou}
+  const[ocupat,setOcupat]=useState(false);
+  const[q,setQ]=useState("");
+  const[msg,setMsg]=useState("");
+  const errTx=e=>{const c=String(e?.body?.codi||"");return c==="existeix"?t("Aquest usuari ja existeix."):c==="usuari"?t("L’usuari només pot tenir lletres minúscules, números i guions."):c==="contrasenya"?t("La contrasenya ha de tenir com a mínim 8 caràcters."):c==="no-existeix"?t("Aquest usuari no existeix."):e?.offline?t("No hi ha connexió amb el núvol."):String(e?.message||e)};
+  async function carrega(){try{const r=await crida("llista");setSt({ll:Array.isArray(r?.comptes)?r.comptes:[],estat:"ok",err:""})}
+    catch(e){setSt({ll:null,estat:e?.status===404?"falta":e?.body?.codi==="no-admin"?"noadmin":"err",err:errTx(e)})}}
+  // només quan s’obre el bloc d’Ajustos (no a cada vegada que s’entra a Ajustos)
+  const ref=useRef(null);
+  useEffect(()=>{const d=ref.current?.closest("details");if(!d||d.open){carrega();return}const h=()=>{if(d.open){d.removeEventListener("toggle",h);carrega()}};d.addEventListener("toggle",h);return()=>d.removeEventListener("toggle",h)},[]);
+  if(st.estat==="carrega")return <p className="buit" ref={ref}>{t("Carregant…")}</p>;
+  if(st.estat==="falta")return <p className="err">{t("Falta instal·lar la funció «aco-comptes» a Supabase (docs/comptes-nuvol.md).")}</p>;
+  if(st.estat==="noadmin")return <p className="err">{t("Aquest compte no pot gestionar comptes: falta el secret ACO_ADMINS amb el teu correu (docs/comptes-nuvol.md).")}</p>;
+  if(st.estat==="err")return <p className="err">{st.err}</p>;
+  const usuariNou=(nou.prova&&!/^prova-/.test(nou.usuari)?"prova-":"")+nou.usuari.replace(/-+$/,"");
+  async function crea(){if(ocupat)return;setMsg("");if(usuariNou.length<2){setMsg(t("Escriu l’usuari."));return}if(nou.pw.length<8){setMsg(t("La contrasenya ha de tenir com a mínim 8 caràcters."));return}
+    setOcupat(true);try{await crida("crea",{usuari:usuariNou,contrasenya:nou.pw});setFet({usuari:usuariNou,pw:nou.pw,nou:true});setNou({usuari:"",pw:contrasenya878613(),prova:false});await carrega()}catch(e){setMsg(errTx(e))}setOcupat(false)}
+  async function canvia(){if(ocupat||!canvi)return;setMsg("");if(canvi.pw.length<8){setMsg(t("La contrasenya ha de tenir com a mínim 8 caràcters."));return}
+    setOcupat(true);try{await crida("contrasenya",{usuari:canvi.usuari,contrasenya:canvi.pw});setFet({usuari:canvi.usuari,pw:canvi.pw,nou:false});setCanvi(null)}catch(e){setMsg(errTx(e))}setOcupat(false)}
+  const enllac=u=>`${location.origin}/?entra=${encodeURIComponent(u)}`;
+  const text=f=>[t("Usuari: {u}",{u:f.usuari}),t("Contrasenya: {p}",{p:f.pw}),t("Per entrar: {l}",{l:enllac(f.usuari)})].join("\n");
+  async function copia(f){try{await navigator.clipboard.writeText(text(f));setMsg(t("Copiat."))}catch{setMsg(t("No s’ha pogut copiar: selecciona-ho i copia-ho a mà."))}}
+  const potCompartir=typeof navigator!=="undefined"&&!!navigator.share;
+  const ll=(st.ll||[]).filter(c=>!q.trim()||c.usuari.includes(q.trim().toLowerCase()));
+  return <div className="comptes-v878613">
+    {fet&&<section className="fet" role="status">
+      <b>{fet.nou?t("Compte creat"):t("Contrasenya canviada")}</b>
+      <pre>{text(fet)}</pre>
+      <small>{t("Desa-la ara: l’app no la guarda.")}</small>
+      <div className="bts"><button type="button" className="primary" onClick={()=>copia(fet)}><Copy size={15} aria-hidden="true"/> {t("Copiar")}</button>{potCompartir&&<button type="button" className="secondary" onClick={()=>navigator.share({text:text(fet)}).catch(()=>{})}><Share2 size={15} aria-hidden="true"/> {t("Compartir…")}</button>}<button type="button" className="secondary" onClick={()=>setFet(null)}>{t("Fet")}</button></div>
+    </section>}
+    <section className="nou">
+      <h4><UserPlus size={17} aria-hidden="true"/> {t("Compte nou")}</h4>
+      <div className="camps">
+        <label><span>{t("Usuari")}</span><input value={nou.usuari} onChange={e=>setNou(x=>({...x,usuari:netUsuari878613(e.target.value)}))} placeholder={t("ex. garcia-constru")} autoCapitalize="none" autoCorrect="off" spellCheck={false}/></label>
+        <label><span>{t("Contrasenya")}</span><span className="amb"><input value={nou.pw} onChange={e=>setNou(x=>({...x,pw:e.target.value}))} autoCapitalize="none" autoCorrect="off" spellCheck={false}/><button type="button" className="secondary icona" title={t("Generar-ne una altra")} aria-label={t("Generar-ne una altra")} onClick={()=>setNou(x=>({...x,pw:contrasenya878613()}))}><RefreshCw size={16} aria-hidden="true"/></button></span></label>
+      </div>
+      <label className="chk"><input type="checkbox" checked={nou.prova} onChange={e=>setNou(x=>({...x,prova:e.target.checked}))}/><span>{t("Compte de prova (amb data de fi)")}</span></label>
+      {nou.usuari&&<p className="previst">{t("Entrarà amb «{u}»",{u:usuariNou})}</p>}
+      <button type="button" className="primary" disabled={ocupat||!nou.usuari} onClick={crea}>{ocupat?t("Un moment…"):t("Crear el compte")}</button>
+    </section>
+    {msg&&<p className="buit msg" role="status">{msg}</p>}
+    <section className="llista">
+      <h4><KeyRound size={17} aria-hidden="true"/> {st.ll.length===1?t("1 compte"):t("{n} comptes",{n:st.ll.length})}</h4>
+      {st.ll.length>8&&<input type="search" className="cerca" value={q} onChange={e=>setQ(e.target.value)} placeholder={t("Buscar usuari…")} aria-label={t("Buscar usuari…")}/>}
+      {ll.map(c=><div key={c.usuari} className={"fila"+(canvi?.usuari===c.usuari?" oberta":"")}>
+        <div className="nom"><b>{c.usuari}</b><small>{c.ultim?t("Últim accés: {d}",{d:fmtAppDate8748(String(c.ultim).slice(0,10))}):t("Encara no ha entrat")}</small></div>
+        {canvi?.usuari===c.usuari?<div className="canvi"><input value={canvi.pw} onChange={e=>setCanvi(x=>({...x,pw:e.target.value}))} aria-label={t("Contrasenya nova")} autoCapitalize="none" autoCorrect="off" spellCheck={false}/><button type="button" className="secondary icona" title={t("Generar-ne una altra")} aria-label={t("Generar-ne una altra")} onClick={()=>setCanvi(x=>({...x,pw:contrasenya878613()}))}><RefreshCw size={16} aria-hidden="true"/></button><button type="button" className="primary" disabled={ocupat} onClick={canvia}>{t("Canviar")}</button><button type="button" className="secondary" onClick={()=>setCanvi(null)}>{t("Cancel·lar")}</button></div>
+          :<button type="button" className="secondary" onClick={()=>{setMsg("");setCanvi({usuari:c.usuari,pw:contrasenya878613()})}}><KeyRound size={15} aria-hidden="true"/> {t("Contrasenya nova")}</button>}
+      </div>)}
+    </section>
+  </div>;
+}
 function ProvesAjustos878519(){
   const pr=window.__acoCloud?.proves;
   const[st,setSt]=useState({c:null,l:null,falta:false,err:""});
@@ -22803,7 +22867,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.612",
+    app_version:"87.613",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23003,7 +23067,7 @@ const ajRef878366=useRef(null);
 useEffect(()=>{const el=ajRef878366.current;if(!el)return;const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;el.querySelectorAll("details.ajustos-grup-v878354[open]").forEach(o=>{if(o!==d)o.open=false});const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};el.addEventListener("click",h,true);return()=>el.removeEventListener("click",h,true)},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={exemples:GraduationCap,copia:FolderDown,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
+const IC438={comptes:KeyRound,exemples:GraduationCap,copia:FolderDown,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
 const bloc878366=(k,tit,cont)=><details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366" data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
 return <div className="stack ajustos-v878366" ref={ajRef878366}>
@@ -23020,6 +23084,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {(!window.__acoEmpresa||/^demo-/.test(String(window.__acoEmpresa?.username||"")))&&bloc878366("aspecte",t("Aspecte"),<AspecteAjustos878400/>)}
 {role878366==="admin"&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
 {bloc878366("usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>)}
+{!window.__acoEmpresa&&!!window.__acoCloud?.callFunction&&bloc878366("comptes",t("Comptes del núvol"),<ComptesNuvol878613/>)}
 {!window.__acoEmpresa&&!!window.__acoCloud?.proves&&bloc878366("proves",t("Comptes de prova"),<ProvesAjustos878519/>)}
 {!esTreballador878326()&&bloc878366("copia",t("Còpia al meu ordinador"),<CopiaOrdinador878520 clients={clients} obres={obres} odata={odata}/>)}
 {admin&&<details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 copies-v878354" data-k="copies"><summary>{icAj438("copies")}<span className="t"><b>{t("Còpies i núvol")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">

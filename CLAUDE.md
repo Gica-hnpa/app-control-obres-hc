@@ -51,6 +51,9 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
     factures amb VeriFactu. **Encara no instal·lades** (vegeu `docs/verifactu-pla.md`).
   - Edge Function `aco-ia` (V87.458, `supabase/functions/aco-ia/index.ts`): tota la IA de l’app (albarans, factures, PDF,
     pressupost i preus) amb Claude. **Instal·lada el 2/11/2026** (passos a `docs/pressupost-ia.md`).
+  - Edge Function `aco-comptes` (V87.613, `supabase/functions/aco-comptes/index.ts`): Ajustos › «Comptes del núvol» (només l’Héctor) crea
+    comptes d’empresa i hi posa contrasenyes noves; mai n’esborra cap. Només els correus del secret `ACO_ADMINS`. **Encara no instal·lada**
+    (passos a `docs/comptes-nuvol.md`).
   - Funció `aco_espai()` (V87.263, `supabase/aco_espai_v87263.sql`): mida de la base de dades i dels arxius per a
     Configuració → «Espai al núvol» (només l’Héctor; els comptes d’empresa reben null). És «security definer»: el
     Security Advisor la marca com a avís, i és d’esperar.
@@ -152,7 +155,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.612 a Render):**
+**Estat (publicada la V87.613 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

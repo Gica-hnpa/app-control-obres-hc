@@ -1,0 +1,27 @@
+/* V87.613 · Ajustos › Comptes del núvol (només l'Héctor): compte nou, contrasenya nova i el resultat per copiar */
+html body .comptes-v878613{display:flex;flex-direction:column;gap:14px}
+html body .comptes-v878613 h4{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:15px;color:#0F172A}
+html body .comptes-v878613 section.nou,html body .comptes-v878613 section.llista{border:1px solid #D6DDE7;border-radius:12px;padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:10px}
+html body .comptes-v878613 .camps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+html body .comptes-v878613 label>span:first-child{display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:4px}
+html body .comptes-v878613 input{min-height:40px;width:100%;box-sizing:border-box;font-size:15px}
+html body .comptes-v878613 .amb{display:flex;gap:6px;align-items:center}
+html body .comptes-v878613 .icona{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;padding:0}
+html body .comptes-v878613 label.chk{display:flex;align-items:center;gap:8px;font-size:14px}
+html body .comptes-v878613 label.chk input{width:auto;min-height:0}
+html body .comptes-v878613 .previst{margin:0;color:#475569;font-size:13.5px}
+html body .comptes-v878613 section.nou>button.primary{align-self:flex-start;min-height:40px}
+html body .comptes-v878613 .fila{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 0;border-top:1px solid #EEF2F7}
+html body .comptes-v878613 .fila:first-of-type{border-top:0}
+html body .comptes-v878613 .fila .nom{display:flex;flex-direction:column;min-width:0}
+html body .comptes-v878613 .fila .nom b{font-size:15px;overflow-wrap:anywhere}
+html body .comptes-v878613 .fila .nom small{color:#64748B;font-size:12.5px}
+html body .comptes-v878613 .fila button{display:inline-flex;align-items:center;gap:6px;min-height:38px}
+html body .comptes-v878613 .fila .canvi{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}
+html body .comptes-v878613 .fila .canvi input{flex:1 1 180px}
+html body .comptes-v878613 .fet{border:2px solid #16A34A;border-radius:12px;padding:12px 14px;background:#F0FDF4;display:flex;flex-direction:column;gap:8px}
+html body .comptes-v878613 .fet pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;background:#fff;border:1px solid #BBF7D0;border-radius:8px;padding:8px 10px;user-select:all}
+html body .comptes-v878613 .fet small{color:#166534;font-weight:600}
+html body .comptes-v878613 .bts{display:flex;flex-wrap:wrap;gap:8px}
+html body .comptes-v878613 .bts button{display:inline-flex;align-items:center;gap:6px;min-height:40px}
+html body .comptes-v878613 .cerca{max-width:320px}

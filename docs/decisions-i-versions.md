@@ -4297,3 +4297,13 @@
   Prova: `v612test` 7/7 (nova: adjudicar «Jardins Prova» a preu tancat → el capítol suma 13.100 € amb les mateixes partides; una partida sense
   preu → «Sense preu» al comparatiu i la 06.02 no es toca). `industrialsunit` 24/24, v608 14/14, v610 11/11 (adaptada), v611 24/24,
   factclient 18/18, v607 15/15, v605 14/14, i18ntest tot traduït.
+  - **V87.613 · Comptes del núvol des de l'app** (l'Héctor, 15/11/2026: «prepara-ho», després que la contrasenya del compte de Teimor no
+    fos enlloc i només es pogués canviar amb SQL). Ajustos › **«Comptes del núvol»** (només l'Héctor; `ComptesNuvol878613`): «Compte nou»
+    (usuari net, contrasenya proposada i «Compte de prova» que hi posa `prova-`), la llista dels comptes d'empresa amb l'últim accés i
+    «Contrasenya nova» a cadascun. En acabar: usuari, contrasenya i l'enllaç `…/?entra=usuari` per copiar o compartir; l'app no guarda cap
+    contrasenya. Funció del servidor nova `aco-comptes` (crea i canvia contrasenyes amb la clau secreta, que no surt del servidor; només els
+    correus del secret `ACO_ADMINS`; mai esborra; no toca `copies` ni l'Héctor; registre a Logs sense contrasenyes). La llista només es demana
+    en obrir el bloc. **Falta instal·lar-la** (`docs/comptes-nuvol.md`: Deploy via Editor, Verify JWT apagat, secret `ACO_ADMINS`).
+  Prova: `v613test` 14/14 (nova: llista sense `copies`, compte nou de prova, «ja existeix», contrasenya nova a l'Oriol, l'Oriol entra amb la
+  nova i no amb la vella, el compte nou entra amb l'enllaç, una empresa no veu el bloc, sense la funció i sense el secret, mòbil). v519 23/23,
+  v609 6/6, i18ntest tot traduït. El Supabase de proves simula la funció (`/functions/v1/aco-comptes`, `/__comptes`).
