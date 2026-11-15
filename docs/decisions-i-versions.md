@@ -4261,3 +4261,19 @@
   Prova: `v610test` 11/11 (nova: socoterm, ordinador i mòbil: facturació de l'obra amb 3 factures i la proforma pendent, factures i despeses de
   l'encàrrec només d'aquell expedient; oriol: factures i despeses de l'encàrrec). v606 12/12, v607 15/15, despeses348 22/22,
   factclient 13/13, v578 13/13, i18ntest tot traduït; v501 13/14, despesestest 1/5 i albaranstest 5/10, igual que a la V87.609 (proves velles).
+  - **V87.611 · Industrials: les partides de les ofertes es poden editar i el comparatiu, millorat** (l'Héctor, 15/11/2026: «millorem
+    comparatius d'ofertes, no podia editar alguna partida feta amb IA, crec un tècnic»). Al pressupost, una partida amb el preu i el descompost
+    de la IA (com la 17.05 del Martí) ja s'editava bé (nom, quantitat, preu i descompost: ho comprova la prova); el bloqueig era a la **fitxa de
+    l'oferta**, que només ensenyava les partides llegides del PDF.
+    - **Fitxa de l'oferta** (`FitxaOferta878608`): cada partida amb codi, concepte, unitat, quantitat i preu per escriure, l'import i «Treure la
+      partida»; «Afegir una partida»; **«Omplir amb les partides del pressupost (n)»** (les del capítol amb la quantitat de l'obra: només cal
+      posar-hi els preus de l'oferta quan el PDF no es pot llegir); **termini d'execució** i **forma de pagament**. Al mòbil, cada partida en
+      un requadre de dues files. A la llista, «Veure» ara és «Editar».
+    - **Comparatiu** (`ComparaOfertes878608`): «No inclosa» quan una oferta no porta una partida del pressupost i la fila «Partides no
+      incloses»; les partides que no són al pressupost, marcades; la més cara de cada partida en vermell (la més barata en verd); la més baixa
+      del total només entre les ofertes completes; files de termini, forma de pagament i notes; «Editar» a cada oferta (la fitxa surt al davant
+      i el comparatiu es posa al dia); **«Descarregar el PDF» i «Imprimir»** (A4 horitzontal, amb el logo) per enviar-lo al client.
+    - Lògica a `src/industrials.js` (`comparatiu` amb `pitjor`, `ambL` i `noIncl`; `liniesPressupost`); estils `src/theme-v878611.css`.
+  Prova: `v611test` 24/24 (nova: la partida de la IA al pressupost, ordinador i mòbil; editar, afegir i treure partides d'una oferta, termini i
+  pagament, comparatiu amb «No inclosa», la partida de fora, la més cara, «Editar» al davant i el PDF, «Omplir amb les partides del pressupost»
+  i el mòbil). `industrialsunit` 15/15, `v608test` 14/14 (adaptada: les files de condicions), i18ntest tot traduït.

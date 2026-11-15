@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.610";
+const APP_VERSION878264="87.611";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -16438,7 +16438,7 @@ function Industrials878608({obra,data={},setData,readOnly=false,industrials=[]})
           <div className="imp"><b>{money(im)}</b>{dif!=null&&<small className={dif>0?"puja":"baixa"}>{dif>0?"+":""}{(Math.round(dif*10)/10).toLocaleString(loc878272())} %</small>}</div>
           <span className={`estat ${o.estat||"rebuda"}`}>{o.estat==="adjudicada"||o.estat==="descartada"?estatEt(o.estat):im===g.minim&&g.ofertes.length>1?t("La més baixa"):estatEt(o.estat)}</span>
           {s&&<div className="seg"><span>{t("Certificat {c} de {p} ({x} %)",{c:money(s.cert),p:money(s.pres),x:s.pct.toLocaleString(loc878272())})}</span><span>{t("Facturat {f}",{f:money(s.fact)})}</span></div>}
-          {!readOnly&&<div className="bts">{o.estat!=="adjudicada"&&<button type="button" className="primary" onClick={()=>setAdj(o)}>{t("Adjudicar")}</button>}<button type="button" className="secondary" onClick={()=>setFitxa({...o})}>{t("Veure")}</button><button type="button" className="secondary icona" aria-label={t("Eliminar")} title={t("Eliminar")} onClick={()=>elimina(o)}><Trash2 size={16} aria-hidden="true"/></button></div>}
+          {!readOnly&&<div className="bts">{o.estat!=="adjudicada"&&<button type="button" className="primary" onClick={()=>setAdj(o)}>{t("Adjudicar")}</button>}<button type="button" className="secondary" onClick={()=>setFitxa({...o})}>{t("Editar")}</button><button type="button" className="secondary icona" aria-label={t("Eliminar")} title={t("Eliminar")} onClick={()=>elimina(o)}><Trash2 size={16} aria-hidden="true"/></button></div>}
         </div>})}
         {g.ofertes.length>1&&<button type="button" className="secondary ind-comparar" onClick={()=>setComp(g.k)}><Scale size={16} aria-hidden="true"/> {t("Comparar les ofertes")}</button>}
       </div>
@@ -16449,39 +16449,85 @@ function Industrials878608({obra,data={},setData,readOnly=false,industrials=[]})
       </div>
     </CartaLlista878518>}
     {pdf&&<PdfPressupost878305 titol={t("Llegir l’oferta d’un PDF")} close={()=>setPdf(false)} onLlegit={(rows,meta)=>{setPdf(false);delPdf(rows,meta)}}/>}
-    {fitxa&&<FitxaOferta878608 inicial={fitxa} caps={caps} industrials={industrials} readOnly={readOnly} close={()=>setFitxa(null)} desa={desaFitxa}/>}
-    {g0&&<ComparaOfertes878608 grup={g0} partides={partides} close={()=>setComp(null)} onAdjudica={readOnly?null:o=>setAdj(o)}/>}
+    {g0&&<ComparaOfertes878608 grup={g0} partides={partides} obraNom={obra?.nom||""} close={()=>setComp(null)} onAdjudica={readOnly?null:o=>setAdj(o)} onEdita={readOnly?null:o=>setFitxa({...o})}/>}
+    {/* V87.611 · la fitxa, al davant del comparatiu (s’hi pot editar una oferta i en desar-la el comparatiu es posa al dia) */}
+    {fitxa&&<FitxaOferta878608 key={fitxa.id||"nova"} inicial={fitxa} caps={caps} partides={partides} industrials={industrials} readOnly={readOnly} close={()=>setFitxa(null)} desa={desaFitxa}/>}
     {adj&&<AdjudicaOferta878608 oferta={adj} data={data} grup={grups.find(g=>g.ofertes.some(o=>o.id===adj.id))} close={()=>setAdj(null)} confirma={d=>adjudica(adj,d)}/>}
   </div>;
 }
-function FitxaOferta878608({inicial,caps=[],industrials=[],readOnly=false,close,desa}){
-  const[f,setF]=useState(()=>({...inicial,import:inicial.linies?.length?"":String(inicial.import??"").replace(".",",")}));
+// V87.611 · la fitxa de l'oferta: les partides llegides del PDF (o amb la IA) es poden corregir, afegir i treure (l'Héctor, 15/11/2026: «no podia
+// editar alguna partida feta amb IA»), «Omplir amb les partides del pressupost» (les quantitats de l'obra: només cal posar-hi els preus de
+// l'oferta) i el termini i la forma de pagament, que surten al comparatiu.
+function FitxaOferta878608({inicial,caps=[],partides=[],industrials=[],readOnly=false,close,desa}){
+  const[f,setF]=useState(()=>({...inicial,linies:(inicial.linies||[]).map((l,i)=>({...l,_k:"l"+i})),import:inicial.linies?.length?"":String(inicial.import??"").replace(".",",")}));
   const[altre,setAltre]=useState(()=>!!inicial.capitol&&!caps.includes(inicial.capitol));
   const set=(k,v)=>setF(x=>({...x,[k]:v}));
   const ambLinies=(f.linies||[]).length>0;
   const total=ambLinies?IND878608.importLinies(f):IND878608.num(f.import);
   const ok=String(f.industrial||"").trim()&&total>0;
-  return <Modal title={inicial.id?t("Oferta de {n}",{n:inicial.industrial||""}):t("Oferta nova")} close={close}><div className="ind-fitxa-v878608">
-    <label><span>{t("Industrial o constructora")}</span><input list="ind-noms-v878608" value={f.industrial||""} disabled={readOnly} onChange={e=>set("industrial",e.target.value)} placeholder={t("Nom de l’empresa")} autoFocus/><datalist id="ind-noms-v878608">{industrials.map((x,i)=><option key={i} value={x.empresa||x.nom}/>)}</datalist></label>
+  const setL=(i,k,v)=>setF(x=>({...x,linies:x.linies.map((l,j)=>j===i?{...l,[k]:v}:l)}));
+  const treuL=i=>setF(x=>({...x,linies:x.linies.filter((_,j)=>j!==i)}));
+  const nouK=()=>"n"+Date.now()+Math.random().toString(36).slice(2,6);
+  const afegeixL=()=>setF(x=>({...x,import:"",linies:[...(x.linies||[]),{_k:nouK(),codi:"",cap:x.capitol||"",ut:"",concepte:"",q:1,pu:""}]}));
+  const delPres=IND878608.liniesPressupost(partides,f.capitol||"");
+  const omple=()=>setF(x=>({...x,import:"",linies:delPres.map(l=>({...l,_k:nouK()}))}));
+  const net=ls=>(ls||[]).filter(l=>String(l.concepte||"").trim()||IND878608.num(l.pu)>0).map(({_k,...l})=>({...l,q:IND878608.num(l.q),pu:IND878608.num(l.pu)}));
+  return <Modal title={inicial.id?t("Oferta de {n}",{n:inicial.industrial||""}):t("Oferta nova")} close={close}><div className="ind-fitxa-v878608 ind-fitxa-v878611">
+    <label><span>{t("Industrial o constructora")}</span><input list="ind-noms-v878608" value={f.industrial||""} disabled={readOnly} onChange={e=>set("industrial",e.target.value)} placeholder={t("Nom de l’empresa")} autoFocus={!inicial.id}/><datalist id="ind-noms-v878608">{industrials.map((x,i)=><option key={i} value={x.empresa||x.nom}/>)}</datalist></label>
     <label><span>{t("Capítol")}</span>{altre?<input value={f.capitol||""} disabled={readOnly} onChange={e=>set("capitol",e.target.value)} placeholder={t("Nom del capítol")}/>
       :<select value={f.capitol||""} disabled={readOnly} onChange={e=>{if(e.target.value==="__altre"){setAltre(true);set("capitol","")}else set("capitol",e.target.value)}}><option value="">{t("Tota l’obra")}</option>{caps.map(c=><option key={c} value={c}>{c}</option>)}<option value="__altre">{t("Un altre capítol…")}</option></select>}</label>
     <div className="dos"><label><span>{t("Data")}</span><input type="date" value={f.data||""} disabled={readOnly} onChange={e=>set("data",e.target.value)}/></label>
-      <label><span>{t("Import (sense IVA)")}</span>{ambLinies?<input value={money(total)} readOnly/>:<NumIn878584 inputMode="decimal" value={f.import} disabled={readOnly} onChange={e=>set("import",e.target.value)} placeholder="0,00"/>}</label></div>
-    {ambLinies&&<details className="ind-linies-v878608"><summary>{t("{n} partides llegides",{n:f.linies.length})}{f.fitxer?.nom?` · ${f.fitxer.nom}`:""}</summary><div className="taula">{f.linies.map((l,i)=><div key={i} className="l"><span className="c">{l.codi?<small>{l.codi}</small>:null}{l.concepte}</span><span>{[qty2(IND878608.num(l.q)),l.ut].filter(Boolean).join(" ")}</span><span>{money(IND878608.num(l.pu))}</span><b>{money(IND878608.num(l.q)*IND878608.num(l.pu))}</b></div>)}</div></details>}
-    <label><span>{t("Notes")}</span><TextCreix878604 rows={2} value={f.notes||""} disabled={readOnly} onChange={e=>set("notes",e.target.value)} placeholder={t("Termini, condicions, el que no inclou…")}/></label>
-  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{readOnly?t("Tancar"):t("Cancel·lar")}</button>{!readOnly&&<button type="button" className="primary" disabled={!ok} onClick={()=>desa({...f,import:ambLinies?"":String(IND878608.num(f.import))})}>{t("Desar l’oferta")}</button>}</div></Modal>;
+      <label><span>{t("Import (sense IVA)")}</span>{ambLinies?<input value={money(total)} readOnly className="calc-v878611"/>:<NumIn878584 inputMode="decimal" value={f.import} disabled={readOnly} onChange={e=>set("import",e.target.value)} placeholder="0,00"/>}</label></div>
+    <section className="ind-linies-v878611">
+      <header><b>{ambLinies?(f.linies.length===1?t("1 partida"):t("{n} partides",{n:f.linies.length})):t("Partides de l’oferta")}</b>{f.fitxer?.nom&&<small>{f.fitxer.nom}</small>}</header>
+      {ambLinies&&<div className="taula">
+        <div className="l cap" aria-hidden="true"><span>{t("Codi")}</span><span>{t("Concepte")}</span><span>{t("Ut.")}</span><span className="n">{t("Quantitat")}</span><span className="n">{t("Preu")}</span><span className="n">{t("Import")}</span><span/></div>
+        {f.linies.map((l,i)=><div key={l._k||i} className="l">
+          <input className="codi" value={l.codi||""} disabled={readOnly} onChange={e=>setL(i,"codi",e.target.value)} aria-label={t("Codi")} placeholder={t("Codi")}/>
+          <input className="conc" value={l.concepte||""} disabled={readOnly} onChange={e=>setL(i,"concepte",e.target.value)} aria-label={t("Concepte")} placeholder={t("Concepte")}/>
+          <input className="ut" value={l.ut||""} disabled={readOnly} onChange={e=>setL(i,"ut",e.target.value)} aria-label={t("Unitat")} placeholder={t("Ut.")}/>
+          <NumIn878584 className="q" inputMode="decimal" value={l.q??""} disabled={readOnly} onChange={e=>setL(i,"q",e.target.value)} aria-label={t("Quantitat")}/>
+          <NumIn878584 className="pu" inputMode="decimal" value={l.pu??""} disabled={readOnly} onChange={e=>setL(i,"pu",e.target.value)} aria-label={t("Preu")} placeholder="0,00"/>
+          <b className="imp">{money(IND878608.num(l.q)*IND878608.num(l.pu))}</b>
+          {!readOnly?<button type="button" className="link treu" aria-label={t("Treure la partida")} title={t("Treure la partida")} onClick={()=>treuL(i)}><X size={16} aria-hidden="true"/></button>:<span/>}
+        </div>)}
+      </div>}
+      {!readOnly&&<div className="bts"><button type="button" className="secondary" onClick={afegeixL}><Plus size={15} aria-hidden="true"/> {t("Afegir una partida")}</button>
+        {!ambLinies&&delPres.length>0&&<button type="button" className="secondary" onClick={omple}><ListChecks size={15} aria-hidden="true"/> {t("Omplir amb les partides del pressupost ({n})",{n:delPres.length})}</button>}</div>}
+    </section>
+    <div className="dos"><label><span>{t("Termini d’execució")}</span><input value={f.termini||""} disabled={readOnly} onChange={e=>set("termini",e.target.value)} placeholder={t("Ex. 6 setmanes")}/></label>
+      <label><span>{t("Forma de pagament")}</span><input value={f.pagament||""} disabled={readOnly} onChange={e=>set("pagament",e.target.value)} placeholder={t("Ex. 30 % a l’inici i la resta per certificacions")}/></label></div>
+    <label><span>{t("Notes")}</span><TextCreix878604 rows={2} value={f.notes||""} disabled={readOnly} onChange={e=>set("notes",e.target.value)} placeholder={t("El que inclou i el que no, garanties…")}/></label>
+  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{readOnly?t("Tancar"):t("Cancel·lar")}</button>{!readOnly&&<button type="button" className="primary" disabled={!ok} onClick={()=>{const ls=net(f.linies);desa({...f,linies:ls,import:ls.length?"":String(IND878608.num(f.import))})}}>{t("Desar l’oferta")}</button>}</div></Modal>;
 }
-function ComparaOfertes878608({grup,partides=[],close,onAdjudica}){
+// V87.611 · el comparatiu: les partides que una oferta no inclou («No inclosa»), la més cara de cada partida en vermell, el termini i la forma de
+// pagament, «Editar» cada oferta i el PDF per enviar-lo (l'Héctor, 15/11/2026: «millorem comparatius d'ofertes»)
+function ComparaOfertes878608({grup,partides=[],obraNom="",close,onAdjudica,onEdita}){
   const ofs=grup.ofertes;
   const c=useMemo(()=>IND878608.comparatiu(ofs,partides,grup.capitol),[grup,partides]);
-  const cel=(x,millor)=>x?<span className={`n${millor!=null&&Math.abs(x.pu-millor)<0.005?" millor":""}`}><b>{money(x.imp)}</b><small>{money(x.pu)}{x.q?` · ${qty2(x.q)}`:""}</small></span>:<span className="n buit">—</span>;
-  return <Modal title={t("Comparatiu · {c}",{c:capNom608(grup.capitol)})} close={close}><div className="ind-comp-v878608">
+  const titol=t("Comparatiu · {c}",{c:capNom608(grup.capitol)});
+  const cel=(x,f,j)=>x?<span className={`n${f&&f.millor!=null&&Math.abs(x.pu-f.millor)<0.005?" millor":f&&f.pitjor!=null&&Math.abs(x.pu-f.pitjor)<0.005?" pitjor":""}`}><b>{money(x.imp)}</b><small>{money(x.pu)}{x.q?` · ${qty2(x.q)}`:""}</small></span>
+    :<span className={`n buit${f&&f.pres&&j!=null&&c.ambL[j]?" falta":""}`}>{f&&f.pres&&j!=null&&c.ambL[j]?t("No inclosa"):"—"}</span>;
+  const pc=x=>c.pres>0?`${x>c.pres?"+":""}${(Math.round((x-c.pres)/c.pres*1000)/10).toLocaleString(loc878272())} %`:"";
+  const ambCond=k=>ofs.some(o=>String(o[k]||"").trim());
+  // la més baixa, entre les ofertes que inclouen totes les partides del pressupost (si n’hi ha cap)
+  const compl=c.totals.filter((x,j)=>!c.noIncl[j]&&x>0);const millorT=compl.length?Math.min(...compl):c.millor;
+  const html=useMemo(()=>{const files=[];
+    if(c.ambLinies)c.files.forEach(f=>files.push([[f.codi,f.concepte].filter(Boolean).join(" "),f.pres?money(f.pres.imp):"",...f.of.map((x,j)=>x?`${money(x.imp)} (${money(x.pu)})`:f.pres&&c.ambL[j]?t("No inclosa"):"")]));
+    if(c.noIncl.some(n=>n>0))files.push({subtotal:[t("Partides no incloses"),"",...c.noIncl.map(n=>n?String(n):"")]});
+    [["termini",t("Termini d’execució")],["pagament",t("Forma de pagament")],["notes",t("Notes")]].forEach(([k,l])=>{if(ambCond(k))files.push([l,"",...ofs.map(o=>String(o[k]||""))])});
+    return informeHtml878505({titol,sub:[obraNom,ofs.length===1?t("1 oferta"):t("{n} ofertes",{n:ofs.length})].filter(Boolean).join(" · "),horitzontal:ofs.length>2||c.ambLinies,
+      cols:[{l:t("Partida")},{l:t("Pressupost"),n:true},...ofs.map(o=>({l:o.industrial||"—",n:true}))],files,
+      peu:[t("Total"),money(c.pres),...c.totals.map(x=>`${money(x)}${pc(x)?" · "+pc(x):""}`)]})},[c,ofs,titol]);
+  return <Modal title={titol} close={close}><div className="ind-comp-v878608 ind-comp-v878611">
     <div className="taula" style={{"--n":ofs.length}}>
-      <div className="fila cap"><span>{t("Partida")}</span><span>{t("Pressupost")}</span>{ofs.map(o=><span key={o.id}><b>{o.industrial}</b>{onAdjudica&&o.estat!=="adjudicada"&&<button type="button" className="secondary" onClick={()=>onAdjudica(o)}>{t("Adjudicar")}</button>}{o.estat==="adjudicada"&&<em>{t("Adjudicada")}</em>}</span>)}</div>
-      {c.ambLinies&&c.files.map((f,i)=><div key={i} className="fila"><span className="pt">{f.codi?<small>{f.codi}</small>:null}{f.concepte}</span>{cel(f.pres,null)}{f.of.map((x,j)=><React.Fragment key={j}>{cel(x,f.millor)}</React.Fragment>)}</div>)}
-      <div className="fila tot"><span>{t("Total")}</span><span className="n"><b>{money(c.pres)}</b></span>{c.totals.map((x,j)=><span key={j} className={`n${Math.abs(x-c.millor)<0.005?" millor":""}`}><b>{money(x)}</b>{c.pres>0&&<small>{x>c.pres?"+":""}{(Math.round((x-c.pres)/c.pres*1000)/10).toLocaleString(loc878272())} %</small>}</span>)}</div>
+      <div className="fila cap"><span>{t("Partida")}</span><span>{t("Pressupost")}</span>{ofs.map(o=><span key={o.id}><b>{o.industrial}</b>{onEdita&&<button type="button" className="link edita" onClick={()=>onEdita(o)}>{t("Editar")}</button>}{onAdjudica&&o.estat!=="adjudicada"&&<button type="button" className="secondary" onClick={()=>onAdjudica(o)}>{t("Adjudicar")}</button>}{o.estat==="adjudicada"&&<em>{t("Adjudicada")}</em>}</span>)}</div>
+      {c.ambLinies&&c.files.map((f,i)=><div key={i} className={`fila${f.pres?"":" nova"}`}><span className="pt">{f.codi?<small>{f.codi}</small>:null}{f.concepte}{!f.pres&&<em>{t("No és al pressupost")}</em>}</span>{cel(f.pres,null,null)}{f.of.map((x,j)=><React.Fragment key={j}>{cel(x,f,j)}</React.Fragment>)}</div>)}
+      <div className="fila tot"><span>{t("Total")}</span><span className="n"><b>{money(c.pres)}</b></span>{c.totals.map((x,j)=><span key={j} className={`n${!c.noIncl[j]&&Math.abs(x-millorT)<0.005?" millor":""}`}><b>{money(x)}</b>{c.pres>0&&<small>{pc(x)}</small>}</span>)}</div>
+      {c.noIncl.some(n=>n>0)&&<div className="fila cond falta"><span>{t("Partides no incloses")}</span><span/>{c.noIncl.map((n,j)=><span key={j} className="n">{n?(n===1?t("1 partida"):t("{n} partides",{n})):"—"}</span>)}</div>}
+      {[["termini",t("Termini d’execució")],["pagament",t("Forma de pagament")],["notes",t("Notes")]].filter(([k])=>ambCond(k)).map(([k,l])=><div key={k} className="fila cond"><span>{l}</span><span/>{ofs.map(o=><span key={o.id} className="tx">{o[k]||"—"}</span>)}</div>)}
     </div>
-  </div><div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Tancar")}</button></div></Modal>;
+  </div><BotonsDoc878412 html={html} titol={titol} onImprimir={()=>printHtmlInPlace878112(html,titol)} close={close}/></Modal>;
 }
 function AdjudicaOferta878608({oferta,data={},grup,close,confirma}){
   const[descarta,setDescarta]=useState(true);
@@ -22753,7 +22799,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.610",
+    app_version:"87.611",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -68,11 +68,19 @@ export function comparatiu(ofertes = [], partides = [], capitol = TOTA_OBRA) {
       f.of[j] = { q: num(l.q), pu: num(l.pu), imp: r2(num(l.q) * num(l.pu)) };
     }
   });
-  files.forEach(f => { const v = f.of.map(x => x ? x.pu : null).filter(x => x != null && x > 0); f.millor = v.length > 1 ? Math.min(...v) : null; delete f._p; });
+  // V87.611 · la més cara de cada partida (en vermell) i, per a cada oferta amb partides, quantes del pressupost no inclou
+  files.forEach(f => { const v = f.of.map(x => x ? x.pu : null).filter(x => x != null && x > 0); f.millor = v.length > 1 ? Math.min(...v) : null; f.pitjor = v.length > 1 && Math.max(...v) - Math.min(...v) > 0.005 ? Math.max(...v) : null; delete f._p; });
   const totals = ofertes.map(o => importOferta(o));
   const pres = importPartides(base);
-  return { files, totals, pres, millor: totals.length ? Math.min(...totals.filter(x => x > 0)) : 0, ambLinies: ofertes.some(o => (o.linies || []).length) };
+  const ambL = ofertes.map(o => (o.linies || []).length > 0);
+  const noIncl = ofertes.map((o, j) => ambL[j] ? files.filter(f => f.pres && !f.of[j]).length : 0);
+  return { files, totals, pres, millor: totals.length ? Math.min(...totals.filter(x => x > 0)) : 0, ambLinies: ambL.some(Boolean), ambL, noIncl };
 }
+
+// V87.611 · «Omplir amb les partides del pressupost»: les partides del capítol (o de tota l'obra) amb la quantitat de l'obra i el preu buit,
+// per escriure-hi els preus de l'oferta quan el PDF no es pot llegir
+export const liniesPressupost = (partides = [], capitol = TOTA_OBRA) =>
+  partidesCapitol(partides, capitol).map(p => ({ codi: p.codi || "", cap: p.cap || "", ut: p.ut || "", concepte: p.concepte || "", q: num(p.q), pu: "" }));
 
 // Passar l'oferta adjudicada al pressupost (les partides d'un pressupost / fase). Les partides que coincideixen agafen el preu de l'oferta (la
 // quantitat és la de l'obra); les línies que no hi són s'afegeixen al capítol; sense línies, una partida «a preu tancat» amb l'import.

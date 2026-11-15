@@ -1,0 +1,32 @@
+/* V87.611 · Industrials: les partides de l'oferta es poden editar (també les llegides del PDF amb la IA) i el comparatiu millorat */
+html body .ind-fitxa-v878611 .calc-v878611{background:#F1F5F9;color:#0F172A;font-weight:700}
+html body .ind-linies-v878611{display:flex;flex-direction:column;gap:8px;border:1px solid #D6DDE7;border-radius:12px;padding:10px 12px;background:#F8FAFC}
+html body .ind-linies-v878611>header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+html body .ind-linies-v878611>header b{font-size:15px;color:#0F172A}
+html body .ind-linies-v878611>header small{color:#64748B;font-size:12.5px;overflow-wrap:anywhere}
+html body .ind-linies-v878611 .taula{display:flex;flex-direction:column;gap:6px;max-height:min(52vh,520px);overflow:auto}
+html body .ind-linies-v878611 .l{display:grid;grid-template-columns:72px minmax(0,1fr) 54px 84px 96px 96px 32px;gap:6px;align-items:center}
+html body .ind-linies-v878611 .l.cap{position:sticky;top:0;z-index:1;background:#F8FAFC;font-size:11.5px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.03em;padding-bottom:2px}
+html body .ind-linies-v878611 .l input{min-height:36px;padding:6px 8px;font-size:14px;min-width:0;width:100%;box-sizing:border-box}
+html body .ind-linies-v878611 .l .n,html body .ind-linies-v878611 .l .q,html body .ind-linies-v878611 .l .pu{text-align:right}
+html body .ind-linies-v878611 .l .imp{text-align:right;white-space:nowrap;font-size:14px}
+html body .ind-linies-v878611 .l .treu{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:36px;color:#B91C1C}
+html body .ind-linies-v878611 .bts{display:flex;flex-wrap:wrap;gap:8px}
+html body .ind-linies-v878611 .bts button{display:inline-flex;align-items:center;gap:6px;min-height:38px}
+/* al mòbil, cada partida en dues files: codi i concepte a dalt; unitat, quantitat, preu i import a sota */
+@media (max-width:700px){
+  html body .ind-linies-v878611 .l.cap{display:none}
+  html body .ind-linies-v878611 .l{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr);grid-template-areas:"codi conc conc" "ut q pu" "imp imp treu";background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:8px}
+  html body .ind-linies-v878611 .l .codi{grid-area:codi}html body .ind-linies-v878611 .l .conc{grid-area:conc}html body .ind-linies-v878611 .l .treu{grid-area:treu;justify-self:end}
+  html body .ind-linies-v878611 .l .ut{grid-area:ut}html body .ind-linies-v878611 .l .q{grid-area:q}html body .ind-linies-v878611 .l .pu{grid-area:pu}html body .ind-linies-v878611 .l .imp{grid-area:imp;text-align:left}
+}
+/* el comparatiu: la més cara en vermell, «No inclosa» en taronja, files de condicions i el botó «Editar» de cada oferta */
+html body .ind-comp-v878611 .n.pitjor b{color:#B91C1C}
+html body .ind-comp-v878611 .n.buit.falta{color:#B45309;font-weight:700;font-size:12.5px}
+html body .ind-comp-v878611 .fila.nova .pt em{display:block;font-style:normal;font-size:11.5px;color:#B45309;font-weight:700}
+html body .ind-comp-v878611 .fila.cond>span{font-size:13px;color:#334155}
+html body .ind-comp-v878611 .fila.cond>span:first-child{font-weight:700;color:#0F172A}
+html body .ind-comp-v878611 .fila.cond .tx{overflow-wrap:anywhere;white-space:normal}
+html body .ind-comp-v878611 .fila.cond.falta .n{color:#B45309;font-weight:700}
+html body .ind-comp-v878611 .fila.cap .edita{font-size:13px;padding:2px 0;min-height:28px}
+html body .ind-comp-v878611 .fila.cap button.edita{background:none;border:0;box-shadow:none;color:#1D4ED8;font-weight:700;text-decoration:underline;text-underline-offset:2px;padding:2px 0;min-height:28px;width:auto;justify-content:flex-start}
