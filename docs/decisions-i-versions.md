@@ -4277,3 +4277,23 @@
   Prova: `v611test` 24/24 (nova: la partida de la IA al pressupost, ordinador i mòbil; editar, afegir i treure partides d'una oferta, termini i
   pagament, comparatiu amb «No inclosa», la partida de fora, la més cara, «Editar» al davant i el PDF, «Omplir amb les partides del pressupost»
   i el mòbil). `industrialsunit` 15/15, `v608test` 14/14 (adaptada: les files de condicions), i18ntest tot traduït.
+  - **V87.612 · Arranjaments de la revisió del codi (V87.606–611) i del repàs exhaustiu** (15/11/2026: l'Héctor va demanar «un repàs exhaustiu
+    de l'app»; un agent revisor va llegir els canvis i el `repas411` va passar 379 pantalles —4 comptes, ordinador i mòbil— amb tots els PDF,
+    «Enviar» i «Signar»: cap error de JavaScript ni «Mode segur», només 13 camps amb el text llarg tallat).
+    - **Adjudicar a preu tancat ja no duplica el capítol** (`aplicaOferta`): les partides del capítol (o de tota l'obra, per a una constructora
+      que ho fa tot) s'ajusten en proporció perquè sumin l'import de l'oferta (l'última, al cèntim); les certificades no es toquen. Només si
+      el capítol no té cap partida amb import, una «pa». Abans: el capítol de 13.480 € passava a 26.580 €.
+    - **Línies de l'oferta sense preu**: al comparatiu, «Sense preu» (abans 0,00 € i l'oferta semblava la més baixa); en adjudicar no toquen la
+      partida del pressupost (abans la posaven a 0 €); a la fitxa, «n sense preu».
+    - **Adjudicar una altra oferta del mateix capítol** treu les partides que hi havia afegit l'anterior (marca `afegidaInd878612`).
+    - **Aparellar per text**: sense codi igual, el principi comú ha de ser gairebé tot el text («… interior» i «… exterior» ja no es creuen).
+    - **Seguiment dels industrials**: el facturat només amb el mateix proveïdor (`mateixProveidor`: sense proveïdor no compta, «S.L.» no
+      compta, un sol mot genèric tampoc) i sense els albarans que ja cobreix una factura; amb totes les partides de l'obra (no només el
+      pressupost actiu).
+    - **Números de factura de l'obra**: es comparen amb totes les factures d'obra del compte (abans, dos clients sense sèrie pròpia podien
+      tenir la mateixa F2026-001).
+    - **Llistats de la V87.610**: les factures anul·lades no hi sumen; a l'obra, només les factures (les proformes pendents són a «Proformes»).
+    - Dades de l'obra: el nom en dues columnes a l'ordinador; el formulari del pressupost, amb menys marge al mòbil.
+  Prova: `v612test` 7/7 (nova: adjudicar «Jardins Prova» a preu tancat → el capítol suma 13.100 € amb les mateixes partides; una partida sense
+  preu → «Sense preu» al comparatiu i la 06.02 no es toca). `industrialsunit` 24/24, v608 14/14, v610 11/11 (adaptada), v611 24/24,
+  factclient 18/18, v607 15/15, v605 14/14, i18ntest tot traduït.

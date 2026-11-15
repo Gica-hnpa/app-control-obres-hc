@@ -1,0 +1,6 @@
+/* V87.612 · arranjaments de la revisió: les partides sense preu de l'oferta; el nom de l'obra (Dades) en dues columnes a l'ordinador i els
+   formularis del pressupost amb menys marge al mòbil (el repàs exhaustiu hi trobava el text tallat) */
+html body .ind-linies-v878611>header .sp-v878612{font-style:normal;font-size:12.5px;font-weight:700;color:#B45309;margin-right:auto;margin-left:8px}
+html body .ind-adj-v878608 li.av{color:#B45309;font-weight:600}
+@media (min-width:901px){html body .fitxa-dades-stack-v878133 .form-grid.fitxa-form-v8773>label.nom-v878612{grid-column:span 2}}
+@media (max-width:600px){html body .form-grid.compact-form-v87160{padding:10px!important;gap:10px!important}}
