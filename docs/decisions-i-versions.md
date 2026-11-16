@@ -4384,3 +4384,9 @@
   mòbil). v553 10/10. i18ntest tot traduït.
   v519 23/23, v617 14/14. `v434test` 9/17 igual que a la V87.617 (prova vella: espera «300» on ara hi ha «300,00» i navega per «Honoraris»;
   queda per posar al dia). A revisar: al mòbil, l'acord obert té dos elements que surten de la pantalla (ja passava abans).
+
+- **V87.619 · Contactes: la fila en mode «Seleccionar»** (l'Héctor, 16/11/2026, amb dues captures: «a l'hora de seleccionar els contactes surten
+  amb alineació a la dreta diferent a la normal»). La fila és una graella de 4 columnes (logo · nom · telèfons · obres); la casella de la V87.618
+  hi entrava com un fill més i ho desplaçava tot una columna: el logo a la columna ampla, el nom a la dreta i «1 obra» a sota. Ara, en mode
+  «Seleccionar», la graella té una columna de 20 px per a la casella (ordinador: 5 columnes; mòbil: casella · logo · nom, i els telèfons i les
+  obres sota el nom). Prova: `v618test` 13/13 (noves: el nom just al costat del logo, a l'ordinador i al mòbil).

@@ -7,7 +7,13 @@ html body .sel-barra-v878618 select{min-height:36px;max-width:240px}
 html body .sel-barra-v878618 .primary{margin-left:auto;min-height:36px}
 html body .contacte-v878315.sel-v878618{cursor:pointer}
 html body .contacte-v878315.sel-v878618.on{background:color-mix(in srgb,var(--co-accent,#1D4ED8) 8%,#fff);outline:2px solid color-mix(in srgb,var(--co-accent,#1D4ED8) 45%,#fff);outline-offset:-2px;border-radius:10px}
-html body .contacte-v878315 .chk-v878618{width:20px;height:20px;flex:0 0 auto;margin:0 4px 0 0;pointer-events:none}
+html body .contacte-v878315 .chk-v878618{width:20px;height:20px;flex:0 0 auto;margin:0;pointer-events:none}
+/* V87.619 · la casella té la seva columna: abans empenyia el logo a la columna del nom i el nom a la dreta (l'Héctor, 16/11/2026) */
+html body .contactes-v878315 .contacte-v878315.sel-v878618{grid-template-columns:20px 40px minmax(0,1fr) auto auto}
+@media (max-width:767px){
+  html body .contactes-v878315 .contacte-v878315.sel-v878618{grid-template-columns:20px 40px minmax(0,1fr)}
+  html body .contactes-v878315 .contacte-v878315.sel-v878618 .tels-v878315,html body .contactes-v878315 .contacte-v878315.sel-v878618 .ob{grid-column:3}
+}
 html body .tot-grup-v878618{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:6px 4px;font-weight:600;font-size:13.5px;min-height:36px}
 html body .tot-grup-v878618 input{width:20px;height:20px}
 html body .imp-contactes-v878553 .fila .tp-fila-v878618{margin-left:auto;min-height:34px;max-width:200px;font-size:13px}
