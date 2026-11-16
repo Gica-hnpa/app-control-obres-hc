@@ -4439,3 +4439,14 @@
     (Jane-Font) i el promotor és el mateix per a tots dos. No es canvia el de sèrie (el promotor), perquè en altres obres compartides l'Héctor
     treballa per al promotor (V87.347, Socoterm: «el client és l'Alberto»).
   Prova: `v622test` 8/8 (indicadors de cada tipus, «Llistat» amb les columnes, PDF i Excel, mòbil); v572 14/14; i18n tot traduït.
+
+- **V87.623 · Obra compartida amb el promotor «Pendent»: el client de qui la comparteix** (l'Héctor, 16/11/2026, Obra Llafranc de Brava:
+  «per defecte el promotor no pot sortir el que ja té entrat Brava, en el cas d'Obra Llafranc és Julien Vernaet? Si no, m'obliga a entrar-lo a
+  mi també en els meus contactes»). A la còpia del núvol, Brava hi té Julien Vernaet com a client i el promotor «Pendent» (a la seva app, el
+  promotor és el client). Ara: amb l'obra compartida s'envien també les dades del client de qui la comparteix (`clientCompartit878623`: nom,
+  NIF, adreça, correu i telèfon; `localShare` de `cloudSync.js`), i el compte que la rep, si el promotor és «Pendent», veu aquest client com a
+  promotor (`ambPromotorComp878623`): a la capçalera, a Dades › Promotor (ple, sense triar-lo dels contactes) i als documents (destinatari).
+  Només a la pantalla: es desa a l'obra si es desen les Dades. Les obres que comparteix l'Héctor també envien el seu client.
+  Les dades arriben quan qui comparteix obre l'app amb la V87.623 (Brava); mentrestant, el nom (ja hi era: `clientNomCompartit`).
+  Prova: `v623test` 7/7 (capçalera, Dades › Promotor amb NIF i adreça, pressupost, no es desa res a l’obra de l’altre); v614 27/27,
+  v620b 7/7, v615 14/14.

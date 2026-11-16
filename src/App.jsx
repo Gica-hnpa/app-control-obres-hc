@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.622";
+const APP_VERSION878264="87.623";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5446,7 +5446,7 @@ useEffect(()=>{
 },[authUser8779,dataLoadedUser8781,obres,clients,amagTick878347]);
 const obraBase=viewObres878233.find(o=>o.id===obraId)||viewObres878233[0]||{id:"",client:"",nom:"Sense expedient",propietat:"Client pendent",nifPropietat:"Pendent",adreca:"",poblacio:"",tipusTreball:"Altres",tipologia:"Altres",estat:"Pendent",any:String(new Date().getFullYear())};
 const obraSnapshot=(obraBase?.id&&viewOdata878233?.[obraBase.id]?.obra)?viewOdata878233[obraBase.id].obra:{};
-const obra=applyWorkTemplate878121({...obraBase,...obraSnapshot,id:obraBase.id||obraSnapshot.id||""},obraSnapshot.tipusTreball||obraBase.tipusTreball||obraBase.tipologia,false);
+const obra=ambPromotorComp878623(applyWorkTemplate878121({...obraBase,...obraSnapshot,id:obraBase.id||obraSnapshot.id||""},obraSnapshot.tipusTreball||obraBase.tipusTreball||obraBase.tipologia,false));
 const client=viewClients878233.find(c=>c.id===clientIdObra878347(obra))||{id:"",nom:obra?.propietat||"Client pendent",rao:obra?.propietat||"Client pendent",nif:obra?.nifPropietat||"Pendent",email:"Pendent",telefon:"Pendent",adreca:obra?.adreca||"Pendent",logo:""}, data=obra?.id?normalizeBudgetedData8791(viewOdata878233[obra.id]||empty()):empty();
 const fObres=viewObres878233.filter(o=>{let c=viewClients878233.find(x=>x.id===o.client);return sel878275(oc,o.client)&&sel878275(oy,o.any)&&sel878275(ost,o.estat,normalizeExpedientStatus878136)&&sel878275(ot,canonicalWorkType8740(o.tipusTreball||o.tipologia))&&((expedientCode8739(o)+" "+clientProjectLabel878233(o)+" "+o.nom+" "+o.subtitol+" "+moduleLabel8737(o)+" "+(o.adreca||"")+" "+(o.poblacio||"")+" "+(c?.nom||"")+" "+(o.propietat||"")).toLowerCase().includes(os.toLowerCase()))});
 const byClient=useMemo(()=>{let m={};fObres.forEach(o=>{m[o.client]??={};m[o.client][o.any]??=[];m[o.client][o.any].push(o)});return m},[fObres]);
@@ -9434,6 +9434,18 @@ const AMAGADES_KEY878347="aco_obres_amagades_v878347";
 function mapaClientsComp878347(){try{return JSON.parse(lsGet8779(CLIENTS_COMP_KEY878347,"{}"))||{}}catch{return {}}}
 function desaClientComp878347(obraId,clientId){const m=mapaClientsComp878347();if(clientId)m[obraId]=clientId;else delete m[obraId];lsSet8779(CLIENTS_COMP_KEY878347,JSON.stringify(m))}
 function clientIdObra878347(o){if(!o)return "";if(!o.compartida)return o.client||"";return mapaClientsComp878347()[o.id]||""}
+// V87.623 · obra compartida per un altre compte amb el promotor «Pendent» (l'Héctor, 16/11/2026, Obra Llafranc de Brava: «per defecte el promotor
+// no pot sortir el que ja té entrat Brava…? si no, m'obliga a entrar-lo a mi també en els meus contactes»). A l'app de qui la comparteix, un
+// promotor «Pendent» vol dir que el promotor és el seu client: aquí es veu igual (el nom i, si arriben, el NIF, l'adreça, el correu i el
+// telèfon). Només a la pantalla i als documents; es desa a l'obra si es desen les Dades.
+function ambPromotorComp878623(o){
+  if(!o?.compartida||promotorReal878347(o))return o;
+  const cc=o.clientCompartit878623&&typeof o.clientCompartit878623==="object"?o.clientCompartit878623:null;
+  const nom=String(cc?.nom||o.clientNomCompartit||"").trim();if(!nom)return o;
+  const buit=v=>!String(v||"").trim()||/^(pendent|pendiente)$/i.test(String(v).trim());
+  return {...o,propietat:nom,nifPropietat:buit(o.nifPropietat)?String(cc?.nif||""):o.nifPropietat,adrecaPropietat:buit(o.adrecaPropietat)?String(cc?.adreca||""):o.adrecaPropietat,
+    emailPropietat:buit(o.emailPropietat)?String(cc?.email||""):o.emailPropietat,telefonPropietat:buit(o.telefonPropietat)?String(cc?.telefon||""):o.telefonPropietat};
+}
 function promotorReal878347(o){const p=String(o?.propietat||"").trim();return p&&!/^(pendent|pendiente|particular|client pendent|-)$/i.test(p)?p:""}
 function nomClientObra878347(o,clients=[]){const id=clientIdObra878347(o);const c=id?(clients||[]).find(x=>String(x.id)===String(id)):null;if(c)return c.nom||c.rao||"";if(o?.compartida)return promotorReal878347(o)||o.clientNomCompartit||"";return o?.clientNomCompartit||o?.propietat||""}
 function obresAmagades878347(){try{return new Set(JSON.parse(lsGet8779(AMAGADES_KEY878347,"[]"))||[])}catch{return new Set()}}
@@ -23014,7 +23026,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.622",
+    app_version:"87.623",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

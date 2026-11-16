@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.622";
+const VERSION = "V87.623";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -634,7 +634,13 @@ function localShare(id) {
   const o = readArr(kObres(), []).find(x => x?.id === id); if (!o) return null;
   const d = readArr(kOdata(), {})[id];
   const obra = stripShareMeta(o);
-  if (!o.compartida) { const c = readArr(`aco_v8782__${ownNs()}__aco_clients`, []).find(x => String(x?.id) === String(o.client)); if (c) obra.clientNomCompartit = c.nom || c.rao || ""; }
+  if (!o.compartida) { const c = readArr(`aco_v8782__${ownNs()}__aco_clients`, []).find(x => String(x?.id) === String(o.client)); if (c) {
+    obra.clientNomCompartit = c.nom || c.rao || "";
+    // V87.623 · i les seves dades: si el promotor és «Pendent» (el promotor és el client), l'altre compte el veu sense haver-lo d'afegir als seus contactes
+    const net = v => { const x = String(v ?? "").trim(); return /^(pendent|pendiente)$/i.test(x) ? "" : x; };
+    const adr = [net(c.carrer) || net(c.adreca), [net(c.codiPostal), net(c.poblacio)].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+    obra.clientCompartit878623 = { nom: net(c.nom) || net(c.rao), rao: net(c.rao), nif: net(c.nif), adreca: adr, email: net(c.email), telefon: net(c.telefon) || net(c.mobil) };
+  } }
   return { obra: JSON.stringify(obra), dades: JSON.stringify(d ?? null), foto: localStorage.getItem(kFoto(id)) || "" };
 }
 function shHash(x) { return hash((x?.obra || "") + "\u0001" + (x?.dades || "") + "\u0001" + (x?.foto || "")); }
