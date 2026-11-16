@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.621";
+const APP_VERSION878264="87.622";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13548,6 +13548,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const[mesosOberts,setMesosOberts]=useState(()=>new Set());
   // V87.572 · diversos dies de cop i validar de cop
   const[dies572,setDies572]=useState(false);const[sel572,setSel572]=useState(null);
+  const[llistat622,setLlistat622]=useState(false);
   const ps=pidsObra878349(data);
   const ara=fetaAra878349(data);
   const totalPres=ps.reduce((s,x)=>s+(parseNum8770(x.r.q)||0)*(parseNum8770(x.r.pu)||0),0);
@@ -13611,7 +13612,7 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
   const mesos=[];partes.forEach(p=>{const k=String(p.data||"").slice(0,7)||"—";let m=mesos.find(x=>x.k===k);if(!m){m={k,partes:[]};mesos.push(m)}m.partes.push(p)});
   const nomMes=k=>k==="—"?"—":new Date(k+"-15T12:00:00").toLocaleDateString(loc878272(),{month:"long",year:"numeric"});
   return <div className="partes-v878349">
-    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}{!readOnly&&!treb&&<button type="button" className="secondary dies-v878572" onClick={()=>{setSel572(null);setDies572(true)}}><CalendarRange size={16} aria-hidden="true"/> {t("Diversos dies")}</button>}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}</div></div>
+    <div className="partes-cap-v878349"><h2>{t("Partes d’obra")}</h2><div className="bts">{!treb&&partes.length>0&&<button type="button" className="secondary llistat-btn-v878501 llistat-v878622" onClick={()=>setLlistat622(true)}><Printer size={16} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>}{potPreus&&ps.length>0&&<button type="button" className="secondary preus-btn" onClick={()=>setPreus(true)}><Euro size={16} aria-hidden="true"/> {t("Preus per hora")}</button>}{!readOnly&&!treb&&<button type="button" className="secondary dies-v878572" onClick={()=>{setSel572(null);setDies572(true)}}><CalendarRange size={16} aria-hidden="true"/> {t("Diversos dies")}</button>}{!readOnly&&<button type="button" className="primary nou" onClick={nou}><Plus size={18} aria-hidden="true"/> {t("Parte d’avui")}</button>}</div></div>
     {!readOnly&&!treb&&partes.filter(p=>p.estat!=="certificat").length>1&&<div className={"valida-v878572"+(sel572?" on":"")}>{!sel572?<button type="button" className="secondary small" onClick={()=>setSel572(new Set())}><ListChecks size={15} aria-hidden="true"/> {t("Validar de cop")}</button>
       :(()=>{const pend=partes.filter(p=>p.estat!=="certificat");return <><label className="tots"><input type="checkbox" checked={pend.length>0&&pend.every(p=>sel572.has(p.id))} onChange={e=>setSel572(e.target.checked?new Set(pend.map(p=>p.id)):new Set())}/> {t("Tots els per validar ({n})",{n:pend.length})}</label>
         <span className="n">{sel572.size===1?t("1 triat"):t("{n} triats",{n:sel572.size})}</span>
@@ -13629,14 +13630,30 @@ function PartesObra878349({obra={},data={},setData,readOnly=false,start=null}){
           return <button type="button" key={p.id} className={"parte-v878349"+(potSel?" sel-v878572":"")+(on?" on-v878572":"")} aria-pressed={potSel?on:undefined} onClick={()=>{if(sel572){if(!potSel)return;setSel572(x=>{const n=new Set(x);if(n.has(p.id))n.delete(p.id);else n.add(p.id);return n});return}setAvis("");setVistaId(p.id)}}>
             {potSel&&<input type="checkbox" className="chk-v878572" checked={on} readOnly tabIndex={-1} aria-hidden="true"/>}
             <span className="dia"><b>{p.data?new Date(p.data+"T12:00:00").toLocaleDateString(loc878272(),{weekday:"short",day:"numeric",month:"short"}):"—"}</b><small>{p.qui||""}</small></span>
-            <span className="que">{que}</span>
+            {/* V87.622 · un indicador per a cada cosa del parte (abans una línia de text) */}
+            <span className="que xips-v878622">{nL>0&&<span className="xp-v878622 k-p"><ListChecks size={13} aria-hidden="true"/> {nL===1?t("1 partida"):t("{n} partides",{n:nL})}</span>}{nN>0&&<span className="xp-v878622 k-n"><Plus size={13} aria-hidden="true"/> {nN===1?t("1 fora de pressupost"):t("{n} fora de pressupost",{n:nN})}</span>}{hh>0&&<span className="xp-v878622 k-h"><Clock size={13} aria-hidden="true"/> {fhMa878348(hh)}</span>}{(p.material||[]).length>0&&<span className="xp-v878622 k-m"><Package size={13} aria-hidden="true"/> {(p.material||[]).length===1?t("1 material"):t("{n} materials",{n:(p.material||[]).length})}</span>}{!nL&&!nN&&!hh&&!(p.material||[]).length&&<span className="xp-v878622 k-0">{t("Res marcat")}</span>}</span>
             {!treb&&<b className="imp">{money(imp)}</b>}
             <em className={`estat ${p.estat==="certificat"?"ok":"pend"}`}>{p.estat==="certificat"?(nomCerts(p.cert)?t("Certificació {n}",{n:nomCerts(p.cert)}):t("Revisat")):t("Per validar")}</em>
           </button>})}</div>}
       </section>})}
     {modalPreus}
     {dies572&&<PartesDies878572 data={data} onCrea={creaDies} close={()=>setDies572(false)}/>}
+    {llistat622&&<LlistatPartes878622 obra={obra} data={data} close={()=>setLlistat622(false)}/>}
   </div>;
+}
+// V87.622 · Llistat dels partes de l'obra (l'Héctor, 16/11/2026: «a banda de les hores hi ha materials o parts del pressupost o partides noves
+// marcades com a fetes, com ho veiem?… fes els indicadors i el llistat dels partes»): què porta cada parte i els imports, amb filtres, PDF i Excel
+function LlistatPartes878622({obra,data={},close}){
+  const files=partesOrdenats878349(data).reverse().map(p=>{
+    const creades=new Set((p.noves||[]).map(n=>n.pidCreat).filter(Boolean));
+    const mat=(p.material||[]).filter(m=>String(m.concepte||"").trim()||parseNum8770(m.import)>0);
+    let cost=0;try{cost=despesesParte878352(obra?.id,data,p).reduce((s,a)=>s+(parseNum8770(a.base)||0),0)}catch{}
+    return {_k:p.id,data:p.data||"",qui:p.qui||"",partides:(p.linies||[]).filter(l=>!creades.has(l.pid)).length,noves:(p.noves||[]).length,hores:horesParte878352(p),
+      material:mat.length,impMat:mat.reduce((s,m)=>s+(parseNum8770(m.import)||0),0),feina:importParte878349(data,p),cost,estat:p.estat==="certificat"?t("Revisat"):t("Per validar"),nota:String(p.nota||"").trim()}});
+  const cols=[{k:"data",l:t("Data"),tipus:"data"},{k:"qui",l:t("Qui")},{k:"partides",l:t("Partides"),tipus:"num",suma:true},{k:"noves",l:t("Fora de pressupost"),tipus:"num",suma:true},
+    {k:"hores",l:t("Hores"),tipus:"hores",suma:true},{k:"material",l:t("Material"),tipus:"num",suma:true},{k:"impMat",l:t("Import del material"),tipus:"diners",suma:true,def:false},
+    {k:"feina",l:t("Feina feta"),tipus:"diners",suma:true},{k:"cost",l:t("Cost del dia"),tipus:"diners",suma:true},{k:"estat",l:t("Estat")},{k:"nota",l:t("Nota"),def:false}];
+  return <Llistat878501 titol={[t("Partes d’obra"),obra?.nom].filter(Boolean).join(" · ")} nom="partes" close={close} dates={[{k:"data",l:t("Data")}]} filtres={[{k:"estat",l:t("Estat")},{k:"qui",l:t("Qui")}]} cols={cols} files={files}/>;
 }
 function horesParte878352(p={}){return (p.hores||[]).reduce((s,h)=>s+(parseNum8770(h.hores)||0),0)+(p.noves||[]).reduce((s,n)=>s+(n.ambHores?(n.hores||[]).reduce((a,h)=>a+(parseNum8770(h.hores)||0),0):0),0)}
 // el resum d'un dia: només el que s'hi ha fet (feina, i les hores i el material que van a Despeses)
@@ -22997,7 +23014,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.621",
+    app_version:"87.622",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

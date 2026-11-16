@@ -1,0 +1,14 @@
+/* V87.622 · Partes d'obra: un indicador per a cada cosa del parte (partides, fora de pressupost, hores, material) */
+html body .partes-llista-v878349 .parte-v878349 .xips-v878622{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;gap:6px;align-items:center;min-width:0}
+html body .xp-v878622{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1.3;white-space:nowrap;border:1px solid transparent}
+html body .xp-v878622 svg{flex:0 0 auto}
+html body .xp-v878622.k-p{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE}
+html body .xp-v878622.k-n{background:#FFF7ED;color:#C2410C;border-color:#FED7AA}
+html body .xp-v878622.k-h{background:#F0FDFA;color:#0F766E;border-color:#99F6E4}
+html body .xp-v878622.k-m{background:#F5F3FF;color:#6D28D9;border-color:#DDD6FE}
+html body .xp-v878622.k-0{background:#F1F5F9;color:#64748B;border-color:#E2E8F0;font-weight:500}
+/* al mòbil, els botons de dalt en dues files de dos (amb «Llistat» no hi cabien: «Preus per hora» quedava en tres línies) */
+@media (max-width:600px){
+  html body .partes-cap-v878349 .bts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+  html body .partes-cap-v878349 .bts>button{width:100%;min-height:46px;justify-content:center;white-space:nowrap;padding:0 10px}
+}

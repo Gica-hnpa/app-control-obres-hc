@@ -4425,3 +4425,17 @@
     format propi (són del tècnic).
   Prova: `v621test` 10/10 (sense format i amb format, el pressupost de l’obra del client, tornar al meu, mòbil); docs396test 14/14;
   documentstest 23/25 com a la V87.620 (l’acta en castellà); i18n tot traduït.
+
+- **V87.622 · Partes d’obra: indicadors i «Llistat»** (l'Héctor, 16/11/2026, amb una captura d'Obra Llafranc: «quan tinc el parte d'una obra i a
+  banda de les hores hi ha materials o parts del pressupost o partides noves marcades com a fetes, com ho veiem?»; «sí, fes els indicadors i el
+  llistat dels partes»).
+  - A cada parte de la llista, un indicador per a cada cosa: partides fetes (blau), fora de pressupost (taronja), hores (verd) i material
+    (lila); un parte sense res, «Res marcat». Abans era una línia de text (a Obra Llafranc només hi deia «32 h»: només hores).
+  - «Llistat» a la capçalera (com a Despeses i Factures): data, qui, partides, fora de pressupost, hores, material, feina feta, cost del dia
+    i estat (i, per triar, l'import del material i la nota), amb filtres per estat i per qui, PDF i Excel. No surt als treballadors.
+  - Al mòbil, els botons de dalt en dues files de dos (amb el «Llistat», «Preus per hora» quedava en tres línies).
+  - Pregunta de l'Héctor sobre Obra Llafranc (de Brava, compartida amb ell): el client d'una obra rebuda ja és de cada compte des de la V87.347
+    (`aco_client_compartides_v878347`): l'Héctor hi tria Brava a Dades › Client i va al subgrup de Brava d'Expedients; Brava hi té el seu
+    (Jane-Font) i el promotor és el mateix per a tots dos. No es canvia el de sèrie (el promotor), perquè en altres obres compartides l'Héctor
+    treballa per al promotor (V87.347, Socoterm: «el client és l'Alberto»).
+  Prova: `v622test` 8/8 (indicadors de cada tipus, «Llistat» amb les columnes, PDF i Excel, mòbil); v572 14/14; i18n tot traduït.

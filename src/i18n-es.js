@@ -6122,4 +6122,7 @@ export default {
   "Peu dels documents": "Pie de los documentos",
   "p. ex. Inscrita al Registre Mercantil de Girona…": "p. ej. Inscrita en el Registro Mercantil de Girona…",
   "Sense logo: es posa amb «Posar logo», a dalt de la fitxa.": "Sin logo: se pone con «Poner logo», arriba de la ficha.",
+  "Res marcat": "Nada marcado",
+  "Import del material": "Importe del material",
+  "Cost del dia": "Coste del día",
 };
