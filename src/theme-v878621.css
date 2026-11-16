@@ -1,0 +1,11 @@
+/* V87.621 · Fitxa del client › «Documents a nom d’aquest client»: amb el meu format o amb el seu (encapçalament, color i peu) */
+html body .docs-client-v878621 .opc-v878621{display:flex;flex-wrap:wrap;gap:8px 20px}
+html body .docs-client-v878621 .opc-v878621 label.chk{min-height:36px}
+html body .docs-client-v878621 .camps-v878621{display:grid;grid-template-columns:120px minmax(0,1fr);gap:10px 14px;align-items:start}
+html body .docs-client-v878621 .color-v878621 input{width:100%;height:42px;padding:3px;border-radius:10px;cursor:pointer}
+html body .docs-client-v878621 .peu-v878621 textarea{width:100%;min-height:58px;resize:vertical}
+html body .docs-client-v878621 .prev-v878396{max-height:300px;overflow:auto}
+@media (max-width:600px){html body .docs-client-v878621 .camps-v878621{grid-template-columns:1fr}html body .docs-client-v878621 .color-v878621 input{max-width:120px}}
+/* un fieldset s'eixampla fins al contingut (la vista prèvia A4): al mòbil sortia de la pantalla */
+html body fieldset.docs-client-v878621{min-width:0;max-width:100%}
+html body .docs-client-v878621 .docs-aj-v878396,html body .docs-client-v878621 .prev-v878396{min-width:0;max-width:100%}

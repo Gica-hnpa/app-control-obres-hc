@@ -6116,4 +6116,10 @@ export default {
   "Capítols fusionats": "Capítulos fusionados",
   "Nom del capítol desat": "Nombre del capítulo guardado",
   "Acord desat": "Acuerdo guardado",
+  "Documents a nom d’aquest client": "Documentos a nombre de este cliente",
+  "Amb el meu format (Ajustos › Documents)": "Con mi formato (Ajustes › Documentos)",
+  "Amb el seu format": "Con su formato",
+  "Peu dels documents": "Pie de los documentos",
+  "p. ex. Inscrita al Registre Mercantil de Girona…": "p. ej. Inscrita en el Registro Mercantil de Girona…",
+  "Sense logo: es posa amb «Posar logo», a dalt de la fitxa.": "Sin logo: se pone con «Poner logo», arriba de la ficha.",
 };

@@ -4412,3 +4412,16 @@
     reprodueix el cas); `v614test` 27/27. **L'Héctor l'ha d'eliminar una vegada més** (la fila d'ara es va crear amb una versió d'abans).
   Altres proves: notestest 16/16, v615 14/14, plustest 18/18, i18n tot traduït; `dictattest` 24/27 com abans (missatge del PDF i límits d'espai
   del pla Pro: prova vella per posar al dia).
+
+- **V87.621 · Documents a nom d’un client amb el seu format** (l'Héctor, 16/11/2026: «quan jo faig un pressupost o factura amb gestió total
+  d'una obra d'un client meu com Brava o Socoterm, el format ha de ser l'escollit per ell i no pas el meu format… tot i que estigui al meu
+  perfil… hem de diferenciar això»). Al compte de l'Héctor (i als tècnics amb gestió), els documents d'obra ja anaven a nom del client de l'obra
+  (`emissorDocs878396`: el seu nom, NIF, adreça i logo), però amb l'encapçalament, el color i el peu de l'Héctor.
+  - Fitxa del client (editar) › «Documents a nom d’aquest client»: «Amb el meu format (Ajustos › Documents)» (de sèrie) o «Amb el seu format»:
+    els 7 encapçalaments, el color i el peu, amb la vista prèvia (amb el seu logo). Es desa al client (`docs878621`). No surt als comptes
+    d'empresa (allà l'emissor és l'empresa).
+  - Pressupost d'obra, certificacions, comparativa, fora de pressupost, proformes i factures de les seves obres: l'encapçalament i el color del
+    client (`capDoc878396` agafa `em.estil`/`em.color`) i el seu peu (`peuDoc878396(em)`). Les actes, les notes i els honoraris continuen amb el
+    format propi (són del tècnic).
+  Prova: `v621test` 10/10 (sense format i amb format, el pressupost de l’obra del client, tornar al meu, mòbil); docs396test 14/14;
+  documentstest 23/25 com a la V87.620 (l’acta en castellà); i18n tot traduït.
