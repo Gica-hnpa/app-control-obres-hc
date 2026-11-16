@@ -16,7 +16,7 @@ const CLIENTS = {
   // V87.605 · la casa unifamiliar (gestió total) i l'aixecament dels exemples per començar
   casa: { id: "client-demo-casa", nom: "Laura Roca Prova", rao: "", tipus: "Particular", contacte: "Laura Roca", telefon: "600 000 006", email: "laura.roca@exemple.test", adreca: "C/ dels Pins, 14", codiPostal: "17251", poblacio: "Calonge", nif: "00000006Y" },
   // V87.607 · la constructora per a qui el tècnic amb gestió porta la casa: és el client de l'obra i les factures van amb la seva sèrie
-  constr: { id: "client-demo-constr", nom: "Construccions Prova SL", rao: "Construccions Prova SL", tipus: "Constructora", contacte: "Xavier Prova", telefon: "600 000 008", email: "obres@construccionsprova.exemple.test", adreca: "Pol. Ind. Prova, nau 3", codiPostal: "17251", poblacio: "Calonge", nif: "B00000008", facturacio878297: { actiu: true, prefix: `CP${String(new Date().getFullYear()).slice(2)}-`, digits: 3, proper: 4 } },
+  constr: { id: "client-demo-constr", nom: "Construccions Prova SL", rao: "Construccions Prova SL", tipus: "Constructora", contacte: "Xavier Prova", telefon: "600 000 008", email: "obres@construccionsprova.exemple.test", adreca: "Pol. Ind. Prova, nau 3", codiPostal: "17251", poblacio: "Calonge", nif: "B00000008", facturacio878297: { actiu: true, prefix: `F${new Date().getFullYear()}-`, digits: 3, proper: 4 } },
   aixeca: { id: "client-demo-aixeca", nom: "Joan Prova Bosch", rao: "", tipus: "Particular", contacte: "Joan Prova", telefon: "600 000 007", email: "joan.prova@exemple.test", adreca: "C/ Ample, 3, 1r", codiPostal: "17200", poblacio: "Palafrugell", nif: "00000007F" },
 };
 
@@ -102,12 +102,13 @@ function certsCasa() {
   const rows = partides(CASA);
   return [-110, -80, -50, -20].map((d, i) => ({ id: `cert-demo-casa-${i + 1}`, numero: String(i + 1), data: iso(d), estat: i < 2 ? "Cobrada" : "Pendent", budgetId: "principal", import: Math.round(rows.reduce((s, r) => s + (r.certsByNum[String(i + 1)] || 0) * r.pu, 0) * 100) / 100, createdAt: ara(), updatedAt: ara() }));
 }
-// les 3 primeres certificacions, facturades a la promotora amb la sèrie de la constructora (IVA 10 % d'habitatge); les dues primeres, cobrades
+// les 3 primeres certificacions, facturades a la promotora amb la sèrie de la constructora (IVA 10 % d'habitatge); les dues primeres, cobrades.
+// V87.614 · numeració de sempre, F2026-001 (l'Héctor, 16/11/2026: «i el codi aquest CP26… no posàvem P2026-… i F2026-… i ja està»)
 function facturesCasa(certs, client, constr) {
   const r2 = x => Math.round(x * 100) / 100, perAny = {};
   const destinatari = { nom: client.nom, nif: client.nif, adreca: `${client.adreca}, ${client.codiPostal} ${client.poblacio}` };
   return certs.slice(0, 3).map((c, i) => {
-    const df = -108 + 30 * i, any = dia(df).getFullYear(), prefix = `CP${String(any).slice(2)}-`, num = (perAny[any] = (perAny[any] || 0) + 1);
+    const df = -108 + 30 * i, any = dia(df).getFullYear(), prefix = `F${any}-`, num = (perAny[any] = (perAny[any] || 0) + 1);
     const base = c.import, iva = 10, ivaImp = r2(base * iva / 100);
     return { id: `fo-demo-casa-${i + 1}`, certId: c.id, budgetId: "principal", pfNumero: `PF-${String(c.numero).padStart(3, "0")}`, certNum: c.numero, numero: `${prefix}${String(num).padStart(3, "0")}`, num, serieClient: constr.id, prefix,
       data: iso(df), base, ded: 0, iva, ivaImp, ret: 0, retImp: 0, total: r2(base + ivaImp), destinatari, avisCobr878496: { data: iso(df + 30) },

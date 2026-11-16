@@ -6084,4 +6084,11 @@ export default {
   "Marcar les altres {n} ofertes com a descartades": "Marcar las otras {n} ofertas como descartadas",
   "Adjudicar i passar-ho al pressupost": "Adjudicar y pasarlo al presupuesto",
   "Fer-ne l’oferta ({n} partides)": "Hacer la oferta ({n} partidas)",
+  "Eliminar definitivament aquest expedient?": "¿Eliminar definitivamente este expediente?",
+  "S'esborraran també les dades vinculades: actes, agenda, pressupostos, certificacions, factures i documents registrats dins l'app.": "También se borrarán los datos vinculados: actas, agenda, presupuestos, certificaciones, facturas y documentos registrados en la app.",
+  "L'has compartit amb altres comptes: també desapareixerà de les seves llistes.": "Lo has compartido con otras cuentas: también desaparecerá de sus listas.",
+  "Hi ha una versió nova de l’app.": "Hay una versión nueva de la app.",
+  "Anul·lades ({n})": "Anuladas ({n})",
+  "Tornar a totes": "Volver a todas",
+  "Eliminar definitivament la factura {n}? Fes-ho només si era de prova i no l’has enviada a ningú.": "¿Eliminar definitivamente la factura {n}? Hazlo solo si era de prueba y no la has enviado a nadie.",
 };

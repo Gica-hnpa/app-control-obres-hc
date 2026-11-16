@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.613";
+const VERSION = "V87.614";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -685,6 +685,17 @@ function removeForeign(ids) {
   const od = readArr(kOdata(), {}); ids.forEach(id => { delete od[id]; removeRaw(kFoto(id)); }); writeRaw(kOdata(), JSON.stringify(od));
 }
 let sharedOwned = new Set(), sharedTableMissing = false;
+// V87.614 · Obres compartides pròpies esborrades (l'Héctor, 16/11/2026: «Edifici Catalunya… no sé quantes vegades l'he anul·lat i em tornava
+// a sortir»): en esborrar-ne una, la fila d'aco_shared es quedava i el cicle la tornava a posar a la llista (i l'altre compte la continuava
+// veient). Ara es treu del núvol compartit i es recorda aquí (les últimes 100): si en aquell moment no es pot (sense connexió), es fa al
+// cicle següent, i una obra recordada que falta a l'aparell no es torna a posar mai (encara que un cicle l'hagués llegit just abans).
+const SH_FORA_KEY = "nuvol-aco-sh-esborrades";
+function shFora() { try { return new Set(JSON.parse((window.__acoStore?.real || localStorage).getItem(SH_FORA_KEY) || "[]") || []); } catch { return new Set(); } }
+function desaShFora(set) { try { const st = window.__acoStore?.real || localStorage; if (set.size) st.setItem(SH_FORA_KEY, JSON.stringify([...set].slice(-100))); else st.removeItem(SH_FORA_KEY); } catch {} }
+async function esborraCompartida(obraId) {
+  const set = shFora(); set.add(String(obraId)); desaShFora(set);
+  try { await unshareObra(obraId); return true; } catch { return false; }
+}
 // V87.409.1 · obres compartides ja baixades en aquesta sessió (obra_id → fila sencera): una obra que espera (es pot aplicar
 // més tard) no es torna a baixar a cada volta.
 const shCache = new Map();
@@ -724,6 +735,8 @@ async function sharedCycle(canApply) {
   sharedOwned = new Set(rows.filter(r => r.owner === me).map(r => r.obra_id));
   for (const r0 of rows) {
     const owned = r0.owner === me, editor = owned || (r0.editors || []).includes(email);
+    // (es llegeix cada vegada: es pot haver esborrat mentre el cicle esperava el núvol)
+    if (owned && !localShare(r0.obra_id) && shFora().has(String(r0.obra_id))) { try { await unshareObra(r0.obra_id); } catch {} continue; }
     const loc = localShare(r0.obra_id), lh = loc ? shHash(loc) : "";
     const known = sm.known[r0.obra_id];
     const c = shCache.get(r0.obra_id), r = c && c.updated_at === r0.updated_at ? { ...c, ...r0 } : null;
@@ -1131,7 +1144,7 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
   session = readSession();
   // V87.609 · enllaç per entrar amb un compte concret (el QR de la guia de benvinguda: «…/?entra=marti»; l'Héctor, 13/11/2026: «hauria d'anar
   // directe a posar el seu usuari i contrasenya; jo entro amb el meu mòbil i s'obre el de Brava»). Si l'aparell té oberta la sessió d'un altre

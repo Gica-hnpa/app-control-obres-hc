@@ -42,6 +42,7 @@ self.addEventListener("fetch", event => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;           // núvol i altres: directes
   if (url.pathname.includes("/__dades-locals")) return;       // desat a l'ordinador: directe
+  if (url.searchParams.has("vn")) return;                     // V87.614 · comprovar si hi ha versió nova: sempre la xarxa, sense guardar-la
   if (req.mode === "navigate") {
     event.respondWith((async () => {
       try {

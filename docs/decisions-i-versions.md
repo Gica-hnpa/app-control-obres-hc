@@ -4307,3 +4307,31 @@
   Prova: `v613test` 14/14 (nova: llista sense `copies`, compte nou de prova, «ja existeix», contrasenya nova a l'Oriol, l'Oriol entra amb la
   nova i no amb la vella, el compte nou entra amb l'enllaç, una empresa no veu el bloc, sense la funció i sense el secret, mòbil). v519 23/23,
   v609 6/6, i18ntest tot traduït. El Supabase de proves simula la funció (`/functions/v1/aco-comptes`, `/__comptes`).
+  - **V87.614 · Arranjaments que feien mala imatge** (l'Héctor, 16/11/2026, amb una captura de la demo de «Tècnic amb gestió»: «a facturació
+    d'una obra no hi ha possibilitat de llistar res i a despeses tampoc… a socoterm… en ajustos de pressupost no li surt el % de gestió de
+    comissió de la immobiliària com sí que surt a qualsevol altre expedient… no podem sortir així»; «i el codi aquest CP26… no posàvem P2026-…
+    i F2026-… i ja està»; «edifici Catalunya en usuari hector i socoterm… l'he anul·lat i em tornava a sortir»):
+    - **«Llistat» sempre a la vista** dins de l'obra: Facturació, Despeses (abans només dins d'«Opcions» i si n'hi havia) i les factures de
+      l'expedient del tècnic. Sense res, s'obre igual («0 línies»). La captura era d'una pestanya oberta d'abans de la V87.610 (la versió
+      publicada ja el tenia): d'aquí l'avís de versió nova.
+    - **Avís de versió nova** (`src/versioNova.js`, `theme-v878614.css`): cada 10 minuts, en tornar a l'app i en recuperar la connexió, es
+      mira si la pàgina publicada carrega un altre codi (`assets/index-…js`); si és així, a baix: «Hi ha una versió nova de l'app ·
+      Actualitzar» (no recarrega sol: es podria perdre el que s'escriu). El service worker no guarda aquesta consulta (`?vn=`). Només a la
+      versió publicada.
+    - **Marge d'intermediari a les obres compartides amb edició** (`potCom878614`): Front de Mar és de l'Héctor compartida amb Socoterm
+      (editora) i la V87.346 l'amagava a tota obra compartida. A les de només consulta, continua amagat.
+    - **Eliminar una obra pròpia compartida**: la fila d'`aco_shared` es quedava i el cicle del núvol la tornava a posar a la llista (i l'altre
+      compte la continuava veient). Edifici Catalunya no va estar mai «Anul·lat» a les còpies del núvol (sempre «En procés»): era això. Ara
+      l'avís diu «també desapareixerà de les seves llistes», es treu del núvol compartit (`esborraCompartida`) i, si no es pot en aquell
+      moment, es recorda (`nuvol-aco-sh-esborrades`) i es fa al cicle següent sense tornar-la a posar. **L'Héctor l'ha d'eliminar una vegada
+      més** amb la V87.614.
+    - **Factures dels exemples amb F2026-001** (abans `CP26-001`, la sèrie de la constructora d'exemple): als exemples nous i, en obrir l'app,
+      a les ja posades (`facturesDemoF878614`, només les factures `fo-demo-…` o de la sèrie del client d'exemple).
+    - **Factures anul·lades (Facturació del tècnic)** (l'Héctor, 16/11/2026, amb una captura de dues factures de prova anul·lades: «queda
+      així…»): ja no són a «Totes» ni en compten el nombre (abans «0,00 € · 2 factures»). A sota de la llista, «Anul·lades (n)» les
+      ensenya (i «Tornar a totes»); una anul·lada no té «Enviar» i el menú ⋯ hi afegeix «Eliminar» (avís: «només si era de prova i no l'has
+      enviada a ningú»; `eliminaFacturaGlobal878614`). El llistat i el paquet de la gestoria, igual que abans.
+  Prova: `v614test` (nova: Facturació i Despeses de l'obra amb «Llistat», F2026-, migració sense navegador, marge a socoterm i no a l'oriol,
+  «Anul·lat» que es queda, obra compartida eliminada que no torna i desapareix de socoterm, factures anul·lades, mòbil, avís de versió nova
+  amb l'app compilada): 27/27. Adaptades a F2026-: v605 14/14, v607 15/15, v610 11/11 i els guions dels vídeos (`resum605-guions`); i18ntest tot traduït.
+    - **Domini `controlobres.app`** (16/11/2026): estava bloquejat per la validació del titular (el correu del 23/10 de `online-validation.com` no es va clicar). L'Héctor l'ha verificat el 16/11.

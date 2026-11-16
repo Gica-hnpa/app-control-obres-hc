@@ -280,11 +280,13 @@ import "./theme-v878610.css";
 import "./theme-v878611.css";
 import "./theme-v878612.css";
 import "./theme-v878613.css";
+import "./theme-v878614.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
 import { setLang, readLang } from "./i18n.js";
 import { startBarresFixes } from "./barresFixes.js";
+import { startVersioNova } from "./versioNova.js";
 
 // V87.409 · L'enllaç per signar a distància («…/#signa=<clau>»): només la pàgina per signar, sense arrencar l'app (ni les dades
 // de l'aparell ni el núvol del compte que hi pugui haver en aquest navegador).
@@ -292,6 +294,9 @@ const signa878409 = (() => { try { return (/^#signa=([A-Za-z0-9_-]{40,})/.exec(l
 if (signa878409) {
   import("./SignaRemot.jsx").then(({ default: SignaRemot }) => createRoot(document.getElementById("root")).render(<React.StrictMode><SignaRemot token={signa878409} /></React.StrictMode>));
 } else {
+  // V87.614 · avís quan hi ha una versió nova publicada (una pestanya oberta de fa dies es quedava amb la vella). Des del principi: també
+  // a la pantalla d'entrar. Només a la versió compilada (a OBRIR_APP.bat no hi ha «assets/index-…js» i no fa res).
+  if (import.meta.env.PROD) { try { startVersioNova(); } catch {} }
   // V87.252 · primer es carreguen les dades desades a l'ordinador (si l'app s'ha obert
   // amb OBRIR_APP.bat) i després l'app, perquè llegeixi les dades bones des del principi.
   // V87.257 · després, el núvol: baixa el que s'hagi fet des d'altres aparells.

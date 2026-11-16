@@ -144,5 +144,12 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
   copia a part al servidor (mai la resta de l'obra: costos, marges, notes); treure l'enllaç o caducitat; veure quan l'ha obert. Base: l'enllaç
   per signar (V87.409). Per decidir: només enllaç o també usuari amb contrasenya; si la certificació «per validar» porta «Conforme»; d'on
   surten les factures de la constructora al compte d'un tècnic. 2-3 versions, després dels vídeos i dels CI.
+  - **Ampliat (l'Héctor, 16/11/2026):** «com podem treballar amb expedients compartits però seleccionant allò que volem compartir i si poden
+    o no modificar res (en cas d'obres on puc compartir amb el tècnic que m'ha de validar la certificació, per exemple, o només lectura si
+    vull ensenyar, depèn de quina documentació, al client)». O sigui, un sol «Compartir» per obra amb, **per a cada persona: què veu**
+    (apartats: pressupost, certificacions, documents, planning, actes, factures…) **i què pot fer** (només mirar · treballar-hi, p. ex.
+    validar la certificació). Ara: compartir és tota l'obra (editor o lector) i la V87.424 «només Pressupost i Certificacions» només amaga
+    pestanyes, no les dades (cada obra és una sola fila al núvol). Per amagar de debò el que no es comparteix cal guardar a part la còpia
+    del que es comparteix (com l'enllaç del client de sobre). Proposta i preguntes abans de començar.
 - **CI (costos indirectes) al preu de les partides** (l'Héctor, 12/11/2026): esperant les respostes (Front de Mar amb DG i BI dues vegades a
   8 partides, BC3 de sortida, com es trien les partides del 35 % de mitjans auxiliars, comparar descompostos semblants).
