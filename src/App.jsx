@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.623";
+const APP_VERSION878264="87.624";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -12287,6 +12287,7 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
   const totalObra=gs.filter(g=>!alt437.has(g.id)).reduce((s,g)=>s+info(g).total,0);
   const actAlt=alt437.has(act);
   const llista451=useRef(null);
+  const canviaNom624=()=>{const prova=()=>{let fet=false;window.dispatchEvent(new CustomEvent("aco-nomnum878624",{detail:{fet:()=>{fet=true}}}));return fet};if(!prova())onRenom?.(act)};
   useEffect(()=>{const c=llista451.current,o=c?.querySelector("button.on");if(c&&o&&c.scrollWidth>c.clientWidth)c.scrollLeft=Math.max(0,o.offsetLeft-c.offsetLeft-8)},[act,tota]);
   return <div className={"fases-v878342"+(obre?" rajoles-v878551":"")+(obre&&gs.length===1&&!(info(gs[0]).av>0)?" un-v878589":"")} role="group" aria-label={t("Fases de l’obra")}>
     <span className="tit">{obre?(gs.length>1?t("Pressupostos"):t("Pressupost")):t("Fases")}</span>
@@ -12298,13 +12299,17 @@ function FasesObra878342({data={},ambTota=false,tota=false,setTota,select,onNova
         <em>{al?"A":versioPres878528(data,g.id)}</em><b>{nomPres878532(data,g.id)}</b><span>{al&&<i className="alt-et-v878437">{t("Alternativa")}</i>}{money(x.total)}{x.pc!=null?` · ${pct(x.pc)}`:""}{x.av>0&&<i className="av-rajola-v878552" title={t("Avisos del pressupost: {n}",{n:x.av})}><AlertTriangle size={12} aria-hidden="true"/> {x.av}</i>}</span></button>})}
       {ambTota&&gs.length>1&&<button type="button" className={`tota ${tota?"on":""}`} aria-pressed={tota} onClick={()=>setTota?.(true)}><em>Σ</em><b>{t("Tota l’obra")}</b><span>{money(totalObra)}</span></button>}
     </div>
-    {!readOnly&&<details className="mes-v878342 opcions-v878500"><summary aria-label={t("Més opcions de les fases")}>{t("Fases")}<ChevronDown size={16} aria-hidden="true"/></summary><div className="menu">
-      <button type="button" onClick={e=>{e.currentTarget.closest("details").open=false;onNova?.()}}>{t("+ Nova fase")}</button>
+    {/* V87.624 · «+ Nova fase» a part i les opcions del pressupost triat en un menú «Opcions» (l'Héctor, 16/11/2026: «l'opció d'eliminar el
+        pressupost hauria d'estar en un altre nom, que posés opcions, on també pugui estar canviar nom o número, però no en el de fases: sempre que
+        vull eliminar-ne un em torno boig buscant on està l'opció»). Abans tot era dins de «Fases». */}
+    {!readOnly&&<div className="accions-v878624"><button type="button" className="nova-fase-v878624" onClick={()=>onNova?.()}><Plus size={16} aria-hidden="true"/> {t("Nova fase")}</button>
+    {(!tota||(onRecupera&&(data.budgetGroups||[]).some(g=>g?.arxivat878531&&g.id!=="principal")))&&<details className="mes-v878342 opcions-v878500 opcions-v878624"><summary aria-label={t("Opcions del pressupost")}>{t("Opcions")}<ChevronDown size={16} aria-hidden="true"/></summary><div className="menu">
+      {!tota&&<button type="button" className="nom-btn-v878624" onClick={e=>{e.currentTarget.closest("details").open=false;canviaNom624()}}>{t("Canviar el nom i el número")}</button>}
       {!tota&&onAlt&&act!=="principal"&&gs.length>1&&<button type="button" className="alt-btn-v878437" onClick={e=>{e.currentTarget.closest("details").open=false;onAlt(act,!actAlt)}}>{actAlt?t("«{fase}» ja no és una alternativa",{fase:nomPres878532(data,act)}):t("Marcar «{fase}» com a alternativa",{fase:nomPres878532(data,act)})}</button>}
       {!tota&&onArxiva&&act!=="principal"&&gs.length>1&&<button type="button" className="arx-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onArxiva(act)}}>{t("Arxivar «{fase}» a Documents",{fase:nomPres878532(data,act)})}</button>}
-      {!tota&&gs.length>1&&<button type="button" className="danger-text-v87229" onClick={e=>{e.currentTarget.closest("details").open=false;onElimina?.(act)}}>{t("Eliminar «{fase}»",{fase:nomPres878532(data,act)})}</button>}
       {onRecupera&&(data.budgetGroups||[]).some(g=>g?.arxivat878531&&g.id!=="principal")&&<><span className="sep-v878531">{t("Arxivats")}</span>{(data.budgetGroups||[]).filter(g=>g?.arxivat878531&&g.id!=="principal").map(g=><button type="button" key={g.id} className="rec-btn-v878531" onClick={e=>{e.currentTarget.closest("details").open=false;onRecupera(g.id)}}>{t("Recuperar «{fase}»",{fase:nomPres878532(data,g.id)})}</button>)}</>}
-    </div></details>}
+      {!tota&&gs.length>1&&<button type="button" className="danger-text-v87229 elimina-v878624" onClick={e=>{e.currentTarget.closest("details").open=false;onElimina?.(act)}}>{t("Eliminar «{fase}»",{fase:nomPres878532(data,act)})}</button>}
+    </div></details>}</div>}
   </div>;
 }
 // Rendiment de l'obra per fase (pestanya «Rendiment»)
@@ -13068,7 +13073,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
   function arxivaDirectBudget878531(id){
     const bid=id||"";if(!bid||bid==="principal")return;const nom=budgetLabel8786(data,bid);
     if((data?.certificacions||[]).some(c=>(c.budgetId||"principal")===bid)){alert(t("«{fase}» té certificacions: no es pot arxivar.",{fase:nom}));return}
-    if(!confirm(t("Arxivar «{fase}»? Es desa a Documents i deixa de sortir a les fases i als totals. Es pot recuperar des de «Fases».",{fase:nom})))return;
+    if(!confirm(t("Arxivar «{fase}»? Es desa a Documents i deixa de sortir a les fases i als totals. Es pot recuperar des d’«Opcions».",{fase:nom})))return;
     const r=window.__acoDocPres878531?.();
     if(r&&r.bid===bid){fiArxiva878531(bid,r.doc);return}
     window.__acoArxivaPend878531=bid;if(preferredBudgetTab878239&&activeTab!==preferredBudgetTab878239)setTab(preferredBudgetTab878239);
@@ -17464,6 +17469,8 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
   // directe l'opció editar, però només aquell capítol; i a fora, editar, que seria tots els capítols»)
   const[capEdit528,setCapEdit528]=useState(null);
   const[nomNumObert528,setNomNumObert528]=useState(false);
+  // V87.624 · des de la barra de fases › Opcions › «Canviar el nom i el número»
+  useEffect(()=>{if(clientMode||quickMode||!nomNum528)return;const f=e=>{e.detail?.fet?.();setPresObert427(true);setNomNumObert528(true)};window.addEventListener("aco-nomnum878624",f);return()=>window.removeEventListener("aco-nomnum878624",f)},[clientMode,quickMode,!!nomNum528]);
   function editaCap528(cap){setCapEdit528(cap);beginBudgetEdit878176();setOpen(o=>({...o,[cap]:true}))}
   function beginBudgetEdit878176(){
     if(com878346.on&&!clientMode){if(!confirm(i18nT("Per editar, el pressupost torna als preus sense comissió. En guardar o cancel·lar es torna a aplicar.")))return;setReaplica878346(com878346.pct);treuComissio878346();setPendentEditar878346(true);return}
@@ -23026,7 +23033,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.623",
+    app_version:"87.624",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

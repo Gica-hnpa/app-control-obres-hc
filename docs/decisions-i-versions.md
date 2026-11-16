@@ -4450,3 +4450,13 @@
   Les dades arriben quan qui comparteix obre l'app amb la V87.623 (Brava); mentrestant, el nom (ja hi era: `clientNomCompartit`).
   Prova: `v623test` 7/7 (capçalera, Dades › Promotor amb NIF i adreça, pressupost, no es desa res a l’obra de l’altre); v614 27/27,
   v620b 7/7, v615 14/14.
+
+- **V87.624 · Pressupost: «+ Nova fase» i «Opcions»** (l'Héctor, 16/11/2026, amb una captura del menú «Fases»: «l'opció d'eliminar el
+  pressupost hauria d'estar en un altre nom, que posés opcions, on també pugui estar canviar nom o número, però no en el de fases: sempre que vull
+  eliminar-ne un em torno boig buscant on està l'opció»). A la barra de fases (a dalt del pressupost i de l'Econòmic), on hi havia el menú
+  «Fases»: el botó «+ Nova fase» (directe) i el menú «Opcions» del pressupost triat: «Canviar el nom i el número» (obre la finestra «Nom i número
+  del pressupost»; fora de la pestanya Pressupost, el nom), «Marcar … com a alternativa», «Arxivar … a Documents», els arxivats per recuperar
+  i, a baix de tot i en vermell, «Eliminar …». Amb «Tota l’obra», «Opcions» només si hi ha arxivats. L'avís d'arxivar diu «Es pot recuperar
+  des d’«Opcions»». Prova: `v624test` 8/8 (botons, nova fase, ordre del menú, finestra del nom i número, eliminar, mòbil); v528 13/13.
+  Proves velles que obrien «Fases» › «+ Nova fase» adaptades (fases342, v435, v437, v531, v534, pressupost, pdfpressupost). Amb la V87.623 ja
+  fallaven igual (noms amb el número «P2026_0001 · …» des de la V87.532/589): v437 2/16, v531 5/14, pressuposttest 24/27; queden per posar al dia.

@@ -6125,4 +6125,8 @@ export default {
   "Res marcat": "Nada marcado",
   "Import del material": "Importe del material",
   "Cost del dia": "Coste del día",
+  "Nova fase": "Nueva fase",
+  "Opcions del pressupost": "Opciones del presupuesto",
+  "Canviar el nom i el número": "Cambiar el nombre y el número",
+  "Arxivar «{fase}»? Es desa a Documents i deixa de sortir a les fases i als totals. Es pot recuperar des d’«Opcions».": "¿Archivar «{fase}»? Se guarda en Documentos y deja de salir en las fases y en los totales. Se puede recuperar desde «Opciones».",
 };

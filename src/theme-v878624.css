@@ -1,0 +1,16 @@
+/* V87.624 · Barra de fases: «+ Nova fase» a part i el menú «Opcions» del pressupost triat (canviar el nom i el número, alternativa,
+   arxivar, recuperar i, a baix de tot, eliminar) */
+html body .fases-v878342 .nova-fase-v878624{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border:1.5px solid #94A3B8;border-radius:12px;background:#fff;font:700 14px var(--app-font);color:var(--co-ink,#152328);cursor:pointer;flex:0 0 auto;white-space:nowrap}
+html body .fases-v878342 .nova-fase-v878624:hover{border-color:#1D4ED8;color:#1D4ED8}
+html body .fases-v878342 .nova-fase-v878624:focus-visible{outline:2px solid var(--co-accent,#1D4ED8);outline-offset:2px}
+html body .fases-v878342 .mes-v878342>.menu>button.elimina-v878624{margin-top:4px;border-top:1px solid var(--co-line);border-radius:0 0 8px 8px;padding-top:11px}
+/* els dos botons junts, a dalt a la dreta (on abans hi havia «Fases»): a la barra normal i a la de rajoles */
+html body .fases-v878342 .accions-v878624{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+html body .fases-v878342 .accions-v878624>.mes-v878342{position:relative!important;right:auto!important;margin:0!important}
+html:root body .fases-v878342.rajoles-v878551>.accions-v878624{grid-area:m;justify-self:end;order:2;margin-left:auto}
+@media (max-width:767px){html body .fases-v878342:has(>.accions-v878624){padding-right:8px}}
+@media (max-width:480px){
+  html body .fases-v878342 .accions-v878624{gap:6px}
+  html body .fases-v878342 .nova-fase-v878624,html body .fases-v878342 .accions-v878624>.mes-v878342.opcions-v878500>summary{padding:0 10px;height:38px;font-size:13.5px}
+  html body .fases-v878342.rajoles-v878551>.tit{font-size:14px!important;letter-spacing:.03em}
+}
