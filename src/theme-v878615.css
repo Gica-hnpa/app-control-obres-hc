@@ -16,3 +16,5 @@ html body .exp-sub-v878615.comp{background:#f5f0ff;color:#5b21b6;border:1px soli
 html body .exp-sub-v878615 .s{min-width:0;overflow-wrap:anywhere}
 /* el nom, l'etiqueta i el nombre en una sola línia (com a la franja de l'any) */
 html body table.exp-table-v8742 tr.sub-row-v878615 td .s,html body table.exp-table-v8742 tr.sub-row-v878615 td small,html body table.exp-table-v8742 tr.sub-row-v878615 td .etq{display:inline-block!important;vertical-align:baseline}
+/* V87.616 · a la fitxa de la nota: «PDF», «Enviar» i «Tancar» en una fila */
+html body .nota-acc-v878616{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}

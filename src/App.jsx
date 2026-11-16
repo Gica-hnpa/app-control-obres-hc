@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.615";
+const APP_VERSION878264="87.616";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3801,8 +3801,9 @@ async function addNotePhotos878278(files,setDraft){
     }catch{alert(t("No s’ha pogut afegir la foto. Prova amb una imatge més petita."))}
   }
 }
-function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFitxa=false,onTancar}){
+function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFitxa=false,onTancar,openDoc,openEmail}){
   const notes=[...(data.notes||[])].sort((a,b)=>(+b.numero||0)-(+a.numero||0));
+  const[llistat616,setLlistat616]=useState(false);
   const[draft,setDraft]=useState(null);
   // V87.302 · el botó ＋ de l'obra obre una nota nova (i, si ve d'una foto, ja la hi posa)
   // V87.309 · des de «Visites» també obre una nota que ja hi és (`start.obrir`); `nomesFitxa`: només la fitxa, i en tancar-la
@@ -3831,7 +3832,8 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
   }
   function esborrar(){if(!confirm(t("Eliminar la nota {n}? Les fotos i els documents de la nota també es treuen.",{n:draft.numero})))return;setData(d=>({...d,notes:(d.notes||[]).filter(x=>x.id!==draft.id),updatedAt:new Date().toISOString()}));tanca()}
   const resum=n=>{const txt=String(n.text||"").trim().split(/\n/)[0];return txt.length>140?txt.slice(0,140)+"…":txt};
-  if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={<button type="button" className="secondary" onClick={tanca}>{t("Tancar")}</button>}>
+  const envia616=()=>{const d=docNota878616(draft,obra);if(openEmail)openEmail(d.title,{doc:d});else window.__acoEnviar878407?.({title:d.title,obra,doc:d})};
+  if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={<div className="nota-acc-v878616">{!draft.isNew&&openDoc&&<button type="button" className="secondary" onClick={()=>openDoc(docNota878616(draft,obra))}><Printer size={15} aria-hidden="true"/> {t("PDF")}</button>}{!draft.isNew&&(openEmail||window.__acoEnviar878407)&&<button type="button" className="secondary" onClick={envia616}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button>}<button type="button" className="secondary" onClick={tanca}>{t("Tancar")}</button></div>}>
     <fieldset disabled={readOnly} className="notes-form-v878278">
       <label className="notes-date-v878278"><span>{t("Dia")}</span><input type="date" value={draft.data||""} onChange={e=>set("data",e.target.value)}/></label>
       <label className="notes-text-v878278"><span>{t("Què has vist o què s’ha de fer")}</span><textarea rows={6} value={draft.text||""} onChange={e=>set("text",e.target.value)} placeholder={t("Escriu o dicta la nota…")}/></label>
@@ -3848,7 +3850,8 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
     {!readOnly&&<div className="modal-actions notes-actions-v878278">{!draft.isNew&&canDelete&&<button type="button" className="danger" onClick={esborrar}>{t("Eliminar la nota")}</button>}<button type="button" className="secondary" onClick={tanca}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={desar}>{t("Desar la nota")}</button></div>}
   </Card>;
   if(nomesFitxa)return null;
-  return <Card className="notes-v878278" title={t("Notes")} action={!readOnly&&<button type="button" className="primary" onClick={nova}><Plus size={16}/> {t("Nova nota")}</button>}>
+  return <Card className="notes-v878278" title={t("Notes")} action={<div className="visites-nou-v878309"><button type="button" className="secondary llistat-btn-v878501 llistat-v878616" onClick={()=>setLlistat616(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>{!readOnly&&<button type="button" className="primary" onClick={nova}><Plus size={16}/> {t("Nova nota")}</button>}</div>}>
+    {llistat616&&<LlistatVisites878616 obra={obra} data={data} nomes="nota" close={()=>setLlistat616(false)}/>}
     {notes.length===0?<Empty text="Encara no hi ha notes en aquesta obra."/>:<div className="notes-list-v878278">{notes.map(n=><button type="button" key={n.id} className="notes-row-v878278" onClick={()=>obrir(n)}>
       <span className="notes-num-v878278">{t("Nota {n}",{n:n.numero})}</span>
       <span className="notes-day-v878278">{fmtDate8761(n.data)}</span>
@@ -3863,14 +3866,26 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
 // V87.475 · l'Héctor, 2/11/2026: «surt aquesta del 22/10 sense res i no es pot ni eliminar». Fins ara, «+ Acta» la desava abans d'escriure-hi res i
 // «Cancel·lar» la deixava buida. Les que van quedar així (mai desades, sense res) es treuen en obrir Visites.
 function actaBuida878475(a){return !!a&&!a.updatedAt&&(a.estat||"Esborrany")==="Esborrany"&&!String(a.text||"").trim()&&!(a.fotoIds||[]).length&&!(a.agentIds||[]).length&&!(a.docs||[]).length&&!(a.croquis||[]).length&&!(a.signatures878403||[]).length}
+// V87.616 · Llistat de les notes i les actes de l'obra (l'Héctor, 16/11/2026: «on puc llistar les notes?»): filtres, PDF i Excel, com a
+// Factures i Despeses. A les notes, el text sencer; a les actes, el títol i l'estat.
+function LlistatVisites878616({obra,data={},nomes="",close}){
+  const files=[
+    ...(nomes==="nota"?[]:data.actes||[]).filter(a=>!actaBuida878475(a)).map(a=>({_k:"a"+a.id,tipus:t("Acta"),num:String(a.numero||""),data:toInputDate8743(a.data)||"",text:String(a.titol||"").trim(),estat:t(a.estat||"Esborrany"),fotos:(a.fotoIds||[]).length,docs:(a.docs||[]).length})),
+    ...(nomes==="acta"?[]:data.notes||[]).map(n=>({_k:"n"+n.id,tipus:t("Nota"),num:String(n.numero||""),data:toInputDate8743(n.data)||"",text:String(n.text||"").trim(),estat:"",fotos:(n.fotos||[]).length,docs:(n.docs||[]).length}))
+  ].sort((a,b)=>String(b.data).localeCompare(String(a.data))||(+b.num||0)-(+a.num||0));
+  const nomT=nomes==="acta"?t("Actes"):nomes==="nota"?t("Notes"):t("Visites");
+  const cols=[{k:"num",l:t("Núm.")},...(nomes?[]:[{k:"tipus",l:t("Tipus")}]),{k:"data",l:t("Data"),tipus:"data"},{k:"text",l:nomes==="acta"?t("Títol"):nomes==="nota"?t("Text"):t("Títol o text")},...(nomes==="nota"?[]:[{k:"estat",l:t("Estat")}]),{k:"fotos",l:t("Fotos"),tipus:"num",suma:true},{k:"docs",l:t("Documents"),tipus:"num",suma:true,def:false}];
+  return <Llistat878501 titol={[nomT,obra?.nom].filter(Boolean).join(" · ")} nom={nomes==="acta"?"actes":nomes==="nota"?"notes":"visites"} close={close} dates={[{k:"data",l:t("Data")}]} filtres={nomes?(nomes==="acta"?[{k:"estat",l:t("Estat")}]:[]):[{k:"tipus",l:t("Tipus")}]} cols={cols} files={files}/>;
+}
 // V87.571 · «nomes»: la mateixa llista a la pestanya «Actes» (només actes) i a «Notes» (només notes), cadascuna amb el seu botó
 function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDoc,allAgents=[],start=null,nomes=""}){
   const[obert,setObert]=useState(null);// {tipus:"acta"|"nota", token, obrir, files}
+  const[llistat616,setLlistat616]=useState(false);
   const fet=useRef(0);
   useEffect(()=>{if(readOnly||!(data.actes||[]).some(actaBuida878475))return;setData(d=>({...d,actes:(d.actes||[]).filter(a=>!actaBuida878475(a))}))},[]);
   useEffect(()=>{if(!start?.token||fet.current===start.token)return;fet.current=start.token;setObert({tipus:start.tab==="Notes"?"nota":"acta",token:start.token,files:start.files||null})},[start?.token]);
   const tanca=()=>setObert(null);
-  if(obert?.tipus==="nota")return <Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} nomesFitxa onTancar={tanca} start={{tab:"Notes",token:obert.token,obrir:obert.obrir,files:obert.files}}/>;
+  if(obert?.tipus==="nota")return <Notes878278 obra={obra} data={data} setData={setData} readOnly={readOnly} openDoc={openDoc} openEmail={openEmail} nomesFitxa onTancar={tanca} start={{tab:"Notes",token:obert.token,obrir:obert.obrir,files:obert.files}}/>;
   if(obert?.tipus==="acta")return <Actes8761 obra={obra} client={client} data={data} setData={setData} openEmail={openEmail} openDoc={openDoc} allAgents={allAgents} nomesFitxa onTancar={tanca} start={{tab:"Actes",token:obert.token,obrir:obert.obrir}}/>;
   const items=[
     ...(nomes==="nota"?[]:data.actes||[]).map(a=>({tipus:"acta",id:a.id,num:a.numero,data:a.data,text:a.titol||"",fotos:(a.fotoIds||[]).length,docs:(a.docs||[]).length,agents:(a.agentIds||a.agents||[]).length})),
@@ -3878,7 +3893,8 @@ function Visites878309({obra,client,data,setData,readOnly=false,openEmail,openDo
   ].sort((a,b)=>String(b.data||"").localeCompare(String(a.data||""))||(+b.num||0)-(+a.num||0));
   const nou=tipus=>setObert({tipus,token:Date.now()});
   const buit=nomes==="acta"?(diuObra878326()?"Encara no hi ha cap acta en aquesta obra.":"Encara no hi ha cap acta en aquest expedient."):nomes==="nota"?(diuObra878326()?"Encara no hi ha notes en aquesta obra.":"Encara no hi ha notes en aquest expedient."):(diuObra878326()?"Encara no hi ha cap visita en aquesta obra.":"Encara no hi ha cap visita en aquest expedient.");
-  return <Card className={"visites-v878309"+(nomes?" nomes-"+nomes+"-v878571":"")} title={nomes==="acta"?t("Actes"):nomes==="nota"?t("Notes"):t("Visites")} action={!readOnly&&<div className="visites-nou-v878309">{nomes!=="acta"&&<button type="button" className={nomes?"primary":"secondary"} onClick={()=>nou("nota")}><Plus size={16}/> {nomes?t("Nova nota"):t("Nota")}</button>}{nomes!=="nota"&&<button type="button" className="primary" onClick={()=>nou("acta")}><Plus size={16}/> {nomes?t("Nova acta"):t("Acta")}</button>}</div>}>
+  return <Card className={"visites-v878309"+(nomes?" nomes-"+nomes+"-v878571":"")} title={nomes==="acta"?t("Actes"):nomes==="nota"?t("Notes"):t("Visites")} action={<div className="visites-nou-v878309"><button type="button" className="secondary llistat-btn-v878501 llistat-v878616" onClick={()=>setLlistat616(true)}><Printer size={15} aria-hidden="true"/> <span className="tx-v878471">{t("Llistat")}</span></button>{!readOnly&&nomes!=="acta"&&<button type="button" className={nomes?"primary":"secondary"} onClick={()=>nou("nota")}><Plus size={16}/> {nomes?t("Nova nota"):t("Nota")}</button>}{!readOnly&&nomes!=="nota"&&<button type="button" className="primary" onClick={()=>nou("acta")}><Plus size={16}/> {nomes?t("Nova acta"):t("Acta")}</button>}</div>}>
+    {llistat616&&<LlistatVisites878616 obra={obra} data={data} nomes={nomes} close={()=>setLlistat616(false)}/>}
     {items.length===0?<Empty text={buit}/>:<div className="visites-llista-v878309">{items.map(x=><button type="button" key={x.tipus+x.id} className={`visita-v878309 ${x.tipus}`} onClick={()=>setObert({tipus:x.tipus,token:Date.now(),obrir:x.id})}>
       <b className="tipus">{x.tipus==="acta"?t("Acta {n}",{n:x.num||"—"}):t("Nota {n}",{n:x.num||"—"})}</b>
       <span className="dia">{fmtDate8761(x.data)}</span>
@@ -4313,10 +4329,31 @@ function actaPrintHtml878405(doc,obra,client){
     ${peuDoc878396()}
   </div></body></html>`;
 }
+// V87.616 · el document d'una nota (l'Héctor, 16/11/2026: «si només vull desar o imprimir i enviar una d'elles no hi ha aquestes opcions com
+// a la resta de pantalles»): la mateixa capçalera que l'acta, el text, les fotos i la llista de documents. Es veu, s'imprimeix, es baixa i
+// s'envia com la resta (DocViewer, BotonsDoc878412, enviaDoc878407).
+function notaPrintHtml878616(doc,obra,client){
+  const D=(s,v)=>tl(docLang878283(obra),s,v);const esc=escHtmlV8772;const nota=doc.nota||{};
+  const em=emissorTecnic878396();const C=colorDocs878396();
+  const str=v=>{const x=typeof v==="string"?v.trim():"";return /^(pendent|pendiente)\b/i.test(x)?"":x};
+  const promotor=str(obra?.propietat)||str(client?.nom);
+  const codi=typeof codiCurt878270==="function"?codiCurt878270(obra):"";
+  const cap=capDoc878396({D,em,titol:D("NOTA D’OBRA"),meta:[[D("Nota núm."),nota.numero],[D("Data"),fmtDate8761(nota.data)]],recLabel:D("Promotor / propietat"),recHtml:`<b>${esc(promotor||"—")}</b>`,obraLabel:D("Expedient / obra"),obraTitol:obra?.nom||"",obraLinia:[codi,[obra?.adreca,obra?.poblacio].filter(x=>x&&!/^pendent$/i.test(String(x).trim())).join(", ")].filter(Boolean).join(" · ")});
+  const sec=(t,cos)=>`<section class="s"><h3>${esc(t)}</h3>${cos}</section>`;
+  const fotos=(nota.fotos||[]).filter(x=>x&&x.src);const docs=(nota.docs||[]).filter(Boolean);
+  const css=`@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:#fff}.page{width:182mm;margin:0 auto;padding:6mm 0}.s{margin:0 0 5mm}.s h3{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:${C};margin:0 0 2mm;padding-bottom:1mm;border-bottom:1px solid #e2e8f0}.s p.tx{white-space:pre-wrap;line-height:1.5;margin:0;font-size:11.5px}.fotos{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fotos.una{grid-template-columns:1fr}figure{margin:0;break-inside:avoid}figure img{display:block;width:100%;height:62mm;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}.fotos.una figure img{height:auto;max-height:120mm;object-fit:contain}ul{margin:0;padding-left:5mm}`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(doc.title||D("Nota núm.")+" "+(nota.numero||""))}</title><style>${css}</style></head><body><div class="page">${cap}
+    ${sec(D("Nota"),`<p class="tx">${esc(String(nota.text||"").trim()||"—")}</p>`)}
+    ${fotos.length?sec(D("Fotos"),`<div class="fotos${fotos.length===1?" una":""}">${fotos.map(x=>`<figure><img src="${esc(x.src)}" alt=""></figure>`).join("")}</div>`):""}
+    ${docs.length?sec(D("Documents adjunts"),`<ul>${docs.map(d=>`<li>${esc(d.nom||"")}</li>`).join("")}</ul>`):""}
+    ${peuDoc878396()}
+  </div></body></html>`;
+}
+function docNota878616(n,obra){return {type:"nota878616",autoPrint:false,title:[i18nT("Nota {n}",{n:n?.numero||""}),obra?.nom].filter(Boolean).join(" · "),nota:{numero:n?.numero,data:n?.data,text:n?.text||"",fotos:(n?.fotos||[]).map(x=>({src:x.src})),docs:(n?.docs||[]).map(x=>({nom:x.nom}))}}}
 // V87.405 · l'HTML exacte de qualsevol document que en té (vista, impressió i PDF per adjuntar)
 function htmlDoc878405(doc,obra,client){
   if(!doc)return null;
-  const h=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):doc.type==="facturavf"&&doc.factura?facturaVFPrintHtml878285(doc,obra):doc.type==="acta"&&doc.acta?actaPrintHtml878405(doc,obra,client):doc.type==="imprevistos878411"&&doc.pi?imprevistosPrintHtml878411(doc,obra,client):doc.type==="facturadirecta878559"&&doc.factura878559?facturaDirectaHtml878559(doc,obra,client):doc.type==="compara878424"&&doc.cmp?comparaPrintHtml878424(doc,obra,client):null;
+  const h=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):doc.type==="pressupostobra"&&doc.rows?pressupostObraPrintHtml878153(doc,obra,client):doc.type==="pressuposttecnic"?quotePrintHtml8745("pressupost",doc,obra):doc.type==="facturatecnica"?quotePrintHtml8745("factura",doc,obra):doc.type==="facturavf"&&doc.factura?facturaVFPrintHtml878285(doc,obra):doc.type==="acta"&&doc.acta?actaPrintHtml878405(doc,obra,client):doc.type==="imprevistos878411"&&doc.pi?imprevistosPrintHtml878411(doc,obra,client):doc.type==="facturadirecta878559"&&doc.factura878559?facturaDirectaHtml878559(doc,obra,client):doc.type==="compara878424"&&doc.cmp?comparaPrintHtml878424(doc,obra,client):doc.type==="nota878616"&&doc.nota?notaPrintHtml878616(doc,obra,client):null;
   return h?marcaDoc878351(h):null;
 }
 
@@ -10616,10 +10653,14 @@ const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)ret
 // sense cap obra compartida es veu com abans.
 const esComp615=o=>{if(o?.compartida)return true;try{return !!window.__acoCloud?.sharedOwned?.()?.has?.(o?.id)}catch{return false}};
 const grupsAny615=any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));if(!items.some(esComp615))return [{k:"tot",items,cap:false}];
+  // V87.616 · un sol grup per empresa: dues fitxes de client amb el mateix NIF (l'Héctor, 16/11/2026: «SOCOTERM, el nom fiscal és Vertical
+  // Trek, i em surten en dos llistats per separat») van juntes, amb el nom que surt més vegades (el comercial)
   const meus=items.filter(o=>!esComp615(o)),per=new Map();
-  items.filter(esComp615).forEach(o=>{const c=String(clientNom(o)||"").trim()||t("Sense client");if(!per.has(c))per.set(c,[]);per.get(c).push(o)});
+  items.filter(esComp615).forEach(o=>{const id=clientIdObra878347(o),c=id?(clients||[]).find(x=>String(x.id)===String(id)):null;const nif=String(c?.nif||"").replace(/[^0-9a-z]/gi,"").toUpperCase();
+    const nom=String(clientNom(o)||"").trim();const k=nif.length>=8?"nif:"+nif:c?"id:"+c.id:"nom:"+(nom.toLowerCase()||"-");if(!per.has(k))per.set(k,[]);per.get(k).push(o)});
+  const etiq616=ls=>{const n=new Map();ls.forEach(o=>{const x=String(clientNom(o)||"").trim();if(x&&x!=="—")n.set(x,(n.get(x)||0)+1)});return [...n.entries()].sort((a,b)=>b[1]-a[1]||a[0].length-b[0].length)[0]?.[0]||t("Sense client")};
   return [...(meus.length?[{k:"meus",l:diuObra878326()?t("Les meves obres"):t("Els meus expedients"),items:meus,cap:true}]:[]),
-    ...[...per.entries()].sort((a,b)=>a[0].localeCompare(b[0],"ca")).map(([c,ls])=>({k:"c:"+c,l:c,items:ls,cap:true,comp:true}))]};
+    ...[...per.entries()].map(([k,ls])=>({k:"c:"+k,l:etiq616(ls),items:ls,cap:true,comp:true})).sort((a,b)=>a.l.localeCompare(b.l,"ca"))]};
 const capSub615=g=><><span className="s">{g.l}</span>{g.comp&&<em className="etq">{t("Compartides")}</em>}<small>{etNExp878327(g.items.length)}</small></>;
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
   <Card title={t(etObres878304())} action={esTreballador878326()?null:<div className="actions-inline">{allowAdminActions&&<button type="button" className="secondary imp-obres-btn-v878358" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-importar-obres"))}catch{}}}>{t("Importar")}</button>}<button className="primary" onClick={newObra}><Plus/> {t(etNovaObra878304())}</button></div>}>
@@ -22885,7 +22926,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.615",
+    app_version:"87.616",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

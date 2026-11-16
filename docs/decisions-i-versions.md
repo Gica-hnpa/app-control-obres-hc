@@ -4343,3 +4343,13 @@
     mòbil (targetes). Un any sense cap compartida es veu com abans. Estils: `theme-v878615.css`.
   Prova: `v615test` 10/10 (nova: sense compartides com abans; amb la casa compartida, «Els meus expedients» i «Construccions Prova SL ·
   Compartides» amb la casa; nombres; franges amb color i ombra; mòbil; socoterm amb la casa rebuda en el seu subgrup).
+  - **V87.616 · Una empresa, un sol grup; llistat de notes i actes; cada nota en PDF i per enviar** (l'Héctor, 16/11/2026):
+    - «SOCOTERM, el nom fiscal és Vertical Trek, i em surten en dos llistats per separat»: al compte de l'Héctor hi ha dues fitxes de client
+      amb el mateix NIF (`socoterm` i `client-vertical-trek-espana-s-l-…`, creada el 29/10 amb Front de Mar). Els subgrups de la V87.615 ara
+      ajunten les fitxes amb el mateix NIF (si no n'hi ha, per fitxa i, sense fitxa, pel nom) i porten el nom que surt més vegades.
+    - «On puc llistar les notes?»: «Llistat» (filtres, PDF i Excel) a Notes, Actes i Visites de l'obra (`LlistatVisites878616`): a les notes,
+      el text sencer; a les actes, el títol i l'estat.
+    - «Si només vull desar o imprimir i enviar una d'elles…»: a la fitxa d'una nota desada, «PDF» (visor amb Imprimir i Descarregar el PDF) i
+      «Enviar» (Gmail amb el PDF). Document nou `notaPrintHtml878616` (NOTA D'OBRA: capçalera com l'acta, text, fotos i documents).
+  Prova: `v615test` 14/14 (ampliada: dues fitxes amb el mateix NIF en un sol subgrup; llistat de notes amb una nota nova; la nota en PDF i
+  Enviar; llistat de les 4 actes de la casa). i18ntest tot traduït.

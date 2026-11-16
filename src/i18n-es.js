@@ -6093,4 +6093,7 @@ export default {
   "Eliminar definitivament la factura {n}? Fes-ho només si era de prova i no l’has enviada a ningú.": "¿Eliminar definitivamente la factura {n}? Hazlo solo si era de prueba y no la has enviado a nadie.",
   "Els meus expedients": "Mis expedientes",
   "Compartides": "Compartidas",
+  "Títol o text": "Título o texto",
+  "NOTA D’OBRA": "NOTA DE OBRA",
+  "Nota núm.": "Nota núm.",
 };
