@@ -4460,3 +4460,16 @@
   des d’«Opcions»». Prova: `v624test` 8/8 (botons, nova fase, ordre del menú, finestra del nom i número, eliminar, mòbil); v528 13/13.
   Proves velles que obrien «Fases» › «+ Nova fase» adaptades (fases342, v435, v437, v531, v534, pressupost, pdfpressupost). Amb la V87.623 ja
   fallaven igual (noms amb el número «P2026_0001 · …» des de la V87.532/589): v437 2/16, v531 5/14, pressuposttest 24/27; queden per posar al dia.
+- **V87.625 · Carpeta del despatx** (l'Héctor, 16/11/2026, per a un despatx de 8 arquitectes on no tots fan servir l'app: «que cada
+  vegada que es guarda qualsevol document d'una obra anés en aquella carpeta… i al revés»; el 17/11 a la nit: «ves fent i ves publicant»).
+  Ajustos › «Carpeta del despatx» (Chrome o Edge a l'ordinador, com la «Còpia al meu ordinador»): es tria una carpeta (la del servidor,
+  OneDrive o Google Drive de l'ordinador…) i, mentre l'app és oberta, en obrir-la i cada 5 minuts: els documents de cada obra pròpia
+  (pestanya Documents) s'hi copien a «<codi de carpeta de l'obra>\<apartat>\<arxiu>» (apartats «01 Documentació prèvia», «02 Plànols»…,
+  els de la pestanya Documents); el que algú hi posa o hi canvia entra als Documents de l'obra (l'apartat surt del nom de la subcarpeta;
+  si no, «99 Altres») i d'aquí al núvol. Una carpeta d'obra que ja existeix es reconeix pel codi («2026-001 …»). No s'esborra mai res (el
+  que es treu d'un costat no torna); més de 50 arxius nous o 300 MB de cop no es pugen sols («N arxius nous a la carpeta» + «Afegir-los a
+  l'app», i avís a l'Inici); els de més de 50 MB no entren a l'app. «Últims canvis» (30). Si el navegador demana el permís, avís a l'Inici
+  «Carpeta del despatx · Toca per continuar». **Decisió (sense les respostes de l'Héctor):** dins de l'app i no un programa a part
+  (sense contrasenyes ni instal·lació; es pot provar amb una carpeta seva d'un clic); el programa del despatx (opció A) es pot fer després
+  amb les mateixes regles si cal que funcioni sense l'app oberta. Falta: obres compartides per altres, fotos de les actes i PDF generats
+  (pressupostos, actes…). IndexedDB `aco_carpeta_despatx`. Prova: `v625test` 17/17 (carpeta del navegador OPFS).

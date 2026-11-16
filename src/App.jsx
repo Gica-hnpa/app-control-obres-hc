@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,FolderSync,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.624";
+const APP_VERSION878264="87.625";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3646,15 +3646,18 @@ async function triaCarpeta878520(st){
 // l'avís de l'Inici: la còpia d'avui està pendent perquè el navegador ha de tornar a donar permís (cal un toc)
 function useCopiaPendent878520(){const[p,setP]=useState(!!window.__acoCopiaPendent878520);useEffect(()=>{const f=()=>setP(!!window.__acoCopiaPendent878520);window.addEventListener("aco-copia-878520",f);return()=>window.removeEventListener("aco-copia-878520",f)},[]);return p}
 function useAvisos878520(){
-  const[esp,setEsp]=useState([]);const pend=useCopiaPendent878520();
+  const[esp,setEsp]=useState([]);const pend=useCopiaPendent878520();const dsp=useDespatx878625();
   useEffect(()=>{let viu=true;const t0=setTimeout(()=>espaiAvisos878520().then(l=>{if(viu)setEsp(l)}),2500);return()=>{viu=false;clearTimeout(t0)}},[]);
-  return useMemo(()=>[...esp,...(pend?[{k:"copia",ref:"copia",tone:"info",txt:t("Còpia al teu ordinador"),sub:t("Toca per fer la d’avui")}]:[])],[esp,pend]);
+  return useMemo(()=>[...esp,...(pend?[{k:"copia",ref:"copia",tone:"info",txt:t("Còpia al teu ordinador"),sub:t("Toca per fer la d’avui")}]:[]),
+    ...(dsp.permis?[{k:"despatx",ref:"despatx",tone:"info",txt:t("Carpeta del despatx"),sub:t("Toca per continuar")}]:[]),
+    ...(dsp.nous?[{k:"despatx-nous",ref:"despatx-nous",tone:"info",txt:t("Carpeta del despatx: {n} arxius nous",{n:dsp.nous}),sub:t("Toca per afegir-los a l’app")}]:[])],[esp,pend,dsp.permis,dsp.nous]);
 }
 function obreAvis878520(a,st){
   if(a.k==="espai"){try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Configuració"}}))}catch{}return true}
   if(a.k==="pagar"||a.k==="pagar-set"||a.k==="caixa"){obreCaixa878521(a.vista);return true}
   if(a.k==="dge"){window.__acoRendDGE878564=true;try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Rendiment empresa"}}))}catch{}return true}
   if(a.k==="fitx-no"){window.__acoCHVista878523="fitxatge";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Traça"}}))}catch{}return true}
+  if(a.k==="despatx"||a.k==="despatx-nous"){sincronitzaDespatx878625(window.__acoEstatDespatx878625?.()||{},{demana:true,manual:a.k==="despatx-nous",tots:a.k==="despatx-nous"});return true}
   if(a.k==="copia"){ferCopia878520(st||window.__acoEstatCopia878520?.()||{},{demana:true}).then(r=>{if(r?.ok){window.__acoCopiaPendent878520=false;try{window.dispatchEvent(new Event("aco-copia-878520"))}catch{}}});return true}
   return false;
 }
@@ -3689,6 +3692,226 @@ function CopiaOrdinador878520({clients,obres,odata}){
       {rec?.dir?<button type="button" className="secondary" disabled={fent} onClick={async()=>{if(!confirm(t("Deixar de fer la còpia en aquesta carpeta? Les còpies que ja hi ha no s’esborren.")))return;await desaCopiaRec878520(user,null);setMsg("")}}>{t("Deixar de fer-la")}</button>:null}
     </div>
     {msg&&<p className="msg" role="status">{msg}</p>}
+  </div>;
+}
+// ── V87.625 · Carpeta del despatx ─────────────────────────────────────────────────────────────────────────────────────────────────
+// L'Héctor, 16/11/2026, per a un despatx de 8 arquitectes on no tots fan servir l'app: «que cada vegada que es guarda qualsevol document
+// d'una obra anés en aquella carpeta… i al revés, qualsevol canvi que es faci a l'obra que quedi ja canviat per la resta que treballen al
+// despatx». Chrome o Edge a l'ordinador, com la «Còpia al meu ordinador»: es tria una carpeta (la del servidor, la de OneDrive o de Google
+// Drive de l'ordinador…) i, mentre l'app és oberta, en obrir-la i cada 5 minuts:
+//  · els documents de cada obra pròpia (pestanya Documents) s'hi copien a «<codi de carpeta de l'obra>\<apartat>\<arxiu>»;
+//  · el que algú hi posa o hi canvia entra als Documents de l'obra (i d'aquí al núvol i als altres aparells).
+// Una carpeta d'obra que ja hi és es reconeix pel codi (2026-026…). No s'esborra mai res: ni de la carpeta ni de l'app (el que es treu
+// d'un costat no torna). Si de cop hi ha molts arxius nous (més de 50 o de 300 MB) no es pugen sols: es pregunta. La carpeta i el que ja
+// s'ha passat es recorden a l'aparell (IndexedDB aco_carpeta_despatx, per usuari). Les obres compartides per altres, de moment no.
+const CARP878625={"00_DESPATX_TECNIC":"00 Despatx tècnic","01_DOCUMENTACIO_PREVIA":"01 Documentació prèvia","01_TRAMITS_AJUNTAMENT":"01 Tràmits","02_PLANOLS":"02 Plànols","03_AMIDAMENTS_PRESSUPOST_OBRA":"03 Amidaments i pressupost","04_PRESSUPOSTOS_INDUSTRIALS":"04 Pressupostos industrials","05_SEGURETAT_SALUT":"05 Seguretat i salut","06_ACTES_SEGUIMENT":"06 Actes i seguiment","06B_FOTOS_OBRA":"06B Fotos d'obra","06C_CONTROL_QUALITAT":"06C Control de qualitat","07_CERTIFICACIONS_FACTURACIO_OBRA":"07 Certificacions i facturació","08_DOCUMENTACIO_FINAL":"08 Final d'obra","99_ALTRES":"99 Altres"};
+const LIMIT878625={n:50,mb:300};
+const nomDir878625=x=>String(nomFitxer878520(x)).replace(/[. ]+$/,"")||"sense nom";
+const norm878625=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+function idCarpeta878625(nom){
+  const n=norm878625(nom);if(!n)return null;
+  for(const id of Object.keys(CARP878625))if(n===id.toLowerCase()||n===norm878625(CARP878625[id])||n===norm878625(t(CARP878625[id])))return id;
+  const m=/^(\d{2}[a-z]?)(?=[\s_.\-·]|$)/.exec(n);if(!m)return null;
+  const cs=Object.keys(CARP878625).filter(id=>id.split("_")[0].toLowerCase()===m[1]);
+  if(cs.length===1)return cs[0];if(cs.length>1)return /tramit|ajuntament|llicenc|licenc/.test(n)?"01_TRAMITS_AJUNTAMENT":"01_DOCUMENTACIO_PREVIA";
+  return null;
+}
+const nomSubDir878625=id=>nomDir878625(CARP878625[id]?t(CARP878625[id]):id);
+const ignora878625=n=>/^(~\$|\.|_)/.test(n)||/^(thumbs\.db|desktop\.ini)$/i.test(n)||/\.(tmp|dwl2?|bak|sv\$|lnk|crdownload|part)$/i.test(n);
+// nom de la carpeta d'una obra: el codi de carpeta (2026-026-ALT-ALBA-PROJECTEPISC) o el codi i el nom
+function nomObraDir878625(o){
+  const c=String(o?.codiExpedient||"").trim(),curt=String(codiCurt878270(o)||"").trim(),nom=String(o?.nom||"").trim();
+  return nomDir878625(/^\d{4}-\d{2,4}-[a-z]/i.test(c)?c:[c||curt,nom].filter(Boolean).join(" ")||o?.id||"Obra");
+}
+const nomArxiuDoc878625=d=>nomFitxer878520(d?.nom||d?.id);
+function despatxDb878625(){return new Promise((res,rej)=>{const r=indexedDB.open("aco_carpeta_despatx",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("c"))r.result.createObjectStore("c")};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function despatxRec878625(u){if(!u)return null;const db=await despatxDb878625();return new Promise((res,rej)=>{const q=db.transaction("c","readonly").objectStore("c").get(u);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)})}
+async function desaDespatxRec878625(u,v){const db=await despatxDb878625();await new Promise((res,rej)=>{const tx=db.transaction("c","readwrite");if(v==null)tx.objectStore("c").delete(u);else tx.objectStore("c").put(v,u);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)});avisaDespatx878625()}
+function avisaDespatx878625(){try{window.dispatchEvent(new Event("aco-despatx-878625"))}catch{}}
+let despatxAra878625=false;
+async function sincronitzaDespatx878625(st,opc={}){
+  if(typeof navigator!=="undefined"&&navigator.locks?.request)return navigator.locks.request("aco-despatx-878625",{ifAvailable:true},l=>l?fesDespatx878625(st,opc):{error:"ja"});
+  return fesDespatx878625(st,opc);
+}
+async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
+  const user=currentAppUser8779();if(!user)return {error:"usuari"};
+  const rec=await despatxRec878625(user);if(!rec?.dir)return {error:"carpeta"};
+  let perm="granted";try{perm=await rec.dir.queryPermission?.({mode:"readwrite"})||"granted"}catch{}
+  if(perm!=="granted"&&demana){try{perm=await rec.dir.requestPermission({mode:"readwrite"})}catch{}}
+  if(perm!=="granted"){if(!window.__acoDespatxPendent878625){window.__acoDespatxPendent878625=true;avisaDespatx878625()}return {error:"permis"}}
+  if(window.__acoDespatxPendent878625){window.__acoDespatxPendent878625=false;avisaDespatx878625()}
+  const {obres=[],odata={},setOdata}=st||{};
+  if(typeof setOdata!=="function"||((obres||[]).length&&!Object.keys(odata||{}).length))return {error:"dades"};
+  if(despatxAra878625)return {error:"ja"};despatxAra878625=true;
+  const fets={...(rec.fets||{})},mapa={...(rec.obres||{})},canvis=[],grans=[],nous={},subs={};
+  let aCarpeta=0,aApp=0,actualitzats=0,errors=0,deixa=false,nousP=[],bytes=0;
+  const ara=()=>new Date().toISOString();
+  const apunta=(d,o,n)=>canvis.push({d,o:String(o?.nom||""),n:String(n||""),at:ara()});
+  const fatal=e=>/NotAllowed|Security/i.test(String(e?.name||""))||/permission/i.test(String(e?.message||""));
+  try{
+    const root=rec.dir;
+    const dirsDe=async d=>{const out=[];for await(const [n,h] of d.entries())if(h.kind==="directory"&&!ignora878625(n))out.push([n,h]);return out};
+    const arrel=await dirsDe(root);
+    const usats=new Set(Object.values(mapa));
+    const propies=(obres||[]).filter(o=>o&&o.id&&!o.compartida&&odata[o.id]&&typeof odata[o.id]==="object");
+    const feina=[];
+    // 1. la carpeta de cada obra: la que ja té, una que porti el seu codi o, si té documents, una de nova
+    for(const o of propies){
+      const d=odata[o.id];const docs=(Array.isArray(d.documents)?d.documents:[]).filter(x=>x&&x.id&&x.hasFile);
+      let nomO=mapa[o.id]||"",dirO=nomO?(arrel.find(([n])=>n===nomO)||[])[1]||null:null;
+      if(!dirO){
+        const nom=nomObraDir878625(o),curt=String(codiCurt878270(o)||"").trim();
+        let c=arrel.find(([n])=>n===nom&&!usats.has(n));
+        if(!c&&curt&&/\d/.test(curt)){const re=new RegExp("^"+curt.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![0-9])","i");const cs=arrel.filter(([n])=>re.test(n)&&!usats.has(n));if(cs.length===1)c=cs[0]}
+        if(c){nomO=c[0];dirO=c[1]}
+        else if(docs.length){let i=2;nomO=nom;while(usats.has(nomO)||arrel.some(([n])=>n===nomO))nomO=`${nom} (${i++})`;dirO=await root.getDirectoryHandle(nomO,{create:true});arrel.push([nomO,dirO])}
+        if(dirO){mapa[o.id]=nomO;usats.add(nomO)}
+      }
+      if(!dirO)continue;
+      const arxius=[];
+      const recorre=async(dir,rel,prof)=>{for await(const [n,h] of dir.entries()){if(ignora878625(n))continue;const r=rel?rel+"/"+n:n;if(h.kind==="directory"){if(prof<4)await recorre(h,r,prof+1)}else{try{const f=await h.getFile();arxius.push({r,h,f,sub:rel?rel.split("/")[0]:""})}catch{}}}};
+      await recorre(dirO,"",0);
+      feina.push({o,d,docs,dirO,nomO,arxius,perPath:new Map(arxius.map(a=>[nomO+"/"+a.r,a]))});
+    }
+    // 2. de la carpeta a l'app: el que hi ha de nou o de canviat
+    const pendents=[];
+    for(const w of feina){
+      const {o,d,docs,nomO,arxius}=w;
+      const coneguts=new Map();for(const [id,v] of Object.entries(fets))if(v&&v.o===o.id&&v.p)coneguts.set(v.p,id);
+      const llista=documentFolders8775(o,d),disp=new Set(llista.map(x=>x.id));
+      for(const a of arxius){
+        const p=nomO+"/"+a.r,id=coneguts.get(p);
+        if(id){
+          const v=fets[id];if(v.x){const {x,...resta}=v;fets[id]=resta}
+          if(a.f.lastModified>(v.m||0)+1500){
+            const doc=docs.find(x=>x.id===id);
+            if(!doc||doc.linkedType||doc.docData){fets[id]={...fets[id],m:a.f.lastModified,s:a.f.size};continue}
+            if(a.f.size>50*1048576){grans.push(a.r);continue}
+            pendents.push({tipus:"act",w,a,p,id});
+          }
+          continue;
+        }
+        const fid0=a.sub?idCarpeta878625(a.sub):null,fid=fid0&&(disp.has(fid0)||llista.encarrec878441)?fid0:"99_ALTRES";
+        const base=n=>{const b=nomFitxer878520(n);return a.f.name===b||a.f.name.startsWith(b+".")};
+        const ja=docs.find(x=>!fets[x.id]&&(x.carpeta878625===p||((x.folder||"01_DOCUMENTACIO_PREVIA")===fid&&base(x.nom||x.id)&&+x.size===a.f.size)));
+        if(ja){fets[ja.id]={o:o.id,p,m:a.f.lastModified,s:a.f.size,u:ja.updatedAt||""};continue}
+        if(a.f.size>50*1048576){grans.push(a.r);continue}
+        pendents.push({tipus:"nou",w,a,p,fid});
+      }
+    }
+    nousP=pendents.filter(x=>x.tipus==="nou");bytes=nousP.reduce((s0,x)=>s0+(x.a.f.size||0),0);
+    const lim=window.__acoDespatxLimit878625||LIMIT878625;
+    if(nousP.length>lim.n||bytes>lim.mb*1048576)deixa=!(manual&&(tots||confirm(t("La carpeta té {n} arxius que no són a l’app ({mb} MB). Afegir-los tots a l’app i al núvol?",{n:nousP.length,mb:MB878263(bytes)}))));
+    for(const x of pendents){
+      if(x.tipus==="nou"&&deixa)continue;
+      const {w,a,p}=x,o=w.o,f=a.f;
+      try{
+        const fitxer=new File([await f.arrayBuffer()],f.name,{type:f.type||"",lastModified:f.lastModified});
+        const nid=`doc-${o.id}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,now=ara();
+        await saveDocFile(nid,fitxer,o.id);
+        if(x.tipus==="nou"){
+          const ext=f.name.includes(".")?f.name.split(".").pop().toUpperCase():"DOC";
+          (nous[o.id]=nous[o.id]||[]).push({id:nid,obraId:o.id,nom:f.name,tipus:ext,folder:x.fid,data:new Date().toLocaleDateString("ca-ES"),createdAt:now,updatedAt:now,size:f.size,storage:"indexeddb",hasFile:true,carpeta878625:p});
+          fets[nid]={o:o.id,p,m:f.lastModified,s:f.size,u:now};aApp++;apunta("app",o,f.name);
+        }else{
+          (subs[o.id]=subs[o.id]||{})[x.id]={id:nid,size:f.size,updatedAt:now,carpeta878625:p};
+          delete fets[x.id];fets[nid]={o:o.id,p,m:f.lastModified,s:f.size,u:now};actualitzats++;apunta("act",o,f.name);
+        }
+      }catch(e){if(fatal(e))throw e;errors++}
+    }
+    // 3. de l'app a la carpeta: els documents que encara no hi són (o que s'han canviat a l'app)
+    for(const w of feina){
+      const {o,docs,dirO,nomO,perPath}=w;
+      let subdirs=null;
+      const subPer=async fid=>{if(!subdirs)subdirs=await (async()=>{const out=[];for await(const [n,h] of dirO.entries())if(h.kind==="directory"&&!ignora878625(n))out.push([n,h]);return out})();
+        let c=subdirs.find(([n])=>n===nomSubDir878625(fid))||subdirs.find(([n])=>idCarpeta878625(n)===fid);if(c)return c;
+        const n=nomSubDir878625(fid);c=[n,await dirO.getDirectoryHandle(n,{create:true})];subdirs.push(c);return c};
+      for(const doc of docs){
+        try{
+          const v=fets[doc.id];
+          if(v){
+            const a=perPath.get(v.p);
+            if(!a){if(!v.x)fets[doc.id]={...v,x:1};continue} // l'han tret de la carpeta: no es torna a posar
+            if(doc.updatedAt&&v.u&&doc.updatedAt>v.u&&!(subs[o.id]||{})[doc.id]){
+              if(a.f.lastModified<=(v.m||0)+1500){const blob=await getDocFile(doc.id,o.id).catch(()=>null);if(!blob)continue;const wr=await a.h.createWritable();await wr.write(blob);await wr.close();const f2=await a.h.getFile();fets[doc.id]={...v,m:f2.lastModified,s:f2.size,u:doc.updatedAt};aCarpeta++;apunta("carpeta",o,a.r.split("/").pop())}
+              else fets[doc.id]={...v,u:doc.updatedAt};
+            }
+            continue;
+          }
+          if(doc.carpeta878625&&perPath.has(doc.carpeta878625)){const a=perPath.get(doc.carpeta878625);fets[doc.id]={o:o.id,p:doc.carpeta878625,m:a.f.lastModified,s:a.f.size,u:doc.updatedAt||""};continue}
+          const blob=await getDocFile(doc.id,o.id).catch(()=>null);if(!blob)continue;
+          const [sn,sh]=await subPer(doc.folder||"01_DOCUMENTACIO_PREVIA");
+          const base=nomArxiuDoc878625(doc),nomF=base+extDe878520(blob.type,base),mm=/^(.*?)(\.[^.]*)?$/.exec(nomF);
+          let nomFinal=nomF,fh=null;
+          for(let i=2;i<60&&!fh;i++){
+            let ex=null;try{ex=await sh.getFileHandle(nomFinal)}catch{}
+            if(!ex){fh=await sh.getFileHandle(nomFinal,{create:true});const wr=await fh.createWritable();await wr.write(blob);await wr.close();aCarpeta++;apunta("carpeta",o,nomFinal);break}
+            const fx=await ex.getFile(),pth=nomO+"/"+sn+"/"+nomFinal;
+            if(fx.size===blob.size&&!Object.values(fets).some(q=>q&&q.p===pth)){fh=ex;break} // el mateix arxiu, que ja hi era
+            nomFinal=`${mm[1]} (${i})${mm[2]||""}`;
+          }
+          if(!fh)continue;
+          const f2=await fh.getFile();fets[doc.id]={o:o.id,p:nomO+"/"+sn+"/"+nomFinal,m:f2.lastModified,s:f2.size,u:doc.updatedAt||""};
+        }catch(e){if(fatal(e))throw e;errors++}
+      }
+    }
+    if(Object.keys(nous).length||Object.keys(subs).length)setOdata(prev=>{let canvi=false;const n={...prev};
+      for(const [oid,arr] of Object.entries(nous)){const d=n[oid];if(!d||typeof d!=="object")continue;const ids=new Set((d.documents||[]).map(x=>x?.id));const add=arr.filter(x=>!ids.has(x.id));if(add.length){n[oid]={...d,documents:[...add,...(d.documents||[])]};canvi=true}}
+      for(const [oid,m] of Object.entries(subs)){const d=n[oid];if(!d||typeof d!=="object")continue;n[oid]={...d,documents:(d.documents||[]).map(x=>x&&m[x.id]?{...x,...m[x.id]}:x)};canvi=true}
+      return canvi?n:prev});
+    const ara2=await despatxRec878625(user);
+    let mateixa=false;try{mateixa=!!ara2?.dir&&(ara2.dir===rec.dir||await ara2.dir.isSameEntry(rec.dir))}catch{}
+    if(mateixa)await desaDespatxRec878625(user,{...ara2,fets,obres:mapa,ultima:ara(),pendents:deixa?{n:nousP.length,bytes}:null,canvis:[...canvis.reverse(),...(ara2.canvis||[])].slice(0,30)});
+    window.__acoDespatxNous878625=deixa?nousP.length:0;avisaDespatx878625();
+    return {ok:true,aCarpeta,aApp,actualitzats,grans,errors,pendents:deixa?nousP.length:0,bytes};
+  }catch(e){if(fatal(e)){window.__acoDespatxPendent878625=true;avisaDespatx878625();return {error:"permis"}}return {error:"escriure",msg:String(e?.message||e)}}
+  finally{despatxAra878625=false}
+}
+async function triaDespatx878625(st){
+  const user=currentAppUser8779();if(!user)return {error:"usuari"};
+  let dir;try{dir=await (window.__acoTriaDespatx878625?window.__acoTriaDespatx878625():window.showDirectoryPicker({mode:"readwrite",id:"aco-despatx"}))}catch{return {error:"cancel"}}
+  await desaDespatxRec878625(user,{dir,nom:dir.name||"",fets:{},obres:{},canvis:[],ultima:""});
+  return sincronitzaDespatx878625(st,{demana:true,manual:true});
+}
+function useDespatx878625(){const llegeix=()=>({permis:!!window.__acoDespatxPendent878625,nous:+window.__acoDespatxNous878625||0});const[s,setS]=useState(llegeix);useEffect(()=>{const f=()=>setS(llegeix());window.addEventListener("aco-despatx-878625",f);return()=>window.removeEventListener("aco-despatx-878625",f)},[]);return s}
+// en obrir l'app i cada 5 minuts (si l'app es veu i el navegador ja té el permís; si no, l'avís de l'Inici)
+function DespatxAuto878625({obres,odata,setOdata}){
+  const ref=useRef({obres,odata,setOdata});ref.current={obres,odata,setOdata};
+  useEffect(()=>{window.__acoEstatDespatx878625=()=>ref.current;let viu=true,tm=null;
+    const passa=async()=>{if(!viu)return;
+      try{if(potCopia878520()&&document.visibilityState!=="hidden"){const user=currentAppUser8779();const rec=user?await despatxRec878625(user):null;if(rec?.dir)await sincronitzaDespatx878625(ref.current)}}catch{}
+      if(viu)tm=setTimeout(passa,window.__acoDespatxCada878625??300000)};
+    tm=setTimeout(passa,window.__acoDespatxEspera878625??25000);
+    return()=>{viu=false;clearTimeout(tm)}},[]);
+  return null;
+}
+const horaDespatx878625=v=>{if(!v)return "";const d=new Date(v);return fmtAppDate8748(isoDay878255(d))+" · "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+function CarpetaDespatx878625({obres,odata,setOdata}){
+  const user=currentAppUser8779();
+  const[rec,setRec]=useState(undefined);const[msg,setMsg]=useState("");const[fent,setFent]=useState(false);
+  const llegeix=()=>despatxRec878625(user).then(r=>setRec(r||null)).catch(()=>setRec(null));
+  useEffect(()=>{llegeix();window.addEventListener("aco-despatx-878625",llegeix);return()=>window.removeEventListener("aco-despatx-878625",llegeix)},[]);
+  if(!potCopia878520())return <p className="copia-buit-v878520">{t("Es fa des de l’ordinador, amb Chrome o Edge.")}</p>;
+  const st={obres,odata,setOdata};
+  const diu=r=>{
+    if(r?.ok){let x=t("Fet: {a} a la carpeta i {b} a l’app.",{a:r.aCarpeta,b:r.aApp+r.actualitzats});
+      if(r.pendents)x+=" "+t("Queden {n} arxius nous a la carpeta per afegir a l’app.",{n:r.pendents});
+      if(r.grans?.length)x+=" "+t("No s’han afegit a l’app perquè fan més de 50 MB: {l}.",{l:r.grans.slice(0,3).map(g=>g.split("/").pop()).join(", ")+(r.grans.length>3?"…":"")});
+      if(r.errors)x+=" "+t("{n} arxius no s’han pogut passar: es tornarà a provar.",{n:r.errors});
+      return x}
+    return r?.error==="permis"?t("El navegador no ha donat permís per fer servir la carpeta."):r?.error==="escriure"?t("No s’ha pogut fer servir la carpeta: {m}",{m:r.msg||""}):r?.error==="ja"?t("Ja s’està sincronitzant."):r?.error==="dades"?t("Les obres encara s’estan carregant. Torna-ho a provar d’aquí a un moment."):""};
+  const fes=async f=>{setFent(true);setMsg("");try{setMsg(diu(await f()))}finally{setFent(false);llegeix()}};
+  if(rec===undefined)return null;
+  return <div className="copia-v878520 despatx-v878625">
+    {rec?.dir?<div className="estat"><FolderSync size={20} aria-hidden="true"/><span><b>{rec.nom||t("Carpeta triada")}</b><small>{rec.ultima?t("Última sincronització: {d}",{d:horaDespatx878625(rec.ultima)}):t("Encara no s’ha sincronitzat")}</small></span></div>:null}
+    {rec?.dir&&rec.pendents?.n>0?<div className="pend-v878625" role="status"><span>{t("{n} arxius nous a la carpeta ({mb} MB)",{n:rec.pendents.n,mb:MB878263(rec.pendents.bytes||0)})}</span><button type="button" className="primary" disabled={fent} onClick={()=>fes(()=>sincronitzaDespatx878625(st,{demana:true,manual:true,tots:true}))}>{t("Afegir-los a l’app")}</button></div>:null}
+    <div className="botons">
+      {rec?.dir?<button type="button" className="primary" disabled={fent} onClick={()=>fes(()=>sincronitzaDespatx878625(st,{demana:true,manual:true}))}>{fent?t("Sincronitzant…"):t("Sincronitzar ara")}</button>:null}
+      <button type="button" className={rec?.dir?"secondary":"primary"} disabled={fent} onClick={()=>fes(()=>triaDespatx878625(st))}>{rec?.dir?t("Canviar de carpeta"):t("Triar la carpeta")}</button>
+      {rec?.dir?<button type="button" className="secondary" disabled={fent} onClick={async()=>{if(!confirm(t("Deixar de sincronitzar amb aquesta carpeta? No s’esborra res, ni de la carpeta ni de l’app.")))return;await desaDespatxRec878625(user,null);window.__acoDespatxNous878625=0;window.__acoDespatxPendent878625=false;avisaDespatx878625();setMsg("")}}>{t("Deixar de fer-ho")}</button>:null}
+    </div>
+    {msg&&<p className="msg" role="status">{msg}</p>}
+    {rec?.dir&&rec.canvis?.length>0?<details className="canvis-v878625"><summary>{t("Últims canvis")} <span className="xifra">{rec.canvis.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><ul>{rec.canvis.map((c,i)=><li key={i}><b>{c.n}</b><small>{c.d==="app"?t("De la carpeta a l’app"):c.d==="act"?t("Canviat a la carpeta"):t("De l’app a la carpeta")} · {c.o} · {horaDespatx878625(c.at)}</small></li>)}</ul></details>:null}
   </div>;
 }
 function EspaiNuvol878263(){
@@ -6704,7 +6927,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
 {fiTemps878463&&<DesarTemps878463 fi={fiTemps878463} obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} close={()=>setFiTemps878463(null)} acaba={row=>acabaTemps878463(fiTemps878463,row)}/>}
-{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/>{!esTreballador878326()&&<PaquetGestoriaGlobal878522 obres={viewObres878233} odata={viewOdata878233} clients={viewClients878233}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
+{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/>{!esTreballador878326()&&<DespatxAuto878625 obres={obres} odata={odata} setOdata={setOdata}/>}{!esTreballador878326()&&<PaquetGestoriaGlobal878522 obres={viewObres878233} odata={viewOdata878233} clients={viewClients878233}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
   const meva508=k==="despesa"&&!modeObra878484(currentAccount878233.role,empresa878259?.perfil||"");
   if(screen==="Obra"&&obraId){if(meva508){window.__acoStartAlb878484={files,token:Date.now(),obraId};nav("Albarans");return}try{window.dispatchEvent(new CustomEvent("aco-accio-484",{detail:{k,files}}))}catch{}return}setAccio878484({k,files,meva508})}}/>{accio878484&&<TriaObraAccio878484 accio={accio878484} obres={viewObres878233} clients={viewClients878233} close={()=>setAccio878484(null)} tria={id=>{if(!id){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),senseObra:true};setAccio878484(null);nav("Albarans");return}
   if(accio878484.meva508){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),obraId:id};setAccio878484(null);nav("Albarans");return}window.__acoStart878484={obraId:id,k:accio878484.k,files:accio878484.files};setAccio878484(null);openObra(id)}}/>}</div></>
@@ -23033,7 +23256,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.624",
+    app_version:"87.625",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23233,7 +23456,7 @@ const ajRef878366=useRef(null);
 useEffect(()=>{const el=ajRef878366.current;if(!el)return;const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;el.querySelectorAll("details.ajustos-grup-v878354[open]").forEach(o=>{if(o!==d)o.open=false});const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};el.addEventListener("click",h,true);return()=>el.removeEventListener("click",h,true)},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={comptes:KeyRound,exemples:GraduationCap,copia:FolderDown,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
+const IC438={comptes:KeyRound,exemples:GraduationCap,copia:FolderDown,despatx:FolderSync,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
 const bloc878366=(k,tit,cont)=><details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366" data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
 return <div className="stack ajustos-v878366" ref={ajRef878366}>
@@ -23253,6 +23476,7 @@ return <div className="stack ajustos-v878366" ref={ajRef878366}>
 {!window.__acoEmpresa&&!!window.__acoCloud?.callFunction&&bloc878366("comptes",t("Comptes del núvol"),<ComptesNuvol878613/>)}
 {!window.__acoEmpresa&&!!window.__acoCloud?.proves&&bloc878366("proves",t("Comptes de prova"),<ProvesAjustos878519/>)}
 {!esTreballador878326()&&bloc878366("copia",t("Còpia al meu ordinador"),<CopiaOrdinador878520 clients={clients} obres={obres} odata={odata}/>)}
+{!esTreballador878326()&&bloc878366("despatx",t("Carpeta del despatx"),<CarpetaDespatx878625 obres={obres} odata={odata} setOdata={setOdata}/>)}
 {admin&&<details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 copies-v878354" data-k="copies"><summary>{icAj438("copies")}<span className="t"><b>{t("Còpies i núvol")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
 {!window.__acoEmpresa&&<EspaiNuvol878263/>}
 <VersionsGuardades878266/>

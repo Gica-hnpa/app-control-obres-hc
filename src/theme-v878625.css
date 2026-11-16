@@ -1,0 +1,12 @@
+/* V87.625 · Ajustos › Carpeta del despatx: arxius pendents d'afegir i últims canvis */
+html body .despatx-v878625 .pend-v878625{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:#FFF7E6;border:1px solid #F0C36D;border-radius:12px;font-size:14px;color:#7A4A00}
+html body .despatx-v878625 .canvis-v878625{background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08)}
+html body .despatx-v878625 .canvis-v878625>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;cursor:pointer;list-style:none;font-weight:600}
+html body .despatx-v878625 .canvis-v878625>summary::-webkit-details-marker{display:none}
+html body .despatx-v878625 .canvis-v878625>summary .xifra{font-size:13px;font-weight:600;color:#1D4ED8;background:#E7F1FB;border-radius:999px;padding:1px 8px}
+html body .despatx-v878625 .canvis-v878625>summary .chev{margin-left:auto;transition:transform .15s}
+html body .despatx-v878625 .canvis-v878625[open]>summary .chev{transform:rotate(90deg)}
+html body .despatx-v878625 .canvis-v878625 ul{list-style:none;margin:0;padding:0 12px 8px;display:flex;flex-direction:column}
+html body .despatx-v878625 .canvis-v878625 li{display:flex;flex-direction:column;min-width:0;padding:8px 0;border-top:1px solid #E2E8F0}
+html body .despatx-v878625 .canvis-v878625 li b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .despatx-v878625 .canvis-v878625 li small{font-size:13px;color:var(--co-ink-3,#5F7075);overflow-wrap:anywhere}

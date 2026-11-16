@@ -152,7 +152,14 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
     pestanyes, no les dades (cada obra és una sola fila al núvol). Per amagar de debò el que no es comparteix cal guardar a part la còpia
     del que es comparteix (com l'enllaç del client de sobre). **Proposta (16/11/2026):** https://claude.ai/artifact/29vXviCYKANfhe6s8sKDXp
     (finestra «Compartir» amb models i, per apartat, No · Mirar · Treballar-hi · Validar; còpia a part per persona; 3 fases: comptes,
-    validar la certificació amb AutoFirma, enllaç del client amb codi). Esperant les 7 respostes de la taula «Per decidir».
+    validar la certificació amb AutoFirma, enllaç del client amb codi).
+  - **Respostes de l'Héctor (17/11/2026, una a una):** 1) per ordre: fase 1 (comptes) → 2 (validar) → 3 (enllaç del client); permisos amb
+    els noms **No · Lectura · Modificar** (+ «Validar» a Certificacions), en lloc de Mirar · Treballar-hi; 2) totes dues maneres de validar,
+    triades per tècnic; de sèrie «Validar o tornar-la» (AutoFirma o comentari), i «fer la seva certificació i comparar» com amb el Martí;
+    3) el client veu els preus finals de sèrie, canviable per obra a «només el total» o «cap import»; 4) enllaç + codi de 4 xifres (el mòbil
+    el recorda); el compte propi, més endavant amb el portal del client; 5) el client només veu els canvis quan es prem «Publicar al
+    client»; 6) avisos per correu des del Gmail, amb la casella «Avisar per correu» marcada de sèrie; 7) l'enllaç funciona fins que es
+    tanca l'obra (i es pot treure abans a mà). Abans de començar la fase 1: la carpeta del despatx (l'Héctor: «potser ho farem abans»).
 - **Carpeta del despatx sincronitzada amb els documents de l'app** (l'Héctor, 16/11/2026, per a un despatx de 8 arquitectes on no tots
   faran servir l'app: «que cada vegada que es guarda qualsevol document d'una obra anés en aquella carpeta… i al revés, qualsevol canvi que
   es faci a l'obra que quedi ja canviat per la resta que treballen al despatx»). És possible. Proposta: (A, recomanada) un programa petit
