@@ -153,5 +153,15 @@ L’Héctor (29/10/2026): llesta en una setmana com a molt; de finals de novembr
     del que es comparteix (com l'enllaç del client de sobre). **Proposta (16/11/2026):** https://claude.ai/artifact/29vXviCYKANfhe6s8sKDXp
     (finestra «Compartir» amb models i, per apartat, No · Mirar · Treballar-hi · Validar; còpia a part per persona; 3 fases: comptes,
     validar la certificació amb AutoFirma, enllaç del client amb codi). Esperant les 7 respostes de la taula «Per decidir».
+- **Carpeta del despatx sincronitzada amb els documents de l'app** (l'Héctor, 16/11/2026, per a un despatx de 8 arquitectes on no tots
+  faran servir l'app: «que cada vegada que es guarda qualsevol document d'una obra anés en aquella carpeta… i al revés, qualsevol canvi que
+  es faci a l'obra que quedi ja canviat per la resta que treballen al despatx»). És possible. Proposta: (A, recomanada) un programa petit
+  en un ordinador del despatx sempre encès (com el de les còpies de les 13:00) que cada pocs minuts baixa a la carpeta comuna
+  (`Obres\<codi i nom>\<carpeta>`) el que s'ha afegit o canviat a l'app i puja a l'app el que algú hi ha posat o canviat al despatx; si tots
+  dos han canviat el mateix arxiu, es queden les dues còpies; els esborrats no es propaguen sols (van a `_Esborrats`). Serveix per a un
+  servidor/NAS, OneDrive, Dropbox o Google Drive per a l'escriptori. (B) Connectar l'app directament a Google Drive o OneDrive: per veure
+  el que hi posen els altres, Google demana una verificació de l'app i una auditoria anual de seguretat; Microsoft, el permís de
+  l'administrador de cada despatx. Preguntes: on és la carpeta comuna, si hi ha un ordinador sempre encès, com s'organitza per obres,
+  quines carpetes de l'app (Plànols, Documents…), mida dels arxius (DWG).
 - **CI (costos indirectes) al preu de les partides** (l'Héctor, 12/11/2026): esperant les respostes (Front de Mar amb DG i BI dues vegades a
   8 partides, BC3 de sortida, com es trien les partides del 35 % de mitjans auxiliars, comparar descompostos semblants).

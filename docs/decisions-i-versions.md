@@ -4370,3 +4370,17 @@
   l'empresa; mòbil; Brava sense socoterm/oriol/marti, «Canviar per…» a una fila mal escrita, escrivint «gestio» el compte de debò i l'altre
   compte la veu; Llistat d'hores a la dreta; Llistat de factures al costat de «Nova factura»). v415, v417, v424, factclient i v586 bé;
   i18ntest tot traduït.
+  - **V87.618 · Contactes per grups i repàs de tots els «Desar»** (l'Héctor, 16/11/2026):
+    - «Un client… en insertar els contactes des d'un excel no li deixa dir si són promotor o quin grup… els posa tots a altres… es poden
+      seleccionar per unitat o tots d'un grup per canviar-los de grup?». Importar: cada fila té el seu grup (el de la columna de l'Excel si
+      n'hi ha; si no, el «Grup per a tots» de dalt) i es pot canviar un per un. Contactes: «Seleccionar» (un per un o «Tot el grup») i, a la
+      barra de dalt, «Moure a [tipus]» → «✓ N contactes moguts a …» (fitxes de client: `tipus`; contactes de les obres: `rol`).
+    - «Repassa la resta de botons de desar de l'app»: un agent els va llegir tots (69); 54 ja tancaven. Arreglats perquè tanquin i ho diguin
+      (`tancaDesat878617` o l'avís de baix): Comptes de prova (configuració i lectures), «Guardar i inserir a l'acta» (croquis), nom del
+      capítol a la llibreria (es tanca la finestra), «Desar l'acord» del client, valors per defecte del client al pressupost ràpid,
+      «Guardar usuari i permisos», «Guardar configuració» i «Canviar contrasenya» (abans amb «D'acord»). Sense canvis: «Desar a la llibreria»
+      de la partida (copia la partida; el pressupost es desa amb «Guardar canvis», que sí que tanca).
+  Prova: `v618test` 11/11 (Excel amb el grup de cada fila; seleccionar i moure un per un i tot el grup; recarregar; l'acord del client;
+  mòbil). v553 10/10. i18ntest tot traduït.
+  v519 23/23, v617 14/14. `v434test` 9/17 igual que a la V87.617 (prova vella: espera «300» on ara hi ha «300,00» i navega per «Honoraris»;
+  queda per posar al dia). A revisar: al mòbil, l'acord obert té dos elements que surten de la pantalla (ja passava abans).
