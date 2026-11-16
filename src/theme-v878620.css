@@ -1,0 +1,38 @@
+/* V87.620 · Nota i acta: cada apartat en una targeta blanca amb vora sobre la safata blavosa, com a la resta de pantalles
+   (l'Héctor, 16/11/2026: «remarca els bordes de cada apartat… es veu molt i molt bàsica… no es separen a nivell visual») */
+
+/* ── Nota ── */
+html body .notes-edit-v878278>.notes-form-v878278.seccions-v878620{background:#E6EDF6;border-radius:14px;padding:14px;gap:12px;margin:12px 16px 0}
+html body .seccions-v878620 .sec-v878620{background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14);padding:12px 14px;display:flex;flex-direction:column;gap:10px;margin:0;min-width:0}
+html body .seccions-v878620 .sec-fila-v878620{flex-direction:row;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+html body .seccions-v878620 .sec-fila-v878620 input{max-width:200px;min-height:40px}
+html body .seccions-v878620 .sec-v878620>b,html body .seccions-v878620 .sec-cap-v878620>b,html body .seccions-v878620 .notes-files-head-v878278>b{font-size:14.5px;font-weight:700;color:var(--co-ink,#0f172a)}
+html body .seccions-v878620 .notes-files-v878278 small{font-size:13px}
+html body .notes-edit-v878278 .notes-actions-v878278{margin:14px 16px 16px;padding:0}
+
+/* la capçalera d'un apartat: el títol a l'esquerra i les eines (dictat, fotos…) a la dreta */
+html body .sec-cap-v878620{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;min-height:38px}
+html body .sec-cap-v878620 .dictat-v878263{margin:0;width:auto;align-items:flex-end}
+html body .sec-cap-v878620 .dictat-live-v878263{max-width:100%}
+
+/* ── Acta: les pestanyes sobre la safata i el contingut de cada una en una targeta blanca ── */
+html body .acta-editor-v8761:has(>.acta-panel-v878620){background:#E6EDF6;border-radius:14px;padding:12px;margin:8px 0 4px}
+html body .acta-editor-v8761 .acta-panel-v878620{background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14);padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+html body .acta-editor-v8761 .acta-panel-v878620 .acta-textarea-v8768{padding:0;margin:0}
+html body .acta-editor-v8761 .acta-panel-v878620 .acta-textarea-v8768 textarea{min-height:200px;font-size:16px;line-height:1.5}
+html body .acta-editor-v8761 .acta-panel-v878620>.photo-select-v8761,
+html body .acta-editor-v8761 .acta-panel-v878620>.docs-acta-box-v8764{border:0;background:transparent;padding:0;margin:0;border-radius:0}
+html body .acta-editor-v8761 .acta-panel-v878620>.form-grid{margin:0}
+html body .acta-editor-v8761 .acta-panel-v878620 .sec-cap-v878620>b{font-size:14.5px;font-weight:700;color:var(--co-ink,#0f172a)}
+html body .acta-editor-v8761:has(>.acta-panel-v878620)>.actions-inline{margin:12px 0 0;padding:0}
+@media (min-width:901px){
+  html body .acta-editor-v8761:has(>.acta-panel-v878620)>.acta-panel-tabs-v8799{background:#E6EDF6!important;border-bottom:0!important;padding:0 0 12px!important;margin:0!important}
+}
+@media (max-width:767px){
+  html body .notes-edit-v878278>.notes-form-v878278.seccions-v878620{margin:10px 10px 0;padding:10px;gap:10px}
+  html body .seccions-v878620 .sec-v878620{padding:12px}
+  html body .notes-edit-v878278 .notes-actions-v878278{margin:12px 10px 12px}
+  html body .acta-editor-v8761:has(>.acta-panel-v878620){margin:4px -8px 8px;padding:10px}
+  html body .acta-editor-v8761 .acta-panel-v878620{padding:12px}
+  html body .sec-cap-v878620 .dictat-v878263{align-items:flex-start}
+}

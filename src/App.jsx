@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.619";
+const APP_VERSION878264="87.620";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3834,15 +3834,19 @@ function Notes878278({obra={},data={},setData,readOnly=false,start=null,nomesFit
   const resum=n=>{const txt=String(n.text||"").trim().split(/\n/)[0];return txt.length>140?txt.slice(0,140)+"…":txt};
   const envia616=()=>{const d=docNota878616(draft,obra);if(openEmail)openEmail(d.title,{doc:d});else window.__acoEnviar878407?.({title:d.title,obra,doc:d})};
   if(draft)return <Card className="notes-edit-v878278" title={draft.isNew?t("Nota nova · {n}",{n:draft.numero}):t("Nota {n}",{n:draft.numero})} action={<div className="nota-acc-v878616">{!draft.isNew&&openDoc&&<button type="button" className="secondary" onClick={()=>openDoc(docNota878616(draft,obra))}><Printer size={15} aria-hidden="true"/> {t("PDF")}</button>}{!draft.isNew&&(openEmail||window.__acoEnviar878407)&&<button type="button" className="secondary" onClick={envia616}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button>}<button type="button" className="secondary" onClick={tanca}>{t("Tancar")}</button></div>}>
-    <fieldset disabled={readOnly} className="notes-form-v878278">
-      <label className="notes-date-v878278"><span>{t("Dia")}</span><input type="date" value={draft.data||""} onChange={e=>set("data",e.target.value)}/></label>
-      <label className="notes-text-v878278"><span>{t("Què has vist o què s’ha de fer")}</span><textarea rows={6} value={draft.text||""} onChange={e=>set("text",e.target.value)} placeholder={t("Escriu o dicta la nota…")}/></label>
-      {!readOnly&&<DictatActa878263 value={draft.text||""} onChange={v=>set("text",v)}/>}
-      <div className="notes-files-v878278">
+    {/* V87.620 · cada apartat en una targeta blanca amb vora sobre la safata (l'Héctor, 16/11/2026: «remarca els bordes de cada apartat com en
+        d'altres pantalles… els espais entre on has d'escriure la nota, el si es dicta o no, documents… no es separen») */}
+    <fieldset disabled={readOnly} className="notes-form-v878278 seccions-v878620">
+      <label className="notes-date-v878278 sec-v878620 sec-fila-v878620"><b>{t("Dia")}</b><input type="date" value={draft.data||""} onChange={e=>set("data",e.target.value)}/></label>
+      <div className="sec-v878620">
+        <div className="sec-cap-v878620"><b>{t("Què has vist o què s’ha de fer")}</b>{!readOnly&&<DictatActa878263 value={draft.text||""} onChange={v=>set("text",v)}/>}</div>
+        <label className="notes-text-v878278"><textarea rows={6} aria-label={t("Què has vist o què s’ha de fer")} value={draft.text||""} onChange={e=>set("text",e.target.value)} placeholder={t("Escriu o dicta la nota…")}/></label>
+      </div>
+      <div className="notes-files-v878278 sec-v878620">
         <div className="notes-files-head-v878278"><b>{t("Fotos")}</b>{!readOnly&&<span><label className="primary file-btn-v8761">{t("Fer foto")}<input type="file" accept="image/*" capture="environment" onChange={e=>{addNotePhotos878278(e.target.files,setDraft);e.target.value=""}}/></label><label className="secondary file-btn-v8761">{t("Afegir fotos")}<input type="file" accept="image/*" multiple onChange={e=>{addNotePhotos878278(e.target.files,setDraft);e.target.value=""}}/></label></span>}</div>
         {(draft.fotos||[]).length>0?<div className="notes-photos-v878278">{draft.fotos.map(p=><div key={p.id} className="notes-photo-v878278"><FileImg878261 src={p.src}/>{!readOnly&&<button type="button" aria-label={t("Treure la foto")} onClick={()=>set("fotos",draft.fotos.filter(x=>x.id!==p.id))}><X size={14}/></button>}</div>)}</div>:<small>{t("Encara no hi ha fotos.")}</small>}
       </div>
-      <div className="notes-files-v878278">
+      <div className="notes-files-v878278 sec-v878620">
         <div className="notes-files-head-v878278"><b>{t("Documents")}</b>{!readOnly&&<label className="secondary file-btn-v8761">{t("Adjuntar document")}<input type="file" multiple onChange={e=>{addActaDocFiles8764(e.target.files,setDraft);e.target.value=""}}/></label>}</div>
         {(draft.docs||[]).length>0?<ul className="notes-docs-v878278">{draft.docs.map(x=><li key={x.id}><Paperclip size={14}/><a href="#" role="button" className="obre-v8784291" onClick={e=>{e.preventDefault();obreDataUrl8784291(x.nom,x.url)}}>{x.nom}</a>{!readOnly&&<button type="button" aria-label={t("Treure el document")} onClick={()=>set("docs",draft.docs.filter(y=>y.id!==x.id))}><X size={14}/></button>}</li>)}</ul>:<small>{t("Encara no hi ha documents.")}</small>}
       </div>
@@ -4189,6 +4193,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
 
         {draft&&<>
           <div className="acta-panel-tabs-v8799">{["Dades","Agents","Observacions","Fotos","Documents","Plànols","Signatures"].map(p=><button type="button" key={p} className={actaPanel8799===p?"active":""} onClick={()=>setActaPanel8799(p)}>{t(p)}{p==="Signatures"&&(sigRec878408?.signat878408?.signatures||[]).length?<em className="n-sig-v878403">{sigRec878408.signat878408.signatures.length}</em>:null}</button>)}</div>
+          <div className="acta-panel-v878620" data-panel={actaPanel8799}>
           {actaPanel8799==="Dades"&&<div className="form-grid">
             <label><span>{t("Número acta *")}</span><input value={draft.numero||""} onChange={e=>upd("numero",e.target.value)}/></label>
             <label><span>{t("Títol acta *")}</span><input value={draft.titol||""} onChange={e=>upd("titol",e.target.value)}/></label>
@@ -4203,8 +4208,8 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
 
           {actaPanel8799==="Agents"&&<AssistentsActa878406 seleccionats={selectedAgents} onTria={triaAss878406} onTreu={treuAss878406} suggerits={esTecnicPur878332(obra)&&teModul878326("tecnic")?[client?.nom,obra?.propietat,obra?.representant]:null}/>}
 
-                    {actaPanel8799==="Observacions"&&<DictatActa878263 value={draft.text||""} onChange={v=>upd("text",v)}/>}
-                    {actaPanel8799==="Observacions"&&<label className="span-all acta-textarea-v8768"><span>{t("Text de l’acta")}</span><textarea value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder={t("Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents...")}/></label>}
+          {actaPanel8799==="Observacions"&&<div className="sec-cap-v878620"><b>{t("Text de l’acta")}</b><DictatActa878263 value={draft.text||""} onChange={v=>upd("text",v)}/></div>}
+          {actaPanel8799==="Observacions"&&<label className="span-all acta-textarea-v8768"><textarea aria-label={t("Text de l’acta")} value={draft.text||""} onChange={e=>upd("text",e.target.value)} placeholder={t("Redacta aquí les comprovacions, acords, ordres d’obra, incidències i tasques pendents...")}/></label>}
 
           {actaPanel8799==="Fotos"&&<div className="photo-select-v8761">
             <div className="photo-select-head-v8761"><b>{t("Fotos que sortiran a l’acta")}</b><small className="file-note-v878261">{t("Les fotos es pugen al núvol i arriben als altres aparells. Sense cobertura, es pugen soles quan torna la connexió.")}</small><label className="secondary file-btn-v8761">{t("Adjuntar / fer foto")}<input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhotoFiles8761(e.target.files,setData)}/></label></div>
@@ -4230,6 +4235,7 @@ function Actes8761({obra,client,data,setData,openEmail,openDoc,allAgents=[],star
             {(draft.signatures878403||[]).length>0&&<div className="signatures-acta-v878403 velles-v878408"><b className="tit">{t("Signatures a la pantalla (d’abans)")}</b>{ROLS_SIG878403.map(([k,lab])=>{const sg=(draft.signatures878403||[]).find(x=>x.rol===k);
               return sg?<div key={k} className="sig-rol signat"><b>{t(lab)}</b><SignaturaVista878403 sig={sg} onTreu={()=>treuSig878403(k)}/></div>:null})}</div>}
           </>}
+          </div>
           {signa878403&&<SignaturaPad878403 titol={t("Signatura")} sub={[t((ROLS_SIG878403.find(r=>r[0]===signa878403)||[])[1]||""),draft.titol].filter(Boolean).join(" · ")} nom={nomSig878403(draft,signa878403)} onDesa={sg=>posaSig878403(signa878403,sg)} close={()=>setSigna878403(null)}/>}
 
           <div className="actions-inline">
@@ -5515,7 +5521,10 @@ function deleteObra878112(id){
 ${label}
 
 ${i18nT("S'esborraran també les dades vinculades: actes, agenda, pressupostos, certificacions, factures i documents registrats dins l'app.")}${comp614?"\n\n"+i18nT("L'has compartit amb altres comptes: també desapareixerà de les seves llistes."):""}`))return;
-  if(comp614){try{window.__acoCloud?.esborraCompartida?.(id)}catch{}}
+  // V87.620 · sempre (abans només si el núvol ja havia dit que era compartida: esborrada just en obrir l'app, la fila compartida es quedava i
+  // el cicle la tornava a posar a la llista). La llista d'esborrades és del compte i arriba als altres aparells.
+  try{const k="aco_obres_esborrades_v878620";const a=(()=>{try{const x=JSON.parse(lsGet8779(k)||"[]");return Array.isArray(x)?x:[]}catch{return []}})();lsSet8779(k,JSON.stringify([...a.filter(x=>String(x?.id)!==String(id)),{id,at:new Date().toISOString()}].slice(-200)))}catch{}
+  try{window.__acoCloud?.esborraCompartida?.(id)}catch{}
   // V87.303 · esborrada expressament: el fre de seguretat del núvol no la compta com un esborrat per error
   try{window.__acoCloud?.esborrada?.(id)}catch{}
   const remaining=obres.filter(x=>x.id!==id);
@@ -22954,7 +22963,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.619",
+    app_version:"87.620",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

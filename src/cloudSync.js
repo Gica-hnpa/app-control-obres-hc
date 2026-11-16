@@ -9,7 +9,7 @@ import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 
-const VERSION = "V87.619";
+const VERSION = "V87.620";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -692,6 +692,10 @@ let sharedOwned = new Set(), sharedTableMissing = false;
 const SH_FORA_KEY = "nuvol-aco-sh-esborrades";
 function shFora() { try { return new Set(JSON.parse((window.__acoStore?.real || localStorage).getItem(SH_FORA_KEY) || "[]") || []); } catch { return new Set(); } }
 function desaShFora(set) { try { const st = window.__acoStore?.real || localStorage; if (set.size) st.setItem(SH_FORA_KEY, JSON.stringify([...set].slice(-100))); else st.removeItem(SH_FORA_KEY); } catch {} }
+// V87.620 · les obres pròpies esborrades, en una llista del compte que arriba a tots els aparells (l'Héctor, 16/11/2026: «en la versió 619
+// continua Edifici Catalunya… després de tantes i tantes vegades que l'he esborrada»): qualsevol aparell seu que vegi la fila compartida
+// d'una obra d'aquesta llista la treu del núvol compartit.
+function obresEsborrades() { try { const a = JSON.parse(localStorage.getItem(`aco_v8782__${ownNs()}__aco_obres_esborrades_v878620`) || "[]"); return new Set((Array.isArray(a) ? a : []).map(x => String(x?.id ?? x))); } catch { return new Set(); } }
 async function esborraCompartida(obraId) {
   const set = shFora(); set.add(String(obraId)); desaShFora(set);
   try { await unshareObra(obraId); return true; } catch { return false; }
@@ -736,7 +740,9 @@ async function sharedCycle(canApply) {
   for (const r0 of rows) {
     const owned = r0.owner === me, editor = owned || (r0.editors || []).includes(email);
     // (es llegeix cada vegada: es pot haver esborrat mentre el cicle esperava el núvol)
-    if (owned && !localShare(r0.obra_id) && shFora().has(String(r0.obra_id))) { try { await unshareObra(r0.obra_id); } catch {} continue; }
+    // V87.620 · una obra pròpia que no és a l'aparell no es torna a posar mai des del núvol compartit (abans: «remoteChanged || !loc» la tornava
+    // a la llista; les pròpies arriben amb la llista del compte). Si s'ha esborrat (en aquest aparell o en un altre), es treu del núvol compartit.
+    if (owned && !localShare(r0.obra_id)) { if (shFora().has(String(r0.obra_id)) || obresEsborrades().has(String(r0.obra_id))) { try { await unshareObra(r0.obra_id); } catch {} } continue; }
     const loc = localShare(r0.obra_id), lh = loc ? shHash(loc) : "";
     const known = sm.known[r0.obra_id];
     const c = shCache.get(r0.obra_id), r = c && c.updated_at === r0.updated_at ? { ...c, ...r0 } : null;

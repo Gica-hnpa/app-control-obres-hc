@@ -4390,3 +4390,25 @@
   hi entrava com un fill més i ho desplaçava tot una columna: el logo a la columna ampla, el nom a la dreta i «1 obra» a sota. Ara, en mode
   «Seleccionar», la graella té una columna de 20 px per a la casella (ordinador: 5 columnes; mòbil: casella · logo · nom, i els telèfons i les
   obres sota el nom). Prova: `v618test` 13/13 (noves: el nom just al costat del logo, a l'ordinador i al mòbil).
+
+- **V87.620 · Nota i acta amb els apartats en targetes** (l'Héctor, 16/11/2026, amb una captura de la Nota 2: «pots millorar aquesta pantalla a
+  nivell visual? remarca els bordes de cada apartat com en d'altres pantalles… es veu molt i molt bàsica… els espais entre on has d'escriure
+  la nota, el si es dicta o no, documents i d'altres no es separen… el mateix suposo que passarà amb actes»).
+  - Nota: sobre la safata blavosa, quatre targetes blanques amb vora i ombra (com les subtargetes de la V87.518): «Dia» (la data a la dreta),
+    «Què has vist o què s’ha de fer» amb el dictat (Dictar · Català/Castellano) a la capçalera i el quadre de text a sota, «Fotos» i
+    «Documents». Abans els camps tocaven la vora de la targeta i el dictat quedava solt entre el text i les fotos.
+  - Acta: les pestanyes sobre la safata i el contingut de cada pestanya en una targeta blanca; a «Observacions», «Text de l’acta» amb el dictat
+    a la capçalera (abans el dictat a dalt i el text desplaçat cap a dins). Les capses de fotos i documents de dins ja no fan doble vora.
+  - Formats del document de la nota i l'acta: ja segueixen els 7 encapçalaments d'Ajustos › Documents (com el pressupost).
+  Prova: `v620test` 10/10 (les quatre targetes i la safata, separació, dictat a la capçalera, desar i tornar a obrir; les 7 pestanyes de
+  l'acta dins de la targeta, desar l'acta; mòbil sense res fora de la pantalla).
+  - **Edifici Catalunya tornava (l'Héctor, 16/11/2026: «en la versió 619 continua… després de tantes i tantes vegades que l'he esborrada»).**
+    Les còpies del núvol: l'obra hi és cada dia des del 4/11; el 16/11 a les 11:44 l'ordinador de l'Héctor la tornava a desar i la fila
+    compartida (amb socoterm, editora) encara hi era. Dos forats: (1) en esborrar-la, la V87.614 només la treia del núvol compartit si el núvol ja
+    havia dit que era compartida (`sharedOwned`, buit els primers segons després d'obrir l'app); (2) el cicle de compartides tornava a posar a la
+    llista una obra pròpia que no era a l'aparell (`remoteChanged || !loc`). Ara: en esborrar una obra pròpia, sempre es treu del núvol compartit
+    i es recorda a `aco_obres_esborrades_v878620` (clau del compte: arriba a tots els aparells); una obra pròpia mai es torna a posar des del
+    núvol compartit, i qualsevol aparell del compte que en vegi la fila d'una esborrada la treu. Prova: `v620btest` 7/7 (amb la V87.619, 3/7:
+    reprodueix el cas); `v614test` 27/27. **L'Héctor l'ha d'eliminar una vegada més** (la fila d'ara es va crear amb una versió d'abans).
+  Altres proves: notestest 16/16, v615 14/14, plustest 18/18, i18n tot traduït; `dictattest` 24/27 com abans (missatge del PDF i límits d'espai
+  del pla Pro: prova vella per posar al dia).
