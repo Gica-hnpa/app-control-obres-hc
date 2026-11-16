@@ -1,0 +1,18 @@
+/* V87.615 · Expedients: dins de cada any, «Els meus expedients» i les obres compartides de cada client, en franges com la de l'any
+   (més fines i una mica entrades, perquè es vegi que són dins de l'any). Els meus, amb el color de l'app; les compartides, en lila. */
+html body table.exp-table-v8742 tr.sub-row-v878615 td{padding:9px 16px 9px 34px!important;border-top:1px solid transparent!important;font-weight:800;font-size:14px;cursor:default}
+html body table.exp-table-v8742 tr.sub-row-v878615.meus td{background:color-mix(in srgb,var(--co-accent,#1D4ED8) 6%,#fff)!important;color:var(--co-accent,#1D4ED8)!important;box-shadow:inset 22px 0 0 #fff,inset 26px 0 0 color-mix(in srgb,var(--co-accent,#1D4ED8) 55%,#fff),0 1px 0 color-mix(in srgb,var(--co-accent,#1D4ED8) 22%,#fff)!important}
+html body table.exp-table-v8742 tr.sub-row-v878615.comp td{background:#f5f0ff!important;color:#5b21b6!important;box-shadow:inset 22px 0 0 #fff,inset 26px 0 0 #7c3aed,0 1px 0 #ddd0fb!important}
+html body table.exp-table-v8742 tbody tr.sub-row-v878615:hover td{filter:none}
+html body table.exp-table-v8742 tbody tr.sub-row-v878615.meus:hover td{background:color-mix(in srgb,var(--co-accent,#1D4ED8) 6%,#fff)!important}
+html body table.exp-table-v8742 tbody tr.sub-row-v878615.comp:hover td{background:#f5f0ff!important}
+html body tr.sub-row-v878615 .s,html body .exp-sub-v878615 .s{letter-spacing:.01em}
+html body tr.sub-row-v878615 small,html body .exp-sub-v878615 small{margin-left:10px;font-size:12.5px;font-weight:600;color:var(--co-ink-3,#5F7075)}
+html body tr.sub-row-v878615 .etq,html body .exp-sub-v878615 .etq{display:inline-block;margin-left:10px;padding:2px 9px;border-radius:999px;background:#ede4ff;color:#5b21b6;font-style:normal;font-size:11.5px;font-weight:700;vertical-align:1px}
+/* mòbil i iPad (targetes) */
+html body .exp-sub-v878615{display:flex;align-items:center;flex-wrap:wrap;gap:4px 0;margin:10px 0 8px 10px;padding:8px 12px 8px 14px;border-radius:10px;font-size:14px;font-weight:800}
+html body .exp-sub-v878615.meus{background:color-mix(in srgb,var(--co-accent,#1D4ED8) 6%,#fff);color:var(--co-accent,#1D4ED8);border:1px solid color-mix(in srgb,var(--co-accent,#1D4ED8) 20%,#fff);box-shadow:inset 4px 0 0 color-mix(in srgb,var(--co-accent,#1D4ED8) 55%,#fff),0 1px 3px rgba(15,23,42,.06)}
+html body .exp-sub-v878615.comp{background:#f5f0ff;color:#5b21b6;border:1px solid #ddd0fb;box-shadow:inset 4px 0 0 #7c3aed,0 1px 3px rgba(91,33,182,.10)}
+html body .exp-sub-v878615 .s{min-width:0;overflow-wrap:anywhere}
+/* el nom, l'etiqueta i el nombre en una sola línia (com a la franja de l'any) */
+html body table.exp-table-v8742 tr.sub-row-v878615 td .s,html body table.exp-table-v8742 tr.sub-row-v878615 td small,html body table.exp-table-v8742 tr.sub-row-v878615 td .etq{display:inline-block!important;vertical-align:baseline}

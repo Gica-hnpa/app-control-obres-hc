@@ -6091,4 +6091,6 @@ export default {
   "Anul·lades ({n})": "Anuladas ({n})",
   "Tornar a totes": "Volver a todas",
   "Eliminar definitivament la factura {n}? Fes-ho només si era de prova i no l’has enviada a ningú.": "¿Eliminar definitivamente la factura {n}? Hazlo solo si era de prueba y no la has enviado a nadie.",
+  "Els meus expedients": "Mis expedientes",
+  "Compartides": "Compartidas",
 };

@@ -4335,3 +4335,11 @@
   «Anul·lat» que es queda, obra compartida eliminada que no torna i desapareix de socoterm, factures anul·lades, mòbil, avís de versió nova
   amb l'app compilada): 27/27. Adaptades a F2026-: v605 14/14, v607 15/15, v610 11/11 i els guions dels vídeos (`resum605-guions`); i18ntest tot traduït.
     - **Domini `controlobres.app`** (16/11/2026): estava bloquejat per la validació del titular (el correu del 23/10 de `online-validation.com` no es va clicar). L'Héctor l'ha verificat el 16/11.
+  - **V87.615 · Expedients: dins de cada any, «Els meus» i les compartides de cada client** (l'Héctor, 16/11/2026, amb una captura de la
+    llista: «a perfil tècnic gestió total pot haver un subgrup dins cada any on vegi els meus expedients com a tècnic i després en subtargetes
+    o subgrups ben marcats i amb color i ombrejat com la targeta de l'any… aquells que són d'altres clients meus que són compartits?»). Dins de
+    cada any amb alguna obra compartida (rebuda o pròpia compartida): primer «Els meus expedients» («Les meves obres» a la constructora), en
+    el color de l'app, i després una franja lila per client amb l'etiqueta «Compartides» i el nombre. A l'ordinador (files de la taula) i al
+    mòbil (targetes). Un any sense cap compartida es veu com abans. Estils: `theme-v878615.css`.
+  Prova: `v615test` 10/10 (nova: sense compartides com abans; amb la casa compartida, «Els meus expedients» i «Construccions Prova SL ·
+  Compartides» amb la casa; nombres; franges amb color i ombra; mòbil; socoterm amb la casa rebuda en el seu subgrup).

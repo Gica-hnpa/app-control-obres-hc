@@ -43,7 +43,7 @@ import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetc
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.614";
+const APP_VERSION878264="87.615";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -10610,6 +10610,17 @@ const SORT_OPTIONS878192=[{key:"numero",label:"Número"},{key:"codi",label:"Codi
 const chooseSort878192=key=>setSort878192(s=>s.key===key?{key,dir:s.dir==="asc"?"desc":"asc"}:{key,dir:key==="numero"?"desc":"asc"});
 const sortHead878192=(key,label)=><button type="button" className={`exp-sort-head-v878192 ${sort878192.key===key?"active":""}`} onClick={()=>chooseSort878192(key)} title={t("Ordenar per")+" "+t(label).toLowerCase()}><span>{t(label)}</span><b>{sort878192.key===key?(sort878192.dir==="asc"?"▲":"▼"):"↕"}</b></button>;
 const changeStatus878247=(obra,value)=>{if(!allowAdminActions||!updateStatus)return;updateStatus(obra.id,value)};
+// V87.615 · dins de cada any, primer «Els meus expedients» i després, a part, les obres compartides de cada client (l'Héctor, 16/11/2026:
+// «un subgrup dins cada any on vegi els meus expedients com a tècnic i després, en subgrups ben marcats amb color i ombrejat com la targeta
+// de l'any, aquells que són d'altres clients meus que són compartits»). Compartida: rebuda d'un altre compte o pròpia compartida. Un any
+// sense cap obra compartida es veu com abans.
+const esComp615=o=>{if(o?.compartida)return true;try{return !!window.__acoCloud?.sharedOwned?.()?.has?.(o?.id)}catch{return false}};
+const grupsAny615=any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));if(!items.some(esComp615))return [{k:"tot",items,cap:false}];
+  const meus=items.filter(o=>!esComp615(o)),per=new Map();
+  items.filter(esComp615).forEach(o=>{const c=String(clientNom(o)||"").trim()||t("Sense client");if(!per.has(c))per.set(c,[]);per.get(c).push(o)});
+  return [...(meus.length?[{k:"meus",l:diuObra878326()?t("Les meves obres"):t("Els meus expedients"),items:meus,cap:true}]:[]),
+    ...[...per.entries()].sort((a,b)=>a[0].localeCompare(b[0],"ca")).map(([c,ls])=>({k:"c:"+c,l:c,items:ls,cap:true,comp:true}))]};
+const capSub615=g=><><span className="s">{g.l}</span>{g.comp&&<em className="etq">{t("Compartides")}</em>}<small>{etNExp878327(g.items.length)}</small></>;
 return <div className="expedients-page-v8741 expedients-page-v8742 expedients-page-v87119">
   <Card title={t(etObres878304())} action={esTreballador878326()?null:<div className="actions-inline">{allowAdminActions&&<button type="button" className="secondary imp-obres-btn-v878358" onClick={()=>{try{window.dispatchEvent(new CustomEvent("aco-importar-obres"))}catch{}}}>{t("Importar")}</button>}<button className="primary" onClick={newObra}><Plus/> {t(etNovaObra878304())}</button></div>}>
     <div className="search-field exp-search-mobile-v878270"><Search size={16}/><input value={f.os} onChange={e=>f.setOs(e.target.value)} placeholder={diuObra878326()?t("Buscar obra, client o població…"):t("Buscar expedient, client, obra o població…")} aria-label={t("Buscar")}/></div>
@@ -10622,12 +10633,12 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
     <div className="exp-mobile-tree-v87119 exp-cards-v878270">
       {flat.length===0?<Empty text={t("No hi ha expedients amb aquest filtre.")}/>:anys.map(any=>{const items=flat.filter(o=>String(yearLabel878192(o))===String(any));return <section key={any} className="exp-year-v878270 any-v878561">
         <h3><span>{any}</span>{anys.length>1&&<small>{etNExp878327(items.length)}</small>}</h3>
-        {items.map(o=>{const st=normalizeExpedientStatus878136(o.estat);const lloc=[o.poblacio,o.adreca].find(x=>x&&x!=="Pendent")||"";return <button type="button" key={o.id} className="exp-card-v878270 exp-card-foto-v878275" onClick={()=>openObra(o.id)}>
+        {grupsAny615(any).map(g=><React.Fragment key={g.k}>{g.cap&&<h4 className={`exp-sub-v878615 ${g.comp?"comp":"meus"}`}>{capSub615(g)}</h4>}{g.items.map(o=>{const st=normalizeExpedientStatus878136(o.estat);const lloc=[o.poblacio,o.adreca].find(x=>x&&x!=="Pendent")||"";return <button type="button" key={o.id} className="exp-card-v878270 exp-card-foto-v878275" onClick={()=>openObra(o.id)}>
           <ObraThumb878275 o={o} nom={clientNom(o)}/><span className="exp-card-body-v878275"><span className="l1"><b>{codiCurt878270(o)}</b>{o.compartida?<small className="exp-prop-v878347">{expPropietari878347(o)}</small>:null}<span>{clientNom(o)}</span></span>
           <strong>{o.nom}</strong>
           <span className="l3">{[t(moduleLabel8737(o)),lloc].filter(Boolean).join(" · ")}</span>
           <span className="l4"><em className={`st ${statusKeyPress8776(st)} est-v878299 est-${estatTone878299(st)}`}>{t(st)}</em><SharedBadge878259 o={o}/>{(()=>{const d=creationStamp878233(o);const x=d?fmtCreationDate878233(d):"";return x&&/\d/.test(x)?<small className="data-v878533" title={t("Data de creació")}>{x}</small>:null})()}</span></span>
-        </button>})}
+        </button>})}</React.Fragment>)}
       </section>})}
     </div>
     <div className="exp-table-wrap-v8741 exp-table-wrap-v87119">
@@ -10635,7 +10646,7 @@ return <div className="expedients-page-v8741 expedients-page-v8742 expedients-pa
         <thead><tr><th>{sortHead878192("numero","Número")}</th><th>{diuObra878326()?t("Compartida per"):t("Núm. client")}</th><th>{sortHead878192("client","Client")}</th><th>{sortHead878192("promotor","Promotor")}</th><th>{sortHead878192("nom","Nom treball")}</th><th>{sortHead878192("tipus","Tipologia treball")}</th><th>{sortHead878192("adreca","Adreça / municipi")}</th><th>{sortHead878192("estat","Estat")}</th></tr></thead>
         <tbody>{flat.length===0&&<tr><td colSpan="8"><Empty text={t("No hi ha expedients amb aquest filtre.")}/></td></tr>}{anys.map(any=><React.Fragment key={any}>
           <tr className="year-row-v8742 any-v878561"><td colSpan="8"><span className="a">{any}</span>{anys.length>1&&<>{" "}<small>{etNExp878327(flat.filter(o=>String(yearLabel878192(o))===String(any)).length)}</small></>}</td></tr>
-          {flat.filter(o=>String(yearLabel878192(o))===String(any)).map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td><td>{o.compartida?<><b className="ref-prop-v878360">{codiCurtBase878347(o)}</b><small>{o.compartida.ownerNom||o.compartida.ownerUsuari||""}</small></>:o.refClient?<b className="ref-client-v878314">{o.refClient}</b>:diuObra878326()?<span className="cap-ref-v878497">—</span>:<b>{clientProjectLabel878233(o)}</b>}</td><td>{clientNom(o)}</td><td className="exp-prom-v878289">{promotorNom878289(o)||"—"}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{o.poblacio}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select className={`est-v878299 est-${estatTone878299(o.estat)}`} aria-label={i18nT("Estat")} value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}
+          {grupsAny615(any).map(g=><React.Fragment key={g.k}>{g.cap&&<tr className={`sub-row-v878615 ${g.comp?"comp":"meus"}`}><td colSpan="8">{capSub615(g)}</td></tr>}{g.items.map(o=><tr key={o.id} onClick={()=>openObra(o.id)}><td title={expedientCode8739(o)}><b>{codiCurt878270(o)}</b>{o.createdAt?<small>{t("Creat: {data}",{data:fmtCreationDate878233(o.createdAt)})}</small>:null}</td><td>{o.compartida?<><b className="ref-prop-v878360">{codiCurtBase878347(o)}</b><small>{o.compartida.ownerNom||o.compartida.ownerUsuari||""}</small></>:o.refClient?<b className="ref-client-v878314">{o.refClient}</b>:diuObra878326()?<span className="cap-ref-v878497">—</span>:<b>{clientProjectLabel878233(o)}</b>}</td><td>{clientNom(o)}</td><td className="exp-prom-v878289">{promotorNom878289(o)||"—"}</td><td>{(()=>{return <div className="exp-name-v878259"><ObraThumb878275 o={o} nom={clientNom(o)}/><div><strong>{o.nom}</strong><small>{o.subtitol}</small><SharedBadge878259 o={o}/></div></div>})()}</td><td>{t(moduleLabel8737(o))}</td><td><span>{o.adreca&&o.adreca!=="Pendent"?o.adreca:"—"}</span>{o.poblacio&&o.poblacio!=="Pendent"?<small>{o.poblacio}</small>:null}</td><td onClick={e=>e.stopPropagation()}><div className="exp-status-cell-v878247"><Badge estat={o.estat}/>{allowAdminActions&&<select className={`est-v878299 est-${estatTone878299(o.estat)}`} aria-label={i18nT("Estat")} value={normalizeExpedientStatus878136(o.estat)} onChange={e=>changeStatus878247(o,e.target.value)}><option value="" disabled>{t("Canviar estat")}</option>{EXPEDIENT_STATUS878136.map(st=><option key={st} value={st}>{t(st)}</option>)}</select>}</div></td></tr>)}</React.Fragment>)}
         </React.Fragment>)}</tbody>
       </table>
     </div>
@@ -22874,7 +22885,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.614",
+    app_version:"87.615",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
