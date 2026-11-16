@@ -1,0 +1,7 @@
+/* V87.617 · «Llistat» sempre a la dreta, al costat del botó de crear (a Factures de l'expedient sortia al mig) */
+html body .acc-dreta-v878617{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-left:auto;flex-wrap:wrap}
+/* Hores de l'encàrrec: «Marcar tot com a facturat» i «Llistat» a la dreta de la fila de botons */
+html body .botons-v878430 .dreta-v878617{margin-left:auto;display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap}
+html body .llistat-v878617{display:inline-flex;align-items:center;gap:6px;min-height:36px;white-space:nowrap}
+/* Compartir: «Canviar per …» sota un nom curt que no és cap compte (p. ex. «hector») */
+html body .share-modal-v878259 .row b .canvia-v878617{display:block;margin-top:2px;font-size:12.5px;font-weight:600;padding:2px 0;min-height:28px;text-align:left}

@@ -6096,4 +6096,11 @@ export default {
   "Títol o text": "Título o texto",
   "NOTA D’OBRA": "NOTA DE OBRA",
   "Nota núm.": "Nota núm.",
+  "Contacte desat": "Contacto guardado",
+  "Dades de l’empresa desades": "Datos de la empresa guardados",
+  "Compartició desada": "Compartido guardado",
+  "Ja no es comparteix": "Ya no se comparte",
+  "Usuari o nom": "Usuario o nombre",
+  "Preu/h": "Precio/h",
+  "Canviar per {nom}": "Cambiar por {nom}",
 };

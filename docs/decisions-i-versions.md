@@ -4353,3 +4353,20 @@
       «Enviar» (Gmail amb el PDF). Document nou `notaPrintHtml878616` (NOTA D'OBRA: capçalera com l'acta, text, fotos i documents).
   Prova: `v615test` 14/14 (ampliada: dues fitxes amb el mateix NIF en un sol subgrup; llistat de notes amb una nota nova; la nota en PDF i
   Enviar; llistat de les 4 actes de la casa). i18ntest tot traduït.
+  - **V87.617 · Desar tanca, contactes sense obligar al NIF, compartir sense la llista de l'Héctor, llistat d'hores** (l'Héctor, 16/11/2026):
+    - «Sempre que en qualsevol pantalla es guarda alguna cosa aquella pantalla s'ha de tancar… els clients m'ho estan dient quan creen o editen
+      contactes». El contacte nou ja es tancava; l'**edició** (fitxa del client) obligava a posar NIF, adreça, CP i població i, sense, avisava
+      i es quedava oberta. Ara només el nom és obligatori (com en crear-lo) i, en desar, «✓ Contacte desat» i torna a Contactes. Els avisos de
+      «guardat» que aturaven la feina (pressupost a Documents, configuració, usuari…) són ara l'avís de baix (`toast878557`). Dades de
+      l'empresa: «✓ Dades de l'empresa desades» i es pleguen les targetes obertes (`tancaDesat878617`, el mateix que la V87.557 a Dades de l'obra).
+    - «Quan un client vol compartir no han de sortir clients meus com socoterm, marti o oriol… i posa que està compartida amb hector i jo no la
+      veig»: els suggeriments surten del mateix compte (qui li comparteix obres i amb qui n'ha compartit: `shareGent878617`); el compte
+      principal conserva brava, socoterm, oriol i marti. «hector» es convertia en `hector@usuaris.controlobres.app`, que no és el compte de
+      l'Héctor: ara, escrivint un nom conegut (p. ex. «hector» o «gestio») s'afegeix el seu compte de debò, i la llista ensenya el nom. En
+      desar, «✓ Compartició desada». **Obra Llafranc (Brava):** Brava ha de treure «hector» i afegir «Héctor Cubero» (o tocar «Canviar per…»).
+    - Hores de l'encàrrec: «Llistat» (data, feina, observacions, hores, preu, import, estat; filtres i PDF/Excel). «Llistat» sempre a la dreta,
+      al costat de «Nova…» (a Factures de l'encàrrec sortia al mig: `acc-dreta-v878617`).
+  Prova: `v617test` 14/14 (nova: contacte nou i editat només amb el nom, «✓ Contacte desat» i torna a la llista, el telèfon desat; Dades de
+  l'empresa; mòbil; Brava sense socoterm/oriol/marti, «Canviar per…» a una fila mal escrita, escrivint «gestio» el compte de debò i l'altre
+  compte la veu; Llistat d'hores a la dreta; Llistat de factures al costat de «Nova factura»). v415, v417, v424, factclient i v586 bé;
+  i18ntest tot traduït.
