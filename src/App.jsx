@@ -44,7 +44,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.635";
+const APP_VERSION878264="87.636";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3902,8 +3902,11 @@ async function triaDespatx878625(st){
   // V87.634 · (l'Héctor, 17/11/2026: «trio carpeta… i no em surt res»): si el navegador no deixa fer servir la carpeta (la de l'usuari,
   // l'arrel d'un disc, una del sistema) o no dona permís, ara es diu; només si es cancel·la no es diu res
   let dir;try{dir=await (window.__acoTriaDespatx878625?window.__acoTriaDespatx878625():window.showDirectoryPicker({mode:"readwrite",id:"aco-despatx"}))}
+  // V87.636 · (l'Héctor, 17/11/2026: «trio D:\00_CUBERO\FEINA i no surt res»): el navegador també diu «cancel·lat» (AbortError) quan, després
+  // de triar-la, no s'accepta la pregunta d'editar els arxius o quan la carpeta no es pot fer servir: ara també es diu què cal fer.
   catch(e){const n=String(e?.name||"");return n==="AbortError"?{error:"cancel"}:n==="NotAllowedError"?{error:"permis"}:{error:"carpeta-no",msg:String(e?.message||e||"")}}
-  await desaDespatxRec878625(user,{dir,nom:dir.name||"",fets:{},obres:{},canvis:[],ultima:""});
+  if(!dir)return {error:"cancel"};
+  try{await desaDespatxRec878625(user,{dir,nom:dir.name||"",fets:{},obres:{},canvis:[],ultima:""})}catch(e){return {error:"escriure",msg:String(e?.message||e||"")}}
   return sincronitzaDespatx878625(st,{demana:true,manual:true});
 }
 function useDespatx878625(){const llegeix=()=>({permis:!!window.__acoDespatxPendent878625,nous:+window.__acoDespatxNous878625||0});const[s,setS]=useState(llegeix);useEffect(()=>{const f=()=>setS(llegeix());window.addEventListener("aco-despatx-878625",f);return()=>window.removeEventListener("aco-despatx-878625",f)},[]);return s}
@@ -3935,8 +3938,9 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
       if(r.grans?.length)x+=" "+t("No s’han afegit a l’app perquè fan més de 50 MB: {l}.",{l:r.grans.slice(0,3).map(g=>g.split("/").pop()).join(", ")+(r.grans.length>3?"…":"")});
       if(r.errors)x+=" "+t("{n} arxius no s’han pogut passar: es tornarà a provar.",{n:r.errors});
       return x}
-    return r?.error==="carpeta-no"?t("El navegador no deixa fer servir aquesta carpeta. Tria’n una altra: per exemple, una carpeta nova dins de D:, no la del teu usuari ni l’arrel d’un disc."):r?.error==="permis"?t("El navegador no ha donat permís per fer servir la carpeta."):r?.error==="escriure"?t("No s’ha pogut fer servir la carpeta: {m}",{m:r.msg||""}):r?.error==="ja"?t("Ja s’està sincronitzant."):r?.error==="dades"?t("Les obres encara s’estan carregant. Torna-ho a provar d’aquí a un moment."):""};
-  const fes=async f=>{setFent(true);setMsg("");try{setMsg(diu(await f()))}finally{setFent(false);llegeix()}};
+    return r?.error==="carpeta-no"?t("El navegador no deixa fer servir aquesta carpeta. Tria’n una altra: per exemple, una carpeta nova dins de D:, no la del teu usuari ni l’arrel d’un disc.")+(r.msg?" ("+r.msg+")":""):r?.error==="cancel"?t("No s’ha triat cap carpeta. Després de triar-la, el navegador pregunta a dalt, al costat de l’adreça, si l’app pot editar els arxius: cal dir que sí. Si diu que aquella carpeta no es pot fer servir, tria’n una de nova dins de D:."):r?.error==="permis"?t("El navegador no ha donat permís per fer servir la carpeta."):r?.error==="escriure"?t("No s’ha pogut fer servir la carpeta: {m}",{m:r.msg||""}):r?.error==="ja"?t("Ja s’està sincronitzant."):r?.error==="dades"?t("Les obres encara s’estan carregant. Torna-ho a provar d’aquí a un moment."):r?.error==="usuari"||r?.error==="carpeta"?t("No s’ha pogut desar la carpeta. Torna a obrir l’app i torna-ho a provar."):""};
+  // V87.636 · si alguna cosa falla pel camí, es diu (abans no sortia res)
+  const fes=async f=>{setFent(true);setMsg("");try{setMsg(diu(await f()))}catch(e){setMsg(t("No s’ha pogut fer servir la carpeta: {m}",{m:String(e?.message||e||"")}))}finally{setFent(false);llegeix()}};
   if(rec===undefined)return null;
   return <div className="copia-v878520 despatx-v878625">
     {rec?.dir?<div className="estat"><FolderSync size={20} aria-hidden="true"/><span><b>{rec.nom||t("Carpeta triada")}</b><small>{rec.ultima?t("Última sincronització: {d}",{d:horaDespatx878625(rec.ultima)}):t("Encara no s’ha sincronitzat")}</small></span></div>:null}
@@ -23379,7 +23383,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.635",
+    app_version:"87.636",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

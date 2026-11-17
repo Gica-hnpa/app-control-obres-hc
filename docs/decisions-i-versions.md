@@ -4573,3 +4573,9 @@
     conserven i, si n'hi ha cap que sigui client d'obres, ho diu («N obres es quedaran sense client») i les obres es queden sense client.
   - Prova: `v635test` 12/12 (obra des de dalt, Inici en recarregar, recàrrega automàtica que torna a l'obra, eliminar 2 contactes, recarregar,
     cap obra esborrada, mòbil).
+- **V87.636 · Carpeta del despatx: dir sempre què ha passat** (l'Héctor, 17/11/2026: «trio D:\00_CUBERO\FEINA i no surt res»). El navegador
+  respon «cancel·lat» (AbortError) quan es tanca el quadre, però també quan, després de triar la carpeta, no s'accepta la pregunta d'editar
+  els arxius (a dalt, al costat de l'adreça) o quan la carpeta no es pot fer servir; l'app ho prenia com un «cancel·lar» i no deia res. Ara
+  diu «No s'ha triat cap carpeta. Després de triar-la, el navegador pregunta a dalt… cal dir que sí. Si diu que aquella carpeta no es pot fer
+  servir, tria'n una de nova dins de D:.». Si desar la carpeta o qualsevol altra cosa falla pel camí, també es diu (abans no sortia res).
+  Prova: `v634test` 6/6 (cancel·lar, cap carpeta, nom de la carpeta triada); v625 17/17.
