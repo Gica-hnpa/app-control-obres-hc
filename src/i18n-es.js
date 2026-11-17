@@ -6245,4 +6245,7 @@ export default {
   "Només de consulta. Si hi veus res que no és correcte, digues-ho a {nom}.": "Solo de consulta. Si ves algo que no es correcto, díselo a {nom}.",
   "qui te l’ha enviat": "quien te lo ha enviado",
   "Croquis": "Croquis",
+  "Aquesta obra encara no té fotos ni documents.": "Esta obra aún no tiene fotos ni documentos.",
+  "Fotos i documents": "Fotos y documentos",
+  "{n} arxius encara no són al núvol: es posaran quan tornis a publicar.": "{n} archivos aún no están en la nube: se pondrán cuando vuelvas a publicar.",
 };

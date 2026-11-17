@@ -152,6 +152,8 @@ function ownerOf(obraId) {
 const seg = s => encodeURIComponent(String(s || "").replace(/[\\/]/g, "_"));
 const pathOf = (obraId, id) => { const owner = ownerOf(obraId); return owner && obraId && id ? `${owner}/${seg(obraId)}/${seg(id)}` : ""; };
 const qKey = (space, kind, id) => `${space}::${kind}::${id}`;
+// V87.631 · per a l'enllaç del client: el camí al núvol d'un arxiu d'una obra
+export const camiArxiu878631 = (obraId, id) => pathOf(obraId, id);
 function dataUrlToBlob(u) {
   const m = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(u || "");
   if (!m) return null;

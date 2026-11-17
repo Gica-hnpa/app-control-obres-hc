@@ -4526,3 +4526,9 @@
   l'ordinador, es baixen del núvol (`fileStore.js`: `fitxersObra878630`, `dadesFitxer878630`). Com a molt 200 per volta; no es repeteixen; el
   que es treu de la carpeta no torna; no tornen a l'app com a documents. Una obra que només té fotos també té carpeta. Prova: `v630test` 6/6;
   v625test 17/17.
+- **V87.631 · Enllaç per al client: fotos i documents** («Fotos i documents: els que triïs», proposta del 16/11). A «Enllaç per al client»,
+  la casella «Fotos i documents (N triats)» obre la llista de les fotos i els croquis de l'obra (amb la miniatura) i dels documents de la
+  pestanya Documents, per triar-los (fins a 60). En crear l'enllaç o publicar, de cada arxiu triat es fa un enllaç signat del núvol (un any;
+  `storageSign` a cloudSync.js, `camiArxiu878631` a fileStore.js) i el client els veu a «Fotos» (galeria) i «Documents» (per baixar-los),
+  sense compte; si algun encara no és al núvol, es diu («… es posaran quan tornis a publicar»). Els que no es trien no hi són. El Supabase de
+  proves té `/object/sign`. Prova: `v631test` 5/5; v629test 25/25 (les dues esperen que la pàgina del client acabi de carregar).

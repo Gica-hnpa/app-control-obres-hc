@@ -2,7 +2,7 @@
 // clau de l'enllaç i el codi de 4 xifres es veu la còpia que l'empresa hi ha publicat (supabase/aco_client_v878629.sql) i prou: només
 // mirar i imprimir-la o desar-la en PDF. El codi es recorda en aquest aparell. No arrenca l'app (main.jsx la carrega a part).
 import React, { useEffect, useRef, useState } from "react";
-import { Lock, Printer, AlertTriangle, BadgeCheck, ChevronRight } from "lucide-react";
+import { Lock, Printer, AlertTriangle, BadgeCheck, ChevronRight, FileText } from "lucide-react";
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { tl } from "./i18n.js";
 
@@ -78,6 +78,14 @@ export default function ClientObra({ token }) {
         {imp !== "cap" && x.imp != null ? <span className="imp">{eur(x.imp)}</span> : null}
         {x.per ? <small className="val"><BadgeCheck size={14} aria-hidden="true" /> {T("Validada per {per} el {d}", { per: x.per, d: dia(x.at) })}</small> : null}
       </li>)}</ul>}
+    </section>}
+    {Array.isArray(c.arxius) && c.arxius.some(x => x.t === "foto") && <section className="bloc">
+      <h2>{T("Fotos")}</h2>
+      <div className="fotos-v878631">{c.arxius.filter(x => x.t === "foto").map((x, i) => <a key={i} href={x.url} target="_blank" rel="noopener noreferrer" title={x.nom}><img src={x.url} alt={x.nom} loading="lazy" /></a>)}</div>
+    </section>}
+    {Array.isArray(c.arxius) && c.arxius.some(x => x.t === "doc") && <section className="bloc">
+      <h2>{T("Documents")}</h2>
+      <ul className="docs-v878631">{c.arxius.filter(x => x.t === "doc").map((x, i) => <li key={i}><a href={x.url} target="_blank" rel="noopener noreferrer"><FileText size={16} aria-hidden="true" /> {x.nom}</a></li>)}</ul>
     </section>}
     {c.pres && <section className="bloc">
       <h2>{T("Pressupost")}</h2>

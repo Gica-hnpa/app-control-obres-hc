@@ -39,12 +39,12 @@ import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
-import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile,recorreArxius,fitxersObra878630,dadesFitxer878630} from "./fileStore.js";
+import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile,recorreArxius,fitxersObra878630,dadesFitxer878630,camiArxiu878631} from "./fileStore.js";
 import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses878626,permisTab878626} from "./compartir878626.js";
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.630";
+const APP_VERSION878264="87.631";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -23340,7 +23340,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.630",
+    app_version:"87.631",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -27778,10 +27778,35 @@ function contingutClient878629(o,d,opc={}){
     partides:ps.map(r=>imports==="finals"?{codi:String(r.codi||""),concepte:String(r.concepte||r.descripcio||"").slice(0,300),ut:String(r.ut||""),q:qd(r),pu:pd(r),imp:Math.round(qd(r)*pd(r)*100)/100}:{codi:String(r.codi||""),concepte:String(r.concepte||r.descripcio||"").slice(0,300),ut:String(r.ut||""),q:qd(r)})}})};
   return {v:1,idioma:docLang878283(o),obra:{nom:String(o?.nom||""),adreca:[o?.adreca,o?.poblacio].filter(Boolean).join(", "),codi:String(codiDoc878589(o)||"")},empresa:{nom:String(nomCompte878424()||"")},imports,certTipus:tipus,
     exec:{pct:total?Math.round(certificat/total*1000)/10:0,certificat:imports==="cap"?undefined:Math.round(certificat*100)/100,pressupost:imports==="cap"?undefined:total},
+    arxiusTriats:opc.arxiusOn&&Array.isArray(opc.arxius)?opc.arxius.slice(0,60):[],
     certs:opc.certsOn===false?null:certs.map(c=>({n:c.numero,data:String(c.data||""),imp:imports==="cap"?undefined:impC(c),per:c.validacio878627?.estat==="validada"?String(c.validacio878627.per||""):undefined,at:c.validacio878627?.estat==="validada"?String(c.validacio878627.at||""):undefined})),
     pres};
 }
-const OPC878629={certsOn:true,certs:"validades",pres:true,imports:"finals"};
+const OPC878629={certsOn:true,certs:"validades",pres:true,imports:"finals",arxiusOn:false,arxius:[]};
+// V87.631 · les fotos i els documents que es poden triar per al client: les fotos i els croquis (de l'obra, les actes i les notes) i els
+// documents de la pestanya Documents que tenen arxiu
+function arxiusTriables878631(d){
+  const fotos=fitxersObra878630(d||{}).filter(x=>x.llista==="fotos"||x.llista==="croquis").map(x=>({id:x.id,t:"foto",nom:x.nom||t("Foto")}));
+  const docs=(d?.documents||[]).filter(x=>x&&x.id&&x.hasFile).map(x=>({id:String(x.id),t:"doc",nom:String(x.nom||t("Document"))}));
+  return [...fotos,...docs];
+}
+// en publicar: un enllaç signat (un any) de cada arxiu triat; els que encara no són al núvol es diuen
+async function arxiusClient878631(obraId,d,ids){
+  const c=window.__acoCloud;const tots=arxiusTriables878631(d);const out=[];let falten=0;
+  for(const id of (ids||[]).slice(0,60)){const x=tots.find(y=>y.id===id);if(!x)continue;const p=camiArxiu878631(obraId,id);let url="";try{url=p&&c?.storageSign?await c.storageSign(p):""}catch{}if(!url){falten++;continue}out.push({t:x.t,nom:x.nom,url})}
+  return {arxius:out,falten};
+}
+function TriaArxius878631({obra,sel,setSel}){
+  const llista=useMemo(()=>{try{return arxiusTriables878631((lsJson8779("aco_odata",{})||{})[obra.id]||{})}catch{return []}},[obra.id]);
+  const[minis,setMinis]=useState({});
+  useEffect(()=>{let viu=true;(async()=>{const esp=currentFilesSpace878262();for(const x of llista.filter(y=>y.t==="foto").slice(0,60)){const dd=await dadesFitxer878630(esp,obra.id,x.id).catch(()=>null);if(!viu)return;if(dd)setMinis(m=>({...m,[x.id]:dd}))}})();return()=>{viu=false}},[llista]);
+  if(!llista.length)return <p className="muted">{t("Aquesta obra encara no té fotos ni documents.")}</p>;
+  const posa=(id,on)=>setSel(on?[...new Set([...(sel||[]),id])].slice(0,60):(sel||[]).filter(x=>x!==id));
+  return <div className="arxius-v878631">
+    {llista.filter(x=>x.t==="foto").length>0&&<div className="fotos">{llista.filter(x=>x.t==="foto").slice(0,60).map(x=><label key={x.id} className={"foto"+((sel||[]).includes(x.id)?" on":"")} title={x.nom}><input type="checkbox" checked={(sel||[]).includes(x.id)} onChange={e=>posa(x.id,e.target.checked)} aria-label={x.nom}/>{minis[x.id]?<img src={minis[x.id]} alt=""/>:<span className="sense">{x.nom}</span>}</label>)}</div>}
+    {llista.filter(x=>x.t==="doc").length>0&&<div className="docs">{llista.filter(x=>x.t==="doc").slice(0,60).map(x=><label key={x.id} className="chk"><input type="checkbox" checked={(sel||[]).includes(x.id)} onChange={e=>posa(x.id,e.target.checked)}/> {x.nom}</label>)}</div>}
+  </div>;
+}
 function EnllacClient878629({obra}){
   const c=typeof window!=="undefined"?window.__acoCloud:null;
   const[row,setRow]=useState(undefined);
@@ -27798,9 +27823,9 @@ function EnllacClient878629({obra}){
   const patch=p=>window.__acoPatchObra878424?.(obra.id,{enllac878629:p});
   const fes=async f=>{setBusy(true);setMsg("");try{await f()}catch(e){setMsg(e?.message||String(e))}finally{setBusy(false)}};
   const crea=()=>fes(async()=>{const a=new Uint8Array(32);crypto.getRandomValues(a);const token=[...a].map(x=>x.toString(16).padStart(2,"0")).join("");const n=new Uint32Array(1);crypto.getRandomValues(n);const codi=String(n[0]%10000).padStart(4,"0");
-    const k=cont(),ara=new Date().toISOString();await c.clientDesa878629({obra_id:obra.id,token,codi,info:info(),contingut:k,publicat:ara});
-    patch({opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Enllaç creat. Envia’l al client i digues-li el codi per un altre camí."))});
-  const publica=()=>fes(async()=>{const k=cont(),ara=new Date().toISOString();await c.clientPublica878629(obra.id,{contingut:k,info:info(),publicat:ara});patch({...(obra.enllac878629||{}),opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Publicat: el client ja ho veu."))});
+    const k=cont(),ara=new Date().toISOString();const ax=await arxiusClient878631(obra.id,dades(),k.arxiusTriats);await c.clientDesa878629({obra_id:obra.id,token,codi,info:info(),contingut:{...k,arxius:ax.arxius},publicat:ara});
+    patch({opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Enllaç creat. Envia’l al client i digues-li el codi per un altre camí.")+(ax.falten?" "+t("{n} arxius encara no són al núvol: es posaran quan tornis a publicar.",{n:ax.falten}):""))});
+  const publica=()=>fes(async()=>{const k=cont(),ara=new Date().toISOString();const ax=await arxiusClient878631(obra.id,dades(),k.arxiusTriats);await c.clientPublica878629(obra.id,{contingut:{...k,arxius:ax.arxius},info:info(),publicat:ara});patch({...(obra.enllac878629||{}),opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Publicat: el client ja ho veu.")+(ax.falten?" "+t("{n} arxius encara no són al núvol: es posaran quan tornis a publicar.",{n:ax.falten}):""))});
   const treu=()=>{if(!confirm(t("Treure l’enllaç? El client ja no hi podrà entrar (si cal, se’n pot fer un de nou).")))return;fes(async()=>{await c.clientTreu878629(obra.id);patch(undefined);await llegeix();setMsg(t("Enllaç tret."))})};
   const copia=async()=>{try{await navigator.clipboard.writeText(url);setCopiat(true);setTimeout(()=>setCopiat(false),1800)}catch{window.prompt(t("Copia l’enllaç:"),url)}};
   const text=t("Hola! Aquí pots veure com va l’obra «{obra}»: {url}",{obra:obra.nom||"",url});
@@ -27811,6 +27836,8 @@ function EnllacClient878629({obra}){
     {opc.certsOn!==false&&<select aria-label={t("Quines certificacions")} value={opc.certs} onChange={e=>setOpc(o=>({...o,certs:e.target.value}))}><option value="validades">{t("Les validades")}</option><option value="totes">{t("Totes")}</option></select>}
     <label className="chk"><input type="checkbox" checked={opc.pres!==false} onChange={e=>setOpc(o=>({...o,pres:e.target.checked}))}/> {t("Pressupost")}</label>
     <label className="sel">{t("Imports")} <select value={opc.imports} onChange={e=>setOpc(o=>({...o,imports:e.target.value}))}><option value="finals">{t("Preus finals")}</option><option value="total">{t("Només el total")}</option><option value="cap">{t("Cap import")}</option></select></label>
+    <label className="chk"><input type="checkbox" checked={!!opc.arxiusOn} onChange={e=>setOpc(o=>({...o,arxiusOn:e.target.checked}))}/> {t("Fotos i documents")}{opc.arxiusOn?" ("+t("{n} triats",{n:(opc.arxius||[]).length})+")":""}</label>
+    {opc.arxiusOn&&<TriaArxius878631 obra={obra} sel={opc.arxius||[]} setSel={v=>setOpc(o=>({...o,arxius:v}))}/>}
   </div>;
   return <div className="client-v878629">
     <b className="tit">{t("Enllaç per al client")}</b>

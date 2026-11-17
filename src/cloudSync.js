@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626 } from "./compartir878626.js";
 
-const VERSION = "V87.630";
+const VERSION = "V87.631";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -206,6 +206,14 @@ async function storageDownload(path) {
   if (r.ok) return await r.blob();
   if (r.status === 400 || r.status === 404) return null; // encara no s'ha pujat
   const e = new Error(`Error ${r.status}`); e.status = r.status; throw e;
+}
+// V87.631 · enllaç signat d'un arxiu (per a l'enllaç del client): qui tingui l'adreça el pot baixar fins que caduca (de sèrie, un any)
+async function storageSign(path, expiresIn = 31536000) {
+  const r = await storageFetch(`sign/aco-fitxers/${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn }) });
+  if (!r.ok) return "";
+  let j = null; try { j = await r.json(); } catch {}
+  const u = j?.signedURL || j?.signedUrl || "";
+  return u ? `${CLOUD_URL}/storage/v1${u.startsWith("/") ? u : "/" + u}` : "";
 }
 // V87.263 · espai ocupat al núvol (funció aco_espai de supabase/aco_espai_v87263.sql; null per als comptes d'empresa).
 async function espai() { return api("/rest/v1/rpc/aco_espai", { method: "POST", body: {} }); }
@@ -1193,7 +1201,7 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629 };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629, storageSign };
   session = readSession();
   // V87.609 · enllaç per entrar amb un compte concret (el QR de la guia de benvinguda: «…/?entra=marti»; l'Héctor, 13/11/2026: «hauria d'anar
   // directe a posar el seu usuari i contrasenya; jo entro amb el meu mòbil i s'obre el de Brava»). Si l'aparell té oberta la sessió d'un altre
