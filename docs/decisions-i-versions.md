@@ -4562,3 +4562,14 @@
   fer servir la carpeta triada (la de l'usuari, l'arrel d'un disc, una del sistema), ara ho diu i què cal triar («una carpeta nova dins de
   D:…»); si no dona permís, també; si es cancel·la, no diu res. Mentre sincronitza (la primera vegada, amb totes les obres, pot trigar), surt
   «Mirant la carpeta: obra X de Y…» i després «Sincronitzant: obra X de Y · N arxius a la carpeta i M a l'app». Prova: `v634test` 4/4; v625 17/17.
+- **V87.635 · Obra des de dalt, Inici en recarregar i eliminar contactes de cop** (l'Héctor, 17/11/2026).
+  - «En entrar en un expedient moltes vegades s'obre la pantalla així… i no des de dalt»: la pàgina es quedava on eres de la llista
+    d'Expedients. Ara, en canviar de pantalla o obrir una altra obra, es comença per dalt (`dalt878635`, `useLayoutEffect` a l'App).
+  - «Quan obres sessió o refresques no comença per Inici sinó on ho vas deixar»: als comptes d'empresa, el núvol marcava cada arrencada com
+    a «recàrrega automàtica» (`aco-reentrar-auto` a `applyCompanyContext`) i l'app tornava on eres. Ja no: en obrir l'app o recarregar-la,
+    Inici. Les recàrregues que fa l'app sola (canvis del núvol o del disc, idioma) continuen tornant on eres.
+  - «Com puc eliminar contactes seleccionats quan són més d'un a la vegada?»: a Contactes › «Seleccionar», la barra té «Eliminar» al costat
+    de «Moure» (també mentre es busca). Fa el mateix que «Eliminar» de cada fitxa: demana confirmació, les obres i les actes on surten els
+    conserven i, si n'hi ha cap que sigui client d'obres, ho diu («N obres es quedaran sense client») i les obres es queden sense client.
+  - Prova: `v635test` 12/12 (obra des de dalt, Inici en recarregar, recàrrega automàtica que torna a l'obra, eliminar 2 contactes, recarregar,
+    cap obra esborrada, mòbil).

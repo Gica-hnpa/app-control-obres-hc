@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.634";
+const VERSION = "V87.635";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -28,7 +28,9 @@ function applyCompanyContext() {
   const c = companyOf(session?.email);
   window.__acoEmpresa = c ? { ...c, email: session.email } : null;
   try {
-    if (c) { sessionStorage.setItem("aco_current_user8779", c.internal); sessionStorage.setItem("aco-reentrar-auto", c.internal); }
+    // V87.635 · ja no marca «recàrrega automàtica» a cada arrencada: en obrir l'app o recarregar-la, es comença per Inici
+    // (les recàrregues que fa l'app sola —núvol, idioma— continuen tornant on eres).
+    if (c) { sessionStorage.setItem("aco_current_user8779", c.internal); }
     else { const cur = sessionStorage.getItem("aco_current_user8779") || ""; if (cur.startsWith("emp_")) { sessionStorage.removeItem("aco_current_user8779"); sessionStorage.removeItem("aco-reentrar-auto"); } }
   } catch {}
 }

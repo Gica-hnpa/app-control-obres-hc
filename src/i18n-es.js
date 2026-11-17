@@ -6251,4 +6251,11 @@ export default {
   "El navegador no deixa fer servir aquesta carpeta. Tria’n una altra: per exemple, una carpeta nova dins de D:, no la del teu usuari ni l’arrel d’un disc.": "El navegador no deja usar esta carpeta. Elige otra: por ejemplo, una carpeta nueva dentro de D:, no la de tu usuario ni la raíz de un disco.",
   "Mirant la carpeta: obra {i} de {n}…": "Mirando la carpeta: obra {i} de {n}…",
   "Sincronitzant: obra {i} de {n} · {a} arxius a la carpeta i {b} a l’app": "Sincronizando: obra {i} de {n} · {a} archivos a la carpeta y {b} a la app",
+  "Eliminar «{nom}» dels contactes?": "¿Eliminar «{nom}» de los contactos?",
+  "Eliminar els {n} contactes seleccionats?": "¿Eliminar los {n} contactos seleccionados?",
+  "{n} obres es quedaran sense client (no s’esborren).": "{n} obras se quedarán sin cliente (no se borran).",
+  "{n} expedients es quedaran sense client (no s’esborren).": "{n} expedientes se quedarán sin cliente (no se borran).",
+  "Les obres i les actes on ja hi surten els conserven.": "Las obras y las actas donde ya aparecen los conservan.",
+  "1 contacte eliminat": "1 contacto eliminado",
+  "{n} contactes eliminats": "{n} contactos eliminados",
 };
