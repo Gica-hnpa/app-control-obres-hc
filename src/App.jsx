@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,FolderSync,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,FolderSync,BadgeCheck,Undo2,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -44,7 +44,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.626";
+const APP_VERSION878264="87.627";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9773,6 +9773,10 @@ function avisosObra878360(o,d={},alb=null){
   if(teModul878326("obra")&&isExpedientInExecution878247(o.estat)&&(d.partides||[]).length&&(certs.length||(d.partes878349||[]).length)&&ara.getDate()>=25&&!certs.some(c=>String(toInputDate8743(c.data)||"").startsWith(mes)))
     out.push({k:"cert",obraId:o.id,tab:"Certificacions",tone:"info",ref:mes,txt:t("Toca la certificació de {mes}",{mes:ara.toLocaleDateString(loc878272(),{month:"long"})})});
   out.push(...avisosCobr878496(o,d));
+  // V87.627 · certificacions per validar (a qui valida) i tornades (a qui l'ha compartida)
+  {const cfg=cfgObra878626(o);if(cfg&&permis878626(cfg,"cert")==="v")for(const c of (d.certificacions||[])){const v=c?.validacio878627;if(!v)continue;
+    if(o.compartida&&v.estat==="pendent")out.push({k:"validar",obraId:o.id,tab:"Certificacions",tone:"warn",ref:String(c.id)+"|"+(v.enviat||""),txt:t("Certificació {n} per validar",{n:c.numero})});
+    if(!o.compartida&&v.estat==="tornada")out.push({k:"tornada",obraId:o.id,tab:"Certificacions",tone:"warn",ref:String(c.id)+"|"+(v.at||""),txt:v.comentari?t("Certificació {n} tornada: {c}",{n:c.numero,c:String(v.comentari).slice(0,80)}):t("Certificació {n} tornada",{n:c.numero})})}}
   return out;
 }
 function avisosDocs878360(odata={},clients=[]){
@@ -12846,7 +12850,7 @@ function GestioObra8746({data:data0,setData:setData0,importExcel,deletePressupos
   // V87.424 · obra compartida «només Pressupost i certificacions»: qui la rep hi fa la seva certificació (contrast878424)
   const data=useMemo(()=>contrast878424?ambContrast878424(data0,contrast878424.me):data0,[data0,contrast878424?.me]);// eslint-disable-line react-hooks/exhaustive-deps
   // V87.626 · obra compartida amb el pressupost o les certificacions de «Lectura»
-  const cfg626=obra?.compartida?cfgObra878626(obra):null,lectPres626=permis878626(cfg626,"pressupost")==="l",lectCert626=permis878626(cfg626,"cert")==="l";
+  const cfg626=obra?.compartida?cfgObra878626(obra):null,lectPres626=permis878626(cfg626,"pressupost")==="l",lectCert626=["l","v"].includes(permis878626(cfg626,"cert")),valida627=permis878626(cfg626,"cert")==="v";
   const setData=upd=>{if(!contrast878424){setData0(upd);return}setData0(d=>desaContrast878424(d,contrast878424,typeof upd==="function"?upd(ambContrast878424(d,contrast878424.me)):upd))};
   const[sub,setSub]=useState(fixedSub||"Pressupost obra");
   const info=ensureBudgetGroups8786(data);
@@ -12994,7 +12998,7 @@ function GestioObra8746({data:data0,setData:setData0,importExcel,deletePressupos
     {!fixedSub&&<div className="subtabs-v8746"><button className={sub==="Pressupost obra"?"active":""} onClick={()=>setSub("Pressupost obra")}>{t("Pressupost obra")}</button><button className={sub==="Certificacions obra"?"active":""} onClick={()=>setSub("Certificacions obra")}>{t("Certificacions obra")}</button><button className={sub==="Facturació obra"?"active":""} onClick={()=>setSub("Facturació obra")}>{t("Facturació obra")}</button><button className={sub==="Gantt"?"active":""} onClick={()=>setSub("Gantt")}>{t("Gantt")}</button><button className={sub==="Rendibilitat"?"active":""} onClick={()=>setSub("Rendibilitat")}>{t("Seguiment econòmic")}</button></div>}
     {sub==="Pressupost obra"&&(contrast878424||lectPres626)&&<PressupostCompartit878424 data={filterBudgetData8786(data0,activeBudgetId)} obra={obra} client={client} openDoc={openDoc}/>}{sub==="Pressupost obra"&&!contrast878424&&!lectPres626&&<Pressupost ajustos878426={ajustos878426} ambFases878426={senseBarra878342} data={activeData} setData={setScopedData} importExcel={(e)=>importExcel?.(e,activeBudgetId)} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} openPartida={openPartida} openEmail={openEmail} openDoc={openDoc} client={client} obra={obra} clientHistoricalPartides={clientHistoricalPartides} budgetGroups={groups} activeBudgetId={activeBudgetId} selectBudget={selectBudget8788} addBudget={addBudget} renameBudget={renameBudget} nomNum528={readOnly878342||contrast878424?undefined:nomNum528} deleteBudget={deleteBudget} totalGlobal={totalGlobal} totalActive={totalActive} partidaLibrary={partidaLibrary} setPartidaLibrary={setPartidaLibrary}/>} 
     {sub==="Certificacions obra"&&<BudgetWarnings878253 rows={activeData.partides||[]}/>}
-    {sub==="Certificacions obra"&&<Cert readOnly={lectCert626} contrast878424={contrast878424} compara878424={{raw:data0,bid:activeBudgetId}} data={activeData} setData={setScopedData} obra={obra} client={client} setClients={setClients} obraData={data} setObraData={setData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
+    {sub==="Certificacions obra"&&<Cert readOnly={lectCert626} valida878627={valida627} contrast878424={contrast878424} compara878424={{raw:data0,bid:activeBudgetId}} data={activeData} setData={setScopedData} obra={obra} client={client} setClients={setClients} obraData={data} setObraData={setData} updateCert={scopedUpdateCert} deleteCertificacio8721={scopedDeleteCert} updateCertDate8721={scopedUpdateCertDate} addCertificacio={scopedAddCert} ci={certInfo} setCi={setCertInfo} saveCert={scopedSaveCert} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Facturació obra"&&<Fact data={activeData} setData={setData} obra={obra} client={client} setClients={setClients} openEmail={openEmail} openDoc={openDoc}/>} 
     {sub==="Gantt"&&<><GanttObraVisual878253 data={activeData} setData={setScopedData}/><details className="gt-legacy-v878253"><summary>{t("Planificació avançada per industrials i colles (eina anterior)")}</summary><GanttObra878149 data={activeData} setData={setScopedData}/></details></>}
     {sub==="Rendibilitat"&&<GlobalRendibilitat8789 data={data} setData={setData} activeBudgetId={activeBudgetId} obraId={obra?.id||""} tota878342={tota878342} readOnly878342={readOnly878342} goDespeses878342={goDespeses878342}/>}
@@ -13370,6 +13374,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
     </>}};
   const renderTab=()=> <>
     {!readOnly&&obra?.compartida&&permisTab878626(activeTab,cfgObra878626(obra))==="l"&&<div className="lectura-v878626" role="note"><Eye size={16} aria-hidden="true"/><span>{t("Només lectura: el que hi canviïs no arribarà a {nom}.",{nom:obra.compartida.ownerNom||t("qui l’ha compartida")})}</span></div>}
+    {!readOnly&&obra?.compartida&&permisTab878626(activeTab,cfgObra878626(obra))==="v"&&<div className="lectura-v878626 valida-v878627" role="note"><BadgeCheck size={16} aria-hidden="true"/><span>{t("Pots validar les certificacions o tornar-les amb un comentari; no les pots canviar.")}</span></div>}
     {activeTab==="Resum"&&!readOnly&&<AvisosObra878360 obra={obra} data={data} setTab={setTab}/>}
     {activeTab==="Resum"&&<ObraHero878252 obra={obra} client={client} data={data} scope={directBudgetData878214} tabs={navigationTabs} setTab={setTab} uploadImage={uploadImage}/>}
     {activeTab==="Resum"&&<EncarrecTecnic878306 obra={obra} client={client} data={data} setData={setData} readOnly={readOnly}/>}
@@ -19219,7 +19224,48 @@ function CertPartidaModal87216({row,certNum,capOptions=[],editing,close,onNova,o
 // 4.487,50 €). L'import surt sempre de les partides; el desat (c.import) només val per a les certificacions importades sense quantitats.
 function teQuantCert878364(partides,n){const k=String(n);return (partides||[]).some(r=>(r?.certsByNum&&Object.prototype.hasOwnProperty.call(r.certsByNum,k))||(r?.certAmountsByNum&&Object.prototype.hasOwnProperty.call(r.certAmountsByNum,k))||(r?.["cert_"+n]!=null&&r["cert_"+n]!==""))}
 function importCert878364(partides,c){const n=+c?.numero||0;const calc=(partides||[]).reduce((s,r)=>s+certAmount878223(r,n),0);return Math.abs(calc)>0.000001||teQuantCert878364(partides,n)?calc:(parseNum8770(c?.import)||0)}
-function Cert({data,setData,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc,readOnly=false,clientMode=false,obra,client,setClients,obraData,setObraData,contrast878424=null,compara878424=null}){
+// ── V87.627 · Validar la certificació (fase 2 de compartir; l'Héctor, 17/11/2026: «Validar o tornar amb comentari»). Qui l'ha compartida
+// (amb «Certificacions › Validar») la «Envia per validar» (i, si vol, l'avís pel Gmail amb el PDF); qui la rep la «Valida» o la «Torna» amb un
+// comentari. Es desa a la certificació (`validacio878627`: estat, enviada, qui, quan, comentari i les quantitats de cada partida en aquell
+// moment) i el núvol només deixa passar això (compartir878626.js). Si després es canvia, es veu què ha canviat. Falta: la signatura amb l'AutoFirma.
+function qCert878627(partides,num){const out={};for(const r of partides||[]){const v=(r?.certsByNum||{})[num];if(v!=null&&v!=="")out[pidC878424(r)]=Math.round((parseNum8770(v)||0)*1000)/1000}return out}
+function difQ878627(a,b,partides){if(!a||!b)return [];const per=new Map((partides||[]).map(r=>[pidC878424(r),r]));const ks=[...new Set([...Object.keys(a),...Object.keys(b)])];
+  return ks.filter(k=>Math.abs((+a[k]||0)-(+b[k]||0))>0.0005).map(k=>{const r=per.get(k)||{};return {k,codi:r.codi||"",concepte:String(r.concepte||r.descripcio||"").slice(0,80),abans:+a[k]||0,ara:+b[k]||0}})}
+const nf878627=n=>Number(n||0).toLocaleString("ca-ES",{maximumFractionDigits:3});
+const quan878627=v=>v?fmtAppDate8748(isoDay878255(new Date(v))):"";
+function ValidacioCert878627({cert,certNum,partides,valida,propi,setCert,correu}){
+  const v=cert?.validacio878627&&typeof cert.validacio878627==="object"?cert.validacio878627:null;
+  const[envia,setEnvia]=useState(false);const[avisa,setAvisa]=useState(true);const[tornant,setTornant]=useState(false);const[com,setCom]=useState("");
+  if(!cert||(!valida&&!propi&&!v))return null;
+  const q=qCert878627(partides,certNum);
+  const ara=()=>new Date().toISOString();
+  const llista=ds=>ds.length?<ul className="canvis-v878627">{ds.slice(0,12).map(x=><li key={x.k}><b>{x.codi||"—"}</b> <span>{x.concepte}</span> <em>{nf878627(x.abans)} → {nf878627(x.ara)}</em></li>)}{ds.length>12?<li>…</li>:null}</ul>:null;
+  const enviar=()=>{setCert(c=>{const w=c.validacio878627;return {...c,validacio878627:{estat:"pendent",enviat:ara(),q,anterior:w?{estat:w.estat,at:w.at||w.enviat||"",q:w.qv||w.q||null}:null}}});setEnvia(false);if(avisa&&correu)correu()};
+  const despresQ=v?.estat==="validada"?difQ878627(v.qv,q,partides):v?.estat==="pendent"?difQ878627(v.q,q,partides):[];
+  const xip=!v?null:v.estat==="pendent"?<span className="xip-v878627 pendent">{t("Enviada per validar el {d}",{d:quan878627(v.enviat)})}</span>
+    :v.estat==="validada"?<span className="xip-v878627 validada"><BadgeCheck size={15} aria-hidden="true"/> {t("Validada per {per} el {d}",{per:v.per||"—",d:quan878627(v.at)})}</span>
+    :<span className="xip-v878627 tornada">{t("Tornada per {per} el {d}",{per:v.per||"—",d:quan878627(v.at)})}</span>;
+  if(propi)return <div className="card validacio-v878627">
+    <div className="fila">{xip||<span className="xip-v878627">{t("Encara no s’ha enviat per validar")}</span>}
+      {!envia&&<button type="button" className={v?"secondary":"primary"} onClick={()=>setEnvia(true)}><Send size={16} aria-hidden="true"/> {v?t("Tornar a enviar per validar"):t("Enviar per validar")}</button>}</div>
+    {v?.estat==="tornada"&&v.comentari?<p className="comentari">«{v.comentari}»</p>:null}
+    {despresQ.length>0&&<div className="avis"><b>{v.estat==="validada"?t("Ha canviat des que es va validar"):t("Ha canviat des que la vas enviar")}</b>{llista(despresQ)}</div>}
+    {envia&&<div className="envia"><label className="chk"><input type="checkbox" checked={avisa} onChange={e=>setAvisa(e.target.checked)}/> {t("Avisar per correu (amb el PDF)")}</label>
+      <div className="botons"><button type="button" className="secondary" onClick={()=>setEnvia(false)}>{t("Cancel·lar")}</button><button type="button" className="primary" onClick={enviar}>{t("Enviar")}</button></div></div>}
+  </div>;
+  // qui valida
+  if(!v)return null;
+  const desDe=v.estat==="pendent"&&v.anterior?.q?difQ878627(v.anterior.q,q,partides):[];
+  return <div className={"card validacio-v878627"+(v.estat==="pendent"?" per-validar":"")}>
+    <div className="fila">{v.estat==="pendent"?<b className="tit">{t("Certificació {n} per validar",{n:certNum})}</b>:xip}</div>
+    {v.estat==="pendent"&&v.anterior?<div className="avis"><b>{desDe.length?t("Ha canviat des de l’última vegada:"):t("No ha canviat res des de l’última vegada.")}</b>{llista(desDe)}</div>:null}
+    {v.estat!=="pendent"&&v.estat==="tornada"&&v.comentari?<p className="comentari">«{v.comentari}»</p>:null}
+    {v.estat==="pendent"&&!tornant&&<div className="botons"><button type="button" className="primary" onClick={()=>setCert(c=>({...c,validacio878627:{...c.validacio878627,estat:"validada",per:nomCompte878424(),at:ara(),comentari:"",qv:q}}))}><BadgeCheck size={16} aria-hidden="true"/> {t("Validar")}</button><button type="button" className="secondary" onClick={()=>setTornant(true)}><Undo2 size={16} aria-hidden="true"/> {t("Tornar-la")}</button></div>}
+    {v.estat==="pendent"&&tornant&&<div className="envia"><label className="lbl">{t("Per què la tornes?")}<textarea rows={3} value={com} onChange={e=>setCom(e.target.value)} placeholder={t("Ex.: revisa la partida 04.02")}/></label>
+      <div className="botons"><button type="button" className="secondary" onClick={()=>{setTornant(false);setCom("")}}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!com.trim()} onClick={()=>{setCert(c=>({...c,validacio878627:{...c.validacio878627,estat:"tornada",per:nomCompte878424(),at:ara(),comentari:com.trim()}}));setTornant(false);setCom("")}}>{t("Tornar-la")}</button></div></div>}
+  </div>;
+}
+function Cert({valida878627=false,data,setData,updateCert,addCertificacio,deleteCertificacio8721,updateCertDate8721,updateCertDate,ci,setCi,saveCert,openEmail,openDoc,readOnly=false,clientMode=false,obra,client,setClients,obraData,setObraData,contrast878424=null,compara878424=null}){
 const certs=data.certificacions||[];
 const[selected,setSelected]=useState(certs.find(c=>+c.numero===2)?.id||certs[0]?.id||null);
 const[editing,setEditing]=useState(false);
@@ -19508,7 +19554,7 @@ function botonsCap527(){
 function einesCert527(){
   const pot=!readOnly&&!contrast878424;
   return <div className="cert-eines-v878527">
-    {!editing?<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>
+    {!editing?(readOnly?null:<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>)
       :<div className="edita-fix-v878452"><span className="tot-m-v878452"><small>{i18nT("Certificació {n}",{n:certNum})}</small><b>{money(certTotal(certNum))}</b></span><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button></div>}
     {pot&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}
     {pot&&!clientMode&&<label className={`secondary excel-v878527${certImportBusy878231?" disabled":""}`} title={i18nT("Llegeix les quantitats d’aquesta certificació d’un Excel")}><Upload size={15} aria-hidden="true"/> {certImportBusy878231?i18nT("Llegint Excel..."):i18nT("Omplir-la des d’un Excel")}<input type="file" accept=".xlsx,.xls" disabled={certImportBusy878231} onChange={e=>{const file=e.target.files?.[0];readCertificationExcel878231(file);e.target.value=""}}/></label>}
@@ -19925,6 +19971,9 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
 <>
   {detall426&&cert&&<div className="cert-detall-v878426">
   {!editing&&<button type="button" className="tornar-v878426" onClick={()=>{setDetall426(false);setLlista426(true)}}><ChevronLeft size={18} aria-hidden="true"/> {contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</button>}
+  {!editing&&!clientMode&&!contrast878424&&<ValidacioCert878627 cert={cert} certNum={certNum} partides={data.partides||[]} valida={!!valida878627} propi={!obra?.compartida&&permis878626(cfgObra878626(obra),"cert")==="v"}
+    setCert={fn=>(setObraData||setData)?.(d=>({...d,certificacions:(d.certificacions||[]).map(x=>String(x?.id)===String(cert.id)?fn(x):x)}))}
+    correu={openEmail?()=>openEmail(`${i18nT("Certificació")} ${certNum} · ${i18nT("per validar")}`,{doc:certPdfDoc878407("origen")}):null}/>}
   <div className="card cert-cap-v878426">
     <div className="esq"><b>{contrast878424?i18nT("La meva certificació {n}",{n:certNum}):i18nT("Certificació {n}",{n:certNum})}</b><small>{fmtAppDate8748(dateVal8721(cert)||"")}{faCert878337?<em className="fa">{i18nT("Factura {n}",{n:faCert878337.numero})}</em>:vfCert878337?<em className="fa">{vfCert878337.numSerie}</em>:null}</small></div>
     <b className="tot">{money(editing?certTotal(certNum):certListTotal878215(cert))}</b>
@@ -19932,7 +19981,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     {sigs408.length>0&&<button type="button" className="sigcert-xip-v878408" onClick={()=>setSigCert408(true)} title={sigs408.map(x=>x.nom||x.org).join(" · ")}><Signature size={15} aria-hidden="true"/> {sigs408.length===1?i18nT("1 signatura"):i18nT("{n} signatures",{n:sigs408.length})}</button>}
     {vell527?<>
     {bloq878364?<><span className="bloq-v878364" title={i18nT("Té factura: per canviar-la, cal eliminar la factura")}><Lock size={15} aria-hidden="true"/> {i18nT("Facturada")}</span>{(()=>{const fx=cert&&faDe878364(cert);return fx?.acord544&&+fx.acord544.imp>0?<span className="acord-barra-v878548" title={fx.acord544.motiu||""}>{i18nT("Factura {n} amb acord: −{imp}",{n:fx.numero,imp:money(fx.acord544.imp)})}{fx.acord544.motiu?` · ${fx.acord544.motiu}`:""}</span>:null})()}</>
-      :!editing?<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>
+      :!editing?(readOnly?null:<button type="button" className="primary editar-v878364" onClick={()=>{setEditing(true);setCertMode8711("emplenar")}}><PenLine size={16} aria-hidden="true"/> {i18nT("Editar")}</button>)
       :<><div className="edita-fix-v878452"><span className="tot-m-v878452"><small>{i18nT("Certificació {n}",{n:certNum})}</small><b>{money(certTotal(certNum))}</b></span><button type="button" className="secondary" onClick={()=>{setDraft({});setEditing(false)}}>{i18nT("Cancel·lar")}</button><button type="button" className="primary" onClick={guardarAmidaments}><Save/> {i18nT("Guardar canvis")}</button></div>{!readOnly&&!contrast878424&&<button type="button" className="secondary" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}</>}
     {!editing&&<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>}
     {!editing&&<ActionMenu87213 className="accions-v878364" label={i18nT("Opcions")}>
@@ -23262,7 +23311,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.626",
+    app_version:"87.627",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -27670,7 +27719,7 @@ function ShareModal878259({obra,close}){
       <div className="que-veuen-v878626">
         <b className="tit">{t("Què veuen")}</b>
         <div className="models" role="radiogroup" aria-label={t("Què veuen")}>{Object.entries(MODELS878626).map(([k,m])=><button type="button" key={k} role="radio" aria-checked={model===k} className={model===k?"on":""} onClick={()=>triaModel626(k)}>{t(m.nom)}</button>)}{model==="propi"&&<span className="propi" aria-live="polite">{t("A mida")}</span>}</div>
-        {model!=="tot"&&<div className="graella" role="table">{APARTATS878626.map(a=><div className="fila" role="row" key={a.k}><span role="cell">{t(a.nom)}</span><div className="opc" role="cell">{[["n","No"],["l","Lectura"],["m","Modificar"]].filter(([v])=>!(a.k==="fitxa"&&v==="n")).map(([v,l])=><button type="button" key={v} aria-pressed={ap[a.k]===v} className={"o-"+v+(ap[a.k]===v?" on":"")} onClick={()=>posaAp626(a.k,v)}>{t(l)}</button>)}</div></div>)}</div>}
+        {model!=="tot"&&<div className="graella" role="table">{APARTATS878626.map(a=><div className="fila" role="row" key={a.k}><span role="cell">{t(a.nom)}</span><div className="opc" role="cell">{[["n","No"],["l","Lectura"],...(a.k==="cert"?[["v","Validar"]]:[]),["m","Modificar"]].filter(([v])=>!(a.k==="fitxa"&&v==="n")).map(([v,l])=><button type="button" key={v} aria-pressed={ap[a.k]===v} className={"o-"+v+(ap[a.k]===v?" on":"")} onClick={()=>posaAp626(a.k,v)}>{t(l)}</button>)}</div></div>)}</div>}
       </div>
     </>}
     {err&&<p className="err">{err}</p>}

@@ -7,7 +7,9 @@
 //  · En arribar canvis d'un altre compte (cloudSync › applyShared), a l'obra pròpia només entren els dels apartats «m»; la resta es
 //    queda com era (i al cicle següent es torna a pujar la bona).
 //  · Qui la rep no veu les pestanyes dels apartats «n», i les dels «l» són només de lectura.
-// Fase 2: «Validar» la certificació; fase 3: l'enllaç per al client. Còpia a part per a cada persona: quan hi hagi la taula nova (SQL).
+// V87.627 · Fase 2: a les certificacions, també «v» (Validar): les veu com de lectura i només en pot tornar l'estat (validada o tornada),
+// qui ho diu, quan i el comentari (`certificacions[].validacio878627`). Fase 3: l'enllaç per al client. Còpia a part per a cada persona:
+// quan hi hagi la taula nova (SQL).
 export const APARTATS878626 = [
   { k: "fitxa", nom: "Fitxa i contactes", claus: ["agents", "hiddenAgentIdentities878192", "fitxa878443", "passos878305", "obra"], tabs: ["Dades", "Agents"] },
   { k: "docs", nom: "Documents i plànols", claus: ["documents", "sectionDocs"], tabs: ["Documents", "Plànols", "Documentació"] },
@@ -25,7 +27,7 @@ export const APARTATS878626 = [
 export const MODELS878626 = {
   tot: { nom: "Tot, com ara", ap: null },
   equip: { nom: "Equip de l’obra", ap: { fitxa: "m", docs: "m", fotos: "m", dia: "m", planning: "m", pressupost: "m", cert: "m", factura: "n", economia: "n" } },
-  valida: { nom: "Tècnic que valida", ap: { fitxa: "l", docs: "l", fotos: "l", dia: "n", planning: "l", pressupost: "l", cert: "l", factura: "n", economia: "n" } },
+  valida: { nom: "Tècnic que valida", ap: { fitxa: "l", docs: "l", fotos: "l", dia: "n", planning: "l", pressupost: "l", cert: "v", factura: "n", economia: "n" } },
   mirar: { nom: "Només mirar", ap: { fitxa: "l", docs: "l", fotos: "l", dia: "l", planning: "l", pressupost: "l", cert: "l", factura: "n", economia: "n" } },
 };
 const PER_CLAU = new Map();
@@ -41,7 +43,7 @@ export function cfgObra878626(o) {
   const c = o && typeof o === "object" ? o.compartir878626 : null;
   if (!c || typeof c !== "object" || !c.ap || typeof c.ap !== "object") return null;
   const ap = {};
-  for (const a of APARTATS878626) { const v = c.ap[a.k]; ap[a.k] = v === "n" || v === "l" || v === "m" ? v : "m"; }
+  for (const a of APARTATS878626) { const v = c.ap[a.k]; ap[a.k] = v === "n" || v === "l" || v === "m" || (v === "v" && a.k === "cert") ? v : "m"; }
   if (ap.fitxa === "n") ap.fitxa = "l"; // la fitxa sempre es veu (el nom, l'adreça…)
   return { model: String(c.model || ""), ap };
 }
@@ -55,7 +57,7 @@ export function filtraDades878626(d, cfg) {
   for (const [k, v] of Object.entries(d)) {
     const p = permis878626(cfg, apartatDe878626(k));
     if (p === "n") continue;
-    out[k] = p === "l" && k === "partides" && Array.isArray(v) ? v.map(senseComissio) : v;
+    out[k] = (p === "l" || p === "v") && k === "partides" && Array.isArray(v) ? v.map(senseComissio) : v;
   }
   return out;
 }
@@ -66,10 +68,27 @@ export function ajuntaDades878626(local, remote, cfg) {
   const out = { ...(local && typeof local === "object" && !Array.isArray(local) ? local : {}) };
   const claus = new Set([...Object.keys(out), ...Object.keys(remote)]);
   for (const k of claus) {
-    if (permis878626(cfg, apartatDe878626(k)) !== "m") continue;
+    const p = permis878626(cfg, apartatDe878626(k));
+    if (p === "v" && k === "certificacions") { out[k] = ambValidacions878627(out[k], remote[k]); continue; }
+    if (p !== "m") continue;
     if (k in remote) out[k] = remote[k]; else delete out[k];
   }
   return out;
+}
+// V87.627 · de les certificacions que arriben de qui valida, només la validació (validada o tornada), i només si és posterior a la pròpia
+// (a l'enviament per validar, si encara no s'ha validat). Les quantitats validades són les de la versió enviada (no les que diu qui valida).
+export function ambValidacions878627(loc, rem) {
+  if (!Array.isArray(loc)) return loc;
+  const per = new Map((Array.isArray(rem) ? rem : []).filter(c => c && c.id != null).map(c => [String(c.id), c]));
+  return loc.map(c => {
+    const v = per.get(String(c?.id))?.validacio878627;
+    if (!v || typeof v !== "object" || !["validada", "tornada"].includes(v.estat) || !v.at) return c;
+    const l = c.validacio878627;
+    if (l && l.estat === "pendent" && String(v.at) <= String(l.enviat || "")) return c;
+    if (l && l.estat !== "pendent" && String(l.at || "") >= String(v.at)) return c;
+    const { estat, per: qui, at, comentari, qv } = v;
+    return { ...c, validacio878627: { ...(l || {}), estat, per: String(qui || "").slice(0, 120), at: String(at), comentari: String(comentari || "").slice(0, 2000), qv: l?.q && typeof l.q === "object" ? l.q : (qv && typeof qv === "object" ? qv : undefined) } };
+  });
 }
 // la fitxa de l'obra que arriba d'un altre compte: només si la fitxa és «m»; la configuració sempre és la pròpia
 export function ajuntaObra878626(local, remote, cfg) {

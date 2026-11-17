@@ -4489,3 +4489,16 @@
   «què veuen» és el mateix per a tothom amb qui es comparteix aquella obra (la còpia a part per a cada persona, amb la taula nova). Prova:
   `v626test` (dos comptes: fila del núvol sense els apartats «No», pestanyes, lectura, un canvi a Certificacions arriba i un a Documents no,
   la fila deixa de canviar amb tots dos oberts, «Tot, com ara» torna a pujar-ho tot, mòbil) 22/22; v424, v614, v620b, v623, alhoratest (43/43) i fusiotest (22/22), bé. El Supabase de proves té `GET /__shared`.
+- **V87.627 · Validar la certificació (fase 2 de compartir)** (l'Héctor, 17/11/2026: «Validar o tornar amb comentari… totes dues, triades
+  per tècnic»). A «Compartir › Què veuen», les Certificacions tenen també **Validar** (No · Lectura · Validar · Modificar); «Tècnic que valida»
+  la hi posa. A la certificació, qui l'ha compartida té una targeta: «Encara no s’ha enviat per validar» + «Enviar per validar» (amb la
+  casella «Avisar per correu (amb el PDF)» marcada: obre l'enviament pel Gmail amb el PDF de la certificació); després «Enviada per validar el
+  …», «Validada per … el …» (verd) o «Tornada per … el …» amb el comentari (taronja), i «Tornar a enviar per validar». Si les quantitats
+  canvien després d'enviar-la o de validar-la: «Ha canviat des que…» amb les partides (codi, abans → ara). Qui valida: avís de dalt «Pots validar
+  les certificacions o tornar-les amb un comentari; no les pots canviar», la certificació de lectura (sense «Editar») i la targeta
+  «Certificació N per validar» amb «Validar» i «Tornar-la» (comentari obligatori); si l'han tornat a enviar, «Ha canviat des de l’última
+  vegada:» amb les partides. Avisos a l'Inici: «Certificació N per validar» (a qui valida) i «Certificació N tornada: …» (a qui l'ha
+  compartida). Es desa a `certificacions[].validacio878627` (estat, enviat, at, per, comentari, q enviades, qv validades, anterior); a l'obra
+  pròpia, de qui valida només entra la validació (validada/tornada, posterior a l'enviament) i les quantitats validades són les enviades.
+  També: «Editar» de la certificació ja no surt si la certificació és de lectura. Prova: `v627test` 15/15 (enviar, tornar, canviar, tornar a
+  enviar, què ha canviat, validar, el tècnic no pot canviar quantitats ni dades, avisos de l'Inici, mòbil).

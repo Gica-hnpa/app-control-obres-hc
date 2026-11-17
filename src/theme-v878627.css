@@ -1,0 +1,24 @@
+/* V87.627 · Validar la certificació: «Validar» a la finestra Compartir, la targeta de validació i l'avís de dalt */
+html body .share-modal-v878259 .que-veuen-v878626 .opc button.on.o-v{background:#EFEDFF;color:#5B21B6}
+@media (max-width:560px){html body .share-modal-v878259 .que-veuen-v878626 .opc:has(.o-v){grid-template-columns:repeat(4,1fr)}}
+html body .lectura-v878626.valida-v878627{background:#EFEDFF;border-color:#C4B5FD;color:#5B21B6}
+html body .validacio-v878627{display:flex;flex-direction:column;gap:10px;padding:12px 14px;margin:0 0 10px;border:1px solid #AEBBCA;border-radius:12px;background:#fff}
+html body .validacio-v878627.per-validar{border-color:#C4B5FD;background:#FAF8FF}
+html body .validacio-v878627 .fila{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+html body .validacio-v878627 .tit{font-size:15px;color:#5B21B6}
+html body .validacio-v878627 .xip-v878627{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:13.5px;font-weight:600;background:#F1F5F9;color:#334155}
+html body .validacio-v878627 .xip-v878627.pendent{background:#E7F1FB;color:#1E40AF}
+html body .validacio-v878627 .xip-v878627.validada{background:#E5F4E4;color:#166534}
+html body .validacio-v878627 .xip-v878627.tornada{background:#F9ECE7;color:#9A3412}
+html body .validacio-v878627 .comentari{margin:0;font-size:14px;color:#9A3412}
+html body .validacio-v878627 .avis{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border-radius:10px;background:#FFF7E6;border:1px solid #F0C36D;font-size:13.5px;color:#7A4A00}
+html body .validacio-v878627 .canvis-v878627{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+html body .validacio-v878627 .canvis-v878627 li{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;min-width:0}
+html body .validacio-v878627 .canvis-v878627 li span{flex:1 1 140px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .validacio-v878627 .canvis-v878627 li em{font-style:normal;font-weight:600;white-space:nowrap}
+html body .validacio-v878627 .botons{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+html body .validacio-v878627 .envia{display:flex;flex-direction:column;gap:8px}
+html body .validacio-v878627 .chk{display:inline-flex;align-items:center;gap:8px;font-size:14px}
+html body .validacio-v878627 .chk input{width:18px;height:18px;margin:0}
+html body .validacio-v878627 .lbl{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+html body .validacio-v878627 textarea{width:100%;box-sizing:border-box;font:inherit;font-weight:400;padding:8px 10px;border:1px solid #AEBBCA;border-radius:10px}
