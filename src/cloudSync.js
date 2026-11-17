@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626 } from "./compartir878626.js";
 
-const VERSION = "V87.628";
+const VERSION = "V87.629";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -630,7 +630,8 @@ function kOdata() { return `aco_v8782__${ownNs()}__aco_odata`; }
 function kFoto(id) { return `aco_v8782__${ownNs()}__aco_obra_foto_v878259_${id}`; }
 function sharedMetaKey() { return `nuvol-aco-compartits__${session?.user_id || ""}`; }
 function readArr(k, f) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? f; } catch { return f; } }
-function stripShareMeta(o) { const { compartida, imatge, ...rest } = o || {}; return rest; }
+// V87.629 · l'enllaç per al client (la clau i el codi) no surt mai cap a les obres compartides
+function stripShareMeta(o) { const { compartida, imatge, enllac878629, ...rest } = o || {}; return rest; }
 function localShare(id) {
   const o = readArr(kObres(), []).find(x => x?.id === id); if (!o) return null;
   const d = readArr(kOdata(), {})[id];
@@ -692,7 +693,7 @@ function applyShared(r, owned, editor) {
   // V87.626 · a l'obra pròpia amb permisos per apartats, només entren els canvis dels apartats «Modificar» (la resta es queda com era)
   const cfg = owned && prev ? cfgObra878626(prev) : null;
   if (cfg) o = ajuntaObra878626(prev, o, cfg);
-  if (owned && prev) { delete o.compartida; delete o.clientNomCompartit; }
+  if (owned && prev) { delete o.compartida; delete o.clientNomCompartit; if (prev.enllac878629 && !o.enllac878629) o.enllac878629 = prev.enllac878629; }
   writeRaw(kObres(), JSON.stringify(prev ? list.map(x => x?.id === r.obra_id ? o : x) : [...list, o]));
   const od = readArr(kOdata(), {}); let d = null; try { d = JSON.parse(r.dades || "null"); } catch {}
   if (cfg) d = ajuntaDades878626(od[r.obra_id], d, cfg);
@@ -856,6 +857,27 @@ async function unshareObra(obraId) {
   shCache.delete(obraId);
   dropShBase(obraId);
   sharedOwned.delete(obraId);
+}
+// ---------- V87.629 · l'enllaç per al client (taula aco_client, supabase/aco_client_v878629.sql) ----------
+let clientTaulaFalta = false;
+const clientFalta = e => e && (e.status === 404 || /aco_client|PGRST20[25]|42P01/.test(String(e.message || "")));
+async function clientEnllac878629(obraId) {
+  if (!session || clientTaulaFalta) return { falta: true };
+  try { const r = await api(`/rest/v1/aco_client?select=token,codi,obra_id,publicat,obert,obertures,intents,info&obra_id=eq.${encodeURIComponent(obraId)}&owner=eq.${session.user_id}`); return Array.isArray(r) && r[0] ? r[0] : null; }
+  catch (e) { if (clientFalta(e)) { clientTaulaFalta = true; return { falta: true }; } throw e; }
+}
+async function clientDesa878629(fila) {
+  if (!session) throw new Error(t("Cal estar connectat al núvol."));
+  return api(`/rest/v1/aco_client?on_conflict=owner,obra_id`, { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: [{ ...fila, owner: session.user_id }] });
+}
+async function clientPublica878629(obraId, canvis) {
+  if (!session) throw new Error(t("Cal estar connectat al núvol."));
+  return api(`/rest/v1/aco_client?obra_id=eq.${encodeURIComponent(obraId)}&owner=eq.${session.user_id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: canvis });
+}
+async function clientTreu878629(obraId) {
+  if (!session || clientTaulaFalta) return;
+  try { await api(`/rest/v1/aco_client?obra_id=eq.${encodeURIComponent(obraId)}&owner=eq.${session.user_id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } }); }
+  catch (e) { if (clientFalta(e)) { clientTaulaFalta = true; return; } throw e; }
 }
 async function sharedInfo(obraId) {
   const rows = await api(`/rest/v1/aco_shared?select=obra_id,owner,owner_nom,lectors,editors,updated_at,updated_by&obra_id=eq.${encodeURIComponent(obraId)}`);
@@ -1171,7 +1193,7 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "" };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629 };
   session = readSession();
   // V87.609 · enllaç per entrar amb un compte concret (el QR de la guia de benvinguda: «…/?entra=marti»; l'Héctor, 13/11/2026: «hauria d'anar
   // directe a posar el seu usuari i contrasenya; jo entro amb el meu mòbil i s'obre el de Brava»). Si l'aparell té oberta la sessió d'un altre

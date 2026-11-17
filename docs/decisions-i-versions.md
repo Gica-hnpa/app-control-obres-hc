@@ -4508,3 +4508,16 @@
   l'espai de l'obra al núvol de qui l'ha compartida (els editors hi poden afegir arxius) i la validació en porta l'identificador i el nom
   (`validacio878627.doc`): a tots dos costats, «Validada per … el … · amb certificat digital» i el botó «PDF signat», que l'obre. Prova:
   `v628test` 8/8 (amb l'AutoFirma de prova de signatura408test i `--ignore-certificate-errors`).
+- **V87.629 · L'enllaç per al client (fase 3 de compartir)** (respostes de l'Héctor del 17/11/2026: enllaç i codi de 4 xifres, els preus
+  finals de sèrie —canviable a «només el total» o «cap import»—, el client només veu el que es publica, avisar pel Gmail, fins que es tanca
+  l'obra). **Cal executar `supabase/aco_client_v878629.sql`** (taula privada `aco_client` + funció `aco_client_veure` per a qui no té compte;
+  10 codis equivocats seguits la bloquegen); fins llavors la secció no surt. A «Compartir», «Enllaç per al client»: què hi veu (Certificacions:
+  les validades o totes; Pressupost; Imports: preus finals / només el total / cap import) i «Crear l’enllaç» → l'enllaç
+  (https://app-control-obres-hc.onrender.com/#obra=<clau de 64>, també des de l'app de l'ordinador), el codi, el QR, «Copiar», «WhatsApp»
+  (wa.me, sense el codi) i «Correu» (redacció del Gmail), «Publicat el …», «Obert per última vegada el … (N vegades)» / «Encara no l’ha
+  obert», «Bloquejat per massa codis equivocats», «Hi ha canvis que el client encara no veu», «Publicar al client» i «Treure l’enllaç». La
+  còpia (contingutClient878629: obra, com va —% i certificat—, certificacions i pressupost per capítols amb les partides) es fa a l'app i
+  només s'actualitza amb «Publicar al client». La clau i el codi es recorden a l'obra (`enllac878629`), que no viatja a les compartides.
+  En tancar l'obra (Tancat, Anul·lat, No acceptat), l'enllaç es treu sol. La pàgina del client (`src/ClientObra.jsx`, com SignaRemot: no
+  arrenca l'app): demana el codi (es recorda a l'aparell), català/castellà (de sèrie, l'idioma dels documents de l'obra), «Imprimir o desar
+  en PDF», mòbil. Falta: fotos, documents i planning. Prova: `v629test` 25/25 (el Supabase de proves té la taula, la funció i `/__client`).

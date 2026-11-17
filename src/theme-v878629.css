@@ -1,0 +1,71 @@
+/* V87.629 · L'enllaç per al client: la secció de la finestra «Compartir» i la pàgina que obre el client (ClientObra.jsx) */
+html body .share-modal-v878259 .client-v878629{display:flex;flex-direction:column;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid var(--co-line,#E2E8F0)}
+html body .share-modal-v878259 .client-v878629 .tit{font-size:14px;color:var(--co-ink,#0F172A)}
+html body .share-modal-v878259 .client-v878629 .opc-v878629{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+html body .share-modal-v878259 .client-v878629 .chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;min-height:36px}
+html body .share-modal-v878259 .client-v878629 .chk input{width:18px;height:18px;margin:0}
+html body .share-modal-v878259 .client-v878629 .sel{display:inline-flex;align-items:center;gap:6px;font-size:14px}
+html body .share-modal-v878259 .client-v878629 select{min-height:36px;border:1px solid #AEBBCA;border-radius:8px;padding:0 8px;font:inherit;font-size:14px;background:#fff;width:auto;max-width:100%}
+html body .share-modal-v878259 .client-v878629 .enllac{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+html body .share-modal-v878259 .client-v878629 .enllac input{min-height:36px;border:1px solid #AEBBCA;border-radius:8px;padding:0 10px;font:inherit;font-size:13px;color:#334155;background:#F8FAFC;min-width:0}
+html body .share-modal-v878259 .client-v878629 .fila-codi{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+html body .share-modal-v878259 .client-v878629 .qr{width:120px;height:120px;border:1px solid #E2E8F0;border-radius:8px;background:#fff}
+html body .share-modal-v878259 .client-v878629 .fila-codi>div{display:flex;flex-direction:column;gap:6px}
+html body .share-modal-v878259 .client-v878629 .fila-codi span{font-size:13px;color:var(--co-ink-3,#5F7075)}
+html body .share-modal-v878259 .client-v878629 .codi{font-size:28px;letter-spacing:6px;color:#1D4ED8;font-variant-numeric:tabular-nums}
+html body .share-modal-v878259 .client-v878629 .envia{display:flex;flex-wrap:wrap;gap:8px}
+html body .share-modal-v878259 .client-v878629 .envia a{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:999px;border:1px solid #AEBBCA;background:#fff;color:var(--co-ink,#0F172A);font-size:13.5px;font-weight:600;text-decoration:none}
+html body .share-modal-v878259 .client-v878629 .estat{margin:0;font-size:13.5px;color:var(--co-ink-2,#334155)}
+html body .share-modal-v878259 .client-v878629 .pend{margin:0;padding:8px 10px;border-radius:10px;background:#FFF7E6;border:1px solid #F0C36D;color:#7A4A00;font-size:13.5px}
+html body .share-modal-v878259 .client-v878629 .botons{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+html body .share-modal-v878259 .client-v878629 .perill{color:#B91C1C}
+html body .share-modal-v878259 .client-v878629 .msg{margin:0;font-size:13.5px;color:#166534}
+
+/* la pàgina del client */
+html body .client-obra-v878629{max-width:860px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:14px;font-size:15px;color:#0F172A;background:#F1F5F9;min-height:100vh;box-sizing:border-box}
+html body .client-obra-v878629.entrada{justify-content:center;align-items:center}
+html body .client-obra-v878629 .caixa{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;background:#fff;border:1px solid #AEBBCA;border-radius:16px;padding:24px 20px;width:100%;max-width:380px;box-sizing:border-box}
+html body .client-obra-v878629 .caixa svg{color:#1D4ED8}
+html body .client-obra-v878629 h1{margin:0;font-size:22px}
+html body .client-obra-v878629 .caixa p{margin:0;color:#334155}
+html body .client-obra-v878629 form{display:flex;gap:8px;width:100%}
+html body .client-obra-v878629 form input{flex:1;min-width:0;min-height:44px;font-size:24px;letter-spacing:8px;text-align:center;border:1px solid #AEBBCA;border-radius:10px}
+html body .client-obra-v878629 button.primary{min-height:44px;padding:0 18px;border:0;border-radius:10px;background:#1D4ED8;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+html body .client-obra-v878629 button.primary:disabled{opacity:.5}
+html body .client-obra-v878629 button.secondary{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid #AEBBCA;border-radius:10px;background:#fff;color:#0F172A;font-weight:600;cursor:pointer}
+html body .client-obra-v878629 .err{display:flex;align-items:center;gap:6px;color:#B91C1C;font-size:14px}
+html body .client-obra-v878629 .idioma-v878629{display:inline-flex;gap:4px;align-self:flex-end}
+html body .client-obra-v878629 .idioma-v878629 button{min-height:32px;padding:0 10px;border:1px solid #CBD5E1;border-radius:999px;background:#fff;font-size:13px;cursor:pointer}
+html body .client-obra-v878629 .idioma-v878629 button.on{background:#0F172A;color:#fff;border-color:#0F172A}
+html body .client-obra-v878629 .cap{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid #AEBBCA;border-radius:16px;padding:16px}
+html body .client-obra-v878629 .cap .emp{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#1D4ED8}
+html body .client-obra-v878629 .cap .adr,html body .client-obra-v878629 .cap .pub{margin:0;color:#475569;font-size:14px}
+html body .client-obra-v878629 .cap .imprimir{align-self:flex-start;margin-top:4px}
+html body .client-obra-v878629 .bloc{background:#fff;border:1px solid #AEBBCA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+html body .client-obra-v878629 h2{margin:0;font-size:17px}
+html body .client-obra-v878629 .barra{height:12px;border-radius:999px;background:#E2E8F0;overflow:hidden}
+html body .client-obra-v878629 .barra i{display:block;height:100%;background:#16A34A}
+html body .client-obra-v878629 .xifres{margin:0;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+html body .client-obra-v878629 .xifres span{color:#475569;font-size:14px}
+html body .client-obra-v878629 .certs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+html body .client-obra-v878629 .certs li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 0;border-top:1px solid #E2E8F0}
+html body .client-obra-v878629 .certs li:first-child{border-top:0}
+html body .client-obra-v878629 .certs li>div{display:flex;flex-direction:column}
+html body .client-obra-v878629 .certs small{color:#475569}
+html body .client-obra-v878629 .certs .imp{font-weight:700;font-variant-numeric:tabular-nums}
+html body .client-obra-v878629 .certs .val{grid-column:1/-1;display:inline-flex;align-items:center;gap:4px;color:#166534}
+html body .client-obra-v878629 .total{margin:0}
+html body .client-obra-v878629 .cap-p{border:1px solid #E2E8F0;border-radius:12px}
+html body .client-obra-v878629 .cap-p>summary{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;cursor:pointer;list-style:none}
+html body .client-obra-v878629 .cap-p>summary::-webkit-details-marker{display:none}
+html body .client-obra-v878629 .cap-p>summary span{flex:1;min-width:0;font-weight:600}
+html body .client-obra-v878629 .cap-p>summary b{font-variant-numeric:tabular-nums}
+html body .client-obra-v878629 .cap-p[open]>summary .chev{transform:rotate(90deg)}
+html body .client-obra-v878629 table{width:100%;border-collapse:collapse;font-size:13.5px}
+html body .client-obra-v878629 th,html body .client-obra-v878629 td{padding:6px 8px;border-top:1px solid #E2E8F0;text-align:left;vertical-align:top}
+html body .client-obra-v878629 th{font-size:12px;color:#475569;font-weight:600}
+html body .client-obra-v878629 .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body .client-obra-v878629 .buit{margin:0;color:#475569}
+html body .client-obra-v878629 .peu{font-size:13px;color:#475569;text-align:center}
+@media (max-width:560px){html body .client-obra-v878629 table thead{display:none}html body .client-obra-v878629 table tr{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;padding:6px 0;border-top:1px solid #E2E8F0}html body .client-obra-v878629 th,html body .client-obra-v878629 td{border:0;padding:0 8px}html body .client-obra-v878629 td:nth-child(2){grid-column:2}html body .client-obra-v878629 td.n{grid-column:2;text-align:left}}
+@media print{html body .client-obra-v878629{background:#fff;padding:0}html body .client-obra-v878629 .idioma-v878629,html body .client-obra-v878629 .imprimir{display:none}html body .client-obra-v878629 .cap-p>summary .chev{display:none}html body .client-obra-v878629 .cap,html body .client-obra-v878629 .bloc{border-color:#CBD5E1;break-inside:avoid}}

@@ -97,6 +97,7 @@ export function ajuntaObra878626(local, remote, cfg) {
   if (!cfg) return remote;
   const base = cfg.ap.fitxa === "m" && remote && typeof remote === "object" ? { ...remote } : { ...(local || {}) };
   base.compartir878626 = local?.compartir878626;
+  if (local?.enllac878629) base.enllac878629 = local.enllac878629;
   return base;
 }
 // a qui la rep: les pestanyes dels apartats «n» no hi són

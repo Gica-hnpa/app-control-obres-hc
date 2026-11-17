@@ -292,6 +292,7 @@ import "./theme-v878625.css";
 import "./theme-v878626.css";
 import "./theme-v878627.css";
 import "./theme-v878628.css";
+import "./theme-v878629.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
@@ -302,8 +303,12 @@ import { startVersioNova } from "./versioNova.js";
 // V87.409 · L'enllaç per signar a distància («…/#signa=<clau>»): només la pàgina per signar, sense arrencar l'app (ni les dades
 // de l'aparell ni el núvol del compte que hi pugui haver en aquest navegador).
 const signa878409 = (() => { try { return (/^#signa=([A-Za-z0-9_-]{40,})/.exec(location.hash || "") || [])[1] || ""; } catch { return ""; } })();
+// V87.629 · L'enllaç per al client («…/#obra=<clau>»): només la pàgina de la seva obra (amb el codi de 4 xifres), sense arrencar l'app.
+const client878629 = (() => { try { return (/^#obra=([A-Za-z0-9_-]{40,})/.exec(location.hash || "") || [])[1] || ""; } catch { return ""; } })();
 if (signa878409) {
   import("./SignaRemot.jsx").then(({ default: SignaRemot }) => createRoot(document.getElementById("root")).render(<React.StrictMode><SignaRemot token={signa878409} /></React.StrictMode>));
+} else if (client878629) {
+  import("./ClientObra.jsx").then(({ default: ClientObra }) => createRoot(document.getElementById("root")).render(<React.StrictMode><ClientObra token={client878629} /></React.StrictMode>));
 } else {
   // V87.614 · avís quan hi ha una versió nova publicada (una pestanya oberta de fa dies es quedava amb la vella). Des del principi: també
   // a la pantalla d'entrar. Només a la versió compilada (a OBRIR_APP.bat no hi ha «assets/index-…js» i no fa res).

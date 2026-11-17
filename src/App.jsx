@@ -44,7 +44,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.628";
+const APP_VERSION878264="87.629";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -6928,7 +6928,7 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
 {fiTemps878463&&<DesarTemps878463 fi={fiTemps878463} obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} close={()=>setFiTemps878463(null)} acaba={row=>acabaTemps878463(fiTemps878463,row)}/>}
-{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/>{!esTreballador878326()&&<DespatxAuto878625 obres={obres} odata={odata} setOdata={setOdata}/>}{!esTreballador878326()&&<PaquetGestoriaGlobal878522 obres={viewObres878233} odata={viewOdata878233} clients={viewClients878233}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
+{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/>{!esTreballador878326()&&<DespatxAuto878625 obres={obres} odata={odata} setOdata={setOdata}/>}{!esTreballador878326()&&<TancaEnllacos878629 obres={obres}/>}{!esTreballador878326()&&<PaquetGestoriaGlobal878522 obres={viewObres878233} odata={viewOdata878233} clients={viewClients878233}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
   const meva508=k==="despesa"&&!modeObra878484(currentAccount878233.role,empresa878259?.perfil||"");
   if(screen==="Obra"&&obraId){if(meva508){window.__acoStartAlb878484={files,token:Date.now(),obraId};nav("Albarans");return}try{window.dispatchEvent(new CustomEvent("aco-accio-484",{detail:{k,files}}))}catch{}return}setAccio878484({k,files,meva508})}}/>{accio878484&&<TriaObraAccio878484 accio={accio878484} obres={viewObres878233} clients={viewClients878233} close={()=>setAccio878484(null)} tria={id=>{if(!id){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),senseObra:true};setAccio878484(null);nav("Albarans");return}
   if(accio878484.meva508){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),obraId:id};setAccio878484(null);nav("Albarans");return}window.__acoStart878484={obraId:id,k:accio878484.k,files:accio878484.files};setAccio878484(null);openObra(id)}}/>}</div></>
@@ -23317,7 +23317,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.628",
+    app_version:"87.629",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -27730,7 +27730,86 @@ function ShareModal878259({obra,close}){
     </>}
     {err&&<p className="err">{err}</p>}
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={busy||rows===null} onClick={save}>{busy?t("Desant…"):t("Desar")}</button></div>
+    <EnllacClient878629 obra={obra}/>
   </div></Modal>;
+}
+// ── V87.629 · L'enllaç per al client (fase 3 de compartir; l'Héctor, 17/11/2026: enllaç i codi de 4 xifres, els preus finals de sèrie
+// —o només el total, o cap import—, només veu el que es publica amb «Publicar al client», avisar pel Gmail, fins que es tanca l'obra).
+// Una còpia feta aquí amb el que es tria (com va l'obra, les certificacions validades —o totes— i el pressupost) es desa al núvol
+// (supabase/aco_client_v878629.sql) i el client la veu a «…/#obra=<clau>» amb el codi (ClientObra.jsx). Sense l'SQL, la secció no surt.
+// La clau i el codi es recorden a l'obra (`enllac878629`), que no viatja a les obres compartides. Falta: fotos, documents i planning.
+const URL_PUBLICA878629="https://app-control-obres-hc.onrender.com/";
+function baseEnllac878629(){try{const h=location.hostname;return /^(localhost|127\.|192\.168\.|10\.)/.test(h)?URL_PUBLICA878629:location.origin+location.pathname}catch{return URL_PUBLICA878629}}
+function hashText878629(s){let h=5381;s=String(s||"");for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return String(h>>>0)}
+function contingutClient878629(o,d,opc={}){
+  const imports=["finals","total","cap"].includes(opc.imports)?opc.imports:"finals",tipus=opc.certs==="totes"?"totes":"validades";
+  let dd=d||{};try{dd=filterBudgetData8786(d||{},d?.activeBudgetIdObra||"principal")||d||{}}catch{}
+  const rows=(dd.partides||[]).filter(r=>r&&typeof r==="object");
+  const qd=r=>parseNum8770(r.q)||0,pd=r=>parseNum8770(r.pu)||0;
+  const total=Math.round(rows.reduce((s,r)=>s+qd(r)*pd(r),0)*100)/100;
+  const certs=(dd.certificacions||[]).filter(c=>c&&(tipus==="totes"||c.validacio878627?.estat==="validada")).sort((a,b)=>(+a.numero||0)-(+b.numero||0));
+  const impC=c=>{try{return Math.round((+importCert878364(rows,c)||0)*100)/100}catch{return 0}};
+  const certificat=certs.reduce((s,c)=>s+impC(c),0);
+  const caps=[];const perCap=new Map();for(const r of rows){const k=String(r.cap||"");if(!perCap.has(k)){perCap.set(k,[]);caps.push(k)}perCap.get(k).push(r)}
+  const pres=opc.pres===false?null:{total:imports==="cap"?undefined:total,caps:caps.map(k=>{const ps=perCap.get(k);return {cap:k,total:imports==="cap"?undefined:Math.round(ps.reduce((s,r)=>s+qd(r)*pd(r),0)*100)/100,
+    partides:ps.map(r=>imports==="finals"?{codi:String(r.codi||""),concepte:String(r.concepte||r.descripcio||"").slice(0,300),ut:String(r.ut||""),q:qd(r),pu:pd(r),imp:Math.round(qd(r)*pd(r)*100)/100}:{codi:String(r.codi||""),concepte:String(r.concepte||r.descripcio||"").slice(0,300),ut:String(r.ut||""),q:qd(r)})}})};
+  return {v:1,idioma:docLang878283(o),obra:{nom:String(o?.nom||""),adreca:[o?.adreca,o?.poblacio].filter(Boolean).join(", "),codi:String(codiDoc878589(o)||"")},empresa:{nom:String(nomCompte878424()||"")},imports,certTipus:tipus,
+    exec:{pct:total?Math.round(certificat/total*1000)/10:0,certificat:imports==="cap"?undefined:Math.round(certificat*100)/100,pressupost:imports==="cap"?undefined:total},
+    certs:opc.certsOn===false?null:certs.map(c=>({n:c.numero,data:String(c.data||""),imp:imports==="cap"?undefined:impC(c),per:c.validacio878627?.estat==="validada"?String(c.validacio878627.per||""):undefined,at:c.validacio878627?.estat==="validada"?String(c.validacio878627.at||""):undefined})),
+    pres};
+}
+const OPC878629={certsOn:true,certs:"validades",pres:true,imports:"finals"};
+function EnllacClient878629({obra}){
+  const c=typeof window!=="undefined"?window.__acoCloud:null;
+  const[row,setRow]=useState(undefined);
+  const[opc,setOpc]=useState(()=>({...OPC878629,...(obra?.enllac878629?.opc||{})}));
+  const[busy,setBusy]=useState(false);const[msg,setMsg]=useState("");const[qr,setQr]=useState("");const[copiat,setCopiat]=useState(false);
+  const llegeix=()=>c?.clientEnllac878629?c.clientEnllac878629(obra.id).then(r=>setRow(r)).catch(()=>setRow({error:true})):setRow({falta:true});
+  useEffect(()=>{llegeix()},[obra?.id]);// eslint-disable-line react-hooks/exhaustive-deps
+  const url=row?.token?baseEnllac878629()+"#obra="+row.token:"";
+  useEffect(()=>{if(!url){setQr("");return}let viu=true;QRCode.toDataURL(url,{margin:1,width:180,errorCorrectionLevel:"M"}).then(q=>{if(viu)setQr(q)}).catch(()=>{});return()=>{viu=false}},[url]);
+  if(!obra?.id||obra.compartida||row===undefined||row?.falta||row?.error)return null;
+  const dades=()=>{try{return (lsJson8779("aco_odata",{})||{})[obra.id]||{}}catch{return {}}};
+  const cont=()=>contingutClient878629(obra,dades(),opc);
+  const info=()=>({obra:String(obra.nom||"")});
+  const patch=p=>window.__acoPatchObra878424?.(obra.id,{enllac878629:p});
+  const fes=async f=>{setBusy(true);setMsg("");try{await f()}catch(e){setMsg(e?.message||String(e))}finally{setBusy(false)}};
+  const crea=()=>fes(async()=>{const a=new Uint8Array(32);crypto.getRandomValues(a);const token=[...a].map(x=>x.toString(16).padStart(2,"0")).join("");const n=new Uint32Array(1);crypto.getRandomValues(n);const codi=String(n[0]%10000).padStart(4,"0");
+    const k=cont(),ara=new Date().toISOString();await c.clientDesa878629({obra_id:obra.id,token,codi,info:info(),contingut:k,publicat:ara});
+    patch({opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Enllaç creat. Envia’l al client i digues-li el codi per un altre camí."))});
+  const publica=()=>fes(async()=>{const k=cont(),ara=new Date().toISOString();await c.clientPublica878629(obra.id,{contingut:k,info:info(),publicat:ara});patch({...(obra.enllac878629||{}),opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Publicat: el client ja ho veu."))});
+  const treu=()=>{if(!confirm(t("Treure l’enllaç? El client ja no hi podrà entrar (si cal, se’n pot fer un de nou).")))return;fes(async()=>{await c.clientTreu878629(obra.id);patch(undefined);await llegeix();setMsg(t("Enllaç tret."))})};
+  const copia=async()=>{try{await navigator.clipboard.writeText(url);setCopiat(true);setTimeout(()=>setCopiat(false),1800)}catch{window.prompt(t("Copia l’enllaç:"),url)}};
+  const text=t("Hola! Aquí pots veure com va l’obra «{obra}»: {url}",{obra:obra.nom||"",url});
+  const pendent=!!row&&!!obra.enllac878629?.h&&hashText878629(JSON.stringify(cont()))!==obra.enllac878629.h;
+  const quan=v=>v?horaDespatx878625(v):"";
+  const opcions=<div className="opc-v878629">
+    <label className="chk"><input type="checkbox" checked={opc.certsOn!==false} onChange={e=>setOpc(o=>({...o,certsOn:e.target.checked}))}/> {t("Certificacions")}</label>
+    {opc.certsOn!==false&&<select aria-label={t("Quines certificacions")} value={opc.certs} onChange={e=>setOpc(o=>({...o,certs:e.target.value}))}><option value="validades">{t("Les validades")}</option><option value="totes">{t("Totes")}</option></select>}
+    <label className="chk"><input type="checkbox" checked={opc.pres!==false} onChange={e=>setOpc(o=>({...o,pres:e.target.checked}))}/> {t("Pressupost")}</label>
+    <label className="sel">{t("Imports")} <select value={opc.imports} onChange={e=>setOpc(o=>({...o,imports:e.target.value}))}><option value="finals">{t("Preus finals")}</option><option value="total">{t("Només el total")}</option><option value="cap">{t("Cap import")}</option></select></label>
+  </div>;
+  return <div className="client-v878629">
+    <b className="tit">{t("Enllaç per al client")}</b>
+    {!row?<>{opcions}<div className="botons"><button type="button" className="primary" disabled={busy} onClick={crea}>{t("Crear l’enllaç")}</button></div></>:<>
+      <div className="enllac"><input readOnly value={url} aria-label={t("Enllaç per al client")} onFocus={e=>e.target.select()}/><button type="button" className="secondary" onClick={copia}>{copiat?t("Copiat ✓"):t("Copiar")}</button></div>
+      <div className="fila-codi">{qr?<img className="qr" src={qr} alt={t("Codi QR de l’enllaç")}/>:null}<div><span>{t("Codi")}</span><b className="codi">{row.codi}</b>
+        <div className="envia"><a className="secondary" href={"https://wa.me/?text="+encodeURIComponent(text)} target="_blank" rel="noopener noreferrer">WhatsApp</a><a className="secondary" href={"https://mail.google.com/mail/?view=cm&fs=1&su="+encodeURIComponent(t("La teva obra: {obra}",{obra:obra.nom||""}))+"&body="+encodeURIComponent(text)} target="_blank" rel="noopener noreferrer">{t("Correu")}</a></div></div></div>
+      <p className="estat">{t("Publicat el {d}",{d:quan(row.publicat)})} · {row.obert?t("Obert per última vegada el {d} ({n} vegades)",{d:quan(row.obert),n:row.obertures||0}):t("Encara no l’ha obert")}{row.intents>=10?" · "+t("Bloquejat per massa codis equivocats"):""}</p>
+      {pendent&&<p className="pend">{t("Hi ha canvis que el client encara no veu.")}</p>}
+      {opcions}
+      <div className="botons"><button type="button" className="primary" disabled={busy} onClick={publica}>{t("Publicar al client")}</button><button type="button" className="secondary perill" disabled={busy} onClick={treu}>{t("Treure l’enllaç")}</button></div>
+    </>}
+    {msg&&<p className="msg" role="status">{msg}</p>}
+  </div>;
+}
+// V87.629 · fins que es tanca l'obra: en tancar-la (o anul·lar-la), l'enllaç del client es treu sol
+function TancaEnllacos878629({obres}){
+  const fets=useRef(new Set());
+  useEffect(()=>{const c=window.__acoCloud;if(!c?.clientTreu878629)return;
+    for(const o of obres||[]){if(!o?.enllac878629||o.compartida||isExpedientOpen878136(o.estat)||fets.current.has(o.id))continue;fets.current.add(o.id);
+      c.clientTreu878629(o.id).then(()=>window.__acoPatchObra878424?.(o.id,{enllac878629:undefined})).catch(()=>fets.current.delete(o.id))}},[obres]);
+  return null;
 }
 function SharedBadge878259({o}){
   useSharedTick878259();
