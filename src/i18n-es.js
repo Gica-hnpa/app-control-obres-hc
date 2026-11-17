@@ -6260,4 +6260,11 @@ export default {
   "{n} contactes eliminats": "{n} contactos eliminados",
   "No s’ha triat cap carpeta. Després de triar-la, el navegador pregunta a dalt, al costat de l’adreça, si l’app pot editar els arxius: cal dir que sí. Si diu que aquella carpeta no es pot fer servir, tria’n una de nova dins de D:.": "No se ha elegido ninguna carpeta. Después de elegirla, el navegador pregunta arriba, junto a la dirección, si la app puede editar los archivos: hay que decir que sí. Si dice que esa carpeta no se puede usar, elige una nueva dentro de D:.",
   "No s’ha pogut desar la carpeta. Torna a obrir l’app i torna-ho a provar.": "No se ha podido guardar la carpeta. Vuelve a abrir la app y vuelve a intentarlo.",
+  "Preferències": "Preferencias",
+  "Usuaris i accés": "Usuarios y acceso",
+  "Còpies i arxius": "Copias y archivos",
+  "Idioma i aspecte": "Idioma y aspecto",
+  "Enllaços i programes": "Enlaces y programas",
+  "Comptes d’empresa": "Cuentas de empresa",
+  "Còpies del núvol i versions": "Copias de la nube y versiones",
 };

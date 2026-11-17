@@ -4579,3 +4579,21 @@
   diu «No s'ha triat cap carpeta. Després de triar-la, el navegador pregunta a dalt… cal dir que sí. Si diu que aquella carpeta no es pot fer
   servir, tria'n una de nova dins de D:.». Si desar la carpeta o qualsevol altra cosa falla pel camí, també es diu (abans no sortia res).
   Prova: `v634test` 6/6 (cancel·lar, cap carpeta, nom de la carpeta triada); v625 17/17.
+- **V87.637 · Ajustos en 4 targetes i fotos senceres a les actes i les notes** (l'Héctor, 17/11/2026).
+  - **Ajustos** («la llista és interminable… podem depurar o agrupar?»; proposta A amb els noms nous, «Sí, fes-la»): quatre targetes principals
+    amb les d'abans a dins com a subtargetes (blanques sobre la safata, patró de la V87.518): **La meva empresa** (Imatge de l'empresa, Dades
+    de l'empresa, Documents, Preus i marges, VeriFactu) · **Preferències** (Perfil i mòduls, Accessos ràpids, «Idioma i aspecte», «Enllaços i
+    programes», Exemples per començar) · **Usuaris i accés** (Usuaris i contrasenyes; Comptes del núvol amb els de prova a dins, només
+    l'Héctor) · **Còpies i arxius** (Carpeta del despatx, Còpia al meu ordinador, «Còpies del núvol i versions»). Un grup d'una sola targeta
+    va sol; amb 5 o menys en total (un treballador), totes soles. Una oberta alhora a cada nivell; una subtargeta que s'obre des de fora
+    («Canviar el % de DGE…», un avís) obre el seu grup. «Còpies del núvol i versions», depurada: fora «Configuració general» (l'IVA i la
+    retenció de sèrie no els feia servir res; el correu i l'empresa, a Documents) i «Supabase Storage» (el sistema d'arxius d'abans de la
+    V87.262); les dades desades no s'esborren.
+  - **Fotos** («les fotos en vertical a notes i actes d'acord, però que adaptis l'espai i no deixis res en blanc»): abans, cada foto anava en
+    un requadre horitzontal (dues per fila, 62 mm) i s'omplia retallant-la (una vertical en perdia més de la meitat). Ara
+    (`src/fotosDoc878636.js`) cada foto surt sencera i les de cada fila tenen la mateixa alçada i omplen tota l'amplada (files
+    «justificades», la millor partició amb programació dinàmica, alçada a prop de 66 mm, màxim 5 per fila). La forma es llegeix de la
+    capçalera del JPEG/PNG, amb el gir de l'EXIF. Una foto sola: tota l'amplada si és horitzontal; si és vertical, fins a 140 mm d'alt i al mig.
+  - Proves: `fotos636unit` 17/17 (sense navegador), `v637test` (Ajustos a l'ordinador i al mòbil, nota amb una foto vertical i una
+    d'horitzontal: senceres, mateixa alçada, fila de tota l'amplada). `visual400test`, `v442test` i `v519test` busquen ara «Idioma i aspecte»,
+    «Enllaços i programes» i «Comptes del núvol».

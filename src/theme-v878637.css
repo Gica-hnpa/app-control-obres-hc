@@ -1,0 +1,18 @@
+/* V87.637 · Ajustos en 4 targetes principals (La meva empresa · Preferències · Usuaris i accés · Còpies i arxius) amb les d'abans a dins.
+   La principal oberta fa de safata (fons blavós) i les subtargetes són blanques, amb vora fina i ombra petita (el patró de la V87.518). */
+html:root body details.ajustos-bloc-v878366.aj-g-v878637[open]{background:#E6EDF6!important}
+html:root body details.ajustos-bloc-v878366.aj-g-v878637>.cos{display:flex;flex-direction:column;gap:10px;padding:12px!important;background:transparent!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637{margin:0!important;border:1px solid #AEBBCA!important;border-radius:12px!important;background:#fff!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14)!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637[open]{border:1.5px solid #2563EB!important;box-shadow:0 1px 2px rgba(15,23,42,.08),0 6px 16px -8px rgba(37,99,235,.45)!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637>summary{min-height:52px!important;position:relative!important;top:auto!important;z-index:auto!important;background:#fff!important;color:#0F172A!important;border-radius:11px}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637>summary b{color:#0F172A!important;font-size:15px!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637[open]>summary{background:#EFF6FF!important;border-bottom:1px solid #BFDBFE!important;border-radius:11px 11px 0 0;box-shadow:none!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637>summary>svg:first-child{background:#EEF2F6!important;color:#334155!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637[open]>summary>svg:first-child{background:#DBEAFE!important;color:#1D4ED8!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637>summary .chev{background:#EEF2F6!important;color:#334155!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637[open]>summary .chev{background:#2563EB!important;color:#fff!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637>.cos{background:#fff!important;border-radius:0 0 11px 11px}
+/* dues parts dins d'una subtargeta (Idioma i aspecte, Enllaços i programes, Comptes del núvol): una ratlla entre elles */
+html:root body details.ajustos-bloc-v878366>.cos>.card:not(details)+.card:not(details){margin-top:12px!important;border-top:1px solid #E2E8F0!important;padding-top:12px!important}
+@media (max-width:760px){html:root body details.ajustos-bloc-v878366.aj-g-v878637>.cos{padding:10px 8px!important;gap:8px}}

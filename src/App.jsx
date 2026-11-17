@@ -40,11 +40,12 @@ import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} 
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
 import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile,recorreArxius,fitxersObra878630,dadesFitxer878630,camiArxiu878631} from "./fileStore.js";
+import {fotosHtml878636,CSS_FOTOS878636} from "./fotosDoc878636.js";
 import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses878626,permisTab878626} from "./compartir878626.js";
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.636";
+const APP_VERSION878264="87.637";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -4586,13 +4587,13 @@ function actaPrintHtml878405(doc,obra,client){
     return `<div class="sg"><small>${esc(D(lab))}</small><div class="sgi"${ps?` data-signa="${k}"`:""}>${cs?`<b class="dig">${esc(D("Signat digitalment"))}</b>`:ok?`<img src="${sg.src}" alt="">`:""}</div><span>${esc(cs?[cs.nom,cs.nif,qn(cs.quan)].filter(Boolean).join(" · "):sg?[sg.nom,sg.dni,qn(sg.at)].filter(Boolean).join(" · "):ps?nomSig878403(acta,k):"")}</span></div>`}).join("");
   const titolActa=str(acta.titol);
   const css=`@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:#fff}.page{width:182mm;margin:0 auto;padding:6mm 0}h2.tt{font-size:15px;margin:0 0 4mm;color:#0f172a}.clau{display:grid;grid-template-columns:repeat(3,1fr);gap:2mm 4mm;margin:0 0 5mm}.clau div{border:1px solid #e2e8f0;border-radius:6px;padding:2mm 3mm}.clau b{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;color:#64748b}.clau span{font-size:11px}.s{margin:0 0 5mm}.s h3{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:${C};margin:0 0 2mm;padding-bottom:1mm;border-bottom:1px solid #e2e8f0}.s p.tx{white-space:pre-wrap;line-height:1.5;margin:0;font-size:11.5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:1.6mm 2mm;border-bottom:1px solid #e2e8f0;font-size:10.5px}th{font-size:8.5px;text-transform:uppercase;color:#64748b}.fotos{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fotos.una{grid-template-columns:1fr}figure{margin:0;break-inside:avoid}figure img{display:block;width:100%;height:62mm;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}.fotos.una figure img{height:auto;max-height:120mm;object-fit:contain}figcaption{font-size:9px;color:#64748b;margin-top:1mm}ul{margin:0;padding-left:5mm}.sigs{display:grid;grid-template-columns:1fr 1fr;gap:5mm}.sg{border:1px solid #cbd5e1;border-radius:6px;padding:2mm 3mm;break-inside:avoid}.sg small{display:block;font-size:8.5px;text-transform:uppercase;color:#64748b;font-weight:700}.sgi{height:22mm;display:flex;align-items:center}.sgi b.dig{font-size:10px;color:#166534}.sgi img{max-height:21mm;max-width:100%}.sg span{display:block;font-size:9px;color:#475569;border-top:1px solid #e2e8f0;padding-top:1mm;min-height:4mm}`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(doc.title||D("Acta núm.")+" "+(acta.numero||""))}</title><style>${css}</style></head><body><div class="page">${cap}
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(doc.title||D("Acta núm.")+" "+(acta.numero||""))}</title><style>${css}${CSS_FOTOS878636}</style></head><body><div class="page">${cap}
     ${titolActa?`<h2 class="tt">${esc(titolActa)}</h2>`:""}
     ${clau.length?`<div class="clau">${clau.map(([l,v])=>`<div><b>${esc(l)}</b><span>${esc(v)}</span></div>`).join("")}</div>`:""}
     ${sec(D("Agents intervinents / assistents"),assist.length?`<table><thead><tr><th>${esc(D("Nom"))}</th><th>${esc(D("Rol"))}</th><th>${esc(D("Empresa"))}</th></tr></thead><tbody>${assist.map(a=>`<tr><td>${esc(a.nom||"—")}</td><td>${esc(a.rol?D(a.rol):"—")}</td><td>${esc(a.empresa&&a.empresa!==a.nom?a.empresa:"—")}</td></tr>`).join("")}</tbody></table>`:`<p>${esc(D("Sense agents seleccionats."))}</p>`)}
     ${sec(D("Contingut de l’acta"),`<p class="tx">${esc(acta.text||D("Text pendent..."))}</p>`)}
     ${croquis.length?sec(D("Plànols marcats i croquis d’obra"),`<div class="fotos una">${croquis.map(c=>fig(c.src,[c.nom,c.origen?D("Base:")+" "+c.origen:""].filter(Boolean).join(" · "))).join("")}</div>`):""}
-    ${fotos.length?sec(D("Reportatge fotogràfic"),`<div class="fotos">${fotos.map(f=>fig(f.src||f.url,f.nom)).join("")}</div>`):""}
+    ${fotos.length?sec(D("Reportatge fotogràfic"),fotosHtml878636(fotos.map(f=>({src:f.src||f.url,peu:f.nom||""})),esc)):""}
     ${docs.length?sec(D("Documents adjunts"),`<ul>${docs.map(d=>`<li>${esc(d.nom||"")}</li>`).join("")}</ul>`):""}
     ${sec(D("Signatures electròniques"),`<div class="sigs">${sigs}</div>`)}
     ${peuDoc878396()}
@@ -4611,9 +4612,9 @@ function notaPrintHtml878616(doc,obra,client){
   const sec=(t,cos)=>`<section class="s"><h3>${esc(t)}</h3>${cos}</section>`;
   const fotos=(nota.fotos||[]).filter(x=>x&&x.src);const docs=(nota.docs||[]).filter(Boolean);
   const css=`@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;font-size:11px;margin:0;background:#fff}.page{width:182mm;margin:0 auto;padding:6mm 0}.s{margin:0 0 5mm}.s h3{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:${C};margin:0 0 2mm;padding-bottom:1mm;border-bottom:1px solid #e2e8f0}.s p.tx{white-space:pre-wrap;line-height:1.5;margin:0;font-size:11.5px}.fotos{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.fotos.una{grid-template-columns:1fr}figure{margin:0;break-inside:avoid}figure img{display:block;width:100%;height:62mm;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0}.fotos.una figure img{height:auto;max-height:120mm;object-fit:contain}ul{margin:0;padding-left:5mm}`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(doc.title||D("Nota núm.")+" "+(nota.numero||""))}</title><style>${css}</style></head><body><div class="page">${cap}
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(doc.title||D("Nota núm.")+" "+(nota.numero||""))}</title><style>${css}${CSS_FOTOS878636}</style></head><body><div class="page">${cap}
     ${sec(D("Nota"),`<p class="tx">${esc(String(nota.text||"").trim()||"—")}</p>`)}
-    ${fotos.length?sec(D("Fotos"),`<div class="fotos${fotos.length===1?" una":""}">${fotos.map(x=>`<figure><img src="${esc(x.src)}" alt=""></figure>`).join("")}</div>`):""}
+    ${fotos.length?sec(D("Fotos"),fotosHtml878636(fotos.map(x=>({src:x.src})),esc)):""}
     ${docs.length?sec(D("Documents adjunts"),`<ul>${docs.map(d=>`<li>${esc(d.nom||"")}</li>`).join("")}</ul>`):""}
     ${peuDoc878396()}
   </div></body></html>`;
@@ -17055,7 +17056,7 @@ function MargesAjustos878378(){
   const[v,setV]=useState(()=>lsJson8779(MARGES_KEY878378,{})||{});
   const set=x=>setV(o=>{const n={...o,...x};lsSet8779(MARGES_KEY878378,JSON.stringify(n));return n});
   // V87.564 · des de «Canviar el % de DGE» (Rendiment): «Preus i marges» obert, a la vista i amb el % de DGE triat
-  useEffect(()=>{if(!window.__acoAjustosMarges878564)return;const id=setTimeout(()=>{window.__acoAjustosMarges878564=false;const d=document.querySelector('details.ajustos-bloc-v878366[data-k="marges"]');if(!d)return;d.open=true;
+  useEffect(()=>{if(!window.__acoAjustosMarges878564)return;const id=setTimeout(()=>{window.__acoAjustosMarges878564=false;const d=document.querySelector('details.ajustos-bloc-v878366[data-k="marges"]');if(!d)return;{const g=d.parentElement?.closest("details.aj-g-v878637");if(g)g.open=true}d.open=true;
     const i=[...d.querySelectorAll("label")].find(l=>l.querySelector("span")?.textContent.trim()==="DGE")?.querySelector("input");(i||d).scrollIntoView({block:"center"});try{i?.focus({preventScroll:true});i?.select?.()}catch{}},300);return()=>clearTimeout(id)},[]);
   // el compte de l'Héctor no té «Preus» al menú: el banc de preus és aquí
   return <>{!!PERFIL878304&&teModul878326("obra")&&!esTreballador878326()&&<div className="llib-ajustos-v878562"><span><BookOpen size={18} aria-hidden="true"/><b>{t("Llibreria de preus")}</b></span><button type="button" className="secondary obre-llib-v878562" onClick={()=>{window.__acoLlibDe878562="Configuració";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Llibreria"}}))}catch{}}}>{t("Obrir")} <ChevronRight size={16} aria-hidden="true"/></button></div>}{!PERFIL878304&&<div className="banc-ajustos-v878460"><BancPreus878368/></div>}{!esTreballador878326()&&<div className="meva-ajustos-v878537"><MevaBaseBloc878537/></div>}<MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/></>;
@@ -23383,7 +23384,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.636",
+    app_version:"87.637",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23579,54 +23580,60 @@ function save(){
 }
 // V87.366 · l'Héctor (23/10/2026): «a Ajustos, ajunta coses en blocs, que és súper llarga la pàgina i costa trobar les coses». Cada
 // apartat és una línia que es desplega en tocar-la; se n'obre un alhora.
+// V87.637 · l'Héctor (17/11/2026): «a Ajustos ara la llista és interminable… podem fer proposta de depurar aquestes targetes o agrupar-ne
+// alguna?» (proposta A, amb els noms nous): quatre targetes principals —La meva empresa · Preferències · Usuaris i accés · Còpies i arxius—
+// amb les d'abans a dins com a subtargetes. Si un grup només en té una, va sola; amb 5 o menys en total (un treballador), totes soles.
+// Se n'obre una alhora a cada nivell; una subtargeta que s'obre sola (un avís, «Canviar el % de…») obre també el seu grup.
 const ajRef878366=useRef(null);
-useEffect(()=>{const el=ajRef878366.current;if(!el)return;const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;el.querySelectorAll("details.ajustos-grup-v878354[open]").forEach(o=>{if(o!==d)o.open=false});const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};el.addEventListener("click",h,true);return()=>el.removeEventListener("click",h,true)},[]);
+useEffect(()=>{const el=ajRef878366.current;if(!el)return;
+  const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;
+    [...(d.parentElement?.children||[])].forEach(o=>{if(o!==d&&o.matches?.("details.ajustos-grup-v878354[open]"))o.open=false});
+    const despres=sm.getBoundingClientRect().top;if(Math.abs(despres-abans)>1)window.scrollBy(0,despres-abans)};
+  const tg=e=>{const d=e.target;if(!d?.matches?.("details.aj-sub-v878637[open]"))return;const g=d.parentElement?.closest("details.aj-g-v878637");if(!g||g.open)return;[...el.children].forEach(o=>{if(o!==g&&o.matches?.("details[open]"))o.open=false});g.open=true};
+  el.addEventListener("click",h,true);el.addEventListener("toggle",tg,true);return()=>{el.removeEventListener("click",h,true);el.removeEventListener("toggle",tg,true)}},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={comptes:KeyRound,exemples:GraduationCap,copia:FolderDown,despatx:FolderSync,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Save};
+const IC438={comptes:KeyRound,exemples:GraduationCap,copia:FolderDown,despatx:FolderSync,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Cloud};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
-const bloc878366=(k,tit,cont)=><details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366" data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
-return <div className="stack ajustos-v878366" ref={ajRef878366}>
-{!esTreballador878326()&&bloc878366("marca",t("Imatge de l’empresa"),<MarcaEmpresa878351/>)}
-{!esTreballador878326()&&bloc878366("docs",t("Documents"),<DocsAjustos878396/>)}
-{!esTreballador878326()&&window.__acoEmpresa&&!menuEmpresa878607()&&bloc878366("dades",t("Dades de l’empresa"),<DadesEmpresa878337 sub/>)}
-{bloc878366("perfil",t("Perfil i mòduls"),<PerfilModuls878326/>)}
-{!!window.__acoEmpresa&&!esTreballador878326()&&bloc878366("exemples",t("Exemples per començar"),<ExemplesAjustos878605/>)}
-{!esTreballador878326()&&bloc878366("verifactu",t("Factures amb VERI*FACTU"),<VerifactuCompte878286 admin={admin}/>)}
-{!esTreballador878326()&&teModul878326("obra")&&bloc878366("marges",t("Preus i marges"),<MargesAjustos878378/>)}
-{bloc878366("idioma",t("Idioma"),<IdiomaUsuari878268 user={authUser}/>)}
-{!esTreballador878326()&&bloc878366("enllacos",t("Enllaços de les obres"),<EnllacosAjustos878305/>)}
-{!esTreballador878326()&&teModul878326("tecnic")&&pcWindows878442()&&bloc878366("programes",t("Programes de l’ordinador"),<ProgramesPc878442/>)}
-{(!window.__acoEmpresa||/^demo-/.test(String(window.__acoEmpresa?.username||"")))&&bloc878366("aspecte",t("Aspecte"),<AspecteAjustos878400/>)}
-{role878366==="admin"&&bloc878366("accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>)}
-{bloc878366("usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>)}
-{!window.__acoEmpresa&&!!window.__acoCloud?.callFunction&&bloc878366("comptes",t("Comptes del núvol"),<ComptesNuvol878613/>)}
-{!window.__acoEmpresa&&!!window.__acoCloud?.proves&&bloc878366("proves",t("Comptes de prova"),<ProvesAjustos878519/>)}
-{!esTreballador878326()&&bloc878366("copia",t("Còpia al meu ordinador"),<CopiaOrdinador878520 clients={clients} obres={obres} odata={odata}/>)}
-{!esTreballador878326()&&bloc878366("despatx",t("Carpeta del despatx"),<CarpetaDespatx878625 obres={obres} odata={odata} setOdata={setOdata}/>)}
-{admin&&<details className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 copies-v878354" data-k="copies"><summary>{icAj438("copies")}<span className="t"><b>{t("Còpies i núvol")}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
-{!window.__acoEmpresa&&<EspaiNuvol878263/>}
+const bloc878366=(k,tit,cont,sub=false,cls="")=><details key={k} className={"card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366"+(sub?" aj-sub-v878637":"")+(cls?" "+cls:"")} data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
+const tr637=esTreballador878326(),emp637=!!window.__acoEmpresa;
+const aspecte637=!emp637||/^demo-/.test(String(window.__acoEmpresa?.username||""));
+const programes637=!tr637&&teModul878326("tecnic")&&pcWindows878442();
+const comptes637=!emp637&&!!window.__acoCloud?.callFunction,proves637=!emp637&&!!window.__acoCloud?.proves;
+// V87.637 · «Còpies del núvol i versions», depurada: fora «Configuració general» (l'IVA i la retenció de sèrie no els feia servir res; el correu
+// i l'empresa ja són a Documents) i «Supabase Storage» (el sistema d'arxius d'abans de la V87.262). Les dades desades no s'esborren.
+const copies637=<>
+{!emp637&&<EspaiNuvol878263/>}
 <VersionsGuardades878266/>
-{!esTreballador878326()&&<>
+{!tr637&&<>
 <DataJsonTools8778 clients={clients} obres={obres} odata={odata}/>
 <RecoverySnapshotsPanel878122 setClients={setClients} setObres={setObres} setOdata={setOdata} authUser={authUser}/>
-<Card title={t("Configuració general")} action={<button className="primary" onClick={e=>{save();tancaDesat878617(e,t("Configuració guardada"))}}><Save/> {t("Guardar configuració")}</button>}>
-  <div className="form-grid">
-    <Input label={t("Email emissor")} value={cfg.email||""} onChange={e=>upd("email",e.target.value)} />
-    <Input label={t("Empresa / usuari")} value={cfg.empresa||""} onChange={e=>upd("empresa",e.target.value)} />
-    <Input label={t("IVA defecte %")} value={cfg.iva||"21"} onChange={e=>upd("iva",e.target.value)} />
-    <Input label={t("Retenció defecte %")} value={cfg.retencio||"0"} onChange={e=>upd("retencio",e.target.value)} />
-  </div>
-</Card>
-<CloudPanel878257/>
-{!window.__acoEmpresa&&<Card title={t("Supabase Storage · documents i arxius")}>
-  <div className="form-grid">
-    <Input label={t("Supabase URL")} value={cfg.supabaseUrl||""} onChange={e=>upd("supabaseUrl",e.target.value)} />
-    <Input label={t("Anon key")} value={cfg.supabaseKey||""} onChange={e=>upd("supabaseKey",e.target.value)} />
-    <Input label={t("Bucket")} value={cfg.bucket||"app-control-obres"} onChange={e=>upd("bucket",e.target.value)} />
-  </div>
-</Card>}</>}
-</div><Recollir878432/></details>}
+<CloudPanel878257/></>}
+</>;
+const grups637=[
+  {g:"empresa",tit:t("La meva empresa"),Ic:Briefcase,items:[
+    !tr637&&["marca",t("Imatge de l’empresa"),<MarcaEmpresa878351/>],
+    !tr637&&emp637&&!menuEmpresa878607()&&["dades",t("Dades de l’empresa"),<DadesEmpresa878337 sub/>],
+    !tr637&&["docs",t("Documents"),<DocsAjustos878396/>],
+    !tr637&&teModul878326("obra")&&["marges",t("Preus i marges"),<MargesAjustos878378/>],
+    !tr637&&["verifactu",t("Factures amb VERI*FACTU"),<VerifactuCompte878286 admin={admin}/>]]},
+  {g:"pref",tit:t("Preferències"),Ic:Settings,items:[
+    ["perfil",t("Perfil i mòduls"),<PerfilModuls878326/>],
+    role878366==="admin"&&["accessos",t("Accessos ràpids"),<AccessosRapids878366 role={role878366} perfil={empresaInfo878259()?.perfil||""}/>],
+    ["idioma",aspecte637?t("Idioma i aspecte"):t("Idioma"),aspecte637?<><IdiomaUsuari878268 user={authUser}/><Card title={t("Aspecte")} className="aspecte-card-v878637"><AspecteAjustos878400/></Card></>:<IdiomaUsuari878268 user={authUser}/>],
+    !tr637&&["enllacos",programes637?t("Enllaços i programes"):t("Enllaços de les obres"),programes637?<><EnllacosAjustos878305/><Card title={t("Programes de l’ordinador")} className="programes-card-v878637"><ProgramesPc878442/></Card></>:<EnllacosAjustos878305/>],
+    emp637&&!tr637&&["exemples",t("Exemples per començar"),<ExemplesAjustos878605/>]]},
+  {g:"acces",tit:t("Usuaris i accés"),Ic:Lock,items:[
+    ["usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>],
+    (comptes637||proves637)&&[comptes637?"comptes":"proves",comptes637?t("Comptes del núvol"):t("Comptes de prova"),comptes637&&proves637?<><Card title={t("Comptes d’empresa")} className="comptes-card-v878637"><ComptesNuvol878613/></Card><Card title={t("Comptes de prova")} className="proves-card-v878637"><ProvesAjustos878519/></Card></>:comptes637?<ComptesNuvol878613/>:<ProvesAjustos878519/>]]},
+  {g:"copies",tit:t("Còpies i arxius"),Ic:Save,items:[
+    !tr637&&["despatx",t("Carpeta del despatx"),<CarpetaDespatx878625 obres={obres} odata={odata} setOdata={setOdata}/>],
+    !tr637&&["copia",t("Còpia al meu ordinador"),<CopiaOrdinador878520 clients={clients} obres={obres} odata={odata}/>],
+    admin&&["copies",t("Còpies del núvol i versions"),copies637,"copies-v878354"]]},
+].map(x=>({...x,items:x.items.filter(Boolean)})).filter(x=>x.items.length);
+const sols637=grups637.reduce((s,x)=>s+x.items.length,0)<=5;
+return <div className="stack ajustos-v878366 ajustos-v878637" ref={ajRef878366}>
+{grups637.map(({g,tit,Ic,items})=>sols637||items.length===1?items.map(([k,ti,c,cls])=>bloc878366(k,ti,c,false,cls)):<details key={"g-"+g} className="card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366 aj-g-v878637" data-g={g}><summary><Ic size={18} aria-hidden="true"/><span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{items.map(([k,ti,c,cls])=>bloc878366(k,ti,c,true,cls))}</div><Recollir878432/></details>)}
 </div>
 }
 
