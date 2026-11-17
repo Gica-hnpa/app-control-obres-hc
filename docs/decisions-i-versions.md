@@ -4613,3 +4613,25 @@
     trigat («AbortError · 0,4 s») i ofereix «Provar-ho d'una altra manera»: es tria només per llegir i després es demana el permís d'editar
     (si el navegador el té bloquejat, ho diu i com treure-ho; si cal un toc més, desa la carpeta i diu «toca Sincronitzar ara»).
   - Proves: `v634test` 8/8, `v637test` 25/25 (amb el color de l'empresa), v625 17/17, v605 14/14, contrasenyestest 33/34 (la d'abans).
+- **V87.639 · Usuari sencer al menú, Caixa i bancs del tècnic només amb les seves despeses, i els partes de Brava ja no es copien** (l'Héctor,
+  17/11/2026).
+  - «L'usuari no es veu» (captura del menú a l'iPhone: «Usua…» tallat i a sobre del logo): `theme-v878639.css` posa la capçalera del menú en
+    dues files a tots els aparells: a dalt el logo (amb ✕ al mòbil i l'iPad, o el botó de plegar a l'ordinador) i, a sota, «Usuari: …» sencer
+    (si és llarg, en dues ratlles) i «Sortir». El logo ja no s'encongeix sota l'usuari.
+  - «Per què a Caixa i bancs em surten despeses de Brava i no meves?»: a la còpia del núvol del 17/11 (només llegida), el compte de l'Héctor
+    tenia 19 despeses: la factura de Reyló Cerramientos (4.307,89 €, obra CALA ROVIRA 11, pujada per ell el 2/11 amb «Factura reylo.pdf»), una
+    seva (CEE Cornellà) i **16 de mà d'obra de Brava** (Hicham, Mohamed, Said, Juan, Xavier Espejo) de l'**Obra Llafranc**, que Brava li
+    comparteix, amb els mateixos identificadors que al compte de Brava. Dues causes:
+    - Caixa › «Per pagar» (i «Pagades», la previsió i els avisos de l'Inici) agafava totes les despeses de les obres. La V87.607 ja deia que la
+      Caixa del tècnic és la seva («honoraris, les meves despeses»): ara, si el compte no és una constructora (`esConstructora878344`), només hi
+      compten les despeses pròpies (`meva`); les de cada obra són la comptabilitat de l'obra i continuen dins de l'obra i a Despeses amb el seu
+      estat. `pagarItems878521(obres,{caixa:true})`, `pagadesItems878529(obres,90,{caixa:true})`. La constructora, igual que abans.
+    - `fanDespeses878359`: en una obra rebuda, també feia les despeses dels partes el compte de l'Héctor (sense perfil = tots els mòduls), i en
+      obrir «Partes d'obra» de Llafranc s'hi copiava la mà d'obra dels partes de Brava (la recuperació dels partes d'abans de la V87.359). Ara
+      només les fa una constructora. `netejaDespesesRebudes878639` treu les que ja s'hi havien copiat (despeses de partes d'obres rebudes) dels
+      comptes que no són constructora; el perfil es llegeix de la configuració del compte i, si un compte d'empresa encara no la té (baixant
+      del núvol), no es toca res. A les còpies del 17/11 només el compte de l'Héctor en tenia (les 16); Brava i Socoterm són constructores.
+  - Proves: `v639test` 44/44 (menú a 390, 820 i 1440, amb logo i sense i amb un nom d'empresa llarg; la constructora comparteix una obra amb un parte
+    amb hores amb el compte de l'Héctor: la còpia de la mà d'obra se'n va, obrir els partes no en copia cap, la Caixa de l'Héctor només té la
+    seva despesa i la de la constructora continua igual); partes359 20/20 (la constructora continua fent les despeses dels partes de les obres
+    que li comparteixen), v521 23/23, v575 22/22, v626 22/22, v607 15/15.

@@ -45,7 +45,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.638";
+const APP_VERSION878264="87.639";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5601,6 +5601,8 @@ useEffect(()=>{try{sessionStorage.setItem("aco-on-era",JSON.stringify({screen,ob
 const dalt878635=useRef({screen,obraId});
 useLayoutEffect(()=>{const p=dalt878635.current;dalt878635.current={screen,obraId};if(p.screen!==screen||(screen==="Obra"&&p.obraId!==obraId)){try{window.scrollTo(0,0)}catch{}}},[screen,obraId]);
 // V87.262 · de qui és cada obra (les compartides són d'un altre compte) i document local per a la cua.
+// V87.639 · les despeses dels partes d'obres rebudes copiades a un compte que no és constructora (només amb les dades d'aquest compte ja carregades)
+useEffect(()=>{if(!authUser8779||dataLoadedUser8781!==authUser8779)return;try{netejaDespesesRebudes878639(obres)}catch(e){console.warn(e)}},[obres,authUser8779,dataLoadedUser8781]);
 useEffect(()=>{window.__acoOwnerOf=id=>obres.find(o=>o.id===id)?.compartida?.owner||"";window.__acoGetLocalDoc=id=>getLocalDocFile878262(id).catch(()=>null)},[obres]);
 // V87.262 · en obrir una obra, es baixen del núvol els seus fitxers que no són en aquest aparell.
 useEffect(()=>{if(!obraId||!authUser8779||dataLoadedUser8781!==authUser8779)return;const who=authUser8779,space=dataOwnerUser878233;fetchObraFiles(obraId,odata[obraId],space).then(found=>{if(found.size&&sessionStorage.getItem("aco_current_user8779")===who)setOdata(prev=>fillObraFiles(prev,found))}).catch(e=>console.warn("Fitxers:",e))},[obraId,authUser8779,dataLoadedUser8781]);
@@ -7563,12 +7565,16 @@ function cobrarItems878521(obres=[],odata={},clients=[]){
     }}
   return out.sort((a,b)=>String(a.data).localeCompare(String(b.data)));
 }
-function pagarItems878521(obres=[]){
+function pagarItems878521(obres=[],{caixa=false}={}){
+  // V87.639 · a Caixa i bancs, el tècnic (també el «Tècnic amb gestió» i el compte de l'Héctor) només hi té les seves despeses: les de cada obra
+  // són la comptabilitat de l'obra (de la constructora), que es mira dins de l'obra (V87.607: «el menú… la caixa i bancs són els del tècnic»;
+  // l'Héctor, 17/11/2026: «per què a Caixa i bancs em surten despeses de Brava i no meves?»)
+  const nomesMeves=caixa&&!esConstructora878344();
   // V87.578 · totes les factures que no s'han marcat com a pagades són per pagar, siguin de quan siguin (l'Héctor, 11/11/2026: «qui li ha dit que
   // estan pagades i en quin moment? Jo no»); abans, només des de la data d'inici de Caixa i sense les importades
   const dies=diesCaixa878521("pagar",30);
   const nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));const albs=readAlbarans878259(),cob=cobertsPer878311(albs),out=[];
-  for(const a of albs){if(a.pagada878514||cob[a.id])continue;const tot=despesaTotal878311(a);if(!(tot>0))continue;
+  for(const a of albs){if(a.pagada878514||cob[a.id])continue;if(nomesMeves&&!a.meva)continue;const tot=despesaTotal878311(a);if(!(tot>0))continue;
     const df=isoData878292(a.data)||isoData878292(String(a.dataEntrada||"").slice(0,10));
     if(!a.venciment878521){const tp=tipusDespesa878311(a);if(a.meva||tp==="Albarà"||tp==="MaObra"||a.parteId878352||a.deHores878355)continue;if(!df)continue}
     out.push({clau:`d:${a.id}`,id:a.id,numero:a.numero||"",dataF:df,data:a.venciment878521||sumaDies878496(df,dies)||df,total:r2c878521(tot),obra:nom.get(String(a.obraId))||"",obraId:a.obraId||"",qui:a.proveidor||a.concepte||""});
@@ -7584,9 +7590,9 @@ function cobradesItems878529(obres=[],odata={},clients=[],dies=90){
   }
   return out.sort((a,b)=>String(b.data).localeCompare(String(a.data)));
 }
-function pagadesItems878529(obres=[],dies=90){
-  const des=sumaDies878496(todayISO8743(),-dies),nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));
-  return readAlbarans878259().filter(a=>a.pagada878514&&!(a.pagada878514.data&&a.pagada878514.data<des)).map(a=>({clau:"d:"+a.id,id:a.id,numero:a.numero||"",total:r2c878521(despesaTotal878311(a)),data:a.pagada878514.data||"",obra:nom.get(String(a.obraId))||"",qui:a.proveidor||a.concepte||""})).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+function pagadesItems878529(obres=[],dies=90,{caixa=false}={}){
+  const des=sumaDies878496(todayISO8743(),-dies),nom=new Map((obres||[]).map(o=>[String(o.id),o.nom||""]));const nomesMeves=caixa&&!esConstructora878344();
+  return readAlbarans878259().filter(a=>a.pagada878514&&!(nomesMeves&&!a.meva)&&!(a.pagada878514.data&&a.pagada878514.data<des)).map(a=>({clau:"d:"+a.id,id:a.id,numero:a.numero||"",total:r2c878521(despesaTotal878311(a)),data:a.pagada878514.data||"",obra:nom.get(String(a.obraId))||"",qui:a.proveidor||a.concepte||""})).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
 }
 function FetsCaixa878529({items,kind,onDesfes}){
   return <CartaLlista878518 className="fets-v878529" icona={CircleCheck} title={kind==="cobrar"?t("Cobrades (últims 90 dies)"):t("Pagades (últims 90 dies)")} xifra={items.length?money(items.reduce((x,y)=>x+y.total,0)):null}>
@@ -7604,7 +7610,7 @@ function saldoCaixa878521(c=llegeixCaixa878521()){
   return {ok:false,banc:false,saldo:0,data:""};
 }
 function previsio878521(obres,odata,clients,c=llegeixCaixa878521()){
-  const sb=saldoCaixa878521(c);const cob=cobrarItems878521(obres,odata,clients),pag=pagarItems878521(obres);
+  const sb=saldoCaixa878521(c);const cob=cobrarItems878521(obres,odata,clients),pag=pagarItems878521(obres,{caixa:true});
   return {sb,cob,pag,p:previsioCaixa({saldo:sb.saldo,entrades:cob.map(x=>({...x,import:x.total})),sortides:pag.map(x=>({...x,import:x.total})),fixos:c.fixos,avui:todayISO8743()})};
 }
 // els avisos de l'Inici (només si ja s'ha obert la pantalla alguna vegada: abans, «Per pagar» no té data d'inici)
@@ -7715,7 +7721,7 @@ function Caixa878521({obres=[],odata={},clients=[],openObraTab}){
   const etPer=w=>per529==="mes"?mesNom878529(w.ini):t("Setmana del {d}",{d:dm878521(w.ini)});
   const fiTxt=per529==="mes"?(n529===1?t("D’aquí a 1 mes"):t("D’aquí a {n} mesos",{n:n529})):t("D’aquí a {n} setmanes",{n:n529});
   const cobF=useMemo(()=>cobradesItems878529(obres,odata,clients),[obres,odata,clients,tick]);
-  const pagF=useMemo(()=>pagadesItems878529(obres),[obres,tick]);
+  const pagF=useMemo(()=>pagadesItems878529(obres,90,{caixa:true}),[obres,tick]);
   const desfes529=(kind,x)=>{if(!confirm(kind==="cobrar"?t("Tornar a posar la factura {n} per cobrar?",{n:x.numero||""}):t("Tornar a posar «{n}» per pagar?",{n:x.numero||x.qui||""})))return;
     if(kind==="cobrar")window.__acoPatchFactura878496?.(x.obraId,x.camp,x.id,x.camp==="facturesTecnic"?{estat:"Pendent",dataCobrament:""}:{cobrada:false,dataCobrament:""});
     else writeAlbarans878259(readAlbarans878259().map(a=>a.id===x.id?(({pagada878514,...r})=>r)(a):a));
@@ -13768,7 +13774,20 @@ function avisTreuCert878359(d,certId){const c=(d?.certificacions||[]).find(x=>x.
 // V87.359 · les hores i el material del parte van a Despeses també a les obres compartides, al compte de qui porta l'obra (constructora o
 // gestió total); abans no s'hi feien (les obres de Brava i de Socoterm són compartides per l'Héctor). Una sola vegada per parte i compte
 // (aco_partes_despeses_v878359): si després se n'esborren les despeses, no es tornen a fer soles.
-function fanDespeses878359(obra){return !!obra?.id&&(!obra.compartida||teModul878326("obra")||teModul878326("empresa"))}
+// V87.639 · en una obra que t'han compartit, les despeses dels partes (la mà d'obra i el material) només les fa la constructora: abans també el compte
+// de l'Héctor (sense perfil = tots els mòduls), que en obrir els partes de l'obra de Llafranc de Brava s'hi copiava la mà d'obra de Brava
+function fanDespeses878359(obra){return !!obra?.id&&(!obra.compartida||esConstructora878344())}
+// i les que ja s'hi havien copiat se’n van (són de la constructora, que les té al seu compte)
+function netejaDespesesRebudes878639(obres=[]){
+  // el perfil es llegeix aquí (no el de la pantalla, que en entrar pot ser encara el d'abans); un compte d'empresa sense la configuració
+  // (encara baixant del núvol) no es toca
+  const u=currentAppUser8779();if(!u)return 0;const p=String(empresaInfo878259()?.perfil||"");
+  if(!p&&(window.__acoEmpresa||String(u).startsWith("emp_")))return 0;
+  const m=PERFILS878326[p]?.moduls;if(m&&m.obra&&!m.tecnic)return 0;
+  const rebudes=new Set((obres||[]).filter(o=>o?.id&&o.compartida).map(o=>String(o.id)));if(!rebudes.size)return 0;
+  const cur=readAlbarans878259();const queden=cur.filter(a=>!(a?.parteId878352&&rebudes.has(String(a.obraId))));
+  if(queden.length<cur.length)writeAlbarans878259(queden);return cur.length-queden.length;
+}
 function partesFets878359(){return new Set(lsJson8779("aco_partes_despeses_v878359",[]))}
 function marcaParteFet878359(id){const s=partesFets878359();if(s.has(id))return;lsSet8779("aco_partes_despeses_v878359",JSON.stringify([...s,id].slice(-3000)))}
 function teDespesesParte878359(p){return (p.hores||[]).some(h=>parseNum8770(h.hores)>0)||(p.material||[]).length>0||(p.noves||[]).some(n=>n.ambHores&&((n.hores||[]).length||(n.material||[]).length))}
@@ -23395,7 +23414,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.638",
+    app_version:"87.639",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
