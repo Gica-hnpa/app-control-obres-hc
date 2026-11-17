@@ -44,7 +44,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.633";
+const APP_VERSION878264="87.634";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3756,8 +3756,12 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
     const usats=new Set(Object.values(mapa));
     const propies=(obres||[]).filter(o=>o&&o.id&&!o.compartida&&odata[o.id]&&typeof odata[o.id]==="object");
     const feina=[];
+    // V87.634 · per on va (per a la pantalla)
+    const prog=(fase,i,n)=>{window.__acoDespatxProg878634={fase,i,n,a:aCarpeta,b:aApp+actualitzats};try{window.dispatchEvent(new Event("aco-despatx-prog-878634"))}catch{}};
+    let iProg=0;
     // 1. la carpeta de cada obra: la que ja té, una que porti el seu codi o, si té documents, una de nova
     for(const o of propies){
+      prog("llegint",++iProg,propies.length);
       const d=odata[o.id];const docs=(Array.isArray(d.documents)?d.documents:[]).filter(x=>x&&x.id&&x.hasFile);
       let nomO=mapa[o.id]||"",dirO=nomO?(arrel.find(([n])=>n===nomO)||[])[1]||null:null;
       if(!dirO){
@@ -3822,7 +3826,9 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
     }
     // 3. de l'app a la carpeta: els documents que encara no hi són (o que s'han canviat a l'app)
     const espai630=currentFilesSpace878262(),MAXF630=window.__acoDespatxMaxFotos878630||200;let nFotos630=0;
+    iProg=0;
     for(const w of feina){
+      prog("escrivint",++iProg,feina.length);
       const {o,docs,dirO,nomO,perPath}=w;
       let subdirs=null;
       const subPer=async fid=>{if(!subdirs)subdirs=await (async()=>{const out=[];for await(const [n,h] of dirO.entries())if(h.kind==="directory"&&!ignora878625(n))out.push([n,h]);return out})();
@@ -3889,11 +3895,14 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
     window.__acoDespatxNous878625=deixa?nousP.length:0;avisaDespatx878625();
     return {ok:true,aCarpeta,aApp,actualitzats,grans,errors,pendents:deixa?nousP.length:0,bytes};
   }catch(e){if(fatal(e)){window.__acoDespatxPendent878625=true;avisaDespatx878625();return {error:"permis"}}return {error:"escriure",msg:String(e?.message||e)}}
-  finally{despatxAra878625=false}
+  finally{despatxAra878625=false;window.__acoDespatxProg878634=null;try{window.dispatchEvent(new Event("aco-despatx-prog-878634"))}catch{}}
 }
 async function triaDespatx878625(st){
   const user=currentAppUser8779();if(!user)return {error:"usuari"};
-  let dir;try{dir=await (window.__acoTriaDespatx878625?window.__acoTriaDespatx878625():window.showDirectoryPicker({mode:"readwrite",id:"aco-despatx"}))}catch{return {error:"cancel"}}
+  // V87.634 · (l'Héctor, 17/11/2026: «trio carpeta… i no em surt res»): si el navegador no deixa fer servir la carpeta (la de l'usuari,
+  // l'arrel d'un disc, una del sistema) o no dona permís, ara es diu; només si es cancel·la no es diu res
+  let dir;try{dir=await (window.__acoTriaDespatx878625?window.__acoTriaDespatx878625():window.showDirectoryPicker({mode:"readwrite",id:"aco-despatx"}))}
+  catch(e){const n=String(e?.name||"");return n==="AbortError"?{error:"cancel"}:n==="NotAllowedError"?{error:"permis"}:{error:"carpeta-no",msg:String(e?.message||e||"")}}
   await desaDespatxRec878625(user,{dir,nom:dir.name||"",fets:{},obres:{},canvis:[],ultima:""});
   return sincronitzaDespatx878625(st,{demana:true,manual:true});
 }
@@ -3915,6 +3924,9 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
   const[rec,setRec]=useState(undefined);const[msg,setMsg]=useState("");const[fent,setFent]=useState(false);
   const llegeix=()=>despatxRec878625(user).then(r=>setRec(r||null)).catch(()=>setRec(null));
   useEffect(()=>{llegeix();window.addEventListener("aco-despatx-878625",llegeix);return()=>window.removeEventListener("aco-despatx-878625",llegeix)},[]);
+  // V87.634 · mentre sincronitza (la primera vegada pot trigar, amb totes les obres): per quina obra va i quants arxius ha passat
+  const[prog,setProg]=useState(()=>window.__acoDespatxProg878634||null);
+  useEffect(()=>{const f=()=>setProg(window.__acoDespatxProg878634?{...window.__acoDespatxProg878634}:null);window.addEventListener("aco-despatx-prog-878634",f);return()=>window.removeEventListener("aco-despatx-prog-878634",f)},[]);
   if(!potCopia878520())return <p className="copia-buit-v878520">{t("Es fa des de l’ordinador, amb Chrome o Edge.")}</p>;
   const st={obres,odata,setOdata};
   const diu=r=>{
@@ -3923,7 +3935,7 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
       if(r.grans?.length)x+=" "+t("No s’han afegit a l’app perquè fan més de 50 MB: {l}.",{l:r.grans.slice(0,3).map(g=>g.split("/").pop()).join(", ")+(r.grans.length>3?"…":"")});
       if(r.errors)x+=" "+t("{n} arxius no s’han pogut passar: es tornarà a provar.",{n:r.errors});
       return x}
-    return r?.error==="permis"?t("El navegador no ha donat permís per fer servir la carpeta."):r?.error==="escriure"?t("No s’ha pogut fer servir la carpeta: {m}",{m:r.msg||""}):r?.error==="ja"?t("Ja s’està sincronitzant."):r?.error==="dades"?t("Les obres encara s’estan carregant. Torna-ho a provar d’aquí a un moment."):""};
+    return r?.error==="carpeta-no"?t("El navegador no deixa fer servir aquesta carpeta. Tria’n una altra: per exemple, una carpeta nova dins de D:, no la del teu usuari ni l’arrel d’un disc."):r?.error==="permis"?t("El navegador no ha donat permís per fer servir la carpeta."):r?.error==="escriure"?t("No s’ha pogut fer servir la carpeta: {m}",{m:r.msg||""}):r?.error==="ja"?t("Ja s’està sincronitzant."):r?.error==="dades"?t("Les obres encara s’estan carregant. Torna-ho a provar d’aquí a un moment."):""};
   const fes=async f=>{setFent(true);setMsg("");try{setMsg(diu(await f()))}finally{setFent(false);llegeix()}};
   if(rec===undefined)return null;
   return <div className="copia-v878520 despatx-v878625">
@@ -3934,7 +3946,7 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
       <button type="button" className={rec?.dir?"secondary":"primary"} disabled={fent} onClick={()=>fes(()=>triaDespatx878625(st))}>{rec?.dir?t("Canviar de carpeta"):t("Triar la carpeta")}</button>
       {rec?.dir?<button type="button" className="secondary" disabled={fent} onClick={async()=>{if(!confirm(t("Deixar de sincronitzar amb aquesta carpeta? No s’esborra res, ni de la carpeta ni de l’app.")))return;await desaDespatxRec878625(user,null);window.__acoDespatxNous878625=0;window.__acoDespatxPendent878625=false;avisaDespatx878625();setMsg("")}}>{t("Deixar de fer-ho")}</button>:null}
     </div>
-    {msg&&<p className="msg" role="status">{msg}</p>}
+    {prog?<p className="msg prog-v878634" role="status">{prog.fase==="llegint"?t("Mirant la carpeta: obra {i} de {n}…",{i:prog.i,n:prog.n}):t("Sincronitzant: obra {i} de {n} · {a} arxius a la carpeta i {b} a l’app",{i:prog.i,n:prog.n,a:prog.a,b:prog.b})}</p>:msg&&<p className="msg" role="status">{msg}</p>}
     {rec?.dir&&rec.canvis?.length>0?<details className="canvis-v878625"><summary>{t("Últims canvis")} <span className="xifra">{rec.canvis.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><ul>{rec.canvis.map((c,i)=><li key={i}><b>{c.n}</b><small>{c.d==="app"?t("De la carpeta a l’app"):c.d==="act"?t("Canviat a la carpeta"):t("De l’app a la carpeta")} · {c.o} · {horaDespatx878625(c.at)}</small></li>)}</ul></details>:null}
   </div>;
 }
@@ -23340,7 +23352,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.633",
+    app_version:"87.634",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

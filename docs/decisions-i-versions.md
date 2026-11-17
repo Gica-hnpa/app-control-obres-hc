@@ -4558,3 +4558,7 @@
     sigui a l'obra abans de pujar-la.
   - Proves: `compartir633unit` 11/11 (sense navegador) i `v633test` 10/10 (un aparell sense la configuració, un aparell vell que puja les dades
     o la fila sencera, i qui la rep l'obre); el Supabase de proves té `/__sharedset`, `/__kvset` i `/__kv`.
+- **V87.634 · Carpeta del despatx: dir què passa** (l'Héctor, 17/11/2026: «trio carpeta… i no em surt res a Ajustos»). Si el navegador no deixa
+  fer servir la carpeta triada (la de l'usuari, l'arrel d'un disc, una del sistema), ara ho diu i què cal triar («una carpeta nova dins de
+  D:…»); si no dona permís, també; si es cancel·la, no diu res. Mentre sincronitza (la primera vegada, amb totes les obres, pot trigar), surt
+  «Mirant la carpeta: obra X de Y…» i després «Sincronitzant: obra X de Y · N arxius a la carpeta i M a l'app». Prova: `v634test` 4/4; v625 17/17.

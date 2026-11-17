@@ -6248,4 +6248,7 @@ export default {
   "Aquesta obra encara no té fotos ni documents.": "Esta obra aún no tiene fotos ni documentos.",
   "Fotos i documents": "Fotos y documentos",
   "{n} arxius encara no són al núvol: es posaran quan tornis a publicar.": "{n} archivos aún no están en la nube: se pondrán cuando vuelvas a publicar.",
+  "El navegador no deixa fer servir aquesta carpeta. Tria’n una altra: per exemple, una carpeta nova dins de D:, no la del teu usuari ni l’arrel d’un disc.": "El navegador no deja usar esta carpeta. Elige otra: por ejemplo, una carpeta nueva dentro de D:, no la de tu usuario ni la raíz de un disco.",
+  "Mirant la carpeta: obra {i} de {n}…": "Mirando la carpeta: obra {i} de {n}…",
+  "Sincronitzant: obra {i} de {n} · {a} arxius a la carpeta i {b} a l’app": "Sincronizando: obra {i} de {n} · {a} archivos a la carpeta y {b} a la app",
 };
