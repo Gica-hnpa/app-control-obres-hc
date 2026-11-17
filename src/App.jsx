@@ -44,7 +44,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.627";
+const APP_VERSION878264="87.628";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -19233,7 +19233,8 @@ function difQ878627(a,b,partides){if(!a||!b)return [];const per=new Map((partide
   return ks.filter(k=>Math.abs((+a[k]||0)-(+b[k]||0))>0.0005).map(k=>{const r=per.get(k)||{};return {k,codi:r.codi||"",concepte:String(r.concepte||r.descripcio||"").slice(0,80),abans:+a[k]||0,ara:+b[k]||0}})}
 const nf878627=n=>Number(n||0).toLocaleString("ca-ES",{maximumFractionDigits:3});
 const quan878627=v=>v?fmtAppDate8748(isoDay878255(new Date(v))):"";
-function ValidacioCert878627({cert,certNum,partides,valida,propi,setCert,correu}){
+function obrePdfSignat878628(doc,obraId){if(!doc?.id)return;const w=window.open("","_blank");getDocFile(doc.id,obraId).then(b=>{if(!b){try{w?.close()}catch{};alert(t("Encara no s’ha pogut baixar el PDF signat. Torna-ho a provar d’aquí a un moment."));return}const u=URL.createObjectURL(b.type?b:new Blob([b],{type:"application/pdf"}));if(w)w.location.href=u;else window.open(u,"_blank")}).catch(()=>{try{w?.close()}catch{}})}
+function ValidacioCert878627({cert,certNum,partides,valida,propi,setCert,correu,signa,obraId}){
   const v=cert?.validacio878627&&typeof cert.validacio878627==="object"?cert.validacio878627:null;
   const[envia,setEnvia]=useState(false);const[avisa,setAvisa]=useState(true);const[tornant,setTornant]=useState(false);const[com,setCom]=useState("");
   if(!cert||(!valida&&!propi&&!v))return null;
@@ -19243,10 +19244,11 @@ function ValidacioCert878627({cert,certNum,partides,valida,propi,setCert,correu}
   const enviar=()=>{setCert(c=>{const w=c.validacio878627;return {...c,validacio878627:{estat:"pendent",enviat:ara(),q,anterior:w?{estat:w.estat,at:w.at||w.enviat||"",q:w.qv||w.q||null}:null}}});setEnvia(false);if(avisa&&correu)correu()};
   const despresQ=v?.estat==="validada"?difQ878627(v.qv,q,partides):v?.estat==="pendent"?difQ878627(v.q,q,partides):[];
   const xip=!v?null:v.estat==="pendent"?<span className="xip-v878627 pendent">{t("Enviada per validar el {d}",{d:quan878627(v.enviat)})}</span>
-    :v.estat==="validada"?<span className="xip-v878627 validada"><BadgeCheck size={15} aria-hidden="true"/> {t("Validada per {per} el {d}",{per:v.per||"—",d:quan878627(v.at)})}</span>
+    :v.estat==="validada"?<span className="xip-v878627 validada"><BadgeCheck size={15} aria-hidden="true"/> {t("Validada per {per} el {d}",{per:v.per||"—",d:quan878627(v.at)})}{v.doc?.id?" · "+t("amb certificat digital"):""}</span>
     :<span className="xip-v878627 tornada">{t("Tornada per {per} el {d}",{per:v.per||"—",d:quan878627(v.at)})}</span>;
+  const pdf628=v?.estat==="validada"&&v.doc?.id?<button type="button" className="secondary pdf-v878628" onClick={()=>obrePdfSignat878628(v.doc,obraId)}><FileText size={16} aria-hidden="true"/> {t("PDF signat")}</button>:null;
   if(propi)return <div className="card validacio-v878627">
-    <div className="fila">{xip||<span className="xip-v878627">{t("Encara no s’ha enviat per validar")}</span>}
+    <div className="fila">{xip||<span className="xip-v878627">{t("Encara no s’ha enviat per validar")}</span>}{pdf628}
       {!envia&&<button type="button" className={v?"secondary":"primary"} onClick={()=>setEnvia(true)}><Send size={16} aria-hidden="true"/> {v?t("Tornar a enviar per validar"):t("Enviar per validar")}</button>}</div>
     {v?.estat==="tornada"&&v.comentari?<p className="comentari">«{v.comentari}»</p>:null}
     {despresQ.length>0&&<div className="avis"><b>{v.estat==="validada"?t("Ha canviat des que es va validar"):t("Ha canviat des que la vas enviar")}</b>{llista(despresQ)}</div>}
@@ -19257,10 +19259,13 @@ function ValidacioCert878627({cert,certNum,partides,valida,propi,setCert,correu}
   if(!v)return null;
   const desDe=v.estat==="pendent"&&v.anterior?.q?difQ878627(v.anterior.q,q,partides):[];
   return <div className={"card validacio-v878627"+(v.estat==="pendent"?" per-validar":"")}>
-    <div className="fila">{v.estat==="pendent"?<b className="tit">{t("Certificació {n} per validar",{n:certNum})}</b>:xip}</div>
+    <div className="fila">{v.estat==="pendent"?<b className="tit">{t("Certificació {n} per validar",{n:certNum})}</b>:xip}{pdf628}</div>
     {v.estat==="pendent"&&v.anterior?<div className="avis"><b>{desDe.length?t("Ha canviat des de l’última vegada:"):t("No ha canviat res des de l’última vegada.")}</b>{llista(desDe)}</div>:null}
     {v.estat!=="pendent"&&v.estat==="tornada"&&v.comentari?<p className="comentari">«{v.comentari}»</p>:null}
-    {v.estat==="pendent"&&!tornant&&<div className="botons"><button type="button" className="primary" onClick={()=>setCert(c=>({...c,validacio878627:{...c.validacio878627,estat:"validada",per:nomCompte878424(),at:ara(),comentari:"",qv:q}}))}><BadgeCheck size={16} aria-hidden="true"/> {t("Validar")}</button><button type="button" className="secondary" onClick={()=>setTornant(true)}><Undo2 size={16} aria-hidden="true"/> {t("Tornar-la")}</button></div>}
+    {v.estat==="pendent"&&!tornant&&<div className="botons">
+      {signa?<button type="button" className="primary" onClick={signa}><Signature size={16} aria-hidden="true"/> {t("Validar i signar…")}</button>:null}
+      <button type="button" className={signa?"secondary":"primary"} onClick={()=>setCert(c=>({...c,validacio878627:{...c.validacio878627,estat:"validada",per:nomCompte878424(),at:ara(),comentari:"",qv:q,doc:undefined}}))}><BadgeCheck size={16} aria-hidden="true"/> {signa?t("Validar sense signar"):t("Validar")}</button>
+      <button type="button" className="secondary" onClick={()=>setTornant(true)}><Undo2 size={16} aria-hidden="true"/> {t("Tornar-la")}</button></div>}
     {v.estat==="pendent"&&tornant&&<div className="envia"><label className="lbl">{t("Per què la tornes?")}<textarea rows={3} value={com} onChange={e=>setCom(e.target.value)} placeholder={t("Ex.: revisa la partida 04.02")}/></label>
       <div className="botons"><button type="button" className="secondary" onClick={()=>{setTornant(false);setCom("")}}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={!com.trim()} onClick={()=>{setCert(c=>({...c,validacio878627:{...c.validacio878627,estat:"tornada",per:nomCompte878424(),at:ara(),comentari:com.trim()}}));setTornant(false);setCom("")}}>{t("Tornar-la")}</button></div></div>}
   </div>;
@@ -19973,7 +19978,8 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
   {!editing&&<button type="button" className="tornar-v878426" onClick={()=>{setDetall426(false);setLlista426(true)}}><ChevronLeft size={18} aria-hidden="true"/> {contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</button>}
   {!editing&&!clientMode&&!contrast878424&&<ValidacioCert878627 cert={cert} certNum={certNum} partides={data.partides||[]} valida={!!valida878627} propi={!obra?.compartida&&permis878626(cfgObra878626(obra),"cert")==="v"}
     setCert={fn=>(setObraData||setData)?.(d=>({...d,certificacions:(d.certificacions||[]).map(x=>String(x?.id)===String(cert.id)?fn(x):x)}))}
-    correu={openEmail?()=>openEmail(`${i18nT("Certificació")} ${certNum} · ${i18nT("per validar")}`,{doc:certPdfDoc878407("origen")}):null}/>}
+    correu={openEmail?()=>openEmail(`${i18nT("Certificació")} ${certNum} · ${i18nT("per validar")}`,{doc:certPdfDoc878407("origen")}):null}
+    obraId={obra?.id} signa={valida878627&&af878408.potSignar()?()=>setSigCert408("valida"):null}/>}
   <div className="card cert-cap-v878426">
     <div className="esq"><b>{contrast878424?i18nT("La meva certificació {n}",{n:certNum}):i18nT("Certificació {n}",{n:certNum})}</b><small>{fmtAppDate8748(dateVal8721(cert)||"")}{faCert878337?<em className="fa">{i18nT("Factura {n}",{n:faCert878337.numero})}</em>:vfCert878337?<em className="fa">{vfCert878337.numSerie}</em>:null}</small></div>
     <b className="tot">{money(editing?certTotal(certNum):certListTotal878215(cert))}</b>
@@ -20015,7 +20021,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     {!contrast878424&&obra?.id&&cert&&<button type="button" className="opcio" onClick={()=>{setEnviar440(false);setSigCert408("envia")}}><Signature size={20} aria-hidden="true"/> {i18nT("Enviar-la perquè la tornin signada")}</button>}
     {!rec408&&selDesc878582()}
   </div></Modal>}
-  {sigCert408&&<SignaturaCert878408 autoEnvia={sigCert408==="envia"} obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
+  {sigCert408&&<SignaturaCert878408 autoEnvia={sigCert408==="envia"} onSignat={sigCert408==="valida"?r=>{if(!r?.id||!(r.signat878408?.signatures||[]).length)return;const q=qCert878627(data.partides||[],certNum);(setObraData||setData)?.(d=>({...d,certificacions:(d.certificacions||[]).map(x=>String(x?.id)===String(cert?.id)&&x.validacio878627?.estat==="pendent"?{...x,validacio878627:{...x.validacio878627,estat:"validada",per:nomCompte878424(),at:new Date().toISOString(),comentari:"",qv:q,doc:{id:r.id,nom:r.nom||""}}}:x)}))}:undefined} obra={obra} tipus="certificacio" refId={ref408} titol={`${i18nT("Certificació {n}",{n:certNum})} · ${obra?.nom||""}`} rols={ROLS_CERT878408.map(([k,label])=>({k,label,nom:String(k==="df"?(obra?.deo||obra?.do||""):k==="constructor"?(typeof obra?.constructor==="string"?obra.constructor:""):(obra?.propietat||client?.nom||"")).replace(/^pendent$/i,"")}))} fesHtml={()=>htmlDoc878405({...certPdfDoc878407("origen"),certSig878408:[],perSignar878408:true},obra,client)} clau={()=>JSON.stringify([certNum,cert?.data,rows.map(r=>[r.codi,r.q,r.pu,qDraft(r),qOrigin(r)])])} carpeta={carpetaDe878408(obra,obraData||data,"07_CERTIFICACIONS_FACTURACIO_OBRA")} close={()=>setSigCert408(false)}/>}
   {extraOpen878125&&<Modal title={i18nT("Afegir feina · Certificació {n}",{n:certNum})} close={()=>setExtraOpen878125(false)}><div className="cert-extra-modal-v87213"><p className="cert-add-intro-v878255">{i18nT("Què vols afegir a la Certificació")} {certNum}?</p>
   <div className="cert-add-kinds-v878255" role="radiogroup" aria-label={i18nT("Tipus de feina")}>
     {[["modificacio","Feina nova o extra","Una feina que no era al pressupost, o un canvi. Hi poses la quantitat i el preu, i queda afegida al pressupost."],["provisio","Partida a compte","Un import provisional que només surt en aquesta certificació (provisió de fons)."],["administracio","Hores i materials","Feina pagada per hores. Apuntes les hores d’oficial i de peó i els materials, i l’import se suma sol."]].map(([k,t,d])=><button type="button" key={k} role="radio" aria-checked={extraDraft878125.tipus===k} className={extraDraft878125.tipus===k?"on":""} onClick={()=>{const tipus=k;setExtraDraft878125(x=>({...x,tipus,cap:tipus==="administracio"?(x.cap||"C98 FEINES PER ADMINISTRACIÓ"):(x.cap==="C98 FEINES PER ADMINISTRACIÓ"?"":x.cap),ut:tipus==="administracio"?"€":(x.ut==="€"?"ut":x.ut),q:tipus==="administracio"?"":(x.q||"1"),pu:tipus==="administracio"?"":(x.pu||"0")}))}}><b>{t}</b><span>{d}</span></button>)}
@@ -23311,7 +23317,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.627",
+    app_version:"87.628",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

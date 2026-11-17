@@ -86,8 +86,10 @@ export function ambValidacions878627(loc, rem) {
     const l = c.validacio878627;
     if (l && l.estat === "pendent" && String(v.at) <= String(l.enviat || "")) return c;
     if (l && l.estat !== "pendent" && String(l.at || "") >= String(v.at)) return c;
-    const { estat, per: qui, at, comentari, qv } = v;
-    return { ...c, validacio878627: { ...(l || {}), estat, per: String(qui || "").slice(0, 120), at: String(at), comentari: String(comentari || "").slice(0, 2000), qv: l?.q && typeof l.q === "object" ? l.q : (qv && typeof qv === "object" ? qv : undefined) } };
+    const { estat, per: qui, at, comentari, qv, doc } = v;
+    // V87.628 · i, si s'ha validat amb la signatura de l'AutoFirma, el PDF signat (l'arxiu és a l'espai de l'obra de qui l'ha compartida)
+    const pdf = estat === "validada" && doc && typeof doc === "object" && doc.id ? { id: String(doc.id).slice(0, 200), nom: String(doc.nom || "").slice(0, 200) } : undefined;
+    return { ...c, validacio878627: { ...(l || {}), estat, per: String(qui || "").slice(0, 120), at: String(at), comentari: String(comentari || "").slice(0, 2000), qv: l?.q && typeof l.q === "object" ? l.q : (qv && typeof qv === "object" ? qv : undefined), doc: pdf } };
   });
 }
 // la fitxa de l'obra que arriba d'un altre compte: només si la fitxa és «m»; la configuració sempre és la pròpia

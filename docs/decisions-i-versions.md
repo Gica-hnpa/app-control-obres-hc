@@ -4502,3 +4502,9 @@
   pròpia, de qui valida només entra la validació (validada/tornada, posterior a l'enviament) i les quantitats validades són les enviades.
   També: «Editar» de la certificació ja no surt si la certificació és de lectura. Prova: `v627test` 15/15 (enviar, tornar, canviar, tornar a
   enviar, què ha canviat, validar, el tècnic no pot canviar quantitats ni dades, avisos de l'Inici, mòbil).
+- **V87.628 · Validar la certificació amb la signatura de l'AutoFirma** (l'Héctor, 17/11/2026: «Validar o tornar amb comentari, i signatura
+  amb AutoFirma»). A l'ordinador, qui valida té «Validar i signar…» (obre la signatura amb certificat de la certificació, la mateixa de la
+  V87.408; en signar-la, queda validada), «Validar sense signar» i «Tornar-la»; al mòbil, «Validar» (sense AutoFirma). El PDF signat es desa a
+  l'espai de l'obra al núvol de qui l'ha compartida (els editors hi poden afegir arxius) i la validació en porta l'identificador i el nom
+  (`validacio878627.doc`): a tots dos costats, «Validada per … el … · amb certificat digital» i el botó «PDF signat», que l'obre. Prova:
+  `v628test` 8/8 (amb l'AutoFirma de prova de signatura408test i `--ignore-certificate-errors`).

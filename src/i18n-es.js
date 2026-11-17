@@ -6201,4 +6201,8 @@ export default {
   "Ex.: revisa la partida 04.02": "Ej.: revisa la partida 04.02",
   "Certificació {n} tornada: {c}": "Certificación {n} devuelta: {c}",
   "Certificació {n} tornada": "Certificación {n} devuelta",
+  "amb certificat digital": "con certificado digital",
+  "Validar i signar…": "Validar y firmar…",
+  "Validar sense signar": "Validar sin firmar",
+  "Encara no s’ha pogut baixar el PDF signat. Torna-ho a provar d’aquí a un moment.": "Aún no se ha podido descargar el PDF firmado. Vuelve a probarlo en un momento.",
 };

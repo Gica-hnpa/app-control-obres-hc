@@ -1,0 +1,3 @@
+/* V87.628 · validar amb la signatura de l'AutoFirma: el «PDF signat» al costat de l'estat i el botó d'enviar a la dreta */
+html body .validacio-v878627 .fila{justify-content:flex-start}
+html body .validacio-v878627 .fila>button:not(.pdf-v878628){margin-left:auto}
