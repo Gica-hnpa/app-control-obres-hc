@@ -6244,4 +6244,5 @@ export default {
   "Certificacions validades": "Certificaciones validadas",
   "Només de consulta. Si hi veus res que no és correcte, digues-ho a {nom}.": "Solo de consulta. Si ves algo que no es correcto, díselo a {nom}.",
   "qui te l’ha enviat": "quien te lo ha enviado",
+  "Croquis": "Croquis",
 };

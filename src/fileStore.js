@@ -62,6 +62,34 @@ export async function recorreArxius(space, fn) {
   for (const k of keys || []) { const v = await tx("readonly", s => s.get(k)); if (v && typeof v === "object" && isData(v.data)) await fn(String(k).slice(pre.length), v); }
   return (keys || []).length;
 }
+// V87.630 · Carpeta del despatx: els fitxers d'una obra (fotos i croquis de l'obra, les actes i les notes, i els documents de les actes),
+// amb la llista on són (no les signatures)
+export function fitxersObra878630(obra) {
+  const out = [], vist = new Set();
+  (function walk(node, depth) {
+    if (!node || typeof node !== "object" || depth > 4) return;
+    for (const [k, v] of Object.entries(node)) {
+      if (Array.isArray(v) && LISTS[k]) { if (k !== "signatures878403") v.forEach(item => { if (item && typeof item === "object" && item.id && !vist.has(item.id)) { vist.add(item.id); out.push({ id: String(item.id), nom: String(item.nom || item.name || ""), llista: k, data: String(item.data || item.date || "") }); } }); }
+      else if (Array.isArray(v)) v.forEach(x => walk(x, depth + 1));
+      else if (v && typeof v === "object") walk(v, depth + 1);
+    }
+  })(obra, 0);
+  return out;
+}
+// el contingut d'un fitxer («data:…»): el d'aquest aparell o, si no hi és, el del núvol (i es desa a l'aparell)
+export async function dadesFitxer878630(space, obraId, id) {
+  if (!space || !id || typeof indexedDB === "undefined") return null;
+  try { const rec = await tx("readonly", s => s.get(keyOf(space, id))); if (rec && isData(rec.data)) return rec.data; } catch {}
+  const c = cloud(), path = pathOf(obraId, id);
+  if (!c?.storageDownload || !c.status?.().email || !path) return null;
+  try {
+    const blob = await c.storageDownload(path); if (!blob) return null;
+    const data = await blobToDataUrl(blob);
+    await tx("readwrite", s => s.put({ data, obraId, savedAt: new Date().toISOString(), baixat: true }, keyOf(space, id)));
+    stored.set(keyOf(space, id), data.length);
+    return data;
+  } catch { return null; }
+}
 export function persistObraFiles(odata, space) {
   if (!odata || typeof odata !== "object" || !space || typeof indexedDB === "undefined") return Promise.resolve(0);
   const jobs = [];

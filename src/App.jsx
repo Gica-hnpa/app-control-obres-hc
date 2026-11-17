@@ -39,12 +39,12 @@ import {CERTIFICATION_RECOVERY_V87215} from "./certificationRecoveryV87215.js";
 import {repairImportedBudgetHierarchyV87226,importedBudgetHierarchyLabelV87226} from "./excelBudgetHierarchyV87226.js";
 import {parseCertificationWorkbookV87231,matchCertificationItemsV87231} from "./certificationExcelImportV87231.js";
 import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js";
-import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile,recorreArxius} from "./fileStore.js";
+import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile,recorreArxius,fitxersObra878630,dadesFitxer878630} from "./fileStore.js";
 import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses878626,permisTab878626} from "./compartir878626.js";
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.629";
+const APP_VERSION878264="87.630";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3765,7 +3765,7 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
         let c=arrel.find(([n])=>n===nom&&!usats.has(n));
         if(!c&&curt&&/\d/.test(curt)){const re=new RegExp("^"+curt.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![0-9])","i");const cs=arrel.filter(([n])=>re.test(n)&&!usats.has(n));if(cs.length===1)c=cs[0]}
         if(c){nomO=c[0];dirO=c[1]}
-        else if(docs.length){let i=2;nomO=nom;while(usats.has(nomO)||arrel.some(([n])=>n===nomO))nomO=`${nom} (${i++})`;dirO=await root.getDirectoryHandle(nomO,{create:true});arrel.push([nomO,dirO])}
+        else if(docs.length||fitxersObra878630(d).length){let i=2;nomO=nom;while(usats.has(nomO)||arrel.some(([n])=>n===nomO))nomO=`${nom} (${i++})`;dirO=await root.getDirectoryHandle(nomO,{create:true});arrel.push([nomO,dirO])}
         if(dirO){mapa[o.id]=nomO;usats.add(nomO)}
       }
       if(!dirO)continue;
@@ -3821,6 +3821,7 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
       }catch(e){if(fatal(e))throw e;errors++}
     }
     // 3. de l'app a la carpeta: els documents que encara no hi són (o que s'han canviat a l'app)
+    const espai630=currentFilesSpace878262(),MAXF630=window.__acoDespatxMaxFotos878630||200;let nFotos630=0;
     for(const w of feina){
       const {o,docs,dirO,nomO,perPath}=w;
       let subdirs=null;
@@ -3853,6 +3854,28 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
           }
           if(!fh)continue;
           const f2=await fh.getFile();fets[doc.id]={o:o.id,p:nomO+"/"+sn+"/"+nomFinal,m:f2.lastModified,s:f2.size,u:doc.updatedAt||""};
+        }catch(e){if(fatal(e))throw e;errors++}
+      }
+      // V87.630 · i les fotos i els croquis (de l'obra, les actes i les notes) a «06B Fotos d'obra», i els documents de les actes a «06 Actes i
+      // seguiment». Només de l'app a la carpeta (el que es posa a la carpeta entra als Documents, com la resta); com a molt 200 per volta.
+      for(const fx of fitxersObra878630(w.d)){
+        if(nFotos630>=MAXF630)break;
+        const k="f:"+fx.id;if(fets[k])continue;
+        try{
+          const dadesF=await dadesFitxer878630(espai630,o.id,fx.id);if(!dadesF)continue;
+          const blob=await (await fetch(dadesF)).blob();
+          const [sn,sh]=await subPer(fx.llista==="docs"?"06_ACTES_SEGUIMENT":"06B_FOTOS_OBRA");
+          const base=nomFitxer878520(fx.nom||((fx.llista==="croquis"?t("Croquis"):t("Foto"))+" "+String(fx.id).slice(-6))),nomF=base+extDe878520(blob.type,base),mm=/^(.*?)(\.[^.]*)?$/.exec(nomF);
+          let nomFinal=nomF,fh=null;
+          for(let i=2;i<60&&!fh;i++){
+            let ex=null;try{ex=await sh.getFileHandle(nomFinal)}catch{}
+            if(!ex){fh=await sh.getFileHandle(nomFinal,{create:true});const wr=await fh.createWritable();await wr.write(blob);await wr.close();aCarpeta++;nFotos630++;apunta("carpeta",o,nomFinal);break}
+            const fz=await ex.getFile(),pth=nomO+"/"+sn+"/"+nomFinal;
+            if(fz.size===blob.size&&!Object.values(fets).some(q=>q&&q.p===pth)){fh=ex;break}
+            nomFinal=`${mm[1]} (${i})${mm[2]||""}`;
+          }
+          if(!fh)continue;
+          const f3=await fh.getFile();fets[k]={o:o.id,p:nomO+"/"+sn+"/"+nomFinal,m:f3.lastModified,s:f3.size,u:"",f:1};
         }catch(e){if(fatal(e))throw e;errors++}
       }
     }
@@ -23317,7 +23340,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.629",
+    app_version:"87.630",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

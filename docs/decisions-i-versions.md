@@ -4521,3 +4521,8 @@
   En tancar l'obra (Tancat, Anul·lat, No acceptat), l'enllaç es treu sol. La pàgina del client (`src/ClientObra.jsx`, com SignaRemot: no
   arrenca l'app): demana el codi (es recorda a l'aparell), català/castellà (de sèrie, l'idioma dels documents de l'obra), «Imprimir o desar
   en PDF», mòbil. Falta: fotos, documents i planning. Prova: `v629test` 25/25 (el Supabase de proves té la taula, la funció i `/__client`).
+- **V87.630 · Carpeta del despatx, segona part: les fotos.** A més dels Documents, de l'app a la carpeta també hi van les fotos i els croquis
+  de l'obra, les actes i les notes (a «<obra>\06B Fotos d'obra») i els documents de les actes (a «06 Actes i seguiment»); si no són a
+  l'ordinador, es baixen del núvol (`fileStore.js`: `fitxersObra878630`, `dadesFitxer878630`). Com a molt 200 per volta; no es repeteixen; el
+  que es treu de la carpeta no torna; no tornen a l'app com a documents. Una obra que només té fotos també té carpeta. Prova: `v630test` 6/6;
+  v625test 17/17.
