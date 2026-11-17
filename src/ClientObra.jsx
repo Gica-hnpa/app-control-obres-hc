@@ -79,6 +79,18 @@ export default function ClientObra({ token }) {
         {x.per ? <small className="val"><BadgeCheck size={14} aria-hidden="true" /> {T("Validada per {per} el {d}", { per: x.per, d: dia(x.at) })}</small> : null}
       </li>)}</ul>}
     </section>}
+    {Array.isArray(c.planning) && c.planning.length > 0 && (() => {
+      const ms = v => new Date(v + "T00:00:00").getTime(), ini = Math.min(...c.planning.map(x => ms(x.de))), fi = Math.max(...c.planning.map(x => ms(x.a))) + 864e5, tot = Math.max(864e5, fi - ini);
+      const avui = Date.now(), pc = v => Math.max(0, Math.min(100, (v - ini) / tot * 100));
+      return <section className="bloc">
+        <h2>{T("Planning")}</h2>
+        <p className="xifres"><span>{T("Del {a} al {b}", { a: dia(c.planning.reduce((m, x) => x.de < m ? x.de : m, c.planning[0].de)), b: dia(c.planning.reduce((m, x) => x.a > m ? x.a : m, c.planning[0].a)) })}</span></p>
+        <ul className="planning-v878632">{c.planning.map((x, i) => <li key={i}>
+          <div className="nom"><b>{x.cap}</b><small>{dia(x.de)} – {dia(x.a)}</small></div>
+          <div className="pista">{avui > ini && avui < fi ? <i className="avui" style={{ left: pc(avui) + "%" }} aria-hidden="true" /> : null}<span className={"barra" + (ms(x.a) + 864e5 <= avui ? " feta" : ms(x.de) <= avui ? " ara" : "")} style={{ left: pc(ms(x.de)) + "%", width: Math.max(1.5, pc(ms(x.a) + 864e5) - pc(ms(x.de))) + "%" }} /></div>
+        </li>)}</ul>
+      </section>;
+    })()}
     {Array.isArray(c.arxius) && c.arxius.some(x => x.t === "foto") && <section className="bloc">
       <h2>{T("Fotos")}</h2>
       <div className="fotos-v878631">{c.arxius.filter(x => x.t === "foto").map((x, i) => <a key={i} href={x.url} target="_blank" rel="noopener noreferrer" title={x.nom}><img src={x.url} alt={x.nom} loading="lazy" /></a>)}</div>

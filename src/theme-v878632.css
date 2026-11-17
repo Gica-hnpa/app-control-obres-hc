@@ -1,0 +1,13 @@
+/* V87.632 · Enllaç per al client: el planning (una barra per capítol i la ratlla d'avui) */
+html body .client-obra-v878629 .planning-v878632{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+html body .client-obra-v878629 .planning-v878632 li{display:grid;grid-template-columns:minmax(120px,32%) minmax(0,1fr);gap:10px;align-items:center}
+html body .client-obra-v878629 .planning-v878632 .nom{display:flex;flex-direction:column;min-width:0}
+html body .client-obra-v878629 .planning-v878632 .nom b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body .client-obra-v878629 .planning-v878632 .nom small{font-size:12.5px;color:#475569}
+html body .client-obra-v878629 .planning-v878632 .pista{position:relative;height:16px;border-radius:999px;background:#F1F5F9}
+html body .client-obra-v878629 .planning-v878632 .barra{position:absolute;top:0;bottom:0;border-radius:999px;background:#93C5FD}
+html body .client-obra-v878629 .planning-v878632 .barra.ara{background:#1D4ED8}
+html body .client-obra-v878629 .planning-v878632 .barra.feta{background:#16A34A}
+html body .client-obra-v878629 .planning-v878632 .avui{position:absolute;top:-3px;bottom:-3px;width:2px;background:#DC2626;z-index:1}
+@media (max-width:560px){html body .client-obra-v878629 .planning-v878632 li{grid-template-columns:1fr;gap:4px}}
+@media print{html body .client-obra-v878629 .planning-v878632 .barra,html body .client-obra-v878629 .planning-v878632 .avui{-webkit-print-color-adjust:exact;print-color-adjust:exact}}

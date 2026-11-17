@@ -4532,3 +4532,7 @@
   `storageSign` a cloudSync.js, `camiArxiu878631` a fileStore.js) i el client els veu a «Fotos» (galeria) i «Documents» (per baixar-los),
   sense compte; si algun encara no és al núvol, es diu («… es posaran quan tornis a publicar»). Els que no es trien no hi són. El Supabase de
   proves té `/object/sign`. Prova: `v631test` 5/5; v629test 25/25 (les dues esperen que la pàgina del client acabi de carregar).
+- **V87.632 · Enllaç per al client: el planning** (la proposta: «Planning: mirar»). A «Enllaç per al client», la casella «Planning» (marcada
+  de sèrie): de cada capítol planificat, quan comença i quan acaba (les mateixes dates que la pestanya Planning: `resolPlans878341`). Al client,
+  «Planning: del … al …» i una barra per capítol (verda si s'ha acabat, blava si és en curs) amb la ratlla vermella d'avui. Una obra sense
+  planning no en mostra cap. Prova: `v632test` 4/4. També: `signatura408test` posada al dia (la pestanya «Visites» ara és «Actes»).

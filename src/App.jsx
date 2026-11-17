@@ -44,7 +44,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.631";
+const APP_VERSION878264="87.632";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -23340,7 +23340,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.631",
+    app_version:"87.632",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -27779,10 +27779,21 @@ function contingutClient878629(o,d,opc={}){
   return {v:1,idioma:docLang878283(o),obra:{nom:String(o?.nom||""),adreca:[o?.adreca,o?.poblacio].filter(Boolean).join(", "),codi:String(codiDoc878589(o)||"")},empresa:{nom:String(nomCompte878424()||"")},imports,certTipus:tipus,
     exec:{pct:total?Math.round(certificat/total*1000)/10:0,certificat:imports==="cap"?undefined:Math.round(certificat*100)/100,pressupost:imports==="cap"?undefined:total},
     arxiusTriats:opc.arxiusOn&&Array.isArray(opc.arxius)?opc.arxius.slice(0,60):[],
+    planning:opc.planning===false?null:planningClient878632(d||{}),
     certs:opc.certsOn===false?null:certs.map(c=>({n:c.numero,data:String(c.data||""),imp:imports==="cap"?undefined:impC(c),per:c.validacio878627?.estat==="validada"?String(c.validacio878627.per||""):undefined,at:c.validacio878627?.estat==="validada"?String(c.validacio878627.at||""):undefined})),
     pres};
 }
-const OPC878629={certsOn:true,certs:"validades",pres:true,imports:"finals",arxiusOn:false,arxius:[]};
+const OPC878629={certsOn:true,certs:"validades",pres:true,imports:"finals",arxiusOn:false,arxius:[],planning:true};
+// V87.632 · el planning per al client: de cada capítol planificat, quan comença i quan acaba (resolPlans878341, com la pestanya Planning)
+function planningClient878632(d){
+  try{
+    const cfg=d?.ganttConfig87217||{},plans=cfg.capPlans||{},pp=cfg.partPlans||{};if(!Object.keys(plans).length)return [];
+    const s=economicSummary878252(d);const parts={};
+    s.caps.forEach(c=>c.rows.forEach((r,i)=>{const x=pp[pidPlan878377(r,i)];if(x&&parseNum8770(x.dur)>0)(parts[c.cap]??=[]).push({off:Math.max(0,Math.round(parseNum8770(x.off)||0)),dur:Math.max(1,Math.round(parseNum8770(x.dur)))})}));
+    const r=resolPlans878341(plans,parts).plans||{};
+    return s.caps.map(c=>{const x=r[c.cap];return x&&x.from&&x.to?{cap:String(c.cap||""),de:isoDate8776(x.from),a:isoDate8776(x.to)}:null}).filter(Boolean).slice(0,60);
+  }catch{return []}
+}
 // V87.631 · les fotos i els documents que es poden triar per al client: les fotos i els croquis (de l'obra, les actes i les notes) i els
 // documents de la pestanya Documents que tenen arxiu
 function arxiusTriables878631(d){
@@ -27835,6 +27846,7 @@ function EnllacClient878629({obra}){
     <label className="chk"><input type="checkbox" checked={opc.certsOn!==false} onChange={e=>setOpc(o=>({...o,certsOn:e.target.checked}))}/> {t("Certificacions")}</label>
     {opc.certsOn!==false&&<select aria-label={t("Quines certificacions")} value={opc.certs} onChange={e=>setOpc(o=>({...o,certs:e.target.value}))}><option value="validades">{t("Les validades")}</option><option value="totes">{t("Totes")}</option></select>}
     <label className="chk"><input type="checkbox" checked={opc.pres!==false} onChange={e=>setOpc(o=>({...o,pres:e.target.checked}))}/> {t("Pressupost")}</label>
+    <label className="chk"><input type="checkbox" checked={opc.planning!==false} onChange={e=>setOpc(o=>({...o,planning:e.target.checked}))}/> {t("Planning")}</label>
     <label className="sel">{t("Imports")} <select value={opc.imports} onChange={e=>setOpc(o=>({...o,imports:e.target.value}))}><option value="finals">{t("Preus finals")}</option><option value="total">{t("Només el total")}</option><option value="cap">{t("Cap import")}</option></select></label>
     <label className="chk"><input type="checkbox" checked={!!opc.arxiusOn} onChange={e=>setOpc(o=>({...o,arxiusOn:e.target.checked}))}/> {t("Fotos i documents")}{opc.arxiusOn?" ("+t("{n} triats",{n:(opc.arxius||[]).length})+")":""}</label>
     {opc.arxiusOn&&<TriaArxius878631 obra={obra} sel={opc.arxius||[]} setSel={v=>setOpc(o=>({...o,arxius:v}))}/>}
