@@ -44,7 +44,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.632";
+const APP_VERSION878264="87.633";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -23340,7 +23340,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.632",
+    app_version:"87.633",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -27732,7 +27732,9 @@ function ShareModal878259({obra,close}){
       // V87.424 · «Pressupost i certificacions»: al núvol, editor; a l'obra, qui només veu aquestes pestanyes i hi fa la seva certificació
       const parts=Object.fromEntries(list.filter(x=>x.perm==="pressupost").map(x=>[String(x.usuari).toLowerCase(),"pressupost"]));
       const cfg626=model==="tot"?undefined:{model,ap:{...ap,fitxa:ap.fitxa==="n"?"l":ap.fitxa}};
-      if(JSON.stringify(parts)!==JSON.stringify(obra.parts878424||{})||JSON.stringify(cfg626||null)!==JSON.stringify(obra.compartir878626||null)){window.__acoPatchObra878424?.(obra.id,{parts878424:parts,compartir878626:cfg626});await new Promise(r=>setTimeout(r,600))}
+      if(JSON.stringify(parts)!==JSON.stringify(obra.parts878424||{})||JSON.stringify(cfg626||null)!==JSON.stringify(obra.compartir878626||null)){window.__acoPatchObra878424?.(obra.id,{parts878424:parts,compartir878626:cfg626});
+        // V87.633 · s'espera que l'obra ja porti la configuració desada (si no, la primera pujada podia sortir sense filtrar)
+        for(let i=0;i<40;i++){const ob=(lsJson8779("aco_obres",[])||[]).find(x=>x?.id===obra.id);if(JSON.stringify(ob?.compartir878626||null)===JSON.stringify(cfg626||null)&&JSON.stringify(ob?.parts878424||{})===JSON.stringify(parts))break;await new Promise(r=>setTimeout(r,100))}}
       if(!list.length)await c.unshareObra(obra.id);
       else await c.shareObra(obra.id,list.filter(x=>x.perm==="consulta").map(x=>x.usuari),list.filter(x=>x.perm!=="consulta").map(x=>x.usuari));
       try{const h=JSON.parse(lsGet8779(SHARE_HIST878617,"[]"))||[];list.forEach(x=>{const v=String(x.usuari).toLowerCase();if(!h.some(y=>y.valor===v))h.push({valor:v,nom:nomDe617(v)})});lsSet8779(SHARE_HIST878617,JSON.stringify(h.slice(-40)))}catch{}
@@ -27760,7 +27762,7 @@ function ShareModal878259({obra,close}){
 // —o només el total, o cap import—, només veu el que es publica amb «Publicar al client», avisar pel Gmail, fins que es tanca l'obra).
 // Una còpia feta aquí amb el que es tria (com va l'obra, les certificacions validades —o totes— i el pressupost) es desa al núvol
 // (supabase/aco_client_v878629.sql) i el client la veu a «…/#obra=<clau>» amb el codi (ClientObra.jsx). Sense l'SQL, la secció no surt.
-// La clau i el codi es recorden a l'obra (`enllac878629`), que no viatja a les obres compartides. Falta: fotos, documents i planning.
+// La clau i el codi són només al núvol (taula aco_client); a l'obra (`enllac878629`) hi ha què es tria, quan s'ha publicat i el hash, i no viatja a les obres compartides. Falta: fotos, documents i planning.
 const URL_PUBLICA878629="https://app-control-obres-hc.onrender.com/";
 function baseEnllac878629(){try{const h=location.hostname;return /^(localhost|127\.|192\.168\.|10\.)/.test(h)?URL_PUBLICA878629:location.origin+location.pathname}catch{return URL_PUBLICA878629}}
 function hashText878629(s){let h=5381;s=String(s||"");for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return String(h>>>0)}
@@ -27837,7 +27839,7 @@ function EnllacClient878629({obra}){
     const k=cont(),ara=new Date().toISOString();const ax=await arxiusClient878631(obra.id,dades(),k.arxiusTriats);await c.clientDesa878629({obra_id:obra.id,token,codi,info:info(),contingut:{...k,arxius:ax.arxius},publicat:ara});
     patch({opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Enllaç creat. Envia’l al client i digues-li el codi per un altre camí.")+(ax.falten?" "+t("{n} arxius encara no són al núvol: es posaran quan tornis a publicar.",{n:ax.falten}):""))});
   const publica=()=>fes(async()=>{const k=cont(),ara=new Date().toISOString();const ax=await arxiusClient878631(obra.id,dades(),k.arxiusTriats);await c.clientPublica878629(obra.id,{contingut:{...k,arxius:ax.arxius},info:info(),publicat:ara});patch({...(obra.enllac878629||{}),opc,publicat:ara,h:hashText878629(JSON.stringify(k))});await llegeix();setMsg(t("Publicat: el client ja ho veu.")+(ax.falten?" "+t("{n} arxius encara no són al núvol: es posaran quan tornis a publicar.",{n:ax.falten}):""))});
-  const treu=()=>{if(!confirm(t("Treure l’enllaç? El client ja no hi podrà entrar (si cal, se’n pot fer un de nou).")))return;fes(async()=>{await c.clientTreu878629(obra.id);patch(undefined);await llegeix();setMsg(t("Enllaç tret."))})};
+  const treu=()=>{if(!confirm(t("Treure l’enllaç? El client ja no hi podrà entrar (si cal, se’n pot fer un de nou). Les fotos i els documents que s’hi havien publicat es poden continuar obrint amb el seu enllaç fins que caduquin (90 dies des de l’última publicació).")))return;fes(async()=>{await c.clientTreu878629(obra.id);patch(undefined);await llegeix();setMsg(t("Enllaç tret."))})};
   const copia=async()=>{try{await navigator.clipboard.writeText(url);setCopiat(true);setTimeout(()=>setCopiat(false),1800)}catch{window.prompt(t("Copia l’enllaç:"),url)}};
   const text=t("Hola! Aquí pots veure com va l’obra «{obra}»: {url}",{obra:obra.nom||"",url});
   const pendent=!!row&&!!obra.enllac878629?.h&&hashText878629(JSON.stringify(cont()))!==obra.enllac878629.h;
@@ -27857,7 +27859,7 @@ function EnllacClient878629({obra}){
       <div className="enllac"><input readOnly value={url} aria-label={t("Enllaç per al client")} onFocus={e=>e.target.select()}/><button type="button" className="secondary" onClick={copia}>{copiat?t("Copiat ✓"):t("Copiar")}</button></div>
       <div className="fila-codi">{qr?<img className="qr" src={qr} alt={t("Codi QR de l’enllaç")}/>:null}<div><span>{t("Codi")}</span><b className="codi">{row.codi}</b>
         <div className="envia"><a className="secondary" href={"https://wa.me/?text="+encodeURIComponent(text)} target="_blank" rel="noopener noreferrer">WhatsApp</a><a className="secondary" href={"https://mail.google.com/mail/?view=cm&fs=1&su="+encodeURIComponent(t("La teva obra: {obra}",{obra:obra.nom||""}))+"&body="+encodeURIComponent(text)} target="_blank" rel="noopener noreferrer">{t("Correu")}</a></div></div></div>
-      <p className="estat">{t("Publicat el {d}",{d:quan(row.publicat)})} · {row.obert?t("Obert per última vegada el {d} ({n} vegades)",{d:quan(row.obert),n:row.obertures||0}):t("Encara no l’ha obert")}{row.intents>=10?" · "+t("Bloquejat per massa codis equivocats"):""}</p>
+      <p className="estat">{t("Publicat el {d}",{d:quan(row.publicat)})} · {row.obert?t("Obert per última vegada el {d} ({n} vegades)",{d:quan(row.obert),n:row.obertures||0}):t("Encara no l’ha obert")}{row.intents>=20?" · "+t("Bloquejat per massa codis equivocats"):""}</p>
       {pendent&&<p className="pend">{t("Hi ha canvis que el client encara no veu.")}</p>}
       {opcions}
       <div className="botons"><button type="button" className="primary" disabled={busy} onClick={publica}>{t("Publicar al client")}</button><button type="button" className="secondary perill" disabled={busy} onClick={treu}>{t("Treure l’enllaç")}</button></div>

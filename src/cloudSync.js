@@ -8,9 +8,9 @@
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
-import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626 } from "./compartir878626.js";
+import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.632";
+const VERSION = "V87.633";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -207,8 +207,9 @@ async function storageDownload(path) {
   if (r.status === 400 || r.status === 404) return null; // encara no s'ha pujat
   const e = new Error(`Error ${r.status}`); e.status = r.status; throw e;
 }
-// V87.631 · enllaç signat d'un arxiu (per a l'enllaç del client): qui tingui l'adreça el pot baixar fins que caduca (de sèrie, un any)
-async function storageSign(path, expiresIn = 31536000) {
+// V87.631 · enllaç signat d'un arxiu (per a l'enllaç del client): qui tingui l'adreça el pot baixar fins que caduca. V87.633 · 90 dies
+// (abans un any): no es poden anul·lar, i cada «Publicar al client» en fa de nous.
+async function storageSign(path, expiresIn = 7776000) {
   const r = await storageFetch(`sign/aco-fitxers/${path}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn }) });
   if (!r.ok) return "";
   let j = null; try { j = await r.json(); } catch {}
@@ -466,6 +467,18 @@ function pendingKeys(local) {
   for (const k in meta.known) if (!(k in local)) out.push(k);
   return out;
 }
+// V87.633 · les dades d'una obra pròpia amb apartats «No» que arriben d'un altre aparell del compte sense aquests apartats (un aparell
+// d'abans de la V87.626 hi ha aplicat la còpia filtrada de l'obra compartida): les parts «No» d'aquí es conserven (i al cicle següent
+// es tornen a pujar). Sense això, es perdien a tots els aparells.
+function protegeixNo878633(id, cur, inc) {
+  if (!cur || !inc || typeof cur !== "object" || typeof inc !== "object" || Array.isArray(cur) || Array.isArray(inc)) return inc;
+  let o = null; try { o = readArr(kObres(), []).find(x => x?.id === id); } catch {}
+  const cfg = o && !o.compartida ? cfgObra878626(o) : null;
+  if (!cfg) return inc;
+  let out = inc;
+  for (const k of Object.keys(cur)) { if (k in inc || permis878626(cfg, apartatDe878626(k)) !== "n") continue; if (out === inc) out = { ...inc }; out[k] = cur[k]; }
+  return out;
+}
 // Aplica files del núvol al navegador. «skip»: claus amb canvis locals que guanyen.
 function applyRows(rows, skip = new Set()) {
   const local = entries(); let n = 0; const patches = {};
@@ -487,7 +500,7 @@ function applyRows(rows, skip = new Set()) {
   }
   for (const base in patches) {
     let o = {}; try { o = JSON.parse(localStorage.getItem(base) || "{}") || {}; } catch {}
-    for (const id in patches[base]) { const v = patches[base][id]; if (v === undefined) delete o[id]; else { try { o[id] = JSON.parse(v); } catch {} } }
+    for (const id in patches[base]) { const v = patches[base][id]; if (v === undefined) delete o[id]; else { try { o[id] = protegeixNo878633(id, o[id], JSON.parse(v)); } catch {} } }
     try { writeRaw(base, JSON.stringify(o)); } catch (e) { console.warn("Núvol: no hi cap", base, e); }
   }
   return n;
@@ -642,7 +655,9 @@ function readArr(k, f) { try { const v = JSON.parse(localStorage.getItem(k) || "
 function stripShareMeta(o) { const { compartida, imatge, enllac878629, ...rest } = o || {}; return rest; }
 function localShare(id) {
   const o = readArr(kObres(), []).find(x => x?.id === id); if (!o) return null;
-  const d = readArr(kOdata(), {})[id];
+  // V87.633 · (la còpia de la fitxa que hi ha dins de les dades també porta l'enllaç del client: fora)
+  const d0 = readArr(kOdata(), {})[id];
+  const d = d0 && typeof d0 === "object" && d0.obra && typeof d0.obra === "object" && d0.obra.enllac878629 ? { ...d0, obra: (({ enllac878629, ...x }) => x)(d0.obra) } : d0;
   const obra = stripShareMeta(o);
   if (!o.compartida) { const c = readArr(`aco_v8782__${ownNs()}__aco_clients`, []).find(x => String(x?.id) === String(o.client)); if (c) {
     obra.clientNomCompartit = c.nom || c.rao || "";
@@ -656,12 +671,37 @@ function localShare(id) {
   const cfg = cfgObra878626(o);
   return { obra: JSON.stringify(obra), dades: JSON.stringify(cfg ? filtraDades878626(d ?? null, cfg) : (d ?? null)), foto: localStorage.getItem(kFoto(id)) || "" };
 }
-// V87.626 · a l'obra pròpia amb permisos per apartats, el que arriba del núvol es compara sense els apartats «No»: si un aparell de l'altre
-// compte (p. ex. amb una versió d'abans) hi torna a posar llistes buides, no es pren com un canvi (i no es tornen l'obra a cada volta).
+// V87.633 · la configuració d'una obra pròpia: la més estricta entre la d'aquest aparell i la que porta la fila del núvol (un altre
+// aparell del compte pot haver-la triat i aquest encara no la té: sense això, aplicava la còpia filtrada sencera i perdia els apartats «No»)
+function cfgPropia878633(local, remotaObra) {
+  let rem = remotaObra; if (typeof rem === "string") { try { rem = JSON.parse(rem || "{}"); } catch { rem = null; } }
+  return mesEstricta878633(local ? cfgObra878626(local) : null, rem ? cfgObra878626(rem) : null);
+}
+// V87.626 / V87.633 · a l'obra pròpia amb permisos per apartats, el que arriba del núvol es compara sense els apartats «No» (les llistes
+// buides d'un aparell d'abans no compten com a canvi) i, si la fitxa no és «Modificar», amb les dates que l'app escriu sola en obrir l'obra
+// (`lastOpenedAt`…) d'aquí: que qui la rep l'obri no fa tornar a pujar l'obra sencera. Qualsevol altre canvi sí que compta (els propis es
+// pugen; els d'un apartat de lectura de qui la rep es desfan tornant a pujar la bona).
+const VOLATILS878633 = ["lastOpenedAt", "lastWorkedAt", "updatedAt"];
+function ambVolatilsDaqui878633(rem, loc) {
+  if (!rem || typeof rem !== "object" || Array.isArray(rem)) return rem;
+  const out = { ...rem };
+  for (const k of VOLATILS878633) if (k in out) { if (loc && typeof loc === "object" && k in loc) out[k] = loc[k]; else delete out[k]; }
+  return out;
+}
 function shFiltre(id, x) {
-  const o = readArr(kObres(), []).find(y => y?.id === id); const cfg = o && !o.compartida ? cfgObra878626(o) : null;
-  if (!cfg || !x) return x;
-  try { return { ...x, dades: JSON.stringify(filtraDades878626(JSON.parse(x.dades || "null"), cfg)) }; } catch { return x; }
+  if (!x) return x;
+  const o = readArr(kObres(), []).find(y => y?.id === id); if (!o || o.compartida) return x;
+  const cfg = cfgPropia878633(o, x.obra);
+  if (!cfg) return x;
+  try {
+    let rd = JSON.parse(x.dades || "null"), obra = x.obra;
+    if (cfg.ap.fitxa !== "m") {
+      rd = ambVolatilsDaqui878633(rd, readArr(kOdata(), {})[id]);
+      let lo2 = null; try { lo2 = JSON.parse(localShare(id)?.obra || "null"); } catch {}
+      obra = JSON.stringify(ambVolatilsDaqui878633(JSON.parse(x.obra || "{}"), lo2));
+    }
+    return { ...x, obra, dades: JSON.stringify(filtraDades878626(rd, cfg)) };
+  } catch { return x; }
 }
 function shHash(x) { return hash((x?.obra || "") + "\u0001" + (x?.dades || "") + "\u0001" + (x?.foto || "")); }
 // V87.266 · contingut d'una obra compartida sense les dates que l'app posa sola en obrir-la
@@ -699,7 +739,8 @@ function applyShared(r, owned, editor) {
   if (!owned) o.compartida = { owner: r.owner, ownerEmail: r.owner_email || "", ownerNom: r.owner_nom || "", ownerUsuari: companyOf(r.owner_email)?.username || r.owner_email || "", perm: editor ? "edicio" : "consulta" };
   const list = readArr(kObres(), []); const prev = list.find(x => x?.id === r.obra_id);
   // V87.626 · a l'obra pròpia amb permisos per apartats, només entren els canvis dels apartats «Modificar» (la resta es queda com era)
-  const cfg = owned && prev ? cfgObra878626(prev) : null;
+  // V87.633 · la més estricta entre la d'aquí i la de la fila (un aparell sense la configuració encara no aplica mai la còpia filtrada sencera)
+  const cfg = owned && prev ? cfgPropia878633(prev, o) : null;
   if (cfg) o = ajuntaObra878626(prev, o, cfg);
   if (owned && prev) { delete o.compartida; delete o.clientNomCompartit; if (prev.enllac878629 && !o.enllac878629) o.enllac878629 = prev.enllac878629; }
   writeRaw(kObres(), JSON.stringify(prev ? list.map(x => x?.id === r.obra_id ? o : x) : [...list, o]));
@@ -750,10 +791,15 @@ async function sharedCycle(canApply) {
   const need = rows.filter(r => !(conegut(r) && localShare(r.obra_id)) && shCache.get(r.obra_id)?.updated_at !== r.updated_at).map(r => r.obra_id);
   for (let i = 0; i < need.length; i += 10) {
     const full = await api(`/rest/v1/aco_shared?select=*&obra_id=in.${pgIn(need.slice(i, i + 10))}`);
-    (full || []).forEach(x => shCache.set(x.obra_id, x));
+    // V87.633 · i si la fila porta triat què es comparteix (es recorda encara que l'app es recarregui i ja no tingui la fila a la memòria)
+    (full || []).forEach(x => { shCache.set(x.obra_id, x); try { (sm.cf ||= {})[x.obra_id] = !!cfgObra878626(JSON.parse(x.obra || "{}")); } catch {} });
   }
   // la que s'ha canviat aquí puja damunt de la del núvol (només si encara hi ha la versió que s'acaba de llegir)
+  // V87.633 · una obra pròpia que en aquest aparell encara no té triat què es comparteix, però la fila del núvol sí (s'ha triat en un altre
+  // aparell i la llista d'obres encara no ha arribat): no es puja res fins que arribi (si no, pujaria l'obra sencera, sense filtrar)
+  const esperaCfg = (id, filaObra) => { const lo = readArr(kObres(), []).find(x => x?.id === id); if (!lo || lo.compartida || cfgObra878626(lo)) return false; if (filaObra == null) return !!sm.cf?.[id]; let ro = null; try { ro = JSON.parse(filaObra || "{}"); } catch {} return !!cfgObra878626(ro); };
   const pujaMeva = async (r, loc, lh) => {
+    if (esperaCfg(r.obra_id, shCache.get(r.obra_id)?.obra ?? r.obra)) return;
     const res = await api(`/rest/v1/aco_shared?obra_id=eq.${encodeURIComponent(r.obra_id)}&updated_at=eq.${encodeURIComponent(r.updated_at)}&select=obra_id,updated_at`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: { ...loc, updated_by: email } });
     if (Array.isArray(res) && res.length) { knowSh(r.obra_id, loc, lh, res[0].updated_at); if (shCache.has(r.obra_id)) shCache.set(r.obra_id, { ...shCache.get(r.obra_id), ...loc, updated_at: res[0].updated_at }); }
     else again = true;
@@ -762,6 +808,7 @@ async function sharedCycle(canApply) {
   const pujaAjuntada = async (r, owned, editor, remote, rh, v) => {
     applyShared({ ...r, obra: v.obra, dades: v.dades, foto: v.foto }, owned, editor);
     knowSh(r.obra_id, remote, rh, r.updated_at);
+    if (owned && esperaCfg(r.obra_id, r.obra)) return;
     const res = await api(`/rest/v1/aco_shared?obra_id=eq.${encodeURIComponent(r.obra_id)}&updated_at=eq.${encodeURIComponent(r.updated_at)}&select=obra_id,updated_at`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: { ...v, updated_by: email } });
     if (Array.isArray(res) && res.length) knowSh(r.obra_id, v, shHash(v), res[0].updated_at); else again = true;
   };
@@ -781,8 +828,12 @@ async function sharedCycle(canApply) {
       if (conegut(r0) && loc && lh !== known && editor) await pujaMeva(r0, loc, lh);
       continue;
     }
-    const remote = owned ? shFiltre(r.obra_id, { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" }) : { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" }, rh = shHash(remote);
-    if (lh === rh) { knowSh(r.obra_id, remote, rh, r.updated_at); continue; }
+    const remoteRaw = { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" };
+    const remote = owned ? shFiltre(r.obra_id, remoteRaw) : remoteRaw, rh = shHash(remote);
+    // V87.633 · a la fila d'una obra pròpia amb apartats «No» hi ha contingut d'aquests apartats (l'ha pujada un aparell d'abans de la
+    // V87.626): es torna a pujar la bona tot seguit, perquè qui la rep no ho vegi
+    const fuita = owned && !!loc && (() => { try { const lo = readArr(kObres(), []).find(x => x?.id === r.obra_id); return teApartatsNo878633(JSON.parse(remoteRaw.dades || "null"), cfgPropia878633(lo, remoteRaw.obra)); } catch { return false; } })();
+    if (lh === rh) { knowSh(r.obra_id, remote, rh, r.updated_at); if (fuita) await pujaMeva(r, loc, lh); continue; }
     if (!(r.obra_id in sm.kc)) { if (loc && lh === known) sm.kc[r.obra_id] = shContent(loc); else if (rh === known) sm.kc[r.obra_id] = shContent(remote); }
     let remoteChanged = rh !== known;
     let localChanged = !!loc && lh !== known;
@@ -868,7 +919,8 @@ async function unshareObra(obraId) {
 }
 // ---------- V87.629 · l'enllaç per al client (taula aco_client, supabase/aco_client_v878629.sql) ----------
 let clientTaulaFalta = false;
-const clientFalta = e => e && (e.status === 404 || /aco_client|PGRST20[25]|42P01/.test(String(e.message || "")));
+// (només quan la taula o la funció no existeixen: no qualsevol error que digui «aco_client»)
+const clientFalta = e => !!e && (e.status === 404 || /PGRST20[25]|42P01|Could not find the (table|function)/.test(String(e.message || "")));
 async function clientEnllac878629(obraId) {
   if (!session || clientTaulaFalta) return { falta: true };
   try { const r = await api(`/rest/v1/aco_client?select=token,codi,obra_id,publicat,obert,obertures,intents,info&obra_id=eq.${encodeURIComponent(obraId)}&owner=eq.${session.user_id}`); return Array.isArray(r) && r[0] ? r[0] : null; }
@@ -883,7 +935,8 @@ async function clientPublica878629(obraId, canvis) {
   return api(`/rest/v1/aco_client?obra_id=eq.${encodeURIComponent(obraId)}&owner=eq.${session.user_id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: canvis });
 }
 async function clientTreu878629(obraId) {
-  if (!session || clientTaulaFalta) return;
+  if (clientTaulaFalta) return;
+  if (!session) throw new Error(t("Cal estar connectat al núvol.")); // (sense sessió, no es dona per tret: es torna a provar)
   try { await api(`/rest/v1/aco_client?obra_id=eq.${encodeURIComponent(obraId)}&owner=eq.${session.user_id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } }); }
   catch (e) { if (clientFalta(e)) { clientTaulaFalta = true; return; } throw e; }
 }

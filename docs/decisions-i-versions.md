@@ -4535,4 +4535,26 @@
 - **V87.632 · Enllaç per al client: el planning** (la proposta: «Planning: mirar»). A «Enllaç per al client», la casella «Planning» (marcada
   de sèrie): de cada capítol planificat, quan comença i quan acaba (les mateixes dates que la pestanya Planning: `resolPlans878341`). Al client,
   «Planning: del … al …» i una barra per capítol (verda si s'ha acabat, blava si és en curs) amb la ratlla vermella d'avui. Una obra sense
-  planning no en mostra cap. Prova: `v632test` 4/4. També: `signatura408test` posada al dia (la pestanya «Visites» ara és «Actes»).
+  planning no en mostra cap. Prova: `v632test` 4/4. `signatura408test` posada al dia («Actes» en lloc de «Visites» i el botó «Nova acta»): 28/28.
+- **V87.633 · Compartir per apartats: arranjaments de la revisió del 17/11** (revisió independent dels canvis de les V87.626–632 abans
+  que l'Héctor ho fes servir; encara no hi havia cap obra real amb «Què veuen»).
+  - **Greu (arreglat): es podien perdre dades entre els aparells del mateix compte.** Un aparell que encara no tenia la configuració (s'havia
+    triat en un altre aparell i la llista d'obres no havia arribat) o una versió d'abans de la V87.626 aplicava la fila filtrada sencera, perdia
+    els apartats «No» i després els esborrava del núvol del compte. Ara: la configuració és la més estricta entre la de l'aparell i la que porta
+    la fila (`cfgPropia878633`, `mesEstricta878633`); en ajuntar, mai s'esborra una part que no arriba; un aparell sense la configuració no puja
+    l'obra fins que la té (`esperaCfg`, i `sm.cf` recorda si la fila en porta encara que l'app es recarregui); si un aparell vell puja les dades
+    sense els apartats «No», els altres les conserven i les tornen a pujar (`protegeixNo878633` a `applyRows`); si en puja la fila compartida
+    sencera, el propietari la torna a pujar filtrada tot seguit (`teApartatsNo878633`).
+  - Menys trànsit: en comparar el que arriba (`shFiltre`), si la fitxa no és «Modificar», les dates que l'app escriu sola en obrir l'obra
+    (`lastOpenedAt`, `lastWorkedAt`, `updatedAt`) es prenen d'aquí: que qui la rep l'obri ja no fa tornar a pujar l'obra sencera. (Un primer
+    intent comparava amb les dades d'aquí barrejades i amagava els canvis propis: l'enviament per validar no arribava. Les proves 626 i 627 ho
+    van trobar i es va desfer.) Els canvis de qui la rep en un apartat de lectura es continuen desfent.
+  - Privacitat: el descompte (`dtePres878580`), els assistents de les actes, la certificació del Martí i les còpies de recuperació ja són d'un
+    apartat; les parts sense apartat només entren si la fitxa és «Modificar»; amb el pressupost de lectura o de validar, les partides van sense
+    descompostos ni costos (`descompost*`, `cost*`) ni els marges ni els preus de venda.
+  - Enllaç del client: el bloqueig és després de 20 codis equivocats en total (no es torna a comptar de zero en encertar); `grant` a
+    `service_role`; els enllaços de les fotos i els documents duren 90 dies (abans un any) i «Treure l'enllaç» ho diu; treure'l sense sessió ja
+    no es dona per fet; la còpia de la fitxa dins de les dades ja no porta `enllac878629`; en desar «Compartir», s'espera que la configuració
+    sigui a l'obra abans de pujar-la.
+  - Proves: `compartir633unit` 11/11 (sense navegador) i `v633test` 10/10 (un aparell sense la configuració, un aparell vell que puja les dades
+    o la fila sencera, i qui la rep l'obre); el Supabase de proves té `/__sharedset`, `/__kvset` i `/__kv`.

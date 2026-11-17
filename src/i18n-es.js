@@ -6208,7 +6208,7 @@ export default {
   "Enllaç per al client": "Enlace para el cliente",
   "Enllaç creat. Envia’l al client i digues-li el codi per un altre camí.": "Enlace creado. Envíaselo al cliente y dile el código por otra vía.",
   "Publicat: el client ja ho veu.": "Publicado: el cliente ya lo ve.",
-  "Treure l’enllaç? El client ja no hi podrà entrar (si cal, se’n pot fer un de nou).": "¿Quitar el enlace? El cliente ya no podrá entrar (si hace falta, se puede crear uno nuevo).",
+  "Treure l’enllaç? El client ja no hi podrà entrar (si cal, se’n pot fer un de nou). Les fotos i els documents que s’hi havien publicat es poden continuar obrint amb el seu enllaç fins que caduquin (90 dies des de l’última publicació).": "¿Quitar el enlace? El cliente ya no podrá entrar (si hace falta, se puede crear uno nuevo). Las fotos y los documentos que se habían publicado se pueden seguir abriendo con su enlace hasta que caduquen (90 días desde la última publicación).",
   "Enllaç tret.": "Enlace quitado.",
   "Hola! Aquí pots veure com va l’obra «{obra}»: {url}": "¡Hola! Aquí puedes ver cómo va la obra «{obra}»: {url}",
   "Quines certificacions": "Qué certificaciones",
