@@ -8,8 +8,9 @@
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
 import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
+import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626 } from "./compartir878626.js";
 
-const VERSION = "V87.625";
+const VERSION = "V87.626";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -641,7 +642,17 @@ function localShare(id) {
     const adr = [net(c.carrer) || net(c.adreca), [net(c.codiPostal), net(c.poblacio)].filter(Boolean).join(" ")].filter(Boolean).join(", ");
     obra.clientCompartit878623 = { nom: net(c.nom) || net(c.rao), rao: net(c.rao), nif: net(c.nif), adreca: adr, email: net(c.email), telefon: net(c.telefon) || net(c.mobil) };
   } }
-  return { obra: JSON.stringify(obra), dades: JSON.stringify(d ?? null), foto: localStorage.getItem(kFoto(id)) || "" };
+  // V87.626 · si l'obra té triat què es comparteix, les parts dels apartats «No» no surten del compte. També a qui la rep: la seva app hi
+  // posa llistes buides (actes, factures…) i, si les pugés, els dos comptes es tornarien l'obra l'un a l'altre a cada volta.
+  const cfg = cfgObra878626(o);
+  return { obra: JSON.stringify(obra), dades: JSON.stringify(cfg ? filtraDades878626(d ?? null, cfg) : (d ?? null)), foto: localStorage.getItem(kFoto(id)) || "" };
+}
+// V87.626 · a l'obra pròpia amb permisos per apartats, el que arriba del núvol es compara sense els apartats «No»: si un aparell de l'altre
+// compte (p. ex. amb una versió d'abans) hi torna a posar llistes buides, no es pren com un canvi (i no es tornen l'obra a cada volta).
+function shFiltre(id, x) {
+  const o = readArr(kObres(), []).find(y => y?.id === id); const cfg = o && !o.compartida ? cfgObra878626(o) : null;
+  if (!cfg || !x) return x;
+  try { return { ...x, dades: JSON.stringify(filtraDades878626(JSON.parse(x.dades || "null"), cfg)) }; } catch { return x; }
 }
 function shHash(x) { return hash((x?.obra || "") + "\u0001" + (x?.dades || "") + "\u0001" + (x?.foto || "")); }
 // V87.266 · contingut d'una obra compartida sense les dates que l'app posa sola en obrir-la
@@ -678,9 +689,13 @@ function applyShared(r, owned, editor) {
   let o = {}; try { o = JSON.parse(r.obra || "{}") || {}; } catch {}
   if (!owned) o.compartida = { owner: r.owner, ownerEmail: r.owner_email || "", ownerNom: r.owner_nom || "", ownerUsuari: companyOf(r.owner_email)?.username || r.owner_email || "", perm: editor ? "edicio" : "consulta" };
   const list = readArr(kObres(), []); const prev = list.find(x => x?.id === r.obra_id);
+  // V87.626 · a l'obra pròpia amb permisos per apartats, només entren els canvis dels apartats «Modificar» (la resta es queda com era)
+  const cfg = owned && prev ? cfgObra878626(prev) : null;
+  if (cfg) o = ajuntaObra878626(prev, o, cfg);
   if (owned && prev) { delete o.compartida; delete o.clientNomCompartit; }
   writeRaw(kObres(), JSON.stringify(prev ? list.map(x => x?.id === r.obra_id ? o : x) : [...list, o]));
   const od = readArr(kOdata(), {}); let d = null; try { d = JSON.parse(r.dades || "null"); } catch {}
+  if (cfg) d = ajuntaDades878626(od[r.obra_id], d, cfg);
   if (d == null) delete od[r.obra_id]; else od[r.obra_id] = d;
   writeRaw(kOdata(), JSON.stringify(od));
   if (r.foto) writeRaw(kFoto(r.obra_id), r.foto); else removeRaw(kFoto(r.obra_id));
@@ -757,7 +772,7 @@ async function sharedCycle(canApply) {
       if (conegut(r0) && loc && lh !== known && editor) await pujaMeva(r0, loc, lh);
       continue;
     }
-    const remote = { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" }, rh = shHash(remote);
+    const remote = owned ? shFiltre(r.obra_id, { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" }) : { obra: r.obra || "", dades: r.dades || "", foto: r.foto || "" }, rh = shHash(remote);
     if (lh === rh) { knowSh(r.obra_id, remote, rh, r.updated_at); continue; }
     if (!(r.obra_id in sm.kc)) { if (loc && lh === known) sm.kc[r.obra_id] = shContent(loc); else if (rh === known) sm.kc[r.obra_id] = shContent(remote); }
     let remoteChanged = rh !== known;

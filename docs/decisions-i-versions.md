@@ -4473,3 +4473,19 @@
   (sense contrasenyes ni instal·lació; es pot provar amb una carpeta seva d'un clic); el programa del despatx (opció A) es pot fer després
   amb les mateixes regles si cal que funcioni sense l'app oberta. Falta: obres compartides per altres, fotos de les actes i PDF generats
   (pressupostos, actes…). IndexedDB `aco_carpeta_despatx`. Prova: `v625test` 17/17 (carpeta del navegador OPFS).
+- **V87.626 · Compartir triant què veuen i què poden fer (fase 1)** (proposta del 16/11/2026; respostes de l'Héctor del 17/11: per ordre
+  1→2→3, permisos «No · Lectura · Modificar»). La finestra «Compartir» de l'obra té «Què veuen»: models d'un toc («Tot, com ara» · «Equip de
+  l'obra» · «Tècnic que valida» · «Només mirar») i, a sota, cada apartat (Fitxa i contactes, Documents i plànols, Fotos, Dia a dia, Planning,
+  Pressupost, Certificacions, Facturació i honoraris, Hores/despeses/rendiment) amb No · Lectura · Modificar; si es toca un apartat, «A mida».
+  Per a cada persona, «Pot modificar» o «Només lectura» (abans «Pot editar» / «Només consulta»; continua «Pressupost i certificacions» de la
+  V87.424). Es desa a l'obra (`compartir878626`, viatja amb ella). `src/compartir878626.js`: quines parts de les dades són de cada apartat.
+  Al núvol (cloudSync › localShare) no hi van els apartats «No»; amb el pressupost de lectura, sense el preu d'abans de la comissió
+  (`puOrig878346`). En arribar canvis (applyShared), a l'obra pròpia només entren els dels apartats «Modificar»; la resta es queda i al cicle
+  següent es torna a pujar la bona. Qui la rep: sense les pestanyes dels apartats «No»; a les de «Lectura», l'avís «Només lectura: el que hi
+  canviïs no arribarà a …»; el pressupost de lectura amb la vista de consulta (sense «+ Nova fase» ni «Opcions») i les certificacions de
+  lectura sense editar. Qui la rep també puja només el que pot veure, i el propietari compara el que arriba sense els apartats «No» (si no,
+  la seva app hi posava llistes buides i els dos comptes es tornaven l'obra a cada volta). **Les compartides d'abans no canvien** («Tot, com
+  ara») fins que l'Héctor hi triï un altre model; una de nova comença amb «Equip de l'obra». Sense SQL nou: una sola fila per obra, o sigui,
+  «què veuen» és el mateix per a tothom amb qui es comparteix aquella obra (la còpia a part per a cada persona, amb la taula nova). Prova:
+  `v626test` (dos comptes: fila del núvol sense els apartats «No», pestanyes, lectura, un canvi a Certificacions arriba i un a Documents no,
+  la fila deixa de canviar amb tots dos oberts, «Tot, com ara» torna a pujar-ho tot, mòbil) 22/22; v424, v614, v620b, v623, alhoratest (43/43) i fusiotest (22/22), bé. El Supabase de proves té `GET /__shared`.
