@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.637";
+const VERSION = "V87.638";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -22,7 +22,9 @@ const SPLIT = /__aco_odata$/;
 const USER_DOMAIN = "usuaris.controlobres.app";
 function toEmail(v) { v = String(v || "").trim(); return v.includes("@") ? v.toLowerCase() : `${v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9._-]/g, "")}@${USER_DOMAIN}`; }
 function companyOf(email) { const e = String(email || "").toLowerCase(); if (!e.endsWith("@" + USER_DOMAIN)) return null; const u = e.split("@")[0]; return { username: u, internal: "emp_" + u.replace(/[^a-z0-9]/g, "") }; }
-function inScope(k) { const c = companyOf(session?.email); if (c) return k.startsWith(`aco_v8782__${c.internal}__`); return !/(^|__)emp_/.test(k.replace(/^aco_v8782__/, "")); }
+// V87.638 · el que es desa «sense usuari» (`__nouser__`) no és de ningú: no es puja ni es baixa (la configuració del compte de l'Oriol
+// es va desar així, va anar al compte de l'Héctor i a la barra hi sortia «Usuari: Perspectiva»)
+function inScope(k) { if (String(k).includes("__nouser__")) return false; const c = companyOf(session?.email); if (c) return k.startsWith(`aco_v8782__${c.internal}__`); return !/(^|__)emp_/.test(k.replace(/^aco_v8782__/, "")); }
 function metaKey() { return `nuvol-aco-estat__${session?.user_id || ""}`; }
 function applyCompanyContext() {
   const c = companyOf(session?.email);

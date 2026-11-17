@@ -45,7 +45,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.637";
+const APP_VERSION878264="87.638";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3740,7 +3740,7 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
   const rec=await despatxRec878625(user);if(!rec?.dir)return {error:"carpeta"};
   let perm="granted";try{perm=await rec.dir.queryPermission?.({mode:"readwrite"})||"granted"}catch{}
   if(perm!=="granted"&&demana){try{perm=await rec.dir.requestPermission({mode:"readwrite"})}catch{}}
-  if(perm!=="granted"){if(!window.__acoDespatxPendent878625){window.__acoDespatxPendent878625=true;avisaDespatx878625()}return {error:"permis"}}
+  if(perm!=="granted"){if(!window.__acoDespatxPendent878625){window.__acoDespatxPendent878625=true;avisaDespatx878625()}return {error:demana&&perm==="denied"?"edicio-bloquejada":"permis"}}
   if(window.__acoDespatxPendent878625){window.__acoDespatxPendent878625=false;avisaDespatx878625()}
   const {obres=[],odata={},setOdata}=st||{};
   if(typeof setOdata!=="function"||((obres||[]).length&&!Object.keys(odata||{}).length))return {error:"dades"};
@@ -3898,16 +3898,24 @@ async function fesDespatx878625(st,{demana=false,manual=false,tots=false}={}){
   }catch(e){if(fatal(e)){window.__acoDespatxPendent878625=true;avisaDespatx878625();return {error:"permis"}}return {error:"escriure",msg:String(e?.message||e)}}
   finally{despatxAra878625=false;window.__acoDespatxProg878634=null;try{window.dispatchEvent(new Event("aco-despatx-prog-878634"))}catch{}}
 }
-async function triaDespatx878625(st){
+async function triaDespatx878625(st,{llegir=false}={}){
   const user=currentAppUser8779();if(!user)return {error:"usuari"};
   // V87.634 · (l'Héctor, 17/11/2026: «trio carpeta… i no em surt res»): si el navegador no deixa fer servir la carpeta (la de l'usuari,
   // l'arrel d'un disc, una del sistema) o no dona permís, ara es diu; només si es cancel·la no es diu res
-  let dir;try{dir=await (window.__acoTriaDespatx878625?window.__acoTriaDespatx878625():window.showDirectoryPicker({mode:"readwrite",id:"aco-despatx"}))}
+  // V87.638 · «Provar-ho d'una altra manera» (`llegir`): es tria només per llegir i després es mira si el navegador deixa editar-hi arxius; si
+  // l'edició d'arxius està bloquejada per a la web (el navegador respon «cancel·lat» sense preguntar res), ara es diu i com treure-ho
+  const t0=Date.now();let dir;try{dir=await (window.__acoTriaDespatx878625?window.__acoTriaDespatx878625(llegir?"read":"readwrite"):window.showDirectoryPicker({mode:llegir?"read":"readwrite",id:"aco-despatx"}))}
   // V87.636 · (l'Héctor, 17/11/2026: «trio D:\00_CUBERO\FEINA i no surt res»): el navegador també diu «cancel·lat» (AbortError) quan, després
   // de triar-la, no s'accepta la pregunta d'editar els arxius o quan la carpeta no es pot fer servir: ara també es diu què cal fer.
-  catch(e){const n=String(e?.name||"");return n==="AbortError"?{error:"cancel"}:n==="NotAllowedError"?{error:"permis"}:{error:"carpeta-no",msg:String(e?.message||e||"")}}
+  // V87.638 · amb què ha respost el navegador i quant ha trigat (per saber si s'ha arribat a triar la carpeta)
+  catch(e){const n=String(e?.name||"");return n==="AbortError"?{error:"cancel",det:`${n} · ${((Date.now()-t0)/1000).toFixed(1).replace(".",",")} s${llegir?" · "+t("només llegir"):""}`}:n==="NotAllowedError"?{error:"permis"}:{error:"carpeta-no",msg:String(e?.message||e||"")}}
   if(!dir)return {error:"cancel"};
+  let q="granted";
+  if(llegir){q="prompt";try{q=await dir.queryPermission({mode:"readwrite"})}catch{}
+    if(q==="prompt"){try{q=await dir.requestPermission({mode:"readwrite"})}catch{q="prompt"}}
+    if(q==="denied")return {error:"edicio-bloquejada"}}
   try{await desaDespatxRec878625(user,{dir,nom:dir.name||"",fets:{},obres:{},canvis:[],ultima:""})}catch(e){return {error:"escriure",msg:String(e?.message||e||"")}}
+  if(q!=="granted")return {error:"permis-falta"};
   return sincronitzaDespatx878625(st,{demana:true,manual:true});
 }
 function useDespatx878625(){const llegeix=()=>({permis:!!window.__acoDespatxPendent878625,nous:+window.__acoDespatxNous878625||0});const[s,setS]=useState(llegeix);useEffect(()=>{const f=()=>setS(llegeix());window.addEventListener("aco-despatx-878625",f);return()=>window.removeEventListener("aco-despatx-878625",f)},[]);return s}
@@ -3925,7 +3933,7 @@ function DespatxAuto878625({obres,odata,setOdata}){
 const horaDespatx878625=v=>{if(!v)return "";const d=new Date(v);return fmtAppDate8748(isoDay878255(d))+" · "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 function CarpetaDespatx878625({obres,odata,setOdata}){
   const user=currentAppUser8779();
-  const[rec,setRec]=useState(undefined);const[msg,setMsg]=useState("");const[fent,setFent]=useState(false);
+  const[rec,setRec]=useState(undefined);const[msg,setMsg]=useState("");const[fent,setFent]=useState(false);const[err638,setErr638]=useState("");
   const llegeix=()=>despatxRec878625(user).then(r=>setRec(r||null)).catch(()=>setRec(null));
   useEffect(()=>{llegeix();window.addEventListener("aco-despatx-878625",llegeix);return()=>window.removeEventListener("aco-despatx-878625",llegeix)},[]);
   // V87.634 · mentre sincronitza (la primera vegada pot trigar, amb totes les obres): per quina obra va i quants arxius ha passat
@@ -3939,9 +3947,9 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
       if(r.grans?.length)x+=" "+t("No s’han afegit a l’app perquè fan més de 50 MB: {l}.",{l:r.grans.slice(0,3).map(g=>g.split("/").pop()).join(", ")+(r.grans.length>3?"…":"")});
       if(r.errors)x+=" "+t("{n} arxius no s’han pogut passar: es tornarà a provar.",{n:r.errors});
       return x}
-    return r?.error==="carpeta-no"?t("El navegador no deixa fer servir aquesta carpeta. Tria’n una altra: per exemple, una carpeta nova dins de D:, no la del teu usuari ni l’arrel d’un disc.")+(r.msg?" ("+r.msg+")":""):r?.error==="cancel"?t("No s’ha triat cap carpeta. Després de triar-la, el navegador pregunta a dalt, al costat de l’adreça, si l’app pot editar els arxius: cal dir que sí. Si diu que aquella carpeta no es pot fer servir, tria’n una de nova dins de D:."):r?.error==="permis"?t("El navegador no ha donat permís per fer servir la carpeta."):r?.error==="escriure"?t("No s’ha pogut fer servir la carpeta: {m}",{m:r.msg||""}):r?.error==="ja"?t("Ja s’està sincronitzant."):r?.error==="dades"?t("Les obres encara s’estan carregant. Torna-ho a provar d’aquí a un moment."):r?.error==="usuari"||r?.error==="carpeta"?t("No s’ha pogut desar la carpeta. Torna a obrir l’app i torna-ho a provar."):""};
+    return r?.error==="carpeta-no"?t("El navegador no deixa fer servir aquesta carpeta. Tria’n una altra: per exemple, una carpeta nova dins de D:, no la del teu usuari ni l’arrel d’un disc.")+(r.msg?" ("+r.msg+")":""):r?.error==="cancel"?t("No s’ha pogut triar la carpeta. Si el navegador no t’ha preguntat res, toca «Provar-ho d’una altra manera»: l’app et dirà què passa.")+(r.det?" ("+r.det+")":""):r?.error==="edicio-bloquejada"?t("El navegador no deixa que aquesta web editi arxius. Per canviar-ho: a dalt de tot, a l’esquerra de l’adreça de l’app, hi ha un dibuixet (un cadenat o dues ratlletes). Clica’l › «Permisos para este sitio» o «Configuración del sitio» › «Edición de archivos» › «Permitir». Després recarrega l’app i torna a triar la carpeta."):r?.error==="permis-falta"?t("Carpeta triada. Ara toca «Sincronitzar ara» i, quan el navegador pregunti si pot editar els arxius, digues que sí."):r?.error==="permis"?t("El navegador no ha donat permís per fer servir la carpeta."):r?.error==="escriure"?t("No s’ha pogut fer servir la carpeta: {m}",{m:r.msg||""}):r?.error==="ja"?t("Ja s’està sincronitzant."):r?.error==="dades"?t("Les obres encara s’estan carregant. Torna-ho a provar d’aquí a un moment."):r?.error==="usuari"||r?.error==="carpeta"?t("No s’ha pogut desar la carpeta. Torna a obrir l’app i torna-ho a provar."):""};
   // V87.636 · si alguna cosa falla pel camí, es diu (abans no sortia res)
-  const fes=async f=>{setFent(true);setMsg("");try{setMsg(diu(await f()))}catch(e){setMsg(t("No s’ha pogut fer servir la carpeta: {m}",{m:String(e?.message||e||"")}))}finally{setFent(false);llegeix()}};
+  const fes=async f=>{setFent(true);setMsg("");setErr638("");try{const r=await f();setErr638(r?.error||"");setMsg(diu(r))}catch(e){setMsg(t("No s’ha pogut fer servir la carpeta: {m}",{m:String(e?.message||e||"")}))}finally{setFent(false);llegeix()}};
   if(rec===undefined)return null;
   return <div className="copia-v878520 despatx-v878625">
     {rec?.dir?<div className="estat"><FolderSync size={20} aria-hidden="true"/><span><b>{rec.nom||t("Carpeta triada")}</b><small>{rec.ultima?t("Última sincronització: {d}",{d:horaDespatx878625(rec.ultima)}):t("Encara no s’ha sincronitzat")}</small></span></div>:null}
@@ -3952,6 +3960,7 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
       {rec?.dir?<button type="button" className="secondary" disabled={fent} onClick={async()=>{if(!confirm(t("Deixar de sincronitzar amb aquesta carpeta? No s’esborra res, ni de la carpeta ni de l’app.")))return;await desaDespatxRec878625(user,null);window.__acoDespatxNous878625=0;window.__acoDespatxPendent878625=false;avisaDespatx878625();setMsg("")}}>{t("Deixar de fer-ho")}</button>:null}
     </div>
     {prog?<p className="msg prog-v878634" role="status">{prog.fase==="llegint"?t("Mirant la carpeta: obra {i} de {n}…",{i:prog.i,n:prog.n}):t("Sincronitzant: obra {i} de {n} · {a} arxius a la carpeta i {b} a l’app",{i:prog.i,n:prog.n,a:prog.a,b:prog.b})}</p>:msg&&<p className="msg" role="status">{msg}</p>}
+    {!prog&&!fent&&err638==="cancel"?<div className="botons"><button type="button" className="secondary altra-v878638" onClick={()=>fes(()=>triaDespatx878625(st,{llegir:true}))}>{t("Provar-ho d’una altra manera")}</button></div>:null}
     {rec?.dir&&rec.canvis?.length>0?<details className="canvis-v878625"><summary>{t("Últims canvis")} <span className="xifra">{rec.canvis.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><ul>{rec.canvis.map((c,i)=><li key={i}><b>{c.n}</b><small>{c.d==="app"?t("De la carpeta a l’app"):c.d==="act"?t("Canviat a la carpeta"):t("De l’app a la carpeta")} · {c.o} · {horaDespatx878625(c.at)}</small></li>)}</ul></details>:null}
   </div>;
 }
@@ -5498,6 +5507,8 @@ const reentry878257=useRef((()=>{try{const u=sessionStorage.getItem("aco-reentra
 // que ja no existeix (p. ex. «pol») no es recupera.
 const[authUser8779,setAuthUser8779]=useState(()=>{const u=reentry878257.current;if(u&&(u.startsWith("emp_")||getAppAccount878233(u)))return u;return autoEntryUser878260()});
 const[empresa878259,setEmpresa878259]=useState(()=>{try{return empresaInfo878259()}catch{return null}});
+// V87.638 · i es torna a llegir quan canvia qui ha entrat
+useEffect(()=>{try{setEmpresa878259(empresaInfo878259())}catch{}},[authUser8779]);
 const navBack878257=useRef((()=>{try{return reentry878257.current?JSON.parse(sessionStorage.getItem("aco-on-era")||"null"):null}catch{return null}})());
 const[dataLoadedUser8781,setDataLoadedUser8781]=useState("");
 const authOk8778=!!authUser8779;
@@ -23384,7 +23395,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.637",
+    app_version:"87.638",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -26379,7 +26390,10 @@ function CloudPanel878257(){
 // =====================================================================
 // V87.259 · Comptes d'empresa (constructors i tècnics): benvinguda i perfil
 // =====================================================================
-function empresaInfo878259(){return lsJson8779("aco_empresa_v878259",null)}
+// V87.638 · sense usuari, cap empresa (l'Héctor, 17/11/2026: «per què surt "Usuari: Perspectiva"?»: la primera configuració del compte de l'Oriol
+// es va desar a «nouser» abans de saber qui era, el núvol la va pujar al compte de l'Héctor i la barra la llegia en obrir l'app)
+function empresaInfo878259(){if(!currentAppUser8779())return null;return lsJson8779("aco_empresa_v878259",null)}
+try{localStorage.removeItem("aco_v8782__nouser__aco_empresa_v878259")}catch{}
 // V87.328 · omple un compte de prova amb les dades d'exemple del seu perfil (obres amb codi i plantilla, clients, cites, tasques,
 // notes, pressupostos i certificacions, honoraris, hores i despeses)
 const NOMS_DEMO878328={tecnic:"Despatx Tècnic Prova",constructor:"Construccions Prova",complet:"Gestió Integral Prova",treballador:"Pere Prova · Construccions Prova"};
@@ -26480,9 +26494,11 @@ function EmpresaSetup878259({onDone}){
   function save(){
     if(!f.nom.trim()){alert(t("Posa el nom de l’empresa o del despatx."));return}
     const {exemple,...info}=f;
-    lsSet8779("aco_empresa_v878259",JSON.stringify({...info,nom:f.nom.trim(),fiscal:f.fiscal.trim(),createdAt:new Date().toISOString()}));
+    // V87.638 · sempre a l'espai de l'empresa (abans, si encara no se sabia l'usuari, anava a «nouser»)
+    const u638=window.__acoEmpresa?.internal||currentAppUser8779();if(!u638){alert(t("Encara s’està connectant. Torna-ho a provar d’aquí a un moment."));return}
+    lsSet8779("aco_empresa_v878259",JSON.stringify({...info,nom:f.nom.trim(),fiscal:f.fiscal.trim(),createdAt:new Date().toISOString()}),u638);
     // les dades d'exemple s'omplen en tornar a obrir l'app, abans que l'app llegeixi res (si s'omplissin ara, l'app les podria trepitjar)
-    if(exemple){setOmplint(true);lsSet8779("aco_empresa_v878259",JSON.stringify({...info,nom:f.nom.trim(),fiscal:f.fiscal.trim(),exemplePendent:true,createdAt:new Date().toISOString()}));(async()=>{try{await window.__acoStore?.flush?.()}catch{};setTimeout(()=>location.reload(),300)})();return}
+    if(exemple){setOmplint(true);lsSet8779("aco_empresa_v878259",JSON.stringify({...info,nom:f.nom.trim(),fiscal:f.fiscal.trim(),exemplePendent:true,createdAt:new Date().toISOString()}),u638);(async()=>{try{await window.__acoStore?.flush?.()}catch{};setTimeout(()=>location.reload(),300)})();return}
     onDone?.();
   }
   return <div className="empresa-setup-v878259"><div className="box">

@@ -1,0 +1,13 @@
+/* V87.638 · Ajustos: la subtargeta oberta es llegeix (l'Héctor, 17/11/2026, captura de «Carpeta del despatx»: el títol i la icona sortien
+   blancs sobre el fons clar). La regla de les targetes obertes (`details.card.bloc-v878426[open]>summary .t b{color:#fff!important}` i la
+   icona amb la classe doblada de la V87.533) guanyava per especificitat; aquí la classe triplicada hi guanya, també amb el color de l'empresa. */
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.aj-sub-v878637.aj-sub-v878637[open]>summary,
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.aj-sub-v878637.aj-sub-v878637[open]>summary .t,
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.aj-sub-v878637.aj-sub-v878637[open]>summary .t b,
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.aj-sub-v878637.aj-sub-v878637[open]>summary b{color:#0F172A!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.aj-sub-v878637.aj-sub-v878637[open]>summary>svg:first-child{background:#DBEAFE!important;color:#1D4ED8!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.aj-sub-v878637.aj-sub-v878637[open]>summary .chev{background:#2563EB!important;color:#fff!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.aj-sub-v878637.aj-sub-v878637:not([open])>summary .t b{color:#0F172A!important}
+/* «Còpies del núvol i versions» dins del grup: la mateixa vora que les altres subtargetes (fora la de punts de la V87.354) */
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.copies-v878354:not([open])>summary{border:0!important}
+html:root body details.ajustos-bloc-v878366.aj-sub-v878637.copies-v878354{border-style:solid!important}

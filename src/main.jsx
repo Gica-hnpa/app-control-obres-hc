@@ -297,6 +297,7 @@ import "./theme-v878631.css";
 import "./theme-v878632.css";
 import "./theme-v878635.css";
 import "./theme-v878637.css";
+import "./theme-v878638.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";

@@ -4597,3 +4597,19 @@
   - Proves: `fotos636unit` 17/17 (sense navegador), `v637test` (Ajustos a l'ordinador i al mòbil, nota amb una foto vertical i una
     d'horitzontal: senceres, mateixa alçada, fila de tota l'amplada). `visual400test`, `v442test` i `v519test` busquen ara «Idioma i aspecte»,
     «Enllaços i programes» i «Comptes del núvol».
+- **V87.638 · «Usuari: Perspectiva», capçalera oberta d'Ajustos llegible i una altra manera de triar la carpeta** (l'Héctor, 17/11/2026).
+  - «Per què surt "Usuari: Perspectiva"? Si no sóc jo, era l'usuari Oriol?»: al compte de l'Héctor del núvol hi havia
+    `aco_v8782__nouser__aco_empresa_v878259` = {nom:"Perspectiva"} (10:00:44, 12 s abans de la de `emp_oriol`): la primera configuració del
+    compte de l'Oriol es va desar a «nouser» abans de saber l'usuari, el núvol de l'Héctor la va pujar (`inScope` acceptava tot el que no era
+    `emp_`) i la barra (estat `empresa878259`, llegit en obrir l'app, quan encara no hi ha usuari) la mostrava. Les dades de l'Héctor no es
+    van barrejar amb les de l'Oriol. Ara: `empresaInfo878259()` sense usuari torna null i es torna a llegir quan canvia qui ha entrat; la
+    benvinguda de l'empresa desa sempre a l'espai de l'empresa; el núvol no puja ni baixa res de `__nouser__`; la clau es treu de l'aparell.
+    La fila vella es queda al núvol de l'Héctor (ja no es baixa).
+  - Ajustos: la subtargeta oberta tenia el títol i la icona blancs sobre fons clar (la regla `details.card.bloc-v878426[open]>summary .t b`
+    i la icona amb classe doblada de la V87.533 hi guanyaven, també amb el color de l'empresa): `theme-v878638.css` amb la classe triplicada.
+    «Còpies del núvol i versions» sense la vora de punts.
+  - Carpeta del despatx (l'Héctor triava `D:\00_CUBERO\00_FEINA` i sortia «No s'ha triat cap carpeta»): s'ha comprovat a les preferències de
+    l'Edge i del Chrome que l'edició d'arxius no està bloquejada per a la web. Ara el missatge diu amb què ha respost el navegador i quant ha
+    trigat («AbortError · 0,4 s») i ofereix «Provar-ho d'una altra manera»: es tria només per llegir i després es demana el permís d'editar
+    (si el navegador el té bloquejat, ho diu i com treure-ho; si cal un toc més, desa la carpeta i diu «toca Sincronitzar ara»).
+  - Proves: `v634test` 8/8, `v637test` 25/25 (amb el color de l'empresa), v625 17/17, v605 14/14, contrasenyestest 33/34 (la d'abans).

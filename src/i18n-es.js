@@ -6267,4 +6267,10 @@ export default {
   "Enllaços i programes": "Enlaces y programas",
   "Comptes d’empresa": "Cuentas de empresa",
   "Còpies del núvol i versions": "Copias de la nube y versiones",
+  "No s’ha pogut triar la carpeta. Si el navegador no t’ha preguntat res, toca «Provar-ho d’una altra manera»: l’app et dirà què passa.": "No se ha podido elegir la carpeta. Si el navegador no te ha preguntado nada, toca «Probarlo de otra manera»: la app te dirá qué pasa.",
+  "El navegador no deixa que aquesta web editi arxius. Per canviar-ho: a dalt de tot, a l’esquerra de l’adreça de l’app, hi ha un dibuixet (un cadenat o dues ratlletes). Clica’l › «Permisos para este sitio» o «Configuración del sitio» › «Edición de archivos» › «Permitir». Després recarrega l’app i torna a triar la carpeta.": "El navegador no deja que esta web edite archivos. Para cambiarlo: arriba del todo, a la izquierda de la dirección de la app, hay un dibujito (un candado o dos rayitas). Haz clic › «Permisos para este sitio» o «Configuración del sitio» › «Edición de archivos» › «Permitir». Después recarga la app y vuelve a elegir la carpeta.",
+  "Carpeta triada. Ara toca «Sincronitzar ara» i, quan el navegador pregunti si pot editar els arxius, digues que sí.": "Carpeta elegida. Ahora toca «Sincronizar ahora» y, cuando el navegador pregunte si puede editar los archivos, di que sí.",
+  "Provar-ho d’una altra manera": "Probarlo de otra manera",
+  "Encara s’està connectant. Torna-ho a provar d’aquí a un moment.": "Todavía se está conectando. Vuelve a intentarlo dentro de un momento.",
+  "només llegir": "solo leer",
 };
