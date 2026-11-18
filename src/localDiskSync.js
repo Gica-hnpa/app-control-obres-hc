@@ -13,8 +13,27 @@
 //   tocar res); si no, el rètol de baix et deixa actualitzar amb un clic.
 const ENDPOINT = "/__dades-locals";
 const APP_KEY = /^aco_/;
-const VERSION = "V87.643";
+const VERSION = "V87.644";
 const DEVICE_KEY = "dispositiu-app-control-obres";
+// V87.644 · Des d'un altre aparell de la wifi (mòbil amb OBRIR_APP_MOBIL.bat), el servidor de l'ordinador només deixa llegir i desar
+// després d'aparellar-lo un cop amb el codi de 6 xifres que surt a la finestra de l'ordinador. La clau de l'aparell es queda aquí
+// (no comença per «aco_»: no es puja al núvol ni al fitxer).
+const APARELL_KEY = "aparell-wifi-app-control-obres";
+function clauAparell() { try { return localStorage.getItem(APARELL_KEY) || ""; } catch { return ""; } }
+function hdr(h = {}) { const t = clauAparell(); return t ? { ...h, "X-Aco-Aparell": t } : h; }
+async function aparella() {
+  for (let i = 0; i < 3; i++) {
+    const codi = String(window.prompt("Per desar a l’ordinador des d’aquest aparell, escriu el codi de 6 xifres que surt a la finestra d’OBRIR_APP_MOBIL a l’ordinador.") || "").replace(/\D/g, "");
+    if (!codi) return false;
+    try {
+      const r = await fetch(`${ENDPOINT}/aparell`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ codi }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.token) { try { localStorage.setItem(APARELL_KEY, j.token); } catch {} return true; }
+      if (r.status === 429) { window.alert("Massa codis equivocats: torna a obrir OBRIR_APP_MOBIL a l’ordinador."); return false; }
+    } catch { return false; }
+  }
+  return false;
+}
 let active = false, timer = null, dirty = false, saving = false, badge = null, lastSaved = "", lastError = "";
 let known = {}, device = "", remotePending = false, lastInput = Date.now(), conflictAt = "", unloading = false;
 
@@ -86,7 +105,7 @@ async function save() {
     Object.keys(known).forEach(k => { if (!(k in storage)) removed.push(k); });
     if (!Object.keys(changes).length && !removed.length) { paint(remotePending ? "remote" : "ok"); return; }
     const base = lastSaved;
-    const r = await fetch(`${ENDPOINT}/desar`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ version: VERSION, device, base, changes, removed }) });
+    const r = await fetch(`${ENDPOINT}/desar`, { method: "POST", headers: hdr({ "Content-Type": "application/json" }), body: JSON.stringify({ version: VERSION, device, base, changes, removed }) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j.ok) throw new Error(j.error || `Error ${r.status}`);
     Object.assign(known, changes); removed.forEach(k => { delete known[k]; });
@@ -114,7 +133,7 @@ function typing() {
 async function applyRemote(force = false) {
   if (dirty || saving) { if (force) { clearTimeout(timer); await save(); } else return; }
   let info;
-  try { const r = await fetch(`${ENDPOINT}/estat`, { cache: "no-store" }); if (!r.ok) return; info = await r.json(); } catch { return; }
+  try { const r = await fetch(`${ENDPOINT}/estat`, { cache: "no-store", headers: hdr() }); if (!r.ok) return; info = await r.json(); } catch { return; }
   if (!info?.storage || !hasObres(info.storage)) return;
   if (dirty || saving) return;
   active = false;
@@ -127,7 +146,7 @@ async function checkRemote(returning = false) {
   if (!active || saving) return;
   if (!remotePending) {
     let v;
-    try { const r = await fetch(`${ENDPOINT}/versio`, { cache: "no-store" }); if (!r.ok) return; v = await r.json(); } catch { return; }
+    try { const r = await fetch(`${ENDPOINT}/versio`, { cache: "no-store", headers: hdr() }); if (!r.ok) return; v = await r.json(); } catch { return; }
     if (!v?.savedAt || v.savedAt === lastSaved || v.device === device) return;
     remotePending = true;
   }
@@ -164,7 +183,9 @@ function hook() {
 export async function startLocalDiskSync() {
   let info;
   try {
-    const r = await fetch(`${ENDPOINT}/estat`, { cache: "no-store" });
+    let r = await fetch(`${ENDPOINT}/estat`, { cache: "no-store", headers: hdr() });
+    // V87.644 · un altre aparell de la wifi encara no aparellat (o amb una clau que l'ordinador ja no coneix): el codi, un cop
+    if (r.status === 401) { try { localStorage.removeItem(APARELL_KEY); } catch {} if (!(await aparella())) return; r = await fetch(`${ENDPOINT}/estat`, { cache: "no-store", headers: hdr() }); }
     if (!r.ok) return;
     info = await r.json();
   } catch { return; }

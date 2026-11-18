@@ -4688,3 +4688,23 @@
   - `fullsA4.js` (vista prèvia i PDF): a l'última pàgina, un espai al davant porta el bloc fins al marge de baix del full. En imprimir
     (`PEU_FIX_CSS878643`), el full és una columna i el bloc va al final (`margin-top:auto`).
   - Proves: `v643test` (demo-constructor amb IBAN: proforma, factura amb les partides i factura neta).
+- **V87.644 · Seguretat, primera tanda** (revisió de seguretat del 18/11/2026, informe a Claude Docs «Revisió de seguretat de l'app»;
+  l'Héctor: «sí, comença»; problemes 1, 2, 3, 5 i 6 de l'informe).
+  - **Peces actualitzades:** `pdfjs-dist` 6.1.200 → **6.5.438** (un PDF preparat podia executar codi, GHSA-hq66-cqwq-w95j) i totes les
+    lectures amb `isEvalSupported:false`; `xlsx` 0.18.5 → **0.20.3** de la web de SheetJS (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`:
+    npm no té la versió arreglada; un Excel preparat podia alterar l'app o penjar-la); `vite` 8.1.5 → **8.3.8** (forat amb els servidors
+    propis com `/__dades-locals`). Queda un avís de `picomatch` 4.0.7 (només en compilar; encara no hi ha versió arreglada).
+    **Atenció:** pdf.js 6.5 es queda les dades que rep (`getDocument({data})` deixa el `Uint8Array` de l'app a 0 bytes): llegir un
+    pressupost en PDF i després desar-lo a Documents fallava (`pdfpressuposttest` 17/29). Ara sempre se li passa una còpia
+    (`copiaPdf878644` a App.jsx, `copiaPdf` a pressupostPdf.js; SignaRemot ja feia `bytes.slice()`).
+  - **Servidor de l'ordinador** (`vite.config.js`, `guarda`): Host només de l'ordinador o d'una IP de casa; Origin igual que la pàgina;
+    un altre aparell de la wifi s'aparella un cop amb el codi de 6 xifres que surt a la finestra d'OBRIR_APP_MOBIL (clau a
+    `DADES/.aco-aparells-wifi.json`; al mòbil, `aparell-wifi-app-control-obres`, `localDiskSync.js`). 10 codis equivocats: bloquejat.
+  - **Documents aïllats:** les vistes prèvies (`ExactHtmlPreview878193`) i el marc del PDF (`pdfDoc.js`) amb `sandbox="allow-same-origin…"`
+    (cap codi de dins s'executa); el títol de la finestra d'imprimir, escapat. Les finestres d'imprimir ja no porten `<script>`: imprimeix
+    l'app (`imprimeix878644`); els botons «Imprimir» dels quadres d'administració, sense `onclick`.
+  - **Política de contingut (CSP)** a l'app compilada (`cspPlugin`, `<meta>` al començament de la pàgina): codi només de l'app i de Google;
+    sense `eval`, objectes ni formularis cap a fora. Les capçaleres que només pot posar el servidor (no posar l'app dins d'una altra web,
+    Referrer-Policy, Permissions-Policy, memòria cau dels arxius) són a `docs/capcaleres-render.md` perquè l'Héctor les enganxi a Render.
+  - Proves: `v644test` (servidor de l'ordinador: localhost, web de fora, Host de fora, aparell de la wifi amb codi bo/dolent/bloqueig;
+    app compilada amb la CSP: entrar, proforma aïllada, codi colat que no s'executa, PDF sense cap bloqueig).

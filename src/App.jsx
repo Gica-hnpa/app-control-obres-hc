@@ -43,10 +43,12 @@ import {recalculateBreakdownTableV87232} from "./breakdownRecalculationV87232.js
 import {persistObraFiles,loadObraFiles,fillObraFiles,enqueueDoc,scanPending,fetchObraFiles,fetchDoc,cloudHasFile,recorreArxius,fitxersObra878630,dadesFitxer878630,camiArxiu878631} from "./fileStore.js";
 import {fotosHtml878636,CSS_FOTOS878636} from "./fotosDoc878636.js";
 import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses878626,permisTab878626} from "./compartir878626.js";
+// V87.644 · pdf.js 6.5 es queda les dades que rep (les deixa a 0 bytes): sempre una còpia, perquè l'app les pugui desar després (Documents…)
+const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):ArrayBuffer.isView(d)?new Uint8Array(d.buffer.slice(d.byteOffset,d.byteOffset+d.byteLength)):d;
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.643";
+const APP_VERSION878264="87.644";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2466,6 +2468,8 @@ function isMobilePrint878112(){
   const ua=String(navigator?.userAgent||"");
   return (window.innerWidth||0)<=900 || /iPhone|iPad|iPod|Android/i.test(ua);
 }
+// V87.644 · imprimir una finestra des de l’app (abans, un <script> dins del document; amb la política de contingut no s’executaria)
+function imprimeix878644(w,ms=350){try{w.document.querySelectorAll("[data-imprimir]").forEach(b=>b.addEventListener("click",()=>w.print()))}catch{}setTimeout(()=>{try{w.focus();w.print()}catch{}},ms)}
 function printHtmlInPlace878112(html,title="Document"){
   try{
     const iframe=document.createElement("iframe");
@@ -2531,7 +2535,7 @@ function printQuote8745(type,doc,obra){
   }
   const w=window.open("","_blank","width=900,height=1100");
   if(!w){alert(t("El navegador ha bloquejat la finestra d’impressió. Permet finestres emergents."));return}
-  w.document.open();w.document.write(html+`<script>setTimeout(()=>{window.focus();window.print();},350)<\/script>`);w.document.close();w.focus();
+  w.document.open();w.document.write(html);w.document.close();w.focus();imprimeix878644(w,350);
 }
 function uniqueFactures8743(rows=[]){
   const seen=new Set();
@@ -3256,7 +3260,7 @@ function PlanolsCroquisActa8769({draft,setDraft}){
   function undo(){setHist(h=>{const last=h[h.length-1];if(last)restore(last);return h.slice(0,-1)})}
   function clearDraw(){if(meta.tipus==="pdf"&&pdfRef.current)renderPdfPage(meta.pagina);else if(meta.tipus==="image"&&meta.src)renderImage(meta.src,meta.nom);else newBlank(false)}
   function newBlank(reset=true){setCanvasSize(1100,780);const c=canvasRef.current,context=ctx();if(!c||!context)return;context.fillStyle="#fff";context.fillRect(0,0,c.width,c.height);context.strokeStyle="#d1d5db";context.lineWidth=1;for(let x=55;x<c.width;x+=55){context.beginPath();context.moveTo(x,0);context.lineTo(x,c.height);context.stroke()}for(let y=55;y<c.height;y+=55){context.beginPath();context.moveTo(0,y);context.lineTo(c.width,y);context.stroke()}if(reset)setMeta({nom:"Full en blanc",tipus:"blank",pagina:1,pagines:1})}
-  async function loadFile(file){if(!file)return;setLoading(true);try{if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;pdfRef.current=pdf;setMeta({nom:file.name,tipus:"pdf",pagina:1,pagines:pdf.numPages});await renderPdfPage(1,pdf,file.name)}else{const reader=new FileReader();reader.onload=()=>renderImage(reader.result,file.name);reader.readAsDataURL(file)}}catch(err){alert(t("No s'ha pogut carregar el plànol. Pots provar exportant la pàgina del PDF com a imatge PNG/JPG."))}finally{setLoading(false)}}
+  async function loadFile(file){if(!file)return;setLoading(true);try{if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:copiaPdf878644(buf)}).promise;pdfRef.current=pdf;setMeta({nom:file.name,tipus:"pdf",pagina:1,pagines:pdf.numPages});await renderPdfPage(1,pdf,file.name)}else{const reader=new FileReader();reader.onload=()=>renderImage(reader.result,file.name);reader.readAsDataURL(file)}}catch(err){alert(t("No s'ha pogut carregar el plànol. Pots provar exportant la pàgina del PDF com a imatge PNG/JPG."))}finally{setLoading(false)}}
   async function renderPdfPage(pageNo,pdf=pdfRef.current,nom=meta.nom){if(!pdf)return;setLoading(true);try{const page=await pdf.getPage(pageNo);const viewport=page.getViewport({scale:1.45});setCanvasSize(viewport.width,viewport.height);const c=canvasRef.current,context=ctx();context.fillStyle="#fff";context.fillRect(0,0,c.width,c.height);await page.render({canvasContext:context,viewport}).promise;setMeta(m=>({...m,nom,tipus:"pdf",pagina:pageNo,pagines:pdf.numPages}))}finally{setLoading(false)}}
   function renderImage(src,nom="Imatge"){const img=new Image();img.onload=()=>{const maxW=1200;const ratio=Math.min(maxW/img.width,1);const w=Math.round(img.width*ratio),h=Math.round(img.height*ratio);setCanvasSize(w,h);const context=ctx();context.fillStyle="#fff";context.fillRect(0,0,w,h);context.drawImage(img,0,0,w,h);setMeta({nom,tipus:"image",src,pagina:1,pagines:1})};img.src=src}
   function pos(e){const c=canvasRef.current;const r=c.getBoundingClientRect();return {x:(e.clientX-r.left)*(c.width/r.width),y:(e.clientY-r.top)*(c.height/r.height)}}
@@ -5493,8 +5497,8 @@ function directPrintDocV87103(doc,obra,client){
   const html=doc.type==="certificacio"&&doc.rows?certPrintHtmlV8772(doc,obra,client):doc.type==="proforma"&&doc.proforma?proformaPrintHtml8783(doc,obra,client):null;
   if(!html){win.close?.();return false}
   win.document.open();
-  win.document.write(html+`<script>setTimeout(()=>{window.focus();window.print();},350)<\/script>`);
-  win.document.close();
+  win.document.write(html);
+  win.document.close();imprimeix878644(win,350);
   return true;
 }
 
@@ -10245,7 +10249,7 @@ function candidatsDespeses878566(files=[]){
 async function filesPdf878569(dataUrl){
   const b64=String(dataUrl||"").split(",")[1]||"";if(!b64)return [];
   const bin=atob(b64);const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
-  const pdf=await pdfjsLib.getDocument({data:u8}).promise;const out=[];
+  const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:copiaPdf878644(u8)}).promise;const out=[];
   for(let i=1;i<=Math.min(pdf.numPages,2);i++){
     const pg=await pdf.getPage(i);const tc=await pg.getTextContent();const rows=[];
     tc.items.filter(x=>String(x.str||"").trim()).forEach(x=>{const y=x.transform[5],xx=x.transform[4],w=x.width||String(x.str).length*5;let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r){r={y,items:[]};rows.push(r)}r.items.push({x:xx,x2:xx+w,s:String(x.str).trim()})});
@@ -15504,7 +15508,7 @@ function FrameA4878425({html,title}){
   const fr=useRef(null);
   function ajusta(){const f=fr.current;let d=null;try{d=f?.contentDocument}catch{}const a=d?.documentElement?.__a4;if(!a||!a.ample)return;d.documentElement.style.zoom="";const cw=d.documentElement.clientWidth||f.clientWidth;const s=Math.min(1,(cw-8)/(a.ample+24));d.documentElement.style.zoom=s<0.995?String(s):""}
   useEffect(()=>{const on=()=>ajusta();window.addEventListener("resize",on);return()=>window.removeEventListener("resize",on)},[]);
-  return <iframe ref={fr} title={title} srcDoc={html} onLoad={async()=>{await fullsVista878425(fr.current);ajusta()}}/>;
+  return <iframe ref={fr} title={title} sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={html} onLoad={async()=>{await fullsVista878425(fr.current);ajusta()}}/>;
 }
 function FitFrame878290({html,title}){
   const wrap=useRef(null),frame=useRef(null);
@@ -15524,7 +15528,7 @@ function FitFrame878290({html,title}){
     return ()=>{window.removeEventListener("resize",on);window.removeEventListener("orientationchange",on);ro?.disconnect()}},[]);
   useEffect(()=>{setM(null)},[html]);
   const carregat=async()=>{mesura();await fullsVista878425(frame.current);mesura();setTimeout(mesura,350);setTimeout(mesura,1200)};
-  return <div ref={wrap} className="fit-wrap-v878290" style={{height:m?Math.ceil(m.docH*m.s):"60vh"}}><iframe ref={frame} title={title} srcDoc={html} scrolling="no" onLoad={carregat} style={m?{width:m.docW,height:m.docH,transform:`scale(${m.s})`}:{width:A4_PX878290}}/></div>;
+  return <div ref={wrap} className="fit-wrap-v878290" style={{height:m?Math.ceil(m.docH*m.s):"60vh"}}><iframe ref={frame} title={title} sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={html} scrolling="no" onLoad={carregat} style={m?{width:m.docW,height:m.docH,transform:`scale(${m.s})`}:{width:A4_PX878290}}/></div>;
 }
 function FitBox878290({children}){
   const fit=useFitDoc878290();
@@ -19130,10 +19134,10 @@ function printAdminMonthly878131({certNum,meta,lines,totalOficial,totalAjudant,t
   const detail=rows.map(l=>`<tr><td class="left">${escapeHtml878131(l.concepte)}</td><td>${escapeHtml878131(l.data)}</td><td>${qty2(parseNum8770(l.horesOficial)||0)}</td><td>${qty2(parseNum8770(l.horesAjudant)||0)}</td><td>${money(adminMaterialSum878131(l))}${(Array.isArray(l.materials)&&l.materials.length)?`<div class="materials">${l.materials.map(m=>`${escapeHtml878131(m.concepte)}: ${money(parseNum8770(m.import)||0)}`).join("<br>")}</div>`:""}</td><td>${money(lineTotal(l))}</td></tr>`).join("");
   const summary=Object.values(groups).map(g=>`<tr><td class="left">${escapeHtml878131(g.concepte)}</td><td>${qty2(g.horesOficial)}</td><td>${qty2(g.horesAjudant)}</td><td>${money(g.material)}</td><td>${money(g.total)}</td></tr>`).join("");
   const mats=Object.entries(materialGroups).map(([k,v])=>`<tr><td class="left">${escapeHtml878131(k)}</td><td>${money(v)}</td></tr>`).join("");
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Quadre administració CERT ${certNum}</title>${css}</head><body><button onclick="window.print()">Imprimir</button><h1>Quadre mensual de feines per administració · Certificació ${certNum}</h1><div class="sub">Capítol: <b>${escapeHtml878131(meta.cap)}</b> · Partida: <b>${escapeHtml878131(meta.targetPartidaCodi||meta.codi)}</b> · ${escapeHtml878131(meta.targetPartidaConcepte||meta.conceptePartida)}</div><div class="box">Cost hora oficial: <b>${money(parseNum8770(meta.costOficial)||0)}</b> · Cost hora ajudant/peó: <b>${money(parseNum8770(meta.costAjudant)||0)}</b></div><h2>Detall justificatiu</h2><table><thead><tr><th class="left">Concepte</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total línia</th></tr></thead><tbody>${detail}</tbody><tfoot><tr><td class="left">TOTAL</td><td></td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table><h2>Resum per concepte</h2><table><thead><tr><th class="left">Concepte</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total</th></tr></thead><tbody>${summary}</tbody><tfoot><tr><td class="left">TOTAL</td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table>${mats?`<h2>Resum de materials per concepte</h2><table><thead><tr><th class="left">Material</th><th>Import</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td class="left">TOTAL MATERIALS</td><td>${money(totalMaterial)}</td></tr></tfoot></table>`:""}</body></html>`;
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Quadre administració CERT ${certNum}</title>${css}</head><body><button data-imprimir="1">Imprimir</button><h1>Quadre mensual de feines per administració · Certificació ${certNum}</h1><div class="sub">Capítol: <b>${escapeHtml878131(meta.cap)}</b> · Partida: <b>${escapeHtml878131(meta.targetPartidaCodi||meta.codi)}</b> · ${escapeHtml878131(meta.targetPartidaConcepte||meta.conceptePartida)}</div><div class="box">Cost hora oficial: <b>${money(parseNum8770(meta.costOficial)||0)}</b> · Cost hora ajudant/peó: <b>${money(parseNum8770(meta.costAjudant)||0)}</b></div><h2>Detall justificatiu</h2><table><thead><tr><th class="left">Concepte</th><th>Dia</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total línia</th></tr></thead><tbody>${detail}</tbody><tfoot><tr><td class="left">TOTAL</td><td></td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table><h2>Resum per concepte</h2><table><thead><tr><th class="left">Concepte</th><th>Oficial (h)</th><th>Ajudant/peó (h)</th><th>Materials</th><th>Total</th></tr></thead><tbody>${summary}</tbody><tfoot><tr><td class="left">TOTAL</td><td>${qty2(totalOficial)} h</td><td>${qty2(totalAjudant)} h</td><td>${money(totalMaterial)}</td><td>${money(total)}</td></tr></tfoot></table>${mats?`<h2>Resum de materials per concepte</h2><table><thead><tr><th class="left">Material</th><th>Import</th></tr></thead><tbody>${mats}</tbody><tfoot><tr><td class="left">TOTAL MATERIALS</td><td>${money(totalMaterial)}</td></tr></tfoot></table>`:""}</body></html>`;
   const w=window.open("","_blank");
   if(!w){alert(t("El navegador ha bloquejat la finestra d'impressió. Permet pop-ups per imprimir el quadre."));return;}
-  w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);
+  w.document.write(html);w.document.close();imprimeix878644(w,250);
 }
 function AdminMonthlyCostModal878127({certNum,initial={},close,save,split,capOptions=[],partidaOptions=[]}){
   const cfgKey=lsKey8779("aco_admin_monthly_defaults_v87127");
@@ -19796,10 +19800,10 @@ function printAdminCombined87222(){
   }).join("");
   const obraNom=String(data.nomTreball||data.nom||data.titol||"").trim();
   const css=`<style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:0;font-size:10.5px}button{margin-bottom:12px;padding:7px 12px}.head{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #0f2d5c;padding-bottom:9px;margin-bottom:14px}.head h1{margin:0;color:#0f2d5c;font-size:21px}.head p{margin:5px 0 0;color:#475569}.grand{min-width:55mm;text-align:right;background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:9px}.grand small,.grand b{display:block}.grand b{margin-top:3px;font-size:20px;color:#0f2d5c}.partida{margin:0 0 14px;break-inside:auto}.partida-head{display:flex;justify-content:space-between;align-items:end;gap:15px;padding:7px 9px;background:#dbeafe;border:1px solid #93c5fd}.partida-head small{color:#475569;font-weight:700}.partida-head h2{margin:2px 0 0;font-size:14px;color:#0f2d5c}.partida-head>b{font-size:16px}.rates{padding:5px 9px;border:1px solid #cbd5e1;border-top:0;color:#475569}.rates strong{color:#9a3412}table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:4px}thead{display:table-header-group}th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:right;vertical-align:top}th{background:#e2e8f0}.left{text-align:left;white-space:normal;overflow-wrap:anywhere}tfoot th{background:#f1f5f9}.global{margin-top:18px;border:2px solid #0f2d5c}.global th{background:#0f2d5c;color:white;font-size:12px}@media print{button{display:none}.partida-head{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>`;
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Administració unificada · Certificació ${certNum}</title>${css}</head><body><button onclick="window.print()">Imprimir document</button><header class="head"><div><h1>FEINES PER ADMINISTRACIÓ · CERTIFICACIÓ ${certNum}</h1><p>${escapeHtml878131(obraNom||"Document únic de totes les partides")} · ${escapeHtml878131(fmtDate8714(cert?.data))}</p><p>${adminPrintableRows87221.length} partides amb administració</p></div><div class="grand"><small>TOTAL ADMINISTRACIÓ</small><b>${money(totalGeneral)}</b></div></header>${sections}<table class="global"><tfoot><tr><th class="left">TOTAL DOCUMENT</th><th>${adminPrintableRows87221.length} partides</th><th>${qty2(totalOficial)} h oficial</th><th>${qty2(totalAjudant)} h ajudant</th><th>${money(totalMaterials)}</th><th>${money(totalGeneral)}</th></tr></tfoot></table></body></html>`;
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Administració unificada · Certificació ${certNum}</title>${css}</head><body><button data-imprimir="1">Imprimir document</button><header class="head"><div><h1>FEINES PER ADMINISTRACIÓ · CERTIFICACIÓ ${certNum}</h1><p>${escapeHtml878131(obraNom||"Document únic de totes les partides")} · ${escapeHtml878131(fmtDate8714(cert?.data))}</p><p>${adminPrintableRows87221.length} partides amb administració</p></div><div class="grand"><small>TOTAL ADMINISTRACIÓ</small><b>${money(totalGeneral)}</b></div></header>${sections}<table class="global"><tfoot><tr><th class="left">TOTAL DOCUMENT</th><th>${adminPrintableRows87221.length} partides</th><th>${qty2(totalOficial)} h oficial</th><th>${qty2(totalAjudant)} h ajudant</th><th>${money(totalMaterials)}</th><th>${money(totalGeneral)}</th></tr></tfoot></table></body></html>`;
   const w=window.open("","_blank");
   if(!w){alert(i18nT("El navegador ha bloquejat la finestra d’impressió. Permet pop-ups per imprimir el document."));return;}
-  w.document.write(html);w.document.close();setTimeout(()=>w.print(),250);
+  w.document.write(html);w.document.close();imprimeix878644(w,250);
 }
 function pc(q,r){
   const value=parseNum8770(q)||0;
@@ -23441,7 +23445,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.643",
+    app_version:"87.644",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -25206,7 +25210,7 @@ function VisorArxiuGlobal8784291(){const[v,setV]=useState(null);useEffect(()=>{c
 function PaginesPdf8784291({blob,onError}){
   const[pags,setPags]=useState([]);const[total,setTotal]=useState(0);const ref=useRef(null);
   useEffect(()=>{let viu=true;const urls=[];
-    (async()=>{try{const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;if(!viu)return;setTotal(pdf.numPages);
+    (async()=>{try{const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:new Uint8Array(await blob.arrayBuffer())}).promise;if(!viu)return;setTotal(pdf.numPages);
       const n=Math.min(pdf.numPages,MAX_PAG8784291);
       for(let i=1;i<=n&&viu;i++){const pg=await pdf.getPage(i);const v1=pg.getViewport({scale:1});
         const css=Math.min(ref.current?.clientWidth||800,1000),dpr=Math.min(window.devicePixelRatio||1,2);const px=Math.min(css*dpr*1.4,2200);
@@ -25634,33 +25638,33 @@ function DocViewer({doc:doc0,obra,client,close,email}){
     if(!win){setTimeout(()=>window.print(),100);return}
     if(exactHtml878193){
       win.document.open();
-      win.document.write(exactHtml878193+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
-      win.document.close();
+      win.document.write(exactHtml878193);
+      win.document.close();imprimeix878644(win,450);
       return;
     }
     if(doc.type==="certificacio"&&doc.rows){
       win.document.open();
-      win.document.write(certPrintHtmlV8772(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
-      win.document.close();
+      win.document.write(certPrintHtmlV8772(doc,obra,client));
+      win.document.close();imprimeix878644(win,450);
       return;
     }
     if(doc.type==="proforma"&&doc.proforma){
       win.document.open();
-      win.document.write(proformaPrintHtml8783(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
-      win.document.close();
+      win.document.write(proformaPrintHtml8783(doc,obra,client));
+      win.document.close();imprimeix878644(win,450);
       return;
     }
     if(doc.type==="pressupostobra"&&doc.rows){
       win.document.open();
-      win.document.write(pressupostObraPrintHtml878153(doc,obra,client)+`<script>setTimeout(()=>{window.focus();window.print();},450)<\/script>`);
-      win.document.close();
+      win.document.write(pressupostObraPrintHtml878153(doc,obra,client));
+      win.document.close();imprimeix878644(win,450);
       return;
     }
     const node=printRef.current;
     if(!node){window.print();return}
     const css=[...document.querySelectorAll('style')].map(x=>x.innerHTML).join('\n')+"\n"+[...document.styleSheets].map(ss=>{try{return [...(ss.cssRules||[])].map(r=>r.cssText).join('\n')}catch(e){return ''}}).join('\n');
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${doc.title||'Document'}</title><style>${css}\nbody{background:white!important;margin:0!important}.document-preview{background:white!important;padding:0!important}.document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.modal-actions,.modal-head,.no-print{display:none!important}</style></head><body>${node.innerHTML}<script>setTimeout(()=>{window.focus();window.print();},350)<\/script></body></html>`);
-    win.document.close();
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escHtmlV8772(doc.title||'Document')}</title><style>${css}\nbody{background:white!important;margin:0!important}.document-preview{background:white!important;padding:0!important}.document-page{box-shadow:none!important;border:0!important;margin:0 auto!important}.modal-actions,.modal-head,.no-print{display:none!important}</style></head><body>${node.innerHTML}</body></html>`);
+    win.document.close();imprimeix878644(win,350);
   }
   useEffect(()=>{if(doc?.autoPrint){const t=setTimeout(()=>{printIsolated();close?.();},120);return()=>clearTimeout(t)}},[doc?.autoPrint]);
   if(doc?.autoPrint)return null;
@@ -26642,7 +26646,7 @@ function readAsDataUrl878259(file){return new Promise((res,rej)=>{const r=new Fi
 async function albaraFromPdf878259(file){
   if(file.size>4*1024*1024)throw new Error("El PDF fa més de 4 MB. Redueix-lo o fes-ne una foto.");
   const pdfData=await readAsDataUrl878259(file);
-  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:await file.arrayBuffer()}).promise;
   const page=await pdf.getPage(1);const v0=page.getViewport({scale:1});const vp=page.getViewport({scale:Math.min(2,1400/Math.max(v0.width,v0.height))});
   const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);
   await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;

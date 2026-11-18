@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -121,11 +122,54 @@ function handler(req, res, next) {
   }
   next();
 }
+// V87.644 · Seguretat del servidor de l'ordinador (revisió de seguretat del 18/11/2026). Abans, qualsevol aparell de la mateixa wifi
+// (amb OBRIR_APP_MOBIL.bat) podia llegir i canviar totes les dades, i una web oberta al navegador també ho podia provar. Ara:
+//  · l'adreça (Host) ha de ser la de l'ordinador: localhost, 127.0.0.1 o una IP de la xarxa de casa (mai un nom de fora: evita que una
+//    web «es disfressi» d'ordinador);
+//  · si la petició diu d'on ve (Origin), ha de ser la mateixa pàgina de l'app;
+//  · des d'un altre aparell de la xarxa, cal aparellar-lo un cop amb el codi de 6 xifres que surt a la finestra de l'ordinador; les claus
+//    dels aparells es desen a DADES/.aco-aparells-wifi.json. Després de 10 codis equivocats, cal tornar a obrir el servidor.
+const APARELLS_FILE = path.join(DADES_DIR, ".aco-aparells-wifi.json");
+const aparells = new Set((readJson(APARELLS_FILE)?.tokens || []).filter(x => typeof x === "string" && x.length >= 32));
+const CODI_APARELL = String(crypto.randomInt(100000, 1000000));
+let errades = 0;
+const esLocal = a => /^(::1|127\.|::ffff:127\.)/.test(String(a || ""));
+const nomHost = h => String(h || "").replace(/:\d+$/, "").replace(/^\[|\]$/g, "").toLowerCase();
+const hostOk = h => { const n = nomHost(h); return n === "localhost" || n === "127.0.0.1" || n === "::1" || /^(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/.test(n); };
+function guarda(req, res, next) {
+  if (!hostOk(req.headers.host)) return send(res, 403, { ok: false, error: "host" });
+  const o = req.headers.origin;
+  if (o && o !== "null") { let oh = ""; try { oh = new URL(o).host; } catch {} if (oh !== req.headers.host) return send(res, 403, { ok: false, error: "origen" }); }
+  if (esLocal(req.socket?.remoteAddress)) return handler(req, res, next);
+  const url = (req.url || "").split("?")[0];
+  if (req.method === "POST" && url === "/aparell") {
+    const chunks = [];
+    req.on("data", c => { if (chunks.length < 20) chunks.push(c); });
+    req.on("end", () => {
+      if (errades >= 10) return send(res, 429, { ok: false, error: "massa" });
+      let codi = ""; try { codi = String(JSON.parse(Buffer.concat(chunks).toString("utf8"))?.codi || ""); } catch {}
+      if (codi !== CODI_APARELL) { errades++; return send(res, 401, { ok: false, error: "codi" }); }
+      const token = crypto.randomBytes(24).toString("hex");
+      aparells.add(token);
+      try { fs.mkdirSync(DADES_DIR, { recursive: true }); fs.writeFileSync(APARELLS_FILE, JSON.stringify({ tokens: [...aparells] })); } catch {}
+      return send(res, 200, { ok: true, token });
+    });
+    return;
+  }
+  const t = String(req.headers["x-aco-aparell"] || "");
+  if (!t || !aparells.has(t)) return send(res, 401, { ok: false, error: "aparell" });
+  return handler(req, res, next);
+}
+function avisaCodi(server) {
+  server.httpServer?.once("listening", () => setTimeout(() => {
+    if (server.config.server?.host || server.config.preview?.host) server.config.logger.info(`\n  Codi per aparellar el mòbil (només el primer cop): ${CODI_APARELL}\n`);
+  }, 400));
+}
 function dadesLocalsPlugin() {
   return {
     name: "aco-dades-locals",
-    configureServer(server) { server.middlewares.use("/__dades-locals", handler); },
-    configurePreviewServer(server) { server.middlewares.use("/__dades-locals", handler); }
+    configureServer(server) { server.middlewares.use("/__dades-locals", guarda); avisaCodi(server); },
+    configurePreviewServer(server) { server.middlewares.use("/__dades-locals", guarda); avisaCodi(server); }
   };
 }
 
@@ -147,6 +191,35 @@ function offlinePlugin() {
   };
 }
 
+// V87.644 · Política de contingut (CSP) a l'app compilada (Render): el codi només pot venir de l'app mateixa i de Google (el permís del
+// Gmail i del Calendar); res d'«eval», ni objectes, ni formularis cap a fora. Si algú aconseguís colar codi en un text, el navegador no
+// l'executaria. Les connexions i les imatges poden anar a qualsevol adreça segura (Supabase, Google, Open-Meteo, els enllaços dels arxius)
+// i a l'AutoFirma de l'ordinador. Al servidor de l'ordinador (OBRIR_APP.bat) no hi és: el Vite hi posa codi en línia.
+// «frame-ancestors» (que l'app no es pugui posar dins d'una altra web) no es pot posar aquí: va a les capçaleres de Render
+// (docs/capcaleres-render.md).
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval' https://accounts.google.com https://apis.google.com",
+  "style-src 'self' 'unsafe-inline' https://accounts.google.com",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self' https: wss: http://localhost:* http://127.0.0.1:* ws://127.0.0.1:* wss://127.0.0.1:* blob: data:",
+  "frame-src 'self' blob: data: https:",
+  "worker-src 'self' blob:",
+  "media-src 'self' blob: data:",
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://accounts.google.com"
+].join("; ");
+function cspPlugin() {
+  return {
+    name: "aco-csp",
+    apply: "build",
+    transformIndexHtml(html) { return html.replace(/<head>/i, `<head>\n    <meta http-equiv="Content-Security-Policy" content="${CSP}" />`); }
+  };
+}
+
 // ACO_SENSE_DISC=1 només per a proves: simula l'app publicada (sense desat a l'ordinador).
 // ACO_VITE_CACHE: memòria cau pròpia (proves des d'una còpia de treball amb node_modules enllaçat, perquè no es trepitgin)
-export default defineConfig({ base: "./", ...(process.env.ACO_VITE_CACHE ? { cacheDir: process.env.ACO_VITE_CACHE } : {}), plugins: [react(), offlinePlugin(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });
+export default defineConfig({ base: "./", ...(process.env.ACO_VITE_CACHE ? { cacheDir: process.env.ACO_VITE_CACHE } : {}), plugins: [react(), offlinePlugin(), cspPlugin(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });

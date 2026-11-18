@@ -14,6 +14,8 @@ function marc(html) {
   return new Promise((resolve, reject) => {
     const f = document.createElement("iframe");
     f.setAttribute("aria-hidden", "true");
+    // V87.644 · el document es dibuixa sense poder executar res (si algun text portés codi colat, no s'executaria)
+    f.setAttribute("sandbox", "allow-same-origin");
     f.style.cssText = `position:fixed;left:-14000px;top:0;width:${MARC}px;height:1200px;border:0;opacity:0;pointer-events:none`;
     document.body.appendChild(f);
     const doc = f.contentDocument;

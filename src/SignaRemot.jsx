@@ -23,7 +23,7 @@ function VistaPdf({ bytes, T }) {
     let viu = true; const cont = ref.current; if (!cont || !bytes) return;
     (async () => {
       try {
-        const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise; if (!viu) return;
+        const pdf = await pdfjsLib.getDocument({isEvalSupported:false, data: bytes.slice() }).promise; if (!viu) return;
         setN(pdf.numPages); cont.innerHTML = "";
         const w = Math.min(cont.clientWidth || 800, 900), dpr = Math.min(window.devicePixelRatio || 1, 2);
         for (let i = 1; i <= Math.min(pdf.numPages, 40) && viu; i++) {

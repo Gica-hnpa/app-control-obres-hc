@@ -358,9 +358,11 @@ export function llegirAmidamentsPdf(files) {
   return { font: "PDF", nom: "", caps: caps.filter(c => usats.has(c)), partides, avisos };
 }
 
+// V87.644 · pdf.js 6.5 es queda les dades que rep (les deixa a 0 bytes): una còpia, perquè qui crida les pugui desar després
+const copiaPdf = d => d instanceof ArrayBuffer ? new Uint8Array(d.slice(0)) : ArrayBuffer.isView(d) ? new Uint8Array(d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength)) : d;
 // Text del PDF per línies (pdf.js): els trossos d'una mateixa altura fan una línia, d'esquerra a dreta
 export async function liniesPdf(pdfjsLib, data, maxPagines = 60) {
-  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const pdf = await pdfjsLib.getDocument({isEvalSupported:false, data: copiaPdf(data) }).promise;
   const out = [];
   for (let i = 1; i <= Math.min(pdf.numPages, maxPagines); i++) {
     const p = await pdf.getPage(i); const tc = await p.getTextContent();
