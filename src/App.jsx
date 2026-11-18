@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
-import {GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,FolderSync,BadgeCheck,Undo2,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
+import {ShieldCheck,GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,FolderSync,BadgeCheck,Undo2,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
 import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
@@ -30,6 +30,7 @@ import * as IND878608 from "./industrials.js";
 import {htmlAPdf,htmlAPdfPerSignar,nomPdf} from "./pdfDoc.js";
 import {prepara as fullsA4878425,aPunt as aPuntA4878425} from "./fullsA4.js";
 import * as af878408 from "./autofirma.js";
+import {TITULAR878640,SERVEIS878640,TEXTOS878640,faltaTitular878640,textLegalHtml878640} from "./legal878640.js";
 import {llegeixSignatures,marcaDe} from "./signaturesPdf.js";
 import {propsSig as propsSigC878409,ajuntaSig as ajuntaSigC878409,comencaAmb as comencaAmb878409,enllacSigna as enllacSigna878409,senseServidor as senseServidor878409} from "./signaComu.js";
 import * as gmail878405 from "./googleMail.js";
@@ -45,7 +46,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.639";
+const APP_VERSION878264="87.640";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -23414,7 +23415,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.639",
+    app_version:"87.640",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23598,6 +23599,58 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
   </Card>;
 }
 
+// ── V87.640 · Ajustos › Usuaris i accés › «Privadesa» ─────────────────────────────────────────────────────────────────────────────
+// L'Héctor, 18/11/2026: «mira'm… protecció de dades i demés temes que ha de tenir una app» (proposta a Claude Docs) i «pots començar amb
+// les targetes dins Ajustos». Tres parts:
+//  · Les meves dades: descarregar totes les dades del compte (JSON, sense les fotos; les fotos i els documents, amb «Còpia al meu ordinador»).
+//    Només qui administra el compte (un treballador no s'endú les dades de l'empresa).
+//  · Serveis que fa servir l'app (src/legal878640.js), amb l'interruptor de la IA: apagada, l'app fa com si la IA no hi fos (iaObra.js) i
+//    no envia cap document. Es desa al compte (aco_ia_apagada_v878640) i va a tots els seus aparells.
+//  · Textos legals: avís legal, privadesa, condicions i contracte d'encarregat. Són ESBORRANYS per a la gestoria: de moment només els veu
+//    l'Héctor (el seu compte, no els d'empresa), amb les dades que falten marcades en groc i en PDF.
+const IA_OFF878640="aco_ia_apagada_v878640";
+function iaApagada878640(){try{return lsGet8779(IA_OFF878640,"0")==="1"}catch{return false}}
+try{if(typeof window!=="undefined")window.__acoIaApagada878640=iaApagada878640}catch{}
+function dadesCompte878640(){
+  const u=currentAppUser8779();if(!u)throw new Error("Sense usuari");
+  const pref=`${STORAGE_NS8782}__${u}__`;const dades={};
+  Object.keys(localStorage).filter(k=>k.startsWith(pref)).sort().forEach(k=>{const v=localStorage.getItem(k);let x=v;try{x=JSON.parse(v)}catch{}dades[k.slice(pref.length)]=stripHeavy878185(x)});
+  return {app:"Control d’obres",versio:"V"+APP_VERSION878264,compte:u,data:new Date().toISOString(),dades};
+}
+function Privadesa878640({admin=true,textos=false,ambCopia=false}){
+  const[iaOff,setIaOff]=useState(iaApagada878640);
+  const[doc,setDoc]=useState(null);const[msg,setMsg]=useState("");
+  useEffect(()=>{const f=()=>setIaOff(iaApagada878640());window.addEventListener("aco-ia-878640",f);return()=>window.removeEventListener("aco-ia-878640",f)},[]);
+  function canviaIa(off){if(!admin)return;lsSet8779(IA_OFF878640,off?"1":"0");setIaOff(off);try{window.dispatchEvent(new Event("aco-ia-878640"))}catch{}}
+  function descarrega(){setMsg("");
+    try{const d=dadesCompte878640();const n=Object.keys(d.dades).length;
+      descarregaBlob878405(new Blob([JSON.stringify(d,null,1)],{type:"application/json"}),`dades-${String(d.compte).replace(/[^a-z0-9_-]/gi,"")||"compte"}-${todayISO8743()}.json`);
+      setMsg(t("Descarregat: {n} apartats.",{n}))}
+    catch(e){console.warn(e);setMsg(t("No s’han pogut preparar les dades."))}}
+  // «Fotos i documents»: obre «Còpia al meu ordinador» (el grup s'obre sol)
+  function obreCopia(){const d=document.querySelector('.ajustos-v878637 details[data-k="copia"]');if(!d)return;d.open=true;setTimeout(()=>{try{d.scrollIntoView({block:"start",behavior:"smooth"})}catch{}},80)}
+  const html=useMemo(()=>doc?textLegalHtml878640(doc,{color:colorDocs878396()}):"",[doc]);
+  const falten=textos?faltaTitular878640():[];
+  return <>
+    {admin&&<Card title={t("Les meves dades")} className="pv-dades-v878640">
+      <div className="botons"><button type="button" className="primary" onClick={descarrega}><Download size={16} aria-hidden="true"/> {t("Descarregar les dades")}</button>
+        {ambCopia&&<button type="button" className="secondary" onClick={obreCopia}><FolderDown size={16} aria-hidden="true"/> {t("Fotos i documents")}</button>}</div>
+      {msg&&<p className="msg" role="status">{msg}</p>}
+    </Card>}
+    <Card title={t("Serveis que fa servir l’app")} className="pv-serveis-v878640">
+      <ul className="serveis">{SERVEIS878640.map(s=><li key={s.k} data-k={s.k} className={s.k==="ia"&&iaOff?"off":""}>
+        <span className="txt"><b>{s.nom}</b><span>{t(s.per)}</span><small>{t(s.on)} · {t(s.quan)}</small></span>
+        {s.k==="ia"&&<label className="sw-v878640"><input type="checkbox" role="switch" checked={!iaOff} disabled={!admin} onChange={e=>canviaIa(!e.target.checked)} aria-label={t("Fer servir la IA")}/><i aria-hidden="true"/><span>{iaOff?t("Apagada"):t("Activa")}</span></label>}
+      </li>)}</ul>
+    </Card>
+    {textos&&<Card title={t("Textos legals")} className="pv-textos-v878640" action={<em className="esb">{t("Esborrany")}</em>}>
+      {falten.length>0&&<p className="falten">{t("Hi falten les teves dades: {l}.",{l:falten.map(x=>t(x)).join(", ")})}</p>}
+      <div className="docs">{TEXTOS878640.map(d=><button type="button" key={d.k} data-doc={d.k} className="secondary" onClick={()=>setDoc(d)}><FileText size={16} aria-hidden="true"/> {t(d.titol)}</button>)}</div>
+    </Card>}
+    {doc&&<Modal title={t(doc.titol)} close={()=>setDoc(null)}><ExactHtmlPreview878193 html={html} title={t(doc.titol)}/><BotonsDoc878412 html={html} titol={t(doc.titol)} onImprimir={()=>printHtmlInPlace878112(html,t(doc.titol))} close={()=>setDoc(null)}/></Modal>}
+  </>;
+}
+
 function Configuracio({clients=[],obres=[],odata={},partidaLibrary=[],setPartidaLibrary,setClients,setObres,setOdata,authUser}){
 const key=lsKey8779("aco_config_v60");
 const[cfg,setCfg]=useState(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}")}catch(e){return {}}});
@@ -23623,13 +23676,14 @@ useEffect(()=>{const el=ajRef878366.current;if(!el)return;
   el.addEventListener("click",h,true);el.addEventListener("toggle",tg,true);return()=>{el.removeEventListener("click",h,true);el.removeEventListener("toggle",tg,true)}},[]);
 const role878366=(getAppAccount878233(authUser)||{}).role||"admin";
 // V87.438 · com les targetes de dins de l'obra: la icona, el títol i la fletxa
-const IC438={comptes:KeyRound,exemples:GraduationCap,copia:FolderDown,despatx:FolderSync,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Cloud};
+const IC438={privadesa:ShieldCheck,comptes:KeyRound,exemples:GraduationCap,copia:FolderDown,despatx:FolderSync,proves:CalendarCheck,marca:IdCard,docs:FileText,dades:Building2,perfil:LayoutDashboard,verifactu:Receipt,marges:Percent,idioma:BookOpen,enllacos:ExternalLink,programes:Monitor,aspecte:Eye,accessos:SlidersHorizontal,usuaris:Users,copies:Cloud};
 const icAj438=k=>{const I=IC438[k]||Settings;return <I size={18} aria-hidden="true"/>};
 const bloc878366=(k,tit,cont,sub=false,cls="")=><details key={k} className={"card bloc-v878426 ajustos-grup-v878354 ajustos-bloc-v878366"+(sub?" aj-sub-v878637":"")+(cls?" "+cls:"")} data-k={k}><summary>{icAj438(k)}<span className="t"><b>{tit}</b></span><ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{cont}</div><Recollir878432/></details>;
 const tr637=esTreballador878326(),emp637=!!window.__acoEmpresa;
 const aspecte637=!emp637||/^demo-/.test(String(window.__acoEmpresa?.username||""));
 const programes637=!tr637&&teModul878326("tecnic")&&pcWindows878442();
 const comptes637=!emp637&&!!window.__acoCloud?.callFunction,proves637=!emp637&&!!window.__acoCloud?.proves;
+const textos640=!emp637&&admin;
 // V87.637 · «Còpies del núvol i versions», depurada: fora «Configuració general» (l'IVA i la retenció de sèrie no els feia servir res; el correu
 // i l'empresa ja són a Documents) i «Supabase Storage» (el sistema d'arxius d'abans de la V87.262). Les dades desades no s'esborren.
 const copies637=<>
@@ -23655,7 +23709,8 @@ const grups637=[
     emp637&&!tr637&&["exemples",t("Exemples per començar"),<ExemplesAjustos878605/>]]},
   {g:"acces",tit:t("Usuaris i accés"),Ic:Lock,items:[
     ["usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>],
-    (comptes637||proves637)&&[comptes637?"comptes":"proves",comptes637?t("Comptes del núvol"):t("Comptes de prova"),comptes637&&proves637?<><Card title={t("Comptes d’empresa")} className="comptes-card-v878637"><ComptesNuvol878613/></Card><Card title={t("Comptes de prova")} className="proves-card-v878637"><ProvesAjustos878519/></Card></>:comptes637?<ComptesNuvol878613/>:<ProvesAjustos878519/>]]},
+    (comptes637||proves637)&&[comptes637?"comptes":"proves",comptes637?t("Comptes del núvol"):t("Comptes de prova"),comptes637&&proves637?<><Card title={t("Comptes d’empresa")} className="comptes-card-v878637"><ComptesNuvol878613/></Card><Card title={t("Comptes de prova")} className="proves-card-v878637"><ProvesAjustos878519/></Card></>:comptes637?<ComptesNuvol878613/>:<ProvesAjustos878519/>],
+    ["privadesa",textos640?t("Privadesa i avisos legals"):t("Privadesa"),<Privadesa878640 admin={role878366==="admin"&&!tr637} textos={textos640} ambCopia={!tr637}/>]]},
   {g:"copies",tit:t("Còpies i arxius"),Ic:Save,items:[
     !tr637&&["despatx",t("Carpeta del despatx"),<CarpetaDespatx878625 obres={obres} odata={odata} setOdata={setOdata}/>],
     !tr637&&["copia",t("Còpia al meu ordinador"),<CopiaOrdinador878520 clients={clients} obres={obres} odata={odata}/>],

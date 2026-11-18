@@ -4635,3 +4635,23 @@
     amb hores amb el compte de l'Héctor: la còpia de la mà d'obra se'n va, obrir els partes no en copia cap, la Caixa de l'Héctor només té la
     seva despesa i la de la constructora continua igual); partes359 20/20 (la constructora continua fent les despeses dels partes de les obres
     que li comparteixen), v521 23/23, v575 22/22, v626 22/22, v607 15/15.
+
+- **V87.640 · Ajustos › Usuaris i accés › «Privadesa»** (l'Héctor, 18/11/2026: «mira'm… protecció de dades i demés temes que ha de tenir una
+  app»; proposta a Claude Docs https://claude.ai/artifact/P4RuRKVqkNd3hn48Zzf82n i «pots començar amb les targetes dins Ajustos»).
+  - Targeta nova a «Usuaris i accés» (`Privadesa878640`, `src/legal878640.js`, `src/theme-v878640.css`), en tres parts:
+    - **Les meves dades** (qui administra el compte; un treballador no): «Descarregar les dades» baixa un JSON amb totes les claus del compte
+      (`dadesCompte878640`, sense fotos: `stripHeavy878185`); «Fotos i documents» obre «Còpies i arxius › Còpia al meu ordinador».
+      «Demanar l'esborrat» encara no hi és: falta el correu de contacte per a la privadesa (no es posa el de l'Héctor al codi sense que ho digui).
+    - **Serveis que fa servir l'app**: Supabase (Frankfurt), Render, Anthropic (IA), Google (Gmail i Calendar, només si es connecta) i
+      Open-Meteo (només el nom del poble). A la línia d'Anthropic, **l'interruptor de la IA** (`aco_ia_apagada_v878640`, del compte, va a tots
+      els seus aparells): apagada, `iaObra.js` fa com si la funció no hi fos (`iaActiva`/`iaCridable`/`iaSabuda` false, `iaCrida` no envia res)
+      i l'app fa el camí de sempre sense IA (text del PDF, copiar i enganxar).
+    - **Textos legals** (només el compte de l'Héctor, mentre són esborranys): avís legal, política de privadesa, condicions del servei i
+      contracte d'encarregat del tractament (art. 28 RGPD), en fulls A4 i en PDF per passar-los a la gestoria. Les dades que falten (titular:
+      nom, NIF, adreça, correu de privadesa; preu i data de fi de la prova) surten marcades en groc. `TITULAR878640` és buit fins que l'Héctor
+      les doni. Correcció a la proposta: l'avís de la IA no el demana la llei d'IA (art. 50 és per a xats i contingut generat), sinó el RGPD
+      (informar dels serveis i de les dades que surten de la UE).
+  - Proves: `v640test` 23/23 (Héctor a 1440 i 390: tres parts, 5 serveis, interruptor de 44 px, descàrrega del JSON sense imatges, «Fotos i
+    documents», privadesa i contracte en fulls amb les marques; empresa: sense textos, apagar la IA → no envia res, continua apagada en
+    recarregar i a l'altre aparell (mòbil), tornar-la a encendre). `v637test` posada al dia («Usuaris i accés» ara és un grup amb dues),
+    i18ntest tot traduït, v469 11/11; v458 6/9 com ja fallava a la V87.600 (pressupost amb IA).

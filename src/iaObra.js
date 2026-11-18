@@ -3,16 +3,19 @@
 const FUNCIO = "aco-ia";
 let activa = null; // null = encara no se sap
 
-export const iaCridable = () => !!window.__acoCloud?.callFunction;
+// V87.640 · cada compte pot apagar la IA a Ajustos › Privadesa (aco_ia_apagada_v878640): llavors l'app fa com si no hi fos i no envia res
+const apagada = () => { try { return !!window.__acoIaApagada878640?.(); } catch { return false; } };
+export const iaCridable = () => !apagada() && !!window.__acoCloud?.callFunction;
 // una sola pregunta per sessió; sense connexió no es recorda la resposta
 export async function iaActiva() {
   if (window.__acoIaOff878458) return false; // les proves del camí sense funció
+  if (apagada()) return false;
   if (activa !== null) return activa;
   if (!iaCridable()) return false;
   try { const r = await window.__acoCloud.callFunction(FUNCIO, { accio: "ping" }); activa = !!r?.ok; return activa; }
   catch (e) { if (e?.status) activa = false; return false; }
 }
-export const iaSabuda = () => (window.__acoIaOff878458 ? false : activa);
+export const iaSabuda = () => (window.__acoIaOff878458 || apagada() ? false : activa);
 // V87.469 · Les lectures d'aquest mes, {limit, usat}; null si la IA no hi és
 export async function iaQuota() {
   if (!await iaActiva()) return null;
@@ -21,6 +24,7 @@ export async function iaQuota() {
 }
 
 export async function iaCrida(accio, cos = {}) {
+  if (apagada()) throw new Error("La IA està apagada a Ajustos.");
   let r;
   try { r = await window.__acoCloud.callFunction(FUNCIO, { accio, ...cos }); }
   catch (e) { if (e?.status === 404) activa = false; throw e; }

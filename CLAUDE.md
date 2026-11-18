@@ -157,7 +157,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.639 a Render):**
+**Estat (publicada la V87.640 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.
@@ -187,6 +187,9 @@ sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gma
   subpestanya, fent servir l’app de debò (crear, triar, desar, recarregar, comprovar), i publicar una versió a cada tanda.
 - **Repàs exhaustiu** (`tools/proves/repas411.mjs`, `WEBROOT=` per passar-lo sobre una còpia): 336 pantalles, PDF, Enviar i Signar.
 - **IA instal·lada (2/11/2026):** albarans, factures, PDF, pressupost i preus amb la funció `aco-ia`; de debò només s’ha provat la lectura de despeses.
+- **Privadesa (V87.640):** Ajustos › Usuaris i accés › Privadesa (descarregar les dades, serveis, interruptor de la IA). Els textos legals són esborranys que
+  només veu l’Héctor: falten les seves dades (`TITULAR878640` a `src/legal878640.js`, i el correu de privadesa) i la revisió de la gestoria; després,
+  casella a la benvinguda, avís del fitxatge, «Demanar l’esborrat» i la línia de la IA al costat dels botons.
 - **No fet:** perfils autònom i promotor amb compte propi, VeriFactu al servidor (ATURAT), fitxatge des del mòbil de cada treballador (fase 2), Google Drive dins de l’app.
 
 **Què fer, per ordre:**
