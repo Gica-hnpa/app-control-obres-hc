@@ -4667,3 +4667,16 @@
     següent surt normal. Al PDF no hi surt cap línia ni text. La factura desa `rebaixa641` i `baseCert641`; a Certificacions, la factura ja no
     surt com a «no coincideix» i la fila diu «rebaixa −X» (només a la pantalla).
   - Proves: `v641test` (DAVID FUSTER, PF-009 a 1440 i 390, amb una còpia de DADES).
+- **V87.642 · Factura «Només l'import» i numeració de l'empresa** (l'Héctor, 18/11/2026).
+  - **«Document»** a la targeta de cada proforma (cinquè camp; al mòbil, a sota d'ample sencer): «Amb les partides» (com sempre) o **«Només
+    l'import»** (`factParams[certId].format642 = "net"`). Llavors la proforma i la factura (`fa.format642`) porten una sola línia «Segons
+    certificació núm. X · data» amb l'import (ja rebaixat si hi ha rebaixa), sense «Partides certificades a origen» ni el quadre «Total
+    certificat a origen / Deducció certificació…»; els totals, igual. L'Héctor: «per no modificar el preu/ut, que es veu malament». La
+    certificació (el document que firma la direcció d'obra) continua amb tot el detall.
+  - **Numeració de la sèrie de l'empresa** («a Brava tocava la 26 i em surt la 33»; «mirant la darrera factura feta sense tenir en compte les
+    esborrades»): a les còpies del núvol, el 10–11/11, en entrar a mà les factures antigues de Brava (F2025-023…034, F2026-002…025, sense
+    ordre), el comptador `facturacio878337.propers["F2026-"]` va quedar a 33 (només pujava). Ara «Fer factura» i «Factura directa» proposen
+    **l'última factura de la sèrie que hi ha de debò + 1** (només les de sèrie d'empresa a «Fer factura»); el comptador només val quan la sèrie
+    encara no en té cap. La sèrie del client (el «número següent» de la fitxa) no canvia.
+  - Proves: `v642test` (DAVID FUSTER PF-008 «Només l'import» amb i sense rebaixa, factura, PF-007 com sempre, mòbil; demo-constructor amb el
+    comptador a 33 i l'última F2026-025 → proposa la 026).

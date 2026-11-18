@@ -1,0 +1,6 @@
+/* V87.642 · «Document» (Amb les partides / Només l'import): un cinquè camp a la fila de la proforma; al mòbil, a sota, d'ample sencer */
+html body .params-v878426{grid-template-columns:repeat(5,minmax(0,160px))}
+@media (max-width:700px){
+  html body .params-v878426{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .params-v878426 .fmt-v878642{grid-column:1/-1}
+}
