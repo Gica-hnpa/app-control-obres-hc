@@ -1,0 +1,9 @@
+/* V87.641 · rebaixa de la proforma: un quart camp al costat d'IVA, Retenció i Deducció (2 × 2 al mòbil) */
+html body .params-v878426{grid-template-columns:repeat(4,minmax(0,160px))}
+html body .params-v878426 .reb-v878641 input{min-height:38px;width:100%;max-width:100%;box-sizing:border-box;border-radius:8px;padding:6px 10px;border:1px solid var(--co-line-strong,#CBD5E1);background:var(--co-surface,#fff);color:var(--co-ink,#0F172A);font:inherit;font-size:14px;text-align:right;font-variant-numeric:tabular-nums}
+html body .params-v878426 .reb-v878641 input:disabled{background:var(--co-bg,#F4F7F8);color:var(--co-ink-3,#5F7075)}
+html body .params-v878426 .reb-v878641.massa input{border-color:#DC2626;box-shadow:0 0 0 1px #DC2626}
+html body .imps-v878426>div.cert-v878641 b{color:var(--co-ink-3,#5F7075)}
+@media (max-width:700px){
+  html body .params-v878426{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

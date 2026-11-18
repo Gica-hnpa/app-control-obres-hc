@@ -5814,6 +5814,8 @@ export default {
 "Certificar el 100 %": "Certificar el 100 %",
 "Acord amb el client: {m}": "Acuerdo con el cliente: {m}",
 "acord −{imp}": "acuerdo −{imp}",
+"Rebaixa (€)": "Rebaja (€)",
+"rebaixa −{imp}": "rebaja −{imp}",
 "Factura {n} amb acord: −{imp}": "Factura {n} con acuerdo: −{imp}",
 "el pressupost acceptat": "el presupuesto aceptado",
 "1 partida nova": "1 partida nueva",

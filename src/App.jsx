@@ -46,7 +46,7 @@ import {APARTATS878626,MODELS878626,cfgObra878626,permis878626,tabsPermeses87862
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.640";
+const APP_VERSION878264="87.641";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -20059,12 +20059,12 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
 {!(detall426&&cert)&&<details className="card bloc-v878426 cert-llista-v878426" open={llista426||certs.length===0} onToggle={e=>{const o=e.currentTarget.open;if(o!==llista426)setLlista426(o)}}><summary><FileCheck size={18} aria-hidden="true"/><span className="t"><b>{contrast878424?i18nT("Les meves certificacions"):i18nT("Certificacions")}</b></span>{certs.length>0&&<span className="xifra">{money(certs.reduce((x,c)=>x+certListTotal878215(c),0))}</span>}{addCertificacio&&!readOnly&&<button type="button" className="primary nova-v878426" onClick={e=>{e.preventDefault();e.stopPropagation();addCertificacio?.();setCertMode8711("emplenar");setDetall426(true)}} aria-label={i18nT("Nova")}><Plus size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Nova")}</span></button>}{addCertificacio&&!readOnly&&!contrast878424&&<button type="button" className="secondary tot-v878547" onClick={e=>{e.preventDefault();e.stopPropagation();certificaTot878547()}} title={i18nT("Certificar el 100 %")} aria-label={i18nT("Certificar el 100 %")}><CheckCheck size={16} aria-hidden="true"/> <span className="tx-v878445">100 %</span></button>}{certs.length>0&&!contrast878424&&<button type="button" className="secondary llistat-btn-v878501" onClick={e=>{e.preventDefault();e.stopPropagation();setLlistat501(true)}} aria-label={i18nT("Llistat")}><Printer size={16} aria-hidden="true"/> <span className="tx-v878445">{i18nT("Llistat")}</span></button>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">{certs.length>0&&!contrast878424&&<div className="llistat-m-v878516"><button type="button" className="secondary" onClick={()=>setLlistat501(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Llistat")}</button></div>}
   {certs.length===0?(addCertificacio&&!readOnly?<div className="cert-buida-v878589"><span>{i18nT("Encara no hi ha cap certificació.")}</span><button type="button" className="primary" onClick={()=>{addCertificacio?.();setCertMode8711("emplenar");setDetall426(true);setTimeout(()=>setEditing(true),80)}}><Plus size={16} aria-hidden="true"/> {i18nT("Fer la certificació 1")}</button></div>:<Empty text="Aquesta obra encara no té certificacions guardades."/>):<div className={"cert-list-v878273 cert-taula-v878364 cert-files-v878426"+(ambFact878364?" amb-fact":"")}>
     <div className="cap-t" aria-hidden="true"><span>{i18nT("Certificació")}</span><span>{i18nT("Data")}</span><span className="n">{i18nT("Import")}</span>{ambFact878364&&<span>{i18nT("Factura")}</span>}<span/></div>
-    {certs.map(c=>{const imp=certListTotal878215(c);const fa=faDe878364(c),vf=vfDe878364(c);const difer=!!fa&&Math.abs((+fa.baseCert544||+fa.base||0)-imp)>0.01;const potF=potFactDe878364(c);const potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
+    {certs.map(c=>{const imp=certListTotal878215(c);const fa=faDe878364(c),vf=vfDe878364(c);const difer=!!fa&&Math.abs((+fa.baseCert544||+fa.base||0)+(+fa.rebaixa641||0)-imp)>0.01;const potF=potFactDe878364(c);const potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
       return <div className={`cert-row-v878273 ${selected===c.id?"on":""}`} key={c.id} role="button" tabIndex={0} aria-pressed={selected===c.id} title={i18nT("Creada el {data}",{data:fmtCreationDate878233(c.createdAt)})} onClick={()=>{setSelected(c.id);setCertMode8711("");setDetall426(true);window.scrollTo?.(0,0)}} onKeyDown={e=>{if(e.target===e.currentTarget&&(e.key==="Enter"||e.key===" ")){e.preventDefault();setSelected(c.id);setCertMode8711("");setDetall426(true)}}}>
         <b>{i18nT("Certificació {n}",{n:c.numero})}</b>
         <input type="date" className="cert-date-input-v8721" aria-label={i18nT("Data de la certificació {n}",{n:c.numero})} value={dateVal8721(c)||""} disabled={!!fa||!!vf} onClick={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()} onChange={e=>{const value=e.target.value;setDateDraft8721(d=>({...d,[c.id]:value}));updateCertDate8721?.(c.id,value)}}/>
         <strong>{money(imp)}</strong>
-        {ambFact878364&&<span className="fact-v878364">{fa?<><button type="button" className={"cert-fa-v878337"+(difer?" mal":"")} title={difer?i18nT("La factura ({f}) no coincideix amb la certificació ({c})",{f:money(fa.base),c:money(imp)}):i18nT("Veure la factura")} onClick={e=>{e.stopPropagation();openDoc?.(docFactura878337(fa,pfs878364.find(x=>x.certId===c.id),obraData))}}>{difer&&<AlertTriangle size={14} aria-hidden="true"/>}{fa.numero}</button>{fa.acord544&&+fa.acord544.imp>0&&<small className="acord-fila-v878548" title={i18nT("Acord amb el client: {m}",{m:fa.acord544.motiu||""})}>{i18nT("acord −{imp}",{imp:money(fa.acord544.imp)})}</small>}</>:vf?<span className="cert-fa-v878337">{vf.numSerie}</span>:<span className="pend">{i18nT("Pendent")}</span>}</span>}
+        {ambFact878364&&<span className="fact-v878364">{fa?<><button type="button" className={"cert-fa-v878337"+(difer?" mal":"")} title={difer?i18nT("La factura ({f}) no coincideix amb la certificació ({c})",{f:money(fa.base),c:money(imp)}):i18nT("Veure la factura")} onClick={e=>{e.stopPropagation();openDoc?.(docFactura878337(fa,pfs878364.find(x=>x.certId===c.id),obraData))}}>{difer&&<AlertTriangle size={14} aria-hidden="true"/>}{fa.numero}</button>{fa.acord544&&+fa.acord544.imp>0&&<small className="acord-fila-v878548" title={i18nT("Acord amb el client: {m}",{m:fa.acord544.motiu||""})}>{i18nT("acord −{imp}",{imp:money(fa.acord544.imp)})}</small>}{+fa.rebaixa641>0&&<small className="acord-fila-v878548 reb-fila-v878641">{i18nT("rebaixa −{imp}",{imp:money(fa.rebaixa641)})}</small>}</>:vf?<span className="cert-fa-v878337">{vf.numSerie}</span>:<span className="pend">{i18nT("Pendent")}</span>}</span>}
         <span className="acc-v878364" onClick={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}><ActionMenu87213 className="fila-v878364 tot-v878527" fletxa={false} titol={i18nT("Opcions de la certificació {n}",{n:c.numero})} label={<Ellipsis size={18} aria-hidden="true"/>}>
           {opcionsCert527(c)}
         </ActionMenu87213></span>
@@ -20798,7 +20798,7 @@ function originRowsForProforma(c){return originRowsForCert8793(data.partides||[]
 let proformes=proformesObra878337(data);
 let current=proformes.find(f=>f.pfId===selected)||proformes[0]||null;
 const def472=defFactura878472(data,client);
-function calc(f){let iva=ivaNum878472(p(f,"iva",def472.iva),def472.iva),ret=+p(f,"ret",def472.ret),ded=+p(f,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total,...motiuPf878472(iva,p(f,"motiu0",def472.motiu0),p(f,"motiu0Text",def472.motiu0Text))}}
+function calc(f){let iva=ivaNum878472(p(f,"iva",def472.iva),def472.iva),ret=+p(f,"ret",def472.ret),ded=+p(f,"ded",0),base=f.base*(1-ded/100),ivaImp=base*iva/100,retImp=base*ret/100,total=base+ivaImp-retImp;return{iva,ret,ded,base,ivaImp,retImp,total,reb641:+f.rebaixa641||0,cert641:+f.baseCert641||0,...motiuPf878472(iva,p(f,"motiu0",def472.motiu0),p(f,"motiu0Text",def472.motiu0Text))}}
 const basePressupostObra=(data.partides||[]).reduce((s,r)=>s+(+r.q||0)*parseNum8770(r.pu),0);
 const totalBaseProformes=proformes.reduce((s,f)=>s+(+f.base||0),0);
 const totalProformes=proformes.reduce((s,f)=>s+calc(f).total,0);
@@ -20815,9 +20815,10 @@ const selects426=(f,c,bloq)=><div className="params-v878426">
   <label><span>{t("IVA")}</span><select aria-label={t("IVA")} disabled={!canEdit||bloq} value={c.iva} onChange={e=>setp(f,"iva",+e.target.value)}>{[21,10,4,0].map(x=><option key={x} value={x}>{x}%</option>)}</select></label>
   <label><span>{t("Retenció")}</span><select aria-label={t("Retenció")} disabled={!canEdit||bloq} value={c.ret} onChange={e=>setp(f,"ret",+e.target.value)}>{[0,1,7,15,19].map(x=><option key={x} value={x}>{x}%</option>)}</select></label>
   <label><span>{t("Deducció")}</span><select aria-label={t("Deducció")} disabled={!canEdit||bloq} value={c.ded} onChange={e=>setp(f,"ded",+e.target.value)}>{Array.from({length:11}).map((_,i)=><option key={i} value={i*5}>{i*5}%</option>)}</select></label>
+  {(()=>{const rv=p(f,"rebaixa","")??"",massa=(parseNum8770(rv)||0)>(c.cert641||+f.base||0)+0.005;return <label className={"reb-v878641"+(massa?" massa":"")}><span>{t("Rebaixa (€)")}</span><NumIn878584 inputMode="decimal" aria-label={t("Rebaixa (€)")} disabled={!canEdit||bloq} value={rv} placeholder="0,00" onChange={e=>setp(f,"rebaixa",e.target.value)}/></label>})()}
   {c.iva===0&&<div className="iva0-v878472"><label><span>{t("Motiu de l’IVA 0 %")}</span><select disabled={!canEdit||bloq} value={c.motiu0} onChange={e=>setp(f,"motiu0",e.target.value)}><option value="isp">{t("Inversió del subjecte passiu")}</option><option value="altre">{t("Un altre motiu")}</option></select></label>{c.motiu0==="altre"&&<label><span>{t("Text que surt a la factura")}</span><input disabled={!canEdit||bloq} value={c.motiu0Text} onChange={e=>setp(f,"motiu0Text",e.target.value)} placeholder={t("p. ex. Operació exempta d’IVA (art. 20 de la Llei 37/1992)")}/></label>}</div>}
 </div>;
-const imports426=c=><div className="imps-v878426"><div><small>{t("Base")}</small><b>{money(c.base)}</b></div><div><small>{t("IVA")}</small><b>{money(c.ivaImp??(c.base*(+c.iva||0)/100))}</b></div>{(+c.retImp||0)>0.005&&<div><small>{t("Retenció")}</small><b>−{money(c.retImp)}</b></div>}<div className="tot"><small>{t("Total")}</small><b>{money(c.total)}</b></div></div>;
+const imports426=c=><div className="imps-v878426">{c.reb641>0&&<div className="cert-v878641"><small>{t("Certificat")}</small><b>{money(c.cert641)}</b></div>}<div><small>{t("Base")}</small><b>{money(c.base)}</b></div><div><small>{t("IVA")}</small><b>{money(c.ivaImp??(c.base*(+c.iva||0)/100))}</b></div>{(+c.retImp||0)>0.005&&<div><small>{t("Retenció")}</small><b>−{money(c.retImp)}</b></div>}<div className="tot"><small>{t("Total")}</small><b>{money(c.total)}</b></div></div>;
 return <div className={`fact-layout-v61 fact-layout-v87101 fact-v878426 ${readOnly?"client-readonly-fact-v878234":""}`}>
 <div className="xifres-v878426 x4 fact-xifres-v878452">
   <div className="x act"><small>{t("Pressupost d’obra")}</small><b>{money(basePressupostObra)}</b></div>
@@ -20846,7 +20847,7 @@ return <div className={`fact-layout-v61 fact-layout-v87101 fact-v878426 ${readOn
   </div></details>})}
 </div><Recollir878432/></details>
 <details className="card bloc-v878426 fact-fa-v878426"><summary><ReceiptText size={18} aria-hidden="true"/><span className="t"><b>{t("Factures")}</b></span>{facturades426.length>0&&<span className="xifra">{money(totFact426)}</span>}<ChevronRight size={18} className="chev" aria-hidden="true"/></summary><div className="cos">
-  {facturades426.length===0?<Empty text="Encara no hi ha factures."/>:facturades426.map(({f,fa,em})=>{const c=em?{iva:em.iva,ret:em.ret,ded:em.ded,base:em.base,ivaImp:em.ivaImp,retImp:em.retImp,total:em.totalCobrar??em.total}:fa?{iva:fa.iva,ret:fa.ret,ded:fa.ded,base:fa.base,ivaImp:fa.ivaImp,retImp:fa.retImp,total:fa.total}:calc(f);const signada=fa&&sigFa426(fa);
+  {facturades426.length===0?<Empty text="Encara no hi ha factures."/>:facturades426.map(({f,fa,em})=>{const c=em?{iva:em.iva,ret:em.ret,ded:em.ded,base:em.base,ivaImp:em.ivaImp,retImp:em.retImp,total:em.totalCobrar??em.total}:fa?{iva:fa.iva,ret:fa.ret,ded:fa.ded,base:fa.base,ivaImp:fa.ivaImp,retImp:fa.retImp,total:fa.total,reb641:+fa.rebaixa641||0,cert641:+fa.baseCert641||0}:calc(f);const signada=fa&&sigFa426(fa);
     return <details key={f.pfId} className="fila-v878426 fa-fila-v878426"><summary><span className="num">{em?em.numSerie:fa.numero}</span><span className="t">{fmtAppDate8748(em?em.data:fa.data)} · {t("Certificació {n}",{n:f.numeroCert})}</span>{!em&&fa?.acord544&&+fa.acord544.imp>0&&<span className="acord-fila-v878548" title={t("Acord amb el client: {m}",{m:fa.acord544.motiu||""})}>{t("acord −{imp}",{imp:money(fa.acord544.imp)})}</span>}{em?<span className={`vf-badge-v878285 vf-${vfEstat878285(em.estat).cls}`}><small>{t(vfEstat878285(em.estat).txt)}</small></span>:signada?<span className="signada-v878426"><Signature size={14} aria-hidden="true"/> {t("Signada")}</span>:null}{!em&&fa&&!fa.importada&&<span className={"cob-v878589"+(fa.cobrada||fa.dataCobrament?" si":"")}>{fa.cobrada||fa.dataCobrament?t("Cobrada {d}",{d:fmtAppDate8748(fa.dataCobrament)||""}).trim():t("Pendent de cobrar")}</span>}<b className="xifra">{money(c.total)}</b><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos">
     {imports426(c)}
     <div className="botons-v878426">
@@ -20975,8 +20976,27 @@ function proformesObra878337(data={}){
     const fin=certFinancialSummary8793(ps,n);
     const base=fin.actual||rows.reduce((s,r)=>s+certQty8783(r,n)*parseNum8770(r.pu),0);
     const bnom=bids.size>1&&bid!=="principal"?(groups.find(g=>g.id===bid)?.nom||""):"";
-    return {...c,certId:c.id,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0")+(bnom?` · ${bnom}`:""),base:base||(teQuantCert878364(ps,n)?0:(c.import||0)),rows,allRows,certTotals:fin.certTotals,totalOrigen:fin.totalOrigen,anterior:fin.anterior,budgetId:bid,budgetNom:bnom};
+    const pf={...c,certId:c.id,pfId:"pf-"+c.numero,numeroCert:c.numero,numero:"PF-"+String(c.numero).padStart(3,"0")+(bnom?` · ${bnom}`:""),base:base||(teQuantCert878364(ps,n)?0:(c.import||0)),rows,allRows,certTotals:fin.certTotals,totalOrigen:fin.totalOrigen,anterior:fin.anterior,budgetId:bid,budgetNom:bnom};
+    return rebaixaPf878641(pf,(data.factParams||{})[c.id]?.rebaixa);
   });
+}
+// V87.641 · rebaixa de la proforma (l'Héctor, 18/11/2026: «treure import manualment d'una proforma sense variar la certificació», «sense que
+// surti cap línia de deducció ni cap text»). L'import es reparteix entre les partides segons el que es certifica aquest mes (al cèntim: la resta
+// va a la partida més gran); la quantitat no canvia i el preu s'ajusta perquè quadri. Només al document (proforma i factura): la certificació
+// desada no es toca i la proforma del mes següent surt normal.
+function rebaixaPf878641(pf,reb){
+  const base=+pf.base||0,n=+pf.numeroCert||1;
+  const R=Math.round(Math.min(Math.max(0,parseNum8770(reb)||0),Math.max(0,base))*100)/100;
+  if(!(R>0.004))return pf;
+  const rows=pf.allRows||[];
+  const per=rows.map(r=>Math.max(0,+certAmount878223(r,n)||0));
+  const sum=per.reduce((s,x)=>s+x,0);
+  if(!(sum>0))return pf;
+  const parts=per.map(x=>Math.round(R*x/sum*100)/100);
+  const dif=Math.round((R-parts.reduce((s,x)=>s+x,0))*100)/100;
+  if(Math.abs(dif)>0.0001){let im=0;per.forEach((x,i)=>{if(x>per[im])im=i});parts[im]=Math.round((parts[im]+dif)*100)/100}
+  const allRows=rows.map((r,i)=>{if(!(parts[i]>0))return r;const imp=(+r.impOrigin||0)-parts[i],q=+r.qOrigin||0;return {...r,impOrigin:imp,pu:q>0?imp/q:r.pu}});
+  return {...pf,allRows,base:Math.round((base-R)*100)/100,totalOrigen:(+pf.totalOrigen||0)-R,certTotals:(pf.certTotals||[]).map(c=>+c.n===n?{...c,total:(+c.total||0)-R}:c),baseCert641:base,rebaixa641:R};
 }
 function legacyFactParams878337(){try{return JSON.parse(localStorage.getItem(lsKey8779("aco_fact_params_v61"))||"{}")}catch{return {}}}
 function paramsPf878337(data,f,legacy){
@@ -21084,7 +21104,7 @@ function FerFactura878297({f,c:c0,obra,client,setClients,data,setData,close}){
     if(faltaIban&&netV878304(compte.iban)){const cur=empresaInfo878259()||{};lsSet8779("aco_empresa_v878259",JSON.stringify({...cur,iban:netV878304(compte.iban).toUpperCase(),banc:netV878304(compte.banc)}))}
     const k=f.certId||f.pfId;
     const m0=motiuPf878472(iva,motiu0,netV878304(motiuTx));
-    const fa={id:"fo-"+Date.now(),certId:k,budgetId:f.budgetId||"principal",pfNumero:f.numero,certNum:f.numeroCert,numero,num:+num,...(emp?{serieEmpresa:true,prefix}:{serieClient:client?.id||""}),data:dataF,base,...(acordImp>0?{baseCert544:baseCert,acord544:{imp:acordImp,motiu:netV878304(acord544.motiu)}}:{}),ded:c0.ded,iva,ivaImp,ret,retImp,total,...m0,destinatari:dest,avisCobr878496:{data:venc529||sumaDies878496(dataF,diesCobrar878521())},createdAt:new Date().toISOString()};
+    const fa={id:"fo-"+Date.now(),certId:k,budgetId:f.budgetId||"principal",pfNumero:f.numero,certNum:f.numeroCert,numero,num:+num,...(emp?{serieEmpresa:true,prefix}:{serieClient:client?.id||""}),data:dataF,base,...(acordImp>0?{baseCert544:baseCert,acord544:{imp:acordImp,motiu:netV878304(acord544.motiu)}}:{}),...(+f.rebaixa641>0?{rebaixa641:+f.rebaixa641,baseCert641:+f.baseCert641||0}:{}),ded:c0.ded,iva,ivaImp,ret,retImp,total,...m0,destinatari:dest,avisCobr878496:{data:venc529||sumaDies878496(dataF,diesCobrar878521())},createdAt:new Date().toISOString()};
     setData(d=>({...d,factParams:{...(d.factParams||{}),[k]:{...((d.factParams||{})[k]||{}),iva,ret,ded:c0.ded,...m0}},facturesObra878297:[...(d.facturesObra878297||[]),fa],updatedAt:new Date().toISOString()}));
     if(emp)desaSerieEmpresa878337(prefix,+num>=(+se.propers[prefix]||1)?+num+1:null);
     else if(noSerie)updateClient878297(client,{facturacio878297:{digits:3,...sc,actiu:true,prefix,proper:+num+1}},setClients);
@@ -23415,7 +23435,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.640",
+    app_version:"87.641",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

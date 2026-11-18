@@ -4655,3 +4655,15 @@
     documents», privadesa i contracte en fulls amb les marques; empresa: sense textos, apagar la IA → no envia res, continua apagada en
     recarregar i a l'altre aparell (mòbil), tornar-la a encendre). `v637test` posada al dia («Usuaris i accés» ara és un grup amb dues),
     i18ntest tot traduït, v469 11/11; v458 6/9 com ja fallava a la V87.600 (pressupost amb IA).
+- **V87.641 · Rebaixa de la proforma** (l'Héctor, 18/11/2026: «treure import manualment d'una proforma sense variar la certificació», «sense
+  que surti cap línia de deducció ni cap text»; triada la «rebaixa a la proforma» davant d'una partida de descompte a la certificació).
+  - A la targeta de cada proforma (Facturació de l'obra), un quart camp **«Rebaixa (€)»** al costat d'IVA, Retenció i Deducció (2 × 2 al mòbil).
+    Es desa a `factParams[certId].rebaixa`; la targeta ensenya «Certificat» (l'import de la certificació) i la base rebaixada. Més que la base:
+    el camp en vermell i la base a 0. Amb factura, bloquejat com la resta.
+  - `rebaixaPf878641` (dins de `proformesObra878337`): la rebaixa es reparteix entre les partides segons el que es certifica aquell mes
+    (`certAmount878223`; al cèntim, la resta a la partida més gran). La quantitat no canvia; l'import a origen baixa i el preu s'ajusta perquè
+    quadri. El total a origen i la base baixen exactament la rebaixa; les deduccions de les certificacions anteriors no canvien. **Només al
+    document** (proforma, factura, Facturació i Rendiment, que fan servir la proforma): la certificació desada no es toca i la proforma del mes
+    següent surt normal. Al PDF no hi surt cap línia ni text. La factura desa `rebaixa641` i `baseCert641`; a Certificacions, la factura ja no
+    surt com a «no coincideix» i la fila diu «rebaixa −X» (només a la pantalla).
+  - Proves: `v641test` (DAVID FUSTER, PF-009 a 1440 i 390, amb una còpia de DADES).

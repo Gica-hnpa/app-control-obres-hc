@@ -300,6 +300,7 @@ import "./theme-v878637.css";
 import "./theme-v878638.css";
 import "./theme-v878639.css";
 import "./theme-v878640.css";
+import "./theme-v878641.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
