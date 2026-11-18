@@ -225,7 +225,22 @@ function paginaFull(doc, root, { H, mt, mb, gap }) {
     const fiCont = r.bottom + win.scrollY - (parseFloat(root.style.getPropertyValue("padding-bottom")) || mb);
     tops.push(ini - mt);
     if (fiCont <= ini + ALT + 1) {
-      root.style.setProperty("padding-bottom", (mb + Math.max(0, ini + ALT - fiCont)) + "px", "important");
+      // V87.643 · el peu fix (la forma de pagament i el peu de l'empresa a les factures) va a baix de tot de l'última pàgina, no just sota
+      // del total (l'Héctor, 18/11/2026: «que el número de compte surti sempre a peu de pàgina»). Un espai al davant l'hi porta.
+      const fix = root.querySelector(".a4-peu-fix");
+      if (fix) {
+        const sp = doc.createElement("div"); sp.className = "a4-espai"; sp.setAttribute("aria-hidden", "true");
+        fix.parentNode.insertBefore(sp, fix);
+        let h = 0;
+        for (let i = 0; i < 4; i++) {
+          const e = ini + ALT - (fix.getBoundingClientRect().bottom + win.scrollY);
+          if (Math.abs(e) < 0.5) break;
+          h = Math.max(0, h + e); sp.style.setProperty("height", h + "px", "important");
+          if (h === 0) break;
+        }
+      }
+      const fi2 = root.getBoundingClientRect().bottom + win.scrollY - (parseFloat(root.style.getPropertyValue("padding-bottom")) || mb);
+      root.style.setProperty("padding-bottom", (mb + Math.max(0, ini + ALT - fi2)) + "px", "important");
       break;
     }
     const t = tall(doc, root, ini, ALT, forcats);

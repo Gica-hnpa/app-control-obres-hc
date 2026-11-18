@@ -4680,3 +4680,11 @@
     encara no en té cap. La sèrie del client (el «número següent» de la fitxa) no canvia.
   - Proves: `v642test` (DAVID FUSTER PF-008 «Només l'import» amb i sense rebaixa, factura, PF-007 com sempre, mòbil; demo-constructor amb el
     comptador a 33 i l'última F2026-025 → proposa la 026).
+- **V87.643 · El número de compte al peu de la pàgina** (l'Héctor, 18/11/2026: «el número de compte surti sempre a peu de pàgina i no just a
+  sota del total, no queda bé»; la factura neta de la V87.642, «perfecte, és el que volia»).
+  - La forma de pagament (`pagament878337`, «Forma de pagament: transferència bancària · banc · IBAN…») i el peu de l'empresa
+    (`peuDoc878396`) van junts en un bloc `.a4-peu-fix` (`peuFix878643`) a les factures i proformes de certificació, a la factura directa
+    i a les factures d'honoraris (les observacions es queden on eren).
+  - `fullsA4.js` (vista prèvia i PDF): a l'última pàgina, un espai al davant porta el bloc fins al marge de baix del full. En imprimir
+    (`PEU_FIX_CSS878643`), el full és una columna i el bloc va al final (`margin-top:auto`).
+  - Proves: `v643test` (demo-constructor amb IBAN: proforma, factura amb les partides i factura neta).
