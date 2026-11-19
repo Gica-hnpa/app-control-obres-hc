@@ -48,7 +48,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.645";
+const APP_VERSION878264="87.646";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -539,7 +539,9 @@ const SOCOTERM_LOGO="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPYAAABgCAYAA
 class SafeRenderBoundary878108 extends React.Component{
   constructor(props){super(props);this.state={hasError:false,msg:""}}
   static getDerivedStateFromError(error){return {hasError:true,msg:String(error?.message||error||"Error de pantalla")}}
-  componentDidCatch(error,info){console.error("Error controlat a pantalla",error,info)}
+  componentDidCatch(error,info){console.error("Error controlat a pantalla",error,info);
+    // V87.646 · també al núvol: la peça de la pantalla pel nom (de la pila de React), mai el títol
+    try{const cs=String(info?.componentStack||"");const peca=(/at (\w+)/.exec(cs)||/^\s*(\w+)/m.exec(cs)||[])[1]||"";window.__acoErrors?.apunta(error,{pantalla:peca,lloc:cs.replace(/\s+/g," ").slice(0,600)})}catch{}}
   render(){
     if(this.state.hasError){return <Card title="Mode segur"><div className="module-note-v8738"><b>He evitat que aquesta pantalla bloquegi tota l'app.</b><span>{this.state.msg}</span></div><button className="primary" onClick={()=>this.setState({hasError:false,msg:""})}>Reintentar</button></Card>}
     return this.props.children;
@@ -1925,7 +1927,7 @@ function ComptesNuvol878613(){
   const[ocupat,setOcupat]=useState(false);
   const[q,setQ]=useState("");
   const[msg,setMsg]=useState("");
-  const errTx=e=>{const c=String(e?.body?.codi||"");return c==="existeix"?t("Aquest usuari ja existeix."):c==="usuari"?t("L’usuari només pot tenir lletres minúscules, números i guions."):c==="contrasenya"?t("La contrasenya ha de tenir com a mínim 8 caràcters."):c==="no-existeix"?t("Aquest usuari no existeix."):e?.offline?t("No hi ha connexió amb el núvol."):String(e?.message||e)};
+  const errTx=e=>{const c=String(e?.body?.codi||"");return c==="existeix"?t("Aquest usuari ja existeix."):c==="usuari"?t("L’usuari només pot tenir lletres minúscules, números i guions."):c==="contrasenya"?t("La contrasenya ha de tenir com a mínim 10 caràcters."):c==="feble"?t("Aquesta contrasenya surt en filtracions d’internet o és massa fàcil. Tria’n una altra."):c==="no-existeix"?t("Aquest usuari no existeix."):e?.offline?t("No hi ha connexió amb el núvol."):String(e?.message||e)};
   async function carrega(){try{const r=await crida("llista");setSt({ll:Array.isArray(r?.comptes)?r.comptes:[],estat:"ok",err:""})}
     catch(e){setSt({ll:null,estat:e?.status===404?"falta":e?.body?.codi==="no-admin"?"noadmin":"err",err:errTx(e)})}}
   // només quan s’obre el bloc d’Ajustos (no a cada vegada que s’entra a Ajustos)
@@ -1936,9 +1938,9 @@ function ComptesNuvol878613(){
   if(st.estat==="noadmin")return <p className="err">{t("Aquest compte no pot gestionar comptes: falta el secret ACO_ADMINS amb el teu correu (docs/comptes-nuvol.md).")}</p>;
   if(st.estat==="err")return <p className="err">{st.err}</p>;
   const usuariNou=(nou.prova&&!/^prova-/.test(nou.usuari)?"prova-":"")+nou.usuari.replace(/-+$/,"");
-  async function crea(){if(ocupat)return;setMsg("");if(usuariNou.length<2){setMsg(t("Escriu l’usuari."));return}if(nou.pw.length<8){setMsg(t("La contrasenya ha de tenir com a mínim 8 caràcters."));return}
+  async function crea(){if(ocupat)return;setMsg("");if(usuariNou.length<2){setMsg(t("Escriu l’usuari."));return}if(nou.pw.length<10){setMsg(t("La contrasenya ha de tenir com a mínim 10 caràcters."));return}
     setOcupat(true);try{await crida("crea",{usuari:usuariNou,contrasenya:nou.pw});setFet({usuari:usuariNou,pw:nou.pw,nou:true});setNou({usuari:"",pw:contrasenya878613(),prova:false});await carrega()}catch(e){setMsg(errTx(e))}setOcupat(false)}
-  async function canvia(){if(ocupat||!canvi)return;setMsg("");if(canvi.pw.length<8){setMsg(t("La contrasenya ha de tenir com a mínim 8 caràcters."));return}
+  async function canvia(){if(ocupat||!canvi)return;setMsg("");if(canvi.pw.length<10){setMsg(t("La contrasenya ha de tenir com a mínim 10 caràcters."));return}
     setOcupat(true);try{await crida("contrasenya",{usuari:canvi.usuari,contrasenya:canvi.pw});setFet({usuari:canvi.usuari,pw:canvi.pw,nou:false});setCanvi(null)}catch(e){setMsg(errTx(e))}setOcupat(false)}
   const enllac=u=>`${location.origin}/?entra=${encodeURIComponent(u)}`;
   const text=f=>[t("Usuari: {u}",{u:f.usuari}),t("Contrasenya: {p}",{p:f.pw}),t("Per entrar: {l}",{l:enllac(f.usuari)})].join("\n");
@@ -3660,7 +3662,7 @@ function useAvisos878520(){
     ...(dsp.nous?[{k:"despatx-nous",ref:"despatx-nous",tone:"info",txt:t("Carpeta del despatx: {n} arxius nous",{n:dsp.nous}),sub:t("Toca per afegir-los a l’app")}]:[])],[esp,pend,dsp.permis,dsp.nous]);
 }
 function obreAvis878520(a,st){
-  if(a.k==="espai"){try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Configuració"}}))}catch{}return true}
+  if(a.k==="espai"){window.__acoAjustosEstat878646=true;try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Configuració"}}))}catch{}return true}
   if(a.k==="pagar"||a.k==="pagar-set"||a.k==="caixa"){obreCaixa878521(a.vista);return true}
   if(a.k==="dge"){window.__acoRendDGE878564=true;try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Rendiment empresa"}}))}catch{}return true}
   if(a.k==="fitx-no"){window.__acoCHVista878523="fitxatge";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Traça"}}))}catch{}return true}
@@ -3969,30 +3971,78 @@ function CarpetaDespatx878625({obres,odata,setOdata}){
     {rec?.dir&&rec.canvis?.length>0?<details className="canvis-v878625"><summary>{t("Últims canvis")} <span className="xifra">{rec.canvis.length}</span><ChevronRight size={16} className="chev" aria-hidden="true"/></summary><ul>{rec.canvis.map((c,i)=><li key={i}><b>{c.n}</b><small>{c.d==="app"?t("De la carpeta a l’app"):c.d==="act"?t("Canviat a la carpeta"):t("De l’app a la carpeta")} · {c.o} · {horaDespatx878625(c.at)}</small></li>)}</ul></details>:null}
   </div>;
 }
-function EspaiNuvol878263(){
+// V87.646 · Vigilància: «Estat del núvol» (Ajustos › Usuaris i accés, només l'Héctor). Abans, si alguna cosa fallava, se n'assabentava
+// quan l'hi deia un usuari. A dalt, el resum (errors de 7 dies, última còpia del núvol i IA del mes); a sota, tres targetes: Espai,
+// Comptes (últim canvi desat, última entrada, IA del mes i errors) i Errors de l'app (30 dies). Funció aco_estat_nuvol de
+// supabase/aco_vigilancia_v878646.sql; sense aquest SQL, només l'espai (aco_espai). Substitueix la targeta «Espai al núvol».
+const loc878646=()=>getLang()==="es"?"es-ES":"ca-ES";
+function quan878646(v){
+  if(!v)return t("mai");const d=new Date(v);if(isNaN(d))return "—";
+  const h=d.toLocaleTimeString(loc878646(),{hour:"2-digit",minute:"2-digit"}),avui=new Date(),ahir=new Date(Date.now()-864e5);
+  if(d.toDateString()===avui.toDateString())return t("avui, {h}",{h});
+  if(d.toDateString()===ahir.toDateString())return t("ahir, {h}",{h});
+  return d.toLocaleDateString(loc878646(),{day:"numeric",month:"numeric",year:d.getFullYear()===avui.getFullYear()?undefined:"2-digit"})+", "+h;
+}
+const usd878646=n=>(+n||0).toLocaleString(loc878646(),{minimumFractionDigits:2,maximumFractionDigits:2})+" $";
+const nomCompte878646=e=>{const s=String(e||"");return s.endsWith("@usuaris.controlobres.app")?s.split("@")[0]:s||"—"};
+function EstatNuvol878646(){
   const[st,setSt]=useState({estat:"carregant"});
   async function load(){
     setSt({estat:"carregant"});
     const c=window.__acoCloud;
-    if(!c?.espai||!c.status?.().email){setSt({estat:"sense-nuvol"});return}
-    try{const r=await c.espai();if(r==null){setSt({estat:"amagat"});return}setSt({estat:"ok",...r})}
-    catch(e){setSt({estat:e.offline?"sense-connexio":(e.status===404||/aco_espai|could not find/i.test(e.message||"")?"falta-sql":"error"),msg:e.message})}
+    if(!c?.estatNuvol||!c.status?.().email){setSt({estat:"sense-nuvol"});return}
+    try{const r=await c.estatNuvol();if(r==null){setSt({estat:"amagat"});return}setSt({estat:"ok",...r})}
+    catch(e){
+      if(e.offline){setSt({estat:"sense-connexio"});return}
+      if(e.status===404||/aco_estat_nuvol|could not find/i.test(e.message||"")){
+        let r=null;try{r=await c.espai()}catch{}
+        setSt({estat:"falta-sql",...(r||{})});return}
+      setSt({estat:"error",msg:e.message})}
   }
   useEffect(()=>{load()},[]);
   if(st.estat==="amagat")return null;
-  const row=(label,used,limit)=>{const pct=Math.min(100,Math.round(used/limit*100));return <div className="espai-row-v878263"><div><b>{t(label)}</b><span>{MB878263(used)} {t("MB de")} {Math.round(limit/1073741824)} GB · {pct} %</span></div><div className="espai-bar-v878263"><i style={{width:pct+"%"}} className={pct>=80?"alerta":""}/></div></div>};
-  return <Card title={t("Espai al núvol")} action={<button type="button" className="secondary" onClick={load}>{t("Actualitzar")}</button>}>
+  const comptes=Array.isArray(st.comptes)?st.comptes:[],errors=Array.isArray(st.errors)?st.errors:[];
+  const err7=errors.filter(e=>Date.now()-new Date(e.darrer).getTime()<7*864e5).reduce((s,e)=>s+(+e.vegades||1),0);
+  const iaMes=comptes.reduce((s,c)=>s+(+c.cost||0),0);
+  const copiaVella=!st.copia||Date.now()-new Date(st.copia).getTime()>36*3600e3;
+  const pct=(u,l)=>Math.min(100,Math.round((+u||0)/l*100));
+  const pArx=pct(st.arxius,PLA878520.arxius),pBd=pct(st.base_dades,PLA878520.bd);
+  const fila=(label,used,limit,p)=><div className="espai-row-v878263"><div><b>{t(label)}</b><span>{MB878263(+used||0)} {t("MB de")} {Math.round(limit/1073741824)} GB · {p} %</span></div><div className="espai-bar-v878263"><i style={{width:p+"%"}} className={p>=80?"alerta":""}/></div></div>;
+  const espai=(st.estat==="ok"||st.estat==="falta-sql")&&st.base_dades!=null?<CartaLlista878518 className="espai-v878646" icona={Cloud} title={t("Espai")} xifra={`${Math.max(pArx,pBd)} %`}>
+    {fila("Arxius (fotos, croquis, documents)",st.arxius,PLA878520.arxius,pArx)}
+    {fila("Base de dades (obres, pressupostos…)",st.base_dades,PLA878520.bd,pBd)}
+    <small className="muted">{t("Pla Pro de Supabase, per a tots els comptes junts · {n} arxius",{n:+st.arxius_n||0})}</small>
+  </CartaLlista878518>:null;
+  return <div className="estat-nuvol-v878646">
+    <div className="botons cap-v878646">
+      {st.estat==="ok"&&<>
+        <span className={"pastilla-v878646 "+(err7?"alerta":"bona")}>{err7===1?t("1 error en 7 dies"):err7?t("{n} errors en 7 dies",{n:err7}):t("Cap error en 7 dies")}</span>
+        <span className={"pastilla-v878646 "+(copiaVella?"alerta":"bona")}>{t("Còpia del núvol: {q}",{q:quan878646(st.copia)})}</span>
+        <span className="pastilla-v878646">{t("IA aquest mes: {c}",{c:usd878646(iaMes)})}</span>
+      </>}
+      <button type="button" className="secondary small" onClick={load} disabled={st.estat==="carregant"}>{t("Actualitzar")}</button>
+    </div>
     {st.estat==="carregant"&&<div className="muted">{t("Calculant…")}</div>}
+    {espai}
     {st.estat==="ok"&&<>
-      {row("Arxius (fotos, croquis, documents)",+st.arxius||0,PLA878520.arxius)}
-      {row("Base de dades (obres, pressupostos…)",+st.base_dades||0,PLA878520.bd)}
-      <small className="muted">{t("Pla Pro de Supabase, per a tots els comptes junts · {n} arxius",{n:+st.arxius_n||0})}</small>
+      <CartaLlista878518 className="comptes-v878646" icona={Users} title={t("Comptes")} xifra={comptes.length}>
+        <div className="llista-v878646">{comptes.map(c=><div key={c.email} className="fila-v878646">
+          <span className="t"><b>{nomCompte878646(c.email)}</b><small>{t("Últim canvi: {q}",{q:quan878646(c.ultim_canvi)})} · {t("Entrada: {q}",{q:quan878646(c.ultima_entrada)})}</small></span>
+          <span className="d"><small>{t("IA: {n} lectures · {c}",{n:+c.lectures||0,c:usd878646(c.cost)})}{c.paquet!=null?" · "+t("paquet {n}",{n:c.paquet}):""}</small>{+c.errors>0&&<small className="err">{+c.errors===1?t("1 error"):t("{n} errors",{n:+c.errors})}</small>}</span>
+        </div>)}</div>
+      </CartaLlista878518>
+      <CartaLlista878518 className="errors-v878646" icona={AlertTriangle} title={t("Errors de l’app (30 dies)")} xifra={errors.length||null}>
+        {errors.length?<div className="llista-v878646">{errors.map((e,i)=><details key={i} className="fila-v878646 error-v878646">
+          <summary><span className="t"><b>{e.missatge}</b><small>{[quan878646(e.darrer),nomCompte878646(e.email),e.versio,e.aparell,+e.vegades>1?t("{n} vegades",{n:+e.vegades}):""].filter(Boolean).join(" · ")}</small></span></summary>
+          {e.pantalla||e.lloc?<code className="lloc-v878646">{[e.pantalla,e.lloc].filter(Boolean).join(" · ")}</code>:null}
+        </details>)}</div>:<div className="muted">{t("Cap error en els últims 30 dies.")}</div>}
+      </CartaLlista878518>
     </>}
-    {st.estat==="falta-sql"&&<div className="module-note-v8738"><span>{t("Per veure l’espai, cal executar una vegada")} <b>{t("supabase/aco_espai_v87263.sql")}</b> {t("a Supabase.")}</span></div>}
+    {st.estat==="falta-sql"&&<div className="module-note-v8738"><span>{t("Per veure els comptes i els errors, cal executar una vegada")} <b>supabase/aco_vigilancia_v878646.sql</b> {t("a Supabase.")}</span></div>}
     {st.estat==="sense-connexio"&&<div className="muted">{t("Sense connexió amb el núvol.")}</div>}
     {st.estat==="sense-nuvol"&&<div className="muted">{t("Cal estar connectat al núvol.")}</div>}
     {st.estat==="error"&&<div className="muted">{t("No s’ha pogut calcular:")} {st.msg}</div>}
-  </Card>;
+  </div>;
 }
 
 // V87.305 · Enllaços de cada obra (mòdul tècnic, encàrrec de l'Héctor del 19/10/2026). El Cadastre s'obre amb la referència
@@ -23445,7 +23495,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.645",
+    app_version:"87.646",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23574,7 +23624,7 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
     const pwdNew=String(form.password||"");
     if(username!=="hector"&&!pwdNew&&!accounts[username]?.passwordHash){alert(t("Cal indicar una contrasenya."));return}
     if(pwdNew&&OLD_PUBLIC_PASSWORDS878260.includes(pwdNew)){alert(t("Aquesta contrasenya era pública. Tria'n una altra."));return}
-    if(pwdNew&&pwdNew.length<8){alert(t("La contrasenya ha de tenir com a mínim 8 caràcters."));return}
+    if(pwdNew&&pwdNew.length<10){alert(t("La contrasenya ha de tenir com a mínim 10 caràcters."));return}
     const requestedClientTabs=form.allowedTabs||[];
     const requiredFeatureTabs=[form.canEditBudget?"Pressupost obra":"",form.canEditCertifications?"Certificacions obra":""].filter(Boolean);
     const normalized={...form,username,password:undefined,passwordHash:username==="hector"?"":(pwdNew?hashPassword878260(pwdNew):String(accounts[username]?.passwordHash||"")),role:form.role==="admin"?"admin":"client",module:form.role==="admin"?"technical":"module2",ownerUser:String(form.ownerUser||authUser||"hector").toLowerCase(),clientId:String(form.clientId||""),allowedTabs:form.role==="admin"?[]:[...new Set([...(requestedClientTabs.length?requestedClientTabs:["Resum"]),...requiredFeatureTabs])],readOnly:form.role==="admin"?false:!!form.readOnly,canCreateProject:form.role==="admin"?true:!!form.canCreateProject,canEditBudget:form.role==="admin"?false:!!form.canEditBudget,canEditCertifications:form.role==="admin"?false:!!form.canEditCertifications,canUseClientLibrary:form.role==="admin"?false:!!form.canUseClientLibrary,clientLibraryMaxPerChapter:form.role==="admin"?3:Math.max(1,Math.min(20,parseNum8770(form.clientLibraryMaxPerChapter)||3)),clientTabsFixedV878239:form.role==="admin"?false:!!form.clientTabsFixedV878239};
@@ -23587,13 +23637,15 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
   const [pwdBusy878260,setPwdBusy878260]=useState(false);
   async function changeMyPassword(e){const ev={currentTarget:e?.currentTarget};
     if(!newPwd||newPwd!==newPwd2){alert(t("Les dues contrasenyes han de coincidir."));return}
-    if(newPwd.length<8){alert(t("La contrasenya ha de tenir com a mínim 8 caràcters."));return}
+    if(newPwd.length<10){alert(t("La contrasenya ha de tenir com a mínim 10 caràcters."));return}
     if(OLD_PUBLIC_PASSWORDS878260.includes(newPwd)){alert(t("Aquesta contrasenya era pública. Tria'n una altra."));return}
     if(cloudUser878260){
       if(!window.__acoCloud?.changePassword||!window.__acoCloud.status().email){alert(t("Cal estar connectat al núvol per canviar la contrasenya."));return}
       setPwdBusy878260(true);
       try{await window.__acoCloud.changePassword(newPwd);setNewPwd("");setNewPwd2("");tancaDesat878617(ev,t("Contrasenya del núvol canviada. Fes-la servir a partir d'ara a tots els aparells."))}
-      catch(e){alert(e?.offline?"No hi ha connexió amb el núvol. Torna-ho a provar més tard.":/different/i.test(e?.message||"")?"La contrasenya nova ha de ser diferent de l'actual.":"No s'ha pogut canviar: "+(e?.message||e))}
+      catch(e){const codi646=String(e?.body?.code||e?.body?.error_code||"");
+        // V87.646 · Supabase diu «weak_password» (massa curta, massa fàcil o filtrada) amb un missatge que també porta «different»: es mira abans
+        alert(e?.offline?"No hi ha connexió amb el núvol. Torna-ho a provar més tard.":(codi646==="weak_password"||e?.body?.weak_password)?t("Aquesta contrasenya surt en filtracions d’internet o és massa fàcil. Tria’n una altra."):(codi646==="same_password"||/different from the old/i.test(e?.message||""))?"La contrasenya nova ha de ser diferent de l'actual.":"No s'ha pogut canviar: "+(e?.message||e))}
       finally{setPwdBusy878260(false)}
       return;
     }
@@ -23611,7 +23663,7 @@ function AccountAccessPanel878233({clients=[],authUser=""}){
       <div className="form-grid account-form-grid-v878233">
         <label><span>{t("Usuari")}</span><input value={form.username||""} readOnly={!newMode} onChange={e=>change("username",e.target.value)} placeholder={t("ex. socoterm")}/></label>
         <label><span>{t("Nom visible")}</span><input value={form.displayName||""} onChange={e=>change("displayName",e.target.value)} placeholder={t("Nom del client")}/></label>
-        {(newMode||selected!=="hector")&&<label><span>{!newMode&&accounts[selected]?.passwordHash?t("Contrasenya nova (buit = no canviar-la)"):t("Contrasenya")}</span><input type="password" autoComplete="new-password" value={form.password||""} onChange={e=>change("password",e.target.value)} placeholder={!newMode&&accounts[selected]?.passwordHash?t("Deixa-ho buit per no canviar-la"):t("Mínim 8 caràcters")}/></label>}
+        {(newMode||selected!=="hector")&&<label><span>{!newMode&&accounts[selected]?.passwordHash?t("Contrasenya nova (buit = no canviar-la)"):t("Contrasenya")}</span><input type="password" autoComplete="new-password" value={form.password||""} onChange={e=>change("password",e.target.value)} placeholder={!newMode&&accounts[selected]?.passwordHash?t("Deixa-ho buit per no canviar-la"):t("Mínim 10 caràcters")}/></label>}
         <label><span>{t("Tipus d’usuari")}</span><select value={form.role||"client"} onChange={e=>change("role",e.target.value)}><option value="client">{t("Client")}</option><option value="admin">{t("Despatx / administrador")}</option></select></label>
         <label><span>{t("Client associat")}</span><select value={form.clientId||""} onChange={e=>change("clientId",e.target.value)}><option value="">{t("Selecciona client")}</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nom||c.rao||c.id}</option>)}</select></label>
         <label><span>{t("Propietari de les dades")}</span><input value={form.ownerUser||""} onChange={e=>change("ownerUser",e.target.value)} placeholder={t("hector")}/></label>
@@ -23698,6 +23750,8 @@ function save(){
 // amb les d'abans a dins com a subtargetes. Si un grup només en té una, va sola; amb 5 o menys en total (un treballador), totes soles.
 // Se n'obre una alhora a cada nivell; una subtargeta que s'obre sola (un avís, «Canviar el % de…») obre també el seu grup.
 const ajRef878366=useRef(null);
+// V87.646 · l'avís de l'espai de l'Inici obre «Estat del núvol» (abans, només Ajustos)
+useEffect(()=>{if(!window.__acoAjustosEstat878646)return;const id=setTimeout(()=>{window.__acoAjustosEstat878646=false;const d=ajRef878366.current?.querySelector('details.ajustos-bloc-v878366[data-k="estat"]');if(!d)return;const g=d.parentElement?.closest("details.aj-g-v878637");if(g)g.open=true;d.open=true;d.scrollIntoView({block:"start"})},400);return()=>clearTimeout(id)},[]);
 useEffect(()=>{const el=ajRef878366.current;if(!el)return;
   const h=e=>{const sm=e.target?.closest?.("summary");const d=sm?.parentElement;if(!d||!d.classList.contains("ajustos-grup-v878354")||!el.contains(d)||d.open)return;const abans=sm.getBoundingClientRect().top;
     [...(d.parentElement?.children||[])].forEach(o=>{if(o!==d&&o.matches?.("details.ajustos-grup-v878354[open]"))o.open=false});
@@ -23714,10 +23768,11 @@ const aspecte637=!emp637||/^demo-/.test(String(window.__acoEmpresa?.username||""
 const programes637=!tr637&&teModul878326("tecnic")&&pcWindows878442();
 const comptes637=!emp637&&!!window.__acoCloud?.callFunction,proves637=!emp637&&!!window.__acoCloud?.proves;
 const textos640=!emp637&&admin;
+// V87.646 · «Estat del núvol» (vigilància): només el compte principal; hi va l'espai que abans era a «Còpies del núvol i versions»
+const estat646=!emp637&&admin&&!tr637&&!!window.__acoCloud?.estatNuvol;
 // V87.637 · «Còpies del núvol i versions», depurada: fora «Configuració general» (l'IVA i la retenció de sèrie no els feia servir res; el correu
 // i l'empresa ja són a Documents) i «Supabase Storage» (el sistema d'arxius d'abans de la V87.262). Les dades desades no s'esborren.
 const copies637=<>
-{!emp637&&<EspaiNuvol878263/>}
 <VersionsGuardades878266/>
 {!tr637&&<>
 <DataJsonTools8778 clients={clients} obres={obres} odata={odata}/>
@@ -23740,6 +23795,7 @@ const grups637=[
   {g:"acces",tit:t("Usuaris i accés"),Ic:Lock,items:[
     ["usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>],
     (comptes637||proves637)&&[comptes637?"comptes":"proves",comptes637?t("Comptes del núvol"):t("Comptes de prova"),comptes637&&proves637?<><Card title={t("Comptes d’empresa")} className="comptes-card-v878637"><ComptesNuvol878613/></Card><Card title={t("Comptes de prova")} className="proves-card-v878637"><ProvesAjustos878519/></Card></>:comptes637?<ComptesNuvol878613/>:<ProvesAjustos878519/>],
+    estat646&&["estat",t("Estat del núvol"),<EstatNuvol878646/>],
     ["privadesa",textos640?t("Privadesa i avisos legals"):t("Privadesa"),<Privadesa878640 admin={role878366==="admin"&&!tr637} textos={textos640} ambCopia={!tr637}/>]]},
   {g:"copies",tit:t("Còpies i arxius"),Ic:Save,items:[
     !tr637&&["despatx",t("Carpeta del despatx"),<CarpetaDespatx878625 obres={obres} odata={odata} setOdata={setOdata}/>],

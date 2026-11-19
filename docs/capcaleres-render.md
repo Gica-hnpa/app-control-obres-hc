@@ -1,4 +1,4 @@
-# Capçaleres de seguretat per a Render (V87.644)
+# Capçaleres de seguretat per a Render (V87.644) · POSADES el 19/11/2026 (comprovades amb curl)
 
 La política de contingut (CSP) ja va dins de l'app des de la V87.644. Aquestes altres capçaleres només les pot posar el servidor:
 cal afegir-les una vegada al panell de Render. No canvien res de com es veu ni de com funciona l'app.

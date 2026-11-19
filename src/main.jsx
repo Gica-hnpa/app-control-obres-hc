@@ -302,12 +302,14 @@ import "./theme-v878639.css";
 import "./theme-v878640.css";
 import "./theme-v878641.css";
 import "./theme-v878642.css";
+import "./theme-v878646.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
 import { setLang, readLang } from "./i18n.js";
 import { startBarresFixes } from "./barresFixes.js";
 import { startVersioNova } from "./versioNova.js";
+import { startErrors } from "./errorsApp878646.js";
 
 // V87.409 · L'enllaç per signar a distància («…/#signa=<clau>»): només la pàgina per signar, sense arrencar l'app (ni les dades
 // de l'aparell ni el núvol del compte que hi pugui haver en aquest navegador).
@@ -322,6 +324,8 @@ if (signa878409) {
   // V87.614 · avís quan hi ha una versió nova publicada (una pestanya oberta de fa dies es quedava amb la vella). Des del principi: també
   // a la pantalla d'entrar. Només a la versió compilada (a OBRIR_APP.bat no hi ha «assets/index-…js» i no fa res).
   if (import.meta.env.PROD) { try { startVersioNova(); } catch {} }
+  // V87.646 · els errors de l'app es desen al núvol (Ajustos › «Estat del núvol»); des del principi, per veure també els d'arrencar
+  try { startErrors(); } catch {}
   // V87.252 · primer es carreguen les dades desades a l'ordinador (si l'app s'ha obert
   // amb OBRIR_APP.bat) i després l'app, perquè llegeixi les dades bones des del principi.
   // V87.257 · després, el núvol: baixa el que s'hagi fet des d'altres aparells.

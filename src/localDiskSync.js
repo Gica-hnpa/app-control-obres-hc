@@ -13,7 +13,7 @@
 //   tocar res); si no, el rètol de baix et deixa actualitzar amb un clic.
 const ENDPOINT = "/__dades-locals";
 const APP_KEY = /^aco_/;
-const VERSION = "V87.645";
+const VERSION = "V87.646";
 const DEVICE_KEY = "dispositiu-app-control-obres";
 // V87.644 · Des d'un altre aparell de la wifi (mòbil amb OBRIR_APP_MOBIL.bat), el servidor de l'ordinador només deixa llegir i desar
 // després d'aparellar-lo un cop amb el codi de 6 xifres que surt a la finestra de l'ordinador. La clau de l'aparell es queda aquí

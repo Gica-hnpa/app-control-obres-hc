@@ -4726,3 +4726,27 @@
     a l'app compilada.
   - Proves: `seguretat645sqltest` 25/25 (PGlite: el forat d'abans, administrador, compte nou amb correu normal, tornar a executar, banc comú,
     espai, enllaç que caduca i s'allarga, tipus d'arxius iguals a l'app), `proves519sqltest` 33/33, la funció compila (rolldown).
+- **V87.646 · Vigilància i contrasenya de 10 lletres** (problema 11 de l'informe «Revisió de seguretat de l'app»; l'Héctor, 19/11/2026:
+  «Sí, comença la 646»). Abans, si alguna cosa fallava, l'Héctor se n'assabentava quan l'hi deia un usuari.
+  - **`supabase/aco_vigilancia_v878646.sql`** (l'ha d'executar l'Héctor, després del de la 645; es pot tornar a executar):
+    - `aco_errors`: els errors de l'app (missatge, on ha passat, versió, aparell; cap dada de les obres). Cada compte només n'afegeix dels
+      seus (l'activador `aco_errors_abans` posa el compte de qui envia) i no en llegeix cap. El mateix missatge del mateix compte en 24 h
+      suma «vegades»; com a molt 30 de nous per hora i compte; els de més de 90 dies s'esborren sols. Permisos explícits (insert per a
+      `authenticated`).
+    - `aco_estat_nuvol()` (només `aco_es_admin()`; la resta, null): espai, cada compte (últim canvi desat = `max(aco_kv.updated_at)`,
+      última entrada, IA del mes d'`aco_ia_us`, paquet d'`aco_ia_comptes`, errors de 7 dies), errors de 30 dies (40) i la còpia del núvol
+      (última entrada del compte `copies@`, que entra un cop a cada còpia: no cal donar-li cap permís d'escriure).
+    - `aco_ping()`: «ok» sense entrar, per a UptimeRobot (avís per correu si l'app o el núvol cauen; el compte el crea l'Héctor).
+  - **App:** `src/errorsApp878646.js` (errors de finestra, promeses sense resposta, la política de contingut i les pantalles que
+    `SafeRenderBoundary878108` atura; només el nom de la peça, mai el títol, que pot portar el nom d'una obra; una vegada per missatge i
+    sessió, com a molt 20; esperen a l'aparell fins que hi ha núvol; sense l'SQL no s'acumulen). `desaErrors` i `estatNuvol` a cloudSync.
+  - **Ajustos › Usuaris i accés › «Estat del núvol»** (només l'Héctor): pastilles (errors de 7 dies, còpia del núvol —taronja si fa més
+    de 36 h—, IA del mes) i tres targetes plegades: Espai · Comptes · Errors de l'app (30 dies, cada un es desplega amb on ha passat).
+    Substitueix «Espai al núvol» de «Còpies del núvol i versions» (ja no es repeteix); l'avís de l'espai de l'Inici hi porta directament.
+    Sense l'SQL: l'espai i «cal executar … aco_vigilancia_v878646.sql».
+  - **Contrasenya mínima de 10 lletres** (núvol, comptes interns i «Comptes del núvol»; la funció `aco-comptes`, encara sense instal·lar,
+    també). Contrasenya filtrada o massa fàcil (Supabase «weak_password», activat el 19/11): «Aquesta contrasenya surt en filtracions
+    d’internet…». Abans, el missatge de Supabase («…choose a different one») sortia com «ha de ser diferent de l'actual».
+    **Després de publicar**, l'Héctor posa el mínim a 10 a Supabase › Authentication › Email (si es fa abans, l'app deixaria passar 8-9
+    lletres i sortiria l'error en anglès).
+  - Proves: `vigilancia646sqltest` 20/20 (PGlite), `v646test` 25/25 (ordinador, mòbil, Brava, sense l'SQL, contrasenyes).

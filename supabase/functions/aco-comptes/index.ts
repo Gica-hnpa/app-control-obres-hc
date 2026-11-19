@@ -56,6 +56,10 @@ async function tots(): Promise<Usuari[]> {
 const usuariDe = (email = "") => email.toLowerCase().endsWith("@" + DOMINI) ? email.toLowerCase().slice(0, -(DOMINI.length + 1)) : "";
 const usuariValid = (u: string) => /^[a-z0-9][a-z0-9-]{1,39}$/.test(u) && !u.endsWith("-") && !PROTEGITS.has(u);
 
+// V87.646 · Supabase diu «weak_password» quan la contrasenya és massa curta, massa fàcil o surt en filtracions (HaveIBeenPwned)
+async function feble(r: Response): Promise<boolean> {
+  try { const j = await r.clone().json(); return j?.code === "weak_password" || j?.error_code === "weak_password" || !!j?.weak_password; } catch { return false; }
+}
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return err("metode", "Només POST.", 405);
@@ -81,11 +85,13 @@ Deno.serve(async (req) => {
     const usuari = String(body.usuari || "").trim().toLowerCase();
     const contrasenya = String(body.contrasenya || "");
     if (!usuariValid(usuari)) return err("usuari", "L'usuari només pot tenir lletres minúscules, números i guions (de 2 a 40).");
-    if (contrasenya.length < 8 || contrasenya.length > 72) return err("contrasenya", "La contrasenya ha de tenir entre 8 i 72 caràcters.");
+    // V87.646 · mínim 10 (com l'app i Supabase › Authentication); una contrasenya filtrada o massa fàcil la rebutja Supabase («weak_password»)
+    if (contrasenya.length < 10 || contrasenya.length > 72) return err("contrasenya", "La contrasenya ha de tenir entre 10 i 72 caràcters.");
     const email = `${usuari}@${DOMINI}`;
 
     if (accio === "crea") {
       const r = await admin("users", { method: "POST", body: JSON.stringify({ email, password: contrasenya, email_confirm: true }) });
+      if (!r.ok && await feble(r)) return err("feble", "Aquesta contrasenya surt en filtracions d'internet o és massa fàcil.", 422);
       if (r.status === 422 || r.status === 409) return err("existeix", "Aquest usuari ja existeix.", 409);
       if (!r.ok) return err("auth", `No s'ha pogut crear (${r.status}).`, 502);
       console.log(JSON.stringify({ accio: "crea", usuari, per: qui, at: new Date().toISOString() }));
@@ -96,6 +102,7 @@ Deno.serve(async (req) => {
       const u = (await tots()).find(x => String(x.email || "").toLowerCase() === email);
       if (!u) return err("no-existeix", "Aquest usuari no existeix.", 404);
       const r = await admin(`users/${u.id}`, { method: "PUT", body: JSON.stringify({ password: contrasenya }) });
+      if (!r.ok && await feble(r)) return err("feble", "Aquesta contrasenya surt en filtracions d'internet o és massa fàcil.", 422);
       if (!r.ok) return err("auth", `No s'ha pogut canviar (${r.status}).`, 502);
       console.log(JSON.stringify({ accio: "contrasenya", usuari, per: qui, at: new Date().toISOString() }));
       return json({ ok: true, usuari });

@@ -51,6 +51,8 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
     factures amb VeriFactu. **Encara no instal·lades** (vegeu `docs/verifactu-pla.md`).
   - Edge Function `aco-ia` (V87.458, `supabase/functions/aco-ia/index.ts`): tota la IA de l’app (albarans, factures, PDF,
     pressupost i preus) amb Claude. **Instal·lada el 2/11/2026** (passos a `docs/pressupost-ia.md`).
+    **Compte d'Anthropic (19/11/2026):** prepagament; crèdit comprat 0 $ i **99,98 $ de crèdit promocional («API credit (Max)») que
+    caduca el 19/12/2026**: després, o si s'acaba, la IA de l'app s'atura fins que l'Héctor compri crèdit. Límit de despesa 50 $/mes i avís a 30 $.
   - Edge Function `aco-comptes` (V87.613, `supabase/functions/aco-comptes/index.ts`): Ajustos › «Comptes del núvol» (només l’Héctor) crea
     comptes d’empresa i hi posa contrasenyes noves; mai n’esborra cap. Només els correus del secret `ACO_ADMINS`. **Encara no instal·lada**
     (passos a `docs/comptes-nuvol.md`).
@@ -58,7 +60,10 @@ i 2 tècnics (Oriol Borràs, Martí Sais), cadascun amb el seu compte al núvol.
     **Executat** (comprovat el 18/11/2026: la taula `aco_client` és al núvol). En canvi, `aco_proves_v878519.sql` (comptes de prova) **no**.
   - **Seguretat (V87.644–645, informe «Revisió de seguretat de l'app» a Claude Docs):** SQL `aco_seguretat_v878645.sql` (administrador =
     taula `aco_admins` i `aco_es_admin()`; enllaç del client amb data de fi; tipus d'arxius) i la funció `aco-ia` nova (només l'app, 10 per
-    minut, 32 MB): **l'Héctor encara els ha d'executar / tornar a instal·lar** (passos a l'informe). Capçaleres de Render: `docs/capcaleres-render.md`.
+    minut, 32 MB): **executats el 19/11/2026** (comprovat des de fora: aco_admins i aco_espai denegats, aco-ia 403 des d'una web de fora). Capçaleres de Render (`docs/capcaleres-render.md`): **posades el 19/11/2026** i comprovades.
+  - **Vigilància (V87.646):** SQL `aco_vigilancia_v878646.sql` (taula `aco_errors` amb els errors de l'app, `aco_estat_nuvol()` per a
+    Ajustos › «Estat del núvol» i `aco_ping()` per a UptimeRobot): **l'Héctor l'ha d'executar**, i després posar el mínim de contrasenya a 10
+    a Supabase i crear els dos avisos d'UptimeRobot (passos a l'informe de seguretat de Claude Docs).
   - Funció `aco_espai()` (V87.263, `supabase/aco_espai_v87263.sql`): mida de la base de dades i dels arxius per a
     Configuració → «Espai al núvol» (només l’Héctor; els comptes d’empresa reben null). És «security definer»: el
     Security Advisor la marca com a avís, i és d’esperar.
@@ -160,7 +165,7 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.645 a Render):**
+**Estat (publicada la V87.646 a Render):**
 - **Tècnic** (l’Héctor i `oriol`, `marti`): expedients amb paquets i filtres, encàrrecs tècnics (cèdula, CEE, ITE, amiant: passos, documents
   i enllaços), honoraris (calculadora, pressupostos i factures), Hores, Les meves despeses (per apartats, gestoria), Facturació (estats,
   cobraments, gestoria, gràfiques per comparar anys), Rendiment, Contactes, Agenda amb Google Calendar i nota de veu, Visites (actes i notes), Documents.

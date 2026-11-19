@@ -1,0 +1,27 @@
+/* V87.646 · Ajustos › «Estat del núvol» (vigilància): el resum a dalt en pastilles i tres targetes (Espai · Comptes · Errors de l'app) */
+html body .estat-nuvol-v878646{display:grid;gap:10px}
+html body .estat-nuvol-v878646 .cap-v878646{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
+html body .estat-nuvol-v878646 .cap-v878646 button{margin-left:auto}
+html body .pastilla-v878646{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:999px;font-size:13px;line-height:1.25;
+  background:var(--co-bg,#F4F7F8);color:var(--co-ink-2,#334155);border:1px solid var(--co-line,#E2E8F0);font-variant-numeric:tabular-nums}
+html body .pastilla-v878646.bona{background:#ECFDF5;color:#065F46;border-color:#A7F3D0}
+html body .pastilla-v878646.alerta{background:#FFF7ED;color:#9A3412;border-color:#FDBA74}
+html body .estat-nuvol-v878646 .llista-v878646{display:grid;gap:0}
+html body .estat-nuvol-v878646 .fila-v878646{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 2px;border-bottom:1px solid var(--co-line,#E2E8F0);min-width:0}
+html body .estat-nuvol-v878646 .fila-v878646:last-child{border-bottom:0}
+html body .estat-nuvol-v878646 .fila-v878646 .t{display:grid;gap:2px;min-width:0}
+html body .estat-nuvol-v878646 .fila-v878646 .t b{overflow-wrap:anywhere}
+html body .estat-nuvol-v878646 .fila-v878646 small{color:var(--co-ink-3,#5F7075);font-size:12px;line-height:1.35}
+html body .estat-nuvol-v878646 .fila-v878646 .d{display:grid;gap:2px;justify-items:end;text-align:right;flex:0 0 auto}
+html body .estat-nuvol-v878646 .fila-v878646 small.err{color:#B91C1C;font-weight:600}
+/* els errors: una fila que es desplega per veure on ha passat */
+html body .estat-nuvol-v878646 details.error-v878646{display:block}
+html body .estat-nuvol-v878646 details.error-v878646>summary{list-style:none;cursor:pointer;min-height:36px}
+html body .estat-nuvol-v878646 details.error-v878646>summary::-webkit-details-marker{display:none}
+html body .estat-nuvol-v878646 .lloc-v878646{display:block;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--co-bg,#F4F7F8);
+  font-size:12px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--co-ink-2,#334155)}
+@media (max-width:700px){
+  html body .estat-nuvol-v878646 .cap-v878646 button{margin-left:0}
+  html body .estat-nuvol-v878646 .fila-v878646{flex-direction:column;gap:4px}
+  html body .estat-nuvol-v878646 .fila-v878646 .d{justify-items:start;text-align:left}
+}

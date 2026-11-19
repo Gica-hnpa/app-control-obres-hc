@@ -50,7 +50,7 @@ export const TEXTOS878640 = [
     { h: "1. Qui és el responsable de les teves dades", b: [
       "{nom}, NIF {nif}, {adreca}. Correu: {correu}." ] },
     { h: "2. Quines dades tractem i de qui", b: [
-      "• De qui té un compte: el nom, l’usuari o el correu, la contrasenya (desada xifrada: ningú la pot llegir), l’idioma i les preferències, i les dades tècniques d’accés (adreça IP, data i hora, aparell) que els servidors guarden per seguretat.",
+      "• De qui té un compte: el nom, l’usuari o el correu, la contrasenya (desada xifrada: ningú la pot llegir), l’idioma i les preferències, i les dades tècniques d’accés (adreça IP, data i hora, aparell) que els servidors guarden per seguretat. Si l’app falla, també el missatge tècnic de l’error, la versió i l’aparell (90 dies), només per corregir-lo.",
       "• Les dades que cada empresa hi posa sobre altres persones (clients, promotors, treballadors, industrials, proveïdors): d’aquestes, la responsable és l’empresa i el titular de l’app n’és l’encarregat. Ho regula el contracte d’encarregat del tractament." ] },
     { h: "3. Per a què", b: [
       "• Donar el servei: que puguis entrar, desar la feina i trobar-la a tots els teus aparells.",
