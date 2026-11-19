@@ -4750,3 +4750,11 @@
     **Després de publicar**, l'Héctor posa el mínim a 10 a Supabase › Authentication › Email (si es fa abans, l'app deixaria passar 8-9
     lletres i sortiria l'error en anglès).
   - Proves: `vigilancia646sqltest` 20/20 (PGlite), `v646test` 25/25 (ordinador, mòbil, Brava, sense l'SQL, contrasenyes).
+- **V87.647 · El BC3 amb preus importat des del Pressupost es queda amb els seus preus** (l'Héctor, 19/11/2026, amb Brava: el BC3 de Front de
+  Mar opció B passava amb «28 partides sense preu» i «7 capítols a 0 €»). «Importar un arxiu» del pressupost buit llegeix els BC3 als
+  Amidaments i obre «Passar-ho a pressupost» (V87.435); la regla de la V87.513 («a la constructora, passar els amidaments sense preus», tanda 8
+  punt 12) els posava a 0. Però l'Héctor ho havia dit: «si el pressupost ja està fet, s'adjunta directament al Pressupost». Ara
+  `PassarPressupost878328` rep `arxiuPres` quan l'arxiu ve del Pressupost: preus de l'arxiu tal com són (amb el descompost), sense marges ni %
+  d'accés d'entrada (es poden marcar). Des dels Amidaments, la constructora continua passant sense preus (v513test 8/8).
+  - Prova: `v647test` 10/10 (demo-constructor com un usuari de debò, ordinador i mòbil; BC3 inventat). `v435test` 14/15: la 3 (menú «Afegir»)
+    ja fallava igual a la V87.646.

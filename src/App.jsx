@@ -48,7 +48,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.646";
+const APP_VERSION878264="87.647";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -17305,6 +17305,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
   const[err,setErr]=useState("");
   const[obert,setObert]=useState(null);
   const[passar,setPassar]=useState(false);
+  const[arxiuPres647,setArxiuPres647]=useState(false); // V87.647 · l'arxiu ve del Pressupost: amb els seus preus
   const[pendent,setPendent]=useState(null);
   const[ia878368,setIa878368]=useState(false);
   const[avisIa878368,setAvisIa878368]=useState([]);
@@ -17354,7 +17355,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
     const nous=preusAmidaments878368(r.partides.map((p,i)=>({id:`am-${Date.now().toString(36)}-${i}`,codi:p.codi||"",cap:p.cap||"01 Partides",capPrincipal:p.capPrincipal||"",capPath:p.capPath||[],ut:p.ut||"",concepte:p.concepte||"",desc:p.desc||"",q:Number(p.q)||0,pu:Number(p.pu)>0?Number(p.pu):null,mides:p.mides||[],arxiu:file.name,...(Number(p.pu)>0?{font878368:"arxiu",...(p.descomp?.length?{descomp878368:p.descomp}:{})}:{})})),partidaLibrary,bancPreus878368(),obra?.id);
     desa(a=>({font:{nom:afegir&&a.font?`${a.font.nom} + ${file.name}`:file.name,tipus:afegir&&a.font&&a.font.tipus!==tipus?`${a.font.tipus} + ${tipus}`:tipus,data:now,obra:r.nom||""},linies:afegir?[...(a.linies||[]),...nous]:nous,passat:null,avisos:r.avisos||[]}));
     setObert(null);
-    if(passarDespres878435.current){passarDespres878435.current=false;setTimeout(()=>setPassar(true),400)}
+    if(passarDespres878435.current){passarDespres878435.current=false;setArxiuPres647(true);setTimeout(()=>setPassar(true),400)}
     // l'arxiu original, a Documents (carpeta d'amidaments i pressupost)
     try{const doc=await persistImportedExcelDocument878245(file,{obraId:obra.id,budgetId:"amidaments",budgetName:"Amidaments",rows:nous.length});setData(d=>({...d,documents:[{...doc,nom:file.name,tipus,linkedType:"amidaments",sourceImport:"Amidaments"},...(d.documents||[])]}))}catch{}
   }
@@ -17426,13 +17427,16 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
       </>}
       </div>
     {ia878368&&<PreusIa878368 obra={obra} cond={cond878368} linies={linies} close={()=>setIa878368(false)} aplica={aplicaIa878368}/>}
-    {passar&&<PassarPressupost878328 eines={eines878462} data={data} linies={linies} partidaLibrary={partidaLibrary} close={()=>setPassar(false)} fet={res=>{setPassar(false);const passat={data:new Date().toISOString(),nom:res.nom,budgetId:res.budgetId,n:res.partides};
+    {passar&&<PassarPressupost878328 eines={eines878462} data={data} linies={linies} partidaLibrary={partidaLibrary} arxiuPres={arxiuPres647} close={()=>{setPassar(false);setArxiuPres647(false)}} fet={res=>{setPassar(false);setArxiuPres647(false);const passat={data:new Date().toISOString(),nom:res.nom,budgetId:res.budgetId,n:res.partides};
       // V87.344 · passats a un pressupost nou (una fase nova): els amidaments van amb aquella fase
       if(res.budgetId&&res.budgetId!==(fase878342||"principal"))setData(d=>{const a=amidDe878342(d,fase878342);return posaAmid878342(treuAmid878342(d,fase878342),res.budgetId,{...a,passat})});
       else desa(()=>({passat}));goPressupost?.()}}/>}
   </div>;
 }
-function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,eines=null}){
+// V87.647 · `arxiuPres`: l'arxiu s'ha importat des del Pressupost («Importar un arxiu»), és a dir, és un pressupost ja fet. Llavors es queden
+// els preus de l'arxiu tal com són (sense marges ni % d'accés d'entrada; es poden marcar), també a la constructora. Abans, el BC3 de Brava
+// (Front de Mar, opció B) passava amb les 28 partides a 0 €: la regla de la V87.513 («a la constructora, sense preus») és per als amidaments.
+function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,eines=null,arxiuPres=false}){
   const bid0=String(data.activeBudgetIdObra||"principal");
   const teActiu=(data.partides||[]).some(r=>(r.budgetId||"principal")===bid0);
   const nomActiu=budgetLabel8786(data,bid0)||t("Pressupost principal");
@@ -17448,16 +17452,16 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
   const nSense=linies.length-nArxiu-(usaLib?nLib:0);
   const pct878368=pctAcces(data.condicions878368||{});
   const nDesc878368=linies.filter(l=>Number(l.pu)>0&&(l.taula878368||l.descomp878368?.length)).length;
-  const[ambPct878368,setAmbPct878368]=useState(pct878368>0);
-  useEffect(()=>{if(pct878368>0)setAmbPct878368(true)},[pct878368>0]);
+  const[ambPct878368,setAmbPct878368]=useState(!arxiuPres&&pct878368>0);
+  useEffect(()=>{if(pct878368>0&&!arxiuPres)setAmbPct878368(true)},[pct878368>0]);
   const mg878378=margesObra878378(data);
-  const[ambMg878378,setAmbMg878378]=useState(true);
+  const[ambMg878378,setAmbMg878378]=useState(!arxiuPres);
   const nMg878378=linies.filter(l=>Number(l.pu)>0&&FONTS_MARGES878378.includes(l.font878368)).length;
   const fanMg878378=!!(mg878378.pctDif||mg878378.ci||(mg878378.mode==="dins"&&(mg878378.dge||mg878378.bi))||(mg878378.minim&&mg878378.minimH));
   const nSemb878368=linies.filter(l=>Number(l.pu)>0&&l.semblant878368).length;
   // V87.513 · a la constructora, sense preus (tanda 8, punt 12: «en passar-los a pressupost, sense preus: encara no s'han posat»). Les proves d'abans
   // porten la marca «amid-prova-v878513» (cap usuari no la té).
-  const senseP513=constructoraPropia878363()&&(()=>{try{return lsVisual878400()?.getItem("amid-prova-v878513")!=="1"}catch{return true}})();
+  const senseP513=!arxiuPres&&constructoraPropia878363()&&(()=>{try{return lsVisual878400()?.getItem("amid-prova-v878513")!=="1"}catch{return true}})();
   async function passa(){
     setFent(true);
     const rows=senseP513?linies.map((l,j)=>{const q=Number(l.q)||0;return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu:0,pressupostMesures:midesFila878476(l,j,q)}}):linies.map((l,j)=>{
@@ -23495,7 +23499,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.646",
+    app_version:"87.647",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
