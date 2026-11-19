@@ -12,6 +12,7 @@ import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
 import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878305} from "./pressupostPdf.js";
 import {textBc3,llegirBc3,llegirExcelAmidaments,llegeixLlibre,fullsLlibre} from "./amidaments.js";
+import {escriuBc3} from "./bc3Escriu.js";
 import {llegirBancBc3,taulaDescomp,fesIndex,buscaPreu,partidesLogistica,pctAcces,promptPreusIa,respostaIa,resumCondicions,COND_DEFECTE,escalaDescomp,preuObres} from "./preusAuto.js";
 import {ipcPct} from "./ipc.js";
 import {llegirDictat} from "./dictatPartides.js";
@@ -48,7 +49,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.647";
+const APP_VERSION878264="87.648";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -3571,7 +3572,8 @@ function DictatActa878263({value="",onChange,separador=" "}){
   </div>;
 }
 
-// V87.263 · Espai al núvol (pla gratuït: 1 GB d'arxius i 500 MB de base de dades, per a tots els comptes junts).
+// V87.263 · Espai al núvol (des de la V87.520, pla Pro: 100 GB d'arxius i 8 GB de base de dades, per a tots els comptes junts; V87.648: el
+// text de l'avís dels documents grans ja no parla del pla gratuït).
 // Croquis: es desa el format que ocupi menys sense perdre llegibilitat. Amb línies (full en blanc, plànol en
 // PDF) sol ser el PNG; sobre una foto o un plànol escanejat, el JPEG al 92 % (provat: el text de 8 px es llegeix).
 function croquisDataUrl878263(canvas){
@@ -3588,7 +3590,7 @@ const MB878263=n=>(n/1048576).toLocaleString("ca-ES",{maximumFractionDigits:1});
 function confirmBigDocument878263(file){
   const size=file?.size||0,nom=file?.name||"Document";
   if(size>50*1048576){alert(`«${nom}» ocupa ${MB878263(size)} MB i el núvol només admet fitxers de fins a 50 MB. Redueix-lo (per exemple, imprimint-lo de nou a PDF) i torna-ho a provar.`);return false}
-  if(size>10*1048576)return confirm(`«${nom}» ocupa ${MB878263(size)} MB. Els documents grans omplen ràpid l’espai del núvol (1 GB per a tots els comptes en el pla gratuït).\n\nVols pujar-lo igualment?`);
+  if(size>10*1048576)return confirm(`«${nom}» ocupa ${MB878263(size)} MB. Els documents grans omplen l’espai del núvol i tarden a obrir-se al mòbil.\n\nVols pujar-lo igualment?`);
   return true;
 }
 // ── V87.520 · L'espai del núvol i la «Còpia al meu ordinador» ─────────────────────────────────────────────────────────────────────
@@ -8577,6 +8579,21 @@ const PRES_OBERT878427="pres-prova-obert-v878462";
 function presObertInici878427(){try{if(window.matchMedia?.("(min-width:1281px)").matches)return false;return lsVisual878400()?.getItem(PRES_OBERT878427)==="1"}catch{return false}}
 // V87.435 · el pressupost buit (l'Héctor, 29/10/2026: «quan poso primer els amidaments, en obrir el pressupost hauria de tenir l'opció
 // que tingués totes les partides per posar preus, i després la de crear o importar el pressupost si l'he fet a part… i en BC3»)
+// V87.648 · descarregar el pressupost o els amidaments en BC3 o Excel (l'Héctor, 19/11/2026: «he de poder descarregar un pressupost o amidament en
+// bc3 o Excel… si vull fer-ho o algú altre fora de la app… i ha d'estar a opcions»). El BC3 el fa src/bc3Escriu.js (Windows-1252, com el Presto).
+function baixaArxiu878648(bytes,nom,tipus){const b=new Blob([bytes],{type:tipus});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=nom;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+const nomArxiu878648=s=>String(s||"").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim().slice(0,90)||"pressupost";
+function capsPres878648(caps){return Object.entries(caps||{}).filter(([,rows])=>(rows||[]).length).map(([nom,rows])=>({nom,pare:(rows||[]).find(r=>r.capPrincipal)?.capPrincipal||"",partides:(rows||[]).map(r=>({codi:r.codi||r.codiPressupost||"",ut:r.ut||"",concepte:r.concepte||"",desc:r.desc||r.descripcio||"",q:r.q,pu:r.pu,mides:r.pressupostMesures||r.mides||[],descomp:r.descompostTable||null}))}))}
+function capsAmid878648(linies){const m=new Map();(linies||[]).forEach(l=>{const k=l.cap||"01 Partides";if(!m.has(k))m.set(k,{nom:k,pare:l.capPrincipal||"",partides:[]});m.get(k).partides.push({codi:l.codi||"",ut:l.ut||"",concepte:l.concepte||"",desc:l.desc||"",q:l.q,pu:0,mides:l.mides||[]})});return [...m.values()]}
+function bc3Amid878648(linies,titol){baixaArxiu878648(escriuBc3({titol,codi:"AMIDAMENTS",ambPreus:false,caps:capsAmid878648(linies)}),nomArxiu878648(titol)+".bc3","application/octet-stream")}
+function excelAmid878648(linies,titol){
+  const n=v=>v===""||v==null?"":(typeof v==="number"?v:(parseNum8770(v)||0));
+  const aoa=[[t("Codi"),t("Capítol"),t("Ut"),t("Concepte"),t("Descripció"),t("Unitats"),t("Llargada"),t("Amplada"),t("Alçada"),t("Quantitat")]];
+  capsAmid878648(linies).forEach(c=>c.partides.forEach(p=>{aoa.push([p.codi,c.nom,p.ut,p.concepte,p.desc,"","","","",n(p.q)]);
+    (p.mides||[]).forEach(md=>aoa.push(["","","","   · "+(md.concepte||""),"",n(md.unitats),n(md.llargada),n(md.amplada),n(md.alcada),n(md.parcial)]))}));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);ws["!cols"]=[{wch:12},{wch:24},{wch:6},{wch:48},{wch:60},{wch:9},{wch:9},{wch:9},{wch:9},{wch:11}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Amidaments").slice(0,30));XLSX.writeFile(wb,nomArxiu878648(titol)+".xlsx");
+}
 function bc3Pres878435(file){if(!file)return;window.__acoAmid878435={file,passar:true};window.__acoObraTab878435?.("Amidaments obra")}
 // V87.486 · el pressupost buit en rajoles iguals (l'Héctor, 3/11/2026: «una rajola com a tots i després, quan entres, altres rajoles amb els diferents tipus
 // d'entrada: importar arxius, ja sigui PDF, Excel o BC3; amb IA; i manual»). Un sol «Importar un arxiu»: l'app mira quin és pel nom.
@@ -17390,7 +17407,7 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
   </details>
   </>;
   return <div className="amid-v878328 amid-v878435">
-    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{linies.length>0?<><span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span><ActionMenu87213 label={t("Opcions")}><label className="action-upload-v87213 tria-v878328"><Upload size={15} aria-hidden="true"/>{llegint?t("Llegint…"):t("Llegir un altre arxiu")}{fileInput878462}</label>{iaOn513&&<button type="button" className="planol-btn-v878513" onClick={()=>setPlanol513(true)}><WandSparkles size={15} aria-hidden="true"/> {t("Llegir un plànol amb IA")}</button>}<button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213></>:<>{tria}{planolBtn513}</>}</div>}
+    {!readOnly&&<div className="amid-eines-v878328 amid-barra-v878435">{linies.length>0?<><span className="amid-passar-v878328"><button type="button" className="primary" onClick={()=>setPassar(true)}><Calculator size={15} aria-hidden="true"/> {t("Passar-ho a pressupost")}</button></span><ActionMenu87213 label={t("Opcions")}><label className="action-upload-v87213 tria-v878328"><Upload size={15} aria-hidden="true"/>{llegint?t("Llegint…"):t("Llegir un altre arxiu")}{fileInput878462}</label>{iaOn513&&<button type="button" className="planol-btn-v878513" onClick={()=>setPlanol513(true)}><WandSparkles size={15} aria-hidden="true"/> {t("Llegir un plànol amb IA")}</button>}<small className="amh-v878273">{t("Descarregar")}</small><button type="button" className="desc-xlsx-v878648" onClick={()=>excelAmid878648(linies,[obra?.nom,t("Amidaments")].filter(Boolean).join(" · "))}><FileSpreadsheet size={15} aria-hidden="true"/> {t("Descarregar en Excel")}</button><button type="button" className="desc-bc3-v878648" onClick={()=>bc3Amid878648(linies,[obra?.nom,t("Amidaments")].filter(Boolean).join(" · "))}><FileCode size={15} aria-hidden="true"/> {t("Descarregar en BC3")}</button><button type="button" className="danger" onClick={buida}>{t("Buidar els amidaments")}</button></ActionMenu87213></>:<>{tria}{planolBtn513}</>}</div>}
     {planol513&&<PlanolIa878513 obra={obra} close={()=>setPlanol513(false)} onAfegeix={aplicaPlanol513}/>}
       <div className="amid-cos-v878328">
       {err&&<p className="amid-err-v878328">{err}</p>}
@@ -17461,7 +17478,10 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
   const nSemb878368=linies.filter(l=>Number(l.pu)>0&&l.semblant878368).length;
   // V87.513 · a la constructora, sense preus (tanda 8, punt 12: «en passar-los a pressupost, sense preus: encara no s'han posat»). Les proves d'abans
   // porten la marca «amid-prova-v878513» (cap usuari no la té).
-  const senseP513=!arxiuPres&&constructoraPropia878363()&&(()=>{try{return lsVisual878400()?.getItem("amid-prova-v878513")!=="1"}catch{return true}})();
+  // V87.648 · si l'arxiu porta preus, es tria: «Amb els preus de l'arxiu» o «Sense preus» (l'Héctor, 19/11/2026: «els bc3 els has de poder entrar
+  // sense preus a amidaments o amb preus a pressupost depèn de qui ho entri»). D'entrada: des del Pressupost, amb; des dels Amidaments, la
+  // constructora sense (V87.513) i el tècnic amb.
+  const[senseP513,setSenseP513]=useState(()=>!arxiuPres&&constructoraPropia878363()&&(()=>{try{return lsVisual878400()?.getItem("amid-prova-v878513")!=="1"}catch{return true}})());
   async function passa(){
     setFent(true);
     const rows=senseP513?linies.map((l,j)=>{const q=Number(l.q)||0;return {codi:l.codi,cap:l.cap,capPrincipal:l.capPrincipal,capPath:l.capPath,ut:l.ut||"ut",concepte:l.concepte,desc:l.desc,q,pu:0,pressupostMesures:midesFila878476(l,j,q)}}):linies.map((l,j)=>{
@@ -17482,7 +17502,11 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
         <label><input type="radio" name="desti878328" checked={desti==="nou"} onChange={()=>setDesti("nou")}/><span>{t("Un pressupost nou: «{nom}»",{nom:nomNou})}</span></label>
         <label><input type="radio" name="desti878328" checked={desti==="afegir"} onChange={()=>setDesti("afegir")}/><span>{t("Afegir-les a «{nom}»",{nom:nomActiu})}</span></label>
       </div>:<p>{t("Aniran a «{nom}», que ara és buit.",{nom:nomActiu})}</p>}
-      {senseP513?<p className="sense-preus-v878513">{t("Passaran sense preus.")}</p>:<>{eines}
+      {nArxiu>0&&<div className="desti preus-arxiu-v878648" role="radiogroup" aria-label={t("Preus de l’arxiu")}>
+        <label><input type="radio" name="preus878648" checked={!senseP513} onChange={()=>setSenseP513(false)}/><span>{t("Amb els preus de l’arxiu ({n})",{n:nArxiu})}</span></label>
+        <label><input type="radio" name="preus878648" checked={senseP513} onChange={()=>setSenseP513(true)}/><span>{t("Sense preus (els posaré jo)")}</span></label>
+      </div>}
+      {senseP513?(nArxiu>0?null:<p className="sense-preus-v878513">{t("Passaran sense preus.")}</p>):<>{eines}
       <ul className="preus">
         {nArxiu>0&&<li>{t("{n} amb el preu de l’arxiu",{n:nArxiu})}</li>}
         {nLib>0&&<li><label><input type="checkbox" checked={usaLib} onChange={e=>setUsaLib(e.target.checked)}/> {t("{n} amb el preu de Preus (mateix codi o mateixa partida)",{n:nLib})}</label></li>}
@@ -18650,6 +18674,11 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
     persistBudgetCaps878179(capsRef878247.current||caps);
     toast878557(i18nT("Descomposats i preus validats guardats dins del pressupost."));
   }
+  function descarregaBc3878648(){
+    persistBudgetCaps878179(capsRef878247.current||caps);
+    const titol=[obra?.nom,budgetLabel8786(data,activeBudgetId)||i18nT("Pressupost")].filter(Boolean).join(" · ");
+    baixaArxiu878648(escriuBc3({titol,codi:codiCurtBase878347(obra)||"PRESSUPOST",ambPreus:true,caps:capsPres878648(capsRef878247.current||caps)}),nomArxiu878648(titol)+".bc3","application/octet-stream");
+  }
   function exportBudgetExcel878180(){
     persistBudgetCaps878179(capsRef878247.current||caps);
     exportBudgetDocExcelStyled878246(budgetPrintDoc878179(),`pressupost_obra_${data?.pressupostRapidNumero||budgetLabel8786(data,activeBudgetId)||"export"}`);
@@ -18770,7 +18799,7 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
       {!clientMode&&<button type="button" className="opcio pdf-desc-v878539" onClick={()=>{setImprimir426(false);openDoc?.({...budgetPrintDoc878179(),nomesDesc878539:true})}}><Printer size={20} aria-hidden="true"/> {i18nT("PDF només amb descripcions i total")}</button>}
       {!clientMode&&(pi878411.noves.length>0||pi878411.mes.length>0||pi878411.canv.length>0||pi878411.noExec.length>0)&&<><button type="button" className="opcio pdf-orig-v878411" onClick={()=>{setImprimir426(false);openDoc?.(docPresOriginal878411({...data,partides:Object.values(caps).flat()},obra,client,""))}}><Printer size={20} aria-hidden="true"/> {i18nT("PDF del pressupost original")}</button><button type="button" className="opcio pdf-imp-v878411" onClick={()=>{setImprimir426(false);openDoc?.({...docImprevistos878411({...data,partides:Object.values(caps).flat()},""),pressupostNom:budgetGroups?.length>1?budgetName878273(budgetGroups.find(g=>g.id===activeBudgetId)||{id:activeBudgetId}):""})}}><Printer size={20} aria-hidden="true"/> {i18nT("PDF fora de pressupost")}</button></>}
       <small className="grup">{i18nT("Altres formats")}</small>
-      {!clientMode&&<button type="button" className="opcio" onClick={()=>{setImprimir426(false);exportBudgetExcel878180()}}><FileSpreadsheet size={20} aria-hidden="true"/> {i18nT("Exportar Excel")}</button>}
+      
       <button type="button" className="opcio" onClick={()=>{setImprimir426(false);saveBudgetDocument878179()}}><FolderDown size={20} aria-hidden="true"/> {i18nT("Guardar a Documents")}</button>
     </div></Modal>}
     {pdf878305&&<PdfPressupost878305 inicial={typeof pdf878305==="object"?pdf878305:null} close={()=>setPdf878305(false)} onImport={(rows,meta)=>window.__acoImportPdf878305?.(rows,meta,activeBudgetId)}/>}
@@ -18822,12 +18851,13 @@ function Pressupost({data,setData,importExcel,deletePressupostVersion,duplicateP
         const ren=!ambFases878426&&!clientMode&&renameBudget?<button type="button" onClick={()=>renameBudget(activeBudgetId)}>{i18nT("Canviar el nom")}</button>:null;
         const del=!ambFases878426&&!clientMode&&deleteBudget&&budgetGroups?.length>1?<button type="button" className="danger-text-v87229" onClick={()=>deleteBudget(activeBudgetId)}>{i18nT("Eliminar aquest pressupost")}</button>:null;
         const costat=alCostat428();
-        if(pc428)return <>{env}{sig}{afegirFora509&&<ActionMenu87213 className="accions-v878366 afegir-v878428" fletxa={false} label={<><Plus size={16} aria-hidden="true"/> {i18nT("Afegir")}</>}>{afegir428()}</ActionMenu87213>}{tanc}{(ren||del||costat)&&<ActionMenu87213 className="accions-v878366 mes-v878428" fletxa={false} titol={i18nT("Més")} label={<Ellipsis size={16} aria-hidden="true"/>}>{ren}{del}{costat}</ActionMenu87213>}</>;
+        const desc649=!clientMode&&!buit428()?<><small className="amh-v878273">{i18nT("Descarregar")}</small><button type="button" className="desc-xlsx-v878648" onClick={exportBudgetExcel878180}><FileSpreadsheet size={15} aria-hidden="true"/> {i18nT("Descarregar en Excel")}</button><button type="button" className="desc-bc3-v878648" onClick={descarregaBc3878648}><FileCode size={15} aria-hidden="true"/> {i18nT("Descarregar en BC3")}</button></>:null;
+        if(pc428)return <>{env}{sig}{afegirFora509&&<ActionMenu87213 className="accions-v878366 afegir-v878428" fletxa={false} label={<><Plus size={16} aria-hidden="true"/> {i18nT("Afegir")}</>}>{afegir428()}</ActionMenu87213>}{tanc}{(ren||del||costat||desc649)&&<ActionMenu87213 className="accions-v878366 mes-v878428" fletxa={false} titol={i18nT("Més")} label={<Ellipsis size={16} aria-hidden="true"/>}>{ren}{del}{costat}{desc649}</ActionMenu87213>}</>;
         return <ActionMenu87213 className="accions-v878366" label={i18nT("Opcions")}>
           {env}{sig}
           {afegirFora509&&<><small className="amh-v878273">{i18nT("Afegir partides")}</small>{afegir428()}</>}
           {(tanc||ren||del)&&<><small className="amh-v878273">{i18nT("Aquest pressupost")}</small>{tanc}{ren}{del}</>}
-          {costat}
+          {costat}{desc649}
         </ActionMenu87213>;
       })()}
       {editBudget8760b&&!vell534&&<ActionMenu87213 className="accions-v878366 opcions-edita-v878534" label={i18nT("Opcions")}>
@@ -23499,7 +23529,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.647",
+    app_version:"87.648",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

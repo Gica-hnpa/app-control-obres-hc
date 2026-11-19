@@ -4758,3 +4758,20 @@
   d'accés d'entrada (es poden marcar). Des dels Amidaments, la constructora continua passant sense preus (v513test 8/8).
   - Prova: `v647test` 10/10 (demo-constructor com un usuari de debò, ordinador i mòbil; BC3 inventat). `v435test` 14/15: la 3 (menú «Afegir»)
     ja fallava igual a la V87.646.
+- **V87.648 · BC3 amb preus o sense, «Descarregar» (BC3 i Excel) i repàs de les proves que fallaven** (l'Héctor, 19/11/2026: «els bc3 els has de
+  poder entrar sense preus a amidaments o amb preus a pressupost depèn de qui ho entri… I després he de poder descarregar un pressupost o
+  amidament en bc3 o Excel… i ha d'estar a opcions»; «quan dius q hi han fallades les arregles o nomes m'ho dius?»).
+  - **Triar els preus de l'arxiu:** a «Passar-ho a pressupost», si l'arxiu porta preus, «Amb els preus de l’arxiu (N)» o «Sense preus (els posaré
+    jo)», per a qualsevol perfil. D'entrada: des del Pressupost, amb (V87.647); des dels Amidaments, la constructora sense (V87.513) i el tècnic
+    amb. Amb preus des dels Amidaments, els marges s'hi posen d'entrada (V87.378: el BC3 és de projecte) i es poden desmarcar.
+  - **Descarregar:** Pressupost › «⋯» (ordinador) / «Opcions» (mòbil) › Descarregar en Excel (el d'abans, que era a Imprimir › Altres
+    formats: ja no s'hi repeteix) i en BC3; Amidaments › Opcions › Descarregar en Excel i en BC3 (sense preus). El BC3 el fa `src/bc3Escriu.js`
+    (FIEBDC-3/2016, Windows-1252 com el Presto): capítols (i el principal), codis únics, quantitats al ~D, mides al ~M, descripcions al ~T i,
+    amb preus, el descompost (mà d'obra 1, maquinària 2, materials 3; els % i l'arrodoniment com una línia més perquè el preu quadri).
+  - **Repàs de les proves que fallaven:** de l'app, només el text de l'avís dels documents grans («1 GB … pla gratuït»). La resta eren proves
+    que s'havien quedat enrere i ara estan al dia: `enviar407test` (la targeta d'honoraris ja surt oberta), `docmobiltest` (botó «Nova acta»),
+    `pdfpressuposttest` (números amb dos decimals), `contrasenyestest` (avís curt en lloc de finestra), `dictattest` (botó dels documents de
+    l'acta i límits del pla Pro), `v435test` i `v426test` (el pressupost surt plegat a l'ordinador i els avisos són a dins).
+  - Proves: `bc3escriuunit` 13/13 (s'escriu i es torna a llegir igual), `v648test` 14/14, `v647test` 10/10, `v513test` 8/8, `v426test` 29/29,
+    `v435test` 15/15, `enviar407test` 23/23, `docmobiltest` 15/15, `pdfpressuposttest` 29/29 (SENSE_IA=1), `contrasenyestest` 34/34,
+    `dictattest` 27/27.

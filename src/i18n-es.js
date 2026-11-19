@@ -6330,4 +6330,10 @@ export default {
   "Cap error en els últims 30 dies.": "Ningún error en los últimos 30 días.",
   "Per veure els comptes i els errors, cal executar una vegada": "Para ver las cuentas y los errores, hay que ejecutar una vez",
   "Aquesta contrasenya surt en filtracions d’internet o és massa fàcil. Tria’n una altra.": "Esta contraseña aparece en filtraciones de internet o es demasiado fácil. Elige otra.",
+  // V87.648 · preus de l’arxiu i descarregar
+  "Preus de l’arxiu": "Precios del archivo",
+  "Amb els preus de l’arxiu ({n})": "Con los precios del archivo ({n})",
+  "Sense preus (els posaré jo)": "Sin precios (los pondré yo)",
+  "Descarregar en Excel": "Descargar en Excel",
+  "Descarregar en BC3": "Descargar en BC3",
 };
