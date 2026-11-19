@@ -4791,3 +4791,16 @@
   - Els estils (1,5 MB, 216 KB comprimits) no s'han tocat: lightningcss no els aprima (no hi ha regles repetides); caldria treure capes velles.
   - Proves: `v649test` 5/5, `v648test` 14/14 (també amb `XLSX_TARD=1`: l'Excel es descarrega abans que arribi), `pdfpressuposttest` 29/29,
     `documentstest` (prova al dia: botó «Nova acta»), `traducciotest` 19/19, `offlinetest` 10/10, `amidaments328test` 27/27, `i18ntest`.
+- **V87.650 · Marges de l'obra en passar un arxiu al pressupost i a les partides que no en tenen** (l'Héctor, 19/11/2026, refent el pressupost de
+  Brava · Front de Mar: «no m'aplica els % de CI DGE i BI, l'únic que sí ha aplicat és el % de comissió»; «on la veus tu desmarcada la casella
+  si no hi és»; «ja el tenia retocat, no el puc eliminar»). La CI, la DGE i el BI («dins del preu») van a cada partida en «Passar-ho a
+  pressupost» si la casella dels marges és marcada; la V87.647 la deixava desmarcada quan l'arxiu entrava pel Pressupost, i petita a baix.
+  - La casella, ara **«Posar-hi els marges de l’obra: …»**, marcada d'entrada sempre i en un requadre ben visible (`theme-v878650.css`).
+  - Pressupost › Ajustos › **Ajustos de l'obra**: «N partides de l’arxiu, del banc o de la IA no tenen els marges de l’obra» i **«Posar-hi els
+    marges»** (`senseMg878650`, `ambMgZero878650`): les del pressupost actiu, amb preu, d'origen Arxiu/Banc/IA (no les escrites a mà) i no
+    certificades; es fan com si tinguessin els marges a zero i es posen els d'ara (`reaplicaMarges878380`), amb el descompost si quadra amb el
+    preu i, si no (preu retocat a mà), multiplicant el preu. La comissió es manté. El comptador de l'etiqueta («per posar al dia») les compta.
+  - **Pendent (parlar-ho amb l'Héctor):** a Brava, Front de Mar té el número P2026_0002 perquè cada compte numera els seus pressupostos i els
+    compartits (Verbania P2026_0002, Mundet 0007, Cala Rovira 0009) porten el número del compte de l'Héctor. Si el comptador comptés també els
+    compartits, a la llista sortirien com a «falten» els números del mig. Mentrestant: Opcions › «Canviar el nom i el número».
+  - Proves: `v650test` 9/9 (nova), `v648test` 14/14 i `v647test` 10/10 (posades al dia: els marges, ara marcats d'entrada).

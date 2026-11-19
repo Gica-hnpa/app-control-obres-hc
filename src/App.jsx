@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.649";
+const APP_VERSION878264="87.650";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -13528,7 +13528,7 @@ function Obra({crono878376=null,agentsLib878301=null,keepAgent878303=null,obra,c
   // V87.426 · l'Héctor (29/10/2026): «fases, ajustos del pressupost i dins d'aquí la icona del %… i preus i marges, que està a part, també
   // a ajustos». Un sol bloc «Ajustos» plegat a sobre del pressupost; a dins, cada part també plegada (els preus i marges, l'obra i la
   // logística i el número i les condicions per al client). El % el posa el Pressupost (és seu).
-  const ajustos878426=()=>{const mg=!readOnly&&hasModule2Access8747(),nMg=mg?nForaMg878380(data):0;if(!mg&&!rapidMerged878277)return null;return {
+  const ajustos878426=()=>{const mg=!readOnly&&hasModule2Access8747(),nMg=mg?nForaMg878380(data)+senseMg878650(data).length:0;if(!mg&&!rapidMerged878277)return null;return {
     resum:mg?resumMarges878378(margesObra878378(data)):"",nMg,
     cos:<>
       {mg&&<details className="sub-v878426 marges-pres-v878378"><summary><SlidersHorizontal size={16} aria-hidden="true"/><span className="t"><b>{i18nT("Ajustos de l’obra")}</b></span>{nMg?<em className="mg-n-v878380">{nMg===1?i18nT("1 partida per posar al dia"):i18nT("{n} partides per posar al dia",{n:nMg})}</em>:null}<ChevronRight size={16} className="chev" aria-hidden="true"/></summary><div className="cos"><AjustosObra878511 data={data} setData={setData}/><PosarMarges878380 data={data} setData={setData}/></div></details>}
@@ -16961,18 +16961,46 @@ function reaplicaMarges878380(p,mg,accNow){
     mg878378:{...r,pmo:tb?nou.acc+nou.pd:(+r.pmo||0),acc:nou.acc,pd:nou.pd,dif:mg.dificultat,mode:mg.mode,fmin,ci:nou.ci,dge:nou.dge,bi:nou.bi,minim:nou.minim||!!r.minim,minimH:nou.minim?nou.minimH:(+r.minimH||0),fM},
     origenPreu878368:origen,updatedAt:new Date().toISOString()};
 }
+// V87.650 · les partides que van entrar al pressupost sense els marges (la casella desmarcada en «Passar-ho a pressupost»: des de la V87.647, un
+// arxiu entrat pel Pressupost la tenia desmarcada d'entrada). L'Héctor, 19/11/2026 (Brava · Front de Mar): «no m'aplica els % de CI DGE i BI…
+// ja el tenia retocat, no el puc eliminar». Només les del pressupost actiu, amb preu, que venen de l'arxiu, del banc o de la IA (les escrites
+// a mà no) i no certificades. Es fan com si tinguessin els marges a zero i es posen els d'ara (reaplicaMarges878380): amb el descompost si
+// quadra amb el preu; si no (preu retocat a mà), es multiplica el preu. La comissió es manté.
+const ORIGEN_MG878650=/^(Arxiu|Banc|IA)(\b|$)/;
+function fanMarges878650(mg){return !!(mg.pctDif||mg.ci||(mg.mode==="dins"&&(mg.dge||mg.bi))||(mg.minim&&mg.minimH))}
+function senseMg878650(d){
+  if(!fanMarges878650(margesObra878378(d||{})))return [];
+  const f=String(d?.activeBudgetIdObra||"principal");
+  return (d?.partides||[]).filter(p=>!p.mg878378&&String(p.budgetId||"principal")===f&&(parseNum8770(p.pu)||0)>0&&ORIGEN_MG878650.test(String(p.origenPreu878368||""))&&!certificada878380(p));
+}
+function ambMgZero878650(p){
+  const tb=p.descompostTable,base=parseNum8770(p.puOrig878346!=null?p.puOrig878346:p.pu)||0;
+  const quadra=!!tb?.rows?.length&&Math.abs((recalculateBreakdownTableV87232(tb).total||0)-base)<0.015;
+  return {...p,mg878378:{pmo:0,acc:0,ambAcc:false,pd:0,dif:"nova",mode:"dins",fmin:1,ci:0,dge:0,bi:0,minim:false,minimH:0,tb:quadra,fM:1}};
+}
 function PosarMarges878380({data={},setData}){
   const[editant,setEditant]=useState(()=>!!window.__acoEditPres878380);
   useEffect(()=>{const f=()=>setEditant(!!window.__acoEditPres878380);window.addEventListener("aco-edit-pres-878380",f);return ()=>window.removeEventListener("aco-edit-pres-878380",f)},[]);
   const mg=margesObra878378(data),acc=pctAcces(data.condicions878368||{});
   const fora=(data.partides||[]).filter(p=>p.mg878378&&margesAPosar878380(p,mg,acc));
   const fer=fora.filter(p=>!certificada878380(p)).length,cert=fora.length-fer;
-  if(!fora.length)return null;
+  const sense=senseMg878650(data);
+  if(!fora.length&&!sense.length)return null;
   const posa=()=>setData?.(d=>{const m2=margesObra878378(d),a2=pctAcces(d.condicions878368||{});return {...d,partides:(d.partides||[]).map(p=>p.mg878378&&!certificada878380(p)?(reaplicaMarges878380(p,m2,a2)||p):p),updatedAt:new Date().toISOString()}});
-  return <div className="mg-posar-v878380">
-    <span>{fer?(fer===1?t("1 partida té els marges d’abans."):t("{n} partides tenen els marges d’abans.",{n:fer})):null}{cert?" "+(cert===1?t("1 ja certificada es queda com està."):t("{n} ja certificades es queden com estan.",{n:cert})):null}</span>
-    {fer>0&&<button type="button" className="primary" disabled={editant} title={editant?t("Guarda abans els canvis del pressupost"):undefined} onClick={posa}>{t("Posar-hi els d’ara")}</button>}
-  </div>;
+  const posaSense=()=>{
+    if(!confirm(t("Posar els marges de l’obra ({r}) a {n} partides que no en tenen? Els preus pujaran (les que ja estan certificades no es toquen).",{r:resumMarges878378(mg),n:sense.length})))return;
+    setData?.(d=>{const s=new Set(senseMg878650(d)),m2=margesObra878378(d),a2=pctAcces(d.condicions878368||{});return {...d,partides:(d.partides||[]).map(p=>s.has(p)?(reaplicaMarges878380(ambMgZero878650(p),m2,a2)||p):p),updatedAt:new Date().toISOString()}});
+  };
+  return <>
+    {fora.length>0&&<div className="mg-posar-v878380">
+      <span>{fer?(fer===1?t("1 partida té els marges d’abans."):t("{n} partides tenen els marges d’abans.",{n:fer})):null}{cert?" "+(cert===1?t("1 ja certificada es queda com està."):t("{n} ja certificades es queden com estan.",{n:cert})):null}</span>
+      {fer>0&&<button type="button" className="primary" disabled={editant} title={editant?t("Guarda abans els canvis del pressupost"):undefined} onClick={posa}>{t("Posar-hi els d’ara")}</button>}
+    </div>}
+    {sense.length>0&&<div className="mg-posar-v878380 sense-mg-v878650">
+      <span>{sense.length===1?t("1 partida de l’arxiu, del banc o de la IA no té els marges de l’obra."):t("{n} partides de l’arxiu, del banc o de la IA no tenen els marges de l’obra.",{n:sense.length})}</span>
+      <button type="button" className="primary" disabled={editant} title={editant?t("Guarda abans els canvis del pressupost"):undefined} onClick={posaSense}>{t("Posar-hi els marges")}</button>
+    </div>}
+  </>;
 }
 function MargesCamps878378({v={},def,set,readOnly=false,perObra=false}){
   const mode=v.mode||(perObra?def.mode:"dins");
@@ -17479,7 +17507,9 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
   const[ambPct878368,setAmbPct878368]=useState(!arxiuPres&&pct878368>0);
   useEffect(()=>{if(pct878368>0&&!arxiuPres)setAmbPct878368(true)},[pct878368>0]);
   const mg878378=margesObra878378(data);
-  const[ambMg878378,setAmbMg878378]=useState(!arxiuPres);
+  // V87.650 · els marges de l'obra, marcats d'entrada també quan l'arxiu entra pel Pressupost (V87.647 els deixava desmarcats i l'Héctor no
+  // trobava la casella: «on la veus tu desmarcada la casella si no hi és»). Es poden desmarcar si els preus de l'arxiu ja els porten.
+  const[ambMg878378,setAmbMg878378]=useState(true);
   const nMg878378=linies.filter(l=>Number(l.pu)>0&&FONTS_MARGES878378.includes(l.font878368)).length;
   const fanMg878378=!!(mg878378.pctDif||mg878378.ci||(mg878378.mode==="dins"&&(mg878378.dge||mg878378.bi))||(mg878378.minim&&mg878378.minimH));
   const nSemb878368=linies.filter(l=>Number(l.pu)>0&&l.semblant878368).length;
@@ -17519,7 +17549,7 @@ function PassarPressupost878328({data={},linies=[],partidaLibrary=[],close,fet,e
         {nLib>0&&<li><label><input type="checkbox" checked={usaLib} onChange={e=>setUsaLib(e.target.checked)}/> {t("{n} amb el preu de Preus (mateix codi o mateixa partida)",{n:nLib})}</label></li>}
         {nSemb878368>0&&<li className="semb">{t("{n} amb el preu d’una partida semblant: revisa-les",{n:nSemb878368})}</li>}
         {nSense>0&&<li className="sense">{t("{n} sense preu: l’hauràs de posar al pressupost",{n:nSense})}</li>}
-        {nMg878378>0&&fanMg878378&&<li className="mg-v878378"><label><input type="checkbox" checked={ambMg878378} onChange={e=>setAmbMg878378(e.target.checked)}/> {t("Marges: {r} ({n} partides del banc, de l’arxiu o de la IA)",{r:resumMarges878378(mg878378),n:nMg878378})}</label></li>}
+        {nMg878378>0&&fanMg878378&&<li className="mg-v878378 mg-clar-v878650"><label><input type="checkbox" checked={ambMg878378} onChange={e=>setAmbMg878378(e.target.checked)}/> {t("Posar-hi els marges de l’obra: {r} ({n} partides del banc, de l’arxiu o de la IA)",{r:resumMarges878378(mg878378),n:nMg878378})}</label></li>}
         {pct878368>0&&nDesc878368>0&&<li><label><input type="checkbox" checked={ambPct878368} onChange={e=>setAmbPct878368(e.target.checked)}/> {t("+{p} % de mà d’obra per l’accés ({n} partides amb descompost)",{p:pct878368,n:nDesc878368})}</label></li>}
       </ul></>}
       <div className="actions"><button type="button" className="ghost" onClick={close}>{t("Cancel·lar")}</button><button type="button" className="primary" disabled={fent} onClick={passa}>{fent?t("Passant…"):t("Passar-ho a pressupost")}</button></div>
@@ -23536,7 +23566,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.649",
+    app_version:"87.650",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -1,0 +1,5 @@
+/* V87.650 · «Passar-ho a pressupost»: la casella dels marges de l'obra, ben visible (l'Héctor no la trobava); l'avís de partides sense marges */
+html body .passar-v878328 .preus li.mg-clar-v878650{list-style:none;margin:2px 0 2px -18px;padding:10px 12px;border:1px solid var(--co-accent,#2563EB);border-radius:10px;background:color-mix(in srgb,var(--co-accent,#2563EB) 7%,transparent);font-weight:600;line-height:1.4}
+html body .passar-v878328 .preus li.mg-clar-v878650 label{align-items:flex-start !important}
+html body .passar-v878328 .preus li.mg-clar-v878650 input{width:18px !important;height:18px;margin-top:1px}
+html body .mg-posar-v878380.sense-mg-v878650{margin-top:8px}
