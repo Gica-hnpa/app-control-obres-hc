@@ -31,10 +31,22 @@ grant select on table public.aco_proves to authenticated;
 grant select, update on table public.aco_proves_config to authenticated;
 grant select, insert, update, delete on table public.aco_proves, public.aco_proves_config to service_role;
 
--- És el compte de l'Héctor?
+-- És el compte de l'Héctor? V87.645: la llista aco_admins (abans, «qualsevol correu que no sigui de les empreses»; vegeu
+-- aco_seguretat_v878645.sql, que fa el mateix: es poden executar en qualsevol ordre)
+create table if not exists public.aco_admins (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  creat timestamptz not null default now()
+);
+alter table public.aco_admins enable row level security;
+revoke all on table public.aco_admins from public, anon, authenticated;
+grant select, insert, update, delete on table public.aco_admins to service_role;
+insert into public.aco_admins (user_id)
+  select id from auth.users where email is not null and email not like '%@usuaris.controlobres.app'
+    and not exists (select 1 from public.aco_admins)
+  on conflict (user_id) do nothing;
 create or replace function public.aco_es_admin() returns boolean
-language sql stable set search_path = ''
-as $$ select coalesce((select auth.jwt() ->> 'email'), '@usuaris.controlobres.app') not like '%@usuaris.controlobres.app' $$;
+language sql stable security definer set search_path = ''
+as $$ select exists (select 1 from public.aco_admins a where a.user_id = (select auth.uid())) $$;
 
 -- Avui, a Catalunya
 create or replace function public.aco_avui() returns date

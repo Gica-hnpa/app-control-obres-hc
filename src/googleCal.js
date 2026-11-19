@@ -7,6 +7,8 @@
 // - El que es canvia o s'esborra a Google torna a l'app; si s'ha canviat als dos llocs, guanya el canvi més nou.
 // - Les cites del calendari principal de Google es poden veure a l'Agenda (només consulta).
 import { GOOGLE_CLIENT_ID } from "./cloudConfig.js";
+// V87.645 · el Google simulat de les proves (window.__acoGoogleMock) només funciona al servidor de proves, mai a l'app publicada
+const mockGoogle878645 = () => (import.meta.env?.DEV ? window.__acoGoogleMock : null);
 
 const ENV = (typeof import.meta !== "undefined" && import.meta.env) || {};
 const API = String(ENV.VITE_GOOGLE_API || "https://www.googleapis.com/calendar/v3").replace(/\/$/, "");
@@ -41,7 +43,7 @@ export function disconnect(oblida = false) { token = null; try { localStorage.re
 export function recorda() { try { localStorage.setItem(FLAG(), "1"); } catch {} }
 export function potReconnectar() { try { return configured() && !connected() && localStorage.getItem(FLAG()) === "1"; } catch { return false; } }
 // es carrega Google abans del toc: així la seva finestra s'obre dins del mateix toc i el navegador no la bloqueja
-export function prepara() { if (!window.__acoGoogleMock && configured()) loadGis().catch(() => {}); }
+export function prepara() { if (!mockGoogle878645() && configured()) loadGis().catch(() => {}); }
 
 function loadGis() {
   if (window.google?.accounts?.oauth2) return Promise.resolve();
@@ -58,7 +60,7 @@ export function connect() {
   return enCurs;
 }
 async function connect0() {
-  if (window.__acoGoogleMock) { const r = await window.__acoGoogleMock.requestToken(); setToken(r.access_token, r.expires_in); return true; }
+  if (mockGoogle878645()) { const r = await mockGoogle878645().requestToken(); setToken(r.access_token, r.expires_in); return true; }
   if (!configured()) throw new Error("Google Calendar encara no està configurat.");
   await loadGis();
   return new Promise((resolve, reject) => {

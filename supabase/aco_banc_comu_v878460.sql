@@ -1,4 +1,5 @@
 -- APP CONTROL D'OBRES · V87.460 · Banc de preus comú
+-- V87.645: NO TORNAR A EXECUTAR. L'administrador ara és la llista aco_admins; les regles i la funció d'aquest fitxer són a aco_seguretat_v878645.sql.
 -- Executar UNA vegada a Supabase > SQL Editor > New query > Run.
 --
 -- Una sola fila amb el banc de preus que l'Héctor comparteix amb tots els comptes (Preus › Banc de preus › «Compartir amb

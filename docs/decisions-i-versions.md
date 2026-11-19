@@ -4708,3 +4708,21 @@
     Referrer-Policy, Permissions-Policy, memòria cau dels arxius) són a `docs/capcaleres-render.md` perquè l'Héctor les enganxi a Render.
   - Proves: `v644test` (servidor de l'ordinador: localhost, web de fora, Host de fora, aparell de la wifi amb codi bo/dolent/bloqueig;
     app compilada amb la CSP: entrar, proforma aïllada, codi colat que no s'executa, PDF sense cap bloqueig).
+- **V87.645 · Seguretat, segona tanda: el núvol i la IA** (problemes 4, 8, 9 i 10 de l'informe «Revisió de seguretat de l'app»).
+  - **`supabase/aco_seguretat_v878645.sql`** (l'ha d'executar l'Héctor; es pot tornar a executar):
+    - **Administrador amb nom i cognoms:** taula `aco_admins` (ningú no la llegeix des de l'app) i `aco_es_admin()` mira la llista. La primera
+      vegada s'hi posen els comptes que no són `@usuaris.controlobres.app` (avui, només el de l'Héctor; l'SQL ho ensenya al final); després ja
+      no s'hi afegeix ningú sol. Abans, qualsevol compte amb un correu normal tenia els permisos de l'administrador (banc comú, espai).
+      Regles del banc comú i `aco_espai()` amb `aco_es_admin()`. `aco_proves_v878519.sql` fa el mateix (no torna enrere si s'executa després);
+      `aco_espai_v87263.sql` i `aco_banc_comu_v8784*.sql` porten «NO TORNAR A EXECUTAR».
+    - **Enllaç per al client amb data de fi:** columna `caduca` (un any); cada «Publicar al client» (canvi de `contingut`) l'allarga un any
+      (activador `aco_client_caduca`); caducat, `aco_client_veure` torna «enllac» («Aquest enllaç ja no funciona»).
+    - **Tipus d'arxius** (`allowed_mime_types` d'`aco-fitxers`): fotos, PDF, Office, text, ZIP, àudio, vídeo i `application/octet-stream`.
+      L'app (`TIPUS878645` a cloudSync.js, la mateixa llista) puja qualsevol altre tipus (HTML, SVG, DWG, BC3…) com a «binari».
+  - **Funció `aco-ia`** (l'ha de tornar a instal·lar l'Héctor): des del navegador només l'app (Render, l'ordinador i la xarxa de casa; més
+    adreces amb el secret `ACO_ORIGENS`); com a molt `IA_PER_MINUT` lectures per minut i compte (10; compta `aco_ia_crides` de l'últim
+    minut); peticions de 32 MB com a molt.
+  - **Restes de proves:** `__acoGoogleMock` i `__acoTempsMock878538` només funcionen al servidor de proves (`import.meta.env.DEV`); ja no són
+    a l'app compilada.
+  - Proves: `seguretat645sqltest` 25/25 (PGlite: el forat d'abans, administrador, compte nou amb correu normal, tornar a executar, banc comú,
+    espai, enllaç que caduca i s'allarga, tipus d'arxius iguals a l'app), `proves519sqltest` 33/33, la funció compila (rolldown).

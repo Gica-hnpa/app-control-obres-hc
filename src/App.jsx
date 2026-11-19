@@ -48,7 +48,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.644";
+const APP_VERSION878264="87.645";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -9528,7 +9528,7 @@ const ICONA_AVIS878536={partes:ClipboardCheck,desp:Camera,cert:FileText,cobr:Rec
 const TEMPS878538="temps-v878538";
 function iconaTemps878538(c){c=Number(c);if(c===0)return Sun;if(c<=2)return CloudSun;if(c===3)return Cloud;if(c===45||c===48)return CloudFog;if(c>=51&&c<=57)return CloudDrizzle;if((c>=61&&c<=67)||(c>=80&&c<=82))return CloudRain;if((c>=71&&c<=77)||c===85||c===86)return CloudSnow;if(c>=95)return CloudLightning;return Cloud}
 async function tempsPoblacio878538(nom){
-  const mock=window.__acoTempsMock878538;if(mock)return typeof mock==="function"?mock(nom):mock[nom]||null;
+  const mock=import.meta.env?.DEV?window.__acoTempsMock878538:null;if(mock)return typeof mock==="function"?mock(nom):mock[nom]||null;
   const st=(()=>{try{return window.__acoStore?.real||localStorage}catch{return null}})();
   let cache={};try{cache=JSON.parse(st?.getItem(TEMPS878538)||"{}")||{}}catch{}
   const k=nrm878533(nom),c=cache[k];
@@ -23445,7 +23445,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.644",
+    app_version:"87.645",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

@@ -5,6 +5,8 @@
 // - Cal que el projecte de Google de l'app tingui activada la «Gmail API». Si no ho està, Google respon 403 i l'app ho diu
 //   (`e.noActiva`); mentrestant, la finestra «Enviar» obre el Gmail amb el correu escrit i descarrega el PDF.
 import { GOOGLE_CLIENT_ID } from "./cloudConfig.js";
+// V87.645 · el Google simulat de les proves (window.__acoGoogleMock) només funciona al servidor de proves, mai a l'app publicada
+const mockGoogle878645 = () => (import.meta.env?.DEV ? window.__acoGoogleMock : null);
 
 const ENV = (typeof import.meta !== "undefined" && import.meta.env) || {};
 const API = String(ENV.VITE_GMAIL_API || "https://gmail.googleapis.com/gmail/v1").replace(/\/$/, "");
@@ -12,7 +14,7 @@ const SCOPE = "https://www.googleapis.com/auth/gmail.send";
 const usr = () => { try { return sessionStorage.getItem("aco_current_user8779") || ""; } catch { return ""; } };
 const TK = () => `google-mail-token__${usr()}`;
 
-export function configurat() { return !!(ENV.VITE_GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID || window.__acoGoogleMock); }
+export function configurat() { return !!(ENV.VITE_GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID || mockGoogle878645()); }
 
 let token = null;
 function tok() {
@@ -37,12 +39,12 @@ function carregaGis() {
   });
 }
 // es carrega Google abans del toc: així la seva finestra s'obre dins del mateix toc i el navegador no la bloqueja
-export function prepara() { if (!window.__acoGoogleMock && configurat()) carregaGis().catch(() => {}); }
+export function prepara() { if (!mockGoogle878645() && configurat()) carregaGis().catch(() => {}); }
 
 // S'ha de cridar des d'un toc (Google obre la seva finestra la primera vegada)
 export async function connecta() {
   if (connectat()) return true;
-  if (window.__acoGoogleMock) { const r = await window.__acoGoogleMock.requestToken(SCOPE); desa(r.access_token, r.expires_in); return true; }
+  if (mockGoogle878645()) { const r = await mockGoogle878645().requestToken(SCOPE); desa(r.access_token, r.expires_in); return true; }
   if (!configurat()) throw new Error("Google encara no està configurat.");
   await carregaGis();
   return new Promise((resolve, reject) => {

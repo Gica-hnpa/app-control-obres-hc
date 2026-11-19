@@ -1,4 +1,5 @@
 -- APP CONTROL D'OBRES · V87.263 · Espai ocupat al núvol (Configuració → «Espai al núvol»)
+-- V87.645: NO TORNAR A EXECUTAR. L'administrador ara és la llista aco_admins; les regles i la funció d'aquest fitxer són a aco_seguretat_v878645.sql.
 -- Executar UNA vegada a Supabase > SQL Editor > New query > Run (després de aco_permisos_v87262_1).
 --
 -- Torna només dos números (mida de la base de dades i dels arxius) per saber quan cal passar al pla Pro.

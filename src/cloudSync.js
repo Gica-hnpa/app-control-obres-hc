@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.644";
+const VERSION = "V87.645";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -201,8 +201,19 @@ async function storageFetch(path, opts = {}) {
   catch { const e = new Error(t("No hi ha connexió amb el núvol.")); e.offline = true; throw e; }
   return r;
 }
+// V87.645 · els tipus d'arxiu que accepta el núvol (la mateixa llista que supabase/aco_seguretat_v878645.sql). Qualsevol altre (una pàgina
+// web, un SVG, un DWG, un BC3…) es puja com a «binari»: es desa igual, però el navegador no l'obre mai com una web.
+const TIPUS878645 = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif", "image/bmp", "image/tiff",
+  "application/pdf", "text/plain", "text/csv", "application/json", "application/rtf",
+  "application/msword", "application/vnd.ms-excel", "application/vnd.ms-powerpoint", "application/vnd.ms-outlook",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.oasis.opendocument.text",
+  "application/vnd.oasis.opendocument.spreadsheet", "application/zip", "application/x-zip-compressed", "message/rfc822",
+  "audio/webm", "audio/mp4", "audio/mpeg", "audio/ogg", "audio/wav", "audio/aac", "audio/x-m4a", "video/mp4", "video/quicktime", "video/webm",
+  "application/octet-stream"]);
+function tipusArxiu878645(t) { const b = String(t || "").split(";")[0].trim().toLowerCase(); return TIPUS878645.has(b) ? b : "application/octet-stream"; }
 async function storageUpload(path, blob, contentType) {
-  const r = await storageFetch(`aco-fitxers/${path}`, { method: "POST", headers: { "Content-Type": contentType || "application/octet-stream", "x-upsert": "true" }, body: blob });
+  const r = await storageFetch(`aco-fitxers/${path}`, { method: "POST", headers: { "Content-Type": tipusArxiu878645(contentType), "x-upsert": "true" }, body: blob });
   if (!r.ok) { const txt = await r.text(); let j = null; try { j = JSON.parse(txt); } catch {} const e = new Error(j?.message || j?.error || txt || `Error ${r.status}`); e.status = +(j?.statusCode || r.status); throw e; }
 }
 async function storageDownload(path) {
