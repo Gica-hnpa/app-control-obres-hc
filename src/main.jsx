@@ -306,10 +306,11 @@ import "./theme-v878646.css";
 import { startLocalDiskSync } from "./localDiskSync.js";
 import { startCloudSync } from "./cloudSync.js";
 import { startBigStore } from "./bigStore.js";
-import { setLang, readLang } from "./i18n.js";
+import { setLang, readLang, getLang, carregaIdioma } from "./i18n.js";
 import { startBarresFixes } from "./barresFixes.js";
 import { startVersioNova } from "./versioNova.js";
 import { startErrors } from "./errorsApp878646.js";
+import { carregaXlsx } from "./excel878649.js";
 
 // V87.409 · L'enllaç per signar a distància («…/#signa=<clau>»): només la pàgina per signar, sense arrencar l'app (ni les dades
 // de l'aparell ni el núvol del compte que hi pugui haver en aquest navegador).
@@ -321,6 +322,14 @@ if (signa878409) {
 } else if (client878629) {
   import("./ClientObra.jsx").then(({ default: ClientObra }) => createRoot(document.getElementById("root")).render(<React.StrictMode><ClientObra token={client878629} /></React.StrictMode>));
 } else {
+  // V87.649 · Velocitat: el codi de l'app (el tros gran) es comença a baixar ara mateix, mentre es carreguen les dades de l'aparell i
+  // es parla amb el núvol (abans s'esperava a acabar-ho tot per començar a baixar-lo). Només es baixa: no s'executa fins més avall.
+  // La llista d'arxius la posa vite.config.js a la pàgina en compilar (a OBRIR_APP.bat no hi és i no fa res).
+  try {
+    for (const f of (document.querySelector('meta[name="aco-precarrega"]')?.content || "").split(",").filter(Boolean)) {
+      const l = document.createElement("link"); l.rel = "modulepreload"; l.crossOrigin = ""; l.href = new URL(f, document.baseURI).href; document.head.appendChild(l);
+    }
+  } catch {}
   // V87.614 · avís quan hi ha una versió nova publicada (una pestanya oberta de fa dies es quedava amb la vella). Des del principi: també
   // a la pantalla d'entrar. Només a la versió compilada (a OBRIR_APP.bat no hi ha «assets/index-…js» i no fa res).
   if (import.meta.env.PROD) { try { startVersioNova(); } catch {} }
@@ -331,15 +340,21 @@ if (signa878409) {
   // V87.257 · després, el núvol: baixa el que s'hagi fet des d'altres aparells.
   // V87.258 · abans de tot, l'espai gran (IndexedDB) en lloc dels 5 MB del navegador.
   // V87.268 · i l'idioma de l'usuari (o de l'aparell), perquè les finestres del núvol ja surtin en el seu idioma.
-  startBigStore().catch(() => false).then(() => { try { setLang(readLang(sessionStorage.getItem("aco_current_user8779") || "")); } catch {} }).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
+  // V87.649 · si l'usuari és en castellà, el diccionari es baixa abans de les finestres del núvol (en català no cal esperar-lo).
+  startBigStore().catch(() => false).then(() => { try { setLang(readLang(sessionStorage.getItem("aco_current_user8779") || "")); } catch {} }).then(() => carregaIdioma(getLang())).then(() => startLocalDiskSync()).catch(() => {}).then(() => startCloudSync()).catch(e => console.warn("Núvol:", e)).finally(async () => {
     // V87.519 · la prova d'un compte «prova-» s'ha acabat: en lloc de l'app, la pantalla de fi (les dades no s'esborren)
     if (window.__acoProva878519?.acabada) {
       const { default: ProvaAcabada } = await import("./ProvaAcabada.jsx");
       createRoot(document.getElementById("root")).render(<React.StrictMode><ProvaAcabada p={window.__acoProva878519} /></React.StrictMode>);
       return;
     }
-    const { default: App } = await import("./App.jsx");
+    const [{ default: App }] = await Promise.all([import("./App.jsx"), carregaIdioma(getLang())]);
     createRoot(document.getElementById("root")).render(<React.StrictMode><App /></React.StrictMode>);
+    // V87.649 · el que no cal per veure l'app es baixa de fons quan ja és oberta: l'Excel i el castellà (documents d'obres en castellà).
+    // Si algú ho fa servir abans, s'espera allà mateix.
+    // (Les proves ho poden aturar amb «xlsx-fons-v878649» = "0" per provar l'Excel quan encara no ha arribat.)
+    const fons = (() => { try { return (window.__acoStore?.real || localStorage).getItem("xlsx-fons-v878649") !== "0"; } catch { return true; } })();
+    if (fons) setTimeout(() => { carregaXlsx().catch(() => {}); carregaIdioma("es"); }, 4000);
     // V87.587 · les barres fixes de baix al mòbil, amb el teclat obert i en tancar-lo
     try { startBarresFixes(); } catch {}
     // V87.271 · App sense cobertura: a la versió publicada, l'app es guarda dins de l'aparell (sw.js) i s'obre encara

@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Lock, Printer, AlertTriangle, BadgeCheck, ChevronRight, FileText } from "lucide-react";
 import { CLOUD_URL, CLOUD_KEY } from "./cloudConfig.js";
-import { tl } from "./i18n.js";
+import { tl, carregaIdioma, idiomaCarregat } from "./i18n.js";
 
 const CLAU_CODI = token => `aco_client_codi_${String(token).slice(0, 16)}`;
 async function veure(token, codi) {
@@ -18,6 +18,9 @@ async function veure(token, codi) {
 
 export default function ClientObra({ token }) {
   const [lang, setLang] = useState(() => (/^es/i.test(navigator.language || "") ? "es" : "ca"));
+  // V87.649 · el diccionari del castellà es baixa a part, només si cal
+  const [, setDicc] = useState(0);
+  useEffect(() => { if (!idiomaCarregat(lang)) carregaIdioma(lang).then(() => setDicc(x => x + 1)); }, [lang]);
   const T = (s, v) => tl(lang, s, v);
   const loc = lang === "es" ? "es-ES" : "ca-ES";
   const eur = n => Number(n || 0).toLocaleString(loc, { style: "currency", currency: "EUR" });

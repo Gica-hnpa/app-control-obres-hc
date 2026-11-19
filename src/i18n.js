@@ -3,15 +3,24 @@
 // diccionari de cada idioma diu com es diu en aquell idioma. Si un text no hi és, surt en català (mai buit).
 // L'idioma és de cada usuari (no de l'obra ni del compte sencer): es desa a la seva clau, que viatja amb el
 // seu compte del núvol, i també a l'aparell (per a les pantalles d'abans d'entrar).
-import ES from "./i18n-es.js";
-
+// V87.649 · Velocitat: el diccionari del castellà (uns 400 KB) ja no va dins del primer arxiu de l'app. Es baixa a part quan cal
+// (usuari en castellà, abans d'obrir l'app; documents o pàgines en castellà) i, si no, de fons un cop oberta l'app. Mentre no hi
+// és, els textos surten en català (mai buits).
 export const LANGS = [
   { code: "ca", nom: "Català" },
   { code: "es", nom: "Castellano" },
 ];
-const DICTS = { es: ES };
+const CARREGA = { es: () => import("./i18n-es.js") };
+const DICTS = {};
+const promeses = {};
 const DEVICE_KEY = "idioma-app-control-obres";
-const known = code => code === "ca" || !!DICTS[code];
+const known = code => code === "ca" || code in CARREGA;
+// Baixa el diccionari d'un idioma (una sola vegada). Sempre acaba bé: si no es pot baixar, els textos surten en català.
+export function carregaIdioma(code) {
+  if (!CARREGA[code] || DICTS[code]) return Promise.resolve(true);
+  return promeses[code] || (promeses[code] = CARREGA[code]().then(m => { DICTS[code] = m.default; return true; }).catch(() => { delete promeses[code]; return false; }));
+}
+export const idiomaCarregat = code => !CARREGA[code] || !!DICTS[code];
 let current = "ca";
 
 function userKey(user) { return `aco_v8782__${user}__aco_idioma_v878268`; }
@@ -47,4 +56,4 @@ export function tl(lang, text, vars) {
 }
 // Per a les proves: textos que encara no són al diccionari d'un idioma.
 export function missing(texts, code = "es") { return texts.filter(x => !(DICTS[code] && x in DICTS[code])); }
-if (typeof window !== "undefined") window.__acoI18n = { t, tl, getLang, setLang, readLang, saveLang, LANGS, missing };
+if (typeof window !== "undefined") window.__acoI18n = { t, tl, getLang, setLang, readLang, saveLang, LANGS, missing, carregaIdioma, idiomaCarregat };

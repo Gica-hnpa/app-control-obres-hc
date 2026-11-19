@@ -220,6 +220,29 @@ function cspPlugin() {
   };
 }
 
+// V87.649 · Velocitat: la pàgina porta la llista d'arxius del codi de l'app (App i el que importa, el tros gran) perquè main.jsx els
+// comenci a baixar de seguida, mentre es carreguen les dades i es parla amb el núvol (abans s'esperava a acabar-ho tot). No a les
+// pàgines de signar ni del client (main.jsx). Provat (tools/proves/v649test.mjs): començar-lo encara abans, sense esperar els estils,
+// alenteix la pantalla d'entrar (3,1 → 4,4 s amb un 4G lent) i gairebé no fa res més ràpid.
+function precarregaPlugin() {
+  return {
+    name: "aco-precarrega",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler(html, ctx) {
+        const b = ctx.bundle; if (!b) return html;
+        const app = Object.values(b).find(c => c.type === "chunk" && (/[\\/]src[\\/]App\.jsx$/.test(c.facadeModuleId || "") || c.name === "App"));
+        if (!app) return html;
+        const fets = new Set(), llista = [];
+        const afegeix = c => { if (!c || c.type !== "chunk" || c.isEntry || fets.has(c.fileName)) return; fets.add(c.fileName); llista.push(c.fileName); (c.imports || []).forEach(f => afegeix(b[f])); };
+        afegeix(app);
+        return html.replace(/<\/head>/i, `  <meta name="aco-precarrega" content="${llista.join(",")}" />\n</head>`);
+      }
+    }
+  };
+}
+
 // ACO_SENSE_DISC=1 només per a proves: simula l'app publicada (sense desat a l'ordinador).
 // ACO_VITE_CACHE: memòria cau pròpia (proves des d'una còpia de treball amb node_modules enllaçat, perquè no es trepitgin)
-export default defineConfig({ base: "./", ...(process.env.ACO_VITE_CACHE ? { cacheDir: process.env.ACO_VITE_CACHE } : {}), plugins: [react(), offlinePlugin(), cspPlugin(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });
+export default defineConfig({ base: "./", ...(process.env.ACO_VITE_CACHE ? { cacheDir: process.env.ACO_VITE_CACHE } : {}), plugins: [react(), precarregaPlugin(), offlinePlugin(), cspPlugin(), ...(process.env.ACO_SENSE_DISC === "1" ? [] : [dadesLocalsPlugin()])] });

@@ -4775,3 +4775,19 @@
   - Proves: `bc3escriuunit` 13/13 (s'escriu i es torna a llegir igual), `v648test` 14/14, `v647test` 10/10, `v513test` 8/8, `v426test` 29/29,
     `v435test` 15/15, `enviar407test` 23/23, `docmobiltest` 15/15, `pdfpressuposttest` 29/29 (SENSE_IA=1), `contrasenyestest` 34/34,
     `dictattest` 27/27.
+- **V87.649 · Velocitat** (pla de la revisió de seguretat del 18/11/2026: «l'app fa 2,9 MB i els estils 1,5 MB… al mòbil amb poca cobertura,
+  la primera vegada triga»). Mesurat amb `tools/proves/v649test.mjs` (app compilada i comprimida com a Render, mòbil amb 4G lent: 1,6 Mbps,
+  150 ms i processador ×4): després d'una versió nova, **9,7 → 7,0 s** fins a veure l'app; primera vegada, **4,6 → 3,1 s** fins a la pantalla
+  d'entrar; tornant-la a obrir, **1,7 → 1,4 s**; abans de veure l'app es baixen **1.448 → 1.046 KB**.
+  - El codi de l'app (el tros gran) es comença a baixar mentre es carreguen les dades i es parla amb el núvol (abans s'esperava a acabar-ho):
+    la pàgina porta la llista (`<meta name="aco-precarrega">`, vite.config.js) i main.jsx hi posa `modulepreload`. No a les pàgines de
+    signar ni del client. Provat també començar-lo sense esperar els estils: la pantalla d'entrar anava més lenta (3,1 → 4,4 s) i no es guanyava res.
+  - Es baixen a part, només quan calen: el **castellà** (`i18n.js` › `carregaIdioma`; abans de les finestres del núvol si l'usuari és en
+    castellà; les pàgines del client i de signar, si cal), l'**Excel** (`src/excel878649.js`: `XLSX` s'omple en arribar; les lectures fan
+    `await carregaXlsx…`, les descàrregues `ambXlsx878649`, que espera i les fa) i el **lector de PDF** (`pdfjs878649()`). L'Excel i el castellà
+    es baixen de fons 4 s després d'obrir l'app (les proves ho poden aturar amb `xlsx-fons-v878649` = "0").
+  - `sw.js`: en una versió nova, els arxius `assets/…` que ja hi eren (Excel, PDF, lletres…) es copien de la còpia anterior en lloc de tornar-los
+    a baixar.
+  - Els estils (1,5 MB, 216 KB comprimits) no s'han tocat: lightningcss no els aprima (no hi ha regles repetides); caldria treure capes velles.
+  - Proves: `v649test` 5/5, `v648test` 14/14 (també amb `XLSX_TARD=1`: l'Excel es descarrega abans que arribi), `pdfpressuposttest` 29/29,
+    `documentstest` (prova al dia: botó «Nova acta»), `traducciotest` 19/19, `offlinetest` 10/10, `amidaments328test` 27/27, `i18ntest`.

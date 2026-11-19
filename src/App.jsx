@@ -1,13 +1,16 @@
 
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from "react";
 import {createPortal} from "react-dom";
-import * as XLSX from "xlsx";
+import {XLSX,carregaXlsx as carregaXlsx878649} from "./excel878649.js";
 import QRCode from "qrcode";
-import * as pdfjsLib from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
-pdfjsLib.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;
+// V87.649 · Velocitat: el lector de PDF (uns 430 KB) ja no va dins del codi principal: es baixa la primera vegada que es llegeix un PDF.
+let pdfjsP878649=null;
+// V87.649 · L'Excel es baixa de fons en obrir l'app (main.jsx). Si algú el descarrega abans que arribi, s'espera i es fa en arribar.
+function ambXlsx878649(fes){if(XLSX.utils)return false;carregaXlsx878649().then(fes).catch(()=>alert(t("No s’ha pogut preparar l’Excel. Torna-ho a provar quan tinguis connexió.")));return true}
+function pdfjs878649(){return pdfjsP878649||(pdfjsP878649=import("pdfjs-dist").then(m=>{m.GlobalWorkerOptions.workerSrc=pdfWorkerUrl;return m}).catch(e=>{pdfjsP878649=null;throw e}))}
 import {ShieldCheck,GraduationCap,KeyRound,UserPlus,Copy,RefreshCw,Cloud,CloudSun,CloudRain,CloudDrizzle,CloudSnow,CloudLightning,CloudFog,Star,Sun,CalendarRange,Fingerprint,Palmtree,BarChart3,CircleCheck,UserRound,CalendarCheck,Minus,ImagePlus,RotateCcw,Phone,ChevronDown,MapPin,Monitor,PackageCheck,FileCode,Handshake,LockOpen,WandSparkles,Signature,Eraser,Check,Eye,ChevronRight,ChevronUp,Share2,Percent,Euro,TrendingUp,Menu,X,Search,Mic,FolderOpen,Users,Bell,Settings,Building2,ClipboardList,CalendarDays,Plus,Upload,Mail,Save,ArrowLeft,ArrowUp,Camera,Paperclip,PenLine,ReceiptText,BookOpen,Library,House,Clock,Ellipsis,ChevronLeft,Trash2,FileText,ExternalLink,Briefcase,Printer,Lock,AlertTriangle,Download,CheckCheck,LayoutDashboard,IdCard,NotebookPen,ClipboardCheck,ChartGantt,Ruler,Calculator,FileCheck,Receipt,Coins,Package,HardHat,Wrench,FolderPlus,Car,Utensils,Landmark,MessageCircle,Send,SlidersHorizontal,FileSpreadsheet,FolderDown,FolderSync,BadgeCheck,Undo2,HandCoins,Factory,Layers,Wallet,Truck,Scale,ListChecks,FilePlus,Repeat} from "lucide-react";
-import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS} from "./i18n.js";
+import {t,t as i18nT,tl,setLang,readLang,saveLang,getLang,LANGS,carregaIdioma,idiomaCarregat} from "./i18n.js";
 import {parseCita} from "./citaVeu.js";
 import {CP_CATALUNYA878304} from "./poblacions-cat.js";
 import {llegirPressupostPdf,liniesPdf,llegirAmidamentsPdf,numero as numeroPdf878305} from "./pressupostPdf.js";
@@ -49,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.648";
+const APP_VERSION878264="87.649";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1551,7 +1554,7 @@ function descompostRowsToText878161(rows=[],source="Excel descomposat") {
   return {text:body,total,lines:lines.length};
 }
 function workbookDescompostFromFile878161(file,{codi="",pu=0}={}){
-  return file.arrayBuffer().then(ab=>{
+  return Promise.all([file.arrayBuffer(),carregaXlsx878649()]).then(([ab])=>{
     const wb=llegeixLlibre(XLSX,ab);
     // V87.399 · la mateixa lectura que en importar tot el pressupost (blocs, títols, línies a 0 que no compten, % ben llegits i triats pel
     // preu de la partida) i, si l'Excel en porta diversos, el de la partida pel codi; si no en surt cap, la lectura d'abans
@@ -1717,7 +1720,7 @@ function planDescompostos878398(rows=[],items=[],fileName="Excel"){
   return {plan,sense:r.unmatchedCodes||[],llegits:(items||[]).length};
 }
 function workbookDescompostsMassius878176(file){
-  return file.arrayBuffer().then(ab=>{
+  return Promise.all([file.arrayBuffer(),carregaXlsx878649()]).then(([ab])=>{
     const wb=llegeixLlibre(XLSX,ab);
     const items=workbookDescompostsFromWorkbook878228(wb,file.name);
     if(!items.length)throw new Error("No he trobat cap full de descomposat vàlid. Recomanat: un full per partida, amb el codi de partida al nom del full o a les primeres files.");
@@ -1742,7 +1745,7 @@ function excelSheetName878180(name,used=new Set()){
   used.add(out.toLowerCase());
   return out;
 }
-function exportBudgetDocExcel878180(doc={},filePrefix="pressupost"){
+function exportBudgetDocExcel878180(doc={},filePrefix="pressupost"){if(ambXlsx878649(()=>exportBudgetDocExcel878180(doc,filePrefix)))return;
   const rows=Array.isArray(doc.rows)?doc.rows:[];
   const used=new Set();
   const wb=XLSX.utils.book_new();
@@ -1815,7 +1818,7 @@ function exportBudgetDocExcel878180(doc={},filePrefix="pressupost"){
 // que veu l'usuari i al PDF, no a una taula plana de dades internes.
 function styleExcelCell878246(ws,address,style){if(ws?.[address])ws[address].s=style}
 function styleExcelRow878246(ws,row,from=0,to=5,style={}){for(let col=from;col<=to;col++)styleExcelCell878246(ws,`${String.fromCharCode(65+col)}${row}`,style)}
-function exportBudgetDocExcelStyled878246(doc={},filePrefix="pressupost"){
+function exportBudgetDocExcelStyled878246(doc={},filePrefix="pressupost"){if(ambXlsx878649(()=>exportBudgetDocExcelStyled878246(doc,filePrefix)))return;
   const rows=sortPartides878132(Array.isArray(doc.rows)?doc.rows:[]);
   const used=new Set();
   const wb=XLSX.utils.book_new();
@@ -2499,7 +2502,7 @@ function printHtmlInPlace878112(html,title="Document"){
   }
 }
 // V87.283 · Idioma dels documents (PDF) d'una obra: el que s'hi ha triat a Dades; si no, el de l'usuari.
-function docLang878283(obra){const v=obra?.idiomaDocs;return LANGS.some(l=>l.code===v)?v:getLang()}
+function docLang878283(obra){const v=obra?.idiomaDocs;const l=LANGS.some(l=>l.code===v)?v:getLang();if(!idiomaCarregat(l))carregaIdioma(l);return l}
 // Títols i subtítols que fa l'app en català («CERTIFICACIÓ 3 · GENERAL A ORIGEN», «12 partides · 1.234,00 €»…): es
 // tradueixen tros a tros a l'idioma del document. El que no es reconeix (el nom de l'obra, un import…) es deixa igual.
 function docTitle878283(obra,s){
@@ -3263,7 +3266,7 @@ function PlanolsCroquisActa8769({draft,setDraft}){
   function undo(){setHist(h=>{const last=h[h.length-1];if(last)restore(last);return h.slice(0,-1)})}
   function clearDraw(){if(meta.tipus==="pdf"&&pdfRef.current)renderPdfPage(meta.pagina);else if(meta.tipus==="image"&&meta.src)renderImage(meta.src,meta.nom);else newBlank(false)}
   function newBlank(reset=true){setCanvasSize(1100,780);const c=canvasRef.current,context=ctx();if(!c||!context)return;context.fillStyle="#fff";context.fillRect(0,0,c.width,c.height);context.strokeStyle="#d1d5db";context.lineWidth=1;for(let x=55;x<c.width;x+=55){context.beginPath();context.moveTo(x,0);context.lineTo(x,c.height);context.stroke()}for(let y=55;y<c.height;y+=55){context.beginPath();context.moveTo(0,y);context.lineTo(c.width,y);context.stroke()}if(reset)setMeta({nom:"Full en blanc",tipus:"blank",pagina:1,pagines:1})}
-  async function loadFile(file){if(!file)return;setLoading(true);try{if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:copiaPdf878644(buf)}).promise;pdfRef.current=pdf;setMeta({nom:file.name,tipus:"pdf",pagina:1,pagines:pdf.numPages});await renderPdfPage(1,pdf,file.name)}else{const reader=new FileReader();reader.onload=()=>renderImage(reader.result,file.name);reader.readAsDataURL(file)}}catch(err){alert(t("No s'ha pogut carregar el plànol. Pots provar exportant la pàgina del PDF com a imatge PNG/JPG."))}finally{setLoading(false)}}
+  async function loadFile(file){if(!file)return;setLoading(true);try{if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){const buf=await file.arrayBuffer();const pdf=await (await pdfjs878649()).getDocument({isEvalSupported:false,data:copiaPdf878644(buf)}).promise;pdfRef.current=pdf;setMeta({nom:file.name,tipus:"pdf",pagina:1,pagines:pdf.numPages});await renderPdfPage(1,pdf,file.name)}else{const reader=new FileReader();reader.onload=()=>renderImage(reader.result,file.name);reader.readAsDataURL(file)}}catch(err){alert(t("No s'ha pogut carregar el plànol. Pots provar exportant la pàgina del PDF com a imatge PNG/JPG."))}finally{setLoading(false)}}
   async function renderPdfPage(pageNo,pdf=pdfRef.current,nom=meta.nom){if(!pdf)return;setLoading(true);try{const page=await pdf.getPage(pageNo);const viewport=page.getViewport({scale:1.45});setCanvasSize(viewport.width,viewport.height);const c=canvasRef.current,context=ctx();context.fillStyle="#fff";context.fillRect(0,0,c.width,c.height);await page.render({canvasContext:context,viewport}).promise;setMeta(m=>({...m,nom,tipus:"pdf",pagina:pageNo,pagines:pdf.numPages}))}finally{setLoading(false)}}
   function renderImage(src,nom="Imatge"){const img=new Image();img.onload=()=>{const maxW=1200;const ratio=Math.min(maxW/img.width,1);const w=Math.round(img.width*ratio),h=Math.round(img.height*ratio);setCanvasSize(w,h);const context=ctx();context.fillStyle="#fff";context.fillRect(0,0,w,h);context.drawImage(img,0,0,w,h);setMeta({nom,tipus:"image",src,pagina:1,pagines:1})};img.src=src}
   function pos(e){const c=canvasRef.current;const r=c.getBoundingClientRect();return {x:(e.clientX-r.left)*(c.width/r.width),y:(e.clientY-r.top)*(c.height/r.height)}}
@@ -5575,6 +5578,9 @@ const scopedClientId878233=currentAccount878233.role!=="admin"?String(currentAcc
 const appCfg=lsJson8779("aco_config",{} ,dataOwnerUser878233)||{};
 // V87.268 · idioma de cada usuari (src/i18n.js). tt() es manté per als pocs textos antics traduïts a mà.
 setLang(readLang(authUser8779||currentAppUser8779()||""));
+// V87.649 · si l'usuari que entra és en castellà i el diccionari encara no hi és (l'aparell era en català), es baixa i es torna a pintar
+const[,setIdioma878649]=useState(0);
+if(!idiomaCarregat(getLang()))carregaIdioma(getLang()).then(()=>setIdioma878649(x=>x+1));
 const lang=getLang()==="es"?"Castellà":"Català";
 const tt=(ca,es)=>getLang()==="es"?es:ca;
 const[clients,setClients]=useState([]),
@@ -6366,7 +6372,7 @@ function parseRows(rows,sheetName){
 
   try{
     const ab=await file.arrayBuffer();
-    const wb=llegeixLlibre(XLSX,ab);
+    const wb=llegeixLlibre(await carregaXlsx878649(),ab);
     let best={rows:[],sheet:"",caps:0,total:0};
     let bestScore=-999999;
     for(const sheetName of wb.SheetNames){
@@ -7541,7 +7547,7 @@ function Bancs878514({obres=[],odata={},openObraTab}){
           else if(!c.dataIni||k.dataIni<c.dataIni){bb={...bb,comptes:bb.comptes.map(x=>x.id===c.id?{...x,saldoIni:k.saldoIni,dataIni:k.dataIni,num43:num}:x)}}
           const [n2,n]=afegeixApunts(bb,c.id,k.apunts,f.name);bb=n2;total+=n}
         desa(bb);setMsg(total===1?t("1 apunt nou."):t("{n} apunts nous.",{n:total}));return}
-      const wb=llegeixLlibre(XLSX,buf);const files=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:""});
+      const wb=llegeixLlibre(await carregaXlsx878649(),buf);const files=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:""});
       const r=llegirFilesBanc(files);if(!r.apunts.length){setMsg(r.avisos.join(" · "));return}
       if(b.comptes.length===1){const [bb,n]=afegeixApunts(b,b.comptes[0].id,r.apunts,f.name);desa(bb);setMsg(n===1?t("1 apunt nou."):t("{n} apunts nous.",{n}));return}
       setCsv({nom:f.name,apunts:r.apunts,compte:b.comptes[0]?.id||""});
@@ -7866,6 +7872,7 @@ async function fesPaquet878522({emeses,rebudes,per,ambPdf=true,ambDocs=true,onPa
   const emp=String(empresaInfo878259()?.nom||(getAppAccount878233(currentAppUser8779())||{}).displayName||"").replace(/[\\/:*?"<>|]+/g,"").trim();
   const P=nomPer878522(per),arrel=`${t("Gestoria")} ${P}${emp?" · "+emp:""}`.trim(),fitx=[],avisos=[];const r2=r2c878521,sum=(l,k)=>r2(l.reduce((x,y)=>x+(+y[k]||0),0));
   const pas=(n,m)=>{try{onPas?.(n,m)}catch{}};
+  await carregaXlsx878649();
   const xlsx=(aoa,cols,full)=>{const ws=XLSX.utils.aoa_to_sheet(aoa);ws["!cols"]=cols.map(w=>({wch:w}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,full.slice(0,31));return new Uint8Array(XLSX.write(wb,{bookType:"xlsx",type:"array"}))};
   const nomEm=r=>`${t("Factures emeses")}/${r.numero||t("Sense número")}${r.client?" · "+r.client:""}.pdf`;
   const nomReb=r=>`${t("Factures rebudes")}/${r.data||t("Sense data")} ${r.proveidor||""}${r.numero?" "+r.numero:""}`.replace(/\s+/g," ").trim();
@@ -8586,7 +8593,7 @@ const nomArxiu878648=s=>String(s||"").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+
 function capsPres878648(caps){return Object.entries(caps||{}).filter(([,rows])=>(rows||[]).length).map(([nom,rows])=>({nom,pare:(rows||[]).find(r=>r.capPrincipal)?.capPrincipal||"",partides:(rows||[]).map(r=>({codi:r.codi||r.codiPressupost||"",ut:r.ut||"",concepte:r.concepte||"",desc:r.desc||r.descripcio||"",q:r.q,pu:r.pu,mides:r.pressupostMesures||r.mides||[],descomp:r.descompostTable||null}))}))}
 function capsAmid878648(linies){const m=new Map();(linies||[]).forEach(l=>{const k=l.cap||"01 Partides";if(!m.has(k))m.set(k,{nom:k,pare:l.capPrincipal||"",partides:[]});m.get(k).partides.push({codi:l.codi||"",ut:l.ut||"",concepte:l.concepte||"",desc:l.desc||"",q:l.q,pu:0,mides:l.mides||[]})});return [...m.values()]}
 function bc3Amid878648(linies,titol){baixaArxiu878648(escriuBc3({titol,codi:"AMIDAMENTS",ambPreus:false,caps:capsAmid878648(linies)}),nomArxiu878648(titol)+".bc3","application/octet-stream")}
-function excelAmid878648(linies,titol){
+function excelAmid878648(linies,titol){if(ambXlsx878649(()=>excelAmid878648(linies,titol)))return;
   const n=v=>v===""||v==null?"":(typeof v==="number"?v:(parseNum8770(v)||0));
   const aoa=[[t("Codi"),t("Capítol"),t("Ut"),t("Concepte"),t("Descripció"),t("Unitats"),t("Llargada"),t("Amplada"),t("Alçada"),t("Quantitat")]];
   capsAmid878648(linies).forEach(c=>c.partides.forEach(p=>{aoa.push([p.codi,c.nom,p.ut,p.concepte,p.desc,"","","","",n(p.q)]);
@@ -10239,9 +10246,9 @@ function liniaPdf878553(txt){
 }
 async function llegeixContactes878553(file){
   const ext=String(file?.name||"").split(".").pop().toLowerCase();const buf=await file.arrayBuffer();
-  if(ext==="pdf"){const {linies}=await liniesPdf(pdfjsLib,buf,60);return linies.map(l=>liniaPdf878553(l.text)).filter(Boolean)}
+  if(ext==="pdf"){const {linies}=await liniesPdf(await pdfjs878649(),buf,60);return linies.map(l=>liniaPdf878553(l.text)).filter(Boolean)}
   // un CSV de l'Excel en castellà o català separa amb «;»
-  let wb;if(ext==="csv"){let tx=new TextDecoder("utf-8").decode(buf);if(tx.includes("\uFFFD"))tx=new TextDecoder("windows-1252").decode(buf);const l0=tx.split(/\r?\n/)[0]||"";const sep=(l0.split(";").length>l0.split(",").length)?";":(l0.includes("\t")?"\t":",");wb=XLSX.read(tx,{type:"string",FS:sep})}else wb=XLSX.read(buf,{type:"array"});
+  let wb;if(ext==="csv"){let tx=new TextDecoder("utf-8").decode(buf);if(tx.includes("\uFFFD"))tx=new TextDecoder("windows-1252").decode(buf);const l0=tx.split(/\r?\n/)[0]||"";const sep=(l0.split(";").length>l0.split(",").length)?";":(l0.includes("\t")?"\t":",");wb=(await carregaXlsx878649()).read(tx,{type:"string",FS:sep})}else wb=(await carregaXlsx878649()).read(buf,{type:"array"});
   const ws=wb.Sheets[wb.SheetNames[0]];
   const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:""}).filter(r=>r.some(c=>String(c).trim()));
   // la fila de títols: la primera (de les 6 primeres) amb 2 o més títols coneguts
@@ -10316,7 +10323,7 @@ function candidatsDespeses878566(files=[]){
 async function filesPdf878569(dataUrl){
   const b64=String(dataUrl||"").split(",")[1]||"";if(!b64)return [];
   const bin=atob(b64);const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
-  const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:copiaPdf878644(u8)}).promise;const out=[];
+  const pdf=await (await pdfjs878649()).getDocument({isEvalSupported:false,data:copiaPdf878644(u8)}).promise;const out=[];
   for(let i=1;i<=Math.min(pdf.numPages,2);i++){
     const pg=await pdf.getPage(i);const tc=await pg.getTextContent();const rows=[];
     tc.items.filter(x=>String(x.str||"").trim()).forEach(x=>{const y=x.transform[5],xx=x.transform[4],w=x.width||String(x.str).length*5;let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r){r={y,items:[]};rows.push(r)}r.items.push({x:xx,x2:xx+w,s:String(x.str).trim()})});
@@ -14763,9 +14770,9 @@ async function textVisita878443(docs,obraId){
     try{
       const f=await getDocFile(x.id,x.obraId||obraId);if(!f){altres.push(x.nom);continue}
       const ext=String(x.nom||"").split(".").pop().toLowerCase();let tx="";
-      if(ext==="pdf"){const {linies}=await liniesPdf(pdfjsLib,await f.arrayBuffer(),40);tx=linies.map(l=>l.text).join("\n")}
+      if(ext==="pdf"){const {linies}=await liniesPdf(await pdfjs878649(),await f.arrayBuffer(),40);tx=linies.map(l=>l.text).join("\n")}
       else if(ext==="csv"||ext==="txt")tx=await f.text();
-      else if(ext==="xlsx"||ext==="xls"){const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});tx=wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n")}
+      else if(ext==="xlsx"||ext==="xls"){const wb=(await carregaXlsx878649()).read(await f.arrayBuffer(),{type:"array"});tx=wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n")}
       if(!String(tx).trim()){altres.push(x.nom);continue}
       const resta=MAX-total;if(resta<=0){altres.push(x.nom);continue}
       const tros=tx.length>resta?tx.slice(0,resta):tx;total+=tros.length;parts.push("— "+x.nom+" —\n"+tros);if(tros.length<tx.length)altres.push(x.nom);
@@ -16211,7 +16218,7 @@ function resumPressupost878362(partides=[]){
 }
 // V87.449 · la llista per comprar, en Excel
 const LLISTES878449=[["mat","Materials"],["ma","Mà d’obra"],["alt","Maquinària i altres"],["ind","Industrials (preu tancat)"]];
-function exportaCompra878449(r,nom=""){
+function exportaCompra878449(r,nom=""){if(ambXlsx878649(()=>exportaCompra878449(r,nom)))return;
   const n2=v=>Math.round(v*100)/100;
   const files=[[t("Tipus"),t("Família"),t("Codi"),t("Concepte"),t("Unitat"),t("Quantitat"),t("Preu màxim"),t("Import"),t("Partides")]];
   LLISTES878449.forEach(([k,g])=>perFamilies878456(r.llistes[k]||[]).forEach(f=>f.linies.forEach(x=>files.push([t(g),k==="ma"?"":t(f.nom),x.codi,x.concepte,x.ut,n2(x.q),x.q?n2(x.imp/x.q):0,n2(x.imp),[...x.cods].join(" · ")]))));
@@ -16672,8 +16679,8 @@ async function llegeixAmid878476(a,ext){
   try{
     const buf=await a.arrayBuffer();let r=null;
     if(ext==="bc3"){const txt=textBc3(buf);r=llegirBc3(txt);const bb=new Map(llegirBancBc3(txt).partides.map(x=>[x.codi,x]));r={...r,partides:r.partides.map(x=>{const d=bb.get(x.codi);return d&&d.descomp.length&&Number(x.pu)>0?{...x,descomp:d.descomp}:x})}}
-    else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(XLSX,buf);r=llegirExcelAmidaments(fullsLlibre(XLSX,wb))}
-    else if(ext==="pdf"){const {linies:ls}=await liniesPdf(pdfjsLib,buf,300);r=llegirAmidamentsPdf(ls);if(!r.partides.length){const p=llegirPressupostPdf(ls);if(p.partides.length)r={font:"PDF",nom:"",caps:p.caps,partides:p.partides.map(x=>({...x,mides:[]})),avisos:p.avisos}}}
+    else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(await carregaXlsx878649(),buf);r=llegirExcelAmidaments(fullsLlibre(XLSX,wb))}
+    else if(ext==="pdf"){const {linies:ls}=await liniesPdf(await pdfjs878649(),buf,300);r=llegirAmidamentsPdf(ls);if(!r.partides.length){const p=llegirPressupostPdf(ls);if(p.partides.length)r={font:"PDF",nom:"",caps:p.caps,partides:p.partides.map(x=>({...x,mides:[]})),avisos:p.avisos}}}
     const ps=r?.partides||[];
     return ps.length>=3&&ps.filter(p=>Number(p.q)>0).length>=ps.length*0.6?r:null;
   }catch(e){console.warn(e);return null}
@@ -16717,7 +16724,7 @@ function DictarPartides878401({caps={},partidaLibrary=[],data={},obra=null,obraI
         setFent(t("Llegint «{n}»…",{n:nom}));const llegit=await llegeixAmid878476(a,ext);
         if(llegit){nous.push({nom,file:a,llegit});continue}
         if(ext==="bc3")nous.push({nom,text:textBc3(await a.arrayBuffer()).slice(0,50000)});
-        else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(XLSX,await a.arrayBuffer());nous.push({nom,text:wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n").slice(0,50000)})}
+        else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(await carregaXlsx878649(),await a.arrayBuffer());nous.push({nom,text:wb.SheetNames.map(n=>XLSX.utils.sheet_to_csv(wb.Sheets[n])).join("\n").slice(0,50000)})}
         else if(/^image\//.test(a.type))nous.push({nom,file:a,...arxiuDeDataUrl(await compressImage878259(a))});
         else if(/pdf$/i.test(a.type)||ext==="pdf"){if(a.size>14*1024*1024){setErr(t("«{n}» fa més de 14 MB.",{n:nom}));continue}nous.push({nom,file:a,pdf:true,...await arxiuDeFitxer(a)})}
         else setErr(t("«{n}» no es pot llegir: ha de ser un PDF, una foto, un Excel o un BC3.",{n:nom}));
@@ -17349,13 +17356,13 @@ function Amidaments878328({fase878342="principal",obra,data={},setData,partidaLi
       let r=null;
       if(ext==="bc3"){const txt=textBc3(buf);r=llegirBc3(txt);const bb=new Map(llegirBancBc3(txt).partides.map(x=>[x.codi,x]));r={...r,partides:r.partides.map(x=>{const d=bb.get(x.codi);return d&&d.descomp.length&&Number(x.pu)>0?{...x,descomp:d.descomp}:x})}}
       else if(ext==="pdf"){
-        const {linies:ls}=await liniesPdf(pdfjsLib,buf,200);
+        const {linies:ls}=await liniesPdf(await pdfjs878649(),buf,200);
         r=llegirAmidamentsPdf(ls);
         // un PDF de pressupost (amb preus i sense mides) també val
         if(!r.partides.length){const p=llegirPressupostPdf(ls);if(p.partides.length)r={font:"PDF",nom:"",caps:p.caps,partides:p.partides.map(x=>({...x,mides:[]})),avisos:p.avisos}}
         if(!r.partides.length&&await iaActiva()){const ia=await pressupostDeIa(file,ls.map(l=>l.text).join("\n"));r={font:"PDF",nom:"",caps:[...new Set(ia.partides.map(x=>x.cap))],partides:ia.partides.map(x=>({...x,mides:[]})),avisos:ia.avisos}}
       }else if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){
-        const wb=llegeixLlibre(XLSX,buf);
+        const wb=llegeixLlibre(await carregaXlsx878649(),buf);
         r=llegirExcelAmidaments(fullsLlibre(XLSX,wb));
       }else{setErr(t("Aquest arxiu no es pot llegir: ha de ser un PDF, un Excel o un BC3."));setLlegint(false);return}
       if(!r?.partides?.length)setErr(ext==="pdf"?t("L’app no hi ha trobat cap partida (si el PDF és una foto o un escaneig, no té text per llegir)."):t("L’app no hi ha trobat cap partida."));
@@ -17539,7 +17546,7 @@ function PdfPressupost878305({onImport,close,inicial=null,onLlegit=null,titol=""
     if(f.size>25*1024*1024){setErr(t("El PDF fa més de 25 MB."));return}
     setErr("");setEstat("llegint");setFitxer(f);setTextPdf("");setRes(null);setFiles([]);
     try{
-      const {linies}=await liniesPdf(pdfjsLib,await f.arrayBuffer());
+      const {linies}=await liniesPdf(await pdfjs878649(),await f.arrayBuffer());
       const text=linies.map(l=>l.text).join("\n");setTextPdf(text);
       const r=llegirPressupostPdf(linies);
       let fallaIa=false;
@@ -19596,7 +19603,7 @@ async function readCertificationExcel878231(file){
   setCertImportBusy878231(true);
   try{
     const buffer=await file.arrayBuffer();
-    const workbook=XLSX.read(buffer,{type:"array",cellStyles:true,cellFormula:true,cellDates:false,dense:false,sheetRows:600});
+    const workbook=(await carregaXlsx878649()).read(buffer,{type:"array",cellStyles:true,cellFormula:true,cellDates:false,dense:false,sheetRows:600});
     const parsed=parseCertificationWorkbookV87231(workbook,XLSX);
     const matching=matchCertificationItemsV87231(parsed,data.partides||[]);
     setCertImportPreview878231({fileName:file.name,parsed,matching,selectedNums:Object.fromEntries(parsed.certifications.map(item=>[String(item.numero),true])),includeExtras:true,replaceExisting:false});
@@ -20536,8 +20543,8 @@ function taronja878413(r,qc){return esFora878410(r)?" nova-v878413":puja878413(r
 async function partidesArxiu878412(buf,nom){
   const ext=String(nom||"").split(".").pop().toLowerCase();
   if(ext==="bc3")return llegirBc3(textBc3(buf)).partides||[];
-  if(ext==="pdf"){const {linies:ls}=await liniesPdf(pdfjsLib,buf,300);const a=llegirAmidamentsPdf(ls);if(a.partides.length&&a.partides.some(p=>+p.pu>0))return a.partides;return llegirPressupostPdf(ls).partides||[]}
-  if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(XLSX,buf);return llegirExcelAmidaments(fullsLlibre(XLSX,wb)).partides||[]}
+  if(ext==="pdf"){const {linies:ls}=await liniesPdf(await pdfjs878649(),buf,300);const a=llegirAmidamentsPdf(ls);if(a.partides.length&&a.partides.some(p=>+p.pu>0))return a.partides;return llegirPressupostPdf(ls).partides||[]}
+  if(["xlsx","xls","xlsm","csv","ods"].includes(ext)){const wb=llegeixLlibre(await carregaXlsx878649(),buf);return llegirExcelAmidaments(fullsLlibre(XLSX,wb)).partides||[]}
   throw new Error(t("Aquest arxiu no es pot llegir: ha de ser un Excel, un BC3 o un PDF."));
 }
 // V87.428 · Tancar el pressupost (l'Héctor, 29/10/2026: «quan estigui tot fet, o ens ve determinat per uns amidaments ja definits, hauríem
@@ -21521,7 +21528,7 @@ function FacturacioEmpresa878337({obres=[],clientList=[],odata={},setOdata,openO
   // V87.407 · amb el PDF de la factura adjunt
   const correuDe=(title,o,doc)=>setCorreu({...draftCorreu878337({title,obra:o,data:odata?.[o.id],clients:clientList}),pdf:doc?{doc,obra:o,client:clientDe(o)}:null});
   function fora(x){if(!confirm(t("Treure la certificació {n} de «{obra}» de la llista? Fes-ho si ja es va facturar fora de l’app.",{n:x.f.numeroCert,obra:x.obra.nom})))return;const k=x.f.certId;setObraData(x.obra.id)(d=>({...d,factParams:{...(d.factParams||{}),[k]:{...((d.factParams||{})[k]||{}),fora:true}},updatedAt:new Date().toISOString()}))}
-  function exporta(compartir=false){
+  function exporta(compartir=false){if(ambXlsx878649(()=>exporta(compartir)))return;
     const aoa=[[t("Número"),t("Data"),t("Client"),t("NIF"),t("Obra"),t("Base"),t("IVA %"),t("IVA"),t("Retenció %"),t("Retenció"),t("Total"),t("Cobrada"),t("Data de cobrament"),t("Motiu IVA 0 %")],
       ...rows.map(r=>[r.numero,fmtAppDate8748(r.data),r.client,r.nif,r.obra.nom,r2(r.base),+r.iva||0,r2(r.ivaImp),+r.ret||0,r2(r.retImp),r2(r.total),r.cobrada?t("Sí"):t("No"),r.dataCobrament?fmtAppDate8748(r.dataCobrament):"",r.x?.motiu0==="isp"?"ISP":(r.x?.motiu0Text||"")]),
       [],["","","","","",r2(sum("base")),"",r2(sum("ivaImp")),"",r2(sum("retImp")),r2(sum("total"))]];
@@ -22447,7 +22454,7 @@ function RegistreFitx878357({obres=[],odata={}}){
   const nomW=id=>treb.find(w=>w.id===id)?.nom||delDia.find(r=>r.wid===id)?.nom||delMes.find(r=>r.wid===id)?.nom||"";
   const ara=dia===isoDay878255(new Date())?Date.now():null;
   const widsMes=[...new Set(delMes.map(r=>r.wid))];
-  function excel(){const rows=[[t("Treballador"),t("DNI / NIE"),t("Dia"),t("Entrada"),t("Sortida"),t("Pauses"),t("Hores"),t("Correccions"),t("Ubicació de l’entrada"),t("Ubicació de la sortida"),t("Validat"),t("Conformitat del treballador")]];const vs=validats878516();
+  function excel(){if(ambXlsx878649(()=>excel()))return;const rows=[[t("Treballador"),t("DNI / NIE"),t("Dia"),t("Entrada"),t("Sortida"),t("Pauses"),t("Hores"),t("Correccions"),t("Ubicació de l’entrada"),t("Ubicació de la sortida"),t("Validat"),t("Conformitat del treballador")]];const vs=validats878516();
     widsMes.forEach(wid=>{const w=treb.find(x=>x.id===wid);resumMesFitx878516(wid,mes).forEach(x=>rows.push([w?.nom||nomW(wid),w?.dni||"",x.dia,x.ent,x.sor,x.pauses,Math.round(x.h*100)/100,x.corr.join(" · "),x.gEnt,x.gSor,(vs[wid]||{})[x.dia]?t("Sí"):"",textConf878523(confMes878523(wid,mes))]))});
     const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[{wch:24},{wch:12},{wch:12},{wch:8},{wch:8},{wch:7},{wch:7},{wch:40},{wch:30},{wch:30},{wch:8},{wch:30}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,t("Fitxatge"));XLSX.writeFile(wb,`${t("Fitxatge")} ${mes}.xlsx`)}
   const widsLlista=[...new Set([...treb.filter(w=>w.actiu!==false).map(w=>w.id),...delDia.map(r=>r.wid),...delMes.map(r=>r.wid)])];
@@ -23234,7 +23241,7 @@ async function openExcelPreview878245(d){
       file=await getDocFile(d.id,d.obraId);
     }
     if(!file)throw new Error("L’original d’aquest Excel no està disponible en aquest dispositiu.");
-    const workbook=llegeixLlibre(XLSX,await file.arrayBuffer());
+    const workbook=llegeixLlibre(await carregaXlsx878649(),await file.arrayBuffer());
     const excelSheets=workbook.SheetNames.map(name=>{
       const sourceRows=XLSX.utils.sheet_to_json(workbook.Sheets[name],{header:1,defval:""});
       const rows=sourceRows.slice(0,120).map(row=>Array.from(row||[]).slice(0,24));
@@ -23529,7 +23536,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.648",
+    app_version:"87.649",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -24426,7 +24433,7 @@ function FacturesGeneral8738({obres,clientList=[],odata,setOdata,openObra,openOb
   const imps395=f=>({base:invoiceNetBase8746(f),iva:invoiceIvaAmount8746(f),ret:invoiceRetencioAmount8746(f),total:invoiceTotal8746(f)});
   const nifDe395=f=>(clientList||[]).find(c=>c.id===f.obra?.client)?.nif||f.obra?.nifPropietat||"";
   const estat395=f=>!vigent873(f)?i18nT("Anul·lada"):cobrada873(f)?i18nT("Cobrada"):i18nT("Pendent");
-  function exporta395(compartir=false){
+  function exporta395(compartir=false){if(ambXlsx878649(()=>exporta395(compartir)))return;
     const r2=x=>Math.round((+x||0)*100)/100;const ls=llibre395();const v=ls.filter(vigent873);
     const tot=k=>r2(v.reduce((x,f)=>x+imps395(f)[k],0));
     const aoa=[[i18nT("Número"),i18nT("Data"),i18nT("Client"),i18nT("NIF"),i18nT("Expedient"),i18nT("Concepte"),i18nT("Base"),i18nT("IVA %"),i18nT("IVA"),i18nT("Retenció %"),i18nT("Retenció"),i18nT("Total"),i18nT("Estat"),i18nT("Data de cobrament")],
@@ -25300,7 +25307,7 @@ function VisorArxiuGlobal8784291(){const[v,setV]=useState(null);useEffect(()=>{c
 function PaginesPdf8784291({blob,onError}){
   const[pags,setPags]=useState([]);const[total,setTotal]=useState(0);const ref=useRef(null);
   useEffect(()=>{let viu=true;const urls=[];
-    (async()=>{try{const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:new Uint8Array(await blob.arrayBuffer())}).promise;if(!viu)return;setTotal(pdf.numPages);
+    (async()=>{try{const pdf=await (await pdfjs878649()).getDocument({isEvalSupported:false,data:new Uint8Array(await blob.arrayBuffer())}).promise;if(!viu)return;setTotal(pdf.numPages);
       const n=Math.min(pdf.numPages,MAX_PAG8784291);
       for(let i=1;i<=n&&viu;i++){const pg=await pdf.getPage(i);const v1=pg.getViewport({scale:1});
         const css=Math.min(ref.current?.clientWidth||800,1000),dpr=Math.min(window.devicePixelRatio||1,2);const px=Math.min(css*dpr*1.4,2200);
@@ -25632,7 +25639,7 @@ function Llistat878501({titol,files=[],cols=[],dates=[],filtres=[],close,nom="ll
       if(tactil){const f=new File([blob],fitx,{type:"application/pdf"});if(navigator.canShare?.({files:[f]})){try{await navigator.share({files:[f],title:titol});setOcupat(false);return}catch(e){if(e?.name==="AbortError"){setOcupat(false);return}}}}
       descarregaBlob878405(blob,fitx)}catch(e){console.warn(e);alert(t("No s’ha pogut preparar el PDF."))}
     setOcupat(false)}
-  function excel(){if(!ll.length)return;const aoa=[cv.map(c=>c.l),...ll.map(r=>cv.map(c=>c.tipus==="diners"||c.tipus==="pct"?Math.round((+r[c.k]||0)*100)/100:c.tipus==="data"?valLl878501(c,r[c.k]):r[c.k]??"")),cv.map((c,i)=>c.suma?Math.round(tot(c)*100)/100:i===0?t("Total"):"")];
+  function excel(){if(!ll.length)return;if(ambXlsx878649(()=>excel()))return;const aoa=[cv.map(c=>c.l),...ll.map(r=>cv.map(c=>c.tipus==="diners"||c.tipus==="pct"?Math.round((+r[c.k]||0)*100)/100:c.tipus==="data"?valLl878501(c,r[c.k]):r[c.k]??"")),cv.map((c,i)=>c.suma?Math.round(tot(c)*100)/100:i===0?t("Total"):"")];
     const ws=XLSX.utils.aoa_to_sheet(aoa);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,String(titol).slice(0,30));XLSX.writeFile(wb,nomArx+".xlsx")}
   const peu=<><button type="button" className="secondary" disabled={!ll.length} onClick={excel}><FileSpreadsheet size={16} aria-hidden="true"/> {t("Excel")}</button><button type="button" className="secondary" disabled={!ll.length||ocupat} onClick={pdf}><Download size={16} aria-hidden="true"/> {ocupat?t("Preparant el PDF…"):t("Desar el PDF")}</button><button type="button" className="primary" disabled={!ll.length} onClick={()=>printHtmlInPlace878112(html(),titol)}><Printer size={16} aria-hidden="true"/> {t("Imprimir")}</button></>;
   const net=()=>{setDes("");setFins("");setAny("");setFv({});setNumDes("");setNumFins("");setQ("")};
@@ -26536,6 +26543,7 @@ function AiBudget878256({obra={},client={},data={},importExcel,close}){
   }
   function doImport(){
     if(!parsed.partides||!importExcel)return;
+    if(ambXlsx878649(()=>doImport()))return;
     const file=aiBudgetWorkbookFile878256(parsed.items);
     close();
     setTimeout(()=>importExcel({target:{files:[file]}}),50);
@@ -26736,7 +26744,7 @@ function readAsDataUrl878259(file){return new Promise((res,rej)=>{const r=new Fi
 async function albaraFromPdf878259(file){
   if(file.size>4*1024*1024)throw new Error("El PDF fa més de 4 MB. Redueix-lo o fes-ne una foto.");
   const pdfData=await readAsDataUrl878259(file);
-  const pdf=await pdfjsLib.getDocument({isEvalSupported:false,data:await file.arrayBuffer()}).promise;
+  const pdf=await (await pdfjs878649()).getDocument({isEvalSupported:false,data:await file.arrayBuffer()}).promise;
   const page=await pdf.getPage(1);const v0=page.getViewport({scale:1});const vp=page.getViewport({scale:Math.min(2,1400/Math.max(v0.width,v0.height))});
   const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);
   await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
@@ -26998,7 +27006,7 @@ function ImportarObres878358({obres=[],numsFact=[],onImporta,close}){
   const nrm=nrmX878344;
   const jaF=f=>!!f.numero&&numsFact.includes(String(f.numero));
   const jaHi=o=>obres.some(x=>nrm(x.nom)===nrm(o.nom)&&(!o.any||String(x.any||"")===String(o.any)));
-  async function llegeix(file){setErr("");setFet(null);try{const wb=llegeixLlibre(XLSX,await file.arrayBuffer());const d=llegirExcelObres878358(wb);if(!d.obres.length&&!d.factures.length){setErr(t("No s’hi ha trobat cap obra ni cap factura. Cal una fila de títols amb el nom de l’obra (obres) o amb la base o el total (factures)."));return}setDades({...d,arxiu:file.name});setTreuO(new Set(d.obres.map((o,i)=>jaHi(o)?i:-1).filter(i=>i>=0)));setTreuF(new Set(d.factures.map((f,i)=>jaF(f)?i:-1).filter(i=>i>=0)))}catch(e){setErr(e?.message||String(e))}}
+  async function llegeix(file){setErr("");setFet(null);try{const wb=llegeixLlibre(await carregaXlsx878649(),await file.arrayBuffer());const d=llegirExcelObres878358(wb);if(!d.obres.length&&!d.factures.length){setErr(t("No s’hi ha trobat cap obra ni cap factura. Cal una fila de títols amb el nom de l’obra (obres) o amb la base o el total (factures)."));return}setDades({...d,arxiu:file.name});setTreuO(new Set(d.obres.map((o,i)=>jaHi(o)?i:-1).filter(i=>i>=0)));setTreuF(new Set(d.factures.map((f,i)=>jaF(f)?i:-1).filter(i=>i>=0)))}catch(e){setErr(e?.message||String(e))}}
   const tog=(set,setSet,i)=>setSet(s=>{const n=new Set(s);if(n.has(i))n.delete(i);else n.add(i);return n});
   const nO=dades?dades.obres.length-treuO.size:0,nF=dades?dades.factures.length-treuF.size:0;
   function importa(){const r=onImporta?.({obres:dades.obres.filter((_,i)=>!treuO.has(i)).map(o=>({...o,estat:o.estat||estat})),factures:dades.factures.filter((_,i)=>!treuF.has(i)),arxiu:dades.arxiu,estat});setFet(r||{});setDades(null)}
@@ -27058,7 +27066,7 @@ function ImportarDespeses878344({obres=[],odata={},obraFixa="",faseFixa="",setOb
   const trobaObra=txt=>{const n=nrmX878344(txt);if(!n)return "";const o=obres.find(o=>nrmX878344(o.nom)===n||nrmX878344(codiCurt878270(o))===n||nrmX878344(o.codiExpedient)===n)||obres.find(o=>n.length>=4&&(nrmX878344(o.nom).includes(n)||n.includes(nrmX878344(o.nom))));return o?.id||""};
   async function llegeix(f){
     if(!f)return;setErr("");setNomArxiu(f.name);arxiu878345.current=f;
-    try{const ab=await f.arrayBuffer();const wb=llegeixLlibre(XLSX,ab);const fs=llegirExcelDespeses878344(wb);
+    try{const ab=await f.arrayBuffer();const wb=llegeixLlibre(await carregaXlsx878649(),ab);const fs=llegirExcelDespeses878344(wb);
       if(!fs.some(x=>x.files.length)){setErr(t("No hi he trobat cap fila amb imports. Cal una fila de títols amb la base o el total (i, si n’hi ha, la data, el proveïdor, el número i el concepte)."));setFulls(fs);return}
       // les files sense data (una comissió, per exemple) van amb l'última data de l'Excel
       const dMax=fs.flatMap(x=>x.files.map(r=>r.data)).filter(Boolean).sort().pop()||"";
@@ -27382,7 +27390,7 @@ function Albarans878259({obres=[],clients=[],odata={},openObra,obraId:fixedObra=
   // V87.329 · «+ Nova despesa» del tècnic: l'editor demana primer l'expedient i després el tipus (si hi ha un apartat triat, ja ve posat)
   function novaMeva878329(){const g=GRUPS_MEVA878323.find(x=>x.k===tipusF);setEdit(novaDespesa878318({meva:true,obraId:obraF||"",...(obraF?{__exp:true}:{}),...(g?{tipusMeva:g.nou,iva:ivaMeva878323(g.nou),...(g.k==="km"?{preuKm:kmObra878434(obres,obraF)}:{})}:{})}))}
   function save(a){if(desaDespesa878318(a))setEdit(null)}
-  function exporta878338(compartir=false){
+  function exporta878338(compartir=false){if(ambXlsx878649(()=>exporta878338(compartir)))return;
     const r2=x=>Math.round((+x||0)*100)/100;
     const aoa=[[t("Data"),t("Data d’entrada"),t("Tipus"),t("Proveïdor o treballador"),t("Número"),t("Obra o categoria"),t("Capítol o partida"),t("Categoria"),t("Hores"),t("Base"),t("IVA"),t("Total"),t("Inclòs a la factura"),t("Repercutida al client"),...(meves?[]:[t("Pagament"),t("Data de pagament")])],
       ...[...rows].sort((x,y)=>String(x.data||"").localeCompare(String(y.data||""))).map(a=>{const o=obres.find(x=>x.id===a.obraId);const tp=tipusDespesa878311(a);const cob=coberts[a.id];const md=tp==="MaObra"?maDe878348(a):null;return [fmtAppDate8748(a.data),dataEntrada878348(a)?fmtAppDate8748(dataEntrada878348(a)):"",a.meva?etiquetaMeva878323(a.tipusMeva||""):etTipusDespesa878338(tp),a.proveidor||"",a.numero||"",tp==="Empresa"?i18nT(a.categoria||""):(o?.nom||""),imputacio878311(a),md?.cat||"",md?.hores??"",r2(albaraBase878259(a)),r2(a.isp?0:despesaIva878311(a)),r2(despesaTotal878311(a)),cob?[cob.proveidor,cob.numero].filter(Boolean).join(" · "):"",tp==="Empresa"?"":(a.facturatClient?t("Sí"):t("No")),...(meves?[]:(p=>[p.l,p.d?fmtAppDate8748(p.d):""])(txtPag578(a)))]})];

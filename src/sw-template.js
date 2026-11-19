@@ -15,7 +15,12 @@ self.addEventListener("install", event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     // Un per un: si n'hi ha un que falla, la resta es guarden igualment.
-    await Promise.all(FILES.map(f => cache.add(new Request(f, { cache: "reload" })).catch(() => {})));
+    // V87.649 · els arxius amb empremta («assets/…») que ja hi eren de la versió d'abans (l'Excel, el PDF, les lletres…) no es tornen
+    // a baixar: es copien. Abans, a cada versió nova el mòbil es tornava a baixar tota l'app (uns 2,5 MB).
+    await Promise.all(FILES.map(async f => {
+      if (f.includes("/assets/")) { const vell = await caches.match(f, MATCH).catch(() => null); if (vell) return cache.put(f, vell).catch(() => {}); }
+      return cache.add(new Request(f, { cache: f.includes("/assets/") ? "default" : "reload" })).catch(() => {});
+    }));
     await self.skipWaiting();
   })());
 });

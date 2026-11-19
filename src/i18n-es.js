@@ -6336,4 +6336,12 @@ export default {
   "Sense preus (els posaré jo)": "Sin precios (los pondré yo)",
   "Descarregar en Excel": "Descargar en Excel",
   "Descarregar en BC3": "Descargar en BC3",
+  // V87.649 · l'Excel es baixa a part
+  "No s’ha pogut preparar l’Excel. Torna-ho a provar quan tinguis connexió.": "No se ha podido preparar el Excel. Vuelve a intentarlo cuando tengas conexión.",
+  // V87.650 · marges a les partides que no en tenen
+  "Posar-hi els marges": "Ponerles los márgenes",
+  "1 partida de l’arxiu, del banc o de la IA no té els marges de l’obra.": "1 partida del archivo, del banco o de la IA no tiene los márgenes de la obra.",
+  "{n} partides de l’arxiu, del banc o de la IA no tenen els marges de l’obra.": "{n} partidas del archivo, del banco o de la IA no tienen los márgenes de la obra.",
+  "Posar els marges de l’obra ({r}) a {n} partides que no en tenen? Els preus pujaran (les que ja estan certificades no es toquen).": "¿Poner los márgenes de la obra ({r}) a {n} partidas que no los tienen? Los precios subirán (las ya certificadas no se tocan).",
+  "Posar-hi els marges de l’obra: {r} ({n} partides del banc, de l’arxiu o de la IA)": "Ponerles los márgenes de la obra: {r} ({n} partidas del banco, del archivo o de la IA)",
 };

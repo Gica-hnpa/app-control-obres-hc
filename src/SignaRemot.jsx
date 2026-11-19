@@ -10,7 +10,7 @@ import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
 import * as af from "./autofirma.js";
 import { llegeixSignatures } from "./signaturesPdf.js";
 import { propsSig, ajuntaSig, comencaAmb, rpcSigna } from "./signaComu.js";
-import { tl } from "./i18n.js";
+import { tl, carregaIdioma, idiomaCarregat } from "./i18n.js";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -41,6 +41,9 @@ function VistaPdf({ bytes, T }) {
 
 export default function SignaRemot({ token }) {
   const [lang, setLang] = useState(() => (/^es/i.test(navigator.language || "") ? "es" : "ca"));
+  // V87.649 · el diccionari del castellà es baixa a part, només si cal
+  const [, setDicc] = useState(0);
+  useEffect(() => { if (!idiomaCarregat(lang)) carregaIdioma(lang).then(() => setDicc(x => x + 1)); }, [lang]);
   const T = (s, v) => tl(lang, s, v);
   const [estat, setEstat] = useState("carregant");      // carregant · ok · no · error
   const [doc, setDoc] = useState(null);                 // {info, versio, signades, expira, bytes}
