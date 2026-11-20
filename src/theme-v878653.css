@@ -1,0 +1,29 @@
+/* V87.653 · Paquets: Ajustos › Comptes del núvol › Paquets dels comptes (només l'Héctor) i Ajustos › Perfil i mòduls */
+html body .paquets-comptes-v878653{display:flex;flex-direction:column;gap:8px}
+html body .paquets-comptes-v878653 .pc{background:#fff;border:1px solid #AEBBCA;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.08),0 3px 8px -3px rgba(15,23,42,.14);overflow:hidden}
+html body .paquets-comptes-v878653 .pc>.cap{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:10px 12px;cursor:pointer}
+html body .paquets-comptes-v878653 .pc>.cap:focus-visible{outline:2px solid var(--co-accent,#2563EB);outline-offset:-2px}
+html body .paquets-comptes-v878653 .pc>.cap>span{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+html body .paquets-comptes-v878653 .pc>.cap b{font:700 14px var(--app-font);color:var(--co-ink)}
+html body .paquets-comptes-v878653 .pc>.cap small{font-size:12.5px;color:var(--co-ink-2);line-height:1.35;overflow-wrap:anywhere}
+html body .paquets-comptes-v878653 .pc>.cap em{font-style:normal;font:700 18px var(--app-font);color:var(--co-ink-3);width:20px;text-align:center}
+html body .paquets-comptes-v878653 .pc.on{border-color:#64748B}
+html body .paquets-comptes-v878653 .cos{display:flex;flex-direction:column;gap:10px;padding:4px 12px 12px;border-top:1px solid var(--co-line)}
+html body .paquets-comptes-v878653 .perfil{display:flex;flex-direction:column;gap:4px;margin-top:8px;max-width:340px}
+html body .paquets-comptes-v878653 .perfil>span{font:600 12px var(--app-font);color:var(--co-ink-2)}
+html body .paquets-comptes-v878653 .perfil select{min-height:40px}
+html body .paquets-comptes-v878653 .paqs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+html body .paquets-comptes-v878653 .paq{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 12px;border:1px solid var(--co-line);border-radius:10px;background:var(--co-surface,#F8FAFC);cursor:pointer}
+html body .paquets-comptes-v878653 .paq input{width:20px;height:20px;margin:1px 0 0;flex:none}
+html body .paquets-comptes-v878653 .paq>span{display:flex;flex-direction:column;gap:2px;min-width:0}
+html body .paquets-comptes-v878653 .paq b{font:700 13.5px var(--app-font);color:var(--co-ink)}
+html body .paquets-comptes-v878653 .paq small{font-size:12px;color:var(--co-ink-2);line-height:1.35}
+html body .paquets-comptes-v878653 .paq:has(input:checked){border-color:#16A34A;background:#F0FDF4}
+html body .paquets-comptes-v878653 .paq.base{cursor:default;opacity:.85}
+html body .paquets-comptes-v878653 .acc{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+html body .paquets-comptes-v878653 .acc button{min-height:40px}
+html body .paquets-comptes-v878653 .err{margin:0}
+@media (max-width:767px){
+  html body .paquets-comptes-v878653 .paqs{grid-template-columns:1fr}
+  html body .paquets-comptes-v878653 .perfil{max-width:none}
+}

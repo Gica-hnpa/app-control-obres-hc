@@ -10,7 +10,7 @@ import { t } from "./i18n.js";
 import { merge3, conflictLabels, diffLabels } from "./merge3.js";
 import { cfgObra878626, filtraDades878626, ajuntaDades878626, ajuntaObra878626, mesEstricta878633, teApartatsNo878633, permis878626, apartatDe878626 } from "./compartir878626.js";
 
-const VERSION = "V87.652";
+const VERSION = "V87.653";
 const APP_KEY = /^aco_/;
 // Claus que són pròpies de cada aparell i no s'han de compartir.
 const EXCLUDE = /(auto_timer|agenda_view|_sync_tick|aco_supabase)/;
@@ -1236,6 +1236,33 @@ async function comprovaProva() {
     return window.__acoProva878519;
   } catch { return null; }
 }
+// V87.653 · Paquets del compte (supabase/aco_paquets_v878653.sql; l'Héctor, 20/11/2026: «prepara primer els paquets que hem parlat»).
+// Els posa només el compte de l'Héctor (Ajustos › Comptes del núvol). L'app els llegeix en arrencar i els desa a l'aparell per obrir-se
+// igual sense connexió. Sense l'SQL o sense fila: null (el compte té tots els paquets del seu perfil, com fins ara).
+function paqKey() { return `nuvol-aco-paquets__${session?.user_id || ""}`; }
+function paquetsCau() { window.__acoPaquets878653 = session && companyOf(session.email) ? readJson(paqKey(), null) : null; }
+function posaPaquets(v) {
+  const abans = JSON.stringify(window.__acoPaquets878653 || null);
+  try { if (v) localStorage.setItem(paqKey(), JSON.stringify(v)); else localStorage.removeItem(paqKey()); } catch {}
+  window.__acoPaquets878653 = v;
+  if (JSON.stringify(v || null) !== abans) try { window.dispatchEvent(new Event("aco-paquets-878653")); } catch {}
+}
+let paqAt = 0;
+async function refrescaPaquets() {
+  if (!session || !companyOf(session.email)) return null;
+  paqAt = Date.now();
+  try {
+    const r = await Promise.race([rpc("aco_paquets_meus"), new Promise((_, no) => setTimeout(() => no(new Error("temps")), 8000))]);
+    posaPaquets(r && typeof r === "object" && Array.isArray(r.paquets) ? { perfil: String(r.perfil || ""), paquets: r.paquets.map(String) } : null);
+  } catch (e) { if (e?.status === 404) posaPaquets(null); }
+  return window.__acoPaquets878653 || null;
+}
+const paquets = {
+  refresca: refrescaPaquets,
+  llista: () => rpc("aco_paquets_llista"),
+  posa: (email, perfil, llista) => rpc("aco_paquets_posa", { p_email: email, p_perfil: perfil || null, p_paquets: llista }),
+  treu: email => rpc("aco_paquets_treu", { p_email: email }),
+};
 async function switchTo(user, pass) {
   const was = active; active = false;
   try { await login(toEmail(user), pass); } catch (e) { active = was; throw e; }
@@ -1266,7 +1293,7 @@ function hook() {
   ["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => window.addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true }));
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") { clearTimeout(timer); cycle(); }
-    else { cycle({ returning: true }); if (provaAt && Date.now() - provaAt > 3600e3) comprovaProva().then(r => { if (r?.acabada) location.reload(); }); }
+    else { cycle({ returning: true }); if (provaAt && Date.now() - provaAt > 3600e3) comprovaProva().then(r => { if (r?.acabada) location.reload(); }); if (paqAt && Date.now() - paqAt > 600e3) refrescaPaquets(); }
   });
   window.addEventListener("online", () => cycle({ returning: true }));
   setInterval(() => { if (document.visibilityState === "visible") cycle(); }, 20000);
@@ -1276,7 +1303,7 @@ export async function startCloudSync() {
   if (!CLOUD_URL || !CLOUD_KEY) return;
   device = makeDevice();
   loadDeliberate();
-  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, desaErrors, estatNuvol, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629, storageSign };
+  window.__acoCloud = { status: () => ({ connected: !!session && active, email: session?.email || "", usuari: companyOf(session?.email)?.username || session?.email || "", lastOk, lastErr, device }), syncNow, connect, logout, switchTo, esborrada: id => { if (id) { deliberate.add(String(id)); saveDeliberate(); } }, shareObra, unshareObra, esborraCompartida, sharedInfo, sharedOwned: () => sharedOwned, bancComu, proves, paquets, myEmail: () => session?.email || "", callFunction, rpc, changePassword, storageUpload, storageDownload, espai, desaErrors, estatNuvol, hold, versions: listVersions, restoreVersion, userId: () => session?.user_id || "", clientEnllac878629, clientDesa878629, clientPublica878629, clientTreu878629, storageSign };
   session = readSession();
   // V87.609 · enllaç per entrar amb un compte concret (el QR de la guia de benvinguda: «…/?entra=marti»; l'Héctor, 13/11/2026: «hauria d'anar
   // directe a posar el seu usuari i contrasenya; jo entro amb el meu mòbil i s'obre el de Brava»). Si l'aparell té oberta la sessió d'un altre
@@ -1298,6 +1325,8 @@ export async function startCloudSync() {
     if (r === "skip") { try { (isLocalServer() ? localStorage : sessionStorage).setItem(SKIP_KEY, "1"); } catch {} applyCompanyContext(); return; }
   }
   applyCompanyContext();
+  // V87.653 · els paquets: primer els de l'aparell (l'app s'obre al moment) i, mentrestant, els del núvol
+  paquetsCau(); refrescaPaquets();
   // V87.519 · la prova s'ha acabat: no es sincronitza res (main.jsx ensenya la pantalla de fi)
   if ((await comprovaProva())?.acabada) return;
   // Estat de sincronització propi de cada compte (abans n'hi havia un de sol).

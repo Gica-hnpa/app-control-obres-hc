@@ -4849,3 +4849,40 @@
   - Prova nova `v652test.mjs` (23/23): compte buit amb el perfil nou; menú, Inici, obra nova amb la comunitat, pestanyes, Resum, pressupost de
     la constructora llegit d'un PDF, dues ofertes i la millor, certificació sense factura, acta, Contactes, recarregar; mòbil (barra, Inici,
     «Acta» des de la barra dins de l'obra, res surt de la pantalla); la constructora igual.
+  - Proves dels altres perfils després de publicar-la: `i18ntest` (tot traduït), `perfils326test` 36/36 (ara 5 perfils), `v607test` 15/15,
+    `v608test` 14/14, `menustest` 48/48, `clientsvirtuals` 32/32. A la tanda, `clientsvirtuals` va llegir 2 partides de 3 del PDF de prova (sola,
+    32/32): la prova imprimia el PDF abans que la pàgina estigués acabada; ara espera `document.readyState` i les fonts (també `v652test`).
+- **V87.653 · Paquets per compte** (l'Héctor, 20/11/2026: «prepara primer els paquets que hem parlat»; document «Perfils i paquets de l'app»).
+  Cada perfil té una base i uns paquets; el que no s'ha contractat no surt (menú, «Més» i barra del mòbil, rajoles d'Inici, pestanyes de l'obra,
+  Empresa, Agenda › Equip, botons de «Fer factura»). Treure un paquet no esborra cap dada.
+  - Paquets (`PAQUETS878653`, `PAQ_PERFIL878653`, `tePaquet878653`): Obres i seguiment (sempre), Honoraris, Pressupost i certificacions («Direcció
+    d'obra» al tècnic), Encàrrecs tècnics, Hores i rendiment, Control d'obra, Personal i fitxatge, Factures i comptabilitat. Tècnic: base Obres +
+    Honoraris; Constructora i Administrador de finques: base Obres + Pressupost i certificacions.
+  - Què amaga cada un: Honoraris (menú Pressupostos, pestanyes Honoraris/Pressupostos); Pressupost i certificacions (Preus, Amidaments, Pressupost,
+    Industrials, Certificacions; el Planning del tècnic); Encàrrecs tècnics (cèdula, CEE, ITE i amiant a l'obra nova; els que ja hi són s'obren);
+    Hores i rendiment (Hores, Rendiment, comptador, «El meu encàrrec» › Hores); Control d'obra (Despeses i partes de l'obra, Seguiment econòmic,
+    Planning de la constructora, Rendiment de l'empresa, Agenda › Equip, «Parte» a la barra); Personal i fitxatge (Control horari, Empresa ›
+    Treballadors i Calendari, Hores de l'obra); Factures i comptabilitat (Facturació, Caixa i bancs, «Fer factura» i «Emetre factura», les meves
+    despeses i «El meu encàrrec» › Despeses i Factures). La Facturació de l'obra de la constructora hi és sempre (proformes). Despeses de la
+    constructora: amb Control d'obra o amb Factures.
+  - Desats al núvol: `supabase/aco_paquets_v878653.sql` (taula `aco_paquets` sense permisos directes; funcions `aco_paquets_meus`, i només per a
+    l'administrador `aco_paquets_llista`, `aco_paquets_posa`, `aco_paquets_treu`). **L'Héctor l'ha d'executar.** Sense l'SQL o sense fila: tots
+    els paquets del perfil (la prova pilot no canvia). `cloudSync.js` els llegeix en arrencar (i en tornar a l'app passats 10 minuts) i els desa
+    a l'aparell (`nuvol-aco-paquets__<usuari>`) per obrir-se igual sense connexió; si canvien, l'app es torna a pintar.
+  - Ajustos › Comptes del núvol › «Paquets dels comptes» (només l'Héctor): una fila per compte (perfil i paquets) que s'obre amb el perfil i els
+    interruptors, «Tot inclòs» i «Desar». En desar, el perfil queda fixat: el compte ja no veu «Canviar el perfil». Ajustos › Perfil i mòduls del
+    compte: els seus paquets (Base, Inclòs, No inclòs).
+  - El «Tècnic amb gestió» ja no és un perfil (l'Héctor: «normalment no porta facturació i despeses»; només ho fa ell per a un client seu): és el
+    Tècnic amb Direcció d'obra. No surt a la benvinguda ni a «Canviar el perfil»; els comptes que el tenen s'obren com a Tècnic
+    (`perfilEfectiu878653`), sense la facturació, la comptabilitat ni les despeses de cada obra (les dades hi continuen). Per a més endavant:
+    el tècnic propi d'una constructora gran (dins del compte de la constructora).
+  - Arreglat de pas: el desplegable de l'ordinador d'«El meu encàrrec» oferia Hores, Despeses i Factures sense mirar què hi havia; el subtítol
+    del bloc ara diu el que hi ha; el Resum ja no diu «encara no té pressupost d'obra» a qui no té Direcció d'obra.
+  - Prova nova `v653test.mjs` (33/33): brava i oriol nous (tot), l'Héctor els posa paquets, tornen a entrar (menú, Inici, Empresa, obra, Ajustos,
+    expedient nou, Honoraris), «Direcció d'obra» encesa, mòbil (barra, Inici, Ajustos i la llista de l'Héctor), demo-gestio com a Tècnic, i sense
+    l'SQL tothom ho té tot. El Supabase de proves té les funcions i `POST /__paquets {sense:true}`.
+  - Les certificacions del Tècnic ja no tenen «Fer factura» ni «Proforma» (`factObra878653`): des de la V87.608 hi sortien sense voler-ho; el
+    tècnic no factura l'obra (només la constructora i el compte de l'Héctor). Les factures que ja hi eren es poden continuar veient.
+  - Proves posades al dia: `perfils326test` 36/36 (4 perfils, paquets a Ajustos, demo-gestio com a Tècnic) i `v607test` 15/15 (demo-gestio: menú
+    del tècnic sense Empresa, la casa sense la comptabilitat de l'obra però amb les factures desades, certificacions sense factura). També
+    `i18ntest`, `v652test` 23/23 i `menustest` 48/48.

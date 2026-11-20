@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.652";
+const APP_VERSION878264="87.653";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -1980,6 +1980,56 @@ function ComptesNuvol878613(){
     </section>
   </div>;
 }
+// V87.653 · Paquets de cada compte, només per a l'Héctor (supabase/aco_paquets_v878653.sql). Un compte sense paquets desats té tots els del
+// seu perfil; en desar-los, el perfil també queda fixat (el compte ja no el pot canviar). Treure un paquet no esborra cap dada.
+function PaquetsComptes878653(){
+  const pq=window.__acoCloud?.paquets;
+  const[st,setSt]=useState({l:null,falta:false,err:""});
+  const[obert,setObert]=useState("");
+  const[ed,setEd]=useState(null);   // {perfil, paquets:[…]} del compte obert
+  const[msg,setMsg]=useState("");
+  const[desant,setDesant]=useState(false);
+  async function carrega(){if(!pq)return;try{const l=await pq.llista();setSt({l:Array.isArray(l)?l:[],falta:false,err:""})}
+    catch(e){const cod=String(e?.body?.code||"");setSt({l:null,falta:e?.status===404||/^PGRST20[25]$/.test(cod),err:String(e?.message||e)})}}
+  useEffect(()=>{carrega()},[]);
+  if(!pq)return <p className="buit">{t("Cal estar connectat al núvol.")}</p>;
+  if(st.falta)return <p className="err">{t("Falta executar supabase/aco_paquets_v878653.sql a Supabase.")}</p>;
+  if(st.err)return <p className="err">{st.err}</p>;
+  if(!st.l)return <p className="buit">{t("Carregant…")}</p>;
+  const perfilDe=x=>{const p=x.perfil||(x.perfil_triat==="complet"?"tecnic":x.perfil_triat)||"";return PERFILS878326[p]?p:""};
+  function obre(x){if(obert===x.email){setObert("");return}const p=perfilDe(x),d=PAQ_PERFIL878653[p];setMsg("");setObert(x.email);
+    setEd({perfil:p,paquets:x.definit?[...(x.paquets||[])]:(d?[...d.extra]:[])})}
+  function triaPerfil(p){const d=PAQ_PERFIL878653[p];setEd({perfil:p,paquets:d?[...d.extra]:[]})}
+  const commuta=k=>setEd(e=>({...e,paquets:e.paquets.includes(k)?e.paquets.filter(x=>x!==k):[...e.paquets,k]}));
+  async function desa(x){if(!ed?.perfil){setMsg(t("Tria el perfil."));return}setDesant(true);setMsg("");
+    try{const d=PAQ_PERFIL878653[ed.perfil];const r=await pq.posa(x.email,ed.perfil,d?ed.paquets.filter(k=>d.extra.includes(k)):[]);
+      if(r&&r.ok===false){setMsg(t("No s’ha pogut fer."));return}toast878557(t("Paquets desats"));setObert("");await carrega()}
+    catch(e){setMsg(String(e?.message||e))}finally{setDesant(false)}}
+  const resum=x=>{const p=perfilDe(x),d=PAQ_PERFIL878653[p];if(!p)return t("Sense triar");const nom=t(PERFILS878326[p].nom);if(!d)return nom;
+    if(!x.definit)return `${nom} · ${t("Tots els paquets")}`;const s=d.extra.filter(k=>(x.paquets||[]).includes(k));
+    return `${nom} · ${s.length===d.extra.length?t("Tot inclòs"):s.length?s.map(k=>t(nomPaquet878653(k,p))).join(", "):t("Només la base")}`};
+  if(!st.l.length)return <p className="buit">{t("Encara no hi ha cap compte d’empresa.")}</p>;
+  return <div className="paquets-comptes-v878653">
+    {st.l.map(x=>{const u=String(x.email||"").replace(/@usuaris\.controlobres\.app$/,"");const on=obert===x.email;const d=on?PAQ_PERFIL878653[ed?.perfil]:null;
+      return <div key={x.email} className={`pc${on?" on":""}`} data-u={u}>
+        <button type="button" className="cap" aria-expanded={on} onClick={()=>obre(x)}><span><b>{u}</b><small>{resum(x)}</small></span><em aria-hidden="true">{on?"−":"+"}</em></button>
+        {on&&ed&&<div className="cos">
+          <label className="perfil"><span>{t("Perfil")}</span><select value={ed.perfil} onChange={e=>triaPerfil(e.target.value)}>
+            {!ed.perfil&&<option value="">{t("Sense triar")}</option>}
+            {Object.entries(PERFILS878326).filter(([,p])=>!p.amagat).map(([k,p])=><option key={k} value={k}>{t(p.nom)}</option>)}</select></label>
+          {d&&<div className="paqs">
+            {d.base.map(k=><label key={k} className="paq base"><input type="checkbox" checked disabled/><span><b>{t(nomPaquet878653(k,ed.perfil))}</b><small>{t("Base")}</small></span></label>)}
+            {d.extra.map(k=><label key={k} className="paq"><input type="checkbox" checked={ed.paquets.includes(k)} onChange={()=>commuta(k)}/><span><b>{t(nomPaquet878653(k,ed.perfil))}</b><small>{t(PAQUETS878653[k][1])}</small></span></label>)}
+          </div>}
+          {msg&&<p className="err" role="status">{msg}</p>}
+          <div className="acc">
+            {d&&d.extra.length>0&&<button type="button" className="secondary" onClick={()=>setEd(e=>({...e,paquets:[...d.extra]}))}>{t("Tot inclòs")}</button>}
+            <button type="button" className="primary" disabled={desant} onClick={()=>desa(x)}>{t("Desar")}</button>
+          </div>
+        </div>}
+      </div>})}
+  </div>;
+}
 function ProvesAjustos878519(){
   const pr=window.__acoCloud?.proves;
   const[st,setSt]=useState({c:null,l:null,falta:false,err:""});
@@ -2027,7 +2077,8 @@ function PerfilModuls878326(){
   const[ia,setIa]=useState(null);
   useEffect(()=>{let viu=true;iaQuota().then(q=>{if(viu)setIa(q)});return()=>{viu=false}},[]);
   const info=empresaInfo878259()||{};
-  const perfil=PERFILS878326[info.perfil]?info.perfil:"";
+  // V87.653 · el perfil amb què s'obre l'app (el del núvol, si l'Héctor n'hi ha posat; el «Tècnic amb gestió» és el Tècnic)
+  const perfil=emp&&PERFILS878326[PERFIL878304]?PERFIL878304:"";const pq=PAQ_PERFIL878653[perfil],actius=paquetsActius878653(perfil);
   const m=moduls878326()||{tecnic:true,obra:true,empresa:true};
   const MODS=[["tecnic","Tècnic","Expedients, actes, honoraris, cèdules, certificats i inspeccions"],["obra","Obra","Pressupostos, certificacions, facturació d’obra, planning i preus"],["empresa","Empresa","Despeses de totes les obres, hores de l’equip i rendiment"]];
   function canvia(k){if(!emp||k===perfil)return;if(!confirm(t("Canviar el perfil a «{p}»? L’app es tornarà a obrir amb els menús d’aquest perfil. Les dades no canvien.",{p:t(PERFILS878326[k].nom)})))return;lsSet8779("aco_empresa_v878259",JSON.stringify({...info,perfil:k,perfilAt:new Date().toISOString()}));try{window.__acoStore?.flush?.()}catch{}setTimeout(()=>location.reload(),300)}
@@ -2035,8 +2086,9 @@ function PerfilModuls878326(){
     <ProvaDies878519/>
     <p className="actual"><span>{t("Perfil d’aquest compte")}</span><b>{emp?(perfil?t(PERFILS878326[perfil].nom):t("Sense triar")):t("Compte principal · tots els mòduls")}</b></p>
     {ia&&ia.limit>0&&!esTreballador878326()&&<p className="actual lectures-v878469"><span>{t("Lectures amb IA aquest mes")}</span><b>{t("{n} de {m}",{n:ia.usat,m:ia.limit})}</b></p>}
-    {!esTreballador878326()&&<div className="mods">{MODS.map(([k,n,d])=><div key={k} className={m[k]?"on":"off"}><b>{t(n)}</b><span>{t(d)}</span><em>{m[k]?t("Inclòs"):t("No inclòs")}</em></div>)}</div>}
-    {emp&&<div className="tria"><span>{t("Canviar el perfil")}</span><div>{Object.entries(PERFILS878326).map(([k,p])=><button type="button" key={k} className={k===perfil?"primary":"secondary"} aria-pressed={k===perfil} onClick={()=>canvia(k)}>{t(p.nom)}</button>)}</div></div>}
+    {!esTreballador878326()&&pq?<div className="mods paquets-v878653">{[...pq.base,...pq.extra].map(k=>{const base=pq.base.includes(k),on=base||!!actius?.has(k);return <div key={k} className={on?"on":"off"}><b>{t(nomPaquet878653(k,perfil))}</b><span>{t(PAQUETS878653[k][1])}</span><em>{base?t("Base"):on?t("Inclòs"):t("No inclòs")}</em></div>})}</div>
+    :!esTreballador878326()&&<div className="mods">{MODS.map(([k,n,d])=><div key={k} className={m[k]?"on":"off"}><b>{t(n)}</b><span>{t(d)}</span><em>{m[k]?t("Inclòs"):t("No inclòs")}</em></div>)}</div>}
+    {emp&&!paqNuvol878653()?.perfil&&<div className="tria"><span>{t("Canviar el perfil")}</span><div>{Object.entries(PERFILS878326).filter(([,p])=>!p.amagat).map(([k,p])=><button type="button" key={k} className={k===perfil?"primary":"secondary"} aria-pressed={k===perfil} onClick={()=>canvia(k)}>{t(p.nom)}</button>)}</div></div>}
   </Card>;
 }
 function PlansModuls8736(){
@@ -2999,8 +3051,9 @@ function QuickExpedientForm878254({clients=[],onSubmit,allAgents=[],fixedClientI
   // V87.652 · l'administrador de finques: la comunitat en lloc del client, sense tipus de feina (sempre és l'obra) ni promotor a part
   const fin652=esFinques878652();
   const constr878344=esConstructora878344()||fin652;
-  const all=constr878344?TIPUS_CONSTR878344:(typeof WORK_TYPES8737!=="undefined"?WORK_TYPES8737:[]);
-  const groups=constr878344?[{label:"Obra",types:TIPUS_CONSTR878344}]:WORK_TYPE_GROUPS878254.map(g=>({...g,types:g.types.filter(t=>!all.length||all.includes(t))})).filter(g=>g.types.length);
+  // V87.653 · sense el paquet «Encàrrecs tècnics», no es poden fer cèdules, certificats energètics, ITE ni amiant (els que ja hi són, sí que s’obren)
+  const all=(constr878344?TIPUS_CONSTR878344:(typeof WORK_TYPES8737!=="undefined"?WORK_TYPES8737:[])).filter(x=>!ENCARRECS878653.includes(x)||tePaquet878653("encarrecs"));
+  const groups=constr878344?[{label:"Obra",types:TIPUS_CONSTR878344}]:WORK_TYPE_GROUPS878254.map(g=>({...g,types:g.types.filter(t=>(!all.length||all.includes(t))&&(!ENCARRECS878653.includes(t)||tePaquet878653("encarrecs")))})).filter(g=>g.types.length);
   const extra=constr878344?[]:all.filter(t=>!WORK_TYPE_GROUPS878254.some(g=>g.types.includes(t)));
   // V87.590 · sense un client recordat, «+ Client nou…» (abans, el primer de la llista: l'obra podia quedar amb un client equivocat)
   const [client,setClient]=useState(()=>fixedClientId||((clients||[]).some(c=>c.id===lastClient)?lastClient:"__new__"));
@@ -5177,9 +5230,14 @@ function HonorarisExpedient8778({data,obra,addPressupost,updatePressupost,factur
   if(pur){const tabs0=[["Pressupostos",t("Pressupostos d’honoraris")],["Factures",t("Factures honoraris")],...(temps?[["Hores",t("Hores")]]:[]),...(rendiment?[["Rendiment",t("Rendiment")]]:[])];
     tabs=horesPrimer?[...tabs0.filter(x=>x[0]==="Hores"),...tabs0.filter(x=>x[0]!=="Hores")]:tabs0}
   else tabs=[...(temps?[["Hores",t("Hores")]]:[]),...(despeses?[["Despeses",t("Despeses")]]:[]),["Factures",t("Factures")]];
+  // V87.653 · segons els paquets: les factures i les meves despeses, amb «Factures i comptabilitat»; les hores i el rendiment, amb «Hores i
+  // rendiment». Si no en queda cap, els pressupostos d'honoraris de l'expedient.
+  tabs=tabs.filter(([k])=>k==="Factures"||k==="Despeses"?tePaquet878653("factures"):k==="Hores"||k==="Rendiment"?tePaquet878653("hores"):true);
+  if(!tabs.length)tabs=[["Pressupostos",t("Pressupostos d’honoraris")]];
   // V87.606 · targetes plegables com les altres (l'Héctor, 13/11/2026: «apreto despeses i surt a sota factures i quan torno a apretar la
   // targeta no recull»): el contingut, just a sota de la seva targeta; tornar-la a tocar la recull («-»: cap d'oberta)
-  const s=sub==="-"?"":tabs.some(x=>x[0]===sub)?sub:pur?(horesPrimer?"Hores":"Pressupostos"):tabs[0][0];
+  const s0=pur?(horesPrimer?"Hores":"Pressupostos"):tabs[0][0];
+  const s=sub==="-"?"":tabs.some(x=>x[0]===sub)?sub:tabs.some(x=>x[0]===s0)?s0:tabs[0][0];
   const tria606=k=>{if(k===s){setSub("-");return}setSub(k);if(k==="Pressupostos")setCalc(false)};
   // V87.526 · les pestanyes, com les rajoles del Control horari (l'Héctor, 5/11/2026: les pantalles velles amb el patró de les altres): la icona,
   // el nom i, a sota, com està (quants pressupostos, el facturat, les hores, les meves despeses o el resultat)
@@ -5585,6 +5643,8 @@ const reentry878257=useRef((()=>{try{const u=sessionStorage.getItem("aco-reentra
 // que ja no existeix (p. ex. «pol») no es recupera.
 const[authUser8779,setAuthUser8779]=useState(()=>{const u=reentry878257.current;if(u&&(u.startsWith("emp_")||getAppAccount878233(u)))return u;return autoEntryUser878260()});
 const[empresa878259,setEmpresa878259]=useState(()=>{try{return empresaInfo878259()}catch{return null}});
+// V87.653 · si el núvol porta paquets nous (els ha canviat l'Héctor), l'app es torna a pintar amb els menús d'ara
+const[,setPaq878653]=useState(0);useEffect(()=>{const f=()=>setPaq878653(x=>x+1);window.addEventListener("aco-paquets-878653",f);return()=>window.removeEventListener("aco-paquets-878653",f)},[]);
 // V87.638 · i es torna a llegir quan canvia qui ha entrat
 useEffect(()=>{try{setEmpresa878259(empresaInfo878259())}catch{}},[authUser8779]);
 const navBack878257=useRef((()=>{try{return reentry878257.current?JSON.parse(sessionStorage.getItem("aco-on-era")||"null"):null}catch{return null}})());
@@ -7045,17 +7105,17 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
-PERFIL878304=empresa878259?.perfil||"";
+PERFIL878304=perfilEfectiu878653(empresa878259?.perfil);
 // V87.652 · a l'administrador de finques, el grup «Promotors» de Contactes són les comunitats
 GRUPS_CONTACTE878315[0][1]=PERFIL878304==="finques"?"Comunitats":"Promotors";
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><MarcaApp878351 nom={empresa878259?.nom||""}/><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!esFinques878652()&&<MB a={screen==="Traça"} i={<Clock/>} l={t(etHores878515())} on={()=>nav("Traça")}/>}{!esTreballador878326()&&<>{menuPresObra878606()&&<MB a={screen==="Pressupostos obra"} i={<ClipboardList/>} l={t(etPresObra878562())} on={()=>nav("Pressupostos obra")}/>}{!esFinques878652()&&<><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/><MB a={screen==="Bancs"} i={<Wallet/>} l={t("Caixa i bancs")} on={()=>nav("Bancs")}/></>}{ambEmpresa878338()&&<MB a={screen==="Rendiment empresa"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment empresa")}/>}{!ambEmpresa878338()&&teModul878326("tecnic")&&<MB a={screen==="Rendiment tecnic"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment tecnic")}/>}</>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{menuEmpresa878607()&&<MB a={screen==="Empresa"} i={<Briefcase/>} l={t("Empresa")} on={()=>nav("Empresa")}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria de preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main">{iniciRajoles878508()&&!["Inici","Obra","Fitxa client"].includes(screen)&&<button type="button" className="torna-inici-v878495 pc-v878495" onClick={()=>nav(tornaA878562(screen)[0])}><ChevronLeft size={20} aria-hidden="true"/> {t(tornaA878562(screen)[1])}</button>}<AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():screen==="Traça"?etHores878515():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav(tornaA878562(screen)[0])}} onMenu={()=>setMenuOpen(true)} icona={screen==="Obra"||screen==="Inici"?null:iconaPantalla878507(screen)}/>
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><MarcaApp878351 nom={empresa878259?.nom||""}/><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&tePaquet878653("honoraris")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{paqHores878653()&&<MB a={screen==="Traça"} i={<Clock/>} l={t(etHores878515())} on={()=>nav("Traça")}/>}{!esTreballador878326()&&<>{menuPresObra878606()&&<MB a={screen==="Pressupostos obra"} i={<ClipboardList/>} l={t(etPresObra878562())} on={()=>nav("Pressupostos obra")}/>}{!esFinques878652()&&<>{tePaquet878653("factures")&&<MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/>}{paqDespeses878653()&&<MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/>}{tePaquet878653("factures")&&<MB a={screen==="Bancs"} i={<Wallet/>} l={t("Caixa i bancs")} on={()=>nav("Bancs")}/>}</>}{ambEmpresa878338()&&paqRendiment878653()&&<MB a={screen==="Rendiment empresa"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment empresa")}/>}{!ambEmpresa878338()&&paqRendiment878653()&&<MB a={screen==="Rendiment tecnic"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment tecnic")}/>}</>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{menuEmpresa878607()&&<MB a={screen==="Empresa"} i={<Briefcase/>} l={t("Empresa")} on={()=>nav("Empresa")}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria de preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main">{iniciRajoles878508()&&!["Inici","Obra","Fitxa client"].includes(screen)&&<button type="button" className="torna-inici-v878495 pc-v878495" onClick={()=>nav(tornaA878562(screen)[0])}><ChevronLeft size={20} aria-hidden="true"/> {t(tornaA878562(screen)[1])}</button>}<AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():screen==="Traça"?etHores878515():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav(tornaA878562(screen)[0])}} onMenu={()=>setMenuOpen(true)} icona={screen==="Obra"||screen==="Inici"?null:iconaPantalla878507(screen)}/>
 
 {screen==="Inici"&&<Inici obreMenu={()=>setMenuOpen(true)} obrirPaquet={(pk,st="")=>{setOs("");setOc("");setOy("");setOt("");setOst(st);setOpk(pk);nav("Treballs / Expedients")}} clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[])]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {(screen==="Clients"||screen==="Agents")&&<SafeRenderBoundary878108><Contactes878315 clients={clients} setClients={setClients} obres={obres} setObres={setObres} odata={odata} setOdata={setOdata} openClient={openClient}/></SafeRenderBoundary878108>}
 {screen==="Fitxa client"&&<FitxaClient setClients={currentAccount878233.readOnly?undefined:setClients} setOdata={currentAccount878233.readOnly?undefined:setOdata} setObres={setObres} client={viewClients878233.find(c=>c.id===clientId)} obres={viewObres878233.filter(o=>o.client===clientId)} odata={viewOdata878233} partidaLibrary={partidaLibrary} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} openObra={openObra} back={()=>nav("Clients")}/>}
 
 {screen==="Treballs / Expedients"&&<Projectes amagades878347={amagades878347.size} mostraAmagades878347={()=>{lsSet8779(AMAGADES_KEY878347,"[]");setAmagTick878347(x=>x+1)}} byClient={byClient} allObres={viewObres878233} clients={viewClients878233} openObra={openObra} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} updateStatus={currentAccount878233.role==="admin"?updateObraStatus878247:undefined} f={{os,setOs,oc,setOc,oy,setOy,ost,setOst,ot,setOt,opk,setOpk}} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined} setScreen={nav} allowAdminActions={currentAccount878233.role==="admin"&&!esTreballador878326()}/>} 
-{screen==="Obra"&&<Obra crono878376={authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&!senseHoresPropies878342()?{on:timer.running&&timer.obraId===obraId,since:timer.start,start:()=>{if(timerRef878254.current.running)aturaTemps878463(obraId);else startTimer()},stop:()=>aturaTemps878463()}:null} obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} agentsLib878301={agentsLibrary878301(viewOdata878233,viewClients878233)} keepAgent878303={ag=>setOdata(prev=>guardarALaLlista878303(prev,ag))} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>compressImage878259(file,1600,0.75).then(u=>{lsSet8779(obraFotoKey878259(obraId),u);setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u,teFoto:true,fotoAt:new Date().toISOString()}:o))}).catch(e=>alert("No s’ha pogut posar la foto: "+(e?.message||e)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,...(r.puOrig878346!=null?{pu:r.puOrig878346}:{}),sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
+{screen==="Obra"&&<Obra crono878376={authUser8779&&currentAccount878233.role==="admin"&&!esTreballador878326()&&!senseHoresPropies878342()&&paqHores878653()?{on:timer.running&&timer.obraId===obraId,since:timer.start,start:()=>{if(timerRef878254.current.running)aturaTemps878463(obraId);else startTimer()},stop:()=>aturaTemps878463()}:null} obra={obra} client={client} clients={viewClients878233} setClients={setClients} allAgents={allAgents8749(viewOdata878233,viewClients878233)} agentsLib878301={agentsLibrary878301(viewOdata878233,viewClients878233)} keepAgent878303={ag=>setOdata(prev=>guardarALaLlista878303(prev,ag))} data={data} setData={up=>setD(obraId,up)} tab={tab} setTab={setTab} setScreen={nav} uploadImage={currentAccount878233.readOnly?undefined:file=>compressImage878259(file,1600,0.75).then(u=>{lsSet8779(obraFotoKey878259(obraId),u);setObres(p=>p.map(o=>o.id===obraId?{...o,imatge:u,teFoto:true,fotoAt:new Date().toISOString()}:o))}).catch(e=>alert("No s’ha pogut posar la foto: "+(e?.message||e)))} importExcel={importExcel} deletePressupostVersion={deletePressupostVersion} duplicatePressupostVersion={duplicatePressupostVersion} updateCert={updateCert} updateObraFitxa8721={currentAccount878233.readOnly?undefined:updateObraFitxa8721} deleteCertificacio8721={deleteCertificacio8721} updateCertDate8721={updateCertDate8721} addCertificacio={addCertificacio} updateCertDate={updateCertDate} certInfo={certInfo} setCertInfo={setCertInfo} saveCert={currentAccount878233.readOnly?undefined:saveCert} openEmail={emailDraft} openDoc={openDocSmart87103} openAgent={currentAccount878233.readOnly?undefined:()=>setModal("agent")} openActa={currentAccount878233.readOnly?undefined:()=>setModal("acta")} openPartida={currentAccount878233.readOnly?undefined:()=>setModal("partida")} openEvent={currentAccount878233.readOnly?undefined:()=>setModal("event")} selectedActaId={selActa} setSelectedActaId={setSelActa} timer={timer} setTimer={setTimer} startTimer={startTimer} stopTimer={stopTimer} addManualHours={addManualHours} deleteHour={deleteHour} addPressupostTecnic={addPressupostTecnic8742} updatePressupostTecnic={updatePressupostTecnic8742} facturarPressupostTecnic={facturarPressupostTecnic8742} addFacturaTecnica={addFacturaTecnica8742} updateFacturaTecnica={updateFacturaTecnica8743} deletePressupostTecnic={deletePressupostTecnic8744} deleteFacturaTecnica={deleteFacturaTecnica8744} deleteObra={currentAccount878233.readOnly?undefined:deleteObra878112} clientBudgetNumbers878194={clientBudgetNumbers878194(viewObres878233,viewOdata878233,obra?.client,obra?.id)} clientHistoricalPartides={(viewObres878233||[]).filter(o=>o.client===obra?.client).flatMap(o=>(((viewOdata878233||{})[o.id]?.partides)||[]).map(r=>({...r,...(r.puOrig878346!=null?{pu:r.puOrig878346}:{}),sourceObra:o.nom,sourceObraId:o.id})))} partidaLibrary={viewPartidaLibrary878233} setPartidaLibrary={currentAccount878233.readOnly?undefined:setPartidaLibrary} readOnly={!!currentAccount878233.readOnly} allowedTabs={appAccountTabs878233(currentAccount878233)} clientEditBudget={!!currentAccount878233.canEditBudget} clientEditCertifications={!!currentAccount878233.canEditCertifications} clientLibraryEnabled={!!currentAccount878233.canUseClientLibrary} clientLibraryMaxPerChapter={currentAccount878233.clientLibraryMaxPerChapter||3}/>}
 <AgendaReminders878256 odata={viewOdata878233} openObra={openObra}/><AiBudgetHost878256/>{screen==="Agenda"&&<SafeRenderBoundary878108><Agenda878256 odata={viewOdata878233} events={[...Object.entries(viewOdata878233||{}).flatMap(([oid,d])=>Array.isArray(d?.events)?d.events.map(e=>({...e,obraId:e.obraId||oid,client:e.client||viewClients878233.find(c=>c.id===viewObres878233.find(o=>o.id===oid)?.client)?.nom,obra:e.obra||viewObres878233.find(o=>o.id===oid)?.nom,adreca:e.adreca||viewObres878233.find(o=>o.id===oid)?.adreca})):[])]} clients={viewClients878233} obres={viewObres878233} openObra={openObra} openObraTab={openObraTab} openEvent={()=>setModal("event")} calM={calM} setCalM={setCalM} calY={calY} setCalY={calY} selDay={selDay} setSelDay={setSelDay} setOdata={currentAccount878233.role==="admin"?setOdata:undefined} readOnly={currentAccount878233.role!=="admin"}/></SafeRenderBoundary878108>}
 {screen==="Avisos"&&<AvisosPanel openObra={openObra}/>}
 {screen==="Pressupostos"&&<SafeRenderBoundary878108><HonorarisGeneral obres={obres} odata={odata} setOdata={setOdata} openObra={openObra} openObraTab={openObraTab} clientsList={clients}/></SafeRenderBoundary878108>}
@@ -7069,8 +7129,8 @@ return <><div className="user-global-badge-v8782"><span>{currentAccount878233.di
   <button type="button" className="plegar" onClick={()=>setTimerObert878264(false)} aria-label="Plegar el comptador">✕</button>
 </div>}
 {fiTemps878463&&<DesarTemps878463 fi={fiTemps878463} obres={viewObres878233} clients={viewClients878233} odata={viewOdata878233} close={()=>setFiTemps878463(null)} acaba={row=>acabaTemps878463(fiTemps878463,row)}/>}
-{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/>{!esTreballador878326()&&<DespatxAuto878625 obres={obres} odata={odata} setOdata={setOdata}/>}{!esTreballador878326()&&<TancaEnllacos878629 obres={obres}/>}{!esTreballador878326()&&<PaquetGestoriaGlobal878522 obres={viewObres878233} odata={viewOdata878233} clients={viewClients878233}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={empresa878259?.perfil||""} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
-  const meva508=k==="despesa"&&!modeObra878484(currentAccount878233.role,empresa878259?.perfil||"");
+{email&&<EmailModal draft={email} setDraft={setEmail} close={()=>setEmail(null)}/>} {doc&&<DocViewer doc={doc} obra={obra} client={client} close={()=>setDoc(null)} email={emailDraft}/>}<VisorArxiuGlobal8784291/><CopiaAuto878520 clients={clients} obres={obres} odata={odata}/>{!esTreballador878326()&&<DespatxAuto878625 obres={obres} odata={odata} setOdata={setOdata}/>}{!esTreballador878326()&&<TancaEnllacos878629 obres={obres}/>}{!esTreballador878326()&&<PaquetGestoriaGlobal878522 obres={viewObres878233} odata={viewOdata878233} clients={viewClients878233}/>}</main><BackTop878301/><BottomNav878268 screen={screen} role={currentAccount878233.role} perfil={PERFIL878304} nav={nav} onMore={()=>setMenuOpen(true)} onAccio={(k,files)=>{if(k==="veu"){window.__acoVeuAgenda878330=true;nav("Agenda");return}
+  const meva508=k==="despesa"&&!modeObra878484(currentAccount878233.role,PERFIL878304);
   if(screen==="Obra"&&obraId){if(meva508){window.__acoStartAlb878484={files,token:Date.now(),obraId};nav("Albarans");return}try{window.dispatchEvent(new CustomEvent("aco-accio-484",{detail:{k,files}}))}catch{}return}setAccio878484({k,files,meva508})}}/>{accio878484&&<TriaObraAccio878484 accio={accio878484} obres={viewObres878233} clients={viewClients878233} close={()=>setAccio878484(null)} tria={id=>{if(!id){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),senseObra:true};setAccio878484(null);nav("Albarans");return}
   if(accio878484.meva508){window.__acoStartAlb878484={files:accio878484.files,token:Date.now(),obraId:id};setAccio878484(null);nav("Albarans");return}window.__acoStart878484={obraId:id,k:accio878484.k,files:accio878484.files};setAccio878484(null);openObra(id)}}/>}</div></>
 }
@@ -7320,14 +7380,16 @@ let PERFIL878304="";
 // les seves obres, notes i fotos, tasques, planning de consulta, hores i la foto de les despeses. Sense perfil d'empresa (el
 // compte de l'Héctor) es té tot, com fins ara.
 const PERFILS878326={
-  tecnic:{nom:"Tècnic",desc:"Expedients, actes i visites, honoraris, hores, cèdules, certificats energètics i inspeccions.",moduls:{tecnic:true}},
+  tecnic:{nom:"Tècnic",desc:"Expedients, actes i visites, honoraris, hores, cèdules, certificats energètics, inspeccions i direcció d’obra.",moduls:{tecnic:true}},
   constructor:{nom:"Constructora",desc:"Obres, pressupostos, certificacions, facturació, despeses de totes les obres i hores de l’equip.",moduls:{obra:true,empresa:true}},
   // V87.607 · el «Gestió total» és el tècnic que fa de project manager (l'Héctor, 13/11/2026: «barreges conceptes d'empresa amb els de tècnic… els
   // menús són tots del tècnic… i dins de les obres que gestioni per una constructora hi haurà la comptabilitat»): el menú és el del tècnic (les
   // seves factures, despeses, caixa, hores i rendiment) i, dins de cada obra, el pressupost, les certificacions i la comptabilitat de l'obra; les
   // factures de l'obra, amb la sèrie de la constructora (com el compte de l'Héctor). Sense el mòdul d'empresa (Control horari, despeses de
   // totes les obres…); «Empresa» es queda per als despatxos amb treballadors. La clau continua sent «complet» (comptes que ja el tenen).
-  complet:{nom:"Tècnic amb gestió",desc:"Project manager: el del tècnic i, a més, la gestió de les obres que porta per una constructora (pressupost, certificacions, facturació i despeses de cada obra).",moduls:{tecnic:true,obra:true}},
+  // V87.653 · el «Tècnic amb gestió» ja no és un perfil: és el Tècnic amb el paquet «Direcció d'obra» (l'Héctor, 20/11/2026: «normalment
+  // no porta facturació i despeses»). Els comptes que el tenen s'obren com a Tècnic (perfilEfectiu878653); no surt a la benvinguda.
+  complet:{nom:"Tècnic amb gestió",amagat:true,desc:"Project manager: el del tècnic i, a més, la gestió de les obres que porta per una constructora (pressupost, certificacions, facturació i despeses de cada obra).",moduls:{tecnic:true,obra:true}},
   // V87.652 · Administrador de finques (l'Héctor, 20/11/2026: «la part de gestió de l'obra, pressupostos i seguiment, sí»; les juntes i la
   // comptabilitat de la comunitat, «de moment ni pensar-ho»). Obres de les comunitats: ofertes, pressupost, certificacions, actes i documents;
   // sense hores, despeses, facturació, caixa ni rendiment. Els seus clients són les comunitats.
@@ -7341,6 +7403,39 @@ function esFinques878652(){return PERFIL878304==="finques"}
 function etClient878652(){return esFinques878652()?"Comunitat":"Client"}
 // pestanyes de l'obra que l'administrador de finques no fa servir (no fa amidaments, partes, hores, despeses ni factures de l'obra)
 const NO_FINQUES878652=["Amidaments obra","Facturació","Seguiment econòmic","Partes obra","Albarans","Gestió temps","Honoraris","Factures","Pressupostos","Rendiment","Rendiments"];
+// V87.653 · Paquets (l'Héctor, 20/11/2026: «prepara primer els paquets que hem parlat»; document «Perfils i paquets de l'app»). Cada perfil
+// té una base i uns paquets que s'hi afegeixen; el que no s'ha contractat no surt als menús, ni a Inici, ni dins de l'obra (no s'esborra res).
+// Els posa només l'Héctor (Ajustos › Comptes del núvol › Paquets; supabase/aco_paquets_v878653.sql). Sense fila al núvol: tots els del perfil.
+const PAQUETS878653={
+  obres:["Obres i seguiment","Obres, contactes, agenda, actes, notes, fotos i documents"],
+  honoraris:["Honoraris","Calculadora, pressupostos d’honoraris i quota mensual"],
+  pressupost:["Pressupost i certificacions","Amidaments, banc de preus, pressupost, certificacions i comparar ofertes"],
+  encarrecs:["Encàrrecs tècnics","Cèdules, certificats energètics, ITE i amiant"],
+  hores:["Hores i rendiment","Temps per expedient i rendiment del despatx"],
+  control:["Control d’obra","Despeses i albarans, partes, planning, equip i rendiment"],
+  personal:["Personal i fitxatge","Treballadors, calendari laboral, fitxatge i hores per obra"],
+  factures:["Factures i comptabilitat","Factures, cobraments, caixa i bancs, despeses generals i gestoria"]};
+const PAQ_PERFIL878653={
+  tecnic:{base:["obres","honoraris"],extra:["pressupost","encarrecs","hores","factures"]},
+  constructor:{base:["obres","pressupost"],extra:["control","personal","factures"]},
+  finques:{base:["obres","pressupost"],extra:[]}};
+function nomPaquet878653(k,perfil=PERFIL878304){return k==="pressupost"&&perfil==="tecnic"?"Direcció d’obra":PAQUETS878653[k]?.[0]||k}
+// el que diu el núvol d'aquest compte ({perfil, paquets}) o null; el llegeix cloudSync.js
+function paqNuvol878653(){if(typeof window==="undefined"||!window.__acoEmpresa)return null;const v=window.__acoPaquets878653;return v&&Array.isArray(v.paquets)?v:null}
+// el perfil amb què s'obre l'app: el que ha posat l'Héctor al núvol o, si no, el triat a la benvinguda; el «Tècnic amb gestió» és el Tècnic
+function perfilEfectiu878653(p){const s=paqNuvol878653()?.perfil;if(s&&PERFILS878326[s])p=s;return p==="complet"?"tecnic":(p||"")}
+function paquetsActius878653(perfil=PERFIL878304){const d=PAQ_PERFIL878653[perfil];if(!d)return null;const s=paqNuvol878653();return new Set([...d.base,...(s?d.extra.filter(k=>s.paquets.includes(k)):d.extra)])}
+function tePaquet878653(k){const s=paquetsActius878653();return s?s.has(k):true}
+// les hores: el tècnic, amb «Hores i rendiment»; la constructora, amb «Personal i fitxatge» (Control horari); l'administrador, no
+function paqHores878653(){return !esFinques878652()&&(ambEmpresa878338()?tePaquet878653("personal"):tePaquet878653("hores"))}
+// les despeses: la constructora, amb «Control d'obra» (les de l'obra) o «Factures i comptabilitat» (les generals); el tècnic, amb les factures
+function paqDespeses878653(){return !esFinques878652()&&(ambEmpresa878338()?(tePaquet878653("control")||tePaquet878653("factures")):tePaquet878653("factures"))}
+// les proformes i les factures de les certificacions: la constructora (i el compte de l'Héctor); ni l'administrador de finques ni el tècnic
+// (l'Héctor, 20/11/2026: el tècnic «normalment no porta facturació» de l'obra; ell només ho fa per a un client seu, amb el seu compte)
+function factObra878653(){return !esFinques878652()&&!(!!PERFIL878304&&teModul878326("tecnic")&&!teModul878326("obra"))}
+function paqRendiment878653(){return ambEmpresa878338()?tePaquet878653("control"):teModul878326("tecnic")&&tePaquet878653("hores")}
+// els encàrrecs del paquet «Encàrrecs tècnics» (la resta de feina tècnica és de la base)
+const ENCARRECS878653=["Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Amiant (localització i diagnosi)"];
 // Els tècnics (i l'Héctor) parlen d'expedients; la resta, d'obres
 // V87.607 · el menú «Empresa» (dades, treballadors, industrials): constructora i tècnic amb gestió
 function menuEmpresa878607(){return !!PERFIL878304&&!esTreballador878326()&&(teModul878326("empresa")||PERFIL878304==="complet")}
@@ -7352,12 +7447,21 @@ function tabsPerfil878326(tabs){
   const m=moduls878326();if(!m)return tabs;
   if(m.treballador)return tabs.filter(x=>["Resum","Documents","Plànols","Agenda / Avisos","Notes","Tasques","Gantt","Partes obra","Albarans","Gestió temps"].includes(x));
   if(m.finques)return tabs.filter(x=>!NO_FINQUES878652.includes(x));
+  // V87.653 · i segons els paquets del compte (sense el paquet, la pestanya no surt; les dades hi continuen)
+  const P=tePaquet878653;
   return tabs.filter(x=>{
     // V87.608 · el tècnic també fa de project manager: comparar ofertes abans d'adjudicar i controlar el pressupost i les certificacions
-    if(["Amidaments obra","Pressupost","Pressupost ràpid","Industrials","Certificacions","Gantt"].includes(x))return !!(m.obra||m.tecnic);
-    if(["Facturació","Seguiment econòmic","Partes obra"].includes(x))return !!m.obra;
-    if(x==="Albarans")return !!(m.obra||m.empresa);
-    if(["Honoraris","Factures","Pressupostos","Rendiment"].includes(x))return !!m.tecnic;
+    if(["Amidaments obra","Pressupost","Pressupost ràpid","Industrials","Certificacions"].includes(x))return !!(m.obra||m.tecnic)&&P("pressupost");
+    // el planning: a la constructora, amb «Control d'obra»; al tècnic, amb «Direcció d'obra»
+    if(x==="Gantt")return m.obra?P("control"):!!m.tecnic&&P("pressupost");
+    // la Facturació de l'obra hi és sempre (proformes); «Fer factura», només amb «Factures i comptabilitat»
+    if(x==="Facturació")return !!m.obra;
+    if(["Seguiment econòmic","Partes obra"].includes(x))return !!m.obra&&P("control");
+    if(x==="Albarans")return !!(m.obra||m.empresa)&&P("control");
+    if(x==="Gestió temps")return paqHores878653();
+    if(["Honoraris","Pressupostos"].includes(x))return !!m.tecnic&&P("honoraris");
+    if(x==="Factures")return !!m.tecnic&&P("factures");
+    if(x==="Rendiment")return !!m.tecnic&&P("hores");
     return true;
   });
 }
@@ -7400,13 +7504,13 @@ function opcionsBarra878366(role="admin"){if(role!=="admin")return [];const treb
   ["Inici",<House/>,"Inici"],
   ...(!treb?[["Clients",<Users/>,"Contactes"]]:[]),
   ["Treballs / Expedients",<FolderOpen/>,etObres878304()],
-  ...(teModul878326("tecnic")?[["Pressupostos",<ClipboardList/>,"Pressupostos"]]:[]),
-  ...(!esFinques878652()?[["Traça",<Clock/>,etHores878515()]]:[]),
+  ...(teModul878326("tecnic")&&tePaquet878653("honoraris")?[["Pressupostos",<ClipboardList/>,"Pressupostos"]]:[]),
+  ...(paqHores878653()?[["Traça",<Clock/>,etHores878515()]]:[]),
   ...(!treb&&menuPresObra878606()?[["Pressupostos obra",<ClipboardList/>,etPresObra878562()]]:[]),
-  ...(!treb&&!esFinques878652()?[["Factures",<ReceiptText/>,"Facturació"],["Albarans",<Camera/>,"Despeses"]]:[]),
-  ...(!treb&&!esFinques878652()?[["Bancs",<Wallet/>,"Caixa i bancs"]]:[]),
-  ...(!treb&&ambEmpresa878338()?[["Rendiment empresa",<TrendingUp/>,"Rendiment"]]:[]),
-  ...(!treb&&!ambEmpresa878338()&&teModul878326("tecnic")?[["Rendiment tecnic",<TrendingUp/>,"Rendiment"]]:[]),
+  ...(!treb&&tePaquet878653("factures")&&!esFinques878652()?[["Factures",<ReceiptText/>,"Facturació"]]:[]),...(!treb&&paqDespeses878653()?[["Albarans",<Camera/>,"Despeses"]]:[]),
+  ...(!treb&&!esFinques878652()&&tePaquet878653("factures")?[["Bancs",<Wallet/>,"Caixa i bancs"]]:[]),
+  ...(!treb&&ambEmpresa878338()&&paqRendiment878653()?[["Rendiment empresa",<TrendingUp/>,"Rendiment"]]:[]),
+  ...(!treb&&!ambEmpresa878338()&&paqRendiment878653()?[["Rendiment tecnic",<TrendingUp/>,"Rendiment"]]:[]),
   ["Agenda",<CalendarDays/>,"Agenda"],
   ...(menuEmpresa878607()&&!treb?[["Empresa",<Briefcase/>,"Empresa"]]:[]),
   ["Configuració",<Settings/>,"Ajustos"]]}
@@ -7474,15 +7578,17 @@ function iniciRajoles878508(role="admin",perfil=PERFIL878304){if(role!=="admin"|
   try{if(lsVisual878400()?.getItem("inici-classic-prova-v878508")==="1")return false}catch{}return true}
 // les accions de la barra de baix (es fan sense sortir de la pantalla; fora d'una obra, primer es tria l'obra o l'expedient)
 function accionsBarra878508(role="admin",perfil=PERFIL878304){const ob=modeObra878484(role,perfil);return [
-  ...(teModul878326("obra")?[["a:parte",<ClipboardCheck/>,"Parte"]]:[]),
-  ...(!esFinques878652()?[["a:despesa",<Camera/>,"Despesa"]]:[]),["a:nota",<NotebookPen/>,"Nota"],["a:foto",<ImagePlus/>,"Foto"],["a:acta",<ClipboardList/>,"Acta"],
-  ...(!senseHoresPropies878342()?[["a:hores",<Clock/>,"Apuntar hores"]]:[]),["a:veu",<Mic/>,"Nota de veu"]].filter(Boolean)}
-function barraDefecte878508(role,perfil){if(perfil==="finques")return ["Inici","a:nota","a:foto","a:acta"];return modeObra878484(role,perfil)&&perfil!=="complet"?["Inici","a:parte","a:despesa","a:nota"]:["Inici","a:nota","a:despesa","a:hores"]}
+  ...(teModul878326("obra")&&tePaquet878653("control")?[["a:parte",<ClipboardCheck/>,"Parte"]]:[]),
+  ...(paqDespeses878653()?[["a:despesa",<Camera/>,"Despesa"]]:[]),["a:nota",<NotebookPen/>,"Nota"],["a:foto",<ImagePlus/>,"Foto"],["a:acta",<ClipboardList/>,"Acta"],
+  ...(!senseHoresPropies878342()&&paqHores878653()?[["a:hores",<Clock/>,"Apuntar hores"]]:[]),["a:veu",<Mic/>,"Nota de veu"]].filter(Boolean)}
+function barraDefecte878508(role,perfil){if(perfil==="finques")return ["Inici","a:nota","a:foto","a:acta"];const d=modeObra878484(role,perfil)&&perfil!=="complet"?["Inici","a:parte","a:despesa","a:nota"]:["Inici","a:nota","a:despesa","a:hores"];
+  // V87.653 · sense el paquet d'una acció (partes, despeses, hores), la barra en posa una de les que sí que té
+  const ok=new Set([...opcionsBarra878366(role),...accionsBarra878508(role,perfil)].map(o=>o[0]));const r=d.filter(k=>ok.has(k));for(const k of ["a:nota","a:foto","a:acta"])if(r.length<4&&!r.includes(k)&&ok.has(k))r.push(k);return r}
 function barra878508(role,perfil){const k=lsJson8779("aco_barra_v878508",null);if(Array.isArray(k)&&k.length)return k;
   const v=lsJson8779("aco_barra_v878366",null);if(!modeObra878484(role,perfil)&&Array.isArray(v)&&v.length)return v;return barraDefecte878508(role,perfil)}
 // les rajoles de l'Inici: cada usuari les tria i les ordena a Ajustos › Accessos ràpids
 const RAJOLES878508=["pend","obres","agenda","temps","cont","enc","hores","desp","preso","fact","bancs","pres","rend","emp","ajust","mes"];
-function rajolesDisp878508(){if(esFinques878652())return RAJOLES878508.filter(k=>["pend","obres","agenda","cont","ajust","mes"].includes(k));const tec=teModul878326("tecnic");return RAJOLES878508.filter(k=>k==="bancs"?true:k==="enc"||k==="pres"?tec:k==="preso"?menuPresObra878606():k==="preus"?false:k==="emp"?menuEmpresa878607():k==="rend"?(ambEmpresa878338()||tec):true)}
+function rajolesDisp878508(){if(esFinques878652())return RAJOLES878508.filter(k=>["pend","obres","agenda","cont","ajust","mes"].includes(k));const tec=teModul878326("tecnic");return RAJOLES878508.filter(k=>k==="bancs"||k==="fact"?tePaquet878653("factures"):k==="desp"?paqDespeses878653():k==="hores"?paqHores878653():k==="enc"?tec:k==="pres"?tec&&tePaquet878653("honoraris"):k==="preso"?menuPresObra878606():k==="preus"?false:k==="emp"?menuEmpresa878607():k==="rend"?paqRendiment878653():true)}
 function iniciDefecte878508(){if(PERFIL878304==="finques")return ["obres","agenda","cont","ajust"];if(PERFIL878304==="complet")return ["pend","obres","enc","agenda","cont","pres","hores","fact","desp","bancs","temps"];return modeObra878484()?["pend","obres","agenda","cont","hores","desp","preso","fact","bancs","temps"]:["pend","obres","enc","agenda","cont","hores","fact","bancs","temps"]}
 function iniciTriat878508(){const k=lsJson8779("aco_inici_v878508",null);const d=rajolesDisp878508();const r=(Array.isArray(k)&&k.length?k:iniciDefecte878508()).filter(x=>d.includes(x));return r.length?r:iniciDefecte878508().filter(x=>d.includes(x))}
 function infoRajola878508(k){const m={pend:[ListChecks,"Pendent"],obres:[diuObra878326()?HardHat:FolderOpen,diuObra878326()?"Obres":"Expedients"],agenda:[CalendarDays,"Agenda"],cont:[Users,"Contactes"],
@@ -14575,9 +14681,11 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   // a les rajoles del tècnic, la línia de sota diu els apartats que hi ha de debò (no hi ha partes, i els encàrrecs tècnics no tenen planning)
   // V87.534 · «El meu encàrrec» té un sol apartat (Honoraris, amb Hores · Despeses · Factures a dins): a l'ordinador també s'obre en passar-hi
   // el ratolí, amb aquestes tres, i cadascuna porta a la seva pestanya (l'Héctor, 6/11/2026: «el meu encàrrec no ho fa»)
-  const subs534=b=>b.k==="El meu encàrrec"&&!pur&&b.tabs.length===1&&b.tabs[0]==="Honoraris"?[["Hores",Clock,t("Hores")],["Despeses",Wallet,t("Despeses")],["Factures",Receipt,t("Factures")]]:null;
+  // V87.653 · només el que permeten els paquets (sense cap, el bloc obre directament els pressupostos d’honoraris)
+  const subs534=b=>{if(!(b.k==="El meu encàrrec"&&!pur&&b.tabs.length===1&&b.tabs[0]==="Honoraris"))return null;const l=[...(tePaquet878653("hores")?[["Hores",Clock,t("Hores")]]:[]),...(tePaquet878653("factures")?[["Despeses",Wallet,t("Despeses")],["Factures",Receipt,t("Factures")]]:[])];return l.length?l:null};
   const pickSub534=k=>{setOb878485("");try{window.__acoHonSub878410=k;window.dispatchEvent(new CustomEvent("aco-hon-sub-534",{detail:k}))}catch{}pick("Honoraris")};
-  const sub492=b=>b.k==="El meu encàrrec"?t(pur?"honoraris, hores, factures":"hores, despeses, factures"):b.tabs.slice(0,3).map(x=>tabLabel878269(x,all,pur)).join(", ").toLowerCase();const fila490=4;
+  // V87.653 · el que hi ha de debò segons els paquets (sense hores ni factures, només els pressupostos d'honoraris)
+  const sub492=b=>b.k==="El meu encàrrec"?((h,f)=>(pur?[t("honoraris"),h&&t("hores"),f&&t("factures")]:[h&&t("hores"),f&&t("despeses"),f&&t("factures")]).filter(Boolean).join(", ")||t("pressupostos d’honoraris"))(tePaquet878653("hores"),tePaquet878653("factures")):b.tabs.slice(0,3).map(x=>tabLabel878269(x,all,pur)).join(", ").toLowerCase();const fila490=4;
   const[ob878485,setOb878485]=useState("");
   // V87.527 · a l'ordinador, la llista de cada rajola s'obre en passar-hi el ratolí, enganxada a sota de la rajola (l'Héctor, 6/11/2026: «com
   // altres apps, que quan passes el ratolí per sobre ja es despleguen les opcions per triar»); en marxar-ne es plega. Tocar-la també l'obre.
@@ -15004,7 +15112,7 @@ function ObraHero878252({obra={},client={},data={},scope={},tabs=[],setTab,uploa
     {hasBudget?<div className="obra-hero-progress-v878252">
           <div className="lbl"><span>{s.lastN?t("Certificat a origen · C-{n}",{n:s.lastN}):t("Pressupost preparat, sense certificacions")}</span><b>{pct878252(exe456)}</b></div>
           <div className="track"><i style={{width:`${Math.min(100,exe456)}%`}}/></div>
-        </div>:esTecnicPur878332(obra)?null:<p className="hint buit-pres-v878589">{diuObra878326()?t("Aquesta obra encara no té pressupost."):t("Aquest expedient encara no té pressupost d’obra.")}{(k=>k&&<button type="button" className="primary small" onClick={()=>go(k)}><Plus size={15} aria-hidden="true"/> {t("Fer el pressupost")}</button>)(["Pressupost obra","Pressupost","Pressupost ràpid"].find(x=>tabs.includes(x)))}</p>}
+        </div>:esTecnicPur878332(obra)||!tePaquet878653("pressupost")?null:<p className="hint buit-pres-v878589">{diuObra878326()?t("Aquesta obra encara no té pressupost."):t("Aquest expedient encara no té pressupost d’obra.")}{(k=>k&&<button type="button" className="primary small" onClick={()=>go(k)}><Plus size={15} aria-hidden="true"/> {t("Fer el pressupost")}</button>)(["Pressupost obra","Pressupost","Pressupost ràpid"].find(x=>tabs.includes(x)))}</p>}
     {hasBudget&&<div className="obra-hero-kpis-v878252">
       <div><small>{amb456?t("Previsió final"):t("Pressupost vigent")}</small><b>{eur0878252(fin456)}</b><span>{t("{n} partides · {m} capítols",{n:s.rows.length,m:s.caps.length})}</span></div>
       <div><small>{t("Certificat a origen")}</small><b>{eur0878252(s.certified)}</b><span>{s.lastN===1?t("1 certificació"):s.lastN?t("{n} certificacions",{n:s.lastN}):t("cap certificació")}</span></div>
@@ -15687,7 +15795,7 @@ function PressupostTecnic8738({data,obra,addPressupost,updatePressupost,facturar
       <div className="quote-total-v8742"><span>{t("Total amb IVA")}</span><b>{money((+form.base||0)*(1+(+form.iva||0)/100))}</b></div>
       <div className="modal-actions"><button type="button" className="secondary" onClick={()=>reset(null)}>{t("Cancel·lar")}</button><button className="primary">{editing?t("Guardar canvis"):t("Guardar pressupost")}</button></div></div><InlineQuotePreview8744 type="pressupost" doc={liveDoc} obra={obra}/></div>
     </form>}
-    <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha pressupostos en aquest expedient."/>}{rows.map(r=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={r.id}><div><strong>{r.numero||"PRE"}</strong><span>{r.concepte?t(r.concepte):t("Pressupost")}</span><small>{r.data||"—"} · {r.estat||t("Pendent")}{r.encarrec878477?" · "+t(nomEncarrec(r.encarrec878477)):""}</small></div><b>{money(totalIva8743(r))}<small>{t("IVA inclòs")}</small></b><div className="actions-inline quote-actions-desktop-v87118"><button className="secondary" onClick={()=>setPreview(r)}>{t("Veure PDF")}</button><button className="secondary" onClick={()=>reset(r)}>{t("Editar")}</button>{!/^acceptat$/i.test(String(r.estat||""))&&<button className="secondary" onClick={()=>updatePressupost?.(r.id,{estat:"Acceptat"})}>{t("Acceptar")}</button>}<button className="secondary" onClick={()=>facturarPressupost?.(r.id)}>{t("Fer factura")}</button><button className="secondary" onClick={()=>openEmail?.(`${t("Pressupost")} ${r.numero||""}`.trim(),{doc:docQuote878407("pressupost",r)})}>{t("Enviar")}</button><button className="danger" onClick={()=>deletePressupost?.(r.id)}>{t("Eliminar")}</button></div><select className="quote-mobile-action-v87118" aria-label={i18nT("Opcions")} defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="pdf")setPreview(r);if(v==="edit")reset(r);if(v==="accept")updatePressupost?.(r.id,{estat:"Acceptat"});if(v==="invoice")facturarPressupost?.(r.id);if(v==="send")openEmail?.(`${t("Pressupost")} ${r.numero||""}`.trim(),{doc:docQuote878407("pressupost",r)});if(v==="delete")deletePressupost?.(r.id)}}><option value="" disabled>{t("Opcions")}</option><option value="pdf">{t("Veure PDF")}</option><option value="edit">{t("Editar")}</option>{!/^acceptat$/i.test(String(r.estat||""))&&<option value="accept">{t("Acceptar")}</option>}<option value="invoice">{t("Fer factura")}</option><option value="send">{t("Enviar")}</option><option value="delete">{t("Eliminar")}</option></select></div>)}</div>
+    <div className="quote-list-v8742 quote-list-v8743 quote-list-v8744">{rows.length===0&&<Empty text="Encara no hi ha pressupostos en aquest expedient."/>}{rows.map(r=><div className="quote-row-v8742 quote-row-v8743 quote-row-v8744" key={r.id}><div><strong>{r.numero||"PRE"}</strong><span>{r.concepte?t(r.concepte):t("Pressupost")}</span><small>{r.data||"—"} · {r.estat||t("Pendent")}{r.encarrec878477?" · "+t(nomEncarrec(r.encarrec878477)):""}</small></div><b>{money(totalIva8743(r))}<small>{t("IVA inclòs")}</small></b><div className="actions-inline quote-actions-desktop-v87118"><button className="secondary" onClick={()=>setPreview(r)}>{t("Veure PDF")}</button><button className="secondary" onClick={()=>reset(r)}>{t("Editar")}</button>{!/^acceptat$/i.test(String(r.estat||""))&&<button className="secondary" onClick={()=>updatePressupost?.(r.id,{estat:"Acceptat"})}>{t("Acceptar")}</button>}{tePaquet878653("factures")&&<button className="secondary" onClick={()=>facturarPressupost?.(r.id)}>{t("Fer factura")}</button>}<button className="secondary" onClick={()=>openEmail?.(`${t("Pressupost")} ${r.numero||""}`.trim(),{doc:docQuote878407("pressupost",r)})}>{t("Enviar")}</button><button className="danger" onClick={()=>deletePressupost?.(r.id)}>{t("Eliminar")}</button></div><select className="quote-mobile-action-v87118" aria-label={i18nT("Opcions")} defaultValue="" onChange={e=>{const v=e.target.value;e.currentTarget.value="";if(v==="pdf")setPreview(r);if(v==="edit")reset(r);if(v==="accept")updatePressupost?.(r.id,{estat:"Acceptat"});if(v==="invoice")facturarPressupost?.(r.id);if(v==="send")openEmail?.(`${t("Pressupost")} ${r.numero||""}`.trim(),{doc:docQuote878407("pressupost",r)});if(v==="delete")deletePressupost?.(r.id)}}><option value="" disabled>{t("Opcions")}</option><option value="pdf">{t("Veure PDF")}</option><option value="edit">{t("Editar")}</option>{!/^acceptat$/i.test(String(r.estat||""))&&<option value="accept">{t("Acceptar")}</option>}{tePaquet878653("factures")&&<option value="invoice">{t("Fer factura")}</option>}<option value="send">{t("Enviar")}</option><option value="delete">{t("Eliminar")}</option></select></div>)}</div>
   </Card></div>
 }
 function FacturesTecniques8738({data,obra,addFactura,updateFactura,deleteFactura,openEmail,openDoc}){
@@ -19596,7 +19704,7 @@ const faCert878337=obraData&&cert?(obraData.facturesObra878297||[]).find(x=>x.ce
 const vfCert878337=obraData&&cert?(obraData.facturesVF878285||[]).find(x=>x.certId===cert.id&&x.estat!=="Anulada"):null;
 // V87.440 · «Fer factura» surt sempre (l'Héctor, 30/10/2026, a Verbania: «com passo la certificació a proforma o a factura directa? no hi ha
 // l'opció»): abans només si el client ja tenia la numeració activada. Sense numeració, la finestra demana la sèrie i la deixa activada.
-const faOk878440=!esFinques878652()&&(esEmpresaFactura878337()||(!!client&&!obra?.compartida));
+const faOk878440=factObra878653()&&tePaquet878653("factures")&&(esEmpresaFactura878337()||(!!client&&!obra?.compartida));
 const potFacturar878337=!clientMode&&!readOnly&&!!setObraData&&!!pfCert878337&&!faCert878337&&!vfCert878337&&pfCert878337.base>0.005&&faOk878440;
 const[ferFactura878337,setFerFactura878337]=useState(false);
 // V87.364 · una certificació amb factura no es pot tocar (abans el Σ en mode consulta obria l'edició i la deixava a 0)
@@ -19764,7 +19872,7 @@ function opcionsCert527(c){
   const potF=potFactDe878364(c),potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
   const teMes=(data.partides||[]).some(r=>(((r.certMesuresByNum||{})[String(n)])||[]).length>0);
   const env=!clientMode&&!!openEmail,sig=!clientMode&&!contrast878424&&!!obra?.id;
-  const proforma=!clientMode&&!contrast878424&&!!pf&&!fa&&!esFinques878652();
+  const proforma=!clientMode&&!contrast878424&&!!pf&&!fa&&factObra878653();
   const tria=()=>{if(!sel)setSelected(c.id)};
   return <>
     <small className="amh-v878273">{i18nT("Veure i imprimir")}</small>
@@ -19788,7 +19896,7 @@ function opcionsCert527(c){
 // Enviar · Opcions.
 function botonsCap527(){
   const env=!clientMode&&!!openEmail,sig=!clientMode&&!contrast878424&&!!obra?.id&&!!cert;
-  const pf=!clientMode&&!contrast878424&&!!pfCert878337&&!faCert878337&&!esFinques878652(),fer=potFacturar878337&&!contrast878424;
+  const pf=!clientMode&&!contrast878424&&!!pfCert878337&&!faCert878337&&factObra878653(),fer=potFacturar878337&&!contrast878424;
   const del=!!deleteCertificacio8721&&!readOnly&&!faCert878337&&!vfCert878337&&!contrast878424&&!!cert;
   const bImp=<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>;
   const bEnv=env?<button type="button" className="secondary cert-enviar-v878337" onClick={()=>fesCert527("enviar")}><Mail size={16} aria-hidden="true"/> {i18nT("Enviar")}</button>:null;
@@ -20248,7 +20356,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     {!editing&&<ActionMenu87213 className="accions-v878364" label={i18nT("Opcions")}>
       {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>{if((!contrast878424&&obra?.id&&cert)||(!rec408&&hiHaDesc878586()))setEnviar440(true);else enviaCert878440()}}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
       {!clientMode&&!contrast878424&&obra?.id&&cert&&<button type="button" className="sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
-      {!clientMode&&!contrast878424&&pfCert878337&&!faCert878337&&!esFinques878652()&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData,client))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
+      {!clientMode&&!contrast878424&&pfCert878337&&!faCert878337&&factObra878653()&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData,client))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
       {faCert878337?<button type="button" onClick={()=>openDoc?.(docFactura878337(faCert878337,pfCert878337,obraData))}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>
         :potFacturar878337&&!contrast878424&&<button type="button" className="cert-fer-v878337" onClick={()=>setFerFactura878337(true)}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Fer factura")}</button>}
       {!readOnly&&!bloq878364&&!contrast878424&&<button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}
@@ -20998,8 +21106,8 @@ return <div className={`fact-layout-v61 fact-layout-v87101 fact-v878426 ${readOn
     <div className="botons-v878426">
       <button type="button" className="secondary" onClick={()=>openDoc(docPf878407(f))}><Printer size={15} aria-hidden="true"/> {t("PDF")}</button>
       {openEmail&&<button type="button" className="secondary" onClick={()=>openEmail(`Proforma ${f.numero}`,{doc:docPf878407(f)})}><Mail size={15} aria-hidden="true"/> {t("Enviar")}</button>}
-      {canEdit&&vf.estat==="actiu"&&<button type="button" className="primary vf-emetre-btn-v878285" onClick={()=>setEmetreVF(f)}>{t("Emetre factura")}</button>}
-      {canEdit&&(serie878297||esEmpresaFactura878337()||(!!client&&!obra?.compartida))&&vf.estat!=="actiu"&&<button type="button" className="primary fa-fer-v878297" onClick={()=>setFerFactura(f)}><ReceiptText size={15} aria-hidden="true"/> {t("Fer factura")}</button>}
+      {canEdit&&tePaquet878653("factures")&&vf.estat==="actiu"&&<button type="button" className="primary vf-emetre-btn-v878285" onClick={()=>setEmetreVF(f)}>{t("Emetre factura")}</button>}
+      {canEdit&&tePaquet878653("factures")&&(serie878297||esEmpresaFactura878337()||(!!client&&!obra?.compartida))&&vf.estat!=="actiu"&&<button type="button" className="primary fa-fer-v878297" onClick={()=>setFerFactura(f)}><ReceiptText size={15} aria-hidden="true"/> {t("Fer factura")}</button>}
     </div>
     {anuladesDe(f).length>0&&<small className="vf-anulades-v878286">{t("Anul·lades:")} {anuladesDe(f).join(", ")}</small>}
   </div></details>})}
@@ -21443,7 +21551,7 @@ function tornaA878562(s){return s==="Llibreria"&&window.__acoLlibDe878562==="Con
 // V87.606 · a Gestió total (tècnic + obra), els pressupostos d'obra són dins de cada expedient / obra i no surten al menú ni a l'Inici (l'Héctor,
 // 13/11/2026: «el perfil tècnic gestió total són expedients/obres… un tècnic que pot treballar per tercers o dins d'un despatx, però que també pot
 // portar el project manager total d'una constructora»). La constructora sí que els té al menú.
-function menuPresObra878606(){return !!PERFIL878304&&teModul878326("obra")&&!teModul878326("tecnic")}
+function menuPresObra878606(){return !!PERFIL878304&&teModul878326("obra")&&!teModul878326("tecnic")&&tePaquet878653("pressupost")}
 function etPresObra878562(){return teModul878326("tecnic")?"Pressupostos d’obra":"Pressupostos"}
 function estatPres878562(o={},d={},bid="principal"){
   const sig=sigPres878403(d,bid);
@@ -22045,7 +22153,7 @@ function CalendariEmpresa878393({obres=[]}){
   </div>;
 }
 function Empresa878339({odata={},clients=[],setOdata,obres=[]}){
-  const [vista,setVista]=useState(()=>{const v=window.__acoEmpresaVista878353;window.__acoEmpresaVista878353="";return v||"dades"});
+  const [vista,setVista]=useState(()=>{const v=window.__acoEmpresaVista878353;window.__acoEmpresaVista878353="";return v&&(!["treb","cal"].includes(v)||tePaquet878653("personal"))?v:"dades"});
   const [tick,setTick]=useState(0);
   const rec=()=>setTick(x=>x+1);
   const treballadors=useMemo(()=>llegeixTreballadors878339(),[tick]);
@@ -22070,7 +22178,7 @@ function Empresa878339({odata={},clients=[],setOdata,obres=[]}){
   const rTreb=actius.map(w=>resumDocs878339(w.docs,DOCS_TREBALLADOR878339));
   const rInd=industrials.map(ag=>resumDocs878339(docsInd[ag._persona878301]?.docs||[],DOCS_INDUSTRIAL878339));
   const alertes=[rEmp,...rTreb,...rInd].reduce((s,r)=>({caducats:s.caducats+r.caducats,aviat:s.aviat+r.aviat}),{caducats:0,aviat:0});
-  const VISTES=[["dades","Dades"],["treb","Treballadors"],["docs","Documentació"],["ind","Industrials"],["cal","Calendari"]];
+  const VISTES=[["dades","Dades"],["treb","Treballadors"],["docs","Documentació"],["ind","Industrials"],["cal","Calendari"]].filter(([k])=>!["treb","cal"].includes(k)||tePaquet878653("personal"));
   const n={treb:actius.length,ind:industrials.length};
   const avis={docs:rEmp.caducats+rEmp.aviat,treb:rTreb.reduce((s,r)=>s+r.caducats+r.aviat,0),ind:rInd.reduce((s,r)=>s+r.caducats+r.aviat,0)};
   const fila=(w,r)=><div key={w.id} className={`treb-v878339 ${w.actiu===false?"baixa":""}`} role="button" tabIndex={0} onClick={()=>setEditT(w)} onKeyDown={e=>{if(e.key==="Enter")setEditT(w)}}>
@@ -23601,7 +23709,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.652",
+    app_version:"87.653",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23900,7 +24008,7 @@ const grups637=[
     emp637&&!tr637&&["exemples",t("Exemples per començar"),<ExemplesAjustos878605/>]]},
   {g:"acces",tit:t("Usuaris i accés"),Ic:Lock,items:[
     ["usuaris",t("Usuaris i contrasenyes"),<AccountAccessPanel878233 clients={clients} authUser={authUser}/>],
-    (comptes637||proves637)&&[comptes637?"comptes":"proves",comptes637?t("Comptes del núvol"):t("Comptes de prova"),comptes637&&proves637?<><Card title={t("Comptes d’empresa")} className="comptes-card-v878637"><ComptesNuvol878613/></Card><Card title={t("Comptes de prova")} className="proves-card-v878637"><ProvesAjustos878519/></Card></>:comptes637?<ComptesNuvol878613/>:<ProvesAjustos878519/>],
+    (comptes637||proves637)&&[comptes637?"comptes":"proves",comptes637?t("Comptes del núvol"):t("Comptes de prova"),comptes637&&proves637?<><Card title={t("Comptes d’empresa")} className="comptes-card-v878637"><ComptesNuvol878613/></Card><Card title={t("Paquets dels comptes")} className="paquets-card-v878653"><PaquetsComptes878653/></Card><Card title={t("Comptes de prova")} className="proves-card-v878637"><ProvesAjustos878519/></Card></>:comptes637?<ComptesNuvol878613/>:<ProvesAjustos878519/>],
     estat646&&["estat",t("Estat del núvol"),<EstatNuvol878646/>],
     ["privadesa",textos640?t("Privadesa i avisos legals"):t("Privadesa"),<Privadesa878640 admin={role878366==="admin"&&!tr637} textos={textos640} ambCopia={!tr637}/>]]},
   {g:"copies",tit:t("Còpies i arxius"),Ic:Save,items:[
@@ -25939,7 +26047,7 @@ function VeuCita878294({obres=[],clients=[],close,onDone,onDirecte,obraFixa=null
 // dia»): a l'Agenda, la setmana de cada treballador, colla o industrial segons el Planning de totes les obres (`capPlans[cap].qui` i
 // les dates de `resolPlans878341`; una colla compta pels seus treballadors). Algú a dues obres el mateix dia surt en vermell.
 const COLORS_EQUIP878381=["#2563EB","#059669","#D97706","#7C3AED","#DB2777","#0891B2","#65A30D","#B45309"];
-function equipOk878381(){return ambEmpresa878338()&&!esTreballador878326()&&llegeixTreballadors878339().some(w=>w.actiu!==false)}
+function equipOk878381(){return ambEmpresa878338()&&!esTreballador878326()&&tePaquet878653("control")&&llegeixTreballadors878339().some(w=>w.actiu!==false)}
 function equipSetmana878381(obres=[],odata={},dies=[]){
   const treb=llegeixTreballadors878339().filter(w=>w.actiu!==false).sort((a,b)=>(a.colla?0:1)-(b.colla?0:1)||String(a.colla||"").localeCompare(String(b.colla||""),"ca")||String(a.nom||"").localeCompare(String(b.nom||""),"ca"));
   const isos=dies.map(isoDay878255),ds=dies.map(d=>new Date(d.getFullYear(),d.getMonth(),d.getDate()));
@@ -26763,8 +26871,8 @@ function EmpresaSetup878259({onDone}){
   const emp=(typeof window!=="undefined"&&window.__acoEmpresa)||{};
   const demo=/^(demo|prova)[-_]/i.test(String(emp.username||""));
   const prova519=/^prova[-_]/i.test(String(emp.username||""));
-  const p0=perfilDemo878326(emp.username)||"constructor";
-  const nice=prova519?"":demo?NOMS_DEMO878328[p0]:String(emp.username||"").replace(/^\w/,c=>c.toUpperCase());
+  const p0=(PERFILS878326[paqNuvol878653()?.perfil]?paqNuvol878653().perfil:"")||perfilDemo878326(emp.username)||"constructor";
+  const nice=prova519?"":demo?(NOMS_DEMO878328[p0]||""):String(emp.username||"").replace(/^\w/,c=>c.toUpperCase());
   const[f,setF]=useState({nom:nice,fiscal:"",perfil:p0,exemple:demo});
   const[omplint,setOmplint]=useState(false);
   function save(){
@@ -26784,7 +26892,7 @@ function EmpresaSetup878259({onDone}){
     <label><span>{t("Nom de l’empresa o del despatx")}</span><input value={f.nom} onChange={e=>setF(x=>({...x,nom:e.target.value}))} autoFocus/></label>
     <label><span>{t("Nom fiscal")} <em>{t("opcional")}</em></span><input value={f.fiscal} onChange={e=>setF(x=>({...x,fiscal:e.target.value}))} placeholder={t("Ex. Vertical Trek España SL")}/></label>
     <div className="perfils perfils-v878326">
-      {Object.entries(PERFILS878326).map(([k,p])=><button type="button" key={k} aria-pressed={f.perfil===k} onClick={()=>setF(x=>({...x,perfil:k}))}><b>{t(p.nom)}</b><span>{t(p.desc)}</span></button>)}
+      {Object.entries(PERFILS878326).filter(([,p])=>!p.amagat).map(([k,p])=><button type="button" key={k} aria-pressed={f.perfil===k||(f.perfil==="complet"&&k==="tecnic")} onClick={()=>setF(x=>({...x,perfil:k}))}><b>{t(p.nom)}</b><span>{t(p.desc)}</span></button>)}
     </div>
     {/* V87.605 · també als comptes de debò: uns quants expedients d'exemple per començar (es treuen a Ajustos) */}
     <label className="exemple-v878328"><input type="checkbox" checked={!!f.exemple} onChange={e=>setF(x=>({...x,exemple:e.target.checked}))}/><span>{demo?t("Omplir-lo amb dades d’exemple (obres, clients, hores i despeses inventats)"):t("Començar amb uns exemples (inventats)")}</span></label>
