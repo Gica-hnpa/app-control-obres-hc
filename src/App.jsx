@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.650";
+const APP_VERSION878264="87.651";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -5247,10 +5247,12 @@ function FerFacturaEncarrec878431({obra,hores=[],despeses=[],quota=0,despIncl=qu
   const iva=f.iva===""?21:parseNum8770(f.iva),ret=parseNum8770(f.retencio);
   const liniaDesp=a=>[a.data?fmtAppDate8748(a.data):"",a.proveidor||a.concepte||(a.tipusMeva?etiquetaMeva878323(a.tipusMeva):t("Despesa"))].filter(Boolean).join(" · ");
   function toggle(set,id){set(s=>{const n=new Set(s);n.has(id)?n.delete(id):n.add(id);return n});setF(x=>({...x,base:""}))}
+  const nif651=useNifEmissor878651();
   function submit(e){
     e.preventDefault();
     if(!pres&&!chH.length&&!chD.length){alert(t("Tria almenys un registre."));return}
     if(!(base>0)){alert(t("Escriu l’import."));return}
+    if(!nif651.valida())return;
     const id="ft-"+Date.now();
     const text=pres?(pres.p.text||""):[...chH.map(r=>`${timeRowLabel878256(r)} · ${money(timeBillImport878291(r))}`),...chD.map(a=>`${liniaDesp(a)} · ${money(albaraBase878259(a))}`)].join("\n");
     addFactura?.({id,data:f.data,avisCobr878496:{data:f.venc529||sumaDies878496(f.data,diesCobrar878521())},concepte:f.concepte,text,base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:"Pendent",pressupostId:pres?.p?.id||"",hoursRows:chH.map(r=>r.id),despeses:chD.map(a=>a.id)});
@@ -5274,10 +5276,24 @@ function FerFacturaEncarrec878431({obra,hores=[],despeses=[],quota=0,despIncl=qu
       <label><span>{t("IVA %")}</span><NumIn878584 inputMode="decimal" value={f.iva} onChange={e=>setF(x=>({...x,iva:e.target.value}))}/></label>
       <label><span>{t("Retenció %")}</span><NumIn878584 inputMode="decimal" value={f.retencio} onChange={e=>setF(x=>({...x,retencio:e.target.value}))}/></label>
     </div>
+    {nif651.camp}
     <div className="quote-total-v8742"><span>{t("Total factura")}</span><b>{money(invoiceTotal8746({base,iva,retencio:ret,descompte:0}))}</b></div>
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button className="primary">{t("Crear la factura")}</button></div>
   </form></Modal>;
-}// V87.410 · Rendiment real d'un encàrrec (l'Héctor, 27/10/2026: «els registres manuals o pel comptador s'han de comptar com a despesa de
+}
+// V87.651 · sense el NIF de qui la fa, la factura no val. Si el tècnic encara no el té, les finestres de factura el demanen (com «Fer factura» de
+// la constructora, V87.594) i es desa a les seves dades: les de l'empresa o, al compte de l'Héctor, Ajustos › Documents. Repàs del 12/11/2026:
+// «el tècnic pot fer factures d'honoraris sense el seu NIF (cap avís, a diferència de la constructora)».
+function useNifEmissor878651(){
+  const falta=useMemo(()=>{try{return !netV878304(emissorTecnic878396()?.nif)}catch{return false}},[]);
+  const[nif,setNif]=useState(""),[err,setErr]=useState(false);
+  const valida=()=>{if(!falta)return true;const n=netV878304(nif).toUpperCase();if(n.replace(/[\s.\-]/g,"").length<8){setErr(true);return false}desaNifEmissor878651(n);return true};
+  const camp=falta?<div className="nif-v878651"><b>{t("Les teves dades per a la factura")}</b>
+    <label className={err?"falta-v878594":""}><span>{t("El teu NIF / CIF")}</span><input className="nif-emissor-v878651" value={nif} autoComplete="off" onChange={e=>{setErr(false);setNif(e.target.value)}}/>{err&&<small className="err-v878594">{t("Cal per fer la factura.")}</small>}</label>
+  </div>:null;
+  return {camp,valida};
+}
+// V87.410 · Rendiment real d'un encàrrec (l'Héctor, 27/10/2026: «els registres manuals o pel comptador s'han de comptar com a despesa de
 // personal meu al meu preu/h, perquè si no no sé el rendiment real de la meva feina»): honoraris (el facturat o, si encara no se n'ha
 // facturat res, els pressupostos acceptats; si no n'hi ha cap d'acceptat, els que no s'han rebutjat) − despeses de l'expedient (les de
 // Despeses i les del registre: quilometratge, dietes…) − hores × preu per hora (el de cada registre o, si no en té, el de sèrie).
@@ -6809,6 +6825,8 @@ function addPressupostTecnic8742(p){
 }
 function updatePressupostTecnic8742(id,patch){setD(obraId,d=>({...d,pressupostosTecnic:(d.pressupostosTecnic||[]).map(p=>p.id===id?{...p,...patch,updatedAt:new Date().toISOString()}:p)}))}
 function facturarPressupostTecnic8742(id){
+  // V87.651 · sense el NIF de qui la fa no hi ha factura: si encara no el té, es demana (i es desa a les seves dades)
+  try{if(!netV878304(emissorTecnic878396()?.nif)){const n=netV878304(prompt(t("Cal el teu NIF / CIF per fer la factura:"))||"").toUpperCase();if(n.replace(/[\s.\-]/g,"").length<8){alert(t("Sense el teu NIF / CIF no es pot fer la factura."));return}desaNifEmissor878651(n)}}catch{}
   setD(obraId,d=>{
     let p=(d.pressupostosTecnic||[]).find(x=>x.id===id);if(!p)return d;
     let factures=d.facturesTecnic||[];
@@ -22779,6 +22797,9 @@ function adrDe878396(c={}){if(c.carrer)return [c.carrer,[c.codiPostal,c.poblacio
 // l'escollit per ell i no pas el meu… tot i que estigui al meu perfil»)
 function formatClient878621(c){return c&&c.id!=="empresa"&&c.docs878621&&c.docs878621.actiu?c.docs878621:null}
 function emissorDocs878396(client){const c=emissorDoc878337(client)||{};const fc=formatClient878621(c);return {nom:issuerFiscalName87100(client),nif:String(c.nif||"").trim(),adr:adrDe878396(c),tel:c.telefon||c.mobil||"",mail:c.email||"",logo:logoClient878315(c),...(fc?{estil:String(fc.estil||""),color:String(fc.color||""),peu:String(fc.peu||"")}:{})}}
+// V87.651 · desa el NIF de qui fa les factures del tècnic on el llegeix emissorTecnic878396: a les dades de l'empresa (comptes d'empresa) o a
+// Ajustos › Documents (el compte de l'Héctor)
+function desaNifEmissor878651(nif){try{if(emissorEmpresa878337()){const cur=empresaInfo878259()||{};lsSet8779("aco_empresa_v878259",JSON.stringify({...cur,nif}))}else{const c=docsCfg878396();desaDocsCfg878396({emissor:{...(c.emissor||{}),nif}})}}catch{}}
 function emissorTecnic878396(){const e=emissorEmpresa878337();if(e)return {nom:e.nom,nif:e.nif,adr:adrDe878396(e),tel:e.telefon,mail:e.email,iban:e.iban,banc:e.banc,logo:logoClient878315(e)};
   const x=docsCfg878396().emissor;let cfg={};try{cfg=JSON.parse(lsGet8779("aco_config_v60")||"{}")}catch{}
   return {nom:x.nom||cfg.empresa||"",nif:x.nif||"",colegiat:x.colegiat||"",adr:x.adreca||"",tel:x.telefon||"",mail:x.email||cfg.email||"",iban:x.iban||"",banc:x.banc||"",logo:logosContactes878315()["client:empresa"]||""}}
@@ -23566,7 +23587,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.650",
+    app_version:"87.651",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -26394,7 +26415,8 @@ function InvoiceQuota878434({q,onCreate,close}){
   const[f,setF]=useState(()=>({obraId:os[0]?.id||"",data:todayISO8743(),concepte:`${t("Quota mensual")} · ${nomMes878430(q.mes).toLowerCase()}`,base:String(q.import).replace(".",","),iva:String(q.ac.iva??21).replace(".",","),retencio:String(q.ac.retencio??0).replace(".",",")}));
   const set=(k,v)=>setF(x=>({...x,[k]:v}));
   const base=parseNum8770(f.base),iva=f.iva===""?21:parseNum8770(f.iva),ret=parseNum8770(f.retencio);
-  function submit(e){e.preventDefault();if(!f.obraId)return;if(!(base>0)){alert(t("Escriu la base."));return}
+  const nif651=useNifEmissor878651();
+  function submit(e){e.preventDefault();if(!f.obraId)return;if(!(base>0)){alert(t("Escriu la base."));return}if(!nif651.valida())return;
     onCreate?.({id:"ft-"+Date.now(),obraId:f.obraId,data:f.data,concepte:f.concepte,text:"",base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:"Pendent",quota878434:{client:q.c.id,mes:q.mes}});close()}
   return <Modal title={t("Factura de la quota")} close={close}><form className="inv-hours-v878256 inv-quota-v878434" onSubmit={submit}>
     <p className="who"><b>{q.c.nom}</b><span>{nomMes878430(q.mes)}</span></p>
@@ -26406,6 +26428,7 @@ function InvoiceQuota878434({q,onCreate,close}){
       <label><span>{t("IVA %")}</span><NumIn878584 inputMode="decimal" value={f.iva} onChange={e=>set("iva",e.target.value)}/></label>
       <label><span>{t("Retenció %")}</span><NumIn878584 inputMode="decimal" value={f.retencio} onChange={e=>set("retencio",e.target.value)}/></label>
     </div>
+    {nif651.camp}
     <div className="quote-total-v8742"><span>{t("Total factura")}</span><b>{money(invoiceTotal8746({base,iva,retencio:ret,descompte:0}))}</b></div>
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button className="primary">{t("Crear la factura")}</button></div>
   </form></Modal>;
@@ -26420,9 +26443,11 @@ function InvoiceFromHours878256({group,clientName,acord=null,onCreate,close}){
   const base=f.base!==""?parseNum8770(f.base):sum;
   const iva=f.iva===""?21:parseNum8770(f.iva),ret=parseNum8770(f.retencio);
   function toggle(id){setSel(s=>{const n=new Set(s);n.has(id)?n.delete(id):n.add(id);return n});setF(x=>({...x,base:""}))}
+  const nif651=useNifEmissor878651();
   function submit(e){
     e.preventDefault();
     if(!chosen.length){alert(t("Tria almenys un registre."));return}
+    if(!nif651.valida())return;
     const id="ft-"+Date.now();
     const text=chosen.map(r=>`${timeRowLabel878256(r)} · ${money(timeBillImport878291(r))}`).join("\n");
     onCreate?.({id,obraId:group.o.id,data:f.data,avisCobr878496:{data:f.venc529||sumaDies878496(f.data,diesCobrar878521())},concepte:f.concepte,text,base:Math.round(base*100)/100,iva,retencio:ret,descompte:0,estat:f.estat,hoursRows:chosen.map(r=>r.id)});
@@ -26441,6 +26466,7 @@ function InvoiceFromHours878256({group,clientName,acord=null,onCreate,close}){
       <label><span>{t("IVA %")}</span><NumIn878584 inputMode="decimal" value={f.iva} onChange={e=>setF(x=>({...x,iva:e.target.value}))}/></label>
       <label><span>{t("Retenció %")}</span><NumIn878584 inputMode="decimal" value={f.retencio} onChange={e=>setF(x=>({...x,retencio:e.target.value}))}/></label>
     </div>
+    {nif651.camp}
     <div className="quote-total-v8742"><span>{t("Total factura")}</span><b>{money(invoiceTotal8746({base,iva,retencio:ret,descompte:0}))}</b></div>
     <p className="note">{t("El detall de les hores queda escrit a la factura. Després la pots revisar, imprimir o canviar d’estat a la llista de factures.")}</p>
     <div className="modal-actions"><button type="button" className="secondary" onClick={close}>{t("Cancel·lar")}</button><button className="primary">{t("Crear la factura")}</button></div>

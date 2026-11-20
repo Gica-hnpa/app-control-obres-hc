@@ -1,0 +1,12 @@
+/* V87.651 · factures del tècnic: el seu NIF, si encara no el té (com «Dades de l’empresa per a la factura» de la constructora) */
+html body .inv-hours-v878256 .nif-v878651{margin:10px 0;padding:12px;border:1px solid #FCD34D;border-radius:12px;background:#FFFBEB;display:flex;flex-direction:column;gap:8px}
+html body .inv-hours-v878256 .nif-v878651>b{font:700 14px var(--app-font);color:#92400E}
+html body .inv-hours-v878256 .nif-v878651 label{display:flex;flex-direction:column;gap:4px;margin:0}
+html body .inv-hours-v878256 .nif-v878651 input{max-width:280px;width:100%}
+/* V87.651 · acord del client al mòbil: el mes de «Es factura des de» no hi cabia (sortia 3 px per la dreta); dues columnes que es poden
+   estrènyer i el mes a tota l'amplada */
+@media (max-width:700px){
+  html body .acord-v878434 .ac-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body .acord-v878434 .ac-grid input{min-width:0}
+  html body .acord-v878434 .ac-grid label:has(input[type=month]){grid-column:1/-1}
+}

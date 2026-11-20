@@ -6344,4 +6344,9 @@ export default {
   "{n} partides de l’arxiu, del banc o de la IA no tenen els marges de l’obra.": "{n} partidas del archivo, del banco o de la IA no tienen los márgenes de la obra.",
   "Posar els marges de l’obra ({r}) a {n} partides que no en tenen? Els preus pujaran (les que ja estan certificades no es toquen).": "¿Poner los márgenes de la obra ({r}) a {n} partidas que no los tienen? Los precios subirán (las ya certificadas no se tocan).",
   "Posar-hi els marges de l’obra: {r} ({n} partides del banc, de l’arxiu o de la IA)": "Ponerles los márgenes de la obra: {r} ({n} partidas del banco, del archivo o de la IA)",
+  // V87.651 · el NIF del tècnic a les factures
+  "Les teves dades per a la factura": "Tus datos para la factura",
+  "El teu NIF / CIF": "Tu NIF / CIF",
+  "Cal el teu NIF / CIF per fer la factura:": "Hace falta tu NIF / CIF para hacer la factura:",
+  "Sense el teu NIF / CIF no es pot fer la factura.": "Sin tu NIF / CIF no se puede hacer la factura.",
 };

@@ -4804,3 +4804,21 @@
     compartits (Verbania P2026_0002, Mundet 0007, Cala Rovira 0009) porten el número del compte de l'Héctor. Si el comptador comptés també els
     compartits, a la llista sortirien com a «falten» els números del mig. Mentrestant: Opcions › «Canviar el nom i el número».
   - Proves: `v650test` 9/9 (nova), `v648test` 14/14 i `v647test` 10/10 (posades al dia: els marges, ara marcats d'entrada).
+- **V87.651 · El NIF del tècnic a les factures i el mes de l'acord al mòbil** (repàs de la nit del 19 al 20/11/2026; ja apuntat al repàs del
+  12/11: «el tècnic pot fer factures d'honoraris sense el seu NIF, cap avís, a diferència de la constructora»).
+  - Factures del tècnic («Fer factura» de l'encàrrec, la quota mensual, la factura des de les hores i «Facturar» un pressupost d'honoraris): si
+    qui fa la factura encara no té el NIF / CIF (`emissorTecnic878396`), la finestra el demana («Les teves dades per a la factura · El teu NIF /
+    CIF»; sense, «Cal per fer la factura.») i es desa (`desaNifEmissor878651`) a les dades de l'empresa (comptes d'empresa) o a Ajustos ›
+    Documents (el compte de l'Héctor). «Facturar» un pressupost d'honoraris el demana amb una pregunta. Qui ja el té no veu res de nou.
+  - Mòbil: a l'acord del client (quota), el mes de «Es factura des de» sortia 3 px per la dreta: dues columnes que es poden estrènyer i el mes
+    a tota l'amplada (`theme-v878651.css`).
+  - Repàs de proves de la nit (d'una en una, sobre una còpia de la V87.650 a `D:/aco-tmp/wtnit` i després a la carpeta principal): cap error
+    de l'app a part del mes de l'acord. Proves posades al dia perquè s'havien quedat enrere de canvis aprovats: `clientsvirtuals` (Notes i Actes,
+    V87.571; «Més» al mòbil, V87.484; targetes plegables d'Honoraris, V87.606), `v431test` (desplegable «El meu encàrrec» a l'ordinador, V87.534;
+    «Tècnic amb gestió», V87.607; xifres amb decimals), `v434test`, `obratest` (Notes i Actes), `menustest` (pressupost a pantalla sencera,
+    V87.549, i «⋯» / «Afegir», V87.509), `pressuposttest` (nom i número a «Opcions», V87.624; avisos dins, V87.549), `v606test` (Ajustos en
+    grups, V87.637), `v646test` (qualsevol versió ≥ 646), `dadestest` (esperar les dades després de recarregar).
+  - Proves: `v431test` 24/24 i `v434test` 18/18 (amb el NIF i el mes de l'acord al mòbil), `clientsvirtuals` 32/32 (factura d'honoraris amb el
+    NIF demanat), `pressuposttest` 27/27, `menustest` 48/48, `obratest` 34/34, `v600` 5/5, `v602` 10/10, `v640` 23/23, `v646` 25/25, `v606`
+    12/12, `dadestest` 8/8, `navtest` 32/32, `contrasenyestest` 34/34; la resta del repàs de la nit (v601–v650, núvol, sincronització, fitxers,
+    expedients, agents, notes, ＋) ja era en verd.
