@@ -4822,3 +4822,30 @@
     NIF demanat), `pressuposttest` 27/27, `menustest` 48/48, `obratest` 34/34, `v600` 5/5, `v602` 10/10, `v640` 23/23, `v646` 25/25, `v606`
     12/12, `dadestest` 8/8, `navtest` 32/32, `contrasenyestest` 34/34; la resta del repàs de la nit (v601–v650, núvol, sincronització, fitxers,
     expedients, agents, notes, ＋) ja era en verd.
+  - Repàs del matí del 20/11/2026 (sense canvis a l'app): les 80 proves de les versions 500–599 (més `docmobiltest`, `enviar407test`,
+    `pdfpressuposttest`), d'una en una. 63 en verd i 17 que s'havien quedat enrere, ara posades al dia i en verd: `v590` (respon la pregunta
+    del NIF de la V87.651, sense la qual la prova es penjava), `v571` («Llistat» al costat de «Nova nota/acta»), `v562` i `v531` (número
+    `P2026_0001` sense `_V01`, V87.601), `v536` (Inici de la V87.538: targetes Avisos · Feines, fins a 6 obres, sense rajoles a l'ordinador),
+    `v530` (sense barra fixa als Honoraris, V87.606), `v529` (avís sota el nom a Caixa i bancs, V87.591), `v527` i `v502` (Notes i Actes,
+    V87.571), `v512` (demo-gestio: Expedients i la Casa unifamiliar, V87.605/607), `v511` i `v506` (xifres «10,00», V87.584), `v509` («⋯» al
+    costat dels botons), `v508` (memòria cau de Vite del repàs), `v507` («Opcions» a la barra de fases, V87.624), `v501` (les dates s'ordenaven
+    com a text) i `v528` (en recarregar, Inici: V87.635). Pregunta per a l'Héctor: a Despeses de l'obra hi ha dos «Opcions» (el del pressupost,
+    a la barra de fases, i el de les despeses).
+- **V87.652 · Perfil «Administrador de finques»** (l'Héctor, 20/11/2026, després de la gestoria: el contacte de la gestoria també és
+  administrador de finques i hi ha visita concertada; «Fem el perfil administrador i la resta de preus ho valorem més tard»; abast: «la part de
+  gestió de l'obra, pressupostos i seguiment, sí»; juntes i comptabilitat de la comunitat «de moment ni pensar-ho»; llista de pantalles
+  aprovada amb un canvi: «El temps no els hi cal»). Document «Perfils i paquets de l'app» (Claude Docs i `docs/Perfils i paquets 2026-11-20.pdf`).
+  - Perfil nou `finques` a `PERFILS878326` (mòdul `finques`), a la benvinguda i a Ajustos. `esFinques878652()`, `etClient878652()`.
+  - Menú (ordinador i «Més» del mòbil): Inici, Contactes, Obres, Agenda i Ajustos; sense Hores, Facturació, Despeses, Caixa i bancs, Rendiment,
+    Empresa ni Pressupostos. Inici: Obres, Agenda, Contactes («comunitats i industrials») i Ajustos (es pot afegir «Pendent»). Barra de baix:
+    Inici, Nota, Foto, Acta (sense Despesa ni Hores).
+  - Dins de l'obra (sempre «Gestió integral d'obra», com la constructora): Fitxa, Dia a dia (Notes, Actes, Agenda, Planning) i Pressupost i
+    certificacions (Pressupost, Industrials, Certificacions); sense Amidaments, Partes, Despeses, Hores, Facturació, Rendiment ni Honoraris
+    (`NO_FINQUES878652`). Pressupost i certificacions sense l'avís del Mòdul 2. Les certificacions, sense «Fer factura» ni «Proforma».
+  - «Comunitat» en lloc de «Client»: obra nova («Comunitat», «+ Comunitat nova…», «Nom de la comunitat», sense tipus de feina ni
+    «Promotor / client final»; el contacte nou es desa com a «Comunitat de propietaris»), Resum, Dades de l'obra i el grup «Comunitats» de
+    Contactes. A la capçalera de l'obra no surt el tipus de feina.
+  - No hi va (encara): convidat gratuït a una obra, paquets per compte, juntes, comptabilitat de la comunitat.
+  - Prova nova `v652test.mjs` (23/23): compte buit amb el perfil nou; menú, Inici, obra nova amb la comunitat, pestanyes, Resum, pressupost de
+    la constructora llegit d'un PDF, dues ofertes i la millor, certificació sense factura, acta, Contactes, recarregar; mòbil (barra, Inici,
+    «Acta» des de la barra dins de l'obra, res surt de la pantalla); la constructora igual.

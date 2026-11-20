@@ -6349,4 +6349,15 @@ export default {
   "El teu NIF / CIF": "Tu NIF / CIF",
   "Cal el teu NIF / CIF per fer la factura:": "Hace falta tu NIF / CIF para hacer la factura:",
   "Sense el teu NIF / CIF no es pot fer la factura.": "Sin tu NIF / CIF no se puede hacer la factura.",
+  // V87.652 · Administrador de finques
+  "Administrador de finques": "Administrador de fincas",
+  "Obres de les comunitats: ofertes, pressupost, certificacions i seguiment.": "Obras de las comunidades: ofertas, presupuesto, certificaciones y seguimiento.",
+  "Comunitat": "Comunidad",
+  "Comunitats": "Comunidades",
+  "comunitats i industrials": "comunidades e industriales",
+  "+ Comunitat nova…": "+ Comunidad nueva…",
+  "Nom de la comunitat": "Nombre de la comunidad",
+  "Ex. Comunitat de propietaris Major 12": "Ej. Comunidad de propietarios Major 12",
+  "Ex. Rehabilitació de la façana": "Ej. Rehabilitación de la fachada",
+  "Dades de la comunitat nova": "Datos de la comunidad nueva",
 };

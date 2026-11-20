@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.651";
+const APP_VERSION878264="87.652";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -2339,7 +2339,7 @@ function ExpedientSectionSelect878238({tabs=[],value,onChange,compact=false}){
 function tabsForWork8737(obra,data={}){
   // V87.344 · a la constructora (l'Héctor: «quasi totes seran sempre gestió integral»), totes les obres tenen les pestanyes d'una
   // gestió integral (també una de «només pressupost»: hi ha despeses, certificacions…); el tipus només és una etiqueta
-  const tipus=esConstructora878344()?"Gestió integral d’obra":canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
+  const tipus=esConstructora878344()||esFinques878652()?"Gestió integral d’obra":canonicalWorkType8740(obra?.tipusTreball||obra?.tipologia||"");
   let tabs=[...(TAB_TEMPLATES8769[tipus]||TAB_TEMPLATES8769["Altres"])];
   const hasBudgetTrail878193=(data?.partides||[]).length||(data?.pressupostos||[]).length||(data?.documents||[]).some(d=>d?.docData?.type==="pressupostobra"||/pressupost ràpid|pressupost obra/i.test(String(d?.origen||"")));
   // Si l'encàrrec creix de pressupost a direcció/gestió integral, el pressupost original
@@ -2996,13 +2996,15 @@ function promotorObra878304(nom,nif,client={}){
 function QuickExpedientForm878254({clients=[],onSubmit,allAgents=[],fixedClientId=""}){
   const lastType=(()=>{try{return localStorage.getItem("aco_last_worktype_v878254")||""}catch{return ""}})();
   const lastClient=(()=>{try{return localStorage.getItem("aco_last_client_v878254")||""}catch{return ""}})();
-  const constr878344=esConstructora878344();
+  // V87.652 · l'administrador de finques: la comunitat en lloc del client, sense tipus de feina (sempre és l'obra) ni promotor a part
+  const fin652=esFinques878652();
+  const constr878344=esConstructora878344()||fin652;
   const all=constr878344?TIPUS_CONSTR878344:(typeof WORK_TYPES8737!=="undefined"?WORK_TYPES8737:[]);
   const groups=constr878344?[{label:"Obra",types:TIPUS_CONSTR878344}]:WORK_TYPE_GROUPS878254.map(g=>({...g,types:g.types.filter(t=>!all.length||all.includes(t))})).filter(g=>g.types.length);
   const extra=constr878344?[]:all.filter(t=>!WORK_TYPE_GROUPS878254.some(g=>g.types.includes(t)));
   // V87.590 · sense un client recordat, «+ Client nou…» (abans, el primer de la llista: l'obra podia quedar amb un client equivocat)
   const [client,setClient]=useState(()=>fixedClientId||((clients||[]).some(c=>c.id===lastClient)?lastClient:"__new__"));
-  const [tipus,setTipus]=useState(()=>all.includes(lastType)?lastType:"Gestió integral d’obra");
+  const [tipus,setTipus]=useState(()=>!fin652&&all.includes(lastType)?lastType:"Gestió integral d’obra");
   const [cp,setCp]=useState(""),[poblacio,setPoblacio]=useState(""),[adreca,setAdreca]=useState("");
   // V87.304 · Obra nova més ràpida (encàrrec de l'Héctor del 19/10/2026, p. ex. una cèdula): el client nou amb totes les seves
   // dades, «el promotor és el mateix client» marcat de sèrie i l'adreça de l'obra a la vista, amb «la mateixa que el client».
@@ -3026,15 +3028,15 @@ function QuickExpedientForm878254({clients=[],onSubmit,allAgents=[],fixedClientI
     <datalist id="agents-list-v878254">{agentNames.map(n=><option key={n} value={n}/>)}</datalist>
     <datalist id="promotors-list-v878304">{promotorNames.map(n=><option key={n} value={n}/>)}</datalist>
     <div className="quick-exp-grid-v878254">
-      {fixedClientId?<label><span>{i18nT("Client")}</span><input type="hidden" name="client" value={fixedClientId}/><b className="fixed">{(clients||[]).find(c=>c.id===fixedClientId)?.nom||i18nT("Client")}</b></label>
+      {fixedClientId?<label><span>{i18nT(etClient878652())}</span><input type="hidden" name="client" value={fixedClientId}/><b className="fixed">{(clients||[]).find(c=>c.id===fixedClientId)?.nom||i18nT(etClient878652())}</b></label>
         // V87.415 · el client es tria de Contactes (com a Dades de l'obra): un contacte que encara no és client omple el client nou
-        :<div className="quick-exp-client-v878415"><input type="hidden" name="client" value={client}/><TriaContacte878413 etiqueta={i18nT("Client")} valor={isNew?(net(nou.nom)?nou.nom:i18nT("+ Client nou…")):(selClient?.nom||"")} onTria={(d,x)=>{if(x?.c){setClient(x.c.id);return}setClient("__new__");const pa=partsAdreca878304(d);setNou({nom:d.nom||"",nif:net(d.nif),telefon:net(d.telefon)||net(d.mobil),email:net(d.email),adreca:net(pa.carrer),cp:net(pa.codiPostal),poblacio:net(pa.poblacio)})}} onNou={n=>{setClient("__new__");setNou(p=>({...p,nom:n||""}))}} nouText={i18nT("+ Client nou…")}/></div>}
-      {isNew&&<label><span>{i18nT("Nom complet o raó social del client")}</span><input name="clientNouNom" required autoFocus value={nou.nom} onChange={e=>chNou("nom",e.target.value)} placeholder={i18nT("Ex. Manuel Cebrián Vélez")}/></label>}
-      <label className={isNew?"":"wide"}><span>{i18nT("Nom de l’obra o treball")}</span><input name="nom" required autoFocus={!isNew} placeholder={isBudget?"Ex. Pressupost reforma bany Mundet":"Ex. Reforma interior Verbania"}/></label>
-      <label><span>{i18nT("Tipus de feina")}</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{groups.map(g=><optgroup key={g.label} label={g.label}>{g.types.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</optgroup>)}{extra.length>0&&<optgroup label={i18nT("Altres tipus")}>{extra.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</optgroup>}</select></label>
+        :<div className="quick-exp-client-v878415"><input type="hidden" name="client" value={client}/>{fin652&&<input type="hidden" name="clientNouTipus" value="Comunitat de propietaris"/>}<TriaContacte878413 etiqueta={i18nT(etClient878652())} valor={isNew?(net(nou.nom)?nou.nom:i18nT(fin652?"+ Comunitat nova…":"+ Client nou…")):(selClient?.nom||"")} onTria={(d,x)=>{if(x?.c){setClient(x.c.id);return}setClient("__new__");const pa=partsAdreca878304(d);setNou({nom:d.nom||"",nif:net(d.nif),telefon:net(d.telefon)||net(d.mobil),email:net(d.email),adreca:net(pa.carrer),cp:net(pa.codiPostal),poblacio:net(pa.poblacio)})}} onNou={n=>{setClient("__new__");setNou(p=>({...p,nom:n||""}))}} nouText={i18nT("+ Client nou…")}/></div>}
+      {isNew&&<label><span>{i18nT(fin652?"Nom de la comunitat":"Nom complet o raó social del client")}</span><input name="clientNouNom" required autoFocus value={nou.nom} onChange={e=>chNou("nom",e.target.value)} placeholder={i18nT(fin652?"Ex. Comunitat de propietaris Major 12":"Ex. Manuel Cebrián Vélez")}/></label>}
+      <label className={isNew?"":"wide"}><span>{i18nT("Nom de l’obra o treball")}</span><input name="nom" required autoFocus={!isNew} placeholder={fin652?i18nT("Ex. Rehabilitació de la façana"):isBudget?"Ex. Pressupost reforma bany Mundet":"Ex. Reforma interior Verbania"}/></label>
+      {fin652?<input type="hidden" name="tipusTreball" value="Gestió integral d’obra"/>:<label><span>{i18nT("Tipus de feina")}</span><select name="tipusTreball" value={tipus} onChange={e=>setTipus(e.target.value)}>{groups.map(g=><optgroup key={g.label} label={g.label}>{g.types.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</optgroup>)}{extra.length>0&&<optgroup label={i18nT("Altres tipus")}>{extra.map(t=><option key={t} value={t}>{i18nT(t)}</option>)}</optgroup>}</select></label>}
       {tipus==="Altres"&&<label className="wide"><span>{i18nT("Quina feina és?")}</span><input name="tipusTreballAltres" placeholder={i18nT("Defineix el tipus de feina")}/></label>}
     </div>
-    {isNew&&<fieldset className="quick-exp-box-v878304"><legend>{i18nT("Dades del client nou")} <em>{i18nT("les que tinguis ara")}</em></legend><div className="quick-exp-grid-v878254">
+    {isNew&&<fieldset className="quick-exp-box-v878304"><legend>{i18nT(fin652?"Dades de la comunitat nova":"Dades del client nou")} <em>{i18nT("les que tinguis ara")}</em></legend><div className="quick-exp-grid-v878254">
       <label><span>{i18nT("NIF / DNI")}</span><input name="clientNouNif" value={nou.nif} onChange={e=>chNou("nif",e.target.value)}/></label>
       <label><span>{i18nT("Telèfon")}</span><input name="clientNouTelefon" type="tel" value={nou.telefon} onChange={e=>chNou("telefon",e.target.value)}/></label>
       <label><span>{i18nT("Email")}</span><input name="clientNouEmail" type="email" value={nou.email} onChange={e=>chNou("email",e.target.value)}/></label>
@@ -3042,13 +3044,13 @@ function QuickExpedientForm878254({clients=[],onSubmit,allAgents=[],fixedClientI
       <label><span>{i18nT("Codi postal")}</span><input name="clientNouCodiPostal" list="cp-list-v8773" inputMode="numeric" value={nou.cp} onChange={e=>chNou("cp",e.target.value)} placeholder="17230"/></label>
       <label><span>{i18nT("Població")}</span><input name="clientNouPoblacio" list="poblacio-list-v8773" value={nou.poblacio} onChange={e=>chNou("poblacio",e.target.value)} placeholder={i18nT("Palamós")}/></label>
     </div></fieldset>}
-    <fieldset className="quick-exp-box-v878304"><legend>{i18nT("Promotor / client final")}</legend>
+    {!fin652&&<fieldset className="quick-exp-box-v878304"><legend>{i18nT("Promotor / client final")}</legend>
       <label className="quick-exp-check-v878304"><input type="checkbox" checked={promClient} onChange={e=>setPromClient(e.target.checked)}/><span>{i18nT("El promotor és el mateix client")}</span></label>
       {!promClient&&<div className="quick-exp-grid-v878254">
         <label className="wide"><span>{i18nT("Nom complet o raó social del promotor")}</span><input name="propietat" list="promotors-list-v878304" required placeholder={i18nT("Ex. CP Molí de Vent II")}/></label>
         <label><span>{i18nT("NIF / DNI del promotor")}</span><input name="nifPropietat"/></label>
       </div>}
-    </fieldset>
+    </fieldset>}
     <fieldset className="quick-exp-box-v878304"><legend>{i18nT("Adreça de l’obra")} <em>{i18nT("opcional")}</em></legend>
       {adrecaClient.adreca&&<button type="button" className="secondary quick-exp-copy-v878304" onClick={copiaAdreca}>{i18nT("La mateixa adreça que el client")}</button>}
       <div className="quick-exp-grid-v878254">
@@ -7044,7 +7046,9 @@ function calcHours(a,b){let [ah,am]=String(a).split(":").map(Number),[bh,bm]=Str
 if(!authOk8778)return <LoginScreen8778 onLogin={(u)=>setAuthUser8779(u)}/>;
 if(typeof window!=="undefined"&&window.__acoEmpresa&&!empresa878259)return <EmpresaSetup878259 onDone={()=>setEmpresa878259(empresaInfo878259())}/>;
 PERFIL878304=empresa878259?.perfil||"";
-return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><MarcaApp878351 nom={empresa878259?.nom||""}/><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}<MB a={screen==="Traça"} i={<Clock/>} l={t(etHores878515())} on={()=>nav("Traça")}/>{!esTreballador878326()&&<>{menuPresObra878606()&&<MB a={screen==="Pressupostos obra"} i={<ClipboardList/>} l={t(etPresObra878562())} on={()=>nav("Pressupostos obra")}/>}<MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/><MB a={screen==="Bancs"} i={<Wallet/>} l={t("Caixa i bancs")} on={()=>nav("Bancs")}/>{ambEmpresa878338()&&<MB a={screen==="Rendiment empresa"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment empresa")}/>}{!ambEmpresa878338()&&teModul878326("tecnic")&&<MB a={screen==="Rendiment tecnic"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment tecnic")}/>}</>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{menuEmpresa878607()&&<MB a={screen==="Empresa"} i={<Briefcase/>} l={t("Empresa")} on={()=>nav("Empresa")}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria de preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main">{iniciRajoles878508()&&!["Inici","Obra","Fitxa client"].includes(screen)&&<button type="button" className="torna-inici-v878495 pc-v878495" onClick={()=>nav(tornaA878562(screen)[0])}><ChevronLeft size={20} aria-hidden="true"/> {t(tornaA878562(screen)[1])}</button>}<AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():screen==="Traça"?etHores878515():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav(tornaA878562(screen)[0])}} onMenu={()=>setMenuOpen(true)} icona={screen==="Obra"||screen==="Inici"?null:iconaPantalla878507(screen)}/>
+// V87.652 · a l'administrador de finques, el grup «Promotors» de Contactes són les comunitats
+GRUPS_CONTACTE878315[0][1]=PERFIL878304==="finques"?"Comunitats":"Promotors";
+return <><div className="user-global-badge-v8782"><span>{currentAccount878233.displayName||"USUARI ACTIU"}</span><b>{authUser8779}</b></div><div className={`app-shell ${collapsed?"nav-collapsed":""}`}>{menuOpen&&<div className="overlay" onClick={()=>setMenuOpen(false)}/>}<aside className={`sidebar ${menuOpen?"open":""}`}><div className="sidebar-head"><MarcaApp878351 nom={empresa878259?.nom||""}/><div className="active-user-v8780">{t("Usuari:")} <b>{empresa878259?.nom||window.__acoEmpresa?.username||authUser8779}</b></div><button className="logout-mini-v8778" title={t("Sortir")} onClick={()=>{if(window.__acoEmpresa&&window.__acoCloud){window.__acoCloud.logout();return}sessionStorage.removeItem("aco_current_user8779");setClients([]);setObres([]);setOdata({});setPartidaLibrary([]);setAuthUser8779("")}}>{t("Sortir")}</button><button className="collapse-btn" onClick={()=>setCollapsed(!collapsed)}><Menu size={20}/></button><button className="close-menu" onClick={()=>setMenuOpen(false)}><X/></button></div><nav className="side-nav"><MB a={screen==="Inici"} i={<Building2/>} l={t("Inici")} on={()=>nav("Inici")}/>{currentAccount878233.role==="admin"&&!esTreballador878326()&&<><MB a={screen==="Clients"||screen==="Fitxa client"||screen==="Agents"} i={<Users/>} l={t("Contactes")} on={()=>nav("Clients")}/></>}<MB a={screen==="Treballs / Expedients"||screen==="Obra"} i={<FolderOpen/>} l={t(etObres878304())} on={()=>nav("Treballs / Expedients")}/>{currentAccount878233.role==="admin"&&<>{teModul878326("tecnic")&&<MB a={screen==="Pressupostos"} i={<ClipboardList/>} l={t("Pressupostos")} on={()=>nav("Pressupostos")}/>}{!esFinques878652()&&<MB a={screen==="Traça"} i={<Clock/>} l={t(etHores878515())} on={()=>nav("Traça")}/>}{!esTreballador878326()&&<>{menuPresObra878606()&&<MB a={screen==="Pressupostos obra"} i={<ClipboardList/>} l={t(etPresObra878562())} on={()=>nav("Pressupostos obra")}/>}{!esFinques878652()&&<><MB a={screen==="Factures"} i={<ReceiptText/>} l={t("Facturació")} on={()=>nav("Factures")}/><MB a={screen==="Albarans"} i={<Camera/>} l={t("Despeses")} on={()=>nav("Albarans")}/><MB a={screen==="Bancs"} i={<Wallet/>} l={t("Caixa i bancs")} on={()=>nav("Bancs")}/></>}{ambEmpresa878338()&&<MB a={screen==="Rendiment empresa"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment empresa")}/>}{!ambEmpresa878338()&&teModul878326("tecnic")&&<MB a={screen==="Rendiment tecnic"} i={<TrendingUp/>} l={t("Rendiment")} on={()=>nav("Rendiment tecnic")}/>}</>}<MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/>{menuEmpresa878607()&&<MB a={screen==="Empresa"} i={<Briefcase/>} l={t("Empresa")} on={()=>nav("Empresa")}/>}</>}{currentAccount878233.role==="client"&&<><MB a={screen==="Llibreria"} i={<BookOpen/>} l={t("Llibreria de preus")} on={()=>nav("Llibreria")}/><MB a={screen==="Rendiments"} i={<ReceiptText/>} l={t("Rendiments")} on={()=>nav("Rendiments")}/><MB a={screen==="Agenda"} i={<CalendarDays/>} l={t("Agenda")} on={()=>nav("Agenda")}/></>}<MB a={screen==="Configuració"} i={<Settings/>} l={t("Ajustos")} on={()=>nav("Configuració")}/><div className="nav-version-v878264">{t("Versió")} V{APP_VERSION878264}</div></nav></aside><main className="main">{iniciRajoles878508()&&!["Inici","Obra","Fitxa client"].includes(screen)&&<button type="button" className="torna-inici-v878495 pc-v878495" onClick={()=>nav(tornaA878562(screen)[0])}><ChevronLeft size={20} aria-hidden="true"/> {t(tornaA878562(screen)[1])}</button>}<AppHead878268 title={screen==="Obra"?((obres.find(o=>o.id===obraId)||{}).nom||t("Obra")):t((screen==="Treballs / Expedients"?etObres878304():screen==="Traça"?etHores878515():SCREEN_TITLE878268[screen])||screen)} onBack={screen==="Inici"?null:()=>{if(screen==="Obra")nav("Treballs / Expedients");else if(screen==="Fitxa client")nav("Clients");else nav(tornaA878562(screen)[0])}} onMenu={()=>setMenuOpen(true)} icona={screen==="Obra"||screen==="Inici"?null:iconaPantalla878507(screen)}/>
 
 {screen==="Inici"&&<Inici obreMenu={()=>setMenuOpen(true)} obrirPaquet={(pk,st="")=>{setOs("");setOc("");setOy("");setOt("");setOst(st);setOpk(pk);nav("Treballs / Expedients")}} clients={viewClients878233} setClients={setClients} obres={viewObres878233} setObres={setObres} odata={viewOdata878233} setOdata={setOdata} events={[...Object.values(viewOdata878233).flatMap(d=>d.events||[])]} setScreen={nav} openObra={openObra} openObraTab={openObraTab} newObra={currentAccount878233.canCreateProject?()=>setModal("obra"):undefined}/>}
 {(screen==="Clients"||screen==="Agents")&&<SafeRenderBoundary878108><Contactes878315 clients={clients} setClients={setClients} obres={obres} setObres={setObres} odata={odata} setOdata={setOdata} openClient={openClient}/></SafeRenderBoundary878108>}
@@ -7324,10 +7328,19 @@ const PERFILS878326={
   // factures de l'obra, amb la sèrie de la constructora (com el compte de l'Héctor). Sense el mòdul d'empresa (Control horari, despeses de
   // totes les obres…); «Empresa» es queda per als despatxos amb treballadors. La clau continua sent «complet» (comptes que ja el tenen).
   complet:{nom:"Tècnic amb gestió",desc:"Project manager: el del tècnic i, a més, la gestió de les obres que porta per una constructora (pressupost, certificacions, facturació i despeses de cada obra).",moduls:{tecnic:true,obra:true}},
+  // V87.652 · Administrador de finques (l'Héctor, 20/11/2026: «la part de gestió de l'obra, pressupostos i seguiment, sí»; les juntes i la
+  // comptabilitat de la comunitat, «de moment ni pensar-ho»). Obres de les comunitats: ofertes, pressupost, certificacions, actes i documents;
+  // sense hores, despeses, facturació, caixa ni rendiment. Els seus clients són les comunitats.
+  finques:{nom:"Administrador de finques",desc:"Obres de les comunitats: ofertes, pressupost, certificacions i seguiment.",moduls:{finques:true}},
   treballador:{nom:"Treballador d’empresa",desc:"Les obres on treballa: notes i fotos, tasques, planning, les seves hores i la foto de les despeses.",moduls:{treballador:true}}};
 function moduls878326(){const p=PERFILS878326[PERFIL878304];return p?p.moduls:null}
 function teModul878326(k){const m=moduls878326();return m?!!m[k]:true}
 function esTreballador878326(){return PERFIL878304==="treballador"}
+function esFinques878652(){return PERFIL878304==="finques"}
+// V87.652 · a l'administrador de finques, el client de l'obra és la comunitat
+function etClient878652(){return esFinques878652()?"Comunitat":"Client"}
+// pestanyes de l'obra que l'administrador de finques no fa servir (no fa amidaments, partes, hores, despeses ni factures de l'obra)
+const NO_FINQUES878652=["Amidaments obra","Facturació","Seguiment econòmic","Partes obra","Albarans","Gestió temps","Honoraris","Factures","Pressupostos","Rendiment","Rendiments"];
 // Els tècnics (i l'Héctor) parlen d'expedients; la resta, d'obres
 // V87.607 · el menú «Empresa» (dades, treballadors, industrials): constructora i tècnic amb gestió
 function menuEmpresa878607(){return !!PERFIL878304&&!esTreballador878326()&&(teModul878326("empresa")||PERFIL878304==="complet")}
@@ -7338,6 +7351,7 @@ function perfilDemo878326(u){const n=String(u||"").toLowerCase();return /tecnic/
 function tabsPerfil878326(tabs){
   const m=moduls878326();if(!m)return tabs;
   if(m.treballador)return tabs.filter(x=>["Resum","Documents","Plànols","Agenda / Avisos","Notes","Tasques","Gantt","Partes obra","Albarans","Gestió temps"].includes(x));
+  if(m.finques)return tabs.filter(x=>!NO_FINQUES878652.includes(x));
   return tabs.filter(x=>{
     // V87.608 · el tècnic també fa de project manager: comparar ofertes abans d'adjudicar i controlar el pressupost i les certificacions
     if(["Amidaments obra","Pressupost","Pressupost ràpid","Industrials","Certificacions","Gantt"].includes(x))return !!(m.obra||m.tecnic);
@@ -7387,10 +7401,10 @@ function opcionsBarra878366(role="admin"){if(role!=="admin")return [];const treb
   ...(!treb?[["Clients",<Users/>,"Contactes"]]:[]),
   ["Treballs / Expedients",<FolderOpen/>,etObres878304()],
   ...(teModul878326("tecnic")?[["Pressupostos",<ClipboardList/>,"Pressupostos"]]:[]),
-  ["Traça",<Clock/>,etHores878515()],
+  ...(!esFinques878652()?[["Traça",<Clock/>,etHores878515()]]:[]),
   ...(!treb&&menuPresObra878606()?[["Pressupostos obra",<ClipboardList/>,etPresObra878562()]]:[]),
-  ...(!treb?[["Factures",<ReceiptText/>,"Facturació"],["Albarans",<Camera/>,"Despeses"]]:[]),
-  ...(!treb?[["Bancs",<Wallet/>,"Caixa i bancs"]]:[]),
+  ...(!treb&&!esFinques878652()?[["Factures",<ReceiptText/>,"Facturació"],["Albarans",<Camera/>,"Despeses"]]:[]),
+  ...(!treb&&!esFinques878652()?[["Bancs",<Wallet/>,"Caixa i bancs"]]:[]),
   ...(!treb&&ambEmpresa878338()?[["Rendiment empresa",<TrendingUp/>,"Rendiment"]]:[]),
   ...(!treb&&!ambEmpresa878338()&&teModul878326("tecnic")?[["Rendiment tecnic",<TrendingUp/>,"Rendiment"]]:[]),
   ["Agenda",<CalendarDays/>,"Agenda"],
@@ -7461,15 +7475,15 @@ function iniciRajoles878508(role="admin",perfil=PERFIL878304){if(role!=="admin"|
 // les accions de la barra de baix (es fan sense sortir de la pantalla; fora d'una obra, primer es tria l'obra o l'expedient)
 function accionsBarra878508(role="admin",perfil=PERFIL878304){const ob=modeObra878484(role,perfil);return [
   ...(teModul878326("obra")?[["a:parte",<ClipboardCheck/>,"Parte"]]:[]),
-  ["a:despesa",<Camera/>,"Despesa"],["a:nota",<NotebookPen/>,"Nota"],["a:foto",<ImagePlus/>,"Foto"],["a:acta",<ClipboardList/>,"Acta"],
+  ...(!esFinques878652()?[["a:despesa",<Camera/>,"Despesa"]]:[]),["a:nota",<NotebookPen/>,"Nota"],["a:foto",<ImagePlus/>,"Foto"],["a:acta",<ClipboardList/>,"Acta"],
   ...(!senseHoresPropies878342()?[["a:hores",<Clock/>,"Apuntar hores"]]:[]),["a:veu",<Mic/>,"Nota de veu"]].filter(Boolean)}
-function barraDefecte878508(role,perfil){return modeObra878484(role,perfil)&&perfil!=="complet"?["Inici","a:parte","a:despesa","a:nota"]:["Inici","a:nota","a:despesa","a:hores"]}
+function barraDefecte878508(role,perfil){if(perfil==="finques")return ["Inici","a:nota","a:foto","a:acta"];return modeObra878484(role,perfil)&&perfil!=="complet"?["Inici","a:parte","a:despesa","a:nota"]:["Inici","a:nota","a:despesa","a:hores"]}
 function barra878508(role,perfil){const k=lsJson8779("aco_barra_v878508",null);if(Array.isArray(k)&&k.length)return k;
   const v=lsJson8779("aco_barra_v878366",null);if(!modeObra878484(role,perfil)&&Array.isArray(v)&&v.length)return v;return barraDefecte878508(role,perfil)}
 // les rajoles de l'Inici: cada usuari les tria i les ordena a Ajustos › Accessos ràpids
 const RAJOLES878508=["pend","obres","agenda","temps","cont","enc","hores","desp","preso","fact","bancs","pres","rend","emp","ajust","mes"];
-function rajolesDisp878508(){const tec=teModul878326("tecnic");return RAJOLES878508.filter(k=>k==="bancs"?true:k==="enc"||k==="pres"?tec:k==="preso"?menuPresObra878606():k==="preus"?false:k==="emp"?menuEmpresa878607():k==="rend"?(ambEmpresa878338()||tec):true)}
-function iniciDefecte878508(){if(PERFIL878304==="complet")return ["pend","obres","enc","agenda","cont","pres","hores","fact","desp","bancs","temps"];return modeObra878484()?["pend","obres","agenda","cont","hores","desp","preso","fact","bancs","temps"]:["pend","obres","enc","agenda","cont","hores","fact","bancs","temps"]}
+function rajolesDisp878508(){if(esFinques878652())return RAJOLES878508.filter(k=>["pend","obres","agenda","cont","ajust","mes"].includes(k));const tec=teModul878326("tecnic");return RAJOLES878508.filter(k=>k==="bancs"?true:k==="enc"||k==="pres"?tec:k==="preso"?menuPresObra878606():k==="preus"?false:k==="emp"?menuEmpresa878607():k==="rend"?(ambEmpresa878338()||tec):true)}
+function iniciDefecte878508(){if(PERFIL878304==="finques")return ["obres","agenda","cont","ajust"];if(PERFIL878304==="complet")return ["pend","obres","enc","agenda","cont","pres","hores","fact","desp","bancs","temps"];return modeObra878484()?["pend","obres","agenda","cont","hores","desp","preso","fact","bancs","temps"]:["pend","obres","enc","agenda","cont","hores","fact","bancs","temps"]}
 function iniciTriat878508(){const k=lsJson8779("aco_inici_v878508",null);const d=rajolesDisp878508();const r=(Array.isArray(k)&&k.length?k:iniciDefecte878508()).filter(x=>d.includes(x));return r.length?r:iniciDefecte878508().filter(x=>d.includes(x))}
 function infoRajola878508(k){const m={pend:[ListChecks,"Pendent"],obres:[diuObra878326()?HardHat:FolderOpen,diuObra878326()?"Obres":"Expedients"],agenda:[CalendarDays,"Agenda"],cont:[Users,"Contactes"],
   enc:[ClipboardCheck,"Encàrrecs"],hores:[Clock,etHores878515()],desp:[Camera,"Despeses"],fact:[ReceiptText,"Facturació"],bancs:[Wallet,"Caixa i bancs"],pres:[ClipboardList,"Pressupostos"],preso:[ClipboardList,etPresObra878562()],rend:[TrendingUp,"Rendiment"],
@@ -7492,7 +7506,7 @@ function BottomNav878268({screen,role,perfil,nav,onMore,onAccio}){
   if(role==="admin"&&perfil==="treballador")items.push(["Traça",<Clock/>,etHores878515()]);
   if(role==="admin"&&perfil==="constructor")items.push(["Albarans",<Camera/>,"Despeses"]);
   items.push(["Agenda",<CalendarDays/>,"Agenda"]);
-  if(role==="admin"&&perfil!=="constructor"&&perfil!=="treballador")items.push(["Traça",<Clock/>,etHores878515()]);
+  if(role==="admin"&&perfil!=="constructor"&&perfil!=="treballador"&&perfil!=="finques")items.push(["Traça",<Clock/>,etHores878515()]);
   const tri878366=role==="admin"?barraTriada878366():null;
   if(tri878366){const ops=opcionsBarra878366(role);const v=tri878366.map(k=>ops.find(o=>o[0]===k)).filter(Boolean).slice(0,4);if(v.length)items=v}
   const on=k=>k===screen||(k==="Treballs / Expedients"&&screen==="Obra")||(k==="Clients"&&(screen==="Fitxa client"||screen==="Agents"));
@@ -8556,7 +8570,7 @@ function ContacteObra878304({obra={},client={}}){
   const fila=(lbl,nom,tl,ml,cls="")=><div className={`fila ${cls}`}><span className="lbl">{lbl}</span><b>{nom}</b>{(tl||ml)?<span className="dades">{tl}{tl&&ml?" · ":""}{ml}</span>:<span className="dades buit">{t("Sense telèfon ni correu")}</span>}</div>;
   return <div className="contacte-obra-v878304">
     {adr&&<p className="adr">{adr}</p>}
-    {fila(t("Client"),client?.nom||t("Pendent"),tel(client?.telefon),mail(client?.email))}
+    {fila(t(etClient878652()),client?.nom||t("Pendent"),tel(client?.telefon),mail(client?.email))}
     {prom?fila(t("Promotor / propietat"),prom,tel(obra.telefonPropietat),mail(obra.emailPropietat),"prom")
       :null}
   </div>;
@@ -9582,7 +9596,7 @@ function IniciMenu878484({obres=[],odata={},clients=[],tasks=[],properes=[],setS
       const DEF={pend:{ic:ListChecks,tit:"Pendent",sub:"avisos i feines",num:nPend||t("Res"),cls:nPend?"avis":"",on:()=>setObert(o=>o==="pend"?"":"pend")},
         obres:{ic:ob?HardHat:FolderOpen,tit:ob?"Obres":"Expedients",sub:ob?"obertes":"oberts",num:oberts,on:()=>obrirPaquet?obrirPaquet("oberts"):setScreen("Treballs / Expedients")},
         agenda:{ic:CalendarDays,tit:"Agenda",sub:citesAvui?"cites avui":"avui",num:citesAvui||t("Cap"),on:()=>setScreen("Agenda")},
-        cont:{ic:Users,tit:"Contactes",sub:ob?"clients i industrials":"clients i agents",on:()=>setScreen("Clients")},
+        cont:{ic:Users,tit:"Contactes",sub:esFinques878652()?"comunitats i industrials":ob?"clients i industrials":"clients i agents",on:()=>setScreen("Clients")},
         enc:{ic:ClipboardCheck,tit:"Encàrrecs",sub:"cèdules, CEE, ITE…",num:nEnc||t("Cap"),on:()=>setObert("enc")},
         hores:{ic:Clock,tit:etHores878515(),sub:empresa?"personal, fitxatge i calendari":"registre",on:()=>setScreen("Traça")},
         desp:{ic:Camera,tit:"Despeses",sub:emp?"albarans i factures":"les meves despeses",on:()=>setScreen("Albarans")},
@@ -11196,7 +11210,7 @@ return <Modal title={i18nT("Modificar fitxa de l’obra")} close={close}>
 
 
 function hasModule2Access8747(){
-  if(typeof window!=="undefined"&&window.__acoEmpresa){const m=moduls878326();if(m)return !!(m.obra||m.tecnic)}
+  if(typeof window!=="undefined"&&window.__acoEmpresa){const m=moduls878326();if(m)return !!(m.obra||m.tecnic||m.finques)}
   try{
     const cfg=JSON.parse(lsGet8779("aco_config_v60")||"{}");
     if(cfg.modul2Actiu!==undefined)return !!cfg.modul2Actiu;
@@ -11811,7 +11825,7 @@ function FitxaDadesTab8769({obra,client,clients=[],setClients,data={},save,allAg
   // V87.441 · als encàrrecs tècnics no cal el tema agents (l'Héctor, 30/10/2026): Obra, Client, Promotor i, si l'encàrrec el fa una agència, Representant
   const pur878441=esTecnicPur878332(form)&&teModul878326("tecnic");
   const simple878304=isSimpleWorkType878151(form.tipusTreball||form.tipologia)||pur878441;
-  const TABS878304=[["obra",t("Obra")],["client",t("Client")],["promotor",t("Promotor")],...(pur878441?[["representant",t("Representant")]]:[]),["constructor",t("Constructora")],["do",t("Direcció d’obra")],["deo",t("Direcció d’execució")],["css",t("Coordinació S+S")],["industrials",t("Industrials")]];
+  const TABS878304=[["obra",t("Obra")],["client",t(etClient878652())],["promotor",t("Promotor")],...(pur878441?[["representant",t("Representant")]]:[]),["constructor",t("Constructora")],["do",t("Direcció d’obra")],["deo",t("Direcció d’execució")],["css",t("Coordinació S+S")],["industrials",t("Industrials")]];
   const ple878304=k=>k==="obra"?true:k==="client"?!!clientChoice:k==="promotor"?(promEsClient878304||!!netV878304(form.propietat)):k==="industrials"?inds878304.length>0:!!netV878304(rols878304[k]?.nom);
   const tabsVisibles878304=TABS878304.filter(([k])=>!(k==="constructor"&&propia878363)).filter(([k])=>!simple878304||totes878304||["obra","client","promotor","representant"].includes(k)||ple878304(k)||sub878304===k);
   const cos878363=(
@@ -14596,7 +14610,7 @@ function ObraBar878269({obra={},client={},tabs=[],active,setTab,estat,onEstat,re
   const base=codiCurt878270(obra),propE878347=expPropietari878347(obra);
   // V87.304 · si el promotor no és el client, el seu nom en negreta (encàrrec de l'Héctor: identificar bé l'obra)
   const prom878304=promotorDiferent878304(obra,client);
-  const info=<>{base}{propE878347?<span className="exp-prop-v878347"> ({propE878347})</span>:null}{client?.nom?` · ${client.nom}`:""}{prom878304&&<> · <b className="prom-v878304">{prom878304}</b></>}{" · "+t(moduleLabel8737(obra))}{obra?.refClient?<> · <span className="ref-client-v878314">{t("Núm. client")} {obra.refClient}</span></>:null}</>;
+  const info=<>{base}{propE878347?<span className="exp-prop-v878347"> ({propE878347})</span>:null}{client?.nom?` · ${client.nom}`:""}{prom878304&&<> · <b className="prom-v878304">{prom878304}</b></>}{esFinques878652()?"":" · "+t(moduleLabel8737(obra))}{obra?.refClient?<> · <span className="ref-client-v878314">{t("Núm. client")} {obra.refClient}</span></>:null}</>;
   const st=normalizeExpedientStatus878136(estat);
   return <>
     <div className="obra-bar-info-v878269">
@@ -19582,7 +19596,7 @@ const faCert878337=obraData&&cert?(obraData.facturesObra878297||[]).find(x=>x.ce
 const vfCert878337=obraData&&cert?(obraData.facturesVF878285||[]).find(x=>x.certId===cert.id&&x.estat!=="Anulada"):null;
 // V87.440 · «Fer factura» surt sempre (l'Héctor, 30/10/2026, a Verbania: «com passo la certificació a proforma o a factura directa? no hi ha
 // l'opció»): abans només si el client ja tenia la numeració activada. Sense numeració, la finestra demana la sèrie i la deixa activada.
-const faOk878440=esEmpresaFactura878337()||(!!client&&!obra?.compartida);
+const faOk878440=!esFinques878652()&&(esEmpresaFactura878337()||(!!client&&!obra?.compartida));
 const potFacturar878337=!clientMode&&!readOnly&&!!setObraData&&!!pfCert878337&&!faCert878337&&!vfCert878337&&pfCert878337.base>0.005&&faOk878440;
 const[ferFactura878337,setFerFactura878337]=useState(false);
 // V87.364 · una certificació amb factura no es pot tocar (abans el Σ en mode consulta obria l'edició i la deixava a 0)
@@ -19750,7 +19764,7 @@ function opcionsCert527(c){
   const potF=potFactDe878364(c),potDel=!!deleteCertificacio8721&&!readOnly&&!fa&&!vf&&!contrast878424;
   const teMes=(data.partides||[]).some(r=>(((r.certMesuresByNum||{})[String(n)])||[]).length>0);
   const env=!clientMode&&!!openEmail,sig=!clientMode&&!contrast878424&&!!obra?.id;
-  const proforma=!clientMode&&!contrast878424&&!!pf&&!fa;
+  const proforma=!clientMode&&!contrast878424&&!!pf&&!fa&&!esFinques878652();
   const tria=()=>{if(!sel)setSelected(c.id)};
   return <>
     <small className="amh-v878273">{i18nT("Veure i imprimir")}</small>
@@ -19774,7 +19788,7 @@ function opcionsCert527(c){
 // Enviar · Opcions.
 function botonsCap527(){
   const env=!clientMode&&!!openEmail,sig=!clientMode&&!contrast878424&&!!obra?.id&&!!cert;
-  const pf=!clientMode&&!contrast878424&&!!pfCert878337&&!faCert878337,fer=potFacturar878337&&!contrast878424;
+  const pf=!clientMode&&!contrast878424&&!!pfCert878337&&!faCert878337&&!esFinques878652(),fer=potFacturar878337&&!contrast878424;
   const del=!!deleteCertificacio8721&&!readOnly&&!faCert878337&&!vfCert878337&&!contrast878424&&!!cert;
   const bImp=<button type="button" className="secondary imprimir-v878426" onClick={()=>setImprimirC426(true)}><Printer size={16} aria-hidden="true"/> {i18nT("Imprimir")}</button>;
   const bEnv=env?<button type="button" className="secondary cert-enviar-v878337" onClick={()=>fesCert527("enviar")}><Mail size={16} aria-hidden="true"/> {i18nT("Enviar")}</button>:null;
@@ -20234,7 +20248,7 @@ return <div className={`stack ${readOnly?"client-readonly-cert-v878234":""}`}>{f
     {!editing&&<ActionMenu87213 className="accions-v878364" label={i18nT("Opcions")}>
       {!clientMode&&openEmail&&<button type="button" className="cert-enviar-v878337" onClick={()=>{if((!contrast878424&&obra?.id&&cert)||(!rec408&&hiHaDesc878586()))setEnviar440(true);else enviaCert878440()}}><Mail size={15} aria-hidden="true"/> {i18nT("Enviar")}</button>}
       {!clientMode&&!contrast878424&&obra?.id&&cert&&<button type="button" className="sigcert-btn-v878408" onClick={()=>setSigCert408(true)}><Signature size={15} aria-hidden="true"/> {sigs408.length?i18nT("Signatures amb certificat"):i18nT("Signar amb certificat…")}</button>}
-      {!clientMode&&!contrast878424&&pfCert878337&&!faCert878337&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData,client))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
+      {!clientMode&&!contrast878424&&pfCert878337&&!faCert878337&&!esFinques878652()&&<button type="button" className="cert-pf-v878440" onClick={()=>openDoc?.(docProforma878440(pfCert878337,obraData,client))}><FileText size={15} aria-hidden="true"/> {i18nT("Proforma")}</button>}
       {faCert878337?<button type="button" onClick={()=>openDoc?.(docFactura878337(faCert878337,pfCert878337,obraData))}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Veure la factura")}</button>
         :potFacturar878337&&!contrast878424&&<button type="button" className="cert-fer-v878337" onClick={()=>setFerFactura878337(true)}><ReceiptText size={15} aria-hidden="true"/> {i18nT("Fer factura")}</button>}
       {!readOnly&&!bloq878364&&!contrast878424&&<button type="button" onClick={()=>{setExtraOpen878125(true);setCertMode8711("emplenar")}}><Plus size={15} aria-hidden="true"/> {i18nT("Afegir feina")}</button>}
@@ -23587,7 +23601,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.651",
+    app_version:"87.652",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");

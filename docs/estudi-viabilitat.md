@@ -1,5 +1,43 @@
 # Estudi de viabilitat de l’app (18/10/2026)
 
+## Actualització 20/11/2026: preus amb la comptabilitat a part
+
+*L’Héctor (20/11/2026): «separem el paquet de la comptabilitat perquè hi ha empreses que tenen el seu propi programa».
+També al document de Claude Docs «Preguntes per a la gestoria» (annexos A i B), que l’Héctor porta a la gestoria el 20/11.
+Mana sobre els preus de sota i sobre els de l’estudi de mercat del 31/10 (29 / 69 / 89 €).*
+
+| Pla | Sense comptabilitat | Amb comptabilitat |
+|---|---|---|
+| Tècnic (1 usuari) | 29 € | 39 € |
+| Tècnic amb gestió (1 usuari) | 59 € | 79 € |
+| Constructora (2 d’oficina + 5 treballadors) | 69 € | 89 € |
+
+- **Paquet de comptabilitat:** factures amb VeriFactu i cobraments, Caixa i bancs, despeses generals de l’empresa i Paquet per a la
+  gestoria. Sense el paquet: certificacions i proformes; la factura, amb el programa de l’empresa. VeriFactu (2,90 €/NIF) només hi va
+  amb el paquet. **A l’app encara no es pot treure** (cal un interruptor per compte a Ajustos › Comptes del núvol).
+- Extres: usuari d’oficina 12 €/mes, cada 5 treballadors 15 €/mes. Anual = 10 mesos, amb l’alta inclosa; alta al mes 150 / 290 €.
+  Fundadors: els 20 primers, −30 % el primer any pagant l’any.
+- **Suposicions:** 30 % tècnic, 20 % tècnic amb gestió, 50 % constructora; 40 % amb comptabilitat; 60 % paga l’any → **56 € d’ingrés i
+  46 € nets per client i mes**. Fixes 300 €/mes. Per client: núvol 3 €, IA 1–7 €, VeriFactu 2,90 € (amb comptabilitat), cobrament
+  1,5 % + 0,25 €. Temps: ½ h de suport per client i mes + 10 h de millores, a 45 €/h.
+
+| Clients | Ingressos/mes | Despeses/mes | Et queda/mes | A l’any | Hores teves | Et surt l’hora a |
+|---|---|---|---|---|---|---|
+| 5 | 278 € | 349 € | −71 € | −854 € | 12,5 h | — |
+| 10 | 556 € | 399 € | 158 € | 1.892 € | 15 h | 11 €/h |
+| 20 | 1.112 € | 497 € | 615 € | 7.383 € | 20 h | 31 €/h |
+| 30 | 1.669 € | 596 € | 1.073 € | 12.875 € | 25 h | 43 €/h |
+| 50 | 2.781 € | 793 € | 1.988 € | 23.858 € | 35 h | 57 €/h |
+| 75 | 4.172 € | 1.039 € | 3.132 € | 37.587 € | 47,5 h | 66 €/h |
+| 100 | 5.562 € | 1.286 € | 4.276 € | 51.316 € | 60 h | 71 €/h |
+| 150 | 8.343 € | 1.779 € | 6.564 € | 78.774 € | 85 h | 77 €/h |
+
+- **Punt d’equilibri:** 7 clients (despeses); 13 amb ½ h de suport a 45 €/h; **33 perquè tot el teu temps (suport + 10 h) surti a 45 €/h**.
+- Cada client amb comptabilitat deixa uns 12 € nets més al mes (sense ningú: equilibri a 8 clients; tots: 6).
+- Per sobre d’uns 60 clients, més de 40 h de suport al mes: cal ajuda o que la guia i l’assistent d’IA en resolguin la major part.
+
+---
+
 *Actualització 18/10: preus apujats i viabilitat nova a [guia-comercial.md](guia-comercial.md) (39 / 45 / 69 / 129 / 149 €).*
 
 *Actualització 23/10: estudi per franges de clients (ingressos nets a l’any de 5 a 200 clients, preu de llista i de fundador, el temps de suport i l’hora que et surt) a [estudi-viabilitat-2026-10-23.pdf](estudi-viabilitat-2026-10-23.pdf). Amb 60 € al mes més de despeses fixes (gestoria, assegurança) i el núvol que creix amb els clients.*
