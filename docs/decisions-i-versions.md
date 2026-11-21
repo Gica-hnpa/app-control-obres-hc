@@ -4886,3 +4886,22 @@
   - Proves posades al dia: `perfils326test` 36/36 (4 perfils, paquets a Ajustos, demo-gestio com a Tècnic) i `v607test` 15/15 (demo-gestio: menú
     del tècnic sense Empresa, la casa sense la comptabilitat de l'obra però amb les factures desades, certificacions sense factura). També
     `i18ntest`, `v652test` 23/23 i `menustest` 48/48.
+- **V87.654 · Preus i marges per al tècnic amb «Direcció d'obra» i proves posades al dia després dels paquets** (repàs de les proves velles
+  després de la V87.653, 21/11/2026).
+  - El tècnic amb el paquet «Pressupost i certificacions» («Direcció d'obra») ja té Ajustos › «Preus i marges» i la «Llibreria de preus»
+    (`preusAjustos878654`): fa pressupostos d'obra i el paquet porta el banc de preus, però des de la V87.653 només la constructora els veia.
+    El tècnic sense el paquet no els té (no fa pressupostos d'obra).
+  - Proves posades al dia (21): el «Tècnic amb gestió» (demo-gestio) ja és el Tècnic amb «Direcció d'obra». Les que miraven la comptabilitat de
+    la casa unifamiliar (Despeses, Facturació, Rendiment amb hores tècniques i fases) la miren al compte de l'Héctor del Supabase de proves:
+    s'hi copien les obres d'exemple de demo-gestio (`aHector654`, `entraH654`) i es tria la pestanya del bloc que toca (`tabDe654`: al compte
+    de l'Héctor hi ha dues «Despeses», la de l'encàrrec i la de l'obra). Les que feien servir obres de la constructora amb demo-gestio passen a
+    demo-constructor.
+  - El tècnic té l'Inici de sempre i, si té feines vençudes, la finestra «Feina vençuda» (una per feina). Mentre és oberta, el núvol espera
+    (com amb qualsevol finestra): les proves que entren amb demo-gestio la tanquen sencera. No és cap error de l'app.
+  - Proves velles que ja fallaven per canvis d'abans (ara en verd): números amb dos decimals (V87.584: «6,00», «20,00»), el bloc «Econòmic»
+    (V87.485), Ajustos en 4 grups (V87.637), la data de venciment de les factures de proveïdor (V87.521) i l'etiqueta del pagament a la fila del
+    mòbil (V87.575), el desplegable d'«El meu encàrrec» a l'ordinador (Hores · Despeses · Factures), l'obra nova amb client, el codi de
+    les fases («P2026_0001 · Opció B») i els contactes dels exemples de la constructora (sense cap tècnic: v436 va a la direcció d'obra del tècnic).
+  - `v653test` (37/37) amb comprovacions noves: oriol sense «Direcció d'obra» no té «Preus i marges»; amb el paquet, sí, i «Obrir» porta a
+    la llibreria. Les 21 proves del repàs, en verd: neteja353, personal340, simple354, v365, v410, v414, v431, v436, v437, v438, v450, v459,
+    v461, v464, v605, v606, v608, v610, v614, v617 i clientsvirtuals (v461 falla de vegades en una tanda llarga per lentitud; sola, 26/26).

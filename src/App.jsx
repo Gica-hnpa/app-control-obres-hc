@@ -52,7 +52,7 @@ const copiaPdf878644=d=>d instanceof ArrayBuffer?new Uint8Array(d.slice(0)):Arra
 
 const APP_ACCOUNTS_KEY878233="aco_user_accounts_v878233";
 // V87.264 · número de versió visible al menú lateral i a Configuració (al mòbil ja no surt a la cantonada).
-const APP_VERSION878264="87.653";
+const APP_VERSION878264="87.654";
 const CLIENT_TAB_OPTIONS878233=["Resum","Documents","Actes","Fotografies","Pressupost ràpid","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments","Tasques"];
 const CLIENT_MODULE_TABS878235=["Resum","Documents","Actes","Fotografies","Pressupost obra","Certificacions obra","Facturació obra","Agenda / Avisos","Rendiments"];
 const CLIENT_MODULE_LABEL878235="Mòdul 2 · Portal de client";
@@ -7433,6 +7433,8 @@ function paqDespeses878653(){return !esFinques878652()&&(ambEmpresa878338()?(teP
 // les proformes i les factures de les certificacions: la constructora (i el compte de l'Héctor); ni l'administrador de finques ni el tècnic
 // (l'Héctor, 20/11/2026: el tècnic «normalment no porta facturació» de l'obra; ell només ho fa per a un client seu, amb el seu compte)
 function factObra878653(){return !esFinques878652()&&!(!!PERFIL878304&&teModul878326("tecnic")&&!teModul878326("obra"))}
+// V87.654 · el banc de preus i els marges (Ajustos › Preus i marges): la constructora i el tècnic amb «Direcció d’obra» (el paquet porta el banc de preus)
+function preusAjustos878654(){return teModul878326("obra")||teModul878326("tecnic")&&tePaquet878653("pressupost")}
 function paqRendiment878653(){return ambEmpresa878338()?tePaquet878653("control"):teModul878326("tecnic")&&tePaquet878653("hores")}
 // els encàrrecs del paquet «Encàrrecs tècnics» (la resta de feina tècnica és de la base)
 const ENCARRECS878653=["Certificat energètic","Cèdula d’habitabilitat","ITE / IEE / inspecció d’edifici","Amiant (localització i diagnosi)"];
@@ -17336,7 +17338,7 @@ function MargesAjustos878378(){
   useEffect(()=>{if(!window.__acoAjustosMarges878564)return;const id=setTimeout(()=>{window.__acoAjustosMarges878564=false;const d=document.querySelector('details.ajustos-bloc-v878366[data-k="marges"]');if(!d)return;{const g=d.parentElement?.closest("details.aj-g-v878637");if(g)g.open=true}d.open=true;
     const i=[...d.querySelectorAll("label")].find(l=>l.querySelector("span")?.textContent.trim()==="DGE")?.querySelector("input");(i||d).scrollIntoView({block:"center"});try{i?.focus({preventScroll:true});i?.select?.()}catch{}},300);return()=>clearTimeout(id)},[]);
   // el compte de l'Héctor no té «Preus» al menú: el banc de preus és aquí
-  return <>{!!PERFIL878304&&teModul878326("obra")&&!esTreballador878326()&&<div className="llib-ajustos-v878562"><span><BookOpen size={18} aria-hidden="true"/><b>{t("Llibreria de preus")}</b></span><button type="button" className="secondary obre-llib-v878562" onClick={()=>{window.__acoLlibDe878562="Configuració";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Llibreria"}}))}catch{}}}>{t("Obrir")} <ChevronRight size={16} aria-hidden="true"/></button></div>}{!PERFIL878304&&<div className="banc-ajustos-v878460"><BancPreus878368/></div>}{!esTreballador878326()&&<div className="meva-ajustos-v878537"><MevaBaseBloc878537/></div>}<MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/></>;
+  return <>{!!PERFIL878304&&preusAjustos878654()&&!esTreballador878326()&&<div className="llib-ajustos-v878562"><span><BookOpen size={18} aria-hidden="true"/><b>{t("Llibreria de preus")}</b></span><button type="button" className="secondary obre-llib-v878562" onClick={()=>{window.__acoLlibDe878562="Configuració";try{window.dispatchEvent(new CustomEvent("aco-nav",{detail:{screen:"Llibreria"}}))}catch{}}}>{t("Obrir")} <ChevronRight size={16} aria-hidden="true"/></button></div>}{!PERFIL878304&&<div className="banc-ajustos-v878460"><BancPreus878368/></div>}{!esTreballador878326()&&<div className="meva-ajustos-v878537"><MevaBaseBloc878537/></div>}<MargesCamps878378 v={v} def={margesDefecte878378()} set={set}/></>;
 }
 function Logistica878368({obra={},cond={},setCond,readOnly}){
   const k={...COND_DEFECTE,...cond};
@@ -23709,7 +23711,7 @@ async function pushStateToSupabase878121(state,user=currentAppUser8779()){
     clients:stripHeavy878185(state.clients||[]),
     obres:stripHeavy878185(state.obres||[]),
     odata:stripHeavy878104(mergeOdataWithSyncMeta878146(state.odata||{},state.partidaLibrary)),
-    app_version:"87.653",
+    app_version:"87.654",
     updated_at:new Date().toISOString()
   };
   const base=cfg.url.replace(/\/$/,"");
@@ -23998,7 +24000,7 @@ const grups637=[
     !tr637&&["marca",t("Imatge de l’empresa"),<MarcaEmpresa878351/>],
     !tr637&&emp637&&!menuEmpresa878607()&&["dades",t("Dades de l’empresa"),<DadesEmpresa878337 sub/>],
     !tr637&&["docs",t("Documents"),<DocsAjustos878396/>],
-    !tr637&&teModul878326("obra")&&["marges",t("Preus i marges"),<MargesAjustos878378/>],
+    !tr637&&preusAjustos878654()&&["marges",t("Preus i marges"),<MargesAjustos878378/>],
     !tr637&&["verifactu",t("Factures amb VERI*FACTU"),<VerifactuCompte878286 admin={admin}/>]]},
   {g:"pref",tit:t("Preferències"),Ic:Settings,items:[
     ["perfil",t("Perfil i mòduls"),<PerfilModuls878326/>],

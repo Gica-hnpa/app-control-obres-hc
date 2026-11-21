@@ -167,11 +167,12 @@ L’SQL de la **V87.409** (enllaç per signar) ja és executat (el 27/10 a la ni
 sortia «falta activar la Gmail API»: console.cloud.google.com/apis/library/gmail.googleapis.com › projecte «Control d’obres» › Habilitar.
 **AutoFirma:** «No s’ha pogut obrir» era l’app que tallava la connexió (V87.411); falta que l’Héctor ho torni a provar.
 
-**Estat (publicada la V87.653 a Render):**
+**Estat (publicada la V87.654 a Render):**
 - **Paquets per compte** (V87.653): cada perfil té una base i paquets (Honoraris, Pressupost i certificacions / «Direcció d'obra», Encàrrecs
   tècnics, Hores i rendiment, Control d'obra, Personal i fitxatge, Factures i comptabilitat); el que no té el compte no surt. Els posa l'Héctor
   a Ajustos › Comptes del núvol › «Paquets dels comptes» (cal l'SQL `aco_paquets_v878653.sql`). El «Tècnic amb gestió» ja és el Tècnic amb
-  Direcció d'obra (sense la comptabilitat de cada obra). Preus encara per decidir.
+  Direcció d'obra (sense la comptabilitat de cada obra), i amb Ajustos › «Preus i marges» i la llibreria (V87.654). Preus encara per decidir.
+  Les proves que miren la comptabilitat de la casa d'exemple ho fan al compte de l'Héctor del Supabase de proves (`aHector654`, `tabDe654`).
 - **Administrador de finques** (V87.652, perfil `finques`): només les obres de les comunitats (ofertes, pressupost, certificacions sense
   factura, actes i documents); «Comunitat» en lloc de «Client». Perfils i paquets (preus per decidir) a «Perfils i paquets de l'app» (Claude
   Docs i `docs/Perfils i paquets 2026-11-20.pdf`). Següent: exemples de comunitats i el convidat gratuït a una obra.
